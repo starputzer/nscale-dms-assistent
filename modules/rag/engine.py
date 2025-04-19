@@ -1,5 +1,5 @@
 import asyncio
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple
 
 from ..core.config import Config
 from ..core.logging import LogManager
@@ -55,7 +55,9 @@ class RAGEngine:
     
     async def answer_question(self, question: str, user_id: Optional[int] = None) -> Dict[str, Any]:
         """Beantwortet eine Frage mit dem RAG-System"""
+        # Lazy Initialization nur wenn nötig
         if not self.initialized:
+            logger.info("Lazy-Loading der RAG-Engine...")
             success = await self.initialize()
             if not success:
                 return {
@@ -73,6 +75,7 @@ class RAGEngine:
             relevant_chunks = self.embedding_manager.search(question, top_k=Config.TOP_K)
             
             if not relevant_chunks:
+                logger.warning(f"Keine relevanten Chunks für Frage gefunden: {question[:50]}...")
                 return {
                     'success': False,
                     'message': "Keine relevanten Informationen gefunden"
@@ -81,28 +84,59 @@ class RAGEngine:
             # Erstelle Prompt mit komprimiertem Kontext
             prompt = self._format_prompt(question, relevant_chunks)
             
-            # Generiere Antwort
-            result = await self.ollama_client.generate(prompt, user_id)
+            # Versuche mit Timeout-Handler zu antworten
+            try:
+                # Statt direkt zu generieren, verwenden wir asyncio.wait_for
+                result = await asyncio.wait_for(
+                    self.ollama_client.generate(prompt, user_id),
+                    timeout=Config.LLM_TIMEOUT
+                )
+            except asyncio.TimeoutError:
+                # Bei Timeout einfache Antwort ohne LLM
+                logger.warning(f"LLM-Timeout für Frage: {question[:50]}...")
+                simple_answer = self._generate_fallback_answer(question, relevant_chunks)
+                
+                return {
+                    'success': True,
+                    'answer': simple_answer,
+                    'sources': list(set(chunk['file'] for chunk in relevant_chunks)),
+                    'chunks': relevant_chunks,
+                    'cached': False,
+                    'fallback': True
+                }
             
             if 'error' in result:
+                logger.error(f"Fehler bei LLM-Anfrage: {result['error']}")
+                fallback_answer = self._generate_fallback_answer(question, relevant_chunks)
                 return {
-                    'success': False,
-                    'message': result['error']
+                    'success': True,  # Wir geben trotzdem ein "success", aber mit Fallback
+                    'answer': fallback_answer,
+                    'sources': list(set(chunk['file'] for chunk in relevant_chunks)),
+                    'fallback': True
                 }
+            
+            # Überprüfe, ob Antwort auf Deutsch ist
+            answer = result['response']
+            is_german, fixed_answer = self._ensure_german_answer(answer, relevant_chunks)
+            
+            if not is_german:
+                logger.warning("Nicht-deutsche Antwort erkannt, verwende Fallback")
+                answer = fixed_answer
             
             return {
                 'success': True,
-                'answer': result['response'],
+                'answer': answer,
                 'sources': list(set(chunk['file'] for chunk in relevant_chunks)),  # Entferne Duplikate
                 'chunks': relevant_chunks,
-                'cached': result.get('cached', False)
+                'cached': result.get('cached', False),
+                'fallback': not is_german
             }
         
         except Exception as e:
-            logger.error(f"Fehler beim Beantworten der Frage: {e}")
+            logger.error(f"Fehler beim Beantworten der Frage: {e}", exc_info=True)
             return {
                 'success': False,
-                'message': f"Fehler: {str(e)}"
+                'message': f"Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut."
             }
     
     def _format_prompt(self, question: str, chunks: List[Dict[str, Any]]) -> str:
@@ -117,10 +151,12 @@ class RAGEngine:
                 break
                 
             # Kompakte Darstellung je nach Chunk-Typ
+            chunk_text = chunk['text'][:250]  # Beschränke Textlänge pro Chunk
+            
             if chunk.get('type') == 'section':
-                text = f"Dokument {i+1} (Abschnitt '{chunk['title']}' aus {chunk['file']}): {chunk['text'][:200]}"
+                text = f"Dokument {i+1} (Abschnitt '{chunk['title']}' aus {chunk['file']}): {chunk_text}"
             else:
-                text = f"Dokument {i+1} (aus {chunk['file']}): {chunk['text'][:200]}"
+                text = f"Dokument {i+1} (aus {chunk['file']}): {chunk_text}"
             
             # Füge nur hinzu, wenn noch Platz ist
             if total_length + len(text) <= max_context_length:
@@ -129,42 +165,74 @@ class RAGEngine:
         
         kontext = '\n\n'.join(kontext_mit_quellen)
         
-        # Modellspezifische Prompts (alle auf Deutsch)
-        if Config.MODEL_NAME == 'phi':
-            prompt = f"""<s>Du bist ein deutschsprachiger Support-Assistent für die nscale DMS-Software. 
-Beantworte die folgende Frage präzise und in gutem Deutsch.
+        # Einheitlicher Prompt mit starker Betonung auf Deutsch
+        prompt = f"""Du bist ein deutschsprachiger Support-Assistent für die nscale DMS-Software.
+WICHTIG: Antworte NUR auf Deutsch! Verwende NIEMALS Englisch!
 
 Frage: {question}
 
 Relevante Informationen:
 {kontext}
 
-Beantworte die Frage auf Deutsch und im Kontext der nscale DMS-Software.
-Halte deine Antwort knapp und präzise.</s>
-"""
-        elif 'tinyllama' in Config.MODEL_NAME:
-            # Minimaler Prompt für kleinere Modelle
-            prompt = f"""Deine Aufgabe: Beantworte diese Frage auf Deutsch zur nscale DMS-Software.
-
-Frage: {question}
-
-Informationen:
-{kontext}
-
-Antworte knapp, präzise und AUF DEUTSCH. Nutze nur die gegebenen Informationen."""
-        else:
-            # Generischer Prompt für andere Modelle
-            prompt = f"""Als deutschsprachiger Support-Assistent für die nscale DMS-Software:
-
-Frage: {question}
-
-Kontext:
-{kontext}
-
-Antworte auf Deutsch, knapp und präzise. Verwende ausschließlich die bereitgestellten Informationen.
-"""
+Bleibe knapp und präzise (maximal 3-4 Sätze). Formuliere deine Antwort AUSSCHLIESSLICH auf Deutsch.
+Falls du keine klare Antwort geben kannst, sage es direkt und mache keine Vermutungen."""
         
         return prompt
+    
+    def _generate_fallback_answer(self, question: str, chunks: List[Dict[str, Any]]) -> str:
+        """Generiert eine einfache Antwort ohne LLM für Notfälle und Timeouts"""
+        if not chunks:
+            return "Leider wurden keine relevanten Informationen gefunden. Bitte versuchen Sie es mit einer anderen Frage."
+            
+        # Nimm den relevantesten Chunk
+        top_chunk = chunks[0]
+        chunk_text = top_chunk['text'][:300]  # Begrenzte Länge
+        
+        return f"""Aufgrund hoher Systemlast kann ich nur eine einfache Antwort geben:
+
+Relevante Information zu Ihrer Frage aus der Dokumentation ({top_chunk['file']}):
+{chunk_text}
+
+Bitte stellen Sie eine spezifischere Frage oder versuchen Sie es später erneut."""
+    
+    def _ensure_german_answer(self, answer: str, chunks: List[Dict[str, Any]]) -> Tuple[bool, str]:
+        """Überprüft, ob die Antwort auf Deutsch ist und korrigiert sie ggf."""
+        # Einfache Heuristik zur Erkennung von Englisch
+        english_indicators = ['the', 'this', 'that', 'and', 'for', 'with', 'from', 'here', 'there', 'question', 'answer', 'please']
+        german_indicators = ['der', 'die', 'das', 'und', 'für', 'mit', 'von', 'hier', 'dort', 'frage', 'antwort', 'bitte']
+        
+        # Normalisiere Text für bessere Erkennung
+        answer_lower = answer.lower()
+        
+        # Zähle englische und deutsche Indikatoren
+        english_count = sum(1 for word in english_indicators if f" {word} " in f" {answer_lower} ")
+        german_count = sum(1 for word in german_indicators if f" {word} " in f" {answer_lower} ")
+        
+        # Zusätzliche Check für typisch englische Satzmuster
+        has_english_patterns = any(pattern in answer_lower for pattern in [
+            "i'm sorry", "i am sorry", "i apologize", "let me", "i will", "i can", "try to", 
+            "would be", "should be", "could be", "seems to be", "appears to be"
+        ])
+        
+        # Wenn die Antwort wahrscheinlich Englisch ist
+        if has_english_patterns or (english_count > 0 and english_count >= german_count):
+            top_chunk = chunks[0] if chunks else None
+            
+            if top_chunk:
+                chunk_text = top_chunk['text'][:250]
+                fallback = f"""Entschuldigung, ich konnte momentan nur eine englische Antwort generieren.
+
+Die relevanteste Information aus der Dokumentation lautet:
+
+{chunk_text}
+
+Bitte stellen Sie Ihre Frage erneut oder spezifizieren Sie Ihre Anfrage."""
+            else:
+                fallback = "Entschuldigung, ich konnte keine passende Antwort auf Deutsch generieren. Bitte formulieren Sie Ihre Frage neu."
+            
+            return False, fallback
+        
+        return True, answer
     
     def get_document_stats(self) -> Dict[str, Any]:
         """Gibt Statistiken zu den Dokumenten zurück"""

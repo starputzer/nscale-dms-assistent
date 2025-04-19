@@ -155,7 +155,7 @@
                     
                     <!-- Input Area -->
                     <div class="bg-white border-t p-4">
-                        <form @submit.prevent="sendQuestion" class="flex space-x-2">
+                        <form @submit.prevent="sendQuestionStream" class="flex space-x-2">
                             <input v-model="question" class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" 
                                 placeholder="Stellen Sie Ihre Frage zur nscale DMS-Software..." :disabled="!currentSessionId || isLoading" />
                             <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
@@ -190,12 +190,79 @@
                 const question = ref('');
                 const isLoading = ref(false);
                 const chatMessages = ref(null);
-                
+                const isStreaming = ref(false);
+
                 // Setup axios with auth header
                 const setupAxios = () => {
                     axios.defaults.headers.common['Authorization'] = token.value ? `Bearer ${token.value}` : '';
                 }
                 
+                const sendQuestionStream = async () => {
+                    if (!question.value.trim() || !currentSessionId.value) {
+                        return;
+                    }
+    
+                    try {
+                        isLoading.value = true;
+                        isStreaming.value = true;
+        
+                        // Benutzernachricht sofort hinzufügen
+                        messages.value.push({
+                            is_user: true,
+                            message: question.value,
+                            timestamp: Date.now() / 1000
+                        });
+                        
+                        // Assistentenantwort vorbereiten
+                        const assistantMessageIndex = messages.value.length;
+                        messages.value.push({
+                            is_user: false,
+                            message: "Denke nach...",
+                            timestamp: Date.now() / 1000
+                        });
+                        
+                        await nextTick();
+                        scrollToBottom();
+                        
+                        // XHR für Streaming verwenden
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('POST', '/api/question');
+                        xhr.setRequestHeader('Content-Type', 'application/json');
+                        xhr.setRequestHeader('Authorization', `Bearer ${token.value}`);
+                        
+                        xhr.send(JSON.stringify({
+                            question: question.value,
+                            session_id: currentSessionId.value
+                        }));
+                        
+                        xhr.onload = () => {
+                            if (xhr.status === 200) {
+                                const response = JSON.parse(xhr.responseText);
+                                messages.value[assistantMessageIndex].message = response.answer;
+                            } else {
+                                messages.value[assistantMessageIndex].message = 
+                                    'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.';
+                            }
+                            
+                            question.value = '';
+                            isLoading.value = false;
+                            isStreaming.value = false;
+                            nextTick().then(scrollToBottom);
+                        };
+                        
+                        xhr.onerror = () => {
+                            messages.value[assistantMessageIndex].message = 
+                                'Es ist ein Netzwerkfehler aufgetreten. Bitte überprüfen Sie Ihre Verbindung.';
+                            isLoading.value = false;
+                            isStreaming.value = false;
+                        };
+                        
+                    } catch (error) {
+                        console.error('Error:', error);
+                        isLoading.value = false;
+                        isStreaming.value = false;
+                    }
+                };
                 // Auth functions
                 const login = async () => {
                     try {
@@ -452,6 +519,8 @@
                     question,
                     isLoading,
                     chatMessages,
+                    isStreaming,
+                    sendQuestionStream,
                     
                     // Chat functions
                     loadSessions,

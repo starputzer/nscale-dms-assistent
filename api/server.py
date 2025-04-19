@@ -158,6 +158,25 @@ async def answer_question(request: QuestionRequest, user_data: Dict[str, Any] = 
     if not result['success']:
         return JSONResponse(status_code=500, content={"error": result['message']})
     
+    # Prüfe, ob die Antwort Englisch sein könnte
+    answer = result['answer']
+    english_keywords = ['the', 'this', 'that', 'and', 'for', 'with', 'from', 'here', 'there', 'question']
+    german_keywords = ['der', 'die', 'das', 'und', 'für', 'mit', 'von', 'hier', 'dort', 'frage']
+    
+    english_count = sum(1 for word in english_keywords if f" {word} " in f" {answer.lower()} ")
+    german_count = sum(1 for word in german_keywords if f" {word} " in f" {answer.lower()} ")
+    
+    # Wenn die Antwort wahrscheinlich Englisch ist
+    if english_count > german_count:
+        answer = "Entschuldigung, aber ich konnte nur eine englische Antwort generieren. " \
+                "Hier ist die relevanteste Information auf Deutsch:\n\n" + \
+                "\n".join([chunk['text'][:200] for chunk in result['chunks'][:1]])
+        
+        result['answer'] = answer
+    
+    if not result['success']:
+        return JSONResponse(status_code=500, content={"error": result['message']})
+    
     # Speichere die Antwort
     chat_history.add_message(session_id, result['answer'], is_user=False)
     
