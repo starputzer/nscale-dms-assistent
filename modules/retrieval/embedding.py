@@ -55,12 +55,12 @@ class EmbeddingManager:
                 texts = [chunk['text'] for chunk in chunks]
                 
                 # Deutsche Stop-Words
-                german_stopwords = text.ENGLISH_STOP_WORDS.union({
+                german_stopwords = list(text.ENGLISH_STOP_WORDS.union({
                     'und', 'oder', 'aber', 'nicht', 'sein', 'haben', 'werden',
                     'dies', 'ein', 'eine', 'der', 'die', 'das', 'mit', 'für',
                     'auf', 'ist', 'im', 'den', 'dem', 'des', 'wie', 'wenn', 'dann',
                     'man', 'wir', 'ich', 'sie', 'er', 'es', 'in', 'am', 'an', 'vom'
-                })
+                }))
 
                 # Erstelle TF-IDF Matrix
                 self.tfidf_vectorizer = TfidfVectorizer(lowercase=True, stop_words=german_stopwords)
