@@ -15,12 +15,12 @@ class Config:
     DB_PATH = BASE_DIR / 'data' / 'db' / 'users.db'
     
     # LLM-Konfiguration
-    MODEL_NAME = os.getenv('MODEL_NAME', 'phi')
+    MODEL_NAME = os.getenv('MODEL_NAME', 'tinyllama')
     OLLAMA_URL = os.getenv('OLLAMA_URL', 'http://localhost:11434')
     LLM_TIMEOUT = float(os.getenv('LLM_TIMEOUT', '180.0'))  # Timeout in Sekunden
     LLM_CONTEXT_SIZE = int(os.getenv('LLM_CONTEXT_SIZE', '2048'))  # Maximale Kontextgröße
     LLM_MAX_TOKENS = int(os.getenv('LLM_MAX_TOKENS', '1024'))  # Maximale Token-Anzahl für die Ausgabe
-    MAX_PROMPT_LENGTH = int(os.getenv('MAX_PROMPT_LENGTH', '6000'))  # Maximale Eingabezeichen
+    MAX_PROMPT_LENGTH = int(os.getenv('MAX_PROMPT_LENGTH', '3000'))  # Maximale Eingabezeichen
     
     # RAG-Konfiguration
     CHUNK_SIZE = int(os.getenv('CHUNK_SIZE', '400'))  # Verkleinert von 500
