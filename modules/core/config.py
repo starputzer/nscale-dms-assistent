@@ -15,12 +15,12 @@ class Config:
     DB_PATH = BASE_DIR / 'data' / 'db' / 'users.db'
     
     # LLM-Konfiguration
-    MODEL_NAME = os.getenv('MODEL_NAME', 'tiny-tuned')  # optimiertes Modell
     OLLAMA_URL = os.getenv('OLLAMA_URL', 'http://localhost:11434')
-    LLM_TIMEOUT = float(os.getenv('LLM_TIMEOUT', '60.0'))  # Reduziert auf 60 Sekunden
-    LLM_CONTEXT_SIZE = int(os.getenv('LLM_CONTEXT_SIZE', '2048'))
-    LLM_MAX_TOKENS = int(os.getenv('LLM_MAX_TOKENS', '512'))  # Reduziert Ausgabetokens
-    MAX_PROMPT_LENGTH = int(os.getenv('MAX_PROMPT_LENGTH', '2000'))  # Stark reduziert
+    MODEL_NAME = os.getenv('MODEL_NAME', 'mistral-tuned')  # Wechsel zu Mistral
+    LLM_TIMEOUT = float(os.getenv('LLM_TIMEOUT', '60.0'))  # Höheren Timeout für das größere Modell
+    LLM_CONTEXT_SIZE = int(os.getenv('LLM_CONTEXT_SIZE', '8192'))  # Größerer Kontext
+    LLM_MAX_TOKENS = int(os.getenv('LLM_MAX_TOKENS', '1024'))  # Mehr Output-Tokens
+    MAX_PROMPT_LENGTH = int(os.getenv('MAX_PROMPT_LENGTH', '4000'))  # Längere Prompts erlauben
     
     # RAG-Konfiguration
     CHUNK_SIZE = int(os.getenv('CHUNK_SIZE', '250'))  # Weiter reduziert

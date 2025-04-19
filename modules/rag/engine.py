@@ -140,10 +140,10 @@ class RAGEngine:
             }
     
     def _format_prompt(self, question: str, chunks: List[Dict[str, Any]]) -> str:
-        """Formatiert einen optimierten deutschen Prompt"""
+        """Formatiert einen optimierten deutschen Prompt für Mistral"""
         # Extrem kompakte Kontextaufbereitung
         kontext_mit_quellen = []
-        max_context_length = min(Config.MAX_PROMPT_LENGTH - 500, 1000)  # Reserviere Platz für Anweisungen
+        max_context_length = min(Config.MAX_PROMPT_LENGTH - 500, 4000)  # Größerer Kontext für Mistral
         total_length = 0
         
         for i, chunk in enumerate(chunks[:Config.TOP_K]):
@@ -151,7 +151,7 @@ class RAGEngine:
                 break
                 
             # Kompakte Darstellung je nach Chunk-Typ
-            chunk_text = chunk['text'][:250]  # Beschränke Textlänge pro Chunk
+            chunk_text = chunk['text'][:500]  # Größere Chunk-Teile für Mistral
             
             if chunk.get('type') == 'section':
                 text = f"Dokument {i+1} (Abschnitt '{chunk['title']}' aus {chunk['file']}): {chunk_text}"
@@ -165,18 +165,19 @@ class RAGEngine:
         
         kontext = '\n\n'.join(kontext_mit_quellen)
         
-        # Einheitlicher Prompt mit starker Betonung auf Deutsch
-        prompt = f"""Du bist ein deutschsprachiger Support-Assistent für die nscale DMS-Software.
-WICHTIG: Antworte NUR auf Deutsch! Verwende NIEMALS Englisch!
+        # Mistral-spezifischer Prompt mit Instructformat
+        prompt = f"""<s>[INST] Du bist ein deutschsprachiger Support-Assistent für die nscale DMS-Software.
+WICHTIG: Antworte NUR auf Deutsch und verwende NIEMALS Englisch!
 
 Frage: {question}
 
-Relevante Informationen:
+Relevante Informationen aus der Dokumentation:
 {kontext}
 
-Bleibe knapp und präzise (maximal 3-4 Sätze). Formuliere deine Antwort AUSSCHLIESSLICH auf Deutsch.
-Falls du keine klare Antwort geben kannst, sage es direkt und mache keine Vermutungen."""
-        
+Beantworte die Frage präzise und fachlich korrekt in gutem Deutsch. 
+Bleibe knapp und formuliere höchstens 3-4 Sätze.
+Falls du keine klare Antwort geben kannst, sage es direkt und mache keine Vermutungen. [/INST]</s>"""
+    
         return prompt
     
     def _generate_fallback_answer(self, question: str, chunks: List[Dict[str, Any]]) -> str:
