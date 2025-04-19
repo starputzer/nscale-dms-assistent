@@ -78,8 +78,12 @@ class FallbackSearch:
         answer = f"""Aufgrund hoher Systemlast kann ich gerade keine KI-generierte Antwort erstellen. 
 Hier sind die relevantesten Informationen zu Ihrer Frage:
 
-{''.join(f'- {text}\n\n' for text in texts)}
-
-Bei weiteren Fragen versuchen Sie bitte, spezifischer zu sein oder kontaktieren Sie den Support."""
+"""
+        
+        # Füge die Textabschnitte hinzu
+        for text in texts:
+            answer += f"- {text}\n\n"
+            
+        answer += "Bei weiteren Fragen versuchen Sie bitte, spezifischer zu sein oder kontaktieren Sie den Support."
         
         return answer
