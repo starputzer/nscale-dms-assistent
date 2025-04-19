@@ -1,5 +1,4 @@
 import asyncio
-import time
 from typing import Dict, Any, List, Optional
 
 from ..core.config import Config
@@ -7,18 +6,16 @@ from ..core.logging import LogManager
 from ..retrieval.document_store import DocumentStore
 from ..retrieval.embedding import EmbeddingManager
 from ..llm.model import OllamaClient
-from .fallback_search import FallbackSearch
 
 logger = LogManager.setup_logging(__name__)
 
 class RAGEngine:
-    """Hauptmodul für RAG-Funktionalität mit Fallback-Mechanismen"""
+    """Hauptmodul für RAG-Funktionalität"""
     
     def __init__(self):
         self.document_store = DocumentStore()
         self.embedding_manager = EmbeddingManager()
         self.ollama_client = OllamaClient()
-        self.fallback_search = FallbackSearch()
         self.initialized = False
         self._init_lock = asyncio.Lock()  # Lock für Thread-Sicherheit bei Initialisierung
     
@@ -47,10 +44,6 @@ class RAGEngine:
                 if not self.embedding_manager.process_chunks(chunks):
                     logger.error("Fehler bei der Verarbeitung der Chunks")
                     return False
-                
-                # Initialisiere Fallback-Suche
-                if not self.fallback_search.initialize(chunks):
-                    logger.warning("Fallback-Suche konnte nicht initialisiert werden")
                 
                 self.initialized = True
                 logger.info("RAG-Engine erfolgreich initialisiert")
@@ -88,35 +81,14 @@ class RAGEngine:
             # Erstelle Prompt mit komprimiertem Kontext
             prompt = self._format_prompt(question, relevant_chunks)
             
-            # Warne, wenn Prompt zu lang ist
-            if len(prompt) > Config.MAX_PROMPT_LENGTH:
-                logger.warning(f"Prompt zu lang: {len(prompt)} Zeichen, wird gekürzt")
-                prompt = prompt[:Config.MAX_PROMPT_LENGTH]
+            # Generiere Antwort
+            result = await self.ollama_client.generate(prompt, user_id)
             
-            # Zeitmessung starten für Timeout-Erkennung
-            start_time = time.time()
-            
-            # Generiere Antwort mit Timeout-Überwachung
-            try:
-                # Setze einen Timer
-                result_future = asyncio.create_task(self.ollama_client.generate(prompt, user_id))
-                
-                # Warte auf die Antwort mit Timeout
-                try:
-                    result = await asyncio.wait_for(result_future, timeout=Config.LLM_TIMEOUT)
-                except asyncio.TimeoutError:
-                    logger.warning(f"Asyncio Timeout nach {time.time() - start_time:.2f}s")
-                    # Fallback aktivieren
-                    return await self._use_fallback(question, relevant_chunks, reason="timeout")
-            
-            except Exception as e:
-                logger.error(f"Fehler bei LLM-Anfrage: {e}")
-                return await self._use_fallback(question, relevant_chunks, reason="error")
-            
-            # Prüfe, ob Fehler aufgetreten ist
             if 'error' in result:
-                logger.warning(f"LLM-Fehler: {result['error']}")
-                return await self._use_fallback(question, relevant_chunks, reason="error")
+                return {
+                    'success': False,
+                    'message': result['error']
+                }
             
             return {
                 'success': True,
@@ -133,64 +105,64 @@ class RAGEngine:
                 'message': f"Fehler: {str(e)}"
             }
     
-    async def _use_fallback(self, question: str, chunks: List[Dict[str, Any]], reason: str = "unknown") -> Dict[str, Any]:
-        """Verwendet den Fallback-Mechanismus"""
-        logger.info(f"Aktiviere Fallback-Mechanismus (Grund: {reason})")
-        
-        # Suche für Fallback (kann anders sein als die semantische Suche)
-        fallback_chunks = chunks
-        if not chunks or reason == "no_results":
-            fallback_chunks = self.fallback_search.search(question)
-        
-        # Generiere eine einfache Antwort
-        answer = self.fallback_search.generate_answer(question, fallback_chunks)
-        
-        return {
-            'success': True,
-            'answer': answer,
-            'sources': list(set(chunk['file'] for chunk in fallback_chunks)) if fallback_chunks else [],
-            'chunks': fallback_chunks,
-            'cached': False,
-            'fallback': True
-        }
-    
     def _format_prompt(self, question: str, chunks: List[Dict[str, Any]]) -> str:
-        """Formatiert einen optimierten Prompt basierend auf dem verwendeten Modell"""
-        # Optimiere die Menge der Kontextinformationen
+        """Formatiert einen optimierten deutschen Prompt"""
+        # Extrem kompakte Kontextaufbereitung
         kontext_mit_quellen = []
+        max_context_length = min(Config.MAX_PROMPT_LENGTH - 500, 1000)  # Reserviere Platz für Anweisungen
+        total_length = 0
         
-        # Beschränke die Gesamtlänge des Kontexts
-        total_context_length = 0
-        max_context_length = min(Config.MAX_PROMPT_LENGTH - 500, 1500)  # Noch stärker limitieren
-        
-        for i, chunk in enumerate(chunks):
-            # Überprüfe, ob wir zu viel Kontext haben
-            if total_context_length > max_context_length or i >= Config.TOP_K:
+        for i, chunk in enumerate(chunks[:Config.TOP_K]):
+            if total_length >= max_context_length:
                 break
                 
-            # Formatiere je nach Chunk-Typ
+            # Kompakte Darstellung je nach Chunk-Typ
             if chunk.get('type') == 'section':
-                kontext = f"Information {i+1} aus {chunk['file']} (Abschnitt: {chunk['title']}): {chunk['text'][:250]}"
+                text = f"Dokument {i+1} (Abschnitt '{chunk['title']}' aus {chunk['file']}): {chunk['text'][:200]}"
             else:
-                # Füge Dateinamen als Kontext hinzu
-                kontext = f"Information {i+1} aus {chunk['file']}: {chunk['text'][:250]}"
-                
-            # Begrenzte Kontextlänge
-            if len(kontext) + total_context_length <= max_context_length:
-                kontext_mit_quellen.append(kontext)
-                total_context_length += len(kontext)
+                text = f"Dokument {i+1} (aus {chunk['file']}): {chunk['text'][:200]}"
+            
+            # Füge nur hinzu, wenn noch Platz ist
+            if total_length + len(text) <= max_context_length:
+                kontext_mit_quellen.append(text)
+                total_length += len(text)
         
         kontext = '\n\n'.join(kontext_mit_quellen)
         
-        # Wähle ein sehr kompaktes Prompt-Format
-        prompt = f"""<s>nscale DMS-Assistent. Beantworte knapp & präzise:
+        # Modellspezifische Prompts (alle auf Deutsch)
+        if Config.MODEL_NAME == 'phi':
+            prompt = f"""<s>Du bist ein deutschsprachiger Support-Assistent für die nscale DMS-Software. 
+Beantworte die folgende Frage präzise und in gutem Deutsch.
+
+Frage: {question}
+
+Relevante Informationen:
+{kontext}
+
+Beantworte die Frage auf Deutsch und im Kontext der nscale DMS-Software.
+Halte deine Antwort knapp und präzise.</s>
+"""
+        elif 'tinyllama' in Config.MODEL_NAME:
+            # Minimaler Prompt für kleinere Modelle
+            prompt = f"""Deine Aufgabe: Beantworte diese Frage auf Deutsch zur nscale DMS-Software.
+
+Frage: {question}
+
+Informationen:
+{kontext}
+
+Antworte knapp, präzise und AUF DEUTSCH. Nutze nur die gegebenen Informationen."""
+        else:
+            # Generischer Prompt für andere Modelle
+            prompt = f"""Als deutschsprachiger Support-Assistent für die nscale DMS-Software:
 
 Frage: {question}
 
 Kontext:
 {kontext}
 
-Antworte kurz und sachlich.</s>"""
+Antworte auf Deutsch, knapp und präzise. Verwende ausschließlich die bereitgestellten Informationen.
+"""
         
         return prompt
     

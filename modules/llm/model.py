@@ -10,31 +10,30 @@ import httpx
 from ..core.config import Config
 from ..core.logging import LogManager
 
-logger = LogManager.setup_logging(__name__)  # Präziseres Logger-Objekt
+logger = LogManager.setup_logging(__name__)
 
 class OllamaClient:
-    """Client für die Kommunikation mit dem Ollama-Server"""
+    """Client für die Kommunikation mit dem Ollama-Server mit Streaming-Unterstützung"""
     
     def __init__(self):
         self.cache = dc.Cache(str(Config.RESULT_CACHE_DIR))
         self.semaphore = asyncio.Semaphore(Config.THREAD_POOL_SIZE)
-        self._lock = threading.RLock()  # Explizites Lock für kritische Operationen
+        self._lock = threading.RLock()
     
     def _hash_prompt(self, prompt: str) -> str:
         """Erstellt einen Hash für einen Prompt"""
         return hashlib.md5(prompt.encode('utf-8')).hexdigest()
     
     async def generate(self, prompt: str, user_id: int = None) -> Dict[str, Any]:
-        """Generiert eine Antwort für einen Prompt"""
+        """Generiert eine Antwort für einen Prompt mit Streaming"""
         # Prompt-Längen-Check
         if len(prompt) > Config.MAX_PROMPT_LENGTH:
             logger.warning(f"Prompt überschreitet maximale Länge ({len(prompt)} > {Config.MAX_PROMPT_LENGTH})")
-            # Kürze den Prompt auf die maximale Länge
             prompt = prompt[:Config.MAX_PROMPT_LENGTH]
         
         cache_key = f"{user_id}:{self._hash_prompt(prompt)}" if user_id else self._hash_prompt(prompt)
         
-        # Versuche aus dem Cache zu laden (Thread-sicher mit Lock)
+        # Versuche aus dem Cache zu laden
         with self._lock:
             cached_result = self.cache.get(cache_key)
             if cached_result is not None:
@@ -47,8 +46,12 @@ class OllamaClient:
         # Semaphore für begrenzte parallele Anfragen
         async with self.semaphore:
             try:
-                logger.info(f"Sende Anfrage an Ollama ({len(prompt)} Zeichen)")
+                logger.info(f"Sende Anfrage an Ollama ({len(prompt)} Zeichen) mit Streaming")
                 start_time = time.time()
+                
+                # Zusätzlicher Parameter in deutschen Prompts
+                if "Antwort auf Deutsch" not in prompt and "auf Deutsch antworten" not in prompt:
+                    prompt = f"{prompt}\n\nAchte darauf, auf Deutsch zu antworten."
                 
                 async with httpx.AsyncClient(timeout=Config.LLM_TIMEOUT) as client:
                     response = await client.post(
@@ -56,29 +59,44 @@ class OllamaClient:
                         json={
                             'model': Config.MODEL_NAME,
                             'prompt': prompt,
-                            'stream': False,
+                            'stream': True,  # Streaming aktivieren
                             'options': {
-                                'temperature': 0.1,
-                                'num_ctx': Config.LLM_CONTEXT_SIZE,
-                                'num_predict': Config.LLM_MAX_TOKENS
+                                'temperature': 0.2,  # Reduzierte Temperatur für konsistentere Antworten
+                                'num_ctx': 1024,     # Reduzierter Kontext für Geschwindigkeit
+                                'num_predict': 300,  # Begrenzte Antwortlänge
+                                'top_p': 0.9,
+                                'repeat_penalty': 1.1,
+                                'num_batch': 512,    # Größere Batch-Size für schnellere Verarbeitung
                             }
                         },
                         timeout=Config.LLM_TIMEOUT
                     )
                     
-                    elapsed = time.time() - start_time
-                    
                     if response.status_code == 200:
-                        data = response.json()
-                        result = data.get('response', '')
+                        # Verarbeite Stream-Antwort
+                        complete_response = ""
+                        async for line in response.aiter_lines():
+                            if not line.strip():
+                                continue
+                            try:
+                                data = json.loads(line)
+                                if 'response' in data:
+                                    complete_response += data['response']
+                                # Wenn wir das Ende erreicht haben
+                                if data.get('done', False):
+                                    break
+                            except json.JSONDecodeError:
+                                continue
                         
-                        # Cache das Ergebnis (Thread-sicher mit Lock)
+                        elapsed = time.time() - start_time
+                        
+                        # Cache das Ergebnis
                         with self._lock:
-                            self.cache.set(cache_key, result, expire=Config.CACHE_EXPIRE)
+                            self.cache.set(cache_key, complete_response, expire=Config.CACHE_EXPIRE)
                         
-                        logger.info(f"Antwort erhalten in {elapsed:.2f}s")
+                        logger.info(f"Antwort erhalten in {elapsed:.2f}s (Streaming)")
                         return {
-                            'response': result,
+                            'response': complete_response,
                             'elapsed': elapsed,
                             'cached': False
                         }
@@ -87,7 +105,7 @@ class OllamaClient:
                         logger.error(error_msg)
                         return {
                             'error': error_msg,
-                            'elapsed': elapsed,
+                            'elapsed': time.time() - start_time,
                             'cached': False
                         }
             
