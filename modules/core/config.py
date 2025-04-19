@@ -15,18 +15,22 @@ class Config:
     DB_PATH = BASE_DIR / 'data' / 'db' / 'users.db'
     
     # LLM-Konfiguration
-    MODEL_NAME = os.getenv('MODEL_NAME', 'tinyllama')
+    MODEL_NAME = os.getenv('MODEL_NAME', 'phi')
     OLLAMA_URL = os.getenv('OLLAMA_URL', 'http://localhost:11434')
-    LLM_TIMEOUT = float(os.getenv('LLM_TIMEOUT', '180.0'))  # Timeout in Sekunden
-    LLM_CONTEXT_SIZE = int(os.getenv('LLM_CONTEXT_SIZE', '2048'))  # Maximale Kontextgröße
-    LLM_MAX_TOKENS = int(os.getenv('LLM_MAX_TOKENS', '1024'))  # Maximale Token-Anzahl für die Ausgabe
-    MAX_PROMPT_LENGTH = int(os.getenv('MAX_PROMPT_LENGTH', '3000'))  # Maximale Eingabezeichen
+    LLM_TIMEOUT = float(os.getenv('LLM_TIMEOUT', '60.0'))  # Reduziert auf 60 Sekunden
+    LLM_CONTEXT_SIZE = int(os.getenv('LLM_CONTEXT_SIZE', '2048'))
+    LLM_MAX_TOKENS = int(os.getenv('LLM_MAX_TOKENS', '512'))  # Reduziert Ausgabetokens
+    MAX_PROMPT_LENGTH = int(os.getenv('MAX_PROMPT_LENGTH', '2000'))  # Stark reduziert
     
     # RAG-Konfiguration
-    CHUNK_SIZE = int(os.getenv('CHUNK_SIZE', '400'))  # Verkleinert von 500
-    CHUNK_OVERLAP = int(os.getenv('CHUNK_OVERLAP', '100'))  # Verkleinert von 250
-    TOP_K = int(os.getenv('TOP_K', '3'))  # Reduziert von 5 auf 3
+    CHUNK_SIZE = int(os.getenv('CHUNK_SIZE', '250'))  # Weiter reduziert
+    CHUNK_OVERLAP = int(os.getenv('CHUNK_OVERLAP', '50'))  # Minimal
+    TOP_K = int(os.getenv('TOP_K', '2'))  # Nur 2 relevante Chunks
     SEMANTIC_WEIGHT = float(os.getenv('SEMANTIC_WEIGHT', '0.7'))
+    
+    # Fallback-Konfiguration
+    FALLBACK_ENABLED = os.getenv('FALLBACK_ENABLED', 'true').lower() == 'true'
+    FALLBACK_TIMEOUT = float(os.getenv('FALLBACK_TIMEOUT', '5.0'))  # Wartezeit vor Fallback
     
     # Caching
     CACHE_EXPIRE = int(os.getenv('CACHE_EXPIRE', '604800'))  # 7 Tage
@@ -42,12 +46,12 @@ class Config:
     WORKERS = int(os.getenv('WORKERS', '4'))
     
     # Thread-Pool-Konfiguration
-    THREAD_POOL_SIZE = int(os.getenv('THREAD_POOL_SIZE', '4'))  # Reduziert von 10 auf 4
+    THREAD_POOL_SIZE = int(os.getenv('THREAD_POOL_SIZE', '2'))  # Minimal
     
     @classmethod
     def init_directories(cls):
         """Initialisiert notwendige Verzeichnisse"""
         for directory in [cls.TXT_DIR, cls.CACHE_DIR, cls.RESULT_CACHE_DIR, 
                          cls.BASE_DIR / 'logs', cls.BASE_DIR / 'data' / 'db',
-                         cls.EMBED_CACHE_PATH.parent]:  # Stelle sicher, dass das Embedding-Cache-Verzeichnis existiert
+                         cls.EMBED_CACHE_PATH.parent]:
             directory.mkdir(parents=True, exist_ok=True)
