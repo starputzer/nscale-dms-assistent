@@ -1,4 +1,4 @@
-[200~# Modell- und Datendateien
+# Modell- und Datendateien
 /models/
 /data/
 /cache/
@@ -41,6 +41,21 @@ ENV/
 .vscode/
 *.swp
 *.swo
-github-laptop
-github-laptop.pub
+
+# SSH-Schlüssel
+id_*
+*.pem
+*.key
+*.pub
 github-laptop*
+
+# Umgebungsvariablen
+.env
+*.env
+
+# OS-spezifisch
+.DS_Store
+Thumbs.db
+
+# Log-Dateien
+*.log

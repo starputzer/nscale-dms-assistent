@@ -3,6 +3,7 @@ import numpy as np
 import threading
 from typing import List, Dict, Any, Optional
 from pathlib import Path
+from sklearn.feature_extraction import text
 
 from sentence_transformers import SentenceTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -53,8 +54,16 @@ class EmbeddingManager:
                 # Extrahiere Texte
                 texts = [chunk['text'] for chunk in chunks]
                 
+                # Deutsche Stop-Words
+                german_stopwords = text.ENGLISH_STOP_WORDS.union({
+                    'und', 'oder', 'aber', 'nicht', 'sein', 'haben', 'werden',
+                    'dies', 'ein', 'eine', 'der', 'die', 'das', 'mit', 'für',
+                    'auf', 'ist', 'im', 'den', 'dem', 'des', 'wie', 'wenn', 'dann',
+                    'man', 'wir', 'ich', 'sie', 'er', 'es', 'in', 'am', 'an', 'vom'
+                })
+
                 # Erstelle TF-IDF Matrix
-                self.tfidf_vectorizer = TfidfVectorizer(lowercase=True, stop_words='german')
+                self.tfidf_vectorizer = TfidfVectorizer(lowercase=True, stop_words=german_stopwords)
                 self.tfidf_matrix = self.tfidf_vectorizer.fit_transform(texts)
                 
                 # Erstelle Embeddings
