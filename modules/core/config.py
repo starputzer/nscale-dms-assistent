@@ -17,11 +17,15 @@ class Config:
     # LLM-Konfiguration
     MODEL_NAME = os.getenv('MODEL_NAME', 'phi')
     OLLAMA_URL = os.getenv('OLLAMA_URL', 'http://localhost:11434')
+    LLM_TIMEOUT = float(os.getenv('LLM_TIMEOUT', '180.0'))  # Timeout in Sekunden
+    LLM_CONTEXT_SIZE = int(os.getenv('LLM_CONTEXT_SIZE', '2048'))  # Maximale Kontextgröße
+    LLM_MAX_TOKENS = int(os.getenv('LLM_MAX_TOKENS', '1024'))  # Maximale Token-Anzahl für die Ausgabe
+    MAX_PROMPT_LENGTH = int(os.getenv('MAX_PROMPT_LENGTH', '6000'))  # Maximale Eingabezeichen
     
     # RAG-Konfiguration
-    CHUNK_SIZE = int(os.getenv('CHUNK_SIZE', '500'))
-    CHUNK_OVERLAP = int(os.getenv('CHUNK_OVERLAP', '250'))
-    TOP_K = int(os.getenv('TOP_K', '5'))
+    CHUNK_SIZE = int(os.getenv('CHUNK_SIZE', '400'))  # Verkleinert von 500
+    CHUNK_OVERLAP = int(os.getenv('CHUNK_OVERLAP', '100'))  # Verkleinert von 250
+    TOP_K = int(os.getenv('TOP_K', '3'))  # Reduziert von 5 auf 3
     SEMANTIC_WEIGHT = float(os.getenv('SEMANTIC_WEIGHT', '0.7'))
     
     # Caching
@@ -38,11 +42,12 @@ class Config:
     WORKERS = int(os.getenv('WORKERS', '4'))
     
     # Thread-Pool-Konfiguration
-    THREAD_POOL_SIZE = int(os.getenv('THREAD_POOL_SIZE', '10'))
+    THREAD_POOL_SIZE = int(os.getenv('THREAD_POOL_SIZE', '4'))  # Reduziert von 10 auf 4
     
     @classmethod
     def init_directories(cls):
         """Initialisiert notwendige Verzeichnisse"""
         for directory in [cls.TXT_DIR, cls.CACHE_DIR, cls.RESULT_CACHE_DIR, 
-                         cls.BASE_DIR / 'logs', cls.BASE_DIR / 'data' / 'db']:
+                         cls.BASE_DIR / 'logs', cls.BASE_DIR / 'data' / 'db',
+                         cls.EMBED_CACHE_PATH.parent]:  # Stelle sicher, dass das Embedding-Cache-Verzeichnis existiert
             directory.mkdir(parents=True, exist_ok=True)

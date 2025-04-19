@@ -9,7 +9,7 @@ from typing import List, Dict, Any, Optional
 from ..core.config import Config
 from ..core.logging import LogManager
 
-logger = LogManager.setup_logging()
+logger = LogManager.setup_logging(__name__)
 
 class Document:
     """Repräsentiert ein einzelnes Dokument"""
@@ -29,7 +29,8 @@ class Document:
         
         if sections:
             for section in sections:
-                if len(section['text']) > 50:  # Ignoriere sehr kleine Abschnitte
+                # Ignoriere sehr kleine Abschnitte (< 50 Zeichen)
+                if len(section['text']) > 50:
                     self.chunks.append({
                         'text': section['text'],
                         'file': self.filename,
@@ -38,8 +39,25 @@ class Document:
                     })
         else:
             # Fallback: Erstelle überlappende Chunks
-            for i in range(0, len(self.text), Config.CHUNK_SIZE - Config.CHUNK_OVERLAP):
-                chunk_text = self._preprocess_text(self.text[i:i+Config.CHUNK_SIZE])
+            chunk_size = Config.CHUNK_SIZE
+            overlap = Config.CHUNK_OVERLAP
+            
+            # Stelle sicher, dass die Überlappung kleiner als die Chunk-Größe ist
+            if overlap >= chunk_size:
+                overlap = chunk_size // 2
+                logger.warning(f"Überlappung zu groß, reduziert auf {overlap}")
+            
+            # Berechne die tatsächliche Schrittweite
+            step_size = chunk_size - overlap
+            
+            # Teile Text in Chunks auf
+            text_length = len(self.text)
+            for i in range(0, text_length, step_size):
+                # Stelle sicher, dass wir nicht über das Textende hinausgehen
+                end_pos = min(i + chunk_size, text_length)
+                chunk_text = self._preprocess_text(self.text[i:end_pos])
+                
+                # Ignoriere leere oder zu kleine Chunks
                 if len(chunk_text) > 50:
                     self.chunks.append({
                         'text': chunk_text,
@@ -52,8 +70,13 @@ class Document:
         """Extrahiert strukturierte Abschnitte aus dem Text"""
         sections = []
         
-        # Einfache Überschriftenerkennung
-        headers = re.finditer(r'(?m)^(#{1,3}|[A-Z][A-Z\s]+:|[0-9]+\.[0-9]+\s+)(.+)$', self.text)
+        # Einfache Überschriftenerkennung (verbessert)
+        pattern = r'(?m)^(#{1,3}|[A-Z][A-Z\s]+:|[0-9]+\.[0-9.]*\s+)(.+?)$'
+        headers = list(re.finditer(pattern, self.text))
+        
+        # Wenn keine oder zu wenige Überschriften, kein Abschnitt-Extraktion
+        if len(headers) < 2:
+            return []
         
         last_pos = 0
         last_header = "Einleitung"
@@ -84,7 +107,12 @@ class Document:
     
     def _preprocess_text(self, text: str) -> str:
         """Bereinigt Text für bessere Verarbeitung"""
+        # Entferne überflüssige Whitespaces und normalisiere Zeilenumbrüche
         text = re.sub(r'\s+', ' ', text)
+        
+        # Entferne Steuerzeichen
+        text = re.sub(r'[\x00-\x1F\x7F]', '', text)
+        
         return text.strip()
 
 class DocumentStore:
@@ -111,8 +139,23 @@ class DocumentStore:
                 self.doc_modified = {}
                 
                 # Lade alle Textdateien
-                for file_path in Config.TXT_DIR.glob('*.txt'):
+                files_loaded = 0
+                txt_dir = Config.TXT_DIR
+                
+                # Stelle sicher, dass das Verzeichnis existiert
+                if not txt_dir.exists():
+                    logger.warning(f"Textverzeichnis {txt_dir} existiert nicht, wird erstellt")
+                    txt_dir.mkdir(parents=True, exist_ok=True)
+                    return True  # Kein Fehler, aber keine Dokumente
+                
+                for file_path in txt_dir.glob('*.txt'):
                     try:
+                        # Überspringe zu große Dateien
+                        file_size = file_path.stat().st_size
+                        if file_size > 10 * 1024 * 1024:  # 10 MB
+                            logger.warning(f"Datei zu groß, wird übersprungen: {file_path.name} ({file_size/1024/1024:.2f} MB)")
+                            continue
+                            
                         with open(file_path, 'r', encoding='utf-8') as f:
                             text = f.read()
                         
@@ -125,7 +168,7 @@ class DocumentStore:
                             text=text,
                             filename=file_path.name,
                             metadata={
-                                'size': file_path.stat().st_size,
+                                'size': file_size,
                                 'modified': modified_time,
                                 'path': str(file_path)
                             }
@@ -137,9 +180,12 @@ class DocumentStore:
                         # Speichere Dokument und füge Chunks hinzu
                         self.documents[file_path.name] = doc
                         self.chunks.extend(doc.chunks)
+                        files_loaded += 1
                     
                     except Exception as e:
                         logger.error(f"Fehler beim Laden von {file_path}: {e}")
+                
+                logger.info(f"Insgesamt {files_loaded} Dokumente mit {len(self.chunks)} Chunks geladen")
                 
                 # Speichere Cache
                 self._save_cache()
@@ -157,14 +203,27 @@ class DocumentStore:
             return False
         
         try:
+            # Prüfe Cache-Integrität
             with open(cache_path, 'rb') as f:
                 cached_data = pickle.load(f)
             
-            cached_files = {d for d in cached_data['doc_modified']}
+            # Prüfe ob erwartete Daten vorhanden sind
+            if not all(key in cached_data for key in ['documents', 'chunks', 'doc_modified']):
+                logger.warning("Cache unvollständig, wird neu erstellt")
+                return False
+                
+            cached_files = set(cached_data['doc_modified'].keys())
+            
+            # Prüfe ob TXT_DIR existiert
+            if not Config.TXT_DIR.exists():
+                logger.warning(f"Textverzeichnis {Config.TXT_DIR} existiert nicht")
+                return False
+                
             current_files = {f.name for f in Config.TXT_DIR.glob('*.txt')}
             
             # Prüfe ob alle Dateien übereinstimmen
             if cached_files != current_files:
+                logger.info(f"Dateiunterschiede erkannt: Cache hat {len(cached_files)}, aktuell {len(current_files)}")
                 return False
             
             # Prüfe ob Änderungsdaten übereinstimmen
@@ -173,6 +232,7 @@ class DocumentStore:
                 modified_time = datetime.fromtimestamp(file_path.stat().st_mtime).strftime('%Y-%m-%d %H:%M')
                 
                 if modified_time != cached_data['doc_modified'].get(file):
+                    logger.info(f"Änderungsdatum für {file} hat sich geändert")
                     return False
             
             # Lade Daten aus Cache
@@ -180,6 +240,7 @@ class DocumentStore:
             self.chunks = cached_data['chunks']
             self.doc_modified = cached_data['doc_modified']
             
+            logger.info(f"Cache-Daten geladen: {len(self.documents)} Dokumente, {len(self.chunks)} Chunks")
             return True
         
         except Exception as e:
@@ -191,6 +252,9 @@ class DocumentStore:
         cache_path = Config.CACHE_DIR / 'documents.pkl'
         
         try:
+            # Stelle sicher, dass das Verzeichnis existiert
+            cache_path.parent.mkdir(parents=True, exist_ok=True)
+            
             with open(cache_path, 'wb') as f:
                 pickle.dump({
                     'documents': self.documents,
