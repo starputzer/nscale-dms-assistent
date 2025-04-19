@@ -15,7 +15,7 @@ class Config:
     DB_PATH = BASE_DIR / 'data' / 'db' / 'users.db'
     
     # LLM-Konfiguration
-    MODEL_NAME = os.getenv('MODEL_NAME', 'tinyllama-tuned')  # optimiertes Modell
+    MODEL_NAME = os.getenv('MODEL_NAME', 'tiny-tuned')  # optimiertes Modell
     OLLAMA_URL = os.getenv('OLLAMA_URL', 'http://localhost:11434')
     LLM_TIMEOUT = float(os.getenv('LLM_TIMEOUT', '60.0'))  # Reduziert auf 60 Sekunden
     LLM_CONTEXT_SIZE = int(os.getenv('LLM_CONTEXT_SIZE', '2048'))
