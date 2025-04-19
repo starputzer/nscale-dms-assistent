@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nscale DMS Assistent</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.2.31/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div id="app" class="container mx-auto px-4 py-8">
+        <!-- Login & Register -->
+        <div v-if="!token" class="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden p-6">
+            <h1 class="text-2xl font-bold text-center mb-6">nscale DMS Assistent</h1>
+            
+            <div class="flex border-b border-gray-200">
+                <button @click="authMode = 'login'" 
+                    :class="['py-2 px-4 w-1/2 text-center focus:outline-none', 
+                    authMode === 'login' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-500']">
+                    Anmelden
+                </button>
+                <button @click="authMode = 'register'" 
+                    :class="['py-2 px-4 w-1/2 text-center focus:outline-none', 
+                    authMode === 'register' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-500']">
+                    Registrieren
+                </button>
+            </div>
+            
+            <!-- Login Form -->
+            <form v-if="authMode === 'login'" @submit.prevent="login" class="mt-6">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="email">E-Mail</label>
+                    <input v-model="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                        id="email" type="email" placeholder="E-Mail" required>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="password">Passwort</label>
+                    <input v-model="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                        id="password" type="password" placeholder="Passwort" required>
+                </div>
+                <div class="flex items-center justify-between">
+                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" 
+                        type="submit" :disabled="loading">
+                        {{ loading ? 'Anmelden...' : 'Anmelden' }}
+                    </button>
+                    <a class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800" href="#" @click.prevent="authMode = 'reset'">
+                        Passwort vergessen?
+                    </a>
+                </div>
+                <div v-if="errorMessage" class="mt-4 text-red-500 text-sm">{{ errorMessage }}</div>
+            </form>
+            
+            <!-- Register Form -->
+            <form v-if="authMode === 'register'" @submit.prevent="register" class="mt-6">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="reg-email">E-Mail</label>
+                    <input v-model="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                        id="reg-email" type="email" placeholder="E-Mail" required>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="reg-password">Passwort</label>
+                    <input v-model="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                        id="reg-password" type="password" placeholder="Passwort" required>
+                </div>
+                <div class="flex items-center justify-between">
+                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" 
+                        type="submit" :disabled="loading">
+                        {{ loading ? 'Registrieren...' : 'Registrieren' }}
+                    </button>
+                </div>
+                <div v-if="errorMessage" class="mt-4 text-red-500 text-sm">{{ errorMessage }}</div>
+            </form>
+            
+            <!-- Reset Password Form -->
+            <form v-if="authMode === 'reset'" @submit.prevent="resetPassword" class="mt-6">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="reset-email">E-Mail</label>
+                    <input v-model="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                        id="reset-email" type="email" placeholder="E-Mail" required>
+                </div>
+                <div class="flex items-center justify-between">
+                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" 
+                        type="submit" :disabled="loading">
+                        {{ loading ? 'Zurücksetzen...' : 'Passwort zurücksetzen' }}
+                    </button>
+                    <a class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800" href="#" @click.prevent="authMode = 'login'">
+                        Zurück zur Anmeldung
+                    </a>
+                </div>
+                <div v-if="successMessage" class="mt-4 text-green-500 text-sm">{{ successMessage }}</div>
+                <div v-if="errorMessage" class="mt-4 text-red-500 text-sm">{{ errorMessage }}</div>
+            </form>
+        </div>
+        
+        <!-- Main Chat Interface -->
+        <div v-if="token" class="flex flex-col h-screen">
+            <!-- Header -->
+            <header class="bg-white shadow-md p-4">
+                <div class="flex justify-between items-center">
+                    <h1 class="text-xl font-bold">nscale DMS Assistent</h1>
+                    <div class="flex space-x-4">
+                        <button @click="startNewSession" class="bg-blue-500 hover:bg-blue-700 text-white text-sm px-3 py-1 rounded">
+                            Neue Unterhaltung
+                        </button>
+                        <button @click="logout" class="bg-gray-500 hover:bg-gray-700 text-white text-sm px-3 py-1 rounded">
+                            Abmelden
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Main Content -->
+            <div class="flex flex-1 overflow-hidden">
+                <!-- Sessions Sidebar -->
+                <aside class="w-64 bg-white p-4 shadow-md overflow-y-auto">
+                    <h2 class="text-lg font-semibold mb-4">Unterhaltungen</h2>
+                    <ul class="space-y-2">
+                        <li v-for="session in sessions" :key="session.id" 
+                            @click="loadSession(session.id)"
+                            :class="['p-2 rounded cursor-pointer', 
+                            currentSessionId === session.id ? 'bg-blue-100' : 'hover:bg-gray-100']">
+                            <div class="flex justify-between items-center">
+                                <span>{{ session.title }}</span>
+                                <button @click.stop="deleteSession(session.id)" class="text-red-500 hover:text-red-700">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </li>
+                    </ul>
+                </aside>
+                
+                <!-- Chat Area -->
+                <main class="flex-1 flex flex-col bg-gray-50 overflow-hidden">
+                    <!-- Chat Messages -->
+                    <div class="flex-1 overflow-y-auto p-4" ref="chatMessages">
+                        <div v-if="!currentSessionId" class="flex h-full items-center justify-center text-gray-500">
+                            Wählen Sie eine Unterhaltung oder starten Sie eine neue.
+                        </div>
+                        <div v-else>
+                            <div v-for="(message, index) in messages" :key="index" class="mb-4">
+                                <div :class="['p-3 rounded-lg max-w-3xl', 
+                                    message.is_user ? 'bg-blue-100 ml-auto' : 'bg-white']">
+                                    <div v-html="formatMessage(message.message)" class="prose"></div>
+                                </div>
+                            </div>
+                            <div v-if="isLoading" class="flex justify-center p-4">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Input Area -->
+                    <div class="bg-white border-t p-4">
+                        <form @submit.prevent="sendQuestion" class="flex space-x-2">
+                            <input v-model="question" class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                placeholder="Stellen Sie Ihre Frage zur nscale DMS-Software..." :disabled="!currentSessionId || isLoading" />
+                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                                :disabled="!currentSessionId || !question || isLoading">
+                                Senden
+                            </button>
+                        </form>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const { createApp, ref, onMounted, watch, nextTick } = Vue;
+        
+        createApp({
+            setup() {
+                // Authentication state
+                const token = ref(localStorage.getItem('token') || '');
+                const email = ref('');
+                const password = ref('');
+                const authMode = ref('login');
+                const loading = ref(false);
+                const errorMessage = ref('');
+                const successMessage = ref('');
+                
+                // Chat state
+                const sessions = ref([]);
+                const currentSessionId = ref(null);
+                const messages = ref([]);
+                const question = ref('');
+                const isLoading = ref(false);
+                const chatMessages = ref(null);
+                
+                // Setup axios with auth header
+                const setupAxios = () => {
+                    axios.defaults.headers.common['Authorization'] = token.value ? `Bearer ${token.value}` : '';
+                }
+                
+                // Auth functions
+                const login = async () => {
+                    try {
+                        loading.value = true;
+                        errorMessage.value = '';
+                        
+                        const response = await axios.post('/api/auth/login', {
+                            email: email.value,
+                            password: password.value
+                        });
+                        
+                        token.value = response.data.token;
+                        localStorage.setItem('token', token.value);
+                        setupAxios();
+                        
+                        // Clear form
+                        email.value = '';
+                        password.value = '';
+                        
+                        // Load sessions
+                        loadSessions();
+                    } catch (error) {
+                        errorMessage.value = error.response?.data?.detail || 'Anmeldefehler. Bitte versuchen Sie es erneut.';
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+                
+                const register = async () => {
+                    try {
+                        loading.value = true;
+                        errorMessage.value = '';
+                        
+                        await axios.post('/api/auth/register', {
+                            email: email.value,
+                            password: password.value
+                        });
+                        
+                        // Switch to login after successful registration
+                        authMode.value = 'login';
+                        successMessage.value = 'Registrierung erfolgreich. Bitte melden Sie sich an.';
+                        
+                        // Clear form
+                        email.value = '';
+                        password.value = '';
+                    } catch (error) {
+                        errorMessage.value = error.response?.data?.detail || 'Registrierungsfehler. Bitte versuchen Sie es erneut.';
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+                
+                const resetPassword = async () => {
+                    try {
+                        loading.value = true;
+                        errorMessage.value = '';
+                        successMessage.value = '';
+                        
+                        const response = await axios.post('/api/auth/reset-password', {
+                            email: email.value
+                        });
+                        
+                        successMessage.value = response.data.message;
+                        
+                        // In a real app, the user would receive an email with the token
+                        // For this example, we'll show the token directly
+                        if (response.data.token) {
+                            successMessage.value += ` Token: ${response.data.token}`;
+                        }
+                    } catch (error) {
+                        errorMessage.value = error.response?.data?.detail || 'Fehler beim Zurücksetzen des Passworts.';
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+                
+                const logout = () => {
+                    token.value = '';
+                    localStorage.removeItem('token');
+                    setupAxios();
+                    currentSessionId.value = null;
+                    sessions.value = [];
+                    messages.value = [];
+                };
+                
+                // Session management
+                const loadSessions = async () => {
+                    try {
+                        const response = await axios.get('/api/sessions');
+                        sessions.value = response.data.sessions;
+                    } catch (error) {
+                        console.error('Error loading sessions:', error);
+                    }
+                };
+                
+                const loadSession = async (sessionId) => {
+                    try {
+                        isLoading.value = true;
+                        const response = await axios.get(`/api/session/${sessionId}`);
+                        currentSessionId.value = sessionId;
+                        messages.value = response.data.messages;
+                        
+                        // Scroll to bottom after messages load
+                        await nextTick();
+                        scrollToBottom();
+                    } catch (error) {
+                        console.error('Error loading session:', error);
+                    } finally {
+                        isLoading.value = false;
+                    }
+                };
+                
+                const startNewSession = async () => {
+                    try {
+                        isLoading.value = true;
+                        const response = await axios.post('/api/session', {
+                            title: "Neue Unterhaltung"
+                        });
+                        
+                        await loadSessions();
+                        await loadSession(response.data.session_id);
+                    } catch (error) {
+                        console.error('Error starting new session:', error);
+                    } finally {
+                        isLoading.value = false;
+                    }
+                };
+                
+                const deleteSession = async (sessionId) => {
+                    if (!confirm('Möchten Sie diese Unterhaltung wirklich löschen?')) {
+                        return;
+                    }
+                    
+                    try {
+                        await axios.delete(`/api/session/${sessionId}`);
+                        
+                        if (currentSessionId.value === sessionId) {
+                            currentSessionId.value = null;
+                            messages.value = [];
+                        }
+                        
+                        await loadSessions();
+                    } catch (error) {
+                        console.error('Error deleting session:', error);
+                    }
+                };
+                
+                // Chat functions
+                const sendQuestion = async () => {
+                    if (!question.value.trim() || !currentSessionId.value) {
+                        return;
+                    }
+                    
+                    try {
+                        isLoading.value = true;
+                        
+                        // Add user message immediately for better UX
+                        messages.value.push({
+                            is_user: true,
+                            message: question.value,
+                            timestamp: Date.now() / 1000
+                        });
+                        
+                        await nextTick();
+                        scrollToBottom();
+                        
+                        const response = await axios.post('/api/question', {
+                            question: question.value,
+                            session_id: currentSessionId.value
+                        });
+                        
+                        // Add assistant response
+                        messages.value.push({
+                            is_user: false,
+                            message: response.data.answer,
+                            timestamp: Date.now() / 1000
+                        });
+                        
+                        // Clear input
+                        question.value = '';
+                        
+                        await nextTick();
+                        scrollToBottom();
+                    } catch (error) {
+                        console.error('Error sending question:', error);
+                        
+                        // Add error message
+                        messages.value.push({
+                            is_user: false,
+                            message: 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
+                            timestamp: Date.now() / 1000
+                        });
+                        
+                        await nextTick();
+                        scrollToBottom();
+                    } finally {
+                        isLoading.value = false;
+                    }
+                };
+                
+                const formatMessage = (text) => {
+                    return marked.parse(text);
+                };
+                
+                const scrollToBottom = () => {
+                    if (chatMessages.value) {
+                        chatMessages.value.scrollTop = chatMessages.value.scrollHeight;
+                    }
+                };
+                
+                // Initialize
+                onMounted(() => {
+                    setupAxios();
+                    
+                    if (token.value) {
+                        loadSessions();
+                    }
+                    
+                    // Clear messages when auth state changes
+                    watch(token, (newValue) => {
+                        if (!newValue) {
+                            messages.value = [];
+                            currentSessioId.value = null;
+                        }
+                    });
+                    
+                    // Clear error message when auth mode changes
+                    watch(authMode, () => {
+                        errorMessage.value = '';
+                        successMessage.value = '';
+                    });
+                });
+                
+                return {
+                    // Auth state
+                    token,
+                    email,
+                    password,
+                    authMode,
+                    loading,
+                    errorMessage,
+                    successMessage,
+                    
+                    // Auth functions
+                    login,
+                    register,
+                    resetPassword,
+                    logout,
+                    
+                    // Chat state
+                    sessions,
+                    currentSessionId,
+                    messages,
+                    question,
+                    isLoading,
+                    chatMessages,
+                    
+                    // Chat functions
+                    loadSessions,
+                    loadSession,
+                    startNewSession,
+                    deleteSession,
+                    sendQuestion,
+                    formatMessage
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
