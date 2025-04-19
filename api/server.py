@@ -1,3 +1,9 @@
+import sys
+import os
+
+# Füge das Projektverzeichnis zum Python-Pfad hinzu
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import asyncio
 import time
 import uuid
@@ -32,6 +38,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# App Mounten
+app.mount("/static", StaticFiles(directory="frontend"), name="static")
+
+@app.get("/")
+async def root():
+    return FileResponse("frontend/index.html")
+        
 # Initialisiere Module
 user_manager = UserManager()
 rag_engine = RAGEngine()
