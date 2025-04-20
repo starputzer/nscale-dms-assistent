@@ -19,7 +19,7 @@ class Config:
     MODEL_NAME = os.getenv('MODEL_NAME', 'mistral-tuned')  # Wechsel zu Mistral
     LLM_TIMEOUT = float(os.getenv('LLM_TIMEOUT', '60.0'))  # Höheren Timeout für das größere Modell
     LLM_CONTEXT_SIZE = int(os.getenv('LLM_CONTEXT_SIZE', '8192'))  # Größerer Kontext
-    LLM_MAX_TOKENS = int(os.getenv('LLM_MAX_TOKENS', '2048'))  # Mehr Output-Tokens
+    LLM_MAX_TOKENS = int(os.getenv('LLM_MAX_TOKENS', '4096'))  # Mehr Output-Tokens
     MAX_PROMPT_LENGTH = int(os.getenv('MAX_PROMPT_LENGTH', '7500'))  # Längere Prompts erlauben
     
     # RAG-Konfiguration

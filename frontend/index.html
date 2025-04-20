@@ -197,71 +197,60 @@
                     axios.defaults.headers.common['Authorization'] = token.value ? `Bearer ${token.value}` : '';
                 }
                 
+                // Neuer SendQuestionStream
                 const sendQuestionStream = async () => {
-                    if (!question.value.trim() || !currentSessionId.value) {
-                        return;
-                    }
-    
-                    try {
-                        isLoading.value = true;
-                        isStreaming.value = true;
-        
-                        // Benutzernachricht sofort hinzufügen
-                        messages.value.push({
-                            is_user: true,
-                            message: question.value,
-                            timestamp: Date.now() / 1000
-                        });
-                        
-                        // Assistentenantwort vorbereiten
-                        const assistantMessageIndex = messages.value.length;
-                        messages.value.push({
-                            is_user: false,
-                            message: "Denke nach...",
-                            timestamp: Date.now() / 1000
-                        });
-                        
-                        await nextTick();
-                        scrollToBottom();
-                        
-                        // XHR für Streaming verwenden
-                        const xhr = new XMLHttpRequest();
-                        xhr.open('POST', '/api/question');
-                        xhr.setRequestHeader('Content-Type', 'application/json');
-                        xhr.setRequestHeader('Authorization', `Bearer ${token.value}`);
-                        
-                        xhr.send(JSON.stringify({
-                            question: question.value,
-                            session_id: currentSessionId.value
-                        }));
-                        
-                        xhr.onload = () => {
-                            if (xhr.status === 200) {
-                                const response = JSON.parse(xhr.responseText);
-                                messages.value[assistantMessageIndex].message = response.answer;
-                            } else {
-                                messages.value[assistantMessageIndex].message = 
-                                    'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.';
-                            }
-                            
-                            question.value = '';
-                            isLoading.value = false;
-                            isStreaming.value = false;
-                            nextTick().then(scrollToBottom);
-                        };
-                        
-                        xhr.onerror = () => {
-                            messages.value[assistantMessageIndex].message = 
-                                'Es ist ein Netzwerkfehler aufgetreten. Bitte überprüfen Sie Ihre Verbindung.';
-                            isLoading.value = false;
-                            isStreaming.value = false;
-                        };
-                        
-                    } catch (error) {
-                        console.error('Error:', error);
+                    if (!question.value.trim() || !currentSessionId.value) return;
+
+                    isLoading.value = true;
+                    isStreaming.value = true;
+
+                    messages.value.push({
+                        is_user: true,
+                        message: question.value,
+                        timestamp: Date.now()
+                    });
+
+                    const assistantIndex = messages.value.length;
+                    messages.value.push({
+                        is_user: false,
+                        message: '',
+                        timestamp: Date.now()
+                    });
+
+                    await nextTick();
+                    scrollToBottom();
+
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', '/api/question');
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                    if (token.value) xhr.setRequestHeader('Authorization', `Bearer ${token.value}`);
+
+                    let buffer = '';
+                    xhr.onreadystatechange = () => {
+                        if (xhr.readyState === XMLHttpRequest.LOADING || xhr.readyState === XMLHttpRequest.DONE) {
+                            const newChunk = xhr.responseText.slice(buffer.length);
+                            buffer += newChunk;
+                            messages.value[assistantIndex].message = buffer;
+                            scrollToBottom();
+                        }
+                    };
+
+                    xhr.onload = () => {
                         isLoading.value = false;
                         isStreaming.value = false;
-                    }
+                        question.value = '';
+                    };
+
+                    xhr.onerror = () => {
+                        messages.value[assistantIndex].message = 'Fehler beim Laden der Antwort.';
+                        isLoading.value = false;
+                        isStreaming.value = false;
+                    };
+
+                    xhr.send(JSON.stringify({
+                        question: question.value,
+                        session_id: currentSessionId.value
+                    }));
                 };
                 // Auth functions
                 const login = async () => {
