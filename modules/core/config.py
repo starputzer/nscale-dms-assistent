@@ -19,13 +19,13 @@ class Config:
     MODEL_NAME = os.getenv('MODEL_NAME', 'mistral-tuned')  # Wechsel zu Mistral
     LLM_TIMEOUT = float(os.getenv('LLM_TIMEOUT', '60.0'))  # Höheren Timeout für das größere Modell
     LLM_CONTEXT_SIZE = int(os.getenv('LLM_CONTEXT_SIZE', '8192'))  # Größerer Kontext
-    LLM_MAX_TOKENS = int(os.getenv('LLM_MAX_TOKENS', '1024'))  # Mehr Output-Tokens
-    MAX_PROMPT_LENGTH = int(os.getenv('MAX_PROMPT_LENGTH', '4000'))  # Längere Prompts erlauben
+    LLM_MAX_TOKENS = int(os.getenv('LLM_MAX_TOKENS', '2048'))  # Mehr Output-Tokens
+    MAX_PROMPT_LENGTH = int(os.getenv('MAX_PROMPT_LENGTH', '7500'))  # Längere Prompts erlauben
     
     # RAG-Konfiguration
-    CHUNK_SIZE = int(os.getenv('CHUNK_SIZE', '250'))  # Weiter reduziert
-    CHUNK_OVERLAP = int(os.getenv('CHUNK_OVERLAP', '50'))  # Minimal
-    TOP_K = int(os.getenv('TOP_K', '2'))  # Nur 2 relevante Chunks
+    CHUNK_SIZE = int(os.getenv('CHUNK_SIZE', '500'))  # Weiter reduziert
+    CHUNK_OVERLAP = int(os.getenv('CHUNK_OVERLAP', '100'))  # Minimal
+    TOP_K = int(os.getenv('TOP_K', '6'))  # von 2 auf 6 (TEST) relevante Chunks
     SEMANTIC_WEIGHT = float(os.getenv('SEMANTIC_WEIGHT', '0.7'))
     
     # Fallback-Konfiguration
