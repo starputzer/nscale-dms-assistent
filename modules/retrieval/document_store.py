@@ -148,7 +148,7 @@ class DocumentStore:
                     txt_dir.mkdir(parents=True, exist_ok=True)
                     return True  # Kein Fehler, aber keine Dokumente
                 
-                for file_path in txt_dir.glob('*.txt'):
+                for file_path in txt_dir.glob('.txt', '.md'):
                     try:
                         # Überspringe zu große Dateien
                         file_size = file_path.stat().st_size
@@ -219,7 +219,8 @@ class DocumentStore:
                 logger.warning(f"Textverzeichnis {Config.TXT_DIR} existiert nicht")
                 return False
                 
-            current_files = {f.name for f in Config.TXT_DIR.glob('*.txt')}
+            current_files = {f.name for f in Config.TXT_DIR.glob('*') if f.suffix.lower() in ['.txt', '.md']}
+
             
             # Prüfe ob alle Dateien übereinstimmen
             if cached_files != current_files:
