@@ -185,7 +185,8 @@ Relevante Informationen aus der Dokumentation:
 {kontext}
 
 Beantworte die Frage präzise und fachlich korrekt in gutem Deutsch. 
-Bleibe knapp und formuliere höchstens 3-4 Sätze.
+Antworte vollständig und Schritt für Schritt.
+Gib bei Bedarf nummerierte Listen oder Absätze aus.
 Falls du keine klare Antwort geben kannst, sage es direkt und mache keine Vermutungen. [/INST]</s>"""
     
         return prompt
