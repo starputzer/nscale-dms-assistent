@@ -153,7 +153,7 @@ class RAGEngine:
         """Formatiert einen optimierten deutschen Prompt für Mistral"""
         # Extrem kompakte Kontextaufbereitung
         kontext_mit_quellen = []
-        max_context_length = min(Config.MAX_PROMPT_LENGTH - 500, 4000)  # Größerer Kontext für Mistral
+        max_context_length = min(Config.MAX_PROMPT_LENGTH - 500, 7000)  # Größerer Kontext für Mistral
         total_length = 0
         
         for i, chunk in enumerate(chunks[:Config.TOP_K]):
