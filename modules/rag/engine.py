@@ -6,6 +6,7 @@ from ..core.logging import LogManager
 from ..retrieval.document_store import DocumentStore
 from ..retrieval.embedding import EmbeddingManager
 from ..llm.model import OllamaClient
+import torch
 
 logger = LogManager.setup_logging(__name__)
 
