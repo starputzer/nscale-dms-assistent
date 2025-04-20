@@ -13,6 +13,15 @@ class RAGEngine:
     """Hauptmodul für RAG-Funktionalität"""
     
     def __init__(self):
+        # Erkenne CUDA-Unterstützung
+        if torch.cuda.is_available():
+            self.device = "cuda"
+            self.torch_dtype = torch.float16
+            logger.info("🚀 CUDA ist verfügbar – GPU wird verwendet.")
+        else:
+            self.device = "cpu"
+            self.torch_dtype = torch.float32
+            logger.warning("⚠️ CUDA nicht verfügbar – es wird die CPU verwendet.")
         self.document_store = DocumentStore()
         self.embedding_manager = EmbeddingManager()
         self.ollama_client = OllamaClient()
