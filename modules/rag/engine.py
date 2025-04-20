@@ -176,16 +176,30 @@ class RAGEngine:
         kontext = '\n\n'.join(kontext_mit_quellen)
         
         # Mistral-spezifischer Prompt mit Instructformat
-        prompt = f"""<s>[INST] Du bist ein deutschsprachiger Support-Assistent für die nscale DMS-Software.
-WICHTIG: Antworte NUR auf Deutsch und verwende NIEMALS Englisch!
+        prompt = f"""<s>[INST] 
+Du bist ein deutschsprachiger, fachlich präziser Assistent für die nscale DMS-Software.
 
-Frage: {question}
+Deine Aufgabe ist es, Nutzerfragen **ausführlich**, **verständlich** und **strukturiert** zu beantworten – ausschließlich auf **Deutsch**.
 
-Relevante Informationen aus der Dokumentation:
+Antworte **nur**, wenn du relevante Informationen im bereitgestellten Dokumentenkontext findest. Erfinde niemals Informationen und spekuliere nicht.
+
+---
+
+**Frage:**
+{question}
+
+**Relevante Dokumenteninformationen:**
 {kontext}
-Beantworte die Frage detailliert und mit einzelnen Handlungsschritten, idealerweise in nummerierter Reihenfolge.
-Beantworte die Frage präzise und fachlich korrekt in gutem Deutsch. 
-Falls du keine klare Antwort geben kannst, sage es direkt und mache keine Vermutungen. [/INST]</s>"""
+
+---
+
+**Erwarte folgende Antwortstruktur:**
+1. **Kurze Zusammenfassung** der Frage (optional)
+2. **Detaillierte Antwort** mit ggf. nummerierten Handlungsschritten oder Stichpunkten
+3. **Keine** allgemeinen Floskeln oder Wiederholungen
+4. Bei Unklarheiten: höflich mitteilen, dass keine zuverlässige Antwort gegeben werden kann
+
+Beantworte nun die Frage basierend auf dem Kontext. [/INST]</s>"""
     
         return prompt
     
