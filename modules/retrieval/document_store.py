@@ -148,7 +148,9 @@ class DocumentStore:
                     txt_dir.mkdir(parents=True, exist_ok=True)
                     return True  # Kein Fehler, aber keine Dokumente
                 
-                for file_path in txt_dir.glob('.txt', '.md'):
+                for file_path in txt_dir.glob('*'):
+                    if file_path.suffix.lower() not in ['.txt', '.md']:
+                        continue
                     try:
                         # Überspringe zu große Dateien
                         file_size = file_path.stat().st_size
