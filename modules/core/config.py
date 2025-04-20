@@ -23,7 +23,7 @@ class Config:
     MAX_PROMPT_LENGTH = int(os.getenv('MAX_PROMPT_LENGTH', '7500'))  # Längere Prompts erlauben
     
     # RAG-Konfiguration
-    CHUNK_SIZE = int(os.getenv('CHUNK_SIZE', '600'))  # Weiter erhöht
+    CHUNK_SIZE = int(os.getenv('CHUNK_SIZE', '750'))  # Weiter erhöht
     CHUNK_OVERLAP = int(os.getenv('CHUNK_OVERLAP', '100'))  # erhöht
     TOP_K = int(os.getenv('TOP_K', '10'))  # von 2 auf 10 (TEST) relevante Chunks
     SEMANTIC_WEIGHT = float(os.getenv('SEMANTIC_WEIGHT', '0.7'))

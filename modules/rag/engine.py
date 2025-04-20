@@ -161,7 +161,7 @@ class RAGEngine:
                 break
                 
             # Kompakte Darstellung je nach Chunk-Typ
-            chunk_text = chunk['text'][:500]  # Größere Chunk-Teile für Mistral
+            chunk_text = chunk['text'][:1000]  # Größere Chunk-Teile für Mistral
             
             if chunk.get('type') == 'section':
                 text = f"Dokument {i+1} (Abschnitt '{chunk['title']}' aus {chunk['file']}): {chunk_text}"
@@ -183,10 +183,8 @@ Frage: {question}
 
 Relevante Informationen aus der Dokumentation:
 {kontext}
-
+Beantworte die Frage detailliert und mit einzelnen Handlungsschritten, idealerweise in nummerierter Reihenfolge.
 Beantworte die Frage präzise und fachlich korrekt in gutem Deutsch. 
-Antworte vollständig und Schritt für Schritt.
-Gib bei Bedarf nummerierte Listen oder Absätze aus.
 Falls du keine klare Antwort geben kannst, sage es direkt und mache keine Vermutungen. [/INST]</s>"""
     
         return prompt
