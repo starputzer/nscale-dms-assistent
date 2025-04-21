@@ -27,6 +27,7 @@ class OllamaClient:
     
     async def stream_generate(self, prompt: str) -> AsyncGenerator[str, None]:
         """Streamt die Antwort vom Ollama-Server und gibt sie Wort für Wort zurück"""
+    
         # Prompt-Längen-Check
         if len(prompt) > Config.MAX_PROMPT_LENGTH:
             logger.warning(f"Prompt überschreitet maximale Länge ({len(prompt)} > {Config.MAX_PROMPT_LENGTH})")
@@ -53,92 +54,64 @@ class OllamaClient:
         logger.info(f"Starte Stream-Generierung für Prompt ({len(prompt)} Zeichen)")
         start_time = time.time()
         
-        async def stream_generate(self, prompt: str) -> AsyncGenerator[str, None]:
-            """Streamt die Antwort vom Ollama-Server und gibt sie Wort für Wort zurück"""
-            # Prompt-Längen-Check
-            if len(prompt) > Config.MAX_PROMPT_LENGTH:
-                logger.warning(f"Prompt überschreitet maximale Länge ({len(prompt)} > {Config.MAX_PROMPT_LENGTH})")
-                prompt = prompt[:Config.MAX_PROMPT_LENGTH]
-            
-            # Zusätzlicher Parameter in deutschen Prompts
-            if "Antwort auf Deutsch" not in prompt and "auf Deutsch antworten" not in prompt:
-                prompt = f"{prompt}\n\nAchte darauf, auf Deutsch zu antworten."
-            
-            payload = {
-                'model': Config.MODEL_NAME,
-                'prompt': prompt,
-                'stream': True,
-                'options': {
-                    'temperature': 0.2,
-                    'num_ctx': Config.LLM_CONTEXT_SIZE,
-                    'num_predict': Config.LLM_MAX_TOKENS,
-                    'top_p': 0.9,
-                    'repeat_penalty': 1.1,
-                    'num_batch': 512,
-                }
-            }
-            
-            logger.info(f"Starte Stream-Generierung für Prompt ({len(prompt)} Zeichen)")
-            start_time = time.time()
-            
-            try:
-                async with aiohttp.ClientSession() as session:
-                    try:
-                        async with session.post(f"{Config.OLLAMA_URL}/api/generate", 
-                                            json=payload, 
-                                            timeout=Config.LLM_TIMEOUT) as resp:
+        try:
+            async with aiohttp.ClientSession() as session:
+                try:
+                    async with session.post(
+                        f"{Config.OLLAMA_URL}/api/generate",
+                        json=payload,
+                        timeout=Config.LLM_TIMEOUT
+                    ) as resp:
+                        
+                        logger.info(f"Ollama-Server-Antwort: Status {resp.status}")
+                        
+                        if resp.status != 200:
+                            error_text = await resp.text()
+                            logger.error(f"Fehler bei Ollama-Anfrage: {resp.status} {error_text}")
+                            yield f"Fehler bei der Verbindung zum Sprachmodell: {resp.status}"
+                            return
+                        
+                        # Verarbeite den Stream
+                        async for line in resp.content:
+                            if not line:
+                                continue
                             
-                            logger.info(f"Ollama-Server-Antwort: Status {resp.status}")
-                            
-                            if resp.status != 200:
-                                error_text = await resp.text()
-                                logger.error(f"Fehler bei Ollama-Anfrage: {resp.status} {error_text}")
-                                yield f"Fehler bei der Verbindung zum Sprachmodell: {resp.status}"
-                                return
-                            
-                            # Verarbeite den Stream
-                            async for line in resp.content:
-                                if not line:
+                            try:
+                                line_text = line.decode('utf-8').strip()
+                                if not line_text or not line_text.startswith('data: '):
                                     continue
-                                    
-                                try:
-                                    line_text = line.decode('utf-8').strip()
-                                    if not line_text or not line_text.startswith('data: '):
-                                        continue
-                                        
-                                    # Entferne das 'data: ' Präfix
-                                    data_json = line_text[6:]
-                                    data = json.loads(data_json)
-                                    
-                                    # Extrahiere die Antwort und logge sie
-                                    if 'response' in data:
-                                        token = data['response']
-                                        if token:  # Nur nicht-leere Tokens senden
-                                            logger.info(f"Streaming-Token: {token}")
-                                            yield token
-                                    
-                                    # Wenn wir das Ende erreicht haben
-                                    if data.get('done', False):
-                                        logger.info(f"Stream abgeschlossen in {time.time() - start_time:.2f}s")
-                                        break
-                                        
-                                except json.JSONDecodeError as e:
-                                    logger.warning(f"JSON-Fehler beim Verarbeiten der Stream-Daten: {e}")
-                                    continue
-                                except Exception as e:
-                                    logger.error(f"Fehler beim Verarbeiten der Stream-Daten: {e}")
-                                    yield f"[Fehler bei der Datenverarbeitung: {str(e)}]"
-                    
-                    except aiohttp.ClientError as e:
-                        logger.error(f"Verbindungsfehler zu Ollama: {e}")
-                        yield f"[Verbindungsfehler zum Sprachmodell: {str(e)}]"
-                    except asyncio.TimeoutError:
-                        logger.error("Timeout bei der Anfrage an Ollama")
-                        yield "[Zeitüberschreitung bei der Anfrage]"
-            
-            except Exception as e:
-                logger.error(f"Unerwarteter Fehler beim Streaming: {e}")
-                yield f"[Unerwarteter Fehler: {str(e)}]"
+                                
+                                data_json = line_text[6:]
+                                data = json.loads(data_json)
+                                
+                                if 'response' in data:
+                                    token = data['response']
+                                    if token:
+                                        logger.info(f"Streaming-Token: {token}")
+                                        yield token
+                                
+                                if data.get('done', False):
+                                    logger.info(f"Stream abgeschlossen in {time.time() - start_time:.2f}s")
+                                    break
+                            
+                            except json.JSONDecodeError as e:
+                                logger.warning(f"JSON-Fehler beim Verarbeiten der Stream-Daten: {e}")
+                                continue
+                            except Exception as e:
+                                logger.error(f"Fehler beim Verarbeiten der Stream-Daten: {e}")
+                                yield f"[Fehler bei der Datenverarbeitung: {str(e)}]"
+                
+                except aiohttp.ClientError as e:
+                    logger.error(f"Verbindungsfehler zu Ollama: {e}")
+                    yield f"[Verbindungsfehler zum Sprachmodell: {str(e)}]"
+                except asyncio.TimeoutError:
+                    logger.error("Timeout bei der Anfrage an Ollama")
+                    yield "[Zeitüberschreitung bei der Anfrage]"
+        
+        except Exception as e:
+            logger.error(f"Unerwarteter Fehler beim Streaming: {e}")
+            yield f"[Unerwarteter Fehler: {str(e)}]"
+
         
     async def generate(self, prompt: str, user_id: int = None) -> Dict[str, Any]:
         """Generiert eine Antwort für einen Prompt mit Streaming"""
