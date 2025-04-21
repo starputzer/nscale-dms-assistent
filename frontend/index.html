@@ -425,23 +425,25 @@
                 // Optimierte StreamingFunktion mit EventSource und verbessertem Event-Handling
                 const sendQuestionStream = async () => {
                     if (!question.value.trim() || !currentSessionId.value) return;
+
                     // Überprüfe, ob die Frage gesetzt ist
                     if (!question.value) {
                         console.error("Frage ist leer.");
                         return;
                     }
+
                     try {
                         isLoading.value = true;
                         isStreaming.value = true;
 
-                        // Füge Benutzernachricht sofort hinzu (bessere UX)
+                        // Benutzernachricht sofort hinzufügen
                         messages.value.push({
                             is_user: true,
                             message: question.value,
                             timestamp: Date.now() / 1000
                         });
 
-                        // Bereite einen Platz für die Assistentennachricht vor
+                        // Platz für Assistentennachricht reservieren
                         const assistantIndex = messages.value.length;
                         messages.value.push({
                             is_user: false,
@@ -452,50 +454,18 @@
                         await nextTick();
                         scrollToBottom();
 
-                        // Alte EventSource schließen, falls vorhanden
-                        if (eventSource.value) {
-                            eventSource.value.close();
-                        }
-
-                        // URL mit Parametern erstellen
+                        // EventSource erstellen
                         const url = new URL('/api/question/stream', window.location.origin);
                         url.searchParams.append('question', question.value);
                         url.searchParams.append('session_id', currentSessionId.value);
-                        
-                        // Token als URL-Parameter hinzufügen (ohne "Bearer " Präfix)
+
                         const authToken = token.value.replace('Bearer ', '');
                         url.searchParams.append('auth_token', authToken);
 
-                        // Neue EventSource erstellen
+                        // Neue EventSource-Verbindung
                         eventSource.value = new EventSource(url.toString());
 
-                        // Debugginginformationen
-                        console.log('EventSource verbunden mit:', url.toString());
-
-                        // Standard-Nachrichtenereignis - normaler Datenfluss
-                        // eventSource.value.onmessage = (event) => {
-                        //     console.log('Nachricht erhalten:', event.data);
-                        //     if (event.data) {
-                        //         try {
-                        //             const parsed = JSON.parse(event.data);
-                        //             if (parsed.error) {
-                        //                 messages.value[assistantIndex].message = parsed.error;
-                        //                 eventSource.value.close();
-                        //                 isLoading.value = false;
-                        //                 isStreaming.value = false;
-                        //                 question.value = '';
-                        //                 eventSource.value = null;
-                        //                 return;
-                        //             }
-                        //         } catch (e) {
-                        //             // Keine JSON, einfach normal anhängen
-                        //             messages.value[assistantIndex].message += event.data;
-                        //             scrollToBottom();
-                        //         }
-                        //     }
-                        // };
                         eventSource.value.onmessage = (event) => {
-                            console.log('Nachricht erhalten:', event.data);
                             if (event.data) {
                                 try {
                                     const parsed = JSON.parse(event.data);
@@ -507,71 +477,28 @@
                                         messages.value[assistantIndex].message += parsed.response;
                                     }
                                 } catch (e) {
-                                    // Nicht-JSON-Daten anhängen
+                                    // Keine JSON-Daten, direkt anhängen
                                     messages.value[assistantIndex].message += event.data;
                                 }
                                 scrollToBottom();
                             }
                         };
 
-// Bei jedem Ereignistyp
-// eventSource.value.addEventListener('message', (event) => {
-//     console.log('message event:', event.data);
-//     if (event.data) {
-//         messages.value[assistantIndex].message += event.data;
-//         scrollToBottom();
-//     }
-// });
-
-                        // Bei jedem Ereignistyp
-                        eventSource.value.addEventListener('message', (event) => {
-                            console.log('message event:', event.data);
-                            if (event.data) {
-                                messages.value[assistantIndex].message += event.data;
-                                scrollToBottom();
-                            }
-                        });
-
-                        // Bei "done" Event
-                        eventSource.value.addEventListener('done', (event) => {
-                            console.log('done event erhalten');
-                            eventSource.value.close();
-                            isLoading.value = false;
-                            isStreaming.value = false;
-                            question.value = ''; // Eingabefeld leeren
-                            eventSource.value = null;
-                        });
-
-                        // Bei einem Fehler
                         eventSource.value.onerror = (event) => {
                             console.error('SSE-Fehler:', event);
                             if (messages.value[assistantIndex]?.message === '') {
                                 messages.value[assistantIndex].message = 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.';
                             }
-                            
-                            eventSource.value.close();
-                            isLoading.value = false;
-                            isStreaming.value = false;
-                            eventSource.value = null;
+                            cleanupStream();
                         };
 
                     } catch (error) {
                         console.error('Streaming-Fehler:', error);
                         isLoading.value = false;
                         isStreaming.value = false;
-                        
-                        // Fehler-Nachricht hinzufügen
-                        if (messages.value.length > 0 && !messages.value[messages.value.length - 1].is_user) {
-                            messages.value[messages.value.length - 1].message = 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.';
-                        } else {
-                            messages.value.push({
-                                is_user: false,
-                                message: 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
-                                timestamp: Date.now() / 1000
-                            });
-                        }
                     }
                 };
+
                 
                 // Herkömmliche Anfrage (als Fallback)
                 const sendQuestion = async () => {

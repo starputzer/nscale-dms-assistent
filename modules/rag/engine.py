@@ -152,10 +152,10 @@ class RAGEngine:
 
     async def stream_answer(self, question: str, session_id: Optional[int] = None) -> EventSourceResponse:
         """Streamt Antwort stückweise zurück – im Server-Sent-Events-Format"""
-        if not question:  # Hier sicherstellen, dass die Frage nicht leer ist
+        if not question:  # Sicherstellen, dass die Frage nicht leer ist
             logger.error("Die Frage wurde nicht übergeben.")
             return EventSourceResponse("data: {\"error\": \"Keine Frage übergeben.\"}\n\n")      
-        
+
         if not self.initialized:
             logger.info("Lazy-Loading der RAG-Engine für Streaming...")
             success = await self.initialize()
@@ -171,10 +171,6 @@ class RAGEngine:
 
         async def event_generator(question: str) -> AsyncGenerator[str, None]:
             try:
-                if len(question) > 2048:
-                    logger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
-                    question = question[:2048]
-
                 # Chunks suchen
                 relevant_chunks = self.embedding_manager.search(question, top_k=Config.TOP_K)
                 if not relevant_chunks:
@@ -183,12 +179,11 @@ class RAGEngine:
                     yield f"data: {json.dumps(error_message)}\n\n"
                     yield "event: done\ndata: \n\n"
                     return
-                                
+
                 # Prompt bauen
                 prompt = self._format_prompt(question, relevant_chunks)
                 logger.info(f"Starte Streaming für Frage: {question[:50]}...")
 
-                # Stream starten – jeden Chunk einzeln senden
                 found_data = False
                 async for chunk in self.ollama_client.stream_generate(prompt):
                     if chunk:
@@ -200,16 +195,14 @@ class RAGEngine:
                     yield f"data: {json.dumps(error_message)}\n\n"
 
                 yield "event: done\ndata: \n\n"
-
-
             except Exception as e:
                 logger.error(f"Fehler beim Streaming der Antwort: {e}", exc_info=True)
                 error_msg = json.dumps({"error": f"Fehler beim Streaming: {str(e)}"})
                 yield f"data: {error_msg}\n\n"
                 yield "event: done\ndata: \n\n"
 
-
         return EventSourceResponse(event_generator(question))
+
 
 
     def _format_prompt(self, question: str, chunks: List[Dict[str, Any]]) -> str:
