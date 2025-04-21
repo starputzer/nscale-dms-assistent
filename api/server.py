@@ -102,31 +102,42 @@ async def stream_generator(question: str, session_id: int, user_id: int):
     # Puffer für die vollständige Antwort
     complete_answer = ""
     
+    logger.info(f"Stream-Generator gestartet für Frage: {question}")
+    
+    # Initial heartbeat
+    yield {"event": "ping", "data": "Verbindung hergestellt"}
+    
     try:
         # Stream die Antwort vom RAG-Engine
+        token_count = 0
         async for chunk in rag_engine.stream_answer(question):
             if chunk == "[DONE]":
                 # Streaming abgeschlossen
+                logger.info("Stream [DONE] Marker erhalten")
                 break
             
             # Antwortstück zum Puffer hinzufügen
             complete_answer += chunk
+            token_count += 1
             
-            # Formatiere die Daten gemäß SSE-Spezifikation
+            if token_count % 10 == 0:
+                logger.info(f"Bisher {token_count} Tokens gestreamt")
+            
+            # SSE-Daten senden
+            logger.debug(f"Sende SSE-Event mit Daten: {chunk}")
             yield {"data": chunk}
             
-            # Kleine Pause, um Überlastung zu vermeiden
-            await asyncio.sleep(0.01)
-            
     except Exception as e:
-        logger.error(f"Fehler beim Streaming: {e}")
+        logger.error(f"Fehler beim Streaming: {e}", exc_info=True)
         yield {"event": "error", "data": str(e)}
+    
+    logger.info(f"Stream beendet, Gesamtantwort: {len(complete_answer)} Zeichen")
     
     # Speichere die vollständige Antwort in der Chat-Historie
     if complete_answer:
         chat_history.add_message(session_id, complete_answer, is_user=False)
     
-    # Sende ein "done" Event, um dem Client mitzuteilen, dass das Streaming abgeschlossen ist
+    # Sende ein "done" Event
     yield {"event": "done", "data": ""}
 
 # API-Endpunkte für Authentifizierung
