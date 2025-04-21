@@ -188,7 +188,7 @@ class RAGEngine:
                 async for chunk in self.ollama_client.stream_generate(prompt):
                     if chunk:
                         found_data = True
-                        yield f"data: {chunk}\n\n"  # NICHT strippen – sonst fehlen Satzanfänge
+                        yield f"data: {json.dumps({'response': chunk})}\n\n" # NICHT strippen – sonst fehlen Satzanfänge
 
                 if not found_data:
                     error_message = {"error": "Das Modell hat keine Ausgabe erzeugt."}
