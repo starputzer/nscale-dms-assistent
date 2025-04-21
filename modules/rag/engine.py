@@ -187,16 +187,16 @@ class RAGEngine:
                 # Stream starten – jeden Chunk einzeln senden
                 found_data = False
                 async for chunk in self.ollama_client.stream_generate(prompt):
-                    chunk = chunk.strip()
                     if chunk:
                         found_data = True
-                        yield f"data: {chunk}\n\n"
+                        yield f"data: {chunk}\n\n"  # NICHT strippen – sonst fehlen Satzanfänge
 
                 if not found_data:
                     error_message = {"error": "Das Modell hat keine Ausgabe erzeugt."}
                     yield f"data: {json.dumps(error_message)}\n\n"
 
                 yield "event: done\ndata: \n\n"
+
 
             except Exception as e:
                 logger.error(f"Fehler beim Streaming der Antwort: {e}", exc_info=True)
