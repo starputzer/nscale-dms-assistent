@@ -415,11 +415,13 @@
                 };
                 
                 const cleanupStream = () => {
-                    eventSource.value?.close();
-                    eventSource.value = null;
+                    if (eventSource.value) {
+                        console.log("Schließe EventSource");
+                        eventSource.value.close();
+                        eventSource.value = null;
+                    }
                     isLoading.value = false;
                     isStreaming.value = false;
-                    question.value = '';
                 };
 
                 // Optimierte StreamingFunktion mit EventSource und verbessertem Event-Handling
@@ -462,16 +464,31 @@
                         const authToken = token.value.replace('Bearer ', '');
                         url.searchParams.append('auth_token', authToken);
 
+                        console.log(`Streaming URL: ${url.toString()}`); // Debug-Info
+
+                        // Bestehende EventSource schließen
+                        if (eventSource.value) {
+                            eventSource.value.close();
+                            eventSource.value = null;
+                        }
+
                         // Neue EventSource-Verbindung
+                        eventSource.value = new EventSource(url.toString());
+
+                        // Debug-Info
+                        console.log("EventSource erstellt", eventSource.value);
+
                         eventSource.value.onmessage = (event) => {
+                            console.log("EventSource onmessage:", event.data); // Debug-Info
                             if (event.data) {
                                 try {
                                     const parsed = JSON.parse(event.data);
                                     if (parsed.error) {
+                                        console.error("Stream-Fehler:", parsed.error);
                                         messages.value[assistantIndex].message = `Fehler: ${parsed.error}`;
                                         cleanupStream();
                                     } else if (parsed.response) {
-                                        // Hier liegt der Hauptfehler: Füge den Text hinzu statt zu ersetzen
+                                        // Text zur bestehenden Nachricht hinzufügen
                                         messages.value[assistantIndex].message += parsed.response;
                                         scrollToBottom();
                                     }
@@ -481,8 +498,9 @@
                             }
                         };
 
-                        // Expliziter Event-Listener für das 'done' Event
-                        eventSource.value.addEventListener('done', () => {
+                        // Event-Listener für das "done" Event
+                        eventSource.value.addEventListener('done', (event) => {
+                            console.log("Stream abgeschlossen (done event)");
                             cleanupStream();
                         });
 
@@ -494,6 +512,19 @@
                             cleanupStream();
                         };
 
+                        // Timeout für den Fall, dass der Stream hängt
+                        setTimeout(() => {
+                            if (isStreaming.value) {
+                                console.warn("Stream-Timeout nach 30s");
+                                cleanupStream();
+                            }
+                        }, 30000);
+
+                        // Frage für nächste Eingabe zurücksetzen
+                        const sentQuestion = question.value;
+                        question.value = '';
+                        console.log(`Frage "${sentQuestion}" gesendet, warte auf Antwort...`);
+
                     } catch (error) {
                         console.error('Streaming-Fehler:', error);
                         isLoading.value = false;
@@ -501,7 +532,7 @@
                     }
                 };
 
-                
+                                
                 // Herkömmliche Anfrage (als Fallback)
                 const sendQuestion = async () => {
                     if (!question.value.trim() || !currentSessionId.value) {

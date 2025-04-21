@@ -154,18 +154,19 @@ class RAGEngine:
                 'message': f"Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut."
             }
 
+    # Vollständig korrigierte stream_answer Methode für modules/rag/engine.py
     async def stream_answer(self, question: str, session_id: Optional[int] = None) -> EventSourceResponse:
         """Streamt Antwort stückweise zurück – im Server-Sent-Events-Format"""
         if not question:  # Sicherstellen, dass die Frage nicht leer ist
             logger.error("Die Frage wurde nicht übergeben.")
-            return EventSourceResponse("data: {\"error\": \"Keine Frage übergeben.\"}\n\n")      
+            return EventSourceResponse(self._format_error_event("Keine Frage übergeben."))      
 
         if not self.initialized:
             logger.info("Lazy-Loading der RAG-Engine für Streaming...")
             success = await self.initialize()
             if not success:
                 async def error_stream():
-                    yield "data: {\"error\": \"System konnte nicht initialisiert werden\"}\n\n"
+                    yield f"data: {json.dumps({'error': 'System konnte nicht initialisiert werden'})}\n\n"
                     yield "event: done\ndata: \n\n"
                 return EventSourceResponse(error_stream())
 
@@ -179,7 +180,7 @@ class RAGEngine:
                 relevant_chunks = self.embedding_manager.search(question, top_k=Config.TOP_K)
                 if not relevant_chunks:
                     logger.warning(f"Keine relevanten Chunks für Streaming-Frage gefunden: {question[:50]}...")
-                    yield format_sse_event({"error": "Keine relevanten Informationen gefunden"})
+                    yield f"data: {json.dumps({'error': 'Keine relevanten Informationen gefunden'})}\n\n"
                     yield "event: done\ndata: \n\n"
                     return
 
@@ -187,25 +188,33 @@ class RAGEngine:
                 prompt = self._format_prompt(question, relevant_chunks)
                 logger.info(f"Starte Streaming für Frage: {question[:50]}...")
 
-                # Variable für gesamte Antwort
-                complete_answer = ""
+                found_data = False
                 async for chunk in self.ollama_client.stream_generate(prompt):
                     if chunk:
-                        complete_answer += chunk
-                        # Korrektes Format für SSE
-                        yield format_sse_event({"response": chunk})
-                
-                # Prüfen, ob überhaupt eine Antwort generiert wurde
-                if not complete_answer:
-                    yield format_sse_event({"error": "Das Modell hat keine Ausgabe erzeugt."})
+                        found_data = True
+                        # Wichtig: Direktes JSON-Format für SSE verwenden
+                        yield f"data: {json.dumps({'response': chunk})}\n\n"
+
+                if not found_data:
+                    yield f"data: {json.dumps({'error': 'Das Modell hat keine Ausgabe erzeugt.'})}\n\n"
 
                 yield "event: done\ndata: \n\n"
             except Exception as e:
                 logger.error(f"Fehler beim Streaming der Antwort: {e}", exc_info=True)
-                yield format_sse_event({"error": f"Fehler beim Streaming: {str(e)}"})
+                error_msg = json.dumps({"error": f"Fehler beim Streaming: {str(e)}"})
+                yield f"data: {error_msg}\n\n"
                 yield "event: done\ndata: \n\n"
 
+        # Kein Hilfsfunktions-Aufruf mehr, stattdessen direkte Formatierung
         return EventSourceResponse(event_generator(question))
+
+    # Hilfsmethode für Fehlerbehandlung (optional)
+    def _format_error_event(self, error_message: str) -> AsyncGenerator[str, None]:
+        """Formatiert eine Fehlermeldung als SSE-Event"""
+        async def error_generator():
+            yield f"data: {json.dumps({'error': error_message})}\n\n"
+            yield "event: done\ndata: \n\n"
+        return error_generator()
 
 
 

@@ -26,8 +26,8 @@ class OllamaClient:
         return hashlib.md5(prompt.encode('utf-8')).hexdigest()
     
     async def stream_generate(self, prompt: str) -> AsyncGenerator[str, None]:
-        """Streamt die Antwort vom Ollama-Server und gibt sie Wort für Wort zurück"""
-    
+        """Streamt die Antwort vom Ollama-Server und gibt sie Token für Token zurück"""
+
         # Prompt-Längen-Check
         if len(prompt) > Config.MAX_PROMPT_LENGTH:
             logger.warning(f"Prompt überschreitet maximale Länge ({len(prompt)} > {Config.MAX_PROMPT_LENGTH})")
@@ -57,6 +57,7 @@ class OllamaClient:
         try:
             async with aiohttp.ClientSession() as session:
                 try:
+                    logger.info(f"Sende Stream-Anfrage an {Config.OLLAMA_URL}/api/generate")
                     async with session.post(
                         f"{Config.OLLAMA_URL}/api/generate",
                         json=payload,
@@ -75,29 +76,30 @@ class OllamaClient:
                         async for line in resp.content:
                             if not line:
                                 continue
-                            line_text = line.decode('utf-8').strip()
-                            logger.info(f"ROHDATEN aus Stream: {line_text}")
                             
                             try:
                                 line_text = line.decode('utf-8').strip()
+                                logger.debug(f"Stream-Rohdaten: {line_text}")
+                                
                                 if not line_text or not line_text.startswith('data: '):
                                     continue
                                 
-                                data_json = line_text[6:]
+                                data_json = line_text[6:]  # Extrahiere JSON nach "data: "
                                 data = json.loads(data_json)
                                 
                                 if 'response' in data:
                                     token = data['response']
-                                    if token:
-                                        logger.info(f"Streaming-Token: {token}")
+                                    if token:  # Sende nur nicht-leere Tokens
+                                        logger.debug(f"Streaming-Token: {token}")
                                         yield token
                                 
+                                # Erkennen des Stream-Endes
                                 if data.get('done', False):
                                     logger.info(f"Stream abgeschlossen in {time.time() - start_time:.2f}s")
                                     break
                             
                             except json.JSONDecodeError as e:
-                                logger.warning(f"JSON-Fehler beim Verarbeiten der Stream-Daten: {e}")
+                                logger.warning(f"JSON-Fehler beim Verarbeiten der Stream-Daten: {e}, Daten: {line_text}")
                                 continue
                             except Exception as e:
                                 logger.error(f"Fehler beim Verarbeiten der Stream-Daten: {e}")

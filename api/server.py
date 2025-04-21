@@ -232,21 +232,28 @@ async def stream_question(
     request: Request = None
 ):
     """Streamt die Antwort auf eine Frage via Server-Sent Events (SSE)"""
+    # Logging für Debugging
+    logger.info(f"Stream-Anfrage erhalten: Frage='{question[:50]}...', Session={session_id}")
+    
     # Token-Verifizierung
     if auth_token:
         # Token aus URL-Parameter verwenden
         user_data = user_manager.verify_token(auth_token)
+        logger.info(f"Authentifizierung über URL-Parameter: Token gültig={user_data is not None}")
     else:
         # Versuche, das Token aus dem Authorization-Header zu lesen
         auth_header = request.headers.get("Authorization")
         if not auth_header or not auth_header.startswith("Bearer "):
+            logger.warning("Fehlende oder ungültige Authorization im Header")
             raise HTTPException(status_code=401, detail="Nicht authentifiziert")
         
         token = auth_header.split("Bearer ")[1]
         user_data = user_manager.verify_token(token)
+        logger.info(f"Authentifizierung über Header: Token gültig={user_data is not None}")
     
     # Prüfen, ob Token gültig ist
     if not user_data:
+        logger.warning("Ungültiges oder abgelaufenes Token")
         raise HTTPException(status_code=401, detail="Ungültiges oder abgelaufenes Token")
     
     user_id = user_data['user_id']
@@ -261,11 +268,30 @@ async def stream_question(
         session_id = chat_history.create_session(user_id, "Neue Unterhaltung")
         
         if not session_id:
+            logger.error("Fehler beim Erstellen einer neuen Session")
             raise HTTPException(status_code=500, detail="Fehler beim Erstellen einer Session")
     
-    # SSE-Antwort zurückgeben
-    #alt: return EventSourceResponse(stream_generator(question, session_id, user_id))
-    return await rag_engine.stream_answer(question, session_id)
+    # Speichere die Benutzerfrage in der Chat-Historie
+    logger.info(f"Speichere Benutzerfrage in Session {session_id}")
+    chat_history.add_message(session_id, question, is_user=True)
+    
+    # Stream die Antwort vom RAG-Engine
+    try:
+        logger.info(f"Starte Streaming für Frage: '{question[:50]}...'")
+        response = await rag_engine.stream_answer(question, session_id)
+        
+        # Speichere vollständige Antwort am Ende
+        # Anmerkung: Dies muss im Frontend in einem 'done' Event-Handler erfolgen
+        # Hier ist es nicht einfach möglich, da wir die vollständige Antwort nicht haben
+        
+        return response
+    except Exception as e:
+        logger.error(f"Fehler beim Streaming: {e}", exc_info=True)
+        # Konvertiere die Exception in ein EventSourceResponse für den Client
+        async def error_stream():
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            yield "event: done\ndata: \n\n"
+        return EventSourceResponse(error_stream())
 
 @app.get("/api/session/{session_id}")
 async def get_session(session_id: int, user_data: Dict[str, Any] = Depends(get_current_user)):
