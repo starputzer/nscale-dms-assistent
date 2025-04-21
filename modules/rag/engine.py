@@ -1,5 +1,6 @@
 import asyncio
-from typing import Dict, Any, List, Optional, Tuple
+import json  # Wichtig für JSON-Serialisierung beim Streaming
+from typing import Dict, Any, List, Optional, Tuple, AsyncGenerator
 
 from ..core.config import Config
 from ..core.logging import LogManager
@@ -148,7 +149,8 @@ class RAGEngine:
                 'success': False,
                 'message': f"Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut."
             }
-    async def stream_answer(self, question: str, session_id: Optional[int] = None):
+
+    async def stream_answer(self, question: str, session_id: Optional[int] = None) -> AsyncGenerator[str, None]:
         """Streamt Antwort stückweise zurück (für EventSourceResponse)"""
         if not self.initialized:
             logger.info("Lazy-Loading der RAG-Engine für Streaming...")
@@ -158,23 +160,36 @@ class RAGEngine:
                 return
 
         try:
+            # Überprüfe Eingabegröße
             if len(question) > 2048:
                 logger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
                 question = question[:2048]
 
+            # Suche relevante Chunks
             relevant_chunks = self.embedding_manager.search(question, top_k=Config.TOP_K)
+            
             if not relevant_chunks:
-                yield json.dumps({"error": "Keine relevanten Informationen gefunden."})
+                logger.warning(f"Keine relevanten Chunks für Streaming-Frage gefunden: {question[:50]}...")
+                yield json.dumps({"error": "Keine relevanten Informationen gefunden"})
                 return
 
+            # Erstelle optimierten Prompt mit Kontext
             prompt = self._format_prompt(question, relevant_chunks)
-
-            async for part in self.ollama_client.stream_generate(prompt):
-                yield json.dumps({"data": part})
+            
+            # Stream die Antwort
+            logger.info(f"Starte Streaming für Frage: {question[:50]}...")
+            
+            # Streame die Antwort direkt aus dem Ollama-Client
+            async for chunk in self.ollama_client.stream_generate(prompt):
+                if chunk:  # Nur nicht-leere Chunks senden
+                    yield chunk
+            
+            # Abschluss-Signal
+            yield "[DONE]"
 
         except Exception as e:
-            logger.error(f"Streaming-Fehler: {e}")
-            yield json.dumps({"error": "Streaming fehlgeschlagen"})
+            logger.error(f"Fehler beim Streaming der Antwort: {e}", exc_info=True)
+            yield json.dumps({"error": f"Fehler beim Streaming: {str(e)}"})
 
     def _format_prompt(self, question: str, chunks: List[Dict[str, Any]]) -> str:
         """Formatiert einen optimierten deutschen Prompt für Mistral"""

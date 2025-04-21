@@ -8,103 +8,294 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@3.2.31/dist/vue.global.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --nscale-green: #00a550; /* Hauptgrün von nscale */
+            --nscale-green-dark: #009046; /* Dunkleres Grün für Hover */
+            --nscale-light-green: #e8f7ef; /* Helles Grün für Hintergründe */
+            --nscale-gray: #f7f7f7; /* Hellgrau für Hintergründe */
+            --nscale-dark-gray: #333333; /* Für Text */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--nscale-dark-gray);
+            background-color: white;
+        }
+
+        .nscale-btn-primary {
+            background-color: var(--nscale-green);
+            color: white;
+            border-radius: 4px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .nscale-btn-primary:hover {
+            background-color: var(--nscale-green-dark);
+        }
+
+        .nscale-btn-secondary {
+            background-color: white;
+            color: var(--nscale-green);
+            border: 1px solid var(--nscale-green);
+            border-radius: 4px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .nscale-btn-secondary:hover {
+            background-color: var(--nscale-light-green);
+        }
+
+        .nscale-input {
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .nscale-input:focus {
+            border-color: var(--nscale-green);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 165, 80, 0.1);
+        }
+
+        .nscale-header {
+            background-color: white;
+            border-bottom: 1px solid #eaeaea;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .nscale-sidebar {
+            background-color: var(--nscale-gray);
+            border-right: 1px solid #eaeaea;
+        }
+
+        .nscale-message-user {
+            background-color: var(--nscale-light-green);
+            border-radius: 8px;
+            border-top-right-radius: 2px;
+            padding: 1rem;
+            max-width: 80%;
+            margin-left: auto;
+            margin-right: 0;
+        }
+
+        .nscale-message-assistant {
+            background-color: white;
+            border: 1px solid #eaeaea;
+            border-radius: 8px;
+            border-top-left-radius: 2px;
+            padding: 1rem;
+            max-width: 80%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .nscale-session-item {
+            border-radius: 4px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            transition: background-color 0.2s;
+        }
+
+        .nscale-session-item:hover {
+            background-color: #e9e9e9;
+        }
+
+        .nscale-session-item.active {
+            background-color: var(--nscale-light-green);
+            border-left: 3px solid var(--nscale-green);
+        }
+
+        .loading-dots:after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60% { content: '...'; }
+            80%, 100% { content: ''; }
+        }
+
+        /* Logo-Bereich */
+        .nscale-logo {
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.25rem;
+            color: var(--nscale-green);
+        }
+
+        .nscale-logo:before {
+            content: '';
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            margin-right: 8px;
+            background-color: var(--nscale-green);
+            border-radius: 50%;
+        }
+
+        /* Moderne Schatten für Karten */
+        .nscale-card {
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            background-color: white;
+            border: 1px solid #f0f0f0;
+        }
+
+        /* Chat-Bereich */
+        .chat-container {
+            height: calc(100vh - 180px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .message-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        
+        .input-container {
+            padding: 1rem;
+            border-top: 1px solid #eaeaea;
+            background-color: white;
+        }
+
+        /* Farbakzente für Links und Fokus */
+        .text-nscale {
+            color: var(--nscale-green);
+        }
+        
+        .hover\:text-nscale-dark:hover {
+            color: var(--nscale-green-dark);
+        }
+        
+        .border-nscale {
+            border-color: var(--nscale-green);
+        }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <div id="app" class="container mx-auto px-4 py-8">
+<body class="min-h-screen bg-gray-50">
+    <div id="app" class="h-screen flex flex-col">
         <!-- Login & Register -->
-        <div v-if="!token" class="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden p-6">
-            <h1 class="text-2xl font-bold text-center mb-6">nscale DMS Assistent</h1>
-            
-            <div class="flex border-b border-gray-200">
-                <button @click="authMode = 'login'" 
-                    :class="['py-2 px-4 w-1/2 text-center focus:outline-none', 
-                    authMode === 'login' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-500']">
-                    Anmelden
-                </button>
-                <button @click="authMode = 'register'" 
-                    :class="['py-2 px-4 w-1/2 text-center focus:outline-none', 
-                    authMode === 'register' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-500']">
-                    Registrieren
-                </button>
+        <div v-if="!token" class="flex items-center justify-center h-full bg-gray-50">
+            <div class="nscale-card max-w-md w-full p-8">
+                <div class="text-center mb-8">
+                    <div class="nscale-logo mx-auto">nscale DMS Assistent</div>
+                    <p class="text-gray-500 mt-2">Ihr Digitalisierungspartner für DMS-Lösungen</p>
+                </div>
+                
+                <div class="flex border-b border-gray-200 mb-6">
+                    <button @click="authMode = 'login'" 
+                        :class="['py-2 px-4 w-1/2 text-center focus:outline-none', 
+                        authMode === 'login' ? 'border-b-2 border-green-500 text-green-600 font-medium' : 'text-gray-500']">
+                        Anmelden
+                    </button>
+                    <button @click="authMode = 'register'" 
+                        :class="['py-2 px-4 w-1/2 text-center focus:outline-none', 
+                        authMode === 'register' ? 'border-b-2 border-green-500 text-green-600 font-medium' : 'text-gray-500']">
+                        Registrieren
+                    </button>
+                </div>
+                
+                <!-- Login Form -->
+                <form v-if="authMode === 'login'" @submit.prevent="login" class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2" for="email">E-Mail</label>
+                        <input v-model="email" class="nscale-input w-full" 
+                            id="email" type="email" placeholder="Ihre E-Mail-Adresse" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2" for="password">Passwort</label>
+                        <input v-model="password" class="nscale-input w-full" 
+                            id="password" type="password" placeholder="Ihr Passwort" required>
+                    </div>
+                    <div class="flex items-center justify-between mt-6">
+                        <button class="nscale-btn-primary w-full" 
+                            type="submit" :disabled="loading">
+                            <span v-if="loading" class="loading-dots">Anmelden</span>
+                            <span v-else>Anmelden</span>
+                        </button>
+                    </div>
+                    <div class="text-center mt-4">
+                        <a class="text-sm text-nscale hover:text-nscale-dark" href="#" @click.prevent="authMode = 'reset'">
+                            Passwort vergessen?
+                        </a>
+                    </div>
+                    <div v-if="errorMessage" class="mt-4 text-red-500 text-sm text-center">{{ errorMessage }}</div>
+                </form>
+                
+                <!-- Register Form -->
+                <form v-if="authMode === 'register'" @submit.prevent="register" class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2" for="reg-email">E-Mail</label>
+                        <input v-model="email" class="nscale-input w-full" 
+                            id="reg-email" type="email" placeholder="Ihre E-Mail-Adresse" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2" for="reg-password">Passwort</label>
+                        <input v-model="password" class="nscale-input w-full" 
+                            id="reg-password" type="password" placeholder="Ihr sicheres Passwort" required>
+                    </div>
+                    <div class="flex items-center justify-between mt-6">
+                        <button class="nscale-btn-primary w-full" 
+                            type="submit" :disabled="loading">
+                            <span v-if="loading" class="loading-dots">Registrieren</span>
+                            <span v-else>Registrieren</span>
+                        </button>
+                    </div>
+                    <div v-if="errorMessage" class="mt-4 text-red-500 text-sm text-center">{{ errorMessage }}</div>
+                </form>
+                
+                <!-- Reset Password Form -->
+                <form v-if="authMode === 'reset'" @submit.prevent="resetPassword" class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2" for="reset-email">E-Mail</label>
+                        <input v-model="email" class="nscale-input w-full" 
+                            id="reset-email" type="email" placeholder="Ihre E-Mail-Adresse" required>
+                    </div>
+                    <div class="flex items-center justify-between mt-6">
+                        <button class="nscale-btn-primary w-full" 
+                            type="submit" :disabled="loading">
+                            <span v-if="loading" class="loading-dots">Passwort zurücksetzen</span>
+                            <span v-else>Passwort zurücksetzen</span>
+                        </button>
+                    </div>
+                    <div class="text-center mt-4">
+                        <a class="text-sm text-nscale hover:text-nscale-dark" href="#" @click.prevent="authMode = 'login'">
+                            Zurück zur Anmeldung
+                        </a>
+                    </div>
+                    <div v-if="successMessage" class="mt-4 text-green-600 text-sm text-center">{{ successMessage }}</div>
+                    <div v-if="errorMessage" class="mt-4 text-red-500 text-sm text-center">{{ errorMessage }}</div>
+                </form>
             </div>
-            
-            <!-- Login Form -->
-            <form v-if="authMode === 'login'" @submit.prevent="login" class="mt-6">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="email">E-Mail</label>
-                    <input v-model="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
-                        id="email" type="email" placeholder="E-Mail" required>
-                </div>
-                <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="password">Passwort</label>
-                    <input v-model="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
-                        id="password" type="password" placeholder="Passwort" required>
-                </div>
-                <div class="flex items-center justify-between">
-                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" 
-                        type="submit" :disabled="loading">
-                        {{ loading ? 'Anmelden...' : 'Anmelden' }}
-                    </button>
-                    <a class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800" href="#" @click.prevent="authMode = 'reset'">
-                        Passwort vergessen?
-                    </a>
-                </div>
-                <div v-if="errorMessage" class="mt-4 text-red-500 text-sm">{{ errorMessage }}</div>
-            </form>
-            
-            <!-- Register Form -->
-            <form v-if="authMode === 'register'" @submit.prevent="register" class="mt-6">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="reg-email">E-Mail</label>
-                    <input v-model="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
-                        id="reg-email" type="email" placeholder="E-Mail" required>
-                </div>
-                <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="reg-password">Passwort</label>
-                    <input v-model="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
-                        id="reg-password" type="password" placeholder="Passwort" required>
-                </div>
-                <div class="flex items-center justify-between">
-                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" 
-                        type="submit" :disabled="loading">
-                        {{ loading ? 'Registrieren...' : 'Registrieren' }}
-                    </button>
-                </div>
-                <div v-if="errorMessage" class="mt-4 text-red-500 text-sm">{{ errorMessage }}</div>
-            </form>
-            
-            <!-- Reset Password Form -->
-            <form v-if="authMode === 'reset'" @submit.prevent="resetPassword" class="mt-6">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="reset-email">E-Mail</label>
-                    <input v-model="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
-                        id="reset-email" type="email" placeholder="E-Mail" required>
-                </div>
-                <div class="flex items-center justify-between">
-                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" 
-                        type="submit" :disabled="loading">
-                        {{ loading ? 'Zurücksetzen...' : 'Passwort zurücksetzen' }}
-                    </button>
-                    <a class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800" href="#" @click.prevent="authMode = 'login'">
-                        Zurück zur Anmeldung
-                    </a>
-                </div>
-                <div v-if="successMessage" class="mt-4 text-green-500 text-sm">{{ successMessage }}</div>
-                <div v-if="errorMessage" class="mt-4 text-red-500 text-sm">{{ errorMessage }}</div>
-            </form>
         </div>
         
         <!-- Main Chat Interface -->
         <div v-if="token" class="flex flex-col h-screen">
             <!-- Header -->
-            <header class="bg-white shadow-md p-4">
-                <div class="flex justify-between items-center">
-                    <h1 class="text-xl font-bold">nscale DMS Assistent</h1>
+            <header class="nscale-header p-4">
+                <div class="container mx-auto flex justify-between items-center">
+                    <div class="nscale-logo">nscale DMS Assistent</div>
                     <div class="flex space-x-4">
-                        <button @click="startNewSession" class="bg-blue-500 hover:bg-blue-700 text-white text-sm px-3 py-1 rounded">
+                        <button @click="startNewSession" class="nscale-btn-secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
                             Neue Unterhaltung
                         </button>
-                        <button @click="logout" class="bg-gray-500 hover:bg-gray-700 text-white text-sm px-3 py-1 rounded">
+                        <button @click="logout" class="nscale-btn-secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
                             Abmelden
                         </button>
                     </div>
@@ -112,20 +303,25 @@
             </header>
             
             <!-- Main Content -->
-            <div class="flex flex-1 overflow-hidden">
+            <div class="flex flex-1 overflow-hidden container mx-auto my-4">
                 <!-- Sessions Sidebar -->
-                <aside class="w-64 bg-white p-4 shadow-md overflow-y-auto">
-                    <h2 class="text-lg font-semibold mb-4">Unterhaltungen</h2>
+                <aside class="nscale-sidebar w-80 p-4 rounded-l-lg overflow-y-auto">
+                    <h2 class="text-lg font-medium mb-6 text-gray-700">Unterhaltungen</h2>
                     <ul class="space-y-2">
                         <li v-for="session in sessions" :key="session.id" 
                             @click="loadSession(session.id)"
-                            :class="['p-2 rounded cursor-pointer', 
-                            currentSessionId === session.id ? 'bg-blue-100' : 'hover:bg-gray-100']">
+                            :class="['nscale-session-item cursor-pointer', 
+                            currentSessionId === session.id ? 'active' : '']">
                             <div class="flex justify-between items-center">
-                                <span>{{ session.title }}</span>
-                                <button @click.stop="deleteSession(session.id)" class="text-red-500 hover:text-red-700">
+                                <div class="flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                    <span class="truncate">{{ session.title }}</span>
+                                </div>
+                                <button @click.stop="deleteSession(session.id)" class="text-gray-400 hover:text-red-500">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                     </svg>
                                 </button>
                             </div>
@@ -134,35 +330,55 @@
                 </aside>
                 
                 <!-- Chat Area -->
-                <main class="flex-1 flex flex-col bg-gray-50 overflow-hidden">
-                    <!-- Chat Messages -->
-                    <div class="flex-1 overflow-y-auto p-4" ref="chatMessages">
-                        <div v-if="!currentSessionId" class="flex h-full items-center justify-center text-gray-500">
-                            Wählen Sie eine Unterhaltung oder starten Sie eine neue.
+                <main class="nscale-card flex-1 flex flex-col bg-white overflow-hidden rounded-r-lg ml-4">
+                    <div v-if="!currentSessionId" class="flex h-full items-center justify-center text-gray-400 p-8">
+                        <div class="text-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                            <h3 class="text-lg font-medium mb-2">Keine Unterhaltung ausgewählt</h3>
+                            <p class="text-sm text-gray-500 mb-4">Wählen Sie eine Unterhaltung aus der Seitenleiste oder starten Sie eine neue.</p>
+                            <button @click="startNewSession" class="nscale-btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                Neue Unterhaltung starten
+                            </button>
                         </div>
-                        <div v-else>
-                            <div v-for="(message, index) in messages" :key="index" class="mb-4">
-                                <div :class="['p-3 rounded-lg max-w-3xl', 
-                                    message.is_user ? 'bg-blue-100 ml-auto' : 'bg-white']">
+                    </div>
+                    
+                    <div v-else class="chat-container">
+                        <!-- Chat Messages -->
+                        <div class="message-container" ref="chatMessages">
+                            <div v-for="(message, index) in messages" :key="index" class="mb-6">
+                                <div :class="[message.is_user ? 'nscale-message-user' : 'nscale-message-assistant']">
                                     <div v-html="formatMessage(message.message)" class="prose"></div>
                                 </div>
                             </div>
                             <div v-if="isLoading" class="flex justify-center p-4">
-                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- Input Area -->
-                    <div class="bg-white border-t p-4">
-                        <form @submit.prevent="sendQuestionStream" class="flex space-x-2">
-                            <input v-model="question" class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                                placeholder="Stellen Sie Ihre Frage zur nscale DMS-Software..." :disabled="!currentSessionId || isLoading" />
-                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-                                :disabled="!currentSessionId || !question || isLoading">
-                                Senden
-                            </button>
-                        </form>
+                        
+                        <!-- Input Area -->
+                        <div class="input-container bg-white">
+                            <form @submit.prevent="sendQuestionStream" class="flex space-x-2">
+                                <input v-model="question" class="nscale-input flex-1" 
+                                    placeholder="Stellen Sie Ihre Frage zur nscale DMS-Software..." 
+                                    :disabled="!currentSessionId || isLoading" />
+                                <button type="submit" class="nscale-btn-primary"
+                                    :disabled="!currentSessionId || !question || isLoading">
+                                    <span v-if="isLoading">
+                                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Wird gesendet...
+                                    </span>
+                                    <span v-else>Senden</span>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </main>
             </div>
@@ -191,60 +407,154 @@
                 const isLoading = ref(false);
                 const chatMessages = ref(null);
                 const isStreaming = ref(false);
+                const eventSource = ref(null);
 
                 // Setup axios with auth header
                 const setupAxios = () => {
                     axios.defaults.headers.common['Authorization'] = token.value ? `Bearer ${token.value}` : '';
-                }
+                };
                 
-                // Ergänzt: Streaming mit EventSource (SSE)
+                // Optimierte StreamingFunktion mit EventSource
                 const sendQuestionStream = async () => {
                     if (!question.value.trim() || !currentSessionId.value) return;
 
-                    isLoading.value = true;
-                    isStreaming.value = true;
+                    try {
+                        isLoading.value = true;
+                        isStreaming.value = true;
 
-                    messages.value.push({
-                        is_user: true,
-                        message: question.value,
-                        timestamp: Date.now()
-                    });
+                        // Füge Benutzernachricht sofort hinzu (bessere UX)
+                        messages.value.push({
+                            is_user: true,
+                            message: question.value,
+                            timestamp: Date.now() / 1000
+                        });
 
-                    const assistantIndex = messages.value.length;
-                    messages.value.push({
-                        is_user: false,
-                        message: '',
-                        timestamp: Date.now()
-                    });
+                        // Bereite einen Platz für die Assistentennachricht vor
+                        const assistantIndex = messages.value.length;
+                        messages.value.push({
+                            is_user: false,
+                            message: '',
+                            timestamp: Date.now() / 1000
+                        });
 
-                    await nextTick();
-                    scrollToBottom();
-
-                    const eventSource = new EventSource(`/api/question/stream?question=${encodeURIComponent(question.value)}&session_id=${encodeURIComponent(currentSessionId.value)}`);
-
-                    eventSource.onmessage = (event) => {
-                        messages.value[assistantIndex].message += event.data;
+                        await nextTick();
                         scrollToBottom();
-                    };
 
-                    eventSource.onerror = () => {
-                        eventSource.close();
+                        // Alte EventSource schließen, falls vorhanden
+                        if (eventSource.value) {
+                            eventSource.value.close();
+                        }
+
+                        // URL mit Parametern erstellen
+                        const url = new URL('/api/question/stream', window.location.origin);
+                        url.searchParams.append('question', question.value);
+                        url.searchParams.append('session_id', currentSessionId.value);
+
+                        // Neue EventSource erstellen
+                        eventSource.value = new EventSource(url);
+
+                        // Bei jeder Nachricht den Text anhängen
+                        eventSource.value.addEventListener('message', (event) => {
+                            if (event.data) {
+                                // Tokens zur Antwort hinzufügen
+                                messages.value[assistantIndex].message += event.data;
+                                scrollToBottom();
+                            }
+                        });
+
+                        // Bei einem Fehler
+                        eventSource.value.addEventListener('error', (event) => {
+                            console.error('SSE-Fehler:', event);
+                            if (messages.value[assistantIndex]?.message === '') {
+                                messages.value[assistantIndex].message = 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.';
+                            }
+                            
+                            eventSource.value.close();
+                            isLoading.value = false;
+                            isStreaming.value = false;
+                            eventSource.value = null;
+                        });
+
+                        // Bei Abschluss
+                        eventSource.value.addEventListener('done', () => {
+                            eventSource.value.close();
+                            isLoading.value = false;
+                            isStreaming.value = false;
+                            question.value = ''; // Eingabefeld leeren
+                            eventSource.value = null;
+                        });
+
+                    } catch (error) {
+                        console.error('Streaming-Fehler:', error);
                         isLoading.value = false;
                         isStreaming.value = false;
-                        question.value = '';
-                    };
-
-                    eventSource.onopen = () => {
-                        console.log("🔌 SSE Verbindung geöffnet");
-                    };
-
-                    eventSource.addEventListener("done", () => {
-                        eventSource.close();
-                        isLoading.value = false;
-                        isStreaming.value = false;
-                        question.value = '';
-                    });
+                        
+                        // Fehler-Nachricht hinzufügen
+                        if (messages.value.length > 0 && !messages.value[messages.value.length - 1].is_user) {
+                            messages.value[messages.value.length - 1].message = 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.';
+                        } else {
+                            messages.value.push({
+                                is_user: false,
+                                message: 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
+                                timestamp: Date.now() / 1000
+                            });
+                        }
+                    }
                 };
+                
+                // Herkömmliche Anfrage (als Fallback)
+                const sendQuestion = async () => {
+                    if (!question.value.trim() || !currentSessionId.value) {
+                        return;
+                    }
+                    
+                    try {
+                        isLoading.value = true;
+                        
+                        // Add user message immediately for better UX
+                        messages.value.push({
+                            is_user: true,
+                            message: question.value,
+                            timestamp: Date.now() / 1000
+                        });
+                        
+                        await nextTick();
+                        scrollToBottom();
+                        
+                        const response = await axios.post('/api/question', {
+                            question: question.value,
+                            session_id: currentSessionId.value
+                        });
+                        
+                        // Add assistant response
+                        messages.value.push({
+                            is_user: false,
+                            message: response.data.answer,
+                            timestamp: Date.now() / 1000
+                        });
+                        
+                        // Clear input
+                        question.value = '';
+                        
+                        await nextTick();
+                        scrollToBottom();
+                    } catch (error) {
+                        console.error('Error sending question:', error);
+                        
+                        // Add error message
+                        messages.value.push({
+                            is_user: false,
+                            message: 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
+                            timestamp: Date.now() / 1000
+                        });
+                        
+                        await nextTick();
+                        scrollToBottom();
+                    } finally {
+                        isLoading.value = false;
+                    }
+                };
+                
                 // Auth functions
                 const login = async () => {
                     try {
@@ -328,6 +638,12 @@
                     currentSessionId.value = null;
                     sessions.value = [];
                     messages.value = [];
+                    
+                    // EventSource schließen, falls vorhanden
+                    if (eventSource.value) {
+                        eventSource.value.close();
+                        eventSource.value = null;
+                    }
                 };
                 
                 // Session management
@@ -392,59 +708,6 @@
                     }
                 };
                 
-                // Chat functions
-                const sendQuestion = async () => {
-                    if (!question.value.trim() || !currentSessionId.value) {
-                        return;
-                    }
-                    
-                    try {
-                        isLoading.value = true;
-                        
-                        // Add user message immediately for better UX
-                        messages.value.push({
-                            is_user: true,
-                            message: question.value,
-                            timestamp: Date.now() / 1000
-                        });
-                        
-                        await nextTick();
-                        scrollToBottom();
-                        
-                        const response = await axios.post('/api/question', {
-                            question: question.value,
-                            session_id: currentSessionId.value
-                        });
-                        
-                        // Add assistant response
-                        messages.value.push({
-                            is_user: false,
-                            message: response.data.answer,
-                            timestamp: Date.now() / 1000
-                        });
-                        
-                        // Clear input
-                        question.value = '';
-                        
-                        await nextTick();
-                        scrollToBottom();
-                    } catch (error) {
-                        console.error('Error sending question:', error);
-                        
-                        // Add error message
-                        messages.value.push({
-                            is_user: false,
-                            message: 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
-                            timestamp: Date.now() / 1000
-                        });
-                        
-                        await nextTick();
-                        scrollToBottom();
-                    } finally {
-                        isLoading.value = false;
-                    }
-                };
-                
                 const formatMessage = (text) => {
                     return marked.parse(text);
                 };
@@ -467,7 +730,7 @@
                     watch(token, (newValue) => {
                         if (!newValue) {
                             messages.value = [];
-                            currentSessioId.value = null;
+                            currentSessionId.value = null;
                         }
                     });
                     
@@ -476,12 +739,18 @@
                         errorMessage.value = '';
                         successMessage.value = '';
                     });
+                    
+                    // EventSource bereinigen, wenn die Komponente zerstört wird
+                    window.addEventListener('beforeunload', () => {
+                        if (eventSource.value) {
+                            eventSource.value.close();
+                        }
+                    });
                 });
                 
                 return {
                     // Auth state
                     token,
-                    question,
                     email,
                     password,
                     authMode,
@@ -503,15 +772,16 @@
                     isLoading,
                     chatMessages,
                     isStreaming,
-                    sendQuestionStream,
                     
                     // Chat functions
+                    sendQuestionStream,
+                    sendQuestion,
                     loadSessions,
                     loadSession,
                     startNewSession,
                     deleteSession,
-                    sendQuestion,
-                    formatMessage
+                    formatMessage,
+                    scrollToBottom
                 };
             }
         }).mount('#app');

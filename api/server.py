@@ -93,6 +93,41 @@ async def get_current_user(request: Request) -> Dict[str, Any]:
     
     return user_data
 
+async def stream_generator(question: str, session_id: int, user_id: int):
+    """Generator für Server-Sent Events (SSE)"""
+    # Speichere die Benutzerfrage in der Chat-Historie
+    chat_history.add_message(session_id, question, is_user=True)
+    
+    # Puffer für die vollständige Antwort
+    complete_answer = ""
+    
+    try:
+        # Stream die Antwort vom RAG-Engine
+        async for chunk in rag_engine.stream_answer(question):
+            if chunk == "[DONE]":
+                # Streaming abgeschlossen
+                break
+            
+            # Antwortstück zum Puffer hinzufügen
+            complete_answer += chunk
+            
+            # Sende das Chunk als SSE-Event
+            yield {"event": "message", "data": chunk}
+            
+            # Kleine Pause, um Überlastung zu vermeiden (optional)
+            await asyncio.sleep(0.01)
+            
+    except Exception as e:
+        logger.error(f"Fehler beim Streaming: {e}")
+        yield {"event": "error", "data": str(e)}
+    
+    # Speichere die vollständige Antwort in der Chat-Historie
+    if complete_answer:
+        chat_history.add_message(session_id, complete_answer, is_user=False)
+    
+    # Sende ein "done" Event, um dem Client mitzuteilen, dass das Streaming abgeschlossen ist
+    yield {"event": "done", "data": ""}
+
 # API-Endpunkte für Authentifizierung
 @app.post("/api/auth/login")
 async def login(request: LoginRequest):
@@ -175,9 +210,6 @@ async def answer_question(request: QuestionRequest, user_data: Dict[str, Any] = 
         
         result['answer'] = answer
     
-    if not result['success']:
-        return JSONResponse(status_code=500, content={"error": result['message']})
-    
     # Speichere die Antwort
     chat_history.add_message(session_id, result['answer'], is_user=False)
     
@@ -187,15 +219,37 @@ async def answer_question(request: QuestionRequest, user_data: Dict[str, Any] = 
         "sources": result['sources'],
         "cached": result.get('cached', False)
     }
+
 @app.get("/api/question/stream")
-async def stream_answer(question: str, session_id: str):
-    async def event_generator():
-        async for chunk in rag_engine.stream_answer(question, session_id):
-            yield f"data: {chunk}\n\n"
-        yield "event: done\ndata: \n\n"
-
-    return EventSourceResponse(event_generator())
-
+async def stream_question(
+    question: str, 
+    session_id: int,
+    user_data: Dict[str, Any] = Depends(get_current_user)
+):
+    """Streamt die Antwort auf eine Frage via Server-Sent Events (SSE)"""
+    user_id = user_data['user_id']
+    
+    # Prüfe, ob die Session existiert und dem Benutzer gehört
+    user_sessions = chat_history.get_user_sessions(user_id)
+    session_ids = [s['id'] for s in user_sessions]
+    
+    if session_id not in session_ids:
+        # Erstelle eine neue Session, wenn die angegebene nicht existiert
+        logger.warning(f"Session {session_id} nicht gefunden, erstelle neue Session")
+        session_id = chat_history.create_session(user_id, "Neue Unterhaltung")
+        
+        if not session_id:
+            raise HTTPException(status_code=500, detail="Fehler beim Erstellen einer Session")
+    
+    # Gib EventSourceResponse zurück, die den Generator verwendet
+    return EventSourceResponse(
+        stream_generator(question, session_id, user_id),
+        media_type="text/event-stream",
+        # Diese Einstellungen helfen bei der Stabilität des Streams
+        ping_interval=15,
+        ping_message="keep-alive",
+        reconnect=True
+    )
 
 @app.get("/api/session/{session_id}")
 async def get_session(session_id: int, user_data: Dict[str, Any] = Depends(get_current_user)):
@@ -297,11 +351,6 @@ async def get_stats(user_data: Dict[str, Any] = Depends(get_current_user)):
     stats = rag_engine.get_document_stats()
     
     return {"stats": stats}
-
-# Statische Dateien für Frontend
-@app.get("/")
-async def root():
-    return {"message": "nscale DMS Assistent API ist aktiv"}
 
 # Initialisierung
 @app.on_event("startup")
