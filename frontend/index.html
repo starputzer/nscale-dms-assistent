@@ -478,43 +478,27 @@
 
                         // Event Handler für alle Nachrichten
                         eventSource.value.onmessage = (event) => {
-                            console.log(`SSE Nachricht #${totalTokens + 1} erhalten:`, event.data);
-                            
-                            if (!event.data) {
-                                console.warn("Leere Daten erhalten");
-                                return;
-                            }
-                            
-                            try {
-                                const parsed = JSON.parse(event.data);
-                                
-                                // Fehler-Handling
-                                if (parsed.error) {
-                                    console.error("Stream-Fehler:", parsed.error);
-                                    messages.value[assistantIndex].message = `Fehler: ${parsed.error}`;
-                                    cleanupStream();
-                                    return;
-                                }
-                                
-                                // WICHTIG: Auf 'response' in den Daten prüfen - auch leere Strings berücksichtigen
-                                if ('response' in parsed) {
-                                    const token = parsed.response;
-                                    totalTokens++;
+                            console.log("EventSource Nachricht erhalten:", event.data);
+                            if (event.data) {
+                                try {
+                                    const parsed = JSON.parse(event.data);
+                                    console.log("Geparste Daten:", parsed);
                                     
-                                    if (isFirstToken) {
-                                        console.log("Erstes Token empfangen:", JSON.stringify(token));
-                                        isFirstToken = false;
+                                    if (parsed.error) {
+                                        console.error("Stream-Fehler:", parsed.error);
+                                        messages.value[assistantIndex].message = `Fehler: ${parsed.error}`;
+                                        cleanupStream();
+                                    } else if (parsed.response !== undefined) { // Hier ist die Änderung
+                                        console.log(`Token empfangen (${typeof parsed.response}): "${parsed.response}"`);
+                                        // Text zur bestehenden Nachricht hinzufügen
+                                        messages.value[assistantIndex].message += parsed.response;
+                                        scrollToBottom();
                                     }
-                                    
-                                    // Token an die Nachricht anhängen
-                                    messages.value[assistantIndex].message += token;
-                                    
-                                    // Nach jedem Token scrollen
-                                    scrollToBottom();
+                                } catch (e) {
+                                    console.error("JSON-Parsing-Fehler:", e, "Rohdaten:", event.data);
+                                    messages.value[assistantIndex].message = "Fehler bei der Verarbeitung der Antwort.";
+                                    cleanupStream();
                                 }
-                            } catch (e) {
-                                console.error("JSON-Parsing-Fehler:", e, "Rohdaten:", event.data);
-                                cleanupStream();
                             }
                         };
 
