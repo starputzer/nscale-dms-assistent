@@ -94,7 +94,7 @@ async def get_current_user(request: Request) -> Dict[str, Any]:
     return user_data
 
 # Generator-Funktion für SSE
-async def stream_generator(question: str, session_id: int, user_id: int):
+#async def stream_generator(question: str, session_id: int, user_id: int):
     """Generator für Server-Sent Events (SSE)"""
     # Speichere die Benutzerfrage in der Chat-Historie
     chat_history.add_message(session_id, question, is_user=True)

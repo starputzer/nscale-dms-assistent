@@ -161,9 +161,9 @@ class RAGEngine:
                     yield "event: done\ndata: \n\n"
                 return EventSourceResponse(error_stream())
         if len(question) > 2048:
-            ogger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
+            Logger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
             question = question[:2048]
-            
+
         async def event_generator() -> AsyncGenerator[str, None]:
             try:
                 # Eingabe kürzen - Test als if-Block im Vorfeld (unboundlocalerror)
