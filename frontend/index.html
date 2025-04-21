@@ -515,7 +515,14 @@
                             console.log(`Token #${tokenCount+1} erhalten:`, event.data);
                             if (event.data) {
                                 try {
-                                    const parsed = JSON.parse(event.data);
+                                    // Entferne das "data: "-Präfix, falls vorhanden
+                                    let jsonStr = event.data;
+                                    if (jsonStr.startsWith('data: ')) {
+                                        jsonStr = jsonStr.substring(6);
+                                    }
+                                    
+                                    console.log(`Verarbeite JSON:`, jsonStr);
+                                    const parsed = JSON.parse(jsonStr);
                                     console.log("Geparste Daten:", parsed);
                                     
                                     // Prüfen, ob das response-Feld existiert (unabhängig vom Wert)
