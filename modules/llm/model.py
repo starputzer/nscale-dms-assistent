@@ -37,7 +37,6 @@ class OllamaClient:
         if "Antwort auf Deutsch" not in prompt and "auf Deutsch antworten" not in prompt:
             prompt = f"{prompt}\n\nAchte darauf, auf Deutsch zu antworten."
         
-        # Payload für Ollama
         payload = {
             'model': Config.MODEL_NAME,
             'prompt': prompt,
@@ -54,15 +53,12 @@ class OllamaClient:
         
         logger.info(f"Starte Stream-Generierung für Prompt ({len(prompt)} Zeichen)")
         start_time = time.time()
+        token_count = 0
         
         try:
-            # Verwende aiohttp.ClientSession für die HTTP-Anfrage
-            logger.info(f"Erstelle ClientSession für {Config.OLLAMA_URL}")
             async with aiohttp.ClientSession() as session:
                 try:
-                    logger.info(f"Sende POST-Anfrage an {Config.OLLAMA_URL}/api/generate mit Payload: {json.dumps(payload)[:100]}...")
-                    
-                    # Sende Anfrage an Ollama
+                    logger.info(f"Sende Anfrage an {Config.OLLAMA_URL}/api/generate")
                     async with session.post(
                         f"{Config.OLLAMA_URL}/api/generate",
                         json=payload,
@@ -77,66 +73,40 @@ class OllamaClient:
                             yield f"Fehler bei der Verbindung zum Sprachmodell: {resp.status}"
                             return
                         
-                        # Debug: Ersten Teil der Antwort ausgeben
-                        try:
-                            first_chunk = await resp.content.readany()
-                            if first_chunk:
-                                logger.info(f"Erste Antwort-Chunk: {first_chunk.decode('utf-8')}")
-                        except Exception as e:
-                            logger.error(f"Fehler beim Lesen des ersten Chunks: {e}")
-                        
-                        # Standard-Antwort, falls keine Tokens kommen
-                        token_count = 0
-                        has_yielded = False
-                        
-                        # Verarbeite den Stream
+                        # Verarbeite den Stream - WICHTIG: KEINE PRÜFUNG AUF 'data: '-Präfix
                         async for line in resp.content:
                             if not line:
-                                logger.debug("Leere Zeile in Stream empfangen, überspringe")
                                 continue
-                            
+                                
                             try:
                                 line_text = line.decode('utf-8').strip()
                                 logger.info(f"ROHDATEN aus Stream: {line_text}")
                                 
-                                if not line_text:
-                                    logger.debug("Leerer Text nach Dekodierung, überspringe")
-                                    continue
-                                    
-                                if not line_text.startswith('data: '):
-                                    logger.warning(f"Unerwartetes Format im Stream: {line_text}")
-                                    continue
-                                
-                                data_json = line_text[6:]  # Extrahiere JSON nach "data: "
-                                data = json.loads(data_json)
-                                
-                                # Debug: Daten ausgeben
-                                logger.debug(f"Geparste JSON-Daten: {data}")
+                                # Direktes Parsen des JSON ohne Präfix zu erwarten
+                                data = json.loads(line_text)
                                 
                                 if 'response' in data:
                                     token = data['response']
-                                    if token:  # Sende nur nicht-leere Tokens
+                                    if token:
                                         token_count += 1
-                                        has_yielded = True
                                         logger.info(f"Streaming-Token #{token_count}: {token}")
                                         yield token
                                 
-                                # Erkennen des Stream-Endes
                                 if data.get('done', False):
-                                    logger.info(f"Stream abgeschlossen in {time.time() - start_time:.2f}s, {token_count} Tokens gesendet")
+                                    logger.info(f"Stream abgeschlossen in {time.time() - start_time:.2f}s")
                                     break
                             
                             except json.JSONDecodeError as e:
-                                logger.warning(f"JSON-Fehler beim Verarbeiten der Stream-Daten: {e}, Daten: {line_text}")
+                                logger.warning(f"JSON-Fehler beim Verarbeiten der Stream-Daten: {e}")
                                 continue
                             except Exception as e:
-                                logger.error(f"Fehler beim Verarbeiten der Stream-Daten: {e}", exc_info=True)
+                                logger.error(f"Fehler beim Verarbeiten der Stream-Daten: {e}")
                                 yield f"[Fehler bei der Datenverarbeitung: {str(e)}]"
-                        
-                        # Wenn keine Daten gesendet wurden, sende eine Nachricht
-                        if not has_yielded:
-                            logger.warning("Keine Token vom Ollama-Server erhalten!")
-                            yield "Keine Antwort vom Sprachmodell erhalten. Bitte versuchen Sie es später erneut."
+                    
+                    # Prüfen, ob überhaupt Tokens generiert wurden
+                    if token_count == 0:
+                        logger.warning("Keine Token vom Ollama-Server erhalten!")
+                        yield "Keine Antwort vom Sprachmodell erhalten. Bitte versuchen Sie es später erneut."
                 
                 except aiohttp.ClientError as e:
                     logger.error(f"Verbindungsfehler zu Ollama: {e}")
@@ -146,7 +116,7 @@ class OllamaClient:
                     yield "[Zeitüberschreitung bei der Anfrage]"
         
         except Exception as e:
-            logger.error(f"Unerwarteter Fehler beim Streaming: {e}", exc_info=True)
+            logger.error(f"Unerwarteter Fehler beim Streaming: {e}")
             yield f"[Unerwarteter Fehler: {str(e)}]"
 
         
