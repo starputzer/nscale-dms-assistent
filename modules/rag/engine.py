@@ -1,7 +1,6 @@
 import asyncio
 import json  # Wichtig für JSON-Serialisierung beim Streaming
 from typing import Dict, Any, List, Optional, Tuple, AsyncGenerator
-
 from ..core.config import Config
 from ..core.logging import LogManager
 from ..retrieval.document_store import DocumentStore
@@ -150,43 +149,51 @@ class RAGEngine:
                 'message': f"Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut."
             }
 
-    async def stream_answer(self, question: str, session_id: Optional[int] = None):
-        """Streamt Antwort stückweise zurück"""
+    async def stream_answer(self, question: str, session_id: Optional[int] = None) -> EventSourceResponse:
+        """Streamt Antwort stückweise zurück – im Server-Sent-Events-Format"""
         if not self.initialized:
             logger.info("Lazy-Loading der RAG-Engine für Streaming...")
             success = await self.initialize()
             if not success:
-                yield json.dumps({"error": "System konnte nicht initialisiert werden"})
-                return
+                async def error_stream():
+                    yield "data: {\"error\": \"System konnte nicht initialisiert werden\"}\n\n"
+                    yield "event: done\ndata: \n\n"
+                return EventSourceResponse(error_stream())
 
-        try:
-            # Überprüfe Eingabegröße
-            if len(question) > 2048:
-                logger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
-                question = question[:2048]
+        async def event_generator() -> AsyncGenerator[str, None]:
+            try:
+                # Eingabe kürzen
+                if len(question) > 2048:
+                    logger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
+                    question = question[:2048]
 
-            # Suche relevante Chunks
-            relevant_chunks = self.embedding_manager.search(question, top_k=Config.TOP_K)
-            
-            if not relevant_chunks:
-                logger.warning(f"Keine relevanten Chunks für Streaming-Frage gefunden: {question[:50]}...")
-                yield json.dumps({"error": "Keine relevanten Informationen gefunden"})
-                return
+                # Chunks suchen
+                relevant_chunks = self.embedding_manager.search(question, top_k=Config.TOP_K)
+                if not relevant_chunks:
+                    logger.warning(f"Keine relevanten Chunks für Streaming-Frage gefunden: {question[:50]}...")
+                    yield "data: {\"error\": \"Keine relevanten Informationen gefunden\"}\n\n"
+                    yield "event: done\ndata: \n\n"
+                    return
 
-            # Erstelle optimierten Prompt mit Kontext
-            prompt = self._format_prompt(question, relevant_chunks)
-            
-            # Stream die Antwort direkt vom Ollama-Client
-            logger.info(f"Starte Streaming für Frage: {question[:50]}...")
-            
-            # Wandle den Generator in einen async Iterator um
-            async_gen = self.ollama_client.stream_generate(prompt)
-            async for chunk in async_gen:
-                yield chunk
+                # Prompt bauen
+                prompt = self._format_prompt(question, relevant_chunks)
 
-        except Exception as e:
-            logger.error(f"Fehler beim Streaming der Antwort: {e}", exc_info=True)
-            yield json.dumps({"error": f"Fehler beim Streaming: {str(e)}"})
+                logger.info(f"Starte Streaming für Frage: {question[:50]}...")
+
+                # Stream starten
+                async for chunk in self.ollama_client.stream_generate(prompt):
+                    if chunk.strip():  # keine leeren Stücke senden
+                        yield f"data: {chunk}\n\n"
+
+                yield "event: done\ndata: \n\n"
+
+            except Exception as e:
+                logger.error(f"Fehler beim Streaming der Antwort: {e}", exc_info=True)
+                error_msg = json.dumps({"error": f"Fehler beim Streaming: {str(e)}"})
+                yield f"data: {error_msg}\n\n"
+                yield "event: done\ndata: \n\n"
+
+        return EventSourceResponse(event_generator())
 
     def _format_prompt(self, question: str, chunks: List[Dict[str, Any]]) -> str:
         """Formatiert einen optimierten deutschen Prompt für Mistral"""
