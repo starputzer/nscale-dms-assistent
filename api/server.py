@@ -193,9 +193,9 @@ async def answer_question(request: QuestionRequest, user_data: Dict[str, Any] = 
     
     # Beantworte die Frage
     result = await rag_engine.answer_question(request.question, user_id)
-    
     if not result['success']:
         return JSONResponse(status_code=500, content={"error": result['message']})
+    
     
     # Prüfe, ob die Antwort Englisch sein könnte
     answer = result['answer']
@@ -264,7 +264,8 @@ async def stream_question(
             raise HTTPException(status_code=500, detail="Fehler beim Erstellen einer Session")
     
     # SSE-Antwort zurückgeben
-    return EventSourceResponse(stream_generator(question, session_id, user_id))
+    #alt: return EventSourceResponse(stream_generator(question, session_id, user_id))
+    return await rag_engine.stream_answer(question, session_id)
 
 @app.get("/api/session/{session_id}")
 async def get_session(session_id: int, user_data: Dict[str, Any] = Depends(get_current_user)):
