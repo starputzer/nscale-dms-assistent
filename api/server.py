@@ -94,42 +94,42 @@ async def get_current_user(request: Request) -> Dict[str, Any]:
     return user_data
 
 # Generator-Funktion für SSE
-#async def stream_generator(question: str, session_id: int, user_id: int):
-    """Generator für Server-Sent Events (SSE)"""
-    # Speichere die Benutzerfrage in der Chat-Historie
-    chat_history.add_message(session_id, question, is_user=True)
+# async def stream_generator(question: str, session_id: int, user_id: int):
+#     """Generator für Server-Sent Events (SSE)"""
+#     # Speichere die Benutzerfrage in der Chat-Historie
+#     chat_history.add_message(session_id, question, is_user=True)
     
-    # Puffer für die vollständige Antwort
-    complete_answer = ""
+#     # Puffer für die vollständige Antwort
+#     complete_answer = ""
     
-    logger.info(f"Stream-Generator gestartet für Frage: {question}")
+#     logger.info(f"Stream-Generator gestartet für Frage: {question}")
     
-    try:
-        # Stream die Antwort vom RAG-Engine - wichtig: await benutzen!
-        async_gen = rag_engine.stream_answer(question)
+#     try:
+#         # Stream die Antwort vom RAG-Engine - wichtig: await benutzen!
+#         async_gen = rag_engine.stream_answer(question)
         
-        async for chunk in async_gen:
-            if chunk == "[DONE]":
-                # Streaming abgeschlossen
-                break
+#         async for chunk in async_gen:
+#             if chunk == "[DONE]":
+#                 # Streaming abgeschlossen
+#                 break
             
-            # Antwortstück zum Puffer hinzufügen
-            complete_answer += chunk
+#             # Antwortstück zum Puffer hinzufügen
+#             complete_answer += chunk
             
-            # Sende das Chunk als SSE-Event
-            yield {"data": chunk}
+#             # Sende das Chunk als SSE-Event
+#             yield {"data": chunk}
             
-    except Exception as e:
-        error_msg = f"Fehler beim Streaming: {str(e)}"
-        logger.error(error_msg, exc_info=True)
-        yield {"event": "error", "data": error_msg}
+#     except Exception as e:
+#         error_msg = f"Fehler beim Streaming: {str(e)}"
+#         logger.error(error_msg, exc_info=True)
+#         yield {"event": "error", "data": error_msg}
     
-    # Speichere die vollständige Antwort in der Chat-Historie
-    if complete_answer:
-        chat_history.add_message(session_id, complete_answer, is_user=False)
+#     # Speichere die vollständige Antwort in der Chat-Historie
+#     if complete_answer:
+#         chat_history.add_message(session_id, complete_answer, is_user=False)
     
-    # Sende ein "done" Event, um dem Client mitzuteilen, dass das Streaming abgeschlossen ist
-    yield {"event": "done", "data": ""}
+#     # Sende ein "done" Event, um dem Client mitzuteilen, dass das Streaming abgeschlossen ist
+#     yield {"event": "done", "data": ""}
 
 # API-Endpunkte für Authentifizierung
 @app.post("/api/auth/login")
