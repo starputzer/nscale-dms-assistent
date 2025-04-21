@@ -1,9 +1,10 @@
 import asyncio
+import aiohttp
 import hashlib
 import json
 import time
 import threading
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, AsyncGenerator
 import diskcache as dc
 import httpx
 
@@ -23,6 +24,35 @@ class OllamaClient:
     def _hash_prompt(self, prompt: str) -> str:
         """Erstellt einen Hash für einen Prompt"""
         return hashlib.md5(prompt.encode('utf-8')).hexdigest()
+    
+    async def stream_generate(self, prompt: str, user_id: Optional[int] = None) -> AsyncGenerator[str, None]:
+        payload = {
+            'model': Config.MODEL_NAME,
+            'prompt': prompt,
+            'stream': True,
+            'options': {
+                'temperature': 0.2,
+                'num_ctx': Config.LLM_CONTEXT_SIZE,
+                'num_predict': Config.LLM_MAX_TOKENS,
+                'top_p': 0.9,
+                'repeat_penalty': 1.1,
+                'num_batch': 512,
+            }
+        }
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(f"{Config.OLLAMA_URL}/api/generate", json=payload) as resp:
+                    async for line in resp.content:
+                        if not line:
+                            continue
+                        line = line.decode("utf-8").strip()
+                        if line.startswith("data: "):
+                            data = json.loads(line[6:])
+                            chunk = data.get("response", "")
+                            yield chunk
+        except Exception as e:
+            logger.error(f"Streaming-Fehler mit Ollama: {e}")
+            yield "[Fehler bei der Antwortgenerierung]"
     
     async def generate(self, prompt: str, user_id: int = None) -> Dict[str, Any]:
         """Generiert eine Antwort für einen Prompt mit Streaming"""
@@ -62,8 +92,8 @@ class OllamaClient:
                             'stream': True,  # Streaming aktivieren
                             'options': {
                                 'temperature': 0.2,  # Reduzierte Temperatur für konsistentere Antworten
-                                'num_ctx': 1024,     # Reduzierter Kontext für Geschwindigkeit
-                                'num_predict': 300,  # Begrenzte Antwortlänge
+                                'num_ctx': Config.LLM_CONTEXT_SIZE,     # dynamisch laden
+                                'num_predict': Config.LLM_MAX_TOKENS,  # Bdynamisch laden
                                 'top_p': 0.9,
                                 'repeat_penalty': 1.1,
                                 'num_batch': 512,    # Größere Batch-Size für schnellere Verarbeitung

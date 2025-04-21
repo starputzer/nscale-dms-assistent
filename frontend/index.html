@@ -197,7 +197,7 @@
                     axios.defaults.headers.common['Authorization'] = token.value ? `Bearer ${token.value}` : '';
                 }
                 
-                // Neuer SendQuestionStream
+                // Ergänzt: Streaming mit EventSource (SSE)
                 const sendQuestionStream = async () => {
                     if (!question.value.trim() || !currentSessionId.value) return;
 
@@ -220,37 +220,30 @@
                     await nextTick();
                     scrollToBottom();
 
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('POST', '/api/question');
-                    xhr.setRequestHeader('Content-Type', 'application/json');
-                    if (token.value) xhr.setRequestHeader('Authorization', `Bearer ${token.value}`);
+                    const eventSource = new EventSource(`/api/question/stream?question=${encodeURIComponent(question.value)}&session_id=${encodeURIComponent(currentSessionId.value)}`);
 
-                    let buffer = '';
-                    xhr.onreadystatechange = () => {
-                        if (xhr.readyState === XMLHttpRequest.LOADING || xhr.readyState === XMLHttpRequest.DONE) {
-                            const newChunk = xhr.responseText.slice(buffer.length);
-                            buffer += newChunk;
-                            messages.value[assistantIndex].message = buffer;
-                            scrollToBottom();
-                        }
+                    eventSource.onmessage = (event) => {
+                        messages.value[assistantIndex].message += event.data;
+                        scrollToBottom();
                     };
 
-                    xhr.onload = () => {
+                    eventSource.onerror = () => {
+                        eventSource.close();
                         isLoading.value = false;
                         isStreaming.value = false;
                         question.value = '';
                     };
 
-                    xhr.onerror = () => {
-                        messages.value[assistantIndex].message = 'Fehler beim Laden der Antwort.';
-                        isLoading.value = false;
-                        isStreaming.value = false;
+                    eventSource.onopen = () => {
+                        console.log("🔌 SSE Verbindung geöffnet");
                     };
 
-                    xhr.send(JSON.stringify({
-                        question: question.value,
-                        session_id: currentSessionId.value
-                    }));
+                    eventSource.addEventListener("done", () => {
+                        eventSource.close();
+                        isLoading.value = false;
+                        isStreaming.value = false;
+                        question.value = '';
+                    });
                 };
                 // Auth functions
                 const login = async () => {
@@ -488,6 +481,7 @@
                 return {
                     // Auth state
                     token,
+                    question,
                     email,
                     password,
                     authMode,

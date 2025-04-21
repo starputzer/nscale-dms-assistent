@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List
 
 from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, Request
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, EventSourceResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, EmailStr
@@ -186,6 +186,15 @@ async def answer_question(request: QuestionRequest, user_data: Dict[str, Any] = 
         "sources": result['sources'],
         "cached": result.get('cached', False)
     }
+@app.get("/api/question/stream")
+async def stream_answer(question: str, session_id: str):
+    async def event_generator():
+        async for chunk in rag_engine.stream_answer(question, session_id):
+            yield f"data: {chunk}\n\n"
+        yield "event: done\ndata: \n\n"
+
+    return EventSourceResponse(event_generator())
+
 
 @app.get("/api/session/{session_id}")
 async def get_session(session_id: int, user_data: Dict[str, Any] = Depends(get_current_user)):

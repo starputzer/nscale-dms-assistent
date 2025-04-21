@@ -77,9 +77,9 @@ class RAGEngine:
         
         try:
             # Überprüfe Eingabegröße
-            if len(question) > 1000:
+            if len(question) > 2048:
                 logger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
-                question = question[:1000]
+                question = question[:2048]
             
             # Suche relevante Chunks
             relevant_chunks = self.embedding_manager.search(question, top_k=Config.TOP_K)
@@ -148,7 +148,34 @@ class RAGEngine:
                 'success': False,
                 'message': f"Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut."
             }
-    
+    async def stream_answer(self, question: str, session_id: Optional[int] = None):
+        """Streamt Antwort stückweise zurück (für EventSourceResponse)"""
+        if not self.initialized:
+            logger.info("Lazy-Loading der RAG-Engine für Streaming...")
+            success = await self.initialize()
+            if not success:
+                yield json.dumps({"error": "System konnte nicht initialisiert werden"})
+                return
+
+        try:
+            if len(question) > 2048:
+                logger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
+                question = question[:2048]
+
+            relevant_chunks = self.embedding_manager.search(question, top_k=Config.TOP_K)
+            if not relevant_chunks:
+                yield json.dumps({"error": "Keine relevanten Informationen gefunden."})
+                return
+
+            prompt = self._format_prompt(question, relevant_chunks)
+
+            async for part in self.ollama_client.stream_generate(prompt):
+                yield json.dumps({"data": part})
+
+        except Exception as e:
+            logger.error(f"Streaming-Fehler: {e}")
+            yield json.dumps({"error": "Streaming fehlgeschlagen"})
+
     def _format_prompt(self, question: str, chunks: List[Dict[str, Any]]) -> str:
         """Formatiert einen optimierten deutschen Prompt für Mistral"""
         # Extrem kompakte Kontextaufbereitung
