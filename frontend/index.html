@@ -488,8 +488,8 @@
                                         console.error("Stream-Fehler:", parsed.error);
                                         messages.value[assistantIndex].message = `Fehler: ${parsed.error}`;
                                         cleanupStream();
-                                    } else if (parsed.response !== undefined) { // Hier ist die Änderung
-                                        console.log(`Token empfangen (${typeof parsed.response}): "${parsed.response}"`);
+                                    } else if ('response' in parsed) {  // <-- KORRIGIERTE VERSION
+                                        console.log(`Token empfangen: "${parsed.response}"`);
                                         // Text zur bestehenden Nachricht hinzufügen
                                         messages.value[assistantIndex].message += parsed.response;
                                         scrollToBottom();
