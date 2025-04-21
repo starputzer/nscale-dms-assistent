@@ -424,6 +424,33 @@
                     isLoading.value = false;
                     isStreaming.value = false;
                 };
+                
+                const testSSEParsing = () => {
+                    // Testdaten
+                    const testData = [
+                        '{"response":" "}',
+                        '{"response":"Hallo"}',
+                        '{"response":""}',
+                        '{"error":"Test error"}'
+                    ];
+                    
+                    console.log("==== SSE PARSER TEST ====");
+                    testData.forEach(data => {
+                        try {
+                            const parsed = JSON.parse(data);
+                            console.log(`Original: ${data}`);
+                            console.log(`'response' in parsed: ${'response' in parsed}`);
+                            console.log(`parsed.response: ${parsed.response}`);
+                            console.log(`Boolean(parsed.response): ${Boolean(parsed.response)}`);
+                            console.log("----");
+                        } catch (e) {
+                            console.error(`Parsing error for ${data}: ${e}`);
+                        }
+                    });
+                    console.log("========================");
+                };
+
+                testSSEParsing();
 
                 // Komplette Überarbeitung der Event-Handling-Logik
                 const sendQuestionStream = async () => {
@@ -466,33 +493,42 @@
                         console.log(`Streaming URL: ${url.toString()}`);
 
                         // Bestehende EventSource schließen
-                        cleanupStream();
+                        if (eventSource.value) {
+                            console.log("Schließe bestehende EventSource");
+                            eventSource.value.close();
+                            eventSource.value = null;
+                        }
 
                         // Neue EventSource-Verbindung
                         console.log("Erstelle neue EventSource");
                         eventSource.value = new EventSource(url.toString());
                         
-                        // Debug-Logging aktivieren
-                        let isFirstToken = true;
-                        let totalTokens = 0;
+                        // Zähler für Debugging
+                        let tokenCount = 0;
 
-                        // Event Handler für alle Nachrichten
+                        // Debug-Events für alle möglichen EventSource-Ereignisse
+                        eventSource.value.onopen = (event) => {
+                            console.log("EventSource geöffnet:", event);
+                        };
+
                         eventSource.value.onmessage = (event) => {
-                            console.log("EventSource Nachricht erhalten:", event.data);
+                            console.log(`Token #${tokenCount+1} erhalten:`, event.data);
                             if (event.data) {
                                 try {
                                     const parsed = JSON.parse(event.data);
                                     console.log("Geparste Daten:", parsed);
                                     
-                                    if (parsed.error) {
-                                        console.error("Stream-Fehler:", parsed.error);
-                                        messages.value[assistantIndex].message = `Fehler: ${parsed.error}`;
-                                        cleanupStream();
-                                    } else if ('response' in parsed) {  // <-- DIESE ÄNDERUNG IST ENTSCHEIDEND
-                                        console.log(`Token empfangen: "${parsed.response}"`);
+                                    // Prüfen, ob das response-Feld existiert (unabhängig vom Wert)
+                                    if ('response' in parsed) {
+                                        tokenCount++;
+                                        console.log(`Token #${tokenCount}: "${parsed.response}"`);
                                         // Text zur bestehenden Nachricht hinzufügen
                                         messages.value[assistantIndex].message += parsed.response;
                                         scrollToBottom();
+                                    } else if (parsed.error) {
+                                        console.error("Stream-Fehler:", parsed.error);
+                                        messages.value[assistantIndex].message = `Fehler: ${parsed.error}`;
+                                        cleanupStream();
                                     }
                                 } catch (e) {
                                     console.error("JSON-Parsing-Fehler:", e, "Rohdaten:", event.data);
@@ -504,14 +540,13 @@
 
                         // Expliziter Event-Listener für "done"
                         eventSource.value.addEventListener('done', (event) => {
-                            console.log(`Stream abgeschlossen nach ${totalTokens} Tokens`);
+                            console.log(`Stream abgeschlossen, ${tokenCount} Tokens empfangen`);
                             cleanupStream();
                         });
 
-                        // Fehler-Handler
                         eventSource.value.onerror = (event) => {
-                            console.error('SSE-Fehler aufgetreten:', event);
-                            if (totalTokens === 0) {
+                            console.error('SSE-Fehler:', event);
+                            if (tokenCount === 0) {
                                 messages.value[assistantIndex].message = 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.';
                             }
                             cleanupStream();
@@ -520,8 +555,8 @@
                         // Timeout für den Fall, dass der Stream hängt
                         setTimeout(() => {
                             if (isStreaming.value) {
-                                console.warn(`Stream-Timeout nach 30s - ${totalTokens} Tokens empfangen`);
-                                if (totalTokens === 0) {
+                                console.warn(`Stream-Timeout nach 30s, ${tokenCount} Tokens empfangen`);
+                                if (tokenCount === 0) {
                                     messages.value[assistantIndex].message = 'Keine Antwort erhalten. Das Sprachmodell reagiert möglicherweise nicht.';
                                 }
                                 cleanupStream();
