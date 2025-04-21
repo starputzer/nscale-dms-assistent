@@ -165,7 +165,7 @@ class RAGEngine:
             logger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
             question = question[:2048]
 
-        async def event_generator() -> AsyncGenerator[str, None]:
+        async def event_generator(question: str) -> AsyncGenerator[str, None]:
             try:
                 if len(question) > 2048:
                     logger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
@@ -199,7 +199,7 @@ class RAGEngine:
                 yield f"data: {error_msg}\n\n"
                 yield "event: done\ndata: \n\n"
 
-        return EventSourceResponse(event_generator())
+        return EventSourceResponse(event_generator(question))
 
 
     def _format_prompt(self, question: str, chunks: List[Dict[str, Any]]) -> str:
