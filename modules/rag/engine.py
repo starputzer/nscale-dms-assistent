@@ -167,6 +167,10 @@ class RAGEngine:
 
         async def event_generator() -> AsyncGenerator[str, None]:
             try:
+                if len(question) > 2048:
+                    logger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
+                    question = question[:2048]
+
                 # Chunks suchen
                 relevant_chunks = self.embedding_manager.search(question, top_k=Config.TOP_K)
                 if not relevant_chunks:
@@ -180,10 +184,12 @@ class RAGEngine:
                 prompt = self._format_prompt(question, relevant_chunks)
                 logger.info(f"Starte Streaming für Frage: {question[:50]}...")
 
-                # Stream starten – jetzt korrekt!
+                # Stream starten
                 async for chunk in self.ollama_client.stream_generate(prompt):
-                    if chunk.strip():
-                        yield f"data: {chunk}\n\n"
+                    chunk = chunk.strip()
+                    if chunk:
+                        safe_chunk = json.dumps(chunk)
+                        yield f"data: {safe_chunk[1:-1]}\n\n"
 
                 yield "event: done\ndata: \n\n"
 
