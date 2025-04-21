@@ -480,6 +480,9 @@
                             console.log("EventSource geöffnet:", event);
                         };
 
+                        // Diese Änderung muss in der sendQuestionStream Funktion im frontend/index.html vorgenommen werden
+
+                        // Geänderte EventSource-Handler-Logik
                         eventSource.value.onmessage = (event) => {
                             console.log("EventSource Nachricht erhalten:", event.data);
                             if (event.data) {
@@ -491,7 +494,7 @@
                                         console.error("Stream-Fehler:", parsed.error);
                                         messages.value[assistantIndex].message = `Fehler: ${parsed.error}`;
                                         cleanupStream();
-                                    } else if (parsed.response) {
+                                    } else if (parsed.response !== undefined) { // Wichtige Änderung: Auf undefined prüfen statt truthy
                                         console.log(`Token empfangen: "${parsed.response}"`);
                                         // Text zur bestehenden Nachricht hinzufügen
                                         messages.value[assistantIndex].message += parsed.response;
