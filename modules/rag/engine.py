@@ -160,13 +160,16 @@ class RAGEngine:
                     yield "data: {\"error\": \"System konnte nicht initialisiert werden\"}\n\n"
                     yield "event: done\ndata: \n\n"
                 return EventSourceResponse(error_stream())
-
+        if len(question) > 2048:
+            ogger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
+            question = question[:2048]
+            
         async def event_generator() -> AsyncGenerator[str, None]:
             try:
-                # Eingabe kürzen
-                if len(question) > 2048:
-                    logger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
-                    question = question[:2048]
+                # Eingabe kürzen - Test als if-Block im Vorfeld (unboundlocalerror)
+                #if len(question) > 2048:
+                #    logger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
+                #    question = question[:2048]
 
                 # Chunks suchen
                 relevant_chunks = self.embedding_manager.search(question, top_k=Config.TOP_K)
