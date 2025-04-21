@@ -425,6 +425,7 @@
                     isStreaming.value = false;
                 };
 
+                // Komplette Überarbeitung der Event-Handling-Logik
                 const sendQuestionStream = async () => {
                     if (!question.value.trim() || !currentSessionId.value) {
                         console.warn("Leere Frage oder keine Session ausgewählt");
@@ -465,58 +466,68 @@
                         console.log(`Streaming URL: ${url.toString()}`);
 
                         // Bestehende EventSource schließen
-                        if (eventSource.value) {
-                            console.log("Schließe bestehende EventSource");
-                            eventSource.value.close();
-                            eventSource.value = null;
-                        }
+                        cleanupStream();
 
                         // Neue EventSource-Verbindung
                         console.log("Erstelle neue EventSource");
                         eventSource.value = new EventSource(url.toString());
+                        
+                        // Debug-Logging aktivieren
+                        let isFirstToken = true;
+                        let totalTokens = 0;
 
-                        // Debug-Events für alle möglichen EventSource-Ereignisse
-                        eventSource.value.onopen = (event) => {
-                            console.log("EventSource geöffnet:", event);
-                        };
-
-                        // Diese Änderung muss in der sendQuestionStream Funktion im frontend/index.html vorgenommen werden
-
-                        // Geänderte EventSource-Handler-Logik
+                        // Event Handler für alle Nachrichten
                         eventSource.value.onmessage = (event) => {
-                            console.log("EventSource Nachricht erhalten:", event.data);
-                            if (event.data) {
-                                try {
-                                    const parsed = JSON.parse(event.data);
-                                    console.log("Geparste Daten:", parsed);
-                                    
-                                    if (parsed.error) {
-                                        console.error("Stream-Fehler:", parsed.error);
-                                        messages.value[assistantIndex].message = `Fehler: ${parsed.error}`;
-                                        cleanupStream();
-                                    } else if (parsed.response !== undefined) { // Wichtige Änderung: Auf undefined prüfen statt truthy
-                                        console.log(`Token empfangen: "${parsed.response}"`);
-                                        // Text zur bestehenden Nachricht hinzufügen
-                                        messages.value[assistantIndex].message += parsed.response;
-                                        scrollToBottom();
-                                    }
-                                } catch (e) {
-                                    console.error("JSON-Parsing-Fehler:", e, "Rohdaten:", event.data);
-                                    messages.value[assistantIndex].message = "Fehler bei der Verarbeitung der Antwort.";
+                            console.log(`SSE Nachricht #${totalTokens + 1} erhalten:`, event.data);
+                            
+                            if (!event.data) {
+                                console.warn("Leere Daten erhalten");
+                                return;
+                            }
+                            
+                            try {
+                                const parsed = JSON.parse(event.data);
+                                
+                                // Fehler-Handling
+                                if (parsed.error) {
+                                    console.error("Stream-Fehler:", parsed.error);
+                                    messages.value[assistantIndex].message = `Fehler: ${parsed.error}`;
                                     cleanupStream();
+                                    return;
                                 }
+                                
+                                // WICHTIG: Auf 'response' in den Daten prüfen - auch leere Strings berücksichtigen
+                                if ('response' in parsed) {
+                                    const token = parsed.response;
+                                    totalTokens++;
+                                    
+                                    if (isFirstToken) {
+                                        console.log("Erstes Token empfangen:", JSON.stringify(token));
+                                        isFirstToken = false;
+                                    }
+                                    
+                                    // Token an die Nachricht anhängen
+                                    messages.value[assistantIndex].message += token;
+                                    
+                                    // Nach jedem Token scrollen
+                                    scrollToBottom();
+                                }
+                            } catch (e) {
+                                console.error("JSON-Parsing-Fehler:", e, "Rohdaten:", event.data);
+                                cleanupStream();
                             }
                         };
 
                         // Expliziter Event-Listener für "done"
                         eventSource.value.addEventListener('done', (event) => {
-                            console.log("Stream abgeschlossen (done event):", event);
+                            console.log(`Stream abgeschlossen nach ${totalTokens} Tokens`);
                             cleanupStream();
                         });
 
+                        // Fehler-Handler
                         eventSource.value.onerror = (event) => {
-                            console.error('SSE-Fehler:', event);
-                            if (messages.value[assistantIndex]?.message === '') {
+                            console.error('SSE-Fehler aufgetreten:', event);
+                            if (totalTokens === 0) {
                                 messages.value[assistantIndex].message = 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.';
                             }
                             cleanupStream();
@@ -525,8 +536,8 @@
                         // Timeout für den Fall, dass der Stream hängt
                         setTimeout(() => {
                             if (isStreaming.value) {
-                                console.warn("Stream-Timeout nach 30s");
-                                if (messages.value[assistantIndex]?.message === '') {
+                                console.warn(`Stream-Timeout nach 30s - ${totalTokens} Tokens empfangen`);
+                                if (totalTokens === 0) {
                                     messages.value[assistantIndex].message = 'Keine Antwort erhalten. Das Sprachmodell reagiert möglicherweise nicht.';
                                 }
                                 cleanupStream();

@@ -188,24 +188,44 @@ class RAGEngine:
                 prompt = self._format_prompt(question, relevant_chunks)
                 logger.info(f"Starte Streaming für Frage: {question[:50]}...")
 
+                # Geändert: Verwende eine Variable zur Nachverfolgung, ob wir bereits Daten gesendet haben
                 found_data = False
+                
+                # Verwende einen Buffer für die Gesamtantwort
+                complete_answer = ""
+                
                 async for chunk in self.ollama_client.stream_generate(prompt):
-                    if chunk:
-                        found_data = True
-                        # Wichtig: Direktes JSON-Format für SSE verwenden
-                        yield f"data: {json.dumps({'response': chunk})}\n\n"
+                    # Auch leere Tokens werden berücksichtigt
+                    found_data = True
+                    # Füge zum Buffer hinzu 
+                    complete_answer += chunk
+                    # SSE-Event formatieren
+                    logger.debug(f"Sende Token: '{chunk}'")
+                    yield f"data: {json.dumps({'response': chunk})}\n\n"
+                    # Kurze Pause einfügen, um dem Browser Zeit zum Rendern zu geben
+                    await asyncio.sleep(0.01)
 
+                # Wenn keine Antwort empfangen wurde
                 if not found_data:
+                    logger.warning("Keine Antwort vom Modell empfangen")
                     yield f"data: {json.dumps({'error': 'Das Modell hat keine Ausgabe erzeugt.'})}\n\n"
+                else:
+                    # Speichern der kompletten Antwort in der Chathistorie
+                    if session_id and complete_answer.strip():
+                        logger.info(f"Speichere vollständige Antwort ({len(complete_answer)} Zeichen) in Session {session_id}")
+                        from ..session.chat_history import ChatHistoryManager
+                        chat_history = ChatHistoryManager()
+                        chat_history.add_message(session_id, complete_answer, is_user=False)
 
+                # Event zum Abschluss des Streams
                 yield "event: done\ndata: \n\n"
+                
             except Exception as e:
                 logger.error(f"Fehler beim Streaming der Antwort: {e}", exc_info=True)
                 error_msg = json.dumps({"error": f"Fehler beim Streaming: {str(e)}"})
                 yield f"data: {error_msg}\n\n"
                 yield "event: done\ndata: \n\n"
 
-        # Kein Hilfsfunktions-Aufruf mehr, stattdessen direkte Formatierung
         return EventSourceResponse(event_generator(question))
 
     # Hilfsmethode für Fehlerbehandlung (optional)

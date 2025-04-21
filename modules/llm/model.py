@@ -27,7 +27,6 @@ class OllamaClient:
     
     async def stream_generate(self, prompt: str) -> AsyncGenerator[str, None]:
         """Streamt die Antwort vom Ollama-Server und gibt sie Token für Token zurück"""
-
         # Prompt-Längen-Check
         if len(prompt) > Config.MAX_PROMPT_LENGTH:
             logger.warning(f"Prompt überschreitet maximale Länge ({len(prompt)} > {Config.MAX_PROMPT_LENGTH})")
@@ -73,7 +72,7 @@ class OllamaClient:
                             yield f"Fehler bei der Verbindung zum Sprachmodell: {resp.status}"
                             return
                         
-                        # Verarbeite den Stream - WICHTIG: KEINE PRÜFUNG AUF 'data: '-Präfix
+                        # Verarbeite den Stream
                         async for line in resp.content:
                             if not line:
                                 continue
@@ -87,13 +86,14 @@ class OllamaClient:
                                 
                                 if 'response' in data:
                                     token = data['response']
-                                    if token:
-                                        token_count += 1
-                                        logger.info(f"Streaming-Token #{token_count}: {token}")
-                                        yield token
+                                    token_count += 1
+                                    logger.info(f"Streaming-Token #{token_count}: {token}")
+                                    # Leere Tokens werden ebenfalls gesendet (wichtig!)
+                                    yield token
                                 
                                 if data.get('done', False):
                                     logger.info(f"Stream abgeschlossen in {time.time() - start_time:.2f}s")
+                                    yield "" # Leeres Token als Abschluss senden
                                     break
                             
                             except json.JSONDecodeError as e:
