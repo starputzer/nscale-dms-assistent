@@ -414,7 +414,7 @@
                     axios.defaults.headers.common['Authorization'] = token.value ? `Bearer ${token.value}` : '';
                 };
                 
-                // Optimierte StreamingFunktion mit EventSource
+                // Optimierte StreamingFunktion mit EventSource und Auth-Token als URL-Parameter
                 const sendQuestionStream = async () => {
                     if (!question.value.trim() || !currentSessionId.value) return;
 
@@ -449,9 +449,13 @@
                         const url = new URL('/api/question/stream', window.location.origin);
                         url.searchParams.append('question', question.value);
                         url.searchParams.append('session_id', currentSessionId.value);
+                        
+                        // Token als URL-Parameter hinzufügen (ohne "Bearer " Präfix)
+                        const authToken = token.value.replace('Bearer ', '');
+                        url.searchParams.append('auth_token', authToken);
 
                         // Neue EventSource erstellen
-                        eventSource.value = new EventSource(url);
+                        eventSource.value = new EventSource(url.toString());
 
                         // Bei jeder Nachricht den Text anhängen
                         eventSource.value.addEventListener('message', (event) => {

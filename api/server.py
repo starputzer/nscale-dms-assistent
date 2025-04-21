@@ -224,9 +224,27 @@ async def answer_question(request: QuestionRequest, user_data: Dict[str, Any] = 
 async def stream_question(
     question: str, 
     session_id: int,
-    user_data: Dict[str, Any] = Depends(get_current_user)
+    auth_token: Optional[str] = None,
+    request: Request = None
 ):
     """Streamt die Antwort auf eine Frage via Server-Sent Events (SSE)"""
+    # Token-Verifizierung
+    if auth_token:
+        # Token aus URL-Parameter verwenden
+        user_data = user_manager.verify_token(auth_token)
+    else:
+        # Versuche, das Token aus dem Authorization-Header zu lesen
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Nicht authentifiziert")
+        
+        token = auth_header.split("Bearer ")[1]
+        user_data = user_manager.verify_token(token)
+    
+    # Prüfen, ob Token gültig ist
+    if not user_data:
+        raise HTTPException(status_code=401, detail="Ungültiges oder abgelaufenes Token")
+    
     user_id = user_data['user_id']
     
     # Prüfe, ob die Session existiert und dem Benutzer gehört
