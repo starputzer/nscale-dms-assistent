@@ -29,6 +29,10 @@ class RAGEngine:
         self.ollama_client = OllamaClient()
         self.initialized = False
         self._init_lock = asyncio.Lock()  # Lock für Thread-Sicherheit bei Initialisierung
+    # Hilfsfunktion für die stream_answer Methode hinzufügen
+    def format_sse_event(data):
+        json_data = json.dumps(data)
+        return f"data: {json_data}\n\n"
     
     async def initialize(self):
         """Initialisiert alle Komponenten - Thread-sicher"""
@@ -175,8 +179,7 @@ class RAGEngine:
                 relevant_chunks = self.embedding_manager.search(question, top_k=Config.TOP_K)
                 if not relevant_chunks:
                     logger.warning(f"Keine relevanten Chunks für Streaming-Frage gefunden: {question[:50]}...")
-                    error_message = {"error": "Keine relevanten Informationen gefunden"}
-                    yield f"data: {json.dumps(error_message)}\n\n"
+                    yield format_sse_event({"error": "Keine relevanten Informationen gefunden"})
                     yield "event: done\ndata: \n\n"
                     return
 
@@ -184,21 +187,22 @@ class RAGEngine:
                 prompt = self._format_prompt(question, relevant_chunks)
                 logger.info(f"Starte Streaming für Frage: {question[:50]}...")
 
-                found_data = False
+                # Variable für gesamte Antwort
+                complete_answer = ""
                 async for chunk in self.ollama_client.stream_generate(prompt):
                     if chunk:
-                        found_data = True
-                        yield f"data: {json.dumps({'response': chunk})}\n\n" # NICHT strippen – sonst fehlen Satzanfänge
-
-                if not found_data:
-                    error_message = {"error": "Das Modell hat keine Ausgabe erzeugt."}
-                    yield f"data: {json.dumps(error_message)}\n\n"
+                        complete_answer += chunk
+                        # Korrektes Format für SSE
+                        yield format_sse_event({"response": chunk})
+                
+                # Prüfen, ob überhaupt eine Antwort generiert wurde
+                if not complete_answer:
+                    yield format_sse_event({"error": "Das Modell hat keine Ausgabe erzeugt."})
 
                 yield "event: done\ndata: \n\n"
             except Exception as e:
                 logger.error(f"Fehler beim Streaming der Antwort: {e}", exc_info=True)
-                error_msg = json.dumps({"error": f"Fehler beim Streaming: {str(e)}"})
-                yield f"data: {error_msg}\n\n"
+                yield format_sse_event({"error": f"Fehler beim Streaming: {str(e)}"})
                 yield "event: done\ndata: \n\n"
 
         return EventSourceResponse(event_generator(question))

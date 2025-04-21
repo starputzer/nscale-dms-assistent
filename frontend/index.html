@@ -463,26 +463,28 @@
                         url.searchParams.append('auth_token', authToken);
 
                         // Neue EventSource-Verbindung
-                        eventSource.value = new EventSource(url.toString());
-
                         eventSource.value.onmessage = (event) => {
                             if (event.data) {
                                 try {
                                     const parsed = JSON.parse(event.data);
                                     if (parsed.error) {
-                                        messages.value[assistantIndex].message = '[Fehler]: ' + parsed.error;
+                                        messages.value[assistantIndex].message = `Fehler: ${parsed.error}`;
                                         cleanupStream();
-                                        return;
                                     } else if (parsed.response) {
+                                        // Hier liegt der Hauptfehler: Füge den Text hinzu statt zu ersetzen
                                         messages.value[assistantIndex].message += parsed.response;
+                                        scrollToBottom();
                                     }
                                 } catch (e) {
-                                    // Keine JSON-Daten, direkt anhängen
-                                    messages.value[assistantIndex].message += event.data;
+                                    console.error("JSON-Parsing-Fehler:", e, event.data);
                                 }
-                                scrollToBottom();
                             }
                         };
+
+                        // Expliziter Event-Listener für das 'done' Event
+                        eventSource.value.addEventListener('done', () => {
+                            cleanupStream();
+                        });
 
                         eventSource.value.onerror = (event) => {
                             console.error('SSE-Fehler:', event);
