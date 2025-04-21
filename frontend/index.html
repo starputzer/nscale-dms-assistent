@@ -415,6 +415,7 @@
                 };
                 
                 const cleanupStream = () => {
+                    console.log("cleanupStream aufgerufen");
                     if (eventSource.value) {
                         console.log("Schließe EventSource");
                         eventSource.value.close();
@@ -424,17 +425,14 @@
                     isStreaming.value = false;
                 };
 
-                // Optimierte StreamingFunktion mit EventSource und verbessertem Event-Handling
                 const sendQuestionStream = async () => {
-                    if (!question.value.trim() || !currentSessionId.value) return;
-
-                    // Überprüfe, ob die Frage gesetzt ist
-                    if (!question.value) {
-                        console.error("Frage ist leer.");
+                    if (!question.value.trim() || !currentSessionId.value) {
+                        console.warn("Leere Frage oder keine Session ausgewählt");
                         return;
                     }
 
                     try {
+                        console.log(`Sende Frage: "${question.value}"`);
                         isLoading.value = true;
                         isStreaming.value = true;
 
@@ -464,43 +462,52 @@
                         const authToken = token.value.replace('Bearer ', '');
                         url.searchParams.append('auth_token', authToken);
 
-                        console.log(`Streaming URL: ${url.toString()}`); // Debug-Info
+                        console.log(`Streaming URL: ${url.toString()}`);
 
                         // Bestehende EventSource schließen
                         if (eventSource.value) {
+                            console.log("Schließe bestehende EventSource");
                             eventSource.value.close();
                             eventSource.value = null;
                         }
 
                         // Neue EventSource-Verbindung
+                        console.log("Erstelle neue EventSource");
                         eventSource.value = new EventSource(url.toString());
 
-                        // Debug-Info
-                        console.log("EventSource erstellt", eventSource.value);
+                        // Debug-Events für alle möglichen EventSource-Ereignisse
+                        eventSource.value.onopen = (event) => {
+                            console.log("EventSource geöffnet:", event);
+                        };
 
                         eventSource.value.onmessage = (event) => {
-                            console.log("EventSource onmessage:", event.data); // Debug-Info
+                            console.log("EventSource Nachricht erhalten:", event.data);
                             if (event.data) {
                                 try {
                                     const parsed = JSON.parse(event.data);
+                                    console.log("Geparste Daten:", parsed);
+                                    
                                     if (parsed.error) {
                                         console.error("Stream-Fehler:", parsed.error);
                                         messages.value[assistantIndex].message = `Fehler: ${parsed.error}`;
                                         cleanupStream();
                                     } else if (parsed.response) {
+                                        console.log(`Token empfangen: "${parsed.response}"`);
                                         // Text zur bestehenden Nachricht hinzufügen
                                         messages.value[assistantIndex].message += parsed.response;
                                         scrollToBottom();
                                     }
                                 } catch (e) {
-                                    console.error("JSON-Parsing-Fehler:", e, event.data);
+                                    console.error("JSON-Parsing-Fehler:", e, "Rohdaten:", event.data);
+                                    messages.value[assistantIndex].message = "Fehler bei der Verarbeitung der Antwort.";
+                                    cleanupStream();
                                 }
                             }
                         };
 
-                        // Event-Listener für das "done" Event
+                        // Expliziter Event-Listener für "done"
                         eventSource.value.addEventListener('done', (event) => {
-                            console.log("Stream abgeschlossen (done event)");
+                            console.log("Stream abgeschlossen (done event):", event);
                             cleanupStream();
                         });
 
@@ -516,6 +523,9 @@
                         setTimeout(() => {
                             if (isStreaming.value) {
                                 console.warn("Stream-Timeout nach 30s");
+                                if (messages.value[assistantIndex]?.message === '') {
+                                    messages.value[assistantIndex].message = 'Keine Antwort erhalten. Das Sprachmodell reagiert möglicherweise nicht.';
+                                }
                                 cleanupStream();
                             }
                         }, 30000);
