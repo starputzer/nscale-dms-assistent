@@ -160,17 +160,13 @@ class RAGEngine:
                     yield "data: {\"error\": \"System konnte nicht initialisiert werden\"}\n\n"
                     yield "event: done\ndata: \n\n"
                 return EventSourceResponse(error_stream())
+
         if len(question) > 2048:
-            Logger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
+            logger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
             question = question[:2048]
 
         async def event_generator() -> AsyncGenerator[str, None]:
             try:
-                # Eingabe kürzen - Test als if-Block im Vorfeld (unboundlocalerror)
-                #if len(question) > 2048:
-                #    logger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
-                #    question = question[:2048]
-
                 # Chunks suchen
                 relevant_chunks = self.embedding_manager.search(question, top_k=Config.TOP_K)
                 if not relevant_chunks:
@@ -182,15 +178,12 @@ class RAGEngine:
 
                 # Prompt bauen
                 prompt = self._format_prompt(question, relevant_chunks)
-
                 logger.info(f"Starte Streaming für Frage: {question[:50]}...")
 
-                # Stream starten
-                buffer = ""
+                # Stream starten – jetzt korrekt!
                 async for chunk in self.ollama_client.stream_generate(prompt):
                     if chunk.strip():
-                        buffer += chunk
-                        yield f"data: {buffer}\n\n"
+                        yield f"data: {chunk}\n\n"
 
                 yield "event: done\ndata: \n\n"
 
@@ -201,6 +194,7 @@ class RAGEngine:
                 yield "event: done\ndata: \n\n"
 
         return EventSourceResponse(event_generator())
+
 
     def _format_prompt(self, question: str, chunks: List[Dict[str, Any]]) -> str:
         """Formatiert einen optimierten deutschen Prompt für Mistral"""
