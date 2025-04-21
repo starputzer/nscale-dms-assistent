@@ -229,7 +229,6 @@ class RAGEngine:
         return EventSourceResponse(
             event_generator(question),
             ping=15.0,  # Sendet alle 15 Sekunden Ping-Events
-            buffer_size=1  # Minimale Pufferung für sofortige Weiterleitung
         )
 
     # Hilfsmethode für Fehlerbehandlung (optional)

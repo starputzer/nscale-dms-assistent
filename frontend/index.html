@@ -478,7 +478,6 @@
 
                         // Event Handler für alle Nachrichten
                         eventSource.value.onmessage = (event) => {
-                            console.log("RAW SSE EVENT:", event);
                             console.log("EventSource Nachricht erhalten:", event.data);
                             if (event.data) {
                                 try {
@@ -489,7 +488,7 @@
                                         console.error("Stream-Fehler:", parsed.error);
                                         messages.value[assistantIndex].message = `Fehler: ${parsed.error}`;
                                         cleanupStream();
-                                    } else if ('response' in parsed) {  // <-- KORRIGIERTE VERSION
+                                    } else if ('response' in parsed) {  // <-- DIESE ÄNDERUNG IST ENTSCHEIDEND
                                         console.log(`Token empfangen: "${parsed.response}"`);
                                         // Text zur bestehenden Nachricht hinzufügen
                                         messages.value[assistantIndex].message += parsed.response;
