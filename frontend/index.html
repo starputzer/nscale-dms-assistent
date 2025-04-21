@@ -517,12 +517,23 @@
                             cleanupStream();
                         });
 
+                        // Fügen Sie diese minimale Änderung in der onmessage-Funktion ein:
+
                         eventSource.value.onmessage = (event) => {
                             console.log(`Nachricht erhalten:`, event.data);
                             
+                            // ENTSCHEIDENDE ÄNDERUNG: Prüfe nach dem "event: done"-Format
+                            if (event.data && 
+                                (event.data.includes('event: done') || 
+                                event.data.startsWith('event:') || 
+                                event.data === '')) {
+                                console.log("Stream-Steuerungsbefehl erkannt, keine Fehlerbehandlung nötig");
+                                return; // Sofort zurückkehren ohne Fehler
+                            }
+                            
                             if (event.data) {
                                 try {
-                                    // Entferne das "data: "-Präfix, falls vorhanden
+                                    // Rest des Codes bleibt gleich
                                     let jsonStr = event.data;
                                     if (jsonStr.startsWith('data: ')) {
                                         jsonStr = jsonStr.substring(6);
@@ -532,11 +543,9 @@
                                     const parsed = JSON.parse(jsonStr);
                                     console.log("Geparste Daten:", parsed);
                                     
-                                    // Prüfen, ob das response-Feld existiert (unabhängig vom Wert)
                                     if ('response' in parsed) {
                                         tokenCount++;
                                         console.log(`Token #${tokenCount}: "${parsed.response}"`);
-                                        // Text zur bestehenden Nachricht hinzufügen
                                         messages.value[assistantIndex].message += parsed.response;
                                         scrollToBottom();
                                     } else if (parsed.error) {
@@ -546,9 +555,11 @@
                                     }
                                 } catch (e) {
                                     console.error("JSON-Parsing-Fehler:", e, "Rohdaten:", event.data);
-                                    // Bei JSON-Parsing-Fehlern NICHT die Fehlermeldung anzeigen
-                                    // Da dies wahrscheinlich beim done-Event auftritt
-                                    console.log("Ignoriere Parsing-Fehler, könnte ein Steuer-Event sein");
+                                    // Nur bei echten Fehlern (nicht bei event:done) die Fehlermeldung anzeigen
+                                    if (!event.data.includes('event:')) {
+                                        messages.value[assistantIndex].message = "Fehler bei der Verarbeitung der Antwort.";
+                                        cleanupStream();
+                                    }
                                 }
                             }
                         };
