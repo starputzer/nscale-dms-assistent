@@ -12,7 +12,8 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List
 
 from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, Request
-from fastapi.responses import JSONResponse, FileResponse, EventSourceResponse
+from fastapi.responses import JSONResponse, FileResponse
+from sse_starlette.sse import EventSourceResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, EmailStr
