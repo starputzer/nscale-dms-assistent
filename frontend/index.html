@@ -425,7 +425,11 @@
                 // Optimierte StreamingFunktion mit EventSource und verbessertem Event-Handling
                 const sendQuestionStream = async () => {
                     if (!question.value.trim() || !currentSessionId.value) return;
-
+                    // Überprüfe, ob die Frage gesetzt ist
+                    if (!question.value) {
+                        console.error("Frage ist leer.");
+                        return;
+                    }
                     try {
                         isLoading.value = true;
                         isStreaming.value = true;
