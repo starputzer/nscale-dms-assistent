@@ -184,12 +184,10 @@ class RAGEngine:
                 prompt = self._format_prompt(question, relevant_chunks)
                 logger.info(f"Starte Streaming für Frage: {question[:50]}...")
 
-                # Stream starten
+                # Stream starten – jeden Chunk einzeln senden
                 async for chunk in self.ollama_client.stream_generate(prompt):
-                    chunk = chunk.strip()
-                    if chunk:
-                        safe_chunk = json.dumps(chunk)
-                        yield f"data: {safe_chunk[1:-1]}\n\n"
+                    if chunk.strip():
+                        yield f"data: {chunk.strip()}\n\n"  # Kein JSON dump nötig
 
                 yield "event: done\ndata: \n\n"
 
@@ -198,6 +196,7 @@ class RAGEngine:
                 error_msg = json.dumps({"error": f"Fehler beim Streaming: {str(e)}"})
                 yield f"data: {error_msg}\n\n"
                 yield "event: done\ndata: \n\n"
+
 
         return EventSourceResponse(event_generator(question))
 
