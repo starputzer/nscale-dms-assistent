@@ -150,8 +150,8 @@ class RAGEngine:
                 'message': f"Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut."
             }
 
-    async def stream_answer(self, question: str, session_id: Optional[int] = None) -> AsyncGenerator[str, None]:
-        """Streamt Antwort stückweise zurück (für EventSourceResponse)"""
+    async def stream_answer(self, question: str, session_id: Optional[int] = None):
+        """Streamt Antwort stückweise zurück"""
         if not self.initialized:
             logger.info("Lazy-Loading der RAG-Engine für Streaming...")
             success = await self.initialize()
@@ -176,16 +176,13 @@ class RAGEngine:
             # Erstelle optimierten Prompt mit Kontext
             prompt = self._format_prompt(question, relevant_chunks)
             
-            # Stream die Antwort
+            # Stream die Antwort direkt vom Ollama-Client
             logger.info(f"Starte Streaming für Frage: {question[:50]}...")
             
-            # Streame die Antwort direkt aus dem Ollama-Client
-            async for chunk in self.ollama_client.stream_generate(prompt):
-                if chunk:  # Nur nicht-leere Chunks senden
-                    yield chunk
-            
-            # Abschluss-Signal
-            yield "[DONE]"
+            # Wandle den Generator in einen async Iterator um
+            async_gen = self.ollama_client.stream_generate(prompt)
+            async for chunk in async_gen:
+                yield chunk
 
         except Exception as e:
             logger.error(f"Fehler beim Streaming der Antwort: {e}", exc_info=True)

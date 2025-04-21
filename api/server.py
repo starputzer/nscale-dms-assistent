@@ -104,40 +104,31 @@ async def stream_generator(question: str, session_id: int, user_id: int):
     
     logger.info(f"Stream-Generator gestartet für Frage: {question}")
     
-    # Initial heartbeat
-    yield {"event": "ping", "data": "Verbindung hergestellt"}
-    
     try:
-        # Stream die Antwort vom RAG-Engine
-        token_count = 0
-        async for chunk in rag_engine.stream_answer(question):
+        # Stream die Antwort vom RAG-Engine - wichtig: await benutzen!
+        async_gen = rag_engine.stream_answer(question)
+        
+        async for chunk in async_gen:
             if chunk == "[DONE]":
                 # Streaming abgeschlossen
-                logger.info("Stream [DONE] Marker erhalten")
                 break
             
             # Antwortstück zum Puffer hinzufügen
             complete_answer += chunk
-            token_count += 1
             
-            if token_count % 10 == 0:
-                logger.info(f"Bisher {token_count} Tokens gestreamt")
-            
-            # SSE-Daten senden
-            logger.debug(f"Sende SSE-Event mit Daten: {chunk}")
+            # Sende das Chunk als SSE-Event
             yield {"data": chunk}
             
     except Exception as e:
-        logger.error(f"Fehler beim Streaming: {e}", exc_info=True)
-        yield {"event": "error", "data": str(e)}
-    
-    logger.info(f"Stream beendet, Gesamtantwort: {len(complete_answer)} Zeichen")
+        error_msg = f"Fehler beim Streaming: {str(e)}"
+        logger.error(error_msg, exc_info=True)
+        yield {"event": "error", "data": error_msg}
     
     # Speichere die vollständige Antwort in der Chat-Historie
     if complete_answer:
         chat_history.add_message(session_id, complete_answer, is_user=False)
     
-    # Sende ein "done" Event
+    # Sende ein "done" Event, um dem Client mitzuteilen, dass das Streaming abgeschlossen ist
     yield {"event": "done", "data": ""}
 
 # API-Endpunkte für Authentifizierung
