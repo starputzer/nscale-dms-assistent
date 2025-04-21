@@ -280,27 +280,28 @@
         </div>
         
         <!-- Main Chat Interface -->
-        <div v-if="token" class="flex flex-col h-screen">
-            <!-- Header -->
-            <header class="nscale-header p-4">
-                <div class="container mx-auto flex justify-between items-center">
+        <header class="nscale-header p-4">
+            <div class="container mx-auto flex justify-between items-center">
+                <div class="flex items-center">
+                    <img src="images/berlin-logo.svg" alt="Berlin Logo" class="h-16 mr-4">
                     <div class="nscale-logo">nscale DMS Assistent</div>
-                    <div class="flex space-x-4">
-                        <button @click="startNewSession" class="nscale-btn-secondary">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                            Neue Unterhaltung
-                        </button>
-                        <button @click="logout" class="nscale-btn-secondary">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                            </svg>
-                            Abmelden
-                        </button>
-                    </div>
                 </div>
-            </header>
+                <div class="flex space-x-4">
+                    <button @click="startNewSession" class="nscale-btn-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Neue Unterhaltung
+                    </button>
+                    <button @click="logout" class="nscale-btn-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        Abmelden
+                    </button>
+                </div>
+            </div>
+        </header>
             
             <!-- Main Content -->
             <div class="flex flex-1 overflow-hidden container mx-auto my-4">
@@ -565,7 +566,8 @@
                         };
 
                         eventSource.value.onerror = (event) => {
-                            console.error('SSE-Fehler:', event);
+                            console.log('SSE-Verbindung beendet:', event);
+                            // Nur Fehler melden, wenn keine Tokens empfangen wurden
                             if (tokenCount === 0) {
                                 messages.value[assistantIndex].message = 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.';
                             }
