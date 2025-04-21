@@ -1,5 +1,6 @@
 import asyncio
 import json  # Wichtig für JSON-Serialisierung beim Streaming
+from sse_starlette.sse import EventSourceResponse
 from typing import Dict, Any, List, Optional, Tuple, AsyncGenerator
 from ..core.config import Config
 from ..core.logging import LogManager
