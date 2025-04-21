@@ -414,7 +414,7 @@
                     axios.defaults.headers.common['Authorization'] = token.value ? `Bearer ${token.value}` : '';
                 };
                 
-                // Optimierte StreamingFunktion mit EventSource und Auth-Token als URL-Parameter
+                // Optimierte StreamingFunktion mit EventSource und verbessertem Event-Handling
                 const sendQuestionStream = async () => {
                     if (!question.value.trim() || !currentSessionId.value) return;
 
@@ -457,17 +457,40 @@
                         // Neue EventSource erstellen
                         eventSource.value = new EventSource(url.toString());
 
-                        // Bei jeder Nachricht den Text anhängen
-                        eventSource.value.addEventListener('message', (event) => {
+                        // Debugginginformationen
+                        console.log('EventSource verbunden mit:', url.toString());
+
+                        // Standard-Nachrichtenereignis - normaler Datenfluss
+                        eventSource.value.onmessage = (event) => {
+                            console.log('Nachricht erhalten:', event.data);
                             if (event.data) {
                                 // Tokens zur Antwort hinzufügen
                                 messages.value[assistantIndex].message += event.data;
                                 scrollToBottom();
                             }
+                        };
+
+                        // Bei jedem Ereignistyp
+                        eventSource.value.addEventListener('message', (event) => {
+                            console.log('message event:', event.data);
+                            if (event.data) {
+                                messages.value[assistantIndex].message += event.data;
+                                scrollToBottom();
+                            }
+                        });
+
+                        // Bei "done" Event
+                        eventSource.value.addEventListener('done', (event) => {
+                            console.log('done event erhalten');
+                            eventSource.value.close();
+                            isLoading.value = false;
+                            isStreaming.value = false;
+                            question.value = ''; // Eingabefeld leeren
+                            eventSource.value = null;
                         });
 
                         // Bei einem Fehler
-                        eventSource.value.addEventListener('error', (event) => {
+                        eventSource.value.onerror = (event) => {
                             console.error('SSE-Fehler:', event);
                             if (messages.value[assistantIndex]?.message === '') {
                                 messages.value[assistantIndex].message = 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.';
@@ -477,16 +500,7 @@
                             isLoading.value = false;
                             isStreaming.value = false;
                             eventSource.value = null;
-                        });
-
-                        // Bei Abschluss
-                        eventSource.value.addEventListener('done', () => {
-                            eventSource.value.close();
-                            isLoading.value = false;
-                            isStreaming.value = false;
-                            question.value = ''; // Eingabefeld leeren
-                            eventSource.value = null;
-                        });
+                        };
 
                     } catch (error) {
                         console.error('Streaming-Fehler:', error);

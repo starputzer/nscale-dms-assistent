@@ -93,6 +93,7 @@ async def get_current_user(request: Request) -> Dict[str, Any]:
     
     return user_data
 
+# Generator-Funktion für SSE
 async def stream_generator(question: str, session_id: int, user_id: int):
     """Generator für Server-Sent Events (SSE)"""
     # Speichere die Benutzerfrage in der Chat-Historie
@@ -111,10 +112,10 @@ async def stream_generator(question: str, session_id: int, user_id: int):
             # Antwortstück zum Puffer hinzufügen
             complete_answer += chunk
             
-            # Sende das Chunk als SSE-Event
-            yield {"event": "message", "data": chunk}
+            # Formatiere die Daten gemäß SSE-Spezifikation
+            yield {"data": chunk}
             
-            # Kleine Pause, um Überlastung zu vermeiden (optional)
+            # Kleine Pause, um Überlastung zu vermeiden
             await asyncio.sleep(0.01)
             
     except Exception as e:
@@ -220,6 +221,7 @@ async def answer_question(request: QuestionRequest, user_data: Dict[str, Any] = 
         "cached": result.get('cached', False)
     }
 
+# API-Endpunkt für das Streaming
 @app.get("/api/question/stream")
 async def stream_question(
     question: str, 
@@ -259,15 +261,8 @@ async def stream_question(
         if not session_id:
             raise HTTPException(status_code=500, detail="Fehler beim Erstellen einer Session")
     
-    # Gib EventSourceResponse zurück, die den Generator verwendet
-    return EventSourceResponse(
-        stream_generator(question, session_id, user_id),
-        media_type="text/event-stream",
-        # Diese Einstellungen helfen bei der Stabilität des Streams
-        ping_interval=15,
-        ping_message="keep-alive",
-        reconnect=True
-    )
+    # SSE-Antwort zurückgeben
+    return EventSourceResponse(stream_generator(question, session_id, user_id))
 
 @app.get("/api/session/{session_id}")
 async def get_session(session_id: int, user_data: Dict[str, Any] = Depends(get_current_user)):
