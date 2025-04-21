@@ -175,7 +175,8 @@ class RAGEngine:
                 relevant_chunks = self.embedding_manager.search(question, top_k=Config.TOP_K)
                 if not relevant_chunks:
                     logger.warning(f"Keine relevanten Chunks für Streaming-Frage gefunden: {question[:50]}...")
-                    yield "data: {\"error\": \"Keine relevanten Informationen gefunden\"}\n\n"
+                    error_message = {"error": "Keine relevanten Informationen gefunden"}
+                    yield f"data: {json.dumps(error_message)}\n\n"
                     yield "event: done\ndata: \n\n"
                     return
 
