@@ -185,9 +185,11 @@ class RAGEngine:
                 logger.info(f"Starte Streaming für Frage: {question[:50]}...")
 
                 # Stream starten
+                buffer = ""
                 async for chunk in self.ollama_client.stream_generate(prompt):
-                    if chunk.strip():  # keine leeren Stücke senden
-                        yield f"data: {chunk}\n\n"
+                    if chunk.strip():
+                        buffer += chunk
+                        yield f"data: {buffer}\n\n"
 
                 yield "event: done\ndata: \n\n"
 
