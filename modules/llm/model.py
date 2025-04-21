@@ -90,7 +90,8 @@ class OllamaClient:
                                     logger.info(f"Streaming-Token #{token_count}: {token}")
                                     # Leere Tokens werden ebenfalls gesendet (wichtig!)
                                     yield token
-                                
+                                    await asyncio.sleep(0.01)  # Kleine Pause für bessere Verarbeitung
+                                    
                                 if data.get('done', False):
                                     logger.info(f"Stream abgeschlossen in {time.time() - start_time:.2f}s")
                                     yield "" # Leeres Token als Abschluss senden

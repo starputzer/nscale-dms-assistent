@@ -226,7 +226,11 @@ class RAGEngine:
                 yield f"data: {error_msg}\n\n"
                 yield "event: done\ndata: \n\n"
 
-        return EventSourceResponse(event_generator(question))
+        return EventSourceResponse(
+            event_generator(question),
+            ping=15.0,  # Sendet alle 15 Sekunden Ping-Events
+            buffer_size=1  # Minimale Pufferung für sofortige Weiterleitung
+        )
 
     # Hilfsmethode für Fehlerbehandlung (optional)
     def _format_error_event(self, error_message: str) -> AsyncGenerator[str, None]:

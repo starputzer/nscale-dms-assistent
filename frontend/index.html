@@ -478,6 +478,7 @@
 
                         // Event Handler für alle Nachrichten
                         eventSource.value.onmessage = (event) => {
+                            console.log("RAW SSE EVENT:", event);
                             console.log("EventSource Nachricht erhalten:", event.data);
                             if (event.data) {
                                 try {
