@@ -464,11 +464,25 @@
                         eventSource.value.onmessage = (event) => {
                             console.log('Nachricht erhalten:', event.data);
                             if (event.data) {
-                                // Tokens zur Antwort hinzufügen
-                                messages.value[assistantIndex].message += event.data;
-                                scrollToBottom();
+                                try {
+                                    const parsed = JSON.parse(event.data);
+                                    if (parsed.error) {
+                                        messages.value[assistantIndex].message = parsed.error;
+                                        eventSource.value.close();
+                                        isLoading.value = false;
+                                        isStreaming.value = false;
+                                        question.value = '';
+                                        eventSource.value = null;
+                                        return;
+                                    }
+                                } catch (e) {
+                                    // Keine JSON, einfach normal anhängen
+                                    messages.value[assistantIndex].message += event.data;
+                                    scrollToBottom();
+                                }
                             }
                         };
+
 
                         // Bei jedem Ereignistyp
                         eventSource.value.addEventListener('message', (event) => {
