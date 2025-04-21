@@ -75,6 +75,8 @@ class OllamaClient:
                         async for line in resp.content:
                             if not line:
                                 continue
+                            line_text = line.decode('utf-8').strip()
+                            logger.info(f"ROHDATEN aus Stream: {line_text}")
                             
                             try:
                                 line_text = line.decode('utf-8').strip()
