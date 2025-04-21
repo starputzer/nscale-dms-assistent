@@ -511,17 +511,16 @@
                             console.log("EventSource geöffnet:", event);
                         };
 
+                        // WICHTIG: Separater Event-Listener für done-Events
+                        eventSource.value.addEventListener('done', (event) => {
+                            console.log("DONE Event empfangen:", event);
+                            cleanupStream();
+                        });
+
                         eventSource.value.onmessage = (event) => {
-                            console.log(`Rohe Nachricht erhalten:`, event.data);
+                            console.log(`Nachricht erhalten:`, event.data);
                             
                             if (event.data) {
-                                // Prüfe, ob es sich um das done-Event handelt
-                                if (event.data.includes('event: done')) {
-                                    console.log("Stream abgeschlossen durch done-Event");
-                                    cleanupStream();
-                                    return;
-                                }
-                                
                                 try {
                                     // Entferne das "data: "-Präfix, falls vorhanden
                                     let jsonStr = event.data;
@@ -547,25 +546,12 @@
                                     }
                                 } catch (e) {
                                     console.error("JSON-Parsing-Fehler:", e, "Rohdaten:", event.data);
-                                    
-                                    // Bei JSON-Parsing-Fehler am Ende nicht als Fehler behandeln
-                                    if (event.data.includes('event: done') || event.data.includes('data: \n\n')) {
-                                        console.log("Stream ist korrekt abgeschlossen");
-                                        // Machen Sie nichts - der Stream ist abgeschlossen
-                                    } else {
-                                        // Bei anderen Parsing-Fehlern setzen Sie eine Fehlermeldung
-                                        messages.value[assistantIndex].message = "Fehler bei der Verarbeitung der Antwort.";
-                                        cleanupStream();
-                                    }
+                                    // Bei JSON-Parsing-Fehlern NICHT die Fehlermeldung anzeigen
+                                    // Da dies wahrscheinlich beim done-Event auftritt
+                                    console.log("Ignoriere Parsing-Fehler, könnte ein Steuer-Event sein");
                                 }
                             }
                         };
-
-                        // Expliziter Event-Listener für "done"
-                        eventSource.value.addEventListener('done', (event) => {
-                            console.log(`Stream abgeschlossen, ${tokenCount} Tokens empfangen`);
-                            cleanupStream();
-                        });
 
                         eventSource.value.onerror = (event) => {
                             console.error('SSE-Fehler:', event);
