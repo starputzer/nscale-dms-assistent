@@ -25,9 +25,10 @@ class EmbeddingManager:
         self.chunks = []
         self.lock = threading.RLock()
         #cuda erzwingen
-        self.service = "cuda"
+        self.device = "cuda"
         #self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.torch_dtype = torch.float16 if self.device == "cuda" else torch.float32
+
 
     def initialize(self):
         """Initialisiert das Embedding-Modell"""
