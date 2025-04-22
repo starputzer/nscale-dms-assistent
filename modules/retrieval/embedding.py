@@ -32,8 +32,13 @@ class EmbeddingManager:
         with self.lock:
             try:
                 logger.info("Lade Embedding-Modell...")
-                self.model = SentenceTransformer('paraphrase-MiniLM-L3-v2', device=self.device)
-                logger.info("Embedding-Modell geladen")
+                #altes Modell
+                #self.model = SentenceTransformer('paraphrase-MiniLM-L3-v2', device=self.device)
+                #logger.info("Embedding-Modell geladen")
+                
+                #neues Modell
+                self.model = SentenceTransformer('BAAI/bge-large-de', device=self.device)
+                logger.info("BAAI/bge-large-de Embedding-Modell erfolgreich geladen")
                 return True
             except Exception as e:
                 logger.error(f"Fehler beim Laden des Embedding-Modells: {e}")
@@ -127,7 +132,50 @@ class EmbeddingManager:
 
         except Exception as e:
             logger.error(f"Fehler beim Speichern in Cache: {e}")
+            
+    #alte Methode
+    # def search(self, query: str, top_k: int = None) -> List[Dict[str, Any]]:
+    #     """Führt eine Hybrid-Suche durch und gibt die relevantesten Chunks zurück"""
+    #     if top_k is None:
+    #         top_k = Config.TOP_K
 
+    #     with self.lock:
+    #         if not self.model or self.embeddings is None:
+    #             logger.warning("Embedding-Modell oder Embeddings nicht initialisiert")
+    #             return []
+
+    #         try:
+    #             # TF-IDF Suche
+    #             query_vec = self.tfidf_vectorizer.transform([query])
+    #             tfidf_scores = np.array(query_vec @ self.tfidf_matrix.T.toarray()).flatten()
+
+    #             # Semantische Suche
+    #             query_embedding = self.model.encode([query], device=self.device)[0]
+    #             semantic_scores = np.dot(self.embeddings, query_embedding)
+
+    #             # Normalisiere Scores
+    #             tfidf_scores = tfidf_scores / max(tfidf_scores.max(), 1e-5)
+    #             semantic_scores = semantic_scores / max(semantic_scores.max(), 1e-5)
+
+    #             # Gewichtete Kombination
+    #             combined_scores = (1-Config.SEMANTIC_WEIGHT) * tfidf_scores + Config.SEMANTIC_WEIGHT * semantic_scores
+    #             top_indices = combined_scores.argsort()[-top_k:][::-1]
+
+    #             # Erstelle Ergebnisse mit Scores
+    #             results = []
+    #             for i in top_indices:
+    #                 if combined_scores[i] > 0:
+    #                     chunk = self.chunks[i].copy()
+    #                     chunk['score'] = float(combined_scores[i])
+    #                     results.append(chunk)
+
+    #             return results
+
+    #         except Exception as e:
+    #             logger.error(f"Fehler bei der Suche: {e}")
+    #             return []
+
+    #Neue Methode für BGE Modelle
     def search(self, query: str, top_k: int = None) -> List[Dict[str, Any]]:
         """Führt eine Hybrid-Suche durch und gibt die relevantesten Chunks zurück"""
         if top_k is None:
@@ -143,19 +191,27 @@ class EmbeddingManager:
                 query_vec = self.tfidf_vectorizer.transform([query])
                 tfidf_scores = np.array(query_vec @ self.tfidf_matrix.T.toarray()).flatten()
 
-                # Semantische Suche
-                query_embedding = self.model.encode([query], device=self.device)[0]
+                # Semantische Suche mit normalisierten Embeddings
+                query_embedding = self.model.encode(
+                    [query],
+                    device=self.device,
+                    normalize_embeddings=True  # <--- wichtig für BGE & Co.
+                )[0]
+
                 semantic_scores = np.dot(self.embeddings, query_embedding)
 
-                # Normalisiere Scores
+                # Normalisiere Scores (Skalierung auf 0–1 Bereich)
                 tfidf_scores = tfidf_scores / max(tfidf_scores.max(), 1e-5)
                 semantic_scores = semantic_scores / max(semantic_scores.max(), 1e-5)
 
                 # Gewichtete Kombination
-                combined_scores = (1-Config.SEMANTIC_WEIGHT) * tfidf_scores + Config.SEMANTIC_WEIGHT * semantic_scores
+                combined_scores = (
+                    (1 - Config.SEMANTIC_WEIGHT) * tfidf_scores +
+                    Config.SEMANTIC_WEIGHT * semantic_scores
+                )
                 top_indices = combined_scores.argsort()[-top_k:][::-1]
 
-                # Erstelle Ergebnisse mit Scores
+                # Ergebnisse aufbauen
                 results = []
                 for i in top_indices:
                     if combined_scores[i] > 0:
