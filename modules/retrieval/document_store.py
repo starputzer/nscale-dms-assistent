@@ -39,12 +39,10 @@ class Document:
                     })
         else:
             # Neue Variante: Chunking nach ca. 800 Zeichen, satzbasiert
-            chunked = self._chunk_text_by_sentences(self.text, max_chars=800)
-            logger.info(f"📏 Generierte {len(chunked)} Chunks mit Zeichenlängen:")
-            for i, c in enumerate(chunked[:10]):
-                logger.info(f"Chunk {i+1}: {len(c)} Zeichen - Vorschau: {c[:80]}...")
-
             for chunk_text in chunked:
+                if len(chunk_text) > 1500:
+                    logger.warning(f"⚠️ Ignoriere Chunk mit {len(chunk_text)} Zeichen (zu lang)")
+                    continue
                 if len(chunk_text) > 50:
                     self.chunks.append({
                         'text': chunk_text,
@@ -92,16 +90,9 @@ class Document:
 
         if current_chunk.strip():
             chunks.append(current_chunk.strip())
-
-        # Filtere überlange Chunks heraus
-        filtered_chunks = []
-        for chunk in chunks:
-            if len(chunk) > 1500:
-                logger.warning(f"⚠️ Ignoriere Chunk mit {len(chunk)} Zeichen (zu lang)")
-            else:
-                filtered_chunks.append(chunk)
-
-        return filtered_chunks
+        return chunks
+    
+        
 
     def _extract_sections(self) -> List[Dict[str, str]]:
         """Extrahiert strukturierte Abschnitte aus dem Text"""
