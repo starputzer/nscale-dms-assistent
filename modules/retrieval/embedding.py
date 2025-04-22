@@ -24,7 +24,9 @@ class EmbeddingManager:
         self.tfidf_matrix = None
         self.chunks = []
         self.lock = threading.RLock()
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        #cuda erzwingen
+        self.service = "cuda"
+        #self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.torch_dtype = torch.float16 if self.device == "cuda" else torch.float32
 
     def initialize(self):
@@ -42,7 +44,7 @@ class EmbeddingManager:
                 # logger.info("BAAI/bge-large-de Embedding-Modell erfolgreich geladen")
 
                 # empfohlenes Modell: BAAI/bge-m3
-                self.model = SentenceTransformer('BAAI/bge-m3', device=self.device)
+                self.model = SentenceTransformer('BAAI/bge-m3', device="cuda")
                 logger.info("BAAI/bge-m3 Embedding-Modell erfolgreich geladen")
 
                 return True
@@ -81,7 +83,8 @@ class EmbeddingManager:
                     texts,
                     show_progress_bar=True,
                     device=self.device,
-                    normalize_embeddings=True
+                    normalize_embeddings=True,
+                    batch_size=32  # oder 16 bei wenig VRAM
                 )
 
                 self._save_to_cache()
