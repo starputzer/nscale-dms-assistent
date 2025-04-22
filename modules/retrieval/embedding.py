@@ -79,6 +79,11 @@ class EmbeddingManager:
                 self.tfidf_vectorizer = TfidfVectorizer(lowercase=True, stop_words=german_stopwords)
                 self.tfidf_matrix = self.tfidf_vectorizer.fit_transform(texts)
 
+                logger.info(f"Textlängenstatistik für {len(texts)} Chunks:")
+                max_len = max(len(t) for t in texts)
+                min_len = min(len(t) for t in texts)
+                avg_len = sum(len(t) for t in texts) / len(texts)
+                logger.info(f"➤ Max: {max_len}, Min: {min_len}, ⌀: {avg_len:.2f} Zeichen")
                 # neue Variante: normalisierte Embeddings für BGE
                 self.embeddings = self.model.encode(
                     texts,
