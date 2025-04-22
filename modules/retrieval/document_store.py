@@ -40,6 +40,10 @@ class Document:
         else:
             # Neue Variante: Chunking nach ca. 800 Zeichen, satzbasiert
             chunked = self._chunk_text_by_sentences(self.text, max_chars=800)
+            logger.info(f"📏 Generierte {len(chunked)} Chunks mit Zeichenlängen:")
+            for i, c in enumerate(chunked[:10]):
+                logger.info(f"Chunk {i+1}: {len(c)} Zeichen - Vorschau: {c[:80]}...")
+
             for chunk_text in chunked:
                 if len(chunk_text) > 50:
                     self.chunks.append({
@@ -47,6 +51,8 @@ class Document:
                         'file': self.filename,
                         'type': 'chunk'
                     })
+
+            logger.info(f"📄 {self.filename} → {len(self.chunks)} Chunks insgesamt verarbeitet")
 
             # Alte Fallback-Logik (überlappende Chunks) — deaktiviert, aber erhalten
             # chunk_size = Config.CHUNK_SIZE
