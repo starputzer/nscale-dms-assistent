@@ -36,19 +36,37 @@ class OllamaClient:
         if "Antwort auf Deutsch" not in prompt and "auf Deutsch antworten" not in prompt:
             prompt = f"{prompt}\n\nAchte darauf, auf Deutsch zu antworten."
         
+        #llama3 8b instruct q4_1 payload
         payload = {
             'model': Config.MODEL_NAME,
             'prompt': prompt,
             'stream': True,
             'options': {
-                'temperature': 0.2,
+                'temperature': 0.1,  # Reduziert für mehr Determinismus
                 'num_ctx': Config.LLM_CONTEXT_SIZE,
                 'num_predict': Config.LLM_MAX_TOKENS,
                 'top_p': 0.9,
-                'repeat_penalty': 1.1,
+                'repeat_penalty': 1.2,  # Leicht erhöht für weniger Wiederholungen
                 'num_batch': 512,
+                'num_gpu': 1,  # Explizit GPU verwenden falls verfügbar
+                'seed': 42,  # Fester Seed für Reproduzierbarkeit
             }
         }
+
+        #mistral 7b payload
+        # payload = {
+        #     'model': Config.MODEL_NAME,
+        #     'prompt': prompt,
+        #     'stream': True,
+        #     'options': {
+        #         'temperature': 0.2,
+        #         'num_ctx': Config.LLM_CONTEXT_SIZE,
+        #         'num_predict': Config.LLM_MAX_TOKENS,
+        #         'top_p': 0.9,
+        #         'repeat_penalty': 1.1,
+        #         'num_batch': 512,
+        #     }
+        # }
         
         logger.info(f"Starte Stream-Generierung für Prompt ({len(prompt)} Zeichen)")
         start_time = time.time()
