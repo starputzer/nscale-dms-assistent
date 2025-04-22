@@ -267,33 +267,52 @@ class RAGEngine:
         
         kontext = '\n\n'.join(kontext_mit_quellen)
         
-        # Mistral-spezifischer Prompt mit Instructformat
-        prompt = f"""<s>[INST] 
-Du bist ein deutschsprachiger, fachlich präziser Assistent für die nscale DMS-Software.
+        # Llama 3-spezifisches Prompt-Format
+        prompt = f"""<|begin_of_text|><|system|>
+Du bist ein deutschsprachiger, fachlich präziser Assistent für die nscale DMS-Software der SenMVKU Berlin.
 
-Deine Aufgabe ist es, Nutzerfragen **ausführlich**, **verständlich** und **strukturiert** zu beantworten – ausschließlich auf **Deutsch**.
+Deine Aufgabe ist es, Nutzerfragen ausführlich, verständlich und strukturiert zu beantworten – ausschließlich auf Deutsch.
 
-Antworte **nur**, wenn du relevante Informationen im bereitgestellten Dokumentenkontext findest. Erfinde niemals Informationen und spekuliere nicht.
+Antworte nur, wenn du relevante Informationen im bereitgestellten Dokumentenkontext findest. Erfinde niemals Informationen und spekuliere nicht.
+<|end_of_text|>
 
----
+<|begin_of_text|><|user|>
+Frage: {question}
 
-**Frage:**
-{question}
-
-**Relevante Dokumenteninformationen:**
+Relevante Dokumenteninformationen:
 {kontext}
+<|end_of_text|>
 
----
+<|begin_of_text|><|assistant|>"""
 
-**Erwarte folgende Antwortstruktur:**
-1. **Kurze Zusammenfassung** der Frage (optional)
-2. **Detaillierte Antwort** mit ggf. nummerierten Handlungsschritten oder Stichpunkten
-3. **Keine** allgemeinen Floskeln oder Wiederholungen
-4. Bei Unklarheiten: höflich mitteilen, dass keine zuverlässige Antwort gegeben werden kann
-
-Beantworte nun die Frage basierend auf dem Kontext. [/INST]</s>"""
-    
         return prompt
+        # Mistral-spezifischer Prompt mit Instructformat
+#         prompt = f"""<s>[INST] 
+# Du bist ein deutschsprachiger, fachlich präziser Assistent für die nscale DMS-Software.
+
+# Deine Aufgabe ist es, Nutzerfragen **ausführlich**, **verständlich** und **strukturiert** zu beantworten – ausschließlich auf **Deutsch**.
+
+# Antworte **nur**, wenn du relevante Informationen im bereitgestellten Dokumentenkontext findest. Erfinde niemals Informationen und spekuliere nicht.
+
+# ---
+
+# **Frage:**
+# {question}
+
+# **Relevante Dokumenteninformationen:**
+# {kontext}
+
+# ---
+
+# **Erwarte folgende Antwortstruktur:**
+# 1. **Kurze Zusammenfassung** der Frage (optional)
+# 2. **Detaillierte Antwort** mit ggf. nummerierten Handlungsschritten oder Stichpunkten
+# 3. **Keine** allgemeinen Floskeln oder Wiederholungen
+# 4. Bei Unklarheiten: höflich mitteilen, dass keine zuverlässige Antwort gegeben werden kann
+
+# Beantworte nun die Frage basierend auf dem Kontext. [/INST]</s>"""
+    
+#         return prompt
     
     def _generate_fallback_answer(self, question: str, chunks: List[Dict[str, Any]]) -> str:
         """Generiert eine einfache Antwort ohne LLM für Notfälle und Timeouts"""

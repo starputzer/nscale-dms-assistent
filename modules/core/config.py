@@ -16,7 +16,7 @@ class Config:
     
     # LLM-Konfiguration
     OLLAMA_URL = os.getenv('OLLAMA_URL', 'http://localhost:11434')
-    MODEL_NAME = os.getenv('MODEL_NAME', 'mistral-7bq4')  # Wechsel zu Mistral
+    MODEL_NAME = os.getenv('MODEL_NAME', 'llama3-nscale')  # Wechsel zu Mistral
     LLM_TIMEOUT = float(os.getenv('LLM_TIMEOUT', '60.0'))  # Höheren Timeout für das größere Modell
     LLM_CONTEXT_SIZE = int(os.getenv('LLM_CONTEXT_SIZE', '8192'))  # Größerer Kontext
     LLM_MAX_TOKENS = int(os.getenv('LLM_MAX_TOKENS', '4096'))  # Mehr Output-Tokens
