@@ -93,7 +93,15 @@ class Document:
         if current_chunk.strip():
             chunks.append(current_chunk.strip())
 
-        return chunks
+        # Filtere überlange Chunks heraus
+        filtered_chunks = []
+        for chunk in chunks:
+            if len(chunk) > 1500:
+                logger.warning(f"⚠️ Ignoriere Chunk mit {len(chunk)} Zeichen (zu lang)")
+            else:
+                filtered_chunks.append(chunk)
+
+        return filtered_chunks
 
     def _extract_sections(self) -> List[Dict[str, str]]:
         """Extrahiert strukturierte Abschnitte aus dem Text"""
