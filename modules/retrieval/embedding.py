@@ -85,7 +85,7 @@ class EmbeddingManager:
                     show_progress_bar=True,
                     device=self.device,
                     normalize_embeddings=True,
-                    batch_size=32  # oder 16 bei wenig VRAM
+                    batch_size=16 
                 )
 
                 self._save_to_cache()
