@@ -13,20 +13,20 @@ logger = LogManager.setup_logging(__name__)
 
 class Document:
     """Repräsentiert ein einzelnes Dokument"""
-    
+
     def __init__(self, text: str, filename: str, metadata: Optional[Dict[str, Any]] = None):
         self.text = text
         self.filename = filename
         self.metadata = metadata or {}
         self.chunks = []
-    
+
     def process(self):
         """Verarbeitet das Dokument in Chunks"""
         self.chunks = []
-        
+
         # Versuche strukturierte Abschnitte zu erkennen
         sections = self._extract_sections()
-        
+
         if sections:
             for section in sections:
                 # Ignoriere sehr kleine Abschnitte (< 50 Zeichen)
@@ -38,52 +38,68 @@ class Document:
                         'type': 'section'
                     })
         else:
-            # Fallback: Erstelle überlappende Chunks
-            chunk_size = Config.CHUNK_SIZE
-            overlap = Config.CHUNK_OVERLAP
-            
-            # Stelle sicher, dass die Überlappung kleiner als die Chunk-Größe ist
-            if overlap >= chunk_size:
-                overlap = chunk_size // 2
-                logger.warning(f"Überlappung zu groß, reduziert auf {overlap}")
-            
-            # Berechne die tatsächliche Schrittweite
-            step_size = chunk_size - overlap
-            
-            # Teile Text in Chunks auf
-            text_length = len(self.text)
-            for i in range(0, text_length, step_size):
-                # Stelle sicher, dass wir nicht über das Textende hinausgehen
-                end_pos = min(i + chunk_size, text_length)
-                chunk_text = self._preprocess_text(self.text[i:end_pos])
-                
-                # Ignoriere leere oder zu kleine Chunks
+            # Neue Variante: Chunking nach ca. 800 Zeichen, satzbasiert
+            chunked = self._chunk_text_by_sentences(self.text, max_chars=800)
+            for chunk_text in chunked:
                 if len(chunk_text) > 50:
                     self.chunks.append({
                         'text': chunk_text,
                         'file': self.filename,
-                        'start': i,
                         'type': 'chunk'
                     })
-    
+
+            # Alte Fallback-Logik (überlappende Chunks) — deaktiviert, aber erhalten
+            # chunk_size = Config.CHUNK_SIZE
+            # overlap = Config.CHUNK_OVERLAP
+            # if overlap >= chunk_size:
+            #     overlap = chunk_size // 2
+            #     logger.warning(f"Überlappung zu groß, reduziert auf {overlap}")
+            # step_size = chunk_size - overlap
+            # text_length = len(self.text)
+            # for i in range(0, text_length, step_size):
+            #     end_pos = min(i + chunk_size, text_length)
+            #     chunk_text = self._preprocess_text(self.text[i:end_pos])
+            #     if len(chunk_text) > 50:
+            #         self.chunks.append({
+            #             'text': chunk_text,
+            #             'file': self.filename,
+            #             'start': i,
+            #             'type': 'chunk'
+            #         })
+
+    def _chunk_text_by_sentences(self, text: str, max_chars: int = 800) -> List[str]:
+        """Teilt Text an Satzgrenzen in ca. max_chars lange Chunks"""
+        sentences = re.split(r'(?<=[.!?]) +', text)
+        chunks = []
+        current_chunk = ""
+
+        for sentence in sentences:
+            if len(current_chunk) + len(sentence) + 1 > max_chars:
+                if current_chunk:
+                    chunks.append(current_chunk.strip())
+                    current_chunk = sentence
+                else:
+                    chunks.append(sentence.strip())
+                    current_chunk = ""
+            else:
+                current_chunk += " " + sentence
+
+        if current_chunk.strip():
+            chunks.append(current_chunk.strip())
+
+        return chunks
+
     def _extract_sections(self) -> List[Dict[str, str]]:
         """Extrahiert strukturierte Abschnitte aus dem Text"""
         sections = []
-        
-        # Einfache Überschriftenerkennung (verbessert)
         pattern = r'(?m)^(#{1,3}|[A-Z][A-Z\s]+:|[0-9]+\.[0-9.]*\s+)(.+?)$'
         headers = list(re.finditer(pattern, self.text))
-        
-        # Wenn keine oder zu wenige Überschriften, kein Abschnitt-Extraktion
         if len(headers) < 2:
             return []
-        
         last_pos = 0
         last_header = "Einleitung"
-        
         for match in headers:
             if last_pos > 0:
-                # Speichere den vorherigen Abschnitt
                 section_text = self._preprocess_text(self.text[last_pos:match.start()])
                 if section_text:
                     sections.append({
@@ -91,28 +107,20 @@ class Document:
                         'text': section_text,
                         'type': 'section'
                     })
-            
             last_header = match.group(2).strip()
             last_pos = match.end()
-        
-        # Füge den letzten Abschnitt hinzu
         if last_pos < len(self.text):
             sections.append({
                 'title': last_header,
                 'text': self._preprocess_text(self.text[last_pos:]),
                 'type': 'section'
             })
-        
         return sections
-    
+
     def _preprocess_text(self, text: str) -> str:
         """Bereinigt Text für bessere Verarbeitung"""
-        # Entferne überflüssige Whitespaces und normalisiere Zeilenumbrüche
         text = re.sub(r'\s+', ' ', text)
-        
-        # Entferne Steuerzeichen
         text = re.sub(r'[\x00-\x1F\x7F]', '', text)
-        
         return text.strip()
 
 class DocumentStore:
