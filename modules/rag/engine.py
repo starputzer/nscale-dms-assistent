@@ -268,22 +268,20 @@ class RAGEngine:
         kontext = '\n\n'.join(kontext_mit_quellen)
         
         # Llama 3-spezifisches Prompt-Format
-        prompt = f"""<|begin_of_text|><|system|>
+        prompt = f"""<|begin_of_text|>
+<|system|>
 Du bist ein deutschsprachiger, fachlich präziser Assistent für die nscale DMS-Software der SenMVKU Berlin.
 
 Deine Aufgabe ist es, Nutzerfragen ausführlich, verständlich und strukturiert zu beantworten – ausschließlich auf Deutsch.
 
 Antworte nur, wenn du relevante Informationen im bereitgestellten Dokumentenkontext findest. Erfinde niemals Informationen und spekuliere nicht.
-<|end_of_text|>
-
-<|begin_of_text|><|user|>
+<|user|>
 Frage: {question}
 
 Relevante Dokumenteninformationen:
 {kontext}
-<|end_of_text|>
-
-<|begin_of_text|><|assistant|>"""
+<|assistant|>
+"""
 
         return prompt
         # Mistral-spezifischer Prompt mit Instructformat
