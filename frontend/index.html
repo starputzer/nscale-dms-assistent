@@ -411,6 +411,12 @@
                 
                 const cleanupStream = () => {
                     console.log("cleanupStream aufgerufen");
+                    
+                    // Timer löschen
+                    if (streamTimeout) {
+                        clearTimeout(streamTimeout);
+                        streamTimeout = null;
+                    }
                     if (eventSource.value) {
                         try {
                             console.log("Schließe EventSource");
@@ -459,7 +465,22 @@
                 };
 
                 testSSEParsing();
+                
+                // Dynamischer Timeout, sobald keine Tokens mehr empfangen werden
+                let streamTimeout;
 
+                const resetStreamTimeout = () => {
+                    if (streamTimeout) {
+                        clearTimeout(streamTimeout);
+                    }
+                    
+                    streamTimeout = setTimeout(() => {
+                        if (isStreaming.value) {
+                            console.warn(`Stream inaktiv für 30s, bisher ${tokenCount} Tokens empfangen`);
+                            cleanupStream();
+                        }
+                    }, 30000);  // 30 Sekunden Inaktivität
+                };
                 // Komplette Überarbeitung der Event-Handling-Logik
                 const sendQuestionStream = async () => {
                     if (!question.value.trim() || !currentSessionId.value) {
@@ -517,6 +538,8 @@
 
                         eventSource.value.onmessage = (event) => {
                             try {
+                                // Beim Empfang jedes Tokens den Timeout zurücksetzen
+                                resetStreamTimeout();
                                 // KRITISCHE ÄNDERUNG: Der Browser fügt "data: " nicht zum event.data hinzu!
                                 // Es ist bereits da, weil es vom Server so gesendet wird
                                 if (!event.data || event.data.trim() === '') {
@@ -575,15 +598,7 @@
                         };
 
                         // Timeout für hängende Verbindungen
-                        setTimeout(() => {
-                            if (isStreaming.value) {
-                                console.warn(`Stream-Timeout nach 30s, ${tokenCount} Tokens empfangen`);
-                                if (tokenCount === 0) {
-                                    messages.value[assistantIndex].message = 'Zeitüberschreitung. Das Sprachmodell reagiert nicht.';
-                                }
-                                cleanupStream();
-                            }
-                        }, 30000);
+                        resetStreamTimeout();
 
                         // Frage für nächste Eingabe zurücksetzen
                         question.value = '';
