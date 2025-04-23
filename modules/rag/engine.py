@@ -113,14 +113,19 @@ class RAGEngine:
                 async for chunk in self.ollama_client.stream_generate(prompt):
                     # Jedes Token in ein korrektes SSE-Event formatieren
                     token_count += 1
-                    logger.debug(f"Stream-Token #{token_count}: '{chunk}'")
+                    if token_count <= 5 or token_count % 20 == 0:
+                        logger.debug(f"Stream-Token #{token_count}: '{chunk}'")
                     
-                    # Auch leere Tokens werden weitergegeben (wichtig für Frontend-Anzeige)
+                    # Auch leere Tokens werden weitergegeben
                     complete_answer += chunk
+                    
+                    # WICHTIG: Korrekte SSE-Formatierung mit \n\n am Ende
                     yield f"data: {json.dumps({'response': chunk})}\n\n"
                     
                     # Kleine Pause für bessere Browserdarstellung
                     await asyncio.sleep(0.01)
+                
+                logger.info(f"Stream beendet nach {token_count} Tokens")
                 
                 # Komplette Antwort in der Chathistorie speichern
                 if session_id and complete_answer.strip():
@@ -129,8 +134,8 @@ class RAGEngine:
                     chat_history = ChatHistoryManager()
                     chat_history.add_message(session_id, complete_answer, is_user=False)
                 
-                # Abschluss-Event senden
-                logger.info(f"Stream beendet nach {token_count} Tokens")
+                # KRITISCH: Korrektes done-Event mit doppelten Zeilenumbrüchen
+                # Format muss exakt sein: "event: done\ndata: \n\n"
                 yield "event: done\ndata: \n\n"
                 
             except Exception as e:
@@ -138,9 +143,11 @@ class RAGEngine:
                 yield f"data: {json.dumps({'error': f'Fehler: {str(e)}'})}\n\n"
                 yield "event: done\ndata: \n\n"
 
+        # WICHTIG: ping muss niedrig genug sein, um Verbindungsabbrüche zu vermeiden
         return EventSourceResponse(
             event_generator(),
-            ping=15.0,  # Ping alle 15 Sekunden senden
+            ping=10.0,  # Ping alle 10 Sekunden senden
+            media_type="text/event-stream"  # Expliziter MIME-Typ
         )
 
     # Vollständig korrigierte stream_answer Methode für modules/rag/engine.py
@@ -231,19 +238,34 @@ class RAGEngine:
 
 
     def _format_prompt(self, question: str, chunks: List[Dict[str, Any]]) -> str:
-        """Formatiert einen optimierten deutschen Prompt für Mistral"""
-        # Extrem kompakte Kontextaufbereitung
+        """Formatiert einen optimierten deutschen Prompt für LLama 3"""
+        # Sortiere Chunks nach Relevanz
+        sorted_chunks = sorted(chunks, key=lambda x: x.get('score', 0), reverse=True)
+        
+        # Extrahiere die relevantesten Inhalte in kompakter Form
         kontext_mit_quellen = []
-        max_context_length = min(Config.MAX_PROMPT_LENGTH - 500, 7000)  # Größerer Kontext für Mistral
+        max_context_length = min(Config.MAX_PROMPT_LENGTH - 800, 7000)  # Platz für Anweisungen reservieren
         total_length = 0
         
-        for i, chunk in enumerate(chunks[:Config.TOP_K]):
+        # Extrahiere Schlüsselwörter aus der Frage für besseren Kontext
+        question_keywords = set(question.lower().split())
+        
+        for i, chunk in enumerate(sorted_chunks[:Config.TOP_K]):
             if total_length >= max_context_length:
                 break
-                
-            # Kompakte Darstellung je nach Chunk-Typ
-            chunk_text = chunk['text'][:1000]  # Größere Chunk-Teile für Mistral
             
+            # Optimierte, kompakte Darstellung je nach Chunk-Typ mit Schlüsselworthervorhebung
+            chunk_text = chunk['text']
+            
+            # Begrenzen auf 1000 Zeichen, aber versuche an Satzgrenzen zu schneiden
+            if len(chunk_text) > 1000:
+                # Finde den letzten Satzabschluss innerhalb der ersten 1000 Zeichen
+                last_sentence_end = max(
+                    [chunk_text[:1000].rfind(end) for end in ['. ', '! ', '? ', '.\n', '!\n', '?\n']] + [800]
+                )
+                chunk_text = chunk_text[:last_sentence_end+1]
+            
+            # Je nach Chunk-Typ formatieren
             if chunk.get('type') == 'section':
                 text = f"Dokument {i+1} (Abschnitt '{chunk['title']}' aus {chunk['file']}): {chunk_text}"
             else:
@@ -256,21 +278,27 @@ class RAGEngine:
         
         kontext = '\n\n'.join(kontext_mit_quellen)
         
-        # Llama 3-spezifisches Prompt-Format
+        # Llama 3-spezifisches, verbessertes Prompt-Format
         prompt = f"""<|begin_of_text|>
-<|system|>
-Du bist ein deutschsprachiger, fachlich präziser Assistent für die nscale DMS-Software der SenMVKU Berlin.
+    <|system|>
+    Du bist ein deutschsprachiger, fachlich präziser Assistent für die nscale DMS-Software der SenMVKU Berlin.
 
-Deine Aufgabe ist es, Nutzerfragen ausführlich, verständlich und strukturiert zu beantworten – ausschließlich auf Deutsch.
+    Aufgaben und Anforderungen:
+    1. Beantworte Fragen ausführlich, verständlich und strukturiert - AUSSCHLIESSLICH auf Deutsch.
+    2. Nutze NUR Informationen aus dem bereitgestellten Dokumentenkontext.
+    3. Wenn du etwas nicht weißt oder es nicht im Kontext steht, sage ehrlich "Dazu finde ich keine Information im Kontext".
+    4. Organisiere komplexe Antworten mit Überschriften und Aufzählungspunkten für bessere Lesbarkeit.
+    5. Kopiere KEINE vollständigen Abschnitte aus dem Kontext - formuliere die Informationen in eigenen Worten.
+    6. Füge Quellenverweise in deiner Antwort ein, z.B. "(aus Dokument 2)".
 
-Antworte nur, wenn du relevante Informationen im bereitgestellten Dokumentenkontext findest. Erfinde niemals Informationen und spekuliere nicht.
-<|user|>
-Frage: {question}
+    Zielgruppe: Mitarbeiter der Berliner Verwaltung, die nscale DMS für Dokumentenmanagement nutzen.
+    <|user|>
+    Frage: {question}
 
-Relevante Dokumenteninformationen:
-{kontext}
-<|assistant|>
-"""
+    Relevante Dokumenteninformationen:
+    {kontext}
+    <|assistant|>
+    """
 
         return prompt
         # Mistral-spezifischer Prompt mit Instructformat

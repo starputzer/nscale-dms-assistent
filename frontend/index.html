@@ -412,9 +412,22 @@
                 const cleanupStream = () => {
                     console.log("cleanupStream aufgerufen");
                     if (eventSource.value) {
-                        console.log("Schließe EventSource");
-                        eventSource.value.close();
-                        eventSource.value = null;
+                        try {
+                            console.log("Schließe EventSource");
+                            // Alle Event-Listener entfernen, um Memory-Leaks zu vermeiden
+                            eventSource.value.onmessage = null;
+                            eventSource.value.onerror = null;
+                            
+                            // Alle spezifischen Event-Listener entfernen
+                            eventSource.value.removeEventListener('done', () => {});
+                            eventSource.value.removeEventListener('open', () => {});
+                            
+                            // EventSource schließen
+                            eventSource.value.close();
+                            eventSource.value = null;
+                        } catch (e) {
+                            console.error("Fehler beim Bereinigen des EventSource:", e);
+                        }
                     }
                     isLoading.value = false;
                     isStreaming.value = false;
@@ -503,9 +516,14 @@
                         let tokenCount = 0;
 
                         // Event-Handler für 'message' Events
+                        // Event-Handler für normalen Nachrichtenfluss
                         eventSource.value.onmessage = (event) => {
                             try {
-                                if (!event.data) return;
+                                // KRITISCHE ÄNDERUNG: Prüfe, ob es sich um ein spezielles Event handelt
+                                if (!event.data || event.data.trim() === '') {
+                                    console.log("Leeres Datenevent ignorieren");
+                                    return;
+                                }
                                 
                                 console.log(`Rohes Event erhalten: ${event.data}`);
                                 
@@ -527,10 +545,14 @@
                                 }
                             } catch (e) {
                                 console.error("JSON-Parsing-Fehler:", e, "Rohdaten:", event.data);
+                                // Ignoriere JSON-Fehler für spezielle Event-Typen
+                                if (event.data && event.data.includes('event: done')) {
+                                    console.log("'done'-Event erkannt, wird separat verarbeitet");
+                                }
                             }
                         };
 
-                        // Spezieller Handler für 'done' Events
+                        // Spezieller Handler für 'done' Events - WICHTIG
                         eventSource.value.addEventListener('done', (event) => {
                             console.log("DONE Event empfangen, Stream beendet");
                             cleanupStream();
