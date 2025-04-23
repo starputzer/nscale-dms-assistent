@@ -515,11 +515,10 @@
                         // Zähler für Debugging
                         let tokenCount = 0;
 
-                        // Event-Handler für 'message' Events
-                        // Event-Handler für normalen Nachrichtenfluss
                         eventSource.value.onmessage = (event) => {
                             try {
-                                // KRITISCHE ÄNDERUNG: Prüfe, ob es sich um ein spezielles Event handelt
+                                // KRITISCHE ÄNDERUNG: Der Browser fügt "data: " nicht zum event.data hinzu!
+                                // Es ist bereits da, weil es vom Server so gesendet wird
                                 if (!event.data || event.data.trim() === '') {
                                     console.log("Leeres Datenevent ignorieren");
                                     return;
@@ -527,8 +526,16 @@
                                 
                                 console.log(`Rohes Event erhalten: ${event.data}`);
                                 
+                                // Einfach das event.data direkt verwenden, KEIN data:-Präfix entfernen
+                                // Der Fehler ist, dass wir den JSON direkt parsen
+                                let jsonData = event.data;
+                                // Wenn es wirklich mit "data: " beginnt, entfernen wir dieses Präfix
+                                if (jsonData.startsWith('data: ')) {
+                                    jsonData = jsonData.substring(6);
+                                }
+                                
                                 // Versuche JSON zu parsen
-                                const data = JSON.parse(event.data);
+                                const data = JSON.parse(jsonData);
                                 
                                 if ('response' in data) {
                                     tokenCount++;

@@ -44,12 +44,16 @@ class EmbeddingManager:
                     logger.info(f"Verfügbarer CUDA-Speicher: {available_memory / 1024**2:.2f} MB")
                 
                 # Modell mit optimierten Einstellungen laden
+                # Modell mit optimierten Einstellungen laden - ohne torch_dtype
                 self.model = SentenceTransformer(
                     'BAAI/bge-m3', 
-                    device=self.device,
-                    # Float16 auf CUDA für halben Speicherverbrauch
-                    torch_dtype=self.torch_dtype
+                    device=self.device
                 )
+
+                # Wenn wir torch_dtype verwenden wollen, müssen wir es danach manuell setzen
+                if self.device == "cuda":
+                    # Modell manuell in float16 konvertieren
+                    self.model.half()  # Dies konvertiert das Modell zu float16
                 logger.info(f"BAAI/bge-m3 Embedding-Modell erfolgreich geladen auf {self.device}")
                 
                 return True
