@@ -24,30 +24,20 @@ class EmbeddingManager:
         self.tfidf_matrix = None
         self.chunks = []
         self.lock = threading.RLock()
-        #cuda erzwingen
-        self.device = "cuda"
-        #self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        # Dynamische Erkennung verwenden statt erzwingen
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.torch_dtype = torch.float16 if self.device == "cuda" else torch.float32
-
 
     def initialize(self):
         """Initialisiert das Embedding-Modell"""
         with self.lock:
             try:
                 logger.info("Lade Embedding-Modell...")
-
-                # altes Modell
-                # self.model = SentenceTransformer('paraphrase-MiniLM-L3-v2', device=self.device)
-                # logger.info("Embedding-Modell geladen")
-
-                # neues Modell (nicht verfügbar): BAAI/bge-large-de
-                # self.model = SentenceTransformer('BAAI/bge-large-de', device=self.device)
-                # logger.info("BAAI/bge-large-de Embedding-Modell erfolgreich geladen")
-
-                # empfohlenes Modell: BAAI/bge-m3
-                self.model = SentenceTransformer('BAAI/bge-m3', device="cuda")
-                logger.info("BAAI/bge-m3 Embedding-Modell erfolgreich geladen")
-
+                
+                # Verwende das leichtere Modell für bessere Kompatibilität
+                self.model = SentenceTransformer('paraphrase-MiniLM-L3-v2', device=self.device)
+                logger.info(f"Embedding-Modell paraphrase-MiniLM-L3-v2 erfolgreich geladen auf {self.device}")
+                
                 return True
             except Exception as e:
                 logger.error(f"Fehler beim Laden des Embedding-Modells: {e}")
@@ -67,7 +57,14 @@ class EmbeddingManager:
                 logger.info(f"Erstelle Embeddings für {len(chunks)} Chunks")
                 self.chunks = chunks
 
-                texts = [chunk['text'] for chunk in chunks]
+                # Begrenze die maximale Textlänge für bessere Verarbeitung
+                texts = []
+                for chunk in chunks:
+                    # Begrenze Chunk-Größe auf 2000 Zeichen
+                    if len(chunk['text']) > 2000:
+                        logger.info(f"Kürze Chunk von {len(chunk['text'])} auf 2000 Zeichen")
+                        chunk['text'] = chunk['text'][:2000]
+                    texts.append(chunk['text'])
 
                 german_stopwords = list(text.ENGLISH_STOP_WORDS.union({
                     'und', 'oder', 'aber', 'nicht', 'sein', 'haben', 'werden',
@@ -84,13 +81,15 @@ class EmbeddingManager:
                 min_len = min(len(t) for t in texts)
                 avg_len = sum(len(t) for t in texts) / len(texts)
                 logger.info(f"➤ Max: {max_len}, Min: {min_len}, ⌀: {avg_len:.2f} Zeichen")
-                # neue Variante: normalisierte Embeddings für BGE
+
+                # Verarbeite in kleineren Batches (4 statt 16)
+                # Bei sehr vielen Chunks ist ein kleinerer Batch besser für den Speicherverbrauch
                 self.embeddings = self.model.encode(
                     texts,
                     show_progress_bar=True,
                     device=self.device,
-                    normalize_embeddings=True,
-                    batch_size=16 
+                    batch_size=4,  # Reduziert für bessere Speichernutzung
+                    convert_to_numpy=True  # Garantiere numpy-Arrays für Kompatibilität
                 )
 
                 self._save_to_cache()
@@ -159,10 +158,10 @@ class EmbeddingManager:
                 query_vec = self.tfidf_vectorizer.transform([query])
                 tfidf_scores = np.array(query_vec @ self.tfidf_matrix.T.toarray()).flatten()
 
+                # Für das kleinere Modell statt normalize_embeddings=True
                 query_embedding = self.model.encode(
                     [query],
-                    device=self.device,
-                    normalize_embeddings=True
+                    device=self.device
                 )[0]
 
                 semantic_scores = np.dot(self.embeddings, query_embedding)
