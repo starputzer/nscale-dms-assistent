@@ -417,6 +417,9 @@
                         clearTimeout(streamTimeout);
                         streamTimeout = null;
                     }
+                    // tokencount zurücksetzen
+                    tokenCount = 0;
+                    
                     if (eventSource.value) {
                         try {
                             console.log("Schließe EventSource");
@@ -534,7 +537,7 @@
                         eventSource.value = new EventSource(url.toString());
                         
                         // Zähler für Debugging
-                        let tokenCount = 0;
+                        tokenCount = 0;
 
                         eventSource.value.onmessage = (event) => {
                             try {
