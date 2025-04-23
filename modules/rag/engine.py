@@ -68,91 +68,80 @@ class RAGEngine:
                 logger.error(f"Fehler bei der Initialisierung der RAG-Engine: {e}")
                 return False
     
-    async def answer_question(self, question: str, user_id: Optional[int] = None) -> Dict[str, Any]:
-        """Beantwortet eine Frage mit dem RAG-System"""
-        # Lazy Initialization nur wenn nötig
+    async def stream_answer(self, question: str, session_id: Optional[int] = None) -> EventSourceResponse:
+        """Streamt Antwort stückweise zurück – im Server-Sent-Events-Format"""
+        if not question:  # Sicherstellen, dass die Frage nicht leer ist
+            logger.error("Die Frage wurde nicht übergeben.")
+            async def error_generator():
+                yield f"data: {json.dumps({'error': 'Keine Frage übergeben.'})}\n\n"
+                yield "event: done\ndata: \n\n"
+            return EventSourceResponse(error_generator())  
+
         if not self.initialized:
-            logger.info("Lazy-Loading der RAG-Engine...")
+            logger.info("Lazy-Loading der RAG-Engine für Streaming...")
             success = await self.initialize()
             if not success:
-                return {
-                    'success': False,
-                    'message': "System konnte nicht initialisiert werden"
-                }
-        
-        try:
-            # Überprüfe Eingabegröße
-            if len(question) > 2048:
-                logger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
-                question = question[:2048]
-            
-            # Suche relevante Chunks
-            relevant_chunks = self.embedding_manager.search(question, top_k=Config.TOP_K)
-            
-            if not relevant_chunks:
-                logger.warning(f"Keine relevanten Chunks für Frage gefunden: {question[:50]}...")
-                return {
-                    'success': False,
-                    'message': "Keine relevanten Informationen gefunden"
-                }
-            
-            # Erstelle Prompt mit komprimiertem Kontext
-            prompt = self._format_prompt(question, relevant_chunks)
-            
-            # Versuche mit Timeout-Handler zu antworten
+                async def error_generator():
+                    yield f"data: {json.dumps({'error': 'System konnte nicht initialisiert werden'})}\n\n"
+                    yield "event: done\ndata: \n\n"
+                return EventSourceResponse(error_generator())
+
+        if len(question) > 2048:
+            logger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
+            question = question[:2048]
+
+        async def event_generator():
             try:
-                # Statt direkt zu generieren, verwenden wir asyncio.wait_for
-                result = await asyncio.wait_for(
-                    self.ollama_client.generate(prompt, user_id),
-                    timeout=Config.LLM_TIMEOUT
-                )
-            except asyncio.TimeoutError:
-                # Bei Timeout einfache Antwort ohne LLM
-                logger.warning(f"LLM-Timeout für Frage: {question[:50]}...")
-                simple_answer = self._generate_fallback_answer(question, relevant_chunks)
+                # Chunks suchen
+                relevant_chunks = self.embedding_manager.search(question, top_k=Config.TOP_K)
+                if not relevant_chunks:
+                    logger.warning(f"Keine relevanten Chunks für Streaming-Frage gefunden: {question[:50]}...")
+                    yield f"data: {json.dumps({'error': 'Keine relevanten Informationen gefunden'})}\n\n"
+                    yield "event: done\ndata: \n\n"
+                    return
+
+                # Prompt bauen
+                prompt = self._format_prompt(question, relevant_chunks)
+                logger.info(f"Starte Streaming für Frage: {question[:50]}...")
+
+                # Gesamtantwort Buffer
+                complete_answer = ""
                 
-                return {
-                    'success': True,
-                    'answer': simple_answer,
-                    'sources': list(set(chunk['file'] for chunk in relevant_chunks)),
-                    'chunks': relevant_chunks,
-                    'cached': False,
-                    'fallback': True
-                }
-            
-            if 'error' in result:
-                logger.error(f"Fehler bei LLM-Anfrage: {result['error']}")
-                fallback_answer = self._generate_fallback_answer(question, relevant_chunks)
-                return {
-                    'success': True,  # Wir geben trotzdem ein "success", aber mit Fallback
-                    'answer': fallback_answer,
-                    'sources': list(set(chunk['file'] for chunk in relevant_chunks)),
-                    'fallback': True
-                }
-            
-            # Überprüfe, ob Antwort auf Deutsch ist
-            answer = result['response']
-            is_german, fixed_answer = self._ensure_german_answer(answer, relevant_chunks)
-            
-            if not is_german:
-                logger.warning("Nicht-deutsche Antwort erkannt, verwende Fallback")
-                answer = fixed_answer
-            
-            return {
-                'success': True,
-                'answer': answer,
-                'sources': list(set(chunk['file'] for chunk in relevant_chunks)),  # Entferne Duplikate
-                'chunks': relevant_chunks,
-                'cached': result.get('cached', False),
-                'fallback': not is_german
-            }
-        
-        except Exception as e:
-            logger.error(f"Fehler beim Beantworten der Frage: {e}", exc_info=True)
-            return {
-                'success': False,
-                'message': f"Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut."
-            }
+                # Token-Zähler für Debug-Informationen
+                token_count = 0
+                
+                async for chunk in self.ollama_client.stream_generate(prompt):
+                    # Jedes Token in ein korrektes SSE-Event formatieren
+                    token_count += 1
+                    logger.debug(f"Stream-Token #{token_count}: '{chunk}'")
+                    
+                    # Auch leere Tokens werden weitergegeben (wichtig für Frontend-Anzeige)
+                    complete_answer += chunk
+                    yield f"data: {json.dumps({'response': chunk})}\n\n"
+                    
+                    # Kleine Pause für bessere Browserdarstellung
+                    await asyncio.sleep(0.01)
+                
+                # Komplette Antwort in der Chathistorie speichern
+                if session_id and complete_answer.strip():
+                    logger.info(f"Speichere vollständige Antwort ({len(complete_answer)} Zeichen) in Session {session_id}")
+                    from ..session.chat_history import ChatHistoryManager
+                    chat_history = ChatHistoryManager()
+                    chat_history.add_message(session_id, complete_answer, is_user=False)
+                
+                # Abschluss-Event senden
+                logger.info(f"Stream beendet nach {token_count} Tokens")
+                yield "event: done\ndata: \n\n"
+                
+            except Exception as e:
+                logger.error(f"Fehler beim Streaming: {e}", exc_info=True)
+                yield f"data: {json.dumps({'error': f'Fehler: {str(e)}'})}\n\n"
+                yield "event: done\ndata: \n\n"
+
+        return EventSourceResponse(
+            event_generator(),
+            ping=15.0,  # Ping alle 15 Sekunden senden
+        )
 
     # Vollständig korrigierte stream_answer Methode für modules/rag/engine.py
     async def stream_answer(self, question: str, session_id: Optional[int] = None) -> EventSourceResponse:

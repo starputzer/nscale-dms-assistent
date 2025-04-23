@@ -36,37 +36,22 @@ class OllamaClient:
         if "Antwort auf Deutsch" not in prompt and "auf Deutsch antworten" not in prompt:
             prompt = f"{prompt}\n\nAchte darauf, auf Deutsch zu antworten."
         
-        #llama3 8b instruct q4_1 payload
+        # llama3 8b instruct Payload für konsistentere Antworten
         payload = {
             'model': Config.MODEL_NAME,
             'prompt': prompt,
             'stream': True,
             'options': {
-                'temperature': 0.1,  # Reduziert für mehr Determinismus
+                'temperature': 0.1,  # Niedrigere Temperatur für Konsistenz
                 'num_ctx': Config.LLM_CONTEXT_SIZE,
                 'num_predict': Config.LLM_MAX_TOKENS,
                 'top_p': 0.9,
-                'repeat_penalty': 1.2,  # Leicht erhöht für weniger Wiederholungen
+                'repeat_penalty': 1.2,
                 'num_batch': 512,
-                'num_gpu': 1,  # Explizit GPU verwenden falls verfügbar
+                'num_gpu': 1,  # GPU explizit verwenden
                 'seed': 42,  # Fester Seed für Reproduzierbarkeit
             }
         }
-
-        #mistral 7b payload
-        # payload = {
-        #     'model': Config.MODEL_NAME,
-        #     'prompt': prompt,
-        #     'stream': True,
-        #     'options': {
-        #         'temperature': 0.2,
-        #         'num_ctx': Config.LLM_CONTEXT_SIZE,
-        #         'num_predict': Config.LLM_MAX_TOKENS,
-        #         'top_p': 0.9,
-        #         'repeat_penalty': 1.1,
-        #         'num_batch': 512,
-        #     }
-        # }
         
         logger.info(f"Starte Stream-Generierung für Prompt ({len(prompt)} Zeichen)")
         start_time = time.time()
@@ -97,39 +82,43 @@ class OllamaClient:
                                 
                             try:
                                 line_text = line.decode('utf-8').strip()
-                                logger.info(f"ROHDATEN aus Stream: {line_text}")
                                 
-                                # Direktes Parsen des JSON ohne Präfix zu erwarten
+                                # Nur für Debug-Logging - sehr wichtig für Fehlersuche
+                                if token_count < 5 or token_count % 50 == 0:
+                                    logger.debug(f"Stream-Rohdaten #{token_count}: {line_text}")
+                                
+                                # Parse das JSON
                                 data = json.loads(line_text)
                                 
                                 if 'response' in data:
                                     token = data['response']
                                     token_count += 1
-                                    logger.info(f"Streaming-Token #{token_count}: {token}")
-                                    # Leere Tokens werden ebenfalls gesendet (wichtig!)
+                                    
+                                    # Jedes Token streamen, auch leere
                                     yield token
-                                    await asyncio.sleep(0.01)  # Kleine Pause für bessere Verarbeitung
+                                    
+                                    # Kleine Pause für bessere Client-Verarbeitung
+                                    await asyncio.sleep(0.01)
                                     
                                 if data.get('done', False):
-                                    logger.info(f"Stream abgeschlossen in {time.time() - start_time:.2f}s")
-                                    yield "" # Leeres Token als Abschluss senden
+                                    logger.info(f"Stream abgeschlossen in {time.time() - start_time:.2f}s mit {token_count} Tokens")
                                     break
                             
                             except json.JSONDecodeError as e:
-                                logger.warning(f"JSON-Fehler beim Verarbeiten der Stream-Daten: {e}")
+                                logger.warning(f"JSON-Fehler beim Verarbeiten: {e}, Daten: {line_text[:100]}")
                                 continue
                             except Exception as e:
-                                logger.error(f"Fehler beim Verarbeiten der Stream-Daten: {e}")
-                                yield f"[Fehler bei der Datenverarbeitung: {str(e)}]"
+                                logger.error(f"Fehler beim Verarbeiten: {e}")
+                                yield f"[Fehler: {str(e)}]"
                     
                     # Prüfen, ob überhaupt Tokens generiert wurden
                     if token_count == 0:
-                        logger.warning("Keine Token vom Ollama-Server erhalten!")
+                        logger.warning("Keine Tokens vom Ollama-Server erhalten!")
                         yield "Keine Antwort vom Sprachmodell erhalten. Bitte versuchen Sie es später erneut."
                 
                 except aiohttp.ClientError as e:
                     logger.error(f"Verbindungsfehler zu Ollama: {e}")
-                    yield f"[Verbindungsfehler zum Sprachmodell: {str(e)}]"
+                    yield f"[Verbindungsfehler: {str(e)}]"
                 except asyncio.TimeoutError:
                     logger.error("Timeout bei der Anfrage an Ollama")
                     yield "[Zeitüberschreitung bei der Anfrage]"
