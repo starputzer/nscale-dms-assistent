@@ -1,0 +1,217 @@
+/* Admin-Panel-Styles */
+.admin-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--nscale-green);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+    z-index: 100;
+}
+
+.admin-button:hover {
+    background-color: var(--nscale-green-dark);
+    transform: scale(1.05);
+}
+
+.admin-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 80%;
+    max-width: 600px;
+    background: white;
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(100%);
+    overflow: hidden;
+}
+
+.admin-panel.active {
+    transform: translateX(0);
+}
+
+.admin-panel-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.admin-panel-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.admin-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.admin-panel-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--nscale-dark-gray);
+}
+
+.admin-panel-close {
+    background: transparent;
+    border: none;
+    color: var(--nscale-dark-gray);
+    cursor: pointer;
+    font-size: 1.5rem;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+}
+
+.admin-panel-tabs {
+    display: flex;
+    border-bottom: 1px solid #eaeaea;
+    margin-bottom: 1.5rem;
+}
+
+.admin-tab {
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    color: var(--nscale-dark-gray);
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.admin-tab.active {
+    color: var(--nscale-green);
+    border-bottom-color: var(--nscale-green);
+    font-weight: 500;
+}
+
+.admin-tab:hover:not(.active) {
+    color: var(--nscale-green-dark);
+    border-bottom-color: #eaeaea;
+}
+
+.admin-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.admin-card-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    color: var(--nscale-dark-gray);
+}
+
+.admin-form-group {
+    margin-bottom: 1rem;
+}
+
+.admin-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--nscale-dark-gray);
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.admin-table th {
+    font-weight: 500;
+    color: var(--nscale-dark-gray);
+    background-color: var(--nscale-gray);
+}
+
+.admin-table tr:hover {
+    background-color: var(--nscale-light-green);
+}
+
+.admin-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.admin-stat-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-stat-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--nscale-green);
+    margin-bottom: 0.5rem;
+}
+
+.admin-stat-label {
+    font-size: 0.875rem;
+    color: var(--nscale-dark-gray);
+}
+
+.admin-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.admin-button-danger {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.admin-button-danger:hover {
+    background-color: #dc2626;
+}

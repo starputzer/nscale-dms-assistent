@@ -11,6 +11,7 @@
     <!-- Eigene CSS-Dateien -->
     <link href="/static/css/main.css" rel="stylesheet">
     <link href="/static/css/feedback.css" rel="stylesheet">
+    <link href="/static/css/admin.css" rel="stylesheet">
 </head>
 <body class="min-h-screen bg-gray-50">
     <div id="app" class="h-screen flex flex-col">
@@ -182,10 +183,15 @@
                     <!-- Chat Messages -->
                     <div class="message-container" ref="chatMessages">
                         <div v-for="(message, index) in messages" :key="index" class="mb-6">
-                            <div :class="[message.is_user ? 'nscale-message-user' : 'nscale-message-assistant']">
+                            <!-- Systemnachricht -->
+                            <div v-if="message.is_system" class="nscale-message-system">
+                                <div v-html="formatMessage(message.message)" class="prose"></div>
+                            </div>
+                            <!-- Normale Nutzer- oder Assistentennachricht -->
+                            <div v-else :class="[message.is_user ? 'nscale-message-user' : 'nscale-message-assistant']">
                                 <div v-html="formatMessage(message.message)" class="prose"></div>
                                 
-                                <!-- Feedback-Buttons nur für Assistenten-Nachrichten hinzugefügt -->
+                                <!-- Feedback-Buttons nur für Assistenten-Nachrichten -->
                                 <div v-if="!message.is_user" class="feedback-buttons">
                                     <span v-if="message.feedback_comment" class="feedback-comment">{{ message.feedback_comment }}</span>
                                     <button 
@@ -244,6 +250,194 @@
             </main>
         </div>
         
+        <!-- Admin-Button (nur für Admins) -->
+        <button 
+            v-if="userRole === 'admin'" 
+            @click="toggleAdminPanel" 
+            class="admin-button"
+            title="Admin-Panel öffnen">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+        </button>
+        
+        <!-- Admin-Panel -->
+        <div class="admin-panel-overlay" :class="{ 'active': showAdminPanel }" @click="showAdminPanel = false"></div>
+        <div class="admin-panel" :class="{ 'active': showAdminPanel }">
+            <div class="admin-panel-header">
+                <div class="admin-panel-title">Admin-Panel</div>
+                <button class="admin-panel-close" @click="showAdminPanel = false">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="admin-panel-tabs">
+                <div 
+                    @click="adminTab = 'users'" 
+                    :class="['admin-tab', { 'active': adminTab === 'users' }]">
+                    Benutzer
+                </div>
+                <div 
+                    @click="adminTab = 'system'" 
+                    :class="['admin-tab', { 'active': adminTab === 'system' }]">
+                    System
+                </div>
+                <div 
+                    @click="adminTab = 'feedback'" 
+                    :class="['admin-tab', { 'active': adminTab === 'feedback' }]">
+                    Feedback
+                </div>
+            </div>
+            <div class="admin-panel-content">
+                <!-- Benutzer-Tab -->
+                <div v-if="adminTab === 'users'">
+                    <div class="admin-card">
+                        <div class="admin-card-title">Neuen Benutzer erstellen</div>
+                        <div class="admin-form-group">
+                            <label class="admin-label">E-Mail</label>
+                            <input v-model="newUser.email" type="email" class="nscale-input w-full" placeholder="E-Mail-Adresse">
+                        </div>
+                        <div class="admin-form-group">
+                            <label class="admin-label">Passwort</label>
+                            <input v-model="newUser.password" type="password" class="nscale-input w-full" placeholder="Passwort">
+                        </div>
+                        <div class="admin-form-group">
+                            <label class="admin-label">Rolle</label>
+                            <select v-model="newUser.role" class="nscale-input w-full">
+                                <option value="user">Benutzer</option>
+                                <option value="admin">Administrator</option>
+                            </select>
+                        </div>
+                        <button @click="createUser" class="nscale-btn-primary">Benutzer erstellen</button>
+                    </div>
+                    
+                    <div class="admin-card">
+                        <div class="admin-card-title">Benutzerliste</div>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>E-Mail</th>
+                                    <th>Rolle</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="user in adminUsers" :key="user.id">
+                                    <td>{{ user.id }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>
+                                        <select 
+                                            v-model="user.role" 
+                                            @change="updateUserRole(user.id, user.role)"
+                                            class="nscale-input">
+                                            <option value="user">Benutzer</option>
+                                            <option value="admin">Administrator</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <button @click="deleteUser(user.id)" class="admin-button-danger">
+                                            Löschen
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- System-Tab -->
+                <div v-if="adminTab === 'system'">
+                    <div class="admin-stats-grid">
+                        <div class="admin-stat-card">
+                            <div class="admin-stat-value">{{ systemStats.document_count || 0 }}</div>
+                            <div class="admin-stat-label">Dokumente</div>
+                        </div>
+                        <div class="admin-stat-card">
+                            <div class="admin-stat-value">{{ systemStats.chunk_count || 0 }}</div>
+                            <div class="admin-stat-label">Chunks</div>
+                        </div>
+                        <div class="admin-stat-card">
+                            <div class="admin-stat-value">{{ Object.keys(systemStats.documents || {}).length }}</div>
+                            <div class="admin-stat-label">Quellen</div>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-card">
+                        <div class="admin-card-title">System-Aktionen</div>
+                        <div class="admin-actions">
+                            <button @click="reloadMotd" class="nscale-btn-secondary">MOTD neu laden</button>
+                            <button @click="clearModelCache" class="nscale-btn-secondary">Modell-Cache leeren</button>
+                            <button @click="clearEmbeddingCache" class="nscale-btn-secondary">Embedding-Cache leeren</button>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-card">
+                        <div class="admin-card-title">Dokumente</div>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Datei</th>
+                                    <th>Chunks</th>
+                                    <th>Tokens</th>
+                                    <th>Letzte Änderung</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(docStats, filename) in systemStats.documents || {}" :key="filename">
+                                    <td>{{ filename }}</td>
+                                    <td>{{ docStats.chunks }}</td>
+                                    <td>{{ docStats.total_tokens }}</td>
+                                    <td>{{ docStats.modified }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Feedback-Tab -->
+                <div v-if="adminTab === 'feedback'">
+                    <div class="admin-stats-grid">
+                        <div class="admin-stat-card">
+                            <div class="admin-stat-value">{{ feedbackStats.total_feedback || 0 }}</div>
+                            <div class="admin-stat-label">Gesamtes Feedback</div>
+                        </div>
+                        <div class="admin-stat-card">
+                            <div class="admin-stat-value">{{ feedbackStats.positive_count || 0 }}</div>
+                            <div class="admin-stat-label">Positiv</div>
+                        </div>
+                        <div class="admin-stat-card">
+                            <div class="admin-stat-value">{{ feedbackStats.negative_count || 0 }}</div>
+                            <div class="admin-stat-label">Negativ</div>
+                        </div>
+                        <div class="admin-stat-card">
+                            <div class="admin-stat-value">{{ Math.round((feedbackStats.positive_count || 0) / (feedbackStats.total_feedback || 1) * 100) }}%</div>
+                            <div class="admin-stat-label">Zufriedenheit</div>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-card">
+                        <div class="admin-card-title">Negatives Feedback</div>
+                        <div v-if="negativeFeedback.length === 0" class="text-gray-500 italic">
+                            Kein negatives Feedback vorhanden
+                        </div>
+                        <div v-else>
+                            <div v-for="feedback in negativeFeedback" :key="feedback.id" class="border-b border-gray-200 py-4">
+                                <div class="font-medium">Frage: {{ feedback.question }}</div>
+                                <div class="text-sm text-gray-700 my-2">{{ feedback.answer }}</div>
+                                <div class="text-sm text-red-600">
+                                    <span class="font-medium">Kommentar:</span> {{ feedback.comment || 'Kein Kommentar' }}
+                                </div>
+                                <div class="text-xs text-gray-500 mt-1">{{ new Date(feedback.timestamp * 1000).toLocaleString() }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Feedback-Kommentar-Dialog -->
         <div v-if="showFeedbackDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div class="bg-white rounded-lg shadow-lg p-6 w-96">
@@ -262,6 +456,9 @@
     </div>
     
     <!-- JavaScript-Module einbinden -->
+    <script src="/static/js/chat.js" type="module"></script>
+    <script src="/static/js/feedback.js" type="module"></script>
+    <script src="/static/js/admin.js" type="module"></script>
     <script src="/static/js/app.js" type="module"></script>
 </body>
 </html>

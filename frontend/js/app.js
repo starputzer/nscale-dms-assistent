@@ -1,5 +1,6 @@
 import { setupChat } from './chat.js';
 import { setupFeedback } from './feedback.js';
+import { setupAdmin } from './admin.js';
 
 const { createApp, ref, onMounted, watch, nextTick } = Vue;
 
@@ -23,6 +24,9 @@ createApp({
         const chatMessages = ref(null);
         const isStreaming = ref(false);
         const eventSource = ref(null);
+        
+        // Benutzerrolle
+        const userRole = ref('user');
 
         // Feedback state
         const showFeedbackDialog = ref(false);
@@ -52,6 +56,9 @@ createApp({
                 // Clear form
                 email.value = '';
                 password.value = '';
+                
+                // Benutzerrolle laden
+                await adminFunctions.loadUserRole();
                 
                 // Load sessions
                 loadSessions();
@@ -117,6 +124,7 @@ createApp({
             currentSessionId.value = null;
             sessions.value = [];
             messages.value = [];
+            userRole.value = 'user';
             
             // EventSource schließen, falls vorhanden
             if (eventSource.value) {
@@ -202,6 +210,13 @@ createApp({
             feedbackMessage
         });
         
+        // Initialize admin functionality
+        const adminFunctions = setupAdmin({
+            token,
+            userRole,
+            isLoading
+        });
+        
         // Session handling with feedback support
         const loadSession = async (sessionId) => {
             try {
@@ -227,12 +242,28 @@ createApp({
             }
         };
         
+        // Watch-Funktion für Admin-Panel-Tabs
+        watch([adminFunctions.showAdminPanel, adminFunctions.adminTab], ([isOpen, tab]) => {
+            if (isOpen && userRole.value === 'admin') {
+                if (tab === 'users') {
+                    adminFunctions.loadUsers();
+                } else if (tab === 'system') {
+                    adminFunctions.loadSystemStats();
+                } else if (tab === 'feedback') {
+                    adminFunctions.loadFeedbackStats();
+                    adminFunctions.loadNegativeFeedback();
+                }
+            }
+        });
+        
         // Initialize
         onMounted(() => {
             setupAxios();
             
             if (token.value) {
                 loadSessions();
+                // Benutzerrolle laden
+                adminFunctions.loadUserRole();
             }
             
             // Clear messages when auth state changes
@@ -240,6 +271,10 @@ createApp({
                 if (!newValue) {
                     messages.value = [];
                     currentSessionId.value = null;
+                    userRole.value = 'user';
+                } else {
+                    // Wenn sich der Token ändert (z.B. nach Login), Benutzerrolle laden
+                    adminFunctions.loadUserRole();
                 }
             });
             
@@ -296,7 +331,10 @@ createApp({
             // Feedback functionality
             ...feedbackFunctions,
             showFeedbackDialog,
-            feedbackComment
+            feedbackComment,
+            
+            // Admin functionality
+            ...adminFunctions
         };
     }
 }).mount('#app');
