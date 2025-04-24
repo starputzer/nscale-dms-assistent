@@ -19,7 +19,9 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, EmailStr
 from jose import JWTError, jwt
 from starlette.concurrency import run_in_threadpool
-
+from fastapi import HTTPException, Depends, Security
+from pydantic import BaseModel, EmailStr
+from typing import List
 from modules.core.config import Config
 from modules.core.logging import LogManager
 from modules.auth.user_model import UserManager
@@ -78,6 +80,27 @@ class StartSessionRequest(BaseModel):
 class RenameSessionRequest(BaseModel):
     session_id: int
     title: str
+
+# Neue Pydantic-Modelle für API-Anfragen
+class UserRoleUpdateRequest(BaseModel):
+    user_id: int
+    new_role: str
+
+class CreateUserRequest(BaseModel):
+    email: EmailStr
+    password: str
+    role: str = "user"
+
+# Helper-Funktion zur Überprüfung von Admin-Rechten
+async def get_admin_user(request: Request) -> Dict[str, Any]:
+    """Überprüft, ob der aktuelle Benutzer Admin-Rechte hat"""
+    user_data = await get_current_user(request)
+    
+    if user_data.get('role') != 'admin':
+        logger.warning(f"Benutzer {user_data['email']} ohne Admin-Rechte versucht, auf Admin-Funktionen zuzugreifen")
+        raise HTTPException(status_code=403, detail="Admin-Rechte erforderlich")
+    
+    return user_data
 
 # Hilfsfunktionen
 async def get_current_user(request: Request) -> Dict[str, Any]:
@@ -138,6 +161,50 @@ async def set_password(request: SetPasswordRequest):
         raise HTTPException(status_code=400, detail="Ungültiger oder abgelaufener Token")
     
     return {"message": "Passwort erfolgreich zurückgesetzt"}
+
+# API-Endpunkte für Benutzerverwaltung (nur für Admins)
+@app.get("/api/admin/users")
+async def get_users(admin_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Gibt eine Liste aller Benutzer zurück (Admin-Funktion)"""
+    users = user_manager.get_all_users(admin_data['user_id'])
+    
+    if users is None:
+        raise HTTPException(status_code=500, detail="Fehler beim Laden der Benutzerliste")
+    
+    return {"users": users}
+
+@app.post("/api/admin/users")
+async def create_user(request: CreateUserRequest, admin_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Erstellt einen neuen Benutzer mit angegebener Rolle (Admin-Funktion)"""
+    success = user_manager.register_user(request.email, request.password, request.role)
+    
+    if not success:
+        raise HTTPException(status_code=400, detail="Benutzer existiert bereits oder ungültige Daten")
+    
+    return {"message": f"Benutzer {request.email} mit Rolle {request.role} erfolgreich erstellt"}
+
+@app.put("/api/admin/users/role")
+async def update_user_role(request: UserRoleUpdateRequest, admin_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Aktualisiert die Rolle eines Benutzers (Admin-Funktion)"""
+    success = user_manager.update_user_role(request.user_id, request.new_role, admin_data['user_id'])
+    
+    if not success:
+        raise HTTPException(status_code=400, detail="Benutzer nicht gefunden oder ungültige Rolle")
+    
+    return {"message": f"Rolle für Benutzer ID {request.user_id} auf {request.new_role} aktualisiert"}
+
+@app.delete("/api/admin/users/{user_id}")
+async def delete_user(user_id: int, admin_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Löscht einen Benutzer (Admin-Funktion)"""
+    # Diese Funktion müsste noch in der UserManager-Klasse implementiert werden
+    # Da wir sie im Moment nicht benötigen, geben wir eine entsprechende Meldung zurück
+    raise HTTPException(status_code=501, detail="Diese Funktion ist noch nicht implementiert")
+
+# Endpoint um die Rolle des aktuellen Benutzers abzurufen
+@app.get("/api/user/role")
+async def get_current_user_role(user_data: Dict[str, Any] = Depends(get_current_user)):
+    """Gibt die Rolle des aktuellen Benutzers zurück"""
+    return {"role": user_data.get('role', 'user')}
 
 # API-Endpunkte für RAG
 @app.post("/api/question")
