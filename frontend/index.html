@@ -83,6 +83,15 @@
             margin-left: auto;
             margin-right: 0;
         }
+        .nscale-message-system {
+            background-color: var(--nscale-light-green);
+            border: 1px solid var(--nscale-green);
+            border-radius: 8px;
+            padding: 1rem;
+            max-width: 90%;
+            margin: 1rem auto;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
 
         .nscale-message-assistant {
             background-color: white;
@@ -176,6 +185,7 @@
         }
     </style>
 </head>
+
 <body class="min-h-screen bg-gray-50">
     <div id="app" class="h-screen flex flex-col">
         <!-- Login & Register -->
@@ -296,7 +306,29 @@
                 </div>
             </div>
         </header>
-            
+        <!-- MOTD Banner -->
+        <div v-if="motd.enabled && motd.display.showOnStartup" 
+        :style="{
+        backgroundColor: motd.style.backgroundColor,
+        borderColor: motd.style.borderColor,
+        color: motd.style.textColor,
+        padding: '1rem',
+        margin: '0 auto 1rem auto',
+        maxWidth: '1200px', 
+        borderRadius: '0.5rem',
+        boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+        position: 'relative'
+        }" 
+        class="container mx-auto my-2 border">
+        <button v-if="motd.display.dismissible" 
+            @click="dismissMotd" 
+            class="absolute top-2 right-2 text-sm text-gray-500 hover:text-gray-700"
+            aria-label="Hinweis schließen">
+        &times;
+        </button>
+        <div v-if="motd.format === 'markdown'" v-html="formatMessage(motd.content)"></div>
+        <div v-else v-html="motd.content"></div>
+        </div>
             <!-- Main Content -->
             <div class="flex flex-1 overflow-hidden container mx-auto my-4">
                 <!-- Sessions Sidebar -->
@@ -346,7 +378,12 @@
                         <!-- Chat Messages -->
                         <div class="message-container" ref="chatMessages">
                             <div v-for="(message, index) in messages" :key="index" class="mb-6">
-                                <div :class="[message.is_user ? 'nscale-message-user' : 'nscale-message-assistant']">
+                                <!-- Systemnachricht -->
+                                <div v-if="message.is_system" class="nscale-message-system">
+                                    <div v-html="formatMessage(message.message)" class="prose"></div>
+                                </div>
+                                <!-- Normale Nutzer- oder Assistentennachricht -->
+                                <div v-else :class="[message.is_user ? 'nscale-message-user' : 'nscale-message-assistant']">
                                     <div v-html="formatMessage(message.message)" class="prose"></div>
                                 </div>
                             </div>
@@ -403,12 +440,57 @@
                 const chatMessages = ref(null);
                 const isStreaming = ref(false);
                 const eventSource = ref(null);
+                
+                const motd = ref({
+                    enabled: false,
+                    content: '',
+                    format: 'text',
+                    style: {},
+                    display: {}
+                });
+                const motdDismissed = ref(false);
 
                 // Setup axios with auth header
                 const setupAxios = () => {
                     axios.defaults.headers.common['Authorization'] = token.value ? `Bearer ${token.value}` : '';
                 };
                 
+                const loadMotd = async () => {
+                    try {
+                        const response = await axios.get('/api/motd');
+                        motd.value = response.data;
+                        // Prüfe auf gespeicherten Dismissed-Status
+                        const savedDismissed = localStorage.getItem('motdDismissed');
+                        if (savedDismissed) {
+                            motdDismissed.value = true;
+                        }
+                    } catch (error) {
+                        console.error('Fehler beim Laden der MOTD:', error);
+                    }
+                };
+                const addSystemMotd = () => {
+                    // Fügt die MOTD als System-Nachricht zum Chat hinzu, wenn aktiviert
+                    if (motd.value.enabled && motd.value.display.showInChat && 
+                        messages.value.length === 0 && currentSessionId.value) {
+                        messages.value.push({
+                            is_user: false,
+                            is_system: true, // Spezielle Markierung für Systemnachrichten
+                            message: motd.value.content,
+                            timestamp: Date.now() / 1000
+                        });
+                        
+                        // Scroll nach unten, nachdem die Nachricht hinzugefügt wurde
+                        nextTick(() => {
+                            scrollToBottom();
+                        });
+                    }
+                };
+
+                const dismissMotd = () => {
+                    motdDismissed.value = true;
+                    localStorage.setItem('motdDismissed', 'true');
+                };
+
                 const cleanupStream = () => {
                     console.log("cleanupStream aufgerufen");
                     
@@ -419,7 +501,7 @@
                     }
                     // tokencount zurücksetzen
                     tokenCount = 0;
-                    
+
                     if (eventSource.value) {
                         try {
                             console.log("Schließe EventSource");
@@ -612,8 +694,7 @@
                         isStreaming.value = false;
                     }
                 };
-
-                                
+         
                 // Herkömmliche Anfrage (als Fallback)
                 const sendQuestion = async () => {
                     if (!question.value.trim() || !currentSessionId.value) {
@@ -759,21 +840,17 @@
                 };
                 
                 // Session management
-                const loadSessions = async () => {
-                    try {
-                        const response = await axios.get('/api/sessions');
-                        sessions.value = response.data.sessions;
-                    } catch (error) {
-                        console.error('Error loading sessions:', error);
-                    }
-                };
-                
                 const loadSession = async (sessionId) => {
                     try {
                         isLoading.value = true;
                         const response = await axios.get(`/api/session/${sessionId}`);
                         currentSessionId.value = sessionId;
                         messages.value = response.data.messages;
+                        
+                        // MOTD als System-Nachricht hinzufügen, wenn keine Nachrichten vorhanden
+                        if (messages.value.length === 0) {
+                            addSystemMotd();
+                        }
                         
                         // Scroll to bottom after messages load
                         await nextTick();
@@ -784,6 +861,16 @@
                         isLoading.value = false;
                     }
                 };
+
+                const loadSessions = async () => {
+                    try {
+                        const response = await axios.get('/api/sessions');
+                        sessions.value = response.data.sessions;
+                    } catch (error) {
+                        console.error('Error loading sessions:', error);
+                    }
+                };
+                
                 
                 const startNewSession = async () => {
                     try {
@@ -793,14 +880,21 @@
                         });
                         
                         await loadSessions();
-                        await loadSession(response.data.session_id);
+                        currentSessionId.value = response.data.session_id;
+                        messages.value = [];
+                        
+                        // MOTD als System-Nachricht hinzufügen
+                        addSystemMotd();
+                        
+                        await nextTick();
+                        scrollToBottom();
                     } catch (error) {
                         console.error('Error starting new session:', error);
                     } finally {
                         isLoading.value = false;
                     }
                 };
-                
+                                
                 const deleteSession = async (sessionId) => {
                     if (!confirm('Möchten Sie diese Unterhaltung wirklich löschen?')) {
                         return;
@@ -833,6 +927,9 @@
                 // Initialize
                 onMounted(() => {
                     setupAxios();
+                    
+                    // MOTD-Konfiguration laden
+                    loadMotd();
                     
                     if (token.value) {
                         loadSessions();
@@ -893,7 +990,13 @@
                     startNewSession,
                     deleteSession,
                     formatMessage,
-                    scrollToBottom
+                    scrollToBottom,
+                    
+                    // Message of the day
+                    motd,
+                    motdDismissed,
+                    loadMotd,
+                    dismissMotd,
                 };
             }
         }).mount('#app');

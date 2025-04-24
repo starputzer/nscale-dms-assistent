@@ -10,7 +10,7 @@ import uuid
 import json
 from pathlib import Path
 from typing import Dict, Any, Optional, List
-
+from modules.core.motd_manager import MOTDManager
 from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, Request
 from fastapi.responses import JSONResponse, FileResponse
 from sse_starlette.sse import EventSourceResponse
@@ -26,6 +26,7 @@ from modules.auth.user_model import UserManager
 from modules.rag.engine import RAGEngine
 from modules.session.chat_history import ChatHistoryManager
 
+motd_manager = MOTDManager()
 logger = LogManager.setup_logging()
 
 app = FastAPI(title="nscale DMS Assistent API")
@@ -289,6 +290,12 @@ async def get_sessions(user_data: Dict[str, Any] = Depends(get_current_user)):
     sessions = chat_history.get_user_sessions(user_id)
     
     return {"sessions": sessions}
+
+# message of the day
+@app.get("/api/motd")
+async def get_motd():
+    """Gibt die aktuelle Message of the Day zurück"""
+    return motd_manager.get_motd()
 
 @app.post("/api/session")
 async def start_session(request: StartSessionRequest, user_data: Dict[str, Any] = Depends(get_current_user)):
