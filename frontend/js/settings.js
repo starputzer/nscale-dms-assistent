@@ -29,6 +29,7 @@ export function setupSettings(options) {
      * @param {string} theme - 'light', 'dark' oder 'contrast'
      */
     const setTheme = (theme) => {
+        // Wert aktualisieren
         currentTheme.value = theme;
         localStorage.setItem('theme', theme);
         
@@ -38,6 +39,15 @@ export function setupSettings(options) {
         // Füge die ausgewählte Theme-Klasse hinzu
         if (theme !== 'light') {
             document.body.classList.add(`theme-${theme}`);
+        }
+        
+        // Optional: Spezifische Behandlung für Kontrast-Modus
+        if (theme === 'contrast') {
+            // Setze Fokus-Farben, falls benötigt
+            document.documentElement.style.setProperty('--focus-ring-color', '#ffeb3b');
+        } else {
+            // Zurücksetzen der Fokus-Farben
+            document.documentElement.style.removeProperty('--focus-ring-color');
         }
     };
     

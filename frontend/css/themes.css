@@ -1,0 +1,229 @@
+/* Theme classes */
+.theme-dark {
+    --nscale-green: #00c060;
+    --nscale-green-dark: #00a550;
+    --nscale-light-green: #003320;
+    --nscale-dark-gray: #f0f0f0;
+    --nscale-gray: #2a2a2a;
+    background-color: #121212;
+    color: #f0f0f0;
+}
+
+.theme-dark .nscale-card,
+.theme-dark .settings-panel,
+.theme-dark .admin-card {
+    background-color: #1e1e1e;
+    border-color: #333;
+}
+
+.theme-dark .nscale-header {
+    background-color: #1e1e1e;
+    border-color: #333;
+}
+
+.theme-dark .nscale-sidebar {
+    background-color: #2a2a2a;
+    border-color: #333;
+}
+
+.theme-dark .nscale-message-assistant {
+    background-color: #2a2a2a;
+    border-color: #333;
+}
+
+.theme-dark .nscale-input {
+    background-color: #333;
+    color: #f0f0f0;
+    border-color: #444;
+}
+
+.theme-dark .nscale-btn-secondary {
+    background-color: #1e1e1e;
+    color: #00c060;
+    border-color: #00c060;
+}
+
+.theme-dark .nscale-session-item:hover {
+    background-color: #333;
+}
+
+.theme-dark .nscale-session-item.active {
+    background-color: #003320;
+    border-left-color: #00c060;
+}
+
+.theme-dark .settings-button {
+    background-color: #2a2a2a;
+    border-color: #333;
+    color: #f0f0f0;
+}
+
+.theme-dark .settings-button:hover {
+    background-color: #003320;
+    color: #00c060;
+}
+
+/* Kontrast-Thema */
+.theme-contrast {
+    --nscale-green: #ffeb3b; /* Gelb statt Grün */
+    --nscale-green-dark: #ffd600; /* Dunkleres Gelb für Hover */
+    --nscale-light-green: #333300; /* Dunklerer Hintergrund mit Gelbton */
+    --nscale-dark-gray: #ffffff;
+    --nscale-gray: #333333;
+    background-color: #000000;
+    color: #ffffff;
+}
+
+.theme-contrast .nscale-card,
+.theme-contrast .settings-panel,
+.theme-contrast .admin-card {
+    background-color: #000000;
+    border: 2px solid #ffeb3b;
+}
+
+.theme-contrast .nscale-header {
+    background-color: #000000;
+    border-color: #ffeb3b;
+}
+
+.theme-contrast .nscale-sidebar {
+    background-color: #000000;
+    border-color: #ffeb3b;
+}
+
+.theme-contrast .nscale-message-assistant {
+    background-color: #000000;
+    border: 2px solid #ffeb3b;
+}
+
+.theme-contrast .nscale-message-user {
+    background-color: #333300;
+    color: #ffeb3b;
+}
+
+.theme-contrast .nscale-input {
+    background-color: #000000;
+    color: #ffffff;
+    border: 2px solid #ffeb3b;
+}
+
+.theme-contrast .nscale-btn-primary {
+    background-color: #ffeb3b;
+    color: #000000;
+    font-weight: 700;
+}
+
+.theme-contrast .nscale-btn-secondary {
+    background-color: #000000;
+    color: #ffeb3b;
+    border: 2px solid #ffeb3b;
+}
+
+.theme-contrast .nscale-btn-primary:hover,
+.theme-contrast .nscale-btn-secondary:hover {
+    background-color: #ffd600;
+    color: #000000;
+}
+
+.theme-contrast .nscale-session-item:hover {
+    background-color: #333300;
+}
+
+.theme-contrast .nscale-session-item.active {
+    background-color: #333300;
+    border-left: 3px solid #ffeb3b;
+}
+
+.theme-contrast .settings-button {
+    background-color: #000000;
+    border: 2px solid #ffeb3b;
+    color: #ffeb3b;
+}
+
+.theme-contrast .settings-button:hover {
+    background-color: #ffeb3b;
+    color: #000000;
+}
+
+.theme-contrast .text-nscale {
+    color: #ffeb3b;
+}
+
+.theme-contrast .hover\:text-nscale-dark:hover {
+    color: #ffd600;
+}
+
+.theme-contrast .border-nscale {
+    border-color: #ffeb3b;
+}
+
+.theme-contrast .nscale-logo {
+    color: #ffeb3b;
+}
+
+.theme-contrast .admin-tab.active {
+    color: #ffeb3b;
+    border-bottom-color: #ffeb3b;
+}
+
+.theme-contrast .admin-tab:hover:not(.active) {
+    color: #ffd600;
+}
+
+.theme-contrast .nav-button:hover,
+.theme-contrast .nav-active {
+    background-color: #333300;
+    color: #ffeb3b;
+}
+
+/* Einstellungsbereich im Kontrast-Modus */
+.theme-contrast .settings-panel-title,
+.theme-contrast .settings-section-title,
+.theme-contrast .settings-option label {
+    color: #ffeb3b;
+}
+
+.theme-contrast .settings-button {
+    background-color: #000000;
+    border: 2px solid #ffeb3b;
+    color: #ffeb3b;
+}
+
+.theme-contrast .settings-button:hover {
+    background-color: #333300;
+}
+
+.theme-contrast .settings-button.active {
+    background-color: #ffeb3b;
+    color: #000000;
+    border-color: #ffeb3b;
+}
+
+/* Spezifische Anpassungen für Einstellungskomponenten im Kontrast-Modus */
+.theme-contrast input[type="checkbox"] {
+    border: 2px solid #ffeb3b;
+    background-color: #000000;
+}
+
+.theme-contrast input[type="checkbox"]:checked {
+    background-color: #ffeb3b;
+}
+
+/* Font size classes */
+.font-small {
+    font-size: 0.875rem;
+}
+
+.font-medium {
+    font-size: 1rem;
+}
+
+.font-large {
+    font-size: 1.125rem;
+}
+
+/* Reduced motion */
+.reduce-motion * {
+    transition: none !important;
+    animation: none !important;
+}

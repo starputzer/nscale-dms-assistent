@@ -1,120 +1,6 @@
-/* Hauptnavigation Styles */
-.nav-button {
-    display: flex;
-    align-items: center;
-    padding: 0.5rem 1rem;
-    font-weight: 500;
-    color: var(--nscale-dark-gray);
-    border-radius: 4px;
-    transition: all 0.2s;
-}
+/* Verbesserte Einstellungen-Komponente Styles */
 
-.nav-button:hover {
-    background-color: var(--nscale-light-green);
-    color: var(--nscale-green);
-}
-
-.nav-active {
-    background-color: var(--nscale-light-green);
-    color: var(--nscale-green);
-    font-weight: 600;
-}
-
-/* Admin Tabs */
-.admin-tabs {
-    display: flex;
-    border-bottom: 1px solid #eaeaea;
-    margin-bottom: 1.5rem;
-}
-
-.admin-tab {
-    display: flex;
-    align-items: center;
-    padding: 0.75rem 1.5rem;
-    cursor: pointer;
-    color: var(--nscale-dark-gray);
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s;
-}
-
-.admin-tab.active {
-    color: var(--nscale-green);
-    border-bottom-color: var(--nscale-green);
-    font-weight: 500;
-}
-
-.admin-tab:hover:not(.active) {
-    color: var(--nscale-green-dark);
-    border-bottom-color: #eaeaea;
-}
-
-/* Admin Styles */
-.admin-card {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.admin-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.admin-table th,
-.admin-table td {
-    padding: 0.75rem;
-    text-align: left;
-    border-bottom: 1px solid #eaeaea;
-}
-
-.admin-table th {
-    font-weight: 500;
-    color: var(--nscale-dark-gray);
-    background-color: var(--nscale-gray);
-}
-
-.admin-table tr:hover {
-    background-color: var(--nscale-light-green);
-}
-
-.admin-button-danger {
-    background-color: #ef4444;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 0.5rem 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.admin-button-danger:hover {
-    background-color: #dc2626;
-}
-
-/* Settings Panel */
-.settings-button {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: white;
-    border: 1px solid #eaeaea;
-    color: var(--nscale-dark-gray);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.settings-button:hover {
-    background-color: var(--nscale-light-green);
-    color: var(--nscale-green);
-}
-
+/* Einstellungspanel */
 .settings-panel {
     position: fixed;
     top: 0;
@@ -126,7 +12,6 @@
     z-index: 1000;
     display: flex;
     flex-direction: column;
-    transform: translateX(0);
     transition: transform 0.3s ease-in-out;
 }
 
@@ -162,6 +47,7 @@
     padding: 1.5rem;
 }
 
+/* Einstellungssektionen */
 .settings-section {
     margin-bottom: 2rem;
 }
@@ -174,136 +60,216 @@
 }
 
 .settings-option {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
 }
 
-.settings-option label {
+.settings-option-label {
     display: block;
-    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
     font-weight: 500;
+    margin-bottom: 0.75rem;
+    color: var(--nscale-dark-gray);
 }
 
-.settings-buttons {
-    display: flex;
-    gap: 0.5rem;
+/* Farbschema-Auswahloptionen */
+.theme-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
 }
 
-.settings-button {
-    background-color: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 4px;
-    padding: 0.5rem 1rem;
+.theme-option {
+    border: 2px solid transparent;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
     cursor: pointer;
-    transition: all 0.2s;
-    width: auto;
-    height: auto;
+    transition: all 0.2s ease-in-out;
 }
 
-.settings-button:hover {
-    background-color: var(--nscale-light-green);
+.theme-option:hover {
+    transform: translateY(-3px);
 }
 
-.settings-button.active {
-    background-color: var(--nscale-green);
-    color: white;
+.theme-option.selected {
     border-color: var(--nscale-green);
 }
 
-/* Theme classes */
-.theme-dark {
-    --nscale-dark-gray: #f0f0f0;
-    --nscale-gray: #2a2a2a;
-    background-color: #121212;
-    color: #f0f0f0;
+.theme-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 8px;
 }
 
-.theme-dark .nscale-card,
-.theme-dark .settings-panel,
-.theme-dark .admin-card {
-    background-color: #1e1e1e;
-    border-color: #333;
+.theme-icon.light {
+    background-color: #f9f9f9;
+    color: #ffc107;
+    border: 1px solid #eaeaea;
 }
 
-.theme-dark .nscale-header {
-    background-color: #1e1e1e;
-    border-color: #333;
+.theme-icon.dark {
+    background-color: #292929;
+    color: #aaaaaa;
+    border: 1px solid #444444;
 }
 
-.theme-dark .nscale-sidebar {
-    background-color: #2a2a2a;
-    border-color: #333;
-}
-
-.theme-dark .nscale-message-assistant {
-    background-color: #2a2a2a;
-    border-color: #333;
-}
-
-.theme-dark .nscale-input {
-    background-color: #333;
-    color: #f0f0f0;
-    border-color: #444;
-}
-
-.theme-contrast {
-    --nscale-green: #ffff00;
-    --nscale-green-dark: #e6e600;
-    --nscale-light-green: #333300;
-    --nscale-dark-gray: #ffffff;
-    --nscale-gray: #333333;
+.theme-icon.contrast {
     background-color: #000000;
-    color: #ffffff;
+    color: #ffeb3b;
+    border: 1px solid #ffeb3b;
 }
 
-.theme-contrast .nscale-card,
-.theme-contrast .settings-panel,
-.theme-contrast .admin-card {
-    background-color: #000000;
-    border: 2px solid #ffff00;
-}
-
-.theme-contrast .nscale-header {
-    background-color: #000000;
-    border-color: #ffff00;
-}
-
-.theme-contrast .nscale-sidebar {
-    background-color: #000000;
-    border-color: #ffff00;
-}
-
-.theme-contrast .nscale-message-assistant {
-    background-color: #000000;
-    border: 2px solid #ffff00;
-}
-
-.theme-contrast .nscale-input {
-    background-color: #000000;
-    color: #ffffff;
-    border: 2px solid #ffff00;
-}
-
-.theme-contrast .nscale-btn-primary {
-    background-color: #ffff00;
-    color: #000000;
-    font-weight: 700;
-}
-
-/* Font size classes */
-.font-small {
+.theme-label {
     font-size: 0.875rem;
 }
 
-.font-medium {
+/* Schriftgrößen-Auswahloptionen */
+.font-size-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.font-size-option {
+    border: 2px solid transparent;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.font-size-option:hover {
+    background-color: var(--nscale-light-green);
+}
+
+.font-size-option.selected {
+    border-color: var(--nscale-green);
+}
+
+.font-size-label.small {
+    font-size: 0.875rem;
+}
+
+.font-size-label.medium {
     font-size: 1rem;
 }
 
-.font-large {
+.font-size-label.large {
     font-size: 1.125rem;
 }
 
-/* Reduced motion */
-.reduce-motion * {
-    transition: none !important;
-    animation: none !important;
+/* Barrierefreiheitsoptionen */
+.accessibility-option {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.accessibility-checkbox {
+    width: 18px;
+    height: 18px;
+    margin-right: 10px;
+    cursor: pointer;
+    accent-color: var(--nscale-green);
+}
+
+.accessibility-label {
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+/* Dark mode */
+.theme-dark .settings-panel {
+    background-color: #1e1e1e;
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.3);
+}
+
+.theme-dark .settings-panel-header {
+    border-bottom-color: #333;
+}
+
+.theme-dark .settings-panel-title,
+.theme-dark .settings-section-title,
+.theme-dark .settings-option-label,
+.theme-dark .accessibility-label {
+    color: #f0f0f0;
+}
+
+.theme-dark .theme-option:hover,
+.theme-dark .font-size-option:hover {
+    background-color: #333;
+}
+
+.theme-dark .theme-option.selected,
+.theme-dark .font-size-option.selected {
+    border-color: #00c060;
+}
+
+.theme-dark .accessibility-checkbox {
+    accent-color: #00c060;
+}
+
+/* Contrast mode */
+.theme-contrast .settings-panel {
+    background-color: #000000;
+    border-left: 2px solid #ffeb3b;
+    box-shadow: -4px 0 15px rgba(255, 235, 59, 0.2);
+}
+
+.theme-contrast .settings-panel-header {
+    border-bottom: 2px solid #ffeb3b;
+}
+
+.theme-contrast .settings-panel-title,
+.theme-contrast .settings-section-title,
+.theme-contrast .settings-option-label,
+.theme-contrast .theme-label,
+.theme-contrast .font-size-label,
+.theme-contrast .accessibility-label {
+    color: #ffeb3b;
+}
+
+.theme-contrast .settings-panel-close {
+    color: #ffeb3b;
+}
+
+.theme-contrast .theme-option,
+.theme-contrast .font-size-option {
+    border: 2px solid #333;
+}
+
+.theme-contrast .theme-option:hover,
+.theme-contrast .font-size-option:hover {
+    background-color: #333300;
+}
+
+.theme-contrast .theme-option.selected,
+.theme-contrast .font-size-option.selected {
+    border-color: #ffeb3b;
+    background-color: #333300;
+}
+
+.theme-contrast .accessibility-checkbox {
+    accent-color: #ffeb3b;
+    border: 2px solid #ffeb3b;
+}
+
+/* Mobile-Anpassungen */
+@media (max-width: 768px) {
+    .settings-panel {
+        width: 100%;
+    }
+    
+    .theme-options,
+    .font-size-options {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }

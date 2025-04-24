@@ -215,3 +215,140 @@
 .admin-button-danger:hover {
     background-color: #dc2626;
 }
+
+/* Theme-spezifische Anpassungen */
+.theme-dark .admin-button {
+    background-color: #00c060;
+}
+
+.theme-dark .admin-button:hover {
+    background-color: #00a550;
+}
+
+.theme-dark .admin-panel {
+    background-color: #1e1e1e;
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.3);
+}
+
+.theme-dark .admin-panel-header {
+    border-bottom-color: #333;
+}
+
+.theme-dark .admin-panel-tabs {
+    border-bottom-color: #333;
+}
+
+.theme-dark .admin-card {
+    background-color: #2a2a2a;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.theme-dark .admin-table th {
+    background-color: #333;
+}
+
+.theme-dark .admin-table td {
+    border-bottom-color: #333;
+}
+
+.theme-dark .admin-table tr:hover {
+    background-color: #003320;
+}
+
+.theme-dark .admin-stat-card {
+    background-color: #2a2a2a;
+}
+
+.theme-dark .admin-stat-value {
+    color: #00c060;
+}
+
+.theme-dark .admin-stat-label {
+    color: #f0f0f0;
+}
+
+/* Kontrast-Theme */
+.theme-contrast .admin-button {
+    background-color: #ffeb3b;
+    color: #000000;
+}
+
+.theme-contrast .admin-button:hover {
+    background-color: #ffd600;
+}
+
+.theme-contrast .admin-panel {
+    background-color: #000000;
+    border-left: 2px solid #ffeb3b;
+    box-shadow: -4px 0 15px rgba(255, 235, 59, 0.2);
+}
+
+.theme-contrast .admin-panel-header {
+    border-bottom: 2px solid #ffeb3b;
+}
+
+.theme-contrast .admin-panel-title {
+    color: #ffeb3b;
+}
+
+.theme-contrast .admin-panel-close {
+    color: #ffeb3b;
+}
+
+.theme-contrast .admin-panel-tabs {
+    border-bottom: 2px solid #ffeb3b;
+}
+
+.theme-contrast .admin-tab {
+    color: #ffffff;
+}
+
+.theme-contrast .admin-tab.active {
+    color: #ffeb3b;
+    border-bottom-color: #ffeb3b;
+}
+
+.theme-contrast .admin-tab:hover:not(.active) {
+    color: #ffd600;
+}
+
+.theme-contrast .admin-card {
+    background-color: #000000;
+    border: 2px solid #ffeb3b;
+    box-shadow: 0 2px 8px rgba(255, 235, 59, 0.2);
+}
+
+.theme-contrast .admin-card-title {
+    color: #ffeb3b;
+}
+
+.theme-contrast .admin-label {
+    color: #ffeb3b;
+}
+
+.theme-contrast .admin-table th {
+    background-color: #333300;
+    color: #ffeb3b;
+    border-bottom: 2px solid #ffeb3b;
+}
+
+.theme-contrast .admin-table td {
+    border-bottom: 1px solid #ffeb3b;
+}
+
+.theme-contrast .admin-table tr:hover {
+    background-color: #333300;
+}
+
+.theme-contrast .admin-stat-card {
+    background-color: #000000;
+    border: 2px solid #ffeb3b;
+}
+
+.theme-contrast .admin-stat-value {
+    color: #ffeb3b;
+}
+
+.theme-contrast .admin-stat-label {
+    color: #ffffff;
+}
