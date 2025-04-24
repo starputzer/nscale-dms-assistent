@@ -98,4 +98,19 @@ export function setupSettings(options) {
     initializeSettings();
     
     // Watch für Einstellungsänderungen
-    Vue.watch();
+    Vue.watch(accessibilitySettings, (newSettings) => {
+        updateAccessibilitySettings(newSettings);
+    }, { deep: true });
+    
+    // Rückgabe der Funktionen und Zustände für die Verwendung in der Vue-App
+    return {
+        showSettingsPanel,
+        currentTheme,
+        currentFontSize,
+        accessibilitySettings,
+        toggleSettings,
+        setTheme,
+        setFontSize,
+        updateAccessibilitySettings
+    };
+}
