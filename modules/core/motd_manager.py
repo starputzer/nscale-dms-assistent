@@ -41,7 +41,7 @@ class MOTDManager:
                     "display": {
                         "position": "top",
                         "dismissible": True,
-                        "showOnStartup": True,
+                        "showOnStartup": False,
                         "showInChat": True
                     }
                 }
