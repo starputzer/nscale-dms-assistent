@@ -14,6 +14,10 @@
     <link href="/static/css/admin.css" rel="stylesheet">
 </head>
 <body class="min-h-screen bg-gray-50">
+    <!-- Direkt nach dem Body-Tag einfügen, um zu testen -->
+    <div v-if="userRole === 'admin'" style="position: fixed; top: 0; left: 0; background: red; padding: 10px; z-index: 9999; color: white;">
+        Admin-Rolle erkannt!
+    </div>
     <div id="app" class="h-screen flex flex-col">
         <!-- Login & Register -->
         <div v-if="!token" class="flex items-center justify-center h-full bg-gray-50">
