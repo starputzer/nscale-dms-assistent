@@ -98,4 +98,4 @@ export function setupSettings(options) {
     initializeSettings();
     
     // Watch für Einstellungsänderungen
-    Vue.watch(
+    Vue.watch();
