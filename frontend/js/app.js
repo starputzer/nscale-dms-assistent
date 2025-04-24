@@ -39,6 +39,7 @@ createApp({
         
         // MOTD state
         const motd = ref(null);
+        const motdDismissed = ref(false); // Zum Ausblenden der MOTD
 
         // Setup axios with auth header
         const setupAxios = () => {
@@ -99,24 +100,7 @@ createApp({
                 loading.value = false;
             }
         };
-
-        // MOTD-Funktionen
-        const dismissMotd = () => {
-            if (motd.value) {
-                motd.value.enabled = false;
-            }
-        };
-
-        const formatMotdContent = (content) => {
-            if (!content) return '';
-            
-            // Einfache Markdown-Formatierung
-            return content
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\n\n/g, '<br/><br/>')
-                .replace(/\n-\s/g, '<br/>• ');
-        };
-
+        
         const resetPassword = async () => {
             try {
                 loading.value = true;
@@ -216,6 +200,21 @@ createApp({
             }
         };
         
+        // MOTD-Funktionen
+        const dismissMotd = () => {
+            motdDismissed.value = true;
+        };
+        
+        const formatMotdContent = (content) => {
+            if (!content) return '';
+            
+            // Einfache Markdown-Formatierung
+            return content
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n\n/g, '<br/><br/>')
+                .replace(/\n-\s/g, '<br/>• ');
+        };
+        
         // Initialize chat functionality
         const chatFunctions = setupChat({
             token,
@@ -256,6 +255,11 @@ createApp({
                 const response = await axios.get('/api/motd');
                 motd.value = response.data;
                 console.log("MOTD geladen:", motd.value);
+                
+                // Reset dismissed status when loading a new MOTD
+                if (motd.value && motd.value.enabled) {
+                    motdDismissed.value = false;
+                }
             } catch (error) {
                 console.error('Fehler beim Laden der MOTD:', error);
             }
@@ -299,6 +303,8 @@ createApp({
                 } else if (tab === 'feedback') {
                     adminFunctions.loadFeedbackStats();
                     adminFunctions.loadNegativeFeedback();
+                } else if (tab === 'motd') {
+                    adminFunctions.loadMotdConfig();
                 }
             }
         });
@@ -349,6 +355,9 @@ createApp({
                     eventSource.value.close();
                 }
             });
+            
+            // Stellen Sie die loadMotd-Funktion global zur Verfügung
+            window.loadMotd = loadMotd;
         });
         
         return {
@@ -404,6 +413,7 @@ createApp({
             
             // MOTD
             motd,
+            motdDismissed,
             loadMotd,
             dismissMotd,
             formatMotdContent

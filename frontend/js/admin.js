@@ -19,6 +19,25 @@ export function setupAdmin(options) {
     const feedbackStats = Vue.ref({});
     const negativeFeedback = Vue.ref([]);
     
+    // MOTD-Konfiguration
+    const motdConfig = Vue.ref({
+        enabled: true,
+        format: 'markdown',
+        content: '',
+        style: {
+            backgroundColor: '#fff3cd',
+            borderColor: '#ffeeba',
+            textColor: '#856404',
+            iconClass: "info-circle"
+        },
+        display: {
+            position: "top",
+            dismissible: true,
+            showOnStartup: false,
+            showInChat: true
+        }
+    });
+    
     /**
      * Lädt die Benutzerrolle vom Server
      */
@@ -214,6 +233,94 @@ export function setupAdmin(options) {
         }
     };
     
+    /**
+     * Lädt die aktuelle MOTD-Konfiguration
+     */
+    const loadMotdConfig = async () => {
+        try {
+            if (userRole.value === 'admin') {
+                isLoading.value = true;
+                const response = await axios.get('/api/motd');
+                
+                // Tiefe Kopie der Konfiguration erstellen
+                motdConfig.value = JSON.parse(JSON.stringify(response.data));
+            }
+        } catch (error) {
+            console.error('Fehler beim Laden der MOTD-Konfiguration:', error);
+        } finally {
+            isLoading.value = false;
+        }
+    };
+    
+    /**
+     * Setzt die MOTD-Konfiguration auf Standardwerte zurück
+     */
+    const resetMotdConfig = () => {
+        if (!confirm('Möchten Sie die MOTD-Konfiguration wirklich zurücksetzen?')) {
+            return;
+        }
+        
+        motdConfig.value = {
+            enabled: true,
+            format: 'markdown',
+            content: '🛠️ **BETA-VERSION: Lokaler KI-Assistent für nscale**\n\nDieser Assistent beantwortet Fragen zur Nutzung der nscale DMS-Software auf Basis interner Informationen.\n\n🔒 **Wichtige Hinweise:**\n- Alle Datenverarbeitungen erfolgen **ausschließlich lokal im Landesnetz Berlin**.\n- Es besteht **keine Verbindung zum Internet** – Ihre Eingaben verlassen niemals das System.\n- **Niemand außer Ihnen** hat Zugriff auf Ihre Eingaben oder Fragen.\n- Die Antworten werden von einer KI generiert – **Fehlinformationen sind möglich**.\n- Bitte geben Sie **keine sensiblen oder personenbezogenen Daten** ein.\n\n🧠 Der Assistent befindet sich in der Erprobung und wird stetig weiterentwickelt.',
+            style: {
+                backgroundColor: '#fff3cd',
+                borderColor: '#ffeeba',
+                textColor: '#856404',
+                iconClass: "info-circle"
+            },
+            display: {
+                position: "top",
+                dismissible: true,
+                showOnStartup: false,
+                showInChat: true
+            }
+        };
+    };
+    
+    /**
+     * Speichert die MOTD-Konfiguration
+     */
+    const saveMotdConfig = async () => {
+        try {
+            if (userRole.value === 'admin') {
+                isLoading.value = true;
+                
+                // Validierung
+                if (!motdConfig.value.content.trim()) {
+                    alert('Der MOTD-Inhalt darf nicht leer sein.');
+                    return;
+                }
+                
+                await axios.post('/api/admin/update-motd', motdConfig.value);
+                
+                // Lade die aktuelle MOTD neu
+                await window.loadMotd();
+                
+                alert('MOTD-Konfiguration erfolgreich gespeichert!');
+            }
+        } catch (error) {
+            console.error('Fehler beim Speichern der MOTD-Konfiguration:', error);
+            alert(`Fehler beim Speichern: ${error.response?.data?.detail || error.message}`);
+        } finally {
+            isLoading.value = false;
+        }
+    };
+    
+    /**
+     * Formatiert den MOTD-Inhalt für die Vorschau
+     */
+    const formatMotdContent = (content) => {
+        if (!content) return '';
+        
+        // Einfache Markdown-Formatierung
+        return content
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\n\n/g, '<br/><br/>')
+            .replace(/\n-\s/g, '<br/>• ');
+    };
+    
     return {
         // State
         userRole,
@@ -224,6 +331,7 @@ export function setupAdmin(options) {
         systemStats,
         feedbackStats,
         negativeFeedback,
+        motdConfig,
         
         // Funktionen
         loadUserRole,
@@ -237,6 +345,12 @@ export function setupAdmin(options) {
         reloadMotd,
         clearModelCache,
         clearEmbeddingCache,
-        toggleAdminPanel
+        toggleAdminPanel,
+        
+        // MOTD-Funktionen
+        loadMotdConfig,
+        resetMotdConfig,
+        saveMotdConfig,
+        formatMotdContent
     };
 }

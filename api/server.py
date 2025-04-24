@@ -289,6 +289,47 @@ async def reload_motd(user_data: Dict[str, Any] = Depends(get_admin_user)):
     
     return {"message": "MOTD-Konfiguration erfolgreich neu geladen"}
 
+# Neuer Endpunkt für die Aktualisierung der MOTD-Konfiguration
+@app.post("/api/admin/update-motd")
+async def update_motd(request: Request, admin_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Aktualisiert die MOTD-Konfiguration (nur für Admins)"""
+    try:
+        data = await request.json()
+        
+        # Validiere die MOTD-Daten
+        if 'content' not in data or not data['content']:
+            raise HTTPException(status_code=400, detail="MOTD-Inhalt darf nicht leer sein")
+        
+        # Aktualisiere die Konfigurationsdatei
+        motd_path = Config.APP_DIR / 'modules' / 'core' / 'motd_config.json'
+        
+        # Lese aktuelle Konfiguration
+        current_config = motd_manager.get_motd()
+        
+        # Aktualisiere mit neuen Daten (nur erlaubte Felder)
+        allowed_fields = ['content', 'enabled', 'format', 'style', 'display']
+        for field in allowed_fields:
+            if field in data:
+                current_config[field] = data[field]
+        
+        # Schreibe zurück in die Datei
+        with open(motd_path, 'w', encoding='utf-8') as f:
+            json.dump(current_config, f, indent=2, ensure_ascii=False)
+        
+        # Lade die Konfiguration neu
+        success = motd_manager.reload_config()
+        
+        if not success:
+            raise HTTPException(status_code=500, detail="Fehler beim Neuladen der MOTD-Konfiguration")
+        
+        return {"message": "MOTD-Konfiguration erfolgreich aktualisiert"}
+    
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Ungültiges JSON-Format")
+    except Exception as e:
+        logger.error(f"Fehler beim Aktualisieren der MOTD-Konfiguration: {e}")
+        raise HTTPException(status_code=500, detail=f"Interner Serverfehler: {str(e)}")
+
 # API-Endpunkte für RAG
 @app.post("/api/question")
 async def answer_question(request: QuestionRequest, user_data: Dict[str, Any] = Depends(get_current_user)):

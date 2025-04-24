@@ -25,6 +25,24 @@
                     <p class="text-gray-500 mt-2">Ihr Digitalisierungspartner für DMS-Lösungen</p>
                 </div>
                 
+                <!-- MOTD auch auf der Login-Seite anzeigen -->
+                <div v-if="motd && motd.enabled && !motdDismissed" 
+                     :style="{
+                       backgroundColor: motd.style.backgroundColor,
+                       borderColor: motd.style.borderColor,
+                       color: motd.style.textColor,
+                       border: '1px solid ' + motd.style.borderColor
+                     }"
+                     class="p-4 mb-4 rounded-lg relative">
+                    <button v-if="motd.display.dismissible" 
+                            @click="dismissMotd" 
+                            class="absolute top-2 right-2 font-bold"
+                            :style="{ color: motd.style.textColor }">
+                        ×
+                    </button>
+                    <div v-html="formatMotdContent(motd.content)" class="motd-content"></div>
+                </div>
+                
                 <div class="flex border-b border-gray-200 mb-6">
                     <button @click="authMode = 'login'" 
                         :class="['py-2 px-4 w-1/2 text-center focus:outline-none', 
@@ -221,6 +239,24 @@
                     </div>
                     
                     <div v-else class="chat-container">
+                        <!-- MOTD im Chat anzeigen -->
+                        <div v-if="motd && motd.enabled && motd.display.showInChat && !motdDismissed" 
+                             :style="{
+                               backgroundColor: motd.style.backgroundColor,
+                               borderColor: motd.style.borderColor,
+                               color: motd.style.textColor,
+                               border: '1px solid ' + motd.style.borderColor
+                             }"
+                             class="p-4 mx-4 mt-4 mb-2 rounded-lg relative">
+                            <button v-if="motd.display.dismissible" 
+                                    @click="dismissMotd" 
+                                    class="absolute top-2 right-2 font-bold"
+                                    :style="{ color: motd.style.textColor }">
+                                ×
+                            </button>
+                            <div v-html="formatMotdContent(motd.content)" class="motd-content"></div>
+                        </div>
+                        
                         <!-- Chat Messages -->
                         <div class="message-container" ref="chatMessages">
                             <div v-for="(message, index) in messages" :key="index" class="mb-6">
@@ -267,23 +303,7 @@
                                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
                             </div>
                         </div>
-                        <!-- MOTD Banner -->
-                        <div v-if="motd && motd.enabled" 
-                        :style="{
-                        backgroundColor: motd.style.backgroundColor,
-                        borderColor: motd.style.borderColor,
-                        color: motd.style.textColor,
-                        border: '1px solid ' + motd.style.borderColor
-                        }"
-                        class="p-4 mb-4 rounded-lg relative">
-                        <button v-if="motd.display.dismissible" 
-                            @click="dismissMotd" 
-                            class="absolute top-2 right-2 font-bold"
-                            :style="{ color: motd.style.textColor }">
-                        ×
-                        </button>
-                        <div v-html="formatMotdContent(motd.content)" class="motd-content"></div>
-                        </div>
+                        
                         <!-- Input Area -->
                         <div class="input-container bg-white">
                             <form @submit.prevent="sendQuestionStream" class="flex space-x-2">
@@ -338,6 +358,14 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                         </svg>
                         Feedback
+                    </div>
+                    <div 
+                        @click="adminTab = 'motd'; loadMotdConfig()" 
+                        :class="['admin-tab', { 'active': adminTab === 'motd' }]">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        MOTD
                     </div>
                 </div>
                 
@@ -529,6 +557,96 @@
                                     </div>
                                     <div class="text-xs text-gray-500 mt-1">{{ new Date(feedback.timestamp * 1000).toLocaleString() }}</div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- MOTD-Tab -->
+                    <div v-if="adminTab === 'motd'" class="admin-panel-content">
+                        <div class="admin-card">
+                            <div class="admin-card-title text-xl font-semibold mb-4">Message of the Day (MOTD) Konfiguration</div>
+                            
+                            <div class="mb-4">
+                                <label class="admin-label">MOTD aktivieren</label>
+                                <div class="flex items-center">
+                                    <input type="checkbox" v-model="motdConfig.enabled" class="mr-2">
+                                    <span class="text-sm text-gray-600">Aktiviert die Anzeige der MOTD für alle Benutzer</span>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="admin-label">Format</label>
+                                <select v-model="motdConfig.format" class="nscale-input w-full">
+                                    <option value="markdown">Markdown</option>
+                                    <option value="text">Einfacher Text</option>
+                                    <option value="html">HTML (nur für fortgeschrittene Benutzer)</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="admin-label">Inhalt</label>
+                                <textarea 
+                                    v-model="motdConfig.content" 
+                                    class="nscale-input w-full h-64 font-mono text-sm" 
+                                    placeholder="Inhalt der MOTD..."
+                                ></textarea>
+                                <span class="text-xs text-gray-500">Markdown wird unterstützt, z.B. **fett** oder Listen mit -</span>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="admin-label">Stil-Einstellungen</label>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="text-sm text-gray-600 mb-1 block">Hintergrundfarbe</label>
+                                        <input type="color" v-model="motdConfig.style.backgroundColor" class="w-full h-10 cursor-pointer">
+                                    </div>
+                                    <div>
+                                        <label class="text-sm text-gray-600 mb-1 block">Randfarbe</label>
+                                        <input type="color" v-model="motdConfig.style.borderColor" class="w-full h-10 cursor-pointer">
+                                    </div>
+                                    <div>
+                                        <label class="text-sm text-gray-600 mb-1 block">Textfarbe</label>
+                                        <input type="color" v-model="motdConfig.style.textColor" class="w-full h-10 cursor-pointer">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="admin-label">Anzeigeoptionen</label>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="flex items-center">
+                                        <input type="checkbox" v-model="motdConfig.display.dismissible" class="mr-2">
+                                        <span class="text-sm">Schließbar (X-Button anzeigen)</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" v-model="motdConfig.display.showInChat" class="mr-2">
+                                        <span class="text-sm">Im Chat anzeigen</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="admin-label">Vorschau</label>
+                                <div 
+                                    class="p-4 rounded-lg border"
+                                    :style="{
+                                        backgroundColor: motdConfig.style.backgroundColor,
+                                        borderColor: motdConfig.style.borderColor,
+                                        color: motdConfig.style.textColor
+                                    }"
+                                >
+                                    <div v-if="motdConfig.display.dismissible" class="float-right cursor-pointer">×</div>
+                                    <div v-html="formatMotdContent(motdConfig.content)"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-6 flex space-x-4">
+                                <button @click="resetMotdConfig" class="nscale-btn-secondary">
+                                    Zurücksetzen
+                                </button>
+                                <button @click="saveMotdConfig" class="nscale-btn-primary">
+                                    Speichern
+                                </button>
                             </div>
                         </div>
                     </div>
