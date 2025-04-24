@@ -85,13 +85,31 @@ class OllamaClient:
                     
                     try:
                         logger.info(f"Sende Anfrage an {Config.OLLAMA_URL}/api/generate (Versuch {retry+1}/{connection_retries})")
-                        async with client_session.post(
-                            f"{Config.OLLAMA_URL}/api/generate",
-                            json=payload,
-                            timeout=timeout,
-                            headers={"Content-Type": "application/json"}
-                        ) as resp:
+                        
+                        resp = None
+                        stream_timeout = False
+                        
+                        try:
+                            # Implementiere den Timeout auf Anfrage-Ebene
+                            async def make_request():
+                                nonlocal resp
+                                resp = await client_session.post(
+                                    f"{Config.OLLAMA_URL}/api/generate",
+                                    json=payload,
+                                    timeout=timeout,
+                                    headers={"Content-Type": "application/json"}
+                                )
+                                return resp
                             
+                            # Setze einen Timeout für die Anfrage
+                            await asyncio.wait_for(make_request(), timeout=Config.LLM_TIMEOUT)
+                            
+                            if resp is None:
+                                # Sollte nicht passieren, aber zur Sicherheit
+                                logger.error("Keine Antwort erhalten")
+                                yield "[ERROR] Keine Antwort vom Server erhalten"
+                                continue
+                                
                             logger.info(f"Ollama-Server-Antwort: Status {resp.status}")
                             
                             if resp.status != 200:
@@ -107,67 +125,87 @@ class OllamaClient:
                             # Verarbeite den Stream mit optimiertem Buffer-Management
                             buffer = b""  # Byte-Buffer für fragmentierte Nachrichten
                             
-                            # Setze einen internen Stream-Timeout für diesen Versuch
-                            stream_timeout = False
-                            
-                            try:
-                                # Async Timeout für diesen spezifischen Stream
-                                async with asyncio.timeout(Config.LLM_TIMEOUT):
-                                    async for chunk in resp.content.iter_chunks():
-                                        line_data, end_of_chunk = chunk
-                                        if not line_data:
-                                            continue
-                                        
-                                        # Füge zum Buffer hinzu
-                                        buffer += line_data
-                                        
-                                        # Verarbeite komplette Zeilen im Buffer
-                                        while b'\n' in buffer:
+                            # Timeout für den Stream-Verarbeitungsprozess
+                            async def process_stream():
+                                nonlocal buffer, token_count
+                                async for chunk in resp.content.iter_chunks():
+                                    line_data, end_of_chunk = chunk
+                                    if not line_data:
+                                        continue
+                                    
+                                    # Füge zum Buffer hinzu
+                                    buffer += line_data
+                                    
+                                    # Verarbeite komplette Zeilen im Buffer
+                                    while b'\n' in buffer:
+                                        try:
                                             line, buffer = buffer.split(b'\n', 1)
                                             if not line:
                                                 continue
                                             
-                                            try:
-                                                line_text = line.decode('utf-8').strip()
-                                                # Logging nur für erste paar Tokens oder periodisch
-                                                if token_count < 5 or token_count % 50 == 0:
-                                                    logger.debug(f"Stream-Rohdaten #{token_count}: {line_text}")
-                                                
-                                                # Parse JSON
-                                                data = json.loads(line_text)
-                                                
-                                                if 'response' in data:
-                                                    token = data['response']
-                                                    token_count += 1
-                                                    
-                                                    # Token ausgeben
-                                                    yield token
-                                                    
-                                                    # Kleine Pause für gleichmäßigeren Stream
-                                                    if token_count % 5 == 0:  # Nur alle 5 Tokens pausieren
-                                                        await asyncio.sleep(0.01)
-                                                
-                                                if data.get('done', False):
-                                                    duration = time.time() - start_time
-                                                    tokens_per_second = token_count / duration if duration > 0 else 0
-                                                    logger.info(f"Stream abgeschlossen in {duration:.2f}s mit {token_count} Tokens "
-                                                            f"({tokens_per_second:.1f} Tokens/s)")
-                                                    
-                                                    # Stream-Verbindung schließen
-                                                    if stream_id in self._active_streams:
-                                                        await self._active_streams[stream_id].close()
-                                                        del self._active_streams[stream_id]
-                                                    
-                                                    return  # Stream erfolgreich abgeschlossen
+                                            line_text = line.decode('utf-8').strip()
+                                            # Logging nur für erste paar Tokens oder periodisch
+                                            if token_count < 5 or token_count % 50 == 0:
+                                                logger.debug(f"Stream-Rohdaten #{token_count}: {line_text}")
                                             
-                                            except json.JSONDecodeError as e:
-                                                logger.warning(f"JSON-Fehler beim Verarbeiten: {e}, Daten: {line[:100]}")
-                                                continue
-                                            except Exception as e:
-                                                logger.error(f"Fehler beim Verarbeiten: {e}")
-                                                yield f"[ERROR] {str(e)}"
+                                            # Parse JSON
+                                            data = json.loads(line_text)
+                                            
+                                            if 'response' in data:
+                                                token = data['response']
+                                                token_count += 1
+                                                
+                                                # Token ausgeben
+                                                yield token
+                                                
+                                                # Kleine Pause für gleichmäßigeren Stream
+                                                if token_count % 5 == 0:  # Nur alle 5 Tokens pausieren
+                                                    await asyncio.sleep(0.01)
+                                            
+                                            if data.get('done', False):
+                                                duration = time.time() - start_time
+                                                tokens_per_second = token_count / duration if duration > 0 else 0
+                                                logger.info(f"Stream abgeschlossen in {duration:.2f}s mit {token_count} Tokens "
+                                                        f"({tokens_per_second:.1f} Tokens/s)")
+                                                
+                                                # Stream-Verbindung schließen
+                                                if stream_id in self._active_streams:
+                                                    await self._active_streams[stream_id].close()
+                                                    del self._active_streams[stream_id]
+                                                
+                                                return True  # Stream erfolgreich abgeschlossen
+                                        
+                                        except json.JSONDecodeError as e:
+                                            logger.warning(f"JSON-Fehler beim Verarbeiten: {e}, Daten: {line[:100]}")
+                                            continue
+                                        except Exception as e:
+                                            logger.error(f"Fehler beim Verarbeiten: {e}")
+                                            yield f"[ERROR] {str(e)}"
+                                
+                                return False  # Stream nicht abgeschlossen (sollte nicht erreicht werden)
+                            
+                            # Stream-Verarbeitung mit Timeout
+                            try:
+                                # Iterator-basierte Verarbeitung für Python 3.9
+                                stream_gen = process_stream().__aiter__()
+                                
+                                while True:
+                                    try:
+                                        # Setze einen Timeout für jeden Token-Abruf
+                                        token = await asyncio.wait_for(stream_gen.__anext__(), timeout=5.0)
+                                        yield token
+                                    except StopAsyncIteration:
+                                        # Generator ist fertig
+                                        break
+                                
+                                # Wenn wir hierher kommen, war die Stream-Verarbeitung erfolgreich
+                                if stream_id in self._active_streams:
+                                    await self._active_streams[stream_id].close()
+                                    del self._active_streams[stream_id]
+                                return  # Stream war erfolgreich, verlasse die äußere Funktion
+                                
                             except asyncio.TimeoutError:
-                                logger.error(f"Timeout bei der Anfrage an Ollama (Versuch {retry+1})")
+                                logger.error(f"Timeout während der Stream-Verarbeitung (Versuch {retry+1})")
                                 stream_timeout = True
                                 yield "[TIMEOUT]"
                                 
@@ -183,18 +221,35 @@ class OllamaClient:
                                     await asyncio.sleep(1.0)
                                     continue  # Zum nächsten Versuch
                             
-                            # Verarbeite den letzten Buffer-Inhalt, falls vorhanden
-                            if not stream_timeout and buffer:
-                                try:
-                                    line_text = buffer.decode('utf-8').strip()
-                                    if line_text:
-                                        data = json.loads(line_text)
-                                        if 'response' in data:
-                                            token = data['response']
-                                            token_count += 1
-                                            yield token
-                                except Exception:
-                                    pass  # Ignoriere Fehler im letzten Buffer
+                        except asyncio.TimeoutError:
+                            logger.error(f"Timeout bei der anfänglichen Verbindung (Versuch {retry+1})")
+                            stream_timeout = True
+                            yield "[CONN_TIMEOUT]"
+                            
+                            # Stream-Verbindung schließen
+                            if stream_id in self._active_streams:
+                                await self._active_streams[stream_id].close()
+                                del self._active_streams[stream_id]
+                            
+                            if retry == connection_retries - 1:  # Letzter Versuch
+                                yield "[FINAL_TIMEOUT] Zeitüberschreitung bei der anfänglichen Verbindung"
+                                return
+                            else:
+                                await asyncio.sleep(1.0)
+                                continue  # Zum nächsten Versuch
+                            
+                        # Verarbeite den letzten Buffer-Inhalt, falls vorhanden
+                        if not stream_timeout and buffer:
+                            try:
+                                line_text = buffer.decode('utf-8').strip()
+                                if line_text:
+                                    data = json.loads(line_text)
+                                    if 'response' in data:
+                                        token = data['response']
+                                        token_count += 1
+                                        yield token
+                            except Exception:
+                                pass  # Ignoriere Fehler im letzten Buffer
                         
                         # Prüfen, ob überhaupt Tokens generiert wurden
                         if token_count == 0 and not stream_timeout:
@@ -383,6 +438,10 @@ class OllamaClient:
         with self._lock:
             self.cache.clear()
         logger.info("LLM-Cache gelöscht")
+        return {
+            'success': True,
+            'message': "Cache erfolgreich gelöscht"
+        }
         
     async def cancel_active_streams(self):
         """Bricht alle aktiven Streams ab"""
