@@ -1,0 +1,42 @@
+/* Feedback-Button-Stile */
+.feedback-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.feedback-buttons:hover {
+    opacity: 1;
+}
+
+.feedback-button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.feedback-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.feedback-button.selected {
+    color: var(--nscale-green);
+}
+
+.feedback-button.selected.negative {
+    color: #ef4444;
+}
+
+.feedback-comment {
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 0.2rem;
+    margin-right: 1rem;
+}
