@@ -99,7 +99,24 @@ createApp({
                 loading.value = false;
             }
         };
-        
+
+        // MOTD-Funktionen
+        const dismissMotd = () => {
+            if (motd.value) {
+                motd.value.enabled = false;
+            }
+        };
+
+        const formatMotdContent = (content) => {
+            if (!content) return '';
+            
+            // Einfache Markdown-Formatierung
+            return content
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n\n/g, '<br/><br/>')
+                .replace(/\n-\s/g, '<br/>• ');
+        };
+
         const resetPassword = async () => {
             try {
                 loading.value = true;
@@ -387,7 +404,9 @@ createApp({
             
             // MOTD
             motd,
-            loadMotd
+            loadMotd,
+            dismissMotd,
+            formatMotdContent
         };
     }
 }).mount('#app');

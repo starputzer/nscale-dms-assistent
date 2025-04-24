@@ -267,7 +267,23 @@
                                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
                             </div>
                         </div>
-                        
+                        <!-- MOTD Banner -->
+                        <div v-if="motd && motd.enabled" 
+                        :style="{
+                        backgroundColor: motd.style.backgroundColor,
+                        borderColor: motd.style.borderColor,
+                        color: motd.style.textColor,
+                        border: '1px solid ' + motd.style.borderColor
+                        }"
+                        class="p-4 mb-4 rounded-lg relative">
+                        <button v-if="motd.display.dismissible" 
+                            @click="dismissMotd" 
+                            class="absolute top-2 right-2 font-bold"
+                            :style="{ color: motd.style.textColor }">
+                        ×
+                        </button>
+                        <div v-html="formatMotdContent(motd.content)" class="motd-content"></div>
+                        </div>
                         <!-- Input Area -->
                         <div class="input-container bg-white">
                             <form @submit.prevent="sendQuestionStream" class="flex space-x-2">
