@@ -20,7 +20,7 @@ class UserManager:
     
     # Liste von Admin-E-Mails, die automatisch Admin-Rechte erhalten    
     def __init__(self):
-        admin_emails_str = os.getenv('ADMIN_EMAILS')
+        admin_emails_str = os.getenv('ADMIN_EMAILS', '')
         self.ADMIN_EMAILS = [email.strip() for email in admin_emails_str.split(',')]
         self.init_db()
         
@@ -153,6 +153,9 @@ class UserManager:
     
     def _update_existing_admin_users(self):
         """Aktualisiert bestehende Benutzer mit Admin-E-Mails zu Administratoren"""
+        if not self.ADMIN_EMAILS:
+            return  # Keine Admin-E-Mails definiert
+            
         try:
             conn = sqlite3.connect(Config.DB_PATH)
             cursor = conn.cursor()
@@ -162,9 +165,6 @@ class UserManager:
                     "UPDATE users SET role = ? WHERE email = ? AND role != ?",
                     (UserRole.ADMIN, admin_email, UserRole.ADMIN)
                 )
-            
-            if cursor.rowcount > 0:
-                logger.info(f"Admin-Rollen für {cursor.rowcount} bestehende Benutzer aktualisiert")
             
             conn.commit()
             conn.close()
