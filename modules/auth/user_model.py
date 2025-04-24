@@ -19,7 +19,7 @@ class UserManager:
     """Verwaltet Benutzeroperationen und Authentifizierung mit Rollenunterstützung"""
     
     # Liste von Admin-E-Mails, die automatisch Admin-Rechte erhalten
-    ADMIN_EMAILS = ["admin@berlin.de", "chef@behörde.de"]  # Ändern Sie diese Liste nach Ihren Anforderungen
+    ADMIN_EMAILS = ["martin@danglefeet.com"]  # Ändern Sie diese Liste nach Ihren Anforderungen
     
     def __init__(self):
         self.init_db()
