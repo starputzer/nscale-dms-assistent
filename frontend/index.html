@@ -306,29 +306,6 @@
                 </div>
             </div>
         </header>
-        <!-- MOTD Banner -->
-        <div v-if="motd.enabled && motd.display.showOnStartup" 
-        :style="{
-        backgroundColor: motd.style.backgroundColor,
-        borderColor: motd.style.borderColor,
-        color: motd.style.textColor,
-        padding: '1rem',
-        margin: '0 auto 1rem auto',
-        maxWidth: '1200px', 
-        borderRadius: '0.5rem',
-        boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
-        position: 'relative'
-        }" 
-        class="container mx-auto my-2 border">
-        <button v-if="motd.display.dismissible" 
-            @click="dismissMotd" 
-            class="absolute top-2 right-2 text-sm text-gray-500 hover:text-gray-700"
-            aria-label="Hinweis schließen">
-        &times;
-        </button>
-        <div v-if="motd.format === 'markdown'" v-html="formatMessage(motd.content)"></div>
-        <div v-else v-html="motd.content"></div>
-        </div>
             <!-- Main Content -->
             <div class="flex flex-1 overflow-hidden container mx-auto my-4">
                 <!-- Sessions Sidebar -->

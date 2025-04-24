@@ -11,7 +11,7 @@
     "display": {
       "position": "top", 
       "dismissible": true,
-      "showOnStartup": true,
+      "showOnStartup": false,
       "showInChat": true
     }
   }
