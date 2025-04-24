@@ -18,6 +18,7 @@ export function setupChat(options) {
     
     let tokenCount = 0;
     let streamTimeout;
+    let currentStreamRetryCount = 0;
     
     /**
      * Bereinigt die EventSource-Verbindung
@@ -33,6 +34,7 @@ export function setupChat(options) {
         
         // tokencount zurücksetzen
         tokenCount = 0;
+        currentStreamRetryCount = 0;
         
         if (eventSource.value) {
             try {
@@ -160,6 +162,7 @@ export function setupChat(options) {
             
             // Zähler für Debugging
             tokenCount = 0;
+            currentStreamRetryCount = 0;
 
             eventSource.value.onmessage = (event) => {
                 try {
@@ -183,9 +186,45 @@ export function setupChat(options) {
                     // Versuche JSON zu parsen
                     const data = JSON.parse(jsonData);
                     
+                    // Spezielle Kontrollnachrichten prüfen
                     if ('response' in data) {
-                        tokenCount++;
                         const token = data.response;
+                        
+                        // Prüfen auf spezielle Steuerungscodes vom Backend
+                        if (token === "[STREAM_RETRY]") {
+                            console.log("Stream wird neu gestartet...");
+                            currentStreamRetryCount++;
+                            messages.value[assistantIndex].message += `\n[Verbindung wird wiederhergestellt... Versuch ${currentStreamRetryCount}]\n`;
+                            scrollToBottom();
+                            return;
+                        }
+                        
+                        if (token === "[TIMEOUT]") {
+                            console.log("Timeout beim Stream.");
+                            return;
+                        }
+                        
+                        if (token.startsWith("[FINAL_TIMEOUT]") || 
+                            token.startsWith("[CONN_ERROR]") || 
+                            token.startsWith("[ERROR]") || 
+                            token.startsWith("[UNEXPECTED_ERROR]") || 
+                            token.startsWith("[NO_TOKENS]")) {
+                            console.error("Stream-Fehler:", token);
+                            
+                            // Wenn die Nachricht bereits Inhalt hat, nur eine Warnung anhängen
+                            if (messages.value[assistantIndex].message.trim()) {
+                                messages.value[assistantIndex].message += "\n\n[Hinweis: Die Antwort wurde möglicherweise abgeschnitten.]";
+                            } else {
+                                // Sonst Fehlermeldung anzeigen
+                                messages.value[assistantIndex].message = "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.";
+                            }
+                            scrollToBottom();
+                            cleanupStream();
+                            return;
+                        }
+                        
+                        // Normaler Token
+                        tokenCount++;
                         console.log(`Token #${tokenCount}: "${token}"`);
                         
                         // Token zur Assistenten-Nachricht hinzufügen
@@ -208,6 +247,12 @@ export function setupChat(options) {
             // Spezieller Handler für 'done' Events
             eventSource.value.addEventListener('done', (event) => {
                 console.log("DONE Event empfangen, Stream beendet");
+                
+                // Prüfe, ob die Nachricht nicht leer ist
+                if (!messages.value[assistantIndex].message.trim()) {
+                    messages.value[assistantIndex].message = 'Es wurden keine Daten empfangen. Bitte versuchen Sie es später erneut.';
+                }
+                
                 cleanupStream();
             });
 
@@ -216,9 +261,17 @@ export function setupChat(options) {
                 console.error('SSE-Verbindungsfehler:', event);
                 if (tokenCount === 0) {
                     messages.value[assistantIndex].message = 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.';
+                } else {
+                    // Wenn bereits Daten empfangen wurden, nur Hinweis anhängen
+                    messages.value[assistantIndex].message += "\n\n[Hinweis: Die Verbindung wurde unterbrochen. Die Antwort könnte unvollständig sein.]";
                 }
                 cleanupStream();
             };
+
+            // Open-Handler
+            eventSource.value.addEventListener('open', () => {
+                console.log("SSE-Verbindung erfolgreich geöffnet");
+            });
 
             // Timeout für hängende Verbindungen
             resetStreamTimeout();
@@ -230,6 +283,15 @@ export function setupChat(options) {
             console.error('Streaming-Fehler:', error);
             isLoading.value = false;
             isStreaming.value = false;
+            
+            // Füge eine Fehlernachricht hinzu, wenn noch keine Antwort angezeigt wurde
+            if (messages.value.length > 0 && messages.value[messages.value.length - 1].is_user) {
+                messages.value.push({
+                    is_user: false,
+                    message: 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.',
+                    timestamp: Date.now() / 1000
+                });
+            }
         }
     };
                             
