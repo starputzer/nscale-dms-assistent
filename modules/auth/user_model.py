@@ -1,5 +1,5 @@
 # In modules/auth/user_model.py
-
+import os
 import sqlite3
 import hashlib
 import secrets
@@ -22,7 +22,12 @@ class UserManager:
     ADMIN_EMAILS = ["martin@danglefeet.com"]  # Ändern Sie diese Liste nach Ihren Anforderungen
     
     def __init__(self):
+        admin_emails_str = os.getenv('ADMIN_EMAILS')
+        self.ADMIN_EMAILS = [email.strip() for email in admin_emails_str.split(',')]
         self.init_db()
+        
+        # Bestehende Benutzer aktualisieren, um sicherzustellen, dass Admin-E-Mails als Admin gekennzeichnet sind
+        self._update_existing_admin_users()
     
     def init_db(self):
         """Initialisiert die Benutzerdatenbank mit Unterstützung für Rollen"""
@@ -148,6 +153,26 @@ class UserManager:
         logger.warning(f"Fehlgeschlagener Anmeldeversuch für E-Mail: {email}")
         return None
     
+    def _update_existing_admin_users(self):
+        """Aktualisiert bestehende Benutzer mit Admin-E-Mails zu Administratoren"""
+        try:
+            conn = sqlite3.connect(Config.DB_PATH)
+            cursor = conn.cursor()
+            
+            for admin_email in self.ADMIN_EMAILS:
+                cursor.execute(
+                    "UPDATE users SET role = ? WHERE email = ? AND role != ?",
+                    (UserRole.ADMIN, admin_email, UserRole.ADMIN)
+                )
+            
+            if cursor.rowcount > 0:
+                logger.info(f"Admin-Rollen für {cursor.rowcount} bestehende Benutzer aktualisiert")
+            
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            logger.error(f"Fehler beim Aktualisieren bestehender Admin-Benutzer: {e}")
+
     def update_user_role(self, user_id, new_role, admin_user_id):
         """Aktualisiert die Rolle eines Benutzers (nur für Admins)"""
         # Prüfe, ob der ausführende Benutzer Admin ist
