@@ -1,0 +1,309 @@
+/* Hauptnavigation Styles */
+.nav-button {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    color: var(--nscale-dark-gray);
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.nav-button:hover {
+    background-color: var(--nscale-light-green);
+    color: var(--nscale-green);
+}
+
+.nav-active {
+    background-color: var(--nscale-light-green);
+    color: var(--nscale-green);
+    font-weight: 600;
+}
+
+/* Admin Tabs */
+.admin-tabs {
+    display: flex;
+    border-bottom: 1px solid #eaeaea;
+    margin-bottom: 1.5rem;
+}
+
+.admin-tab {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    color: var(--nscale-dark-gray);
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.admin-tab.active {
+    color: var(--nscale-green);
+    border-bottom-color: var(--nscale-green);
+    font-weight: 500;
+}
+
+.admin-tab:hover:not(.active) {
+    color: var(--nscale-green-dark);
+    border-bottom-color: #eaeaea;
+}
+
+/* Admin Styles */
+.admin-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.admin-table th {
+    font-weight: 500;
+    color: var(--nscale-dark-gray);
+    background-color: var(--nscale-gray);
+}
+
+.admin-table tr:hover {
+    background-color: var(--nscale-light-green);
+}
+
+.admin-button-danger {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.admin-button-danger:hover {
+    background-color: #dc2626;
+}
+
+/* Settings Panel */
+.settings-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: white;
+    border: 1px solid #eaeaea;
+    color: var(--nscale-dark-gray);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.settings-button:hover {
+    background-color: var(--nscale-light-green);
+    color: var(--nscale-green);
+}
+
+.settings-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 360px;
+    background: white;
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(0);
+    transition: transform 0.3s ease-in-out;
+}
+
+.settings-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.settings-panel-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--nscale-dark-gray);
+}
+
+.settings-panel-close {
+    background: transparent;
+    border: none;
+    color: var(--nscale-dark-gray);
+    cursor: pointer;
+    font-size: 1.5rem;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.settings-panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+}
+
+.settings-section {
+    margin-bottom: 2rem;
+}
+
+.settings-section-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    color: var(--nscale-dark-gray);
+}
+
+.settings-option {
+    margin-bottom: 1rem;
+}
+
+.settings-option label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.settings-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.settings-button {
+    background-color: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: auto;
+    height: auto;
+}
+
+.settings-button:hover {
+    background-color: var(--nscale-light-green);
+}
+
+.settings-button.active {
+    background-color: var(--nscale-green);
+    color: white;
+    border-color: var(--nscale-green);
+}
+
+/* Theme classes */
+.theme-dark {
+    --nscale-dark-gray: #f0f0f0;
+    --nscale-gray: #2a2a2a;
+    background-color: #121212;
+    color: #f0f0f0;
+}
+
+.theme-dark .nscale-card,
+.theme-dark .settings-panel,
+.theme-dark .admin-card {
+    background-color: #1e1e1e;
+    border-color: #333;
+}
+
+.theme-dark .nscale-header {
+    background-color: #1e1e1e;
+    border-color: #333;
+}
+
+.theme-dark .nscale-sidebar {
+    background-color: #2a2a2a;
+    border-color: #333;
+}
+
+.theme-dark .nscale-message-assistant {
+    background-color: #2a2a2a;
+    border-color: #333;
+}
+
+.theme-dark .nscale-input {
+    background-color: #333;
+    color: #f0f0f0;
+    border-color: #444;
+}
+
+.theme-contrast {
+    --nscale-green: #ffff00;
+    --nscale-green-dark: #e6e600;
+    --nscale-light-green: #333300;
+    --nscale-dark-gray: #ffffff;
+    --nscale-gray: #333333;
+    background-color: #000000;
+    color: #ffffff;
+}
+
+.theme-contrast .nscale-card,
+.theme-contrast .settings-panel,
+.theme-contrast .admin-card {
+    background-color: #000000;
+    border: 2px solid #ffff00;
+}
+
+.theme-contrast .nscale-header {
+    background-color: #000000;
+    border-color: #ffff00;
+}
+
+.theme-contrast .nscale-sidebar {
+    background-color: #000000;
+    border-color: #ffff00;
+}
+
+.theme-contrast .nscale-message-assistant {
+    background-color: #000000;
+    border: 2px solid #ffff00;
+}
+
+.theme-contrast .nscale-input {
+    background-color: #000000;
+    color: #ffffff;
+    border: 2px solid #ffff00;
+}
+
+.theme-contrast .nscale-btn-primary {
+    background-color: #ffff00;
+    color: #000000;
+    font-weight: 700;
+}
+
+/* Font size classes */
+.font-small {
+    font-size: 0.875rem;
+}
+
+.font-medium {
+    font-size: 1rem;
+}
+
+.font-large {
+    font-size: 1.125rem;
+}
+
+/* Reduced motion */
+.reduce-motion * {
+    transition: none !important;
+    animation: none !important;
+}

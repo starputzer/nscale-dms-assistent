@@ -1,6 +1,7 @@
 import { setupChat } from './chat.js';
 import { setupFeedback } from './feedback.js';
 import { setupAdmin } from './admin.js';
+import { setupSettings } from './settings.js';
 
 const { createApp, ref, onMounted, watch, nextTick } = Vue;
 
@@ -24,6 +25,9 @@ createApp({
         const chatMessages = ref(null);
         const isStreaming = ref(false);
         const eventSource = ref(null);
+        
+        // Ansichts-State
+        const activeView = ref('chat'); // 'chat' oder 'admin'
         
         // Benutzerrolle
         const userRole = ref('user');
@@ -125,6 +129,7 @@ createApp({
             sessions.value = [];
             messages.value = [];
             userRole.value = 'user';
+            activeView.value = 'chat';
             
             // EventSource schließen, falls vorhanden
             if (eventSource.value) {
@@ -152,6 +157,9 @@ createApp({
                 
                 await loadSessions();
                 await loadSession(response.data.session_id);
+                
+                // Zur Chat-Ansicht wechseln
+                activeView.value = 'chat';
             } catch (error) {
                 console.error('Error starting new session:', error);
             } finally {
@@ -217,6 +225,11 @@ createApp({
             isLoading
         });
         
+        // Initialize settings functionality
+        const settingsFunction = setupSettings({
+            token
+        });
+        
         // Session handling with feedback support
         const loadSession = async (sessionId) => {
             try {
@@ -232,6 +245,9 @@ createApp({
                     }
                 }
                 
+                // Zur Chat-Ansicht wechseln
+                activeView.value = 'chat';
+                
                 // Scroll to bottom after messages load
                 await nextTick();
                 scrollToBottom();
@@ -243,8 +259,8 @@ createApp({
         };
         
         // Watch-Funktion für Admin-Panel-Tabs
-        watch([adminFunctions.showAdminPanel, adminFunctions.adminTab], ([isOpen, tab]) => {
-            if (isOpen && userRole.value === 'admin') {
+        watch([adminFunctions.adminTab], ([tab]) => {
+            if (activeView.value === 'admin' && userRole.value === 'admin') {
                 if (tab === 'users') {
                     adminFunctions.loadUsers();
                 } else if (tab === 'system') {
@@ -253,6 +269,14 @@ createApp({
                     adminFunctions.loadFeedbackStats();
                     adminFunctions.loadNegativeFeedback();
                 }
+            }
+        });
+        
+        // Watch für die aktive Ansicht
+        watch(activeView, (newView) => {
+            if (newView === 'admin' && userRole.value === 'admin') {
+                adminFunctions.loadSystemStats();
+                adminFunctions.loadUsers();
             }
         });
         
@@ -272,6 +296,7 @@ createApp({
                     messages.value = [];
                     currentSessionId.value = null;
                     userRole.value = 'user';
+                    activeView.value = 'chat';
                 } else {
                     // Wenn sich der Token ändert (z.B. nach Login), Benutzerrolle laden
                     adminFunctions.loadUserRole();
@@ -308,6 +333,9 @@ createApp({
             resetPassword,
             logout,
             
+            // View state
+            activeView,
+            
             // Chat state
             sessions,
             currentSessionId,
@@ -334,7 +362,11 @@ createApp({
             feedbackComment,
             
             // Admin functionality
-            ...adminFunctions
+            ...adminFunctions,
+            userRole,
+            
+            // Settings functionality
+            ...settingsFunction
         };
     }
 }).mount('#app');

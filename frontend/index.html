@@ -12,12 +12,9 @@
     <link href="/static/css/main.css" rel="stylesheet">
     <link href="/static/css/feedback.css" rel="stylesheet">
     <link href="/static/css/admin.css" rel="stylesheet">
+    <link href="/static/css/settings.css" rel="stylesheet">
 </head>
 <body class="min-h-screen bg-gray-50">
-    <!-- Direkt nach dem Body-Tag einfügen, um zu testen -->
-    <div v-if="userRole === 'admin'" style="position: fixed; top: 0; left: 0; background: red; padding: 10px; z-index: 9999; color: white;">
-        Admin-Rolle erkannt!
-    </div>
     <div id="app" class="h-screen flex flex-col">
         <!-- Login & Register -->
         <div v-if="!token" class="flex items-center justify-center h-full bg-gray-50">
@@ -114,328 +111,483 @@
             </div>
         </div>
         
-        <!-- Main Chat Interface -->
-        <header class="nscale-header p-4">
-            <div class="container mx-auto flex justify-between items-center">
-                <div class="flex items-center">
-                    <img src="/static/images/senmvku-logo.png" alt="Berlin Logo" class="h-16 mr-4">
-                    <div class="nscale-logo">nscale DMS Assistent</div>
-                </div>
-                <div class="flex space-x-4">
-                    <button @click="startNewSession" class="nscale-btn-secondary">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                        Neue Unterhaltung
-                    </button>
-                    <button @click="logout" class="nscale-btn-secondary">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
-                        Abmelden
-                    </button>
-                </div>
-            </div>
-        </header>
-            
-        <!-- Main Content -->
-        <div class="flex flex-1 overflow-hidden container mx-auto my-4">
-            <!-- Sessions Sidebar -->
-            <aside class="nscale-sidebar w-80 p-4 rounded-l-lg overflow-y-auto">
-                <h2 class="text-lg font-medium mb-6 text-gray-700">Unterhaltungen</h2>
-                <ul class="space-y-2">
-                    <li v-for="session in sessions" :key="session.id" 
-                        @click="loadSession(session.id)"
-                        :class="['nscale-session-item cursor-pointer', 
-                        currentSessionId === session.id ? 'active' : '']">
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <!-- Main Application (Chat + Admin) -->
+        <div v-else class="flex flex-col h-screen">
+            <!-- Navigation Header -->
+            <header class="nscale-header p-4">
+                <div class="container mx-auto flex justify-between items-center">
+                    <div class="flex items-center">
+                        <img src="/static/images/senmvku-logo.png" alt="Berlin Logo" class="h-16 mr-4">
+                        <div class="nscale-logo">nscale DMS Assistent</div>
+                    </div>
+                    
+                    <!-- Navigation -->
+                    <div class="flex items-center space-x-4">
+                        <nav class="flex space-x-2">
+                            <button 
+                                @click="activeView = 'chat'"
+                                :class="['nav-button', activeView === 'chat' ? 'nav-active' : '']">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                                 </svg>
-                                <span class="truncate">{{ session.title }}</span>
-                            </div>
-                            <button @click.stop="deleteSession(session.id)" class="text-gray-400 hover:text-red-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                Chat
+                            </button>
+                            
+                            <!-- Admin Nav Button - nur für Admins -->
+                            <button 
+                                v-if="userRole === 'admin'"
+                                @click="activeView = 'admin'"
+                                :class="['nav-button', activeView === 'admin' ? 'nav-active' : '']">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                Administration
+                            </button>
+                        </nav>
+                        
+                        <div class="flex space-x-2 ml-4">
+                            <!-- Neue Unterhaltung Button -->
+                            <button @click="startNewSession" class="nscale-btn-secondary">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                Neue Unterhaltung
+                            </button>
+                            
+                            <!-- Settings Button (wird für Dark Mode etc. reserviert) -->
+                            <button @click="toggleSettings" class="settings-button">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
                                 </svg>
                             </button>
-                        </div>
-                    </li>
-                </ul>
-            </aside>
-            
-            <!-- Chat Area -->
-            <main class="nscale-card flex-1 flex flex-col bg-white overflow-hidden rounded-r-lg ml-4">
-                <div v-if="!currentSessionId" class="flex h-full items-center justify-center text-gray-400 p-8">
-                    <div class="text-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                        </svg>
-                        <h3 class="text-lg font-medium mb-2">Keine Unterhaltung ausgewählt</h3>
-                        <p class="text-sm text-gray-500 mb-4">Wählen Sie eine Unterhaltung aus der Seitenleiste oder starten Sie eine neue.</p>
-                        <button @click="startNewSession" class="nscale-btn-primary">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                            Neue Unterhaltung starten
-                        </button>
-                    </div>
-                </div>
-                
-                <div v-else class="chat-container">
-                    <!-- Chat Messages -->
-                    <div class="message-container" ref="chatMessages">
-                        <div v-for="(message, index) in messages" :key="index" class="mb-6">
-                            <!-- Systemnachricht -->
-                            <div v-if="message.is_system" class="nscale-message-system">
-                                <div v-html="formatMessage(message.message)" class="prose"></div>
-                            </div>
-                            <!-- Normale Nutzer- oder Assistentennachricht -->
-                            <div v-else :class="[message.is_user ? 'nscale-message-user' : 'nscale-message-assistant']">
-                                <div v-html="formatMessage(message.message)" class="prose"></div>
-                                
-                                <!-- Feedback-Buttons nur für Assistenten-Nachrichten -->
-                                <div v-if="!message.is_user" class="feedback-buttons">
-                                    <span v-if="message.feedback_comment" class="feedback-comment">{{ message.feedback_comment }}</span>
-                                    <button 
-                                        @click="submitFeedback(message.id, message.session_id || currentSessionId, true)" 
-                                        :class="['feedback-button', { 'selected': message.feedback_positive === true }]"
-                                        title="Hilfreich">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
-                                        </svg>
-                                    </button>
-                                    <button 
-                                        @click="submitFeedback(message.id, message.session_id || currentSessionId, false)" 
-                                        :class="['feedback-button', { 'selected negative': message.feedback_positive === false }]"
-                                        title="Nicht hilfreich">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2" />
-                                        </svg>
-                                    </button>
-                                    <button 
-                                        v-if="message.feedback_positive === false" 
-                                        @click="showFeedbackCommentDialog(message)" 
-                                        class="feedback-button"
-                                        title="Kommentar hinzufügen">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div v-if="isLoading" class="flex justify-center p-4">
-                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Input Area -->
-                    <div class="input-container bg-white">
-                        <form @submit.prevent="sendQuestionStream" class="flex space-x-2">
-                            <input v-model="question" class="nscale-input flex-1" 
-                                placeholder="Stellen Sie Ihre Frage zur nscale DMS-Software..." 
-                                :disabled="!currentSessionId || isLoading" />
-                            <button type="submit" class="nscale-btn-primary"
-                                :disabled="!currentSessionId || !question || isLoading">
-                                <span v-if="isLoading">
-                                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Wird gesendet...
-                                </span>
-                                <span v-else>Senden</span>
+                            
+                            <!-- Abmelden-Button -->
+                            <button @click="logout" class="nscale-btn-secondary">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                Abmelden
                             </button>
-                        </form>
+                        </div>
                     </div>
                 </div>
-            </main>
-        </div>
-        
-        <!-- Admin-Button (nur für Admins) -->
-        <button 
-            v-if="userRole === 'admin'" 
-            @click="toggleAdminPanel" 
-            class="admin-button"
-            title="Admin-Panel öffnen">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-        </button>
-        
-        <!-- Admin-Panel -->
-        <div class="admin-panel-overlay" :class="{ 'active': showAdminPanel }" @click="showAdminPanel = false"></div>
-        <div class="admin-panel" :class="{ 'active': showAdminPanel }">
-            <div class="admin-panel-header">
-                <div class="admin-panel-title">Admin-Panel</div>
-                <button class="admin-panel-close" @click="showAdminPanel = false">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            <div class="admin-panel-tabs">
-                <div 
-                    @click="adminTab = 'users'" 
-                    :class="['admin-tab', { 'active': adminTab === 'users' }]">
-                    Benutzer
-                </div>
-                <div 
-                    @click="adminTab = 'system'" 
-                    :class="['admin-tab', { 'active': adminTab === 'system' }]">
-                    System
-                </div>
-                <div 
-                    @click="adminTab = 'feedback'" 
-                    :class="['admin-tab', { 'active': adminTab === 'feedback' }]">
-                    Feedback
-                </div>
-            </div>
-            <div class="admin-panel-content">
-                <!-- Benutzer-Tab -->
-                <div v-if="adminTab === 'users'">
-                    <div class="admin-card">
-                        <div class="admin-card-title">Neuen Benutzer erstellen</div>
-                        <div class="admin-form-group">
-                            <label class="admin-label">E-Mail</label>
-                            <input v-model="newUser.email" type="email" class="nscale-input w-full" placeholder="E-Mail-Adresse">
-                        </div>
-                        <div class="admin-form-group">
-                            <label class="admin-label">Passwort</label>
-                            <input v-model="newUser.password" type="password" class="nscale-input w-full" placeholder="Passwort">
-                        </div>
-                        <div class="admin-form-group">
-                            <label class="admin-label">Rolle</label>
-                            <select v-model="newUser.role" class="nscale-input w-full">
-                                <option value="user">Benutzer</option>
-                                <option value="admin">Administrator</option>
-                            </select>
-                        </div>
-                        <button @click="createUser" class="nscale-btn-primary">Benutzer erstellen</button>
-                    </div>
-                    
-                    <div class="admin-card">
-                        <div class="admin-card-title">Benutzerliste</div>
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>E-Mail</th>
-                                    <th>Rolle</th>
-                                    <th>Aktionen</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="user in adminUsers" :key="user.id">
-                                    <td>{{ user.id }}</td>
-                                    <td>{{ user.email }}</td>
-                                    <td>
-                                        <select 
-                                            v-model="user.role" 
-                                            @change="updateUserRole(user.id, user.role)"
-                                            class="nscale-input">
-                                            <option value="user">Benutzer</option>
-                                            <option value="admin">Administrator</option>
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <button @click="deleteUser(user.id)" class="admin-button-danger">
-                                            Löschen
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <!-- System-Tab -->
-                <div v-if="adminTab === 'system'">
-                    <div class="admin-stats-grid">
-                        <div class="admin-stat-card">
-                            <div class="admin-stat-value">{{ systemStats.document_count || 0 }}</div>
-                            <div class="admin-stat-label">Dokumente</div>
-                        </div>
-                        <div class="admin-stat-card">
-                            <div class="admin-stat-value">{{ systemStats.chunk_count || 0 }}</div>
-                            <div class="admin-stat-label">Chunks</div>
-                        </div>
-                        <div class="admin-stat-card">
-                            <div class="admin-stat-value">{{ Object.keys(systemStats.documents || {}).length }}</div>
-                            <div class="admin-stat-label">Quellen</div>
-                        </div>
-                    </div>
-                    
-                    <div class="admin-card">
-                        <div class="admin-card-title">System-Aktionen</div>
-                        <div class="admin-actions">
-                            <button @click="reloadMotd" class="nscale-btn-secondary">MOTD neu laden</button>
-                            <button @click="clearModelCache" class="nscale-btn-secondary">Modell-Cache leeren</button>
-                            <button @click="clearEmbeddingCache" class="nscale-btn-secondary">Embedding-Cache leeren</button>
-                        </div>
-                    </div>
-                    
-                    <div class="admin-card">
-                        <div class="admin-card-title">Dokumente</div>
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Datei</th>
-                                    <th>Chunks</th>
-                                    <th>Tokens</th>
-                                    <th>Letzte Änderung</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(docStats, filename) in systemStats.documents || {}" :key="filename">
-                                    <td>{{ filename }}</td>
-                                    <td>{{ docStats.chunks }}</td>
-                                    <td>{{ docStats.total_tokens }}</td>
-                                    <td>{{ docStats.modified }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <!-- Feedback-Tab -->
-                <div v-if="adminTab === 'feedback'">
-                    <div class="admin-stats-grid">
-                        <div class="admin-stat-card">
-                            <div class="admin-stat-value">{{ feedbackStats.total_feedback || 0 }}</div>
-                            <div class="admin-stat-label">Gesamtes Feedback</div>
-                        </div>
-                        <div class="admin-stat-card">
-                            <div class="admin-stat-value">{{ feedbackStats.positive_count || 0 }}</div>
-                            <div class="admin-stat-label">Positiv</div>
-                        </div>
-                        <div class="admin-stat-card">
-                            <div class="admin-stat-value">{{ feedbackStats.negative_count || 0 }}</div>
-                            <div class="admin-stat-label">Negativ</div>
-                        </div>
-                        <div class="admin-stat-card">
-                            <div class="admin-stat-value">{{ Math.round((feedbackStats.positive_count || 0) / (feedbackStats.total_feedback || 1) * 100) }}%</div>
-                            <div class="admin-stat-label">Zufriedenheit</div>
-                        </div>
-                    </div>
-                    
-                    <div class="admin-card">
-                        <div class="admin-card-title">Negatives Feedback</div>
-                        <div v-if="negativeFeedback.length === 0" class="text-gray-500 italic">
-                            Kein negatives Feedback vorhanden
-                        </div>
-                        <div v-else>
-                            <div v-for="feedback in negativeFeedback" :key="feedback.id" class="border-b border-gray-200 py-4">
-                                <div class="font-medium">Frage: {{ feedback.question }}</div>
-                                <div class="text-sm text-gray-700 my-2">{{ feedback.answer }}</div>
-                                <div class="text-sm text-red-600">
-                                    <span class="font-medium">Kommentar:</span> {{ feedback.comment || 'Kein Kommentar' }}
+            </header>
+            
+            <!-- Chat View -->
+            <div v-show="activeView === 'chat'" class="flex flex-1 overflow-hidden container mx-auto my-4">
+                <!-- Sessions Sidebar -->
+                <aside class="nscale-sidebar w-80 p-4 rounded-l-lg overflow-y-auto">
+                    <h2 class="text-lg font-medium mb-6 text-gray-700">Unterhaltungen</h2>
+                    <ul class="space-y-2">
+                        <li v-for="session in sessions" :key="session.id" 
+                            @click="loadSession(session.id)"
+                            :class="['nscale-session-item cursor-pointer', 
+                            currentSessionId === session.id ? 'active' : '']">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                    <span class="truncate">{{ session.title }}</span>
                                 </div>
-                                <div class="text-xs text-gray-500 mt-1">{{ new Date(feedback.timestamp * 1000).toLocaleString() }}</div>
+                                <button @click.stop="deleteSession(session.id)" class="text-gray-400 hover:text-red-500">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
                             </div>
+                        </li>
+                    </ul>
+                </aside>
+                
+                <!-- Chat Area -->
+                <main class="nscale-card flex-1 flex flex-col bg-white overflow-hidden rounded-r-lg ml-4">
+                    <div v-if="!currentSessionId" class="flex h-full items-center justify-center text-gray-400 p-8">
+                        <div class="text-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                            <h3 class="text-lg font-medium mb-2">Keine Unterhaltung ausgewählt</h3>
+                            <p class="text-sm text-gray-500 mb-4">Wählen Sie eine Unterhaltung aus der Seitenleiste oder starten Sie eine neue.</p>
+                            <button @click="startNewSession" class="nscale-btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                Neue Unterhaltung starten
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div v-else class="chat-container">
+                        <!-- Chat Messages -->
+                        <div class="message-container" ref="chatMessages">
+                            <div v-for="(message, index) in messages" :key="index" class="mb-6">
+                                <!-- Systemnachricht -->
+                                <div v-if="message.is_system" class="nscale-message-system">
+                                    <div v-html="formatMessage(message.message)" class="prose"></div>
+                                </div>
+                                <!-- Normale Nutzer- oder Assistentennachricht -->
+                                <div v-else :class="[message.is_user ? 'nscale-message-user' : 'nscale-message-assistant']">
+                                    <div v-html="formatMessage(message.message)" class="prose"></div>
+                                    
+                                    <!-- Feedback-Buttons nur für Assistenten-Nachrichten -->
+                                    <div v-if="!message.is_user" class="feedback-buttons">
+                                        <span v-if="message.feedback_comment" class="feedback-comment">{{ message.feedback_comment }}</span>
+                                        <button 
+                                            @click="submitFeedback(message.id, message.session_id || currentSessionId, true)" 
+                                            :class="['feedback-button', { 'selected': message.feedback_positive === true }]"
+                                            title="Hilfreich">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                                            </svg>
+                                        </button>
+                                        <button 
+                                            @click="submitFeedback(message.id, message.session_id || currentSessionId, false)" 
+                                            :class="['feedback-button', { 'selected negative': message.feedback_positive === false }]"
+                                            title="Nicht hilfreich">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2" />
+                                            </svg>
+                                        </button>
+                                        <button 
+                                            v-if="message.feedback_positive === false" 
+                                            @click="showFeedbackCommentDialog(message)" 
+                                            class="feedback-button"
+                                            title="Kommentar hinzufügen">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-if="isLoading" class="flex justify-center p-4">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Input Area -->
+                        <div class="input-container bg-white">
+                            <form @submit.prevent="sendQuestionStream" class="flex space-x-2">
+                                <input v-model="question" class="nscale-input flex-1" 
+                                    placeholder="Stellen Sie Ihre Frage zur nscale DMS-Software..." 
+                                    :disabled="!currentSessionId || isLoading" />
+                                <button type="submit" class="nscale-btn-primary"
+                                    :disabled="!currentSessionId || !question || isLoading">
+                                    <span v-if="isLoading">
+                                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Wird gesendet...
+                                    </span>
+                                    <span v-else>Senden</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </main>
+            </div>
+            
+            <!-- Admin View -->
+            <div v-show="activeView === 'admin'" class="flex-1 container mx-auto my-4 bg-white shadow rounded-lg p-6 overflow-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-2xl font-semibold text-gray-800">Systemadministration</h1>
+                    <div class="text-sm text-gray-500">Angemeldet als {{ userRole }}</div>
+                </div>
+                
+                <div class="admin-tabs">
+                    <div 
+                        @click="adminTab = 'users'" 
+                        :class="['admin-tab', { 'active': adminTab === 'users' }]">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        Benutzer
+                    </div>
+                    <div 
+                        @click="adminTab = 'system'; loadSystemStats()" 
+                        :class="['admin-tab', { 'active': adminTab === 'system' }]">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        System
+                    </div>
+                    <div 
+                        @click="adminTab = 'feedback'; loadFeedbackStats(); loadNegativeFeedback()" 
+                        :class="['admin-tab', { 'active': adminTab === 'feedback' }]">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                        </svg>
+                        Feedback
+                    </div>
+                </div>
+                
+                <div class="admin-content mt-6">
+                    <!-- Benutzer-Tab -->
+                    <div v-if="adminTab === 'users'" class="admin-panel-content">
+                        <div class="admin-card mb-8">
+                            <div class="admin-card-title text-xl font-semibold mb-4">Neuen Benutzer erstellen</div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="form-group">
+                                    <label class="admin-label">E-Mail</label>
+                                    <input v-model="newUser.email" type="email" class="nscale-input w-full" placeholder="E-Mail-Adresse">
+                                </div>
+                                <div class="form-group">
+                                    <label class="admin-label">Passwort</label>
+                                    <input v-model="newUser.password" type="password" class="nscale-input w-full" placeholder="Passwort">
+                                </div>
+                                <div class="form-group">
+                                    <label class="admin-label">Rolle</label>
+                                    <select v-model="newUser.role" class="nscale-input w-full">
+                                        <option value="user">Benutzer</option>
+                                        <option value="admin">Administrator</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <button @click="createUser" class="nscale-btn-primary">Benutzer erstellen</button>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-card">
+                            <div class="admin-card-title text-xl font-semibold mb-4">Benutzerliste</div>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full admin-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>E-Mail</th>
+                                            <th>Rolle</th>
+                                            <th>Aktionen</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="user in adminUsers" :key="user.id">
+                                            <td>{{ user.id }}</td>
+                                            <td>{{ user.email }}</td>
+                                            <td>
+                                                <select 
+                                                    v-model="user.role" 
+                                                    @change="updateUserRole(user.id, user.role)"
+                                                    class="nscale-input">
+                                                    <option value="user">Benutzer</option>
+                                                    <option value="admin">Administrator</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <button @click="deleteUser(user.id)" class="admin-button-danger">
+                                                    Löschen
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- System-Tab -->
+                    <div v-if="adminTab === 'system'" class="admin-panel-content">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-xl font-semibold">Systemübersicht</h2>
+                            <button @click="loadSystemStats" class="nscale-btn-secondary">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                Aktualisieren
+                            </button>
+                        </div>
+                        
+                        <div class="admin-stats-grid grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div class="admin-stat-card">
+                                <div class="admin-stat-value text-3xl font-bold text-green-600">{{ systemStats.document_count || 0 }}</div>
+                                <div class="admin-stat-label">Dokumente</div>
+                            </div>
+                            <div class="admin-stat-card">
+                                <div class="admin-stat-value text-3xl font-bold text-green-600">{{ systemStats.chunk_count || 0 }}</div>
+                                <div class="admin-stat-label">Chunks</div>
+                            </div>
+                            <div class="admin-stat-card">
+                                <div class="admin-stat-value text-3xl font-bold text-green-600">{{ Object.keys(systemStats.documents || {}).length }}</div>
+                                <div class="admin-stat-label">Quellen</div>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-card mb-8">
+                            <div class="admin-card-title text-xl font-semibold mb-4">System-Aktionen</div>
+                            <div class="admin-actions grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <button @click="reloadMotd" class="nscale-btn-secondary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    MOTD neu laden
+                                </button>
+                                <button @click="clearModelCache" class="nscale-btn-secondary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Modell-Cache leeren
+                                </button>
+                                <button @click="clearEmbeddingCache" class="nscale-btn-secondary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Embedding-Cache leeren
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-card">
+                            <div class="admin-card-title text-xl font-semibold mb-4">Dokumente</div>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full admin-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Datei</th>
+                                            <th>Chunks</th>
+                                            <th>Tokens</th>
+                                            <th>Letzte Änderung</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(docStats, filename) in systemStats.documents || {}" :key="filename">
+                                            <td>{{ filename }}</td>
+                                            <td>{{ docStats.chunks }}</td>
+                                            <td>{{ docStats.total_tokens }}</td>
+                                            <td>{{ docStats.modified }}</td>
+                                        </tr>
+                                        <tr v-if="Object.keys(systemStats.documents || {}).length === 0">
+                                            <td colspan="4" class="text-center py-4 text-gray-500">Keine Dokumente vorhanden</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Feedback-Tab -->
+                    <div v-if="adminTab === 'feedback'" class="admin-panel-content">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-xl font-semibold">Feedback-Übersicht</h2>
+                            <button @click="loadFeedbackStats(); loadNegativeFeedback()" class="nscale-btn-secondary">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                Aktualisieren
+                            </button>
+                        </div>
+                        
+                        <div class="admin-stats-grid grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                            <div class="admin-stat-card">
+                                <div class="admin-stat-value text-3xl font-bold text-green-600">{{ feedbackStats.total_feedback || 0 }}</div>
+                                <div class="admin-stat-label">Gesamtes Feedback</div>
+                            </div>
+                            <div class="admin-stat-card">
+                                <div class="admin-stat-value text-3xl font-bold text-green-600">{{ feedbackStats.positive_count || 0 }}</div>
+                                <div class="admin-stat-label">Positiv</div>
+                            </div>
+                            <div class="admin-stat-card">
+                                <div class="admin-stat-value text-3xl font-bold text-red-500">{{ feedbackStats.negative_count || 0 }}</div>
+                                <div class="admin-stat-label">Negativ</div>
+                            </div>
+                            <div class="admin-stat-card">
+                                <div class="admin-stat-value text-3xl font-bold text-green-600">{{ Math.round((feedbackStats.positive_count || 0) / (feedbackStats.total_feedback || 1) * 100) }}%</div>
+                                <div class="admin-stat-label">Zufriedenheit</div>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-card">
+                            <div class="admin-card-title text-xl font-semibold mb-4">Negatives Feedback</div>
+                            <div v-if="negativeFeedback.length === 0" class="text-gray-500 italic p-4 text-center">
+                                Kein negatives Feedback vorhanden
+                            </div>
+                            <div v-else class="grid grid-cols-1 gap-4">
+                                <div v-for="feedback in negativeFeedback" :key="feedback.id" class="border-b border-gray-200 py-4">
+                                    <div class="font-medium">Frage: {{ feedback.question }}</div>
+                                    <div class="text-sm text-gray-700 my-2 p-3 bg-gray-50 rounded">{{ feedback.answer }}</div>
+                                    <div class="text-sm text-red-600 p-2 bg-red-50 rounded">
+                                        <span class="font-medium">Kommentar:</span> {{ feedback.comment || 'Kein Kommentar' }}
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1">{{ new Date(feedback.timestamp * 1000).toLocaleString() }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Settings Panel -->
+            <div v-if="showSettingsPanel" class="settings-panel">
+                <div class="settings-panel-header">
+                    <h3 class="settings-panel-title">Einstellungen</h3>
+                    <button @click="toggleSettings" class="settings-panel-close">×</button>
+                </div>
+                <div class="settings-panel-content">
+                    <div class="settings-section">
+                        <h4 class="settings-section-title">Erscheinungsbild</h4>
+                        <div class="settings-option">
+                            <label>Farbschema</label>
+                            <div class="settings-buttons">
+                                <button 
+                                    @click="setTheme('light')" 
+                                    :class="['settings-button', { active: currentTheme === 'light' }]">
+                                    ☀️ Hell
+                                </button>
+                                <button 
+                                    @click="setTheme('dark')" 
+                                    :class="['settings-button', { active: currentTheme === 'dark' }]">
+                                    🌙 Dunkel
+                                </button>
+                                <button 
+                                    @click="setTheme('contrast')" 
+                                    :class="['settings-button', { active: currentTheme === 'contrast' }]">
+                                    🔍 Kontrast
+                                </button>
+                            </div>
+                        </div>
+                        <div class="settings-option">
+                            <label>Schriftgröße</label>
+                            <div class="settings-buttons">
+                                <button 
+                                    @click="setFontSize('small')" 
+                                    :class="['settings-button', { active: currentFontSize === 'small' }]">
+                                    Klein
+                                </button>
+                                <button 
+                                    @click="setFontSize('medium')" 
+                                    :class="['settings-button', { active: currentFontSize === 'medium' }]">
+                                    Mittel
+                                </button>
+                                <button 
+                                    @click="setFontSize('large')" 
+                                    :class="['settings-button', { active: currentFontSize === 'large' }]">
+                                    Groß
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4 class="settings-section-title">Barrierefreiheit</h4>
+                        <div class="settings-option">
+                            <label class="flex items-center">
+                                <input 
+                                    type="checkbox" 
+                                    v-model="accessibilitySettings.reduceMotion" 
+                                    class="mr-2">
+                                Animationen reduzieren
+                            </label>
+                        </div>
+                        <div class="settings-option">
+                            <label class="flex items-center">
+                                <input 
+                                    type="checkbox" 
+                                    v-model="accessibilitySettings.simpleLanguage" 
+                                    class="mr-2">
+                                Einfache Sprache bevorzugen
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -463,6 +615,7 @@
     <script src="/static/js/chat.js" type="module"></script>
     <script src="/static/js/feedback.js" type="module"></script>
     <script src="/static/js/admin.js" type="module"></script>
+    <script src="/static/js/settings.js" type="module"></script>
     <script src="/static/js/app.js" type="module"></script>
 </body>
 </html>
