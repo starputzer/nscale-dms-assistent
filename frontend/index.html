@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>nscale DMS Assistent</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/vue@3.2.31/dist/vue.global.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -14,6 +15,7 @@
     <link href="/static/css/admin.css" rel="stylesheet">
     <link href="/static/css/settings.css" rel="stylesheet">
     <link href="/static/css/themes.css" rel="stylesheet">
+    <link href="/static/css/improved-ui.css" rel="stylesheet">
 </head>
 <body class="min-h-screen bg-gray-50">
     <div id="app" class="h-screen flex flex-col">
@@ -133,70 +135,75 @@
         <!-- Main Application (Chat + Admin) -->
         <div v-else class="flex flex-col h-screen">
             <!-- Navigation Header -->
-            <header class="nscale-header p-4">
+            <header class="nscale-header p-4 shadow-sm">
                 <div class="container mx-auto flex justify-between items-center">
                     <div class="flex items-center">
-                        <img src="/static/images/senmvku-logo.png" alt="Berlin Logo" class="h-16 mr-4">
+                        <img src="/static/images/senmvku-logo.png" alt="Berlin Logo" class="h-12 mr-4">
                         <div class="nscale-logo">nscale DMS Assistent</div>
                     </div>
                     
-                    <!-- Navigation -->
+                    <!-- Simplified Navigation Menu -->
                     <div class="flex items-center space-x-4">
-                        <nav class="flex space-x-2">
-                            <button 
-                                @click="activeView = 'chat'"
-                                :class="['nav-button', activeView === 'chat' ? 'nav-active' : '']">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                </svg>
-                                Chat
-                            </button>
-                            
-                            <!-- Admin Nav Button - nur für Admins -->
-                            <button 
-                                v-if="userRole === 'admin'"
-                                @click="activeView = 'admin'"
-                                :class="['nav-button', activeView === 'admin' ? 'nav-active' : '']">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                Administration
-                            </button>
-                        </nav>
+                        <button 
+                            @click="startNewSession" 
+                            class="nscale-btn-primary flex items-center">
+                            <i class="fas fa-plus mr-2"></i>
+                            Neue Unterhaltung
+                        </button>
                         
-                        <div class="flex space-x-2 ml-4">
-                            <!-- Neue Unterhaltung Button -->
-                            <button @click="startNewSession" class="nscale-btn-secondary">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                                Neue Unterhaltung
-                            </button>
-                            
-                            <!-- Settings Button (wird für Dark Mode etc. reserviert) -->
-                            <button @click="toggleSettings" class="settings-button">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
-                                </svg>
-                            </button>
-                            
-                            <!-- Abmelden-Button -->
-                            <button @click="logout" class="nscale-btn-secondary">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                </svg>
-                                Abmelden
-                            </button>
-                        </div>
+                        <button 
+                            @click="logout" 
+                            class="nscale-btn-secondary flex items-center">
+                            <i class="fas fa-sign-out-alt mr-2"></i>
+                            Abmelden
+                        </button>
                     </div>
                 </div>
             </header>
             
-            <!-- Chat View -->
-            <div v-show="activeView === 'chat'" class="flex flex-1 overflow-hidden container mx-auto my-4">
-                <!-- Sessions Sidebar -->
-                <aside class="nscale-sidebar w-80 p-4 rounded-l-lg overflow-y-auto">
+            <!-- Main Content with Admin Sidebar -->
+            <div class="flex flex-1 overflow-hidden container mx-auto my-4">
+                <!-- Admin Sidebar - Only visible when in admin mode -->
+                <aside v-if="activeView === 'admin' && userRole === 'admin'" class="admin-sidebar w-64 flex-shrink-0 transition-all">
+                    <div class="p-4 font-semibold text-lg">Systemadministration</div>
+                    
+                    <nav class="admin-nav">
+                        <button 
+                            @click="adminTab = 'users'" 
+                            :class="['admin-nav-item', adminTab === 'users' ? 'active' : '']">
+                            <i class="fas fa-users"></i>
+                            <span>Benutzer</span>
+                        </button>
+                        
+                        <button 
+                            @click="adminTab = 'system'; loadSystemStats()" 
+                            :class="['admin-nav-item', adminTab === 'system' ? 'active' : '']">
+                            <i class="fas fa-chart-line"></i>
+                            <span>System</span>
+                        </button>
+                        
+                        <button 
+                            @click="adminTab = 'feedback'; loadFeedbackStats(); loadNegativeFeedback()" 
+                            :class="['admin-nav-item', adminTab === 'feedback' ? 'active' : '']">
+                            <i class="fas fa-comment-dots"></i>
+                            <span>Feedback</span>
+                        </button>
+                        
+                        <button 
+                            @click="adminTab = 'motd'; loadMotdConfig()" 
+                            :class="['admin-nav-item', adminTab === 'motd' ? 'active' : '']">
+                            <i class="fas fa-info-circle"></i>
+                            <span>MOTD</span>
+                        </button>
+                    </nav>
+                    
+                    <div class="mt-auto p-4 text-sm text-gray-500">
+                        <p>Angemeldet als: <span class="font-semibold">{{ userRole }}</span></p>
+                    </div>
+                </aside>
+
+                <!-- Sessions Sidebar - Only visible in chat mode -->
+                <aside v-if="activeView === 'chat'" class="nscale-sidebar w-80 p-4 rounded-l-lg shadow-sm overflow-y-auto">
                     <h2 class="text-lg font-medium mb-6 text-gray-700">Unterhaltungen</h2>
                     <ul class="space-y-2">
                         <li v-for="session in sessions" :key="session.id" 
@@ -205,540 +212,532 @@
                             currentSessionId === session.id ? 'active' : '']">
                             <div class="flex justify-between items-center">
                                 <div class="flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                    </svg>
+                                    <i class="fas fa-comment text-gray-500 mr-2"></i>
                                     <span class="truncate">{{ session.title }}</span>
                                 </div>
                                 <button @click.stop="deleteSession(session.id)" class="text-gray-400 hover:text-red-500">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
+                                    <i class="fas fa-trash-alt"></i>
                                 </button>
                             </div>
                         </li>
                     </ul>
                 </aside>
                 
-                <!-- Chat Area -->
-                <main class="nscale-card flex-1 flex flex-col bg-white overflow-hidden rounded-r-lg ml-4">
-                    <div v-if="!currentSessionId" class="flex h-full items-center justify-center text-gray-400 p-8">
-                        <div class="text-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                            </svg>
-                            <h3 class="text-lg font-medium mb-2">Keine Unterhaltung ausgewählt</h3>
-                            <p class="text-sm text-gray-500 mb-4">Wählen Sie eine Unterhaltung aus der Seitenleiste oder starten Sie eine neue.</p>
-                            <button @click="startNewSession" class="nscale-btn-primary">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                                Neue Unterhaltung starten
-                            </button>
+                <!-- Main Content Area -->
+                <main class="flex-1 flex flex-col bg-white overflow-hidden rounded-lg shadow-sm ml-4 relative">
+                    <!-- Chat View -->
+                    <div v-if="activeView === 'chat'" class="h-full flex flex-col">
+                        <div v-if="!currentSessionId" class="flex h-full items-center justify-center text-gray-400 p-8">
+                            <div class="text-center">
+                                <i class="fas fa-comment-dots text-5xl text-gray-300 mb-4"></i>
+                                <h3 class="text-lg font-medium mb-2">Keine Unterhaltung ausgewählt</h3>
+                                <p class="text-sm text-gray-500 mb-4">Wählen Sie eine Unterhaltung aus der Seitenleiste oder starten Sie eine neue.</p>
+                                <button @click="startNewSession" class="nscale-btn-primary">
+                                    <i class="fas fa-plus mr-2"></i>
+                                    Neue Unterhaltung starten
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div v-else class="chat-container h-full">
+                            <!-- MOTD im Chat anzeigen -->
+                            <div v-if="motd && motd.enabled && motd.display.showInChat && !motdDismissed" 
+                                class="motd-banner p-4 mx-4 mt-4 mb-2 rounded-lg relative shadow-sm"
+                                :style="{
+                                    backgroundColor: motd.style.backgroundColor,
+                                    borderColor: motd.style.borderColor,
+                                    color: motd.style.textColor,
+                                    border: '1px solid ' + motd.style.borderColor
+                                }">
+                                <button v-if="motd.display.dismissible" 
+                                        @click="dismissMotd" 
+                                        class="absolute top-2 right-2 font-bold"
+                                        :style="{ color: motd.style.textColor }">
+                                    ×
+                                </button>
+                                <div v-html="formatMotdContent(motd.content)" class="motd-content"></div>
+                            </div>
+                            
+                            <!-- Chat Messages -->
+                            <div class="message-container flex-1 overflow-y-auto p-4" ref="chatMessages">
+                                <div v-for="(message, index) in messages" :key="index" class="mb-6">
+                                    <!-- Systemnachricht -->
+                                    <div v-if="message.is_system" class="nscale-message-system">
+                                        <div v-html="formatMessage(message.message)" class="prose"></div>
+                                    </div>
+                                    <!-- Normale Nutzer- oder Assistentennachricht -->
+                                    <div v-else :class="[message.is_user ? 'nscale-message-user' : 'nscale-message-assistant']">
+                                        <div v-html="formatMessage(message.message)" class="prose"></div>
+                                        
+                                        <!-- Feedback-Buttons nur für Assistenten-Nachrichten -->
+                                        <div v-if="!message.is_user" class="feedback-buttons">
+                                            <span v-if="message.feedback_comment" class="feedback-comment">{{ message.feedback_comment }}</span>
+                                            <button 
+                                                @click="submitFeedback(message.id, message.session_id || currentSessionId, true)" 
+                                                :class="['feedback-button', { 'selected': message.feedback_positive === true }]"
+                                                title="Hilfreich">
+                                                <i class="fas fa-thumbs-up"></i>
+                                            </button>
+                                            <button 
+                                                @click="submitFeedback(message.id, message.session_id || currentSessionId, false)" 
+                                                :class="['feedback-button', { 'selected negative': message.feedback_positive === false }]"
+                                                title="Nicht hilfreich">
+                                                <i class="fas fa-thumbs-down"></i>
+                                            </button>
+                                            <button 
+                                                v-if="message.feedback_positive === false" 
+                                                @click="showFeedbackCommentDialog(message)" 
+                                                class="feedback-button"
+                                                title="Kommentar hinzufügen">
+                                                <i class="fas fa-comment"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-if="isLoading" class="flex justify-center p-4">
+                                    <div class="loader"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Input Area -->
+                            <div class="input-container p-4 border-t border-gray-100 bg-white">
+                                <form @submit.prevent="sendQuestionStream" class="flex space-x-2">
+                                    <input v-model="question" class="nscale-input flex-1" 
+                                        placeholder="Stellen Sie Ihre Frage zur nscale DMS-Software..." 
+                                        :disabled="!currentSessionId || isLoading" />
+                                    <button type="submit" class="nscale-btn-primary flex items-center"
+                                        :disabled="!currentSessionId || !question || isLoading">
+                                        <span v-if="isLoading">
+                                            <i class="fas fa-spinner fa-spin mr-2"></i>
+                                            Wird gesendet...
+                                        </span>
+                                        <span v-else>
+                                            <i class="fas fa-paper-plane mr-2"></i>
+                                            Senden
+                                        </span>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                     
-                    <div v-else class="chat-container">
-                        <!-- MOTD im Chat anzeigen -->
-                        <div v-if="motd && motd.enabled && motd.display.showInChat && !motdDismissed" 
-                             :style="{
-                               backgroundColor: motd.style.backgroundColor,
-                               borderColor: motd.style.borderColor,
-                               color: motd.style.textColor,
-                               border: '1px solid ' + motd.style.borderColor
-                             }"
-                             class="p-4 mx-4 mt-4 mb-2 rounded-lg relative">
-                            <button v-if="motd.display.dismissible" 
-                                    @click="dismissMotd" 
-                                    class="absolute top-2 right-2 font-bold"
-                                    :style="{ color: motd.style.textColor }">
-                                ×
-                            </button>
-                            <div v-html="formatMotdContent(motd.content)" class="motd-content"></div>
+                    <!-- Admin View -->
+                    <div v-if="activeView === 'admin'" class="h-full flex flex-col p-6 overflow-auto">
+                        <div class="mb-6">
+                            <h1 class="text-2xl font-semibold text-gray-800">{{ getAdminTabTitle() }}</h1>
                         </div>
                         
-                        <!-- Chat Messages -->
-                        <div class="message-container" ref="chatMessages">
-                            <div v-for="(message, index) in messages" :key="index" class="mb-6">
-                                <!-- Systemnachricht -->
-                                <div v-if="message.is_system" class="nscale-message-system">
-                                    <div v-html="formatMessage(message.message)" class="prose"></div>
-                                </div>
-                                <!-- Normale Nutzer- oder Assistentennachricht -->
-                                <div v-else :class="[message.is_user ? 'nscale-message-user' : 'nscale-message-assistant']">
-                                    <div v-html="formatMessage(message.message)" class="prose"></div>
-                                    
-                                    <!-- Feedback-Buttons nur für Assistenten-Nachrichten -->
-                                    <div v-if="!message.is_user" class="feedback-buttons">
-                                        <span v-if="message.feedback_comment" class="feedback-comment">{{ message.feedback_comment }}</span>
-                                        <button 
-                                            @click="submitFeedback(message.id, message.session_id || currentSessionId, true)" 
-                                            :class="['feedback-button', { 'selected': message.feedback_positive === true }]"
-                                            title="Hilfreich">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
-                                            </svg>
-                                        </button>
-                                        <button 
-                                            @click="submitFeedback(message.id, message.session_id || currentSessionId, false)" 
-                                            :class="['feedback-button', { 'selected negative': message.feedback_positive === false }]"
-                                            title="Nicht hilfreich">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2" />
-                                            </svg>
-                                        </button>
-                                        <button 
-                                            v-if="message.feedback_positive === false" 
-                                            @click="showFeedbackCommentDialog(message)" 
-                                            class="feedback-button"
-                                            title="Kommentar hinzufügen">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                                            </svg>
+                        <div class="admin-content flex-1">
+                            <!-- Benutzer-Tab -->
+                            <div v-if="adminTab === 'users'" class="admin-panel-content">
+                                <div class="admin-card mb-8">
+                                    <div class="admin-card-title">Neuen Benutzer erstellen</div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div class="form-group">
+                                            <label class="admin-label">E-Mail</label>
+                                            <input v-model="newUser.email" type="email" class="nscale-input w-full" placeholder="E-Mail-Adresse">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="admin-label">Passwort</label>
+                                            <input v-model="newUser.password" type="password" class="nscale-input w-full" placeholder="Passwort">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="admin-label">Rolle</label>
+                                            <select v-model="newUser.role" class="nscale-input w-full">
+                                                <option value="user">Benutzer</option>
+                                                <option value="admin">Administrator</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4">
+                                        <button @click="createUser" class="nscale-btn-primary">
+                                            <i class="fas fa-user-plus mr-2"></i>
+                                            Benutzer erstellen
                                         </button>
                                     </div>
                                 </div>
+                                
+                                <div class="admin-card">
+                                    <div class="admin-card-title">Benutzerliste</div>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full admin-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>E-Mail</th>
+                                                    <th>Rolle</th>
+                                                    <th>Aktionen</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="user in adminUsers" :key="user.id">
+                                                    <td>{{ user.id }}</td>
+                                                    <td>{{ user.email }}</td>
+                                                    <td>
+                                                        <select 
+                                                            v-model="user.role" 
+                                                            @change="updateUserRole(user.id, user.role)"
+                                                            class="nscale-input">
+                                                            <option value="user">Benutzer</option>
+                                                            <option value="admin">Administrator</option>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <button @click="deleteUser(user.id)" class="admin-button-danger">
+                                                            <i class="fas fa-trash-alt mr-1"></i>
+                                                            Löschen
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
-                            <div v-if="isLoading" class="flex justify-center p-4">
-                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+                            
+                            <!-- System-Tab -->
+                            <div v-if="adminTab === 'system'" class="admin-panel-content">
+                                <div class="flex justify-end mb-6">
+                                    <button @click="loadSystemStats" class="nscale-btn-secondary">
+                                        <i class="fas fa-sync-alt mr-2"></i>
+                                        Aktualisieren
+                                    </button>
+                                </div>
+                                
+                                <div class="admin-stats-grid grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                    <div class="admin-stat-card">
+                                        <div class="admin-stat-value">{{ systemStats.document_count || 0 }}</div>
+                                        <div class="admin-stat-label">Dokumente</div>
+                                    </div>
+                                    <div class="admin-stat-card">
+                                        <div class="admin-stat-value">{{ systemStats.chunk_count || 0 }}</div>
+                                        <div class="admin-stat-label">Chunks</div>
+                                    </div>
+                                    <div class="admin-stat-card">
+                                        <div class="admin-stat-value">{{ Object.keys(systemStats.documents || {}).length }}</div>
+                                        <div class="admin-stat-label">Quellen</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="admin-card mb-8">
+                                    <div class="admin-card-title">System-Aktionen</div>
+                                    <div class="admin-actions grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <button @click="reloadMotd" class="nscale-btn-secondary">
+                                            <i class="fas fa-sync-alt mr-2"></i>
+                                            MOTD neu laden
+                                        </button>
+                                        <button @click="clearModelCache" class="nscale-btn-secondary">
+                                            <i class="fas fa-trash-alt mr-2"></i>
+                                            Modell-Cache leeren
+                                        </button>
+                                        <button @click="clearEmbeddingCache" class="nscale-btn-secondary">
+                                            <i class="fas fa-trash-alt mr-2"></i>
+                                            Embedding-Cache leeren
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="admin-card">
+                                    <div class="admin-card-title">Dokumente</div>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full admin-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Datei</th>
+                                                    <th>Chunks</th>
+                                                    <th>Tokens</th>
+                                                    <th>Letzte Änderung</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="(docStats, filename) in systemStats.documents || {}" :key="filename">
+                                                    <td>{{ filename }}</td>
+                                                    <td>{{ docStats.chunks }}</td>
+                                                    <td>{{ docStats.total_tokens }}</td>
+                                                    <td>{{ docStats.modified }}</td>
+                                                </tr>
+                                                <tr v-if="Object.keys(systemStats.documents || {}).length === 0">
+                                                    <td colspan="4" class="text-center py-4 text-gray-500">Keine Dokumente vorhanden</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <!-- Input Area -->
-                        <div class="input-container bg-white">
-                            <form @submit.prevent="sendQuestionStream" class="flex space-x-2">
-                                <input v-model="question" class="nscale-input flex-1" 
-                                    placeholder="Stellen Sie Ihre Frage zur nscale DMS-Software..." 
-                                    :disabled="!currentSessionId || isLoading" />
-                                <button type="submit" class="nscale-btn-primary"
-                                    :disabled="!currentSessionId || !question || isLoading">
-                                    <span v-if="isLoading">
-                                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        Wird gesendet...
-                                    </span>
-                                    <span v-else>Senden</span>
-                                </button>
-                            </form>
+                            
+                            <!-- Feedback-Tab -->
+                            <div v-if="adminTab === 'feedback'" class="admin-panel-content">
+                                <div class="flex justify-end mb-6">
+                                    <button @click="loadFeedbackStats(); loadNegativeFeedback()" class="nscale-btn-secondary">
+                                        <i class="fas fa-sync-alt mr-2"></i>
+                                        Aktualisieren
+                                    </button>
+                                </div>
+                                
+                                <div class="admin-stats-grid grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                                    <div class="admin-stat-card">
+                                        <div class="admin-stat-value">{{ feedbackStats.total || 0 }}</div>
+                                        <div class="admin-stat-label">Gesamtes Feedback</div>
+                                    </div>
+                                    <div class="admin-stat-card">
+                                        <div class="admin-stat-value">{{ feedbackStats.positive || 0 }}</div>
+                                        <div class="admin-stat-label">Positiv</div>
+                                    </div>
+                                    <div class="admin-stat-card negative">
+                                        <div class="admin-stat-value">{{ feedbackStats.negative || 0 }}</div>
+                                        <div class="admin-stat-label">Negativ</div>
+                                    </div>
+                                    <div class="admin-stat-card">
+                                        <div class="admin-stat-value">{{ Math.round((feedbackStats.positive || 0) / (feedbackStats.total || 1) * 100) }}%</div>
+                                        <div class="admin-stat-label">Zufriedenheit</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="admin-card">
+                                    <div class="admin-card-title">Negatives Feedback</div>
+                                    <div v-if="negativeFeedback.length === 0" class="text-gray-500 italic p-4 text-center">
+                                        Kein negatives Feedback vorhanden
+                                    </div>
+                                    <div v-else class="grid grid-cols-1 gap-4">
+                                        <div v-for="feedback in negativeFeedback" :key="feedback.id" class="border-b border-gray-200 py-4">
+                                            <div class="font-medium">Frage: {{ feedback.question }}</div>
+                                            <div class="text-sm text-gray-700 my-2 p-3 bg-gray-50 rounded">{{ feedback.answer }}</div>
+                                            <div class="text-sm text-red-600 p-2 bg-red-50 rounded">
+                                                <span class="font-medium">Kommentar:</span> {{ feedback.comment || 'Kein Kommentar' }}
+                                            </div>
+                                            <div class="text-xs text-gray-500 mt-1">{{ new Date(feedback.timestamp * 1000).toLocaleString() }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- MOTD-Tab -->
+                            <div v-if="adminTab === 'motd'" class="admin-panel-content">
+                                <div class="flex flex-col lg:flex-row gap-6">
+                                    <!-- MOTD Form -->
+                                    <div class="flex-1">
+                                        <div class="admin-card">
+                                            <div class="admin-card-title">Message of the Day Konfiguration</div>
+                                            
+                                            <div class="mb-4">
+                                                <label class="admin-label">MOTD aktivieren</label>
+                                                <div class="flex items-center">
+                                                    <input type="checkbox" v-model="motdConfig.enabled" class="mr-2">
+                                                    <span class="text-sm text-gray-600">Aktiviert die Anzeige der MOTD für alle Benutzer</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-4">
+                                                <label class="admin-label">Format</label>
+                                                <select v-model="motdConfig.format" class="nscale-input w-full">
+                                                    <option value="markdown">Markdown</option>
+                                                    <option value="text">Einfacher Text</option>
+                                                    <option value="html">HTML (nur für fortgeschrittene Benutzer)</option>
+                                                </select>
+                                                <p class="text-xs text-gray-500 mt-1">Markdown wird für die Formatierung empfohlen.</p>
+                                            </div>
+
+                                            <div class="mb-4">
+                                                <label class="admin-label">Inhalt</label>
+                                                <textarea 
+                                                    v-model="motdConfig.content" 
+                                                    class="nscale-input w-full h-64 font-mono text-sm" 
+                                                    placeholder="Inhalt der MOTD..."
+                                                ></textarea>
+                                                <p class="text-xs text-gray-500 mt-1">
+                                                    <i class="fas fa-info-circle mr-1"></i>
+                                                    Markdown wird unterstützt, z.B. **fett** oder Listen mit - (Bindestrich)
+                                                </p>
+                                            </div>
+                                            
+                                            <div class="mb-4">
+                                                <label class="admin-label">Erscheinungsbild</label>
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label class="text-sm font-medium mb-1 block">Farbschema</label>
+                                                        <select v-model="selectedColorTheme" class="nscale-input w-full" @change="applyColorTheme">
+                                                            <option value="warning">Warnung (Gelb)</option>
+                                                            <option value="info">Information (Blau)</option>
+                                                            <option value="success">Erfolg (Grün)</option>
+                                                            <option value="danger">Gefahr (Rot)</option>
+                                                            <option value="neutral">Neutral (Grau)</option>
+                                                            <option value="custom">Benutzerdefiniert</option>
+                                                        </select>
+                                                    </div>
+                                                    
+                                                    <div v-if="selectedColorTheme === 'custom'" class="grid grid-cols-3 gap-2">
+                                                        <div>
+                                                            <label class="text-xs text-gray-600 mb-1 block">Hintergrund</label>
+                                                            <input type="color" v-model="motdConfig.style.backgroundColor" class="w-full h-10 cursor-pointer">
+                                                        </div>
+                                                        <div>
+                                                            <label class="text-xs text-gray-600 mb-1 block">Rand</label>
+                                                            <input type="color" v-model="motdConfig.style.borderColor" class="w-full h-10 cursor-pointer">
+                                                        </div>
+                                                        <div>
+                                                            <label class="text-xs text-gray-600 mb-1 block">Text</label>
+                                                            <input type="color" v-model="motdConfig.style.textColor" class="w-full h-10 cursor-pointer">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mb-4">
+                                                <label class="admin-label">Anzeigeoptionen</label>
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div class="flex items-center">
+                                                        <input type="checkbox" v-model="motdConfig.display.dismissible" class="mr-2">
+                                                        <span class="text-sm">Schließbar (X-Button anzeigen)</span>
+                                                    </div>
+                                                    <div class="flex items-center">
+                                                        <input type="checkbox" v-model="motdConfig.display.showInChat" class="mr-2">
+                                                        <span class="text-sm">Im Chat anzeigen</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex space-x-4 mt-4">
+                                            <button @click="resetMotdConfig" class="nscale-btn-secondary">
+                                                <i class="fas fa-undo mr-2"></i>
+                                                Zurücksetzen
+                                            </button>
+                                            <button @click="saveMotdConfig" class="nscale-btn-primary">
+                                                <i class="fas fa-save mr-2"></i>
+                                                Speichern
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- MOTD Vorschau -->
+                                    <div class="w-full lg:w-1/3 flex flex-col">
+                                        <div class="admin-card h-full">
+                                            <div class="admin-card-title">Vorschau</div>
+                                            <div class="p-4 border rounded-lg flex-1 mt-4" 
+                                                :style="{
+                                                    backgroundColor: motdConfig.style.backgroundColor,
+                                                    borderColor: motdConfig.style.borderColor,
+                                                    color: motdConfig.style.textColor,
+                                                    borderWidth: '1px',
+                                                    borderStyle: 'solid'
+                                                }">
+                                                <div v-if="motdConfig.display.dismissible" class="float-right cursor-pointer">×</div>
+                                                <div v-html="formatMotdContent(motdConfig.content)" class="prose"></div>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-2">
+                                                <i class="fas fa-info-circle mr-1"></i>
+                                                So wird die Nachricht für die Benutzer angezeigt
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    
+                    <!-- Navigation Toggle Button -->
+                    <button @click="toggleView" class="floating-action-button">
+                        <i v-if="activeView === 'chat' && userRole === 'admin'" class="fas fa-cog"></i>
+                        <i v-else-if="activeView === 'admin'" class="fas fa-comment"></i>
+                        <i v-else class="fas fa-cog"></i>
+                    </button>
                 </main>
             </div>
-            
-            <!-- Admin View -->
-            <div v-show="activeView === 'admin'" class="flex-1 container mx-auto my-4 bg-white shadow rounded-lg p-6 overflow-auto">
-                <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-2xl font-semibold text-gray-800">Systemadministration</h1>
-                    <div class="text-sm text-gray-500">Angemeldet als {{ userRole }}</div>
-                </div>
-                
-                <div class="admin-tabs">
-                    <div 
-                        @click="adminTab = 'users'" 
-                        :class="['admin-tab', { 'active': adminTab === 'users' }]">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                        Benutzer
-                    </div>
-                    <div 
-                        @click="adminTab = 'system'; loadSystemStats()" 
-                        :class="['admin-tab', { 'active': adminTab === 'system' }]">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                        System
-                    </div>
-                    <div 
-                        @click="adminTab = 'feedback'; loadFeedbackStats(); loadNegativeFeedback()" 
-                        :class="['admin-tab', { 'active': adminTab === 'feedback' }]">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                        </svg>
-                        Feedback
-                    </div>
-                    <div 
-                        @click="adminTab = 'motd'; loadMotdConfig()" 
-                        :class="['admin-tab', { 'active': adminTab === 'motd' }]">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        MOTD
-                    </div>
-                </div>
-                
-                <div class="admin-content mt-6">
-                    <!-- Benutzer-Tab -->
-                    <div v-if="adminTab === 'users'" class="admin-panel-content">
-                        <div class="admin-card mb-8">
-                            <div class="admin-card-title text-xl font-semibold mb-4">Neuen Benutzer erstellen</div>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div class="form-group">
-                                    <label class="admin-label">E-Mail</label>
-                                    <input v-model="newUser.email" type="email" class="nscale-input w-full" placeholder="E-Mail-Adresse">
-                                </div>
-                                <div class="form-group">
-                                    <label class="admin-label">Passwort</label>
-                                    <input v-model="newUser.password" type="password" class="nscale-input w-full" placeholder="Passwort">
-                                </div>
-                                <div class="form-group">
-                                    <label class="admin-label">Rolle</label>
-                                    <select v-model="newUser.role" class="nscale-input w-full">
-                                        <option value="user">Benutzer</option>
-                                        <option value="admin">Administrator</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="mt-4">
-                                <button @click="createUser" class="nscale-btn-primary">Benutzer erstellen</button>
-                            </div>
-                        </div>
-                        
-                        <div class="admin-card">
-                            <div class="admin-card-title text-xl font-semibold mb-4">Benutzerliste</div>
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full admin-table">
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>E-Mail</th>
-                                            <th>Rolle</th>
-                                            <th>Aktionen</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-for="user in adminUsers" :key="user.id">
-                                            <td>{{ user.id }}</td>
-                                            <td>{{ user.email }}</td>
-                                            <td>
-                                                <select 
-                                                    v-model="user.role" 
-                                                    @change="updateUserRole(user.id, user.role)"
-                                                    class="nscale-input">
-                                                    <option value="user">Benutzer</option>
-                                                    <option value="admin">Administrator</option>
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <button @click="deleteUser(user.id)" class="admin-button-danger">
-                                                    Löschen
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- System-Tab -->
-                    <div v-if="adminTab === 'system'" class="admin-panel-content">
-                        <div class="flex justify-between items-center mb-6">
-                            <h2 class="text-xl font-semibold">Systemübersicht</h2>
-                            <button @click="loadSystemStats" class="nscale-btn-secondary">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
-                                Aktualisieren
-                            </button>
-                        </div>
-                        
-                        <div class="admin-stats-grid grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                            <div class="admin-stat-card">
-                                <div class="admin-stat-value text-3xl font-bold text-green-600">{{ systemStats.document_count || 0 }}</div>
-                                <div class="admin-stat-label">Dokumente</div>
-                            </div>
-                            <div class="admin-stat-card">
-                                <div class="admin-stat-value text-3xl font-bold text-green-600">{{ systemStats.chunk_count || 0 }}</div>
-                                <div class="admin-stat-label">Chunks</div>
-                            </div>
-                            <div class="admin-stat-card">
-                                <div class="admin-stat-value text-3xl font-bold text-green-600">{{ Object.keys(systemStats.documents || {}).length }}</div>
-                                <div class="admin-stat-label">Quellen</div>
-                            </div>
-                        </div>
-                        
-                        <div class="admin-card mb-8">
-                            <div class="admin-card-title text-xl font-semibold mb-4">System-Aktionen</div>
-                            <div class="admin-actions grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <button @click="reloadMotd" class="nscale-btn-secondary">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                    MOTD neu laden
-                                </button>
-                                <button @click="clearModelCache" class="nscale-btn-secondary">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                    Modell-Cache leeren
-                                </button>
-                                <button @click="clearEmbeddingCache" class="nscale-btn-secondary">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                    Embedding-Cache leeren
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="admin-card">
-                            <div class="admin-card-title text-xl font-semibold mb-4">Dokumente</div>
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full admin-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Datei</th>
-                                            <th>Chunks</th>
-                                            <th>Tokens</th>
-                                            <th>Letzte Änderung</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-for="(docStats, filename) in systemStats.documents || {}" :key="filename">
-                                            <td>{{ filename }}</td>
-                                            <td>{{ docStats.chunks }}</td>
-                                            <td>{{ docStats.total_tokens }}</td>
-                                            <td>{{ docStats.modified }}</td>
-                                        </tr>
-                                        <tr v-if="Object.keys(systemStats.documents || {}).length === 0">
-                                            <td colspan="4" class="text-center py-4 text-gray-500">Keine Dokumente vorhanden</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Feedback-Tab -->
-                    <div v-if="adminTab === 'feedback'" class="admin-panel-content">
-                        <div class="flex justify-between items-center mb-6">
-                            <h2 class="text-xl font-semibold">Feedback-Übersicht</h2>
-                            <button @click="loadFeedbackStats(); loadNegativeFeedback()" class="nscale-btn-secondary">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
-                                Aktualisieren
-                            </button>
-                        </div>
-                        
-                        <div class="admin-stats-grid grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                            <div class="admin-stat-card">
-                                <div class="admin-stat-value text-3xl font-bold text-green-600">{{ feedbackStats.total_feedback || 0 }}</div>
-                                <div class="admin-stat-label">Gesamtes Feedback</div>
-                            </div>
-                            <div class="admin-stat-card">
-                                <div class="admin-stat-value text-3xl font-bold text-green-600">{{ feedbackStats.positive_count || 0 }}</div>
-                                <div class="admin-stat-label">Positiv</div>
-                            </div>
-                            <div class="admin-stat-card">
-                                <div class="admin-stat-value text-3xl font-bold text-red-500">{{ feedbackStats.negative_count || 0 }}</div>
-                                <div class="admin-stat-label">Negativ</div>
-                            </div>
-                            <div class="admin-stat-card">
-                                <div class="admin-stat-value text-3xl font-bold text-green-600">{{ Math.round((feedbackStats.positive_count || 0) / (feedbackStats.total_feedback || 1) * 100) }}%</div>
-                                <div class="admin-stat-label">Zufriedenheit</div>
-                            </div>
-                        </div>
-                        
-                        <div class="admin-card">
-                            <div class="admin-card-title text-xl font-semibold mb-4">Negatives Feedback</div>
-                            <div v-if="negativeFeedback.length === 0" class="text-gray-500 italic p-4 text-center">
-                                Kein negatives Feedback vorhanden
-                            </div>
-                            <div v-else class="grid grid-cols-1 gap-4">
-                                <div v-for="feedback in negativeFeedback" :key="feedback.id" class="border-b border-gray-200 py-4">
-                                    <div class="font-medium">Frage: {{ feedback.question }}</div>
-                                    <div class="text-sm text-gray-700 my-2 p-3 bg-gray-50 rounded">{{ feedback.answer }}</div>
-                                    <div class="text-sm text-red-600 p-2 bg-red-50 rounded">
-                                        <span class="font-medium">Kommentar:</span> {{ feedback.comment || 'Kein Kommentar' }}
-                                    </div>
-                                    <div class="text-xs text-gray-500 mt-1">{{ new Date(feedback.timestamp * 1000).toLocaleString() }}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- MOTD-Tab -->
-                    <div v-if="adminTab === 'motd'" class="admin-panel-content">
-                        <div class="admin-card">
-                            <div class="admin-card-title text-xl font-semibold mb-4">Message of the Day (MOTD) Konfiguration</div>
-                            
-                            <div class="mb-4">
-                                <label class="admin-label">MOTD aktivieren</label>
-                                <div class="flex items-center">
-                                    <input type="checkbox" v-model="motdConfig.enabled" class="mr-2">
-                                    <span class="text-sm text-gray-600">Aktiviert die Anzeige der MOTD für alle Benutzer</span>
-                                </div>
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="admin-label">Format</label>
-                                <select v-model="motdConfig.format" class="nscale-input w-full">
-                                    <option value="markdown">Markdown</option>
-                                    <option value="text">Einfacher Text</option>
-                                    <option value="html">HTML (nur für fortgeschrittene Benutzer)</option>
-                                </select>
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="admin-label">Inhalt</label>
-                                <textarea 
-                                    v-model="motdConfig.content" 
-                                    class="nscale-input w-full h-64 font-mono text-sm" 
-                                    placeholder="Inhalt der MOTD..."
-                                ></textarea>
-                                <span class="text-xs text-gray-500">Markdown wird unterstützt, z.B. **fett** oder Listen mit -</span>
-                            </div>
-                            
-                            <div class="mb-4">
-                                <label class="admin-label">Stil-Einstellungen</label>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div>
-                                        <label class="text-sm text-gray-600 mb-1 block">Hintergrundfarbe</label>
-                                        <input type="color" v-model="motdConfig.style.backgroundColor" class="w-full h-10 cursor-pointer">
-                                    </div>
-                                    <div>
-                                        <label class="text-sm text-gray-600 mb-1 block">Randfarbe</label>
-                                        <input type="color" v-model="motdConfig.style.borderColor" class="w-full h-10 cursor-pointer">
-                                    </div>
-                                    <div>
-                                        <label class="text-sm text-gray-600 mb-1 block">Textfarbe</label>
-                                        <input type="color" v-model="motdConfig.style.textColor" class="w-full h-10 cursor-pointer">
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-4">
-                                <label class="admin-label">Anzeigeoptionen</label>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div class="flex items-center">
-                                        <input type="checkbox" v-model="motdConfig.display.dismissible" class="mr-2">
-                                        <span class="text-sm">Schließbar (X-Button anzeigen)</span>
-                                    </div>
-                                    <div class="flex items-center">
-                                        <input type="checkbox" v-model="motdConfig.display.showInChat" class="mr-2">
-                                        <span class="text-sm">Im Chat anzeigen</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-4">
-                                <label class="admin-label">Vorschau</label>
-                                <div 
-                                    class="p-4 rounded-lg border"
-                                    :style="{
-                                        backgroundColor: motdConfig.style.backgroundColor,
-                                        borderColor: motdConfig.style.borderColor,
-                                        color: motdConfig.style.textColor
-                                    }"
-                                >
-                                    <div v-if="motdConfig.display.dismissible" class="float-right cursor-pointer">×</div>
-                                    <div v-html="formatMotdContent(motdConfig.content)"></div>
-                                </div>
-                            </div>
-                            
-                            <div class="mt-6 flex space-x-4">
-                                <button @click="resetMotdConfig" class="nscale-btn-secondary">
-                                    Zurücksetzen
-                                </button>
-                                <button @click="saveMotdConfig" class="nscale-btn-primary">
-                                    Speichern
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        </div>
+        
+        <!-- Settings Panel -->
+        <div v-if="showSettingsPanel" class="settings-panel transform transition-transform">
+            <div class="settings-panel-header">
+                <h3 class="settings-panel-title">Einstellungen</h3>
+                <button @click="toggleSettings" class="settings-panel-close">×</button>
             </div>
-            
-            <!-- Settings Panel -->
-            <div v-if="showSettingsPanel" class="settings-panel">
-                <div class="settings-panel-header">
-                    <h3 class="settings-panel-title">Einstellungen</h3>
-                    <button @click="toggleSettings" class="settings-panel-close">×</button>
-                </div>
-                <div class="settings-panel-content">
-                    <div class="settings-section">
-                        <h4 class="settings-section-title">Erscheinungsbild</h4>
-                        <div class="settings-option">
-                            <label>Farbschema</label>
-                            <div class="settings-buttons">
-                                <button 
-                                    @click="setTheme('light')" 
-                                    :class="['settings-button', { active: currentTheme === 'light' }]">
-                                    ☀️ Hell
-                                </button>
-                                <button 
-                                    @click="setTheme('dark')" 
-                                    :class="['settings-button', { active: currentTheme === 'dark' }]">
-                                    🌙 Dunkel
-                                </button>
-                                <button 
-                                    @click="setTheme('contrast')" 
-                                    :class="['settings-button', { active: currentTheme === 'contrast' }]">
-                                    🔍 Kontrast
-                                </button>
-                            </div>
-                        </div>
-                        <div class="settings-option">
-                            <label>Schriftgröße</label>
-                            <div class="settings-buttons">
-                                <button 
-                                    @click="setFontSize('small')" 
-                                    :class="['settings-button', { active: currentFontSize === 'small' }]">
-                                    Klein
-                                </button>
-                                <button 
-                                    @click="setFontSize('medium')" 
-                                    :class="['settings-button', { active: currentFontSize === 'medium' }]">
-                                    Mittel
-                                </button>
-                                <button 
-                                    @click="setFontSize('large')" 
-                                    :class="['settings-button', { active: currentFontSize === 'large' }]">
-                                    Groß
-                                </button>
-                            </div>
+            <div class="settings-panel-content">
+                <div class="settings-section">
+                    <h4 class="settings-section-title">Erscheinungsbild</h4>
+                    <div class="settings-option">
+                        <label>Farbschema</label>
+                        <div class="settings-buttons">
+                            <button 
+                                @click="setTheme('light')" 
+                                :class="['settings-button', { active: currentTheme === 'light' }]">
+                                <i class="fas fa-sun mr-2"></i>
+                                Hell
+                            </button>
+                            <button 
+                                @click="setTheme('dark')" 
+                                :class="['settings-button', { active: currentTheme === 'dark' }]">
+                                <i class="fas fa-moon mr-2"></i>
+                                Dunkel
+                            </button>
+                            <button 
+                                @click="setTheme('contrast')" 
+                                :class="['settings-button', { active: currentTheme === 'contrast' }]">
+                                <i class="fas fa-adjust mr-2"></i>
+                                Kontrast
+                            </button>
                         </div>
                     </div>
-                    
-                    <div class="settings-section">
-                        <h4 class="settings-section-title">Barrierefreiheit</h4>
-                        <div class="settings-option">
-                            <label class="flex items-center">
-                                <input 
-                                    type="checkbox" 
-                                    v-model="accessibilitySettings.reduceMotion" 
-                                    class="mr-2">
-                                Animationen reduzieren
-                            </label>
+                    <div class="settings-option">
+                        <label>Schriftgröße</label>
+                        <div class="settings-buttons">
+                            <button 
+                                @click="setFontSize('small')" 
+                                :class="['settings-button', { active: currentFontSize === 'small' }]">
+                                Klein
+                            </button>
+                            <button 
+                                @click="setFontSize('medium')" 
+                                :class="['settings-button', { active: currentFontSize === 'medium' }]">
+                                Mittel
+                            </button>
+                            <button 
+                                @click="setFontSize('large')" 
+                                :class="['settings-button', { active: currentFontSize === 'large' }]">
+                                Groß
+                            </button>
                         </div>
-                        <div class="settings-option">
-                            <label class="flex items-center">
-                                <input 
-                                    type="checkbox" 
-                                    v-model="accessibilitySettings.simpleLanguage" 
-                                    class="mr-2">
-                                Einfache Sprache bevorzugen
-                            </label>
-                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h4 class="settings-section-title">Barrierefreiheit</h4>
+                    <div class="settings-option">
+                        <label class="flex items-center">
+                            <input 
+                                type="checkbox" 
+                                v-model="accessibilitySettings.reduceMotion" 
+                                class="mr-2">
+                            Animationen reduzieren
+                        </label>
+                    </div>
+                    <div class="settings-option">
+                        <label class="flex items-center">
+                            <input 
+                                type="checkbox" 
+                                v-model="accessibilitySettings.simpleLanguage" 
+                                class="mr-2">
+                            Einfache Sprache bevorzugen
+                        </label>
                     </div>
                 </div>
             </div>
         </div>
         
         <!-- Feedback-Kommentar-Dialog -->
-        <div v-if="showFeedbackDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-lg shadow-lg p-6 w-96">
-                <h3 class="text-lg font-medium mb-4">Feedback hinzufügen</h3>
-                <p class="text-gray-600 mb-4">Bitte teilen Sie uns mit, warum diese Antwort nicht hilfreich war:</p>
-                <textarea 
-                    v-model="feedbackComment" 
-                    class="nscale-input w-full h-32 mb-4" 
-                    placeholder="Ihr Feedback..."></textarea>
-                <div class="flex justify-end space-x-2">
+        <div v-if="showFeedbackDialog" class="modal-overlay">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h3 class="modal-title">Feedback hinzufügen</h3>
+                    <button @click="showFeedbackDialog = false" class="modal-close">×</button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-gray-600 mb-4">Bitte teilen Sie uns mit, warum diese Antwort nicht hilfreich war:</p>
+                    <textarea 
+                        v-model="feedbackComment" 
+                        class="nscale-input w-full h-32 mb-4" 
+                        placeholder="Ihr Feedback..."></textarea>
+                </div>
+                <div class="modal-footer">
                     <button @click="showFeedbackDialog = false" class="nscale-btn-secondary">Abbrechen</button>
                     <button @click="submitFeedbackComment" class="nscale-btn-primary">Senden</button>
                 </div>

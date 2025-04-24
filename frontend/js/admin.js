@@ -185,9 +185,17 @@ export function setupAdmin(options) {
             if (userRole.value === 'admin') {
                 isLoading.value = true;
                 await axios.post('/api/admin/reload-motd');
+                
+                // Lade die globale MOTD auch neu
+                if (typeof window.loadMotd === 'function') {
+                    await window.loadMotd();
+                }
+                
+                alert('MOTD wurde erfolgreich neu geladen');
             }
         } catch (error) {
             console.error('Fehler beim Neuladen der MOTD:', error);
+            alert('Fehler beim Neuladen der MOTD');
         } finally {
             isLoading.value = false;
         }
@@ -200,10 +208,12 @@ export function setupAdmin(options) {
         try {
             if (userRole.value === 'admin' && confirm('Möchten Sie wirklich den Modell-Cache leeren?')) {
                 isLoading.value = true;
-                await axios.post('/api/admin/clear-cache');
+                const response = await axios.post('/api/admin/clear-cache');
+                alert(response.data.message || 'Cache wurde geleert');
             }
         } catch (error) {
             console.error('Fehler beim Leeren des Modell-Caches:', error);
+            alert('Fehler beim Leeren des Caches: ' + error.message);
         } finally {
             isLoading.value = false;
         }
@@ -217,19 +227,13 @@ export function setupAdmin(options) {
             if (userRole.value === 'admin' && confirm('Möchten Sie wirklich den Embedding-Cache leeren?')) {
                 isLoading.value = true;
                 await axios.post('/api/admin/clear-embedding-cache');
+                alert('Embedding-Cache wurde erfolgreich geleert');
             }
         } catch (error) {
             console.error('Fehler beim Leeren des Embedding-Caches:', error);
+            alert('Fehler beim Leeren des Embedding-Caches: ' + error.message);
         } finally {
             isLoading.value = false;
-        }
-    };
-    
-    // Admin-Panel öffnen/schließen
-    const toggleAdminPanel = () => {
-        showAdminPanel.value = !showAdminPanel.value;
-        if (showAdminPanel.value && userRole.value === 'admin') {
-            loadSystemStats();
         }
     };
     
@@ -247,6 +251,7 @@ export function setupAdmin(options) {
             }
         } catch (error) {
             console.error('Fehler beim Laden der MOTD-Konfiguration:', error);
+            alert('Fehler beim Laden der MOTD-Konfiguration');
         } finally {
             isLoading.value = false;
         }
@@ -290,13 +295,16 @@ export function setupAdmin(options) {
                 // Validierung
                 if (!motdConfig.value.content.trim()) {
                     alert('Der MOTD-Inhalt darf nicht leer sein.');
+                    isLoading.value = false;
                     return;
                 }
                 
                 await axios.post('/api/admin/update-motd', motdConfig.value);
                 
                 // Lade die aktuelle MOTD neu
-                await window.loadMotd();
+                if (typeof window.loadMotd === 'function') {
+                    await window.loadMotd();
+                }
                 
                 alert('MOTD-Konfiguration erfolgreich gespeichert!');
             }
@@ -345,7 +353,6 @@ export function setupAdmin(options) {
         reloadMotd,
         clearModelCache,
         clearEmbeddingCache,
-        toggleAdminPanel,
         
         // MOTD-Funktionen
         loadMotdConfig,

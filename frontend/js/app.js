@@ -39,8 +39,40 @@ createApp({
         
         // MOTD state
         const motd = ref(null);
-        const motdDismissed = ref(false); // Zum Ausblenden der MOTD
+        const motdDismissed = ref(localStorage.getItem('motdDismissed') === 'true');
 
+        // MOTD Farbpaletten
+        const colorThemes = {
+            warning: {
+                backgroundColor: '#fff3cd',
+                borderColor: '#ffeeba',
+                textColor: '#856404'
+            },
+            info: {
+                backgroundColor: '#e1ecf8',
+                borderColor: '#bee5eb',
+                textColor: '#0c5460'
+            },
+            success: {
+                backgroundColor: '#e0f5ea',
+                borderColor: '#c3e6cb',
+                textColor: '#155724'
+            },
+            danger: {
+                backgroundColor: '#f8d7da',
+                borderColor: '#f5c6cb',
+                textColor: '#721c24'
+            },
+            neutral: {
+                backgroundColor: '#f8f9fa',
+                borderColor: '#dee2e6',
+                textColor: '#495057'
+            }
+        };
+        
+        // Ausgewähltes Farbthema
+        const selectedColorTheme = ref('warning');
+        
         // Setup axios with auth header
         const setupAxios = () => {
             axios.defaults.headers.common['Authorization'] = token.value ? `Bearer ${token.value}` : '';
@@ -203,6 +235,7 @@ createApp({
         // MOTD-Funktionen
         const dismissMotd = () => {
             motdDismissed.value = true;
+            localStorage.setItem('motdDismissed', 'true');
         };
         
         const formatMotdContent = (content) => {
@@ -213,6 +246,38 @@ createApp({
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                 .replace(/\n\n/g, '<br/><br/>')
                 .replace(/\n-\s/g, '<br/>• ');
+        };
+        
+        // Farbthema für MOTD anwenden
+        const applyColorTheme = () => {
+            if (selectedColorTheme.value !== 'custom' && colorThemes[selectedColorTheme.value]) {
+                const theme = colorThemes[selectedColorTheme.value];
+                motdConfig.value.style.backgroundColor = theme.backgroundColor;
+                motdConfig.value.style.borderColor = theme.borderColor;
+                motdConfig.value.style.textColor = theme.textColor;
+            }
+        };
+        
+        // UI-Navigation Funktionen
+        const toggleView = () => {
+            if (userRole.value === 'admin') {
+                // Wechsel zwischen Chat und Admin für Admins
+                activeView.value = activeView.value === 'chat' ? 'admin' : 'chat';
+            } else {
+                // Für normale Benutzer nur Settings öffnen
+                toggleSettings();
+            }
+        };
+        
+        // Hilfsfunktion für admin Tab-Titel
+        const getAdminTabTitle = () => {
+            switch(adminFunctions.adminTab.value) {
+                case 'users': return 'Benutzerverwaltung';
+                case 'system': return 'Systemüberwachung';
+                case 'feedback': return 'Feedback-Analyse';
+                case 'motd': return 'Message of the Day';
+                default: return 'Administration';
+            }
         };
         
         // Initialize chat functionality
@@ -256,9 +321,20 @@ createApp({
                 motd.value = response.data;
                 console.log("MOTD geladen:", motd.value);
                 
-                // Reset dismissed status when loading a new MOTD
-                if (motd.value && motd.value.enabled) {
-                    motdDismissed.value = false;
+                // Determine color theme based on current MOTD colors
+                if (motd.value && motd.value.style) {
+                    // Find matching theme or set to custom
+                    let matchFound = false;
+                    for (const [theme, colors] of Object.entries(colorThemes)) {
+                        if (colors.backgroundColor === motd.value.style.backgroundColor) {
+                            selectedColorTheme.value = theme;
+                            matchFound = true;
+                            break;
+                        }
+                    }
+                    if (!matchFound) {
+                        selectedColorTheme.value = 'custom';
+                    }
                 }
             } catch (error) {
                 console.error('Fehler beim Laden der MOTD:', error);
@@ -407,6 +483,8 @@ createApp({
             // Admin functionality
             ...adminFunctions,
             userRole,
+            getAdminTabTitle,
+            toggleView,
             
             // Settings functionality
             ...settingsFunction,
@@ -416,7 +494,11 @@ createApp({
             motdDismissed,
             loadMotd,
             dismissMotd,
-            formatMotdContent
+            formatMotdContent,
+            
+            // MOTD Editor
+            selectedColorTheme,
+            applyColorTheme
         };
     }
 }).mount('#app');
