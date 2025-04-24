@@ -23,7 +23,7 @@ class MOTDManager:
     def _load_config(self) -> None:
         """Lädt die MOTD-Konfiguration aus der JSON-Datei"""
         try:
-            motd_path = Config.APP_DIR / 'core' / 'motd_config.json'
+            motd_path = Config.APP_DIR / 'modules' / 'core' / 'motd_config.json'
             
             if not motd_path.exists():
                 logger.warning(f"MOTD-Konfigurationsdatei nicht gefunden: {motd_path}")
