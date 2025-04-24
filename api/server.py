@@ -27,6 +27,7 @@ from modules.core.logging import LogManager
 from modules.auth.user_model import UserManager
 from modules.rag.engine import RAGEngine
 from modules.session.chat_history import ChatHistoryManager
+from modules.feedback.feedback_manager import FeedbackManager
 
 try:
     from dotenv import load_dotenv
@@ -36,10 +37,10 @@ try:
     print(f"ADMIN_EMAILS-Wert: {os.getenv('ADMIN_EMAILS')}")
 except ImportError:
     print("python-dotenv nicht installiert")
-    
+
 motd_manager = MOTDManager()
 logger = LogManager.setup_logging()
-
+feedback_manager = FeedbackManager()
 app = FastAPI(title="nscale DMS Assistent API")
 
 # CORS-Konfiguration
@@ -99,6 +100,12 @@ class CreateUserRequest(BaseModel):
     email: EmailStr
     password: str
     role: str = "user"
+
+class FeedbackRequest(BaseModel):
+    message_id: int
+    session_id: int
+    is_positive: bool
+    comment: Optional[str] = None
 
 # Helper-Funktion zur Überprüfung von Admin-Rechten
 async def get_admin_user(request: Request) -> Dict[str, Any]:
@@ -214,6 +221,57 @@ async def delete_user(user_id: int, admin_data: Dict[str, Any] = Depends(get_adm
 async def get_current_user_role(user_data: Dict[str, Any] = Depends(get_current_user)):
     """Gibt die Rolle des aktuellen Benutzers zurück"""
     return {"role": user_data.get('role', 'user')}
+@app.post("/api/feedback")
+async def add_feedback(request: FeedbackRequest, user_data: Dict[str, Any] = Depends(get_current_user)):
+    """Fügt Feedback zu einer Nachricht hinzu"""
+    user_id = user_data['user_id']
+    
+    success = feedback_manager.add_feedback(
+        message_id=request.message_id,
+        session_id=request.session_id,
+        user_id=user_id,
+        is_positive=request.is_positive,
+        comment=request.comment
+    )
+    
+    if not success:
+        raise HTTPException(status_code=500, detail="Fehler beim Speichern des Feedbacks")
+    
+    return {"message": "Feedback erfolgreich gespeichert"}
+
+@app.get("/api/feedback/message/{message_id}")
+async def get_message_feedback(message_id: int, user_data: Dict[str, Any] = Depends(get_current_user)):
+    """Gibt das Feedback für eine bestimmte Nachricht zurück"""
+    feedback = feedback_manager.get_message_feedback(message_id)
+    
+    if feedback is None:
+        return {"feedback": None}
+    
+    return {"feedback": feedback}
+
+@app.get("/api/user/feedback")
+async def get_user_feedback(user_data: Dict[str, Any] = Depends(get_current_user)):
+    """Gibt alle Feedback-Einträge des aktuellen Benutzers zurück"""
+    user_id = user_data['user_id']
+    
+    feedback_list = feedback_manager.get_user_feedback(user_id)
+    
+    return {"feedback": feedback_list}
+
+# Endpunkte für Admins
+@app.get("/api/admin/feedback/stats")
+async def get_feedback_stats(admin_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Gibt Feedback-Statistiken zurück (Admin)"""
+    stats = feedback_manager.get_feedback_stats()
+    
+    return {"stats": stats}
+
+@app.get("/api/admin/feedback/negative")
+async def get_negative_feedback(admin_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Gibt Nachrichten mit negativem Feedback zurück (Admin)"""
+    negative_feedback = feedback_manager.get_negative_feedback_messages()
+    
+    return {"feedback": negative_feedback}
 
 # API-Endpunkte für RAG
 @app.post("/api/question")
