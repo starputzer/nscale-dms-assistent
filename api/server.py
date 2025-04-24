@@ -273,6 +273,22 @@ async def get_negative_feedback(admin_data: Dict[str, Any] = Depends(get_admin_u
     
     return {"feedback": negative_feedback}
 
+# MOTD API-Endpunkte
+@app.get("/api/motd")
+async def get_motd():
+    """Gibt die aktuelle Message of the Day zurück"""
+    return motd_manager.get_motd()
+
+@app.post("/api/admin/reload-motd")
+async def reload_motd(user_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Lädt die MOTD-Konfiguration neu (nur für Admins)"""
+    success = motd_manager.reload_config()
+    
+    if not success:
+        raise HTTPException(status_code=500, detail="Fehler beim Neuladen der MOTD-Konfiguration")
+    
+    return {"message": "MOTD-Konfiguration erfolgreich neu geladen"}
+
 # API-Endpunkte für RAG
 @app.post("/api/question")
 async def answer_question(request: QuestionRequest, user_data: Dict[str, Any] = Depends(get_current_user)):
@@ -424,12 +440,6 @@ async def get_sessions(user_data: Dict[str, Any] = Depends(get_current_user)):
     sessions = chat_history.get_user_sessions(user_id)
     
     return {"sessions": sessions}
-
-# message of the day
-@app.get("/api/motd")
-async def get_motd():
-    """Gibt die aktuelle Message of the Day zurück"""
-    return motd_manager.get_motd()
 
 @app.post("/api/session")
 async def start_session(request: StartSessionRequest, user_data: Dict[str, Any] = Depends(get_current_user)):

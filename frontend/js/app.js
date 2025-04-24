@@ -36,6 +36,9 @@ createApp({
         const showFeedbackDialog = ref(false);
         const feedbackComment = ref('');
         const feedbackMessage = ref(null);
+        
+        // MOTD state
+        const motd = ref(null);
 
         // Setup axios with auth header
         const setupAxios = () => {
@@ -230,6 +233,17 @@ createApp({
             token
         });
         
+        // Laden der MOTD
+        const loadMotd = async () => {
+            try {
+                const response = await axios.get('/api/motd');
+                motd.value = response.data;
+                console.log("MOTD geladen:", motd.value);
+            } catch (error) {
+                console.error('Fehler beim Laden der MOTD:', error);
+            }
+        };
+        
         // Session handling with feedback support
         const loadSession = async (sessionId) => {
             try {
@@ -289,6 +303,9 @@ createApp({
                 // Benutzerrolle laden
                 adminFunctions.loadUserRole();
             }
+            
+            // MOTD laden (auch wenn nicht eingeloggt)
+            loadMotd();
             
             // Clear messages when auth state changes
             watch(token, (newValue) => {
@@ -366,7 +383,11 @@ createApp({
             userRole,
             
             // Settings functionality
-            ...settingsFunction
+            ...settingsFunction,
+            
+            // MOTD
+            motd,
+            loadMotd
         };
     }
 }).mount('#app');
