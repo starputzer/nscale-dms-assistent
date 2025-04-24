@@ -20,11 +20,11 @@ class UserManager:
     
     # Liste von Admin-E-Mails, die automatisch Admin-Rechte erhalten    
     def __init__(self):
+        # Admin-E-Mails aus Umgebungsvariablen laden
         admin_emails_str = os.getenv('ADMIN_EMAILS', '')
-        self.ADMIN_EMAILS = [email.strip() for email in admin_emails_str.split(',')]
+        self.ADMIN_EMAILS = [email.strip() for email in admin_emails_str.split(',') if email.strip()]
+        print(f"Admin-E-Mails geladen: {self.ADMIN_EMAILS}")  # Debug-Ausgabe
         self.init_db()
-        
-        # Bestehende Benutzer aktualisieren, um sicherzustellen, dass Admin-E-Mails als Admin gekennzeichnet sind
         self._update_existing_admin_users()
     
     def init_db(self):
@@ -154,22 +154,35 @@ class UserManager:
     def _update_existing_admin_users(self):
         """Aktualisiert bestehende Benutzer mit Admin-E-Mails zu Administratoren"""
         if not self.ADMIN_EMAILS:
-            return  # Keine Admin-E-Mails definiert
+            print("Keine Admin-E-Mails definiert!")
+            return
             
         try:
             conn = sqlite3.connect(Config.DB_PATH)
             cursor = conn.cursor()
             
             for admin_email in self.ADMIN_EMAILS:
-                cursor.execute(
-                    "UPDATE users SET role = ? WHERE email = ? AND role != ?",
-                    (UserRole.ADMIN, admin_email, UserRole.ADMIN)
-                )
+                # Prüfen, ob der Benutzer existiert
+                cursor.execute("SELECT id, role FROM users WHERE email = ?", (admin_email,))
+                user = cursor.fetchone()
+                
+                if user:
+                    user_id, current_role = user
+                    if current_role != 'admin':
+                        cursor.execute(
+                            "UPDATE users SET role = ? WHERE id = ?",
+                            ('admin', user_id)
+                        )
+                        print(f"Benutzer {admin_email} (ID: {user_id}) zum Admin aktualisiert")
+                    else:
+                        print(f"Benutzer {admin_email} (ID: {user_id}) ist bereits Admin")
+                else:
+                    print(f"Kein Benutzer mit E-Mail {admin_email} gefunden")
             
             conn.commit()
             conn.close()
         except Exception as e:
-            logger.error(f"Fehler beim Aktualisieren bestehender Admin-Benutzer: {e}")
+            print(f"Fehler beim Aktualisieren der Admin-Benutzer: {e}")
 
     def update_user_role(self, user_id, new_role, admin_user_id):
         """Aktualisiert die Rolle eines Benutzers (nur für Admins)"""

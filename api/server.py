@@ -28,6 +28,15 @@ from modules.auth.user_model import UserManager
 from modules.rag.engine import RAGEngine
 from modules.session.chat_history import ChatHistoryManager
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+    print("Umgebungsvariablen aus .env geladen")
+    import os
+    print(f"ADMIN_EMAILS-Wert: {os.getenv('ADMIN_EMAILS')}")
+except ImportError:
+    print("python-dotenv nicht installiert")
+    
 motd_manager = MOTDManager()
 logger = LogManager.setup_logging()
 
