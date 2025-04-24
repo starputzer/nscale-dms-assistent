@@ -18,9 +18,7 @@ class UserRole:
 class UserManager:
     """Verwaltet Benutzeroperationen und Authentifizierung mit Rollenunterstützung"""
     
-    # Liste von Admin-E-Mails, die automatisch Admin-Rechte erhalten
-    ADMIN_EMAILS = ["martin@danglefeet.com"]  # Ändern Sie diese Liste nach Ihren Anforderungen
-    
+    # Liste von Admin-E-Mails, die automatisch Admin-Rechte erhalten    
     def __init__(self):
         admin_emails_str = os.getenv('ADMIN_EMAILS')
         self.ADMIN_EMAILS = [email.strip() for email in admin_emails_str.split(',')]
