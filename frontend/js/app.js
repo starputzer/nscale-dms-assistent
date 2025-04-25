@@ -273,7 +273,8 @@ createApp({
             eventSource,
             scrollToBottom,
             nextTick,
-            loadSessions
+            loadSessions,
+            motdDismissed  // Übergebe motdDismissed an setupChat
         });
         
         // Initialize feedback functionality
@@ -414,7 +415,7 @@ createApp({
             }
         });
 
-        // Watch für Sitzungswechsel - HIER EINFÜGEN
+        // Watch für Sitzungswechsel
         watch(currentSessionId, () => {
             if (currentSessionId.value) {
                 console.log("Session gewechselt - MOTD zurücksetzen");
@@ -514,7 +515,7 @@ createApp({
             userRole,
             getAdminTabTitle,
             toggleView,
-            toggleAdminView, // NEU: Hinzugefügt für Admin-Bereich Toggle
+            toggleAdminView,
             
             // Settings functionality
             ...settingsFunction,

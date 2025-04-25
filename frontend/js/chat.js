@@ -14,7 +14,8 @@ export function setupChat(options) {
         eventSource,
         scrollToBottom,
         nextTick,
-        loadSessions  // Funktion zum Laden der Sessions
+        loadSessions,  // Funktion zum Laden der Sessions
+        motdDismissed  // MOTD Status
     } = options;
     
     let tokenCount = 0;
@@ -43,8 +44,6 @@ export function setupChat(options) {
                 // Alle Event-Listener entfernen, um Memory-Leaks zu vermeiden
                 eventSource.value.onmessage = null;
                 eventSource.value.onerror = null;
-                
-                // EventSource schließen
                 eventSource.value.close();
                 eventSource.value = null;
             } catch (e) {
@@ -55,37 +54,6 @@ export function setupChat(options) {
         isLoading.value = false;
         isStreaming.value = false;
     };
-    
-    /**
-     * SSE-Parser-Test zur Diagnose
-     */
-    const testSSEParsing = () => {
-        // Testdaten
-        const testData = [
-            '{"response":" "}',
-            '{"response":"Hallo"}',
-            '{"response":""}',
-            '{"error":"Test error"}'
-        ];
-        
-        console.log("==== SSE PARSER TEST ====");
-        testData.forEach(data => {
-            try {
-                const parsed = JSON.parse(data);
-                console.log(`Original: ${data}`);
-                console.log(`'response' in parsed: ${'response' in parsed}`);
-                console.log(`parsed.response: ${parsed.response}`);
-                console.log(`Boolean(parsed.response): ${Boolean(parsed.response)}`);
-                console.log("----");
-            } catch (e) {
-                console.error(`Parsing error for ${data}: ${e}`);
-            }
-        });
-        console.log("========================");
-    };
-    
-    // Test bei Initialisierung durchführen
-    testSSEParsing();
     
     /**
      * Setzt den Timeout für inaktive Streams zurück
@@ -111,7 +79,12 @@ export function setupChat(options) {
             console.warn("Leere Frage oder keine Session ausgewählt");
             return;
         }
-        motdDismissed.value = true;
+        
+        // MOTD ausblenden, wenn eine Frage gestellt wird
+        if (motdDismissed) {
+            motdDismissed.value = true;
+        }
+        
         try {
             console.log(`Sende Frage: "${question.value}"`);
             isLoading.value = true;
@@ -141,7 +114,8 @@ export function setupChat(options) {
             url.searchParams.append('session_id', currentSessionId.value);
 
             // Token als URL-Parameter übergeben für SSE-Authentifizierung
-            const authToken = token.value.replace('Bearer ', '');
+            // Entferne "Bearer " von Anfang, wenn vorhanden
+            const authToken = token.value.replace(/^Bearer\s+/i, '');
             url.searchParams.append('auth_token', authToken);
 
             console.log(`Streaming URL: ${url.toString()}`);
@@ -164,13 +138,10 @@ export function setupChat(options) {
             // Flag für erfolgreiche Fertigstellung
             let successfulCompletion = false;
 
+            // Haupt-Message-Handler
             eventSource.value.onmessage = (event) => {
                 try {
-                    // Ignoriere "event: done", da dies in einem separaten Handler verarbeitet wird
-                    if (event.data && (event.data.includes('event: done') || event.data === 'data: ')) {
-                        console.log("'done'-Event oder leeres Datenevent erkannt, wird separat verarbeitet");
-                        return;
-                    }
+                    console.log(`Rohes Event erhalten: ${event.data}`);
                     
                     // Beim Empfang jedes Tokens den Timeout zurücksetzen
                     resetStreamTimeout();
@@ -180,8 +151,6 @@ export function setupChat(options) {
                         console.log("Leeres Datenevent ignorieren");
                         return;
                     }
-                    
-                    console.log(`Rohes Event erhalten: ${event.data}`);
                     
                     // JSON-Daten extrahieren
                     let jsonData = event.data;
@@ -243,12 +212,11 @@ export function setupChat(options) {
                     }
                 } catch (e) {
                     console.error("JSON-Parsing-Fehler:", e, "Rohdaten:", event.data);
-                    // Wir versuchen nicht, spezielle Events hier zu erkennen, da sie separate Handler haben
                 }
             };
 
             // Spezieller Handler für 'done' Events
-            eventSource.value.addEventListener('done', async (event) => {  // async hinzugefügt
+            eventSource.value.addEventListener('done', async (event) => {
                 console.log("DONE Event empfangen, Stream beendet");
                 successfulCompletion = true;
                 
@@ -261,17 +229,7 @@ export function setupChat(options) {
                 try {
                     if (loadSessions && typeof loadSessions === 'function') {
                         console.log("Lade Sitzungen nach Stream-Ende...");
-                        await loadSessions();  // await hinzugefügt
-                        
-                        // Füge einen kleinen Delay hinzu, um sicherzustellen, dass Vue die Änderungen rendert
-                        await new Promise(resolve => setTimeout(resolve, 50));
-                        
-                        // Erzwinge ein Rerendering der Sitzungsliste
-                        if (Array.isArray(sessions.value)) {
-                            console.log("Erzwinge Aktualisierung der Sitzungsliste...");
-                            // Erstelle eine Kopie des Arrays, um eine reaktive Änderung auszulösen
-                            sessions.value = [...sessions.value];
-                        }
+                        await loadSessions();
                     }
                 } catch (e) {
                     console.error("Fehler beim Laden der aktualisierten Sitzungen:", e);
@@ -279,6 +237,7 @@ export function setupChat(options) {
                 
                 cleanupStream();
             });
+            
             // Error-Handler
             eventSource.value.onerror = (event) => {
                 console.error('SSE-Verbindungsfehler:', event);
@@ -312,12 +271,11 @@ export function setupChat(options) {
             isLoading.value = false;
             isStreaming.value = false;
             
-            // Füge eine Fehlernachricht hinzu, wenn noch keine Antwort angezeigt wurde
+            // Füge eine Fehlernachricht hinzu
             if (messages.value.length > 0 && messages.value[messages.value.length - 1].is_user) {
                 messages.value.push({
-                    id: response.data.message_id, // Stelle sicher, dass diese ID vom Server kommt
                     is_user: false,
-                    message: response.data.answer,
+                    message: 'Fehler bei der Kommunikation mit dem Server. Bitte versuchen Sie es später erneut.',
                     timestamp: Date.now() / 1000
                 });
             }
@@ -334,6 +292,11 @@ export function setupChat(options) {
         
         try {
             isLoading.value = true;
+            
+            // MOTD ausblenden, wenn eine Frage gestellt wird
+            if (motdDismissed) {
+                motdDismissed.value = true;
+            }
             
             // Add user message immediately for better UX
             messages.value.push({
