@@ -255,16 +255,25 @@ async def delete_user(user_id: int, admin_data: Dict[str, Any] = Depends(get_adm
     
     return {"message": f"Benutzer mit ID {user_id} erfolgreich gelöscht"}
 
-@app.delete("/api/admin/users/{user_id}")
-async def delete_user(user_id: int, admin_data: Dict[str, Any] = Depends(get_admin_user)):
-    """Löscht einen Benutzer (Admin-Funktion)"""
-    # Prüfen, ob der Admin versucht, sich selbst zu löschen
+@app.put("/api/admin/users/{user_id}/role")
+async def update_user_role(user_id: int, request: dict, admin_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Aktualisiert die Rolle eines Benutzers (Admin-Funktion)"""
+    # Prüfen, ob der Admin versucht, seine eigene Rolle zu ändern
     if user_id == admin_data['user_id']:
-        raise HTTPException(status_code=400, detail="Sie können Ihr eigenes Konto nicht löschen")
-        
-    # Diese Funktion müsste noch in der UserManager-Klasse implementiert werden
-    # Da wir sie im Moment nicht benötigen, geben wir eine entsprechende Meldung zurück
-    raise HTTPException(status_code=501, detail="Diese Funktion ist noch nicht implementiert")
+        raise HTTPException(status_code=400, detail="Sie können Ihre eigene Rolle nicht ändern")
+    
+    # Validiere Rollenangabe
+    new_role = request.get("role")
+    if new_role not in ["user", "admin"]:
+        raise HTTPException(status_code=400, detail="Ungültige Rolle")
+    
+    # Aktualisiere die Rolle
+    success = user_manager.update_user_role(user_id, new_role, admin_data['user_id'])
+    
+    if not success:
+        raise HTTPException(status_code=403, detail="Aktualisierung nicht möglich. Der Benutzer könnte ein geschützter Admin sein oder existiert nicht.")
+    
+    return {"message": f"Rolle des Benutzers mit ID {user_id} erfolgreich auf {new_role} aktualisiert"}
 
 # Endpoint um die Rolle des aktuellen Benutzers abzurufen
 @app.get("/api/user/role")
@@ -429,12 +438,17 @@ async def answer_question(request: QuestionRequest, request_obj: Request, user_d
         
         result['answer'] = answer
     
-    # Speichere die Antwort
-    chat_history.add_message(session_id, result['answer'], is_user=False)
+    # Speichere die Antwort und erhalte die message_id
+    message_id = chat_history.add_message(session_id, result['answer'], is_user=False)
+    
+    # Wenn etwas bei der Speicherung schiefging, loggen wir das
+    if not message_id:
+        logger.error(f"Fehler beim Speichern der Antwort in Session {session_id}")
     
     return {
         "answer": result['answer'],
         "session_id": session_id,
+        "message_id": message_id,  # Wichtig: Gib die message_id zurück an das Frontend
         "sources": result['sources'],
         "cached": result.get('cached', False)
     }
@@ -545,9 +559,9 @@ async def stream_question(
         
         return EventSourceResponse(error_stream())
 
-@app.post("/api/session/{session_id}/update-title")
-async def update_session_title(session_id: int, user_data: Dict[str, Any] = Depends(get_current_user)):
-    """Aktualisiert den Titel einer Session basierend auf der ersten Nachricht"""
+@app.get("/api/session/{session_id}")
+async def get_session(session_id: int, user_data: Dict[str, Any] = Depends(get_current_user)):
+    """Gibt den Chatverlauf einer Session zurück"""
     user_id = user_data['user_id']
     
     # Hole alle Sessions des Benutzers
@@ -558,20 +572,17 @@ async def update_session_title(session_id: int, user_data: Dict[str, Any] = Depe
     if session_id not in session_ids:
         raise HTTPException(status_code=403, detail="Zugriff verweigert")
     
-    # Aktualisiere den Titel
-    success = chat_history.update_session_after_message(session_id)
+    # Hole den Chatverlauf
+    history = chat_history.get_session_history(session_id)
     
-    if not success:
-        raise HTTPException(status_code=500, detail="Fehler beim Aktualisieren des Titels")
+    # Finde den Session-Titel
+    session_info = next((s for s in user_sessions if s['id'] == session_id), None)
     
-    # Hole den aktualisierten Titel
-    updated_sessions = chat_history.get_user_sessions(user_id)
-    updated_session = next((s for s in updated_sessions if s['id'] == session_id), None)
-    
-    if not updated_session:
-        raise HTTPException(status_code=404, detail="Session nicht gefunden")
-    
-    return {"message": "Titel erfolgreich aktualisiert", "new_title": updated_session['title']}
+    return {
+        "session_id": session_id,
+        "title": session_info['title'] if session_info else "Unbekannte Unterhaltung",
+        "messages": history
+    }
 
 @app.get("/api/sessions")
 async def get_sessions(user_data: Dict[str, Any] = Depends(get_current_user)):

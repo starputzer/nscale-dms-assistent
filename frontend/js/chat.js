@@ -22,6 +22,7 @@ export function setupChat(options) {
     let streamTimeout;
     let currentStreamRetryCount = 0;
     let completeResponse = ""; // Variable für die vollständige Antwort
+    let currentMessageId = null; // Speichert die message_id aus dem Stream
     
     /**
      * Bereinigt die EventSource-Verbindung
@@ -46,11 +47,9 @@ export function setupChat(options) {
                 eventSource.value.onmessage = null;
                 eventSource.value.onerror = null;
                 
-                // Spezielle Event-Listener entfernen
+                // Explizit done-Listener entfernen
                 eventSource.value.removeEventListener('done', doneEventHandler);
-                eventSource.value.removeEventListener('open', openEventHandler);
                 
-                // Stream schließen
                 eventSource.value.close();
                 eventSource.value = null;
             } catch (e) {
@@ -78,13 +77,44 @@ export function setupChat(options) {
         }, 30000);  // 30 Sekunden Inaktivität
     };
     
-    // Handler-Funktionen, die wir bei Bedarf entfernen können
-    // Diese werden ausgelagert, damit wir die EventListener wieder entfernen können
-    let doneEventHandler;
-    let openEventHandler;
+    /**
+     * Event-Handler für das 'done' Event
+     * Als benannte Funktion, damit sie korrekt entfernt werden kann
+     */
+    const doneEventHandler = async (event) => {
+        console.log("DONE Event empfangen, Stream beendet");
+        
+        // Setze erfolgreiche Fertigstellung
+        const successfulCompletion = true;
+        
+        // Prüfe, ob die Nachricht nicht leer ist
+        const assistantIndex = messages.value.length - 1;
+        if (assistantIndex >= 0 && !messages.value[assistantIndex].message.trim()) {
+            messages.value[assistantIndex].message = 'Es wurden keine Daten empfangen. Bitte versuchen Sie es später erneut.';
+        }
+        
+        // Wenn wir eine message_id empfangen haben, setze sie in der aktuellen Nachricht
+        if (currentMessageId !== null && assistantIndex >= 0) {
+            console.log(`Setze message_id ${currentMessageId} in Nachricht an Index ${assistantIndex}`);
+            messages.value[assistantIndex].id = currentMessageId;
+            messages.value[assistantIndex].session_id = currentSessionId.value;
+        }
+        
+        // Session-Liste sofort aktualisieren, um den generierten Titel anzuzeigen
+        try {
+            if (loadSessions && typeof loadSessions === 'function') {
+                console.log("Lade Sitzungen nach Stream-Ende...");
+                await loadSessions();
+            }
+        } catch (e) {
+            console.error("Fehler beim Laden der aktualisierten Sitzungen:", e);
+        }
+        
+        cleanupStream();
+    };
     
     /**
-     * Sendet eine Frage mit Streaming-Antwort und aktualisiert den Sitzungstitel
+     * Sendet eine Frage mit Streaming-Antwort
      */
     const sendQuestionStream = async () => {
         if (!question.value.trim() || !currentSessionId.value) {
@@ -101,70 +131,55 @@ export function setupChat(options) {
             console.log(`Sende Frage: "${question.value}"`);
             isLoading.value = true;
             isStreaming.value = true;
-    
+
+            // Zurücksetzen von message_id aus vorherigen Anfragen
+            currentMessageId = null;
+
             // Benutzernachricht sofort hinzufügen
             messages.value.push({
                 is_user: true,
                 message: question.value,
                 timestamp: Date.now() / 1000
             });
-    
+
             // Platz für Assistentennachricht reservieren
             const assistantIndex = messages.value.length;
             messages.value.push({
                 is_user: false,
                 message: '',
-                timestamp: Date.now() / 1000
+                timestamp: Date.now() / 1000,
+                session_id: currentSessionId.value  // Session-ID direkt setzen
             });
-    
+
             await nextTick();
             scrollToBottom();
-            
-            // HINZUGEFÜGT: Sofort den Titel aktualisieren, nachdem die Frage gesendet wurde
-            // Dies hilft, den Titel schneller zu aktualisieren, und hängt nicht vom Abschluss des Streams ab
-            try {
-                if (window.updateSessionTitle && typeof window.updateSessionTitle === 'function') {
-                    console.log("Aktualisiere Sitzungstitel anhand der neuen Frage...");
-                    setTimeout(() => {
-                        window.updateSessionTitle(currentSessionId.value)
-                            .then(success => {
-                                if (success) {
-                                    console.log("Sitzungstitel erfolgreich aktualisiert");
-                                }
-                            })
-                            .catch(err => console.error("Fehler bei der Titelaktualisierung:", err));
-                    }, 500); // Kurze Verzögerung, um sicherzustellen, dass die Nachricht gespeichert wurde
-                }
-            } catch (titleError) {
-                console.error("Fehler beim Aktualisieren des Titels:", titleError);
-                // Keine Unterbrechung der Hauptfunktion bei Fehlern in der Titelaktualisierung
-            }
-    
+
             // EventSource erstellen
             const url = new URL('/api/question/stream', window.location.origin);
             url.searchParams.append('question', question.value);
             url.searchParams.append('session_id', currentSessionId.value);
-    
+
             // Prüfen, ob einfache Sprache aktiviert ist
             const useSimpleLanguage = window.useSimpleLanguage === true;
             if (useSimpleLanguage) {
                 url.searchParams.append('simple_language', 'true');
                 console.log("Einfache Sprache aktiviert für diese Anfrage");
             }
-    
+
             // Token als URL-Parameter übergeben für SSE-Authentifizierung
             // Entferne "Bearer " von Anfang, wenn vorhanden
             const authToken = token.value.replace(/^Bearer\\s+/i, '');
             url.searchParams.append('auth_token', authToken);
-    
+
             console.log(`Streaming URL: ${url.toString()}`);
-    
+
             // Bestehende EventSource schließen
             if (eventSource.value) {
                 console.log("Schließe bestehende EventSource");
-                cleanupStream(); // Nutze die cleanupStream Funktion
+                eventSource.value.close();
+                eventSource.value = null;
             }
-    
+
             // Neue EventSource-Verbindung
             console.log("Erstelle neue EventSource");
             eventSource.value = new EventSource(url.toString());
@@ -175,14 +190,11 @@ export function setupChat(options) {
             
             // Zurücksetzen der vollständigen Antwort
             completeResponse = "";
-            
-            // Flag für erfolgreiche Fertigstellung
-            let successfulCompletion = false;
-    
-            // Haupt-Message-Handler (mit verbesserter Event-Erkennung)
+
+            // Haupt-Message-Handler
             eventSource.value.onmessage = (event) => {
                 try {
-                    console.log(`Event erhalten: ${event.type}`, event.data ? event.data.substring(0, 50) + "..." : "(kein Dateninhalt)");
+                    console.log(`Rohes Event erhalten: ${event.data}`);
                     
                     // Beim Empfang jedes Tokens den Timeout zurücksetzen
                     resetStreamTimeout();
@@ -193,145 +205,116 @@ export function setupChat(options) {
                         return;
                     }
                     
-                    // Überprüfe, ob dies ein Event mit "event: done" ist
-                    if (event.data.startsWith('event: done')) {
-                        console.log("'event: done' im Datenstrom erkannt, überspringe JSON-Parsing");
-                        return;
-                    }
-                    
                     // JSON-Daten extrahieren
                     let jsonData = event.data;
                     if (jsonData.startsWith('data: ')) {
                         jsonData = jsonData.substring(6);
                     }
                     
-                    // Nur versuchen, JSON zu parsen, wenn es wie JSON aussieht
-                    if (jsonData.trim().startsWith('{') && jsonData.trim().endsWith('}')) {
-                        // Versuche JSON zu parsen
-                        const data = JSON.parse(jsonData);
+                    // Prüfen, ob es sich um ein done-Event handelt, was kein JSON ist
+                    if (jsonData.includes('event: done')) {
+                        console.log("'done'-Event in normaler Nachricht erkannt, ignoriere JSON-Parsing");
+                        return;
+                    }
+                    
+                    // Versuche JSON zu parsen
+                    const data = JSON.parse(jsonData);
+                    
+                    // Überprüfen, ob das Event eine message_id enthält
+                    if ('message_id' in data) {
+                        console.log(`Message-ID vom Server empfangen: ${data.message_id}`);
+                        currentMessageId = data.message_id;
                         
-                        // Spezielle Kontrollnachrichten prüfen
-                        if ('response' in data) {
-                            const token = data.response;
-                            
-                            // Prüfen auf spezielle Steuerungscodes vom Backend
-                            if (token === "[STREAM_RETRY]") {
-                                console.log("Stream wird neu gestartet...");
-                                currentStreamRetryCount++;
-                                messages.value[assistantIndex].message += `\n[Verbindung wird wiederhergestellt... Versuch ${currentStreamRetryCount}]\n`;
-                                scrollToBottom();
-                                return;
-                            }
-                            
-                            if (token === "[TIMEOUT]") {
-                                console.log("Timeout beim Stream.");
-                                return;
-                            }
-                            
-                            if (token.startsWith("[FINAL_TIMEOUT]") || 
-                                token.startsWith("[CONN_ERROR]") || 
-                                token.startsWith("[ERROR]") || 
-                                token.startsWith("[UNEXPECTED_ERROR]") || 
-                                token.startsWith("[NO_TOKENS]")) {
-                                console.error("Stream-Fehler:", token);
-                                
-                                // Wenn die Nachricht bereits Inhalt hat, nur eine Warnung anhängen
-                                if (messages.value[assistantIndex].message.trim()) {
-                                    messages.value[assistantIndex].message += "\n\n[Hinweis: Die Antwort wurde möglicherweise abgeschnitten.]";
-                                } else {
-                                    // Sonst Fehlermeldung anzeigen
-                                    messages.value[assistantIndex].message = "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.";
-                                }
-                                scrollToBottom();
-                                cleanupStream();
-                                return;
-                            }
-                            
-                            // Normaler Token - für Debugging
-                            tokenCount++;
-                            console.log(`Token #${tokenCount}: "${token}"`);
-                            
-                            // Token zur vollständigen Antwort hinzufügen
-                            completeResponse += token;
-                            
-                            // Aktualisiere die angezeigte Nachricht sofort
-                            messages.value[assistantIndex].message = completeResponse;
+                        // Speichere die message_id direkt in der aktuellen Nachricht
+                        messages.value[assistantIndex].id = currentMessageId;
+                        return;
+                    }
+                    
+                    // Spezielle Kontrollnachrichten prüfen
+                    if ('response' in data) {
+                        const token = data.response;
+                        
+                        // Prüfen auf spezielle Steuerungscodes vom Backend
+                        if (token === "[STREAM_RETRY]") {
+                            console.log("Stream wird neu gestartet...");
+                            currentStreamRetryCount++;
+                            messages.value[assistantIndex].message += `\n[Verbindung wird wiederhergestellt... Versuch ${currentStreamRetryCount}]\n`;
                             scrollToBottom();
-                        } else if (data.error) {
-                            console.error("Stream-Fehler:", data.error);
-                            messages.value[assistantIndex].message = `Fehler: ${data.error}`;
-                            cleanupStream();
+                            return;
                         }
-                    } else {
-                        console.log("Überspringe nicht-JSON-formatierte Daten:", jsonData);
+                        
+                        if (token === "[TIMEOUT]") {
+                            console.log("Timeout beim Stream.");
+                            return;
+                        }
+                        
+                        if (token.startsWith("[FINAL_TIMEOUT]") || 
+                            token.startsWith("[CONN_ERROR]") || 
+                            token.startsWith("[ERROR]") || 
+                            token.startsWith("[UNEXPECTED_ERROR]") || 
+                            token.startsWith("[NO_TOKENS]")) {
+                            console.error("Stream-Fehler:", token);
+                            
+                            // Wenn die Nachricht bereits Inhalt hat, nur eine Warnung anhängen
+                            if (messages.value[assistantIndex].message.trim()) {
+                                messages.value[assistantIndex].message += "\n\n[Hinweis: Die Antwort wurde möglicherweise abgeschnitten.]";
+                            } else {
+                                // Sonst Fehlermeldung anzeigen
+                                messages.value[assistantIndex].message = "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.";
+                            }
+                            scrollToBottom();
+                            cleanupStream();
+                            return;
+                        }
+                        
+                        // Normaler Token - für Debugging
+                        tokenCount++;
+                        console.log(`Token #${tokenCount}: "${token}"`);
+                        
+                        // Token zur vollständigen Antwort hinzufügen
+                        completeResponse += token;
+                        
+                        // Aktualisiere die angezeigte Nachricht sofort
+                        messages.value[assistantIndex].message = completeResponse;
+                        scrollToBottom();
+                    } else if (data.error) {
+                        console.error("Stream-Fehler:", data.error);
+                        messages.value[assistantIndex].message = `Fehler: ${data.error}`;
+                        cleanupStream();
                     }
                 } catch (e) {
                     console.error("JSON-Parsing-Fehler:", e, "Rohdaten:", event.data);
-                    // Ignoriere Fehler bei der Verarbeitung spezieller Events
+                    
+                    // Hier keine Fehlerbehandlung für 'done'-Event, da wir das bereits oben abfangen
                 }
             };
-    
-            // Spezieller Handler für 'done' Events
-            doneEventHandler = async (event) => {
-                console.log("DONE Event empfangen, Stream beendet", event);
-                successfulCompletion = true;
-                
-                // Prüfe, ob die Nachricht nicht leer ist
-                if (!messages.value[assistantIndex].message.trim()) {
-                    messages.value[assistantIndex].message = 'Es wurden keine Daten empfangen. Bitte versuchen Sie es später erneut.';
-                }
-                
-                // Session-Liste sofort aktualisieren
-                try {
-                    if (loadSessions && typeof loadSessions === 'function') {
-                        console.log("Lade Sitzungen nach Stream-Ende...");
-                        await loadSessions();
-                        
-                        // Auf die aktuelle Session-ID fokussieren, 
-                        // um sicherzustellen, dass die ID der Assistentennachricht geladen wird
-                        console.log("Lade aktuelle Session neu, um Nachricht-IDs zu aktualisieren");
-                        if (window.reloadCurrentSession && typeof window.reloadCurrentSession === 'function') {
-                            await window.reloadCurrentSession();
-                        }
-                    }
-                } catch (e) {
-                    console.error("Fehler beim Laden der aktualisierten Sitzungen:", e);
-                }
-                
-                cleanupStream();
-            };
-            
-            // Event-Listener für 'done' Events im done-Namensraum
+
+            // Spezieller Handler für 'done' Events - nun als benannte Funktion
             eventSource.value.addEventListener('done', doneEventHandler);
-            
+
             // Error-Handler
             eventSource.value.onerror = (event) => {
                 console.error('SSE-Verbindungsfehler:', event);
                 
-                // Nur Fehlermeldung anzeigen, wenn keine erfolgreiche Fertigstellung stattgefunden hat
-                if (!successfulCompletion) {
-                    if (tokenCount === 0) {
-                        messages.value[assistantIndex].message = 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.';
-                    } 
-                    // GEÄNDERT: Entferne die Fehlermeldung über unvollständige Antworten, wenn Tokens empfangen wurden
-                    // Die Server-Logs zeigen, dass die Antworten vollständig sind
-                }
+                // Nur Fehlermeldung anzeigen, wenn die Antwort unvollständig ist
+                if (tokenCount === 0) {
+                    messages.value[assistantIndex].message = 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.';
+                } 
                 
                 cleanupStream();
             };
-    
+
             // Open-Handler
-            openEventHandler = () => {
+            eventSource.value.addEventListener('open', () => {
                 console.log("SSE-Verbindung erfolgreich geöffnet");
-            };
-            eventSource.value.addEventListener('open', openEventHandler);
-    
+            });
+
             // Timeout für hängende Verbindungen
             resetStreamTimeout();
-    
+
             // Frage für nächste Eingabe zurücksetzen
             question.value = '';
-    
+
         } catch (error) {
             console.error('Streaming-Fehler:', error);
             isLoading.value = false;
@@ -382,29 +365,21 @@ export function setupChat(options) {
                 console.log("Einfache Sprache aktiviert für diese Anfrage");
             }
             
-            // Sofort den Titel aktualisieren
-            try {
-                if (window.updateSessionTitle && typeof window.updateSessionTitle === 'function') {
-                    setTimeout(() => {
-                        window.updateSessionTitle(currentSessionId.value)
-                            .catch(err => console.error("Fehler bei der Titelaktualisierung:", err));
-                    }, 500);
-                }
-            } catch (titleError) {
-                console.error("Fehler beim Aktualisieren des Titels:", titleError);
-            }
-            
             const response = await axios.post('/api/question', {
                 question: question.value,
                 session_id: currentSessionId.value
             }, { headers });
             
             // Add assistant response
-            messages.value.push({
+            const assistantMessage = {
+                id: response.data.message_id, // Stelle sicher, dass die Message-ID vom Backend zurückgegeben wird
                 is_user: false,
                 message: response.data.answer,
-                timestamp: Date.now() / 1000
-            });
+                timestamp: Date.now() / 1000,
+                session_id: currentSessionId.value
+            };
+            
+            messages.value.push(assistantMessage);
             
             // Session-Liste aktiv aktualisieren, um den generierten Titel anzuzeigen
             try {
