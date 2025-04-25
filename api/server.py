@@ -510,6 +510,38 @@ async def update_motd(request: Request, admin_data: Dict[str, Any] = Depends(get
         logger.error(f"Fehler beim Aktualisieren der MOTD-Konfiguration: {e}")
         raise HTTPException(status_code=500, detail=f"Interner Serverfehler: {str(e)}")
 
+@app.post("/api/session/{session_id}/update-title")
+async def update_session_title(session_id: int, user_data: Dict[str, Any] = Depends(get_current_user)):
+    """Aktualisiert den Titel einer Session basierend auf der ersten Nachricht"""
+    user_id = user_data['user_id']
+    
+    try:
+        # Überprüfe, ob die Session dem Benutzer gehört
+        user_sessions = chat_history.get_user_sessions(user_id)
+        session_ids = [s['id'] for s in user_sessions]
+        
+        if session_id not in session_ids:
+            raise HTTPException(status_code=403, detail="Zugriff verweigert")
+        
+        # Aktualisiere den Titel
+        success = chat_history.update_session_after_message(session_id)
+        
+        if not success:
+            return JSONResponse(status_code=400, content={"detail": "Titel konnte nicht aktualisiert werden"})
+        
+        # Hole den aktualisierten Titel
+        updated_sessions = chat_history.get_user_sessions(user_id)
+        updated_session = next((s for s in updated_sessions if s['id'] == session_id), None)
+        
+        if not updated_session:
+            return JSONResponse(status_code=404, content={"detail": "Session nach Aktualisierung nicht gefunden"})
+        
+        return {"new_title": updated_session['title']}
+    
+    except Exception as e:
+        logger.error(f"Fehler beim Aktualisieren des Session-Titels: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    
 # API-Endpunkte für RAG
 @app.post("/api/question")
 async def answer_question(request: QuestionRequest, request_obj: Request, user_data: Dict[str, Any] = Depends(get_current_user)):

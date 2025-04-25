@@ -841,6 +841,7 @@
         </div>
         
         <!-- NEU: Quellenerklärungs-Dialog -->
+        <!-- Verbessertes Erklärungs-Dialog Template -->
         <div v-if="showExplanationDialog" class="modal-overlay">
             <div class="modal-container max-w-3xl">
                 <div class="modal-header">
@@ -853,38 +854,45 @@
                         <p>Erklärung wird geladen...</p>
                     </div>
                     <div v-else-if="currentExplanation" class="p-6">
-                        <h2 class="text-xl font-semibold mb-4">Antwort-Erklärung</h2>
-                        
-                        <div class="mb-4">
-                            <h3 class="font-medium text-sm text-gray-600">Ursprüngliche Frage:</h3>
-                            <p class="p-2 bg-gray-50 rounded">{{ currentExplanation.original_question }}</p>
+                        <div class="mb-6">
+                            <h3 class="text-lg font-semibold mb-2">Ursprüngliche Frage:</h3>
+                            <div class="p-3 bg-gray-50 rounded border border-gray-200">
+                                {{ currentExplanation.original_question }}
+                            </div>
                         </div>
                         
-                        <div class="mb-4">
-                            <h3 class="font-medium text-sm text-gray-600">Verwendete Quellen:</h3>
-                            <div class="p-3 bg-gray-50 rounded">
-                                <div v-if="currentExplanation.source_references && currentExplanation.source_references.length" 
-                                     v-for="(source, index) in currentExplanation.source_references" 
-                                     :key="source.source_id"
-                                     class="mb-2 pb-2" 
-                                     :class="index < currentExplanation.source_references.length - 1 ? 'border-b border-gray-200' : ''">
-                                    <div class="flex justify-between">
-                                        <span class="font-medium">{{ source.source_id }}</span>
-                                        <span class="text-sm text-gray-500">{{ source.usage_count || 0 }}× verwendet</span>
+                        <div class="mb-6">
+                            <h3 class="text-lg font-semibold mb-2">Verwendete Quellen:</h3>
+                            <div v-if="currentExplanation.source_references && currentExplanation.source_references.length" 
+                                class="space-y-3">
+                                <div v-for="(source, index) in currentExplanation.source_references" 
+                                    :key="source.source_id"
+                                    class="p-3 bg-gray-50 rounded border border-gray-200">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="font-semibold text-green-700">{{ source.source_id }}</span>
+                                        <span class="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                            {{ source.usage_count || 0 }}× verwendet
+                                        </span>
                                     </div>
-                                    <p class="text-sm">Datei: {{ source.file }}</p>
-                                    <p v-if="source.title" class="text-sm">Abschnitt: {{ source.title }}</p>
-                                    <div class="mt-1 text-xs bg-white p-2 rounded border border-gray-200">
+                                    <div class="mb-1">
+                                        <span class="font-medium">Datei:</span> {{ source.file }}
+                                    </div>
+                                    <div v-if="source.title" class="mb-1">
+                                        <span class="font-medium">Abschnitt:</span> {{ source.title }}
+                                    </div>
+                                    <div class="mt-2 p-2 bg-white rounded border border-gray-200 text-sm">
                                         {{ source.preview || 'Keine Vorschau verfügbar' }}
                                     </div>
                                 </div>
-                                <p v-else class="text-sm text-gray-500">Keine Quellen gefunden.</p>
+                            </div>
+                            <div v-else class="p-3 bg-gray-50 rounded border border-gray-200 text-gray-500 italic">
+                                Keine Quellen gefunden.
                             </div>
                         </div>
                         
                         <div class="mt-4">
-                            <h3 class="font-medium text-sm text-gray-600">Erläuterung:</h3>
-                            <div class="p-3 bg-gray-50 rounded whitespace-pre-line">
+                            <h3 class="text-lg font-semibold mb-2">Erläuterung:</h3>
+                            <div class="p-3 bg-gray-50 rounded border border-gray-200 whitespace-pre-line">
                                 {{ currentExplanation.explanation_text || 'Keine Erläuterung verfügbar.' }}
                             </div>
                         </div>

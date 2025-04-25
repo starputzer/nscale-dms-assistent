@@ -640,3 +640,197 @@ main,
 .theme-contrast .floating-action-button {
     color: #000000 !important;
 }
+
+/* Erweiterte Theme-Anpassungen für Erklärungsfenster und Quellen */
+
+/* ===== DUNKELMODUS: Erklärung und Quellen ===== */
+.theme-dark .modal-overlay {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.theme-dark .modal-container {
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    color: #f0f0f0;
+}
+
+.theme-dark .modal-header {
+    border-bottom-color: #333;
+}
+
+.theme-dark .modal-title,
+.theme-dark .modal-body h2,
+.theme-dark .modal-body h3,
+.theme-dark .font-medium,
+.theme-dark .font-semibold {
+    color: #f0f0f0;
+}
+
+.theme-dark .modal-body {
+    color: #e0e0e0;
+}
+
+.theme-dark .bg-gray-50 {
+    background-color: #2a2a2a;
+    border-color: #444;
+}
+
+.theme-dark .bg-white,
+.theme-dark .bg-gray-100 {
+    background-color: #333;
+    border-color: #444;
+}
+
+.theme-dark .modal-footer {
+    border-top-color: #333;
+}
+
+.theme-dark .text-gray-500,
+.theme-dark .text-gray-600,
+.theme-dark .text-gray-700 {
+    color: #aaa;
+}
+
+.theme-dark .text-green-700 {
+    color: #00c060;
+}
+
+.theme-dark .border-gray-200 {
+    border-color: #444;
+}
+
+/* Quellenreferenzen Styling im Dark Mode */
+.theme-dark .source-reference {
+    background-color: rgba(0, 192, 96, 0.2);
+    border: 1px solid rgba(0, 192, 96, 0.3);
+    color: #00c060;
+}
+
+.theme-dark .source-reference:hover {
+    background-color: rgba(0, 192, 96, 0.3);
+}
+
+.theme-dark .source-btn {
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    color: #f0f0f0;
+}
+
+.theme-dark .source-btn:hover {
+    background-color: #333;
+}
+
+/* ===== KONTRASTMODUS: Erklärung und Quellen ===== */
+.theme-contrast .modal-overlay {
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+.theme-contrast .modal-container {
+    background-color: #000;
+    border: 2px solid #ffeb3b;
+    color: #fff;
+}
+
+.theme-contrast .modal-header {
+    border-bottom: 2px solid #ffeb3b;
+}
+
+.theme-contrast .modal-title,
+.theme-contrast .modal-body h2,
+.theme-contrast .modal-body h3,
+.theme-contrast .font-medium,
+.theme-contrast .font-semibold {
+    color: #ffeb3b !important;
+}
+
+.theme-contrast .modal-footer {
+    border-top: 2px solid #ffeb3b;
+}
+
+.theme-contrast .bg-gray-50,
+.theme-contrast .bg-gray-100 {
+    background-color: #000;
+    border: 1px solid #ffeb3b;
+    color: #fff;
+}
+
+.theme-contrast .bg-white {
+    background-color: #000;
+    border: 1px solid #ffeb3b;
+    color: #fff;
+}
+
+.theme-contrast .text-gray-500,
+.theme-contrast .text-gray-600,
+.theme-contrast .text-gray-700 {
+    color: #fff !important;
+}
+
+.theme-contrast .text-green-700 {
+    color: #ffeb3b !important;
+}
+
+.theme-contrast .border-gray-200 {
+    border-color: #ffeb3b;
+}
+
+.theme-contrast .italic {
+    font-style: italic;
+    color: #ffeb3b !important;
+}
+
+/* Quellenreferenzen Styling im Kontrastmodus */
+.theme-contrast .source-reference {
+    background-color: #333300;
+    border: 1px solid #ffeb3b;
+    color: #ffeb3b;
+    font-weight: bold;
+}
+
+.theme-contrast .source-reference:hover {
+    background-color: #444400;
+}
+
+.theme-contrast .source-btn {
+    background-color: #000000;
+    border: 1px solid #ffeb3b;
+    color: #ffeb3b;
+}
+
+.theme-contrast .source-btn:hover {
+    background-color: #333300;
+}
+
+/* Modal Footer Buttons in den verschiedenen Modi */
+.theme-dark .modal-footer .nscale-btn-secondary {
+    background-color: #1e1e1e;
+    border: 1px solid #00c060;
+    color: #00c060;
+}
+
+.theme-dark .modal-footer .nscale-btn-secondary:hover {
+    background-color: #003320;
+    color: #00c060;
+}
+
+.theme-contrast .modal-footer .nscale-btn-secondary {
+    background-color: #000000;
+    border: 2px solid #ffeb3b;
+    color: #ffeb3b;
+    font-weight: bold;
+}
+
+.theme-contrast .modal-footer .nscale-btn-secondary:hover {
+    background-color: #333300;
+}
+
+/* Verbesserte Sichtbarkeit für Erklärungstext */
+.theme-dark .whitespace-pre-line,
+.theme-contrast .whitespace-pre-line {
+    white-space: pre-line;
+    line-height: 1.6;
+}
+
+.theme-contrast .whitespace-pre-line {
+    color: #ffffff !important;
+}
