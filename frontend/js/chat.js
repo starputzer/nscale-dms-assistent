@@ -44,10 +44,6 @@ export function setupChat(options) {
                 eventSource.value.onmessage = null;
                 eventSource.value.onerror = null;
                 
-                // Alle spezifischen Event-Listener entfernen
-                eventSource.value.removeEventListener('done', () => {});
-                eventSource.value.removeEventListener('open', () => {});
-                
                 // EventSource schließen
                 eventSource.value.close();
                 eventSource.value = null;
@@ -286,7 +282,7 @@ export function setupChat(options) {
                 }
                 
                 cleanupStream();
-            });
+            };
 
             // Open-Handler
             eventSource.value.addEventListener('open', () => {
