@@ -261,13 +261,13 @@ class RAGEngine:
         }
 
     def _format_prompt(self, question: str, chunks: List[Dict[str, Any]], use_simple_language: bool = False) -> str:
-        """Formatiert einen optimierten deutschen Prompt für LLama 3"""
+        """Formatiert einen optimierten deutschen Prompt für LLama 3 mit verbesserter Quellenangabe"""
         # Sortiere Chunks nach Relevanz
         sorted_chunks = sorted(chunks, key=lambda x: x.get('score', 0), reverse=True)
         
         # Extrahiere die relevantesten Inhalte in kompakter Form
         kontext_mit_quellen = []
-        max_context_length = min(Config.MAX_PROMPT_LENGTH - 800, 7000)  # Platz für Anweisungen reservieren
+        max_context_length = min(Config.MAX_PROMPT_LENGTH - 900, 7000)  # Platz für Anweisungen reservieren
         total_length = 0
         
         # Extrahiere Schlüsselwörter aus der Frage für besseren Kontext
@@ -288,11 +288,21 @@ class RAGEngine:
                 )
                 chunk_text = chunk_text[:last_sentence_end+1]
             
+            # Metadaten für präzisere Quellenangaben speichern
+            source_id = f"Quelle-{i+1}"
+            source_details = {}
+            source_details['id'] = source_id
+            source_details['file'] = chunk.get('file', 'Unbekannte Quelle')
+            
             # Je nach Chunk-Typ formatieren
             if chunk.get('type') == 'section':
-                text = f"Dokument {i+1} (Abschnitt '{chunk['title']}' aus {chunk['file']}): {chunk_text}"
+                source_details['type'] = 'section'
+                source_details['title'] = chunk.get('title', 'Unbekannter Abschnitt')
+                text = f"<{source_id}> Dokument {i+1} (Abschnitt '{chunk['title']}' aus {chunk['file']}): {chunk_text}"
             else:
-                text = f"Dokument {i+1} (aus {chunk['file']}): {chunk_text}"
+                source_details['type'] = 'chunk'
+                source_details['position'] = chunk.get('start', 0)
+                text = f"<{source_id}> Dokument {i+1} (aus {chunk['file']}): {chunk_text}"
             
             # Füge nur hinzu, wenn noch Platz ist
             if total_length + len(text) <= max_context_length:
@@ -301,56 +311,71 @@ class RAGEngine:
         
         kontext = '\n\n'.join(kontext_mit_quellen)
         
-        # Basisprompt
+        # Basisprompt mit verbesserter Anweisung zur Quellenangabe
         base_prompt = f"""<|begin_of_text|>
-<|system|>
-Du bist ein deutschsprachiger, fachlich präziser Assistent für die nscale DMS-Software der SenMVKU Berlin.
+    <|system|>
+    Du bist ein deutschsprachiger, fachlich präziser Assistent für die nscale DMS-Software der SenMVKU Berlin.
 
-Aufgaben und Anforderungen:
-1. Beantworte Fragen ausführlich, verständlich und strukturiert - AUSSCHLIESSLICH auf Deutsch.
-2. Nutze NUR Informationen aus dem bereitgestellten Dokumentenkontext.
-3. Wenn du etwas nicht weißt oder es nicht im Kontext steht, sage ehrlich "Dazu finde ich keine Information im Kontext".
-4. Organisiere komplexe Antworten mit Überschriften und Aufzählungspunkten für bessere Lesbarkeit.
-5. Kopiere KEINE vollständigen Abschnitte aus dem Kontext - formuliere die Informationen in eigenen Worten.
-6. Füge Quellenverweise in deiner Antwort ein, z.B. "(aus Dokument 2)".
-7. Beachte, dass nicht alle Dokumente gleichwertig oder relevant sind - wähle die passendsten aus.
-8. Nenne MAXIMAL DIE ERSTEN 5 QUELLEN am Ende deiner Antwort, ohne Wiederholungen.
+    Aufgaben und Anforderungen:
+    1. Beantworte Fragen ausführlich, verständlich und strukturiert - AUSSCHLIESSLICH auf Deutsch.
+    2. Nutze NUR Informationen aus dem bereitgestellten Dokumentenkontext.
+    3. Wenn du etwas nicht weißt oder es nicht im Kontext steht, sage ehrlich "Dazu finde ich keine Information im Kontext".
+    4. Organisiere komplexe Antworten mit Überschriften und Aufzählungspunkten für bessere Lesbarkeit.
+    5. Kopiere KEINE vollständigen Abschnitte aus dem Kontext - formuliere die Informationen in eigenen Worten.
 
-Zielgruppe: Mitarbeiter der Berliner Verwaltung, die nscale DMS für Dokumentenmanagement nutzen."""
+    WICHTIG ZUR QUELLENANGABE:
+    6. Füge DIREKT nach jeder inhaltlichen Aussage einen Quellenverweis ein. Format: "(Quelle-X)"
+    Beispiel: "Zum Archivieren eines Dokuments müssen Sie die Schaltfläche 'Archivieren' anklicken (Quelle-1)."
+    7. Die Quellen sind im Format <Quelle-X> im Kontext markiert, nutze exakt diese Bezeichnungen.
+    8. Verweise auf Quellen nach JEDEM inhaltlichen Punkt, nicht nur am Ende eines Absatzes.
+    9. Füge am Ende eine kurze Quellenzusammenfassung als nummerierte Liste hinzu:
+    "Quellen:
+    1. nscale-handbuch.md, Abschnitt 'Archivieren'
+    2. workflow-dokumente.txt"
+
+    Zielgruppe: Mitarbeiter der Berliner Verwaltung, die nscale DMS für Dokumentenmanagement nutzen."""
 
         # Erweiterter Prompt für einfache Sprache
         simple_language_prompt = f"""<|begin_of_text|>
-<|system|>
-Du bist ein freundlicher und geduldiger Assistent, der Fragen zur nscale DMS-Software in klarer, leicht verständlicher Sprache beantwortet. Erkläre Informationen so, dass sie auch von Personen verstanden werden, die keine Vorkenntnisse in Technik oder Verwaltung haben.
+    <|system|>
+    Du bist ein freundlicher und geduldiger Assistent, der Fragen zur nscale DMS-Software in klarer, leicht verständlicher Sprache beantwortet. Erkläre Informationen so, dass sie auch von Personen verstanden werden, die keine Vorkenntnisse in Technik oder Verwaltung haben.
 
-Verwende:
-- einfache Wörter
-- kurze Sätze (maximal 12 Wörter pro Satz)
-- keine Fremdwörter oder Fachbegriffe – oder erkläre sie sofort mit einem Beispiel
-- wenn nötig: Schritt-für-Schritt-Erklärungen
-- kein "Fachsprache", kein "Beamtendeutsch"
+    Verwende:
+    - einfache Wörter
+    - kurze Sätze (maximal 12 Wörter pro Satz)
+    - keine Fremdwörter oder Fachbegriffe – oder erkläre sie sofort mit einem Beispiel
+    - wenn nötig: Schritt-für-Schritt-Erklärungen
+    - kein "Fachsprache", kein "Beamtendeutsch"
 
-Sprich direkt die Nutzerin oder den Nutzer an. Gib keine unnötigen Details. Verwende gerne Beispiele.
+    Sprich direkt die Nutzerin oder den Nutzer an. Gib keine unnötigen Details. Verwende gerne Beispiele.
 
-Nutze NUR Informationen aus dem bereitgestellten Dokumentenkontext.
-Wenn du etwas nicht weißt, sage einfach "Dazu finde ich keine Information."
+    Nutze NUR Informationen aus dem bereitgestellten Dokumentenkontext.
+    Wenn du etwas nicht weißt, sage einfach "Dazu finde ich keine Information."
 
-Nenne MAXIMAL DIE ERSTEN 5 QUELLEN am Ende deiner Antwort, ohne Wiederholungen.
+    WICHTIG ZUR QUELLENANGABE:
+    - Füge DIREKT nach jeder inhaltlichen Aussage einen Quellenverweis ein. Format: "(Quelle-X)"
+    Beispiel: "Um ein Dokument zu speichern, klicken Sie auf den Speichern-Knopf (Quelle-1)."
+    - Die Quellen sind im Format <Quelle-X> im Kontext markiert, nutze exakt diese Bezeichnungen.
+    - Verweise auf Quellen nach JEDEM wichtigen Schritt oder Erklärung.
+    - Füge am Ende eine einfache Quellenliste hinzu:
+    "Meine Quellen:
+    1. nscale-Handbuch, Abschnitt 'Dokumente speichern'
+    2. nscale-Kurzanleitung"
 
-Zielgruppe: Neue Mitarbeiter der Berliner Verwaltung, die mit der nscale DMS-Software noch nicht vertraut sind."""
+    Zielgruppe: Neue Mitarbeiter der Berliner Verwaltung, die mit der nscale DMS-Software noch nicht vertraut sind."""
 
         # Wähle den passenden Prompt
         system_prompt = simple_language_prompt if use_simple_language else base_prompt
         
         # Llama 3-spezifisches, verbessertes Prompt-Format
         prompt = f"""{system_prompt}
-<|user|>
-Frage: {question}
+    <|user|>
+    Frage: {question}
 
-Relevante Dokumenteninformationen:
-{kontext}
-<|assistant|>
-"""
+    Relevante Dokumenteninformationen:
+    {kontext}
+    <|assistant|>
+    """
 
         return prompt
     

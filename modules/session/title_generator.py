@@ -22,48 +22,110 @@ class SessionTitleGenerator:
         # Entfernen von Sonderzeichen und bereinigen der Nachricht
         clean_message = message.strip()
         
-        # Extrahiere Schlüsselwörter und häufige Begriffe im DMS-Kontext
-        key_phrases = [
-            "akte anlegen", "dokument speichern", "datei hochladen", "workflow starten", 
-            "benutzer anlegen", "berechtigung", "einscannen", "archivieren", "suche", 
-            "wiederfinden", "freigabe", "digitalisierung", "geschäftsgang", "aktenplan", 
-            "ablage", "aktenzeichen", "vorgang", "dokumententyp", "prozess", 
-            "elektronische akte", "workflow", "scannen", "erstellen", "importieren", 
-            "exportieren", "konvertieren", "verschieben", "kopieren", "löschen",
-            "pdf", "word", "excel", "email", "zugriffsrechte", "drucken", "teilen",
-            "fehler", "problem", "fehler im geschäftsgang", "hallo", "hilfe",
-            "nscale", "dms", "dokumentenmanagementsystem", "dokumentenmanagement"
-        ]
+        # DMS-spezifische Fachbegriffe für bessere Titelerkennung
+        dms_key_terms = {
+            # Dokumenten-bezogene Begriffe
+            "akte": "Akten",
+            "dokument": "Dokumente",
+            "datei": "Dateien",
+            "archiv": "Archivierung",
+            "scannen": "Scanvorgang",
+            "digitalisier": "Digitalisierung",
+            
+            # Prozess-bezogene Begriffe
+            "workflow": "Workflow",
+            "geschäftsgang": "Geschäftsgang",
+            "prozess": "Prozesse",
+            "vorgang": "Vorgänge",
+            
+            # Technische Begriffe
+            "benutzer": "Benutzerverwaltung",
+            "berechtigung": "Berechtigungen",
+            "zugriffsrecht": "Zugriffsrechte",
+            "konfiguration": "Konfiguration",
+            "einstellung": "Einstellungen",
+            
+            # Nscale-spezifische Begriffe
+            "nscale": "nscale",
+            "dms": "DMS",
+            "client": "nscale Client",
+            "server": "nscale Server",
+            "web client": "Web Client",
+            "export": "Export",
+            "import": "Import",
+            "vorlagen": "Vorlagen",
+            "suche": "Suche",
+            "template": "Templates",
+            "objektreferenz": "Objektreferenzen",
+            "indexdaten": "Indexdaten",
+            
+            # Formate
+            "pdf": "PDF-Dokumente",
+            "excel": "Excel-Dateien",
+            "word": "Word-Dokumente",
+            "email": "E-Mail-Verarbeitung",
+            "outlook": "Outlook-Integration"
+        }
         
         lowercase_message = clean_message.lower()
         
         # DEBUG-AUSGABE
         print(f"Title Generator: Originalfrage: '{message}'")
         
-        # 1. Direkter "Was ist X" Matcher 
-        what_is_pattern = r'was ist (nscale|dms|dokumentenmanagementsystem)'
+        # 1. Domänenspezifische Muster erkennen
+        # Diese Muster sind spezifisch für nscale-DMS-Fragen
+        dms_patterns = [
+            # Wie tue ich X mit nscale/DMS?
+            (r'wie\s+(?:kann|muss|soll|könnte|müsste|sollte)\s+(?:ich|man)\s+(.+?)\s+(?:in|mit|bei)\s+(?:nscale|dms)(?:\?|$)', 
+             lambda m: f"nscale: {m.group(1).strip().title()}"),
+            
+            # nscale-spezifische Komponente X
+            (r'(?:was\s+ist|wie\s+funktioniert)\s+(?:der|die|das)?\s*(?:nscale\s+)?([a-zA-Z\s\-]+?)(?:\s+in\s+nscale|\s+von\s+nscale|\?|$)',
+             lambda m: f"nscale {m.group(1).strip().title()}"),
+            
+            # Frage zu spezifischer Funktion
+            (r'(?:wie|wo|wann|warum)\s+(.+?)\s+(?:dokumente|akten|dateien|vorgänge)(?:\?|$)',
+             lambda m: f"Dokumente: {m.group(1).strip().title()}")
+        ]
+        
+        for pattern, title_formatter in dms_patterns:
+            match = re.search(pattern, lowercase_message)
+            if match:
+                title = title_formatter(match)
+                # Kürze Titel auf maximale Länge
+                if len(title) > max_length:
+                    title = title[:max_length-3] + "..."
+                
+                print(f"Title Generator: DMS-Muster erkannt - Titel: '{title}'")
+                return title
+        
+        # 2. Direkte "Was ist X" Matcher für DMS-Begriffe 
+        what_is_pattern = r'was ist (?:ein(?:e)? )?([a-zA-Z\-\s]+?)(?:\?|$|\s+in)'
         what_is_match = re.search(what_is_pattern, lowercase_message)
         if what_is_match:
-            subject = what_is_match.group(1).upper()
-            print(f"Title Generator: Was ist {subject} Pattern erkannt")
-            return f"{subject} Erklärung"
+            term = what_is_match.group(1).strip()
+            # Prüfe, ob es sich um einen DMS-Fachbegriff handelt
+            for key_term, title_term in dms_key_terms.items():
+                if key_term in term:
+                    title = f"{title_term} erklärt"
+                    if len(title) > max_length:
+                        title = title[:max_length-3] + "..."
+                    print(f"Title Generator: Fachbegriff-Erklärung erkannt: {title}")
+                    return title
             
-        # 2. Allgemeiner "Was ist X" Matcher
-        general_what_is = r'was ist\s+(\w+)'
-        general_what_match = re.search(general_what_is, lowercase_message)
-        if general_what_match:
-            subject = general_what_match.group(1)
-            # Erste Buchstaben groß
-            titled_subject = subject.title()
-            print(f"Title Generator: Allgemeines Was ist Pattern erkannt: {titled_subject}")
-            return f"{titled_subject} Erklärung"
+            # Generischer "Was ist X"-Titel
+            subject = term.title()
+            title = f"{subject} Erklärung"
+            if len(title) > max_length:
+                title = title[:max_length-3] + "..."
+            print(f"Title Generator: Was ist-Frage erkannt: {title}")
+            return title
             
-        # 3. Allgemeine Fragemuster
-        # Format: {Fragewort} {Verb} {Subjekt}
+        # 3. Präzisere Fragemuster
         question_patterns = [
-            # Wie kann/muss/soll ich X
-            (r'wie\s+(kann|muss|soll|könnte|müsste|sollte)\s+(?:ich|man)\s+(.+?)(?:\?|$)', 
-             lambda m: f"{m.group(2).strip().title()} Anleitung"),
+            # Wie kann/muss/soll ich X tun/machen
+            (r'wie\s+(?:kann|muss|soll|könnte|müsste|sollte)\s+(?:ich|man)\s+(.+?)(?:\s+tun|\s+machen)?(?:\?|$)', 
+             lambda m: f"{m.group(1).strip().title()} Anleitung"),
             
             # Wie funktioniert X
             (r'wie\s+funktioniert\s+(.+?)(?:\?|$)', 
@@ -71,7 +133,7 @@ class SessionTitleGenerator:
              
             # Wo finde ich X
             (r'wo\s+(?:finde|gibt|bekomme)\s+(?:ich|man)\s+(.+?)(?:\?|$)', 
-             lambda m: f"{m.group(1).strip().title()} Ort"),
+             lambda m: f"{m.group(1).strip().title()} finden"),
              
             # Wann wird/ist X
             (r'wann\s+(?:wird|ist|soll|kann|muss)\s+(.+?)(?:\?|$)', 
@@ -81,15 +143,23 @@ class SessionTitleGenerator:
             (r'was\s+bedeutet\s+(.+?)(?:\?|$)', 
              lambda m: f"{m.group(1).strip().title()} Bedeutung"),
              
-            # Was sind X
-            (r'was\s+sind\s+(.+?)(?:\?|$)', 
-             lambda m: f"{m.group(1).strip().title()} Erklärung"),
+            # Wie erstelle ich X
+            (r'wie\s+(?:erstelle|erzeuge|generiere|kreiere)\s+(?:ich|man)\s+(?:ein(?:e)?\s+)?(.+?)(?:\?|$)', 
+             lambda m: f"{m.group(1).strip().title()} erstellen"),
+             
+            # Wie lösche ich X
+            (r'wie\s+(?:lösche|entferne|vernichte)\s+(?:ich|man)\s+(?:ein(?:e)?\s+)?(.+?)(?:\?|$)', 
+             lambda m: f"{m.group(1).strip().title()} löschen"),
+             
+            # Problem/Fehler mit X
+            (r'(?:problem|fehler|issue|bug)\s+(?:mit|bei)\s+(.+?)(?:\?|$)', 
+             lambda m: f"{m.group(1).strip().title()} Problem"),
              
             # Welche X gibt es
             (r'welche\s+(.+?)\s+gibt\s+es', 
              lambda m: f"{m.group(1).strip().title()} Übersicht"),
              
-            # Allgemeines "Wie X" Muster
+            # Allgemeines "Wie X" Muster (als Fallback)
             (r'wie\s+(.+?)(?:\?|$)',
              lambda m: f"{m.group(1).strip().title()}"),
         ]
@@ -105,32 +175,39 @@ class SessionTitleGenerator:
                 print(f"Title Generator: Fragemuster erkannt - Titel: '{title}'")
                 return title
         
-        # 4. Schlüsselbegriff-basierte Titel
-        # Prüfe, ob einer der Schlüsselbegriffe enthalten ist
-        found_phrases = []
-        for phrase in key_phrases:
-            if phrase.lower() in lowercase_message:
-                found_phrases.append(phrase)
+        # 4. Erkennung von DMS-Fachbegriffen im Text
+        for term, title in dms_key_terms.items():
+            if term.lower() in lowercase_message:
+                # Erstelle einen Titel basierend auf dem erkannten Fachbegriff
+                prefix = ""
+                # Bestimme dynamisch ein passendes Präfix
+                if "wie" in lowercase_message[:15]:  # Prüft nur am Anfang der Nachricht
+                    prefix = "Anleitung: "
+                elif "was" in lowercase_message[:15]:
+                    prefix = ""
+                elif "problem" in lowercase_message or "fehler" in lowercase_message:
+                    prefix = "Problem: "
+                
+                full_title = f"{prefix}{title}"
+                if len(full_title) > max_length:
+                    full_title = full_title[:max_length-3] + "..."
+                    
+                print(f"Title Generator: Fachbegriff '{term}' erkannt - Titel: '{full_title}'")
+                return full_title
         
-        # Wenn ein Schlüsselbegriff gefunden wurde, nutze den längsten
-        if found_phrases:
-            longest_phrase = max(found_phrases, key=len)
-            print(f"Title Generator: Schlüsselbegriff '{longest_phrase}' in Nachricht gefunden")
-            return longest_phrase.title()  # Erster Buchstabe groß
-        
-        # 5. Extrahiere Subjekt und/oder Verb aus dem Text
-        # Entferne typische Fragewort-Präfixe
+        # 5. Entferne typische Fragewort-Präfixe für bessere Titelextraktion
         question_prefixes = [
             r'^(wie|was|warum|weshalb|wann|wozu|wo|welche[rsm]?|wer|gibt es|kann ich|können wir|ist es möglich) ',
             r'^(ich möchte|möchte ich|ich will|will ich|ich brauche|brauche ich) ',
-            r'^(bitte zeig|zeig mir|zeige mir|erkläre|erklär mir|hilf mir|helfen sie) '
+            r'^(bitte zeig|zeig mir|zeige mir|erkläre|erklär mir|hilf mir|helfen sie) ',
+            r'^(hat jemand|kennt jemand|weiß jemand|kann mir jemand sagen|kann mir jemand erklären) '
         ]
         
         cleaned_text = lowercase_message
         for prefix_pattern in question_prefixes:
             cleaned_text = re.sub(prefix_pattern, '', cleaned_text, flags=re.IGNORECASE)
         
-        # Entferne noch weitere Füllworte
+        # Entferne noch weitere Füllworte für klarere Titel
         filler_words = [
             r'\b(und|oder|aber|denn|weil|wenn|als|wie|dass|ob|bitte|einfach)\b',
             r'\b(der|die|das|den|dem|des|ein|eine|einen|einem|einer|eines)\b',

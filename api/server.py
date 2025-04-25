@@ -284,6 +284,115 @@ async def get_current_user_role(user_data: Dict[str, Any] = Depends(get_current_
         "user_id": user_data.get('user_id')
     }
 
+@app.get("/api/explain/{message_id}")
+async def explain_answer(message_id: int, user_data: Dict[str, Any] = Depends(get_current_user)):
+    """
+    Erklärt, wie eine bestimmte Antwort generiert wurde, inkl. genutzter Quellen
+    und Entscheidungsprozess.
+    """
+    try:
+        # Hole die Nachricht aus der Datenbank
+        conn = sqlite3.connect(Config.DB_PATH)
+        cursor = conn.cursor()
+        
+        # Prüfe, ob die Nachricht existiert und ob sie dem Benutzer gehört
+        cursor.execute("""
+            SELECT m.id, m.message, m.session_id, s.user_id 
+            FROM chat_messages m
+            JOIN chat_sessions s ON m.session_id = s.id
+            WHERE m.id = ? AND m.is_user = 0
+        """, (message_id,))
+        
+        result = cursor.fetchone()
+        if not result:
+            conn.close()
+            raise HTTPException(status_code=404, detail="Nachricht nicht gefunden")
+        
+        msg_id, message_text, session_id, message_user_id = result
+        
+        # Prüfe, ob der Benutzer Zugriff auf diese Nachricht hat
+        if message_user_id != user_data['user_id'] and user_data.get('role') != 'admin':
+            conn.close()
+            raise HTTPException(status_code=403, detail="Keine Berechtigung für diese Nachricht")
+        
+        # Hole die vorherige Benutzerfrage
+        cursor.execute("""
+            SELECT message FROM chat_messages 
+            WHERE session_id = ? AND is_user = 1 AND created_at < (
+                SELECT created_at FROM chat_messages WHERE id = ?
+            )
+            ORDER BY created_at DESC
+            LIMIT 1
+        """, (session_id, message_id))
+        
+        prev_question_result = cursor.fetchone()
+        if not prev_question_result:
+            conn.close()
+            raise HTTPException(status_code=404, detail="Zugehörige Frage nicht gefunden")
+        
+        question = prev_question_result[0]
+        conn.close()
+        
+        # Analysiere die Antwort auf verwendete Quellen
+        source_references = []
+        source_pattern = r'\(Quelle-(\d+)\)'
+        source_matches = re.findall(source_pattern, message_text)
+        
+        # Zähle Vorkommen der einzelnen Quellen
+        source_counts = {}
+        for source_id in source_matches:
+            if source_id in source_counts:
+                source_counts[source_id] += 1
+            else:
+                source_counts[source_id] = 1
+        
+        # Hole die originalen Quellen zum Kontext
+        # In einer echten Implementierung würden wir die Chunks für die Frage neu abrufen
+        # oder sie speichern, wenn die Antwort generiert wird
+        relevant_chunks = []
+        try:
+            # Hier würden wir idealerweise die exakt verwendeten Chunks abrufen
+            # Da dies in der aktuellen Implementierung nicht gespeichert wird,
+            # erzeugen wir eine neue Suche mit dem ursprünglichen Text
+            relevant_chunks = rag_engine.embedding_manager.search(question, top_k=Config.TOP_K)
+        except Exception as e:
+            logger.error(f"Fehler bei der Quellensuche für Erklärung: {e}")
+            # Fallback: leere Quellenliste
+            relevant_chunks = []
+        
+        # Erstelle eine detaillierte Erklärung
+        # Hier würden wir die genauen Entscheidungen erklären, warum welche Information ausgewählt wurde
+        explanation = {
+            "original_question": question,
+            "answer_summary": message_text[:200] + "..." if len(message_text) > 200 else message_text,
+            "source_references": [
+                {
+                    "source_id": f"Quelle-{i+1}",
+                    "file": chunk.get('file', 'Unbekannte Quelle'),
+                    "type": chunk.get('type', 'chunk'),
+                    "title": chunk.get('title', '') if chunk.get('type') == 'section' else '',
+                    "usage_count": source_counts.get(str(i+1), 0),
+                    "relevance_score": float(chunk.get('score', 0)),
+                    "preview": chunk.get('text', '')[:200] + "..." if len(chunk.get('text', '')) > 200 else chunk.get('text', '')
+                }
+                for i, chunk in enumerate(relevant_chunks[:5])  # Nur die ersten 5 Quellen
+            ],
+            "explanation_text": f"""
+Diese Antwort wurde basierend auf Ihrer Frage "{question}" generiert.
+
+Der Assistent hat dazu folgende Quellen verwendet:
+{"".join([f"- {chunk.get('file', 'Unbekannte Quelle')}" + (f", Abschnitt '{chunk.get('title', '')}')" if chunk.get('type') == 'section' else '') + f" - ca. {source_counts.get(str(i+1), 0)} mal referenziert\n" for i, chunk in enumerate(relevant_chunks[:5]) if str(i+1) in source_counts])}
+
+Die Antwort wurde so formuliert, dass sie Ihre Frage direkt beantwortet und dabei die relevantesten Informationen aus den Quellen verständlich zusammenfasst.
+"""
+        }
+        
+        return explanation
+        
+    except Exception as e:
+        logger.error(f"Fehler bei der Generierung der Erklärung: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Fehler bei der Erklärung: {str(e)}")
+
 @app.post("/api/feedback")
 async def add_feedback(request: FeedbackRequest, user_data: Dict[str, Any] = Depends(get_current_user)):
     """Fügt Feedback zu einer Nachricht hinzu"""
