@@ -65,6 +65,7 @@ class ChatHistoryManager:
             conn.commit()
             conn.close()
             
+            logger.info(f"Neue Session erstellt: ID {session_id}, Titel '{title}'")
             return session_id
         
         except Exception as e:
@@ -104,6 +105,7 @@ class ChatHistoryManager:
                 
                 logger.info(f"Nachricht hinzugefügt zu Session {session_id}: Nachrichtenzähler = {message_count}")
                 
+                # Immer den Titel aktualisieren, wenn es die erste Nachricht ist
                 if message_count == 1:
                     # Generiere neuen Titel basierend auf der Nachricht
                     new_title = self.title_generator.generate_title(message)
@@ -117,14 +119,13 @@ class ChatHistoryManager:
                     
                     logger.info(f"Session {session_id} - Aktueller Titel: '{current_title}', Neuer Titel: '{new_title}'")
                     
-                    # Aktualisiere den Titel, wenn er noch der Standardtitel ist oder wenn
-                    # der generierte Titel nicht leer ist
-                    if current_title == "Neue Unterhaltung" and new_title != "Neue Unterhaltung":
+                    # Aktualisiere den Titel, wenn es sinnvoll ist
+                    if current_title == "Neue Unterhaltung" or True:  # Immer aktualisieren
                         cursor.execute(
                             "UPDATE chat_sessions SET title = ? WHERE id = ?",
                             (new_title, session_id)
                         )
-                        logger.info(f"Session-Titel für {session_id} automatisch aktualisiert: '{new_title}'")
+                        logger.info(f"Session-Titel für {session_id} aktualisiert: '{new_title}'")
             
             conn.commit()
             conn.close()
@@ -148,10 +149,10 @@ class ChatHistoryManager:
             
             messages = []
             for row in cursor.fetchall():
-                # BUGFIX: Korrekter Boolean-Wert für is_user
+                # Wichtig: is_user korrekt als Boolean umwandeln
                 messages.append({
                     'id': row[0],
-                    'is_user': bool(row[1]),  # Stelle sicher, dass es ein Boolean ist
+                    'is_user': bool(row[1]),
                     'message': row[2],
                     'timestamp': row[3]
                 })
@@ -184,6 +185,7 @@ class ChatHistoryManager:
                 })
             
             conn.close()
+            logger.info(f"Abgerufene Sessions für Benutzer {user_id}: {len(sessions)}")
             return sessions
         
         except Exception as e:

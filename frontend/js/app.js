@@ -73,6 +73,38 @@ createApp({
         // Ausgewähltes Farbthema
         const selectedColorTheme = ref('warning');
         
+        // Session-Persistenz-Funktionen
+        const saveCurrentSessionToStorage = (sessionId) => {
+            if (sessionId) {
+                localStorage.setItem('lastActiveSession', sessionId);
+                console.log(`Aktuelle Session ${sessionId} im localStorage gespeichert`);
+            }
+        };
+
+        const restoreLastActiveSession = async () => {
+            try {
+                const lastSessionId = localStorage.getItem('lastActiveSession');
+                
+                if (lastSessionId && sessions.value.length > 0) {
+                    // Prüfen, ob die Session noch existiert
+                    const sessionExists = sessions.value.some(session => session.id === parseInt(lastSessionId));
+                    
+                    if (sessionExists) {
+                        console.log(`Lade zuletzt aktive Session ${lastSessionId} aus localStorage`);
+                        await loadSession(parseInt(lastSessionId));
+                        return true;
+                    } else {
+                        console.log(`Zuletzt aktive Session ${lastSessionId} existiert nicht mehr`);
+                        localStorage.removeItem('lastActiveSession');
+                    }
+                }
+            } catch (error) {
+                console.error('Fehler beim Wiederherstellen der letzten Session:', error);
+            }
+            
+            return false;
+        };
+        
         // Setup axios with auth header
         const setupAxios = () => {
             axios.defaults.headers.common['Authorization'] = token.value ? `Bearer ${token.value}` : '';
@@ -166,6 +198,7 @@ createApp({
             messages.value = [];
             userRole.value = 'user';
             activeView.value = 'chat';
+            localStorage.removeItem('lastActiveSession');
             
             // EventSource schließen, falls vorhanden
             if (eventSource.value) {
@@ -174,12 +207,77 @@ createApp({
             }
         };
         
-        // Session management
+        // Session handling with improved persistence
+        const loadSession = async (sessionId) => {
+            try {
+                isLoading.value = true;
+                console.log(`Lade Session ${sessionId}...`);
+                
+                const response = await axios.get(`/api/session/${sessionId}`);
+                currentSessionId.value = sessionId;
+                
+                // Session im localStorage speichern für Persistenz nach Reload
+                saveCurrentSessionToStorage(sessionId);
+                
+                // Nachrichten setzen
+                messages.value = response.data.messages;
+                
+                // MOTD-Logik: Wenn bereits Nachrichten existieren, MOTD ausblenden
+                if (messages.value && messages.value.length > 0) {
+                    console.log(`Session ${sessionId} hat ${messages.value.length} Nachrichten - MOTD wird ausgeblendet`);
+                    motdDismissed.value = true;
+                } else {
+                    console.log(`Session ${sessionId} hat keine Nachrichten - MOTD wird angezeigt`);
+                    motdDismissed.value = false;
+                }
+                
+                // Feedback für jede Assistenten-Nachricht laden
+                for (const message of messages.value) {
+                    if (!message.is_user && message.id) {
+                        await feedbackFunctions.loadMessageFeedback(message.id);
+                    }
+                }
+                
+                // Zur Chat-Ansicht wechseln
+                activeView.value = 'chat';
+                
+                // Scroll to bottom after messages load
+                await nextTick();
+                scrollToBottom();
+            } catch (error) {
+                console.error('Error loading session:', error);
+            } finally {
+                isLoading.value = false;
+            }
+        };
+        
+        // Verbesserte loadSessions Funktion mit automatischer Aktualisierung
         const loadSessions = async () => {
             try {
                 const response = await axios.get('/api/sessions');
-                sessions.value = [...response.data.sessions];
-                console.log("Sessions neu geladen:", sessions.value);
+                
+                // Tiefe Kopie erstellen, um Reaktivität sicherzustellen
+                const newSessions = JSON.parse(JSON.stringify(response.data.sessions));
+                
+                // Prüfen, ob sich die Titel geändert haben
+                let titlesChanged = false;
+                if (sessions.value.length > 0 && newSessions.length === sessions.value.length) {
+                    for (let i = 0; i < sessions.value.length; i++) {
+                        if (sessions.value[i].title !== newSessions[i].title) {
+                            titlesChanged = true;
+                            console.log(`Titel für Session ${sessions.value[i].id} hat sich geändert: "${sessions.value[i].title}" -> "${newSessions[i].title}"`);
+                            break;
+                        }
+                    }
+                } else {
+                    titlesChanged = true;
+                }
+                
+                // Nur aktualisieren, wenn sich etwas geändert hat
+                if (titlesChanged || sessions.value.length !== newSessions.length) {
+                    console.log("Sessions wurden aktualisiert");
+                    sessions.value = newSessions;
+                }
             } catch (error) {
                 console.error('Error loading sessions:', error);
             }
@@ -218,6 +316,8 @@ createApp({
                 if (currentSessionId.value === sessionId) {
                     currentSessionId.value = null;
                     messages.value = [];
+                    // Entferne auch aus dem localStorage
+                    localStorage.removeItem('lastActiveSession');
                 }
                 
                 await loadSessions();
@@ -239,7 +339,6 @@ createApp({
         // MOTD-Funktionen
         const dismissMotd = () => {
             motdDismissed.value = true;
-            //localStorage.setItem('motdDismissed', 'true');
         };
         
         const formatMotdContent = (content) => {
@@ -354,95 +453,37 @@ createApp({
             }
         };
         
-        /**
-         * Lädt eine vorhandene Chat-Session und behandelt MOTD und Feedback
-         * @param {number} sessionId - Die ID der zu ladenden Session
-         */
-        const loadSession = async (sessionId) => {
-            try {
-                isLoading.value = true;
-                console.log(`Lade Session ${sessionId}...`);
-                
-                const response = await axios.get(`/api/session/${sessionId}`);
-                currentSessionId.value = sessionId;
-                
-                // Nachrichten setzen
-                messages.value = response.data.messages;
-                
-                // MOTD-Logik: Wenn bereits Nachrichten existieren, MOTD ausblenden
-                if (messages.value && messages.value.length > 0) {
-                    console.log(`Session ${sessionId} hat ${messages.value.length} Nachrichten - MOTD wird ausgeblendet`);
-                    motdDismissed.value = true;
-                } else {
-                    console.log(`Session ${sessionId} hat keine Nachrichten - MOTD wird angezeigt`);
-                    motdDismissed.value = false;
-                }
-                
-                // Feedback für jede Assistenten-Nachricht laden
-                for (const message of messages.value) {
-                    if (!message.is_user && message.id) {
-                        await feedbackFunctions.loadMessageFeedback(message.id);
-                    }
-                }
-                
-                // Zur Chat-Ansicht wechseln
-                activeView.value = 'chat';
-                
-                // Scroll to bottom after messages load
-                await nextTick();
-                scrollToBottom();
-            } catch (error) {
-                console.error('Error loading session:', error);
-            } finally {
-                isLoading.value = false;
-            }
-        };
-                
-        // Watch-Funktion für Admin-Panel-Tabs
-        watch([adminFunctions.adminTab], ([tab]) => {
-            if (activeView.value === 'admin' && userRole.value === 'admin') {
-                if (tab === 'users') {
-                    adminFunctions.loadUsers();
-                } else if (tab === 'system') {
-                    adminFunctions.loadSystemStats();
-                } else if (tab === 'feedback') {
-                    adminFunctions.loadFeedbackStats();
-                    adminFunctions.loadNegativeFeedback();
-                } else if (tab === 'motd') {
-                    adminFunctions.loadMotdConfig();
-                }
-            }
-        });
-        
-        // Watch für die aktive Ansicht
-        watch(activeView, (newView) => {
-            if (newView === 'admin' && userRole.value === 'admin') {
-                adminFunctions.loadSystemStats();
-                adminFunctions.loadUsers();
-            }
-        });
-
-        // Watch für Sitzungswechsel
-        watch(currentSessionId, (newSessionId) => {
-            if (newSessionId) {
-                // Wenn der Benutzer Sitzungen wechselt, MOTD-Status aus der Sitzung erhalten
-                // Wird jetzt in loadSession behandelt
-                console.log("Sitzungswechsel erkannt:", newSessionId);
+        // Event-Listener für Seiten-Reload
+        window.addEventListener('beforeunload', () => {
+            // Aktuelle Session speichern, bevor die Seite neu geladen wird
+            if (currentSessionId.value) {
+                saveCurrentSessionToStorage(currentSessionId.value);
             }
         });
         
         // Initialize
-        onMounted(() => {
+        onMounted(async () => {
             setupAxios();
             
             if (token.value) {
-                loadSessions();
+                await loadSessions();
+                
                 // Benutzerrolle laden
-                adminFunctions.loadUserRole();
+                await adminFunctions.loadUserRole();
+                
+                // Versuche, die letzte aktive Session wiederherzustellen
+                await restoreLastActiveSession();
             }
             
             // MOTD laden (auch wenn nicht eingeloggt)
             loadMotd();
+            
+            // Automatische Session-Aktualisierung alle 10 Sekunden
+            setInterval(async () => {
+                if (token.value && activeView.value === 'chat') {
+                    await loadSessions();
+                }
+            }, 10000);
             
             // Clear messages when auth state changes
             watch(token, (newValue) => {
@@ -451,6 +492,7 @@ createApp({
                     currentSessionId.value = null;
                     userRole.value = 'user';
                     activeView.value = 'chat';
+                    localStorage.removeItem('lastActiveSession');
                 } else {
                     // Wenn sich der Token ändert (z.B. nach Login), Benutzerrolle laden
                     adminFunctions.loadUserRole();
@@ -509,6 +551,10 @@ createApp({
             deleteSession,
             formatMessage,
             scrollToBottom,
+            
+            // Session persistence
+            saveCurrentSessionToStorage,
+            restoreLastActiveSession,
             
             // Chat streaming functionality
             ...chatFunctions,

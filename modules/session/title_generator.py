@@ -24,39 +24,50 @@ class SessionTitleGenerator:
         
         # Extrahiere Schlüsselwörter und häufige Begriffe im DMS-Kontext
         key_phrases = [
-            "akte anlegen", "dokument speichern", "datei hochladen", "workflow starten", "benutzer anlegen",
-            "berechtigung", "einscannen", "archivieren", "suche", "wiederfinden", "freigabe",
-            "digitalisierung", "geschäftsgang", "aktenplan", "ablage", "aktenzeichen", "vorgang", 
-            "dokumententyp", "prozess", "elektronische akte", "workflow", "scannen", "erstellen",
-            "importieren", "exportieren", "konvertieren", "verschieben", "kopieren", "löschen",
-            "pdf", "word", "excel", "email", "zugriffsrechte", "drucken", "teilen"
+            "akte anlegen", "dokument speichern", "datei hochladen", "workflow starten", 
+            "benutzer anlegen", "berechtigung", "einscannen", "archivieren", "suche", 
+            "wiederfinden", "freigabe", "digitalisierung", "geschäftsgang", "aktenplan", 
+            "ablage", "aktenzeichen", "vorgang", "dokumententyp", "prozess", 
+            "elektronische akte", "workflow", "scannen", "erstellen", "importieren", 
+            "exportieren", "konvertieren", "verschieben", "kopieren", "löschen",
+            "pdf", "word", "excel", "email", "zugriffsrechte", "drucken", "teilen",
+            "fehler", "problem", "fehler im geschäftsgang", "hallo", "hilfe"
         ]
         
-        # Die meisten häufigen Fragen direkter behandeln
-        if re.search(r'(wie|erstell|leg).*(neue|akte)', clean_message.lower()):
-            return "Akte anlegen"
+        # Die häufigsten direkten Fragen mit RegEx behandeln
+        direct_patterns = [
+            (r'(wie|erstell|leg).*(neue|akte)', 'Akte anlegen'),
+            (r'(wie|kann).*(dokument|datei).*(hinzufüg|upload|import)', 'Dokument hochladen'),
+            (r'(fehler|problem).*(geschäftsgang|workflow)', 'Fehler im Geschäftsgang'),
+            (r'(was|wie).*(suche|find)', 'Dokumente suchen'),
+            (r'(wie|kann).*(scan|einscan)', 'Dokumente scannen'),
+            (r'hallo', 'Begrüßung'),
+            (r'(guten\s+)?(morgen|tag|abend)', 'Begrüßung'),
+            (r'hilfe', 'Hilfe angefordert'),
+            (r'starten', 'Workflow starten'),
+            (r'fehler', 'Fehlerbehebung'),
+            (r'anlegen', 'Anlegen'),
+            (r'benutzer|berechtigung', 'Benutzerverwaltung'),
+            (r'(pdf|dokument|datei|ablage)', 'Dokumentenverwaltung'),
+        ]
         
-        if re.search(r'(wie|kann).*(dokument|datei).*(hinzufüg|upload|import)', clean_message.lower()):
-            return "Dokument hochladen"
-            
-        if re.search(r'(fehler|problem).*(geschäftsgang|workflow)', clean_message.lower()):
-            return "Fehler im Geschäftsgang"
-            
-        if re.search(r'(was|wie).*(suche|find)', clean_message.lower()):
-            return "Dokumente suchen"
-            
-        if re.search(r'(wie|kann).*(scan|einscan)', clean_message.lower()):
-            return "Dokumente scannen"
+        # Prüfe zuerst direkte Muster
+        lowercase_message = clean_message.lower()
+        for pattern, title in direct_patterns:
+            if re.search(pattern, lowercase_message):
+                print(f"Muster '{pattern}' gefunden in '{lowercase_message}', Titel: '{title}'")
+                return title
             
         # Prüfe, ob einer der Schlüsselbegriffe enthalten ist
         found_phrases = []
         for phrase in key_phrases:
-            if phrase.lower() in clean_message.lower():
+            if phrase.lower() in lowercase_message:
                 found_phrases.append(phrase)
         
         # Wenn ein Schlüsselbegriff gefunden wurde, nutze den längsten
         if found_phrases:
             longest_phrase = max(found_phrases, key=len)
+            print(f"Schlüsselbegriff '{longest_phrase}' in Nachricht gefunden")
             return longest_phrase.title()  # Erster Buchstabe groß
             
         # Aggressive Entfernung von Fragewörtern und Füllwörtern
@@ -97,34 +108,7 @@ class SessionTitleGenerator:
             "muss", "müssen", "musste", "mussten", "gemusst",
             "darf", "dürfen", "durfte", "durften", "gedurft",
             "mir", "dir", "uns", "euch", "ihnen", "sich",
-            "man", "jemand", "niemand", "alle", "einige",
-            "bisher", "dabei", "dafür", "dagegen", "danach", "dann", "daran", "darauf", "daraus",
-            "darin", "darum", "darunter", "davon", "dazu", "dazwischen", "dein", "deine", "deinem",
-            "deinen", "deiner", "deines", "demgegenüber", "demgemäß", "demzufolge",
-            "den", "denen", "denselben", "derer", "derjenige", "derjenigen", "derselbe", "derselben",
-            "deshalb", "desselben", "dessen", "deswegen", "dich", "die", "dies", "diese", "dieselbe",
-            "dieselben", "diesem", "diesen", "dieser", "dieses", "dort", "dorthin",
-            "durch", "eben", "ebenso", "eigen", "eigene", "eigenen", "eigener", "eigenes",
-            "einander", "einmal", "erst", "es", "etwa", "etwas", "euch", "euer", "eure",
-            "eurem", "euren", "eurer", "eures", "falls", "fast", "ferner", "folgende", "früher",
-            "gegen", "gegenüber", "gemäß", "genau", "gerade", "gern", "gestern", "gewesen",
-            "geworden", "gibt", "gleich", "gute", "guten", "hab", "habe", "halb", "hallo",
-            "hast", "her", "heraus", "herbei", "herein", "heute", "hier", "hierher", "hiesige",
-            "hin", "hinein", "hinten", "hinter", "hoch", "ihn", "ihnen", "ihr", "ihre", "ihrem",
-            "ihren", "ihrer", "ihres", "immer", "indem", "indessen", "infolge", "innen",
-            "innerhalb", "ins", "insofern", "inzwischen", "irgend", "je", "jede", "jedem",
-            "jeden", "jeder", "jedermann", "jedermanns", "jedes", "jedoch", "jemand", "jemandem",
-            "jemanden", "jemands", "jene", "jenem", "jenen", "jener", "jenes", "jenseits",
-            "jetzt", "keinen", "könnt", "könnte", "könnten", "kaum", "kein", "keine", "keinem",
-            "keinen", "keiner", "keines", "kleine", "kleinen", "kleiner", "kleines", "kommen",
-            "kommt", "lang", "lange", "leicht", "leider", "lesen", "letzter", "letztes", "lief",
-            "los", "machen", "machst", "machte", "mag", "magst", "manche", "manchem", "manchen",
-            "mancher", "manches", "mehr", "mein", "meine", "meinem", "meinen", "meiner", "meines",
-            "meist", "meiste", "meisten", "nachdem", "nachher", "nahm", "natürlich", "neben",
-            "nebst", "nein", "neue", "neuen", "neuem", "neuer", "neues", "nicht", "nichts",
-            "nie", "niemandem", "niemanden", "niemands", "nimm", "nimmer", "nimmt", "nirgends",
-            "noch", "nun", "nur", "nötig", "nützt", "nutzt", "oder", "oben", "über", "überhaupt",
-            "übrigens", "oft", "ohne", "per"
+            "man", "jemand", "niemand", "alle", "einige"
         ]
         
         for word in stopwords:
@@ -154,4 +138,5 @@ class SessionTitleGenerator:
         if not clean_message or len(clean_message) < 3:
             return "Neue Unterhaltung"
         
+        print(f"Generierter Titel: '{clean_message}'")
         return clean_message

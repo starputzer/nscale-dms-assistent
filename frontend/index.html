@@ -216,19 +216,22 @@
                 <aside v-if="activeView === 'chat'" class="nscale-sidebar w-80 p-4 rounded-l-lg shadow-sm overflow-y-auto">
                     <h2 class="text-lg font-medium mb-6 text-gray-700">Unterhaltungen</h2>
                     <ul class="space-y-2">
+                        <!-- Verbesserte Session-Items mit fester Breite und Ellipsis -->
                         <li v-for="session in sessions" :key="session.id" 
                             @click="loadSession(session.id)"
                             :class="['nscale-session-item cursor-pointer', 
                             currentSessionId === session.id ? 'active' : '']">
-                            <div class="flex justify-between items-center">
-                                <div class="flex items-center">
-                                    <i class="fas fa-comment text-gray-500 mr-2"></i>
-                                    <span class="truncate">{{ session.title }}</span>
-                                </div>
-                                <button @click.stop="deleteSession(session.id)" class="text-gray-400 hover:text-red-500">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
+                            <!-- Titel-Container mit ellipsis für lange Texte -->
+                            <div class="session-title-container">
+                                <i class="fas fa-comment text-gray-500"></i>
+                                <span class="session-title">{{ session.title }}</span>
                             </div>
+                            <!-- Spezieller Button zum Löschen, der immer sichtbar und erreichbar ist -->
+                            <button @click.stop="deleteSession(session.id)" 
+                                class="session-delete-button" 
+                                title="Unterhaltung löschen">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
                         </li>
                     </ul>
                 </aside>
