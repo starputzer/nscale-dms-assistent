@@ -251,23 +251,6 @@ createApp({
             }
         };
         
-        /**
-         * Lädt die aktuelle Session neu (für Feedback-Funktionalität)
-         */
-        const reloadCurrentSession = async () => {
-            if (currentSessionId.value) {
-                try {
-                    console.log(`Lade aktuelle Session ${currentSessionId.value} neu...`);
-                    await loadSession(currentSessionId.value);
-                    return true;
-                } catch (error) {
-                    console.error('Fehler beim Neuladen der aktuellen Session:', error);
-                    return false;
-                }
-            }
-            return false;
-        };
-
         // Verbesserte loadSessions Funktion mit automatischer Aktualisierung
         const loadSessions = async () => {
             try {
@@ -351,6 +334,79 @@ createApp({
             if (chatMessages.value) {
                 chatMessages.value.scrollTop = chatMessages.value.scrollHeight;
             }
+        };
+        
+        /**
+         * Aktualisiert den Titel einer bestimmten Session
+         * @param {number} sessionId - Die ID der zu aktualisierenden Session
+         * @returns {boolean} - Erfolg der Aktualisierung
+         */
+        const updateSessionTitle = async (sessionId) => {
+            if (!sessionId) {
+                console.warn("Keine Session-ID zum Aktualisieren angegeben");
+                return false;
+            }
+            
+            try {
+                console.log(`Titel für Session ${sessionId} wird aktualisiert...`);
+                
+                const response = await axios.post(`/api/session/${sessionId}/update-title`);
+                
+                if (response.data && response.data.new_title) {
+                    console.log(`Session ${sessionId} Titel aktualisiert zu: "${response.data.new_title}"`);
+                    
+                    // Aktualisiere auch die Session-Liste
+                    await loadSessions();
+                    return true;
+                } else {
+                    console.warn("Keine neue Titel-Information vom Server erhalten");
+                    return false;
+                }
+            } catch (error) {
+                console.error(`Fehler beim Aktualisieren des Titels für Session ${sessionId}:`, error);
+                return false;
+            }
+        };
+
+        /**
+         * Aktualisiert alle Sitzungen (kann als regelmäßiger Job verwendet werden)
+         */
+        const updateAllSessionTitles = async () => {
+            if (!sessions.value || sessions.value.length === 0) {
+                console.log("Keine Sessions zum Aktualisieren vorhanden");
+                return;
+            }
+            
+            try {
+                // Lade die aktuelle Session-Liste
+                await loadSessions();
+                
+                // Beginne mit der aktuellen Session, falls vorhanden
+                if (currentSessionId.value) {
+                    await updateSessionTitle(currentSessionId.value);
+                }
+                
+                console.log("Alle Session-Titel wurden aktualisiert");
+            } catch (error) {
+                console.error("Fehler beim Aktualisieren aller Session-Titel:", error);
+            }
+        };
+        
+        /**
+         * Lädt die aktuelle Session neu (für Feedback-Funktionalität)
+         */
+        const reloadCurrentSession = async () => {
+            if (currentSessionId.value) {
+                try {
+                    console.log(`Lade aktuelle Session ${currentSessionId.value} neu...`);
+                    await loadSession(currentSessionId.value);
+                    return true;
+                } catch (error) {
+                    console.error('Fehler beim Neuladen der aktuellen Session:', error);
+                    return false;
+                }
+            }
+            return false;
         };
         
         // MOTD-Funktionen
@@ -498,12 +554,30 @@ createApp({
             // Session neu laden Funktion global verfügbar machen
             window.reloadCurrentSession = reloadCurrentSession;
             
+            // HINZUGEFÜGT: Mache die Session-Titel-Update-Funktionen global verfügbar
+            window.updateSessionTitle = updateSessionTitle;
+            window.updateAllSessionTitles = updateAllSessionTitles;
+            
             // Automatische Session-Aktualisierung alle 10 Sekunden
             setInterval(async () => {
                 if (token.value && activeView.value === 'chat') {
                     await loadSessions();
                 }
             }, 10000);
+            
+            // HINZUGEFÜGT: Regelmäßige Aktualisierung der Sitzungstitel
+            setInterval(async () => {
+                if (token.value && activeView.value === 'chat' && currentSessionId.value) {
+                    // Versuche die aktuelle Session zu aktualisieren
+                    if (window.updateSessionTitle && typeof window.updateSessionTitle === 'function') {
+                        try {
+                            await window.updateSessionTitle(currentSessionId.value);
+                        } catch (e) {
+                            console.error("Fehler bei der planmäßigen Titelaktualisierung:", e);
+                        }
+                    }
+                }
+            }, 30000); // Alle 30 Sekunden
             
             // Clear messages when auth state changes
             watch(token, (newValue) => {
@@ -571,7 +645,6 @@ createApp({
             deleteSession,
             formatMessage,
             scrollToBottom,
-            reloadCurrentSession,
             
             // Session persistence
             saveCurrentSessionToStorage,
@@ -604,7 +677,12 @@ createApp({
             
             // MOTD Editor
             selectedColorTheme,
-            applyColorTheme
+            applyColorTheme,
+            
+            // Session title functionality
+            updateSessionTitle,
+            updateAllSessionTitles,
+            reloadCurrentSession
         };
     }
 }).mount('#app');

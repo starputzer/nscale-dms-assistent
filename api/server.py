@@ -545,9 +545,9 @@ async def stream_question(
         
         return EventSourceResponse(error_stream())
 
-@app.get("/api/session/{session_id}")
-async def get_session(session_id: int, user_data: Dict[str, Any] = Depends(get_current_user)):
-    """Gibt den Chatverlauf einer Session zurück"""
+@app.post("/api/session/{session_id}/update-title")
+async def update_session_title(session_id: int, user_data: Dict[str, Any] = Depends(get_current_user)):
+    """Aktualisiert den Titel einer Session basierend auf der ersten Nachricht"""
     user_id = user_data['user_id']
     
     # Hole alle Sessions des Benutzers
@@ -558,17 +558,20 @@ async def get_session(session_id: int, user_data: Dict[str, Any] = Depends(get_c
     if session_id not in session_ids:
         raise HTTPException(status_code=403, detail="Zugriff verweigert")
     
-    # Hole den Chatverlauf
-    history = chat_history.get_session_history(session_id)
+    # Aktualisiere den Titel
+    success = chat_history.update_session_after_message(session_id)
     
-    # Finde den Session-Titel
-    session_info = next((s for s in user_sessions if s['id'] == session_id), None)
+    if not success:
+        raise HTTPException(status_code=500, detail="Fehler beim Aktualisieren des Titels")
     
-    return {
-        "session_id": session_id,
-        "title": session_info['title'] if session_info else "Unbekannte Unterhaltung",
-        "messages": history
-    }
+    # Hole den aktualisierten Titel
+    updated_sessions = chat_history.get_user_sessions(user_id)
+    updated_session = next((s for s in updated_sessions if s['id'] == session_id), None)
+    
+    if not updated_session:
+        raise HTTPException(status_code=404, detail="Session nicht gefunden")
+    
+    return {"message": "Titel erfolgreich aktualisiert", "new_title": updated_session['title']}
 
 @app.get("/api/sessions")
 async def get_sessions(user_data: Dict[str, Any] = Depends(get_current_user)):

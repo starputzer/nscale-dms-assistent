@@ -47,6 +47,8 @@ class ChatHistoryManager:
         
         conn.commit()
         conn.close()
+        
+        logger.info("Chat-Datenbank initialisiert")
     
     def create_session(self, user_id: int, title: str = "Neue Unterhaltung") -> Optional[int]:
         """Erstellt eine neue Chat-Session"""
@@ -94,7 +96,7 @@ class ChatHistoryManager:
                 (now, session_id)
             )
             
-            # Wenn dies die erste Benutzernachricht ist, automatisch den Titel aktualisieren
+            # Wenn dies eine Benutzernachricht ist, aktualisiere den Titel
             if is_user:
                 # Prüfen, ob es die erste Benutzernachricht ist
                 cursor.execute(
@@ -105,21 +107,21 @@ class ChatHistoryManager:
                 
                 logger.info(f"Nachricht hinzugefügt zu Session {session_id}: Nachrichtenzähler = {message_count}")
                 
-                # WICHTIG: Immer den Titel aktualisieren, wenn es die erste Nachricht ist
-                if message_count == 1:
-                    # Generiere neuen Titel basierend auf der Nachricht
-                    new_title = self.title_generator.generate_title(message)
-                    
-                    # Prüfe, ob der aktuelle Titel der Standardtitel ist
-                    cursor.execute(
-                        "SELECT title FROM chat_sessions WHERE id = ?",
-                        (session_id,)
-                    )
-                    current_title = cursor.fetchone()[0]
-                    
-                    logger.info(f"Session {session_id} - Aktueller Titel: '{current_title}', Neuer Titel: '{new_title}'")
-                    
-                    # GEÄNDERT: Immer aktualisieren (auch wenn der Titel bereits angepasst wurde)
+                # KRITISCHE ÄNDERUNG: IMMER den Titel aktualisieren, wenn es eine Benutzernachricht ist
+                # Generiere neuen Titel basierend auf der Nachricht
+                new_title = self.title_generator.generate_title(message)
+                
+                # Prüfe, ob der aktuelle Titel der Standardtitel ist
+                cursor.execute(
+                    "SELECT title FROM chat_sessions WHERE id = ?",
+                    (session_id,)
+                )
+                current_title = cursor.fetchone()[0]
+                
+                logger.info(f"Session {session_id} - Aktueller Titel: '{current_title}', Neuer Titel: '{new_title}'")
+                
+                # Bei "Neue Unterhaltung" oder bei der ersten Nachricht IMMER aktualisieren
+                if current_title == "Neue Unterhaltung" or message_count == 1:
                     cursor.execute(
                         "UPDATE chat_sessions SET title = ? WHERE id = ?",
                         (new_title, session_id)
@@ -222,6 +224,7 @@ class ChatHistoryManager:
             conn.commit()
             conn.close()
             
+            logger.info(f"Session {session_id} erfolgreich gelöscht")
             return True
         
         except Exception as e:
@@ -253,8 +256,51 @@ class ChatHistoryManager:
             conn.commit()
             conn.close()
             
+            logger.info(f"Session {session_id} umbenannt zu '{new_title}'")
             return True
         
         except Exception as e:
             logger.error(f"Fehler beim Umbenennen einer Chat-Session: {e}")
+            return False
+    
+    def update_session_after_message(self, session_id: int) -> bool:
+        """
+        Aktualisiert den Sitzungstitel basierend auf der ersten Benutzeranfrage.
+        Diese Funktion kann explizit aufgerufen werden, wenn der Titel nicht automatisch aktualisiert wurde.
+        """
+        try:
+            conn = sqlite3.connect(Config.DB_PATH)
+            cursor = conn.cursor()
+            
+            # Hole die erste Benutzernachricht der Session
+            cursor.execute(
+                "SELECT message FROM chat_messages WHERE session_id = ? AND is_user = 1 ORDER BY created_at ASC LIMIT 1",
+                (session_id,)
+            )
+            
+            result = cursor.fetchone()
+            if not result:
+                conn.close()
+                logger.warning(f"Keine Benutzernachricht in Session {session_id} gefunden")
+                return False
+            
+            first_message = result[0]
+            
+            # Generiere neuen Titel
+            new_title = self.title_generator.generate_title(first_message)
+            
+            # Aktualisiere den Titel
+            cursor.execute(
+                "UPDATE chat_sessions SET title = ? WHERE id = ?",
+                (new_title, session_id)
+            )
+            
+            conn.commit()
+            conn.close()
+            
+            logger.info(f"Session-Titel für {session_id} nachträglich aktualisiert: '{new_title}'")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Fehler beim nachträglichen Aktualisieren des Session-Titels: {e}")
             return False

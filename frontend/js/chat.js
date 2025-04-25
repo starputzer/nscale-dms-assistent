@@ -73,7 +73,7 @@ export function setupChat(options) {
     };
     
     /**
-     * Sendet eine Frage mit Streaming-Antwort
+     * Sendet eine Frage mit Streaming-Antwort und aktualisiert den Sitzungstitel
      */
     const sendQuestionStream = async () => {
         if (!question.value.trim() || !currentSessionId.value) {
@@ -90,14 +90,14 @@ export function setupChat(options) {
             console.log(`Sende Frage: "${question.value}"`);
             isLoading.value = true;
             isStreaming.value = true;
-
+    
             // Benutzernachricht sofort hinzufügen
             messages.value.push({
                 is_user: true,
                 message: question.value,
                 timestamp: Date.now() / 1000
             });
-
+    
             // Platz für Assistentennachricht reservieren
             const assistantIndex = messages.value.length;
             messages.value.push({
@@ -105,36 +105,56 @@ export function setupChat(options) {
                 message: '',
                 timestamp: Date.now() / 1000
             });
-
+    
             await nextTick();
             scrollToBottom();
-
+            
+            // HINZUGEFÜGT: Sofort den Titel aktualisieren, nachdem die Frage gesendet wurde
+            // Dies hilft, den Titel schneller zu aktualisieren, und hängt nicht vom Abschluss des Streams ab
+            try {
+                if (window.updateSessionTitle && typeof window.updateSessionTitle === 'function') {
+                    console.log("Aktualisiere Sitzungstitel anhand der neuen Frage...");
+                    setTimeout(() => {
+                        window.updateSessionTitle(currentSessionId.value)
+                            .then(success => {
+                                if (success) {
+                                    console.log("Sitzungstitel erfolgreich aktualisiert");
+                                }
+                            })
+                            .catch(err => console.error("Fehler bei der Titelaktualisierung:", err));
+                    }, 500); // Kurze Verzögerung, um sicherzustellen, dass die Nachricht gespeichert wurde
+                }
+            } catch (titleError) {
+                console.error("Fehler beim Aktualisieren des Titels:", titleError);
+                // Keine Unterbrechung der Hauptfunktion bei Fehlern in der Titelaktualisierung
+            }
+    
             // EventSource erstellen
             const url = new URL('/api/question/stream', window.location.origin);
             url.searchParams.append('question', question.value);
             url.searchParams.append('session_id', currentSessionId.value);
-
+    
             // Prüfen, ob einfache Sprache aktiviert ist
             const useSimpleLanguage = window.useSimpleLanguage === true;
             if (useSimpleLanguage) {
                 url.searchParams.append('simple_language', 'true');
                 console.log("Einfache Sprache aktiviert für diese Anfrage");
             }
-
+    
             // Token als URL-Parameter übergeben für SSE-Authentifizierung
             // Entferne "Bearer " von Anfang, wenn vorhanden
             const authToken = token.value.replace(/^Bearer\\s+/i, '');
             url.searchParams.append('auth_token', authToken);
-
+    
             console.log(`Streaming URL: ${url.toString()}`);
-
+    
             // Bestehende EventSource schließen
             if (eventSource.value) {
                 console.log("Schließe bestehende EventSource");
                 eventSource.value.close();
                 eventSource.value = null;
             }
-
+    
             // Neue EventSource-Verbindung
             console.log("Erstelle neue EventSource");
             eventSource.value = new EventSource(url.toString());
@@ -148,7 +168,7 @@ export function setupChat(options) {
             
             // Flag für erfolgreiche Fertigstellung
             let successfulCompletion = false;
-
+    
             // Haupt-Message-Handler
             eventSource.value.onmessage = (event) => {
                 try {
@@ -228,7 +248,7 @@ export function setupChat(options) {
                     console.error("JSON-Parsing-Fehler:", e, "Rohdaten:", event.data);
                 }
             };
-
+    
             // Spezieller Handler für 'done' Events
             eventSource.value.addEventListener('done', async (event) => {
                 console.log("DONE Event empfangen, Stream beendet");
@@ -253,7 +273,6 @@ export function setupChat(options) {
                         // Auf die aktuelle Session-ID fokussieren, 
                         // um sicherzustellen, dass die ID der Assistentennachricht geladen wird
                         console.log("Lade aktuelle Session neu, um Nachricht-IDs zu aktualisieren");
-                        // Diese Funktion müsste in app.js hinzugefügt werden
                         if (window.reloadCurrentSession && typeof window.reloadCurrentSession === 'function') {
                             await window.reloadCurrentSession();
                         }
@@ -280,18 +299,18 @@ export function setupChat(options) {
                 
                 cleanupStream();
             };
-
+    
             // Open-Handler
             eventSource.value.addEventListener('open', () => {
                 console.log("SSE-Verbindung erfolgreich geöffnet");
             });
-
+    
             // Timeout für hängende Verbindungen
             resetStreamTimeout();
-
+    
             // Frage für nächste Eingabe zurücksetzen
             question.value = '';
-
+    
         } catch (error) {
             console.error('Streaming-Fehler:', error);
             isLoading.value = false;
@@ -340,6 +359,18 @@ export function setupChat(options) {
             if (useSimpleLanguage) {
                 headers['X-Use-Simple-Language'] = 'true';
                 console.log("Einfache Sprache aktiviert für diese Anfrage");
+            }
+            
+            // Sofort den Titel aktualisieren
+            try {
+                if (window.updateSessionTitle && typeof window.updateSessionTitle === 'function') {
+                    setTimeout(() => {
+                        window.updateSessionTitle(currentSessionId.value)
+                            .catch(err => console.error("Fehler bei der Titelaktualisierung:", err));
+                    }, 500);
+                }
+            } catch (titleError) {
+                console.error("Fehler beim Aktualisieren des Titels:", titleError);
             }
             
             const response = await axios.post('/api/question', {

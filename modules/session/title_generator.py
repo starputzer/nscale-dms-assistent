@@ -32,63 +32,80 @@ class SessionTitleGenerator:
             "exportieren", "konvertieren", "verschieben", "kopieren", "löschen",
             "pdf", "word", "excel", "email", "zugriffsrechte", "drucken", "teilen",
             "fehler", "problem", "fehler im geschäftsgang", "hallo", "hilfe",
-            "nscale", "dms", "dokumentenmanagementsystem"
+            "nscale", "dms", "dokumentenmanagementsystem", "dokumentenmanagement"
         ]
         
-        # Die häufigsten direkten Fragen mit RegEx behandeln
-        direct_patterns = [
-            (r'(wie|erstell|leg).*(neue|akte)', 'Neue Akte erstellen'),
-            (r'(wie|kann).*(dokument|datei).*(hinzufüg|upload|import)', 'Dokument hochladen'),
-            (r'(fehler|problem).*(geschäftsgang|workflow)', 'Fehler im Geschäftsgang'),
-            (r'(was|wie).*(suche|find)', 'Dokumente suchen'),
-            (r'(wie|kann).*(scan|einscan)', 'Dokumente scannen'),
-            (r'hallo', 'Begrüßung'),
-            (r'(guten\s+)?(morgen|tag|abend)', 'Begrüßung'),
-            (r'hilfe', 'Hilfe angefordert'),
-            (r'(wie).*(start)', 'Workflow starten'),
-            (r'(fehler|problem)', 'Fehlerbehebung'),
-            (r'(anlegen|erstellen)', 'Anlegen'),
-            (r'benutzer|berechtigung', 'Benutzerverwaltung'),
-            (r'(pdf|dokument|datei|ablage)', 'Dokumentenverwaltung'),
-            (r'was ist nscale', 'nscale Erklärung'),
-            (r'(was|wer|wo|wie|warum|wozu|wann|welche).+nscale', 'nscale Frage'),
-            (r'(was ist|erkläre|erklär mir) (ein|das) dms', 'DMS Erklärung'),
-        ]
-        
-        # Prüfe zuerst direkte Muster mit "Was ist..."-Fragen
         lowercase_message = clean_message.lower()
         
-        # Spezielle Behandlung für "Was ist"-Fragen
-        what_is_pattern = r'was ist\s+(\w+)'
+        # DEBUG-AUSGABE
+        print(f"Title Generator: Originalfrage: '{message}'")
+        
+        # 1. Direkter "Was ist X" Matcher 
+        what_is_pattern = r'was ist (nscale|dms|dokumentenmanagementsystem)'
         what_is_match = re.search(what_is_pattern, lowercase_message)
         if what_is_match:
-            subject = what_is_match.group(1).title()  # Erster Buchstabe groß
+            subject = what_is_match.group(1).upper()
+            print(f"Title Generator: Was ist {subject} Pattern erkannt")
             return f"{subject} Erklärung"
-        
-        # Allgemeinere W-Fragen
-        w_question_pattern = r'^(was|wie|warum|wer|wo|wann|welche)\s+(ist|sind|kann|können|muss|müssen|soll|sollen|hat|haben)\s+(.+?)\?*$'
-        w_question_match = re.search(w_question_pattern, lowercase_message)
-        if w_question_match:
-            # Extrahiere Subjekt aus der Frage (nach dem "ist/sind/kann/etc.")
-            question_word = w_question_match.group(1).title()  # "Was", "Wie", etc.
-            subject = w_question_match.group(3).strip()
             
-            # Begrenze Subjekt auf die ersten 3-4 Worte
-            subject_words = subject.split()[:3]
-            short_subject = ' '.join(subject_words).title()
+        # 2. Allgemeiner "Was ist X" Matcher
+        general_what_is = r'was ist\s+(\w+)'
+        general_what_match = re.search(general_what_is, lowercase_message)
+        if general_what_match:
+            subject = general_what_match.group(1)
+            # Erste Buchstaben groß
+            titled_subject = subject.title()
+            print(f"Title Generator: Allgemeines Was ist Pattern erkannt: {titled_subject}")
+            return f"{titled_subject} Erklärung"
             
-            # Format: "Frage: [Subjekt]" oder "Was: [Subjekt]"
-            if len(short_subject) > max_length - 8:  # 8 Zeichen für "Frage: " + Platz
-                return f"Frage: {short_subject[:max_length-8]}"
-            else:
-                return f"{question_word}: {short_subject}"
+        # 3. Allgemeine Fragemuster
+        # Format: {Fragewort} {Verb} {Subjekt}
+        question_patterns = [
+            # Wie kann/muss/soll ich X
+            (r'wie\s+(kann|muss|soll|könnte|müsste|sollte)\s+(?:ich|man)\s+(.+?)(?:\?|$)', 
+             lambda m: f"{m.group(2).strip().title()} Anleitung"),
+            
+            # Wie funktioniert X
+            (r'wie\s+funktioniert\s+(.+?)(?:\?|$)', 
+             lambda m: f"{m.group(1).strip().title()} Erklärung"),
+             
+            # Wo finde ich X
+            (r'wo\s+(?:finde|gibt|bekomme)\s+(?:ich|man)\s+(.+?)(?:\?|$)', 
+             lambda m: f"{m.group(1).strip().title()} Ort"),
+             
+            # Wann wird/ist X
+            (r'wann\s+(?:wird|ist|soll|kann|muss)\s+(.+?)(?:\?|$)', 
+             lambda m: f"{m.group(1).strip().title()} Zeitpunkt"),
+             
+            # Was bedeutet X
+            (r'was\s+bedeutet\s+(.+?)(?:\?|$)', 
+             lambda m: f"{m.group(1).strip().title()} Bedeutung"),
+             
+            # Was sind X
+            (r'was\s+sind\s+(.+?)(?:\?|$)', 
+             lambda m: f"{m.group(1).strip().title()} Erklärung"),
+             
+            # Welche X gibt es
+            (r'welche\s+(.+?)\s+gibt\s+es', 
+             lambda m: f"{m.group(1).strip().title()} Übersicht"),
+             
+            # Allgemeines "Wie X" Muster
+            (r'wie\s+(.+?)(?:\?|$)',
+             lambda m: f"{m.group(1).strip().title()}"),
+        ]
         
-        # Suche weiter nach direkten Mustern
-        for pattern, title in direct_patterns:
-            if re.search(pattern, lowercase_message):
-                print(f"Muster '{pattern}' gefunden in '{lowercase_message}', Titel: '{title}'")
+        for pattern, title_formatter in question_patterns:
+            match = re.search(pattern, lowercase_message)
+            if match:
+                title = title_formatter(match)
+                # Kürze Titel auf maximale Länge
+                if len(title) > max_length:
+                    title = title[:max_length-3] + "..."
+                
+                print(f"Title Generator: Fragemuster erkannt - Titel: '{title}'")
                 return title
-            
+        
+        # 4. Schlüsselbegriff-basierte Titel
         # Prüfe, ob einer der Schlüsselbegriffe enthalten ist
         found_phrases = []
         for phrase in key_phrases:
@@ -98,84 +115,67 @@ class SessionTitleGenerator:
         # Wenn ein Schlüsselbegriff gefunden wurde, nutze den längsten
         if found_phrases:
             longest_phrase = max(found_phrases, key=len)
-            print(f"Schlüsselbegriff '{longest_phrase}' in Nachricht gefunden")
+            print(f"Title Generator: Schlüsselbegriff '{longest_phrase}' in Nachricht gefunden")
             return longest_phrase.title()  # Erster Buchstabe groß
-            
-        # Aggressive Entfernung von Fragewörtern und Füllwörtern
-        # Entferne Fragewörter am Anfang
-        question_pattern = r'^(wie|was|warum|weshalb|wann|wozu|wo|welche[rsm]?|wer|gibt es|kann ich|können wir|ist es möglich|ich möchte|möchte ich|ich will|will ich) '
-        clean_message = re.sub(question_pattern, '', clean_message, flags=re.IGNORECASE)
         
-        # Entferne allgemeine Formulierungen
-        common_starts = [
-            "ich möchte gerne wissen", "ich würde gerne wissen", "ich möchte wissen", "würde gerne wissen",
-            "können sie mir sagen", "können sie mir erklären", "können sie mir zeigen", "können sie mir helfen",
-            "kannst du mir sagen", "kannst du mir erklären", "kannst du mir zeigen", "kannst du mir helfen",
-            "ich habe eine frage zu", "ich möchte fragen", "ich habe", "ich will", "ich brauche",
-            "meine frage ist", "bitte erkläre mir", "bitte zeige mir", "bitte sage mir",
-            "erklär mir", "erkläre mir", "zeig mir", "zeige mir", "hilf mir", "helfen sie mir",
-            "ich brauche hilfe bei", "hilf mir bei", "hilfe bei", "hilfestellung", "anleitung für",
-            "wie funktioniert", "wie geht", "wie kann ich", "wie kann man", "wie erstelle ich",
-            "wie füge ich", "wie lege ich", "wie mache ich"
+        # 5. Extrahiere Subjekt und/oder Verb aus dem Text
+        # Entferne typische Fragewort-Präfixe
+        question_prefixes = [
+            r'^(wie|was|warum|weshalb|wann|wozu|wo|welche[rsm]?|wer|gibt es|kann ich|können wir|ist es möglich) ',
+            r'^(ich möchte|möchte ich|ich will|will ich|ich brauche|brauche ich) ',
+            r'^(bitte zeig|zeig mir|zeige mir|erkläre|erklär mir|hilf mir|helfen sie) '
         ]
         
-        for phrase in common_starts:
-            if clean_message.lower().startswith(phrase):
-                clean_message = clean_message[len(phrase):].strip()
-                break
+        cleaned_text = lowercase_message
+        for prefix_pattern in question_prefixes:
+            cleaned_text = re.sub(prefix_pattern, '', cleaned_text, flags=re.IGNORECASE)
         
-        # Entferne häufige Stopwörter (erweiterte Liste)
-        stopwords = [
-            "bitte", "danke", "vielen dank", "hallo", "hi", "guten tag", "moin", "servus",
-            "dms", "software", "system", "programm", "anwendung", "nscale",
-            "mit", "dem", "der", "die", "das", "ein", "eine", "einen", "einer", "eines",
-            "zu", "zur", "zum", "bei", "für", "von", "vom", "am", "im", "in", "an", "auf",
-            "ist", "sind", "war", "waren", "sein", "werden", "wurde", "wurden",
-            "mein", "meine", "meinen", "meiner", "meines",
-            "hat", "haben", "hatte", "hatten", "gehabt",
-            "möchte", "möchten", "will", "wollen", "wollte", "wollten",
-            "kann", "können", "konnte", "konnten", "gekonnt",
-            "soll", "sollen", "sollte", "sollten", "gesollt",
-            "muss", "müssen", "musste", "mussten", "gemusst",
-            "darf", "dürfen", "durfte", "durften", "gedurft",
-            "mir", "dir", "uns", "euch", "ihnen", "sich",
-            "man", "jemand", "niemand", "alle", "einige"
+        # Entferne noch weitere Füllworte
+        filler_words = [
+            r'\b(und|oder|aber|denn|weil|wenn|als|wie|dass|ob|bitte|einfach)\b',
+            r'\b(der|die|das|den|dem|des|ein|eine|einen|einem|einer|eines)\b',
+            r'\b(mir|dir|uns|euch|ihnen|ihn|sie|es|man)\b',
+            r'\b(mal|doch|noch|schon|ja|nein|vielleicht|eigentlich)\b',
+            r'\b(ist|sind|war|waren|wird|werden|kann|können|muss|müssen|darf|dürfen|soll|sollen)\b'
         ]
         
-        for word in stopwords:
-            clean_message = re.sub(r'\b' + re.escape(word) + r'\b', '', clean_message, flags=re.IGNORECASE)
+        for filler in filler_words:
+            cleaned_text = re.sub(filler, ' ', cleaned_text, flags=re.IGNORECASE)
         
-        # Entferne doppelte Leerzeichen und bereinige den Text
-        clean_message = re.sub(r'\s+', ' ', clean_message).strip()
+        # Bereinige mehrfache Leerzeichen
+        cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
         
-        # Teile in Satzzeichen auf und nehme nur den ersten Teil
-        sentence_parts = re.split(r'[.!?]', clean_message)
-        if sentence_parts and len(sentence_parts[0]) > 0:
-            clean_message = sentence_parts[0].strip()
+        print(f"Title Generator: Bereinigter Text: '{cleaned_text}'")
         
-        # Extrahiere Subjekt-Prädikat oder Subjekt aus dem gereinigten Text
-        words = clean_message.split()
-        
+        # Nehme die ersten 2-4 Wörter als Titel
+        words = cleaned_text.split()
         if len(words) >= 2:
-            # Subjekt-Prädikat Format (erste 2-3 Wörter)
+            # Beschränke auf 3 Wörter oder max_length
             title_words = words[:min(3, len(words))]
-            clean_message = ' '.join(title_words)
+            title = ' '.join(title_words).title()
+            
+            if len(title) > max_length:
+                title = title[:max_length-3] + "..."
+                
+            print(f"Title Generator: Aus Wörtern generierter Titel: '{title}'")
+            return title
+        elif len(words) == 1 and len(words[0]) >= 3:
+            # Nur ein Wort, aber lang genug
+            title = words[0].title()
+            print(f"Title Generator: Einzelwort-Titel: '{title}'")
+            return title
         
-        # Kürzen auf maximale Länge
-        if len(clean_message) > max_length:
-            # Versuche, am Wortende zu kürzen
-            words = clean_message[:max_length].split(' ')
-            if len(words) > 1:
-                words.pop()  # Entferne letztes (möglicherweise abgeschnittenes) Wort
-            clean_message = ' '.join(words)
+        # Fallback: Nehme einfach den Anfang des bereinigten Textes
+        if cleaned_text and len(cleaned_text) >= 3:
+            if len(cleaned_text) > max_length:
+                title = cleaned_text[:max_length-3] + "..."
+            else:
+                title = cleaned_text
+                
+            title = title.title()
+            print(f"Title Generator: Fallback-Titel aus Text: '{title}'")
+            return title
         
-        # Stelle sicher, dass der Titel mit einem Großbuchstaben beginnt
-        if clean_message and len(clean_message) > 0:
-            clean_message = clean_message[0].upper() + clean_message[1:]
-        
-        # Fallback, wenn der Titel zu kurz oder leer ist
-        if not clean_message or len(clean_message) < 3:
-            return "Neue Unterhaltung"
-        
-        print(f"Generierter Titel: '{clean_message}'")
-        return clean_message
+        # Absolute Fallback: Standardtitel
+        print("Title Generator: Nutze Standard-Fallback-Titel")
+        return "Neue Unterhaltung"

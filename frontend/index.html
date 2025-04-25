@@ -516,14 +516,41 @@
                                     <div v-if="negativeFeedback.length === 0" class="text-gray-500 italic p-4 text-center">
                                         Kein negatives Feedback vorhanden
                                     </div>
-                                    <div v-else class="grid grid-cols-1 gap-4">
+                                    <div v-else class="grid grid-cols-1 gap-6">
                                         <div v-for="feedback in negativeFeedback" :key="feedback.id" class="border-b border-gray-200 py-4">
-                                            <div class="font-medium">Frage: {{ feedback.question }}</div>
-                                            <div class="text-sm text-gray-700 my-2 p-3 bg-gray-50 rounded">{{ feedback.answer }}</div>
-                                            <div class="text-sm text-red-600 p-2 bg-red-50 rounded">
-                                                <span class="font-medium">Kommentar:</span> {{ feedback.comment || 'Kein Kommentar' }}
+                                            <!-- Frage hinzufügen -->
+                                            <div v-if="feedback.question" class="mb-4">
+                                                <div class="font-medium mb-2">Frage:</div>
+                                                <div class="text-sm text-gray-800 p-3 bg-gray-50 rounded border-l-4 border-blue-500">
+                                                    {{ feedback.question }}
+                                                </div>
                                             </div>
-                                            <div class="text-xs text-gray-500 mt-1">{{ new Date(feedback.timestamp * 1000).toLocaleString() }}</div>
+                                            
+                                            <!-- Antwort hinzufügen -->
+                                            <div v-if="feedback.answer" class="mb-4">
+                                                <div class="font-medium mb-2">Antwort:</div>
+                                                <div class="text-sm text-gray-700 p-3 bg-gray-50 rounded border-l-4 border-green-500">
+                                                    {{ feedback.answer }}
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Feedback-Kommentar -->
+                                            <div class="mt-3">
+                                                <div class="font-medium mb-2">Kommentar:</div>
+                                                <div class="text-sm text-red-600 p-3 bg-red-50 rounded border-l-4 border-red-500">
+                                                    {{ feedback.comment || 'Kein Kommentar' }}
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Meta-Informationen -->
+                                            <div class="flex justify-between items-center mt-3 text-xs text-gray-500">
+                                                <div>
+                                                    <span class="font-medium">Nutzer:</span> {{ feedback.user_email }}
+                                                </div>
+                                                <div>
+                                                    <span class="font-medium">Datum:</span> {{ new Date(feedback.created_at * 1000).toLocaleString() }}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
