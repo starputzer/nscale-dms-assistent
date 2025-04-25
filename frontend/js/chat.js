@@ -163,6 +163,9 @@ export function setupChat(options) {
             // Zähler für Debugging
             tokenCount = 0;
             currentStreamRetryCount = 0;
+            
+            // Flag für erfolgreiche Fertigstellung
+            let successfulCompletion = false;
 
             eventSource.value.onmessage = (event) => {
                 try {
@@ -247,6 +250,7 @@ export function setupChat(options) {
             // Spezieller Handler für 'done' Events
             eventSource.value.addEventListener('done', (event) => {
                 console.log("DONE Event empfangen, Stream beendet");
+                successfulCompletion = true;
                 
                 // Prüfe, ob die Nachricht nicht leer ist
                 if (!messages.value[assistantIndex].message.trim()) {
@@ -259,12 +263,19 @@ export function setupChat(options) {
             // Error-Handler
             eventSource.value.onerror = (event) => {
                 console.error('SSE-Verbindungsfehler:', event);
-                if (tokenCount === 0) {
-                    messages.value[assistantIndex].message = 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.';
-                } else {
-                    // Wenn bereits Daten empfangen wurden, nur Hinweis anhängen
-                    messages.value[assistantIndex].message += "\n\n[Hinweis: Die Verbindung wurde unterbrochen. Die Antwort könnte unvollständig sein.]";
+                
+                // Nur Fehlermeldung anzeigen, wenn keine erfolgreiche Fertigstellung stattgefunden hat
+                if (!successfulCompletion) {
+                    if (tokenCount === 0) {
+                        messages.value[assistantIndex].message = 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.';
+                    } else {
+                        // Nur Fehlermeldung anhängen, wenn wir nicht erfolgreich abgeschlossen haben
+                        if (!successfulCompletion) {
+                            messages.value[assistantIndex].message += "\n\n[Hinweis: Die Verbindung wurde unterbrochen. Die Antwort könnte unvollständig sein.]";
+                        }
+                    }
                 }
+                
                 cleanupStream();
             };
 

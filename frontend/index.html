@@ -151,6 +151,15 @@
                             Neue Unterhaltung
                         </button>
                         
+                        <!-- NEU: Barrierefreiheitsbutton, für alle Benutzerrollen sichtbar -->
+                        <button 
+                            @click="toggleAccessibilitySettings" 
+                            class="nscale-btn-secondary flex items-center"
+                            title="Barrierefreiheitseinstellungen">
+                            <i class="fas fa-universal-access mr-2"></i>
+                            <span class="hidden md:inline">Barrierefreiheit</span>
+                        </button>
+
                         <button 
                             @click="logout" 
                             class="nscale-btn-secondary flex items-center">

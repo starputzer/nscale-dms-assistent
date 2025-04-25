@@ -268,6 +268,12 @@ createApp({
                 toggleSettings();
             }
         };
+
+        // NEU: Barrierefreiheitseinstellungen für alle Benutzer zugänglich machen
+        const toggleAccessibilitySettings = () => {
+            // Öffnet die Einstellungen unabhängig von der Benutzerrolle
+            settingsFunction.showSettingsPanel.value = !settingsFunction.showSettingsPanel.value;
+        };
         
         // Hilfsfunktion für admin Tab-Titel
         const getAdminTabTitle = () => {
@@ -485,6 +491,7 @@ createApp({
             userRole,
             getAdminTabTitle,
             toggleView,
+            toggleAccessibilitySettings,
             
             // Settings functionality
             ...settingsFunction,
