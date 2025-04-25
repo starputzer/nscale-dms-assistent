@@ -39,7 +39,7 @@ createApp({
         
         // MOTD state
         const motd = ref(null);
-        const motdDismissed = ref(localStorage.getItem('motdDismissed') === 'true');
+        const motdDismissed = ref(false);
 
         // MOTD Farbpaletten
         const colorThemes = {
@@ -186,6 +186,9 @@ createApp({
         
         const startNewSession = async () => {
             try {
+                // MOTD für neue Unterhaltungen zurücksetzen
+                motdDismissed.value = false;
+
                 isLoading.value = true;
                 const response = await axios.post('/api/session', {
                     title: "Neue Unterhaltung"
@@ -235,7 +238,7 @@ createApp({
         // MOTD-Funktionen
         const dismissMotd = () => {
             motdDismissed.value = true;
-            localStorage.setItem('motdDismissed', 'true');
+            //localStorage.setItem('motdDismissed', 'true');
         };
         
         const formatMotdContent = (content) => {
@@ -351,6 +354,8 @@ createApp({
         // Session handling with feedback support
         const loadSession = async (sessionId) => {
             try {
+                // MOTD für jede geladene Session zurücksetzen
+                motdDismissed.value = false;
                 isLoading.value = true;
                 const response = await axios.get(`/api/session/${sessionId}`);
                 currentSessionId.value = sessionId;
