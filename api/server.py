@@ -433,7 +433,7 @@ async def answer_question(request: QuestionRequest, request_obj: Request, user_d
         "cached": result.get('cached', False)
     }
 
-# Bearbeiter für /api/question/stream Endpoint
+
 @app.get("/api/question/stream")
 async def stream_question(
     question: str, 
@@ -502,10 +502,26 @@ async def stream_question(
         use_simple_language = True
         logger.info("Einfache Sprache aktiviert via HTTP-Header")
     
+    # BUGFIX: Füge einen eindeutigen Stream-Identifier hinzu, der auf Session und Frage basiert
+    # Dieser wird verwendet, um laufende Streams zu identifizieren und zu gruppieren
+    stream_id = f"stream_{session_id}_{hash(question)}"
+    
     # Stream die Antwort vom RAG-Engine mit Spracheinstellung
     try:
         logger.info(f"Starte Streaming für Frage: '{question[:50]}...' (Einfache Sprache: {use_simple_language})")
-        response = await rag_engine.stream_answer(question, session_id, use_simple_language)
+        
+        # BUGFIX: Versuche, laufende Streams für dieselbe Session abzubrechen
+        if hasattr(rag_engine, "_active_streams"):
+            for active_id in list(rag_engine._active_streams.keys()):
+                if active_id != stream_id and active_id.startswith(f"stream_{session_id}_"):
+                    logger.warning(f"Abbruch eines laufenden Streams für dieselbe Session: {active_id}")
+                    try:
+                        await rag_engine.cancel_active_streams()
+                    except Exception as cancel_err:
+                        logger.error(f"Fehler beim Abbrechen aktiver Streams: {cancel_err}")
+        
+        # Start des neuen Streams mit Stream-ID
+        response = await rag_engine.stream_answer(question, session_id, use_simple_language, stream_id=stream_id)
         
         # Speichern der vollständigen Antwort erfolgt intern in stream_answer
         

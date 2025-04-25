@@ -26,10 +26,11 @@ class OllamaClient:
         """Erstellt einen Hash für einen Prompt"""
         return hashlib.md5(prompt.encode('utf-8')).hexdigest()
     
-    async def stream_generate(self, prompt: str) -> AsyncGenerator[str, None]:
+    async def stream_generate(self, prompt: str, stream_id: Optional[str] = None) -> AsyncGenerator[str, None]:
         """Streamt die Antwort vom Ollama-Server mit optimierter Leistung"""
-        # Generiere eine eindeutige Stream-ID für diese Anfrage
-        stream_id = hashlib.md5(f"{prompt}_{time.time()}".encode()).hexdigest()
+        # Generiere eine eindeutige Stream-ID für diese Anfrage, falls nicht übergeben
+        if not stream_id:
+            stream_id = hashlib.md5(f"{prompt}_{time.time()}".encode()).hexdigest()
         
         try:
             # Prompt-Längen-Check
@@ -61,7 +62,7 @@ class OllamaClient:
                 }
             }
             
-            logger.info(f"Starte Stream-Generierung für Prompt ({len(prompt)} Zeichen)")
+            logger.info(f"Starte Stream-Generierung für Prompt ({len(prompt)} Zeichen) mit Stream-ID: {stream_id}")
             start_time = time.time()
             token_count = 0
             connection_retries = 3  # Anzahl der Verbindungsversuche

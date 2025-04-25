@@ -65,105 +65,114 @@ class RAGEngine:
                 logger.error(f"Fehler bei der Initialisierung der RAG-Engine: {e}")
                 return False
     
-    async def stream_answer(self, question: str, session_id: Optional[int] = None, use_simple_language: bool = False) -> EventSourceResponse:
-        """Streamt Antwort stückweise zurück – im Server-Sent-Events-Format"""
-        if not question:  # Sicherstellen, dass die Frage nicht leer ist
-            logger.error("Die Frage wurde nicht übergeben.")
-            return EventSourceResponse(self._format_error_event("Keine Frage übergeben."))      
+    # Diese Änderungen sollten in der stream_answer-Methode der RAGEngine-Klasse vorgenommen werden
+# Suchen Sie nach der Definition der stream_answer-Methode in modules/rag/engine.py und ersetzen Sie sie
 
-        if not self.initialized:
-            logger.info("Lazy-Loading der RAG-Engine für Streaming...")
-            success = await self.initialize()
-            if not success:
-                async def error_stream():
-                    yield f"data: {json.dumps({'error': 'System konnte nicht initialisiert werden'})}\n\n"
-                    yield "event: done\ndata: \n\n"
-                return EventSourceResponse(error_stream())
+async def stream_answer(self, question: str, session_id: Optional[int] = None, use_simple_language: bool = False, stream_id: Optional[str] = None) -> EventSourceResponse:
+    """Streamt Antwort stückweise zurück – im Server-Sent-Events-Format"""
+    if not question:  # Sicherstellen, dass die Frage nicht leer ist
+        logger.error("Die Frage wurde nicht übergeben.")
+        return EventSourceResponse(self._format_error_event("Keine Frage übergeben."))      
 
-        if len(question) > 2048:
-            logger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
-            question = question[:2048]
-
-        async def event_generator(question: str, use_simple_language: bool) -> AsyncGenerator[str, None]:
-            try:
-                # Chunks suchen
-                relevant_chunks = self.embedding_manager.search(question, top_k=Config.TOP_K)
-                if not relevant_chunks:
-                    logger.warning(f"Keine relevanten Chunks für Streaming-Frage gefunden: {question[:50]}...")
-                    yield f"data: {json.dumps({'error': 'Keine relevanten Informationen gefunden'})}\n\n"
-                    yield "event: done\ndata: \n\n"
-                    return
-
-                # Entferne Duplikate basierend auf der Datei
-                seen_sources = set()
-                unique_chunks = []
-                for chunk in relevant_chunks:
-                    source = chunk.get('file', 'unknown')
-                    # Füge nur hinzu, wenn die Quelle noch nicht gesehen wurde
-                    if source not in seen_sources:
-                        seen_sources.add(source)
-                        unique_chunks.append(chunk)
-                
-                # Begrenze auf maximal 5 verschiedene Quellen
-                if len(unique_chunks) > 5:
-                    unique_chunks = unique_chunks[:5]
-
-                # Prompt bauen mit Spracheinstellung
-                prompt = self._format_prompt(question, unique_chunks, use_simple_language)
-                logger.info(f"Starte Streaming für Frage: {question[:50]}... (Einfache Sprache: {use_simple_language})")
-
-                # Variable zur Nachverfolgung, ob Daten gesendet wurden
-                found_data = False
-                
-                # Buffer für die Gesamtantwort
-                complete_answer = ""
-                
-                # Debug-Logging für den Stream-Start
-                logger.debug("Stream-Generierung beginnt mit Prompt...")
-                
-                async for chunk in self.ollama_client.stream_generate(prompt):
-                    # Auch leere Tokens werden berücksichtigt
-                    found_data = True
-                    # Füge zum Buffer hinzu 
-                    complete_answer += chunk
-                    # SSE-Event formatieren - WICHTIG: Korrektes Format mit \n\n am Ende
-                    logger.debug(f"Sende Token: '{chunk}'")
-                    
-                    # Wichtig: Senden eines vollständigen SSE-Events
-                    yield f"data: {json.dumps({'response': chunk})}\n\n"
-                    
-                    # Kurze Pause einfügen, um dem Browser Zeit zum Rendern zu geben
-                    await asyncio.sleep(0.01)
-
-                # Wenn keine Antwort empfangen wurde
-                if not found_data:
-                    logger.warning("Keine Antwort vom Modell empfangen")
-                    yield f"data: {json.dumps({'error': 'Das Modell hat keine Ausgabe erzeugt.'})}\n\n"
-                else:
-                    # Speichern der kompletten Antwort in der Chathistorie
-                    if session_id and complete_answer.strip():
-                        logger.info(f"Speichere vollständige Antwort ({len(complete_answer)} Zeichen) in Session {session_id}")
-                        from ..session.chat_history import ChatHistoryManager
-                        chat_history = ChatHistoryManager()
-                        chat_history.add_message(session_id, complete_answer, is_user=False)
-
-                # KRITISCH: Korrektes done-Event senden (separates Event)
-                # Das Format muss exakt sein: "event: done\ndata: \n\n"
-                logger.debug("Sende 'done' Event zum Abschluss des Streams")
+    if not self.initialized:
+        logger.info("Lazy-Loading der RAG-Engine für Streaming...")
+        success = await self.initialize()
+        if not success:
+            async def error_stream():
+                yield f"data: {json.dumps({'error': 'System konnte nicht initialisiert werden'})}\n\n"
                 yield "event: done\ndata: \n\n"
-                
-            except Exception as e:
-                logger.error(f"Fehler beim Streaming der Antwort: {e}", exc_info=True)
-                error_msg = json.dumps({"error": f"Fehler beim Streaming: {str(e)}"})
-                yield f"data: {error_msg}\n\n"
-                yield "event: done\ndata: \n\n"
+            return EventSourceResponse(error_stream())
 
-        # Ping-Interval setzen, um Verbindungsabbrüche zu vermeiden
-        return EventSourceResponse(
-            event_generator(question, use_simple_language),
-            ping=15.0,  # Sendet alle 15 Sekunden Ping-Events
-            media_type="text/event-stream"  # Expliziter MIME-Typ
-        )
+    if len(question) > 2048:
+        logger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
+        question = question[:2048]
+
+    # Stream-ID für Tracking verwenden, falls angegeben
+    if not stream_id:
+        stream_id = f"stream_{session_id}_{hash(question)}"
+    
+    logger.info(f"Stream-ID: {stream_id}")
+
+    async def event_generator(question: str, use_simple_language: bool) -> AsyncGenerator[str, None]:
+        try:
+            # Chunks suchen
+            relevant_chunks = self.embedding_manager.search(question, top_k=Config.TOP_K)
+            if not relevant_chunks:
+                logger.warning(f"Keine relevanten Chunks für Streaming-Frage gefunden: {question[:50]}...")
+                yield f"data: {json.dumps({'error': 'Keine relevanten Informationen gefunden'})}\n\n"
+                yield "event: done\ndata: \n\n"
+                return
+
+            # Entferne Duplikate basierend auf der Datei
+            seen_sources = set()
+            unique_chunks = []
+            for chunk in relevant_chunks:
+                source = chunk.get('file', 'unknown')
+                # Füge nur hinzu, wenn die Quelle noch nicht gesehen wurde
+                if source not in seen_sources:
+                    seen_sources.add(source)
+                    unique_chunks.append(chunk)
+            
+            # Begrenze auf maximal 5 verschiedene Quellen
+            if len(unique_chunks) > 5:
+                unique_chunks = unique_chunks[:5]
+
+            # Prompt bauen mit Spracheinstellung
+            prompt = self._format_prompt(question, unique_chunks, use_simple_language)
+            logger.info(f"Starte Streaming für Frage: {question[:50]}... (Einfache Sprache: {use_simple_language})")
+
+            # Variable zur Nachverfolgung, ob Daten gesendet wurden
+            found_data = False
+            
+            # Buffer für die Gesamtantwort
+            complete_answer = ""
+            
+            # Debug-Logging für den Stream-Start
+            logger.debug("Stream-Generierung beginnt mit Prompt...")
+            
+            async for chunk in self.ollama_client.stream_generate(prompt, stream_id=stream_id):
+                # Auch leere Tokens werden berücksichtigt
+                found_data = True
+                # Füge zum Buffer hinzu 
+                complete_answer += chunk
+                # SSE-Event formatieren - WICHTIG: Korrektes Format mit \n\n am Ende
+                logger.debug(f"Sende Token: '{chunk}'")
+                
+                # Wichtig: Senden eines vollständigen SSE-Events
+                yield f"data: {json.dumps({'response': chunk})}\n\n"
+                
+                # Kurze Pause einfügen, um dem Browser Zeit zum Rendern zu geben
+                await asyncio.sleep(0.01)
+
+            # Wenn keine Antwort empfangen wurde
+            if not found_data:
+                logger.warning("Keine Antwort vom Modell empfangen")
+                yield f"data: {json.dumps({'error': 'Das Modell hat keine Ausgabe erzeugt.'})}\n\n"
+            else:
+                # Speichern der kompletten Antwort in der Chathistorie
+                if session_id and complete_answer.strip():
+                    logger.info(f"Speichere vollständige Antwort ({len(complete_answer)} Zeichen) in Session {session_id}")
+                    from ..session.chat_history import ChatHistoryManager
+                    chat_history = ChatHistoryManager()
+                    chat_history.add_message(session_id, complete_answer, is_user=False)
+
+            # KRITISCH: Korrektes done-Event senden (separates Event)
+            # Das Format muss exakt sein: "event: done\ndata: \n\n"
+            logger.debug("Sende 'done' Event zum Abschluss des Streams")
+            yield "event: done\ndata: \n\n"
+            
+        except Exception as e:
+            logger.error(f"Fehler beim Streaming der Antwort: {e}", exc_info=True)
+            error_msg = json.dumps({"error": f"Fehler beim Streaming: {str(e)}"})
+            yield f"data: {error_msg}\n\n"
+            yield "event: done\ndata: \n\n"
+
+    # Ping-Interval setzen, um Verbindungsabbrüche zu vermeiden
+    return EventSourceResponse(
+        event_generator(question, use_simple_language),
+        ping=15.0,  # Sendet alle 15 Sekunden Ping-Events
+        media_type="text/event-stream"  # Expliziter MIME-Typ
+    )
 
     # Hilfsmethode für Fehlerbehandlung
     def _format_error_event(self, error_message: str) -> AsyncGenerator[str, None]:

@@ -28,21 +28,31 @@ export function setupFeedback(options) {
                 return;
             }
             
+            // Konvertiere zu Zahlen für die API
+            const numericMessageId = parseInt(messageId);
+            const numericSessionId = parseInt(sessionId);
+            
             const response = await axios.post('/api/feedback', {
-                message_id: parseInt(messageId),
-                session_id: parseInt(sessionId),
+                message_id: numericMessageId,
+                session_id: numericSessionId,
                 is_positive: isPositive
             });
             
+            console.log("Feedback-Antwort vom Server:", response.data);
+            
             // Aktualisiere den Feedback-Status in der Nachricht
-            const messageIndex = messages.value.findIndex(m => m.id === messageId);
+            const messageIndex = messages.value.findIndex(m => m.id === numericMessageId);
             if (messageIndex >= 0) {
+                console.log(`Nachricht mit ID ${numericMessageId} gefunden an Index ${messageIndex}`);
                 messages.value[messageIndex].feedback_positive = isPositive;
                 // Lösche alten Kommentar wenn positive Feedback gegeben wird
                 if (isPositive) {
                     messages.value[messageIndex].feedback_comment = null;
                 }
                 console.log('Feedback erfolgreich gesendet und UI aktualisiert');
+            } else {
+                console.warn(`Nachricht mit ID ${numericMessageId} nicht gefunden!`);
+                console.log("Verfügbare Nachrichten:", messages.value.map(m => `ID: ${m.id}, is_user: ${m.is_user}`));
             }
         } catch (error) {
             console.error('Fehler beim Senden des Feedbacks:', error);
@@ -72,6 +82,8 @@ export function setupFeedback(options) {
         if (!feedbackMessage.value) return;
         
         try {
+            console.log(`Sende Feedback-Kommentar für Nachricht ${feedbackMessage.value.id}`);
+            
             const response = await axios.post('/api/feedback', {
                 message_id: feedbackMessage.value.id,
                 session_id: feedbackMessage.value.session_id || currentSessionId.value,
@@ -85,12 +97,16 @@ export function setupFeedback(options) {
                 messages.value[messageIndex].feedback_comment = feedbackComment.value;
                 // Stelle sicher, dass das Feedback auf negativ gesetzt ist
                 messages.value[messageIndex].feedback_positive = false;
+                console.log(`Feedback-Kommentar aktualisiert für Nachricht ${feedbackMessage.value.id}`);
+            } else {
+                console.warn(`Nachricht mit ID ${feedbackMessage.value.id} nicht gefunden!`);
             }
             
             console.log('Feedback-Kommentar erfolgreich gesendet');
             showFeedbackDialog.value = false;
         } catch (error) {
             console.error('Fehler beim Senden des Feedback-Kommentars:', error);
+            alert('Fehler beim Senden des Feedback-Kommentars. Bitte versuchen Sie es später erneut.');
         }
     };
     
@@ -100,15 +116,24 @@ export function setupFeedback(options) {
      */
     const loadMessageFeedback = async (messageId) => {
         try {
+            console.log(`Lade Feedback für Nachricht ${messageId}`);
+            
             const response = await axios.get(`/api/feedback/message/${messageId}`);
             
             if (response.data.feedback) {
+                console.log(`Feedback gefunden für Nachricht ${messageId}:`, response.data.feedback);
+                
                 // Aktualisiere den Feedback-Status in der Nachricht
                 const messageIndex = messages.value.findIndex(m => m.id === messageId);
                 if (messageIndex >= 0) {
                     messages.value[messageIndex].feedback_positive = response.data.feedback.is_positive;
                     messages.value[messageIndex].feedback_comment = response.data.feedback.comment;
+                    console.log(`Feedback aktualisiert für Nachricht ${messageId} an Index ${messageIndex}`);
+                } else {
+                    console.warn(`Nachricht mit ID ${messageId} nicht gefunden!`);
                 }
+            } else {
+                console.log(`Kein Feedback gefunden für Nachricht ${messageId}`);
             }
         } catch (error) {
             console.error('Fehler beim Laden des Feedbacks:', error);

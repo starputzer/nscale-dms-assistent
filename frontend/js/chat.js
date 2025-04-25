@@ -21,6 +21,7 @@ export function setupChat(options) {
     let tokenCount = 0;
     let streamTimeout;
     let currentStreamRetryCount = 0;
+    let completeResponse = ""; // Variable für die vollständige Antwort
     
     /**
      * Bereinigt die EventSource-Verbindung
@@ -142,6 +143,9 @@ export function setupChat(options) {
             tokenCount = 0;
             currentStreamRetryCount = 0;
             
+            // Zurücksetzen der vollständigen Antwort
+            completeResponse = "";
+            
             // Flag für erfolgreiche Fertigstellung
             let successfulCompletion = false;
 
@@ -205,23 +209,16 @@ export function setupChat(options) {
                             return;
                         }
                         
-                        // Normaler Token - Zeichen für Zeichen hinzufügen
+                        // Normaler Token - für Debugging
                         tokenCount++;
                         console.log(`Token #${tokenCount}: "${token}"`);
                         
-                        // Zeichen für Zeichen zur Assistenten-Nachricht hinzufügen
-                        if (token && token.length > 0) {
-                            // Aktuelle Nachricht speichern
-                            const currentText = messages.value[assistantIndex].message;
-                            
-                            // Jeden Buchstaben einzeln mit Verzögerung hinzufügen
-                            Array.from(token).forEach((char, index) => {
-                                setTimeout(() => {
-                                    messages.value[assistantIndex].message = currentText + token.substring(0, index + 1);
-                                    scrollToBottom();
-                                }, index * 15); // 15ms Verzögerung zwischen Zeichen
-                            });
-                        }
+                        // Token zur vollständigen Antwort hinzufügen
+                        completeResponse += token;
+                        
+                        // Aktualisiere die angezeigte Nachricht sofort
+                        messages.value[assistantIndex].message = completeResponse;
+                        scrollToBottom();
                     } else if (data.error) {
                         console.error("Stream-Fehler:", data.error);
                         messages.value[assistantIndex].message = `Fehler: ${data.error}`;

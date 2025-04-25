@@ -554,7 +554,7 @@ main,
     background-color: #444;
 }
 
-/* Barrierefreiheitsbutton (Schwimmendes Zahnrad) */
+/* Barrierefreiheitsbutton (Schwimmendes Zahnrad) - KORRIGIERT FÜR KONTRASTMODUS */
 .floating-action-button {
     position: fixed;
     right: 1.5rem;
@@ -588,6 +588,18 @@ main,
     font-size: 1.25rem;
 }
 
+/* Kontrastmodus für floating-action-button */
+.theme-contrast .floating-action-button {
+    background-color: #ffeb3b;
+    color: #000000;
+    border: 2px solid #ffeb3b;
+}
+
+.theme-contrast .floating-action-button:hover {
+    background-color: #ffd600;
+    border-color: #ffd600;
+}
+
 /* Senden-Button */
 .input-container .nscale-btn-primary {
     background-color: var(--nscale-green);
@@ -618,4 +630,13 @@ main,
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
+}
+
+/* Fix für Kontrastmodus-Textfarbe */
+.theme-contrast .input-container .nscale-btn-primary {
+    color: #000000 !important;
+}
+
+.theme-contrast .floating-action-button {
+    color: #000000 !important;
 }

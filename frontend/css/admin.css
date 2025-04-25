@@ -267,6 +267,32 @@
     color: #f0f0f0;
 }
 
+/* Fix für Textfarben im Dunkelmodus */
+.theme-dark .admin-panel-title,
+.theme-dark .admin-card-title,
+.theme-dark .admin-label,
+.theme-dark label,
+.theme-dark .text-gray-800,
+.theme-dark .admin-form-group label,
+.theme-dark .settings-option-label {
+    color: #f0f0f0 !important;
+}
+
+.theme-dark .admin-panel-content h1,
+.theme-dark .admin-panel-content h2,
+.theme-dark .admin-panel-content h3,
+.theme-dark .admin-panel-content h4 {
+    color: #f0f0f0 !important;
+}
+
+.theme-dark .mt-auto.p-4 {
+    color: #f0f0f0;
+}
+
+.theme-dark .mt-auto.p-4 .font-semibold {
+    color: #00c060;
+}
+
 /* Admin-Bereich im Kontrast-Modus */
 .theme-contrast .admin-button {
     background-color: #ffeb3b;
@@ -363,6 +389,30 @@
 
 .theme-contrast .admin-button-danger:hover {
     background-color: #cc0000;
+}
+
+/* Fix für Textfarben im Kontrastmodus */
+.theme-contrast .admin-panel-title,
+.theme-contrast .admin-panel-content h1,
+.theme-contrast .admin-panel-content h2,
+.theme-contrast .admin-panel-content h3,
+.theme-contrast .admin-panel-content h4,
+.theme-contrast .font-semibold,
+.theme-contrast label,
+.theme-contrast .text-gray-800,
+.theme-contrast .admin-form-group label,
+.theme-contrast .settings-option-label {
+    color: #ffeb3b !important;
+}
+
+.theme-contrast .text-gray-500,
+.theme-contrast .text-gray-600,
+.theme-contrast .text-gray-700 {
+    color: #ffffff !important;
+}
+
+.theme-contrast .mt-auto.p-4 {
+    color: #ffeb3b;
 }
 
 /* Admin Sidebar - verbesserte Styles */
@@ -487,4 +537,14 @@
 
 .theme-dark .mt-auto.p-4 .font-semibold {
     color: #00c060;
+}
+
+/* Floating Action Button im Kontrastmodus */
+.theme-contrast .floating-action-button {
+    background-color: #ffeb3b;
+    color: #000000;
+}
+
+.theme-contrast .floating-action-button:hover {
+    background-color: #ffd600;
 }

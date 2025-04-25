@@ -38,6 +38,21 @@ export function setupAdmin(options) {
         }
     });
     
+    // Watch für adminTab, um automatisch Daten zu laden
+    Vue.watch(() => adminTab.value, (newTab) => {
+        console.log(`Admin-Tab gewechselt zu: ${newTab}`);
+        if (newTab === 'users') {
+            loadUsers();
+        } else if (newTab === 'system') {
+            loadSystemStats();
+        } else if (newTab === 'feedback') {
+            loadFeedbackStats();
+            loadNegativeFeedback();
+        } else if (newTab === 'motd') {
+            loadMotdConfig();
+        }
+    });
+    
     /**
      * Lädt die Benutzerrolle vom Server
      */
@@ -49,6 +64,11 @@ export function setupAdmin(options) {
                 console.log("Server-Antwort:", response.data);
                 userRole.value = response.data.role;
                 console.log(`Benutzerrolle geladen: ${userRole.value}`);
+                
+                // Wenn der Benutzer ein Admin ist, lade die Benutzerliste
+                if (userRole.value === 'admin') {
+                    await loadUsers();
+                }
             }
         } catch (error) {
             console.error('Fehler beim Laden der Benutzerrolle:', error);
@@ -63,11 +83,27 @@ export function setupAdmin(options) {
         try {
             if (userRole.value === 'admin') {
                 isLoading.value = true;
+                console.log("Lade Benutzerliste...");
                 const response = await axios.get('/api/admin/users');
-                adminUsers.value = response.data.users;
+                
+                // Prüfe, ob die Antwort eine leere Liste oder null enthält
+                if (response.data.users && response.data.users.length > 0) {
+                    adminUsers.value = response.data.users;
+                    console.log(`${adminUsers.value.length} Benutzer geladen:`, adminUsers.value);
+                } else {
+                    console.warn("Keine Benutzer vom Server zurückgegeben oder leere Liste");
+                    adminUsers.value = [];
+                }
             }
         } catch (error) {
             console.error('Fehler beim Laden der Benutzer:', error);
+            
+            // Zeige Fehlermeldung
+            if (error.response && error.response.status === 403) {
+                alert("Sie haben keine Berechtigung für diese Aktion.");
+            } else {
+                alert("Fehler beim Laden der Benutzerliste: " + (error.response?.data?.detail || error.message));
+            }
         } finally {
             isLoading.value = false;
         }
@@ -79,14 +115,33 @@ export function setupAdmin(options) {
     const createUser = async () => {
         try {
             if (userRole.value === 'admin') {
+                // Validierung
+                if (!newUser.value.email || !newUser.value.password) {
+                    alert("Bitte füllen Sie alle Pflichtfelder aus.");
+                    return;
+                }
+                
                 isLoading.value = true;
+                console.log("Erstelle neuen Benutzer:", newUser.value.email);
+                
                 await axios.post('/api/admin/users', newUser.value);
                 await loadUsers();
+                
+                // Erfolgsbenachrichtigung
+                alert(`Benutzer ${newUser.value.email} wurde erfolgreich erstellt.`);
+                
                 // Formular zurücksetzen
                 newUser.value = { email: '', password: '', role: 'user' };
             }
         } catch (error) {
             console.error('Fehler beim Erstellen des Benutzers:', error);
+            
+            // Zeige Fehlermeldung
+            if (error.response && error.response.status === 400) {
+                alert("Benutzer existiert bereits oder ungültige Daten.");
+            } else {
+                alert("Fehler beim Erstellen des Benutzers: " + (error.response?.data?.detail || error.message));
+            }
         } finally {
             isLoading.value = false;
         }
@@ -99,11 +154,23 @@ export function setupAdmin(options) {
         try {
             if (userRole.value === 'admin') {
                 isLoading.value = true;
+                console.log(`Aktualisiere Rolle für Benutzer ${userId} auf ${newRole}`);
+                
                 await axios.put(`/api/admin/users/${userId}/role`, { role: newRole });
+                
+                // Erfolgsbenachrichtigung
+                alert(`Die Rolle des Benutzers wurde auf ${newRole} aktualisiert.`);
+                
                 await loadUsers();
             }
         } catch (error) {
             console.error('Fehler beim Aktualisieren der Benutzerrolle:', error);
+            
+            // Zeige Fehlermeldung
+            alert("Fehler beim Aktualisieren der Benutzerrolle: " + (error.response?.data?.detail || error.message));
+            
+            // Lade die Liste neu, um den ursprünglichen Zustand wiederherzustellen
+            await loadUsers();
         } finally {
             isLoading.value = false;
         }
@@ -117,10 +184,21 @@ export function setupAdmin(options) {
             if (userRole.value === 'admin' && confirm('Möchten Sie diesen Benutzer wirklich löschen?')) {
                 isLoading.value = true;
                 await axios.delete(`/api/admin/users/${userId}`);
+                
+                // Erfolgsbenachrichtigung
+                alert("Benutzer wurde erfolgreich gelöscht.");
+                
                 await loadUsers();
             }
         } catch (error) {
             console.error('Fehler beim Löschen des Benutzers:', error);
+            
+            // Zeige Fehlermeldung
+            if (error.response && error.response.status === 501) {
+                alert("Diese Funktion ist noch nicht implementiert.");
+            } else {
+                alert("Fehler beim Löschen des Benutzers: " + (error.response?.data?.detail || error.message));
+            }
         } finally {
             isLoading.value = false;
         }
@@ -133,11 +211,18 @@ export function setupAdmin(options) {
         try {
             if (userRole.value === 'admin') {
                 isLoading.value = true;
+                console.log("Lade Systemstatistiken...");
+                
                 const response = await axios.get('/api/admin/stats');
                 systemStats.value = response.data.stats;
+                
+                console.log("Systemstatistiken geladen:", systemStats.value);
             }
         } catch (error) {
             console.error('Fehler beim Laden der Systemstatistiken:', error);
+            
+            // Zeige Fehlermeldung
+            alert("Fehler beim Laden der Systemstatistiken: " + (error.response?.data?.detail || error.message));
         } finally {
             isLoading.value = false;
         }
@@ -150,11 +235,18 @@ export function setupAdmin(options) {
         try {
             if (userRole.value === 'admin') {
                 isLoading.value = true;
+                console.log("Lade Feedback-Statistiken...");
+                
                 const response = await axios.get('/api/admin/feedback/stats');
                 feedbackStats.value = response.data.stats;
+                
+                console.log("Feedback-Statistiken geladen:", feedbackStats.value);
             }
         } catch (error) {
             console.error('Fehler beim Laden der Feedback-Statistiken:', error);
+            
+            // Zeige Fehlermeldung
+            alert("Fehler beim Laden der Feedback-Statistiken: " + (error.response?.data?.detail || error.message));
         } finally {
             isLoading.value = false;
         }
@@ -167,11 +259,18 @@ export function setupAdmin(options) {
         try {
             if (userRole.value === 'admin') {
                 isLoading.value = true;
+                console.log("Lade negatives Feedback...");
+                
                 const response = await axios.get('/api/admin/feedback/negative');
                 negativeFeedback.value = response.data.feedback;
+                
+                console.log("Negatives Feedback geladen:", negativeFeedback.value);
             }
         } catch (error) {
             console.error('Fehler beim Laden des negativen Feedbacks:', error);
+            
+            // Zeige Fehlermeldung
+            alert("Fehler beim Laden des negativen Feedbacks: " + (error.response?.data?.detail || error.message));
         } finally {
             isLoading.value = false;
         }
@@ -184,6 +283,8 @@ export function setupAdmin(options) {
         try {
             if (userRole.value === 'admin') {
                 isLoading.value = true;
+                console.log("Lade MOTD neu...");
+                
                 await axios.post('/api/admin/reload-motd');
                 
                 // Lade die globale MOTD auch neu
@@ -195,7 +296,7 @@ export function setupAdmin(options) {
             }
         } catch (error) {
             console.error('Fehler beim Neuladen der MOTD:', error);
-            alert('Fehler beim Neuladen der MOTD');
+            alert('Fehler beim Neuladen der MOTD: ' + (error.response?.data?.detail || error.message));
         } finally {
             isLoading.value = false;
         }
@@ -208,12 +309,14 @@ export function setupAdmin(options) {
         try {
             if (userRole.value === 'admin' && confirm('Möchten Sie wirklich den Modell-Cache leeren?')) {
                 isLoading.value = true;
+                console.log("Leere Modell-Cache...");
+                
                 const response = await axios.post('/api/admin/clear-cache');
                 alert(response.data.message || 'Cache wurde geleert');
             }
         } catch (error) {
             console.error('Fehler beim Leeren des Modell-Caches:', error);
-            alert('Fehler beim Leeren des Caches: ' + error.message);
+            alert('Fehler beim Leeren des Caches: ' + (error.response?.data?.detail || error.message));
         } finally {
             isLoading.value = false;
         }
@@ -226,12 +329,14 @@ export function setupAdmin(options) {
         try {
             if (userRole.value === 'admin' && confirm('Möchten Sie wirklich den Embedding-Cache leeren?')) {
                 isLoading.value = true;
+                console.log("Leere Embedding-Cache...");
+                
                 await axios.post('/api/admin/clear-embedding-cache');
                 alert('Embedding-Cache wurde erfolgreich geleert');
             }
         } catch (error) {
             console.error('Fehler beim Leeren des Embedding-Caches:', error);
-            alert('Fehler beim Leeren des Embedding-Caches: ' + error.message);
+            alert('Fehler beim Leeren des Embedding-Caches: ' + (error.response?.data?.detail || error.message));
         } finally {
             isLoading.value = false;
         }
@@ -244,14 +349,18 @@ export function setupAdmin(options) {
         try {
             if (userRole.value === 'admin') {
                 isLoading.value = true;
+                console.log("Lade MOTD-Konfiguration...");
+                
                 const response = await axios.get('/api/motd');
                 
                 // Tiefe Kopie der Konfiguration erstellen
                 motdConfig.value = JSON.parse(JSON.stringify(response.data));
+                
+                console.log("MOTD-Konfiguration geladen:", motdConfig.value);
             }
         } catch (error) {
             console.error('Fehler beim Laden der MOTD-Konfiguration:', error);
-            alert('Fehler beim Laden der MOTD-Konfiguration');
+            alert('Fehler beim Laden der MOTD-Konfiguration: ' + (error.response?.data?.detail || error.message));
         } finally {
             isLoading.value = false;
         }
@@ -291,6 +400,7 @@ export function setupAdmin(options) {
         try {
             if (userRole.value === 'admin') {
                 isLoading.value = true;
+                console.log("Speichere MOTD-Konfiguration...");
                 
                 // Validierung
                 if (!motdConfig.value.content.trim()) {

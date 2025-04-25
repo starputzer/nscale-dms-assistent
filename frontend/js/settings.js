@@ -115,7 +115,34 @@ export function setupSettings(options) {
      * @param {Object} settings - Die Einstellungen
      */
     const updateAccessibilitySettings = (settings) => {
-        accessibilitySettings.value = {...accessibilitySettings.value, ...settings};
+        // Erstelle eine Kopie der aktuellen Einstellungen
+        const newSettings = {...accessibilitySettings.value, ...settings};
+        
+        // BUGFIX: Event-Handling-Fix für reduceMotion
+        // Vor dem Aktivieren/Deaktivieren mögliche Event-Listener entfernen
+        if ('reduceMotion' in settings) {
+            // Wenn sich der Wert für reduceMotion ändert
+            if (settings.reduceMotion !== accessibilitySettings.value.reduceMotion) {
+                // Wenn wir Animationen reduzieren werden, Event-Listener für Klicks außerhalb entfernen und neu hinzufügen
+                if (settings.reduceMotion) {
+                    console.log("Entferne Event-Listener vor Aktivierung von reduceMotion");
+                    document.removeEventListener('click', handleOutsideClick);
+                    document.removeEventListener('keydown', handleEscapeKey);
+                    
+                    // Nach kurzer Verzögerung wieder hinzufügen, wenn das Panel noch geöffnet ist
+                    setTimeout(() => {
+                        if (showSettingsPanel.value) {
+                            console.log("Füge Event-Listener nach Aktivierung von reduceMotion wieder hinzu");
+                            document.addEventListener('click', handleOutsideClick);
+                            document.addEventListener('keydown', handleEscapeKey);
+                        }
+                    }, 100);
+                }
+            }
+        }
+        
+        // Setze die neuen Einstellungen
+        accessibilitySettings.value = newSettings;
         
         // Speichere alle Einstellungen im localStorage
         for (const [key, value] of Object.entries(accessibilitySettings.value)) {
@@ -205,9 +232,21 @@ export function setupSettings(options) {
         setFontSize(newSize);
     });
     
-    Vue.watch(accessibilitySettings, (newSettings) => {
-        updateAccessibilitySettings(newSettings);
-    }, { deep: true });
+    // Überwachung der Änderungen an den Barrierefreiheits-Einstellungen
+    // Verwende Options API für bessere Kontrolle
+    Vue.watch(() => accessibilitySettings.value.reduceMotion, (newValue, oldValue) => {
+        if (newValue !== oldValue) {
+            console.log(`reduceMotion geändert: ${oldValue} -> ${newValue}`);
+            updateAccessibilitySettings({ reduceMotion: newValue });
+        }
+    });
+    
+    Vue.watch(() => accessibilitySettings.value.simpleLanguage, (newValue, oldValue) => {
+        if (newValue !== oldValue) {
+            console.log(`simpleLanguage geändert: ${oldValue} -> ${newValue}`);
+            updateAccessibilitySettings({ simpleLanguage: newValue });
+        }
+    });
     
     // Rückgabe der Funktionen und Zustände für die Verwendung in der Vue-App
     return {
