@@ -17,6 +17,7 @@ from sse_starlette.sse import EventSourceResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.types import Scope, Receive, Send
+from starlette.middleware.base import BaseHTTPMiddleware
 from pydantic import BaseModel, EmailStr
 from jose import JWTError, jwt
 from starlette.concurrency import run_in_threadpool
@@ -30,45 +31,24 @@ from modules.rag.engine import RAGEngine
 from modules.session.chat_history import ChatHistoryManager
 from modules.feedback.feedback_manager import FeedbackManager
 
-# No-Cache StaticFiles Implementierung
-class NoCacheStaticFiles(StaticFiles):
-    """
-    Erweiterte StaticFiles-Klasse, die Cache-Control-Header für 
-    CSS- und JS-Dateien hinzufügt, um Browsercaching zu verhindern.
-    """
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        """Überschreiben der __call__-Methode zur Manipulation der Response-Header"""
-        
-        if scope["type"] != "http":
-            return await super().__call__(scope, receive, send)
-        
-        # Original-Response erstellen lassen
-        responder = await self.get_response(scope["path"], scope)
-        
-        # Funktion zum Modifizieren der Response-Header
-        async def send_wrapper(message):
-            if message["type"] == "http.response.start":
-                # Cache-Header nur für CSS und JS-Dateien setzen
-                if scope["path"].endswith((".css", ".js")):
-                    headers = list(message.get("headers", []))
-                    
-                    # Cache-Control-Header setzen
-                    cache_headers = [
-                        (b"Cache-Control", b"no-store, no-cache, must-revalidate, max-age=0"),
-                        (b"Pragma", b"no-cache"),
-                        (b"Expires", b"0")
-                    ]
-                    
-                    # Existierende Cache-Header entfernen
-                    headers = [(k, v) for k, v in headers if k.lower() != b"cache-control"]
-                    
-                    # Neue Cache-Header hinzufügen
-                    headers.extend(cache_headers)
-                    message["headers"] = headers
-            await send(message)
-        
-        # Response mit modifizierten Headern senden
-        await responder(scope, receive, send_wrapper)
+# Allgemeiner Exception-Handler für bessere Fehlerdiagnose
+@app.exception_handler(Exception)
+async def general_exception_handler(request, exc):
+    logger.error(f"Unbehandelte Ausnahme: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc)},
+    )
+
+# Einfache Middleware für No-Cache-Header (robustere Lösung als NoCacheStaticFiles)
+class NoCacheMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        if request.url.path.startswith("/static") and (request.url.path.endswith(".css") or request.url.path.endswith(".js")):
+            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        return response
 
 try:
     from dotenv import load_dotenv
@@ -84,6 +64,9 @@ logger = LogManager.setup_logging()
 feedback_manager = FeedbackManager()
 app = FastAPI(title="nscale DMS Assistent API")
 
+# Füge die No-Cache-Middleware hinzu (vor der CORS-Middleware)
+app.add_middleware(NoCacheMiddleware)
+
 # CORS-Konfiguration
 app.add_middleware(
     CORSMiddleware,
@@ -93,8 +76,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# App Mounten mit NoCacheStaticFiles statt StaticFiles
-app.mount("/static", NoCacheStaticFiles(directory="frontend"), name="static")
+# Prüfe und melde den Status der Frontend-Verzeichnisse
+frontend_dir = Path("frontend")
+logger.info(f"Frontend-Verzeichnis: {frontend_dir.absolute()}")
+logger.info(f"Frontend-Verzeichnis existiert: {frontend_dir.exists()}")
+if frontend_dir.exists():
+    css_dir = frontend_dir / "css"
+    js_dir = frontend_dir / "js"
+    logger.info(f"CSS-Verzeichnis existiert: {css_dir.exists()}")
+    logger.info(f"JS-Verzeichnis existiert: {js_dir.exists()}")
+    
+    if css_dir.exists():
+        logger.info(f"CSS-Dateien: {[f.name for f in css_dir.iterdir() if f.is_file()]}")
+    if js_dir.exists():
+        logger.info(f"JS-Dateien: {[f.name for f in js_dir.iterdir() if f.is_file()]}")
+
+# App Mounten mit normaler StaticFiles-Klasse
+app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
 @app.get("/")
 async def root():
