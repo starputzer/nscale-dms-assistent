@@ -195,6 +195,34 @@ class UserManager:
         if new_role not in [UserRole.USER, UserRole.ADMIN]:
             logger.warning(f"Ungültige Rolle angegeben: {new_role}")
             return False
+        
+        # NEU: Prüfe, ob ein Admin versucht, seine eigene Rolle zu ändern
+        if user_id == admin_user_id:
+            logger.warning(f"Admin (ID: {admin_user_id}) versuchte, eigene Rolle zu ändern")
+            return False
+        
+        # NEU: Zähle die Anzahl der verbleibenden Administratoren
+        if new_role == UserRole.USER:
+            conn = sqlite3.connect(Config.DB_PATH)
+            cursor = conn.cursor()
+            
+            # Prüfe, ob der zu ändernde Benutzer ein Admin ist
+            cursor.execute("SELECT role FROM users WHERE id = ?", (user_id,))
+            current_role = cursor.fetchone()
+            
+            if current_role and current_role[0] == UserRole.ADMIN:
+                # Zähle verbleibende Admins
+                cursor.execute("SELECT COUNT(*) FROM users WHERE role = ? AND id != ?", 
+                               (UserRole.ADMIN, user_id))
+                remaining_admins = cursor.fetchone()[0]
+                
+                # Stelle sicher, dass mindestens ein Admin übrig bleibt
+                if remaining_admins == 0:
+                    logger.warning(f"Kann letzten Admin (ID: {user_id}) nicht zu Benutzer herabstufen")
+                    conn.close()
+                    return False
+            
+            conn.close()
             
         try:
             conn = sqlite3.connect(Config.DB_PATH)
@@ -217,6 +245,24 @@ class UserManager:
             return True
         except Exception as e:
             logger.error(f"Fehler beim Aktualisieren der Benutzerrolle: {e}")
+            return False
+
+    def is_protected_admin(self, user_id):
+        """Prüft, ob ein Benutzer ein geschützter Admin ist (über Admin-E-Mails eingetragen)"""
+        try:
+            conn = sqlite3.connect(Config.DB_PATH)
+            cursor = conn.cursor()
+            
+            cursor.execute("SELECT email FROM users WHERE id = ?", (user_id,))
+            result = cursor.fetchone()
+            conn.close()
+            
+            if result:
+                email = result[0]
+                return email.lower() in [e.lower() for e in self.ADMIN_EMAILS]
+            return False
+        except Exception as e:
+            logger.error(f"Fehler beim Prüfen des geschützten Admin-Status: {e}")
             return False
     
     def get_user_role(self, user_id):
@@ -294,3 +340,58 @@ class UserManager:
         except Exception as e:
             logger.error(f"Fehler beim Abrufen der Benutzerliste: {e}")
             return None
+            
+    def delete_user(self, user_id, admin_user_id):
+        """Löscht einen Benutzer (nur für Admins)"""
+        # Prüfe, ob der ausführende Benutzer Admin ist
+        if not self.is_admin(admin_user_id):
+            logger.warning(f"Nicht-Admin (ID: {admin_user_id}) versuchte, Benutzer zu löschen")
+            return False
+            
+        # NEU: Verbiete, dass ein Admin sich selbst löscht
+        if user_id == admin_user_id:
+            logger.warning(f"Admin (ID: {admin_user_id}) versuchte, sich selbst zu löschen")
+            return False
+            
+        try:
+            conn = sqlite3.connect(Config.DB_PATH)
+            cursor = conn.cursor()
+            
+            # NEU: Prüfe, ob Zielbenutzer ein Admin ist
+            cursor.execute("SELECT role FROM users WHERE id = ?", (user_id,))
+            user_role = cursor.fetchone()
+            
+            if not user_role:
+                logger.warning(f"Benutzer mit ID {user_id} nicht gefunden")
+                conn.close()
+                return False
+                
+            # NEU: Verbiete das Löschen von Admins
+            if user_role[0] == UserRole.ADMIN:
+                logger.warning(f"Admin (ID: {admin_user_id}) versuchte, anderen Admin (ID: {user_id}) zu löschen")
+                conn.close()
+                return False
+                
+            # NEU: Verbiete das Löschen von geschützten Admins
+            if self.is_protected_admin(user_id):
+                logger.warning(f"Versuch, geschützten Admin (ID: {user_id}) zu löschen")
+                conn.close() 
+                return False
+                
+            # Lösche den Benutzer
+            cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
+            
+            if cursor.rowcount == 0:
+                logger.warning(f"Benutzer mit ID {user_id} nicht gefunden")
+                conn.close()
+                return False
+                
+            conn.commit()
+            conn.close()
+            
+            logger.info(f"Benutzer ID {user_id} wurde gelöscht durch Admin ID {admin_user_id}")
+            return True
+                
+        except Exception as e:
+            logger.error(f"Fehler beim Löschen des Benutzers: {e}")
+            return False

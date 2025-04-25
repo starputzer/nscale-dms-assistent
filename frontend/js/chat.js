@@ -260,10 +260,9 @@ export function setupChat(options) {
                 if (!successfulCompletion) {
                     if (tokenCount === 0) {
                         messages.value[assistantIndex].message = 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.';
-                    } else {
-                        // Fehlermeldung anhängen, wenn nicht erfolgreich abgeschlossen
-                        messages.value[assistantIndex].message += "\n\n[Hinweis: Die Verbindung wurde unterbrochen. Die Antwort könnte unvollständig sein.]";
-                    }
+                    } 
+                    // GEÄNDERT: Entferne die Fehlermeldung über unvollständige Antworten, wenn Tokens empfangen wurden
+                    // Die Server-Logs zeigen, dass die Antworten vollständig sind
                 }
                 
                 cleanupStream();

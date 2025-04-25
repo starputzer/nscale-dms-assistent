@@ -238,19 +238,22 @@ async def create_user(request: CreateUserRequest, admin_data: Dict[str, Any] = D
     
     return {"message": f"Benutzer {request.email} mit Rolle {request.role} erfolgreich erstellt"}
 
-@app.put("/api/admin/users/{user_id}/role")
-async def update_user_role(user_id: int, request: Dict[str, str], admin_data: Dict[str, Any] = Depends(get_admin_user)):
-    """Aktualisiert die Rolle eines Benutzers (Admin-Funktion)"""
-    # Prüfen, ob der Admin versucht, seine eigene Rolle zu ändern
-    if user_id == admin_data['user_id']:
-        raise HTTPException(status_code=400, detail="Sie können Ihre eigene Rolle nicht ändern")
+@app.delete("/api/admin/users/{user_id}")
+async def delete_user(user_id: int, admin_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Löscht einen Benutzer (nur für Administratoren)"""
+    admin_user_id = admin_data['user_id']
     
-    success = user_manager.update_user_role(user_id, request['role'], admin_data['user_id'])
+    # Prüfen, ob der Admin versucht, sich selbst zu löschen
+    if user_id == admin_user_id:
+        raise HTTPException(status_code=400, detail="Sie können Ihr eigenes Konto nicht löschen")
+    
+    # Diese Implementierung nutzt nun die erweiterte delete_user-Methode
+    success = user_manager.delete_user(user_id, admin_user_id)
     
     if not success:
-        raise HTTPException(status_code=400, detail="Benutzer nicht gefunden oder ungültige Rolle")
+        raise HTTPException(status_code=403, detail="Löschen nicht möglich. Der Benutzer könnte ein Administrator sein oder existiert nicht.")
     
-    return {"message": f"Rolle für Benutzer ID {user_id} auf {request['role']} aktualisiert"}
+    return {"message": f"Benutzer mit ID {user_id} erfolgreich gelöscht"}
 
 @app.delete("/api/admin/users/{user_id}")
 async def delete_user(user_id: int, admin_data: Dict[str, Any] = Depends(get_admin_user)):
@@ -266,8 +269,11 @@ async def delete_user(user_id: int, admin_data: Dict[str, Any] = Depends(get_adm
 # Endpoint um die Rolle des aktuellen Benutzers abzurufen
 @app.get("/api/user/role")
 async def get_current_user_role(user_data: Dict[str, Any] = Depends(get_current_user)):
-    """Gibt die Rolle des aktuellen Benutzers zurück"""
-    return {"role": user_data.get('role', 'user')}
+    """Gibt die Rolle und ID des aktuellen Benutzers zurück"""
+    return {
+        "role": user_data.get('role', 'user'),
+        "user_id": user_data.get('user_id')
+    }
 
 @app.post("/api/feedback")
 async def add_feedback(request: FeedbackRequest, user_data: Dict[str, Any] = Depends(get_current_user)):

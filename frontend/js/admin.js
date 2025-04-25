@@ -18,6 +18,8 @@ export function setupAdmin(options) {
     const systemStats = Vue.ref({});
     const feedbackStats = Vue.ref({});
     const negativeFeedback = Vue.ref([]);
+    // Speichere die ID des aktuellen Benutzers
+    const currentUserId = Vue.ref(null);
     
     // MOTD-Konfiguration
     const motdConfig = Vue.ref({
@@ -63,6 +65,11 @@ export function setupAdmin(options) {
                 const response = await axios.get('/api/user/role');
                 console.log("Server-Antwort:", response.data);
                 userRole.value = response.data.role;
+                
+                // Speichere auch die Benutzer-ID, wenn sie in der Antwort enthalten ist
+                if (response.data.user_id) {
+                    currentUserId.value = response.data.user_id;
+                }
                 console.log(`Benutzerrolle geladen: ${userRole.value}`);
                 
                 // Wenn der Benutzer ein Admin ist, lade die Benutzerliste
@@ -153,6 +160,14 @@ export function setupAdmin(options) {
     const updateUserRole = async (userId, newRole) => {
         try {
             if (userRole.value === 'admin') {
+                // Überprüfe, ob der Admin versucht, seine eigene Rolle zu ändern
+                if (userId === currentUserId.value) {
+                    alert("Sie können Ihre eigene Rolle nicht ändern.");
+                    // Lade die Benutzer neu, um ursprüngliche Rollen wiederherzustellen
+                    await loadUsers();
+                    return;
+                }
+                
                 isLoading.value = true;
                 console.log(`Aktualisiere Rolle für Benutzer ${userId} auf ${newRole}`);
                 
@@ -181,7 +196,24 @@ export function setupAdmin(options) {
      */
     const deleteUser = async (userId) => {
         try {
-            if (userRole.value === 'admin' && confirm('Möchten Sie diesen Benutzer wirklich löschen?')) {
+            if (userRole.value === 'admin') {
+                // Überprüfe, ob der Admin versucht, sich selbst zu löschen
+                if (userId === currentUserId.value) {
+                    alert("Sie können Ihr eigenes Konto nicht löschen.");
+                    return;
+                }
+                
+                // Überprüfe, ob der zu löschende Benutzer ein Admin ist
+                const userToDelete = adminUsers.value.find(user => user.id === userId);
+                if (userToDelete && userToDelete.role === 'admin') {
+                    alert("Administratoren können nicht gelöscht werden.");
+                    return;
+                }
+                
+                if (!confirm('Möchten Sie diesen Benutzer wirklich löschen?')) {
+                    return;
+                }
+                
                 isLoading.value = true;
                 await axios.delete(`/api/admin/users/${userId}`);
                 
@@ -194,10 +226,16 @@ export function setupAdmin(options) {
             console.error('Fehler beim Löschen des Benutzers:', error);
             
             // Zeige Fehlermeldung
-            if (error.response && error.response.status === 501) {
-                alert("Diese Funktion ist noch nicht implementiert.");
+            if (error.response) {
+                if (error.response.status === 400) {
+                    alert("Der Benutzer kann nicht gelöscht werden: " + error.response.data.detail);
+                } else if (error.response.status === 403) {
+                    alert("Sie haben keine Berechtigung zum Löschen dieses Benutzers.");
+                } else {
+                    alert("Fehler beim Löschen des Benutzers: " + (error.response.data.detail || error.message));
+                }
             } else {
-                alert("Fehler beim Löschen des Benutzers: " + (error.response?.data?.detail || error.message));
+                alert("Fehler beim Löschen des Benutzers: " + error.message);
             }
         } finally {
             isLoading.value = false;
@@ -450,6 +488,7 @@ export function setupAdmin(options) {
         feedbackStats,
         negativeFeedback,
         motdConfig,
+        currentUserId,
         
         // Funktionen
         loadUserRole,
