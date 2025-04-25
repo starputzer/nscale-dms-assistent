@@ -360,6 +360,15 @@ async def explain_answer(message_id: int, user_data: Dict[str, Any] = Depends(ge
             # Fallback: leere Quellenliste
             relevant_chunks = []
         
+        # Erstelle die Quellenliste außerhalb des f-Strings
+        source_references_text = ""
+        for i, chunk in enumerate(relevant_chunks[:5]):
+            if str(i+1) in source_counts:
+                source_file = chunk.get('file', 'Unbekannte Quelle')
+                section_text = f", Abschnitt '{chunk.get('title', '')}'" if chunk.get('type') == 'section' else ''
+                count_text = f" - ca. {source_counts.get(str(i+1), 0)} mal referenziert"
+                source_references_text += f"- {source_file}{section_text}{count_text}\n"
+        
         # Erstelle eine detaillierte Erklärung
         # Hier würden wir die genauen Entscheidungen erklären, warum welche Information ausgewählt wurde
         explanation = {
@@ -381,8 +390,7 @@ async def explain_answer(message_id: int, user_data: Dict[str, Any] = Depends(ge
 Diese Antwort wurde basierend auf Ihrer Frage "{question}" generiert.
 
 Der Assistent hat dazu folgende Quellen verwendet:
-{"".join([f"- {chunk.get('file', 'Unbekannte Quelle')}" + (f", Abschnitt '{chunk.get('title', '')}')" if chunk.get('type') == 'section' else '') + f" - ca. {source_counts.get(str(i+1), 0)} mal referenziert\n" for i, chunk in enumerate(relevant_chunks[:5]) if str(i+1) in source_counts])}
-
+{source_references_text}
 Die Antwort wurde so formuliert, dass sie Ihre Frage direkt beantwortet und dabei die relevantesten Informationen aus den Quellen verständlich zusammenfasst.
 """
         }
@@ -392,7 +400,7 @@ Die Antwort wurde so formuliert, dass sie Ihre Frage direkt beantwortet und dabe
     except Exception as e:
         logger.error(f"Fehler bei der Generierung der Erklärung: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Fehler bei der Erklärung: {str(e)}")
-
+    
 @app.post("/api/feedback")
 async def add_feedback(request: FeedbackRequest, user_data: Dict[str, Any] = Depends(get_current_user)):
     """Fügt Feedback zu einer Nachricht hinzu"""
