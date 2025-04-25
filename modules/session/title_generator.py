@@ -31,12 +31,13 @@ class SessionTitleGenerator:
             "elektronische akte", "workflow", "scannen", "erstellen", "importieren", 
             "exportieren", "konvertieren", "verschieben", "kopieren", "löschen",
             "pdf", "word", "excel", "email", "zugriffsrechte", "drucken", "teilen",
-            "fehler", "problem", "fehler im geschäftsgang", "hallo", "hilfe"
+            "fehler", "problem", "fehler im geschäftsgang", "hallo", "hilfe",
+            "nscale", "dms", "dokumentenmanagementsystem"
         ]
         
         # Die häufigsten direkten Fragen mit RegEx behandeln
         direct_patterns = [
-            (r'(wie|erstell|leg).*(neue|akte)', 'Akte anlegen'),
+            (r'(wie|erstell|leg).*(neue|akte)', 'Neue Akte erstellen'),
             (r'(wie|kann).*(dokument|datei).*(hinzufüg|upload|import)', 'Dokument hochladen'),
             (r'(fehler|problem).*(geschäftsgang|workflow)', 'Fehler im Geschäftsgang'),
             (r'(was|wie).*(suche|find)', 'Dokumente suchen'),
@@ -44,15 +45,45 @@ class SessionTitleGenerator:
             (r'hallo', 'Begrüßung'),
             (r'(guten\s+)?(morgen|tag|abend)', 'Begrüßung'),
             (r'hilfe', 'Hilfe angefordert'),
-            (r'starten', 'Workflow starten'),
-            (r'fehler', 'Fehlerbehebung'),
-            (r'anlegen', 'Anlegen'),
+            (r'(wie).*(start)', 'Workflow starten'),
+            (r'(fehler|problem)', 'Fehlerbehebung'),
+            (r'(anlegen|erstellen)', 'Anlegen'),
             (r'benutzer|berechtigung', 'Benutzerverwaltung'),
             (r'(pdf|dokument|datei|ablage)', 'Dokumentenverwaltung'),
+            (r'was ist nscale', 'nscale Erklärung'),
+            (r'(was|wer|wo|wie|warum|wozu|wann|welche).+nscale', 'nscale Frage'),
+            (r'(was ist|erkläre|erklär mir) (ein|das) dms', 'DMS Erklärung'),
         ]
         
-        # Prüfe zuerst direkte Muster
+        # Prüfe zuerst direkte Muster mit "Was ist..."-Fragen
         lowercase_message = clean_message.lower()
+        
+        # Spezielle Behandlung für "Was ist"-Fragen
+        what_is_pattern = r'was ist\s+(\w+)'
+        what_is_match = re.search(what_is_pattern, lowercase_message)
+        if what_is_match:
+            subject = what_is_match.group(1).title()  # Erster Buchstabe groß
+            return f"{subject} Erklärung"
+        
+        # Allgemeinere W-Fragen
+        w_question_pattern = r'^(was|wie|warum|wer|wo|wann|welche)\s+(ist|sind|kann|können|muss|müssen|soll|sollen|hat|haben)\s+(.+?)\?*$'
+        w_question_match = re.search(w_question_pattern, lowercase_message)
+        if w_question_match:
+            # Extrahiere Subjekt aus der Frage (nach dem "ist/sind/kann/etc.")
+            question_word = w_question_match.group(1).title()  # "Was", "Wie", etc.
+            subject = w_question_match.group(3).strip()
+            
+            # Begrenze Subjekt auf die ersten 3-4 Worte
+            subject_words = subject.split()[:3]
+            short_subject = ' '.join(subject_words).title()
+            
+            # Format: "Frage: [Subjekt]" oder "Was: [Subjekt]"
+            if len(short_subject) > max_length - 8:  # 8 Zeichen für "Frage: " + Platz
+                return f"Frage: {short_subject[:max_length-8]}"
+            else:
+                return f"{question_word}: {short_subject}"
+        
+        # Suche weiter nach direkten Mustern
         for pattern, title in direct_patterns:
             if re.search(pattern, lowercase_message):
                 print(f"Muster '{pattern}' gefunden in '{lowercase_message}', Titel: '{title}'")
@@ -121,6 +152,14 @@ class SessionTitleGenerator:
         sentence_parts = re.split(r'[.!?]', clean_message)
         if sentence_parts and len(sentence_parts[0]) > 0:
             clean_message = sentence_parts[0].strip()
+        
+        # Extrahiere Subjekt-Prädikat oder Subjekt aus dem gereinigten Text
+        words = clean_message.split()
+        
+        if len(words) >= 2:
+            # Subjekt-Prädikat Format (erste 2-3 Wörter)
+            title_words = words[:min(3, len(words))]
+            clean_message = ' '.join(title_words)
         
         # Kürzen auf maximale Länge
         if len(clean_message) > max_length:

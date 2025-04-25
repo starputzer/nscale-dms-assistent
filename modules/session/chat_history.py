@@ -105,7 +105,7 @@ class ChatHistoryManager:
                 
                 logger.info(f"Nachricht hinzugefügt zu Session {session_id}: Nachrichtenzähler = {message_count}")
                 
-                # Immer den Titel aktualisieren, wenn es die erste Nachricht ist
+                # WICHTIG: Immer den Titel aktualisieren, wenn es die erste Nachricht ist
                 if message_count == 1:
                     # Generiere neuen Titel basierend auf der Nachricht
                     new_title = self.title_generator.generate_title(message)
@@ -119,13 +119,12 @@ class ChatHistoryManager:
                     
                     logger.info(f"Session {session_id} - Aktueller Titel: '{current_title}', Neuer Titel: '{new_title}'")
                     
-                    # Aktualisiere den Titel, wenn es sinnvoll ist
-                    if current_title == "Neue Unterhaltung" or True:  # Immer aktualisieren
-                        cursor.execute(
-                            "UPDATE chat_sessions SET title = ? WHERE id = ?",
-                            (new_title, session_id)
-                        )
-                        logger.info(f"Session-Titel für {session_id} aktualisiert: '{new_title}'")
+                    # GEÄNDERT: Immer aktualisieren (auch wenn der Titel bereits angepasst wurde)
+                    cursor.execute(
+                        "UPDATE chat_sessions SET title = ? WHERE id = ?",
+                        (new_title, session_id)
+                    )
+                    logger.info(f"Session-Titel für {session_id} aktualisiert: '{new_title}'")
             
             conn.commit()
             conn.close()

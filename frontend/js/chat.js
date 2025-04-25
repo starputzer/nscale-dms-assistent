@@ -239,11 +239,24 @@ export function setupChat(options) {
                     messages.value[assistantIndex].message = 'Es wurden keine Daten empfangen. Bitte versuchen Sie es später erneut.';
                 }
                 
-                // Session-Liste sofort aktualisieren, um den generierten Titel anzuzeigen
+                // WICHTIG: Bei Streaming ist die Nachricht-ID nicht vorhanden,
+                // da sie vom Server beim Speichern der Nachricht generiert wird.
+                // Deshalb müssen wir die Session-Liste aktualisieren, um die
+                // aktuellste Nachricht-ID und Titel zu erhalten.
+                
+                // Session-Liste sofort aktualisieren
                 try {
                     if (loadSessions && typeof loadSessions === 'function') {
                         console.log("Lade Sitzungen nach Stream-Ende...");
                         await loadSessions();
+                        
+                        // Auf die aktuelle Session-ID fokussieren, 
+                        // um sicherzustellen, dass die ID der Assistentennachricht geladen wird
+                        console.log("Lade aktuelle Session neu, um Nachricht-IDs zu aktualisieren");
+                        // Diese Funktion müsste in app.js hinzugefügt werden
+                        if (window.reloadCurrentSession && typeof window.reloadCurrentSession === 'function') {
+                            await window.reloadCurrentSession();
+                        }
                     }
                 } catch (e) {
                     console.error("Fehler beim Laden der aktualisierten Sitzungen:", e);

@@ -251,6 +251,23 @@ createApp({
             }
         };
         
+        /**
+         * Lädt die aktuelle Session neu (für Feedback-Funktionalität)
+         */
+        const reloadCurrentSession = async () => {
+            if (currentSessionId.value) {
+                try {
+                    console.log(`Lade aktuelle Session ${currentSessionId.value} neu...`);
+                    await loadSession(currentSessionId.value);
+                    return true;
+                } catch (error) {
+                    console.error('Fehler beim Neuladen der aktuellen Session:', error);
+                    return false;
+                }
+            }
+            return false;
+        };
+
         // Verbesserte loadSessions Funktion mit automatischer Aktualisierung
         const loadSessions = async () => {
             try {
@@ -478,6 +495,9 @@ createApp({
             // MOTD laden (auch wenn nicht eingeloggt)
             loadMotd();
             
+            // Session neu laden Funktion global verfügbar machen
+            window.reloadCurrentSession = reloadCurrentSession;
+            
             // Automatische Session-Aktualisierung alle 10 Sekunden
             setInterval(async () => {
                 if (token.value && activeView.value === 'chat') {
@@ -551,6 +571,7 @@ createApp({
             deleteSession,
             formatMessage,
             scrollToBottom,
+            reloadCurrentSession,
             
             // Session persistence
             saveCurrentSessionToStorage,
