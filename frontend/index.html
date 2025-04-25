@@ -250,6 +250,12 @@
                         </div>
                         
                         <div v-else class="chat-container h-full">
+                            <!-- Nur im Entwicklungsmodus anzeigen -->
+                            <div v-if="false" style="position: fixed; bottom: 0; right: 0; background: white; padding: 10px; z-index: 9999; font-size: 12px;">
+                                <pre>MOTD Enabled: {{ motd?.enabled }}</pre>
+                                <pre>ShowInChat: {{ motd?.display?.showInChat }}</pre>
+                                <pre>Dismissed: {{ motdDismissed }}</pre>
+                            </div>
                             <!-- MOTD im Chat anzeigen -->
                             <div v-if="motd && motd.enabled && motd.display.showInChat && !motdDismissed" 
                                 class="motd-banner p-4 mx-4 mt-4 mb-2 rounded-lg relative shadow-sm"

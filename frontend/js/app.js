@@ -374,6 +374,7 @@ createApp({
                 // Scroll to bottom after messages load
                 await nextTick();
                 scrollToBottom();
+                isLoading.value = true;
             } catch (error) {
                 console.error('Error loading session:', error);
             } finally {
@@ -402,6 +403,14 @@ createApp({
             if (newView === 'admin' && userRole.value === 'admin') {
                 adminFunctions.loadSystemStats();
                 adminFunctions.loadUsers();
+            }
+        });
+
+        // Watch für Sitzungswechsel - HIER EINFÜGEN
+        watch(currentSessionId, () => {
+            if (currentSessionId.value) {
+                console.log("Session gewechselt - MOTD zurücksetzen");
+                motdDismissed.value = false;
             }
         });
         
