@@ -312,7 +312,16 @@
                                                     <i class="fas fa-comment"></i>
                                                 </button>
                                             </div>
-                                            
+                                            <div v-if="!message.is_user && message.message && message.message.includes('Quellen:')" class="source-buttons mt-2">
+                                                <button class="source-btn" @click="loadExplanation(message)">
+                                                    <i class="fas fa-info-circle"></i>
+                                                    Antwort erklären
+                                                </button>
+                                                <button class="source-btn" @click="showSourcesDialog(message)">
+                                                    <i class="fas fa-bookmark"></i>
+                                                    Quellen anzeigen
+                                                </button>
+                                            </div>
                                             <!-- NEU: Quellenreferenz-Buttons manuell hinzufügen (ohne v-html) -->
                                             <div v-if="!message.is_user && hasSourceReferences(message.message)" class="source-buttons mt-2">
                                                 <button class="source-btn" @click="loadExplanation(message)">
