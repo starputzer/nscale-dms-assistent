@@ -277,6 +277,17 @@
     color: #aaa;
 }
 
+.theme-contrast .nscale-input,
+.theme-contrast input[type="text"],
+.theme-contrast input[type="email"],
+.theme-contrast input[type="password"],
+.theme-contrast textarea {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border: 2px solid #ffeb3b !important;
+    caret-color: #ffffff !important;
+}
+
 .theme-contrast .nscale-btn-primary {
     background-color: #ffeb3b;
     color: #000000;

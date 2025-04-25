@@ -28,28 +28,28 @@ export function setupSettings(options) {
      * Setzt das Farbschema
      * @param {string} theme - 'light', 'dark' oder 'contrast'
      */
+    // In settings.js
     const setTheme = (theme) => {
+        // Debug-Ausgabe hinzufügen
+        console.log(`Setze Theme auf: ${theme}`);
+        
         // Wert aktualisieren
         currentTheme.value = theme;
         localStorage.setItem('theme', theme);
         
-        // Entferne alle Theme-Klassen
+        // Alle Theme-Klassen entfernen und explizit auflisten
         document.body.classList.remove('theme-light', 'theme-dark', 'theme-contrast');
         
-        // Füge die ausgewählte Theme-Klasse hinzu
-        if (theme !== 'light') {
-            document.body.classList.add(`theme-${theme}`);
-        }
+        // Theme-Klasse hinzufügen (für alle Themes, nicht nur für nicht-light)
+        document.body.classList.add(`theme-${theme}`);
         
-        // Spezifische Behandlung für Kontrast-Modus
+        // Kontrast-Modus Handling bleibt gleich
         if (theme === 'contrast') {
-            // Setze Fokus-Farben, falls benötigt
             document.documentElement.style.setProperty('--focus-ring-color', '#ffeb3b');
         } else {
-            // Zurücksetzen der Fokus-Farben
             document.documentElement.style.removeProperty('--focus-ring-color');
         }
-    };
+    }
     
     /**
      * Setzt die Schriftgröße
