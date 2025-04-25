@@ -378,7 +378,7 @@ async def answer_question(request: QuestionRequest, user_data: Dict[str, Any] = 
         "cached": result.get('cached', False)
     }
 
-# API-Endpunkt für das Streaming
+# Bearbeiter für /api/question/stream Endpoint
 @app.get("/api/question/stream")
 async def stream_question(
     question: str, 
@@ -426,18 +426,19 @@ async def stream_question(
             logger.error("Fehler beim Erstellen einer neuen Session")
             raise HTTPException(status_code=500, detail="Fehler beim Erstellen einer Session")
     
-    # Speichere die Benutzerfrage in der Chat-Historie
+    # Speichere die Benutzerfrage in der Chat-Historie und erhalte die Nachricht-ID
     logger.info(f"Speichere Benutzerfrage in Session {session_id}")
-    chat_history.add_message(session_id, question, is_user=True)
+    message_id = chat_history.add_message(session_id, question, is_user=True)
+    
+    if not message_id:
+        logger.error(f"Fehler beim Speichern der Benutzerfrage in Session {session_id}")
     
     # Stream die Antwort vom RAG-Engine
     try:
         logger.info(f"Starte Streaming für Frage: '{question[:50]}...'")
         response = await rag_engine.stream_answer(question, session_id)
         
-        # Speichere vollständige Antwort am Ende
-        # Anmerkung: Dies muss im Frontend in einem 'done' Event-Handler erfolgen
-        # Hier ist es nicht einfach möglich, da wir die vollständige Antwort nicht haben
+        # Speichern der vollständigen Antwort erfolgt intern in stream_answer
         
         return response
     except Exception as e:

@@ -271,7 +271,8 @@ createApp({
             isStreaming,
             eventSource,
             scrollToBottom,
-            nextTick
+            nextTick,
+            loadSessions
         });
         
         // Initialize feedback functionality

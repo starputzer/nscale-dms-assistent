@@ -13,7 +13,8 @@ export function setupChat(options) {
         isStreaming,
         eventSource,
         scrollToBottom,
-        nextTick
+        nextTick,
+        loadSessions  // Wichtig: Funktion loadSessions hinzugefügt
     } = options;
     
     let tokenCount = 0;
@@ -257,6 +258,11 @@ export function setupChat(options) {
                     messages.value[assistantIndex].message = 'Es wurden keine Daten empfangen. Bitte versuchen Sie es später erneut.';
                 }
                 
+                // Session-Liste aktualisieren, um den generierten Titel anzuzeigen
+                setTimeout(() => {
+                    loadSessions();
+                }, 500);
+                
                 cleanupStream();
             });
 
@@ -338,6 +344,11 @@ export function setupChat(options) {
                 message: response.data.answer,
                 timestamp: Date.now() / 1000
             });
+            
+            // Session-Liste aktualisieren, um den generierten Titel anzuzeigen
+            setTimeout(() => {
+                loadSessions();
+            }, 500);
             
             // Clear input
             question.value = '';

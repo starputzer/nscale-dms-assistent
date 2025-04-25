@@ -5,6 +5,7 @@ from typing import Dict, Any, List, Optional
 
 from ..core.config import Config
 from ..core.logging import LogManager
+from .title_generator import SessionTitleGenerator
 
 logger = LogManager.setup_logging()
 
@@ -13,6 +14,7 @@ class ChatHistoryManager:
     
     def __init__(self):
         self.init_db()
+        self.title_generator = SessionTitleGenerator()
     
     def init_db(self):
         """Initialisiert die Datenbank für Chat-Verläufe"""
@@ -69,8 +71,8 @@ class ChatHistoryManager:
             logger.error(f"Fehler beim Erstellen einer Chat-Session: {e}")
             return None
     
-    def add_message(self, session_id: int, message: str, is_user: bool = True) -> bool:
-        """Fügt eine Nachricht zum Chat-Verlauf hinzu"""
+    def add_message(self, session_id: int, message: str, is_user: bool = True) -> Optional[int]:
+        """Fügt eine Nachricht zum Chat-Verlauf hinzu und aktualisiert ggf. den Titel"""
         try:
             now = int(time.time())
             
@@ -83,20 +85,50 @@ class ChatHistoryManager:
                 (session_id, is_user, message, now)
             )
             
+            message_id = cursor.lastrowid
+            
             # Session-Zeitstempel aktualisieren
             cursor.execute(
                 "UPDATE chat_sessions SET updated_at = ? WHERE id = ?",
                 (now, session_id)
             )
             
+            # Wenn dies die erste Benutzernachricht ist, automatisch den Titel aktualisieren
+            if is_user:
+                # Prüfen, ob es die erste Benutzernachricht ist
+                cursor.execute(
+                    "SELECT COUNT(*) FROM chat_messages WHERE session_id = ? AND is_user = 1",
+                    (session_id,)
+                )
+                message_count = cursor.fetchone()[0]
+                
+                if message_count == 1:
+                    # Generiere neuen Titel basierend auf der Nachricht
+                    new_title = self.title_generator.generate_title(message)
+                    
+                    # Prüfe, ob der aktuelle Titel der Standardtitel ist
+                    cursor.execute(
+                        "SELECT title FROM chat_sessions WHERE id = ?",
+                        (session_id,)
+                    )
+                    current_title = cursor.fetchone()[0]
+                    
+                    # Aktualisiere den Titel, wenn er noch der Standardtitel ist
+                    if current_title == "Neue Unterhaltung":
+                        cursor.execute(
+                            "UPDATE chat_sessions SET title = ? WHERE id = ?",
+                            (new_title, session_id)
+                        )
+                        logger.info(f"Session-Titel für {session_id} automatisch aktualisiert: '{new_title}'")
+            
             conn.commit()
             conn.close()
             
-            return True
+            return message_id
         
         except Exception as e:
             logger.error(f"Fehler beim Hinzufügen einer Nachricht: {e}")
-            return False
+            return None
     
     def get_session_history(self, session_id: int) -> List[Dict[str, Any]]:
         """Gibt den Chatverlauf einer Session zurück"""
@@ -105,16 +137,17 @@ class ChatHistoryManager:
             cursor = conn.cursor()
             
             cursor.execute(
-                "SELECT is_user, message, created_at FROM chat_messages WHERE session_id = ? ORDER BY created_at",
+                "SELECT id, is_user, message, created_at FROM chat_messages WHERE session_id = ? ORDER BY created_at",
                 (session_id,)
             )
             
             messages = []
             for row in cursor.fetchall():
                 messages.append({
+                    'id': row[0],
                     'is_user': bool(row[0]),
-                    'message': row[1],
-                    'timestamp': row[2]
+                    'message': row[2],
+                    'timestamp': row[3]
                 })
             
             conn.close()
