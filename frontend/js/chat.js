@@ -191,7 +191,7 @@ export function setupChat(options) {
             // Zurücksetzen der vollständigen Antwort
             completeResponse = "";
 
-            // Haupt-Message-Handler
+            // Haupt-Message-Handler - FIX: korrekte Handhabung des 'done' Events
             eventSource.value.onmessage = (event) => {
                 try {
                     console.log(`Rohes Event erhalten: ${event.data}`);
@@ -211,85 +211,89 @@ export function setupChat(options) {
                         jsonData = jsonData.substring(6);
                     }
                     
-                    // Prüfen, ob es sich um ein done-Event handelt, was kein JSON ist
-                    if (jsonData.includes('event: done')) {
-                        console.log("'done'-Event in normaler Nachricht erkannt, ignoriere JSON-Parsing");
+                    // FIX: Prüfen, ob es sich um ein eigentliches Datenevent handelt oder ein spezielles Event
+                    if (jsonData === '[STREAM_RETRY]') {
+                        console.log("Stream wird neu gestartet...");
+                        currentStreamRetryCount++;
+                        messages.value[assistantIndex].message += `\n[Verbindung wird wiederhergestellt... Versuch ${currentStreamRetryCount}]\n`;
+                        scrollToBottom();
+                        return;
+                    }
+                    
+                    if (jsonData === '[TIMEOUT]') {
+                        console.log("Timeout beim Stream.");
+                        return;
+                    }
+                    
+                    if (jsonData.startsWith('[FINAL_TIMEOUT]') || 
+                        jsonData.startsWith('[CONN_ERROR]') || 
+                        jsonData.startsWith('[ERROR]') || 
+                        jsonData.startsWith('[UNEXPECTED_ERROR]') || 
+                        jsonData.startsWith('[NO_TOKENS]')) {
+                        console.error("Stream-Fehler:", jsonData);
+                        
+                        // Wenn die Nachricht bereits Inhalt hat, nur eine Warnung anhängen
+                        if (messages.value[assistantIndex].message.trim()) {
+                            messages.value[assistantIndex].message += "\n\n[Hinweis: Die Antwort wurde möglicherweise abgeschnitten.]";
+                        } else {
+                            // Sonst Fehlermeldung anzeigen
+                            messages.value[assistantIndex].message = "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.";
+                        }
+                        scrollToBottom();
+                        cleanupStream();
                         return;
                     }
                     
                     // Versuche JSON zu parsen
-                    const data = JSON.parse(jsonData);
-                    
-                    // Überprüfen, ob das Event eine message_id enthält
-                    if ('message_id' in data) {
-                        console.log(`Message-ID vom Server empfangen: ${data.message_id}`);
-                        currentMessageId = data.message_id;
+                    try {
+                        const data = JSON.parse(jsonData);
                         
-                        // Speichere die message_id direkt in der aktuellen Nachricht
-                        messages.value[assistantIndex].id = currentMessageId;
-                        return;
-                    }
-                    
-                    // Spezielle Kontrollnachrichten prüfen
-                    if ('response' in data) {
-                        const token = data.response;
-                        
-                        // Prüfen auf spezielle Steuerungscodes vom Backend
-                        if (token === "[STREAM_RETRY]") {
-                            console.log("Stream wird neu gestartet...");
-                            currentStreamRetryCount++;
-                            messages.value[assistantIndex].message += `\n[Verbindung wird wiederhergestellt... Versuch ${currentStreamRetryCount}]\n`;
-                            scrollToBottom();
-                            return;
-                        }
-                        
-                        if (token === "[TIMEOUT]") {
-                            console.log("Timeout beim Stream.");
-                            return;
-                        }
-                        
-                        if (token.startsWith("[FINAL_TIMEOUT]") || 
-                            token.startsWith("[CONN_ERROR]") || 
-                            token.startsWith("[ERROR]") || 
-                            token.startsWith("[UNEXPECTED_ERROR]") || 
-                            token.startsWith("[NO_TOKENS]")) {
-                            console.error("Stream-Fehler:", token);
+                        // Überprüfen, ob das Event eine message_id enthält
+                        if ('message_id' in data) {
+                            console.log(`Message-ID vom Server empfangen: ${data.message_id}`);
+                            currentMessageId = data.message_id;
                             
-                            // Wenn die Nachricht bereits Inhalt hat, nur eine Warnung anhängen
-                            if (messages.value[assistantIndex].message.trim()) {
-                                messages.value[assistantIndex].message += "\n\n[Hinweis: Die Antwort wurde möglicherweise abgeschnitten.]";
-                            } else {
-                                // Sonst Fehlermeldung anzeigen
-                                messages.value[assistantIndex].message = "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.";
-                            }
-                            scrollToBottom();
-                            cleanupStream();
+                            // Speichere die message_id direkt in der aktuellen Nachricht
+                            messages.value[assistantIndex].id = currentMessageId;
                             return;
                         }
                         
-                        // Normaler Token - für Debugging
-                        tokenCount++;
-                        console.log(`Token #${tokenCount}: "${token}"`);
+                        // Normales Token verarbeiten
+                        if ('response' in data) {
+                            const token = data.response;
+                            
+                            // Normaler Token - für Debugging
+                            tokenCount++;
+                            console.log(`Token #${tokenCount}: "${token}"`);
+                            
+                            // Token zur vollständigen Antwort hinzufügen
+                            completeResponse += token;
+                            
+                            // Aktualisiere die angezeigte Nachricht sofort
+                            messages.value[assistantIndex].message = completeResponse;
+                            scrollToBottom();
+                        } else if (data.error) {
+                            console.error("Stream-Fehler:", data.error);
+                            messages.value[assistantIndex].message = `Fehler: ${data.error}`;
+                            cleanupStream();
+                        }
+                    } catch (e) {
+                        // FIX: Dieser Teil ist wichtig - wenn kein JSON, prüfe ob es ein done-Event ist
+                        if (event.data.includes('event: done')) {
+                            console.log("'done'-Event erkannt, verarbeite es wie ein Standard-done-Event");
+                            // Manuell das done-Event auslösen
+                            doneEventHandler(event);
+                            return;
+                        }
                         
-                        // Token zur vollständigen Antwort hinzufügen
-                        completeResponse += token;
-                        
-                        // Aktualisiere die angezeigte Nachricht sofort
-                        messages.value[assistantIndex].message = completeResponse;
-                        scrollToBottom();
-                    } else if (data.error) {
-                        console.error("Stream-Fehler:", data.error);
-                        messages.value[assistantIndex].message = `Fehler: ${data.error}`;
-                        cleanupStream();
+                        console.error("JSON-Parsing-Fehler:", e, "Rohdaten:", event.data);
                     }
                 } catch (e) {
-                    console.error("JSON-Parsing-Fehler:", e, "Rohdaten:", event.data);
-                    
-                    // Hier keine Fehlerbehandlung für 'done'-Event, da wir das bereits oben abfangen
+                    console.error("Allgemeiner Fehler bei Event-Verarbeitung:", e);
                 }
             };
 
-            // Spezieller Handler für 'done' Events - nun als benannte Funktion
+            // FIX: Spezieller Handler für 'done' Events mit korrektem Listener
             eventSource.value.addEventListener('done', doneEventHandler);
 
             // Error-Handler
