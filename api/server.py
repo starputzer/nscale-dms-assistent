@@ -10,7 +10,6 @@ import uuid
 import json
 from pathlib import Path
 from typing import Dict, Any, Optional, List
-from modules.core.motd_manager import MOTDManager
 from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, Request
 from fastapi.responses import JSONResponse, FileResponse
 from sse_starlette.sse import EventSourceResponse
@@ -30,6 +29,21 @@ from modules.auth.user_model import UserManager
 from modules.rag.engine import RAGEngine
 from modules.session.chat_history import ChatHistoryManager
 from modules.feedback.feedback_manager import FeedbackManager
+from modules.core.motd_manager import MOTDManager
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+    print("Umgebungsvariablen aus .env geladen")
+    import os
+    print(f"ADMIN_EMAILS-Wert: {os.getenv('ADMIN_EMAILS')}")
+except ImportError:
+    print("python-dotenv nicht installiert")
+
+motd_manager = MOTDManager()
+logger = LogManager.setup_logging()
+feedback_manager = FeedbackManager()
+app = FastAPI(title="nscale DMS Assistent API")
 
 # Allgemeiner Exception-Handler für bessere Fehlerdiagnose
 @app.exception_handler(Exception)
@@ -49,20 +63,6 @@ class NoCacheMiddleware(BaseHTTPMiddleware):
             response.headers["Pragma"] = "no-cache"
             response.headers["Expires"] = "0"
         return response
-
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-    print("Umgebungsvariablen aus .env geladen")
-    import os
-    print(f"ADMIN_EMAILS-Wert: {os.getenv('ADMIN_EMAILS')}")
-except ImportError:
-    print("python-dotenv nicht installiert")
-
-motd_manager = MOTDManager()
-logger = LogManager.setup_logging()
-feedback_manager = FeedbackManager()
-app = FastAPI(title="nscale DMS Assistent API")
 
 # Füge die No-Cache-Middleware hinzu (vor der CORS-Middleware)
 app.add_middleware(NoCacheMiddleware)
