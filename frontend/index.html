@@ -150,14 +150,15 @@
                             <i class="fas fa-plus mr-2"></i>
                             Neue Unterhaltung
                         </button>
-                        
-                        <!-- NEU: Barrierefreiheitsbutton, für alle Benutzerrollen sichtbar -->
+
+                        <!-- NEU: Admin-Konfigurationsbutton, nur für Admins sichtbar -->
                         <button 
-                            @click="toggleAccessibilitySettings" 
+                            v-if="userRole === 'admin'"
+                            @click="toggleAdminView" 
                             class="nscale-btn-secondary flex items-center"
-                            title="Barrierefreiheitseinstellungen">
-                            <i class="fas fa-universal-access mr-2"></i>
-                            <span class="hidden md:inline">Barrierefreiheit</span>
+                            title="Systemadministration">
+                            <i class="fas fa-cog mr-2"></i>
+                            <span class="hidden md:inline">Administration</span>
                         </button>
 
                         <button 
@@ -646,9 +647,7 @@
                     
                     <!-- Navigation Toggle Button -->
                     <button @click="toggleView" class="floating-action-button">
-                        <i v-if="activeView === 'chat' && userRole === 'admin'" class="fas fa-cog"></i>
-                        <i v-else-if="activeView === 'admin'" class="fas fa-comment"></i>
-                        <i v-else class="fas fa-cog"></i>
+                        <i class="fas fa-universal-access"></i>
                     </button>
                 </main>
             </div>

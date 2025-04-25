@@ -258,35 +258,6 @@ createApp({
             }
         };
         
-        // UI-Navigation Funktionen
-        const toggleView = () => {
-            if (userRole.value === 'admin') {
-                // Wechsel zwischen Chat und Admin für Admins
-                activeView.value = activeView.value === 'chat' ? 'admin' : 'chat';
-            } else {
-                // Für normale Benutzer nur Settings öffnen
-                toggleSettings();
-            }
-        };
-        
-        // NEU: Barrierefreiheitseinstellungen für alle Benutzer zugänglich machen
-        const toggleAccessibilitySettings = () => {
-            // Öffnet die Einstellungen unabhängig von der Benutzerrolle
-            // Greife direkt auf die toggleSettings-Funktion zu
-            toggleSettings();
-        };
-        
-        // Hilfsfunktion für admin Tab-Titel
-        const getAdminTabTitle = () => {
-            switch(adminFunctions.adminTab.value) {
-                case 'users': return 'Benutzerverwaltung';
-                case 'system': return 'Systemüberwachung';
-                case 'feedback': return 'Feedback-Analyse';
-                case 'motd': return 'Message of the Day';
-                default: return 'Administration';
-            }
-        };
-        
         // Initialize chat functionality
         const chatFunctions = setupChat({
             token,
@@ -323,6 +294,32 @@ createApp({
         
         // Extrahiere die toggleSettings-Funktion aus dem settingsFunction-Objekt
         const { toggleSettings } = settingsFunction;
+        
+        // UI-Navigation Funktionen
+        // Aktualisierte toggleView Funktion - Öffnet Barrierefreiheitseinstellungen für alle Benutzer
+        const toggleView = () => {
+            // Das Zahnrad-Symbol unten öffnet für alle Benutzer die Barrierefreiheitseinstellungen
+            toggleSettings();
+        };
+
+        // Neue Funktion - Wechselt für Admins zum Admin-Bereich
+        const toggleAdminView = () => {
+            if (userRole.value === 'admin') {
+                // Wechsel zwischen Chat und Admin
+                activeView.value = activeView.value === 'chat' ? 'admin' : 'chat';
+            }
+        };
+        
+        // Hilfsfunktion für admin Tab-Titel
+        const getAdminTabTitle = () => {
+            switch(adminFunctions.adminTab.value) {
+                case 'users': return 'Benutzerverwaltung';
+                case 'system': return 'Systemüberwachung';
+                case 'feedback': return 'Feedback-Analyse';
+                case 'motd': return 'Message of the Day';
+                default: return 'Administration';
+            }
+        };
         
         // Laden der MOTD
         const loadMotd = async () => {
@@ -495,10 +492,10 @@ createApp({
             userRole,
             getAdminTabTitle,
             toggleView,
+            toggleAdminView, // NEU: Hinzugefügt für Admin-Bereich Toggle
             
             // Settings functionality
             ...settingsFunction,
-            toggleAccessibilitySettings, // NEU: Barrierefreiheitsfunktion hinzufügen
             
             // MOTD
             motd,
