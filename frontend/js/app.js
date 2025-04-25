@@ -178,7 +178,8 @@ createApp({
         const loadSessions = async () => {
             try {
                 const response = await axios.get('/api/sessions');
-                sessions.value = response.data.sessions;
+                sessions.value = [...response.data.sessions];
+                console.log("Sessions neu geladen:", sessions.value);
             } catch (error) {
                 console.error('Error loading sessions:', error);
             }
@@ -355,12 +356,19 @@ createApp({
         // Session handling with feedback support
         const loadSession = async (sessionId) => {
             try {
-                // MOTD für jede geladene Session zurücksetzen
-                motdDismissed.value = false;
                 isLoading.value = true;
                 const response = await axios.get(`/api/session/${sessionId}`);
                 currentSessionId.value = sessionId;
                 messages.value = response.data.messages;
+                
+                // MOTD-Logik: Nur in leeren Sessions anzeigen
+                if (messages.value.length > 0) {
+                    // Wenn bereits Nachrichten existieren, MOTD ausblenden
+                    motdDismissed.value = true;
+                } else {
+                    // Nur in neuen/leeren Sessions anzeigen
+                    motdDismissed.value = false;
+                }
                 
                 // Feedback für jede Assistenten-Nachricht laden
                 for (const message of messages.value) {
@@ -375,7 +383,6 @@ createApp({
                 // Scroll to bottom after messages load
                 await nextTick();
                 scrollToBottom();
-                isLoading.value = true;
             } catch (error) {
                 console.error('Error loading session:', error);
             } finally {

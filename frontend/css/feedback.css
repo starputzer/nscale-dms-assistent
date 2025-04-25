@@ -22,14 +22,18 @@
     transition: background-color 0.2s;
 }
 
+/* Wichtige Änderung: Hover nur für den jeweiligen Button */
 .feedback-button:hover {
+    color: rgba(0, 0, 0, 0.8);
     background-color: rgba(0, 0, 0, 0.05);
 }
 
+/* Ausgewählter positiver Button */
 .feedback-button.selected {
     color: var(--nscale-green);
 }
 
+/* Ausgewählter negativer Button */
 .feedback-button.selected.negative {
     color: #ef4444;
 }

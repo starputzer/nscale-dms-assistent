@@ -111,7 +111,7 @@ export function setupChat(options) {
             console.warn("Leere Frage oder keine Session ausgewählt");
             return;
         }
-
+        motdDismissed.value = true;
         try {
             console.log(`Sende Frage: "${question.value}"`);
             isLoading.value = true;
@@ -248,7 +248,7 @@ export function setupChat(options) {
             };
 
             // Spezieller Handler für 'done' Events
-            eventSource.value.addEventListener('done', (event) => {
+            eventSource.value.addEventListener('done', async (event) => {  // async hinzugefügt
                 console.log("DONE Event empfangen, Stream beendet");
                 successfulCompletion = true;
                 
@@ -261,7 +261,17 @@ export function setupChat(options) {
                 try {
                     if (loadSessions && typeof loadSessions === 'function') {
                         console.log("Lade Sitzungen nach Stream-Ende...");
-                        loadSessions();
+                        await loadSessions();  // await hinzugefügt
+                        
+                        // Füge einen kleinen Delay hinzu, um sicherzustellen, dass Vue die Änderungen rendert
+                        await new Promise(resolve => setTimeout(resolve, 50));
+                        
+                        // Erzwinge ein Rerendering der Sitzungsliste
+                        if (Array.isArray(sessions.value)) {
+                            console.log("Erzwinge Aktualisierung der Sitzungsliste...");
+                            // Erstelle eine Kopie des Arrays, um eine reaktive Änderung auszulösen
+                            sessions.value = [...sessions.value];
+                        }
                     }
                 } catch (e) {
                     console.error("Fehler beim Laden der aktualisierten Sitzungen:", e);
