@@ -102,6 +102,8 @@ class ChatHistoryManager:
                 )
                 message_count = cursor.fetchone()[0]
                 
+                logger.info(f"Nachricht hinzugefügt zu Session {session_id}: Nachrichtenzähler = {message_count}")
+                
                 if message_count == 1:
                     # Generiere neuen Titel basierend auf der Nachricht
                     new_title = self.title_generator.generate_title(message)
@@ -112,6 +114,8 @@ class ChatHistoryManager:
                         (session_id,)
                     )
                     current_title = cursor.fetchone()[0]
+                    
+                    logger.info(f"Session {session_id} - Aktueller Titel: '{current_title}', Neuer Titel: '{new_title}'")
                     
                     # Aktualisiere den Titel, wenn er noch der Standardtitel ist
                     if current_title == "Neue Unterhaltung":
@@ -125,6 +129,10 @@ class ChatHistoryManager:
             conn.close()
             
             return message_id
+    
+        except Exception as e:
+            logger.error(f"Fehler beim Hinzufügen einer Nachricht: {e}")
+            return None
         
         except Exception as e:
             logger.error(f"Fehler beim Hinzufügen einer Nachricht: {e}")
