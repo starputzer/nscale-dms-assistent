@@ -312,10 +312,16 @@
                                                 </button>
                                             </div>
                                             
-                                            <!-- NEU: Quellenreferenz-Buttons nur für Assistenten-Nachrichten mit Quellen -->
-                                            <div v-if="!message.is_user && hasSourceReferences(message.message)" 
-                                                 v-html="renderSourceButtons(message)" 
-                                                 class="source-buttons-container">
+                                            <!-- NEU: Quellenreferenz-Buttons manuell hinzufügen (ohne v-html) -->
+                                            <div v-if="!message.is_user && hasSourceReferences(message.message)" class="source-buttons mt-2">
+                                                <button class="source-btn" @click="loadExplanation(message)">
+                                                    <i class="fas fa-info-circle"></i>
+                                                    Antwort erklären
+                                                </button>
+                                                <button class="source-btn" @click="showSourcesDialog(message)">
+                                                    <i class="fas fa-bookmark"></i>
+                                                    Quellen anzeigen ({{ extractSourceReferences(message.message).length }})
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -829,7 +835,63 @@
         </div>
         
         <!-- NEU: Quellenerklärungs-Dialog -->
-        <div v-html="renderExplanationDialog()"></div>
+        <div v-if="showExplanationDialog" class="modal-overlay">
+            <div class="modal-container max-w-3xl">
+                <div class="modal-header">
+                    <h3 class="modal-title">Antwort-Erklärung</h3>
+                    <button @click="closeExplanationDialog" class="modal-close">×</button>
+                </div>
+                <div class="modal-body overflow-y-auto max-h-[70vh]">
+                    <div v-if="explanationLoading" class="p-4 text-center">
+                        <div class="loader mx-auto mb-3"></div>
+                        <p>Erklärung wird geladen...</p>
+                    </div>
+                    <div v-else-if="currentExplanation" class="p-6">
+                        <h2 class="text-xl font-semibold mb-4">Antwort-Erklärung</h2>
+                        
+                        <div class="mb-4">
+                            <h3 class="font-medium text-sm text-gray-600">Ursprüngliche Frage:</h3>
+                            <p class="p-2 bg-gray-50 rounded">{{ currentExplanation.original_question }}</p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h3 class="font-medium text-sm text-gray-600">Verwendete Quellen:</h3>
+                            <div class="p-3 bg-gray-50 rounded">
+                                <div v-if="currentExplanation.source_references && currentExplanation.source_references.length" 
+                                     v-for="(source, index) in currentExplanation.source_references" 
+                                     :key="source.source_id"
+                                     class="mb-2 pb-2" 
+                                     :class="index < currentExplanation.source_references.length - 1 ? 'border-b border-gray-200' : ''">
+                                    <div class="flex justify-between">
+                                        <span class="font-medium">{{ source.source_id }}</span>
+                                        <span class="text-sm text-gray-500">{{ source.usage_count || 0 }}× verwendet</span>
+                                    </div>
+                                    <p class="text-sm">Datei: {{ source.file }}</p>
+                                    <p v-if="source.title" class="text-sm">Abschnitt: {{ source.title }}</p>
+                                    <div class="mt-1 text-xs bg-white p-2 rounded border border-gray-200">
+                                        {{ source.preview || 'Keine Vorschau verfügbar' }}
+                                    </div>
+                                </div>
+                                <p v-else class="text-sm text-gray-500">Keine Quellen gefunden.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h3 class="font-medium text-sm text-gray-600">Erläuterung:</h3>
+                            <div class="p-3 bg-gray-50 rounded whitespace-pre-line">
+                                {{ currentExplanation.explanation_text || 'Keine Erläuterung verfügbar.' }}
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else class="p-4 text-center">
+                        <p>Keine Erklärungsdaten verfügbar.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button @click="closeExplanationDialog" class="nscale-btn-secondary">Schließen</button>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- CSS Force-Reload Script -->
