@@ -85,31 +85,13 @@ class OllamaClient:
                     
                     try:
                         logger.info(f"Sende Anfrage an {Config.OLLAMA_URL}/api/generate (Versuch {retry+1}/{connection_retries})")
-                        
-                        resp = None
-                        stream_timeout = False
-                        
-                        try:
-                            # Implementiere den Timeout auf Anfrage-Ebene
-                            async def make_request():
-                                nonlocal resp
-                                resp = await client_session.post(
-                                    f"{Config.OLLAMA_URL}/api/generate",
-                                    json=payload,
-                                    timeout=timeout,
-                                    headers={"Content-Type": "application/json"}
-                                )
-                                return resp
+                        async with client_session.post(
+                            f"{Config.OLLAMA_URL}/api/generate",
+                            json=payload,
+                            timeout=timeout,
+                            headers={"Content-Type": "application/json"}
+                        ) as resp:
                             
-                            # Setze einen Timeout für die Anfrage
-                            await asyncio.wait_for(make_request(), timeout=Config.LLM_TIMEOUT)
-                            
-                            if resp is None:
-                                # Sollte nicht passieren, aber zur Sicherheit
-                                logger.error("Keine Antwort erhalten")
-                                yield "[ERROR] Keine Antwort vom Server erhalten"
-                                continue
-                                
                             logger.info(f"Ollama-Server-Antwort: Status {resp.status}")
                             
                             if resp.status != 200:
@@ -124,25 +106,27 @@ class OllamaClient:
                             
                             # Verarbeite den Stream mit optimiertem Buffer-Management
                             buffer = b""  # Byte-Buffer für fragmentierte Nachrichten
+                            stream_done = False  # Flag, ob der Stream abgeschlossen ist
+                            stream_timeout = False  # Flag für Timeout
                             
-                            # Timeout für den Stream-Verarbeitungsprozess
-                            async def process_stream():
-                                nonlocal buffer, token_count
-                                async for chunk in resp.content.iter_chunks():
-                                    line_data, end_of_chunk = chunk
-                                    if not line_data:
-                                        continue
+                            try:
+                                # Verwende asyncio.wait_for mit einer einfachen while-Schleife
+                                async def process_chunk():
+                                    nonlocal buffer, token_count, stream_done
+                                    chunk = await resp.content.read(1024)
+                                    if not chunk:
+                                        return False  # Stream beendet
                                     
                                     # Füge zum Buffer hinzu
-                                    buffer += line_data
+                                    buffer += chunk
                                     
                                     # Verarbeite komplette Zeilen im Buffer
                                     while b'\n' in buffer:
+                                        line, buffer = buffer.split(b'\n', 1)
+                                        if not line:
+                                            continue
+                                        
                                         try:
-                                            line, buffer = buffer.split(b'\n', 1)
-                                            if not line:
-                                                continue
-                                            
                                             line_text = line.decode('utf-8').strip()
                                             # Logging nur für erste paar Tokens oder periodisch
                                             if token_count < 5 or token_count % 50 == 0:
@@ -157,23 +141,16 @@ class OllamaClient:
                                                 
                                                 # Token ausgeben
                                                 yield token
-                                                
-                                                # Kleine Pause für gleichmäßigeren Stream
-                                                if token_count % 5 == 0:  # Nur alle 5 Tokens pausieren
-                                                    await asyncio.sleep(0.01)
                                             
+                                            # Wenn Stream abgeschlossen ist
                                             if data.get('done', False):
                                                 duration = time.time() - start_time
                                                 tokens_per_second = token_count / duration if duration > 0 else 0
                                                 logger.info(f"Stream abgeschlossen in {duration:.2f}s mit {token_count} Tokens "
                                                         f"({tokens_per_second:.1f} Tokens/s)")
                                                 
-                                                # Stream-Verbindung schließen
-                                                if stream_id in self._active_streams:
-                                                    await self._active_streams[stream_id].close()
-                                                    del self._active_streams[stream_id]
-                                                
-                                                return True  # Stream erfolgreich abgeschlossen
+                                                stream_done = True
+                                                return False  # Stream beendet
                                         
                                         except json.JSONDecodeError as e:
                                             logger.warning(f"JSON-Fehler beim Verarbeiten: {e}, Daten: {line[:100]}")
@@ -181,31 +158,36 @@ class OllamaClient:
                                         except Exception as e:
                                             logger.error(f"Fehler beim Verarbeiten: {e}")
                                             yield f"[ERROR] {str(e)}"
+                                    
+                                    return True  # Weiterlesen
                                 
-                                return False  # Stream nicht abgeschlossen (sollte nicht erreicht werden)
-                            
-                            # Stream-Verarbeitung mit Timeout
-                            try:
-                                # Iterator-basierte Verarbeitung für Python 3.9
-                                stream_gen = process_stream().__aiter__()
-                                
+                                # Chunk-Verarbeitung mit Timeout
                                 while True:
                                     try:
-                                        # Setze einen Timeout für jeden Token-Abruf
-                                        token = await asyncio.wait_for(stream_gen.__anext__(), timeout=5.0)
-                                        yield token
-                                    except StopAsyncIteration:
-                                        # Generator ist fertig
+                                        should_continue = await asyncio.wait_for(
+                                            process_chunk(), 
+                                            timeout=5.0  # Timeout für jeden Chunk
+                                        )
+                                        
+                                        if not should_continue or stream_done:
+                                            break
+                                            
+                                    except asyncio.TimeoutError:
+                                        logger.warning("Timeout beim Lesen eines Chunks, versuche weiter...")
+                                        continue  # Versuche weiter zu lesen
+                                    except Exception as e:
+                                        logger.error(f"Fehler beim Lesen: {e}")
                                         break
                                 
-                                # Wenn wir hierher kommen, war die Stream-Verarbeitung erfolgreich
-                                if stream_id in self._active_streams:
-                                    await self._active_streams[stream_id].close()
-                                    del self._active_streams[stream_id]
-                                return  # Stream war erfolgreich, verlasse die äußere Funktion
+                                # Wenn der Stream ordnungsgemäß abgeschlossen wurde
+                                if stream_done:
+                                    if stream_id in self._active_streams:
+                                        await self._active_streams[stream_id].close()
+                                        del self._active_streams[stream_id]
+                                    return  # Erfolgreich abgeschlossen, verlasse die äußere Funktion
                                 
                             except asyncio.TimeoutError:
-                                logger.error(f"Timeout während der Stream-Verarbeitung (Versuch {retry+1})")
+                                logger.error(f"Timeout bei der Stream-Verarbeitung (Versuch {retry+1})")
                                 stream_timeout = True
                                 yield "[TIMEOUT]"
                                 
@@ -221,47 +203,30 @@ class OllamaClient:
                                     await asyncio.sleep(1.0)
                                     continue  # Zum nächsten Versuch
                             
-                        except asyncio.TimeoutError:
-                            logger.error(f"Timeout bei der anfänglichen Verbindung (Versuch {retry+1})")
-                            stream_timeout = True
-                            yield "[CONN_TIMEOUT]"
+                            # Verarbeite den letzten Buffer-Inhalt, falls vorhanden
+                            if not stream_timeout and buffer:
+                                try:
+                                    line_text = buffer.decode('utf-8').strip()
+                                    if line_text:
+                                        data = json.loads(line_text)
+                                        if 'response' in data:
+                                            token = data['response']
+                                            token_count += 1
+                                            yield token
+                                except Exception:
+                                    pass  # Ignoriere Fehler im letzten Buffer
                             
-                            # Stream-Verbindung schließen
-                            if stream_id in self._active_streams:
-                                await self._active_streams[stream_id].close()
-                                del self._active_streams[stream_id]
+                            # Prüfen, ob überhaupt Tokens generiert wurden
+                            if token_count == 0 and not stream_timeout:
+                                logger.warning("Keine Tokens vom Ollama-Server erhalten!")
+                                yield "[NO_TOKENS] Keine Antwort vom Sprachmodell erhalten. Bitte versuchen Sie es später erneut."
                             
-                            if retry == connection_retries - 1:  # Letzter Versuch
-                                yield "[FINAL_TIMEOUT] Zeitüberschreitung bei der anfänglichen Verbindung"
-                                return
-                            else:
-                                await asyncio.sleep(1.0)
-                                continue  # Zum nächsten Versuch
-                            
-                        # Verarbeite den letzten Buffer-Inhalt, falls vorhanden
-                        if not stream_timeout and buffer:
-                            try:
-                                line_text = buffer.decode('utf-8').strip()
-                                if line_text:
-                                    data = json.loads(line_text)
-                                    if 'response' in data:
-                                        token = data['response']
-                                        token_count += 1
-                                        yield token
-                            except Exception:
-                                pass  # Ignoriere Fehler im letzten Buffer
-                        
-                        # Prüfen, ob überhaupt Tokens generiert wurden
-                        if token_count == 0 and not stream_timeout:
-                            logger.warning("Keine Tokens vom Ollama-Server erhalten!")
-                            yield "[NO_TOKENS] Keine Antwort vom Sprachmodell erhalten. Bitte versuchen Sie es später erneut."
-                        
-                        # Bei erfolgreicher Verarbeitung (ohne Timeout) den Stream beenden
-                        if not stream_timeout:
-                            if stream_id in self._active_streams:
-                                await self._active_streams[stream_id].close()
-                                del self._active_streams[stream_id]
-                            return  # Erfolgreich abgeschlossen - keine weiteren Versuche nötig
+                            # Bei erfolgreicher Verarbeitung den Stream beenden
+                            if not stream_timeout:
+                                if stream_id in self._active_streams:
+                                    await self._active_streams[stream_id].close()
+                                    del self._active_streams[stream_id]
+                                return  # Erfolgreich abgeschlossen - keine weiteren Versuche nötig
                     
                     except aiohttp.ClientError as e:
                         logger.error(f"Verbindungsfehler zu Ollama (Versuch {retry+1}): {e}")
