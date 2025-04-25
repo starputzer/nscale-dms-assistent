@@ -16,6 +16,7 @@
     <link href="/static/css/settings.css" rel="stylesheet">
     <link href="/static/css/themes.css" rel="stylesheet">
     <link href="/static/css/improved-ui.css" rel="stylesheet">
+    <!-- Zusätzliche CSS für Quellenreferenzen (wird dynamisch eingefügt) -->
 </head>
 <body class="min-h-screen bg-gray-50">
     <div id="app" class="h-screen flex flex-col">
@@ -283,7 +284,9 @@
                                     <!-- Benutzer- oder Assistenten-Nachricht mit Wrapper -->
                                     <div v-else :class="['message-wrapper', message.is_user ? 'user-message' : 'assistant-message']">
                                         <div :class="[message.is_user ? 'nscale-message-user' : 'nscale-message-assistant']">
-                                            <div v-html="formatMessage(message.message)" class="prose"></div>
+                                            <!-- NEU: Verwende sourceReferences.formatMessageWithSourceHighlighting für Assistenten-Nachrichten -->
+                                            <div v-if="message.is_user" v-html="formatMessage(message.message)" class="prose"></div>
+                                            <div v-else v-html="formatMessageWithSources(message.message)" class="prose"></div>
                                             
                                             <!-- Feedback-Buttons nur für Assistenten-Nachrichten -->
                                             <div v-if="!message.is_user" class="feedback-buttons">
@@ -307,6 +310,12 @@
                                                     title="Kommentar hinzufügen">
                                                     <i class="fas fa-comment"></i>
                                                 </button>
+                                            </div>
+                                            
+                                            <!-- NEU: Quellenreferenz-Buttons nur für Assistenten-Nachrichten mit Quellen -->
+                                            <div v-if="!message.is_user && hasSourceReferences(message.message)" 
+                                                 v-html="renderSourceButtons(message)" 
+                                                 class="source-buttons-container">
                                             </div>
                                         </div>
                                     </div>
@@ -818,6 +827,9 @@
                 </div>
             </div>
         </div>
+        
+        <!-- NEU: Quellenerklärungs-Dialog -->
+        <div v-html="renderExplanationDialog()"></div>
     </div>
     
     <!-- CSS Force-Reload Script -->
@@ -861,6 +873,7 @@
     <script src="/static/js/feedback.js" type="module"></script>
     <script src="/static/js/admin.js" type="module"></script>
     <script src="/static/js/settings.js" type="module"></script>
+    <script src="/static/js/source-references.js" type="module"></script>
     <script src="/static/js/app.js" type="module"></script>
 </body>
 </html>

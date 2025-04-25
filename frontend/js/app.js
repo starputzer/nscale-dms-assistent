@@ -2,6 +2,7 @@ import { setupChat } from './chat.js';
 import { setupFeedback } from './feedback.js';
 import { setupAdmin } from './admin.js';
 import { setupSettings } from './settings.js';
+import { setupSourceReferences } from './source-references.js';
 
 const { createApp, ref, onMounted, watch, nextTick } = Vue;
 
@@ -39,7 +40,7 @@ createApp({
         
         // MOTD state
         const motd = ref(null);
-        const motdDismissed = ref(false);
+        const motdDismissed = ref(localStorage.getItem('motdDismissed') === 'true' || false);
 
         // MOTD Farbpaletten
         const colorThemes = {
@@ -226,9 +227,11 @@ createApp({
                 if (messages.value && messages.value.length > 0) {
                     console.log(`Session ${sessionId} hat ${messages.value.length} Nachrichten - MOTD wird ausgeblendet`);
                     motdDismissed.value = true;
+                    localStorage.setItem('motdDismissed', 'true');
                 } else {
                     console.log(`Session ${sessionId} hat keine Nachrichten - MOTD wird angezeigt`);
                     motdDismissed.value = false;
+                    localStorage.removeItem('motdDismissed');
                 }
                 
                 // Feedback für jede Assistenten-Nachricht laden
@@ -287,6 +290,7 @@ createApp({
             try {
                 // MOTD für neue Unterhaltungen zurücksetzen
                 motdDismissed.value = false;
+                localStorage.removeItem('motdDismissed');
 
                 isLoading.value = true;
                 const response = await axios.post('/api/session', {
@@ -412,6 +416,7 @@ createApp({
         // MOTD-Funktionen
         const dismissMotd = () => {
             motdDismissed.value = true;
+            localStorage.setItem('motdDismissed', 'true');
         };
         
         const formatMotdContent = (content) => {
@@ -446,7 +451,7 @@ createApp({
             scrollToBottom,
             nextTick,
             loadSessions,
-            motdDismissed  // Übergebe motdDismissed an setupChat
+            motdDismissed
         });
         
         // Initialize feedback functionality
@@ -468,6 +473,13 @@ createApp({
         // Initialize settings functionality
         const settingsFunction = setupSettings({
             token
+        });
+        
+        // Initialize source references functionality
+        const sourceReferences = setupSourceReferences({
+            token,
+            messages,
+            isLoading
         });
         
         // Extrahiere die toggleSettings-Funktion aus dem settingsFunction-Objekt
@@ -523,6 +535,21 @@ createApp({
                 }
             } catch (error) {
                 console.error('Fehler beim Laden der MOTD:', error);
+            }
+        };
+        
+        // Neue Funktion für die Formatierung von Nachrichten mit Quellenhervorhebung
+        const formatMessageWithSources = (text) => {
+            if (!text) return '';
+            
+            // Prüfen, ob die Nachricht Quellenverweise enthält
+            if (sourceReferences.hasSourceReferences(text)) {
+                // Wenn ja, mit Quellenhervorhebung formatieren
+                const formattedText = sourceReferences.formatMessageWithSourceHighlighting(text);
+                return marked.parse(formattedText);
+            } else {
+                // Wenn nicht, normale Formatierung verwenden
+                return formatMessage(text);
             }
         };
         
@@ -667,6 +694,10 @@ createApp({
             
             // Settings functionality
             ...settingsFunction,
+            
+            // Quellenreferenzen
+            ...sourceReferences,
+            formatMessageWithSources,
             
             // MOTD
             motd,
