@@ -1,6 +1,6 @@
-/* Verbesserte Einstellungen-Komponente Styles */
+/* Vollständig überarbeitete Einstellungen-Komponente */
 
-/* Einstellungspanel */
+/* Einstellungspanel - Grundlayout */
 .settings-panel {
     position: fixed;
     top: 0;
@@ -8,11 +8,12 @@
     bottom: 0;
     width: 360px;
     background: white;
-    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.2);
     z-index: 1000;
     display: flex;
     flex-direction: column;
     transition: transform 0.3s ease-in-out;
+    border-left: 1px solid #e2e8f0;
 }
 
 .settings-panel-header {
@@ -20,25 +21,33 @@
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid #eaeaea;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .settings-panel-title {
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--nscale-dark-gray);
+    color: var(--nscale-dark-gray, #333333);
 }
 
 .settings-panel-close {
     background: transparent;
     border: none;
-    color: var(--nscale-dark-gray);
+    color: var(--nscale-dark-gray, #333333);
     cursor: pointer;
-    font-size: 1.5rem;
+    font-size: 1.75rem;
+    line-height: 1;
     padding: 0.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.2s;
+    border-radius: 50%;
+}
+
+.settings-panel-close:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    transform: rotate(90deg);
 }
 
 .settings-panel-content {
@@ -49,147 +58,182 @@
 
 /* Einstellungssektionen */
 .settings-section {
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.settings-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
 }
 
 .settings-section-title {
     font-size: 1.1rem;
-    font-weight: 500;
-    margin-bottom: 1rem;
-    color: var(--nscale-dark-gray);
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    color: var(--nscale-dark-gray, #333333);
+    position: relative;
+    padding-left: 0.5rem;
+}
+
+.settings-section-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background-color: var(--nscale-green, #00a550);
+    border-radius: 3px;
 }
 
 .settings-option {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.75rem;
+}
+
+.settings-option:last-child {
+    margin-bottom: 0;
 }
 
 .settings-option-label {
     display: block;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     font-weight: 500;
-    margin-bottom: 0.75rem;
-    color: var(--nscale-dark-gray);
+    margin-bottom: 0.85rem;
+    color: var(--nscale-dark-gray, #333333);
 }
 
 /* Farbschema-Auswahloptionen */
-.theme-options {
+.settings-option-group {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    gap: 0.75rem;
 }
 
-.theme-option {
-    border: 2px solid transparent;
+/* Bessere Buttons für Einstellungen */
+.settings-button {
+    border: 2px solid #e2e8f0;
     border-radius: 8px;
-    padding: 10px;
+    padding: 0.75rem;
     text-align: center;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
+    position: relative;
+    background-color: white;
+    font-weight: 500;
+    color: #4a5568;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.theme-option:hover {
-    transform: translateY(-3px);
+.settings-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border-color: #cbd5e0;
 }
 
-.theme-option.selected {
-    border-color: var(--nscale-green);
+.settings-button.active {
+    border-color: var(--nscale-green, #00a550);
+    color: var(--nscale-green, #00a550);
+    background-color: rgba(0, 165, 80, 0.05);
 }
 
-.theme-icon {
-    width: 40px;
-    height: 40px;
+.settings-button.active::after {
+    content: '✓';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
+    background-color: var(--nscale-green, #00a550);
+    color: white;
+    font-size: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 8px;
 }
 
-.theme-icon.light {
-    background-color: #f9f9f9;
-    color: #ffc107;
-    border: 1px solid #eaeaea;
-}
-
-.theme-icon.dark {
-    background-color: #292929;
-    color: #aaaaaa;
-    border: 1px solid #444444;
-}
-
-.theme-icon.contrast {
-    background-color: #000000;
-    color: #ffeb3b;
-    border: 1px solid #ffeb3b;
-}
-
-.theme-label {
-    font-size: 0.875rem;
-}
-
-/* Schriftgrößen-Auswahloptionen */
-.font-size-options {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-}
-
-.font-size-option {
-    border: 2px solid transparent;
-    border-radius: 8px;
-    padding: 10px;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-}
-
-.font-size-option:hover {
-    background-color: var(--nscale-light-green);
-}
-
-.font-size-option.selected {
-    border-color: var(--nscale-green);
-}
-
-.font-size-label.small {
-    font-size: 0.875rem;
-}
-
-.font-size-label.medium {
+.settings-button i {
+    margin-right: 0.5rem;
     font-size: 1rem;
 }
 
-.font-size-label.large {
-    font-size: 1.125rem;
+/* Spezifische Buttons für Farbschema */
+.settings-button.theme-button {
+    flex-direction: column;
+    padding: 1.25rem 0.75rem;
+    gap: 0.5rem;
+}
+
+.settings-button.theme-button i {
+    margin-right: 0;
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Spezifische Buttons für Schriftgröße */
+.settings-button.size-button {
+    padding: 0.75rem 0.5rem;
+}
+
+.settings-button.size-small {
+    font-size: 0.8rem;
+}
+
+.settings-button.size-medium {
+    font-size: 1rem;
+}
+
+.settings-button.size-large {
+    font-size: 1.2rem;
 }
 
 /* Barrierefreiheitsoptionen */
 .accessibility-option {
     display: flex;
     align-items: center;
+    background-color: #f7fafc;
+    padding: 1rem;
+    border-radius: 8px;
     margin-bottom: 1rem;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: 1px solid #e2e8f0;
+}
+
+.accessibility-option:hover {
+    background-color: #edf2f7;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.accessibility-option:last-child {
+    margin-bottom: 0;
 }
 
 .accessibility-checkbox {
-    width: 18px;
-    height: 18px;
-    margin-right: 10px;
+    width: 20px;
+    height: 20px;
+    margin-right: 1rem;
     cursor: pointer;
-    accent-color: var(--nscale-green);
+    accent-color: var(--nscale-green, #00a550);
 }
 
 .accessibility-label {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    font-weight: 500;
     cursor: pointer;
+    user-select: none;
 }
 
-/* Dark mode */
+/* Dark mode Anpassungen */
 .theme-dark .settings-panel {
     background-color: #1e1e1e;
-    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.3);
+    border-left: 1px solid #333;
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.5);
 }
 
 .theme-dark .settings-panel-header {
@@ -203,21 +247,51 @@
     color: #f0f0f0;
 }
 
-.theme-dark .theme-option:hover,
-.theme-dark .font-size-option:hover {
+.theme-dark .settings-section {
+    border-bottom-color: #333;
+}
+
+.theme-dark .settings-panel-close {
+    color: #f0f0f0;
+}
+
+.theme-dark .settings-panel-close:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.theme-dark .settings-button {
+    background-color: #2a2a2a;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+.theme-dark .settings-button:hover {
     background-color: #333;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    border-color: #555;
 }
 
-.theme-dark .theme-option.selected,
-.theme-dark .font-size-option.selected {
+.theme-dark .settings-button.active {
     border-color: #00c060;
+    color: #00c060;
+    background-color: rgba(0, 192, 96, 0.15);
 }
 
-.theme-dark .accessibility-checkbox {
-    accent-color: #00c060;
+.theme-dark .settings-button.active::after {
+    background-color: #00c060;
 }
 
-/* Contrast mode */
+.theme-dark .accessibility-option {
+    background-color: #2a2a2a;
+    border-color: #444;
+}
+
+.theme-dark .accessibility-option:hover {
+    background-color: #333;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Kontrast-Modus Anpassungen */
 .theme-contrast .settings-panel {
     background-color: #000000;
     border-left: 2px solid #ffeb3b;
@@ -231,30 +305,58 @@
 .theme-contrast .settings-panel-title,
 .theme-contrast .settings-section-title,
 .theme-contrast .settings-option-label,
-.theme-contrast .theme-label,
-.theme-contrast .font-size-label,
 .theme-contrast .accessibility-label {
     color: #ffeb3b;
+}
+
+.theme-contrast .settings-section-title::before {
+    background-color: #ffeb3b;
+}
+
+.theme-contrast .settings-section {
+    border-bottom-color: #333300;
 }
 
 .theme-contrast .settings-panel-close {
     color: #ffeb3b;
 }
 
-.theme-contrast .theme-option,
-.theme-contrast .font-size-option {
-    border: 2px solid #333;
-}
-
-.theme-contrast .theme-option:hover,
-.theme-contrast .font-size-option:hover {
+.theme-contrast .settings-panel-close:hover {
     background-color: #333300;
 }
 
-.theme-contrast .theme-option.selected,
-.theme-contrast .font-size-option.selected {
+.theme-contrast .settings-button {
+    background-color: #000000;
+    border: 2px solid #ffeb3b;
+    color: #ffeb3b;
+}
+
+.theme-contrast .settings-button:hover {
+    background-color: #333300;
+    box-shadow: 0 4px 6px rgba(255, 235, 59, 0.2);
+}
+
+.theme-contrast .settings-button.active {
     border-color: #ffeb3b;
+    color: #000000;
+    background-color: #ffeb3b;
+    font-weight: bold;
+}
+
+.theme-contrast .settings-button.active::after {
+    background-color: #000;
+    color: #ffeb3b;
+    border: 2px solid #ffeb3b;
+}
+
+.theme-contrast .accessibility-option {
+    background-color: #000000;
+    border: 2px solid #ffeb3b;
+}
+
+.theme-contrast .accessibility-option:hover {
     background-color: #333300;
+    box-shadow: 0 2px 5px rgba(255, 235, 59, 0.2);
 }
 
 .theme-contrast .accessibility-checkbox {
@@ -262,14 +364,34 @@
     border: 2px solid #ffeb3b;
 }
 
-/* Mobile-Anpassungen */
+/* Responsives Design */
 @media (max-width: 768px) {
     .settings-panel {
         width: 100%;
     }
     
-    .theme-options,
-    .font-size-options {
+    .settings-option-group {
         grid-template-columns: repeat(3, 1fr);
     }
+}
+
+/* Fokus-Zustände für Tastatur-Navigation */
+.settings-button:focus-visible,
+.accessibility-option:focus-visible,
+.settings-panel-close:focus-visible {
+    outline: 3px solid var(--nscale-green, #00a550);
+    outline-offset: 2px;
+}
+
+.theme-dark .settings-button:focus-visible,
+.theme-dark .accessibility-option:focus-visible,
+.theme-dark .settings-panel-close:focus-visible {
+    outline-color: #00c060;
+}
+
+.theme-contrast .settings-button:focus-visible,
+.theme-contrast .accessibility-option:focus-visible,
+.theme-contrast .settings-panel-close:focus-visible {
+    outline-color: #ffeb3b;
+    outline-width: 3px;
 }
