@@ -277,15 +277,30 @@
     color: #aaa;
 }
 
-.theme-contrast .nscale-input,
+/* Verbesserte Input-Styles für Kontrast-Modus */
 .theme-contrast input[type="text"],
 .theme-contrast input[type="email"],
 .theme-contrast input[type="password"],
-.theme-contrast textarea {
+.theme-contrast textarea,
+.theme-contrast select,
+.theme-contrast .nscale-input {
     background-color: #000000 !important;
     color: #ffffff !important;
     border: 2px solid #ffeb3b !important;
     caret-color: #ffffff !important;
+}
+
+.theme-contrast select option {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+.theme-contrast .nscale-input:focus,
+.theme-contrast input:focus,
+.theme-contrast select:focus,
+.theme-contrast textarea:focus {
+    outline: 3px solid #ffeb3b !important;
+    box-shadow: 0 0 0 3px rgba(255, 235, 59, 0.3) !important;
 }
 
 .theme-contrast .nscale-btn-primary {

@@ -21,14 +21,29 @@ export function setupSettings(options) {
      * Öffnet/Schließt das Einstellungs-Panel
      */
     const toggleSettings = () => {
+        console.log("Toggle Settings Panel", showSettingsPanel.value);
         showSettingsPanel.value = !showSettingsPanel.value;
+        
+        // Event-Listener für ESC-Taste hinzufügen, wenn Panel geöffnet ist
+        if (showSettingsPanel.value) {
+            document.addEventListener('keydown', handleEscapeKey);
+        } else {
+            document.removeEventListener('keydown', handleEscapeKey);
+        }
+    };
+
+    // Funktion zum Schließen des Panels mit ESC-Taste
+    const handleEscapeKey = (event) => {
+        if (event.key === 'Escape') {
+            showSettingsPanel.value = false;
+            document.removeEventListener('keydown', handleEscapeKey);
+        }
     };
     
     /**
      * Setzt das Farbschema
      * @param {string} theme - 'light', 'dark' oder 'contrast'
      */
-    // In settings.js
     const setTheme = (theme) => {
         // Debug-Ausgabe hinzufügen
         console.log(`Setze Theme auf: ${theme}`);
@@ -37,18 +52,23 @@ export function setupSettings(options) {
         currentTheme.value = theme;
         localStorage.setItem('theme', theme);
         
-        // Alle Theme-Klassen entfernen und explizit auflisten
-        document.body.classList.remove('theme-light', 'theme-dark', 'theme-contrast');
-        
-        // Theme-Klasse hinzufügen (für alle Themes, nicht nur für nicht-light)
-        document.body.classList.add(`theme-${theme}`);
-        
-        // Kontrast-Modus Handling bleibt gleich
-        if (theme === 'contrast') {
-            document.documentElement.style.setProperty('--focus-ring-color', '#ffeb3b');
-        } else {
-            document.documentElement.style.removeProperty('--focus-ring-color');
-        }
+        // WICHTIG: Verzögerung hinzufügen, um sicherzustellen, dass Vue die DOM-Updates abgeschlossen hat
+        setTimeout(() => {
+            // Alle Theme-Klassen entfernen und explizit auflisten
+            document.body.classList.remove('theme-light', 'theme-dark', 'theme-contrast');
+            
+            // Theme-Klasse hinzufügen (für alle Themes, nicht nur für nicht-light)
+            document.body.classList.add(`theme-${theme}`);
+            
+            console.log(`Theme-Klasse gesetzt: theme-${theme}`);
+            
+            // Kontrast-Modus Handling bleibt gleich
+            if (theme === 'contrast') {
+                document.documentElement.style.setProperty('--focus-ring-color', '#ffeb3b');
+            } else {
+                document.documentElement.style.removeProperty('--focus-ring-color');
+            }
+        }, 50);
     }
     
     /**

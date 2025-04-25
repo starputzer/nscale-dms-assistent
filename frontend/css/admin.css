@@ -267,7 +267,7 @@
     color: #f0f0f0;
 }
 
-/* Kontrast-Theme */
+/* Admin-Bereich im Kontrast-Modus */
 .theme-contrast .admin-button {
     background-color: #ffeb3b;
     color: #000000;
@@ -320,6 +320,7 @@
 
 .theme-contrast .admin-card-title {
     color: #ffeb3b;
+    border-bottom-color: #333300;
 }
 
 .theme-contrast .admin-label {
@@ -334,6 +335,7 @@
 
 .theme-contrast .admin-table td {
     border-bottom: 1px solid #ffeb3b;
+    color: #ffffff;
 }
 
 .theme-contrast .admin-table tr:hover {
@@ -351,4 +353,61 @@
 
 .theme-contrast .admin-stat-label {
     color: #ffffff;
+}
+
+.theme-contrast .admin-button-danger {
+    background-color: #ff4444;
+    color: #ffffff;
+    border: 2px solid #ff4444;
+}
+
+.theme-contrast .admin-button-danger:hover {
+    background-color: #cc0000;
+}
+
+/* Admin Sidebar - verbesserte Styles */
+.theme-contrast .admin-sidebar {
+    background-color: #000000;
+    border-right: 2px solid #ffeb3b;
+    color: #ffeb3b;
+}
+
+.theme-contrast .admin-nav-item {
+    color: #ffeb3b;
+    border: 1px solid transparent;
+}
+
+.theme-contrast .admin-nav-item:hover {
+    background-color: #333300;
+    border-color: #ffeb3b;
+}
+
+.theme-contrast .admin-nav-item.active {
+    background-color: #333300;
+    color: #ffeb3b;
+    border-left: 3px solid #ffeb3b;
+    font-weight: bold;
+}
+
+/* Kontrast-Modus für Admin-Buttons */
+.theme-contrast .nscale-btn-primary,
+.theme-contrast button[type="submit"] {
+    background-color: #ffeb3b;
+    color: #000000;
+    border: 2px solid #ffeb3b;
+}
+
+.theme-contrast .nscale-btn-secondary,
+.theme-contrast button[type="button"] {
+    background-color: #000000;
+    color: #ffeb3b;
+    border: 2px solid #ffeb3b;
+}
+
+.theme-contrast .nscale-btn-primary:hover,
+.theme-contrast .nscale-btn-secondary:hover,
+.theme-contrast button[type="submit"]:hover,
+.theme-contrast button[type="button"]:hover {
+    background-color: #ffd600;
+    color: #000000;
 }

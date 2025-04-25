@@ -660,12 +660,12 @@
                 </main>
             </div>
         </div>
-        
-        <!-- Settings Panel -->
-        <div v-if="showSettingsPanel" class="settings-panel transform transition-transform">
+    
+        <!-- Settings Panel mit @click.stop um Event-Propagation zu stoppen -->
+        <div v-if="showSettingsPanel" @click.stop class="settings-panel transform transition-transform">
             <div class="settings-panel-header">
                 <h3 class="settings-panel-title">Einstellungen</h3>
-                <button @click="toggleSettings" class="settings-panel-close">×</button>
+                <button @click.stop="toggleSettings" class="settings-panel-close">×</button>
             </div>
             <div class="settings-panel-content">
                 <div class="settings-section">
@@ -677,9 +677,9 @@
                         <div class="theme-options">
                             <div class="theme-option">
                                 <input type="radio" id="theme-light" 
-                                       name="theme" value="light" 
-                                       v-model="currentTheme" 
-                                       class="theme-radio">
+                                    name="theme" value="light" 
+                                    v-model="currentTheme" 
+                                    class="theme-radio">
                                 <label for="theme-light" class="theme-label">
                                     <i class="fas fa-sun theme-icon"></i>
                                     <span>Hell</span>
@@ -687,9 +687,9 @@
                             </div>
                             <div class="theme-option">
                                 <input type="radio" id="theme-dark" 
-                                       name="theme" value="dark" 
-                                       v-model="currentTheme" 
-                                       class="theme-radio">
+                                    name="theme" value="dark" 
+                                    v-model="currentTheme" 
+                                    class="theme-radio">
                                 <label for="theme-dark" class="theme-label">
                                     <i class="fas fa-moon theme-icon"></i>
                                     <span>Dunkel</span>
@@ -697,9 +697,9 @@
                             </div>
                             <div class="theme-option">
                                 <input type="radio" id="theme-contrast" 
-                                       name="theme" value="contrast" 
-                                       v-model="currentTheme" 
-                                       class="theme-radio">
+                                    name="theme" value="contrast" 
+                                    v-model="currentTheme" 
+                                    class="theme-radio">
                                 <label for="theme-contrast" class="theme-label">
                                     <i class="fas fa-adjust theme-icon"></i>
                                     <span>Kontrast</span>
@@ -714,27 +714,27 @@
                         <div class="font-size-options">
                             <div class="font-size-option">
                                 <input type="radio" id="size-small" 
-                                       name="fontSize" value="small" 
-                                       v-model="currentFontSize" 
-                                       class="font-size-radio">
+                                    name="fontSize" value="small" 
+                                    v-model="currentFontSize" 
+                                    class="font-size-radio">
                                 <label for="size-small" class="font-size-label font-size-small">
                                     <span>Klein</span>
                                 </label>
                             </div>
                             <div class="font-size-option">
                                 <input type="radio" id="size-medium" 
-                                       name="fontSize" value="medium" 
-                                       v-model="currentFontSize" 
-                                       class="font-size-radio">
+                                    name="fontSize" value="medium" 
+                                    v-model="currentFontSize" 
+                                    class="font-size-radio">
                                 <label for="size-medium" class="font-size-label font-size-medium">
                                     <span>Mittel</span>
                                 </label>
                             </div>
                             <div class="font-size-option">
                                 <input type="radio" id="size-large" 
-                                       name="fontSize" value="large" 
-                                       v-model="currentFontSize" 
-                                       class="font-size-radio">
+                                    name="fontSize" value="large" 
+                                    v-model="currentFontSize" 
+                                    class="font-size-radio">
                                 <label for="size-large" class="font-size-label font-size-large">
                                     <span>Groß</span>
                                 </label>
@@ -748,8 +748,9 @@
                     <div class="accessibility-container">
                         <label class="accessibility-option">
                             <input type="checkbox" 
-                                   v-model="accessibilitySettings.reduceMotion" 
-                                   class="accessibility-checkbox">
+                                v-model="accessibilitySettings.reduceMotion" 
+                                @click.stop
+                                class="accessibility-checkbox">
                             <div>
                                 <span class="accessibility-label">Animationen reduzieren</span>
                                 <span class="accessibility-description">Reduziert oder deaktiviert Bewegungseffekte und Animationen</span>
@@ -758,8 +759,9 @@
                         
                         <label class="accessibility-option">
                             <input type="checkbox" 
-                                   v-model="accessibilitySettings.simpleLanguage" 
-                                   class="accessibility-checkbox">
+                                v-model="accessibilitySettings.simpleLanguage" 
+                                @click.stop
+                                class="accessibility-checkbox">
                             <div>
                                 <span class="accessibility-label">Einfache Sprache bevorzugen</span>
                                 <span class="accessibility-description">Vereinfacht Formulierungen und Erklärungen in Antworten</span>
