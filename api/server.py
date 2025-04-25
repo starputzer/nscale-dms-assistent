@@ -16,6 +16,7 @@ from fastapi.responses import JSONResponse, FileResponse
 from sse_starlette.sse import EventSourceResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.types import Scope, Receive, Send
 from pydantic import BaseModel, EmailStr
 from jose import JWTError, jwt
 from starlette.concurrency import run_in_threadpool
@@ -28,6 +29,46 @@ from modules.auth.user_model import UserManager
 from modules.rag.engine import RAGEngine
 from modules.session.chat_history import ChatHistoryManager
 from modules.feedback.feedback_manager import FeedbackManager
+
+# No-Cache StaticFiles Implementierung
+class NoCacheStaticFiles(StaticFiles):
+    """
+    Erweiterte StaticFiles-Klasse, die Cache-Control-Header für 
+    CSS- und JS-Dateien hinzufügt, um Browsercaching zu verhindern.
+    """
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """Überschreiben der __call__-Methode zur Manipulation der Response-Header"""
+        
+        if scope["type"] != "http":
+            return await super().__call__(scope, receive, send)
+        
+        # Original-Response erstellen lassen
+        responder = await self.get_response(scope["path"], scope)
+        
+        # Funktion zum Modifizieren der Response-Header
+        async def send_wrapper(message):
+            if message["type"] == "http.response.start":
+                # Cache-Header nur für CSS und JS-Dateien setzen
+                if scope["path"].endswith((".css", ".js")):
+                    headers = list(message.get("headers", []))
+                    
+                    # Cache-Control-Header setzen
+                    cache_headers = [
+                        (b"Cache-Control", b"no-store, no-cache, must-revalidate, max-age=0"),
+                        (b"Pragma", b"no-cache"),
+                        (b"Expires", b"0")
+                    ]
+                    
+                    # Existierende Cache-Header entfernen
+                    headers = [(k, v) for k, v in headers if k.lower() != b"cache-control"]
+                    
+                    # Neue Cache-Header hinzufügen
+                    headers.extend(cache_headers)
+                    message["headers"] = headers
+            await send(message)
+        
+        # Response mit modifizierten Headern senden
+        await responder(scope, receive, send_wrapper)
 
 try:
     from dotenv import load_dotenv
@@ -52,8 +93,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# App Mounten
-app.mount("/static", StaticFiles(directory="frontend"), name="static")
+# App Mounten mit NoCacheStaticFiles statt StaticFiles
+app.mount("/static", NoCacheStaticFiles(directory="frontend"), name="static")
 
 @app.get("/")
 async def root():
@@ -570,6 +611,28 @@ async def get_stats(user_data: Dict[str, Any] = Depends(get_current_user)):
     stats = rag_engine.get_document_stats()
     
     return {"stats": stats}
+
+# CSS-Datei-Zeitstempel aktualisieren bei Serverstart
+@app.on_event("startup")
+async def update_css_timestamps():
+    """Aktualisiert die Zeitstempel aller CSS-Dateien beim Server-Start"""
+    import os
+    from datetime import datetime
+    
+    css_dir = Path("frontend/css")
+    if css_dir.exists():
+        now = datetime.now().timestamp()
+        count = 0
+        for file_path in css_dir.glob("*.css"):
+            try:
+                # Ändere Zugriffs- und Modifizierungszeit
+                os.utime(file_path, (now, now))
+                count += 1
+                logger.info(f"CSS-Datei aktualisiert: {file_path.name}")
+            except Exception as e:
+                logger.error(f"Fehler beim Aktualisieren des Zeitstempels von {file_path.name}: {e}")
+        
+        logger.info(f"Insgesamt {count} CSS-Dateien aktualisiert")
 
 # Initialisierung
 @app.on_event("startup")

@@ -205,13 +205,23 @@ export function setupChat(options) {
                             return;
                         }
                         
-                        // Normaler Token
+                        // Normaler Token - Zeichen für Zeichen hinzufügen
                         tokenCount++;
                         console.log(`Token #${tokenCount}: "${token}"`);
                         
-                        // Token zur Assistenten-Nachricht hinzufügen
-                        messages.value[assistantIndex].message += token;
-                        scrollToBottom();
+                        // Zeichen für Zeichen zur Assistenten-Nachricht hinzufügen
+                        if (token && token.length > 0) {
+                            // Aktuelle Nachricht speichern
+                            const currentText = messages.value[assistantIndex].message;
+                            
+                            // Jeden Buchstaben einzeln mit Verzögerung hinzufügen
+                            Array.from(token).forEach((char, index) => {
+                                setTimeout(() => {
+                                    messages.value[assistantIndex].message = currentText + token.substring(0, index + 1);
+                                    scrollToBottom();
+                                }, index * 15); // 15ms Verzögerung zwischen Zeichen
+                            });
+                        }
                     } else if (data.error) {
                         console.error("Stream-Fehler:", data.error);
                         messages.value[assistantIndex].message = `Fehler: ${data.error}`;

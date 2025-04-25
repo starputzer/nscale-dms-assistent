@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@3.2.31/dist/vue.global.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- Eigene CSS-Dateien -->
+    <!-- Eigene CSS-Dateien mit dynamischem Cache-Busting -->
     <link href="/static/css/main.css" rel="stylesheet">
     <link href="/static/css/feedback.css" rel="stylesheet">
     <link href="/static/css/admin.css" rel="stylesheet">
@@ -793,6 +793,42 @@
             </div>
         </div>
     </div>
+    
+    <!-- CSS Force-Reload Script -->
+    <script>
+        // Hilfsfunktion zum Neuladen aller CSS-Dateien
+        function reloadCSS() {
+            console.log("Force-Reload aller CSS-Dateien...");
+            
+            // Alle CSS-Links finden
+            const cssLinks = document.querySelectorAll('link[rel="stylesheet"]');
+            
+            cssLinks.forEach(link => {
+                // Aktuelle Href auslesen
+                const href = link.getAttribute('href');
+                
+                if (href && href.includes('/static/css/')) {
+                    // Timestamp als Query-Parameter hinzufügen
+                    const updatedHref = href.includes('?') 
+                        ? href.split('?')[0] + '?v=' + Date.now() 
+                        : href + '?v=' + Date.now();
+                    
+                    // Neuen Link erstellen
+                    const newLink = document.createElement('link');
+                    newLink.rel = 'stylesheet';
+                    newLink.href = updatedHref;
+                    
+                    // Alten Link ersetzen
+                    link.parentNode.replaceChild(newLink, link);
+                    
+                    console.log(`CSS neu geladen: ${href} -> ${updatedHref}`);
+                }
+            });
+        }
+
+        // Sofortiges Ausführen nach Seitenladung
+        window.addEventListener('DOMContentLoaded', reloadCSS);
+    </script>
     
     <!-- JavaScript-Module einbinden -->
     <script src="/static/js/chat.js" type="module"></script>
