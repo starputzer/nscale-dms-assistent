@@ -238,19 +238,19 @@ async def create_user(request: CreateUserRequest, admin_data: Dict[str, Any] = D
     
     return {"message": f"Benutzer {request.email} mit Rolle {request.role} erfolgreich erstellt"}
 
-@app.put("/api/admin/users/role")
-async def update_user_role(request: UserRoleUpdateRequest, admin_data: Dict[str, Any] = Depends(get_admin_user)):
+@app.put("/api/admin/users/{user_id}/role")
+async def update_user_role(user_id: int, request: Dict[str, str], admin_data: Dict[str, Any] = Depends(get_admin_user)):
     """Aktualisiert die Rolle eines Benutzers (Admin-Funktion)"""
     # Prüfen, ob der Admin versucht, seine eigene Rolle zu ändern
-    if request.user_id == admin_data['user_id']:
+    if user_id == admin_data['user_id']:
         raise HTTPException(status_code=400, detail="Sie können Ihre eigene Rolle nicht ändern")
     
-    success = user_manager.update_user_role(request.user_id, request.new_role, admin_data['user_id'])
+    success = user_manager.update_user_role(user_id, request['role'], admin_data['user_id'])
     
     if not success:
         raise HTTPException(status_code=400, detail="Benutzer nicht gefunden oder ungültige Rolle")
     
-    return {"message": f"Rolle für Benutzer ID {request.user_id} auf {request.new_role} aktualisiert"}
+    return {"message": f"Rolle für Benutzer ID {user_id} auf {request['role']} aktualisiert"}
 
 @app.delete("/api/admin/users/{user_id}")
 async def delete_user(user_id: int, admin_data: Dict[str, Any] = Depends(get_admin_user)):
@@ -528,10 +528,15 @@ async def stream_question(
         return response
     except Exception as e:
         logger.error(f"Fehler beim Streaming: {e}", exc_info=True)
+        
+        # KORRIGIERT: Verwende ein lokales error_message für den error_stream
+        error_message = str(e)
+        
         # Konvertiere die Exception in ein EventSourceResponse für den Client
         async def error_stream():
-            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            yield f"data: {json.dumps({'error': error_message})}\n\n"
             yield "event: done\ndata: \n\n"
+        
         return EventSourceResponse(error_stream())
 
 @app.get("/api/session/{session_id}")
