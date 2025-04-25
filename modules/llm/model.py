@@ -110,68 +110,62 @@ class OllamaClient:
                             stream_timeout = False  # Flag für Timeout
                             
                             try:
-                                # Verwende asyncio.wait_for mit einer einfachen while-Schleife
-                                async def process_chunk():
-                                    nonlocal buffer, token_count, stream_done
-                                    chunk = await resp.content.read(1024)
-                                    if not chunk:
-                                        return False  # Stream beendet
-                                    
-                                    # Füge zum Buffer hinzu
-                                    buffer += chunk
-                                    
-                                    # Verarbeite komplette Zeilen im Buffer
-                                    while b'\n' in buffer:
-                                        line, buffer = buffer.split(b'\n', 1)
-                                        if not line:
-                                            continue
-                                        
-                                        try:
-                                            line_text = line.decode('utf-8').strip()
-                                            # Logging nur für erste paar Tokens oder periodisch
-                                            if token_count < 5 or token_count % 50 == 0:
-                                                logger.debug(f"Stream-Rohdaten #{token_count}: {line_text}")
-                                            
-                                            # Parse JSON
-                                            data = json.loads(line_text)
-                                            
-                                            if 'response' in data:
-                                                token = data['response']
-                                                token_count += 1
-                                                
-                                                # Token ausgeben
-                                                yield token
-                                            
-                                            # Wenn Stream abgeschlossen ist
-                                            if data.get('done', False):
-                                                duration = time.time() - start_time
-                                                tokens_per_second = token_count / duration if duration > 0 else 0
-                                                logger.info(f"Stream abgeschlossen in {duration:.2f}s mit {token_count} Tokens "
-                                                        f"({tokens_per_second:.1f} Tokens/s)")
-                                                
-                                                stream_done = True
-                                                return False  # Stream beendet
-                                        
-                                        except json.JSONDecodeError as e:
-                                            logger.warning(f"JSON-Fehler beim Verarbeiten: {e}, Daten: {line[:100]}")
-                                            continue
-                                        except Exception as e:
-                                            logger.error(f"Fehler beim Verarbeiten: {e}")
-                                            yield f"[ERROR] {str(e)}"
-                                    
-                                    return True  # Weiterlesen
-                                
-                                # Chunk-Verarbeitung mit Timeout
-                                while True:
+                                # Verarbeite den Stream in einer Schleife ohne Generator
+                                while not stream_done:
                                     try:
-                                        should_continue = await asyncio.wait_for(
-                                            process_chunk(), 
-                                            timeout=5.0  # Timeout für jeden Chunk
-                                        )
+                                        # Lese einen Chunk mit Timeout
+                                        chunk_read_task = resp.content.read(1024)
+                                        chunk = await asyncio.wait_for(chunk_read_task, timeout=5.0)
                                         
-                                        if not should_continue or stream_done:
+                                        if not chunk:
+                                            # Ende des Streams erreicht
                                             break
+                                        
+                                        # Füge zum Buffer hinzu
+                                        buffer += chunk
+                                        
+                                        # Verarbeite komplette Zeilen im Buffer
+                                        while b'\n' in buffer:
+                                            line, buffer = buffer.split(b'\n', 1)
+                                            if not line:
+                                                continue
                                             
+                                            try:
+                                                line_text = line.decode('utf-8').strip()
+                                                # Logging nur für erste paar Tokens oder periodisch
+                                                if token_count < 5 or token_count % 50 == 0:
+                                                    logger.debug(f"Stream-Rohdaten #{token_count}: {line_text}")
+                                                
+                                                # Parse JSON
+                                                data = json.loads(line_text)
+                                                
+                                                if 'response' in data:
+                                                    token = data['response']
+                                                    token_count += 1
+                                                    
+                                                    # Token ausgeben
+                                                    yield token
+                                                
+                                                # Wenn Stream abgeschlossen ist
+                                                if data.get('done', False):
+                                                    duration = time.time() - start_time
+                                                    tokens_per_second = token_count / duration if duration > 0 else 0
+                                                    logger.info(f"Stream abgeschlossen in {duration:.2f}s mit {token_count} Tokens "
+                                                            f"({tokens_per_second:.1f} Tokens/s)")
+                                                    
+                                                    stream_done = True
+                                                    break
+                                            
+                                            except json.JSONDecodeError as e:
+                                                logger.warning(f"JSON-Fehler beim Verarbeiten: {e}, Daten: {line[:100]}")
+                                                continue
+                                            except Exception as e:
+                                                logger.error(f"Fehler beim Verarbeiten: {e}")
+                                                yield f"[ERROR] {str(e)}"
+                                        
+                                        if stream_done:
+                                            break
+                                    
                                     except asyncio.TimeoutError:
                                         logger.warning("Timeout beim Lesen eines Chunks, versuche weiter...")
                                         continue  # Versuche weiter zu lesen
