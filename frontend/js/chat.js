@@ -45,6 +45,12 @@ export function setupChat(options) {
                 // Alle Event-Listener entfernen, um Memory-Leaks zu vermeiden
                 eventSource.value.onmessage = null;
                 eventSource.value.onerror = null;
+                
+                // Spezielle Event-Listener entfernen
+                eventSource.value.removeEventListener('done', doneEventHandler);
+                eventSource.value.removeEventListener('open', openEventHandler);
+                
+                // Stream schließen
                 eventSource.value.close();
                 eventSource.value = null;
             } catch (e) {
@@ -71,6 +77,11 @@ export function setupChat(options) {
             }
         }, 30000);  // 30 Sekunden Inaktivität
     };
+    
+    // Handler-Funktionen, die wir bei Bedarf entfernen können
+    // Diese werden ausgelagert, damit wir die EventListener wieder entfernen können
+    let doneEventHandler;
+    let openEventHandler;
     
     /**
      * Sendet eine Frage mit Streaming-Antwort und aktualisiert den Sitzungstitel
@@ -151,8 +162,7 @@ export function setupChat(options) {
             // Bestehende EventSource schließen
             if (eventSource.value) {
                 console.log("Schließe bestehende EventSource");
-                eventSource.value.close();
-                eventSource.value = null;
+                cleanupStream(); // Nutze die cleanupStream Funktion
             }
     
             // Neue EventSource-Verbindung
@@ -169,10 +179,10 @@ export function setupChat(options) {
             // Flag für erfolgreiche Fertigstellung
             let successfulCompletion = false;
     
-            // Haupt-Message-Handler
+            // Haupt-Message-Handler (mit verbesserter Event-Erkennung)
             eventSource.value.onmessage = (event) => {
                 try {
-                    console.log(`Rohes Event erhalten: ${event.data}`);
+                    console.log(`Event erhalten: ${event.type}`, event.data ? event.data.substring(0, 50) + "..." : "(kein Dateninhalt)");
                     
                     // Beim Empfang jedes Tokens den Timeout zurücksetzen
                     resetStreamTimeout();
@@ -183,86 +193,93 @@ export function setupChat(options) {
                         return;
                     }
                     
+                    // Überprüfe, ob dies ein Event mit "event: done" ist
+                    if (event.data.startsWith('event: done')) {
+                        console.log("'event: done' im Datenstrom erkannt, überspringe JSON-Parsing");
+                        return;
+                    }
+                    
                     // JSON-Daten extrahieren
                     let jsonData = event.data;
                     if (jsonData.startsWith('data: ')) {
                         jsonData = jsonData.substring(6);
                     }
                     
-                    // Versuche JSON zu parsen
-                    const data = JSON.parse(jsonData);
-                    
-                    // Spezielle Kontrollnachrichten prüfen
-                    if ('response' in data) {
-                        const token = data.response;
+                    // Nur versuchen, JSON zu parsen, wenn es wie JSON aussieht
+                    if (jsonData.trim().startsWith('{') && jsonData.trim().endsWith('}')) {
+                        // Versuche JSON zu parsen
+                        const data = JSON.parse(jsonData);
                         
-                        // Prüfen auf spezielle Steuerungscodes vom Backend
-                        if (token === "[STREAM_RETRY]") {
-                            console.log("Stream wird neu gestartet...");
-                            currentStreamRetryCount++;
-                            messages.value[assistantIndex].message += `\n[Verbindung wird wiederhergestellt... Versuch ${currentStreamRetryCount}]\n`;
-                            scrollToBottom();
-                            return;
-                        }
-                        
-                        if (token === "[TIMEOUT]") {
-                            console.log("Timeout beim Stream.");
-                            return;
-                        }
-                        
-                        if (token.startsWith("[FINAL_TIMEOUT]") || 
-                            token.startsWith("[CONN_ERROR]") || 
-                            token.startsWith("[ERROR]") || 
-                            token.startsWith("[UNEXPECTED_ERROR]") || 
-                            token.startsWith("[NO_TOKENS]")) {
-                            console.error("Stream-Fehler:", token);
+                        // Spezielle Kontrollnachrichten prüfen
+                        if ('response' in data) {
+                            const token = data.response;
                             
-                            // Wenn die Nachricht bereits Inhalt hat, nur eine Warnung anhängen
-                            if (messages.value[assistantIndex].message.trim()) {
-                                messages.value[assistantIndex].message += "\n\n[Hinweis: Die Antwort wurde möglicherweise abgeschnitten.]";
-                            } else {
-                                // Sonst Fehlermeldung anzeigen
-                                messages.value[assistantIndex].message = "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.";
+                            // Prüfen auf spezielle Steuerungscodes vom Backend
+                            if (token === "[STREAM_RETRY]") {
+                                console.log("Stream wird neu gestartet...");
+                                currentStreamRetryCount++;
+                                messages.value[assistantIndex].message += `\n[Verbindung wird wiederhergestellt... Versuch ${currentStreamRetryCount}]\n`;
+                                scrollToBottom();
+                                return;
                             }
+                            
+                            if (token === "[TIMEOUT]") {
+                                console.log("Timeout beim Stream.");
+                                return;
+                            }
+                            
+                            if (token.startsWith("[FINAL_TIMEOUT]") || 
+                                token.startsWith("[CONN_ERROR]") || 
+                                token.startsWith("[ERROR]") || 
+                                token.startsWith("[UNEXPECTED_ERROR]") || 
+                                token.startsWith("[NO_TOKENS]")) {
+                                console.error("Stream-Fehler:", token);
+                                
+                                // Wenn die Nachricht bereits Inhalt hat, nur eine Warnung anhängen
+                                if (messages.value[assistantIndex].message.trim()) {
+                                    messages.value[assistantIndex].message += "\n\n[Hinweis: Die Antwort wurde möglicherweise abgeschnitten.]";
+                                } else {
+                                    // Sonst Fehlermeldung anzeigen
+                                    messages.value[assistantIndex].message = "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.";
+                                }
+                                scrollToBottom();
+                                cleanupStream();
+                                return;
+                            }
+                            
+                            // Normaler Token - für Debugging
+                            tokenCount++;
+                            console.log(`Token #${tokenCount}: "${token}"`);
+                            
+                            // Token zur vollständigen Antwort hinzufügen
+                            completeResponse += token;
+                            
+                            // Aktualisiere die angezeigte Nachricht sofort
+                            messages.value[assistantIndex].message = completeResponse;
                             scrollToBottom();
+                        } else if (data.error) {
+                            console.error("Stream-Fehler:", data.error);
+                            messages.value[assistantIndex].message = `Fehler: ${data.error}`;
                             cleanupStream();
-                            return;
                         }
-                        
-                        // Normaler Token - für Debugging
-                        tokenCount++;
-                        console.log(`Token #${tokenCount}: "${token}"`);
-                        
-                        // Token zur vollständigen Antwort hinzufügen
-                        completeResponse += token;
-                        
-                        // Aktualisiere die angezeigte Nachricht sofort
-                        messages.value[assistantIndex].message = completeResponse;
-                        scrollToBottom();
-                    } else if (data.error) {
-                        console.error("Stream-Fehler:", data.error);
-                        messages.value[assistantIndex].message = `Fehler: ${data.error}`;
-                        cleanupStream();
+                    } else {
+                        console.log("Überspringe nicht-JSON-formatierte Daten:", jsonData);
                     }
                 } catch (e) {
                     console.error("JSON-Parsing-Fehler:", e, "Rohdaten:", event.data);
+                    // Ignoriere Fehler bei der Verarbeitung spezieller Events
                 }
             };
     
             // Spezieller Handler für 'done' Events
-            eventSource.value.addEventListener('done', async (event) => {
-                console.log("DONE Event empfangen, Stream beendet");
+            doneEventHandler = async (event) => {
+                console.log("DONE Event empfangen, Stream beendet", event);
                 successfulCompletion = true;
                 
                 // Prüfe, ob die Nachricht nicht leer ist
                 if (!messages.value[assistantIndex].message.trim()) {
                     messages.value[assistantIndex].message = 'Es wurden keine Daten empfangen. Bitte versuchen Sie es später erneut.';
                 }
-                
-                // WICHTIG: Bei Streaming ist die Nachricht-ID nicht vorhanden,
-                // da sie vom Server beim Speichern der Nachricht generiert wird.
-                // Deshalb müssen wir die Session-Liste aktualisieren, um die
-                // aktuellste Nachricht-ID und Titel zu erhalten.
                 
                 // Session-Liste sofort aktualisieren
                 try {
@@ -282,7 +299,10 @@ export function setupChat(options) {
                 }
                 
                 cleanupStream();
-            });
+            };
+            
+            // Event-Listener für 'done' Events im done-Namensraum
+            eventSource.value.addEventListener('done', doneEventHandler);
             
             // Error-Handler
             eventSource.value.onerror = (event) => {
@@ -301,9 +321,10 @@ export function setupChat(options) {
             };
     
             // Open-Handler
-            eventSource.value.addEventListener('open', () => {
+            openEventHandler = () => {
                 console.log("SSE-Verbindung erfolgreich geöffnet");
-            });
+            };
+            eventSource.value.addEventListener('open', openEventHandler);
     
             // Timeout für hängende Verbindungen
             resetStreamTimeout();

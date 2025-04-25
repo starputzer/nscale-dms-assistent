@@ -289,13 +289,13 @@
                                             <div v-if="!message.is_user" class="feedback-buttons">
                                                 <span v-if="message.feedback_comment" class="feedback-comment">{{ message.feedback_comment }}</span>
                                                 <button 
-                                                    @click="submitFeedback(message.id, message.session_id || currentSessionId, true)" 
+                                                    @click="submitFeedback(message.id, currentSessionId, true)" 
                                                     :class="['feedback-button', { 'selected': message.feedback_positive === true }]"
                                                     title="Hilfreich">
                                                     <i class="fas fa-thumbs-up"></i>
                                                 </button>
                                                 <button 
-                                                    @click="submitFeedback(message.id, message.session_id || currentSessionId, false)" 
+                                                    @click="submitFeedback(message.id, currentSessionId, false)" 
                                                     :class="['feedback-button', { 'selected negative': message.feedback_positive === false }]"
                                                     title="Nicht hilfreich">
                                                     <i class="fas fa-thumbs-down"></i>

@@ -20,32 +20,53 @@ export function setupFeedback(options) {
      */
     const submitFeedback = async (messageId, sessionId, isPositive) => {
         try {
-            console.log(`Sende Feedback: message_id=${messageId}, session_id=${sessionId}, isPositive=${isPositive}`);
+            // DEBUG: Ausgabe der übergebenen Werte
+            console.log("submitFeedback aufgerufen mit:", { messageId, sessionId, isPositive });
+            console.log("Nachricht:", messages.value.find(m => m.id === messageId));
             
-            // Stelle sicher, dass messageId und sessionId numerisch sind
-            if (!messageId || isNaN(parseInt(messageId)) || parseInt(messageId) <= 0) {
+            // Stelle sicher, dass messageId und sessionId vorhanden sind
+            if (!messageId) {
                 console.error("Ungültige message_id für Feedback:", messageId);
+                
+                // WICHTIG: Finde die tatsächliche Message-ID aus dem messages-Array
+                const lastAssistantMessage = [...messages.value].reverse().find(m => !m.is_user);
+                
+                if (lastAssistantMessage && lastAssistantMessage.id) {
+                    messageId = lastAssistantMessage.id;
+                    console.log("Verwende stattdessen die ID der letzten Assistenten-Nachricht:", messageId);
+                } else {
+                    console.error("Keine geeignete Assistenten-Nachricht gefunden");
+                    return;
+                }
+            }
+            
+            // Stelle sicher, dass die Session-ID vorhanden ist
+            if (!sessionId) {
+                if (!currentSessionId.value) {
+                    console.error("Keine Session-ID vorhanden");
+                    return;
+                }
+                sessionId = currentSessionId.value;
+                console.log("Verwende aktuelle Session-ID:", sessionId);
+            }
+            
+            // Stelle sicher, dass die IDs numerisch sind
+            const numericMessageId = parseInt(messageId, 10);
+            const numericSessionId = parseInt(sessionId, 10);
+            
+            if (isNaN(numericMessageId) || numericMessageId <= 0) {
+                console.error("Numerische message_id ungültig:", numericMessageId);
                 return;
             }
             
-            // Konvertiere zu Zahlen für die API
-            const numericMessageId = parseInt(messageId);
-            const numericSessionId = parseInt(sessionId);
-            
-            // Stelle sicher, dass die Session-ID gültig ist
-            if (!numericSessionId || isNaN(numericSessionId) || numericSessionId <= 0) {
-                console.error("Ungültige session_id für Feedback:", sessionId);
+            if (isNaN(numericSessionId) || numericSessionId <= 0) {
+                console.error("Numerische session_id ungültig:", numericSessionId);
                 return;
             }
             
-            // Debugging-Ausgabe vor der Anfrage
-            console.log("Sende Feedback-Anfrage mit folgenden Daten:", {
-                message_id: numericMessageId,
-                session_id: numericSessionId,
-                is_positive: isPositive
-            });
+            console.log(`Sende Feedback: message_id=${numericMessageId}, session_id=${numericSessionId}, isPositive=${isPositive}`);
             
-            // Sende Anfrage an das Backend
+            // Sende die Anfrage an den Server
             const response = await axios.post('/api/feedback', {
                 message_id: numericMessageId,
                 session_id: numericSessionId,
@@ -67,6 +88,12 @@ export function setupFeedback(options) {
             } else {
                 console.warn(`Nachricht mit ID ${numericMessageId} nicht gefunden!`);
                 console.log("Verfügbare Nachrichten:", messages.value.map(m => `ID: ${m.id}, is_user: ${m.is_user}`));
+                
+                // Reload der aktuellen Session, um die Nachrichten-IDs zu aktualisieren
+                if (window.reloadCurrentSession) {
+                    console.log("Lade Session neu, um Nachrichten-IDs zu aktualisieren");
+                    await window.reloadCurrentSession();
+                }
             }
         } catch (error) {
             console.error('Fehler beim Senden des Feedbacks:', error);
@@ -75,10 +102,8 @@ export function setupFeedback(options) {
             if (error.response) {
                 console.error('Server-Antwort:', error.response.status, error.response.data);
                 
-                // Validierungsfehler besser behandeln
                 if (error.response.status === 422) {
-                    const detail = error.response.data.detail || "Ungültige Daten";
-                    console.error('Validierungsfehler:', detail);
+                    console.error('Validierungsfehler:', error.response.data.detail || "Ungültige Daten");
                 }
             } else if (error.request) {
                 console.error('Keine Antwort vom Server erhalten.');
@@ -93,28 +118,58 @@ export function setupFeedback(options) {
      * @param {Object} message - Die Nachricht, für die ein Kommentar abgegeben werden soll
      */
     const showFeedbackCommentDialog = (message) => {
-        if (!message || !message.id) {
-            console.error("Versuch, Feedback-Dialog für ungültige Nachricht zu öffnen:", message);
+        // Überprüfe, ob die Nachricht valid ist
+        if (!message) {
+            console.error("Versuch, Feedback-Dialog für undefinierte Nachricht zu öffnen");
             return;
         }
         
         // Speichern der aktuellen Nachricht für spätere Verwendung
         feedbackMessage.value = message;
+        
+        // Wenn die Nachricht keine ID hat, versuche sie zu finden
+        if (!message.id) {
+            const lastAssistantMessage = [...messages.value].reverse().find(m => !m.is_user);
+            if (lastAssistantMessage && lastAssistantMessage.id) {
+                feedbackMessage.value = {...message, id: lastAssistantMessage.id};
+                console.log("ID der letzten Assistenten-Nachricht verwendet:", lastAssistantMessage.id);
+            } else {
+                console.error("Keine Nachrichten-ID verfügbar für Feedback-Dialog");
+                return;
+            }
+        }
+        
         // Initialisieren des Kommentars mit vorhandenem Wert (falls vorhanden)
         feedbackComment.value = message.feedback_comment || '';
+        
         // Dialog anzeigen
         showFeedbackDialog.value = true;
         
-        console.log(`Feedback-Dialog geöffnet für Nachricht ID ${message.id}`);
+        console.log(`Feedback-Dialog geöffnet für Nachricht ID ${feedbackMessage.value.id}`);
     };
     
     /**
      * Sendet den Feedback-Kommentar
      */
     const submitFeedbackComment = async () => {
-        if (!feedbackMessage.value || !feedbackMessage.value.id) {
+        if (!feedbackMessage.value) {
             console.error("Keine gültige Nachricht für Feedback-Kommentar");
             return;
+        }
+        
+        // Überprüfe, ob die Nachricht eine ID hat
+        if (!feedbackMessage.value.id) {
+            console.error("Keine ID in der Feedback-Nachricht");
+            
+            // Versuche, die ID der letzten Assistenten-Nachricht zu verwenden
+            const lastAssistantMessage = [...messages.value].reverse().find(m => !m.is_user);
+            if (lastAssistantMessage && lastAssistantMessage.id) {
+                feedbackMessage.value.id = lastAssistantMessage.id;
+                console.log("ID der letzten Assistenten-Nachricht verwendet:", lastAssistantMessage.id);
+            } else {
+                console.error("Keine Nachrichten-ID verfügbar für Feedback-Kommentar");
+                return;
+            }
         }
         
         try {
@@ -129,8 +184,18 @@ export function setupFeedback(options) {
             }
             
             // Stelle sicher, dass beide IDs als Zahlen vorliegen
-            const numericMessageId = parseInt(feedbackMessage.value.id);
-            const numericSessionId = parseInt(sessionId);
+            const numericMessageId = parseInt(feedbackMessage.value.id, 10);
+            const numericSessionId = parseInt(sessionId, 10);
+            
+            if (isNaN(numericMessageId) || numericMessageId <= 0) {
+                console.error("Numerische message_id ungültig:", numericMessageId);
+                return;
+            }
+            
+            if (isNaN(numericSessionId) || numericSessionId <= 0) {
+                console.error("Numerische session_id ungültig:", numericSessionId);
+                return;
+            }
             
             console.log("Sende Feedback-Kommentar mit folgenden Daten:", {
                 message_id: numericMessageId,
@@ -155,6 +220,12 @@ export function setupFeedback(options) {
                 console.log(`Feedback-Kommentar aktualisiert für Nachricht ${numericMessageId}`);
             } else {
                 console.warn(`Nachricht mit ID ${numericMessageId} nicht gefunden!`);
+                
+                // Reload der aktuellen Session, um die Nachrichten-IDs zu aktualisieren
+                if (window.reloadCurrentSession) {
+                    console.log("Lade Session neu, um Nachrichten-IDs zu aktualisieren");
+                    await window.reloadCurrentSession();
+                }
             }
             
             console.log('Feedback-Kommentar erfolgreich gesendet');
@@ -176,12 +247,16 @@ export function setupFeedback(options) {
      * @param {number} messageId - ID der Nachricht
      */
     const loadMessageFeedback = async (messageId) => {
-        if (!messageId || isNaN(parseInt(messageId)) || parseInt(messageId) <= 0) {
-            console.error("Ungültige message_id für Feedback-Abruf:", messageId);
+        if (!messageId) {
+            console.warn("Keine Nachrichten-ID zum Laden des Feedbacks angegeben");
             return;
         }
         
-        const numericMessageId = parseInt(messageId);
+        const numericMessageId = parseInt(messageId, 10);
+        if (isNaN(numericMessageId) || numericMessageId <= 0) {
+            console.error("Ungültige message_id für Feedback-Abruf:", messageId);
+            return;
+        }
         
         try {
             console.log(`Lade Feedback für Nachricht ${numericMessageId}`);
