@@ -366,10 +366,51 @@
 }
 
 /* Admin Sidebar - verbesserte Styles */
+.admin-sidebar {
+    background-color: white;
+    border-right: 1px solid #e2e8f0;
+    border-radius: var(--nscale-border-radius) 0 0 var(--nscale-border-radius);
+    box-shadow: var(--nscale-shadow);
+    overflow-y: auto;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+}
+
+.theme-dark .admin-sidebar {
+    background-color: #1e1e1e;
+    border-right: 1px solid #333;
+    color: #f0f0f0;
+}
+
 .theme-contrast .admin-sidebar {
     background-color: #000000;
     border-right: 2px solid #ffeb3b;
     color: #ffeb3b;
+}
+
+.admin-nav {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem;
+}
+
+.admin-nav-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: var(--nscale-border-radius);
+    margin-bottom: 0.5rem;
+    transition: all 0.2s;
+    cursor: pointer;
+    color: var(--nscale-dark-gray);
+    text-align: left;
+    border: none;
+    background: transparent;
+}
+
+.theme-dark .admin-nav-item {
+    color: #f0f0f0;
 }
 
 .theme-contrast .admin-nav-item {
@@ -377,9 +418,36 @@
     border: 1px solid transparent;
 }
 
+.admin-nav-item i {
+    margin-right: 0.75rem;
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+}
+
+.admin-nav-item:hover {
+    background-color: var(--nscale-gray);
+}
+
+.theme-dark .admin-nav-item:hover {
+    background-color: #333;
+}
+
 .theme-contrast .admin-nav-item:hover {
     background-color: #333300;
     border-color: #ffeb3b;
+}
+
+.admin-nav-item.active {
+    background-color: var(--nscale-light-green);
+    color: var(--nscale-primary-dark);
+    font-weight: 500;
+}
+
+.theme-dark .admin-nav-item.active {
+    background-color: #003320;
+    color: #00c060;
+    font-weight: 500;
 }
 
 .theme-contrast .admin-nav-item.active {
@@ -410,4 +478,13 @@
 .theme-contrast button[type="button"]:hover {
     background-color: #ffd600;
     color: #000000;
+}
+
+/* Verbesserung für Text in der Sidebar im Dunkelmodus */
+.theme-dark .mt-auto.p-4 {
+    color: #f0f0f0;
+}
+
+.theme-dark .mt-auto.p-4 .font-semibold {
+    color: #00c060;
 }

@@ -528,8 +528,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
-                            <!-- MOTD-Tab -->
+                            <!-- MOTD-Tab und Vorschau -->
                             <div v-if="adminTab === 'motd'" class="admin-panel-content">
                                 <div class="flex flex-col lg:flex-row gap-6">
                                     <!-- MOTD Form -->
@@ -627,7 +626,7 @@
                                         </div>
                                     </div>
                                     
-                                    <!-- MOTD Vorschau -->
+                                    <!-- MOTD Vorschau - KORRIGIERT für MOTD-Textfarbe -->
                                     <div class="w-full lg:w-1/3 flex flex-col">
                                         <div class="admin-card h-full">
                                             <div class="admin-card-title">Vorschau</div>
@@ -640,7 +639,7 @@
                                                     borderStyle: 'solid'
                                                 }">
                                                 <div v-if="motdConfig.display.dismissible" class="float-right cursor-pointer">×</div>
-                                                <div v-html="formatMotdContent(motdConfig.content)" class="prose"></div>
+                                                <div v-html="formatMotdContent(motdConfig.content)"></div>
                                             </div>
                                             <p class="text-xs text-gray-500 mt-2">
                                                 <i class="fas fa-info-circle mr-1"></i>

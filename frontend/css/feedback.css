@@ -20,9 +20,10 @@
     display: flex;
     align-items: center;
     transition: background-color 0.2s;
+    margin-left: 0.2rem;
 }
 
-/* Wichtige Änderung: Hover nur für den jeweiligen Button */
+/* Hover-Effekt für individuelle Buttons angepasst */
 .feedback-button:hover {
     color: rgba(0, 0, 0, 0.8);
     background-color: rgba(0, 0, 0, 0.05);
@@ -57,6 +58,10 @@
 
 .theme-dark .feedback-comment {
     color: #aaa;
+}
+
+.theme-dark .feedback-button.selected {
+    color: #00c060;
 }
 
 .theme-contrast .feedback-button {

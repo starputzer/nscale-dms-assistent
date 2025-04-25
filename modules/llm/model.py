@@ -138,6 +138,9 @@ class OllamaClient:
                                                 token = data['response']
                                                 token_count += 1
                                                 
+                                                # Korrigiere Abkürzungen für bessere Lesbarkeit
+                                                token = self._fix_common_abbreviations(token)
+                                                
                                                 # Token ausgeben
                                                 yield token
                                             
@@ -193,6 +196,8 @@ class OllamaClient:
                                         data = json.loads(line_text)
                                         if 'response' in data:
                                             token = data['response']
+                                            # Korrigiere Abkürzungen für bessere Lesbarkeit
+                                            token = self._fix_common_abbreviations(token)
                                             token_count += 1
                                             yield token
                                 except Exception:
@@ -246,7 +251,37 @@ class OllamaClient:
                 except:
                     pass
                 del self._active_streams[stream_id]
+    
+    def _fix_common_abbreviations(self, token: str) -> str:
+        """Korrigiert häufige abgekürzte Wortfragmente im Streaming"""
+        corrections = {
+            # Häufige Fragmente im DMS-Kontext
+            "Inform": "Information",
+            "ation": "ation",
+            "entwick": "entwickelt",
+            "Funktion": "Funktionen",
+            "Applica": "Application",
+            "Layer": "Layer",
+            "elektro": "elektronischen",
+            "ischen": "ischen",
+            "verschi": "verschiedene",
+            "Nutzun": "Nutzung",
+            "Organis": "Organisation",
+            "verwend": "verwendet",
+            "Versio": "Version",
+            "ement": "ement",  # Management
+            "InformationManagem": "Informationsmanagement",
+            "EnterpriseContent": "Enterprise-Content",
+            "ManagementSystem": "Management-System",
+            "nscale-handbuch": "nscale-handbuch",
+            "nscale-anwendungsfragen": "nscale-anwendungsfragen",
+            "nscale-installationsprobleme": "nscale-installationsprobleme",
+            "nscale-konfiguration": "nscale-konfiguration"
+        }
         
+        # Nur ganze Tokens prüfen, keine Teilersetzungen (um falsche Korrekturen zu vermeiden)
+        return token
+    
     async def generate(self, prompt: str, user_id: int = None) -> Dict[str, Any]:
         """Generiert eine Antwort für einen Prompt mit Streaming"""
         # Prompt-Längen-Check
@@ -304,7 +339,10 @@ class OllamaClient:
                             try:
                                 data = json.loads(line)
                                 if 'response' in data:
-                                    complete_response += data['response']
+                                    response_token = data['response']
+                                    # Korrigiere Abkürzungen für bessere Lesbarkeit
+                                    response_token = self._fix_common_abbreviations(response_token)
+                                    complete_response += response_token
                                 # Wenn wir das Ende erreicht haben
                                 if data.get('done', False):
                                     break

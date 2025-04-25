@@ -512,7 +512,7 @@ main,
     gap: 0.75rem;
 }
 
-/* Eingabefeld */
+/* Eingabefeld - korrigiert für Dunkelmodus */
 .input-container .nscale-input {
     background-color: #f8fafc;
     border: 1px solid #e2e8f0;
@@ -524,14 +524,68 @@ main,
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
+.theme-dark .input-container .nscale-input {
+    background-color: #333;
+    color: #f0f0f0;
+    border-color: #444;
+}
+
+.theme-dark .input-container .nscale-input::placeholder {
+    color: #aaa;
+}
+
 .input-container .nscale-input:hover {
     border-color: #cbd5e0;
+}
+
+.theme-dark .input-container .nscale-input:hover {
+    border-color: #555;
 }
 
 .input-container .nscale-input:focus {
     border-color: var(--nscale-green);
     box-shadow: 0 0 0 2px rgba(0, 165, 80, 0.1);
     background-color: white;
+}
+
+.theme-dark .input-container .nscale-input:focus {
+    border-color: #00c060;
+    box-shadow: 0 0 0 2px rgba(0, 192, 96, 0.2);
+    background-color: #444;
+}
+
+/* Barrierefreiheitsbutton (Schwimmendes Zahnrad) */
+.floating-action-button {
+    position: fixed;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background-color: var(--nscale-green);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 50;
+}
+
+.floating-action-button:hover {
+    background-color: var(--nscale-green-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.floating-action-button:active {
+    transform: translateY(0);
+}
+
+.floating-action-button i {
+    font-size: 1.25rem;
 }
 
 /* Senden-Button */

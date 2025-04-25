@@ -27,17 +27,39 @@ export function setupSettings(options) {
         // Event-Listener für ESC-Taste hinzufügen, wenn Panel geöffnet ist
         if (showSettingsPanel.value) {
             document.addEventListener('keydown', handleEscapeKey);
+            // Event-Listener für Klicks außerhalb des Panels hinzufügen
+            setTimeout(() => {
+                document.addEventListener('click', handleOutsideClick);
+            }, 100);
         } else {
             document.removeEventListener('keydown', handleEscapeKey);
+            document.removeEventListener('click', handleOutsideClick);
         }
     };
 
     // Funktion zum Schließen des Panels mit ESC-Taste
     const handleEscapeKey = (event) => {
         if (event.key === 'Escape') {
-            showSettingsPanel.value = false;
-            document.removeEventListener('keydown', handleEscapeKey);
+            closeSettingsPanel();
         }
+    };
+    
+    // Funktion zum Schließen des Panels bei Klick außerhalb
+    const handleOutsideClick = (event) => {
+        // Prüfen, ob der Klick außerhalb des Panels erfolgte
+        const settingsPanel = document.querySelector('.settings-panel');
+        if (settingsPanel && !settingsPanel.contains(event.target) && 
+            !event.target.classList.contains('floating-action-button') &&
+            !event.target.closest('.floating-action-button')) {
+            closeSettingsPanel();
+        }
+    };
+    
+    // Separate Funktion zum Schließen des Panels
+    const closeSettingsPanel = () => {
+        showSettingsPanel.value = false;
+        document.removeEventListener('keydown', handleEscapeKey);
+        document.removeEventListener('click', handleOutsideClick);
     };
     
     /**
@@ -194,6 +216,7 @@ export function setupSettings(options) {
         currentFontSize,
         accessibilitySettings,
         toggleSettings,
+        closeSettingsPanel,
         setTheme,
         setFontSize,
         updateAccessibilitySettings

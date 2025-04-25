@@ -241,6 +241,10 @@ async def create_user(request: CreateUserRequest, admin_data: Dict[str, Any] = D
 @app.put("/api/admin/users/role")
 async def update_user_role(request: UserRoleUpdateRequest, admin_data: Dict[str, Any] = Depends(get_admin_user)):
     """Aktualisiert die Rolle eines Benutzers (Admin-Funktion)"""
+    # Prüfen, ob der Admin versucht, seine eigene Rolle zu ändern
+    if request.user_id == admin_data['user_id']:
+        raise HTTPException(status_code=400, detail="Sie können Ihre eigene Rolle nicht ändern")
+    
     success = user_manager.update_user_role(request.user_id, request.new_role, admin_data['user_id'])
     
     if not success:
@@ -251,6 +255,10 @@ async def update_user_role(request: UserRoleUpdateRequest, admin_data: Dict[str,
 @app.delete("/api/admin/users/{user_id}")
 async def delete_user(user_id: int, admin_data: Dict[str, Any] = Depends(get_admin_user)):
     """Löscht einen Benutzer (Admin-Funktion)"""
+    # Prüfen, ob der Admin versucht, sich selbst zu löschen
+    if user_id == admin_data['user_id']:
+        raise HTTPException(status_code=400, detail="Sie können Ihr eigenes Konto nicht löschen")
+        
     # Diese Funktion müsste noch in der UserManager-Klasse implementiert werden
     # Da wir sie im Moment nicht benötigen, geben wir eine entsprechende Meldung zurück
     raise HTTPException(status_code=501, detail="Diese Funktion ist noch nicht implementiert")
@@ -260,6 +268,7 @@ async def delete_user(user_id: int, admin_data: Dict[str, Any] = Depends(get_adm
 async def get_current_user_role(user_data: Dict[str, Any] = Depends(get_current_user)):
     """Gibt die Rolle des aktuellen Benutzers zurück"""
     return {"role": user_data.get('role', 'user')}
+
 @app.post("/api/feedback")
 async def add_feedback(request: FeedbackRequest, user_data: Dict[str, Any] = Depends(get_current_user)):
     """Fügt Feedback zu einer Nachricht hinzu"""
@@ -581,9 +590,8 @@ async def rename_session(request: RenameSessionRequest, user_data: Dict[str, Any
 
 # Admin-API-Endpunkte
 @app.post("/api/admin/install-model")
-async def install_model(user_data: Dict[str, Any] = Depends(get_current_user)):
-    """Installiert das LLM-Modell"""
-    # In einer echten Anwendung würde hier eine Admin-Berechtigung geprüft werden
+async def install_model(user_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Installiert das LLM-Modell (nur für Admins)"""
     result = await rag_engine.install_model()
     
     if not result['success']:
@@ -592,9 +600,8 @@ async def install_model(user_data: Dict[str, Any] = Depends(get_current_user)):
     return {"message": result['message']}
 
 @app.post("/api/admin/clear-cache")
-async def clear_cache(user_data: Dict[str, Any] = Depends(get_current_user)):
-    """Löscht den Cache"""
-    # In einer echten Anwendung würde hier eine Admin-Berechtigung geprüft werden
+async def clear_cache(user_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Löscht den LLM-Cache (nur für Admins)"""
     result = rag_engine.clear_cache()
     
     if not result['success']:
@@ -602,10 +609,40 @@ async def clear_cache(user_data: Dict[str, Any] = Depends(get_current_user)):
     
     return {"message": result['message']}
 
+@app.post("/api/admin/clear-embedding-cache")
+async def clear_embedding_cache(user_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Löscht den Embedding-Cache (nur für Admins)"""
+    try:
+        # Löschlogik für Embedding-Cache
+        embedding_cache_path = Config.EMBED_CACHE_PATH
+        if embedding_cache_path.exists():
+            embedding_cache_path.unlink()
+            logger.info(f"Embedding-Cache-Datei gelöscht: {embedding_cache_path}")
+            
+            # Setze den RAG-Engine-Zustand zurück, um Neuinitialisierung zu erzwingen
+            rag_engine.initialized = False
+            if hasattr(rag_engine, 'embedding_manager'):
+                if hasattr(rag_engine.embedding_manager, 'embeddings'):
+                    rag_engine.embedding_manager.embeddings = None
+                if hasattr(rag_engine.embedding_manager, 'chunks'):
+                    rag_engine.embedding_manager.chunks = []
+                if hasattr(rag_engine.embedding_manager, 'tfidf_vectorizer'):
+                    rag_engine.embedding_manager.tfidf_vectorizer = None
+                if hasattr(rag_engine.embedding_manager, 'tfidf_matrix'):
+                    rag_engine.embedding_manager.tfidf_matrix = None
+                rag_engine.embedding_manager.initialized = False
+            
+            return {"message": "Embedding-Cache erfolgreich gelöscht"}
+        else:
+            logger.info(f"Embedding-Cache-Datei existiert nicht: {embedding_cache_path}")
+            return {"message": "Embedding-Cache existiert nicht oder wurde bereits gelöscht"}
+    except Exception as e:
+        logger.error(f"Fehler beim Löschen des Embedding-Cache: {e}")
+        raise HTTPException(status_code=500, detail=f"Fehler beim Löschen des Embedding-Cache: {str(e)}")
+
 @app.get("/api/admin/stats")
-async def get_stats(user_data: Dict[str, Any] = Depends(get_current_user)):
-    """Gibt Statistiken zum System zurück"""
-    # In einer echten Anwendung würde hier eine Admin-Berechtigung geprüft werden
+async def get_stats(user_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Gibt Statistiken zum System zurück (nur für Admins)"""
     stats = rag_engine.get_document_stats()
     
     return {"stats": stats}

@@ -9,7 +9,7 @@ from ..retrieval.embedding import EmbeddingManager
 from ..llm.model import OllamaClient
 import torch
 
-logger = LogManager.setup_logging(__name__)
+logger = LogManager.setup_logging()
 
 class RAGEngine:
     """Hauptmodul für RAG-Funktionalität"""
@@ -94,8 +94,22 @@ class RAGEngine:
                     yield "event: done\ndata: \n\n"
                     return
 
+                # Entferne Duplikate basierend auf der Datei
+                seen_sources = set()
+                unique_chunks = []
+                for chunk in relevant_chunks:
+                    source = chunk.get('file', 'unknown')
+                    # Füge nur hinzu, wenn die Quelle noch nicht gesehen wurde
+                    if source not in seen_sources:
+                        seen_sources.add(source)
+                        unique_chunks.append(chunk)
+                
+                # Begrenze auf maximal 5 verschiedene Quellen
+                if len(unique_chunks) > 5:
+                    unique_chunks = unique_chunks[:5]
+
                 # Prompt bauen mit Spracheinstellung
-                prompt = self._format_prompt(question, relevant_chunks, use_simple_language)
+                prompt = self._format_prompt(question, unique_chunks, use_simple_language)
                 logger.info(f"Starte Streaming für Frage: {question[:50]}... (Einfache Sprache: {use_simple_language})")
 
                 # Variable zur Nachverfolgung, ob Daten gesendet wurden
@@ -184,8 +198,22 @@ class RAGEngine:
                 'sources': []
             }
         
+        # Entferne Duplikate basierend auf der Datei
+        seen_sources = set()
+        unique_chunks = []
+        for chunk in chunks:
+            source = chunk.get('file', 'unknown')
+            # Füge nur hinzu, wenn die Quelle noch nicht gesehen wurde
+            if source not in seen_sources:
+                seen_sources.add(source)
+                unique_chunks.append(chunk)
+                
+        # Begrenze auf maximal 5 verschiedene Quellen
+        if len(unique_chunks) > 5:
+            unique_chunks = unique_chunks[:5]
+        
         # Formatiere Prompt mit Chunks und Spracheinstellung
-        prompt = self._format_prompt(question, chunks, use_simple_language)
+        prompt = self._format_prompt(question, unique_chunks, use_simple_language)
         
         # Generiere Antwort
         result = await self.ollama_client.generate(prompt, user_id)
@@ -195,18 +223,18 @@ class RAGEngine:
                 'success': False,
                 'message': result['error'],
                 'answer': '',
-                'chunks': chunks,
-                'sources': self._extract_sources(chunks)
+                'chunks': unique_chunks,
+                'sources': self._extract_sources(unique_chunks)
             }
         
         # Prüfe, ob die Antwort Deutsch ist
-        is_german, answer = self._ensure_german_answer(result['response'], chunks)
+        is_german, answer = self._ensure_german_answer(result['response'], unique_chunks)
         
         return {
             'success': True,
             'answer': answer,
-            'chunks': chunks,
-            'sources': self._extract_sources(chunks),
+            'chunks': unique_chunks,
+            'sources': self._extract_sources(unique_chunks),
             'cached': result.get('cached', False)
         }
 
@@ -263,13 +291,12 @@ Aufgaben und Anforderungen:
 4. Organisiere komplexe Antworten mit Überschriften und Aufzählungspunkten für bessere Lesbarkeit.
 5. Kopiere KEINE vollständigen Abschnitte aus dem Kontext - formuliere die Informationen in eigenen Worten.
 6. Füge Quellenverweise in deiner Antwort ein, z.B. "(aus Dokument 2)".
+7. Beachte, dass nicht alle Dokumente gleichwertig oder relevant sind - wähle die passendsten aus.
+8. Nenne MAXIMAL DIE ERSTEN 5 QUELLEN am Ende deiner Antwort, ohne Wiederholungen.
 
 Zielgruppe: Mitarbeiter der Berliner Verwaltung, die nscale DMS für Dokumentenmanagement nutzen."""
 
         # Erweiterter Prompt für einfache Sprache
-        # Nur der aktualisierte Teil für "einfache Sprache" in der _format_prompt Funktion:
-
-    # Erweiterter Prompt für einfache Sprache
         simple_language_prompt = f"""<|begin_of_text|>
 <|system|>
 Du bist ein freundlicher und geduldiger Assistent, der Fragen zur nscale DMS-Software in klarer, leicht verständlicher Sprache beantwortet. Erkläre Informationen so, dass sie auch von Personen verstanden werden, die keine Vorkenntnisse in Technik oder Verwaltung haben.
@@ -285,6 +312,8 @@ Sprich direkt die Nutzerin oder den Nutzer an. Gib keine unnötigen Details. Ver
 
 Nutze NUR Informationen aus dem bereitgestellten Dokumentenkontext.
 Wenn du etwas nicht weißt, sage einfach "Dazu finde ich keine Information."
+
+Nenne MAXIMAL DIE ERSTEN 5 QUELLEN am Ende deiner Antwort, ohne Wiederholungen.
 
 Zielgruppe: Neue Mitarbeiter der Berliner Verwaltung, die mit der nscale DMS-Software noch nicht vertraut sind."""
 
