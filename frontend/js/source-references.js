@@ -22,10 +22,14 @@ export function setupSourceReferences(options) {
      */
     const hasSourceReferences = (message) => {
         if (!message) return false;
+        
         // Suche nach verschiedenen Mustern für Quellenverweise
+        // Erweitert, um alle möglichen Formate zu erkennen
         return /\(Quelle-\d+\)/.test(message) || 
-               /Dokument \d+/.test(message) || 
-               /Quelle(n)?:/.test(message);
+               /Dokument \d+/.test(message) ||
+               /Quelle(n)?:/.test(message) ||
+               /Abschnitt/.test(message) ||
+               /aus nscale/.test(message);
     };
     
     /**
@@ -36,13 +40,31 @@ export function setupSourceReferences(options) {
     const extractSourceReferences = (message) => {
         if (!message) return [];
         
-        const sourcePattern = /\(Quelle-(\d+)\)/g;
-        const matches = [...message.matchAll(sourcePattern)];
+        // Suche nach verschiedenen Quellenformaten
+        const patterns = [
+            /\(Quelle-(\d+)\)/g,
+            /Dokument (\d+)/g,
+            /Abschnitt ['"]([^'"]+)['"]/g
+        ];
         
-        // Extrahiere die eindeutigen Quellen-IDs
-        const sourceIds = [...new Set(matches.map(match => match[1]))];
+        let sources = [];
         
-        return sourceIds.map(id => `Quelle-${id}`);
+        // Durchsuche alle Muster
+        for (const pattern of patterns) {
+            const matches = [...(message.matchAll(pattern) || [])];
+            if (matches.length > 0) {
+                const sourceIds = matches.map(match => match[1]);
+                sources = [...sources, ...sourceIds];
+            }
+        }
+        
+        // Wenn keine spezifischen Quellen gefunden wurden, aber ein Quellenabschnitt existiert
+        if (sources.length === 0 && /Quelle(n)?:/.test(message)) {
+            sources.push('Quellenabschnitt');
+        }
+        
+        // Entferne Duplikate
+        return [...new Set(sources)];
     };
     
     /**
@@ -53,13 +75,19 @@ export function setupSourceReferences(options) {
     const formatMessageWithSourceHighlighting = (message) => {
         if (!message) return '';
         
-        // Bereite den Text für die Anzeige vor (XSS-Schutz, etc.)
+        // Bereite den Text für die Anzeige vor
         let formattedMessage = message;
         
         // Ersetze Quellenverweise mit hervorgehobenen Spans
         formattedMessage = formattedMessage.replace(
             /\(Quelle-(\d+)\)/g, 
             '<span class="source-reference" title="Quelle $1">$&</span>'
+        );
+        
+        // Ersetze Datei- und Abschnittsreferenzen
+        formattedMessage = formattedMessage.replace(
+            /(Dokument \d+) \(([^\)]+)\)/g,
+            '<span class="source-reference" title="$2">$1</span>'
         );
         
         return formattedMessage;
@@ -70,8 +98,11 @@ export function setupSourceReferences(options) {
      * @param {Object} message - Die Nachricht, für die eine Erklärung geladen werden soll
      */
     const loadExplanation = async (message) => {
+        console.log("loadExplanation aufgerufen mit:", message);
+        
         if (!message || !message.id) {
             console.error("Ungültige Nachricht für Erklärung:", message);
+            alert("Diese Nachricht kann nicht erklärt werden, da keine ID vorhanden ist.");
             return;
         }
         
@@ -87,6 +118,7 @@ export function setupSourceReferences(options) {
         } catch (error) {
             console.error("Fehler beim Laden der Erklärung:", error);
             currentExplanation.value = {
+                original_question: message.message,
                 explanation_text: "Es ist ein Fehler bei der Erklärung aufgetreten. Bitte versuchen Sie es später erneut."
             };
         } finally {
@@ -99,8 +131,8 @@ export function setupSourceReferences(options) {
      * @param {Object} message - Die Nachricht, für die Quellen angezeigt werden sollen
      */
     const showSourcesDialog = (message) => {
-        // Diese Funktion könnte einen separaten Dialog für die Quellenansicht öffnen
-        // Für jetzt leiten wir auf die loadExplanation um, da diese auch die Quellen enthält
+        console.log("showSourcesDialog aufgerufen mit:", message);
+        // Diese Funktion leitet auf die loadExplanation um, da diese auch die Quellen enthält
         loadExplanation(message);
     };
     
@@ -354,6 +386,13 @@ export function setupSourceReferences(options) {
     // Styles einfügen
     injectStylesIntoHead();
     
+    // Debug-Hilfsfunktion, um zu überprüfen, ob Nachrichten Quellenreferenzen enthalten
+    const debugSourceReferences = (message) => {
+        console.log("Nachricht:", message);
+        console.log("Hat Quellenreferenzen:", hasSourceReferences(message));
+        console.log("Extrahierte Referenzen:", extractSourceReferences(message));
+    };
+    
     return {
         hasSourceReferences,
         extractSourceReferences,
@@ -365,6 +404,7 @@ export function setupSourceReferences(options) {
         renderSourceButtons,
         showExplanationDialog,
         currentExplanation,
-        explanationLoading
+        explanationLoading,
+        debugSourceReferences
     };
 }

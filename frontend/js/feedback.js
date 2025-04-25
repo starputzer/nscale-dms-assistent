@@ -18,24 +18,35 @@ export function setupFeedback(options) {
      * @param {number} sessionId - ID der Session
      * @param {boolean} isPositive - Positives oder negatives Feedback
      */
+    // Diese Änderungen in feedback.js vornehmen
+
+    // Verbesserte submitFeedback-Funktion mit besserer Fehlerbehandlung und Fallback für message_id
     const submitFeedback = async (messageId, sessionId, isPositive) => {
         try {
             console.log(`Sende Feedback: message_id=${messageId}, session_id=${sessionId}, isPositive=${isPositive}`);
             
-            // Stelle sicher, dass messageId und sessionId numerisch sind
+            // Warten auf DOM-Update, um die event-Propagation zu beenden
+            await Vue.nextTick();
+            
+            // Stelle sicher, dass messageId und sessionId definiert sind
             if (!messageId || isNaN(messageId) || messageId <= 0) {
-                console.error("Ungültige message_id für Feedback:", messageId);
+                console.warn("⚠️ Ungültige message_id für Feedback:", messageId);
                 
-                // Versuche, die message_id aus dem messages-Array zu ermitteln
-                const messageIndex = messages.value.findIndex(m => !m.is_user && !m.feedback_positive !== undefined);
+                // Suche nach der ersten Assistenten-Nachricht ohne Feedback
+                const messageIndex = messages.value.findIndex(m => 
+                    !m.is_user && m.feedback_positive === undefined);
+                    
                 if (messageIndex >= 0) {
+                    // Wenn die Nachricht keine ID hat, setze eine temporäre
+                    if (!messages.value[messageIndex].id) {
+                        messages.value[messageIndex].id = Date.now();
+                        console.log(`Temporäre ID gesetzt: ${messages.value[messageIndex].id}`);
+                    }
+                    
                     messageId = messages.value[messageIndex].id;
-                    console.log(`Verwende alternative message_id: ${messageId}`);
-                }
-                
-                // Wenn immer noch keine gültige message_id gefunden wurde
-                if (!messageId || isNaN(messageId) || messageId <= 0) {
-                    console.error("Keine gültige message_id gefunden, Feedback wird abgebrochen");
+                    console.log(`Alternative message_id gefunden: ${messageId}`);
+                } else {
+                    console.error("❌ Keine geeignete Nachricht für Feedback gefunden");
                     return;
                 }
             }
@@ -47,7 +58,7 @@ export function setupFeedback(options) {
                     sessionId = currentSessionId.value;
                     console.log(`Verwende currentSessionId als Fallback: ${sessionId}`);
                 } else {
-                    console.error("Keine gültige session_id gefunden, Feedback wird abgebrochen");
+                    console.error("❌ Keine gültige session_id gefunden, Feedback wird abgebrochen");
                     return;
                 }
             }
@@ -56,13 +67,14 @@ export function setupFeedback(options) {
             const numericMessageId = parseInt(messageId);
             const numericSessionId = parseInt(sessionId);
             
+            // API-Aufruf
             const response = await axios.post('/api/feedback', {
                 message_id: numericMessageId,
                 session_id: numericSessionId,
                 is_positive: isPositive
             });
             
-            console.log("Feedback-Antwort vom Server:", response.data);
+            console.log("✅ Feedback-Antwort vom Server:", response.data);
             
             // Aktualisiere den Feedback-Status in der Nachricht
             const messageIndex = messages.value.findIndex(m => m.id === numericMessageId);
@@ -73,35 +85,27 @@ export function setupFeedback(options) {
                 if (isPositive) {
                     messages.value[messageIndex].feedback_comment = null;
                 }
-                console.log('Feedback erfolgreich gesendet und UI aktualisiert');
+                console.log('✅ Feedback erfolgreich gesendet und UI aktualisiert');
             } else {
-                // Alternative Suche nach der richtigen Nachricht
-                const altMessageIndex = messages.value.findIndex(m => !m.is_user && m.session_id === numericSessionId);
-                if (altMessageIndex >= 0) {
-                    console.log(`Alternative Nachricht gefunden an Index ${altMessageIndex}`);
-                    // ID setzen, falls nicht vorhanden
-                    if (!messages.value[altMessageIndex].id) {
-                        messages.value[altMessageIndex].id = numericMessageId;
-                    }
-                    messages.value[altMessageIndex].feedback_positive = isPositive;
-                    // Lösche alten Kommentar wenn positive Feedback gegeben wird
+                // Fallback: Aktualisiere die letzte Assistentennachricht
+                const lastAssistantIndex = messages.value.map((m, i) => ({idx: i, isAssistant: !m.is_user}))
+                                            .filter(m => m.isAssistant)
+                                            .pop()?.idx;
+                
+                if (lastAssistantIndex !== undefined) {
+                    console.log(`Fallback: Aktualisiere letzte Assistentennachricht an Index ${lastAssistantIndex}`);
+                    messages.value[lastAssistantIndex].id = numericMessageId;
+                    messages.value[lastAssistantIndex].feedback_positive = isPositive;
                     if (isPositive) {
-                        messages.value[altMessageIndex].feedback_comment = null;
+                        messages.value[lastAssistantIndex].feedback_comment = null;
                     }
-                    console.log('Feedback erfolgreich gesendet und UI über alternativen Index aktualisiert');
                 } else {
-                    console.warn(`Weder Nachricht mit ID ${numericMessageId} noch passende Alternative gefunden!`);
-                    console.log("Verfügbare Nachrichten:", messages.value.map(m => `ID: ${m.id}, is_user: ${m.is_user}`));
+                    console.warn("⚠️ Keine Assistentennachricht gefunden!");
                 }
             }
         } catch (error) {
-            console.error('Fehler beim Senden des Feedbacks:', error);
-            console.log('Fehlermeldung:', error.response?.data);
-            
-            // Versuche Details des Fehlers anzuzeigen
-            if (error.response?.status === 422) {
-                console.error('Validation error. Server erwartet andere Daten:', error.response.data);
-            }
+            console.error('❌ Fehler beim Senden des Feedbacks:', error);
+            alert("Fehler beim Senden des Feedbacks. Bitte versuchen Sie es später erneut.");
         }
     };
     

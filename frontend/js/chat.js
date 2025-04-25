@@ -191,7 +191,8 @@ export function setupChat(options) {
             // Zurücksetzen der vollständigen Antwort
             completeResponse = "";
 
-            // Haupt-Message-Handler - FIX: korrekte Handhabung des 'done' Events
+            // 1. Verbesserte onmessage-Funktion mit besserer Behandlung des done-Events
+            // Im async function event_generator() im sendQuestionStream-Block:
             eventSource.value.onmessage = (event) => {
                 try {
                     console.log(`Rohes Event erhalten: ${event.data}`);
@@ -205,14 +206,15 @@ export function setupChat(options) {
                         return;
                     }
                     
-                    // JSON-Daten extrahieren
-                    let jsonData = event.data;
-                    if (jsonData.startsWith('data: ')) {
-                        jsonData = jsonData.substring(6);
+                    // Prüfe, ob es sich um ein 'done'-Event handelt
+                    if (event.data.includes('event: done')) {
+                        console.log("'done'-Event erkannt, verarbeite es wie ein Standard-done-Event");
+                        doneEventHandler(event);
+                        return;
                     }
                     
-                    // FIX: Prüfen, ob es sich um ein eigentliches Datenevent handelt oder ein spezielles Event
-                    if (jsonData === '[STREAM_RETRY]') {
+                    // Prüfe auf Spezial-Event-Flags
+                    if (event.data === '[STREAM_RETRY]') {
                         console.log("Stream wird neu gestartet...");
                         currentStreamRetryCount++;
                         messages.value[assistantIndex].message += `\n[Verbindung wird wiederhergestellt... Versuch ${currentStreamRetryCount}]\n`;
@@ -220,17 +222,17 @@ export function setupChat(options) {
                         return;
                     }
                     
-                    if (jsonData === '[TIMEOUT]') {
+                    if (event.data === '[TIMEOUT]') {
                         console.log("Timeout beim Stream.");
                         return;
                     }
                     
-                    if (jsonData.startsWith('[FINAL_TIMEOUT]') || 
-                        jsonData.startsWith('[CONN_ERROR]') || 
-                        jsonData.startsWith('[ERROR]') || 
-                        jsonData.startsWith('[UNEXPECTED_ERROR]') || 
-                        jsonData.startsWith('[NO_TOKENS]')) {
-                        console.error("Stream-Fehler:", jsonData);
+                    if (event.data.startsWith('[FINAL_TIMEOUT]') || 
+                        event.data.startsWith('[CONN_ERROR]') || 
+                        event.data.startsWith('[ERROR]') || 
+                        event.data.startsWith('[UNEXPECTED_ERROR]') || 
+                        event.data.startsWith('[NO_TOKENS]')) {
+                        console.error("Stream-Fehler:", event.data);
                         
                         // Wenn die Nachricht bereits Inhalt hat, nur eine Warnung anhängen
                         if (messages.value[assistantIndex].message.trim()) {
@@ -246,6 +248,12 @@ export function setupChat(options) {
                     
                     // Versuche JSON zu parsen
                     try {
+                        // Extrahiere den JSON-Teil
+                        let jsonData = event.data;
+                        if (jsonData.startsWith('data: ')) {
+                            jsonData = jsonData.substring(6);
+                        }
+                        
                         const data = JSON.parse(jsonData);
                         
                         // Überprüfen, ob das Event eine message_id enthält
@@ -278,21 +286,50 @@ export function setupChat(options) {
                             messages.value[assistantIndex].message = `Fehler: ${data.error}`;
                             cleanupStream();
                         }
-                    } catch (e) {
-                        // FIX: Dieser Teil ist wichtig - wenn kein JSON, prüfe ob es ein done-Event ist
-                        if (event.data.includes('event: done')) {
-                            console.log("'done'-Event erkannt, verarbeite es wie ein Standard-done-Event");
-                            // Manuell das done-Event auslösen
-                            doneEventHandler(event);
-                            return;
-                        }
-                        
-                        console.error("JSON-Parsing-Fehler:", e, "Rohdaten:", event.data);
+                    } catch (jsonError) {
+                        console.warn("Konnte Event-Daten nicht als JSON parsen, behandle als Rohtext:", event.data);
+                        // Hier könnten wir weitere Verarbeitungslogik hinzufügen, falls nötig
                     }
                 } catch (e) {
                     console.error("Allgemeiner Fehler bei Event-Verarbeitung:", e);
                 }
             };
+
+// 2. Im doneEventHandler sicherstellen, dass die message_id gesetzt wird
+const doneEventHandler = async (event) => {
+    console.log("DONE Event empfangen, Stream beendet");
+    
+    // Prüfe, ob die Nachricht nicht leer ist
+    const assistantIndex = messages.value.length - 1;
+    if (assistantIndex >= 0 && !messages.value[assistantIndex].message.trim()) {
+        messages.value[assistantIndex].message = 'Es wurden keine Daten empfangen. Bitte versuchen Sie es später erneut.';
+    }
+    
+    // Wenn wir eine message_id empfangen haben, setze sie in der aktuellen Nachricht
+    if (currentMessageId !== null && assistantIndex >= 0) {
+        console.log(`Setze message_id ${currentMessageId} in Nachricht an Index ${assistantIndex}`);
+        messages.value[assistantIndex].id = currentMessageId;
+        messages.value[assistantIndex].session_id = currentSessionId.value;
+    } else if (assistantIndex >= 0) {
+        // Wenn keine ID vorhanden, setze einen temporären Wert
+        const tempId = Date.now();
+        console.log(`Keine message_id vorhanden, setze temporäre ID: ${tempId}`);
+        messages.value[assistantIndex].id = tempId;
+        messages.value[assistantIndex].session_id = currentSessionId.value;
+    }
+    
+    // Session-Liste sofort aktualisieren, um den generierten Titel anzuzeigen
+    try {
+        if (loadSessions && typeof loadSessions === 'function') {
+            console.log("Lade Sitzungen nach Stream-Ende...");
+            await loadSessions();
+        }
+    } catch (e) {
+        console.error("Fehler beim Laden der aktualisierten Sitzungen:", e);
+    }
+    
+    cleanupStream();
+};
 
             // FIX: Spezieller Handler für 'done' Events mit korrektem Listener
             eventSource.value.addEventListener('done', doneEventHandler);

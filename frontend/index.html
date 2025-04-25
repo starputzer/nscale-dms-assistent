@@ -285,7 +285,7 @@
                                     <!-- Benutzer- oder Assistenten-Nachricht mit Wrapper -->
                                     <div v-else :class="['message-wrapper', message.is_user ? 'user-message' : 'assistant-message']">
                                         <div :class="[message.is_user ? 'nscale-message-user' : 'nscale-message-assistant']">
-                                            <!-- NEU: Verwende sourceReferences.formatMessageWithSourceHighlighting für Assistenten-Nachrichten -->
+                                            <!-- Nachrichten-Inhalt -->
                                             <div v-if="message.is_user" v-html="formatMessage(message.message)" class="prose"></div>
                                             <div v-else v-html="formatMessageWithSources(message.message)" class="prose"></div>
                                             
@@ -312,7 +312,9 @@
                                                     <i class="fas fa-comment"></i>
                                                 </button>
                                             </div>
-                                            <div v-if="!message.is_user && message.message && message.message.includes('Quellen:')" class="source-buttons mt-2">
+                                            
+                                            <!-- Quellbuttons ohne v-if Bedingung für Debugging -->
+                                            <div v-if="!message.is_user" class="source-buttons mt-2">
                                                 <button class="source-btn" @click="loadExplanation(message)">
                                                     <i class="fas fa-info-circle"></i>
                                                     Antwort erklären
@@ -322,16 +324,10 @@
                                                     Quellen anzeigen
                                                 </button>
                                             </div>
-                                            <!-- NEU: Quellenreferenz-Buttons manuell hinzufügen (ohne v-html) -->
-                                            <div v-if="!message.is_user && hasSourceReferences(message.message)" class="source-buttons mt-2">
-                                                <button class="source-btn" @click="loadExplanation(message)">
-                                                    <i class="fas fa-info-circle"></i>
-                                                    Antwort erklären
-                                                </button>
-                                                <button class="source-btn" @click="showSourcesDialog(message)">
-                                                    <i class="fas fa-bookmark"></i>
-                                                    Quellen anzeigen ({{ extractSourceReferences(message.message).length }})
-                                                </button>
+                                            
+                                            <!-- Debug-Info für message_id -->
+                                            <div style="font-size: 10px; color: gray; margin-top: 5px;">
+                                                message_id: {{message.id || 'undefined'}}
                                             </div>
                                         </div>
                                     </div>
