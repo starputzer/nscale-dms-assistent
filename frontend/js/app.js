@@ -268,11 +268,12 @@ createApp({
                 toggleSettings();
             }
         };
-
+        
         // NEU: Barrierefreiheitseinstellungen für alle Benutzer zugänglich machen
         const toggleAccessibilitySettings = () => {
             // Öffnet die Einstellungen unabhängig von der Benutzerrolle
-            settingsFunction.showSettingsPanel.value = !settingsFunction.showSettingsPanel.value;
+            // Greife direkt auf die toggleSettings-Funktion zu
+            toggleSettings();
         };
         
         // Hilfsfunktion für admin Tab-Titel
@@ -319,6 +320,9 @@ createApp({
         const settingsFunction = setupSettings({
             token
         });
+        
+        // Extrahiere die toggleSettings-Funktion aus dem settingsFunction-Objekt
+        const { toggleSettings } = settingsFunction;
         
         // Laden der MOTD
         const loadMotd = async () => {
@@ -491,10 +495,10 @@ createApp({
             userRole,
             getAdminTabTitle,
             toggleView,
-            toggleAccessibilitySettings,
             
             // Settings functionality
             ...settingsFunction,
+            toggleAccessibilitySettings, // NEU: Barrierefreiheitsfunktion hinzufügen
             
             // MOTD
             motd,
