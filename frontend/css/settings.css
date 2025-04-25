@@ -104,43 +104,56 @@
     color: var(--nscale-dark-gray, #333333);
 }
 
-/* Farbschema-Auswahloptionen */
-.settings-option-group {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.75rem;
-}
-
-/* Bessere Buttons für Einstellungen */
-.settings-button {
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 0.75rem;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    position: relative;
-    background-color: white;
-    font-weight: 500;
-    color: #4a5568;
+/* RadioButton-Style für Farbschema und Schriftgröße */
+.theme-options,
+.font-size-options {
     display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.theme-option,
+.font-size-option {
+    position: relative;
+    cursor: pointer;
+}
+
+.theme-radio,
+.font-size-radio {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.theme-label,
+.font-size-label {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 2px solid #e2e8f0;
+    transition: all 0.2s ease;
+    min-width: 80px;
+    text-align: center;
 }
 
-.settings-button:hover {
+.theme-label:hover,
+.font-size-label:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     border-color: #cbd5e0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-.settings-button.active {
-    border-color: var(--nscale-green, #00a550);
-    color: var(--nscale-green, #00a550);
+.theme-radio:checked + .theme-label,
+.font-size-radio:checked + .font-size-label {
+    border-color: var(--nscale-green);
     background-color: rgba(0, 165, 80, 0.05);
 }
 
-.settings-button.active::after {
+.theme-radio:checked + .theme-label::after,
+.font-size-radio:checked + .font-size-label::after {
     content: '✓';
     position: absolute;
     top: -8px;
@@ -148,7 +161,7 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background-color: var(--nscale-green, #00a550);
+    background-color: var(--nscale-green);
     color: white;
     font-size: 12px;
     display: flex;
@@ -156,52 +169,27 @@
     justify-content: center;
 }
 
-.settings-button i {
-    margin-right: 0.5rem;
-    font-size: 1rem;
-}
-
-/* Spezifische Buttons für Farbschema */
-.settings-button.theme-button {
-    flex-direction: column;
-    padding: 1.25rem 0.75rem;
-    gap: 0.5rem;
-}
-
-.settings-button.theme-button i {
-    margin-right: 0;
+.theme-icon {
     font-size: 1.5rem;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
 }
 
-/* Spezifische Buttons für Schriftgröße */
-.settings-button.size-button {
-    padding: 0.75rem 0.5rem;
+/* Verbesserte Checkboxen für Barrierefreiheit */
+.accessibility-container {
+    margin-top: 1.5rem;
 }
 
-.settings-button.size-small {
-    font-size: 0.8rem;
-}
-
-.settings-button.size-medium {
-    font-size: 1rem;
-}
-
-.settings-button.size-large {
-    font-size: 1.2rem;
-}
-
-/* Barrierefreiheitsoptionen */
 .accessibility-option {
+    position: relative;
     display: flex;
     align-items: center;
+    margin-bottom: 1rem;
     background-color: #f7fafc;
     padding: 1rem;
     border-radius: 8px;
-    margin-bottom: 1rem;
-    transition: all 0.2s;
-    cursor: pointer;
     border: 1px solid #e2e8f0;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .accessibility-option:hover {
@@ -210,23 +198,47 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
-.accessibility-option:last-child {
-    margin-bottom: 0;
-}
-
 .accessibility-checkbox {
-    width: 20px;
-    height: 20px;
+    position: relative;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border: 2px solid #cbd5e0;
+    border-radius: 4px;
     margin-right: 1rem;
     cursor: pointer;
-    accent-color: var(--nscale-green, #00a550);
+    transition: all 0.2s ease;
+    background-color: white;
+    flex-shrink: 0;
+}
+
+.accessibility-checkbox:checked {
+    background-color: var(--nscale-green);
+    border-color: var(--nscale-green);
+}
+
+.accessibility-checkbox:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+    color: white;
 }
 
 .accessibility-label {
     font-size: 0.95rem;
     font-weight: 500;
-    cursor: pointer;
+    flex-grow: 1;
     user-select: none;
+}
+
+.accessibility-description {
+    font-size: 0.85rem;
+    color: #718096;
+    margin-top: 0.25rem;
+    display: block;
 }
 
 /* Dark mode Anpassungen */
@@ -259,28 +271,33 @@
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-.theme-dark .settings-button {
+/* Dunkelmodus für Radio Buttons */
+.theme-dark .theme-label,
+.theme-dark .font-size-label {
     background-color: #2a2a2a;
     border-color: #444;
     color: #e0e0e0;
 }
 
-.theme-dark .settings-button:hover {
+.theme-dark .theme-label:hover,
+.theme-dark .font-size-label:hover {
     background-color: #333;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     border-color: #555;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
-.theme-dark .settings-button.active {
+.theme-dark .theme-radio:checked + .theme-label,
+.theme-dark .font-size-radio:checked + .font-size-label {
     border-color: #00c060;
-    color: #00c060;
     background-color: rgba(0, 192, 96, 0.15);
 }
 
-.theme-dark .settings-button.active::after {
+.theme-dark .theme-radio:checked + .theme-label::after,
+.theme-dark .font-size-radio:checked + .font-size-label::after {
     background-color: #00c060;
 }
 
+/* Dunkelmodus für Barrierefreiheit */
 .theme-dark .accessibility-option {
     background-color: #2a2a2a;
     border-color: #444;
@@ -289,6 +306,20 @@
 .theme-dark .accessibility-option:hover {
     background-color: #333;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.theme-dark .accessibility-checkbox {
+    background-color: #333;
+    border-color: #555;
+}
+
+.theme-dark .accessibility-checkbox:checked {
+    background-color: #00c060;
+    border-color: #00c060;
+}
+
+.theme-dark .accessibility-description {
+    color: #a0aec0;
 }
 
 /* Kontrast-Modus Anpassungen */
@@ -325,30 +356,35 @@
     background-color: #333300;
 }
 
-.theme-contrast .settings-button {
+/* Kontrastmodus für Radio Buttons */
+.theme-contrast .theme-label,
+.theme-contrast .font-size-label {
     background-color: #000000;
     border: 2px solid #ffeb3b;
     color: #ffeb3b;
 }
 
-.theme-contrast .settings-button:hover {
+.theme-contrast .theme-label:hover,
+.theme-contrast .font-size-label:hover {
     background-color: #333300;
     box-shadow: 0 4px 6px rgba(255, 235, 59, 0.2);
 }
 
-.theme-contrast .settings-button.active {
+.theme-contrast .theme-radio:checked + .theme-label,
+.theme-contrast .font-size-radio:checked + .font-size-label {
     border-color: #ffeb3b;
-    color: #000000;
-    background-color: #ffeb3b;
+    background-color: #333300;
     font-weight: bold;
 }
 
-.theme-contrast .settings-button.active::after {
-    background-color: #000;
-    color: #ffeb3b;
-    border: 2px solid #ffeb3b;
+.theme-contrast .theme-radio:checked + .theme-label::after,
+.theme-contrast .font-size-radio:checked + .font-size-label::after {
+    background-color: #ffeb3b;
+    color: #000;
+    border: 2px solid #000;
 }
 
+/* Kontrastmodus für Barrierefreiheit */
 .theme-contrast .accessibility-option {
     background-color: #000000;
     border: 2px solid #ffeb3b;
@@ -360,8 +396,21 @@
 }
 
 .theme-contrast .accessibility-checkbox {
-    accent-color: #ffeb3b;
+    background-color: #000;
     border: 2px solid #ffeb3b;
+}
+
+.theme-contrast .accessibility-checkbox:checked {
+    background-color: #ffeb3b;
+    border-color: #ffeb3b;
+}
+
+.theme-contrast .accessibility-checkbox:checked::after {
+    color: #000;
+}
+
+.theme-contrast .accessibility-description {
+    color: #cccccc;
 }
 
 /* Responsives Design */
@@ -370,27 +419,44 @@
         width: 100%;
     }
     
-    .settings-option-group {
-        grid-template-columns: repeat(3, 1fr);
+    .theme-options,
+    .font-size-options {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .theme-label,
+    .font-size-label {
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 0.75rem;
+        min-width: auto;
+    }
+    
+    .theme-icon {
+        margin-bottom: 0;
     }
 }
 
 /* Fokus-Zustände für Tastatur-Navigation */
-.settings-button:focus-visible,
-.accessibility-option:focus-visible,
+.theme-radio:focus-visible + .theme-label,
+.font-size-radio:focus-visible + .font-size-label,
+.accessibility-checkbox:focus-visible,
 .settings-panel-close:focus-visible {
     outline: 3px solid var(--nscale-green, #00a550);
     outline-offset: 2px;
 }
 
-.theme-dark .settings-button:focus-visible,
-.theme-dark .accessibility-option:focus-visible,
+.theme-dark .theme-radio:focus-visible + .theme-label,
+.theme-dark .font-size-radio:focus-visible + .font-size-label,
+.theme-dark .accessibility-checkbox:focus-visible,
 .theme-dark .settings-panel-close:focus-visible {
     outline-color: #00c060;
 }
 
-.theme-contrast .settings-button:focus-visible,
-.theme-contrast .accessibility-option:focus-visible,
+.theme-contrast .theme-radio:focus-visible + .theme-label,
+.theme-contrast .font-size-radio:focus-visible + .font-size-label,
+.theme-contrast .accessibility-checkbox:focus-visible,
 .theme-contrast .settings-panel-close:focus-visible {
     outline-color: #ffeb3b;
     outline-width: 3px;

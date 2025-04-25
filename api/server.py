@@ -332,7 +332,7 @@ async def update_motd(request: Request, admin_data: Dict[str, Any] = Depends(get
 
 # API-Endpunkte für RAG
 @app.post("/api/question")
-async def answer_question(request: QuestionRequest, user_data: Dict[str, Any] = Depends(get_current_user)):
+async def answer_question(request: QuestionRequest, request_obj: Request, user_data: Dict[str, Any] = Depends(get_current_user)):
     """Beantwortet eine Frage mit dem RAG-System"""
     user_id = user_data['user_id']
     
@@ -346,11 +346,18 @@ async def answer_question(request: QuestionRequest, user_data: Dict[str, Any] = 
     # Speichere die Benutzerfrage
     chat_history.add_message(session_id, request.question, is_user=True)
     
+    # Überprüfe, ob einfache Sprache verwendet werden soll
+    use_simple_language = False
+    
+    # Prüfe Header
+    if request_obj.headers.get("X-Use-Simple-Language", "").lower() in ['true', '1', 'yes']:
+        use_simple_language = True
+        logger.info("Einfache Sprache aktiviert via HTTP-Header")
+    
     # Beantworte die Frage
-    result = await rag_engine.answer_question(request.question, user_id)
+    result = await rag_engine.answer_question(request.question, user_id, use_simple_language)
     if not result['success']:
         return JSONResponse(status_code=500, content={"error": result['message']})
-    
     
     # Prüfe, ob die Antwort Englisch sein könnte
     answer = result['answer']
@@ -383,6 +390,7 @@ async def answer_question(request: QuestionRequest, user_data: Dict[str, Any] = 
 async def stream_question(
     question: str, 
     session_id: int,
+    simple_language: Optional[str] = None,
     auth_token: Optional[str] = None,
     request: Request = None
 ):
@@ -433,10 +441,23 @@ async def stream_question(
     if not message_id:
         logger.error(f"Fehler beim Speichern der Benutzerfrage in Session {session_id}")
     
-    # Stream die Antwort vom RAG-Engine
+    # Überprüfe, ob einfache Sprache verwendet werden soll
+    use_simple_language = False
+    
+    # Prüfe URL-Parameter
+    if simple_language and simple_language.lower() in ['true', '1', 'yes']:
+        use_simple_language = True
+        logger.info("Einfache Sprache aktiviert via URL-Parameter")
+    
+    # Prüfe Header (hat Vorrang vor URL-Parameter)
+    if request.headers.get("X-Use-Simple-Language", "").lower() in ['true', '1', 'yes']:
+        use_simple_language = True
+        logger.info("Einfache Sprache aktiviert via HTTP-Header")
+    
+    # Stream die Antwort vom RAG-Engine mit Spracheinstellung
     try:
-        logger.info(f"Starte Streaming für Frage: '{question[:50]}...'")
-        response = await rag_engine.stream_answer(question, session_id)
+        logger.info(f"Starte Streaming für Frage: '{question[:50]}...' (Einfache Sprache: {use_simple_language})")
+        response = await rag_engine.stream_answer(question, session_id, use_simple_language)
         
         # Speichern der vollständigen Antwort erfolgt intern in stream_answer
         

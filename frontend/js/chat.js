@@ -113,6 +113,13 @@ export function setupChat(options) {
             url.searchParams.append('question', question.value);
             url.searchParams.append('session_id', currentSessionId.value);
 
+            // Prüfen, ob einfache Sprache aktiviert ist
+            const useSimpleLanguage = window.useSimpleLanguage === true;
+            if (useSimpleLanguage) {
+                url.searchParams.append('simple_language', 'true');
+                console.log("Einfache Sprache aktiviert für diese Anfrage");
+            }
+
             // Token als URL-Parameter übergeben für SSE-Authentifizierung
             // Entferne "Bearer " von Anfang, wenn vorhanden
             const authToken = token.value.replace(/^Bearer\\s+/i, '');
@@ -308,10 +315,18 @@ export function setupChat(options) {
             await nextTick();
             scrollToBottom();
             
+            // Prüfen, ob einfache Sprache aktiviert ist
+            const headers = {};
+            const useSimpleLanguage = window.useSimpleLanguage === true;
+            if (useSimpleLanguage) {
+                headers['X-Use-Simple-Language'] = 'true';
+                console.log("Einfache Sprache aktiviert für diese Anfrage");
+            }
+            
             const response = await axios.post('/api/question', {
                 question: question.value,
                 session_id: currentSessionId.value
-            });
+            }, { headers });
             
             // Add assistant response
             messages.value.push({

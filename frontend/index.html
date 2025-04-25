@@ -670,69 +670,100 @@
             <div class="settings-panel-content">
                 <div class="settings-section">
                     <h4 class="settings-section-title">Erscheinungsbild</h4>
+                    
+                    <!-- Farbschema als Radio-Buttons -->
                     <div class="settings-option">
-                        <label>Farbschema</label>
-                        <div class="settings-buttons">
-                            <button 
-                                @click="setTheme('light')" 
-                                :class="['settings-button', { active: currentTheme === 'light' }]">
-                                <i class="fas fa-sun mr-2"></i>
-                                Hell
-                            </button>
-                            <button 
-                                @click="setTheme('dark')" 
-                                :class="['settings-button', { active: currentTheme === 'dark' }]">
-                                <i class="fas fa-moon mr-2"></i>
-                                Dunkel
-                            </button>
-                            <button 
-                                @click="setTheme('contrast')" 
-                                :class="['settings-button', { active: currentTheme === 'contrast' }]">
-                                <i class="fas fa-adjust mr-2"></i>
-                                Kontrast
-                            </button>
+                        <label class="settings-option-label">Farbschema</label>
+                        <div class="theme-options">
+                            <div class="theme-option">
+                                <input type="radio" id="theme-light" 
+                                       name="theme" value="light" 
+                                       v-model="currentTheme" 
+                                       class="theme-radio">
+                                <label for="theme-light" class="theme-label">
+                                    <i class="fas fa-sun theme-icon"></i>
+                                    <span>Hell</span>
+                                </label>
+                            </div>
+                            <div class="theme-option">
+                                <input type="radio" id="theme-dark" 
+                                       name="theme" value="dark" 
+                                       v-model="currentTheme" 
+                                       class="theme-radio">
+                                <label for="theme-dark" class="theme-label">
+                                    <i class="fas fa-moon theme-icon"></i>
+                                    <span>Dunkel</span>
+                                </label>
+                            </div>
+                            <div class="theme-option">
+                                <input type="radio" id="theme-contrast" 
+                                       name="theme" value="contrast" 
+                                       v-model="currentTheme" 
+                                       class="theme-radio">
+                                <label for="theme-contrast" class="theme-label">
+                                    <i class="fas fa-adjust theme-icon"></i>
+                                    <span>Kontrast</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
+                    
+                    <!-- Schriftgröße als Radio-Buttons -->
                     <div class="settings-option">
-                        <label>Schriftgröße</label>
-                        <div class="settings-buttons">
-                            <button 
-                                @click="setFontSize('small')" 
-                                :class="['settings-button', { active: currentFontSize === 'small' }]">
-                                Klein
-                            </button>
-                            <button 
-                                @click="setFontSize('medium')" 
-                                :class="['settings-button', { active: currentFontSize === 'medium' }]">
-                                Mittel
-                            </button>
-                            <button 
-                                @click="setFontSize('large')" 
-                                :class="['settings-button', { active: currentFontSize === 'large' }]">
-                                Groß
-                            </button>
+                        <label class="settings-option-label">Schriftgröße</label>
+                        <div class="font-size-options">
+                            <div class="font-size-option">
+                                <input type="radio" id="size-small" 
+                                       name="fontSize" value="small" 
+                                       v-model="currentFontSize" 
+                                       class="font-size-radio">
+                                <label for="size-small" class="font-size-label font-size-small">
+                                    <span>Klein</span>
+                                </label>
+                            </div>
+                            <div class="font-size-option">
+                                <input type="radio" id="size-medium" 
+                                       name="fontSize" value="medium" 
+                                       v-model="currentFontSize" 
+                                       class="font-size-radio">
+                                <label for="size-medium" class="font-size-label font-size-medium">
+                                    <span>Mittel</span>
+                                </label>
+                            </div>
+                            <div class="font-size-option">
+                                <input type="radio" id="size-large" 
+                                       name="fontSize" value="large" 
+                                       v-model="currentFontSize" 
+                                       class="font-size-radio">
+                                <label for="size-large" class="font-size-label font-size-large">
+                                    <span>Groß</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="settings-section">
                     <h4 class="settings-section-title">Barrierefreiheit</h4>
-                    <div class="settings-option">
-                        <label class="flex items-center">
-                            <input 
-                                type="checkbox" 
-                                v-model="accessibilitySettings.reduceMotion" 
-                                class="mr-2">
-                            Animationen reduzieren
+                    <div class="accessibility-container">
+                        <label class="accessibility-option">
+                            <input type="checkbox" 
+                                   v-model="accessibilitySettings.reduceMotion" 
+                                   class="accessibility-checkbox">
+                            <div>
+                                <span class="accessibility-label">Animationen reduzieren</span>
+                                <span class="accessibility-description">Reduziert oder deaktiviert Bewegungseffekte und Animationen</span>
+                            </div>
                         </label>
-                    </div>
-                    <div class="settings-option">
-                        <label class="flex items-center">
-                            <input 
-                                type="checkbox" 
-                                v-model="accessibilitySettings.simpleLanguage" 
-                                class="mr-2">
-                            Einfache Sprache bevorzugen
+                        
+                        <label class="accessibility-option">
+                            <input type="checkbox" 
+                                   v-model="accessibilitySettings.simpleLanguage" 
+                                   class="accessibility-checkbox">
+                            <div>
+                                <span class="accessibility-label">Einfache Sprache bevorzugen</span>
+                                <span class="accessibility-description">Vereinfacht Formulierungen und Erklärungen in Antworten</span>
+                            </div>
                         </label>
                     </div>
                 </div>

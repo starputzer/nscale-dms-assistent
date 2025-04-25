@@ -41,7 +41,7 @@ export function setupSettings(options) {
             document.body.classList.add(`theme-${theme}`);
         }
         
-        // Optional: Spezifische Behandlung für Kontrast-Modus
+        // Spezifische Behandlung für Kontrast-Modus
         if (theme === 'contrast') {
             // Setze Fokus-Farben, falls benötigt
             document.documentElement.style.setProperty('--focus-ring-color', '#ffeb3b');
@@ -86,6 +86,43 @@ export function setupSettings(options) {
         } else {
             document.body.classList.remove('reduce-motion');
         }
+        
+        // Wenn sich die Spracheinstellung ändert, müssen wir das UI aktualisieren
+        // und den Prompt anpassen
+        if ('simpleLanguage' in settings) {
+            applySimpleLanguageSettings(settings.simpleLanguage);
+        }
+    };
+    
+    /**
+     * Wendet die Einstellung für einfache Sprache an
+     * @param {boolean} useSimpleLanguage - Ob einfache Sprache verwendet werden soll
+     */
+    const applySimpleLanguageSettings = (useSimpleLanguage) => {
+        console.log(`Einfache Sprache ${useSimpleLanguage ? 'aktiviert' : 'deaktiviert'}`);
+        
+        // Hier könnte man einen Event auslösen oder einen globalen Zustand setzen,
+        // der dann vom Chat-Modul für die Prompt-Generierung verwendet wird
+        
+        // Beispiel: Globale Variable setzen, die vom Chat-Modul geprüft wird
+        window.useSimpleLanguage = useSimpleLanguage;
+        
+        // Alternativ: Event auslösen, das andere Module abfangen können
+        const event = new CustomEvent('simpleLanguageChanged', { 
+            detail: { enabled: useSimpleLanguage } 
+        });
+        document.dispatchEvent(event);
+        
+        // Wenn eine aktive Anfrage läuft, Header für nächste Anfrage setzen
+        if (useSimpleLanguage) {
+            if (axios && axios.defaults && axios.defaults.headers) {
+                axios.defaults.headers.common['X-Use-Simple-Language'] = 'true';
+            }
+        } else {
+            if (axios && axios.defaults && axios.defaults.headers) {
+                delete axios.defaults.headers.common['X-Use-Simple-Language'];
+            }
+        }
     };
     
     /**
@@ -102,12 +139,30 @@ export function setupSettings(options) {
         if (accessibilitySettings.value.reduceMotion) {
             document.body.classList.add('reduce-motion');
         }
+        
+        // Initialisiere die globale Variable für einfache Sprache
+        window.useSimpleLanguage = accessibilitySettings.value.simpleLanguage;
+        
+        // Header für einfache Sprache setzen, falls aktiviert
+        if (accessibilitySettings.value.simpleLanguage) {
+            if (axios && axios.defaults && axios.defaults.headers) {
+                axios.defaults.headers.common['X-Use-Simple-Language'] = 'true';
+            }
+        }
     };
     
     // Einstellungen beim Laden initialisieren
     initializeSettings();
     
     // Watch für Einstellungsänderungen
+    Vue.watch(() => currentTheme.value, (newTheme) => {
+        setTheme(newTheme);
+    });
+    
+    Vue.watch(() => currentFontSize.value, (newSize) => {
+        setFontSize(newSize);
+    });
+    
     Vue.watch(accessibilitySettings, (newSettings) => {
         updateAccessibilitySettings(newSettings);
     }, { deep: true });

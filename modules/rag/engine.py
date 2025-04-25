@@ -65,7 +65,7 @@ class RAGEngine:
                 logger.error(f"Fehler bei der Initialisierung der RAG-Engine: {e}")
                 return False
     
-    async def stream_answer(self, question: str, session_id: Optional[int] = None) -> EventSourceResponse:
+    async def stream_answer(self, question: str, session_id: Optional[int] = None, use_simple_language: bool = False) -> EventSourceResponse:
         """Streamt Antwort stückweise zurück – im Server-Sent-Events-Format"""
         if not question:  # Sicherstellen, dass die Frage nicht leer ist
             logger.error("Die Frage wurde nicht übergeben.")
@@ -84,7 +84,7 @@ class RAGEngine:
             logger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
             question = question[:2048]
 
-        async def event_generator(question: str) -> AsyncGenerator[str, None]:
+        async def event_generator(question: str, use_simple_language: bool) -> AsyncGenerator[str, None]:
             try:
                 # Chunks suchen
                 relevant_chunks = self.embedding_manager.search(question, top_k=Config.TOP_K)
@@ -94,9 +94,9 @@ class RAGEngine:
                     yield "event: done\ndata: \n\n"
                     return
 
-                # Prompt bauen
-                prompt = self._format_prompt(question, relevant_chunks)
-                logger.info(f"Starte Streaming für Frage: {question[:50]}...")
+                # Prompt bauen mit Spracheinstellung
+                prompt = self._format_prompt(question, relevant_chunks, use_simple_language)
+                logger.info(f"Starte Streaming für Frage: {question[:50]}... (Einfache Sprache: {use_simple_language})")
 
                 # Variable zur Nachverfolgung, ob Daten gesendet wurden
                 found_data = False
@@ -146,7 +146,7 @@ class RAGEngine:
 
         # Ping-Interval setzen, um Verbindungsabbrüche zu vermeiden
         return EventSourceResponse(
-            event_generator(question),
+            event_generator(question, use_simple_language),
             ping=15.0,  # Sendet alle 15 Sekunden Ping-Events
             media_type="text/event-stream"  # Expliziter MIME-Typ
         )
@@ -159,7 +159,7 @@ class RAGEngine:
             yield "event: done\ndata: \n\n"
         return error_generator()
 
-    async def answer_question(self, question: str, user_id: Optional[int] = None) -> Dict[str, Any]:
+    async def answer_question(self, question: str, user_id: Optional[int] = None, use_simple_language: bool = False) -> Dict[str, Any]:
         """Beantwortet eine Frage mit dem RAG-System"""
         if not self.initialized:
             success = await self.initialize()
@@ -184,8 +184,8 @@ class RAGEngine:
                 'sources': []
             }
         
-        # Formatiere Prompt mit Chunks
-        prompt = self._format_prompt(question, chunks)
+        # Formatiere Prompt mit Chunks und Spracheinstellung
+        prompt = self._format_prompt(question, chunks, use_simple_language)
         
         # Generiere Antwort
         result = await self.ollama_client.generate(prompt, user_id)
@@ -210,7 +210,7 @@ class RAGEngine:
             'cached': result.get('cached', False)
         }
 
-    def _format_prompt(self, question: str, chunks: List[Dict[str, Any]]) -> str:
+    def _format_prompt(self, question: str, chunks: List[Dict[str, Any]], use_simple_language: bool = False) -> str:
         """Formatiert einen optimierten deutschen Prompt für LLama 3"""
         # Sortiere Chunks nach Relevanz
         sorted_chunks = sorted(chunks, key=lambda x: x.get('score', 0), reverse=True)
@@ -251,8 +251,8 @@ class RAGEngine:
         
         kontext = '\n\n'.join(kontext_mit_quellen)
         
-        # Llama 3-spezifisches, verbessertes Prompt-Format
-        prompt = f"""<|begin_of_text|>
+        # Basisprompt
+        base_prompt = f"""<|begin_of_text|>
 <|system|>
 Du bist ein deutschsprachiger, fachlich präziser Assistent für die nscale DMS-Software der SenMVKU Berlin.
 
@@ -264,7 +264,30 @@ Aufgaben und Anforderungen:
 5. Kopiere KEINE vollständigen Abschnitte aus dem Kontext - formuliere die Informationen in eigenen Worten.
 6. Füge Quellenverweise in deiner Antwort ein, z.B. "(aus Dokument 2)".
 
-Zielgruppe: Mitarbeiter der Berliner Verwaltung, die nscale DMS für Dokumentenmanagement nutzen.
+Zielgruppe: Mitarbeiter der Berliner Verwaltung, die nscale DMS für Dokumentenmanagement nutzen."""
+
+        # Erweiterter Prompt für einfache Sprache
+        simple_language_prompt = f"""<|begin_of_text|>
+<|system|>
+Du bist ein deutschsprachiger, unterstützender Assistent für die nscale DMS-Software der SenMVKU Berlin.
+
+Aufgaben und Anforderungen:
+1. Beantworte Fragen in EINFACHER SPRACHE - verwende kurze Sätze, einfache Wörter und klare Erklärungen.
+2. Vermeide Fachsprache und technische Begriffe. Wenn sie notwendig sind, erkläre sie direkt.
+3. Nutze NUR Informationen aus dem bereitgestellten Dokumentenkontext.
+4. Wenn du etwas nicht weißt, sage einfach "Dazu finde ich keine Information."
+5. Verwende Aufzählungen und einfache Beispiele für komplexe Zusammenhänge.
+6. Füge kurze Quellenhinweise ein, z.B. "(aus Dokument 2)".
+7. Teile lange Texte in kürzere Abschnitte auf.
+8. Verwende eine Schritt-für-Schritt-Erklärung, wenn du Vorgänge beschreibst.
+
+Zielgruppe: Neue Mitarbeiter der Berliner Verwaltung, die mit der nscale DMS-Software noch nicht vertraut sind."""
+
+        # Wähle den passenden Prompt
+        system_prompt = simple_language_prompt if use_simple_language else base_prompt
+        
+        # Llama 3-spezifisches, verbessertes Prompt-Format
+        prompt = f"""{system_prompt}
 <|user|>
 Frage: {question}
 
