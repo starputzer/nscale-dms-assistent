@@ -154,7 +154,7 @@
                         <!-- NEU: Admin-Konfigurationsbutton, nur für Admins sichtbar -->
                         <button 
                             v-if="userRole === 'admin'"
-                            @click="toggleAdminView" 
+                            @click="activeView = activeView === 'chat' ? 'admin' : 'chat'" 
                             class="nscale-btn-secondary flex items-center"
                             title="Systemadministration">
                             <i class="fas fa-cog mr-2"></i>
