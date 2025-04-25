@@ -257,16 +257,18 @@ export function setupChat(options) {
                     messages.value[assistantIndex].message = 'Es wurden keine Daten empfangen. Bitte versuchen Sie es später erneut.';
                 }
                 
-                // Session-Liste aktualisieren, um den generierten Titel anzuzeigen
-                setTimeout(() => {
+                // Session-Liste sofort aktualisieren, um den generierten Titel anzuzeigen
+                try {
                     if (loadSessions && typeof loadSessions === 'function') {
+                        console.log("Lade Sitzungen nach Stream-Ende...");
                         loadSessions();
                     }
-                }, 500);
+                } catch (e) {
+                    console.error("Fehler beim Laden der aktualisierten Sitzungen:", e);
+                }
                 
                 cleanupStream();
             });
-
             // Error-Handler
             eventSource.value.onerror = (event) => {
                 console.error('SSE-Verbindungsfehler:', event);
@@ -303,8 +305,9 @@ export function setupChat(options) {
             // Füge eine Fehlernachricht hinzu, wenn noch keine Antwort angezeigt wurde
             if (messages.value.length > 0 && messages.value[messages.value.length - 1].is_user) {
                 messages.value.push({
+                    id: response.data.message_id, // Stelle sicher, dass diese ID vom Server kommt
                     is_user: false,
-                    message: 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.',
+                    message: response.data.answer,
                     timestamp: Date.now() / 1000
                 });
             }

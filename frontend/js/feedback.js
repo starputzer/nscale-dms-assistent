@@ -20,9 +20,17 @@ export function setupFeedback(options) {
      */
     const submitFeedback = async (messageId, sessionId, isPositive) => {
         try {
+            console.log(`Sende Feedback: message_id=${messageId}, session_id=${sessionId}, isPositive=${isPositive}`);
+            
+            // Stelle sicher, dass messageId und sessionId numerisch sind
+            if (!messageId || isNaN(messageId) || messageId <= 0) {
+                console.error("Ungültige message_id für Feedback:", messageId);
+                return;
+            }
+            
             const response = await axios.post('/api/feedback', {
-                message_id: messageId,
-                session_id: sessionId,
+                message_id: parseInt(messageId),
+                session_id: parseInt(sessionId),
                 is_positive: isPositive
             });
             
@@ -34,11 +42,16 @@ export function setupFeedback(options) {
                 if (isPositive) {
                     messages.value[messageIndex].feedback_comment = null;
                 }
+                console.log('Feedback erfolgreich gesendet und UI aktualisiert');
             }
-            
-            console.log('Feedback erfolgreich gesendet');
         } catch (error) {
             console.error('Fehler beim Senden des Feedbacks:', error);
+            console.log('Fehlermeldung:', error.response?.data);
+            
+            // Versuche Details des Fehlers anzuzeigen
+            if (error.response?.status === 422) {
+                console.error('Validation error. Server erwartet andere Daten:', error.response.data);
+            }
         }
     };
     
