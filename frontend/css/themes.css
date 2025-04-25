@@ -1,104 +1,82 @@
-/* Theme classes */
+/* Verbesserte Farbmodi-Implementierung */
+
+/* Basis-Dunkelmodus Korrekturen */
 .theme-dark {
     --nscale-green: #00c060;
     --nscale-green-dark: #00a550;
     --nscale-light-green: #003320;
     --nscale-dark-gray: #f0f0f0;
     --nscale-gray: #2a2a2a;
-    background-color: #121212;
     color: #f0f0f0;
 }
 
-.theme-dark .nscale-card,
-.theme-dark .settings-panel,
-.theme-dark .admin-card {
-    background-color: #1e1e1e;
-    border-color: #333;
+/* Hauptkorrektur: Dunkler Hintergrund für den Chat-Bereich */
+.theme-dark .message-container {
+    background-color: #121212;
 }
 
-.theme-dark .nscale-header {
-    background-color: #1e1e1e;
-    border-color: #333;
+.theme-dark .chat-container {
+    background-color: #121212;
 }
 
-.theme-dark .nscale-sidebar {
-    background-color: #2a2a2a;
-    border-color: #333;
+.theme-dark main {
+    background-color: #121212;
+}
+
+.theme-dark .nscale-message-user {
+    background-color: #003320;
+    color: #f0f0f0;
 }
 
 .theme-dark .nscale-message-assistant {
-    background-color: #2a2a2a;
-    border-color: #333;
-}
-
-.theme-dark .nscale-input {
-    background-color: #333;
-    color: #f0f0f0;
-    border-color: #444;
-}
-
-.theme-dark .nscale-btn-secondary {
     background-color: #1e1e1e;
-    color: #00c060;
-    border-color: #00c060;
-}
-
-.theme-dark .nscale-session-item:hover {
-    background-color: #333;
-}
-
-.theme-dark .nscale-session-item.active {
-    background-color: #003320;
-    border-left-color: #00c060;
-}
-
-.theme-dark .settings-button {
-    background-color: #2a2a2a;
-    border-color: #333;
     color: #f0f0f0;
+    border-color: #333;
 }
 
-.theme-dark .settings-button:hover {
-    background-color: #003320;
-    color: #00c060;
+.theme-dark .input-container {
+    background-color: #1e1e1e;
+    border-color: #333;
 }
 
-/* Kontrast-Thema */
+/* Basis-Kontrast-Modus Korrekturen */
 .theme-contrast {
     --nscale-green: #ffeb3b; /* Gelb statt Grün */
     --nscale-green-dark: #ffd600; /* Dunkleres Gelb für Hover */
     --nscale-light-green: #333300; /* Dunklerer Hintergrund mit Gelbton */
     --nscale-dark-gray: #ffffff;
     --nscale-gray: #333333;
-    background-color: #000000;
-    color: #ffffff;
+    color: #ffeb3b;
 }
 
-.theme-contrast .nscale-card,
-.theme-contrast .settings-panel,
-.theme-contrast .admin-card {
+/* Hauptkorrektur: Schwarzer Hintergrund für den Chat-Bereich */
+.theme-contrast .message-container {
     background-color: #000000;
-    border: 2px solid #ffeb3b;
 }
 
-.theme-contrast .nscale-header {
+.theme-contrast .chat-container {
     background-color: #000000;
-    border-color: #ffeb3b;
 }
 
-.theme-contrast .nscale-sidebar {
+.theme-contrast main {
     background-color: #000000;
-    border-color: #ffeb3b;
-}
-
-.theme-contrast .nscale-message-assistant {
-    background-color: #000000;
-    border: 2px solid #ffeb3b;
 }
 
 .theme-contrast .nscale-message-user {
     background-color: #333300;
     color: #ffeb3b;
+    border: 2px solid #ffeb3b;
+}
+
+.theme-contrast .nscale-message-assistant {
+    background-color: #000000;
+    color: #ffffff;
+    border: 2px solid #ffeb3b;
+}
+
+.theme-contrast .input-container {
+    background-color: #000000;
+    border-top: 2px solid #ffeb3b;
 }
 
 .theme-contrast .nscale-input {
@@ -113,78 +91,156 @@
     font-weight: 700;
 }
 
-.theme-contrast .nscale-btn-secondary {
+/* Verbesserte Einstellungsbereich-Styles */
+.settings-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 360px;
+    background: white;
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Dunkelmodus für Einstellungspanel */
+.theme-dark .settings-panel {
+    background-color: #1e1e1e;
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.3);
+    color: #f0f0f0;
+}
+
+/* Kontrastmodus für Einstellungspanel */
+.theme-contrast .settings-panel {
     background-color: #000000;
+    border-left: 2px solid #ffeb3b;
+    box-shadow: -4px 0 15px rgba(255, 235, 59, 0.2);
     color: #ffeb3b;
-    border: 2px solid #ffeb3b;
 }
 
-.theme-contrast .nscale-btn-primary:hover,
-.theme-contrast .nscale-btn-secondary:hover {
-    background-color: #ffd600;
-    color: #000000;
+.settings-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #eaeaea;
 }
 
-.theme-contrast .nscale-session-item:hover {
-    background-color: #333300;
+.theme-dark .settings-panel-header {
+    border-bottom-color: #333;
 }
 
-.theme-contrast .nscale-session-item.active {
-    background-color: #333300;
-    border-left: 3px solid #ffeb3b;
+.theme-contrast .settings-panel-header {
+    border-bottom: 2px solid #ffeb3b;
 }
 
+.settings-panel-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--nscale-dark-gray);
+}
+
+.settings-panel-close {
+    background: transparent;
+    border: none;
+    color: var(--nscale-dark-gray);
+    cursor: pointer;
+    font-size: 1.5rem;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-contrast .settings-panel-close {
+    color: #ffeb3b;
+}
+
+.settings-panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+}
+
+/* Einstellungssektionen */
+.settings-section {
+    margin-bottom: 2rem;
+}
+
+.settings-section-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    color: var(--nscale-dark-gray);
+}
+
+.settings-option {
+    margin-bottom: 1.5rem;
+}
+
+.settings-option label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    color: var(--nscale-dark-gray);
+}
+
+/* Verbesserte Buttons für Einstellungen */
+.settings-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.settings-button {
+    padding: 0.5rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    background-color: #fff;
+    color: #4a5568;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.settings-button:hover {
+    background-color: #f7fafc;
+    transform: translateY(-1px);
+}
+
+.settings-button.active {
+    background-color: var(--nscale-green);
+    color: white;
+    border-color: var(--nscale-green);
+}
+
+/* Dunkelmodus für Einstellungsbuttons */
+.theme-dark .settings-button {
+    background-color: #2a2a2a;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+.theme-dark .settings-button:hover {
+    background-color: #333;
+}
+
+.theme-dark .settings-button.active {
+    background-color: var(--nscale-green);
+    color: #000;
+}
+
+/* Kontrastmodus für Einstellungsbuttons */
 .theme-contrast .settings-button {
-    background-color: #000000;
-    border: 2px solid #ffeb3b;
-    color: #ffeb3b;
-}
-
-.theme-contrast .settings-button:hover {
-    background-color: #ffeb3b;
-    color: #000000;
-}
-
-.theme-contrast .text-nscale {
-    color: #ffeb3b;
-}
-
-.theme-contrast .hover\:text-nscale-dark:hover {
-    color: #ffd600;
-}
-
-.theme-contrast .border-nscale {
-    border-color: #ffeb3b;
-}
-
-.theme-contrast .nscale-logo {
-    color: #ffeb3b;
-}
-
-.theme-contrast .admin-tab.active {
-    color: #ffeb3b;
-    border-bottom-color: #ffeb3b;
-}
-
-.theme-contrast .admin-tab:hover:not(.active) {
-    color: #ffd600;
-}
-
-.theme-contrast .nav-button:hover,
-.theme-contrast .nav-active {
-    background-color: #333300;
-    color: #ffeb3b;
-}
-
-/* Einstellungsbereich im Kontrast-Modus */
-.theme-contrast .settings-panel-title,
-.theme-contrast .settings-section-title,
-.theme-contrast .settings-option label {
-    color: #ffeb3b;
-}
-
-.theme-contrast .settings-button {
-    background-color: #000000;
+    background-color: #000;
     border: 2px solid #ffeb3b;
     color: #ffeb3b;
 }
@@ -195,35 +251,110 @@
 
 .theme-contrast .settings-button.active {
     background-color: #ffeb3b;
-    color: #000000;
-    border-color: #ffeb3b;
+    color: #000;
 }
 
-/* Spezifische Anpassungen für Einstellungskomponenten im Kontrast-Modus */
-.theme-contrast input[type="checkbox"] {
+/* Verbesserte Checkboxen für Barrierefreiheit */
+.settings-option input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-right: 0.5rem;
+    accent-color: var(--nscale-green);
+}
+
+.theme-dark .settings-option input[type="checkbox"] {
+    accent-color: #00c060;
+    background-color: #333;
+}
+
+.theme-contrast .settings-option input[type="checkbox"] {
+    accent-color: #ffeb3b;
     border: 2px solid #ffeb3b;
-    background-color: #000000;
+    background-color: #000;
 }
 
-.theme-contrast input[type="checkbox"]:checked {
-    background-color: #ffeb3b;
+/* Fix für die Eingabeaufforderung im Kontrastmodus */
+.theme-contrast .nscale-input::placeholder {
+    color: #aaa;
 }
 
-/* Font size classes */
-.font-small {
+/* Fix für die Chatbox */
+.theme-contrast .prose {
+    color: #ffffff;
+}
+
+/* Verbesserte Abstände im Einstellungsmenü */
+.settings-section + .settings-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #eaeaea;
+}
+
+.theme-dark .settings-section + .settings-section {
+    border-top-color: #333;
+}
+
+.theme-contrast .settings-section + .settings-section {
+    border-top-color: #ffeb3b;
+}
+
+/* Verbesserte Schriftgrößen-Auswahl */
+.settings-button.size-button {
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+}
+
+.settings-button.size-small {
+    font-size: 0.75rem;
+}
+
+.settings-button.size-medium {
     font-size: 0.875rem;
 }
 
-.font-medium {
+.settings-button.size-large {
     font-size: 1rem;
 }
 
-.font-large {
-    font-size: 1.125rem;
+/* Verbesserte Barrierefreiheits-Optionen */
+.accessibility-option {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    background-color: #f7fafc;
+    transition: background-color 0.2s;
 }
 
-/* Reduced motion */
-.reduce-motion * {
-    transition: none !important;
-    animation: none !important;
+.theme-dark .accessibility-option {
+    background-color: #2a2a2a;
+}
+
+.theme-contrast .accessibility-option {
+    background-color: #000;
+    border: 1px solid #ffeb3b;
+}
+
+.accessibility-option:hover {
+    background-color: #edf2f7;
+}
+
+.theme-dark .accessibility-option:hover {
+    background-color: #333;
+}
+
+.theme-contrast .accessibility-option:hover {
+    background-color: #333300;
+}
+
+/* Fix für blinkenden Cursor im Kontrastmodus */
+.theme-contrast input,
+.theme-contrast textarea {
+    caret-color: #ffffff;
+}
+
+/* Schriftfarbe in Kontrastmodus-Eingabefeldern */
+.theme-contrast .input-container input {
+    color: #ffffff;
 }
