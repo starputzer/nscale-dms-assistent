@@ -250,15 +250,9 @@
                         </div>
                         
                         <div v-else class="chat-container h-full">
-                            <!-- Nur im Entwicklungsmodus anzeigen -->
-                            <div v-if="false" style="position: fixed; bottom: 0; right: 0; background: white; padding: 10px; z-index: 9999; font-size: 12px;">
-                                <pre>MOTD Enabled: {{ motd?.enabled }}</pre>
-                                <pre>ShowInChat: {{ motd?.display?.showInChat }}</pre>
-                                <pre>Dismissed: {{ motdDismissed }}</pre>
-                            </div>
                             <!-- MOTD im Chat anzeigen -->
                             <div v-if="motd && motd.enabled && motd.display.showInChat && !motdDismissed" 
-                                class="motd-banner p-4 mx-4 mt-4 mb-2 rounded-lg relative shadow-sm"
+                                class="motd-banner p-4 mx-4 mt-4 mb-4 rounded-lg relative shadow-sm"
                                 :style="{
                                     backgroundColor: motd.style.backgroundColor,
                                     borderColor: motd.style.borderColor,
@@ -276,40 +270,45 @@
                             
                             <!-- Chat Messages -->
                             <div class="message-container flex-1 overflow-y-auto p-4" ref="chatMessages">
+                                <!-- Nachrichten mit verbesserten Wrappern für korrekte Anzeige -->
                                 <div v-for="(message, index) in messages" :key="index" class="mb-6">
                                     <!-- Systemnachricht -->
                                     <div v-if="message.is_system" class="nscale-message-system">
                                         <div v-html="formatMessage(message.message)" class="prose"></div>
                                     </div>
-                                    <!-- Normale Nutzer- oder Assistentennachricht -->
-                                    <div v-else :class="[message.is_user ? 'nscale-message-user' : 'nscale-message-assistant']">
-                                        <div v-html="formatMessage(message.message)" class="prose"></div>
-                                        
-                                        <!-- Feedback-Buttons nur für Assistenten-Nachrichten -->
-                                        <div v-if="!message.is_user" class="feedback-buttons">
-                                            <span v-if="message.feedback_comment" class="feedback-comment">{{ message.feedback_comment }}</span>
-                                            <button 
-                                                @click="submitFeedback(message.id, message.session_id || currentSessionId, true)" 
-                                                :class="['feedback-button', { 'selected': message.feedback_positive === true }]"
-                                                title="Hilfreich">
-                                                <i class="fas fa-thumbs-up"></i>
-                                            </button>
-                                            <button 
-                                                @click="submitFeedback(message.id, message.session_id || currentSessionId, false)" 
-                                                :class="['feedback-button', { 'selected negative': message.feedback_positive === false }]"
-                                                title="Nicht hilfreich">
-                                                <i class="fas fa-thumbs-down"></i>
-                                            </button>
-                                            <button 
-                                                v-if="message.feedback_positive === false" 
-                                                @click="showFeedbackCommentDialog(message)" 
-                                                class="feedback-button"
-                                                title="Kommentar hinzufügen">
-                                                <i class="fas fa-comment"></i>
-                                            </button>
+                                    
+                                    <!-- Benutzer- oder Assistenten-Nachricht mit Wrapper -->
+                                    <div v-else :class="['message-wrapper', message.is_user ? 'user-message' : 'assistant-message']">
+                                        <div :class="[message.is_user ? 'nscale-message-user' : 'nscale-message-assistant']">
+                                            <div v-html="formatMessage(message.message)" class="prose"></div>
+                                            
+                                            <!-- Feedback-Buttons nur für Assistenten-Nachrichten -->
+                                            <div v-if="!message.is_user" class="feedback-buttons">
+                                                <span v-if="message.feedback_comment" class="feedback-comment">{{ message.feedback_comment }}</span>
+                                                <button 
+                                                    @click="submitFeedback(message.id, message.session_id || currentSessionId, true)" 
+                                                    :class="['feedback-button', { 'selected': message.feedback_positive === true }]"
+                                                    title="Hilfreich">
+                                                    <i class="fas fa-thumbs-up"></i>
+                                                </button>
+                                                <button 
+                                                    @click="submitFeedback(message.id, message.session_id || currentSessionId, false)" 
+                                                    :class="['feedback-button', { 'selected negative': message.feedback_positive === false }]"
+                                                    title="Nicht hilfreich">
+                                                    <i class="fas fa-thumbs-down"></i>
+                                                </button>
+                                                <button 
+                                                    v-if="message.feedback_positive === false" 
+                                                    @click="showFeedbackCommentDialog(message)" 
+                                                    class="feedback-button"
+                                                    title="Kommentar hinzufügen">
+                                                    <i class="fas fa-comment"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                                
                                 <div v-if="isLoading" class="flex justify-center p-4">
                                     <div class="loader"></div>
                                 </div>

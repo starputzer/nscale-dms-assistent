@@ -115,7 +115,7 @@ export function setupChat(options) {
 
             // Token als URL-Parameter übergeben für SSE-Authentifizierung
             // Entferne "Bearer " von Anfang, wenn vorhanden
-            const authToken = token.value.replace(/^Bearer\s+/i, '');
+            const authToken = token.value.replace(/^Bearer\\s+/i, '');
             url.searchParams.append('auth_token', authToken);
 
             console.log(`Streaming URL: ${url.toString()}`);
@@ -320,12 +320,15 @@ export function setupChat(options) {
                 timestamp: Date.now() / 1000
             });
             
-            // Session-Liste aktualisieren, um den generierten Titel anzuzeigen
-            setTimeout(() => {
+            // Session-Liste aktiv aktualisieren, um den generierten Titel anzuzeigen
+            try {
                 if (loadSessions && typeof loadSessions === 'function') {
-                    loadSessions();
+                    console.log("Lade Sitzungen nach Antwort...");
+                    await loadSessions();
                 }
-            }, 500);
+            } catch (e) {
+                console.error("Fehler beim Laden der aktualisierten Sitzungen:", e);
+            }
             
             // Clear input
             question.value = '';

@@ -63,6 +63,21 @@ body {
     border-right: 1px solid #eaeaea;
 }
 
+/* Verbesserte Nachrichten-Stilisierung für Chat-Darstellung */
+.message-wrapper {
+    display: flex;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.message-wrapper.user-message {
+    justify-content: flex-end;
+}
+
+.message-wrapper.assistant-message {
+    justify-content: flex-start;
+}
+
 .nscale-message-user {
     background-color: var(--nscale-light-green);
     border-radius: 8px;

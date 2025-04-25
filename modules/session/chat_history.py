@@ -117,8 +117,9 @@ class ChatHistoryManager:
                     
                     logger.info(f"Session {session_id} - Aktueller Titel: '{current_title}', Neuer Titel: '{new_title}'")
                     
-                    # Aktualisiere den Titel, wenn er noch der Standardtitel ist
-                    if current_title == "Neue Unterhaltung":
+                    # Aktualisiere den Titel, wenn er noch der Standardtitel ist oder wenn
+                    # der generierte Titel nicht leer ist
+                    if current_title == "Neue Unterhaltung" and new_title != "Neue Unterhaltung":
                         cursor.execute(
                             "UPDATE chat_sessions SET title = ? WHERE id = ?",
                             (new_title, session_id)
@@ -130,10 +131,6 @@ class ChatHistoryManager:
             
             return message_id
     
-        except Exception as e:
-            logger.error(f"Fehler beim Hinzufügen einer Nachricht: {e}")
-            return None
-        
         except Exception as e:
             logger.error(f"Fehler beim Hinzufügen einer Nachricht: {e}")
             return None
@@ -151,9 +148,10 @@ class ChatHistoryManager:
             
             messages = []
             for row in cursor.fetchall():
+                # BUGFIX: Korrekter Boolean-Wert für is_user
                 messages.append({
                     'id': row[0],
-                    'is_user': bool(row[0]),
+                    'is_user': bool(row[1]),  # Stelle sicher, dass es ein Boolean ist
                     'message': row[2],
                     'timestamp': row[3]
                 })

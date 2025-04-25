@@ -83,6 +83,8 @@ export function setupFeedback(options) {
             const messageIndex = messages.value.findIndex(m => m.id === feedbackMessage.value.id);
             if (messageIndex >= 0) {
                 messages.value[messageIndex].feedback_comment = feedbackComment.value;
+                // Stelle sicher, dass das Feedback auf negativ gesetzt ist
+                messages.value[messageIndex].feedback_positive = false;
             }
             
             console.log('Feedback-Kommentar erfolgreich gesendet');

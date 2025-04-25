@@ -354,20 +354,27 @@ createApp({
             }
         };
         
-        // Session handling with feedback support
+        /**
+         * Lädt eine vorhandene Chat-Session und behandelt MOTD und Feedback
+         * @param {number} sessionId - Die ID der zu ladenden Session
+         */
         const loadSession = async (sessionId) => {
             try {
                 isLoading.value = true;
+                console.log(`Lade Session ${sessionId}...`);
+                
                 const response = await axios.get(`/api/session/${sessionId}`);
                 currentSessionId.value = sessionId;
+                
+                // Nachrichten setzen
                 messages.value = response.data.messages;
                 
-                // MOTD-Logik: Nur in leeren Sessions anzeigen
-                if (messages.value.length > 0) {
-                    // Wenn bereits Nachrichten existieren, MOTD ausblenden
+                // MOTD-Logik: Wenn bereits Nachrichten existieren, MOTD ausblenden
+                if (messages.value && messages.value.length > 0) {
+                    console.log(`Session ${sessionId} hat ${messages.value.length} Nachrichten - MOTD wird ausgeblendet`);
                     motdDismissed.value = true;
                 } else {
-                    // Nur in neuen/leeren Sessions anzeigen
+                    console.log(`Session ${sessionId} hat keine Nachrichten - MOTD wird angezeigt`);
                     motdDismissed.value = false;
                 }
                 
@@ -390,7 +397,7 @@ createApp({
                 isLoading.value = false;
             }
         };
-        
+                
         // Watch-Funktion für Admin-Panel-Tabs
         watch([adminFunctions.adminTab], ([tab]) => {
             if (activeView.value === 'admin' && userRole.value === 'admin') {
@@ -416,10 +423,11 @@ createApp({
         });
 
         // Watch für Sitzungswechsel
-        watch(currentSessionId, () => {
-            if (currentSessionId.value) {
-                console.log("Session gewechselt - MOTD zurücksetzen");
-                motdDismissed.value = false;
+        watch(currentSessionId, (newSessionId) => {
+            if (newSessionId) {
+                // Wenn der Benutzer Sitzungen wechselt, MOTD-Status aus der Sitzung erhalten
+                // Wird jetzt in loadSession behandelt
+                console.log("Sitzungswechsel erkannt:", newSessionId);
             }
         });
         

@@ -27,15 +27,26 @@ class SessionTitleGenerator:
             "akte anlegen", "dokument speichern", "datei hochladen", "workflow starten", "benutzer anlegen",
             "berechtigung", "einscannen", "archivieren", "suche", "wiederfinden", "freigabe",
             "digitalisierung", "geschäftsgang", "aktenplan", "ablage", "aktenzeichen", "vorgang", 
-            "dokumententyp", "prozess", "elektronische akte", "workflow"
+            "dokumententyp", "prozess", "elektronische akte", "workflow", "scannen", "erstellen",
+            "importieren", "exportieren", "konvertieren", "verschieben", "kopieren", "löschen",
+            "pdf", "word", "excel", "email", "zugriffsrechte", "drucken", "teilen"
         ]
         
-        # Spezialfall: Wenn die Nachricht "Wie lege ich eine Akte an" oder ähnlich ist
-        if any(phrase in clean_message.lower() for phrase in ["akte anlegen", "neue akte", "akte erstellen"]):
+        # Die meisten häufigen Fragen direkter behandeln
+        if re.search(r'(wie|erstell|leg).*(neue|akte)', clean_message.lower()):
             return "Akte anlegen"
         
-        if any(phrase in clean_message.lower() for phrase in ["fehler im geschäftsgang", "geschäftsgang fehler"]):
+        if re.search(r'(wie|kann).*(dokument|datei).*(hinzufüg|upload|import)', clean_message.lower()):
+            return "Dokument hochladen"
+            
+        if re.search(r'(fehler|problem).*(geschäftsgang|workflow)', clean_message.lower()):
             return "Fehler im Geschäftsgang"
+            
+        if re.search(r'(was|wie).*(suche|find)', clean_message.lower()):
+            return "Dokumente suchen"
+            
+        if re.search(r'(wie|kann).*(scan|einscan)', clean_message.lower()):
+            return "Dokumente scannen"
             
         # Prüfe, ob einer der Schlüsselbegriffe enthalten ist
         found_phrases = []
@@ -75,7 +86,7 @@ class SessionTitleGenerator:
         stopwords = [
             "bitte", "danke", "vielen dank", "hallo", "hi", "guten tag", "moin", "servus",
             "dms", "software", "system", "programm", "anwendung", "nscale",
-            "mit", "dem", "der", "das", "ein", "eine", "einen", "einer", "eines",
+            "mit", "dem", "der", "die", "das", "ein", "eine", "einen", "einer", "eines",
             "zu", "zur", "zum", "bei", "für", "von", "vom", "am", "im", "in", "an", "auf",
             "ist", "sind", "war", "waren", "sein", "werden", "wurde", "wurden",
             "mein", "meine", "meinen", "meiner", "meines",
