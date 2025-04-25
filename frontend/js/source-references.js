@@ -22,8 +22,10 @@ export function setupSourceReferences(options) {
      */
     const hasSourceReferences = (message) => {
         if (!message) return false;
-        // Suche nach Quellenverweisen im Format (Quelle-X)
-        return /\(Quelle-\d+\)/.test(message);
+        // Suche nach verschiedenen Mustern für Quellenverweise
+        return /\(Quelle-\d+\)/.test(message) || 
+               /Dokument \d+/.test(message) || 
+               /Quelle(n)?:/.test(message);
     };
     
     /**

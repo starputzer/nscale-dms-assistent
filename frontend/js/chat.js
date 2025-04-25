@@ -255,6 +255,7 @@ export function setupChat(options) {
                             
                             // Speichere die message_id direkt in der aktuellen Nachricht
                             messages.value[assistantIndex].id = currentMessageId;
+                            messages.value[assistantIndex].session_id = currentSessionId.value;
                             return;
                         }
                         
