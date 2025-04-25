@@ -74,7 +74,7 @@ class OllamaClient:
                 
                 try:
                     # Timeout pro Verbindungsversuch erhöhen
-                    timeout = aiohttp.ClientTimeout(total=Config.LLM_TIMEOUT, connect=10.0)
+                    timeout = aiohttp.ClientTimeout(total=Config.LLM_TIMEOUT * 2, connect=20.0)
                     
                     # Verbindungspool verbessern
                     conn = aiohttp.TCPConnector(limit=5, force_close=False, enable_cleanup_closed=True)
@@ -110,67 +110,55 @@ class OllamaClient:
                             stream_timeout = False  # Flag für Timeout
                             
                             try:
-                                # Verarbeite den Stream in einer Schleife ohne Generator
-                                while not stream_done:
-                                    try:
-                                        # Lese einen Chunk mit Timeout
-                                        chunk_read_task = resp.content.read(1024)
-                                        chunk = await asyncio.wait_for(chunk_read_task, timeout=5.0)
-                                        
-                                        if not chunk:
-                                            # Ende des Streams erreicht
-                                            break
-                                        
-                                        # Füge zum Buffer hinzu
-                                        buffer += chunk
-                                        
-                                        # Verarbeite komplette Zeilen im Buffer
-                                        while b'\n' in buffer:
-                                            line, buffer = buffer.split(b'\n', 1)
-                                            if not line:
-                                                continue
-                                            
-                                            try:
-                                                line_text = line.decode('utf-8').strip()
-                                                # Logging nur für erste paar Tokens oder periodisch
-                                                if token_count < 5 or token_count % 50 == 0:
-                                                    logger.debug(f"Stream-Rohdaten #{token_count}: {line_text}")
-                                                
-                                                # Parse JSON
-                                                data = json.loads(line_text)
-                                                
-                                                if 'response' in data:
-                                                    token = data['response']
-                                                    token_count += 1
-                                                    
-                                                    # Token ausgeben
-                                                    yield token
-                                                
-                                                # Wenn Stream abgeschlossen ist
-                                                if data.get('done', False):
-                                                    duration = time.time() - start_time
-                                                    tokens_per_second = token_count / duration if duration > 0 else 0
-                                                    logger.info(f"Stream abgeschlossen in {duration:.2f}s mit {token_count} Tokens "
-                                                            f"({tokens_per_second:.1f} Tokens/s)")
-                                                    
-                                                    stream_done = True
-                                                    break
-                                            
-                                            except json.JSONDecodeError as e:
-                                                logger.warning(f"JSON-Fehler beim Verarbeiten: {e}, Daten: {line[:100]}")
-                                                continue
-                                            except Exception as e:
-                                                logger.error(f"Fehler beim Verarbeiten: {e}")
-                                                yield f"[ERROR] {str(e)}"
-                                        
-                                        if stream_done:
-                                            break
+                                # Verarbeite den Stream in einer Schleife direkt über dem aiohttp Stream
+                                async for chunk in resp.content.iter_chunked(2048):  # Größere Chunks für weniger Timeouts
+                                    if not chunk:
+                                        # Ende des Streams erreicht
+                                        break
                                     
-                                    except asyncio.TimeoutError:
-                                        logger.warning("Timeout beim Lesen eines Chunks, versuche weiter...")
-                                        continue  # Versuche weiter zu lesen
-                                    except Exception as e:
-                                        logger.error(f"Fehler beim Lesen: {e}")
+                                    # Füge zum Buffer hinzu
+                                    buffer += chunk
+                                    
+                                    # Verarbeite komplette Zeilen im Buffer
+                                    while b'\n' in buffer:
+                                        line, buffer = buffer.split(b'\n', 1)
+                                        if not line:
+                                            continue
+                                        
+                                        try:
+                                            line_text = line.decode('utf-8').strip()
+                                            # Logging nur für erste paar Tokens oder periodisch
+                                            if token_count < 5 or token_count % 50 == 0:
+                                                logger.debug(f"Stream-Rohdaten #{token_count}: {line_text}")
+                                            
+                                            # Parse JSON
+                                            data = json.loads(line_text)
+                                            
+                                            if 'response' in data:
+                                                token = data['response']
+                                                token_count += 1
+                                                
+                                                # Token ausgeben
+                                                yield token
+                                            
+                                            # Wenn Stream abgeschlossen ist
+                                            if data.get('done', False):
+                                                duration = time.time() - start_time
+                                                tokens_per_second = token_count / duration if duration > 0 else 0
+                                                logger.info(f"Stream abgeschlossen in {duration:.2f}s mit {token_count} Tokens "
+                                                        f"({tokens_per_second:.1f} Tokens/s)")
+                                                
+                                                stream_done = True
+                                                break
+                                        
+                                        except json.JSONDecodeError as e:
+                                            logger.warning(f"JSON-Fehler beim Verarbeiten: {e}, Daten: {line[:100]}")
+                                            continue
+                                        except Exception as e:
+                                            logger.error(f"Fehler beim Verarbeiten: {e}")
+                                            yield f"[ERROR] {str(e)}"
+                                    
+                                    if stream_done:
                                         break
                                 
                                 # Wenn der Stream ordnungsgemäß abgeschlossen wurde
@@ -288,7 +276,7 @@ class OllamaClient:
                 if "Antwort auf Deutsch" not in prompt and "auf Deutsch antworten" not in prompt:
                     prompt = f"{prompt}\n\nAchte darauf, auf Deutsch zu antworten."
                 
-                async with httpx.AsyncClient(timeout=Config.LLM_TIMEOUT) as client:
+                async with httpx.AsyncClient(timeout=Config.LLM_TIMEOUT * 1.5) as client:
                     response = await client.post(
                         f"{Config.OLLAMA_URL}/api/generate",
                         json={
@@ -304,7 +292,7 @@ class OllamaClient:
                                 'num_batch': 512,    # Größere Batch-Size für schnellere Verarbeitung
                             }
                         },
-                        timeout=Config.LLM_TIMEOUT
+                        timeout=Config.LLM_TIMEOUT * 1.5
                     )
                     
                     if response.status_code == 200:

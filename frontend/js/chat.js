@@ -14,7 +14,7 @@ export function setupChat(options) {
         eventSource,
         scrollToBottom,
         nextTick,
-        loadSessions  // Wichtig: Funktion loadSessions hinzugefügt
+        loadSessions  // Funktion zum Laden der Sessions
     } = options;
     
     let tokenCount = 0;
@@ -170,6 +170,12 @@ export function setupChat(options) {
 
             eventSource.value.onmessage = (event) => {
                 try {
+                    // Ignoriere "event: done", da dies in einem separaten Handler verarbeitet wird
+                    if (event.data && (event.data.includes('event: done') || event.data === 'data: ')) {
+                        console.log("'done'-Event oder leeres Datenevent erkannt, wird separat verarbeitet");
+                        return;
+                    }
+                    
                     // Beim Empfang jedes Tokens den Timeout zurücksetzen
                     resetStreamTimeout();
                     
@@ -241,10 +247,7 @@ export function setupChat(options) {
                     }
                 } catch (e) {
                     console.error("JSON-Parsing-Fehler:", e, "Rohdaten:", event.data);
-                    // Ignoriere JSON-Fehler für spezielle Event-Typen
-                    if (event.data && event.data.includes('event: done')) {
-                        console.log("'done'-Event erkannt, wird separat verarbeitet");
-                    }
+                    // Wir versuchen nicht, spezielle Events hier zu erkennen, da sie separate Handler haben
                 }
             };
 
@@ -260,7 +263,9 @@ export function setupChat(options) {
                 
                 // Session-Liste aktualisieren, um den generierten Titel anzuzeigen
                 setTimeout(() => {
-                    loadSessions();
+                    if (loadSessions && typeof loadSessions === 'function') {
+                        loadSessions();
+                    }
                 }, 500);
                 
                 cleanupStream();
@@ -275,15 +280,13 @@ export function setupChat(options) {
                     if (tokenCount === 0) {
                         messages.value[assistantIndex].message = 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.';
                     } else {
-                        // Nur Fehlermeldung anhängen, wenn wir nicht erfolgreich abgeschlossen haben
-                        if (!successfulCompletion) {
-                            messages.value[assistantIndex].message += "\n\n[Hinweis: Die Verbindung wurde unterbrochen. Die Antwort könnte unvollständig sein.]";
-                        }
+                        // Fehlermeldung anhängen, wenn nicht erfolgreich abgeschlossen
+                        messages.value[assistantIndex].message += "\n\n[Hinweis: Die Verbindung wurde unterbrochen. Die Antwort könnte unvollständig sein.]";
                     }
                 }
                 
                 cleanupStream();
-            };
+            });
 
             // Open-Handler
             eventSource.value.addEventListener('open', () => {
@@ -347,7 +350,9 @@ export function setupChat(options) {
             
             // Session-Liste aktualisieren, um den generierten Titel anzuzeigen
             setTimeout(() => {
-                loadSessions();
+                if (loadSessions && typeof loadSessions === 'function') {
+                    loadSessions();
+                }
             }, 500);
             
             // Clear input
