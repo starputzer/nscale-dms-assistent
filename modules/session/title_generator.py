@@ -16,11 +16,25 @@ class SessionTitleGenerator:
         Returns:
             Ein prägnanter Titel
         """
+        # Ausgabe für Debugging
+        print(f"Title Generator: Originalfrage: '{message}'")
+        
         if not message or len(message.strip()) == 0:
             return "Neue Unterhaltung"
         
         # Entfernen von Sonderzeichen und bereinigen der Nachricht
         clean_message = message.strip()
+        
+        # Verbesserte Behandlung für sehr kurze Nachrichten (< 5 Zeichen)
+        if len(clean_message) < 5:
+            # Für Begrüßungen wie "hi", "hallo" etc.
+            greetings = ["hi", "hey", "hallo", "moin", "servus", "huhu"]
+            if clean_message.lower() in greetings:
+                return "Neue Unterhaltung" # Bei Begrüßungen keine Umbenennung
+            
+            # Für andere kurze Nachrichten, z.B. Abkürzungen
+            # Groß schreiben, falls es sich um eine Abkürzung handeln könnte
+            return clean_message.upper() if len(clean_message) <= 3 else clean_message.title()
         
         # DMS-spezifische Fachbegriffe für bessere Titelerkennung
         dms_key_terms = {
@@ -69,9 +83,6 @@ class SessionTitleGenerator:
         
         lowercase_message = clean_message.lower()
         
-        # DEBUG-AUSGABE
-        print(f"Title Generator: Originalfrage: '{message}'")
-        
         # 1. Domänenspezifische Muster erkennen
         # Diese Muster sind spezifisch für nscale-DMS-Fragen
         dms_patterns = [
@@ -87,6 +98,8 @@ class SessionTitleGenerator:
             (r'(?:wie|wo|wann|warum)\s+(.+?)\s+(?:dokumente|akten|dateien|vorgänge)(?:\?|$)',
              lambda m: f"Dokumente: {m.group(1).strip().title()}")
         ]
+        
+        import re  # Stelle sicher, dass re importiert ist
         
         for pattern, title_formatter in dms_patterns:
             match = re.search(pattern, lowercase_message)
@@ -120,62 +133,8 @@ class SessionTitleGenerator:
                 title = title[:max_length-3] + "..."
             print(f"Title Generator: Was ist-Frage erkannt: {title}")
             return title
-            
-        # 3. Präzisere Fragemuster
-        question_patterns = [
-            # Wie kann/muss/soll ich X tun/machen
-            (r'wie\s+(?:kann|muss|soll|könnte|müsste|sollte)\s+(?:ich|man)\s+(.+?)(?:\s+tun|\s+machen)?(?:\?|$)', 
-             lambda m: f"{m.group(1).strip().title()} Anleitung"),
-            
-            # Wie funktioniert X
-            (r'wie\s+funktioniert\s+(.+?)(?:\?|$)', 
-             lambda m: f"{m.group(1).strip().title()} Erklärung"),
-             
-            # Wo finde ich X
-            (r'wo\s+(?:finde|gibt|bekomme)\s+(?:ich|man)\s+(.+?)(?:\?|$)', 
-             lambda m: f"{m.group(1).strip().title()} finden"),
-             
-            # Wann wird/ist X
-            (r'wann\s+(?:wird|ist|soll|kann|muss)\s+(.+?)(?:\?|$)', 
-             lambda m: f"{m.group(1).strip().title()} Zeitpunkt"),
-             
-            # Was bedeutet X
-            (r'was\s+bedeutet\s+(.+?)(?:\?|$)', 
-             lambda m: f"{m.group(1).strip().title()} Bedeutung"),
-             
-            # Wie erstelle ich X
-            (r'wie\s+(?:erstelle|erzeuge|generiere|kreiere)\s+(?:ich|man)\s+(?:ein(?:e)?\s+)?(.+?)(?:\?|$)', 
-             lambda m: f"{m.group(1).strip().title()} erstellen"),
-             
-            # Wie lösche ich X
-            (r'wie\s+(?:lösche|entferne|vernichte)\s+(?:ich|man)\s+(?:ein(?:e)?\s+)?(.+?)(?:\?|$)', 
-             lambda m: f"{m.group(1).strip().title()} löschen"),
-             
-            # Problem/Fehler mit X
-            (r'(?:problem|fehler|issue|bug)\s+(?:mit|bei)\s+(.+?)(?:\?|$)', 
-             lambda m: f"{m.group(1).strip().title()} Problem"),
-             
-            # Welche X gibt es
-            (r'welche\s+(.+?)\s+gibt\s+es', 
-             lambda m: f"{m.group(1).strip().title()} Übersicht"),
-             
-            # Allgemeines "Wie X" Muster (als Fallback)
-            (r'wie\s+(.+?)(?:\?|$)',
-             lambda m: f"{m.group(1).strip().title()}"),
-        ]
         
-        for pattern, title_formatter in question_patterns:
-            match = re.search(pattern, lowercase_message)
-            if match:
-                title = title_formatter(match)
-                # Kürze Titel auf maximale Länge
-                if len(title) > max_length:
-                    title = title[:max_length-3] + "..."
-                
-                print(f"Title Generator: Fragemuster erkannt - Titel: '{title}'")
-                return title
-        
-        # 4. Erkennung von DMS-Fachbegriffen im Text
+        # 3. Erkennung von DMS-Fachbegriffen im Text
         for term, title in dms_key_terms.items():
             if term.lower() in lowercase_message:
                 # Erstelle einen Titel basierend auf dem erkannten Fachbegriff
@@ -195,7 +154,7 @@ class SessionTitleGenerator:
                 print(f"Title Generator: Fachbegriff '{term}' erkannt - Titel: '{full_title}'")
                 return full_title
         
-        # 5. Entferne typische Fragewort-Präfixe für bessere Titelextraktion
+        # 4. Entferne typische Fragewort-Präfixe für bessere Titelextraktion
         question_prefixes = [
             r'^(wie|was|warum|weshalb|wann|wozu|wo|welche[rsm]?|wer|gibt es|kann ich|können wir|ist es möglich) ',
             r'^(ich möchte|möchte ich|ich will|will ich|ich brauche|brauche ich) ',
@@ -236,23 +195,18 @@ class SessionTitleGenerator:
                 
             print(f"Title Generator: Aus Wörtern generierter Titel: '{title}'")
             return title
-        elif len(words) == 1 and len(words[0]) >= 3:
+        elif len(words) == 1 and len(words[0]) >= 2:
             # Nur ein Wort, aber lang genug
             title = words[0].title()
             print(f"Title Generator: Einzelwort-Titel: '{title}'")
             return title
         
-        # Fallback: Nehme einfach den Anfang des bereinigten Textes
-        if cleaned_text and len(cleaned_text) >= 3:
-            if len(cleaned_text) > max_length:
-                title = cleaned_text[:max_length-3] + "..."
-            else:
-                title = cleaned_text
-                
-            title = title.title()
-            print(f"Title Generator: Fallback-Titel aus Text: '{title}'")
+        # Absolute Fallback für sehr kurze Nachrichten
+        if len(clean_message) >= 2:
+            title = clean_message.title()
+            print(f"Title Generator: Kurznachricht-Titel: '{title}'")
             return title
         
-        # Absolute Fallback: Standardtitel
+        # Absolut nichts passendes gefunden, Standard-Fallback
         print("Title Generator: Nutze Standard-Fallback-Titel")
         return "Neue Unterhaltung"

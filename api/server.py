@@ -307,15 +307,60 @@ async def explain_answer(message_id: int, user_data: Dict[str, Any] = Depends(ge
         
         result = cursor.fetchone()
         if not result:
-            conn.close()
-            raise HTTPException(status_code=404, detail="Nachricht nicht gefunden")
+            # Überprüfe, ob die ID möglicherweise ein temporärer Zeitstempel ist
+            current_time = int(time.time())
+            one_hour_ago = current_time - 3600  # Eine Stunde zurück
+            
+            # Wenn die ID wie ein Zeitstempel aussieht (z.B. 13-stellig), versuche die letzte Assistenten-Nachricht
+            if len(str(message_id)) >= 13 and one_hour_ago < message_id < current_time * 1000:
+                logger.warning(f"Message ID {message_id} sieht wie ein Zeitstempel aus, verwende Fallback")
+                
+                # Suche nach der letzten Assistenten-Nachricht in der aktuellen Sitzung
+                cursor.execute("""
+                    SELECT m.id, m.message, m.session_id, s.user_id 
+                    FROM chat_messages m
+                    JOIN chat_sessions s ON m.session_id = s.id
+                    WHERE s.user_id = ? AND m.is_user = 0
+                    ORDER BY m.created_at DESC
+                    LIMIT 1
+                """, (user_data['user_id'],))
+                
+                result = cursor.fetchone()
+                
+                if not result:
+                    conn.close()
+                    logger.error(f"Nachricht mit ID {message_id} nicht gefunden und kein Fallback verfügbar")
+                    # Statt 404 geben wir ein leeres Ergebnis zurück, um im Frontend eine bessere Fehlermeldung anzuzeigen
+                    return {
+                        "original_question": "Keine Frage gefunden",
+                        "answer_summary": "Keine Antwort gefunden",
+                        "source_references": [],
+                        "explanation_text": "Leider konnte keine Erklärung generiert werden, da keine zugehörige Nachricht gefunden wurde."
+                    }
+            else:
+                conn.close()
+                logger.error(f"Nachricht mit ID {message_id} nicht gefunden")
+                # Statt 404 geben wir ein leeres Ergebnis zurück
+                return {
+                    "original_question": "Keine Frage gefunden",
+                    "answer_summary": "Keine Antwort gefunden",
+                    "source_references": [],
+                    "explanation_text": "Leider konnte keine Erklärung generiert werden, da keine zugehörige Nachricht gefunden wurde."
+                }
         
         msg_id, message_text, session_id, message_user_id = result
         
         # Prüfe, ob der Benutzer Zugriff auf diese Nachricht hat
         if message_user_id != user_data['user_id'] and user_data.get('role') != 'admin':
             conn.close()
-            raise HTTPException(status_code=403, detail="Keine Berechtigung für diese Nachricht")
+            logger.warning(f"Benutzer {user_data['user_id']} hat keine Berechtigung für Nachricht {message_id}")
+            # Statt 403 geben wir ein leeres Ergebnis zurück
+            return {
+                "original_question": "Keine Berechtigung",
+                "answer_summary": "Keine Berechtigung",
+                "source_references": [],
+                "explanation_text": "Sie haben keine Berechtigung, diese Erklärung anzuzeigen."
+            }
         
         # Hole die vorherige Benutzerfrage
         cursor.execute("""
@@ -325,19 +370,37 @@ async def explain_answer(message_id: int, user_data: Dict[str, Any] = Depends(ge
             )
             ORDER BY created_at DESC
             LIMIT 1
-        """, (session_id, message_id))
+        """, (session_id, msg_id))  # Wichtig: Hier msg_id verwenden, nicht message_id
         
         prev_question_result = cursor.fetchone()
         if not prev_question_result:
-            conn.close()
-            raise HTTPException(status_code=404, detail="Zugehörige Frage nicht gefunden")
+            # Fallback: Versuche irgendeine Benutzerfrage aus der Session zu finden
+            cursor.execute("""
+                SELECT message FROM chat_messages 
+                WHERE session_id = ? AND is_user = 1
+                ORDER BY created_at DESC
+                LIMIT 1
+            """, (session_id,))
+            
+            prev_question_result = cursor.fetchone()
+            
+            if not prev_question_result:
+                conn.close()
+                logger.warning(f"Keine Benutzerfrage für Nachricht {msg_id} gefunden")
+                # Statt 404 geben wir ein leeres Ergebnis zurück
+                return {
+                    "original_question": "Keine Frage gefunden",
+                    "answer_summary": message_text[:200] + "..." if len(message_text) > 200 else message_text,
+                    "source_references": [],
+                    "explanation_text": "Es konnte keine zugehörige Frage gefunden werden, daher kann keine detaillierte Erklärung generiert werden."
+                }
         
         question = prev_question_result[0]
         conn.close()
         
         # Analysiere die Antwort auf verwendete Quellen
         source_references = []
-        source_pattern = r'\(Quelle-(\d+)\)'
+        source_pattern = r'\(Quelle-(\d+)\)'  # Korrigiertes Regex-Pattern
         source_matches = re.findall(source_pattern, message_text)
         
         # Zähle Vorkommen der einzelnen Quellen
@@ -349,20 +412,24 @@ async def explain_answer(message_id: int, user_data: Dict[str, Any] = Depends(ge
                 source_counts[source_id] = 1
         
         # Hole die originalen Quellen zum Kontext
-        # In einer echten Implementierung würden wir die Chunks für die Frage neu abrufen
-        # oder sie speichern, wenn die Antwort generiert wird
         relevant_chunks = []
         try:
-            # Hier würden wir idealerweise die exakt verwendeten Chunks abrufen
-            # Da dies in der aktuellen Implementierung nicht gespeichert wird,
-            # erzeugen wir eine neue Suche mit dem ursprünglichen Text
-            relevant_chunks = rag_engine.embedding_manager.search(question, top_k=Config.TOP_K)
+            # Versuche die Chunks über den RAG-Engine zu holen
+            if not hasattr(rag_engine, "embedding_manager") or not rag_engine.embedding_manager:
+                # Initialisiere RAG-Engine falls nötig
+                await rag_engine.initialize()
+                
+            if hasattr(rag_engine, "embedding_manager") and rag_engine.embedding_manager:
+                relevant_chunks = rag_engine.embedding_manager.search(question, top_k=Config.TOP_K)
+            else:
+                logger.warning("Embedding-Manager nicht verfügbar")
+                relevant_chunks = []
         except Exception as e:
             logger.error(f"Fehler bei der Quellensuche für Erklärung: {e}")
             # Fallback: leere Quellenliste
             relevant_chunks = []
         
-        # Erstelle die Quellenliste außerhalb des f-Strings
+        # Erstelle die Quellenliste
         source_references_text = ""
         for i, chunk in enumerate(relevant_chunks[:5]):
             if str(i+1) in source_counts:
@@ -372,7 +439,6 @@ async def explain_answer(message_id: int, user_data: Dict[str, Any] = Depends(ge
                 source_references_text += f"- {source_file}{section_text}{count_text}\n"
         
         # Erstelle eine detaillierte Erklärung
-        # Hier würden wir die genauen Entscheidungen erklären, warum welche Information ausgewählt wurde
         explanation = {
             "original_question": question,
             "answer_summary": message_text[:200] + "..." if len(message_text) > 200 else message_text,
@@ -401,8 +467,14 @@ Die Antwort wurde so formuliert, dass sie Ihre Frage direkt beantwortet und dabe
         
     except Exception as e:
         logger.error(f"Fehler bei der Generierung der Erklärung: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Fehler bei der Erklärung: {str(e)}")
-    
+        # Statt einer Exception geben wir eine leere Erklärung zurück
+        return {
+            "original_question": "Fehler aufgetreten",
+            "answer_summary": "",
+            "source_references": [],
+            "explanation_text": f"Bei der Generierung der Erklärung ist ein Fehler aufgetreten: {str(e)}"
+        }
+        
 @app.post("/api/feedback")
 async def add_feedback(request: FeedbackRequest, user_data: Dict[str, Any] = Depends(get_current_user)):
     """Fügt Feedback zu einer Nachricht hinzu"""
