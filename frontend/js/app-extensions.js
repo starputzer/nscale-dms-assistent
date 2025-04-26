@@ -1,131 +1,15 @@
 /**
- * Diese Datei enthält Erweiterungen und Verbesserungen für die nscale DMS Assistent App.
- * Sie behandelt vor allem die Quellenreferenzen und Debug-Informationen.
+ * app-extensions.js - Verbesserungen für nScale DMS Assistent
+ * 
+ * Diese Datei enthält Erweiterungen und Bugfixes für den nScale DMS Assistenten,
+ * die folgende Probleme beheben:
+ * 
+ * 1. Nachrichtenaktionen (Feedback/Quellen) bleiben während des Streamings unsichtbar
+ * 2. message_id Debug-Informationen werden aus dem UI entfernt
+ * 3. Verbesserte Titelgenerierung, besonders für kurze Nachrichten
+ * 4. Klickbare Quellenreferenzen mit Popup-Funktionalität
+ * 5. Robustere Fehlerbehandlung für die Erklärungsfunktion
  */
-
-/**
- * Diese Funktion fügt den HTML-Code für das Quellen-Popup zur DOM-Struktur hinzu
- * und überwacht dessen Status, um es bei Änderungen zu aktualisieren
- */
-function setupSourcePopupRendering() {
-    // Container für Quellen-Popup erstellen oder finden
-    let popupContainer = document.getElementById('source-popup-container');
-    
-    if (!popupContainer) {
-        // Erstelle den Container und füge ihn zum DOM hinzu
-        popupContainer = document.createElement('div');
-        popupContainer.id = 'source-popup-container';
-        document.body.appendChild(popupContainer);
-    }
-
-    // Vue-Instanz erstellen, um reaktiv auf Änderungen zu reagieren
-    // Die Instanz existiert nur, um auf Änderungen im sourceReferences-Modul zu reagieren
-    const popupApp = Vue.createApp({
-        setup() {
-            // Referenzen auf die reactive Elemente aus dem sourceReferences-Modul
-            const showSourcePopup = Vue.computed(() => window.sourceRefState?.showSourcePopup);
-            const sourcePopupContent = Vue.computed(() => window.sourceRefState?.sourcePopupContent);
-            const sourcePopupPosition = Vue.computed(() => window.sourceRefState?.sourcePopupPosition);
-            
-            // Bei Änderungen den Popup-Container aktualisieren
-            Vue.watch(showSourcePopup, (isVisible) => {
-                if (isVisible) {
-                    renderPopup();
-                } else {
-                    popupContainer.innerHTML = '';
-                }
-            });
-            
-            // Bei Änderungen am Inhalt oder der Position aktualisieren
-            Vue.watch([sourcePopupContent, sourcePopupPosition], () => {
-                if (showSourcePopup.value) {
-                    renderPopup();
-                }
-            });
-            
-            // Funktion zum Rendering des Popups
-            const renderPopup = () => {
-                if (!showSourcePopup.value || !sourcePopupContent.value) {
-                    popupContainer.innerHTML = '';
-                    return;
-                }
-                
-                const position = sourcePopupPosition.value || { top: 0, left: 0 };
-                const content = sourcePopupContent.value;
-                
-                popupContainer.innerHTML = `
-                    <div class="source-popup" style="top: ${position.top}px; left: ${position.left}px;">
-                        <div class="source-popup-title">${content.title || 'Quellendetails'}</div>
-                        ${content.file ? `<div class="source-popup-file">Datei: ${content.file}</div>` : ''}
-                        <div class="source-popup-content">${content.text || 'Keine Informationen verfügbar'}</div>
-                        <div class="source-popup-close" onclick="window.closeSourcePopup()">Schließen</div>
-                    </div>
-                `;
-            };
-            
-            return {
-                renderPopup
-            };
-        }
-    }).mount(popupContainer);
-    
-    // Globales Objekt für die Zustandsverwaltung
-    window.sourceRefState = {
-        showSourcePopup: false,
-        sourcePopupContent: {
-            title: '',
-            text: '',
-            file: '',
-            sourceId: ''
-        },
-        sourcePopupPosition: {
-            top: 0,
-            left: 0
-        }
-    };
-    
-    // Überschreibe die Handler-Funktionen
-    const originalShowHandler = window.showSourcePopupHandler;
-    window.showSourcePopupHandler = (event, sourceId) => {
-        // Position des Popups berechnen
-        const rect = event.target.getBoundingClientRect();
-        
-        // Globalen Zustand aktualisieren
-        window.sourceRefState.sourcePopupPosition = {
-            top: rect.bottom + window.scrollY,
-            left: rect.left + window.scrollX
-        };
-        
-        // Verwende den ursprünglichen Handler, aber mit angepasster Funktionalität
-        if (originalShowHandler) {
-            // Setze vorläufigen Inhalt
-            window.sourceRefState.sourcePopupContent = {
-                title: `Quelle ${sourceId}`,
-                text: "Lade Quelleninformationen...",
-                sourceId: sourceId
-            };
-            
-            // Zeige das Popup an
-            window.sourceRefState.showSourcePopup = true;
-            
-            // Rufe den ursprünglichen Handler auf, der den Inhalt füllt
-            originalShowHandler(event, sourceId);
-        } else {
-            // Fallback, wenn kein Handler definiert ist
-            window.sourceRefState.sourcePopupContent = {
-                title: `Quelle ${sourceId}`,
-                text: "Keine detaillierten Informationen verfügbar",
-                sourceId: sourceId
-            };
-            window.sourceRefState.showSourcePopup = true;
-        }
-    };
-    
-    // Überschreibe die Close-Funktion
-    window.closeSourcePopup = () => {
-        window.sourceRefState.showSourcePopup = false;
-    };
-}
 
 /**
  * Entfernt die Debug-Informationen zur message_id aus dem DOM
@@ -151,7 +35,7 @@ function removeMessageIdDebugInfo() {
  * nach dem Streaming.
  */
 function enhanceMessageActions() {
-    // Überwacht die isStreaming-Variable der App und setzt eine Klasse am body-Element
+    // Klasse am body-Element hinzufügen/entfernen basierend auf Streaming-Status
     const checkStreamingState = () => {
         // Zugriff auf Vue-App und isStreaming-Status
         if (window.app && window.app.$data && window.app.$data.isStreaming !== undefined) {
@@ -236,15 +120,195 @@ function enhanceTitleGeneration() {
     setInterval(watchStreamingForTitleUpdate, 1000);
 }
 
-// Nach dem Laden der Seite die Funktionen ausführen
+/**
+ * Verbessert die Quellenreferenzen-Funktionalität durch Popup-Anzeige
+ */
+function enhanceSourceReferences() {
+    // Globales Objekt für die Quellenverwaltung
+    window.sourceRefState = {
+        showSourcePopup: false,
+        sourcePopupContent: {
+            title: '',
+            text: '',
+            file: '',
+            sourceId: ''
+        },
+        sourcePopupPosition: {
+            top: 0,
+            left: 0
+        }
+    };
+    
+    // Handler für Klicks auf Quellenreferenzen
+    const originalHandler = window.showSourcePopupHandler;
+    window.showSourcePopupHandler = function(event, sourceId) {
+        // Position des Popups berechnen
+        const rect = event.target.getBoundingClientRect();
+        
+        // Globalen Zustand aktualisieren
+        window.sourceRefState.sourcePopupPosition = {
+            top: rect.bottom + window.scrollY,
+            left: rect.left + window.scrollX
+        };
+        
+        // Vorläufigen Inhalt setzen
+        window.sourceRefState.sourcePopupContent = {
+            title: `Quelle ${sourceId}`,
+            text: "Lade Quelleninformationen...",
+            sourceId: sourceId
+        };
+        
+        // Popup anzeigen
+        window.sourceRefState.showSourcePopup = true;
+        
+        // Popup-Container aktualisieren
+        renderSourcePopup();
+        
+        // Versuche den originalen Handler aufzurufen, wenn vorhanden
+        if (typeof originalHandler === 'function') {
+            try {
+                originalHandler(event, sourceId);
+            } catch (e) {
+                console.error("Fehler beim Aufrufen des originalen Handlers:", e);
+                // Fallback-Text im Popup anzeigen
+                window.sourceRefState.sourcePopupContent.text = 
+                    "Dieses Feature ist gerade in Entwicklung. Bitte benutzen Sie die 'Antwort erklären'-Funktion für detaillierte Quellenangaben.";
+                // Popup aktualisieren
+                renderSourcePopup();
+            }
+        }
+    };
+    
+    // Funktion zum Schließen des Popups
+    window.closeSourcePopup = () => {
+        window.sourceRefState.showSourcePopup = false;
+        
+        // Popup-Container aktualisieren
+        renderSourcePopup();
+    };
+    
+    // Container für Quellen-Popup erstellen oder aktualisieren
+    function renderSourcePopup() {
+        let popupContainer = document.getElementById('source-popup-container');
+        
+        if (!popupContainer) {
+            // Erstelle den Container und füge ihn zum DOM hinzu
+            popupContainer = document.createElement('div');
+            popupContainer.id = 'source-popup-container';
+            document.body.appendChild(popupContainer);
+        }
+        
+        const state = window.sourceRefState;
+        
+        if (!state.showSourcePopup) {
+            popupContainer.innerHTML = '';
+            return;
+        }
+        
+        const position = state.sourcePopupPosition;
+        const content = state.sourcePopupContent;
+        
+        popupContainer.innerHTML = `
+            <div class="source-popup" style="top: ${position.top}px; left: ${position.left}px;">
+                <div class="source-popup-title">${content.title || 'Quellendetails'}</div>
+                ${content.file ? `<div class="source-popup-file">Datei: ${content.file}</div>` : ''}
+                <div class="source-popup-content">${content.text || 'Keine Informationen verfügbar'}</div>
+                <div class="source-popup-close" onclick="window.closeSourcePopup()">Schließen</div>
+            </div>
+        `;
+    }
+}
+
+/**
+ * Behebt Fehler in der Erklärungsfunktion 
+ */
+function fixExplanationErrors() {
+    // Warten bis das Originalobjekt existiert
+    const waitForObject = setInterval(() => {
+        if (window.loadExplanation) {
+            clearInterval(waitForObject);
+            
+            // Original-Funktion speichern
+            const originalLoadExplanation = window.loadExplanation;
+            
+            // Überschreiben mit verbesserter Fehlerbehandlung
+            window.loadExplanation = async function(message) {
+                try {
+                    // Überprüfen, ob Quellenreferenzen vorhanden sind
+                    if (!message || !message.message || !window.hasSourceReferences || !window.hasSourceReferences(message.message)) {
+                        console.log("Keine Quellenreferenzen in der Nachricht gefunden");
+                        
+                        // Statt Fehler anzuzeigen, zeigen wir eine freundliche Meldung
+                        if (window.showExplanationDialog !== undefined) {
+                            window.showExplanationDialog = true;
+                        }
+                        
+                        if (window.currentExplanation !== undefined) {
+                            window.currentExplanation = {
+                                original_question: message?.message || "Keine Frage gefunden",
+                                explanation_text: "Für diese Antwort sind keine Quellen verfügbar. Die Antwort wurde basierend auf dem allgemeinen Wissen des Assistenten generiert.",
+                                source_references: []
+                            };
+                        }
+                        return;
+                    }
+                    
+                    // Prüfe, ob message_id vorhanden ist
+                    if (!message.id) {
+                        console.log("Keine gültige message_id für Erklärung vorhanden");
+                        
+                        // Wir verwenden einen Timestamp als temporäre ID
+                        message.id = Date.now();
+                        console.log(`Verwende temporäre message_id: ${message.id}`);
+                    }
+                    
+                    // Rufe die Original-Funktion auf, mit Fehlerbehandlung
+                    return await originalLoadExplanation(message);
+                    
+                } catch (error) {
+                    console.error("Fehler in verbesserter loadExplanation-Funktion:", error);
+                    
+                    // Fallback-Informationen bereitstellen
+                    if (window.showExplanationDialog !== undefined) {
+                        window.showExplanationDialog = true;
+                    }
+                    
+                    if (window.currentExplanation !== undefined) {
+                        window.currentExplanation = {
+                            original_question: message?.message || "Keine Frage gefunden",
+                            explanation_text: "Es ist ein Fehler bei der Generierung der Erklärung aufgetreten. Bitte versuchen Sie es später erneut oder kontaktieren Sie den Administrator.",
+                            source_references: []
+                        };
+                    }
+                }
+            };
+            
+            console.log("loadExplanation-Funktion erfolgreich verbessert");
+        }
+    }, 200);
+}
+
+// Initialisierung aller Verbesserungen nach dem Laden der Seite
 document.addEventListener('DOMContentLoaded', () => {
-    // Starte mit kurzer Verzögerung, um sicherzustellen, dass alle Skripte geladen sind
+    // Kurze Verzögerung, um sicherzustellen, dass alle Komponenten geladen sind
     setTimeout(() => {
-        setupSourcePopupRendering();
+        console.log("Initialisiere Verbesserungen...");
+        
+        // Entferne message_id Debug-Informationen
         removeMessageIdDebugInfo();
+        
+        // Verbessere Nachrichtenaktionen
         enhanceMessageActions();
+        
+        // Verbessere Titelgenerierung
         enhanceTitleGeneration();
         
-        console.log("App-Erweiterungen erfolgreich initialisiert");
-    }, 500);
+        // Verbessere Quellenreferenzen
+        enhanceSourceReferences();
+        
+        // Behebe Fehler in der Erklärungsfunktion
+        fixExplanationErrors();
+        
+        console.log("Alle Verbesserungen erfolgreich initialisiert");
+    }, 1000);
 });
