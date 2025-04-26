@@ -102,8 +102,19 @@ export function setupSourceReferences(options) {
         
         if (!message || !message.id) {
             console.error("Ungültige Nachricht für Erklärung:", message);
-            alert("Diese Nachricht kann nicht erklärt werden, da keine ID vorhanden ist.");
-            return;
+            
+            // Fallback: Extrahiere Nachricht aus der aktuellen Anzeige
+            const lastAssistantMessage = findLastAssistantMessage();
+            if (lastAssistantMessage && lastAssistantMessage.id) {
+                message = lastAssistantMessage;
+                console.log("Verwende letzte Assistenten-Nachricht als Fallback:", message);
+            } else {
+                // Keine message_id verfügbar, zeige trotzdem einen Dialog mit Fehlermeldung
+                showExplanationWithFallback(message || {
+                    message: "Keine Nachricht verfügbar"
+                });
+                return;
+            }
         }
         
         try {
@@ -111,19 +122,102 @@ export function setupSourceReferences(options) {
             showExplanationDialog.value = true;
             
             console.log(`Lade Erklärung für Nachricht ${message.id}...`);
-            const response = await axios.get(`/api/explain/${message.id}`);
             
-            currentExplanation.value = response.data;
-            console.log("Erklärung geladen:", currentExplanation.value);
+            try {
+                const response = await axios.get(`/api/explain/${message.id}`);
+                currentExplanation.value = response.data;
+                console.log("Erklärung geladen:", currentExplanation.value);
+            } catch (error) {
+                console.error("Fehler beim Laden der Erklärung:", error);
+                
+                // Generiere eine Fallback-Erklärung
+                const fallbackExplanation = generateFallbackExplanation(message);
+                currentExplanation.value = fallbackExplanation;
+                console.log("Verwende Fallback-Erklärung:", fallbackExplanation);
+            }
+            
         } catch (error) {
-            console.error("Fehler beim Laden der Erklärung:", error);
-            currentExplanation.value = {
-                original_question: message.message,
-                explanation_text: "Es ist ein Fehler bei der Erklärung aufgetreten. Bitte versuchen Sie es später erneut."
-            };
+            console.error("Allgemeiner Fehler bei der Erklärung:", error);
+            const fallbackExplanation = generateFallbackExplanation(message);
+            currentExplanation.value = fallbackExplanation;
         } finally {
             explanationLoading.value = false;
         }
+    };
+    
+    /**
+     * Findet die letzte Assistenten-Nachricht mit ID
+     * @returns {Object|null} - Die letzte Assistenten-Nachricht oder null
+     */
+    const findLastAssistantMessage = () => {
+        if (!messages || !messages.value || messages.value.length === 0) {
+            return null;
+        }
+        
+        // Finde die letzte Nachricht vom Assistenten
+        for (let i = messages.value.length - 1; i >= 0; i--) {
+            const msg = messages.value[i];
+            if (!msg.is_user && msg.id) {
+                return msg;
+            }
+        }
+        
+        return null;
+    };
+    
+    /**
+     * Zeigt einen Erklärungsdialog mit Fallback-Informationen an
+     * @param {Object} message - Die Nachricht für die Erklärung
+     */
+    const showExplanationWithFallback = (message) => {
+        showExplanationDialog.value = true;
+        explanationLoading.value = false;
+        
+        // Erstelle eine einfache Erklärung basierend auf der Nachricht
+        currentExplanation.value = generateFallbackExplanation(message);
+    };
+    
+    /**
+     * Generiert eine Fallback-Erklärung wenn der Server-Endpunkt nicht antwortet
+     * @param {Object} message - Die zu erklärende Nachricht
+     * @returns {Object} - Eine einfache Erklärung
+     */
+    const generateFallbackExplanation = (message) => {
+        // Extrahiere Quellen aus dem Nachrichtentext
+        const sourceRefs = extractSourceReferences(message.message || "");
+        
+        // Suche nach dem Quellenabschnitt am Ende der Nachricht
+        let sourceSection = "";
+        if (message.message) {
+            const sourceMatch = message.message.match(/Quellen?:\s*\n?([\s\S]+)$/);
+            if (sourceMatch && sourceMatch[1]) {
+                sourceSection = sourceMatch[1].trim();
+            }
+        }
+        
+        // Erstelle eine einfache Erklärung
+        return {
+            original_question: "Ihre Frage (nicht verfügbar)",
+            answer_summary: message.message ? 
+                (message.message.substring(0, 200) + (message.message.length > 200 ? "..." : "")) : 
+                "Antwort nicht verfügbar",
+            source_references: sourceRefs.map(ref => ({
+                source_id: typeof ref === 'number' ? `Quelle-${ref}` : `${ref}`,
+                file: "Dokumentation",
+                type: "section",
+                title: "Nicht verfügbar",
+                usage_count: 1,
+                relevance_score: 1.0,
+                preview: sourceSection || "Keine Vorschau verfügbar"
+            })),
+            explanation_text: `Die Erklärungsfunktion konnte nicht vom Server abgerufen werden. 
+
+Ich kann jedoch erkennen, dass in der Antwort ${sourceRefs.length} Quellen referenziert wurden. 
+
+Die Antwort basiert auf den Informationen, die in den relevantesten Dokumenten der nscale-Dokumentation gefunden wurden.
+
+${sourceSection ? `\nErkannte Quellenangaben:\n${sourceSection}` : ""}`
+        };
     };
     
     /**

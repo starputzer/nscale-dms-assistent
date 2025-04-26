@@ -8,6 +8,8 @@ import asyncio
 import time
 import uuid
 import json
+import re  # Für reguläre Ausdrücke
+import sqlite3  # Fehlender Import hinzugefügt
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, Request
