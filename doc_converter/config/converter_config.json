@@ -1,0 +1,107 @@
+{
+    "source_dir": "data/raw_docs",
+    "target_dir": "data/txt",
+    "inventory_dir": "doc_converter/data/inventory",
+    "temp_dir": "doc_converter/data/temp",
+    
+    "supported_extensions": [
+      ".pdf", ".docx", ".doc", ".xlsx", ".xls", 
+      ".pptx", ".ppt", ".html", ".htm", ".md", ".txt"
+    ],
+    
+    "parallel_processing": true,
+    "max_workers": 4,
+    "post_processing": true,
+    "validate_results": true,
+    
+    "log_level": "INFO",
+    "log_to_file": true,
+    "log_file": "doc_converter.log",
+    
+    "pdf_converter": {
+      "extract_images": true,
+      "max_image_size": 1024,
+      "detect_tables": true,
+      "table_detection_method": "hybrid",
+      "ocr_enabled": false,
+      "table_confidence_threshold": 0.6
+    },
+    
+    "docx_converter": {
+      "extract_images": true,
+      "max_image_size": 1024,
+      "extract_comments": false,
+      "extract_headers_footers": false,
+      "use_mammoth": true
+    },
+    
+    "excel_converter": {
+      "extract_all_sheets": true,
+      "extract_hidden_sheets": false,
+      "max_rows": 1000,
+      "max_cols": 20,
+      "include_sheet_names": true,
+      "convert_formulas": true
+    },
+    
+    "pptx_converter": {
+      "extract_images": true,
+      "extract_notes": true,
+      "extract_tables": true,
+      "max_image_size": 1024,
+      "preserve_animations": false
+    },
+    
+    "html_converter": {
+      "extract_images": true,
+      "download_remote_images": false,
+      "extract_metadata": true,
+      "extract_links": true,
+      "remove_scripts": true,
+      "main_content_selectors": [
+        "main", "article", ".content", "#content", ".main-content", "#main-content",
+        ".post-content", ".entry-content", ".article-content", ".page-content"
+      ]
+    },
+    
+    "cleaner": {
+      "fix_headings": true,
+      "fix_links": true,
+      "fix_tables": true,
+      "fix_lists": true,
+      "fix_code_blocks": true,
+      "fix_line_breaks": true,
+      "standardize_emphasis": true,
+      "remove_html": false,
+      "max_line_length": 0,
+      "list_marker": "*"
+    },
+    
+    "structure_fixer": {
+      "fix_heading_hierarchy": true,
+      "fix_heading_capitalize": true,
+      "fix_paragraph_breaks": true,
+      "fix_list_formatting": true,
+      "create_missing_sections": false,
+      "improve_frontmatter": true
+    },
+    
+    "table_formatter": {
+      "align_columns": true,
+      "auto_align_numbers": true,
+      "fix_column_widths": true,
+      "max_column_width": 30,
+      "min_column_width": 3,
+      "pretty_format": true
+    },
+    
+    "validator": {
+      "min_content_length": 100,
+      "max_content_length": 1000000,
+      "max_line_length": 120,
+      "check_broken_links": true,
+      "check_images": true,
+      "check_frontmatter": true,
+      "check_heading_hierarchy": true
+    }
+  }

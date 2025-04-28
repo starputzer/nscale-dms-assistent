@@ -1,0 +1,64 @@
+{
+    "structure": {
+      "required_frontmatter": ["title", "original_format"],
+      "heading_hierarchy": true,
+      "allowed_heading_jumps": 1,
+      "max_heading_level": 6,
+      "single_h1": true
+    },
+    "content": {
+      "min_length": 100,
+      "max_length": 1000000,
+      "min_headings": 1,
+      "min_paragraphs": 2,
+      "required_sections": []
+    },
+    "formatting": {
+      "max_line_length": 120,
+      "code_block_style": "fenced",
+      "emphasis_style": "asterisk",
+      "list_item_style": "consistent"
+    },
+    "links": {
+      "require_link_texts": true,
+      "prefer_relative_asset_links": true,
+      "asset_folder": "assets"
+    },
+    "tables": {
+      "require_headers": true,
+      "require_alignment_row": true,
+      "max_columns": 10
+    },
+    "heading_hierarchy": {
+      "enabled": true,
+      "max_level": 4,
+      "allowed_skips": 0,
+      "top_level_heading": 1
+    },
+    "heading_structure": {
+      "required_sections": [],
+      "section_order": [],
+      "auto_capitalize": "title"
+    },
+    "paragraph_structure": {
+      "min_paragraph_length": 40,
+      "max_paragraph_length": 600,
+      "sentence_per_line": false,
+      "ensure_blank_lines": true
+    },
+    "lists": {
+      "ensure_blank_lines": true,
+      "standard_marker": "*",
+      "increase_indentation": true
+    },
+    "document_template": {
+      "enabled": false,
+      "template_file": "",
+      "sections": {}
+    },
+    "frontmatter": {
+      "ensure_required_fields": ["title", "original_format"],
+      "auto_generate_missing": true,
+      "field_ordering": ["title", "author", "original_format", "created", "modified"]
+    }
+  }

@@ -1,0 +1,87 @@
+{
+    "pipeline": {
+      "steps": [
+        {
+          "name": "inventory",
+          "enabled": true,
+          "description": "Inventarisierung und Klassifizierung der Quelldokumente"
+        },
+        {
+          "name": "conversion",
+          "enabled": true,
+          "description": "Konvertierung der Dokumente in Markdown"
+        },
+        {
+          "name": "structure",
+          "enabled": true,
+          "description": "Strukturverbesserung der Markdown-Dokumente"
+        },
+        {
+          "name": "cleaning",
+          "enabled": true,
+          "description": "Bereinigung der Markdown-Dokumente"
+        },
+        {
+          "name": "table_formatting",
+          "enabled": true,
+          "description": "Formatierung der Tabellen in den Markdown-Dokumenten"
+        },
+        {
+          "name": "validation",
+          "enabled": true,
+          "description": "Validierung der Markdown-Dokumente"
+        }
+      ],
+      "error_handling": {
+        "continue_on_error": true,
+        "max_retries": 3,
+        "retry_delay": 5
+      },
+      "reporting": {
+        "generate_report": true,
+        "report_format": "markdown",
+        "include_stats": true,
+        "include_errors": true
+      }
+    },
+    "scheduler": {
+      "enabled": false,
+      "cron_schedule": "0 2 * * *",
+      "max_concurrent_tasks": 2,
+      "priority_groups": [
+        {
+          "name": "Gruppe 1 (Hohe Priorität)",
+          "schedule": "0 2 * * *"
+        },
+        {
+          "name": "Gruppe 2 (Mittlere Priorität)",
+          "schedule": "0 3 * * *"
+        },
+        {
+          "name": "Gruppe 3 (Niedrige Priorität)",
+          "schedule": "0 4 * * 0"
+        }
+      ]
+    },
+    "monitoring": {
+      "log_level": "INFO",
+      "performance_metrics": true,
+      "document_metrics": true,
+      "error_tracking": true,
+      "notification": {
+        "enabled": false,
+        "email": {
+          "enabled": false,
+          "recipients": [],
+          "on_error": true,
+          "on_completion": true
+        }
+      }
+    },
+    "resources": {
+      "cpu_allocation": "auto",
+      "memory_limit": "auto",
+      "gpu_enabled": false,
+      "temp_storage": "doc_converter/data/temp"
+    }
+  }

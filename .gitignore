@@ -59,3 +59,19 @@ Thumbs.db
 
 # Log-Dateien
 *.log
+
+# Konverter-spezifische Verzeichnisse
+doc_converter/data/converted/
+doc_converter/data/inventory/
+doc_converter/data/metadata/
+doc_converter/data/temp/
+doc_converter/data/cache/
+
+# Generierte Berichte
+doc_converter/data/reports/
+
+# Extrahierte Assets
+**/assets/
+
+# Temporäre Konvertierungsdateien
+*.temp.*
