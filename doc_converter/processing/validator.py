@@ -605,7 +605,7 @@ class MarkdownValidator:
                 delimiter_row = table_lines[1] if len(table_lines) > 1 else ""
                 
                 # Prüfe, ob die zweite Zeile tatsächlich eine Trenner-Zeile ist
-                if not re.match(r'^\|[-:| ]+\|, delimiter_row):
+                if not re.match(r'^\|[-:| ]+\|$', delimiter_row):
                     issues.append(f"Tabelle {i+1} hat keine Kopf-Trenner-Zeile (erwartet: |---| Zeile)")
             
             # Prüfe maximale Spaltenanzahl
