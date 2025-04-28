@@ -1,0 +1,16 @@
+PyMuPDF==1.23.8      # Für PDF-Verarbeitung
+python-docx==1.0.1   # Für Word-Dokumente
+pandas==2.1.4        # Für Datenverarbeitung und -analyse
+seaborn==0.13.1      # Für Visualisierungen
+matplotlib==3.8.2    # Für Visualisierungen
+python-magic==0.4.27 # Für MIME-Typ-Erkennung
+openpyxl==3.1.2      # Für Excel-Dateien
+python-pptx==0.6.21  # Für PowerPoint-Präsentationen
+beautifulsoup4==4.12.2 # Für HTML-Parsing
+markdown==3.5.2      # Für Markdown-Manipulation
+html2text==2020.1.16 # Für HTML zu Markdown Konvertierung
+camelot-py==0.10.1   # Für Tabellenerkennung in PDFs
+tabula-py==2.9.0     # Alternative Tabellenerkennung
+Pillow==10.2.0       # Für Bildverarbeitung
+mammoth==1.6.0       # Für bessere DOCX-Konvertierung
+requests==2.31.0     # Für HTTP-Anfragen
