@@ -90,12 +90,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import FileUpload from '@/components/FileUpload.vue';
-import FileList from '@/components/FileList.vue';
-import ConversionOptions from '@/components/ConversionOptions.vue';
-import ConversionProgress from '@/components/ConversionProgress.vue';
-import ConversionResults from '@/components/ConversionResults.vue';
-import ResultPreviewModal from '@/components/ResultPreviewModal.vue';
+import FileUpload from '@/components/doc-converter/FileUpload.vue';
+import FileList from '@/components/doc-converter/FileList.vue';
+import ConversionOptions from '@/components/doc-converter/ConversionOptions.vue';
+import ConversionProgress from '@/components/doc-converter/ConversionProgress.vue';
+import ConversionResults from '@/components/doc-converter/ConversionResults.vue';
+import ResultPreviewModal from '@/components/doc-converter/ResultPreviewModal.vue';
 import { useDocConverterStore } from '@/stores/docConverterStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/composables/useToast';
