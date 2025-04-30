@@ -14,9 +14,9 @@ from pathlib import Path
 from typing import Dict, Any, List, Tuple, Optional, Set
 
 # Importe für die Pipeline-Komponenten
-from inventory.document_classifier import DocumentClassifier
-from inventory.inventory_scanner import DocumentScanner
-from inventory.report_generator import ReportGenerator
+from .inventory.document_classifier import DocumentClassifier
+from .inventory.inventory_scanner import DocumentScanner
+from .inventory.report_generator import ReportGenerator
 
 from converters.base_converter import BaseConverter
 from converters.pdf_converter import PDFConverter
