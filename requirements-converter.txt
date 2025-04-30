@@ -14,3 +14,4 @@ tabula-py==2.9.0     # Alternative Tabellenerkennung
 Pillow==10.2.0       # Für Bildverarbeitung
 mammoth==1.6.0       # Für bessere DOCX-Konvertierung
 requests==2.31.0     # Für HTTP-Anfragen
+opencv-python-headless==4.9.0.80  # Für Bildverarbeitung in camelot (ohne GUI)

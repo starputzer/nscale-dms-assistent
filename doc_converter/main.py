@@ -30,8 +30,8 @@ from .processing.validator import MarkdownValidator
 from .processing.structure_fixer import StructureFixer
 from .processing.table_formatter import TableFormatter
 
-from utils.file_utils import get_files_in_directory, is_file_supported, create_directory
-from utils.config import ConfigManager
+from .utils.file_utils import get_files_in_directory, is_file_supported, create_directory
+from .utils.config import ConfigManager
 
 
 class DocConverter:
