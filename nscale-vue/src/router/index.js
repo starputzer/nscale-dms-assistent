@@ -12,7 +12,7 @@ import RegisterView from '@/views/RegisterView.vue';
 import ForgotPasswordView from '@/views/ForgotPasswordView.vue';
 import ChatView from '@/views/ChatView.vue';
 import AdminView from '@/views/AdminView.vue';
-import DocConverterView from '@/views/DocConverterView.vue';
+import DocConverterView from '@/views/DocConverter.vue';
 import SettingsView from '@/views/SettingsView.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
 
