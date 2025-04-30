@@ -1,0 +1,111 @@
+/* variables.css - CSS-Variablendefinitionen für nscale DMS Assistent */
+
+:root {
+    /* nscale Hauptfarben */
+    --nscale-green: #00a550; /* Hauptgrün von nscale */
+    --nscale-green-dark: #009046; /* Dunkleres Grün für Hover */
+    --nscale-light-green: #e8f7ef; /* Helles Grün für Hintergründe */
+    
+    /* Graustufen */
+    --nscale-gray: #f7f7f7; /* Hellgrau für Hintergründe */
+    --nscale-gray-light: #f8f9fa;
+    --nscale-gray-medium: #e0e3e8;
+    --nscale-gray-dark: #4a5568;
+    --nscale-dark-gray: #333333; /* Für Text */
+    
+    /* Akzentfarben */
+    --nscale-red: #e53e3e;
+    --nscale-red-light: #fed7d7;
+    --nscale-blue: #3182ce;
+    --nscale-blue-light: #ebf8ff;
+    --nscale-yellow: #f6ad55;
+    --nscale-yellow-light: #feebc8;
+    
+    /* UI-Elemente */
+    --nscale-border-radius: 8px;
+    --nscale-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.04);
+    --nscale-shadow-md: 0 4px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06);
+    
+    /* Übergangs-Einstellungen */
+    --nscale-transition: all 0.2s ease;
+  }
+  
+  /* Dunkel-Theme-Variablen */
+  .theme-dark {
+    /* Angepasste Hauptfarben für Dunkelmodus */
+    --nscale-green: #00c060;
+    --nscale-green-dark: #00a550;
+    --nscale-light-green: #003320;
+    
+    /* Angepasste Graustufen */
+    --nscale-gray: #2a2a2a;
+    --nscale-gray-light: #333333;
+    --nscale-gray-medium: #444444;
+    --nscale-gray-dark: #aaaaaa;
+    --nscale-dark-gray: #f0f0f0;
+    
+    /* Angepasste Akzentfarben */
+    --nscale-red: #ff4d4d;
+    --nscale-red-light: rgba(255, 77, 77, 0.2);
+    --nscale-blue: #60a5fa;
+    --nscale-blue-light: rgba(96, 165, 250, 0.2);
+    --nscale-yellow: #fbbf24;
+    --nscale-yellow-light: rgba(251, 191, 36, 0.2);
+    
+    /* UI-Elemente im Dunkelmodus */
+    --nscale-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+    --nscale-shadow-md: 0 4px 6px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2);
+  }
+  
+  /* Kontrast-Theme-Variablen */
+  .theme-contrast {
+    /* Angepasste Hauptfarben für Kontrastmodus */
+    --nscale-green: #ffeb3b; /* Gelb statt Grün für Kontrast */
+    --nscale-green-dark: #ffd600;
+    --nscale-light-green: #333300;
+    
+    /* Angepasste Graustufen */
+    --nscale-gray: #333333;
+    --nscale-gray-light: #444444;
+    --nscale-gray-medium: #666666;
+    --nscale-gray-dark: #cccccc;
+    --nscale-dark-gray: #ffffff;
+    
+    /* Angepasste Akzentfarben */
+    --nscale-red: #ff4444;
+    --nscale-red-light: #330000;
+    --nscale-blue: #4499ff;
+    --nscale-blue-light: #000033;
+    --nscale-yellow: #ffcc00;
+    --nscale-yellow-light: #332b00;
+    
+    /* UI-Elemente im Kontrastmodus */
+    --nscale-border-radius: 8px;
+    --nscale-shadow: 0 1px 3px rgba(255,235,59,0.3), 0 1px 2px rgba(255,235,59,0.2);
+    --nscale-shadow-md: 0 4px 6px rgba(255,235,59,0.3), 0 2px 4px rgba(255,235,59,0.2);
+  }
+  
+  /* Schriftgrößen-Variablen */
+  .font-small {
+    --nscale-font-size-base: 0.875rem;
+    --nscale-font-size-sm: 0.8125rem;
+    --nscale-font-size-lg: 1rem;
+    --nscale-font-size-xl: 1.125rem;
+    --nscale-font-size-2xl: 1.25rem;
+  }
+  
+  .font-medium, :root {
+    --nscale-font-size-base: 1rem;
+    --nscale-font-size-sm: 0.875rem;
+    --nscale-font-size-lg: 1.125rem;
+    --nscale-font-size-xl: 1.25rem;
+    --nscale-font-size-2xl: 1.5rem;
+  }
+  
+  .font-large {
+    --nscale-font-size-base: 1.125rem;
+    --nscale-font-size-sm: 1rem;
+    --nscale-font-size-lg: 1.25rem;
+    --nscale-font-size-xl: 1.5rem;
+    --nscale-font-size-2xl: 1.75rem;
+  }
