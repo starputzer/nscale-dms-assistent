@@ -18,17 +18,17 @@ from .inventory.document_classifier import DocumentClassifier
 from .inventory.inventory_scanner import DocumentScanner
 from .inventory.report_generator import ReportGenerator
 
-from converters.base_converter import BaseConverter
-from converters.pdf_converter import PDFConverter
-from converters.docx_converter import DocxConverter
-from converters.xlsx_converter import ExcelConverter
-from converters.html_converter import HTMLConverter
-from converters.pptx_converter import PowerPointConverter
+from .converters.base_converter import BaseConverter
+from .converters.pdf_converter import PDFConverter
+from .converters.docx_converter import DocxConverter
+from .converters.xlsx_converter import ExcelConverter
+from .converters.html_converter import HTMLConverter
+from .converters.pptx_converter import PowerPointConverter
 
-from processing.cleaner import MarkdownCleaner
-from processing.validator import MarkdownValidator
-from processing.structure_fixer import StructureFixer
-from processing.table_formatter import TableFormatter
+from .processing.cleaner import MarkdownCleaner
+from .processing.validator import MarkdownValidator
+from .processing.structure_fixer import StructureFixer
+from .processing.table_formatter import TableFormatter
 
 from utils.file_utils import get_files_in_directory, is_file_supported, create_directory
 from utils.config import ConfigManager
