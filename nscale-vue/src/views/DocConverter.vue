@@ -1,4 +1,4 @@
-// DocConverter.vue
+<!-- src/views/DocConverterView.vue -->
 <template>
   <div class="doc-converter">
     <header class="header">
@@ -89,12 +89,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import FileUpload from './components/FileUpload.vue';
-import FileList from './components/FileList.vue';
-import ConversionOptions from './components/ConversionOptions.vue';
-import ConversionProgress from './components/ConversionProgress.vue';
-import ConversionResults from './components/ConversionResults.vue';
-import ResultPreviewModal from './components/ResultPreviewModal.vue';
+import FileUpload from '../components/FileUpload.vue';
+import FileList from '../components/FileList.vue';
+import ConversionOptions from '../components/ConversionOptions.vue';
+import ConversionProgress from '../components/ConversionProgress.vue';
+import ConversionResults from '../components/ConversionResults.vue';
+import ResultPreviewModal from '../components/ResultPreviewModal.vue';
 import { useDocConverterStore } from '@/stores/docConverterStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/composables/useToast';
@@ -320,6 +320,10 @@ onMounted(async () => {
 .btn-primary:hover {
   background-color: var(--nscale-green-dark);
   transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
 }
 
 .btn-primary:disabled {

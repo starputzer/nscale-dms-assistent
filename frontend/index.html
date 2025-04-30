@@ -196,6 +196,13 @@
                         </button>
                         
                         <button 
+                            @click="adminTab = 'docConverter'" 
+                            :class="['admin-nav-item', adminTab === 'docConverter' ? 'active' : '']">
+                            <i class="fas fa-file-import"></i>
+                            <span>Dokumente konvertieren</span>
+                        </button>
+
+                        <button 
                             @click="adminTab = 'feedback'; loadFeedbackStats(); loadNegativeFeedback()" 
                             :class="['admin-nav-item', adminTab === 'feedback' ? 'active' : '']">
                             <i class="fas fa-comment-dots"></i>
@@ -509,7 +516,11 @@
                                     </div>
                                 </div>
                             </div>
-                            
+                            <!-- DocConverter Tab -->
+                            <div v-if="adminTab === 'docConverter'" class="admin-panel-content">
+                                <!-- Mounting-Punkt für den DocConverter -->
+                                <div id="doc-converter-app"></div>
+
                             <!-- Feedback-Tab -->
                             <div v-if="adminTab === 'feedback'" class="admin-panel-content">
                                 <div class="flex justify-end mb-6">
@@ -1267,6 +1278,29 @@
         featureToggleApp.mount('#vue-feature-toggle');
         console.log('Feature-Toggle aktiviert (Entwicklungsmodus)');
       }
+    </script>
+    <!-- Am Ende von frontend/index.html, vor dem schließenden </body> Tag -->
+    <script>
+        // DocConverter-Initialisierung
+        document.addEventListener('DOMContentLoaded', () => {
+            // Lade den DocConverter nur, wenn der Admin-Bereich aktiv ist
+            const checkAdminView = setInterval(() => {
+                const isAdmin = document.querySelector('.admin-panel-content') !== null;
+                const docConverterTab = document.querySelector('[data-tab="docConverter"].active') !== null;
+                const mountPoint = document.getElementById('doc-converter-app');
+                
+                if (isAdmin && docConverterTab && mountPoint && !window.docConverterInitialized) {
+                    // Lade das DocConverter-Skript dynamisch
+                    const script = document.createElement('script');
+                    script.src = '/static/js/doc-converter.js';
+                    script.type = 'module';
+                    document.body.appendChild(script);
+                    
+                    window.docConverterInitialized = true;
+                    clearInterval(checkAdminView);
+                }
+            }, 1000);
+        });
     </script>
 </body>
 </html>

@@ -505,6 +505,7 @@ createApp({
             switch(adminFunctions.adminTab.value) {
                 case 'users': return 'Benutzerverwaltung';
                 case 'system': return 'Systemüberwachung';
+                case 'docConverter': return 'Dokumenten-Konvertierung'
                 case 'feedback': return 'Feedback-Analyse';
                 case 'motd': return 'Message of the Day';
                 default: return 'Administration';
