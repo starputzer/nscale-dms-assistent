@@ -1,6 +1,7 @@
 <!-- src/views/DocConverterView.vue -->
 <template>
-  <div class="doc-converter">
+  <div class="doc-converter-view">
+    <!-- Da wir DocConverter.vue direkt in diese Datei kopieren, muss kein Import erfolgen -->
     <header class="header">
       <h1 class="title">nscale Dokumenten-Konverter</h1>
       <p class="subtitle">Konvertieren Sie Ihre Dokumente zu durchsuchbarem Text für das nscale DMS</p>
@@ -89,12 +90,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import FileUpload from '../components/FileUpload.vue';
-import FileList from '../components/FileList.vue';
-import ConversionOptions from '../components/ConversionOptions.vue';
-import ConversionProgress from '../components/ConversionProgress.vue';
-import ConversionResults from '../components/ConversionResults.vue';
-import ResultPreviewModal from '../components/ResultPreviewModal.vue';
+import FileUpload from '@/components/FileUpload.vue';
+import FileList from '@/components/FileList.vue';
+import ConversionOptions from '@/components/ConversionOptions.vue';
+import ConversionProgress from '@/components/ConversionProgress.vue';
+import ConversionResults from '@/components/ConversionResults.vue';
+import ResultPreviewModal from '@/components/ResultPreviewModal.vue';
 import { useDocConverterStore } from '@/stores/docConverterStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/composables/useToast';
@@ -232,11 +233,20 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.doc-converter-view {
+  min-height: 100vh;
+  background-color: var(--nscale-gray, #f7f7f7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .doc-converter {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
   color: var(--nscale-dark-gray);
+  width: 100%;
 }
 
 .header {
@@ -261,6 +271,8 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  max-width: 1200px;
+  width: 100%;
 }
 
 .conversion-panel, .results-panel {
@@ -358,8 +370,8 @@ onMounted(async () => {
 }
 
 /* Dark Mode Anpassungen */
-:global(.theme-dark) .doc-converter {
-  color: #f0f0f0;
+:global(.theme-dark) .doc-converter-view {
+  background-color: #121212;
 }
 
 :global(.theme-dark) .conversion-panel,
@@ -401,8 +413,8 @@ onMounted(async () => {
 }
 
 /* Kontrast-Modus Anpassungen */
-:global(.theme-contrast) .doc-converter {
-  color: #ffffff;
+:global(.theme-contrast) .doc-converter-view {
+  background-color: #000000;
 }
 
 :global(.theme-contrast) .conversion-panel,

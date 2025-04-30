@@ -1,13 +1,13 @@
 // src/standalone/doc-converter.js
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-// KORRIGIERTER PFAD: Der korrekte Pfad ohne das "src/" im Import-Statement
-import DocConverterView from '../views/DocConverterView.vue'
+// Verwende den @-Alias, der in der Vite-Konfiguration definiert ist
+import DocConverterView from '@/views/DocConverterView.vue'
 
-// Stelle sicher, dass benötigte Styles geladen werden
-import '../assets/styles/main.css' // Passe den Pfad an deine Struktur an
+// Styles importieren
+import '@/assets/styles/main.css'
 
-// FontAwesome Icons einbinden - für die Icons in den Buttons
+// FontAwesome einbinden
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { 
@@ -29,7 +29,7 @@ import {
   faCog 
 } from '@fortawesome/free-solid-svg-icons'
 
-// Icons zur Library hinzufügen
+// Icons hinzufügen
 library.add(
   faArrowLeft,
   faCloudUploadAlt, 
