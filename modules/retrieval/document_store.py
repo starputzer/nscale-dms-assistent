@@ -141,8 +141,11 @@ class DocumentStore:
         self.chunks = []
         self.doc_modified = {}
         self.lock = threading.RLock()
+        
+        # WICHTIG: Logger-Instanzattribut setzen
+        self.logger = logger
 
-    # Neu: Initialisieren des Dokumentenkonverters
+        # Neu: Initialisieren des Dokumentenkonverters
         try:
             self.doc_converter = DocConverter()
             self.logger.info("Dokumentenkonverter erfolgreich initialisiert")
