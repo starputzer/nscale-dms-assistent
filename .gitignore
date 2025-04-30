@@ -75,3 +75,57 @@ doc_converter/data/reports/
 
 # Temporäre Konvertierungsdateien
 *.temp.*
+
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Vue.js build output
+.DS_Store
+dist
+dist-ssr
+coverage
+*.local
+
+# Editor directories and files (erweitert)
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+*.njsproj
+*.sln
+*.suo
+*.sw?
+
+# Testing
+/coverage/
+/test-results/
+/playwright-report/
+/cypress/videos/
+/cypress/screenshots/
+
+# Local env files
+.env.local
+.env.*.local
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Cache files
+.eslintcache
+.stylelintcache
+.cache/
+
+# Bundle analyzer reports
+stats.html
+bundle-stats.json
+
+# Temporary files from various tools
+.temp
+.tmp
+.history/
