@@ -2,7 +2,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 // Verwende den @-Alias, der in der Vite-Konfiguration definiert ist
-import DocConverterView from '@/views/DocConverterView.vue'
+import DocConverterView from 'doc-converter-view'
 
 // Styles importieren
 import '@/assets/styles/main.css'
