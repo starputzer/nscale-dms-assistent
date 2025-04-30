@@ -64,7 +64,7 @@ import { marked } from 'marked';
 import { useMotdStore } from '@/stores/motdStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useFeatureToggleStore } from '@/stores/featureToggleStore';
-import UIToggle from '@/components/dev/UIToggle.vue';
+import UIToggle from '@/components/common/UIToggle.vue';
 
 // Stores
 const motdStore = useMotdStore();
