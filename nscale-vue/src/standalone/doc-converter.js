@@ -5,7 +5,7 @@ import { createPinia } from 'pinia'
 import DocConverterView from 'doc-converter-view'
 
 // Styles importieren
-import '@/assets/styles/main.css'
+//import '@/assets/styles/main.css'
 
 // FontAwesome einbinden
 import { library } from '@fortawesome/fontawesome-svg-core'
