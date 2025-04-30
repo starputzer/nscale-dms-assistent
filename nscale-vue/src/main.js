@@ -11,8 +11,8 @@ import ToastContainer from '@/components/common/ToastContainer.vue';
 // Styles
 import '@/assets/css/variables.css';
 import '@/assets/css/main.css';
-import '@/styles/improved-ui.css';
-import '@/styles/themes.css';
+import '@/assets/css/improved-ui.css';
+import '@/assets/css/themes.css';
 
 // Font Awesome
 import { library } from '@fortawesome/fontawesome-svg-core';
