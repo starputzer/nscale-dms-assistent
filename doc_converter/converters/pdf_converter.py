@@ -439,7 +439,8 @@ class PDFConverter(BaseConverter):
                         markdown_parts.append(f"* {block_text.strip()[1:].strip()}")
                     elif re.match(r'^\d+\.', block_text.strip()):
                         # Nummerierte Liste
-                        markdown_parts.append(f"1. {re.sub(r'^\d+\.', '', block_text.strip()).strip()}")
+                        pattern = r'^\d+\.'
+                        markdown_parts.append(f"1. {re.sub(pattern, '', block_text.strip()).strip()}")
                     else:
                         # Normaler Absatz
                         markdown_parts.append(block_text.strip())
