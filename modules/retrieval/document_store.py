@@ -2,12 +2,14 @@ import pickle
 import re
 import hashlib
 import threading
+import os
 from pathlib import Path
 from datetime import datetime
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple, Set
 
 from ..core.config import Config
 from ..core.logging import LogManager
+from doc_converter.main import DocConverter
 
 logger = LogManager.setup_logging(__name__)
 
@@ -139,7 +141,15 @@ class DocumentStore:
         self.chunks = []
         self.doc_modified = {}
         self.lock = threading.RLock()
-    
+
+    # Neu: Initialisieren des Dokumentenkonverters
+        try:
+            self.doc_converter = DocConverter()
+            self.logger.info("Dokumentenkonverter erfolgreich initialisiert")
+        except Exception as e:
+            self.logger.error(f"Fehler beim Initialisieren des Dokumentenkonverters: {e}", exc_info=True)
+            self.doc_converter = None
+
     def load_documents(self) -> bool:
         """Lädt alle Dokumente aus dem Dateisystem"""
         with self.lock:
@@ -310,3 +320,234 @@ class DocumentStore:
                 }
             
             return stats
+    
+    def convert_document(self, source_path: str, target_dir: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Konvertiert ein einzelnes Dokument ins Markdown-Format.
+        
+        Args:
+            source_path: Pfad zum Quelldokument
+            target_dir: Optionaler Zielordner (wenn nicht angegeben, wird Config.TXT_DIR verwendet)
+            
+        Returns:
+            Dictionary mit Konvertierungsergebnis
+        """
+        if self.doc_converter is None:
+            return {
+                'success': False,
+                'error': "Dokumentenkonverter nicht initialisiert",
+                'source': source_path
+            }
+        
+        try:
+            # Zielverzeichnis festlegen
+            if target_dir is None:
+                from modules.core.config import Config
+                target_dir = Config.TXT_DIR
+            
+            # Konvertierung durchführen
+            result = self.doc_converter.convert_document(Path(source_path), Path(target_dir))
+            
+            # Wenn Konvertierung erfolgreich, Dokument neu laden
+            if result.get('success', False):
+                # Bereite asynchrones Neuladen der Dokumente vor
+                self.logger.info(f"Dokument erfolgreich konvertiert: {result.get('target')}")
+            
+            return result
+            
+        except Exception as e:
+            self.logger.error(f"Fehler bei der Konvertierung von {source_path}: {e}", exc_info=True)
+            return {
+                'success': False,
+                'error': str(e),
+                'source': source_path
+            }
+    
+    def convert_and_load_documents(self, source_dir: str, target_dir: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Konvertiert alle unterstützten Dokumente in einem Verzeichnis und lädt sie in den Store.
+        
+        Args:
+            source_dir: Pfad zum Quellverzeichnis
+            target_dir: Optionaler Zielordner (wenn nicht angegeben, wird Config.TXT_DIR verwendet)
+            
+        Returns:
+            Dictionary mit Konvertierungsergebnis
+        """
+        if self.doc_converter is None:
+            return {
+                'success': False,
+                'error': "Dokumentenkonverter nicht initialisiert",
+                'converted': 0,
+                'failed': 0
+            }
+        
+        try:
+            # Zielverzeichnis festlegen
+            if target_dir is None:
+                from modules.core.config import Config
+                target_dir = Config.TXT_DIR
+            
+            # Führe Konvertierung durch
+            result = self.doc_converter.convert_all(priority_group=None)
+            
+            if result.get('success', False):
+                # Nach erfolgreicher Konvertierung Dokumente neu laden
+                self.logger.info(f"Konvertierung abgeschlossen: {result.get('converted', 0)} Dokumente konvertiert")
+                
+                # Lade Dokumente neu
+                self.load_documents()
+            
+            return result
+            
+        except Exception as e:
+            self.logger.error(f"Fehler bei der Konvertierung von Dokumenten aus {source_dir}: {e}", exc_info=True)
+            return {
+                'success': False,
+                'error': str(e),
+                'converted': 0,
+                'failed': 0
+            }
+    
+    def inventory_documents(self, source_dir: str) -> Dict[str, Any]:
+        """
+        Führt eine Inventarisierung der Dokumente durch.
+        
+        Args:
+            source_dir: Pfad zum Quellverzeichnis
+            
+        Returns:
+            Dictionary mit Inventarergebnis
+        """
+        if self.doc_converter is None:
+            return {
+                'success': False,
+                'error': "Dokumentenkonverter nicht initialisiert",
+                'document_count': 0
+            }
+        
+        try:
+            # Setze Quellverzeichnis im Konverter
+            original_source_dir = self.doc_converter.source_dir
+            self.doc_converter.source_dir = Path(source_dir)
+            
+            # Führe Inventarisierung durch
+            result = self.doc_converter.inventory_directory()
+            
+            # Stelle ursprüngliches Quellverzeichnis wieder her
+            self.doc_converter.source_dir = original_source_dir
+            
+            return result
+            
+        except Exception as e:
+            self.logger.error(f"Fehler bei der Inventarisierung von Dokumenten in {source_dir}: {e}", exc_info=True)
+            return {
+                'success': False,
+                'error': str(e),
+                'document_count': 0
+            }
+    
+    def validate_markdown(self, markdown_path: str) -> Dict[str, Any]:
+        """
+        Validiert eine Markdown-Datei.
+        
+        Args:
+            markdown_path: Pfad zur Markdown-Datei
+            
+        Returns:
+            Dictionary mit Validierungsergebnis
+        """
+        if self.doc_converter is None:
+            return {
+                'success': False,
+                'error': "Dokumentenkonverter nicht initialisiert",
+                'is_valid': False
+            }
+        
+        try:
+            # Validiere Markdown-Datei
+            result = self.doc_converter.validate_markdown(Path(markdown_path))
+            return result
+            
+        except Exception as e:
+            self.logger.error(f"Fehler bei der Validierung von {markdown_path}: {e}", exc_info=True)
+            return {
+                'success': False,
+                'error': str(e),
+                'is_valid': False
+            }
+    
+    def process_markdown_directory(self, markdown_dir: str) -> Dict[str, Any]:
+        """
+        Verarbeitet alle Markdown-Dateien in einem Verzeichnis (Reinigung, Strukturverbesserung, etc.).
+        
+        Args:
+            markdown_dir: Pfad zum Markdown-Verzeichnis
+            
+        Returns:
+            Dictionary mit Verarbeitungsergebnis
+        """
+        if self.doc_converter is None:
+            return {
+                'success': False,
+                'error': "Dokumentenkonverter nicht initialisiert",
+                'processed': 0
+            }
+        
+        try:
+            # Verarbeite Markdown-Dateien
+            result = self.doc_converter.process_markdown_directory(Path(markdown_dir))
+            
+            if result.get('success', False):
+                # Nach erfolgreicher Verarbeitung Dokumente neu laden
+                self.logger.info(f"Markdown-Verarbeitung abgeschlossen: {result.get('processed', 0)} Dateien verarbeitet")
+                
+                # Lade Dokumente neu
+                self.load_documents()
+            
+            return result
+            
+        except Exception as e:
+            self.logger.error(f"Fehler bei der Verarbeitung von Markdown-Dateien in {markdown_dir}: {e}", exc_info=True)
+            return {
+                'success': False,
+                'error': str(e),
+                'processed': 0
+            }
+    
+    def get_converter_status(self) -> Dict[str, Any]:
+        """
+        Gibt den Status des Dokumentenkonverters zurück.
+        
+        Returns:
+            Dictionary mit Statusinfo
+        """
+        if self.doc_converter is None:
+            return {
+                'available': False,
+                'error': "Dokumentenkonverter nicht initialisiert"
+            }
+        
+        try:
+            # Prüfe verfügbare Konverter
+            converters = {
+                'pdf': hasattr(self.doc_converter, 'pdf_converter'),
+                'docx': hasattr(self.doc_converter, 'docx_converter'),
+                'xlsx': hasattr(self.doc_converter, 'excel_converter'),
+                'pptx': hasattr(self.doc_converter, 'pptx_converter'),
+                'html': hasattr(self.doc_converter, 'html_converter')
+            }
+            
+            return {
+                'available': True,
+                'converters': converters,
+                'post_processing': self.doc_converter.post_processing,
+                'parallel_processing': self.doc_converter.parallel_processing
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Fehler beim Abrufen des Konverterstatus: {e}", exc_info=True)
+            return {
+                'available': True,
+                'error': str(e)
+            }

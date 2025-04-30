@@ -1251,5 +1251,22 @@
             }, 1000);
         });
     </script>
+    <div id="vue-feature-toggle"></div>
+
+    <script type="module">
+      import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
+      import { createPinia } from 'https://unpkg.com/pinia@2/dist/pinia.esm-browser.js';
+      import UIToggle from '/static/js/vue/components/common/UIToggle.vue';
+    
+      // Mount Feature-Toggle im Entwicklungsmodus
+      const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      
+      if (isDev) {
+        const featureToggleApp = createApp(UIToggle);
+        featureToggleApp.use(createPinia());
+        featureToggleApp.mount('#vue-feature-toggle');
+        console.log('Feature-Toggle aktiviert (Entwicklungsmodus)');
+      }
+    </script>
 </body>
 </html>

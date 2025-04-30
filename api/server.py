@@ -10,6 +10,8 @@ import uuid
 import json
 import re  # Für reguläre Ausdrücke
 import sqlite3  # Fehlender Import hinzugefügt
+import tempfile
+
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, Request
@@ -22,7 +24,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from pydantic import BaseModel, EmailStr
 from jose import JWTError, jwt
 from starlette.concurrency import run_in_threadpool
-from fastapi import HTTPException, Depends, Security
+from fastapi import HTTPException, Depends, Security, File, UploadFile, Form, BackgroundTasks
 from pydantic import BaseModel, EmailStr
 from typing import List
 from modules.core.config import Config
@@ -147,6 +149,20 @@ class FeedbackRequest(BaseModel):
     session_id: int
     is_positive: bool
     comment: Optional[str] = None
+
+#Datenmodelle für Konvertierung
+class ConversionRequest(BaseModel):
+    source_path: str
+    target_dir: Optional[str] = None
+    post_processing: bool = True
+
+class DirectoryConversionRequest(BaseModel):
+    source_dir: str
+    target_dir: Optional[str] = None
+    priority_group: Optional[str] = None
+
+class MarkdownProcessRequest(BaseModel):
+    markdown_dir: str
 
 # Helper-Funktion zur Überprüfung von Admin-Rechten
 async def get_admin_user(request: Request) -> Dict[str, Any]:
@@ -932,6 +948,241 @@ async def update_css_timestamps():
                 logger.error(f"Fehler beim Aktualisieren des Zeitstempels von {file_path.name}: {e}")
         
         logger.info(f"Insgesamt {count} CSS-Dateien aktualisiert")
+
+# API-Endpunkte für Dokumentenkonvertierung hinzufügen:
+
+@app.post("/api/admin/convert/document")
+async def convert_document(
+    request: ConversionRequest,
+    admin_data: Dict[str, Any] = Depends(get_admin_user)
+):
+    """Konvertiert ein einzelnes Dokument (nur für Administratoren)"""
+    result = rag_engine.document_store.convert_document(
+        source_path=request.source_path,
+        target_dir=request.target_dir
+    )
+    
+    if not result.get('success', False):
+        return JSONResponse(
+            status_code=500,
+            content={"error": result.get('error', "Unbekannter Fehler bei der Konvertierung")}
+        )
+    
+    return result
+
+@app.post("/api/admin/convert/directory")
+async def convert_directory(
+    request: DirectoryConversionRequest,
+    admin_data: Dict[str, Any] = Depends(get_admin_user)
+):
+    """Konvertiert alle Dokumente in einem Verzeichnis (nur für Administratoren)"""
+    result = rag_engine.document_store.convert_and_load_documents(
+        source_dir=request.source_dir,
+        target_dir=request.target_dir
+    )
+    
+    if not result.get('success', False):
+        return JSONResponse(
+            status_code=500,
+            content={"error": result.get('error', "Unbekannter Fehler bei der Konvertierung")}
+        )
+    
+    return result
+
+@app.post("/api/admin/inventory")
+async def inventory_documents(
+    request: DirectoryConversionRequest,
+    admin_data: Dict[str, Any] = Depends(get_admin_user)
+):
+    """Führt eine Inventarisierung von Dokumenten durch (nur für Administratoren)"""
+    result = rag_engine.document_store.inventory_documents(
+        source_dir=request.source_dir
+    )
+    
+    if not result.get('success', False):
+        return JSONResponse(
+            status_code=500,
+            content={"error": result.get('error', "Unbekannter Fehler bei der Inventarisierung")}
+        )
+    
+    return result
+
+@app.post("/api/admin/process/markdown")
+async def process_markdown_directory(
+    request: MarkdownProcessRequest,
+    admin_data: Dict[str, Any] = Depends(get_admin_user)
+):
+    """Verarbeitet alle Markdown-Dateien in einem Verzeichnis (nur für Administratoren)"""
+    result = rag_engine.document_store.process_markdown_directory(
+        markdown_dir=request.markdown_dir
+    )
+    
+    if not result.get('success', False):
+        return JSONResponse(
+            status_code=500,
+            content={"error": result.get('error', "Unbekannter Fehler bei der Markdown-Verarbeitung")}
+        )
+    
+    return result
+
+@app.get("/api/admin/converter/status")
+async def get_converter_status(
+    admin_data: Dict[str, Any] = Depends(get_admin_user)
+):
+    """Gibt den Status des Dokumentenkonverters zurück (nur für Administratoren)"""
+    result = rag_engine.document_store.get_converter_status()
+    
+    if not result.get('available', False) and 'error' in result:
+        return JSONResponse(
+            status_code=500,
+            content={"error": result.get('error', "Dokumentenkonverter nicht verfügbar")}
+        )
+    
+    return result
+
+@app.post("/api/admin/upload/document")
+async def upload_and_convert_document(
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...),
+    post_processing: bool = Form(True),
+    target_dir: Optional[str] = Form(None),
+    admin_data: Dict[str, Any] = Depends(get_admin_user)
+):
+    """Lädt ein Dokument hoch und konvertiert es (nur für Administratoren)"""
+    # Erstelle temporäres Verzeichnis für Upload
+    temp_dir = tempfile.mkdtemp(prefix="nscale_upload_")
+    temp_file_path = os.path.join(temp_dir, file.filename)
+    
+    try:
+        # Speichere die hochgeladene Datei
+        with open(temp_file_path, "wb") as f:
+            content = await file.read()
+            f.write(content)
+        
+        # Starte Konvertierung als Hintergrundaufgabe
+        background_tasks.add_task(
+            process_uploaded_document,
+            temp_file_path,
+            target_dir,
+            post_processing,
+            admin_data['user_id']
+        )
+        
+        return {
+            "success": True,
+            "message": "Dokument erfolgreich hochgeladen. Konvertierung läuft im Hintergrund.",
+            "filename": file.filename,
+            "temp_path": temp_file_path
+        }
+    
+    except Exception as e:
+        try:
+            # Aufräumen
+            import shutil
+            shutil.rmtree(temp_dir)
+        except:
+            pass
+        
+        logger.error(f"Fehler beim Hochladen/Konvertieren von {file.filename}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Fehler bei der Verarbeitung: {str(e)}")
+
+async def process_uploaded_document(
+    temp_file_path: str,
+    target_dir: Optional[str],
+    post_processing: bool,
+    user_id: int
+):
+    """Verarbeitet ein hochgeladenes Dokument im Hintergrund"""
+    try:
+        # Speichere ursprüngliche Einstellung
+        original_post_processing = rag_engine.document_store.doc_converter.post_processing
+        # Setze gewünschte Einstellung
+        rag_engine.document_store.doc_converter.post_processing = post_processing
+        
+        # Konvertiere Dokument
+        result = rag_engine.document_store.convert_document(
+            source_path=temp_file_path,
+            target_dir=target_dir
+        )
+        
+        # Stelle ursprüngliche Einstellung wieder her
+        rag_engine.document_store.doc_converter.post_processing = original_post_processing
+        
+        # Lade Dokumente neu
+        if result.get('success', False):
+            rag_engine.document_store.load_documents()
+            
+            # Erstelle Log-Eintrag
+            logger.info(
+                f"Dokument erfolgreich konvertiert: {os.path.basename(temp_file_path)} -> "
+                f"{result.get('target', 'Unbekanntes Ziel')} (Benutzer-ID: {user_id})"
+            )
+        else:
+            # Erstelle Fehler-Log
+            logger.error(
+                f"Fehler bei der Konvertierung von {os.path.basename(temp_file_path)}: "
+                f"{result.get('error', 'Unbekannter Fehler')} (Benutzer-ID: {user_id})"
+            )
+    
+    except Exception as e:
+        logger.error(f"Unbehandelter Fehler bei der Dokumentverarbeitung: {e}", exc_info=True)
+    
+    finally:
+        try:
+            # Aufräumen - temporäres Verzeichnis löschen
+            import shutil
+            temp_dir = os.path.dirname(temp_file_path)
+            shutil.rmtree(temp_dir)
+        except Exception as cleanup_error:
+            logger.warning(f"Fehler beim Aufräumen temporärer Dateien: {cleanup_error}")
+
+@app.get("/api/admin/conversions/recent")
+async def get_recent_conversions(
+    limit: int = 10,
+    admin_data: Dict[str, Any] = Depends(get_admin_user)
+):
+    """Gibt eine Liste der kürzlich durchgeführten Konvertierungen zurück (nur für Administratoren)"""
+    # Diese Funktion benötigt eine Implementierung im DocumentStore, um Konvertierungsprotokolle zu speichern
+    # Hier ein Beispiel für die Struktur der Rückgabe:
+    return {
+        "success": True,
+        "conversions": [
+            # Beispieldaten, in der tatsächlichen Implementierung durch echte Daten ersetzen
+            {
+                "id": 1,
+                "source_filename": "beispiel.pdf",
+                "target_filename": "beispiel.md",
+                "timestamp": "2025-04-29T10:00:00",
+                "user_id": admin_data['user_id'],
+                "success": True
+            }
+        ]
+    }
+
+# Reload-Endpunkt nach Konvertierung
+@app.post("/api/admin/reload-documents")
+async def admin_reload_documents(
+    admin_data: Dict[str, Any] = Depends(get_admin_user)
+):
+    """Lädt alle Dokumente neu (nur für Administratoren)"""
+    try:
+        # Dokumentenstore neu laden
+        rag_engine.document_store.load_documents()
+        
+        # Wenn der RAG-Engine eine Neuinitialisierung benötigt
+        if hasattr(rag_engine, "initialize"):
+            await rag_engine.initialize()
+        
+        return {
+            "success": True,
+            "message": "Dokumente erfolgreich neu geladen",
+            "document_count": len(rag_engine.document_store.documents),
+            "chunk_count": len(rag_engine.document_store.chunks)
+        }
+    
+    except Exception as e:
+        logger.error(f"Fehler beim Neuladen der Dokumente: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Fehler beim Neuladen der Dokumente: {str(e)}")
 
 # Initialisierung
 @app.on_event("startup")
