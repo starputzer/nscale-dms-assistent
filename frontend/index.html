@@ -631,7 +631,7 @@
                                         
                                         try {
                                             const fallbackScript = document.createElement('script');
-                                            fallbackScript.src = '/static/js/doc-converter-fallback.js';
+                                            fallbackScript.src = '/frontend/js/doc-converter-fallback.js';
                                             
                                             // Bei Fehler des Fallback-Skripts
                                             fallbackScript.onerror = function() {
@@ -1439,23 +1439,8 @@
                                         // UI sofort initialisieren
                                         initFeatureUI();
                                         
-                                        // MutationObserver um auf Änderungen zu reagieren
-                                        const observer = new MutationObserver(function(mutations) {
-                                            for (const mutation of mutations) {
-                                                // Nach dem Feature-Container suchen
-                                                if (document.getElementById('feature-toggle-container') && 
-                                                    mutation.type === 'childList') {
-                                                    console.log('Feature-Container wurde geladen, initialisiere UI');
-                                                    initFeatureUI();
-                                                }
-                                            }
-                                        });
-                                        
-                                        // Konfiguration des Observers
-                                        const config = { childList: true, subtree: true };
-                                        
-                                        // Beobachtung des gesamten Body starten
-                                        observer.observe(document.body, config);
+                                        // Wir vermeiden MutationObserver, da dieser zu Endlosschleifen führen kann
+                                        console.log('Feature-Toggle UI wird direkt initialisiert, ohne MutationObserver');
                                         
                                         // Auf Tab-Wechsel zu Features reagieren
                                         const allButtons = document.querySelectorAll('.admin-nav-item');
@@ -1468,25 +1453,12 @@
                                             }
                                         });
                                         
-                                        if (featureTabButton) {
-                                            featureTabButton.addEventListener('click', function() {
-                                                console.log('Features-Tab-Button geklickt');
-                                                // Sofort und auch nach einer kurzen Verzögerung initialisieren
-                                                // um sicherzustellen, dass der Container sichtbar ist
-                                                initFeatureUI();
-                                                setTimeout(initFeatureUI, 100);
-                                                setTimeout(initFeatureUI, 500);
-                                            });
-                                        }
+                                        // Wir entfernen den Tab-Button Event Listener, da dieser zu Problemen führt
+                                        // und die Seite friert ein. Die Feature-Toggle UI ist nur im Admin-Bereich 
+                                        // sichtbar und wird dort automatisch initialisiert.
                                     });
                                     
-                                    // Füge eine Hook ein, die nach dem Laden die Feature-Toggle-UI automatisch initialisiert
-                                    document.addEventListener('load', function() {
-                                        if (document.getElementById('feature-toggle-container')) {
-                                            console.log('Feature-Toggle-Container durch load-Event gefunden, initialisiere');
-                                            initFeatureUI();
-                                        }
-                                    });
+                                    // Wir entfernen den load-Event-Handler, um doppelte Initialisierungen zu vermeiden
                                 })(); // Ende der IIFE
                                 </script>
                             </div>
@@ -2232,157 +2204,13 @@
             }, 1000);
         });
     </script>
-    <div id="vue-feature-toggle"></div>
-
     <script>
-      // Inline-Implementation des UIToggle ohne externen Import für bessere Zuverlässigkeit
-      // Verwende direkte Definitionen ohne module imports, um Probleme mit vue-demi zu vermeiden
-      (function() {
-        // Wir verwenden die globalen Vue-Objekte statt Importieren
-        const { createApp, ref, computed, watch } = Vue;
-        const createPinia = window.Pinia ? window.Pinia.createPinia : () => ({});
-      
       // Basis-URLs für die Verwendung der Vue.js-Komponenten
       window.NSCALE_VUE_ASSETS_PATH = '/static/vue/assets/';
       window.NSCALE_VUE_COMPONENTS_PATH = '/static/vue/components/';
       
-      // Inline-Definition der UIToggle-Komponente
-      const UIToggle = {
-        template: `
-          <div 
-            v-if="devMode" 
-            class="ui-toggle"
-            :class="{ 'collapsed': isCollapsed }"
-            style="position: fixed; bottom: 6rem; right: 1.5rem; width: 300px; background-color: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); z-index: 49; border: 1px solid #ccc; overflow: hidden;"
-          >
-            <div class="toggle-header" @click="toggleCollapsed" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; background-color: #00a550; color: white; cursor: pointer; font-weight: 500;">
-              <span>UI Version</span>
-              <span>{{ isCollapsed ? '▼' : '▲' }}</span>
-            </div>
-            
-            <div v-if="!isCollapsed" style="padding: 1rem;">
-              <div style="margin-bottom: 1rem;">
-                <label style="display: flex; align-items: center; cursor: pointer;">
-                  <input 
-                    type="checkbox" 
-                    :checked="useNewUI" 
-                    @change="toggleNewUI($event)"
-                    style="margin-right: 0.75rem;"
-                  >
-                  <span>{{ useNewUI ? 'Vue.js UI' : 'Alte UI' }}</span>
-                </label>
-              </div>
-              
-              <div v-if="useNewUI">
-                <h4 style="font-size: 0.95rem; font-weight: 500; margin: 1rem 0 0.75rem; padding-top: 1rem; border-top: 1px solid #ccc;">Aktivierte Features</h4>
-                
-                <div v-for="(enabled, feature) in features" :key="feature" style="margin-bottom: 0.5rem;">
-                  <label style="display: flex; align-items: center; cursor: pointer;">
-                    <input 
-                      type="checkbox" 
-                      :checked="enabled" 
-                      @change="toggleFeature(feature, $event)"
-                      style="margin-right: 0.5rem;"
-                    >
-                    <span>{{ formatFeatureName(feature) }}</span>
-                  </label>
-                </div>
-                
-                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                  <button 
-                    @click="enableAllFeatures"
-                    style="background: none; border: 1px solid #ccc; padding: 0.35rem 0.75rem; border-radius: 4px; font-size: 0.8rem; cursor: pointer; flex: 1;"
-                  >
-                    Alle aktivieren
-                  </button>
-                  <button 
-                    @click="disableAllFeatures"
-                    style="background: none; border: 1px solid #ccc; padding: 0.35rem 0.75rem; border-radius: 4px; font-size: 0.8rem; cursor: pointer; flex: 1;"
-                  >
-                    Alle deaktivieren
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        `,
-        setup() {
-          // Lokaler Zustand
-          const isCollapsed = ref(localStorage.getItem('uiToggleCollapsed') === 'true' || false);
-          const devMode = ref(localStorage.getItem('devMode') === 'true' || 
-                     window.location.hostname === 'localhost' || 
-                     window.location.hostname === '127.0.0.1');
-          
-          // Feature-Store auslesen
-          const useNewUI = computed(() => window.featureToggleStore.state.useNewUI);
-          const features = computed(() => window.featureToggleStore.state.features);
-          
-          // Collapse-Funktion
-          const toggleCollapsed = () => {
-            isCollapsed.value = !isCollapsed.value;
-            localStorage.setItem('uiToggleCollapsed', isCollapsed.value.toString());
-          };
-          
-          // Umwandlung von Feature-Namen in lesbare Texte
-          const formatFeatureName = (featureName) => {
-            const nameMap = {
-              vueDocConverter: 'Dokumentenkonverter',
-              vueChat: 'Chat-Oberfläche',
-              vueAdmin: 'Admin-Panel',
-              vueSettings: 'Einstellungen'
-            };
-            
-            return nameMap[featureName] || featureName;
-          };
-          
-          // UI umschalten
-          const toggleNewUI = (event) => {
-            const newValue = event.target.checked;
-            
-            // Bestätigungsdialog
-            if (confirm(`Sind Sie sicher, dass Sie zu ${newValue ? 'neuer Vue.js UI' : 'alter UI'} wechseln möchten? Die Seite wird neu geladen.`)) {
-              window.featureToggleStore.toggleNewUI(newValue);
-            }
-          };
-          
-          // Feature umschalten
-          const toggleFeature = (featureName, event) => {
-            window.featureToggleStore.toggleFeature(featureName, event.target.checked);
-            alert(`${formatFeatureName(featureName)} ${event.target.checked ? 'aktiviert' : 'deaktiviert'}`);
-          };
-          
-          // Alle Features aktivieren
-          const enableAllFeatures = () => {
-            Object.keys(window.featureToggleStore.state.features).forEach(key => {
-              window.featureToggleStore.toggleFeature(key, true);
-            });
-            alert('Alle Features wurden aktiviert');
-          };
-          
-          // Alle Features deaktivieren
-          const disableAllFeatures = () => {
-            Object.keys(window.featureToggleStore.state.features).forEach(key => {
-              window.featureToggleStore.toggleFeature(key, false);
-            });
-            alert('Alle Features wurden deaktiviert');
-          };
-          
-          return {
-            isCollapsed,
-            devMode,
-            useNewUI,
-            features,
-            toggleCollapsed,
-            formatFeatureName,
-            toggleNewUI,
-            toggleFeature,
-            enableAllFeatures,
-            disableAllFeatures
-          };
-        }
-      };
-    
-      // Feature-Toggle-Mechanismus
+      // Einfaches Feature-Toggle-Mechanismus 
+      // Wird nur im Admin-Bereich angezeigt, nicht als schwebender Button
       const featureToggleStore = {
         state: {
           useNewUI: localStorage.getItem('useNewUI') === 'true' || false,
@@ -2435,31 +2263,6 @@
       
       // Globalen Zugriff auf Feature-Toggle-Store ermöglichen
       window.featureToggleStore = featureToggleStore;
-      
-      // Mount Feature-Toggle im Entwicklungsmodus
-      if (featureToggleStore.state.devMode) {
-        // Prüfe, ob Vue verfügbar ist
-        if (typeof Vue !== 'undefined' && Vue.createApp) {
-          const featureToggleApp = Vue.createApp(UIToggle);
-          
-          // Überprüfe, ob Pinia verfügbar ist
-          if (window.Pinia && window.Pinia.createPinia) {
-            const pinia = window.Pinia.createPinia();
-            featureToggleApp.use(pinia);
-          }
-          
-          // Stelle sicher, dass das Mount-Element existiert
-          document.addEventListener('DOMContentLoaded', () => {
-            if (document.getElementById('vue-feature-toggle')) {
-              featureToggleApp.mount('#vue-feature-toggle');
-              console.log('Feature-Toggle aktiviert (Entwicklungsmodus)');
-            }
-          });
-        } else {
-          console.warn('Vue.js ist nicht verfügbar - Feature-Toggle wird im Fallback-Modus ausgeführt');
-        }
-      }
-      })(); // Ende der IIFE
     </script>
     <!-- Feature-Toggle-basierte Initialisierung von Vue.js-Komponenten -->
     <script>
