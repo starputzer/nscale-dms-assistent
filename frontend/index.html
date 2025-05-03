@@ -886,55 +886,248 @@
                                 <!-- Script zum Rendern der Features-Seite ohne Vue.js-Abhängigkeiten -->
                                 <script>
                                     // Einfache direkte Implementation für die Feature-Toggle-UI
-                                    document.addEventListener('DOMContentLoaded', function() {
-                                        // Debug-Logging: Zeige die aktuellen Werte beim Seitenstart
-                                        console.log('Feature-Toggle Status beim Laden:');
-                                        console.log('- useNewUI:', localStorage.getItem('useNewUI'));
-                                        console.log('- feature_vueDocConverter:', localStorage.getItem('feature_vueDocConverter'));
-                                        console.log('- devMode:', localStorage.getItem('devMode'));
-                                        
-                                        // UI sofort initialisieren
-                                        initFeatureUI();
-                                        
-                                        // MutationObserver um auf Änderungen zu reagieren
-                                        const observer = new MutationObserver(function(mutations) {
-                                            for (const mutation of mutations) {
-                                                // Nach dem Feature-Container suchen
-                                                if (document.getElementById('feature-toggle-container') && 
-                                                    mutation.type === 'childList') {
-                                                    console.log('Feature-Container wurde geladen, initialisiere UI');
-                                                    initFeatureUI();
-                                                }
+                                    // Selbstausführende Funktion (IIFE) um den Code ordentlich zu kapseln
+                                    (function() {
+                                        /**
+                                         * Initialisiere das HTML für die Feature-Toggle-UI 
+                                         * @param {HTMLElement} container - Der Container, in dem die UI angezeigt werden soll
+                                         */
+                                        function initFeatureToggleHTML(container) {
+                                            if (!container) {
+                                                console.error('Container für Feature-Toggle-UI nicht gefunden');
+                                                return;
                                             }
-                                        });
-                                        
-                                        // Konfiguration des Observers
-                                        const config = { childList: true, subtree: true };
-                                        
-                                        // Beobachtung des gesamten Body starten
-                                        observer.observe(document.body, config);
-                                        
-                                        // Auf Tab-Wechsel zu Features reagieren
-                                        const allButtons = document.querySelectorAll('.admin-nav-item');
-                                        let featureTabButton = null;
-                                        
-                                        allButtons.forEach(button => {
-                                            if (button.textContent.trim().includes('Features')) {
-                                                featureTabButton = button;
-                                                console.log('Features-Tab-Button gefunden:', button);
+                                            
+                                            // Features aus dem LocalStorage abrufen
+                                            const useNewUI = localStorage.getItem('useNewUI') === 'true';
+                                            const vueDocConverter = localStorage.getItem('feature_vueDocConverter') !== 'false';
+                                            const vueChat = localStorage.getItem('feature_vueChat') === 'true';
+                                            const vueAdmin = localStorage.getItem('feature_vueAdmin') === 'true';
+                                            const vueSettings = localStorage.getItem('feature_vueSettings') === 'true';
+                                            const devMode = localStorage.getItem('devMode') === 'true';
+                                            
+                                            // HTML für die Feature-Toggle-UI erstellen
+                                            container.innerHTML = `
+                                                <div class="flex flex-col">
+                                                    <!-- UI-Version -->
+                                                    <div class="admin-card mb-6">
+                                                        <div class="admin-card-title">UI-Versionen</div>
+                                                        
+                                                        <div class="mb-4">
+                                                            <p class="text-sm mb-4">Wählen Sie, welche UI-Version für die Anwendung verwendet werden soll.</p>
+                                                            
+                                                            <div id="uiSelection" class="bg-gray-100 p-4 rounded-lg mb-6">
+                                                                <div class="font-medium mb-2">Aktuelle UI-Version:</div>
+                                                                <div id="currentUISetting" class="text-lg bg-white p-3 rounded border mb-4">
+                                                                    <!-- Wird dynamisch gefüllt -->
+                                                                    Wird geladen...
+                                                                </div>
+                                                                
+                                                                <div class="flex gap-4">
+                                                                    <button id="enableVueButton" class="nscale-btn-primary">
+                                                                        <i class="fas fa-toggle-on mr-2"></i>Vue.js-UI aktivieren
+                                                                    </button>
+                                                                    <button id="enableClassicButton" class="nscale-btn-secondary">
+                                                                        <i class="fas fa-toggle-off mr-2"></i>Klassische UI aktivieren
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div class="bg-blue-50 p-4 border-l-4 border-blue-500 rounded-r">
+                                                                <p class="text-sm">
+                                                                    <strong>Hinweis:</strong> Die Änderungen werden erst nach einem Neuladen der Seite wirksam. 
+                                                                    Die Einstellung wird in Ihrem Browser gespeichert.
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Dokumentenkonverter Toggle -->
+                                                    <div class="admin-card mb-6">
+                                                        <div class="admin-card-title">Dokumentenkonverter-Komponente</div>
+                                                        
+                                                        <div class="mb-4">
+                                                            <p class="text-sm mb-4">Sie können den Dokumentenkonverter separat zwischen Vue.js und klassischer Implementierung umschalten.</p>
+                                                            
+                                                            <div id="docConverterSelection" class="bg-gray-100 p-4 rounded-lg mb-6">
+                                                                <div class="font-medium mb-2">Aktuelle Implementierung:</div>
+                                                                <div id="currentDocConverterSetting" class="text-lg bg-white p-3 rounded border mb-4">
+                                                                    <!-- Wird dynamisch gefüllt -->
+                                                                    Wird geladen...
+                                                                </div>
+                                                                
+                                                                <div class="flex gap-4">
+                                                                    <button id="enableVueDocButton" class="nscale-btn-primary">
+                                                                        <i class="fas fa-toggle-on mr-2"></i>Vue.js-Implementierung
+                                                                    </button>
+                                                                    <button id="enableClassicDocButton" class="nscale-btn-secondary">
+                                                                        <i class="fas fa-toggle-off mr-2"></i>Klassische Implementierung
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Entwicklermodus -->
+                                                    <div class="admin-card">
+                                                        <div class="admin-card-title">Entwicklermodus</div>
+                                                        
+                                                        <div class="mb-4">
+                                                            <p class="text-sm mb-4">Der Entwicklermodus zeigt zusätzliche Debug-Informationen an.</p>
+                                                            
+                                                            <div id="devModeSelection" class="bg-gray-100 p-4 rounded-lg mb-6">
+                                                                <div class="font-medium mb-2">Entwicklermodus:</div>
+                                                                <div id="currentDevModeSetting" class="text-lg bg-white p-3 rounded border mb-4">
+                                                                    <!-- Wird dynamisch gefüllt -->
+                                                                    Wird geladen...
+                                                                </div>
+                                                                
+                                                                <div class="flex gap-4">
+                                                                    <button id="enableDevModeButton" class="nscale-btn-primary">
+                                                                        <i class="fas fa-toggle-on mr-2"></i>Aktivieren
+                                                                    </button>
+                                                                    <button id="disableDevModeButton" class="nscale-btn-secondary">
+                                                                        <i class="fas fa-toggle-off mr-2"></i>Deaktivieren
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            `;
+                                            
+                                            // Event-Handler für Feature-Toggles hinzufügen
+                                            
+                                            // Global UI Toggle
+                                            const useNewUICheckbox = document.getElementById('useNewUI');
+                                            if (useNewUICheckbox) {
+                                                useNewUICheckbox.addEventListener('change', function(e) {
+                                                    localStorage.setItem('useNewUI', e.target.checked);
+                                                    if (!e.target.checked) {
+                                                        // Wenn die neue UI deaktiviert wird, auch alle Features deaktivieren
+                                                        ['vueDocConverter', 'vueChat', 'vueAdmin', 'vueSettings'].forEach(key => {
+                                                            localStorage.setItem(`feature_${key}`, 'false');
+                                                        });
+                                                    }
+                                                    alert('Die Einstellung wurde gespeichert. Die Seite wird neu geladen.');
+                                                    window.location.reload();
+                                                });
                                             }
-                                        });
-                                        
-                                        if (featureTabButton) {
-                                            featureTabButton.addEventListener('click', function() {
-                                                console.log('Features-Tab-Button geklickt');
-                                                // Sofort und auch nach einer kurzen Verzögerung initialisieren
-                                                // um sicherzustellen, dass der Container sichtbar ist
-                                                initFeatureUI();
-                                                setTimeout(initFeatureUI, 100);
-                                                setTimeout(initFeatureUI, 500);
-                                            });
+                                            
+                                            // DocConverter Toggle
+                                            const toggleDocConverter = document.getElementById('toggle-doc-converter');
+                                            if (toggleDocConverter) {
+                                                toggleDocConverter.addEventListener('click', function() {
+                                                    const newState = localStorage.getItem('feature_vueDocConverter') === 'false';
+                                                    localStorage.setItem('feature_vueDocConverter', newState.toString());
+                                                    alert('Die Einstellung wurde gespeichert. Die Seite wird neu geladen.');
+                                                    window.location.reload();
+                                                });
+                                            }
+                                            
+                                            // Chat Toggle
+                                            const toggleChat = document.getElementById('toggle-chat');
+                                            if (toggleChat) {
+                                                toggleChat.addEventListener('click', function() {
+                                                    const newState = localStorage.getItem('feature_vueChat') === 'true' ? 'false' : 'true';
+                                                    localStorage.setItem('feature_vueChat', newState);
+                                                    alert('Die Einstellung wurde gespeichert. Die Seite wird neu geladen.');
+                                                    window.location.reload();
+                                                });
+                                            }
+                                            
+                                            // Alle Features aktivieren
+                                            const enableAllFeaturesBtn = document.getElementById('enable-all-features');
+                                            if (enableAllFeaturesBtn) {
+                                                enableAllFeaturesBtn.addEventListener('click', function() {
+                                                    if (confirm('Möchten Sie wirklich alle Features aktivieren?')) {
+                                                        localStorage.setItem('useNewUI', 'true');
+                                                        ['vueDocConverter', 'vueChat', 'vueAdmin', 'vueSettings'].forEach(key => {
+                                                            localStorage.setItem(`feature_${key}`, 'true');
+                                                        });
+                                                        alert('Alle Features wurden aktiviert. Die Seite wird neu geladen.');
+                                                        window.location.reload();
+                                                    }
+                                                });
+                                            }
+                                            
+                                            // Alle Features deaktivieren
+                                            const disableAllFeaturesBtn = document.getElementById('disable-all-features');
+                                            if (disableAllFeaturesBtn) {
+                                                disableAllFeaturesBtn.addEventListener('click', function() {
+                                                    if (confirm('Möchten Sie wirklich alle Features deaktivieren und zur klassischen UI zurückkehren?')) {
+                                                        localStorage.setItem('useNewUI', 'false');
+                                                        ['vueDocConverter', 'vueChat', 'vueAdmin', 'vueSettings'].forEach(key => {
+                                                            localStorage.setItem(`feature_${key}`, 'false');
+                                                        });
+                                                        alert('Alle Features wurden deaktiviert. Die Seite wird neu geladen.');
+                                                        window.location.reload();
+                                                    }
+                                                });
+                                            }
+                                            
+                                            // Entwicklermodus Toggle
+                                            const devModeCheckbox = document.getElementById('devMode');
+                                            if (devModeCheckbox) {
+                                                devModeCheckbox.addEventListener('change', function(e) {
+                                                    localStorage.setItem('devMode', e.target.checked);
+                                                    alert('Die Einstellung wurde gespeichert. Die Seite wird neu geladen.');
+                                                    window.location.reload();
+                                                });
+                                            }
                                         }
+                                        
+                                        // Bei DOM-Bereitschaft initialisieren
+                                        document.addEventListener('DOMContentLoaded', function() {
+                                            // Debug-Logging: Zeige die aktuellen Werte beim Seitenstart
+                                            console.log('Feature-Toggle Status beim Laden:');
+                                            console.log('- useNewUI:', localStorage.getItem('useNewUI'));
+                                            console.log('- feature_vueDocConverter:', localStorage.getItem('feature_vueDocConverter'));
+                                            console.log('- devMode:', localStorage.getItem('devMode'));
+                                            
+                                            // UI sofort initialisieren
+                                            initFeatureUI();
+                                            
+                                            // MutationObserver um auf Änderungen zu reagieren
+                                            const observer = new MutationObserver(function(mutations) {
+                                                for (const mutation of mutations) {
+                                                    // Nach dem Feature-Container suchen
+                                                    if (document.getElementById('feature-toggle-container') && 
+                                                        mutation.type === 'childList') {
+                                                        console.log('Feature-Container wurde geladen, initialisiere UI');
+                                                        initFeatureUI();
+                                                    }
+                                                }
+                                            });
+                                            
+                                            // Konfiguration des Observers
+                                            const config = { childList: true, subtree: true };
+                                            
+                                            // Beobachtung des gesamten Body starten
+                                            observer.observe(document.body, config);
+                                            
+                                            // Auf Tab-Wechsel zu Features reagieren
+                                            const allButtons = document.querySelectorAll('.admin-nav-item');
+                                            let featureTabButton = null;
+                                            
+                                            allButtons.forEach(button => {
+                                                if (button.textContent.trim().includes('Features')) {
+                                                    featureTabButton = button;
+                                                    console.log('Features-Tab-Button gefunden:', button);
+                                                }
+                                            });
+                                            
+                                            if (featureTabButton) {
+                                                featureTabButton.addEventListener('click', function() {
+                                                    console.log('Features-Tab-Button geklickt');
+                                                    // Sofort und auch nach einer kurzen Verzögerung initialisieren
+                                                    // um sicherzustellen, dass der Container sichtbar ist
+                                                    initFeatureUI();
+                                                    setTimeout(initFeatureUI, 100);
+                                                    setTimeout(initFeatureUI, 500);
+                                                });
+                                            }
+                                        });
                                     });
                                     
                                     /**
@@ -1285,202 +1478,7 @@
                                         console.log('Event-Listener für alle Buttons konfiguriert');
                                     }
                                     
-                                    /**
-                                     * Initialisiere das HTML für die Feature-Toggle-UI 
-                                     * @param {HTMLElement} container - Der Container, in dem die UI angezeigt werden soll
-                                     */
-                                    function initFeatureToggleHTML(container) {
-                                        if (!container) {
-                                            console.error('Container für Feature-Toggle-UI nicht gefunden');
-                                            return;
-                                        }
-                                        
-                                        // Features aus dem LocalStorage abrufen
-                                        const useNewUI = localStorage.getItem('useNewUI') === 'true';
-                                        const vueDocConverter = localStorage.getItem('feature_vueDocConverter') !== 'false';
-                                        const vueChat = localStorage.getItem('feature_vueChat') === 'true';
-                                        const vueAdmin = localStorage.getItem('feature_vueAdmin') === 'true';
-                                        const vueSettings = localStorage.getItem('feature_vueSettings') === 'true';
-                                        const devMode = localStorage.getItem('devMode') === 'true';
-                                        
-                                        // HTML für die Feature-Toggle-UI erstellen
-                                        container.innerHTML = `
-                                                <div class="flex flex-col">
-                                                    <!-- UI-Version -->
-                                                    <div class="admin-card mb-6">
-                                                        <div class="admin-card-title">UI-Versionen</div>
-                                                        
-                                                        <div class="mb-4">
-                                                            <label class="admin-label">Globale UI-Version</label>
-                                                            <div class="flex items-center mb-4">
-                                                                <input type="checkbox" id="useNewUI" class="mr-2" ${useNewUI ? 'checked' : ''}>
-                                                                <label for="useNewUI" class="text-sm">Neue Vue.js-basierte UI verwenden</label>
-                                                            </div>
-                                                            <p class="text-xs text-gray-500 mb-4">Diese Einstellung steuert global, ob die neue Vue.js-basierte Benutzeroberfläche oder die klassische Implementierung verwendet wird.</p>
-                                                            
-                                                            <div class="p-3 bg-blue-50 border-l-4 border-blue-500 mb-4">
-                                                                <p class="text-sm">Hinweis: Wenn die neue UI deaktiviert ist, werden alle komponentenspezifischen Einstellungen ignoriert.</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <!-- Komponenten-Features -->
-                                                    <div class="admin-card">
-                                                        <div class="admin-card-title">Komponenten-Feature-Toggles</div>
-                                                        <p class="text-sm text-gray-600 mb-4">Aktivieren oder deaktivieren Sie individuelle Komponenten der neuen Vue.js-basierten Benutzeroberfläche.</p>
-                                                        
-                                                        <table class="w-full text-left mb-6">
-                                                            <thead>
-                                                                <tr class="bg-gray-100">
-                                                                    <th class="p-3">Komponente</th>
-                                                                    <th class="p-3">Status</th>
-                                                                    <th class="p-3">Aktion</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                <!-- DocConverter -->
-                                                                <tr class="border-b">
-                                                                    <td class="p-3">
-                                                                        <div class="font-medium">Dokumenten-Konverter</div>
-                                                                        <div class="text-xs text-gray-500">Vue.js-basierte Implementierung des Dokumenten-Upload-Tools</div>
-                                                                    </td>
-                                                                    <td class="p-3">
-                                                                        <span class="px-2 py-1 rounded text-xs ${vueDocConverter ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
-                                                                            ${vueDocConverter ? 'Aktiviert' : 'Deaktiviert'}
-                                                                        </span>
-                                                                    </td>
-                                                                    <td class="p-3">
-                                                                        <button id="toggle-doc-converter" class="nscale-btn-secondary text-sm px-3 py-1">
-                                                                            ${vueDocConverter ? 'Deaktivieren' : 'Aktivieren'}
-                                                                        </button>
-                                                                    </td>
-                                                                </tr>
-                                                                <!-- Chat -->
-                                                                <tr class="border-b">
-                                                                    <td class="p-3">
-                                                                        <div class="font-medium">Chat</div>
-                                                                        <div class="text-xs text-gray-500">Vue.js-basierte Chat-Komponente (in Entwicklung)</div>
-                                                                    </td>
-                                                                    <td class="p-3">
-                                                                        <span class="px-2 py-1 rounded text-xs ${vueChat ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
-                                                                            ${vueChat ? 'Aktiviert' : 'Deaktiviert'}
-                                                                        </span>
-                                                                    </td>
-                                                                    <td class="p-3">
-                                                                        <button id="toggle-chat" class="nscale-btn-secondary text-sm px-3 py-1">
-                                                                            ${vueChat ? 'Deaktivieren' : 'Aktivieren'}
-                                                                        </button>
-                                                                    </td>
-                                                                </tr>
-                                                            </tbody>
-                                                        </table>
-                                                        
-                                                        <div class="flex gap-4 mt-6">
-                                                            <button id="enable-all-features" class="nscale-btn-primary">
-                                                                <i class="fas fa-toggle-on mr-2"></i>Alle Features aktivieren
-                                                            </button>
-                                                            
-                                                            <button id="disable-all-features" class="nscale-btn-danger">
-                                                                <i class="fas fa-toggle-off mr-2"></i>Alle Features deaktivieren
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <!-- Entwicklermodus -->
-                                                    <div class="admin-card mt-6">
-                                                        <div class="admin-card-title">Entwicklermodus</div>
-                                                        
-                                                        <div class="mb-4">
-                                                            <div class="flex items-center">
-                                                                <input type="checkbox" id="devMode" class="mr-2" ${devMode ? 'checked' : ''}>
-                                                                <label for="devMode" class="text-sm">Entwicklermodus aktivieren</label>
-                                                            </div>
-                                                            <p class="text-xs text-gray-500 mt-1">Der Entwicklermodus zeigt zusätzliche Informationen und UI-Controls für Komponenten-Debugging an.</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            `;
-                                            
-                                            // Event-Handler für Feature-Toggles hinzufügen
-                                            
-                                            // Global UI Toggle
-                                            const useNewUICheckbox = document.getElementById('useNewUI');
-                                            if (useNewUICheckbox) {
-                                                useNewUICheckbox.addEventListener('change', function(e) {
-                                                    localStorage.setItem('useNewUI', e.target.checked);
-                                                    if (!e.target.checked) {
-                                                        // Wenn die neue UI deaktiviert wird, auch alle Features deaktivieren
-                                                        ['vueDocConverter', 'vueChat', 'vueAdmin', 'vueSettings'].forEach(key => {
-                                                            localStorage.setItem(`feature_${key}`, 'false');
-                                                        });
-                                                    }
-                                                    alert('Die Einstellung wurde gespeichert. Die Seite wird neu geladen.');
-                                                    window.location.reload();
-                                                });
-                                            }
-                                            
-                                            // DocConverter Toggle
-                                            const toggleDocConverter = document.getElementById('toggle-doc-converter');
-                                            if (toggleDocConverter) {
-                                                toggleDocConverter.addEventListener('click', function() {
-                                                    const newState = localStorage.getItem('feature_vueDocConverter') === 'false';
-                                                    localStorage.setItem('feature_vueDocConverter', newState.toString());
-                                                    alert('Die Einstellung wurde gespeichert. Die Seite wird neu geladen.');
-                                                    window.location.reload();
-                                                });
-                                            }
-                                            
-                                            // Chat Toggle
-                                            const toggleChat = document.getElementById('toggle-chat');
-                                            if (toggleChat) {
-                                                toggleChat.addEventListener('click', function() {
-                                                    const newState = localStorage.getItem('feature_vueChat') === 'true' ? 'false' : 'true';
-                                                    localStorage.setItem('feature_vueChat', newState);
-                                                    alert('Die Einstellung wurde gespeichert. Die Seite wird neu geladen.');
-                                                    window.location.reload();
-                                                });
-                                            }
-                                            
-                                            // Alle Features aktivieren
-                                            const enableAllFeaturesBtn = document.getElementById('enable-all-features');
-                                            if (enableAllFeaturesBtn) {
-                                                enableAllFeaturesBtn.addEventListener('click', function() {
-                                                    if (confirm('Möchten Sie wirklich alle Features aktivieren?')) {
-                                                        localStorage.setItem('useNewUI', 'true');
-                                                        ['vueDocConverter', 'vueChat', 'vueAdmin', 'vueSettings'].forEach(key => {
-                                                            localStorage.setItem(`feature_${key}`, 'true');
-                                                        });
-                                                        alert('Alle Features wurden aktiviert. Die Seite wird neu geladen.');
-                                                        window.location.reload();
-                                                    }
-                                                });
-                                            }
-                                            
-                                            // Alle Features deaktivieren
-                                            const disableAllFeaturesBtn = document.getElementById('disable-all-features');
-                                            if (disableAllFeaturesBtn) {
-                                                disableAllFeaturesBtn.addEventListener('click', function() {
-                                                    if (confirm('Möchten Sie wirklich alle Features deaktivieren und zur klassischen UI zurückkehren?')) {
-                                                        localStorage.setItem('useNewUI', 'false');
-                                                        ['vueDocConverter', 'vueChat', 'vueAdmin', 'vueSettings'].forEach(key => {
-                                                            localStorage.setItem(`feature_${key}`, 'false');
-                                                        });
-                                                        alert('Alle Features wurden deaktiviert. Die Seite wird neu geladen.');
-                                                        window.location.reload();
-                                                    }
-                                                });
-                                            }
-                                            
-                                            // Entwicklermodus Toggle
-                                            const devModeCheckbox = document.getElementById('devMode');
-                                            if (devModeCheckbox) {
-                                                devModeCheckbox.addEventListener('change', function(e) {
-                                                    localStorage.setItem('devMode', e.target.checked);
-                                                    alert('Die Einstellung wurde gespeichert. Die Seite wird neu geladen.');
-                                                    window.location.reload();
-                                                });
-                                            }
-                                        }
+                                    // Stellen Sie hier Ihre Event-Listener oder andere DOM-bezogene Funktionen ein
                                     });
                                     
                                     // Füge eine Hook ein, die nach dem Laden die Feature-Toggle-UI automatisch initialisiert
@@ -1490,6 +1488,7 @@
                                             initFeatureUI();
                                         }
                                     });
+                                })();
                                 </script>
                             </div>
 
