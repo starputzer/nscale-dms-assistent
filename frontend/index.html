@@ -1286,13 +1286,17 @@
             // Lade den DocConverter nur, wenn der Admin-Bereich aktiv ist
             const checkAdminView = setInterval(() => {
                 const isAdmin = document.querySelector('.admin-panel-content') !== null;
-                const docConverterTab = document.querySelector('[data-tab="docConverter"].active') !== null;
+                const docConverterTab = document.querySelector('.admin-nav-item.active') !== null && 
+                                       document.querySelector('#adminTab[value="docConverter"], [data-tab="docConverter"].active') !== null;
                 const mountPoint = document.getElementById('doc-converter-app');
                 
                 if (isAdmin && docConverterTab && mountPoint && !window.docConverterInitialized) {
-                    // Lade das DocConverter-Skript dynamisch
+                    console.log('DocConverter-Tab aktiv, lade Komponente...');
+                    
+                    // Da die Vue-Anwendung in einem separaten Projekt erstellt wurde,
+                    // sollten wir stattdessen die dort erstellte kompilierte Version verwenden
                     const script = document.createElement('script');
-                    script.src = '/static/js/doc-converter.js';
+                    script.src = '/vue/assets/js/doc-converter.js';
                     script.type = 'module';
                     document.body.appendChild(script);
                     

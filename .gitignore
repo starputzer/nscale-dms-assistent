@@ -130,3 +130,4 @@ bundle-stats.json
 .temp
 .tmp
 .history/
+**/.claude/settings.local.json
