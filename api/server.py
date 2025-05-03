@@ -4,6 +4,9 @@ import os
 # Füge das Projektverzeichnis zum Python-Pfad hinzu
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Setze das Arbeitsverzeichnis auf das Projektverzeichnis für einheitliche Pfadbehandlung
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import asyncio
 import time
 import uuid
@@ -96,11 +99,111 @@ if frontend_dir.exists():
         logger.info(f"JS-Dateien: {[f.name for f in js_dir.iterdir() if f.is_file()]}")
 
 # App Mounten mit normaler StaticFiles-Klasse
-app.mount("/static", StaticFiles(directory="frontend"), name="static")
+# Mounte das Frontend-Verzeichnis mit absoluten Pfaden für mehr Zuverlässigkeit
+frontend_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend")
+app.mount("/static", StaticFiles(directory=frontend_path), name="static")
+logger.info(f"Frontend gemountet von: {frontend_path}")
+
+# Mount Vue.js static assets mit absoluten Pfaden
+vue_app_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "nscale-vue")
+logger.info(f"Vue.js App-Pfad: {vue_app_path}")
+
+# Pfade relativ zum Hauptverzeichnis
+vue_paths_to_mount = [
+    {
+        "url_path": "/static/vue",
+        "directory": os.path.join(vue_app_path, ""),
+        "name": "vue_static_root",
+        "description": "Vue.js Root-Assets"
+    },
+    {
+        "url_path": "/static/vue/src",
+        "directory": os.path.join(vue_app_path, "src"),
+        "name": "vue_static_src",
+        "description": "Vue.js Source-Assets"
+    },
+    {
+        "url_path": "/static/vue/dist",
+        "directory": os.path.join(vue_app_path, "dist"),
+        "name": "vue_static_dist",
+        "description": "Vue.js Dist-Assets"
+    },
+    {
+        "url_path": "/static/vue/components",
+        "directory": os.path.join(vue_app_path, "src/components"),
+        "name": "vue_static_components",
+        "description": "Vue.js Components"
+    },
+    {
+        "url_path": "/static/vue/components/common",
+        "directory": os.path.join(vue_app_path, "src/components/common"),
+        "name": "vue_static_common_components",
+        "description": "Vue.js Common Components"
+    },
+    {
+        "url_path": "/static/vue/standalone",
+        "directory": os.path.join(vue_app_path, "src/standalone"),
+        "name": "vue_static_standalone",
+        "description": "Vue.js Standalone Scripts"
+    },
+    {
+        "url_path": "/static/vue/assets/js",
+        "directory": os.path.join(vue_app_path, "dist/assets/js"),
+        "name": "vue_static_js",
+        "description": "Vue.js JavaScript Assets"
+    }
+]
+
+# Versuche, alle Vue.js-Verzeichnisse zu mounten
+successful_mounts = 0
+for path_config in vue_paths_to_mount:
+    dir_path = path_config["directory"]
+    if os.path.exists(dir_path):
+        try:
+            app.mount(
+                path_config["url_path"],
+                StaticFiles(directory=dir_path),
+                name=path_config["name"]
+            )
+            logger.info(f"{path_config['description']} erfolgreich gemountet von {dir_path}")
+            successful_mounts += 1
+        except Exception as e:
+            logger.error(f"Fehler beim Mounten von {dir_path}: {e}")
+
+if successful_mounts == 0:
+    logger.warning("Keine Vue.js Assets-Verzeichnisse gefunden oder konnten gemountet werden")
 
 @app.get("/")
 async def root():
-    return FileResponse("frontend/index.html")
+    index_path = os.path.join(frontend_path, "index.html")
+    logger.info(f"Serving index.html from: {index_path}")
+    return FileResponse(index_path)
+
+# Route für Vue.js SPA (Single Page Application)
+@app.get("/app/{path:path}")
+async def vue_app(path: str):
+    """
+    Liefert die Vue.js SPA für alle /app/* Pfade
+    Dies ermöglicht Client-Side-Routing in der Vue.js-Anwendung
+    """
+    vue_index_path = os.path.join(vue_app_path, "dist/index.html")
+    vue_dev_index_path = os.path.join(vue_app_path, "index.html")
+    frontend_index_path = os.path.join(frontend_path, "index.html")
+    
+    logger.info(f"Vue.js App-Route angefordert für Pfad: {path}")
+    logger.info(f"Prüfe Vue.js Pfade: {vue_index_path}, {vue_dev_index_path}")
+    
+    if os.path.exists(vue_index_path):
+        logger.info(f"Vue.js Dist Index gefunden, liefere: {vue_index_path}")
+        return FileResponse(vue_index_path)
+    elif os.path.exists(vue_dev_index_path):
+        logger.info(f"Vue.js Dev Index gefunden, liefere: {vue_dev_index_path}")
+        return FileResponse(vue_dev_index_path)
+    else:
+        # Fallback zur existierenden index.html, wenn Vue.js-App nicht gefunden
+        logger.warning(f"Vue.js App-Route angefordert, aber index.html nicht gefunden. Path: {path}")
+        logger.info(f"Liefere Fallback-Index: {frontend_index_path}")
+        return FileResponse(frontend_index_path)
         
 # Initialisiere Module
 user_manager = UserManager()
