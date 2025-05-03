@@ -631,7 +631,7 @@
                                         
                                         try {
                                             const fallbackScript = document.createElement('script');
-                                            fallbackScript.src = '/frontend/js/doc-converter-fallback.js';
+                                            fallbackScript.src = '/static/js/doc-converter-fallback.js';
                                             
                                             // Bei Fehler des Fallback-Skripts
                                             fallbackScript.onerror = function() {
@@ -988,6 +988,9 @@
                                         console.log('- feature_vueDocConverter:', localStorage.getItem('feature_vueDocConverter'));
                                         console.log('- devMode:', localStorage.getItem('devMode'));
                                         
+                                        // HTML für die Feature-Toggle-UI erstellen
+                                        initFeatureToggleHTML(container);
+                                        
                                         // UI-Version aktualisieren
                                         updateUIStatus();
                                         
@@ -1281,17 +1284,27 @@
                                         
                                         console.log('Event-Listener für alle Buttons konfiguriert');
                                     }
-                                            
-                                            // Features aus dem LocalStorage abrufen
-                                            const useNewUI = localStorage.getItem('useNewUI') === 'true';
-                                            const vueDocConverter = localStorage.getItem('feature_vueDocConverter') !== 'false';
-                                            const vueChat = localStorage.getItem('feature_vueChat') === 'true';
-                                            const vueAdmin = localStorage.getItem('feature_vueAdmin') === 'true';
-                                            const vueSettings = localStorage.getItem('feature_vueSettings') === 'true';
-                                            const devMode = localStorage.getItem('devMode') === 'true';
-                                            
-                                            // HTML für die Feature-Toggle-UI erstellen
-                                            container.innerHTML = `
+                                    
+                                    /**
+                                     * Initialisiere das HTML für die Feature-Toggle-UI 
+                                     * @param {HTMLElement} container - Der Container, in dem die UI angezeigt werden soll
+                                     */
+                                    function initFeatureToggleHTML(container) {
+                                        if (!container) {
+                                            console.error('Container für Feature-Toggle-UI nicht gefunden');
+                                            return;
+                                        }
+                                        
+                                        // Features aus dem LocalStorage abrufen
+                                        const useNewUI = localStorage.getItem('useNewUI') === 'true';
+                                        const vueDocConverter = localStorage.getItem('feature_vueDocConverter') !== 'false';
+                                        const vueChat = localStorage.getItem('feature_vueChat') === 'true';
+                                        const vueAdmin = localStorage.getItem('feature_vueAdmin') === 'true';
+                                        const vueSettings = localStorage.getItem('feature_vueSettings') === 'true';
+                                        const devMode = localStorage.getItem('devMode') === 'true';
+                                        
+                                        // HTML für die Feature-Toggle-UI erstellen
+                                        container.innerHTML = `
                                                 <div class="flex flex-col">
                                                     <!-- UI-Version -->
                                                     <div class="admin-card mb-6">
@@ -1467,6 +1480,14 @@
                                                     window.location.reload();
                                                 });
                                             }
+                                        }
+                                    });
+                                    
+                                    // Füge eine Hook ein, die nach dem Laden die Feature-Toggle-UI automatisch initialisiert
+                                    document.addEventListener('load', function() {
+                                        if (document.getElementById('feature-toggle-container')) {
+                                            console.log('Feature-Toggle-Container durch load-Event gefunden, initialisiere');
+                                            initFeatureUI();
                                         }
                                     });
                                 </script>
@@ -2215,10 +2236,13 @@
     </script>
     <div id="vue-feature-toggle"></div>
 
-    <script type="module">
+    <script>
       // Inline-Implementation des UIToggle ohne externen Import für bessere Zuverlässigkeit
-      import { createApp, ref, computed, watch } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
-      import { createPinia } from 'https://unpkg.com/pinia@2/dist/pinia.esm-browser.js';
+      // Verwende direkte Definitionen ohne module imports, um Probleme mit vue-demi zu vermeiden
+      (function() {
+        // Wir verwenden die globalen Vue-Objekte statt Importieren
+        const { createApp, ref, computed, watch } = Vue;
+        const createPinia = window.Pinia ? window.Pinia.createPinia : () => ({});
       
       // Basis-URLs für die Verwendung der Vue.js-Komponenten
       window.NSCALE_VUE_ASSETS_PATH = '/static/vue/assets/';
@@ -2416,19 +2440,28 @@
       
       // Mount Feature-Toggle im Entwicklungsmodus
       if (featureToggleStore.state.devMode) {
-        const featureToggleApp = createApp(UIToggle);
-        
-        const pinia = createPinia();
-        featureToggleApp.use(pinia);
-        
-        // Stelle sicher, dass das Mount-Element existiert
-        document.addEventListener('DOMContentLoaded', () => {
-          if (document.getElementById('vue-feature-toggle')) {
-            featureToggleApp.mount('#vue-feature-toggle');
-            console.log('Feature-Toggle aktiviert (Entwicklungsmodus)');
+        // Prüfe, ob Vue verfügbar ist
+        if (typeof Vue !== 'undefined' && Vue.createApp) {
+          const featureToggleApp = Vue.createApp(UIToggle);
+          
+          // Überprüfe, ob Pinia verfügbar ist
+          if (window.Pinia && window.Pinia.createPinia) {
+            const pinia = window.Pinia.createPinia();
+            featureToggleApp.use(pinia);
           }
-        });
+          
+          // Stelle sicher, dass das Mount-Element existiert
+          document.addEventListener('DOMContentLoaded', () => {
+            if (document.getElementById('vue-feature-toggle')) {
+              featureToggleApp.mount('#vue-feature-toggle');
+              console.log('Feature-Toggle aktiviert (Entwicklungsmodus)');
+            }
+          });
+        } else {
+          console.warn('Vue.js ist nicht verfügbar - Feature-Toggle wird im Fallback-Modus ausgeführt');
+        }
       }
+      })(); // Ende der IIFE
     </script>
     <!-- Feature-Toggle-basierte Initialisierung von Vue.js-Komponenten -->
     <script>
