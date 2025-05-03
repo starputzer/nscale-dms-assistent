@@ -886,8 +886,7 @@
                                 <!-- Script zum Rendern der Features-Seite ohne Vue.js-Abhängigkeiten -->
                                 <script>
                                     // Einfache direkte Implementation für die Feature-Toggle-UI
-                                    // Selbstausführende Funktion (IIFE) um den Code ordentlich zu kapseln
-                                    (function() {
+                                    (function() { // Start der IIFE
                                         /**
                                          * Initialisiere das HTML für die Feature-Toggle-UI 
                                          * @param {HTMLElement} container - Der Container, in dem die UI angezeigt werden soll
@@ -1077,58 +1076,7 @@
                                             }
                                         }
                                         
-                                        // Bei DOM-Bereitschaft initialisieren
-                                        document.addEventListener('DOMContentLoaded', function() {
-                                            // Debug-Logging: Zeige die aktuellen Werte beim Seitenstart
-                                            console.log('Feature-Toggle Status beim Laden:');
-                                            console.log('- useNewUI:', localStorage.getItem('useNewUI'));
-                                            console.log('- feature_vueDocConverter:', localStorage.getItem('feature_vueDocConverter'));
-                                            console.log('- devMode:', localStorage.getItem('devMode'));
-                                            
-                                            // UI sofort initialisieren
-                                            initFeatureUI();
-                                            
-                                            // MutationObserver um auf Änderungen zu reagieren
-                                            const observer = new MutationObserver(function(mutations) {
-                                                for (const mutation of mutations) {
-                                                    // Nach dem Feature-Container suchen
-                                                    if (document.getElementById('feature-toggle-container') && 
-                                                        mutation.type === 'childList') {
-                                                        console.log('Feature-Container wurde geladen, initialisiere UI');
-                                                        initFeatureUI();
-                                                    }
-                                                }
-                                            });
-                                            
-                                            // Konfiguration des Observers
-                                            const config = { childList: true, subtree: true };
-                                            
-                                            // Beobachtung des gesamten Body starten
-                                            observer.observe(document.body, config);
-                                            
-                                            // Auf Tab-Wechsel zu Features reagieren
-                                            const allButtons = document.querySelectorAll('.admin-nav-item');
-                                            let featureTabButton = null;
-                                            
-                                            allButtons.forEach(button => {
-                                                if (button.textContent.trim().includes('Features')) {
-                                                    featureTabButton = button;
-                                                    console.log('Features-Tab-Button gefunden:', button);
-                                                }
-                                            });
-                                            
-                                            if (featureTabButton) {
-                                                featureTabButton.addEventListener('click', function() {
-                                                    console.log('Features-Tab-Button geklickt');
-                                                    // Sofort und auch nach einer kurzen Verzögerung initialisieren
-                                                    // um sicherzustellen, dass der Container sichtbar ist
-                                                    initFeatureUI();
-                                                    setTimeout(initFeatureUI, 100);
-                                                    setTimeout(initFeatureUI, 500);
-                                                });
-                                            }
-                                        });
-                                    });
+                                        // Initialisierung erfolgt im unteren DOMContentLoaded-Handler
                                     
                                     /**
                                      * Initialisiert die Feature-Toggle-UI und fügt Event-Listener hinzu
@@ -1476,9 +1424,60 @@
                                         }
                                         
                                         console.log('Event-Listener für alle Buttons konfiguriert');
-                                    }
+                                    } // Ende von setupEventListeners()
                                     
-                                    // Stellen Sie hier Ihre Event-Listener oder andere DOM-bezogene Funktionen ein
+                                    /**
+                                     * Funktionen und DOM-Elemente initialisieren wenn das Dokument geladen ist
+                                     */
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        // Debug-Logging: Zeige die aktuellen Werte beim Seitenstart
+                                        console.log('Feature-Toggle Status beim Laden:');
+                                        console.log('- useNewUI:', localStorage.getItem('useNewUI'));
+                                        console.log('- feature_vueDocConverter:', localStorage.getItem('feature_vueDocConverter'));
+                                        console.log('- devMode:', localStorage.getItem('devMode'));
+                                        
+                                        // UI sofort initialisieren
+                                        initFeatureUI();
+                                        
+                                        // MutationObserver um auf Änderungen zu reagieren
+                                        const observer = new MutationObserver(function(mutations) {
+                                            for (const mutation of mutations) {
+                                                // Nach dem Feature-Container suchen
+                                                if (document.getElementById('feature-toggle-container') && 
+                                                    mutation.type === 'childList') {
+                                                    console.log('Feature-Container wurde geladen, initialisiere UI');
+                                                    initFeatureUI();
+                                                }
+                                            }
+                                        });
+                                        
+                                        // Konfiguration des Observers
+                                        const config = { childList: true, subtree: true };
+                                        
+                                        // Beobachtung des gesamten Body starten
+                                        observer.observe(document.body, config);
+                                        
+                                        // Auf Tab-Wechsel zu Features reagieren
+                                        const allButtons = document.querySelectorAll('.admin-nav-item');
+                                        let featureTabButton = null;
+                                        
+                                        allButtons.forEach(button => {
+                                            if (button.textContent.trim().includes('Features')) {
+                                                featureTabButton = button;
+                                                console.log('Features-Tab-Button gefunden:', button);
+                                            }
+                                        });
+                                        
+                                        if (featureTabButton) {
+                                            featureTabButton.addEventListener('click', function() {
+                                                console.log('Features-Tab-Button geklickt');
+                                                // Sofort und auch nach einer kurzen Verzögerung initialisieren
+                                                // um sicherzustellen, dass der Container sichtbar ist
+                                                initFeatureUI();
+                                                setTimeout(initFeatureUI, 100);
+                                                setTimeout(initFeatureUI, 500);
+                                            });
+                                        }
                                     });
                                     
                                     // Füge eine Hook ein, die nach dem Laden die Feature-Toggle-UI automatisch initialisiert
@@ -1488,7 +1487,7 @@
                                             initFeatureUI();
                                         }
                                     });
-                                })();
+                                })(); // Ende der IIFE
                                 </script>
                             </div>
 
