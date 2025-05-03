@@ -52,6 +52,16 @@ export function setupAdmin(options) {
             loadNegativeFeedback();
         } else if (newTab === 'motd') {
             loadMotdConfig();
+        } else if (newTab === 'features') {
+            console.log('Features-Tab ausgewählt, initialisiere Feature-UI');
+            // Kurze Verzögerung, um sicherzustellen, dass der DOM aktualisiert wurde
+            setTimeout(() => {
+                if (typeof window.initFeatureUI === 'function') {
+                    window.initFeatureUI();
+                } else {
+                    console.error('initFeatureUI-Funktion nicht gefunden');
+                }
+            }, 100);
         }
     });
     
@@ -477,6 +487,43 @@ export function setupAdmin(options) {
             .replace(/\n-\s/g, '<br/>• ');
     };
     
+    /**
+     * Hilfsfunktionen für Feature-Toggles
+     */
+    const enableAllFeatures = () => {
+        // Liste aller bekannten Features
+        const featureKeys = [
+            'vueDocConverter',
+            'vueChat',
+            'vueAdmin',
+            'vueSettings'
+        ];
+        
+        // Alle Features aktivieren
+        featureKeys.forEach(key => {
+            localStorage.setItem(`feature_${key}`, 'true');
+        });
+        
+        console.log('Alle Features wurden aktiviert');
+    };
+    
+    const disableAllFeatures = () => {
+        // Liste aller bekannten Features
+        const featureKeys = [
+            'vueDocConverter',
+            'vueChat',
+            'vueAdmin',
+            'vueSettings'
+        ];
+        
+        // Alle Features deaktivieren
+        featureKeys.forEach(key => {
+            localStorage.setItem(`feature_${key}`, 'false');
+        });
+        
+        console.log('Alle Features wurden deaktiviert');
+    };
+    
     return {
         // State
         userRole,
@@ -507,6 +554,10 @@ export function setupAdmin(options) {
         loadMotdConfig,
         resetMotdConfig,
         saveMotdConfig,
-        formatMotdContent
+        formatMotdContent,
+        
+        // Feature-Toggle-Funktionen
+        enableAllFeatures,
+        disableAllFeatures
     };
 }

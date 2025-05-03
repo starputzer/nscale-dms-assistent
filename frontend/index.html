@@ -807,7 +807,7 @@
                                                     <div class="font-medium mb-2">Aktuelle UI-Version:</div>
                                                     <div id="currentUISetting" class="text-lg bg-white p-3 rounded border mb-4">
                                                         <!-- Wird dynamisch gefüllt -->
-                                                        Wird geladen...
+                                                        <span class="text-gray-500"><i class="fas fa-sync fa-spin mr-2"></i> Wird geladen...</span>
                                                     </div>
                                                     
                                                     <div class="flex gap-4">
@@ -840,7 +840,7 @@
                                                     <div class="font-medium mb-2">Aktuelle Implementierung:</div>
                                                     <div id="currentDocConverterSetting" class="text-lg bg-white p-3 rounded border mb-4">
                                                         <!-- Wird dynamisch gefüllt -->
-                                                        Wird geladen...
+                                                        <span class="text-gray-500"><i class="fas fa-sync fa-spin mr-2"></i> Wird geladen...</span>
                                                     </div>
                                                     
                                                     <div class="flex gap-4">
@@ -866,7 +866,7 @@
                                                     <div class="font-medium mb-2">Entwicklermodus:</div>
                                                     <div id="currentDevModeSetting" class="text-lg bg-white p-3 rounded border mb-4">
                                                         <!-- Wird dynamisch gefüllt -->
-                                                        Wird geladen...
+                                                        <span class="text-gray-500"><i class="fas fa-sync fa-spin mr-2"></i> Wird geladen...</span>
                                                     </div>
                                                     
                                                     <div class="flex gap-4">
@@ -1080,8 +1080,9 @@
                                     
                                     /**
                                      * Initialisiert die Feature-Toggle-UI und fügt Event-Listener hinzu
+                                     * Wird global verfügbar gemacht, damit es auch aus admin.js aufgerufen werden kann
                                      */
-                                    function initFeatureUI() {
+                                    window.initFeatureUI = function() {
                                         console.log('Initialisiere Feature-UI');
                                         
                                         // Feature-Toggle-Container überprüfen
@@ -1436,26 +1437,20 @@
                                         console.log('- feature_vueDocConverter:', localStorage.getItem('feature_vueDocConverter'));
                                         console.log('- devMode:', localStorage.getItem('devMode'));
                                         
-                                        // UI sofort initialisieren
-                                        initFeatureUI();
+                                        // Feature-Toggle-Container suchen
+                                        const featureContainer = document.getElementById('feature-toggle-container');
                                         
-                                        // Wir vermeiden MutationObserver, da dieser zu Endlosschleifen führen kann
-                                        console.log('Feature-Toggle UI wird direkt initialisiert, ohne MutationObserver');
+                                        // Nur initialisieren, wenn der Container bereits sichtbar ist (was unwahrscheinlich ist)
+                                        // Ansonsten wird die Initialisierung durch admin.js beim Tab-Wechsel ausgelöst
+                                        if (featureContainer && featureContainer.offsetParent !== null) {
+                                            console.log('Feature-Toggle-Container ist bereits sichtbar, initialisiere sofort');
+                                            window.initFeatureUI();
+                                        } else {
+                                            console.log('Feature-Toggle-Container ist nicht sichtbar, Initialisierung erfolgt bei Tab-Wechsel');
+                                        }
                                         
-                                        // Auf Tab-Wechsel zu Features reagieren
-                                        const allButtons = document.querySelectorAll('.admin-nav-item');
-                                        let featureTabButton = null;
-                                        
-                                        allButtons.forEach(button => {
-                                            if (button.textContent.trim().includes('Features')) {
-                                                featureTabButton = button;
-                                                console.log('Features-Tab-Button gefunden:', button);
-                                            }
-                                        });
-                                        
-                                        // Wir entfernen den Tab-Button Event Listener, da dieser zu Problemen führt
-                                        // und die Seite friert ein. Die Feature-Toggle UI ist nur im Admin-Bereich 
-                                        // sichtbar und wird dort automatisch initialisiert.
+                                        // Wir überlassen die eigentliche Initialisierung dem Tab-Wechsel in admin.js
+                                        console.log('Feature-Toggle UI wird via Tab-Wechsel in admin.js initialisiert');
                                     });
                                     
                                     // Wir entfernen den load-Event-Handler, um doppelte Initialisierungen zu vermeiden

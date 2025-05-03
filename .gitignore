@@ -42,6 +42,12 @@ ENV/
 *.swp
 *.swo
 
+# Claude-spezifische Dateien
+.claude/
+DOKUMENTENKONVERTER_LOESUNG.md
+PROJEKTSTATUS.md
+VUE_MIGRATION_REPORT.md
+
 # SSH-Schlüssel
 id_*
 *.pem
