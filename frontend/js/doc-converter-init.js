@@ -98,7 +98,7 @@
         
         try {
             const fallbackScript = document.createElement('script');
-            fallbackScript.src = '/frontend/js/doc-converter-fallback.js';
+            fallbackScript.src = '/static/js/doc-converter-fallback.js';
             
             // Bei Fehler des Fallback-Skripts
             fallbackScript.onerror = function() {
