@@ -543,17 +543,70 @@
                                     </div>
                                 </div>
                                 
-                                <!-- Inline Skript, um direkt den Dokumentenkonverter zu initialisieren -->
+                                <!-- Inline Skript, um den Dokumentenkonverter zu initialisieren -->
                                 <script>
                                     console.log('DocConverter-Tab inline script ausgeführt');
-                                    // Lade das externe Skript
-                                    var script = document.createElement('script');
-                                    script.src = '/static/js/doc-converter-fallback.js';
-                                    script.onerror = function() {
-                                        console.error('Fehler beim Laden des Fallback-Skripts');
-                                        document.getElementById('doc-converter-container').innerHTML = '<div class="p-4"><div class="bg-red-100 p-4 rounded"><p>Fehler beim Laden des Dokumentenkonverters.</p></div></div>';
-                                    };
-                                    document.body.appendChild(script);
+                                    
+                                    // Feature-Toggle prüfen
+                                    function loadAppropriateImplementation() {
+                                        const useNewUI = localStorage.getItem('useNewUI') === 'true';
+                                        const useVueDocConverter = localStorage.getItem('feature_vueDocConverter') !== 'false';
+                                        
+                                        console.log('DocConverter Feature-Toggle:', { useNewUI, useVueDocConverter });
+                                        
+                                        if (useNewUI && useVueDocConverter) {
+                                            // Vue.js-Implementierung laden
+                                            console.log('Versuche Vue.js-Implementierung zu laden...');
+                                            
+                                            // Timeout für Fallback setzen
+                                            const vueTimeout = setTimeout(function() {
+                                                console.warn('Vue.js-Implementierung konnte nicht geladen werden, wechsle zu Fallback');
+                                                loadFallbackImplementation();
+                                            }, 5000);
+                                            
+                                            // Vue-Komponente laden
+                                            const vueScript = document.createElement('script');
+                                            vueScript.type = 'module';
+                                            vueScript.src = '/static/vue/standalone/doc-converter.js';
+                                            
+                                            vueScript.onload = function() {
+                                                console.log('Vue.js-Dokumentenkonverter erfolgreich geladen');
+                                                clearTimeout(vueTimeout);
+                                            };
+                                            
+                                            vueScript.onerror = function() {
+                                                console.error('Fehler beim Laden des Vue.js-Dokumentenkonverters');
+                                                clearTimeout(vueTimeout);
+                                                loadFallbackImplementation();
+                                            };
+                                            
+                                            document.body.appendChild(vueScript);
+                                        } else {
+                                            // Direkt die Fallback-Implementierung laden
+                                            loadFallbackImplementation();
+                                        }
+                                    }
+                                    
+                                    // Klassische Implementierung laden
+                                    function loadFallbackImplementation() {
+                                        console.log('Lade klassische Implementierung des Dokumentenkonverters...');
+                                        
+                                        const fallbackScript = document.createElement('script');
+                                        fallbackScript.src = '/static/js/doc-converter-fallback.js';
+                                        
+                                        fallbackScript.onerror = function() {
+                                            console.error('Fehler beim Laden der klassischen Implementierung');
+                                            document.getElementById('doc-converter-container').innerHTML = 
+                                                '<div class="p-4"><div class="bg-red-100 p-4 rounded">' +
+                                                '<p class="text-red-700"><i class="fas fa-exclamation-triangle mr-2"></i>' +
+                                                'Fehler beim Laden des Dokumentenkonverters.</p></div></div>';
+                                        };
+                                        
+                                        document.body.appendChild(fallbackScript);
+                                    }
+                                    
+                                    // Initialisierung starten
+                                    loadAppropriateImplementation();
                                 </script>
                             </div>
                             

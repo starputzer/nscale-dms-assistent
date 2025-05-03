@@ -13,7 +13,7 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       // Explizite Alias-Definition für die DocConverterView
-      'doc-converter-view': fileURLToPath(new URL('./src/views/DocConverter.vue', import.meta.url))
+      'doc-converter-view': fileURLToPath(new URL('./src/views/DocConverterView.vue', import.meta.url))
     }
   },
   build: {
