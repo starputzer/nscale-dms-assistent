@@ -526,6 +526,10 @@
                             </div>
                             <!-- DocConverter Tab -->
                             <div v-if="adminTab === 'docConverter'" class="admin-panel-content" data-tab="docConverter">
+                                <div id="docconverter-debug" style="display:none;">
+                                    <p>Debug-Info für DocConverter-Tab</p>
+                                </div>
+                            
                                 <!-- Vue.js app mount point -->
                                 <div id="doc-converter-app">
                                     <!-- Container für die klassische Implementierung -->
@@ -539,8 +543,18 @@
                                     </div>
                                 </div>
                                 
-                                <!-- Initialisierungs-Skript für den Dokumentenkonverter -->
-                                <script src="/static/js/doc-converter-init.js"></script>
+                                <!-- Inline Skript, um direkt den Dokumentenkonverter zu initialisieren -->
+                                <script>
+                                    console.log('DocConverter-Tab inline script ausgeführt');
+                                    // Lade das externe Skript
+                                    var script = document.createElement('script');
+                                    script.src = '/static/js/doc-converter-fallback.js';
+                                    script.onerror = function() {
+                                        console.error('Fehler beim Laden des Fallback-Skripts');
+                                        document.getElementById('doc-converter-container').innerHTML = '<div class="p-4"><div class="bg-red-100 p-4 rounded"><p>Fehler beim Laden des Dokumentenkonverters.</p></div></div>';
+                                    };
+                                    document.body.appendChild(script);
+                                </script>
                             </div>
                             
                             <!-- Feature-Toggle-Tab (Vanilla JS Version - keine Vue.js-Abhängigkeiten) -->

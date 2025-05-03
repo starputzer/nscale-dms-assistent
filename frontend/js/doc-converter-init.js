@@ -4,6 +4,7 @@
  */
 (function() {
     console.log('Dokumentenkonverter-Initialisierung gestartet');
+    console.log('Dokumentenkonverter Debug: Skript erfolgreich geladen');
     
     /**
      * Zeigt die Minimal-UI für den Dokumentenkonverter an, wenn alles andere fehlschlägt
@@ -203,47 +204,38 @@
     function checkAndInitDocConverter() {
         console.log('Prüfe auf aktiven DocConverter-Tab');
         
-        // Aktuellen Admin-Tab ermitteln (über Vue oder DOM)
-        let currentTab = '';
-        try {
-            // Versuche über DOM-Element zu ermitteln
-            const adminTabs = document.querySelectorAll('.admin-nav-item');
-            if (adminTabs) {
-                for (const tab of adminTabs) {
-                    if (tab.classList.contains('active')) {
-                        // Aus Text oder data-tab Attribut ermitteln
-                        if (tab.dataset && tab.dataset.tab) {
-                            currentTab = tab.dataset.tab;
-                        } else if (tab.textContent && tab.textContent.includes('Dokumente konvertieren')) {
-                            currentTab = 'docConverter';
-                        }
-                    }
-                }
-            }
-        } catch (e) {
-            console.warn('Fehler beim Ermitteln des aktuellen Tabs:', e);
-        }
+        // Direkt initialisieren, da wir bereits wissen, dass wir im DocConverter-Tab sind
+        console.log('DocConverter-Tab sollte aktiv sein, initialisiere direkt...');
         
-        console.log('Ermittelter Tab:', currentTab);
-        
-        // Wenn DocConverter-Tab aktiv ist, initialisieren
-        if (currentTab === 'docConverter' || document.querySelector('[v-if="adminTab === \'docConverter\'"]')) {
-            console.log('DocConverter-Tab erkannt, initialisiere...');
+        // Überprüfen, ob der Container sichtbar ist
+        const container = document.getElementById('doc-converter-container');
+        if (container) {
+            console.log('DocConverter-Container gefunden:', container);
             setupDocConverter();
         } else {
-            console.log('DocConverter-Tab nicht aktiv, warte auf Tab-Wechsel...');
+            console.log('DocConverter-Container NICHT gefunden! Suche nach anderen Elementen...');
             
-            // Event-Listener für Tab-Wechsel
-            document.querySelectorAll('.admin-nav-item').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    if (this.textContent && this.textContent.includes('Dokumente konvertieren')) {
-                        console.log('Wechsel zum DocConverter-Tab erkannt');
-                        // Kurze Verzögerung für DOM-Updates
-                        setTimeout(setupDocConverter, 100);
-                    }
-                });
-            });
+            // Versuche, andere wichtige Elemente zu finden
+            const docConverterApp = document.getElementById('doc-converter-app');
+            console.log('doc-converter-app gefunden:', !!docConverterApp);
+            
+            // Liste alle Container in der DOM-Struktur auf
+            const allDivs = document.querySelectorAll('div[id]');
+            console.log('Alle DIVs mit IDs:', Array.from(allDivs).map(div => div.id).join(', '));
+            
+            // Trotzdem versuchen zu initialisieren
+            setTimeout(setupDocConverter, 500);
         }
+        
+        // Backup: Event-Listener für Tab-Wechsel
+        document.querySelectorAll('.admin-nav-item').forEach(tab => {
+            tab.addEventListener('click', function() {
+                if (this.textContent && this.textContent.includes('Dokumente konvertieren')) {
+                    console.log('Wechsel zum DocConverter-Tab erkannt durch Klick');
+                    setTimeout(setupDocConverter, 300);
+                }
+            });
+        });
     }
     
     // Initialisierung starten wenn DOM geladen ist
