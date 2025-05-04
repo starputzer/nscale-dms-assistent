@@ -6,9 +6,78 @@
     <title>nscale DMS Assistent</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/vue@3.2.31/dist/vue.global.prod.js"></script>
+    <!-- Vue.js in Entwicklungsversion für bessere Fehlermeldungen -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.2.31/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Hilfs-Skript zur Vue-Diagnose -->
+    <script>
+        // Vue-Fehler abfangen
+        window.addEventListener('error', function(event) {
+            console.error('GLOBALER FEHLER:', event.message, event.filename, event.lineno);
+            document.getElementById('vue-error-logger') && 
+            (document.getElementById('vue-error-logger').innerHTML += `<div>${event.message} in ${event.filename}:${event.lineno}</div>`);
+        });
+        
+        // Vue-Init-Überprüfung
+        window.vueInitTester = {
+            test: function() {
+                try {
+                    // Prüfen, ob Vue verfügbar ist
+                    if (typeof Vue === 'undefined') {
+                        return 'Vue ist nicht definiert';
+                    }
+                    
+                    // Versuche, eine minimale Vue-App zu erstellen
+                    const testApp = Vue.createApp({
+                        data() {
+                            return { testMessage: 'Vue funktioniert' };
+                        }
+                    });
+                    
+                    // Wenn wir bis hierher kommen, ist Vue.js grundsätzlich funktionsfähig
+                    return 'Vue scheint korrekt initialisiert zu sein, aber die Hauptanwendung hat Probleme';
+                } catch (error) {
+                    return `Vue-Initialisierungsfehler: ${error.message}`;
+                }
+            }
+        };
+        
+        // Nach kurzem Timeout die Vue-Tests durchführen
+        setTimeout(function() {
+            // Diagnosediv hinzufügen, falls nicht vorhanden
+            if (!document.getElementById('vue-error-logger')) {
+                const diagDiv = document.createElement('div');
+                diagDiv.id = 'vue-error-logger';
+                diagDiv.style.position = 'fixed';
+                diagDiv.style.bottom = '10px';
+                diagDiv.style.right = '10px';
+                diagDiv.style.width = '300px';
+                diagDiv.style.maxHeight = '200px';
+                diagDiv.style.overflowY = 'auto';
+                diagDiv.style.backgroundColor = 'rgba(255, 0, 0, 0.1)';
+                diagDiv.style.border = '1px solid red';
+                diagDiv.style.padding = '10px';
+                diagDiv.style.zIndex = '10000';
+                diagDiv.style.color = 'red';
+                diagDiv.style.fontFamily = 'monospace';
+                diagDiv.style.fontSize = '12px';
+                document.body.appendChild(diagDiv);
+            }
+            
+            // Vue-Test durchführen und Ergebnis anzeigen
+            document.getElementById('vue-error-logger').innerHTML = `<div><strong>Vue-Test:</strong> ${window.vueInitTester.test()}</div>`;
+            
+            // Prüfen, ob die App-Div initialisiert wurde
+            const appDiv = document.getElementById('app');
+            if (appDiv) {
+                document.getElementById('vue-error-logger').innerHTML += `<div><strong>App-Status:</strong> ${appDiv.children.length} Kinder</div>`;
+            } else {
+                document.getElementById('vue-error-logger').innerHTML += `<div><strong>App-Status:</strong> Nicht gefunden</div>`;
+            }
+        }, 2000);
+    </script>
     <!-- Eigene CSS-Dateien mit dynamischem Cache-Busting -->
     <link href="/static/css/main.css" rel="stylesheet">
     <link href="/static/css/feedback.css" rel="stylesheet">
@@ -44,8 +113,97 @@
     <script src="/static/js/admin-integration.js"></script>
     <script src="/static/js/emergency-fix.js"></script>
     <script src="/static/js/vue-rescue.js"></script>
+    
+    <!-- Notfall-Bootstrap-Skript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Prüfen ob alle Skripte korrekt geladen wurden
+            console.log('DOMContentLoaded Event ausgelöst');
+            
+            // Skripte überprüfen
+            const scripts = [
+                { name: 'Vue.js', global: 'Vue' },
+                { name: 'Axios', global: 'axios' },
+                { name: 'Marked', global: 'marked' }
+            ];
+            
+            let allLoaded = true;
+            scripts.forEach(script => {
+                if (typeof window[script.global] === 'undefined') {
+                    console.error(`KRITISCHER FEHLER: ${script.name} (${script.global}) nicht geladen!`);
+                    allLoaded = false;
+                } else {
+                    console.log(`${script.name} erfolgreich geladen.`);
+                }
+            });
+            
+            if (!allLoaded) {
+                // Notfall: CSS und JS neu laden
+                console.warn('Versuche Skripte neu zu laden...');
+                scripts.forEach(script => {
+                    if (typeof window[script.global] === 'undefined') {
+                        const s = document.createElement('script');
+                        switch(script.global) {
+                            case 'Vue':
+                                s.src = 'https://cdn.jsdelivr.net/npm/vue@3.2.31/dist/vue.global.js';
+                                break;
+                            case 'axios':
+                                s.src = 'https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js';
+                                break;
+                            case 'marked':
+                                s.src = 'https://cdn.jsdelivr.net/npm/marked/marked.min.js';
+                                break;
+                        }
+                        
+                        s.onload = function() {
+                            console.log(`${script.name} erfolgreich nachgeladen.`);
+                        };
+                        
+                        document.head.appendChild(s);
+                    }
+                });
+            }
+        });
+    </script>
 </head>
 <body class="min-h-screen bg-gray-50">
+    <!-- Notfall-Container für den Fall, dass Vue.js nicht lädt -->
+    <div id="app-fallback" style="display: none;">
+        <div style="max-width: 400px; margin: 50px auto; padding: 20px; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px;">
+            <h2 style="text-align: center; margin-bottom: 20px;">nscale DMS Assistent</h2>
+            <p style="color: #721c24; background: #f8d7da; padding: 10px; border-radius: 4px; margin-bottom: 20px; text-align: center;">
+                Es gibt technische Probleme mit der Benutzeroberfläche.<br>
+                Die Anwendung wird im Notfallmodus geladen.
+            </p>
+            <div style="text-align: center;">
+                <button id="fallback-reload" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    Seite neu laden
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Fallback-Reload-Button-Funktion
+        document.addEventListener('DOMContentLoaded', function() {
+            const reloadButton = document.getElementById('fallback-reload');
+            if (reloadButton) {
+                reloadButton.addEventListener('click', function() {
+                    window.location.reload();
+                });
+            }
+            
+            // Nach 10 Sekunden Fallback UI anzeigen, wenn App nicht geladen
+            setTimeout(function() {
+                if (document.getElementById('app').children.length === 0) {
+                    document.getElementById('app-fallback').style.display = 'block';
+                    console.error('TIMEOUT: App wurde nicht rechtzeitig geladen.');
+                }
+            }, 10000);
+        });
+    </script>
+    
+    <!-- Haupt-Vue.js-App -->
     <div id="app" class="h-screen flex flex-col">
         <!-- Login & Register -->
         <div v-if="!token" class="flex items-center justify-center h-full bg-gray-50">

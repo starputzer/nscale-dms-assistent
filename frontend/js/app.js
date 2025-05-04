@@ -4,11 +4,78 @@ import { setupAdmin } from './admin.js';
 import { setupSettings } from './settings.js';
 import { setupSourceReferences } from './source-references.js';
 
-const { createApp, ref, onMounted, watch, nextTick } = Vue;
+// Variablen vorab deklarieren
+let createApp, ref, onMounted, watch, nextTick;
 
-createApp({
-    setup() {
-        // Authentication state
+// Globale Fehlerbehandlung für Vue.js
+try {
+    console.log('Vue.js App wird initialisiert...');
+    
+    // Prüfen, ob die Abhängigkeiten geladen wurden
+    if (typeof Vue === 'undefined') throw new Error('Vue ist nicht definiert');
+    if (typeof axios === 'undefined') throw new Error('Axios ist nicht definiert');
+    if (typeof marked === 'undefined') throw new Error('Marked ist nicht definiert');
+    
+    // Prüfen, ob das app-Element existiert
+    if (!document.getElementById('app')) {
+        throw new Error('Element #app nicht gefunden');
+    }
+    
+    // Verstecke Fallback-UI falls vorhanden
+    setTimeout(() => {
+        const fallbackUI = document.getElementById('app-fallback');
+        if (fallbackUI) fallbackUI.style.display = 'none';
+    }, 1000);
+    
+    // Bei OnError Ereignis Fallback-UI anzeigen
+    window.addEventListener('error', function(event) {
+        const errorSrc = event.filename || '';
+        if (errorSrc.includes('app.js') || errorSrc.includes('vue')) {
+            console.error('KRITISCHER APP-FEHLER:', event.message);
+            const fallbackUI = document.getElementById('app-fallback');
+            if (fallbackUI) fallbackUI.style.display = 'block';
+            
+            // Event-Listener für Neu-Laden-Button
+            const reloadButton = document.getElementById('fallback-reload');
+            if (reloadButton) {
+                reloadButton.addEventListener('click', function() {
+                    window.location.reload();
+                });
+            }
+        }
+    });
+} catch (error) {
+    console.error('KRITISCHER INITIALISIERUNGSFEHLER:', error.message);
+    
+    // Fallback-UI anzeigen
+    setTimeout(() => {
+        const fallbackUI = document.getElementById('app-fallback');
+        if (fallbackUI) fallbackUI.style.display = 'block';
+        
+        // Event-Listener für Neu-Laden-Button
+        const reloadButton = document.getElementById('fallback-reload');
+        if (reloadButton) {
+            reloadButton.addEventListener('click', function() {
+                window.location.reload();
+            });
+        }
+    }, 0);
+    
+    // Notfall: Neu laden in 10 Sekunden
+    setTimeout(() => window.location.reload(), 10000);
+}
+
+// Main App erstellen - jetzt mit try-catch
+try {
+    // Vue-Funktionen extrahieren
+    ({ createApp, ref, onMounted, watch, nextTick } = Vue);
+    
+    console.log('Vue-Funktionen extrahiert, starte App-Erstellung...');
+    
+    // App mit Fehlerbehandlung erstellen
+    createApp({
+        setup() {
+            // Authentication state
         const token = ref(localStorage.getItem('token') || '');
         const email = ref('');
         const password = ref('');
@@ -717,4 +784,32 @@ createApp({
             reloadCurrentSession
         };
     }
-}).mount('#app');
+    }).mount('#app');
+    
+    console.log('Vue.js App wurde erfolgreich gestartet!');
+} catch (error) {
+    console.error('KRITISCHER FEHLER BEIM APP-START:', error.message);
+    
+    // Fallback-UI anzeigen
+    setTimeout(() => {
+        const fallbackUI = document.getElementById('app-fallback');
+        if (fallbackUI) {
+            fallbackUI.style.display = 'block';
+            
+            // Fehlermeldung anzeigen
+            const errorMsg = document.createElement('div');
+            errorMsg.style.marginTop = '20px';
+            errorMsg.style.color = '#721c24';
+            errorMsg.style.padding = '10px';
+            errorMsg.style.backgroundColor = '#f8d7da';
+            errorMsg.style.borderRadius = '4px';
+            errorMsg.style.fontSize = '12px';
+            errorMsg.style.wordBreak = 'break-all';
+            errorMsg.textContent = `Fehler: ${error.message}`;
+            
+            // Füge Fehlermeldung zum Fallback-Container hinzu
+            const container = fallbackUI.querySelector('div');
+            if (container) container.appendChild(errorMsg);
+        }
+    }, 0);
+}
