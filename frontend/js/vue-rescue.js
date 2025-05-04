@@ -1669,10 +1669,644 @@
         }, 2000); // Alle 2 Sekunden prüfen
     }
 
+    // Globale Fehlerbehandlung für Vue.js hinzufügen
+    function addGlobalErrorHandling() {
+        // Globaler Error-Handler, der auf Vue-related Fehler hört
+        window.addEventListener('error', (event) => {
+            const errorMsg = event.message || '';
+            const errorSrc = event.filename || '';
+            
+            // Zeige spezifische Vue.js bezogene Fehler
+            const isVueError = errorMsg.includes('Vue') || 
+                            errorMsg.includes('vue') || 
+                            errorSrc.includes('vue');
+                            
+            if (isVueError) {
+                console.error('[Vue Rescue] Vue.js Fehler erkannt:', {
+                    message: errorMsg,
+                    file: errorSrc,
+                    line: event.lineno,
+                    col: event.colno
+                });
+                
+                // Nur im Notfall starten, wenn nicht bereits aktiv
+                if (!rescueActive && document.querySelector('#app')) {
+                    setTimeout(() => {
+                        console.warn('[Vue Rescue] Starte Notfallmodus wegen Vue.js Fehler');
+                        activateRescueMode();
+                    }, 100);
+                }
+            }
+        });
+        
+        // Promise-Fehler abfangen
+        window.addEventListener('unhandledrejection', (event) => {
+            const errorMsg = event.reason?.message || event.reason || '';
+            
+            if (typeof errorMsg === 'string' && (errorMsg.includes('Vue') || errorMsg.includes('vue'))) {
+                console.error('[Vue Rescue] Vue.js Promise-Fehler erkannt:', errorMsg);
+                
+                // Nur im Notfall starten, wenn nicht bereits aktiv
+                if (!rescueActive && document.querySelector('#app')) {
+                    setTimeout(() => {
+                        console.warn('[Vue Rescue] Starte Notfallmodus wegen Vue.js Promise-Fehler');
+                        activateRescueMode();
+                    }, 100);
+                }
+            }
+        });
+    }
+    
+    // Füge HTML-Fehlerprüfung hinzu
+    function checkHtmlStructure() {
+        try {
+            // Überprüfe, ob das app-Div existiert
+            const appDiv = document.getElementById('app');
+            if (!appDiv) {
+                console.error('[Vue Rescue] Kritischer Fehler: #app-Element nicht gefunden');
+                return false;
+            }
+            
+            // Überprüfe auf versteckte Vue-Fehler
+            if (appDiv.innerHTML.includes('Komponente wird geladen')) {
+                console.warn('[Vue Rescue] App zeigt Ladeindikator, könnte feststecken');
+            }
+            
+            // Prüfe auf Vue-Instanzierung-Problem
+            if (typeof Vue === 'undefined') {
+                console.error('[Vue Rescue] Vue ist nicht definiert');
+                return false;
+            }
+            
+            // Prüfe auf kritischen Fehler im Frontend
+            const errorContainer = document.querySelector('.error-container');
+            if (errorContainer) {
+                console.error('[Vue Rescue] Frontend-Fehler gefunden:', errorContainer.textContent);
+                return false;
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('[Vue Rescue] Fehler bei HTML-Struktur-Prüfung:', error);
+            return false;
+        }
+    }
+    
+    // Notfall-Frontend-Fix - Versuche die gesamte Anwendung zu reparieren
+    function emergencyFrontendFix() {
+        console.warn('[Vue Rescue] Notfall-Frontend-Fix wird gestartet');
+        
+        // Versuche, einen Login-Screen anzuzeigen, wenn der Benutzer nicht angemeldet ist
+        const appDiv = document.getElementById('app');
+        if (appDiv) {
+            // Prüfen, ob ein Token existiert
+            const hasToken = localStorage.getItem('token');
+            
+            if (!hasToken) {
+                console.warn('[Vue Rescue] Kein Token gefunden, zeige Notfall-Login-Screen');
+                appDiv.innerHTML = `
+                <div style="max-width: 400px; margin: 50px auto; padding: 20px; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px;">
+                    <h2 style="text-align: center; margin-bottom: 20px;">Anmeldung (Notfall-Modus)</h2>
+                    <p style="color: #721c24; background: #f8d7da; padding: 10px; border-radius: 4px; margin-bottom: 20px;">
+                        Es gibt technische Probleme mit der Benutzeroberfläche. Sie können sich trotzdem anmelden.
+                    </p>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">E-Mail:</label>
+                        <input type="email" id="rescue-email" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Passwort:</label>
+                        <input type="password" id="rescue-password" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+                    </div>
+                    <button id="rescue-login-button" style="width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">
+                        Anmelden
+                    </button>
+                    <div id="rescue-login-error" style="color: #721c24; margin-top: 10px; display: none;"></div>
+                </div>
+                `;
+                
+                // Login-Logik hinzufügen
+                setTimeout(() => {
+                    const loginButton = document.getElementById('rescue-login-button');
+                    if (loginButton) {
+                        loginButton.addEventListener('click', async () => {
+                            try {
+                                const email = document.getElementById('rescue-email').value;
+                                const password = document.getElementById('rescue-password').value;
+                                const errorDiv = document.getElementById('rescue-login-error');
+                                
+                                if (!email || !password) {
+                                    errorDiv.textContent = 'Bitte E-Mail und Passwort eingeben.';
+                                    errorDiv.style.display = 'block';
+                                    return;
+                                }
+                                
+                                // Login-Button Zustand ändern
+                                loginButton.textContent = 'Anmeldung...';
+                                loginButton.disabled = true;
+                                
+                                // Login-Anfrage senden
+                                const response = await fetch('/api/auth/login', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({ email, password })
+                                });
+                                
+                                const data = await response.json();
+                                
+                                if (!response.ok) {
+                                    throw new Error(data.detail || 'Anmeldefehler');
+                                }
+                                
+                                // Token speichern
+                                localStorage.setItem('token', data.token);
+                                
+                                // Seite neu laden, um mit Token zu starten
+                                window.location.reload();
+                            } catch (error) {
+                                const errorDiv = document.getElementById('rescue-login-error');
+                                errorDiv.textContent = error.message || 'Anmeldefehler. Bitte versuchen Sie es erneut.';
+                                errorDiv.style.display = 'block';
+                                
+                                // Login-Button zurücksetzen
+                                loginButton.textContent = 'Anmelden';
+                                loginButton.disabled = false;
+                            }
+                        });
+                    }
+                }, 100);
+            } else {
+                // Benutzer ist angemeldet, zeige eine einfache Chat-Oberfläche
+                console.warn('[Vue Rescue] Token gefunden, zeige Notfall-Chat-UI');
+                appDiv.innerHTML = `
+                <div style="display: flex; height: 100vh; background: #f5f5f5;">
+                    <!-- Sidebar -->
+                    <div style="width: 280px; background: white; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column;">
+                        <div style="padding: 15px; border-bottom: 1px solid #e2e8f0;">
+                            <button id="rescue-new-chat" style="width: 100%; padding: 8px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                <i class="fas fa-plus"></i> Neue Unterhaltung
+                            </button>
+                        </div>
+                        
+                        <div id="rescue-sessions-list" style="flex: 1; overflow-y: auto; padding: 10px;"></div>
+                        
+                        <div style="padding: 15px; border-top: 1px solid #e2e8f0;">
+                            <button id="rescue-admin-button" style="width: 100%; padding: 8px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 8px;">
+                                <i class="fas fa-cog"></i> Administration
+                            </button>
+                            <button id="rescue-logout" style="width: 100%; padding: 8px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                <i class="fas fa-sign-out-alt"></i> Abmelden
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Main Content -->
+                    <div style="flex: 1; display: flex; flex-direction: column;">
+                        <div id="rescue-messages" style="flex: 1; overflow-y: auto; padding: 20px;"></div>
+                        
+                        <div style="border-top: 1px solid #e2e8f0; padding: 15px; background: white;">
+                            <div style="display: flex;">
+                                <textarea id="rescue-question" style="flex: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; resize: none; min-height: 80px;" placeholder="Nachricht eingeben..."></textarea>
+                                <button id="rescue-send" style="margin-left: 10px; padding: 0 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+                
+                // Chat-Funktionalität initialisieren
+                setTimeout(() => {
+                    initEmergencyChatFunctionality();
+                }, 100);
+            }
+        }
+    }
+    
+    // Notfall-Chat-Funktionalität
+    function initEmergencyChatFunctionality() {
+        // Variablen für die Chat-Funktionalität
+        let sessions = [];
+        let currentSessionId = null;
+        let messages = [];
+        
+        // DOM-Elemente
+        const sessionsListElement = document.getElementById('rescue-sessions-list');
+        const messagesElement = document.getElementById('rescue-messages');
+        const questionElement = document.getElementById('rescue-question');
+        const sendButton = document.getElementById('rescue-send');
+        const newChatButton = document.getElementById('rescue-new-chat');
+        const adminButton = document.getElementById('rescue-admin-button');
+        const logoutButton = document.getElementById('rescue-logout');
+        
+        // Axios mit Token konfigurieren
+        const token = localStorage.getItem('token');
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        
+        // Sessions laden
+        const loadSessions = async () => {
+            try {
+                const response = await axios.get('/api/sessions');
+                sessions = response.data.sessions;
+                renderSessions();
+            } catch (error) {
+                console.error('Fehler beim Laden der Sessions:', error);
+            }
+        };
+        
+        // Session laden
+        const loadSession = async (sessionId) => {
+            try {
+                const response = await axios.get(`/api/session/${sessionId}`);
+                currentSessionId = sessionId;
+                messages = response.data.messages;
+                renderMessages();
+                
+                // Im localStorage speichern
+                localStorage.setItem('lastActiveSession', sessionId);
+            } catch (error) {
+                console.error('Fehler beim Laden der Session:', error);
+            }
+        };
+        
+        // Neue Session starten
+        const startNewSession = async () => {
+            try {
+                const response = await axios.post('/api/session', {
+                    title: "Neue Unterhaltung"
+                });
+                
+                await loadSessions();
+                await loadSession(response.data.session_id);
+            } catch (error) {
+                console.error('Fehler beim Starten einer neuen Session:', error);
+            }
+        };
+        
+        // Nachrichten anzeigen
+        const renderMessages = () => {
+            if (!messagesElement) return;
+            
+            messagesElement.innerHTML = '';
+            
+            // MOTD anzeigen, wenn keine Nachrichten vorhanden sind
+            if (messages.length === 0) {
+                const motdDismissed = localStorage.getItem('motdDismissed') === 'true';
+                
+                if (!motdDismissed) {
+                    axios.get('/api/motd').then(response => {
+                        const motd = response.data;
+                        
+                        if (motd && motd.active && motd.content) {
+                            const motdElement = document.createElement('div');
+                            motdElement.style.padding = '15px';
+                            motdElement.style.border = '1px solid ' + (motd.style?.borderColor || '#ffeeba');
+                            motdElement.style.backgroundColor = motd.style?.backgroundColor || '#fff3cd';
+                            motdElement.style.color = motd.style?.textColor || '#856404';
+                            motdElement.style.borderRadius = '4px';
+                            motdElement.style.marginBottom = '20px';
+                            motdElement.style.position = 'relative';
+                            
+                            const closeButton = document.createElement('button');
+                            closeButton.innerHTML = '&times;';
+                            closeButton.style.position = 'absolute';
+                            closeButton.style.top = '5px';
+                            closeButton.style.right = '10px';
+                            closeButton.style.background = 'none';
+                            closeButton.style.border = 'none';
+                            closeButton.style.color = 'inherit';
+                            closeButton.style.fontSize = '20px';
+                            closeButton.style.cursor = 'pointer';
+                            
+                            closeButton.addEventListener('click', () => {
+                                motdElement.remove();
+                                localStorage.setItem('motdDismissed', 'true');
+                            });
+                            
+                            // Titel
+                            if (motd.title) {
+                                const titleElement = document.createElement('h3');
+                                titleElement.style.marginTop = '0';
+                                titleElement.style.marginBottom = '10px';
+                                titleElement.textContent = motd.title;
+                                motdElement.appendChild(titleElement);
+                            }
+                            
+                            // Inhalt mit einfachem Markdown
+                            const contentElement = document.createElement('div');
+                            contentElement.innerHTML = motd.content
+                                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                .replace(/\n\n/g, '<br/><br/>')
+                                .replace(/\n-\s/g, '<br/>• ');
+                            
+                            motdElement.appendChild(closeButton);
+                            motdElement.appendChild(contentElement);
+                            messagesElement.appendChild(motdElement);
+                        }
+                    }).catch(err => {
+                        console.error('Fehler beim Laden der MOTD:', err);
+                    });
+                }
+            }
+            
+            messages.forEach(message => {
+                const messageElement = document.createElement('div');
+                messageElement.style.marginBottom = '20px';
+                messageElement.style.padding = '15px';
+                messageElement.style.borderRadius = '4px';
+                
+                if (message.is_user) {
+                    messageElement.style.backgroundColor = '#e1f5fe';
+                    messageElement.style.marginLeft = '20%';
+                    messageElement.style.position = 'relative';
+                    
+                    // Benutzer-Icon
+                    const userIcon = document.createElement('div');
+                    userIcon.innerHTML = '<i class="fas fa-user"></i>';
+                    userIcon.style.position = 'absolute';
+                    userIcon.style.top = '15px';
+                    userIcon.style.right = '-25px';
+                    userIcon.style.width = '20px';
+                    userIcon.style.height = '20px';
+                    userIcon.style.backgroundColor = '#4fc3f7';
+                    userIcon.style.color = 'white';
+                    userIcon.style.borderRadius = '50%';
+                    userIcon.style.display = 'flex';
+                    userIcon.style.alignItems = 'center';
+                    userIcon.style.justifyContent = 'center';
+                    userIcon.style.fontSize = '10px';
+                    
+                    messageElement.appendChild(userIcon);
+                } else {
+                    messageElement.style.backgroundColor = '#f1f3f4';
+                    messageElement.style.marginRight = '20%';
+                    messageElement.style.position = 'relative';
+                    
+                    // Assistant-Icon
+                    const assistantIcon = document.createElement('div');
+                    assistantIcon.innerHTML = '<i class="fas fa-robot"></i>';
+                    assistantIcon.style.position = 'absolute';
+                    assistantIcon.style.top = '15px';
+                    assistantIcon.style.left = '-25px';
+                    assistantIcon.style.width = '20px';
+                    assistantIcon.style.height = '20px';
+                    assistantIcon.style.backgroundColor = '#78909c';
+                    assistantIcon.style.color = 'white';
+                    assistantIcon.style.borderRadius = '50%';
+                    assistantIcon.style.display = 'flex';
+                    assistantIcon.style.alignItems = 'center';
+                    assistantIcon.style.justifyContent = 'center';
+                    assistantIcon.style.fontSize = '10px';
+                    
+                    messageElement.appendChild(assistantIcon);
+                }
+                
+                // Versuch, markdown zu nutzen, falls verfügbar
+                try {
+                    if (window.marked && typeof window.marked.parse === 'function') {
+                        messageElement.innerHTML += window.marked.parse(message.content);
+                    } else {
+                        messageElement.innerHTML += message.content.replace(/\n/g, '<br>');
+                    }
+                } catch (e) {
+                    messageElement.innerHTML += message.content.replace(/\n/g, '<br>');
+                }
+                
+                messagesElement.appendChild(messageElement);
+            });
+            
+            // Nach unten scrollen
+            messagesElement.scrollTop = messagesElement.scrollHeight;
+        };
+        
+        // Sessions anzeigen
+        const renderSessions = () => {
+            if (!sessionsListElement) return;
+            
+            sessionsListElement.innerHTML = '';
+            
+            sessions.forEach(session => {
+                const sessionElement = document.createElement('div');
+                sessionElement.style.padding = '10px';
+                sessionElement.style.borderRadius = '4px';
+                sessionElement.style.cursor = 'pointer';
+                sessionElement.style.marginBottom = '5px';
+                sessionElement.style.display = 'flex';
+                sessionElement.style.justifyContent = 'space-between';
+                sessionElement.style.alignItems = 'center';
+                
+                if (session.id === currentSessionId) {
+                    sessionElement.style.backgroundColor = '#e9ecef';
+                    sessionElement.style.fontWeight = 'bold';
+                }
+                
+                const sessionTitle = document.createElement('div');
+                sessionTitle.textContent = session.title || 'Neue Unterhaltung';
+                sessionTitle.style.flex = '1';
+                sessionTitle.style.overflow = 'hidden';
+                sessionTitle.style.textOverflow = 'ellipsis';
+                sessionTitle.style.whiteSpace = 'nowrap';
+                
+                const deleteButton = document.createElement('button');
+                deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
+                deleteButton.style.background = 'none';
+                deleteButton.style.border = 'none';
+                deleteButton.style.color = '#dc3545';
+                deleteButton.style.cursor = 'pointer';
+                deleteButton.style.display = 'none'; // Erst bei Hover anzeigen
+                
+                sessionElement.appendChild(sessionTitle);
+                sessionElement.appendChild(deleteButton);
+                
+                // Hover-Effekt
+                sessionElement.addEventListener('mouseover', () => {
+                    if (session.id !== currentSessionId) {
+                        sessionElement.style.backgroundColor = '#f8f9fa';
+                    }
+                    deleteButton.style.display = 'block';
+                });
+                
+                sessionElement.addEventListener('mouseout', () => {
+                    if (session.id !== currentSessionId) {
+                        sessionElement.style.backgroundColor = '';
+                    }
+                    deleteButton.style.display = 'none';
+                });
+                
+                // Session laden
+                sessionElement.addEventListener('click', (e) => {
+                    if (e.target !== deleteButton && e.target.parentNode !== deleteButton) {
+                        loadSession(session.id);
+                    }
+                });
+                
+                // Session löschen
+                deleteButton.addEventListener('click', async () => {
+                    if (confirm('Möchten Sie diese Unterhaltung wirklich löschen?')) {
+                        try {
+                            await axios.delete(`/api/session/${session.id}`);
+                            
+                            if (currentSessionId === session.id) {
+                                currentSessionId = null;
+                                messages = [];
+                                renderMessages();
+                                localStorage.removeItem('lastActiveSession');
+                            }
+                            
+                            await loadSessions();
+                        } catch (error) {
+                            console.error('Fehler beim Löschen der Session:', error);
+                        }
+                    }
+                });
+                
+                sessionsListElement.appendChild(sessionElement);
+            });
+        };
+        
+        // Nachricht senden
+        const sendMessage = async () => {
+            const question = questionElement.value.trim();
+            
+            if (!question) return;
+            
+            // Prüfen, ob eine Session ausgewählt ist
+            if (!currentSessionId) {
+                await startNewSession();
+            }
+            
+            try {
+                // Nachricht anzeigen (optimistisch)
+                messages.push({
+                    content: question,
+                    is_user: true,
+                    id: Date.now() // Temporäre ID
+                });
+                
+                renderMessages();
+                questionElement.value = '';
+                
+                // Lade-Nachricht anzeigen
+                const loadingMessage = {
+                    content: 'Antwort wird generiert...',
+                    is_user: false,
+                    id: null
+                };
+                
+                messages.push(loadingMessage);
+                renderMessages();
+                
+                // Antwort vom Server holen
+                const response = await axios.post(`/api/chat/${currentSessionId}`, {
+                    question
+                });
+                
+                // Lade-Nachricht entfernen
+                messages.pop();
+                
+                // Antwort anzeigen
+                messages.push({
+                    content: response.data.answer,
+                    is_user: false,
+                    id: response.data.message_id
+                });
+                
+                renderMessages();
+                
+                // Sessions aktualisieren (für neue Titel)
+                loadSessions();
+            } catch (error) {
+                console.error('Fehler beim Senden der Nachricht:', error);
+                
+                // Lade-Nachricht durch Fehlermeldung ersetzen
+                messages.pop();
+                messages.push({
+                    content: 'Fehler beim Generieren der Antwort. Bitte versuchen Sie es erneut.',
+                    is_user: false,
+                    id: null
+                });
+                
+                renderMessages();
+            }
+        };
+        
+        // Event-Listener hinzufügen
+        if (sendButton) {
+            sendButton.addEventListener('click', sendMessage);
+        }
+        
+        if (questionElement) {
+            questionElement.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        }
+        
+        if (newChatButton) {
+            newChatButton.addEventListener('click', startNewSession);
+        }
+        
+        if (adminButton) {
+            adminButton.addEventListener('click', () => {
+                // Zum Admin-Bereich wechseln
+                activateRescueMode();
+            });
+        }
+        
+        if (logoutButton) {
+            logoutButton.addEventListener('click', () => {
+                // Abmelden
+                localStorage.removeItem('token');
+                window.location.reload();
+            });
+        }
+        
+        // Letzte Session laden oder neue Session starten
+        const initSession = async () => {
+            const lastSessionId = localStorage.getItem('lastActiveSession');
+            
+            await loadSessions();
+            
+            if (lastSessionId && sessions.some(s => s.id === parseInt(lastSessionId))) {
+                loadSession(parseInt(lastSessionId));
+            } else if (sessions.length > 0) {
+                loadSession(sessions[0].id);
+            }
+        };
+        
+        // Initialisieren
+        initSession();
+    }
+    
     // Starte Rettungssystem wenn DOM geladen ist
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializeRescueSystem);
+        document.addEventListener('DOMContentLoaded', () => {
+            addGlobalErrorHandling();
+            initializeRescueSystem();
+            
+            // Nach kurzer Verzögerung prüfen wir, ob die Haupt-App gerendert wurde
+            setTimeout(() => {
+                if (!checkHtmlStructure()) {
+                    console.warn('[Vue Rescue] Grundstruktur fehlerhaft, starte Notfall-Frontend-Fix');
+                    emergencyFrontendFix();
+                }
+            }, 3000);
+        });
     } else {
+        addGlobalErrorHandling();
         initializeRescueSystem();
+        
+        // Nach kurzer Verzögerung prüfen wir, ob die Haupt-App gerendert wurde
+        setTimeout(() => {
+            if (!checkHtmlStructure()) {
+                console.warn('[Vue Rescue] Grundstruktur fehlerhaft, starte Notfall-Frontend-Fix');
+                emergencyFrontendFix();
+            }
+        }, 3000);
     }
 })();
