@@ -165,6 +165,15 @@
             console.warn('Feedback-Tab-Container nicht gefunden');
             return;
         }
+        
+        // Prüfen, ob bereits initialisiert
+        if (container.getAttribute('data-vue-initialized') === 'true') {
+            console.log('Feedback-Tab bereits initialisiert, überspringe...');
+            return;
+        }
+        
+        // Als initialisiert markieren
+        container.setAttribute('data-vue-initialized', 'true');
 
         // Container leeren
         container.innerHTML = '';
@@ -190,6 +199,18 @@
             console.warn('Vue.js Feedback-Ansicht konnte nicht geladen werden, wechsle zu Fallback');
             loadFallbackFeedback(container);
         }, 5000);
+
+        // Prüfen, ob das Skript bereits geladen wurde
+        const existingScript = document.querySelector('script[src="/api/static/vue/standalone/admin-feedback.js"]');
+        if (existingScript) {
+            console.log('Feedback-Skript bereits geladen, versuche direkte Initialisierung');
+            clearTimeout(vueTimeout);
+            // Warten auf die globale Initialisierungsfunktion
+            if (window.initAdminFeedback) {
+                window.initAdminFeedback();
+            }
+            return;
+        }
 
         // Vue-Komponente laden (ohne module type für Browser-Kompatibilität)
         const vueScript = document.createElement('script');
@@ -266,6 +287,15 @@
             console.warn('MOTD-Tab-Container nicht gefunden');
             return;
         }
+        
+        // Prüfen, ob bereits initialisiert
+        if (container.getAttribute('data-vue-initialized') === 'true') {
+            console.log('MOTD-Tab bereits initialisiert, überspringe...');
+            return;
+        }
+        
+        // Als initialisiert markieren
+        container.setAttribute('data-vue-initialized', 'true');
 
         // Container leeren
         container.innerHTML = '';
@@ -291,6 +321,18 @@
             console.warn('Vue.js MOTD-Verwaltung konnte nicht geladen werden, wechsle zu Fallback');
             loadFallbackMotd(container);
         }, 5000);
+        
+        // Prüfen, ob das Skript bereits geladen wurde
+        const existingScript = document.querySelector('script[src="/api/static/vue/standalone/admin-motd.js"]');
+        if (existingScript) {
+            console.log('MOTD-Skript bereits geladen, versuche direkte Initialisierung');
+            clearTimeout(vueTimeout);
+            // Warten auf die globale Initialisierungsfunktion
+            if (window.initAdminMotd) {
+                window.initAdminMotd();
+            }
+            return;
+        }
 
         // Vue-Komponente laden (ohne module type für Browser-Kompatibilität)
         const vueScript = document.createElement('script');
@@ -365,6 +407,15 @@
             console.warn('Users-Tab-Container nicht gefunden');
             return;
         }
+        
+        // Prüfen, ob bereits initialisiert
+        if (container.getAttribute('data-vue-initialized') === 'true') {
+            console.log('Users-Tab bereits initialisiert, überspringe...');
+            return;
+        }
+        
+        // Als initialisiert markieren
+        container.setAttribute('data-vue-initialized', 'true');
 
         // Container leeren
         container.innerHTML = '';
@@ -390,6 +441,18 @@
             console.warn('Vue.js Benutzerverwaltung konnte nicht geladen werden, wechsle zu Fallback');
             loadFallbackUsers(container);
         }, 5000);
+        
+        // Prüfen, ob das Skript bereits geladen wurde
+        const existingScript = document.querySelector('script[src="/api/static/vue/standalone/admin-users.js"]');
+        if (existingScript) {
+            console.log('Users-Skript bereits geladen, versuche direkte Initialisierung');
+            clearTimeout(vueTimeout);
+            // Warten auf die globale Initialisierungsfunktion
+            if (window.initAdminUsers) {
+                window.initAdminUsers();
+            }
+            return;
+        }
 
         // Vue-Komponente laden (ohne module type für Browser-Kompatibilität)
         const vueScript = document.createElement('script');
@@ -464,6 +527,15 @@
             console.warn('System-Tab-Container nicht gefunden');
             return;
         }
+        
+        // Prüfen, ob bereits initialisiert
+        if (container.getAttribute('data-vue-initialized') === 'true') {
+            console.log('System-Tab bereits initialisiert, überspringe...');
+            return;
+        }
+        
+        // Als initialisiert markieren
+        container.setAttribute('data-vue-initialized', 'true');
 
         // Container leeren
         container.innerHTML = '';
@@ -489,6 +561,18 @@
             console.warn('Vue.js System-Monitoring konnte nicht geladen werden, wechsle zu Fallback');
             loadFallbackSystem(container);
         }, 5000);
+        
+        // Prüfen, ob das Skript bereits geladen wurde
+        const existingScript = document.querySelector('script[src="/api/static/vue/standalone/admin-system.js"]');
+        if (existingScript) {
+            console.log('System-Skript bereits geladen, versuche direkte Initialisierung');
+            clearTimeout(vueTimeout);
+            // Warten auf die globale Initialisierungsfunktion
+            if (window.initAdminSystem) {
+                window.initAdminSystem();
+            }
+            return;
+        }
 
         // Vue-Komponente laden (ohne module type für Browser-Kompatibilität)
         const vueScript = document.createElement('script');
