@@ -56,7 +56,7 @@ Die Migration erfolgt komponentenweise. Hier ist der aktuelle Status:
 |------------|--------|--------------|
 | Dokumentenkonverter | ✅ 95% | Vue.js-Implementation funktioniert stabil, Fallback-Mechanismus optimiert, Endlosschleifen beseitigt |
 | Chat-Interface | ✅ 75% | Vollständige Implementation mit reaktiven Komponenten, sessionStore.js und chatStore.js |
-| Admin-Bereich | ✅ 60% | Feedback-Verwaltung und MOTD-Verwaltung vollständig implementiert, Users in Entwicklung |
+| Admin-Bereich | ✅ 100% | Feedback-Verwaltung, MOTD-Verwaltung, Benutzerverwaltung und System-Monitoring vollständig implementiert |
 | Settings | ⏳ 10% | Vue.js-Implementation begonnen, nicht einsatzbereit |
 
 ## Architekturprinzipien
@@ -114,9 +114,9 @@ Der Dokumentenkonverter war eine der Hauptkomponenten, die migriert wurden. Hier
    - **Problem**: Der Versuch, ES-Module in einem nicht-Modul-Kontext zu laden, führte zu Fehlern.
    - **Lösung**: Änderung des Skripttyps von "module" zu "text/javascript" und Vereinfachung der Implementierung.
 
-3. **DOM-Verfügbarkeit**:
-   - **Problem**: DOM-Elemente waren zum Zeitpunkt der Initialisierung oft nicht verfügbar.
-   - **Lösung**: Implementierung von Retry-Mechanismen und MutationObserver für dynamische DOM-Änderungen.
+3. **DOM-Verfügbarkeit und Manipulation**:
+   - **Problem**: DOM-Elemente waren zum Zeitpunkt der Initialisierung oft nicht verfügbar, und die DOM-Manipulation durch innerHTML verursachte Probleme bei Mount-Points.
+   - **Lösung**: Implementierung von Retry-Mechanismen und MutationObserver für dynamische DOM-Änderungen. Verbesserte DOM-Manipulation durch explizites Erstellen und Anhängen von Elementen statt innerHTML-Ersetzung.
 
 4. **Endlosschleifen**:
    - **Problem**: Mehrfache setTimeout-Aufrufe führten zu exponentiellen Initialisierungsversuchen.
@@ -221,6 +221,12 @@ Die Vue.js-Implementierung verwendet Pinia für das State Management:
 +----------------+       +----------------+       +----------------+
 | docConverterStore |     | motdStore     |       | settingsStore  |
 +----------------+       +----------------+       +----------------+
+                                 ^                        ^
+                                 |                        |
+                                 v                        v
+                         +----------------+       +----------------+
+                         | userStore      |<----->| systemStore    |
+                         +----------------+       +----------------+
 ```
 
 ### Umgesetzte Komponenten
@@ -268,6 +274,53 @@ Die Feedback-Verwaltung bietet umfassende Analysemöglichkeiten für Benutzerfee
   - Dateiexport-Funktionalität für Analysen
   - Filterfunktionen und Paginierung
 
+#### Benutzerverwaltung
+
+Die Benutzerverwaltung wurde vollständig in Vue.js implementiert:
+
+- **UserList.vue**: Zeigt eine interaktive Liste aller Benutzer
+  - Sortierung nach verschiedenen Kriterien (ID, E-Mail, Rolle, Erstellungsdatum, letzter Login)
+  - Filterung nach Rollen (Alle, Administrator, Standardbenutzer)
+  - Durchsuchbarkeit nach E-Mail-Adressen
+  - Aktionen zur Rollenverwaltung und zum Löschen von Benutzern
+
+- **UserForm.vue**: Formular zum Erstellen und Bearbeiten von Benutzern
+  - Validierung von E-Mail und Passwort
+  - Rollenauswahl mit Informationen zu Berechtigungen
+  - Benutzerfreundliche Hinweise und Fehlermeldungen
+
+- **ConfirmDialog.vue**: Wiederverwendbare Dialogkomponente für kritische Aktionen
+  - Verschiedene Dialogtypen (Gefahr, Warnung, Info)
+  - Anpassbare Schaltflächen und Nachrichten
+  - Vollständige Unterstützung für Dark Mode und Kontrast-Modus
+
+- **userStore.js**: Zentraler Datenspeicher für Benutzerverwaltungsfunktionen
+  - Laden, Erstellen, Aktualisieren und Löschen von Benutzern
+  - Filter- und Sortierlogik für die Benutzerliste
+  - Benutzerrollen-Management
+
+#### System-Monitoring
+
+Das System-Monitoring bietet einen umfassenden Überblick über den Systemzustand:
+
+- **SystemStatus.vue**: Zeigt detaillierte Systemdaten und Statistiken
+  - Übersichtskarten mit Dokumenten- und Chunk-Zählern
+  - Tabelle mit Dokumentdetails (Größe, Änderungsdatum, Chunks, Tokens)
+  - Sortier- und Filterfunktionen
+  - Aktionen zum Neuladen und Cache-Leeren
+
+- **SystemLogs.vue**: Bietet eine übersichtliche Darstellung aller Systemprotokolle
+  - Filterung nach Protokolltyp und Zeitraum
+  - Interaktive Protokollanzeige mit erweiterbaren Details
+  - Export-Funktionalität für Protokolldaten
+  - Anpassbare Aktualisierungsintervalle
+
+- **systemStore.js**: Verwaltet den Systemzustand und API-Kommunikation
+  - Laden von Systemstatistiken und Konverterstatus
+  - Neuladen von Dokumenten
+  - Cache-Management
+  - Automatische Aktualisierung mit konfigurierbaren Intervallen
+
 ## Lessons Learned
 
 Aus dem bisherigen Migrationsprozess konnten wichtige Erkenntnisse gewonnen werden:
@@ -275,8 +328,18 @@ Aus dem bisherigen Migrationsprozess konnten wichtige Erkenntnisse gewonnen werd
 1. **Asset-Management frühzeitig planen**: Die Verwaltung von Assets und Pfaden sollte von Anfang an durchdacht sein.
 2. **Robuste Fallback-Mechanismen**: Jede Komponente sollte einen Fallback-Mechanismus haben, falls die Hauptimplementierung fehlschlägt.
 3. **Initialisierungsvariablen**: Verwenden Sie klare globale Flags, um Mehrfachinitialisierungen zu vermeiden.
-4. **DOM-Manipulation**: Trennen Sie verschiedene Implementierungen durch eigenständige Container.
+4. **DOM-Manipulation**: 
+   - Trennen Sie verschiedene Implementierungen durch eigenständige Container
+   - Verwenden Sie explizites Element-Erstellen und appendChild statt innerHTML für Mount-Points
+   - Leeren Sie Container vor dem Hinzufügen neuer Elemente
+   - Stellen Sie sicher, dass Lade-Indikatoren und Mount-Points immer korrekt entfernt werden
 5. **ES-Module mit Bedacht einsetzen**: Bei Migration ist es oft besser, auf ES-Module zu verzichten, bis die gesamte Architektur umgestellt ist.
+6. **Script-Loading optimieren**: Verwenden Sie type="text/javascript" anstelle von type="module" für direktes Browser-Loading.
+7. **Tab-Erkennung verbessern**: Implementieren Sie mehrere Methoden zur Erkennung aktiver Tabs (data-attribute, IDs, Vue.js-Status).
+8. **Wiederverwendbare Komponenten erstellen**: Gemeinsame UI-Elemente wie ConfirmDialog sollten früh entwickelt werden, um sie in allen Bereichen nutzen zu können.
+9. **Dark Mode von Anfang an**: Dark Mode- und Kontrast-Unterstützung sollte von Beginn an implementiert werden, um nachträgliche Anpassungen zu vermeiden.
+10. **Tab-basierte Benutzeroberflächen**: Verwenden Sie Tabs, um komplexe Funktionalitäten in überschaubare Bereiche zu unterteilen, wie beim System-Monitoring.
+11. **Konsistente Filter- und Sortierpatterns**: Entwickeln Sie einheitliche Muster für Filterung und Sortierung, die in verschiedenen Komponenten wiederverwendet werden können.
 
 ## Nächste Schritte
 
@@ -285,15 +348,20 @@ Die Migration wird mit folgenden Schritten fortgesetzt:
 1. **Admin-Bereich Migration**:
    - ✅ **Feedback-Verwaltung**: Implementierung der Feedback-Analyse mit umfangreichen Filterfunktionen (abgeschlossen)
    - ✅ **MOTD-Verwaltung**: Implementierung des MOTD-Editors und der Vorschau-Komponente (abgeschlossen)
-   - **Nutzerverwaltung**: Umstellung der Benutzerverwaltung auf Vue.js (nächster Schritt)
-   - **System-Monitoring**: Erstellung einer Vue.js-Komponente für Systemüberwachung (geplant)
+   - ✅ **Nutzerverwaltung**: Implementierung der Benutzerverwaltung mit UserList, UserForm und ConfirmDialog (abgeschlossen)
+   - ✅ **System-Monitoring**: Implementierung von SystemStatus und SystemLogs-Komponenten (abgeschlossen)
 
-2. **Gemeinsame Infrastruktur**:
+2. **Einstellungsbereich implementieren**:
+   - Benutzereinstellungen migrieren
+   - Anwendungseinstellungen migrieren
+   - Benachrichtigungseinstellungen implementieren
+
+3. **Gemeinsame Infrastruktur**:
    - Vereinheitlichung des Asset-Managements
    - Optimierung des Build-Prozesses
    - Einführung einer zentralen Fehlerbehandlung
 
-3. **Mobile Optimierung**:
+4. **Mobile Optimierung**:
    - Responsive Design für alle Komponenten
    - Touch-freundliche Bedienelemente
    - Progressive Web App (PWA)-Funktionalität
@@ -344,4 +412,4 @@ Für Entwickler, die an der Migration arbeiten, gelten folgende Richtlinien:
 
 ---
 
-Aktualisiert: 04.05.2025
+Aktualisiert: 05.05.2025

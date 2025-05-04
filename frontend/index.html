@@ -19,6 +19,10 @@
     <link href="/static/css/source-references.css" rel="stylesheet">
     <link href="/static/css/message-actions.css" rel="stylesheet">
     <!-- Zusätzliche CSS für Quellenreferenzen (wird dynamisch eingefügt) -->
+    
+    <!-- Feature-Integration Skripte -->
+    <script src="/static/js/chat-integration.js"></script>
+    <script src="/static/js/admin-integration.js"></script>
 </head>
 <body class="min-h-screen bg-gray-50">
     <div id="app" class="h-screen flex flex-col">
@@ -389,7 +393,7 @@
                         
                         <div class="admin-content flex-1">
                             <!-- Benutzer-Tab -->
-                            <div v-if="adminTab === 'users'" class="admin-panel-content">
+                            <div v-if="adminTab === 'users'" class="admin-panel-content" data-tab="users">
                                 <div class="admin-card mb-8">
                                     <div class="admin-card-title">Neuen Benutzer erstellen</div>
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -456,7 +460,7 @@
                             </div>
                             
                             <!-- System-Tab -->
-                            <div v-if="adminTab === 'system'" class="admin-panel-content">
+                            <div v-if="adminTab === 'system'" class="admin-panel-content" data-tab="system">
                                 <div class="flex justify-end mb-6">
                                     <button @click="loadSystemStats" class="nscale-btn-secondary">
                                         <i class="fas fa-sync-alt mr-2"></i>
@@ -530,15 +534,22 @@
                                     <p>Debug-Info für DocConverter-Tab</p>
                                 </div>
                             
-                                <!-- Vue.js app mount point -->
-                                <div id="doc-converter-app">
-                                    <!-- Container für die klassische Implementierung -->
-                                    <div id="doc-converter-container">
-                                        <div class="p-4">
-                                            <div class="loader-container">
-                                                <div class="loader"></div>
-                                                <p class="mt-4 text-gray-600">Dokumentenkonverter wird geladen...</p>
-                                            </div>
+                                <!-- Beide Implementierungen haben ihren eigenen Mount-Point -->
+                                <div id="doc-converter-app" class="vue-implementation">
+                                    <div class="p-4">
+                                        <div class="loader-container">
+                                            <div class="loader"></div>
+                                            <p class="mt-4 text-gray-600">Vue.js-Dokumentenkonverter wird geladen...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Container für die klassische Implementierung -->
+                                <div id="doc-converter-container" class="classic-implementation" style="display:none;">
+                                    <div class="p-4">
+                                        <div class="loader-container">
+                                            <div class="loader"></div>
+                                            <p class="mt-4 text-gray-600">Klassischer Dokumentenkonverter wird geladen...</p>
                                         </div>
                                     </div>
                                 </div>
@@ -558,28 +569,42 @@
                                             // Vue.js-Implementierung laden
                                             console.log('Versuche Vue.js-Implementierung zu laden...');
                                             
+                                            // UI-Zustand aktualisieren - Vue-Container anzeigen, klassischen Container ausblenden
+                                            document.getElementById('doc-converter-app').style.display = 'block';
+                                            document.getElementById('doc-converter-container').style.display = 'none';
+                                            
                                             // Timeout für Fallback setzen
                                             const vueTimeout = setTimeout(function() {
                                                 console.warn('Vue.js-Implementierung konnte nicht geladen werden, wechsle zu Fallback');
                                                 loadFallbackImplementation();
                                             }, 5000);
                                             
-                                            // Vue-Komponente laden
+                                            // Vue-Komponente laden (optimierter Ansatz mit einheitlicher Quelle)
                                             const vueScript = document.createElement('script');
-                                            vueScript.type = 'module';
-                                            vueScript.src = '/static/vue/standalone/doc-converter.js';
+                                            
+                                            // Primärer Pfad - direkt über das frontend/js/vue Verzeichnis
+                                            vueScript.src = '/static/js/vue/doc-converter.js';
+                                            // Wichtig: Ändern des Typs von "module" zu "text/javascript"
+                                            vueScript.type = 'text/javascript';
+                                            
+                                            console.log(`Lade vereinfachten Dokumentenkonverter von: ${vueScript.src}`);
                                             
                                             vueScript.onload = function() {
-                                                console.log('Vue.js-Dokumentenkonverter erfolgreich geladen');
+                                                console.log('Vereinfachter Dokumentenkonverter erfolgreich geladen');
                                                 clearTimeout(vueTimeout);
                                             };
                                             
                                             vueScript.onerror = function() {
                                                 console.error('Fehler beim Laden des Vue.js-Dokumentenkonverters');
-                                                clearTimeout(vueTimeout);
+                                                // Versuche den Fallback-Pfad
+                                                console.log('Versuche Fallback-Pfad...');
+                                                // Fallback zur klassischen Implementierung direkt
+                                                console.log('Verwende klassische Implementierung...');
                                                 loadFallbackImplementation();
+                                                return;
                                             };
                                             
+                                            // Füge das Script-Element hinzu
                                             document.body.appendChild(vueScript);
                                         } else {
                                             // Direkt die Fallback-Implementierung laden
@@ -591,8 +616,16 @@
                                     function loadFallbackImplementation() {
                                         console.log('Lade klassische Implementierung des Dokumentenkonverters...');
                                         
+                                        // UI-Zustand aktualisieren - Vue-Container ausblenden, klassischen Container anzeigen
+                                        document.getElementById('doc-converter-app').style.display = 'none';
+                                        document.getElementById('doc-converter-container').style.display = 'block';
+                                        
                                         const fallbackScript = document.createElement('script');
                                         fallbackScript.src = '/static/js/doc-converter-fallback.js';
+                                        
+                                        fallbackScript.onload = function() {
+                                            console.log('Klassische Implementierung erfolgreich geladen');
+                                        };
                                         
                                         fallbackScript.onerror = function() {
                                             console.error('Fehler beim Laden der klassischen Implementierung');
@@ -787,6 +820,32 @@
                                                         </div>
                                                     </div>
                                                     
+                                                    <!-- Admin-Komponenten Toggle -->
+                                                    <div class="admin-card mb-6">
+                                                        <div class="admin-card-title">Admin-Komponenten</div>
+                                                        
+                                                        <div class="mb-4">
+                                                            <p class="text-sm mb-4">Sie können die Admin-Komponenten (System-Monitoring, MOTD-Verwaltung, Benutzerverwaltung) zwischen Vue.js und klassischer Implementierung umschalten.</p>
+                                                            
+                                                            <div id="adminComponentsSelection" class="bg-gray-100 p-4 rounded-lg mb-6">
+                                                                <div class="font-medium mb-2">Aktuelle Implementierung:</div>
+                                                                <div id="currentAdminSetting" class="text-lg bg-white p-3 rounded border mb-4">
+                                                                    <!-- Wird dynamisch gefüllt -->
+                                                                    Wird geladen...
+                                                                </div>
+                                                                
+                                                                <div class="flex gap-4">
+                                                                    <button id="enableVueAdminButton" class="nscale-btn-primary">
+                                                                        <i class="fas fa-toggle-on mr-2"></i>Vue.js-Implementierung
+                                                                    </button>
+                                                                    <button id="enableClassicAdminButton" class="nscale-btn-secondary">
+                                                                        <i class="fas fa-toggle-off mr-2"></i>Klassische Implementierung
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
                                                     <!-- Entwicklermodus -->
                                                     <div class="admin-card">
                                                         <div class="admin-card-title">Entwicklermodus</div>
@@ -839,8 +898,23 @@
                                                 toggleDocConverter.addEventListener('click', function() {
                                                     const newState = localStorage.getItem('feature_vueDocConverter') === 'false';
                                                     localStorage.setItem('feature_vueDocConverter', newState.toString());
-                                                    alert('Die Einstellung wurde gespeichert. Die Seite wird neu geladen.');
-                                                    window.location.reload();
+                                                    console.log('DocConverter Feature-Toggle geändert auf:', newState);
+                                                    
+                                                    // Alle laufenden Script-Elemente entfernen
+                                                    const oldScripts = document.querySelectorAll('script[src*="doc-converter"]');
+                                                    oldScripts.forEach(script => script.remove());
+                                                    
+                                                    // DOM bereinigen
+                                                    const container = document.getElementById('doc-converter-container');
+                                                    if (container) {
+                                                        container.innerHTML = '<div class="loader-container"><div class="loader"></div><p class="mt-4 text-gray-600">Lade neue Implementierung...</p></div>';
+                                                    }
+                                                    
+                                                    // Seite neu laden nach kurzer Verzögerung, damit localStorage gespeichert wird
+                                                    setTimeout(function() {
+                                                        alert('Die Einstellung wurde gespeichert. Die Seite wird neu geladen.');
+                                                        window.location.reload();
+                                                    }, 200);
                                                 });
                                             }
                                             
@@ -959,6 +1033,9 @@
                                         // DocConverter-Status aktualisieren
                                         updateDocConverterStatus();
                                         
+                                        // Admin-Status aktualisieren
+                                        updateAdminStatus();
+                                        
                                         // DevMode-Status aktualisieren
                                         updateDevModeStatus();
                                         
@@ -1049,6 +1126,34 @@
                                                 enableClassicDocButton.classList.add('nscale-btn-primary');
                                                 enableClassicDocButton.classList.remove('nscale-btn-secondary');
                                             }
+                                        }
+                                    }
+                                    
+                                    /**
+                                     * Aktualisiert die Anzeige für die Admin-Komponenten
+                                     */
+                                    function updateAdminStatus() {
+                                        const statusElement = document.getElementById('currentAdminSetting');
+                                        if (!statusElement) {
+                                            console.warn('Admin-Status-Element nicht gefunden');
+                                            return;
+                                        }
+                                        
+                                        const useNewUI = localStorage.getItem('useNewUI') === 'true'; 
+                                        const useVueAdmin = localStorage.getItem('feature_vueAdmin') === 'true';
+                                        console.log('updateAdminStatus() - useNewUI:', useNewUI, 'useVueAdmin:', useVueAdmin);
+                                        console.log('Raw values - useNewUI:', localStorage.getItem('useNewUI'), 'feature_vueAdmin:', localStorage.getItem('feature_vueAdmin'));
+                                        
+                                        // Wenn global Vue.js deaktiviert ist, sind auch die Admin-Komponenten deaktiviert
+                                        if (!useNewUI) {
+                                            statusElement.innerHTML = '<span class="text-gray-700">✗ Klassische Implementierung (Global deaktiviert)</span>';
+                                            return;
+                                        }
+                                        
+                                        if (useVueAdmin) {
+                                            statusElement.innerHTML = '<span class="text-green-600">✓ Vue.js-Implementierung</span>';
+                                        } else {
+                                            statusElement.innerHTML = '<span class="text-gray-700">✗ Klassische Implementierung</span>';
                                         }
                                     }
                                     
@@ -1194,6 +1299,56 @@
                                             });
                                         }
                                         
+                                        // Admin-Komponenten Buttons
+                                        const enableVueAdminButton = document.getElementById('enableVueAdminButton');
+                                        const enableClassicAdminButton = document.getElementById('enableClassicAdminButton');
+                                        
+                                        if (enableVueAdminButton) {
+                                            // Falls der Button bereits einen Event-Listener hat, diesen entfernen
+                                            enableVueAdminButton.removeEventListener('click', function(){});
+                                            
+                                            enableVueAdminButton.addEventListener('click', function() {
+                                                console.log('Vue.js-Admin aktivieren');
+                                                localStorage.setItem('feature_vueAdmin', 'true');
+                                                
+                                                // Debug-Log nach dem Setzen
+                                                console.log('feature_vueAdmin nach Setzen:', localStorage.getItem('feature_vueAdmin'));
+                                                
+                                                // UI aktualisieren bevor die Seite neu geladen wird
+                                                updateAdminStatus();
+                                                
+                                                // Verzögerung, um sicherzustellen, dass localStorage persistent ist
+                                                setTimeout(function() {
+                                                    console.log('Überprüfe feature_vueAdmin vor Reload:', localStorage.getItem('feature_vueAdmin'));
+                                                    alert('Vue.js-Implementierung für Admin-Komponenten wurde aktiviert. Die Seite wird neu geladen.');
+                                                    window.location.reload();
+                                                }, 100);
+                                            });
+                                        }
+                                        
+                                        if (enableClassicAdminButton) {
+                                            // Falls der Button bereits einen Event-Listener hat, diesen entfernen
+                                            enableClassicAdminButton.removeEventListener('click', function(){});
+                                            
+                                            enableClassicAdminButton.addEventListener('click', function() {
+                                                console.log('Klassische Admin-Komponenten aktivieren');
+                                                localStorage.setItem('feature_vueAdmin', 'false');
+                                                
+                                                // Debug-Log nach dem Setzen
+                                                console.log('feature_vueAdmin nach Setzen:', localStorage.getItem('feature_vueAdmin'));
+                                                
+                                                // UI aktualisieren bevor die Seite neu geladen wird
+                                                updateAdminStatus();
+                                                
+                                                // Verzögerung, um sicherzustellen, dass localStorage persistent ist
+                                                setTimeout(function() {
+                                                    console.log('Überprüfe feature_vueAdmin vor Reload:', localStorage.getItem('feature_vueAdmin'));
+                                                    alert('Klassische Implementierung für Admin-Komponenten wurde aktiviert. Die Seite wird neu geladen.');
+                                                    window.location.reload();
+                                                }, 100);
+                                            });
+                                        }
+                                        
                                         // DevMode Buttons
                                         const enableDevModeButton = document.getElementById('enableDevModeButton');
                                         const disableDevModeButton = document.getElementById('disableDevModeButton');
@@ -1279,7 +1434,7 @@
                             </div>
 
                             <!-- Feedback-Tab -->
-                            <div v-if="adminTab === 'feedback'" class="admin-panel-content">
+                            <div v-if="adminTab === 'feedback'" class="admin-panel-content" data-tab="feedback">
                                 <div class="flex justify-end mb-6">
                                     <button @click="loadFeedbackStats(); loadNegativeFeedback()" class="nscale-btn-secondary">
                                         <i class="fas fa-sync-alt mr-2"></i>
@@ -1351,7 +1506,7 @@
                                 </div>
                             </div>
                             <!-- MOTD-Tab und Vorschau -->
-                            <div v-if="adminTab === 'motd'" class="admin-panel-content">
+                            <div v-if="adminTab === 'motd'" class="admin-panel-content" data-tab="motd">
                                 <div class="flex flex-col lg:flex-row gap-6">
                                     <!-- MOTD Form -->
                                     <div class="flex-1">
@@ -2104,12 +2259,11 @@
                     
                     // Asynchrones Laden der Vue.js-Komponente
                     try {
-                        // Pfade für die Vue.js-Komponente
+                        // Pfade für die Vue.js-Komponente (optimierter Ansatz)
                         const possiblePaths = [
-                            '/static/vue/assets/js/doc-converter.js',
-                            '/static/vue/dist/assets/js/doc-converter.js',
-                            '/static/vue/standalone/doc-converter.js', 
-                            '/static/vue/src/standalone/doc-converter.js'
+                            '/static/js/vue/doc-converter.js', // Primärer Pfad - direkt im JS-Verzeichnis
+                            '/src/standalone/doc-converter.js', // Erster Fallback-Pfad
+                            '/frontend/vue/standalone/doc-converter.js' // Zweiter Fallback-Pfad
                         ];
                         
                         let loadedScript = false;
