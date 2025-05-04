@@ -21,7 +21,9 @@
             <span class="hidden md:inline">Chat</span>
           </router-link>
           
+          <!-- Doc-Converter nur für Admins anzeigen -->
           <router-link 
+            v-if="isAdmin"
             to="/doc-converter" 
             class="nav-link" 
             :class="{ 'active': isActiveRoute('/doc-converter') }"
@@ -40,6 +42,17 @@
           >
             <font-awesome-icon icon="cog" class="mr-2" />
             <span class="hidden md:inline">Administration</span>
+          </router-link>
+          
+          <router-link 
+            v-if="isFeedbackAnalyst && !isAdmin"
+            to="/admin/feedback" 
+            class="nav-link" 
+            :class="{ 'active': isActiveRoute('/admin/feedback') }"
+            title="Feedback-Analyse"
+          >
+            <font-awesome-icon icon="comments" class="mr-2" />
+            <span class="hidden md:inline">Feedback-Analyse</span>
           </router-link>
           
           <div class="user-menu relative">
@@ -151,9 +164,12 @@ const showSettingsPanel = ref(false);
 // Benutzerinformationen aus dem Auth-Store
 const userEmail = computed(() => authStore.userEmail || 'Benutzer');
 const isAdmin = computed(() => authStore.isAdmin);
-const userRoleLabel = computed(() => 
-  authStore.isAdmin ? 'Administrator' : 'Benutzer'
-);
+const isFeedbackAnalyst = computed(() => authStore.isFeedbackAnalyst);
+const userRoleLabel = computed(() => {
+  if (authStore.isAdmin) return 'Administrator';
+  if (authStore.isFeedbackAnalyst) return 'Feedback-Analyst';
+  return 'Benutzer';
+});
 
 // MOTD-Zustände
 const motd = computed(() => motdStore.motd);

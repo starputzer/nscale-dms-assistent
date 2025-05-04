@@ -1,0 +1,61 @@
+/**
+ * Gezielte Styles für Feedback-Icons
+ * Diese wirken unabhängig von der Hauptdatei und überschreiben bestehende Stile
+ */
+
+/* Vergröße den Abstand zwischen den Feedback-Buttons und verschiebe nach rechts */
+.feedback-button {
+    margin-left: 2.5rem !important; /* Extra Abstand */
+    margin-right: 8px !important; /* Zusätzlicher Abstand nach rechts */
+    font-size: 1.25rem !important; /* Größere Icons */
+    opacity: 0.7 !important; /* Im Normalzustand etwas gedimmt */
+    color: #888 !important; /* Grau im Normalzustand */
+    transition: all 0.3s !important;
+}
+
+/* Container für die Feedback-Buttons nach rechts ausrichten */
+.message-actions,
+.feedback-container {
+    display: flex !important;
+    justify-content: flex-end !important; /* Rechtsausrichtung */
+    padding-right: 15px !important; /* Zusätzlicher Abstand zum rechten Rand */
+    margin-left: auto !important; /* Schiebt den Container nach rechts */
+}
+
+/* Hover-Effekt */
+.feedback-button:hover {
+    color: #333 !important; /* Dunkler beim Hover */
+    opacity: 1 !important; /* Volle Sichtbarkeit beim Hover */
+    transform: translateY(-2px) !important; /* Nach oben bewegen beim Hover */
+}
+
+/* Positives Feedback Button */
+.feedback-button.selected {
+    color: #10b981 !important; /* Grün wenn aktiviert */
+    font-weight: 500 !important;
+    opacity: 1 !important;
+    transform: scale(1.15) !important;
+}
+
+/* Negatives Feedback Button */
+.feedback-button.selected.negative {
+    color: #ef4444 !important; /* Rot wenn aktiviert */
+    font-weight: 500 !important;
+    opacity: 1 !important;
+    transform: scale(1.15) !important;
+}
+
+/* Kommentar-Button */
+.feedback-button[title="Kommentar hinzufügen"] {
+    display: none !important; /* Standardmäßig ausgeblendet */
+    opacity: 0 !important;
+    transform: translateX(-10px) !important;
+    transition: all 0.3s ease !important;
+}
+
+/* Kommentar-Button einblenden, wenn negative Bewertung gegeben wurde */
+.feedback-button.negative.selected ~ .feedback-button[title="Kommentar hinzufügen"] {
+    display: flex !important; /* Einblenden */
+    opacity: 1 !important;
+    transform: translateX(0) !important;
+}

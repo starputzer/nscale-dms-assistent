@@ -75,14 +75,24 @@
       
       <!-- Comment section -->
       <div v-if="feedback.comment" class="detail-section comment-section">
-        <h4>Kommentar</h4>
+        <h4>Benutzerkommentar</h4>
         <div class="comment-content">{{ feedback.comment }}</div>
       </div>
       
-      <!-- Message section -->
-      <div class="detail-section">
+      <!-- Question section -->
+      <div v-if="feedback.question" class="detail-section question-section">
+        <h4>Ursprüngliche Frage</h4>
+        <div class="question-content">{{ feedback.question }}</div>
+      </div>
+      
+      <!-- Answer section -->
+      <div v-if="feedback.answer || feedback.message_text" class="detail-section">
         <h4>Assistenten-Antwort</h4>
-        <div class="message-content" v-html="formatMessage(feedback.message_text)"></div>
+        <ContentRenderer 
+          class="message-content" 
+          type="markdown" 
+          :content="feedback.answer || feedback.message_text"
+        />
       </div>
       
       <!-- Context messages -->
@@ -103,7 +113,7 @@
                 {{ formatDate(message.created_at) }}
               </span>
             </div>
-            <div class="message-text" v-html="formatMessage(message.message)"></div>
+            <ContentRenderer class="message-text" type="markdown" :content="message.message" />
           </div>
         </div>
       </div>
@@ -113,8 +123,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { marked } from 'marked';
-import DOMPurify from 'dompurify';
+import ContentRenderer from '@/components/common/ContentRenderer.vue';
 
 // Props
 const props = defineProps({
@@ -162,25 +171,7 @@ const formatDate = (dateString) => {
   });
 };
 
-const formatMessage = (text) => {
-  if (!text) return '';
-  
-  // Use marked.js to parse markdown
-  // This will convert markdown to HTML with DOMPurify for XSS protection
-  try {
-    const rawHtml = marked.parse(text, {
-      gfm: true,            // GitHub Flavored Markdown
-      breaks: true,         // Convert line breaks to <br>
-      smartypants: true,    // Typographic punctuation
-    });
-    
-    // Sanitize the HTML to prevent XSS attacks
-    return DOMPurify.sanitize(rawHtml);
-  } catch (e) {
-    console.error('Error parsing markdown:', e);
-    return text;
-  }
-};
+// Removed formatMessage function - now using ContentRenderer component
 </script>
 
 <style scoped>
@@ -377,6 +368,15 @@ const formatMessage = (text) => {
   white-space: pre-line;
 }
 
+.question-content {
+  padding: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #334155;
+  background-color: #e0f2fe;
+  white-space: pre-line;
+}
+
 .message-content {
   padding: 1rem;
   font-size: 0.875rem;
@@ -526,6 +526,11 @@ const formatMessage = (text) => {
 
 :global(.theme-dark) .comment-content {
   background-color: #332711;
+  color: #e0e0e0;
+}
+
+:global(.theme-dark) .question-content {
+  background-color: #163850;
   color: #e0e0e0;
 }
 

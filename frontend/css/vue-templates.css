@@ -1,0 +1,4 @@
+/* Vue-Templates ausblenden */
+.vue-template-container {
+  display: none \!important;
+}

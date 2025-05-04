@@ -5,7 +5,7 @@ import { useAuthStore } from './authStore';
 
 /**
  * Store zur Verwaltung der Benutzereinstellungen
- * Enthält Funktionen für Theme, Schriftgröße und Barrierefreiheitsoptionen
+ * Enthält Funktionen für Theme, Schriftgröße, Barrierefreiheitsoptionen und mehr
  */
 export const useSettingsStore = defineStore('settings', {
   state: () => ({
@@ -19,6 +19,20 @@ export const useSettingsStore = defineStore('settings', {
     accessibility: {
       reduceMotion: localStorage.getItem('reduceMotion') === 'true' || false,
       simpleLanguage: localStorage.getItem('simpleLanguage') === 'true' || false
+    },
+    
+    // Benachrichtigungseinstellungen
+    notifications: {
+      sessions: localStorage.getItem('notifySessions') === 'true' || true,
+      system: localStorage.getItem('notifySystem') === 'true' || false,
+      email: localStorage.getItem('notifyEmail') === 'true' || false
+    },
+    
+    // Anwendungseinstellungen
+    appSettings: {
+      defaultView: localStorage.getItem('defaultView') || 'chat',
+      language: localStorage.getItem('uiLanguage') || 'de',
+      autoSave: localStorage.getItem('autoSave') === 'true' || true
     },
     
     // Panel-Zustand

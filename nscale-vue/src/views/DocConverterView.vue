@@ -75,6 +75,8 @@
           :results="conversionResults"
           @view-result="viewResult"
           @download-result="downloadResult"
+          @delete-result="deleteResult"
+          @clear-all="clearAllResults"
         />
       </div>
     </main>
@@ -89,128 +91,51 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { onMounted } from 'vue';
 import FileUpload from '@/components/doc-converter/FileUpload.vue';
 import FileList from '@/components/doc-converter/FileList.vue';
 import ConversionOptions from '@/components/doc-converter/ConversionOptions.vue';
 import ConversionProgress from '@/components/doc-converter/ConversionProgress.vue';
 import ConversionResults from '@/components/doc-converter/ConversionResults.vue';
 import ResultPreviewModal from '@/components/doc-converter/ResultPreviewModal.vue';
-import { useDocConverterStore } from '@/stores/docConverterStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/composables/useToast';
+import { useDocConverter } from '@/composables/useDocConverter';
 
-// Stores
-const docConverterStore = useDocConverterStore();
+// Stores and Composables
 const authStore = useAuthStore();
 const { showToast } = useToast();
-
-// Zustände
-const selectedFiles = ref([]);
-const isConverting = ref(false);
-const conversionProgress = ref(0);
-const currentProcessingFile = ref('');
-const conversionError = ref(null);
-const conversionResults = ref([]);
-const showPreviewModal = ref(false);
-const previewData = ref(null);
-
-// Konvertierungs-Optionen
-const conversionOptions = ref({
-  outputFormat: 'markdown',
-  splitSections: true,
-  extractImages: true,
-  imageQuality: 'medium',
-  metadataHandling: 'extract',
-  advancedParsing: true
-});
-
-// Konstanten
-const acceptedFormats = [
-  '.pdf', '.docx', '.doc', '.xlsx', '.xls', '.pptx', '.ppt', '.html', '.txt'
-];
-const maxFileSize = 50 * 1024 * 1024; // 50 MB
-
-// Event-Handler
-const handleFilesSelected = (files) => {
-  selectedFiles.value = [...selectedFiles.value, ...files];
-};
-
-const removeFile = (fileToRemove) => {
-  selectedFiles.value = selectedFiles.value.filter(file => file !== fileToRemove);
-};
-
-const clearSelectedFiles = () => {
-  selectedFiles.value = [];
-};
-
-const startConversion = async () => {
-  if (selectedFiles.value.length === 0) return;
+const {
+  // State
+  selectedFiles,
+  isConverting,
+  conversionProgress,
+  currentProcessingFile,
+  conversionError,
+  conversionOptions,
+  showPreviewModal,
+  previewData,
   
-  try {
-    isConverting.value = true;
-    conversionError.value = null;
-    conversionProgress.value = 0;
-    
-    // Erstelle FormData für den Datei-Upload
-    const formData = new FormData();
-    selectedFiles.value.forEach(file => {
-      formData.append('files', file);
-    });
-    
-    // Füge Optionen hinzu
-    Object.entries(conversionOptions.value).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
-    
-    // Konvertierungsstart und Fortschrittsverfolgung
-    const response = await docConverterStore.convertDocuments(
-      formData, 
-      (progress, filename) => {
-        conversionProgress.value = progress;
-        currentProcessingFile.value = filename;
-      }
-    );
-    
-    // Erfolgreiche Konvertierung
-    conversionResults.value = [...conversionResults.value, ...response.results];
-    showToast('Konvertierung erfolgreich abgeschlossen', 'success');
-    
-  } catch (error) {
-    console.error('Konvertierungsfehler:', error);
-    conversionError.value = error.message || 'Bei der Konvertierung ist ein Fehler aufgetreten.';
-    showToast('Konvertierungsfehler: ' + conversionError.value, 'error');
-  } finally {
-    isConverting.value = false;
-    currentProcessingFile.value = '';
-  }
-};
-
-const cancelConversion = async () => {
-  try {
-    await docConverterStore.cancelConversion();
-    isConverting.value = false;
-    conversionProgress.value = 0;
-    currentProcessingFile.value = '';
-    showToast('Konvertierung abgebrochen', 'info');
-  } catch (error) {
-    console.error('Fehler beim Abbrechen der Konvertierung:', error);
-  }
-};
-
-const viewResult = (result) => {
-  previewData.value = result;
-  showPreviewModal.value = true;
-};
-
-const downloadResult = (result) => {
-  docConverterStore.downloadConvertedFile(result.id);
-};
-
-const closePreviewModal = () => {
-  showPreviewModal.value = false;
-  previewData.value = null;
-};
+  // Computed
+  conversionResults,
+  
+  // Constants
+  acceptedFormats,
+  maxFileSize,
+  
+  // Methods
+  handleFilesSelected,
+  removeFile,
+  clearSelectedFiles,
+  startConversion,
+  cancelConversion,
+  loadPreviousResults,
+  viewResult,
+  downloadResult,
+  deleteResult,
+  clearAllResults,
+  closePreviewModal
+} = useDocConverter();
 
 // Lebenszyklus-Hooks
 onMounted(async () => {
@@ -220,15 +145,16 @@ onMounted(async () => {
     return;
   }
   
-  // Lade vorherige Konvertierungsergebnisse, falls vorhanden
-  try {
-    const previousResults = await docConverterStore.loadPreviousResults();
-    if (previousResults && previousResults.length > 0) {
-      conversionResults.value = previousResults;
-    }
-  } catch (error) {
-    console.error('Fehler beim Laden vorheriger Ergebnisse:', error);
+  // Prüfe, ob der Benutzer Admin-Berechtigungen hat
+  if (!authStore.isAdmin) {
+    showToast('Sie benötigen Admin-Berechtigungen, um auf den Dokumentenkonverter zuzugreifen', 'error');
+    // Zurück zur Hauptseite leiten
+    window.location.href = '/';
+    return;
   }
+  
+  // Lade vorherige Konvertierungsergebnisse, falls vorhanden
+  await loadPreviousResults();
 });
 </script>
 

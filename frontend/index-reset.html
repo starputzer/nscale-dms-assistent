@@ -1,0 +1,68 @@
+<\!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nscale DMS Assistent - Notfall-Modus</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .container { max-width: 800px; margin: 50px auto; padding: 20px; }
+        .btn { padding: 8px 16px; background-color: #2563eb; color: white; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container bg-white shadow-md rounded-lg">
+        <h1 class="text-2xl font-bold mb-4">nscale DMS Assistent - Notfall-Modus</h1>
+        <p class="mb-4">Dieser Notfall-Modus ermöglicht die Zurücksetzung der Anwendung.</p>
+        
+        <button id="reset-btn" class="btn">Einstellungen zurücksetzen</button>
+        <div id="message" class="mt-4 p-4 bg-green-100 rounded hidden"></div>
+        
+        <div class="mt-8">
+            <h2 class="text-xl font-bold mb-2">Status</h2>
+            <pre id="status" class="bg-gray-100 p-4 rounded overflow-auto max-h-40 text-xs"></pre>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('reset-btn').addEventListener('click', function() {
+            // Alle localStorage-Einträge löschen
+            localStorage.clear();
+            
+            // Feature-Flags explizit setzen
+            localStorage.setItem('useNewUI', 'false');
+            localStorage.setItem('feature_vueDocConverter', 'false');
+            localStorage.setItem('feature_vueChat', 'false');
+            localStorage.setItem('feature_vueAdmin', 'false');
+            localStorage.setItem('feature_vueSettings', 'false');
+            localStorage.setItem('devMode', 'false');
+            
+            // Status anzeigen
+            document.getElementById('status').textContent = JSON.stringify(
+                Object.fromEntries(
+                    Object.keys(localStorage).map(key => [key, localStorage.getItem(key)])
+                ), null, 2
+            );
+            
+            // Meldung anzeigen
+            const message = document.getElementById('message');
+            message.textContent = 'Einstellungen wurden zurückgesetzt. Die Anwendung sollte jetzt normal funktionieren.';
+            message.classList.remove('hidden');
+            
+            // Link hinzufügen
+            const link = document.createElement('a');
+            link.href = 'index.html';
+            link.className = 'block mt-4 text-blue-600 underline';
+            link.textContent = 'Zur normalen Ansicht wechseln';
+            message.appendChild(link);
+        });
+        
+        // Initialen Status anzeigen
+        document.getElementById('status').textContent = JSON.stringify(
+            Object.fromEntries(
+                Object.keys(localStorage).map(key => [key, localStorage.getItem(key)])
+            ), null, 2
+        );
+    </script>
+</body>
+</html>

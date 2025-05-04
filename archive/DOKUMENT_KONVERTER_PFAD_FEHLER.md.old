@@ -1,0 +1,97 @@
+# Dokumentenkonverter: Pfad-Fehler und Lösungen
+
+## Aktuell beobachtete Fehler
+
+1. 404-Fehler für CSS-Pfade:
+   ```
+   GET /frontend/static/css/doc-converter-fix.css?v=1746373605660 HTTP/1.1" 404 Not Found
+   ```
+
+2. 404-Fehler für JavaScript-Pfade:
+   ```
+   GET /static/vue/standalone/doc-converter.js HTTP/1.1" 404 Not Found
+   GET /frontend/static/vue/standalone/doc-converter.js HTTP/1.1" 404 Not Found
+   GET /api/static/vue/standalone/doc-converter.js HTTP/1.1" 404 Not Found
+   ```
+
+## Pfad-Struktur-Analyse
+
+Die Anwendung versucht, Ressourcen von mehreren verschiedenen Pfaden zu laden:
+
+1. `/static/...` - Absoluter Pfad, ausgehend vom Server-Root
+2. `/frontend/static/...` - Frontend-spezifischer statischer Ordner 
+3. `/api/static/...` - API-spezifischer statischer Ordner
+
+Die Verwirrung entsteht dadurch, dass verschiedene Skripte auf unterschiedliche Pfadstrukturen verweisen und die gleichen Ressourcen unter verschiedenen Pfaden erwartet werden.
+
+## Gelöste Probleme
+
+1. Syntax-Fehler in JavaScript-Dateien:
+   - Fehler mit Escape-Zeichen in doc-converter-direct-fix.js und doc-converter-fallback.js wurden behoben.
+
+2. ES6-Modul-Probleme:
+   - Implementierter ES6-Modul-Redirector leitet automatisch von .js zu -nomodule.js um
+   - Ändert Skript-Typ von 'module' auf 'text/javascript'
+
+## Implementierte Lösungsansätze
+
+1. **Path Logger & Diagnostik**:
+   - Ein umfassendes Logging-Tool wurde erstellt, das alle Ressourcen-Pfade und 404-Fehler protokolliert
+   - UI-Overlay für Echtzeit-Debugging
+   - Pfad-Test-Funktion für automatische Verfügbarkeitsprüfung
+
+2. **Ressourcen-Bereitstellung an mehreren Pfaden**:
+   - CSS- und JavaScript-Dateien werden automatisch an mehrere Pfade kopiert:
+     - `/frontend/js/` → `/frontend/static/js/`
+     - `/frontend/css/` → `/frontend/static/css/`
+     - Standalone-Scripts kopiert nach `/frontend/static/vue/standalone/`
+
+3. **Inline-CSS Fallback**:
+   - Integriertes Inline-CSS stellt sicher, dass der DocConverter-Tab auch ohne externe CSS-Dateien korrekt angezeigt wird
+
+4. **Alternative Pfad-Suche**:
+   - Dynamische Generierung alternativer Pfade für nicht gefundene Ressourcen
+   - Automatische Erprobung mehrerer möglicher Pfade für jede Ressource
+
+## Notwendige Anpassungen am Server
+
+Um die 404-Fehler vollständig zu beheben, sind folgende Anpassungen am Server notwendig:
+
+1. **Statische Dateien-Mapping**:
+   - `/static/` sollte auf den physischen Ordner `/opt/nscale-assist/app/frontend/static/` verweisen
+   - `/frontend/static/` sollte auf denselben physischen Ordner verweisen
+   - `/api/static/` sollte auf `/opt/nscale-assist/app/api/static/` verweisen
+
+2. **Fallback-Mechanismus im Server**:
+   - Der Server sollte bei 404-Fehlern für bekannte Pfadmuster alternative Pfade ausprobieren
+   - Beispiel: Wenn `/static/css/file.css` nicht gefunden wird, versuche `/frontend/static/css/file.css`
+
+## Temporäre Client-Lösung
+
+Als temporäre Lösung auf Client-Seite wurden folgende Maßnahmen implementiert:
+
+1. **Pfadüberwachung**:
+   - Alle Ressourcen-Anfragen werden überwacht und protokolliert
+   - 404-Fehler werden abgefangen und alternative Pfade werden automatisch getestet
+
+2. **Alternative Ressourcen-Erstellung**:
+   - Wenn eine Ressource nicht gefunden wird, werden automatisch Alternativen geladen
+   - Inline-CSS und vereinfachte Fallback-UIs werden dynamisch erstellt
+
+3. **DOM-Beobachtung**:
+   - Kontinuierliche Überwachung des DOM auf DocConverter-Container
+   - Automatische Sichtbarmachung von gefundenen Containern
+
+## Empfehlungen für zukünftige Verbesserungen
+
+1. **Einheitliche Pfadstruktur**:
+   - Konsolidierung aller statischen Dateien in einem Pfad
+   - Verwendung von versionierten Dateinamen für besseres Caching
+
+2. **Asset-Management-System**:
+   - Implementierung eines Asset-Management-Systems mit einer zentralen Konfiguration
+   - Automatische Generierung von Hash-basierten Dateinamen
+
+3. **Zustandsbasierte Fehlerbehandlung**:
+   - Protokollierung von Fehlern mit detaillierten Umgebungsinformationen
+   - Automatische Wiederherstellung mit Fallback-Mechanismen

@@ -12,8 +12,9 @@ logger = LogManager.setup_logging(__name__)
 
 class UserRole:
     """Definiert verfügbare Benutzerrollen"""
-    USER = "user"      # Standardnutzer
-    ADMIN = "admin"    # Administrator
+    USER = "user"                    # Standardnutzer
+    ADMIN = "admin"                  # Administrator
+    FEEDBACK_ANALYST = "feedback_analyst"  # Feedback-Auswerter
 
 class UserManager:
     """Verwaltet Benutzeroperationen und Authentifizierung mit Rollenunterstützung"""
@@ -93,6 +94,15 @@ class UserManager:
             conn = sqlite3.connect(Config.DB_PATH)
             cursor = conn.cursor()
             
+            # Überprüfe zuerst, ob die E-Mail-Adresse (case-insensitive) bereits existiert
+            cursor.execute("SELECT id FROM users WHERE LOWER(email) = LOWER(?)", (email,))
+            existing_user = cursor.fetchone()
+            
+            if existing_user:
+                logger.warning(f"Registrierungsversuch mit bereits existierender E-Mail: {email}")
+                conn.close()
+                return False
+            
             cursor.execute(
                 "INSERT INTO users (email, password_hash, role, created_at) VALUES (?, ?, ?, ?)",
                 (email, password_hash, role, now)
@@ -119,8 +129,9 @@ class UserManager:
         conn = sqlite3.connect(Config.DB_PATH)
         cursor = conn.cursor()
         
+        # Case-insensitive Vergleich für E-Mail-Adresse durch Umwandlung zu Kleinbuchstaben
         cursor.execute(
-            "SELECT id, email, role FROM users WHERE email = ? AND password_hash = ?",
+            "SELECT id, email, role FROM users WHERE LOWER(email) = LOWER(?) AND password_hash = ?",
             (email, password_hash)
         )
         
@@ -162,8 +173,8 @@ class UserManager:
             cursor = conn.cursor()
             
             for admin_email in self.ADMIN_EMAILS:
-                # Prüfen, ob der Benutzer existiert
-                cursor.execute("SELECT id, role FROM users WHERE email = ?", (admin_email,))
+                # Prüfen, ob der Benutzer existiert (case-insensitive)
+                cursor.execute("SELECT id, role FROM users WHERE LOWER(email) = LOWER(?)", (admin_email,))
                 user = cursor.fetchone()
                 
                 if user:
@@ -192,7 +203,7 @@ class UserManager:
             logger.warning(f"Nicht-Admin (ID: {admin_user_id}) versuchte, Benutzerrolle zu ändern")
             return False
             
-        if new_role not in [UserRole.USER, UserRole.ADMIN]:
+        if new_role not in [UserRole.USER, UserRole.ADMIN, UserRole.FEEDBACK_ANALYST]:
             logger.warning(f"Ungültige Rolle angegeben: {new_role}")
             return False
         
@@ -259,6 +270,7 @@ class UserManager:
             
             if result:
                 email = result[0]
+                # Vergleich bereits case-insensitive mit lower() auf beiden Seiten
                 return email.lower() in [e.lower() for e in self.ADMIN_EMAILS]
             return False
         except Exception as e:
@@ -292,6 +304,16 @@ class UserManager:
         """Prüft, ob ein Benutzer Admin-Rechte hat"""
         role = self.get_user_role(user_id)
         return role == UserRole.ADMIN
+        
+    def is_feedback_analyst(self, user_id):
+        """Prüft, ob ein Benutzer Feedback-Analyst-Rechte hat"""
+        role = self.get_user_role(user_id)
+        return role == UserRole.FEEDBACK_ANALYST
+        
+    def can_view_feedback(self, user_id):
+        """Prüft, ob ein Benutzer Feedback-Daten sehen darf (Admin oder Feedback-Analyst)"""
+        role = self.get_user_role(user_id)
+        return role in [UserRole.ADMIN, UserRole.FEEDBACK_ANALYST]
     
     def verify_token(self, token):
         """Überprüft ein JWT-Token und gibt Benutzerinformationen zurück"""
@@ -340,6 +362,85 @@ class UserManager:
         except Exception as e:
             logger.error(f"Fehler beim Abrufen der Benutzerliste: {e}")
             return None
+            
+    def initiate_password_reset(self, email):
+        """Initiiert den Passwort-Reset-Prozess für einen Benutzer"""
+        try:
+            conn = sqlite3.connect(Config.DB_PATH)
+            cursor = conn.cursor()
+            
+            # Überprüfe, ob die E-Mail existiert (case-insensitive)
+            cursor.execute("SELECT id FROM users WHERE LOWER(email) = LOWER(?)", (email,))
+            user = cursor.fetchone()
+            
+            if not user:
+                logger.warning(f"Passwort-Reset angefordert für nicht existierende E-Mail: {email}")
+                conn.close()
+                return None
+                
+            # Generiere einen sicheren Token
+            token = secrets.token_hex(32)
+            # Token ist 24 Stunden gültig
+            expiry = int(time.time()) + 86400
+            
+            # Speichere Token und Ablaufzeit in der Datenbank
+            cursor.execute(
+                "UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE id = ?",
+                (token, expiry, user[0])
+            )
+            
+            conn.commit()
+            conn.close()
+            
+            logger.info(f"Passwort-Reset-Token generiert für Benutzer mit E-Mail: {email}")
+            return token
+            
+        except Exception as e:
+            logger.error(f"Fehler beim Initiieren des Passwort-Resets: {e}")
+            return None
+    
+    def reset_password(self, token, new_password):
+        """Setzt das Passwort eines Benutzers mit einem gültigen Token zurück"""
+        if not token or not new_password:
+            logger.warning("Ungültiger Token oder leeres Passwort beim Passwort-Reset")
+            return False
+            
+        try:
+            conn = sqlite3.connect(Config.DB_PATH)
+            cursor = conn.cursor()
+            
+            # Hole Benutzer mit diesem Token
+            current_time = int(time.time())
+            cursor.execute(
+                "SELECT id FROM users WHERE reset_token = ? AND reset_token_expiry > ?",
+                (token, current_time)
+            )
+            
+            user = cursor.fetchone()
+            
+            if not user:
+                logger.warning(f"Ungültiger oder abgelaufener Reset-Token verwendet: {token[:8]}...")
+                conn.close()
+                return False
+                
+            # Hash das neue Passwort
+            password_hash = self._hash_password(new_password)
+            
+            # Aktualisiere das Passwort und lösche den Token
+            cursor.execute(
+                "UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expiry = NULL WHERE id = ?",
+                (password_hash, user[0])
+            )
+            
+            conn.commit()
+            conn.close()
+            
+            logger.info(f"Passwort erfolgreich zurückgesetzt für Benutzer ID: {user[0]}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Fehler beim Passwort-Reset: {e}")
+            return False
             
     def delete_user(self, user_id, admin_user_id):
         """Löscht einen Benutzer (nur für Admins)"""
@@ -394,4 +495,83 @@ class UserManager:
                 
         except Exception as e:
             logger.error(f"Fehler beim Löschen des Benutzers: {e}")
+            return False
+            
+    def initiate_password_reset(self, email):
+        """Initiiert den Passwort-Reset-Prozess für eine angegebene E-Mail-Adresse"""
+        try:
+            conn = sqlite3.connect(Config.DB_PATH)
+            cursor = conn.cursor()
+            
+            # Case-insensitive Suche nach der E-Mail-Adresse
+            cursor.execute("SELECT id FROM users WHERE LOWER(email) = LOWER(?)", (email,))
+            user = cursor.fetchone()
+            
+            if not user:
+                logger.warning(f"Passwort-Reset angefordert für nicht existierende E-Mail: {email}")
+                conn.close()
+                return None
+                
+            # Generiere einen sicheren Token
+            reset_token = secrets.token_hex(32)
+            # Token läuft nach 24 Stunden ab
+            expiry = int(time.time()) + 86400
+            
+            # Speichere Token und Ablaufzeit in der Datenbank
+            cursor.execute(
+                "UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE id = ?",
+                (reset_token, expiry, user[0])
+            )
+            
+            conn.commit()
+            conn.close()
+            
+            logger.info(f"Passwort-Reset-Token für Benutzer mit E-Mail {email} generiert")
+            return reset_token
+            
+        except Exception as e:
+            logger.error(f"Fehler beim Initiieren des Passwort-Resets: {e}")
+            return None
+            
+    def reset_password(self, token, new_password):
+        """Setzt das Passwort mit einem gültigen Token zurück"""
+        if not token or not new_password:
+            return False
+            
+        try:
+            conn = sqlite3.connect(Config.DB_PATH)
+            cursor = conn.cursor()
+            
+            # Suche Benutzer mit diesem Token
+            cursor.execute("SELECT id, reset_token_expiry FROM users WHERE reset_token = ?", (token,))
+            result = cursor.fetchone()
+            
+            if not result:
+                logger.warning(f"Passwort-Reset mit ungültigem Token versucht")
+                conn.close()
+                return False
+                
+            user_id, expiry = result
+            
+            # Prüfe, ob Token abgelaufen ist
+            if expiry < time.time():
+                logger.warning(f"Passwort-Reset mit abgelaufenem Token versucht")
+                conn.close()
+                return False
+                
+            # Setze neues Passwort und entferne Token
+            password_hash = self._hash_password(new_password)
+            cursor.execute(
+                "UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expiry = NULL WHERE id = ?",
+                (password_hash, user_id)
+            )
+            
+            conn.commit()
+            conn.close()
+            
+            logger.info(f"Passwort für Benutzer ID {user_id} erfolgreich zurückgesetzt")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Fehler beim Zurücksetzen des Passworts: {e}")
             return False

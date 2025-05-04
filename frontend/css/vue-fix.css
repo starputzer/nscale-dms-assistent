@@ -1,0 +1,118 @@
+/**
+ * CSS-Fix für Vue.js-Komponenten und -Templates
+ * Behebt Darstellungsprobleme und Inline-Script-Probleme
+ */
+
+.vue-template-container {
+  display: none !important;
+}
+
+/* Fix für Vue.js Warnungen bzgl. Inline-Scripts und Styles in Templates */
+script[data-vue-template-fix], 
+style[data-vue-template-fix] {
+  display: none !important;  /* Script und Style Tags ausblenden */
+}
+
+/* Ladeanzeige für Vue-Komponenten */
+.vue-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background-color: #f7f7f7;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.vue-loading-spinner {
+  border: 4px solid rgba(0, 158, 96, 0.3);
+  border-radius: 50%;
+  border-top: 4px solid var(--nscale-green, #009e60);
+  width: 40px;
+  height: 40px;
+  animation: vue-spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes vue-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Notfall-UI für Vue.js-Komponenten */
+.vue-fallback {
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.vue-fallback-header {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.vue-error-message {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  background-color: #fee2e2;
+  color: #991b1b;
+  border-left: 4px solid #ef4444;
+  border-radius: 0 4px 4px 0;
+}
+
+/* Dark Mode-Anpassungen */
+.theme-dark .vue-loading {
+  background-color: #1e1e1e;
+}
+
+.theme-dark .vue-loading-spinner {
+  border-color: rgba(0, 192, 96, 0.3);
+  border-top-color: #00c060;
+}
+
+.theme-dark .vue-fallback {
+  background-color: #1e1e1e;
+  color: #f0f0f0;
+}
+
+.theme-dark .vue-fallback-header {
+  border-bottom-color: #333;
+}
+
+.theme-dark .vue-error-message {
+  background-color: #450a0a;
+  color: #fecaca;
+  border-left-color: #b91c1c;
+}
+
+/* High Contrast Mode-Anpassungen */
+.theme-contrast .vue-loading {
+  background-color: #000000;
+  border: 2px solid #ffeb3b;
+}
+
+.theme-contrast .vue-loading-spinner {
+  border-color: #ffeb3b;
+  border-top-color: #ffffff;
+}
+
+.theme-contrast .vue-fallback {
+  background-color: #000000;
+  color: #ffeb3b;
+  border: 2px solid #ffeb3b;
+}
+
+.theme-contrast .vue-fallback-header {
+  border-bottom-color: #ffeb3b;
+}
+
+.theme-contrast .vue-error-message {
+  background-color: #000000;
+  color: #ffeb3b;
+  border: 2px solid #ff4444;
+}

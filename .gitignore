@@ -137,3 +137,5 @@ bundle-stats.json
 .tmp
 .history/
 **/.claude/settings.local.json
+
+**/CLAUDE.local.md

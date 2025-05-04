@@ -1,0 +1,144 @@
+/* 
+ * Dokumentenkonverter-Positionierungs-Fix 
+ * Verhindert, dass der Dokumentenkonverter außerhalb des Admin-Bereichs angezeigt wird
+ */
+
+/* Grundlegende Regel: Verstecke Dokumentenkonverter außerhalb des Admin-Panels */
+#doc-converter-container:not(.admin-panel *),
+#doc-converter-app:not(.admin-panel *),
+.doc-converter:not(.admin-panel *),
+[data-tab="docConverter"]:not(.admin-panel *) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    position: absolute !important;
+    left: -9999px !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+    max-height: 0 !important;
+    max-width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+}
+
+/* Spezifisch für Chat-Bereich */
+.chat-window #doc-converter-container,
+.chat-window #doc-converter-app,
+.chat-window .doc-converter,
+.chat-window [data-tab="docConverter"],
+.chat-container #doc-converter-container,
+.chat-container #doc-converter-app,
+.chat-container .doc-converter,
+.chat-container [data-tab="docConverter"],
+.messages-container #doc-converter-container,
+.messages-container #doc-converter-app,
+.messages-container .doc-converter,
+.messages-container [data-tab="docConverter"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    max-height: 0 !important;
+}
+
+/* Im Admin-Tab explizit sichtbar machen */
+.admin-panel #doc-converter-container,
+.admin-panel #doc-converter-app,
+.admin-panel .doc-converter,
+.admin-panel [data-tab="docConverter"],
+.admin-tab-content #doc-converter-container,
+.admin-tab-content #doc-converter-app,
+.admin-tab-content .doc-converter,
+.admin-content #doc-converter-container,
+.admin-content #doc-converter-app,
+.admin-content .doc-converter,
+.tab-content #doc-converter-container,
+.tab-content #doc-converter-app,
+.tab-content .doc-converter {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    width: auto !important;
+    position: relative !important;
+    left: auto !important;
+    overflow: visible !important;
+    pointer-events: auto !important;
+}
+
+/* Erzwinge Sichtbarkeit für Tab-Container im Admin-Bereich */
+.doc-converter-force-visible {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    width: auto !important;
+    position: relative !important;
+    left: auto !important;
+    overflow: visible !important;
+    pointer-events: auto !important;
+    max-height: none !important;
+    max-width: none !important;
+}
+
+/* Spezifisch für body.admin-docconverter-tab */
+body.admin-docconverter-tab #doc-converter-container,
+body.admin-docconverter-tab #doc-converter-app,
+body.admin-docconverter-tab .doc-converter[data-tab="docConverter"],
+body.admin-docconverter-tab [data-tab="docConverter"] {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    width: auto !important;
+}
+
+/* Nur wenn es wirklich der aktive Tab ist */
+body.admin-docconverter-tab .admin-nav-item[data-tab="docConverter"],
+body.admin-docconverter-tab .admin-tab[data-tab="docConverter"],
+body.admin-docconverter-tab .tab-item[data-tab="docConverter"] {
+    font-weight: bold;
+    color: var(--primary-color, #006400);
+    background-color: var(--tab-active-bg, rgba(0,100,0,0.1));
+}
+
+/* Lade-Anzeige im Dokumentenkonverter */
+.doc-converter-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+}
+
+.loading-indicator {
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #006400;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 2s linear infinite;
+    margin-top: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsives Design für kleinere Bildschirme */
+@media (max-width: 768px) {
+    .admin-panel #doc-converter-container,
+    .admin-panel #doc-converter-app,
+    .admin-panel .doc-converter {
+        padding: 0.5rem !important;
+    }
+    
+    .doc-converter-loading {
+        padding: 1rem;
+    }
+}

@@ -1,299 +1,182 @@
-// stores/docConverterStore.js
-import { defineStore } from 'pinia';
-import axios from 'axios';
-import { useAuthStore } from './authStore';
+// src/composables/useDocConverter.js
+import { ref, computed, watch } from 'vue';
+import { useDocConverterStore } from '@/stores/docConverterStore';
+import { useToast } from '@/composables/useToast';
 
-export const useDocConverterStore = defineStore('docConverter', {
-  state: () => ({
-    conversionResults: [],
-    isLoading: false,
-    error: null,
-    currentConversionId: null,
-    abortController: null
-  }),
-  
-  getters: {
-    hasResults: (state) => state.conversionResults.length > 0,
-    resultsByDate: (state) => {
-      return [...state.conversionResults].sort((a, b) => b.timestamp - a.timestamp);
+export function useDocConverter() {
+  const docConverterStore = useDocConverterStore();
+  const { showToast } = useToast();
+
+  // Reactive state
+  const selectedFiles = ref([]);
+  const isConverting = ref(false);
+  const conversionProgress = ref(0);
+  const currentProcessingFile = ref('');
+  const conversionError = ref(null);
+  const showPreviewModal = ref(false);
+  const previewData = ref(null);
+
+  // Default conversion options
+  const conversionOptions = ref({
+    outputFormat: 'markdown',
+    splitSections: true,
+    extractImages: true,
+    imageQuality: 'medium',
+    metadataHandling: 'extract',
+    advancedParsing: true,
+    tableDetection: 'auto',
+    ocrLevel: 'basic',
+    formatDetection: true
+  });
+
+  // Computed properties
+  const conversionResults = computed(() => docConverterStore.resultsByDate);
+  const hasResults = computed(() => docConverterStore.hasResults);
+  const isLoading = computed(() => docConverterStore.isLoading);
+
+  // Constants
+  const acceptedFormats = [
+    '.pdf', '.docx', '.doc', '.xlsx', '.xls', '.pptx', '.ppt', '.html', '.txt'
+  ];
+  const maxFileSize = 50 * 1024 * 1024; // 50 MB
+
+  // Methods
+  const handleFilesSelected = (files) => {
+    selectedFiles.value = [...selectedFiles.value, ...files];
+  };
+
+  const removeFile = (fileToRemove) => {
+    selectedFiles.value = selectedFiles.value.filter(file => file !== fileToRemove);
+  };
+
+  const clearSelectedFiles = () => {
+    selectedFiles.value = [];
+  };
+
+  const startConversion = async () => {
+    if (selectedFiles.value.length === 0) return;
+    
+    try {
+      isConverting.value = true;
+      conversionError.value = null;
+      conversionProgress.value = 0;
+      
+      // Create FormData for file upload
+      const formData = new FormData();
+      selectedFiles.value.forEach(file => {
+        formData.append('files', file);
+      });
+      
+      // Add options
+      Object.entries(conversionOptions.value).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
+      
+      // Start conversion and track progress
+      const response = await docConverterStore.convertDocuments(
+        formData, 
+        (progress, filename) => {
+          conversionProgress.value = progress;
+          currentProcessingFile.value = filename;
+        }
+      );
+      
+      // Conversion successful
+      showToast('Konvertierung erfolgreich abgeschlossen', 'success');
+      
+    } catch (error) {
+      console.error('Konvertierungsfehler:', error);
+      conversionError.value = error.message || 'Bei der Konvertierung ist ein Fehler aufgetreten.';
+      showToast('Konvertierungsfehler: ' + conversionError.value, 'error');
+    } finally {
+      isConverting.value = false;
+      currentProcessingFile.value = '';
     }
-  },
-  
-  actions: {
-    async loadPreviousResults() {
-      this.isLoading = true;
-      this.error = null;
-      
-      try {
-        const authStore = useAuthStore();
-        if (!authStore.token) {
-          throw new Error('Benutzer ist nicht angemeldet');
-        }
-        
-        const response = await axios.get('/api/doc-converter/results', {
-          headers: {
-            'Authorization': `Bearer ${authStore.token}`
-          }
-        });
-        
-        this.conversionResults = response.data.results || [];
-        return this.conversionResults;
-      } catch (error) {
-        this.error = error.response?.data?.message || error.message || 'Fehler beim Laden der Ergebnisse';
-        console.error('Fehler beim Laden der vorherigen Ergebnisse:', error);
-        throw error;
-      } finally {
-        this.isLoading = false;
-      }
-    },
-    
-    async convertDocuments(formData, progressCallback) {
-      this.isLoading = true;
-      this.error = null;
-      
-      // Abbruchkontroller für Fetch API erstellen
-      this.abortController = new AbortController();
-      const signal = this.abortController.signal;
-      
-      try {
-        const authStore = useAuthStore();
-        if (!authStore.token) {
-          throw new Error('Benutzer ist nicht angemeldet');
-        }
-        
-        // Initiale Anfrage zur Erstellung eines Konvertierungsjobs
-        const initResponse = await axios.post('/api/doc-converter/create-job', {}, {
-          headers: {
-            'Authorization': `Bearer ${authStore.token}`
-          }
-        });
-        
-        this.currentConversionId = initResponse.data.job_id;
-        
-        // Dateien hochladen
-        const uploadResponse = await axios.post(
-          `/api/doc-converter/upload/${this.currentConversionId}`, 
-          formData, 
-          {
-            headers: {
-              'Authorization': `Bearer ${authStore.token}`,
-              'Content-Type': 'multipart/form-data'
-            },
-            onUploadProgress: (progressEvent) => {
-              const uploadProgress = (progressEvent.loaded / progressEvent.total) * 50; // 50% Fortschritt für Upload
-              progressCallback(uploadProgress, 'Dateien werden hochgeladen...');
-            },
-            signal
-          }
-        );
-        
-        // Konvertierung starten
-        const startResponse = await axios.post(
-          `/api/doc-converter/start/${this.currentConversionId}`,
-          {}, 
-          {
-            headers: {
-              'Authorization': `Bearer ${authStore.token}`
-            },
-            signal
-          }
-        );
-        
-        // Konvertierungsfortschritt überwachen
-        let isCompleted = false;
-        let progress = 50; // Start bei 50% nach Upload
-        
-        while (!isCompleted && !signal.aborted) {
-          await new Promise(resolve => setTimeout(resolve, 1000)); // 1 Sekunde warten
-          
-          const statusResponse = await axios.get(
-            `/api/doc-converter/status/${this.currentConversionId}`,
-            {
-              headers: {
-                'Authorization': `Bearer ${authStore.token}`
-              },
-              signal
-            }
-          );
-          
-          const status = statusResponse.data;
-          
-          if (status.error) {
-            throw new Error(status.error);
-          }
-          
-          // Berechne den Gesamtfortschritt (50% für Upload + 50% für Konvertierung)
-          const conversionProgress = status.progress || 0;
-          progress = 50 + (conversionProgress * 0.5);
-          
-          if (status.current_file) {
-            progressCallback(progress, status.current_file);
-          } else {
-            progressCallback(progress, '');
-          }
-          
-          isCompleted = status.status === 'completed';
-          
-          if (isCompleted) {
-            // Ergebnisse abrufen
-            const resultsResponse = await axios.get(
-              `/api/doc-converter/results/${this.currentConversionId}`,
-              {
-                headers: {
-                  'Authorization': `Bearer ${authStore.token}`
-                }
-              }
-            );
-            
-            // Ergebnisse zum lokalen State hinzufügen
-            const newResults = resultsResponse.data.results || [];
-            this.conversionResults = [...this.conversionResults, ...newResults];
-            
-            return { 
-              results: newResults,
-              jobId: this.currentConversionId 
-            };
-          }
-        }
-        
-        if (signal.aborted) {
-          throw new Error('Konvertierung wurde abgebrochen');
-        }
-        
-      } catch (error) {
-        if (error.name === 'AbortError' || signal.aborted) {
-          this.error = 'Konvertierung wurde abgebrochen';
-        } else {
-          this.error = error.response?.data?.message || error.message || 'Fehler bei der Konvertierung';
-        }
-        console.error('Fehler bei der Dokumentenkonvertierung:', error);
-        throw error;
-      } finally {
-        this.isLoading = false;
-        this.abortController = null;
-      }
-    },
-    
-    async cancelConversion() {
-      if (this.abortController) {
-        this.abortController.abort();
-      }
-      
-      if (this.currentConversionId) {
-        try {
-          const authStore = useAuthStore();
-          await axios.post(
-            `/api/doc-converter/cancel/${this.currentConversionId}`,
-            {},
-            {
-              headers: {
-                'Authorization': `Bearer ${authStore.token}`
-              }
-            }
-          );
-        } catch (error) {
-          console.error('Fehler beim Abbrechen der Konvertierung:', error);
-        }
-      }
-      
-      this.currentConversionId = null;
-      this.isLoading = false;
-    },
-    
-    async downloadConvertedFile(resultId) {
-      try {
-        const authStore = useAuthStore();
-        if (!authStore.token) {
-          throw new Error('Benutzer ist nicht angemeldet');
-        }
-        
-        // Direkte Download-Anfrage
-        const response = await axios.get(`/api/doc-converter/download/${resultId}`, {
-          headers: {
-            'Authorization': `Bearer ${authStore.token}`
-          },
-          responseType: 'blob' // Wichtig für das Herunterladen von Dateien
-        });
-        
-        // Blob aus der Antwort extrahieren
-        const blob = new Blob([response.data]);
-        
-        // Dateinamen aus dem Header extrahieren oder Fallback verwenden
-        const contentDisposition = response.headers['content-disposition'];
-        let filename = 'konvertiertes_dokument.md';
-        
-        if (contentDisposition) {
-          const filenameMatch = contentDisposition.match(/filename="(.+)"/);
-          if (filenameMatch && filenameMatch[1]) {
-            filename = filenameMatch[1];
-          }
-        }
-        
-        // Download-Link erstellen und klicken
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', filename);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.URL.revokeObjectURL(url);
-        
-        return true;
-      } catch (error) {
-        this.error = error.response?.data?.message || error.message || 'Fehler beim Herunterladen der Datei';
-        console.error('Fehler beim Herunterladen der konvertierten Datei:', error);
-        throw error;
-      }
-    },
-    
-    async deleteResult(resultId) {
-      try {
-        const authStore = useAuthStore();
-        if (!authStore.token) {
-          throw new Error('Benutzer ist nicht angemeldet');
-        }
-        
-        await axios.delete(`/api/doc-converter/results/${resultId}`, {
-          headers: {
-            'Authorization': `Bearer ${authStore.token}`
-          }
-        });
-        
-        // Ergebnis aus dem lokalen State entfernen
-        this.conversionResults = this.conversionResults.filter(result => result.id !== resultId);
-        
-        return true;
-      } catch (error) {
-        this.error = error.response?.data?.message || error.message || 'Fehler beim Löschen des Ergebnisses';
-        console.error('Fehler beim Löschen des Konvertierungsergebnisses:', error);
-        throw error;
-      }
-    },
-    
-    // Alle Ergebnisse löschen
-    async clearAllResults() {
-      try {
-        const authStore = useAuthStore();
-        if (!authStore.token) {
-          throw new Error('Benutzer ist nicht angemeldet');
-        }
-        
-        await axios.delete('/api/doc-converter/results', {
-          headers: {
-            'Authorization': `Bearer ${authStore.token}`
-          }
-        });
-        
-        // Lokalen State leeren
-        this.conversionResults = [];
-        
-        return true;
-      } catch (error) {
-        this.error = error.response?.data?.message || error.message || 'Fehler beim Löschen aller Ergebnisse';
-        console.error('Fehler beim Löschen aller Konvertierungsergebnisse:', error);
-        throw error;
-      }
+  };
+
+  const cancelConversion = async () => {
+    try {
+      await docConverterStore.cancelConversion();
+      isConverting.value = false;
+      conversionProgress.value = 0;
+      currentProcessingFile.value = '';
+      showToast('Konvertierung abgebrochen', 'info');
+    } catch (error) {
+      console.error('Fehler beim Abbrechen der Konvertierung:', error);
     }
-  }
-});
+  };
+
+  const loadPreviousResults = async () => {
+    try {
+      await docConverterStore.loadPreviousResults();
+    } catch (error) {
+      console.error('Fehler beim Laden vorheriger Ergebnisse:', error);
+    }
+  };
+
+  const viewResult = (result) => {
+    previewData.value = result;
+    showPreviewModal.value = true;
+  };
+
+  const downloadResult = (result) => {
+    docConverterStore.downloadConvertedFile(result.id);
+  };
+
+  const deleteResult = async (result) => {
+    try {
+      await docConverterStore.deleteResult(result.id);
+      showToast(`"${result.fileName}" wurde gelöscht`, 'info');
+    } catch (error) {
+      showToast(`Fehler beim Löschen: ${error.message}`, 'error');
+    }
+  };
+
+  const clearAllResults = async () => {
+    try {
+      await docConverterStore.clearAllResults();
+      showToast('Alle Konvertierungsergebnisse wurden gelöscht', 'info');
+    } catch (error) {
+      showToast(`Fehler beim Löschen aller Ergebnisse: ${error.message}`, 'error');
+    }
+  };
+
+  const closePreviewModal = () => {
+    showPreviewModal.value = false;
+    previewData.value = null;
+  };
+
+  return {
+    // State
+    selectedFiles,
+    isConverting,
+    conversionProgress,
+    currentProcessingFile,
+    conversionError,
+    conversionOptions,
+    showPreviewModal,
+    previewData,
+    
+    // Computed
+    conversionResults,
+    hasResults,
+    isLoading,
+    
+    // Constants
+    acceptedFormats,
+    maxFileSize,
+    
+    // Methods
+    handleFilesSelected,
+    removeFile,
+    clearSelectedFiles,
+    startConversion,
+    cancelConversion,
+    loadPreviousResults,
+    viewResult,
+    downloadResult,
+    deleteResult,
+    clearAllResults,
+    closePreviewModal
+  };
+}

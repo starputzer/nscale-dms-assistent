@@ -1,0 +1,29 @@
+<\!DOCTYPE html>
+<html>
+<head>
+  <title>Reset App</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    button { background: red; color: white; border: none; padding: 10px; cursor: pointer; }
+    a { color: blue; text-decoration: underline; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Reset App</h1>
+  <p>Klicke auf den Button, um alle Einstellungen zurückzusetzen:</p>
+  <button onclick="
+    localStorage.clear();
+    localStorage.setItem('useNewUI', 'false');
+    localStorage.setItem('feature_vueDocConverter', 'false');
+    localStorage.setItem('feature_vueChat', 'false');
+    localStorage.setItem('feature_vueAdmin', 'false');
+    localStorage.setItem('feature_vueSettings', 'false');
+    document.getElementById('status').style.display = 'block';
+  ">Reset All</button>
+  
+  <div id="status" style="display:none; margin-top: 20px; padding: 10px; background: #dff0d8; color: #3c763d;">
+    Einstellungen zurückgesetzt\!
+    <p><a href="/">Zurück zur App</a></p>
+  </div>
+</body>
+</html>

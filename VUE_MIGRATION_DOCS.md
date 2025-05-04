@@ -36,10 +36,14 @@ Ein zentrales Element der Migration ist das Feature-Toggle-System, das es ermög
 - **localStorage-basierte Toggles**: Schalter werden im Browser-Speicher gespeichert
 - **Komponentenspezifische Toggles**: Jede Hauptkomponente hat einen eigenen Toggle
 - **Admin-Bereich**: Schaltzentrale für die Steuerung aller Toggles
+- **Pinia Store**: Zentrale Store-Implementierung für Vue.js-Komponenten
 
 ```javascript
-// Beispiel für die Abfrage eines Feature-Toggles
-const useVueDocConverter = localStorage.getItem('feature_vueDocConverter') !== 'false';
+// Beispiel für die Abfrage eines Feature-Toggles mit dem neuen Pinia Store
+import { useFeatureToggleStore } from '@/stores/featureToggleStore';
+
+const featureStore = useFeatureToggleStore();
+const useVueDocConverter = featureStore.isFeatureEnabled('vueDocConverter');
 
 if (useVueDocConverter) {
   // Vue.js-Implementierung laden
@@ -54,10 +58,11 @@ Die Migration erfolgt komponentenweise. Hier ist der aktuelle Status:
 
 | Komponente | Status | Beschreibung |
 |------------|--------|--------------|
-| Dokumentenkonverter | ✅ 95% | Vue.js-Implementation funktioniert stabil, Fallback-Mechanismus optimiert, Endlosschleifen beseitigt |
+| Dokumentenkonverter | ✅ 100% | Vue.js-Implementation vollständig, inline-Scripts entfernt, ContentRenderer implementiert |
 | Chat-Interface | ✅ 75% | Vollständige Implementation mit reaktiven Komponenten, sessionStore.js und chatStore.js |
 | Admin-Bereich | ✅ 100% | Feedback-Verwaltung, MOTD-Verwaltung, Benutzerverwaltung und System-Monitoring vollständig implementiert |
 | Settings | ✅ 90% | Vue.js-Implementation abgeschlossen und in klassisches UI integriert |
+| Feature-Toggle | ✅ 100% | Dedizierte Komponente für Feature-Toggle-Verwaltung erstellt |
 
 ## Architekturprinzipien
 
@@ -66,6 +71,8 @@ Bei der Migration werden folgende Prinzipien angewendet:
 1. **Single Source of Truth**: Jede Datei existiert nur einmal im Dateisystem mit symbolischen Links für andere Verzeichnisse
 2. **Kanonische Pfade**: Die Vue.js-Dateien haben einheitliche und vorhersehbare Pfade
 3. **Robuste Fallbacks**: Jeder Asset-Typ hat einen Fallback-Mechanismus für den Fall, dass der Hauptpfad nicht funktioniert
+4. **Keine Inline-Scripts**: Vue.js-Templates enthalten keine inline-Scripts, da diese von Vue ignoriert werden
+5. **Sichere Content-Renderer**: Statt v-html werden dedizierte Komponenten für sicheres Rendering verwendet
 
 ## Asset-Management
 
@@ -83,6 +90,8 @@ Während der Migration ist das Asset-Management eine besondere Herausforderung. 
 ├── nscale-vue/            # Vue.js-Frontend
 │   ├── src/
 │   │   ├── components/
+│   │   │   ├── common/    # Gemeinsame Komponenten (ContentRenderer, SafeIframe)
+│   │   │   └── doc-converter/ # Dokumentenkonverter-Komponenten
 │   │   └── standalone/    # Eigenständige Vue-Module
 └── api/
     └── static/            # Statische Dateien für API-Server
@@ -111,8 +120,8 @@ Der Dokumentenkonverter war eine der Hauptkomponenten, die migriert wurden. Hier
    - **Lösung**: Implementierung einer optimierten Pfad-Auflösung mit mehreren Fallback-Pfaden.
 
 2. **ES-Module-Probleme**:
-   - **Problem**: Der Versuch, ES-Module in einem nicht-Modul-Kontext zu laden, führte zu Fehlern.
-   - **Lösung**: Änderung des Skripttyps von "module" zu "text/javascript" und Vereinfachung der Implementierung.
+   - **Problem**: Der Versuch, ES-Module in einem nicht-Modul-Kontext zu laden, führte zu Fehlern mit der Meldung "Cannot use import statement outside a module".
+   - **Lösung**: Erstellung von speziellen nomodule-Versionen ohne ES-Module-Importe und Änderung des Skripttyps von "module" zu "text/javascript".
 
 3. **DOM-Verfügbarkeit und Manipulation**:
    - **Problem**: DOM-Elemente waren zum Zeitpunkt der Initialisierung oft nicht verfügbar, und die DOM-Manipulation durch innerHTML verursachte Probleme bei Mount-Points.
@@ -121,6 +130,14 @@ Der Dokumentenkonverter war eine der Hauptkomponenten, die migriert wurden. Hier
 4. **Endlosschleifen**:
    - **Problem**: Mehrfache setTimeout-Aufrufe führten zu exponentiellen Initialisierungsversuchen.
    - **Lösung**: Einführung von Initialisierungsflags und optimierte Logik zur Vermeidung von Mehrfachinitialisierungen.
+
+5. **Inline-Scripts in Vue-Templates**:
+   - **Problem**: Vue.js warnt mit "Template compilation error: Tags with side effect (<script> and <style>) are ignored in client component templates" - inline-Scripts werden ignoriert.
+   - **Lösung**: Erstellung dedizierter Komponenten (DocConverterInitializer, FeatureToggleManager) für die bisher in inline-Scripts enthaltene Logik.
+
+6. **v-html Sicherheitsprobleme**:
+   - **Problem**: Die Verwendung von v-html kann zu XSS-Schwachstellen führen und verursacht Vue-Warnungen.
+   - **Lösung**: Implementierung der ContentRenderer-Komponente mit DOMPurify für sicheres Rendering.
 
 ### Code-Beispiele
 
@@ -156,6 +173,54 @@ const observer = new MutationObserver(function(mutations) {
   
   // Verarbeitung der Mutationen...
 });
+```
+
+```javascript
+// Nomodule-Versionen für Browser ohne ES-Module-Support
+(function() {
+  document.addEventListener('DOMContentLoaded', function() {
+    const mountElement = document.getElementById('doc-converter-app');
+    
+    if (mountElement) {
+      try {
+        // Überprüfen, ob Vue global verfügbar ist
+        if (typeof Vue === 'undefined') {
+          // Lade Vue falls nicht verfügbar
+          const vueScript = document.createElement('script');
+          vueScript.src = 'https://unpkg.com/vue@3.2.31/dist/vue.global.js';
+          vueScript.onload = initializeComponent;
+          vueScript.onerror = fallbackToClassic;
+          document.head.appendChild(vueScript);
+        } else {
+          // Vue ist verfügbar, initialisiere den DocConverter
+          initializeComponent();
+        }
+      } catch (error) {
+        fallbackToClassic();
+      }
+    }
+  });
+})();
+```
+
+```vue
+<!-- ContentRenderer-Komponente als sichere Alternative zu v-html -->
+<template>
+  <div class="content-renderer">
+    <div v-if="type === 'markdown'" class="markdown-container" ref="markdownContainer"></div>
+    <!-- weitere Typen... -->
+  </div>
+</template>
+
+<script setup>
+// Sicheres Rendering mit DOMPurify
+function updateContent() {
+  if (props.type === 'markdown' && markdownContainer.value) {
+    const sanitizedHtml = DOMPurify.sanitize(marked(props.content));
+    markdownContainer.value.innerHTML = sanitizedHtml;
+  }
+}
+</script>
 ```
 
 ## Authentifizierungs-Verbesserungen
@@ -227,6 +292,12 @@ Die Vue.js-Implementierung verwendet Pinia für das State Management:
                          +----------------+       +----------------+
                          | userStore      |<----->| systemStore    |
                          +----------------+       +----------------+
+                                                          ^
+                                                          |
+                                                          v
+                                                  +----------------+
+                                                  | featureToggleStore |
+                                                  +----------------+
 ```
 
 ### Umgesetzte Komponenten
@@ -268,6 +339,7 @@ Die Feedback-Verwaltung bietet umfassende Analysemöglichkeiten für Benutzerfee
   - Kontext der Unterhaltung
   - Direkte Navigation zur betreffenden Chat-Session
   - Maximierbare Ansicht für bessere Lesbarkeit
+  - ContentRenderer für sicheres HTML-Rendering
 
 - **feedbackStore.js**: Bietet Zugriff auf Feedback-Daten
   - Statistiken und einzelne Feedback-Einträge
@@ -344,6 +416,35 @@ Der Einstellungsbereich wurde vollständig in Vue.js implementiert:
   - DOM-Manipulation mit Mount-Points für nahtlose Integration
   - Erhaltung des bisherigen Verhaltens mit zusätzlichen Funktionen
 
+#### Feature-Toggle-Verwaltung
+
+Die Feature-Toggle-Verwaltung wurde als eigenständige Vue-Komponente implementiert:
+
+- **FeatureToggleManager.vue**: Interface für die Verwaltung von Feature-Toggles
+  - Umschalten zwischen klassischer und Vue.js-UI
+  - Aktivieren/Deaktivieren einzelner Vue.js-Komponenten
+  - Entwicklungsmodus-Aktivierung
+  - Debugging-Informationen
+
+- **featureToggleStore.js**: Pinia Store für alle Feature-Toggles
+  - Zentrale Verwaltung der Feature-Flags
+  - Persistenz im localStorage
+  - State-Synchronisierung und Initialisierungslogik
+
+#### Sicheres Rendering
+
+Zur Behebung der v-html-Probleme wurden spezielle Komponenten erstellt:
+
+- **ContentRenderer.vue**: Sichere Alternative zu v-html
+  - Unterstützung für verschiedene Inhaltstypen (Markdown, Text, HTML, JSON)
+  - Sanitizing mit DOMPurify
+  - Sicheres HTML-Rendering in Referenzen
+
+- **SafeIframe.vue**: Sichere Alternative zu iframe-srcdoc
+  - Kontrolliertes Rendering von HTML im iframe
+  - Sandbox-Attribute für Sicherheit
+  - Event-Handling für Größenanpassung
+
 ## Lessons Learned
 
 Aus dem bisherigen Migrationsprozess konnten wichtige Erkenntnisse gewonnen werden:
@@ -357,7 +458,7 @@ Aus dem bisherigen Migrationsprozess konnten wichtige Erkenntnisse gewonnen werd
    - Leeren Sie Container vor dem Hinzufügen neuer Elemente
    - Stellen Sie sicher, dass Lade-Indikatoren und Mount-Points immer korrekt entfernt werden
 5. **ES-Module mit Bedacht einsetzen**: Bei Migration ist es oft besser, auf ES-Module zu verzichten, bis die gesamte Architektur umgestellt ist.
-6. **Script-Loading optimieren**: Verwenden Sie type="text/javascript" anstelle von type="module" für direktes Browser-Loading.
+6. **Script-Loading optimieren**: Verwenden Sie type="text/javascript" anstelle von type="module" für direktes Browser-Loading und erstellen Sie nomodule-Versionen Ihrer Komponenten für Browser ohne ES-Module-Support.
 7. **Tab-Erkennung verbessern**: Implementieren Sie mehrere Methoden zur Erkennung aktiver Tabs (data-attribute, IDs, Vue.js-Status).
 8. **Wiederverwendbare Komponenten erstellen**: Gemeinsame UI-Elemente wie ConfirmDialog sollten früh entwickelt werden, um sie in allen Bereichen nutzen zu können.
 9. **Dark Mode von Anfang an**: Dark Mode- und Kontrast-Unterstützung sollte von Beginn an implementiert werden, um nachträgliche Anpassungen zu vermeiden.
@@ -365,6 +466,103 @@ Aus dem bisherigen Migrationsprozess konnten wichtige Erkenntnisse gewonnen werd
 11. **Konsistente Filter- und Sortierpatterns**: Entwickeln Sie einheitliche Muster für Filterung und Sortierung, die in verschiedenen Komponenten wiederverwendet werden können.
 12. **Bridge-Funktionalität**: Erstellen Sie eine klare Bridge-Funktionalität zwischen klassischem JS und Vue.js, um das Zusammenspiel zu erleichtern und einen graduellen Übergang zu ermöglichen.
 13. **Mount-Points**: Verwenden Sie klar definierte Mount-Points mit eindeutigen IDs für die Integration von Vue-Komponenten in das klassische UI.
+14. **Keine inline-Scripts in Vue-Templates**: Vue.js ignoriert inline-Scripts in Templates, daher müssen Sie diese in eigenständige Komponenten migrieren.
+15. **Sichere Alternativen zu v-html**: Verwenden Sie dedizierte Komponenten statt v-html, um XSS-Schwachstellen zu vermeiden und Template-Warnungen zu beheben.
+
+## Deployment-Prozess
+
+Für die Integration der Vue.js-Komponenten wurde ein spezifischer Deployment-Prozess entwickelt, der durch das `update-vue-components.sh` Skript automatisiert wird.
+
+### Das update-vue-components.sh Skript
+
+```bash
+#!/bin/bash
+# update-vue-components.sh
+# Skript zum Aktualisieren der Vue.js-Komponenten in der Produktion
+
+# Absolute Verzeichnisse
+ROOT_DIR="/opt/nscale-assist/app"
+SOURCE_DIR="${ROOT_DIR}/nscale-vue"
+STATIC_DIR="${ROOT_DIR}/frontend/static"
+JS_DIR="${ROOT_DIR}/frontend/js"
+API_STATIC_DIR="${ROOT_DIR}/api/static"
+
+# Durchführung des Build-Prozesses
+echo "1. Baue Vue.js-Komponenten..."
+cd ${SOURCE_DIR}
+npm run build
+cd "${ROOT_DIR}"
+
+# Kopieren der kompilierten Dateien in die entsprechenden Verzeichnisse
+echo "2. Kopiere Standalone-Skripte..."
+if [ -d "${SOURCE_DIR}/dist/assets/js" ]; then
+  cp ${SOURCE_DIR}/dist/assets/js/*.js ${STATIC_DIR}/vue/standalone/
+  cp ${SOURCE_DIR}/dist/assets/js/*.js ${API_STATIC_DIR}/vue/standalone/
+fi
+
+# Kopieren der direkten Zugriffe auf Standalone-Komponenten
+echo "3. Kopiere standalone-Komponenten-Direktzugriffe..."
+cp ${SOURCE_DIR}/src/standalone/*.js ${JS_DIR}/vue/
+
+# Erstellen von Initialisierungsskripten
+echo "5. Erstelle Skripte zum Laden der Vue.js-Komponenten..."
+cat > ${JS_DIR}/vue/doc-converter-initializer.js << 'EOF'
+// DocConverter-Initializer Skript...
+EOF
+
+# Patchen der index.html
+echo "6. Erstelle Patch für index.html..."
+# patch-index-html.sh wird erstellt...
+```
+
+Dieses Skript automatisiert folgende Schritte:
+
+1. **Build der Vue.js-Anwendung**: Verwendet npm run build im nscale-vue-Verzeichnis
+2. **Kopieren der Standalone-Skripte**: Verteilt die kompilierten JS-Dateien in die entsprechenden Verzeichnisse für Frontend und API
+3. **Kopieren der direkten Zugriffe**: Stellt sicher, dass die Direktzugriffsskripte verfügbar sind
+4. **Erstellen von Initialisierer-Skripten**: Generiert spezielle Skripte, die die Vue.js-Komponenten in die bestehende Anwendung integrieren
+5. **Patchen von index.html**: Erstellt ein Skript zum Ersetzen von inline-Scripts durch externe Skripte
+
+### Robuste Fallback-Strategien
+
+Das Skript implementiert verschiedene Fallback-Strategien, um eine zuverlässige Ausführung zu gewährleisten:
+
+1. **Multiple Pfadüberprüfungen**: Prüft verschiedene mögliche Pfade für Assets, z.B. `/dist/assets/js/` oder `/dist/assets/`
+2. **Alternative Pfade für Scripts**: Wenn ein Skript nicht geladen werden kann, werden automatisch alternative Pfade versucht
+3. **Fallback-Implementierungen**: Bei Fehlern werden automatisch klassische Implementierungen aktiviert
+4. **Dynamische Container-Erkennung**: Mehrere mögliche Container-IDs werden überprüft und dynamisch erstellt, wenn sie fehlen
+
+### Beispiel für die DocConverter-Initialisierer-Implementierung:
+
+```javascript
+// Verschiedene mögliche Container-IDs prüfen
+const possibleContainers = [
+  document.getElementById('doc-converter-container'),
+  document.getElementById('doc-converter-app'),
+  document.getElementById('doc-converter-tab')
+];
+
+const docConverterContainer = possibleContainers.find(container => container !== null);
+
+// Bei Fehler alternative Pfade ausprobieren
+const alternativePaths = [
+  '/api/static/vue/standalone/doc-converter.js',
+  '/frontend/static/vue/standalone/doc-converter.js',
+  '/frontend/js/vue/doc-converter.js'
+];
+
+// Iteratives Versuchen alternativer Pfade
+let pathIndex = 0;
+const tryAlternativePath = function() {
+  if (pathIndex < alternativePaths.length) {
+    const newScript = document.createElement('script');
+    newScript.src = alternativePaths[pathIndex];
+    // ...
+  }
+};
+```
+
+Die vollständige Dokumentation des Deployment-Prozesses ist in der separaten Datei `VUE_COMPONENT_DEPLOYMENT.md` zu finden.
 
 ## Nächste Schritte
 
@@ -375,6 +573,7 @@ Die Migration wird mit folgenden Schritten fortgesetzt:
    - ✅ **MOTD-Verwaltung**: Implementierung des MOTD-Editors und der Vorschau-Komponente (abgeschlossen)
    - ✅ **Nutzerverwaltung**: Implementierung der Benutzerverwaltung mit UserList, UserForm und ConfirmDialog (abgeschlossen)
    - ✅ **System-Monitoring**: Implementierung von SystemStatus und SystemLogs-Komponenten (abgeschlossen)
+   - ✅ **Feature-Toggle-Manager**: Implementierung des Feature-Toggle-Managers als dedizierte Komponente (abgeschlossen)
 
 2. **Einstellungsbereich implementieren**: ✅
    - ✅ SettingsView.vue erstellt mit reaktivem Design
@@ -383,12 +582,19 @@ Die Migration wird mit folgenden Schritten fortgesetzt:
    - ✅ Benachrichtigungseinstellungen implementiert (Sessions, System, E-Mail)
    - ✅ Integration in das klassische UI über Bridge-Funktionalität
 
-3. **Gemeinsame Infrastruktur**:
-   - Vereinheitlichung des Asset-Managements
-   - Optimierung des Build-Prozesses
-   - Einführung einer zentralen Fehlerbehandlung
+3. **Dokumentenkonverter optimieren**: ✅
+   - ✅ DocConverterInitializer Komponente erstellt
+   - ✅ ContentRenderer für sicheres Rendering implementiert
+   - ✅ SafeIframe für sichere HTML-Vorschau erstellt
+   - ✅ Inline-Scripts aus Templates entfernt
 
-4. **Mobile Optimierung**:
+4. **Gemeinsame Infrastruktur**: ✅
+   - ✅ Vereinheitlichung des Asset-Managements durch update-vue-components.sh
+   - ✅ Optimierung des Build-Prozesses mit automatischem Deployment
+   - ✅ Robuste Fallback-Strategien implementiert
+   - ⏳ Einführung einer zentralen Fehlerbehandlung (in Arbeit)
+
+5. **Mobile Optimierung**:
    - Responsive Design für alle Komponenten
    - Touch-freundliche Bedienelemente
    - Progressive Web App (PWA)-Funktionalität
@@ -407,11 +613,13 @@ Für die Migration werden folgende Tools und Ressourcen genutzt:
    - Pinia für State Management
    - Tailwind CSS für Styling
    - vue-router für Routing
+   - DOMPurify für sicheres HTML-Rendering
 
 3. **Dokumentationen**:
    - Vue.js Official Guide
    - Tailwind CSS Documentation
    - Pinia Documentation
+   - DOMPurify Documentation
 
 ## Migrationsrichtlinien
 
@@ -421,6 +629,7 @@ Für Entwickler, die an der Migration arbeiten, gelten folgende Richtlinien:
    - Eine Komponente pro Datei
    - Verwendung der Composition API
    - Klare Props und Emits definieren
+   - Keine inline-Scripts in Templates
 
 2. **State Management**:
    - Zustand in Pinia Stores auslagern
@@ -432,11 +641,17 @@ Für Entwickler, die an der Migration arbeiten, gelten folgende Richtlinien:
    - Verwendung des Design-Token-Systems
    - Vermeidung von scoped CSS wenn möglich
 
-4. **Testing**:
+4. **Sicherheit**:
+   - Kein v-html für benutzergenerierten Inhalt
+   - Verwendung von ContentRenderer für Inhaltsdarstellung
+   - Verwendung von SafeIframe für HTML-Vorschau
+   - Sanitizing aller Inhalte mit DOMPurify
+
+5. **Testing**:
    - Unit-Tests für alle neuen Komponenten
    - End-to-End-Tests für kritische Workflows
    - Visuelle Regression-Tests für UI-Komponenten
 
 ---
 
-Aktualisiert: 06.05.2025
+Aktualisiert: 04.05.2025

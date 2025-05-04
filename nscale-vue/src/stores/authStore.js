@@ -14,6 +14,8 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     isAuthenticated: (state) => !!state.token,
     isAdmin: (state) => state.user?.role === 'admin',
+    isFeedbackAnalyst: (state) => state.user?.role === 'feedback_analyst', 
+    canViewFeedback: (state) => ['admin', 'feedback_analyst'].includes(state.user?.role),
     userRole: (state) => state.user?.role || 'guest',
     userId: (state) => state.user?.id,
     userEmail: (state) => state.user?.email

@@ -50,7 +50,10 @@ const routes = [
         path: 'doc-converter',
         name: 'DocConverter',
         component: DocConverterView,
-        meta: { title: 'nscale DMS Assistent - Dokumentkonverter' }
+        meta: { 
+          title: 'nscale DMS Assistent - Dokumentkonverter',
+          requiresAdmin: true  // Nur für Admins zugänglich
+        }
       },
       {
         path: 'settings',
@@ -84,7 +87,10 @@ const routes = [
             path: 'feedback',
             name: 'AdminFeedback',
             component: AdminFeedbackView,
-            meta: { title: 'nscale DMS Assistent - Feedback-Analyse' }
+            meta: { 
+              title: 'nscale DMS Assistent - Feedback-Analyse',
+              requiresFeedbackAccess: true 
+            }
           },
           {
             path: 'motd',
@@ -142,6 +148,7 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   const isAuthenticated = authStore.isAuthenticated;
   const isAdmin = authStore.isAdmin;
+  const canViewFeedback = authStore.canViewFeedback;
 
   // Wenn die Route Authentifizierung erfordert und der Benutzer nicht angemeldet ist,
   // leite zur Login-Seite weiter
@@ -152,6 +159,12 @@ router.beforeEach(async (to, from, next) => {
   // Wenn die Route Admin-Rechte erfordert und der Benutzer kein Admin ist,
   // leite zur Startseite weiter
   if (to.meta.requiresAdmin && !isAdmin) {
+    return next({ name: 'Home' });
+  }
+  
+  // Wenn die Route Feedback-Zugriff erfordert und der Benutzer keinen Zugriff hat,
+  // leite zur Startseite weiter
+  if (to.meta.requiresFeedbackAccess && !canViewFeedback) {
     return next({ name: 'Home' });
   }
 

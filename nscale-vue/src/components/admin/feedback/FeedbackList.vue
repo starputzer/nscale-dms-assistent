@@ -95,16 +95,33 @@
           <p class="comment-text">{{ feedback.comment }}</p>
         </div>
         
+        <!-- Antwort Vorschau -->
         <div class="feedback-message">
+          <div class="message-meta-label">Assistenten-Antwort:</div>
           <div class="message-preview" :class="{ 'expanded': expandedItems[feedback.id] }">
-            {{ truncateMessage(feedback.message_text) }}
+            {{ truncateMessage(feedback.answer || feedback.message_text) }}
           </div>
           <button 
-            v-if="shouldShowExpandButton(feedback.message_text)" 
+            v-if="shouldShowExpandButton(feedback.answer || feedback.message_text)" 
             class="expand-btn"
             @click="toggleExpand(feedback.id)"
           >
             {{ expandedItems[feedback.id] ? 'Weniger anzeigen' : 'Mehr anzeigen' }}
+          </button>
+        </div>
+        
+        <!-- Frage Vorschau (falls vorhanden) -->
+        <div v-if="feedback.question" class="feedback-question">
+          <div class="message-meta-label">Ursprüngliche Frage:</div>
+          <div class="question-preview" :class="{ 'expanded': expandedItemsQuestion[feedback.id] }">
+            {{ truncateMessage(feedback.question) }}
+          </div>
+          <button 
+            v-if="shouldShowExpandButton(feedback.question)" 
+            class="expand-btn"
+            @click="toggleExpandQuestion(feedback.id)"
+          >
+            {{ expandedItemsQuestion[feedback.id] ? 'Weniger anzeigen' : 'Mehr anzeigen' }}
           </button>
         </div>
       </div>
@@ -178,6 +195,7 @@ const emit = defineEmits([
 const activeFilter = ref('all');
 const searchQuery = ref('');
 const expandedItems = ref({});
+const expandedItemsQuestion = ref({});
 const currentPage = ref(props.pagination?.currentPage || 1);
 
 // Computed properties
@@ -253,6 +271,13 @@ const toggleExpand = (feedbackId) => {
   expandedItems.value = {
     ...expandedItems.value,
     [feedbackId]: !expandedItems.value[feedbackId]
+  };
+};
+
+const toggleExpandQuestion = (feedbackId) => {
+  expandedItemsQuestion.value = {
+    ...expandedItemsQuestion.value,
+    [feedbackId]: !expandedItemsQuestion.value[feedbackId]
   };
 };
 
@@ -530,7 +555,14 @@ watch(() => props.pagination, (newVal) => {
   padding: 1rem;
 }
 
-.message-preview {
+.message-meta-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+
+.message-preview, .question-preview {
   font-size: 0.875rem;
   line-height: 1.6;
   color: #334155;
@@ -540,8 +572,18 @@ watch(() => props.pagination, (newVal) => {
   transition: max-height 0.3s ease;
 }
 
-.message-preview.expanded {
+.message-preview.expanded, .question-preview.expanded {
   max-height: none;
+}
+
+.feedback-question {
+  padding: 1rem;
+  background-color: #e0f2fe;
+  border-top: 1px solid #bae6fd;
+}
+
+.question-preview {
+  color: #0369a1;
 }
 
 .expand-btn {
@@ -681,8 +723,22 @@ watch(() => props.pagination, (newVal) => {
   background-color: #1e1e1e;
 }
 
-:global(.theme-dark) .message-preview {
+:global(.theme-dark) .message-preview, 
+:global(.theme-dark) .question-preview {
   color: #e0e0e0;
+}
+
+:global(.theme-dark) .message-meta-label {
+  color: #aaa;
+}
+
+:global(.theme-dark) .feedback-question {
+  background-color: #163850;
+  border-top-color: #1e4a6c;
+}
+
+:global(.theme-dark) .question-preview {
+  color: #81c5f8;
 }
 
 :global(.theme-dark) .expand-btn {
@@ -706,6 +762,21 @@ watch(() => props.pagination, (newVal) => {
 
 :global(.theme-dark) .pagination-info {
   color: #bbb;
+}
+
+/* Kontrast-Modus Unterstützung */
+:global(.theme-contrast) .message-meta-label {
+  color: #ffeb3b;
+  font-weight: bold;
+}
+
+:global(.theme-contrast) .feedback-question {
+  background-color: #003566;
+  border-color: #0066cc;
+}
+
+:global(.theme-contrast) .question-preview {
+  color: #66ccff;
 }
 
 /* Responsive adjustments */

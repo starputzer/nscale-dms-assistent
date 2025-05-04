@@ -1,0 +1,67 @@
+/**
+ * Dokumentenkonverter Positionierungs-Fix CSS
+ * Verhindert, dass der Dokumentenkonverter außerhalb seines Tabs angezeigt wird
+ */
+
+/* Verstecke alle Dokumentenkonverter-Elemente außerhalb des Tab-Kontexts */
+body:not(.admin-page) #doc-converter-container,
+body:not(.admin-page) #doc-converter-app,
+body:not(.admin-page) .doc-converter,
+body:not(.admin-page) [data-tab="docConverter"],
+body:not(.admin-page) .admin-tab-content[data-tab="docConverter"],
+body:not(.admin-page) .doc-converter-force-visible,
+body:not(.admin-docconverter-tab) #doc-converter-container,
+body:not(.admin-docconverter-tab) #doc-converter-app,
+body:not(.admin-docconverter-tab) .doc-converter,
+body:not(.admin-docconverter-tab) [data-tab="docConverter"],
+body:not(.admin-docconverter-tab) .admin-tab-content[data-tab="docConverter"],
+body:not(.admin-docconverter-tab) .doc-converter-force-visible {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
+    pointer-events: none !important;
+}
+
+/* Wenn ein Dokumentenkonverter außerhalb des Tab-Kontexts gefunden wird, entferne ihn vollständig */
+.chat-container #doc-converter-container,
+.chat-container #doc-converter-app,
+.chat-container .doc-converter,
+main:not(.admin-panel) #doc-converter-container,
+main:not(.admin-panel) #doc-converter-app,
+main:not(.admin-panel) .doc-converter {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
+    pointer-events: none !important;
+}
+
+/* Stelle sicher, dass der Dokumentenkonverter nur im Admin-Bereich und nur im korrekten Tab angezeigt wird */
+.admin-page.admin-docconverter-tab #doc-converter-container,
+.admin-page.admin-docconverter-tab #doc-converter-app,
+.admin-page.admin-docconverter-tab .doc-converter,
+.admin-panel .tab-content[data-active-tab="docConverter"] #doc-converter-container,
+.admin-panel .tab-content[data-active-tab="docConverter"] #doc-converter-app,
+.admin-panel .tab-content[data-active-tab="docConverter"] .doc-converter {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-height: 400px !important;
+    width: 100% !important;
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    z-index: 100 !important;
+    pointer-events: auto !important;
+}

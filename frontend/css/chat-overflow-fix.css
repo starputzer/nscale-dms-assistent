@@ -1,0 +1,105 @@
+/**
+ * Chat-Overflow-Fix
+ * Behebt das Problem mit dem Scrollen im Chat-Bereich
+ */
+
+/* Stellt sicher, dass der Chat-Container richtig scrollbar ist */
+.chat-container {
+    position: relative;
+    height: 100%;
+    max-height: calc(100vh - 60px); /* Anpassen an die Header-Höhe */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Verhindert doppelte Scrollbalken */
+}
+
+/* Chat-Nachrichten-Bereich scrollbar machen */
+.message-container, 
+.chat-messages,
+.messages-container {
+    flex: 1;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    padding-bottom: 120px !important; /* Ausreichend Platz für Eingabefeld */
+    min-height: 300px;
+    max-height: calc(100vh - 180px); /* Anpassen an Header + Eingabebereich */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+/* Eingabebereich fixiert am unteren Rand */
+.input-container,
+.chat-input-container {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    background-color: var(--nscale-background, #fff);
+    padding: 1rem;
+    border-top: 1px solid var(--nscale-border, #e2e8f0);
+    z-index: 100;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    max-width: 100%;
+}
+
+/* Scrollbar-Stil für Webkit-Browser */
+.message-container::-webkit-scrollbar,
+.chat-messages::-webkit-scrollbar,
+.messages-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.message-container::-webkit-scrollbar-track,
+.chat-messages::-webkit-scrollbar-track,
+.messages-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.message-container::-webkit-scrollbar-thumb,
+.chat-messages::-webkit-scrollbar-thumb,
+.messages-container::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+/* Dunkelmodus-Anpassungen */
+.theme-dark .message-container::-webkit-scrollbar-thumb,
+.theme-dark .chat-messages::-webkit-scrollbar-thumb,
+.theme-dark .messages-container::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.theme-dark .input-container,
+.theme-dark .chat-input-container {
+    background-color: #1e1e1e;
+    border-top: 1px solid #333;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Kontrastmodus-Anpassungen */
+.theme-contrast .message-container::-webkit-scrollbar-thumb,
+.theme-contrast .chat-messages::-webkit-scrollbar-thumb,
+.theme-contrast .messages-container::-webkit-scrollbar-thumb {
+    background-color: #ffeb3b;
+}
+
+.theme-contrast .input-container,
+.theme-contrast .chat-input-container {
+    background-color: #000000;
+    border-top: 2px solid #ffeb3b;
+    box-shadow: 0 -2px 10px rgba(255, 235, 59, 0.2);
+}
+
+/* Mobile Anpassungen */
+@media (max-width: 768px) {
+    .message-container, 
+    .chat-messages,
+    .messages-container {
+        padding-bottom: 90px !important;
+    }
+    
+    .input-container,
+    .chat-input-container {
+        padding: 0.75rem;
+    }
+}

@@ -1,0 +1,2631 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <script src="/fix-es-module-error.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nscale DMS Assistent</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Vue.js in Entwicklungsversion für bessere Fehlermeldungen -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.2.31/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Hilfs-Skript zur Vue-Diagnose -->
+    <script>
+        // Vue-Fehler abfangen
+        window.addEventListener('error', function(event) {
+            console.error('GLOBALER FEHLER:', event.message, event.filename, event.lineno);
+            document.getElementById('vue-error-logger') && 
+            (document.getElementById('vue-error-logger').innerHTML += `<div>${event.message} in ${event.filename}:${event.lineno}</div>`);
+        });
+        
+        // Vue-Init-Überprüfung
+        window.vueInitTester = {
+            test: function() {
+                try {
+                    // Prüfen, ob Vue verfügbar ist
+                    if (typeof Vue === 'undefined') {
+                        return 'Vue ist nicht definiert';
+                    }
+                    
+                    // Versuche, eine minimale Vue-App zu erstellen
+                    const testApp = Vue.createApp({
+                        data() {
+                            return { testMessage: 'Vue funktioniert' };
+                        }
+                    });
+                    
+                    // Wenn wir bis hierher kommen, ist Vue.js grundsätzlich funktionsfähig
+                    return 'Vue scheint korrekt initialisiert zu sein, aber die Hauptanwendung hat Probleme';
+                } catch (error) {
+                    return `Vue-Initialisierungsfehler: ${error.message}`;
+                }
+            }
+        };
+        
+        // Nach kurzem Timeout die Vue-Tests durchführen
+        setTimeout(function() {
+            // Diagnosediv hinzufügen, falls nicht vorhanden
+            if (!document.getElementById('vue-error-logger')) {
+                const diagDiv = document.createElement('div');
+                diagDiv.id = 'vue-error-logger';
+                diagDiv.style.position = 'fixed';
+                diagDiv.style.bottom = '10px';
+                diagDiv.style.right = '10px';
+                diagDiv.style.width = '300px';
+                diagDiv.style.maxHeight = '200px';
+                diagDiv.style.overflowY = 'auto';
+                diagDiv.style.backgroundColor = 'rgba(255, 0, 0, 0.1)';
+                diagDiv.style.border = '1px solid red';
+                diagDiv.style.padding = '10px';
+                diagDiv.style.zIndex = '10000';
+                diagDiv.style.color = 'red';
+                diagDiv.style.fontFamily = 'monospace';
+                diagDiv.style.fontSize = '12px';
+                document.body.appendChild(diagDiv);
+            }
+            
+            // Vue-Test durchführen und Ergebnis anzeigen
+            document.getElementById('vue-error-logger').innerHTML = `<div><strong>Vue-Test:</strong> ${window.vueInitTester.test()}</div>`;
+            
+            // Prüfen, ob die App-Div initialisiert wurde
+            const appDiv = document.getElementById('app');
+            if (appDiv) {
+                document.getElementById('vue-error-logger').innerHTML += `<div><strong>App-Status:</strong> ${appDiv.children.length} Kinder</div>`;
+            } else {
+                document.getElementById('vue-error-logger').innerHTML += `<div><strong>App-Status:</strong> Nicht gefunden</div>`;
+            }
+        }, 2000);
+    </script>
+    <!-- Eigene CSS-Dateien mit dynamischem Cache-Busting -->
+    <link href="/static/css/main.css" rel="stylesheet">
+    <link href="/static/css/feedback.css" rel="stylesheet">
+    <link href="/static/css/admin.css" rel="stylesheet">
+    <link href="/static/css/settings.css" rel="stylesheet">
+    <link href="/static/css/themes.css" rel="stylesheet">
+    <link href="/static/css/improved-ui.css" rel="stylesheet">
+    <link href="/static/css/source-references.css" rel="stylesheet">
+    <link href="/static/css/message-actions.css" rel="stylesheet">
+    <link href="/static/css/vue-settings.css" rel="stylesheet">
+    <!-- Zusätzliche CSS für Quellenreferenzen (wird dynamisch eingefügt) -->
+    
+    <!-- CSS-Fix für Admin-Panel bei Vue-Initialisierungsproblemen -->
+    <style>
+        /* Standardmäßig alle Tabs verstecken (überschreibt Vue v-if) */
+        .admin-panel-content[data-tab] {
+            display: none !important;
+        }
+        
+        /* Erstes Tab standardmäßig anzeigen */
+        .admin-panel-content[data-tab="users"] {
+            display: block !important;
+        }
+        
+        /* Aktives Tab anzeigen */
+        .admin-panel-content.active-tab {
+            display: block !important;
+        }
+    </style>
+    
+    <!-- Feature-Integration Skripte -->
+    <script src="/static/js/chat-integration.js"></script>
+    <script src="/static/js/admin-integration.js"></script>
+    <script src="/static/js/emergency-fix.js"></script>
+    <script src="/static/js/vue-rescue.js"></script>
+    
+    <!-- Notfall-Bootstrap-Skript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Prüfen ob alle Skripte korrekt geladen wurden
+            console.log('DOMContentLoaded Event ausgelöst');
+            
+            // Skripte überprüfen
+            const scripts = [
+                { name: 'Vue.js', global: 'Vue' },
+                { name: 'Axios', global: 'axios' },
+                { name: 'Marked', global: 'marked' }
+            ];
+            
+            let allLoaded = true;
+            scripts.forEach(script => {
+                if (typeof window[script.global] === 'undefined') {
+                    console.error(`KRITISCHER FEHLER: ${script.name} (${script.global}) nicht geladen!`);
+                    allLoaded = false;
+                } else {
+                    console.log(`${script.name} erfolgreich geladen.`);
+                }
+            });
+            
+            if (!allLoaded) {
+                // Notfall: CSS und JS neu laden
+                console.warn('Versuche Skripte neu zu laden...');
+                scripts.forEach(script => {
+                    if (typeof window[script.global] === 'undefined') {
+                        const s = document.createElement('script');
+                        switch(script.global) {
+                            case 'Vue':
+                                s.src = 'https://cdn.jsdelivr.net/npm/vue@3.2.31/dist/vue.global.js';
+                                break;
+                            case 'axios':
+                                s.src = 'https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js';
+                                break;
+                            case 'marked':
+                                s.src = 'https://cdn.jsdelivr.net/npm/marked/marked.min.js';
+                                break;
+                        }
+                        
+                        s.onload = function() {
+                            console.log(`${script.name} erfolgreich nachgeladen.`);
+                        };
+                        
+                        document.head.appendChild(s);
+                    }
+                });
+            }
+        });
+    </script>
+    <link rel="stylesheet" href="/css/vue-template-fix.css">
+    <link rel="stylesheet" href="/frontend/css/vue-template-fix.css">
+    <link rel="stylesheet" href="/frontend/css/vue-template-fix.css">
+    <link rel="stylesheet" href="/css/vue-template-fix.css">
+    <style>
+    /* Vue Template Fix CSS */
+    .vue-template-container { display: none !important; }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50">
+    <!-- Notfall-Container für den Fall, dass Vue.js nicht lädt -->
+    <div id="app-fallback" style="display: none;">
+        <div style="max-width: 400px; margin: 50px auto; padding: 20px; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px;">
+            <h2 style="text-align: center; margin-bottom: 20px;">nscale DMS Assistent</h2>
+            <p style="color: #721c24; background: #f8d7da; padding: 10px; border-radius: 4px; margin-bottom: 20px; text-align: center;">
+                Es gibt technische Probleme mit der Benutzeroberfläche.<br>
+                Die Anwendung wird im Notfallmodus geladen.
+            </p>
+            <div style="text-align: center;">
+                <button id="fallback-reload" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    Seite neu laden
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Fallback-Reload-Button-Funktion
+        document.addEventListener('DOMContentLoaded', function() {
+            const reloadButton = document.getElementById('fallback-reload');
+            if (reloadButton) {
+                reloadButton.addEventListener('click', function() {
+                    window.location.reload();
+                });
+            }
+            
+            // Nach 10 Sekunden Fallback UI anzeigen, wenn App nicht geladen
+            setTimeout(function() {
+                if (document.getElementById('app').children.length === 0) {
+                    document.getElementById('app-fallback').style.display = 'block';
+                    console.error('TIMEOUT: App wurde nicht rechtzeitig geladen.');
+                }
+            }, 10000);
+        });
+    </script>
+    
+    <!-- Haupt-Vue.js-App -->
+    <div id="app" class="h-screen flex flex-col">
+        <!-- Login & Register -->
+        <div v-if="!token" class="flex items-center justify-center h-full bg-gray-50">
+            <div class="nscale-card max-w-md w-full p-8">
+                <div class="text-center mb-8">
+                    <div class="nscale-logo mx-auto">nscale DMS Assistent</div>
+                    <p class="text-gray-500 mt-2">Ihr Digitalisierungspartner für DMS-Lösungen</p>
+                </div>
+                
+                <!-- MOTD auch auf der Login-Seite anzeigen -->
+                <div v-if="motd && motd.enabled && !motdDismissed" 
+                     :style="{
+                       backgroundColor: motd.style.backgroundColor,
+                       borderColor: motd.style.borderColor,
+                       color: motd.style.textColor,
+                       border: '1px solid ' + motd.style.borderColor
+                     }"
+                     class="p-4 mb-4 rounded-lg relative">
+                    <button v-if="motd.display.dismissible" 
+                            @click="dismissMotd" 
+                            class="absolute top-2 right-2 font-bold"
+                            :style="{ color: motd.style.textColor }">
+                        ×
+                    </button>
+                    <div v-html="formatMotdContent(motd.content)" class="motd-content"></div>
+                </div>
+                
+                <div class="flex border-b border-gray-200 mb-6">
+                    <button @click="authMode = 'login'" 
+                        :class="['py-2 px-4 w-1/2 text-center focus:outline-none', 
+                        authMode === 'login' ? 'border-b-2 border-green-500 text-green-600 font-medium' : 'text-gray-500']">
+                        Anmelden
+                    </button>
+                    <button @click="authMode = 'register'" 
+                        :class="['py-2 px-4 w-1/2 text-center focus:outline-none', 
+                        authMode === 'register' ? 'border-b-2 border-green-500 text-green-600 font-medium' : 'text-gray-500']">
+                        Registrieren
+                    </button>
+                </div>
+                
+                <!-- Login Form -->
+                <form v-if="authMode === 'login'" @submit.prevent="login" class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2" for="email">E-Mail</label>
+                        <input v-model="email" class="nscale-input w-full" 
+                            id="email" type="email" placeholder="Ihre E-Mail-Adresse" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2" for="password">Passwort</label>
+                        <input v-model="password" class="nscale-input w-full" 
+                            id="password" type="password" placeholder="Ihr Passwort" required>
+                    </div>
+                    <div class="flex items-center justify-between mt-6">
+                        <button class="nscale-btn-primary w-full" 
+                            type="submit" :disabled="loading">
+                            <span v-if="loading" class="loading-dots">Anmelden</span>
+                            <span v-else>Anmelden</span>
+                        </button>
+                    </div>
+                    <div class="text-center mt-4">
+                        <a class="text-sm text-nscale hover:text-nscale-dark" href="#" @click.prevent="authMode = 'reset'">
+                            Passwort vergessen?
+                        </a>
+                    </div>
+                    <div v-if="errorMessage" class="mt-4 text-red-500 text-sm text-center">{{ errorMessage }}</div>
+                </form>
+                
+                <!-- Register Form -->
+                <form v-if="authMode === 'register'" @submit.prevent="register" class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2" for="reg-email">E-Mail</label>
+                        <input v-model="email" class="nscale-input w-full" 
+                            id="reg-email" type="email" placeholder="Ihre E-Mail-Adresse" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2" for="reg-password">Passwort</label>
+                        <input v-model="password" class="nscale-input w-full" 
+                            id="reg-password" type="password" placeholder="Ihr sicheres Passwort" required>
+                    </div>
+                    <div class="flex items-center justify-between mt-6">
+                        <button class="nscale-btn-primary w-full" 
+                            type="submit" :disabled="loading">
+                            <span v-if="loading" class="loading-dots">Registrieren</span>
+                            <span v-else>Registrieren</span>
+                        </button>
+                    </div>
+                    <div v-if="errorMessage" class="mt-4 text-red-500 text-sm text-center">{{ errorMessage }}</div>
+                </form>
+                
+                <!-- Reset Password Form -->
+                <form v-if="authMode === 'reset'" @submit.prevent="resetPassword" class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2" for="reset-email">E-Mail</label>
+                        <input v-model="email" class="nscale-input w-full" 
+                            id="reset-email" type="email" placeholder="Ihre E-Mail-Adresse" required>
+                    </div>
+                    <div class="flex items-center justify-between mt-6">
+                        <button class="nscale-btn-primary w-full" 
+                            type="submit" :disabled="loading">
+                            <span v-if="loading" class="loading-dots">Passwort zurücksetzen</span>
+                            <span v-else>Passwort zurücksetzen</span>
+                        </button>
+                    </div>
+                    <div class="text-center mt-4">
+                        <a class="text-sm text-nscale hover:text-nscale-dark" href="#" @click.prevent="authMode = 'login'">
+                            Zurück zur Anmeldung
+                        </a>
+                    </div>
+                    <div v-if="successMessage" class="mt-4 text-green-600 text-sm text-center">{{ successMessage }}</div>
+                    <div v-if="errorMessage" class="mt-4 text-red-500 text-sm text-center">{{ errorMessage }}</div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Main Application (Chat + Admin) -->
+        <div v-else class="flex flex-col h-screen">
+            <!-- Navigation Header -->
+            <header class="nscale-header p-4 shadow-sm">
+                <div class="container mx-auto flex justify-between items-center">
+                    <div class="flex items-center">
+                        <img src="/static/images/senmvku-logo.png" alt="Berlin Logo" class="h-12 mr-4">
+                        <div class="nscale-logo">nscale DMS Assistent</div>
+                    </div>
+                    
+                    <!-- Simplified Navigation Menu -->
+                    <div class="flex items-center space-x-4">
+                        <button 
+                            @click="startNewSession" 
+                            class="nscale-btn-primary flex items-center">
+                            <i class="fas fa-plus mr-2"></i>
+                            Neue Unterhaltung
+                        </button>
+
+                        <!-- NEU: Admin-Konfigurationsbutton, nur für Admins sichtbar -->
+                        <button 
+                            v-if="userRole === 'admin'"
+                            @click="activeView = activeView === 'chat' ? 'admin' : 'chat'" 
+                            class="nscale-btn-secondary flex items-center"
+                            title="Systemadministration">
+                            <i class="fas fa-cog mr-2"></i>
+                            <span class="hidden md:inline">Administration</span>
+                        </button>
+
+                        <button 
+                            @click="logout" 
+                            class="nscale-btn-secondary flex items-center">
+                            <i class="fas fa-sign-out-alt mr-2"></i>
+                            Abmelden
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Main Content with Admin Sidebar -->
+            <div class="flex flex-1 overflow-hidden container mx-auto my-4">
+                <!-- Admin Sidebar - Only visible when in admin mode -->
+                <aside v-if="activeView === 'admin' && userRole === 'admin'" class="admin-sidebar w-64 flex-shrink-0 transition-all">
+                    <div class="p-4 font-semibold text-lg">Systemadministration</div>
+                    
+                    <nav class="admin-nav">
+                        <button 
+                            @click="adminTab = 'users'" 
+                            :class="['admin-nav-item', adminTab === 'users' ? 'active' : '']"
+                            data-tab="users">
+                            <i class="fas fa-users"></i>
+                            <span>Benutzer</span>
+                        </button>
+                        
+                        <button 
+                            @click="adminTab = 'system'; loadSystemStats()" 
+                            :class="['admin-nav-item', adminTab === 'system' ? 'active' : '']"
+                            data-tab="system">
+                            <i class="fas fa-chart-line"></i>
+                            <span>System</span>
+                        </button>
+                        
+                        <button 
+                            @click="adminTab = 'docConverter'" 
+                            :class="['admin-nav-item', adminTab === 'docConverter' ? 'active' : '']"
+                            data-tab="docConverter">
+                            <i class="fas fa-file-import"></i>
+                            <span>Dokumente konvertieren</span>
+                        </button>
+
+                        <button 
+                            @click="adminTab = 'feedback'; loadFeedbackStats(); loadNegativeFeedback()" 
+                            :class="['admin-nav-item', adminTab === 'feedback' ? 'active' : '']"
+                            data-tab="feedback">
+                            <i class="fas fa-comment-dots"></i>
+                            <span>Feedback</span>
+                        </button>
+                        
+                        <button 
+                            @click="adminTab = 'motd'; loadMotdConfig()" 
+                            :class="['admin-nav-item', adminTab === 'motd' ? 'active' : '']"
+                            data-tab="motd">
+                            <i class="fas fa-info-circle"></i>
+                            <span>MOTD</span>
+                        </button>
+                        
+                        <!-- Feature-Toggle-Tab hinzugefügt -->
+                        <button 
+                            @click="adminTab = 'features'" 
+                            :class="['admin-nav-item', adminTab === 'features' ? 'active' : '']"
+                            data-tab="features">
+                            <i class="fas fa-toggle-on"></i>
+                            <span>Features</span>
+                        </button>
+                    </nav>
+                    
+                    <div class="mt-auto p-4 text-sm text-gray-500">
+                        <p>Angemeldet als: <span class="font-semibold">{{ userRole }}</span></p>
+                    </div>
+                </aside>
+
+                <!-- Sessions Sidebar - Only visible in chat mode -->
+                <aside v-if="activeView === 'chat'" class="nscale-sidebar w-80 p-4 rounded-l-lg shadow-sm overflow-y-auto">
+                    <h2 class="text-lg font-medium mb-6 text-gray-700">Unterhaltungen</h2>
+                    <ul class="space-y-2">
+                        <!-- Verbesserte Session-Items mit fester Breite und Ellipsis -->
+                        <li v-for="session in sessions" :key="session.id" 
+                            @click="loadSession(session.id)"
+                            :class="['nscale-session-item cursor-pointer', 
+                            currentSessionId === session.id ? 'active' : '']">
+                            <!-- Titel-Container mit ellipsis für lange Texte -->
+                            <div class="session-title-container">
+                                <i class="fas fa-comment text-gray-500"></i>
+                                <span class="session-title">{{ session.title }}</span>
+                            </div>
+                            <!-- Spezieller Button zum Löschen, der immer sichtbar und erreichbar ist -->
+                            <button @click.stop="deleteSession(session.id)" 
+                                class="session-delete-button" 
+                                title="Unterhaltung löschen">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </aside>
+                
+                <!-- Main Content Area -->
+                <main class="flex-1 flex flex-col bg-white overflow-hidden rounded-lg shadow-sm ml-4 relative">
+                    <!-- Chat View -->
+                    <div v-if="activeView === 'chat'" class="h-full flex flex-col">
+                        <div v-if="!currentSessionId" class="flex h-full items-center justify-center text-gray-400 p-8">
+                            <div class="text-center">
+                                <i class="fas fa-comment-dots text-5xl text-gray-300 mb-4"></i>
+                                <h3 class="text-lg font-medium mb-2">Keine Unterhaltung ausgewählt</h3>
+                                <p class="text-sm text-gray-500 mb-4">Wählen Sie eine Unterhaltung aus der Seitenleiste oder starten Sie eine neue.</p>
+                                <button @click="startNewSession" class="nscale-btn-primary">
+                                    <i class="fas fa-plus mr-2"></i>
+                                    Neue Unterhaltung starten
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div v-else class="chat-container h-full">
+                            <!-- MOTD im Chat anzeigen -->
+                            <div v-if="motd && motd.enabled && motd.display.showInChat && !motdDismissed" 
+                                class="motd-banner p-4 mx-4 mt-4 mb-4 rounded-lg relative shadow-sm"
+                                :style="{
+                                    backgroundColor: motd.style.backgroundColor,
+                                    borderColor: motd.style.borderColor,
+                                    color: motd.style.textColor,
+                                    border: '1px solid ' + motd.style.borderColor
+                                }">
+                                <button v-if="motd.display.dismissible" 
+                                        @click="dismissMotd" 
+                                        class="absolute top-2 right-2 font-bold"
+                                        :style="{ color: motd.style.textColor }">
+                                    ×
+                                </button>
+                                <div v-html="formatMotdContent(motd.content)" class="motd-content"></div>
+                            </div>
+                            
+                            
+                        <!-- Chat Messages -->
+                        <div class="message-container flex-1 overflow-y-auto p-4" ref="chatMessages">
+                            <!-- Nachrichten mit verbesserten Wrappern für korrekte Anzeige -->
+                            <div v-for="(message, index) in messages" :key="index" class="mb-6">
+                                <!-- Systemnachricht -->
+                                <div v-if="message.is_system" class="nscale-message-system">
+                                    <div v-html="formatMessage(message.message)" class="prose"></div>
+                                </div>
+                                
+                                <!-- Benutzer- oder Assistenten-Nachricht mit Wrapper -->
+                                <div v-else :class="['message-wrapper', message.is_user ? 'user-message' : 'assistant-message']">
+                                    <div :class="[message.is_user ? 'nscale-message-user' : 'nscale-message-assistant']">
+                                        <!-- Nachrichten-Inhalt -->
+                                        <div v-if="message.is_user" v-html="formatMessage(message.message)" class="prose"></div>
+                                        <div v-else v-html="formatMessageWithSources(message.message)" class="prose"></div>
+                                        
+                                        <!-- Feedback-Buttons und Quellenbuttons nur für Assistenten-Nachrichten
+                                            und nur wenn die Antwort bereits vollständig ist (kein Streaming läuft) -->
+                                        <div v-if="!message.is_user && !isStreaming" 
+                                            class="message-actions"
+                                            :style="{
+                                                opacity: isStreaming ? '0' : '1',
+                                                transition: 'opacity 0.5s ease'
+                                            }">
+                                            <!-- Feedback-Buttons -->
+                                            <div class="feedback-buttons">
+                                                <span v-if="message.feedback_comment" class="feedback-comment">{{ message.feedback_comment }}</span>
+                                                <button 
+                                                    @click="submitFeedback(message.id, currentSessionId, true)" 
+                                                    :class="['feedback-button', { 'selected': message.feedback_positive === true }]"
+                                                    title="Hilfreich">
+                                                    <i class="fas fa-thumbs-up"></i>
+                                                </button>
+                                                <button 
+                                                    @click="submitFeedback(message.id, currentSessionId, false)" 
+                                                    :class="['feedback-button', { 'selected negative': message.feedback_positive === false }]"
+                                                    title="Nicht hilfreich">
+                                                    <i class="fas fa-thumbs-down"></i>
+                                                </button>
+                                                <button 
+                                                    v-if="message.feedback_positive === false" 
+                                                    @click="showFeedbackCommentDialog(message)" 
+                                                    class="feedback-button"
+                                                    title="Kommentar hinzufügen">
+                                                    <i class="fas fa-comment"></i>
+                                                </button>
+                                            </div>
+                                            
+                                            <!-- Quellbuttons nur anzeigen, wenn Quellenreferenzen gefunden wurden -->
+                                            <div v-if="hasSourceReferences(message.message)" class="source-buttons mt-2">
+                                                <button class="source-btn" @click="loadExplanation(message)">
+                                                    <i class="fas fa-info-circle"></i>
+                                                    Antwort erklären
+                                                </button>
+                                                <button class="source-btn" @click="showSourcesDialog(message)">
+                                                    <i class="fas fa-bookmark"></i>
+                                                    Quellen anzeigen
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div v-if="isLoading" class="flex justify-center p-4">
+                                <div class="loader"></div>
+                            </div>
+                        </div>
+                            
+                            <!-- Input Area -->
+                            <div class="input-container p-4 border-t border-gray-100 bg-white">
+                                <form @submit.prevent="sendQuestionStream" class="flex space-x-2">
+                                    <input v-model="question" class="nscale-input flex-1" 
+                                        placeholder="Stellen Sie Ihre Frage zur nscale DMS-Software..." 
+                                        :disabled="!currentSessionId || isLoading" />
+                                    <button type="submit" class="nscale-btn-primary flex items-center"
+                                        :disabled="!currentSessionId || !question || isLoading">
+                                        <span v-if="isLoading">
+                                            <i class="fas fa-spinner fa-spin mr-2"></i>
+                                            Wird gesendet...
+                                        </span>
+                                        <span v-else>
+                                            <i class="fas fa-paper-plane mr-2"></i>
+                                            Senden
+                                        </span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Admin View -->
+                    <div v-if="activeView === 'admin'" class="h-full flex flex-col p-6 overflow-auto">
+                        <div class="mb-6">
+                            <h1 class="text-2xl font-semibold text-gray-800">{{ getAdminTabTitle() }}</h1>
+                        </div>
+                        
+                        <div class="admin-content flex-1">
+                            <!-- Benutzer-Tab -->
+                            <div v-if="adminTab === 'users'" class="admin-panel-content" data-tab="users">
+                                <div class="admin-card mb-8">
+                                    <div class="admin-card-title">Neuen Benutzer erstellen</div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div class="form-group">
+                                            <label class="admin-label">E-Mail</label>
+                                            <input v-model="newUser.email" type="email" class="nscale-input w-full" placeholder="E-Mail-Adresse">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="admin-label">Passwort</label>
+                                            <input v-model="newUser.password" type="password" class="nscale-input w-full" placeholder="Passwort">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="admin-label">Rolle</label>
+                                            <select v-model="newUser.role" class="nscale-input w-full">
+                                                <option value="user">Benutzer</option>
+                                                <option value="admin">Administrator</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4">
+                                        <button @click="createUser" class="nscale-btn-primary">
+                                            <i class="fas fa-user-plus mr-2"></i>
+                                            Benutzer erstellen
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="admin-card">
+                                    <div class="admin-card-title">Benutzerliste</div>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full admin-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>E-Mail</th>
+                                                    <th>Rolle</th>
+                                                    <th>Aktionen</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="user in adminUsers" :key="user.id">
+                                                    <td>{{ user.id }}</td>
+                                                    <td>{{ user.email }}</td>
+                                                    <td>
+                                                        <select 
+                                                            v-model="user.role" 
+                                                            @change="updateUserRole(user.id, user.role)"
+                                                            class="nscale-input">
+                                                            <option value="user">Benutzer</option>
+                                                            <option value="admin">Administrator</option>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <button @click="deleteUser(user.id)" class="admin-button-danger">
+                                                            <i class="fas fa-trash-alt mr-1"></i>
+                                                            Löschen
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- System-Tab -->
+                            <div v-if="adminTab === 'system'" class="admin-panel-content" data-tab="system">
+                                <div class="flex justify-end mb-6">
+                                    <button @click="loadSystemStats" class="nscale-btn-secondary">
+                                        <i class="fas fa-sync-alt mr-2"></i>
+                                        Aktualisieren
+                                    </button>
+                                </div>
+                                
+                                <div class="admin-stats-grid grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                    <div class="admin-stat-card">
+                                        <div class="admin-stat-value">{{ systemStats.document_count || 0 }}</div>
+                                        <div class="admin-stat-label">Dokumente</div>
+                                    </div>
+                                    <div class="admin-stat-card">
+                                        <div class="admin-stat-value">{{ systemStats.chunk_count || 0 }}</div>
+                                        <div class="admin-stat-label">Chunks</div>
+                                    </div>
+                                    <div class="admin-stat-card">
+                                        <div class="admin-stat-value">{{ Object.keys(systemStats.documents || {}).length }}</div>
+                                        <div class="admin-stat-label">Quellen</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="admin-card mb-8">
+                                    <div class="admin-card-title">System-Aktionen</div>
+                                    <div class="admin-actions grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <button @click="reloadMotd" class="nscale-btn-secondary">
+                                            <i class="fas fa-sync-alt mr-2"></i>
+                                            MOTD neu laden
+                                        </button>
+                                        <button @click="clearModelCache" class="nscale-btn-secondary">
+                                            <i class="fas fa-trash-alt mr-2"></i>
+                                            Modell-Cache leeren
+                                        </button>
+                                        <button @click="clearEmbeddingCache" class="nscale-btn-secondary">
+                                            <i class="fas fa-trash-alt mr-2"></i>
+                                            Embedding-Cache leeren
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="admin-card">
+                                    <div class="admin-card-title">Dokumente</div>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full admin-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Datei</th>
+                                                    <th>Chunks</th>
+                                                    <th>Tokens</th>
+                                                    <th>Letzte Änderung</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="(docStats, filename) in systemStats.documents || {}" :key="filename">
+                                                    <td>{{ filename }}</td>
+                                                    <td>{{ docStats.chunks }}</td>
+                                                    <td>{{ docStats.total_tokens }}</td>
+                                                    <td>{{ docStats.modified }}</td>
+                                                </tr>
+                                                <tr v-if="Object.keys(systemStats.documents || {}).length === 0">
+                                                    <td colspan="4" class="text-center py-4 text-gray-500">Keine Dokumente vorhanden</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- DocConverter Tab -->
+                            <div v-if="adminTab === 'docConverter'" class="admin-panel-content" data-tab="docConverter">
+                                <div id="docconverter-debug" style="display:none;">
+                                    <p>Debug-Info für DocConverter-Tab</p>
+                                </div>
+                            
+                                <!-- Container für Vue.js DocConverter -->
+                                <div id="doc-converter-app" style="display:none;">
+                                    <!-- Wird durch Vue.js befüllt -->
+                                </div>
+                                
+                                <!-- Container für klassischen DocConverter - wird dynamisch befüllt -->
+                                <div id="doc-converter-container">
+                                    <div class="p-4">
+                                        <div class="loader-container">
+                                            <div class="loader"></div>
+                                            <p class="mt-4 text-gray-600">Dokumentenkonverter wird geladen...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Inline Skript, um den Dokumentenkonverter zu initialisieren -->
+                            <script>
+                                console.log('DocConverter-Tab inline script ausgeführt');
+                                    
+                                    // Feature-Toggle prüfen
+                                    function loadAppropriateImplementation() {
+                                        const useNewUI = localStorage.getItem('useNewUI') === 'true';
+                                        const useVueDocConverter = localStorage.getItem('feature_vueDocConverter') !== 'false';
+                                        
+                                        console.log('DocConverter Feature-Toggle:', { useNewUI, useVueDocConverter });
+                                        
+                                        if (useNewUI && useVueDocConverter) {
+                                            // Vue.js-Implementierung laden
+                                            console.log('Versuche Vue.js-Implementierung zu laden...');
+                                            
+                                            // UI-Zustand aktualisieren - Vue-Container anzeigen, klassischen Container ausblenden
+                                            document.getElementById('doc-converter-app').style.display = 'block';
+                                            document.getElementById('doc-converter-container').style.display = 'none';
+                                            
+                                            // Timeout für Fallback setzen
+                                            const vueTimeout = setTimeout(function() {
+                                                console.warn('Vue.js-Implementierung konnte nicht geladen werden, wechsle zu Fallback');
+                                                loadFallbackImplementation();
+                                            }, 5000);
+                                            
+                                            // Vue-Komponente laden (optimierter Ansatz mit einheitlicher Quelle)
+                                            const vueScript = document.createElement('script');
+                                            
+                                            // Primärer Pfad - direkt über das frontend/js/vue Verzeichnis
+                                            vueScript.src = '/static/js/vue/doc-converter.js';
+                                            // Wichtig: Ändern des Typs von "module" zu "text/javascript"
+                                            vueScript.type = 'text/javascript';
+                                            
+                                            console.log(`Lade vereinfachten Dokumentenkonverter von: ${vueScript.src}`);
+                                            
+                                            vueScript.onload = function() {
+                                                console.log('Vereinfachter Dokumentenkonverter erfolgreich geladen');
+                                                clearTimeout(vueTimeout);
+                                            };
+                                            
+                                            vueScript.onerror = function() {
+                                                console.error('Fehler beim Laden des Vue.js-Dokumentenkonverters');
+                                                // Versuche den Fallback-Pfad
+                                                console.log('Versuche Fallback-Pfad...');
+                                                // Fallback zur klassischen Implementierung direkt
+                                                console.log('Verwende klassische Implementierung...');
+                                                loadFallbackImplementation();
+                                                return;
+                                            };
+                                            
+                                            // Füge das Script-Element hinzu
+                                            document.body.appendChild(vueScript);
+                                        } else {
+                                            // Direkt die Fallback-Implementierung laden
+                                            loadFallbackImplementation();
+                                        }
+                                    }
+                                    
+                                    // Klassische Implementierung laden
+                                    function loadFallbackImplementation() {
+                                        console.log('Lade klassische Implementierung des Dokumentenkonverters...');
+                                        
+                                        // UI-Zustand aktualisieren - Vue-Container ausblenden, klassischen Container anzeigen
+                                        document.getElementById('doc-converter-app').style.display = 'none';
+                                        document.getElementById('doc-converter-container').style.display = 'block';
+                                        
+                                        const fallbackScript = document.createElement('script');
+                                        fallbackScript.src = '/static/js/doc-converter-fallback.js';
+                                        
+                                        fallbackScript.onload = function() {
+                                            console.log('Klassische Implementierung erfolgreich geladen');
+                                        };
+                                        
+                                        fallbackScript.onerror = function() {
+                                            console.error('Fehler beim Laden der klassischen Implementierung');
+                                            document.getElementById('doc-converter-container').innerHTML = 
+                                                '<div class="p-4"><div class="bg-red-100 p-4 rounded">' +
+                                                '<p class="text-red-700"><i class="fas fa-exclamation-triangle mr-2"></i>' +
+                                                'Fehler beim Laden des Dokumentenkonverters.</p></div></div>';
+                                        };
+                                        
+                                        document.body.appendChild(fallbackScript);
+                                    }
+                                    
+                                    // Initialisierung starten
+                                    loadAppropriateImplementation();
+                                </script>
+                            </div>
+                            
+                            <!-- Feature-Toggle-Tab (Vanilla JS Version - keine Vue.js-Abhängigkeiten) -->
+                            <div v-if="adminTab === 'features'" class="admin-panel-content" data-tab="features">
+                                <!-- Dieser Container wird durch Vanilla JavaScript gefüllt -->
+                                <div id="feature-toggle-container">
+                                    <!-- Einfache, direkte Feature-Toggle-UI -->
+                                    <div class="flex flex-col">
+                                        <!-- UI-Version -->
+                                        <div class="admin-card mb-6">
+                                            <div class="admin-card-title">UI-Versionen</div>
+                                            
+                                            <div class="mb-4">
+                                                <p class="text-sm mb-4">Wählen Sie, welche UI-Version für die Anwendung verwendet werden soll.</p>
+                                                
+                                                <div id="uiSelection" class="bg-gray-100 p-4 rounded-lg mb-6">
+                                                    <div class="font-medium mb-2">Aktuelle UI-Version:</div>
+                                                    <div id="currentUISetting" class="text-lg bg-white p-3 rounded border mb-4">
+                                                        <!-- Wird dynamisch gefüllt -->
+                                                        <span class="text-gray-500"><i class="fas fa-sync fa-spin mr-2"></i> Wird geladen...</span>
+                                                    </div>
+                                                    
+                                                    <div class="flex gap-4">
+                                                        <button id="enableVueButton" class="nscale-btn-primary">
+                                                            <i class="fas fa-toggle-on mr-2"></i>Vue.js-UI aktivieren
+                                                        </button>
+                                                        <button id="enableClassicButton" class="nscale-btn-secondary">
+                                                            <i class="fas fa-toggle-off mr-2"></i>Klassische UI aktivieren
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="bg-blue-50 p-4 border-l-4 border-blue-500 rounded-r">
+                                                    <p class="text-sm">
+                                                        <strong>Hinweis:</strong> Die Änderungen werden erst nach einem Neuladen der Seite wirksam. 
+                                                        Die Einstellung wird in Ihrem Browser gespeichert.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Dokumentenkonverter Toggle -->
+                                        <div class="admin-card mb-6">
+                                            <div class="admin-card-title">Dokumentenkonverter-Komponente</div>
+                                            
+                                            <div class="mb-4">
+                                                <p class="text-sm mb-4">Sie können den Dokumentenkonverter separat zwischen Vue.js und klassischer Implementierung umschalten.</p>
+                                                
+                                                <div id="docConverterSelection" class="bg-gray-100 p-4 rounded-lg mb-6">
+                                                    <div class="font-medium mb-2">Aktuelle Implementierung:</div>
+                                                    <div id="currentDocConverterSetting" class="text-lg bg-white p-3 rounded border mb-4">
+                                                        <!-- Wird dynamisch gefüllt -->
+                                                        <span class="text-gray-500"><i class="fas fa-sync fa-spin mr-2"></i> Wird geladen...</span>
+                                                    </div>
+                                                    
+                                                    <div class="flex gap-4">
+                                                        <button id="enableVueDocButton" class="nscale-btn-primary">
+                                                            <i class="fas fa-toggle-on mr-2"></i>Vue.js-Implementierung
+                                                        </button>
+                                                        <button id="enableClassicDocButton" class="nscale-btn-secondary">
+                                                            <i class="fas fa-toggle-off mr-2"></i>Klassische Implementierung
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Entwicklermodus -->
+                                        <div class="admin-card">
+                                            <div class="admin-card-title">Entwicklermodus</div>
+                                            
+                                            <div class="mb-4">
+                                                <p class="text-sm mb-4">Der Entwicklermodus zeigt zusätzliche Debug-Informationen an.</p>
+                                                
+                                                <div id="devModeSelection" class="bg-gray-100 p-4 rounded-lg mb-6">
+                                                    <div class="font-medium mb-2">Entwicklermodus:</div>
+                                                    <div id="currentDevModeSetting" class="text-lg bg-white p-3 rounded border mb-4">
+                                                        <!-- Wird dynamisch gefüllt -->
+                                                        <span class="text-gray-500"><i class="fas fa-sync fa-spin mr-2"></i> Wird geladen...</span>
+                                                    </div>
+                                                    
+                                                    <div class="flex gap-4">
+                                                        <button id="enableDevModeButton" class="nscale-btn-primary">
+                                                            <i class="fas fa-toggle-on mr-2"></i>Aktivieren
+                                                        </button>
+                                                        <button id="disableDevModeButton" class="nscale-btn-secondary">
+                                                            <i class="fas fa-toggle-off mr-2"></i>Deaktivieren
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Script zum Rendern der Features-Seite ohne Vue.js-Abhängigkeiten -->
+                                <script>
+                                    // Einfache direkte Implementation für die Feature-Toggle-UI
+                                    (function() { // Start der IIFE
+                                        /**
+                                         * Initialisiere das HTML für die Feature-Toggle-UI 
+                                         * @param {HTMLElement} container - Der Container, in dem die UI angezeigt werden soll
+                                         */
+                                        function initFeatureToggleHTML(container) {
+                                            if (!container) {
+                                                console.error('Container für Feature-Toggle-UI nicht gefunden');
+                                                return;
+                                            }
+                                            
+                                            // Features aus dem LocalStorage abrufen
+                                            const useNewUI = localStorage.getItem('useNewUI') === 'true';
+                                            const vueDocConverter = localStorage.getItem('feature_vueDocConverter') !== 'false';
+                                            const vueChat = localStorage.getItem('feature_vueChat') === 'true';
+                                            const vueAdmin = localStorage.getItem('feature_vueAdmin') === 'true';
+                                            const vueSettings = localStorage.getItem('feature_vueSettings') === 'true';
+                                            const devMode = localStorage.getItem('devMode') === 'true';
+                                            
+                                            // HTML für die Feature-Toggle-UI erstellen
+                                            container.innerHTML = `
+                                                <div class="flex flex-col">
+                                                    <!-- UI-Version -->
+                                                    <div class="admin-card mb-6">
+                                                        <div class="admin-card-title">UI-Versionen</div>
+                                                        
+                                                        <div class="mb-4">
+                                                            <p class="text-sm mb-4">Wählen Sie, welche UI-Version für die Anwendung verwendet werden soll.</p>
+                                                            
+                                                            <div id="uiSelection" class="bg-gray-100 p-4 rounded-lg mb-6">
+                                                                <div class="font-medium mb-2">Aktuelle UI-Version:</div>
+                                                                <div id="currentUISetting" class="text-lg bg-white p-3 rounded border mb-4">
+                                                                    <!-- Wird dynamisch gefüllt -->
+                                                                    Wird geladen...
+                                                                </div>
+                                                                
+                                                                <div class="flex gap-4">
+                                                                    <button id="enableVueButton" class="nscale-btn-primary">
+                                                                        <i class="fas fa-toggle-on mr-2"></i>Vue.js-UI aktivieren
+                                                                    </button>
+                                                                    <button id="enableClassicButton" class="nscale-btn-secondary">
+                                                                        <i class="fas fa-toggle-off mr-2"></i>Klassische UI aktivieren
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div class="bg-blue-50 p-4 border-l-4 border-blue-500 rounded-r">
+                                                                <p class="text-sm">
+                                                                    <strong>Hinweis:</strong> Die Änderungen werden erst nach einem Neuladen der Seite wirksam. 
+                                                                    Die Einstellung wird in Ihrem Browser gespeichert.
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Dokumentenkonverter Toggle -->
+                                                    <div class="admin-card mb-6">
+                                                        <div class="admin-card-title">Dokumentenkonverter-Komponente</div>
+                                                        
+                                                        <div class="mb-4">
+                                                            <p class="text-sm mb-4">Sie können den Dokumentenkonverter separat zwischen Vue.js und klassischer Implementierung umschalten.</p>
+                                                            
+                                                            <div id="docConverterSelection" class="bg-gray-100 p-4 rounded-lg mb-6">
+                                                                <div class="font-medium mb-2">Aktuelle Implementierung:</div>
+                                                                <div id="currentDocConverterSetting" class="text-lg bg-white p-3 rounded border mb-4">
+                                                                    <!-- Wird dynamisch gefüllt -->
+                                                                    Wird geladen...
+                                                                </div>
+                                                                
+                                                                <div class="flex gap-4">
+                                                                    <button id="enableVueDocButton" class="nscale-btn-primary">
+                                                                        <i class="fas fa-toggle-on mr-2"></i>Vue.js-Implementierung
+                                                                    </button>
+                                                                    <button id="enableClassicDocButton" class="nscale-btn-secondary">
+                                                                        <i class="fas fa-toggle-off mr-2"></i>Klassische Implementierung
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Admin-Komponenten Toggle -->
+                                                    <div class="admin-card mb-6">
+                                                        <div class="admin-card-title">Admin-Komponenten</div>
+                                                        
+                                                        <div class="mb-4">
+                                                            <p class="text-sm mb-4">Sie können die Admin-Komponenten (System-Monitoring, MOTD-Verwaltung, Benutzerverwaltung) zwischen Vue.js und klassischer Implementierung umschalten.</p>
+                                                            
+                                                            <div id="adminComponentsSelection" class="bg-gray-100 p-4 rounded-lg mb-6">
+                                                                <div class="font-medium mb-2">Aktuelle Implementierung:</div>
+                                                                <div id="currentAdminSetting" class="text-lg bg-white p-3 rounded border mb-4">
+                                                                    <!-- Wird dynamisch gefüllt -->
+                                                                    Wird geladen...
+                                                                </div>
+                                                                
+                                                                <div class="flex gap-4">
+                                                                    <button id="enableVueAdminButton" class="nscale-btn-primary">
+                                                                        <i class="fas fa-toggle-on mr-2"></i>Vue.js-Implementierung
+                                                                    </button>
+                                                                    <button id="enableClassicAdminButton" class="nscale-btn-secondary">
+                                                                        <i class="fas fa-toggle-off mr-2"></i>Klassische Implementierung
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Entwicklermodus -->
+                                                    <div class="admin-card">
+                                                        <div class="admin-card-title">Entwicklermodus</div>
+                                                        
+                                                        <div class="mb-4">
+                                                            <p class="text-sm mb-4">Der Entwicklermodus zeigt zusätzliche Debug-Informationen an.</p>
+                                                            
+                                                            <div id="devModeSelection" class="bg-gray-100 p-4 rounded-lg mb-6">
+                                                                <div class="font-medium mb-2">Entwicklermodus:</div>
+                                                                <div id="currentDevModeSetting" class="text-lg bg-white p-3 rounded border mb-4">
+                                                                    <!-- Wird dynamisch gefüllt -->
+                                                                    Wird geladen...
+                                                                </div>
+                                                                
+                                                                <div class="flex gap-4">
+                                                                    <button id="enableDevModeButton" class="nscale-btn-primary">
+                                                                        <i class="fas fa-toggle-on mr-2"></i>Aktivieren
+                                                                    </button>
+                                                                    <button id="disableDevModeButton" class="nscale-btn-secondary">
+                                                                        <i class="fas fa-toggle-off mr-2"></i>Deaktivieren
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            `;
+                                            
+                                            // Event-Handler für Feature-Toggles hinzufügen
+                                            
+                                            // Global UI Toggle
+                                            const useNewUICheckbox = document.getElementById('useNewUI');
+                                            if (useNewUICheckbox) {
+                                                useNewUICheckbox.addEventListener('change', function(e) {
+                                                    localStorage.setItem('useNewUI', e.target.checked);
+                                                    if (!e.target.checked) {
+                                                        // Wenn die neue UI deaktiviert wird, auch alle Features deaktivieren
+                                                        ['vueDocConverter', 'vueChat', 'vueAdmin', 'vueSettings'].forEach(key => {
+                                                            localStorage.setItem(`feature_${key}`, 'false');
+                                                        });
+                                                    }
+                                                    alert('Die Einstellung wurde gespeichert. Die Seite wird neu geladen.');
+                                                    window.location.reload();
+                                                });
+                                            }
+                                            
+                                            // DocConverter Toggle
+                                            const toggleDocConverter = document.getElementById('toggle-doc-converter');
+                                            if (toggleDocConverter) {
+                                                toggleDocConverter.addEventListener('click', function() {
+                                                    const newState = localStorage.getItem('feature_vueDocConverter') === 'false';
+                                                    localStorage.setItem('feature_vueDocConverter', newState.toString());
+                                                    console.log('DocConverter Feature-Toggle geändert auf:', newState);
+                                                    
+                                                    // Alle laufenden Script-Elemente entfernen
+                                                    const oldScripts = document.querySelectorAll('script[src*="doc-converter"]');
+                                                    oldScripts.forEach(script => script.remove());
+                                                    
+                                                    // DOM bereinigen
+                                                    const container = document.getElementById('doc-converter-container');
+                                                    if (container) {
+                                                        container.innerHTML = '<div class="loader-container"><div class="loader"></div><p class="mt-4 text-gray-600">Lade neue Implementierung...</p></div>';
+                                                    }
+                                                    
+                                                    // Seite neu laden nach kurzer Verzögerung, damit localStorage gespeichert wird
+                                                    setTimeout(function() {
+                                                        alert('Die Einstellung wurde gespeichert. Die Seite wird neu geladen.');
+                                                        window.location.reload();
+                                                    }, 200);
+                                                });
+                                            }
+                                            
+                                            // Chat Toggle
+                                            const toggleChat = document.getElementById('toggle-chat');
+                                            if (toggleChat) {
+                                                toggleChat.addEventListener('click', function() {
+                                                    const newState = localStorage.getItem('feature_vueChat') === 'true' ? 'false' : 'true';
+                                                    localStorage.setItem('feature_vueChat', newState);
+                                                    alert('Die Einstellung wurde gespeichert. Die Seite wird neu geladen.');
+                                                    window.location.reload();
+                                                });
+                                            }
+                                            
+                                            // Alle Features aktivieren
+                                            const enableAllFeaturesBtn = document.getElementById('enable-all-features');
+                                            if (enableAllFeaturesBtn) {
+                                                enableAllFeaturesBtn.addEventListener('click', function() {
+                                                    if (confirm('Möchten Sie wirklich alle Features aktivieren?')) {
+                                                        localStorage.setItem('useNewUI', 'true');
+                                                        ['vueDocConverter', 'vueChat', 'vueAdmin', 'vueSettings'].forEach(key => {
+                                                            localStorage.setItem(`feature_${key}`, 'true');
+                                                        });
+                                                        alert('Alle Features wurden aktiviert. Die Seite wird neu geladen.');
+                                                        window.location.reload();
+                                                    }
+                                                });
+                                            }
+                                            
+                                            // Alle Features deaktivieren
+                                            const disableAllFeaturesBtn = document.getElementById('disable-all-features');
+                                            if (disableAllFeaturesBtn) {
+                                                disableAllFeaturesBtn.addEventListener('click', function() {
+                                                    if (confirm('Möchten Sie wirklich alle Features deaktivieren und zur klassischen UI zurückkehren?')) {
+                                                        localStorage.setItem('useNewUI', 'false');
+                                                        ['vueDocConverter', 'vueChat', 'vueAdmin', 'vueSettings'].forEach(key => {
+                                                            localStorage.setItem(`feature_${key}`, 'false');
+                                                        });
+                                                        alert('Alle Features wurden deaktiviert. Die Seite wird neu geladen.');
+                                                        window.location.reload();
+                                                    }
+                                                });
+                                            }
+                                            
+                                            // Entwicklermodus Toggle
+                                            const devModeCheckbox = document.getElementById('devMode');
+                                            if (devModeCheckbox) {
+                                                devModeCheckbox.addEventListener('change', function(e) {
+                                                    localStorage.setItem('devMode', e.target.checked);
+                                                    alert('Die Einstellung wurde gespeichert. Die Seite wird neu geladen.');
+                                                    window.location.reload();
+                                                });
+                                            }
+                                        }
+                                        
+                                        // Initialisierung erfolgt im unteren DOMContentLoaded-Handler
+                                    
+                                    /**
+                                     * Initialisiert die Feature-Toggle-UI und fügt Event-Listener hinzu
+                                     * Wird global verfügbar gemacht, damit es auch aus admin.js aufgerufen werden kann
+                                     */
+                                    window.initFeatureUI = function() {
+                                        console.log('Initialisiere Feature-UI');
+                                        
+                                        // Feature-Toggle-Container überprüfen
+                                        const container = document.getElementById('feature-toggle-container');
+                                        if (!container) {
+                                            console.warn('Feature-Toggle-Container nicht gefunden, überspringe Initialisierung');
+                                            return;
+                                        }
+                                        
+                                        console.log('Feature-Toggle-Container gefunden, initialisiere Komponenten');
+                                        
+                                        // Debug: Aktuelle localStorage-Werte ausgeben
+                                        console.log('Aktuelle Feature-Einstellungen in localStorage:');
+                                        console.log('- useNewUI:', localStorage.getItem('useNewUI'));
+                                        console.log('- feature_vueDocConverter:', localStorage.getItem('feature_vueDocConverter'));
+                                        console.log('- devMode:', localStorage.getItem('devMode'));
+                                        
+                                        // Stelle sicher, dass alle Werte korrekt initialisiert sind 
+                                        // und verwende saubere Prüfung mit nullish-Coalescing
+                                        
+                                        // useNewUI prüfen und setzen falls nicht vorhanden (default: false)
+                                        const currentUseNewUI = localStorage.getItem('useNewUI');
+                                        if (currentUseNewUI === null || currentUseNewUI === undefined) {
+                                            console.log('useNewUI nicht gefunden oder undefiniert, initialisiere mit false');
+                                            localStorage.setItem('useNewUI', 'false');
+                                        }
+                                        
+                                        // feature_vueDocConverter prüfen und setzen falls nicht vorhanden (default: true)
+                                        const currentVueDocConverter = localStorage.getItem('feature_vueDocConverter');
+                                        if (currentVueDocConverter === null || currentVueDocConverter === undefined) {
+                                            console.log('feature_vueDocConverter nicht gefunden oder undefiniert, initialisiere mit true');
+                                            localStorage.setItem('feature_vueDocConverter', 'true');
+                                        }
+                                        
+                                        // devMode prüfen und setzen falls nicht vorhanden (default: false)
+                                        const currentDevMode = localStorage.getItem('devMode');
+                                        if (currentDevMode === null || currentDevMode === undefined) {
+                                            console.log('devMode nicht gefunden oder undefiniert, initialisiere mit false');
+                                            localStorage.setItem('devMode', 'false');
+                                        }
+                                        
+                                        // Überprüfe, ob Werte erfolgreich gesetzt wurden
+                                        console.log('Nach Initialisierung:');
+                                        console.log('- useNewUI:', localStorage.getItem('useNewUI'));
+                                        console.log('- feature_vueDocConverter:', localStorage.getItem('feature_vueDocConverter'));
+                                        console.log('- devMode:', localStorage.getItem('devMode'));
+                                        
+                                        // HTML für die Feature-Toggle-UI erstellen
+                                        initFeatureToggleHTML(container);
+                                        
+                                        // UI-Version aktualisieren
+                                        updateUIStatus();
+                                        
+                                        // DocConverter-Status aktualisieren
+                                        updateDocConverterStatus();
+                                        
+                                        // Admin-Status aktualisieren
+                                        updateAdminStatus();
+                                        
+                                        // DevMode-Status aktualisieren
+                                        updateDevModeStatus();
+                                        
+                                        // Event-Listener hinzufügen
+                                        setupEventListeners();
+                                        
+                                        console.log('Feature-UI vollständig initialisiert');
+                                    }
+                                    
+                                    /**
+                                     * Aktualisiert die Anzeige für die UI-Version
+                                     */
+                                    function updateUIStatus() {
+                                        const statusElement = document.getElementById('currentUISetting');
+                                        if (!statusElement) {
+                                            console.warn('UI-Status-Element nicht gefunden');
+                                            return;
+                                        }
+                                        
+                                        const useNewUI = localStorage.getItem('useNewUI') === 'true';
+                                        console.log('updateUIStatus() - useNewUI:', useNewUI, 'raw value:', localStorage.getItem('useNewUI'));
+                                        
+                                        if (useNewUI) {
+                                            statusElement.innerHTML = '<span class="text-green-600">✓ Vue.js-UI ist aktiviert</span>';
+                                        } else {
+                                            statusElement.innerHTML = '<span class="text-gray-700">✗ Klassische UI ist aktiviert</span>';
+                                        }
+                                        
+                                        // Auch Buttons entsprechend hervorheben
+                                        const enableVueButton = document.getElementById('enableVueButton');
+                                        const enableClassicButton = document.getElementById('enableClassicButton');
+                                        
+                                        if (enableVueButton && enableClassicButton) {
+                                            if (useNewUI) {
+                                                enableVueButton.classList.add('nscale-btn-primary');
+                                                enableVueButton.classList.remove('nscale-btn-secondary');
+                                                enableClassicButton.classList.add('nscale-btn-secondary');
+                                                enableClassicButton.classList.remove('nscale-btn-primary');
+                                            } else {
+                                                enableVueButton.classList.add('nscale-btn-secondary');
+                                                enableVueButton.classList.remove('nscale-btn-primary');
+                                                enableClassicButton.classList.add('nscale-btn-primary');
+                                                enableClassicButton.classList.remove('nscale-btn-secondary');
+                                            }
+                                        }
+                                    }
+                                    
+                                    /**
+                                     * Aktualisiert die Anzeige für den DocConverter
+                                     */
+                                    function updateDocConverterStatus() {
+                                        const statusElement = document.getElementById('currentDocConverterSetting');
+                                        if (!statusElement) {
+                                            console.warn('DocConverter-Status-Element nicht gefunden');
+                                            return;
+                                        }
+                                        
+                                        const useNewUI = localStorage.getItem('useNewUI') === 'true'; 
+                                        const useVueDoc = localStorage.getItem('feature_vueDocConverter') !== 'false';
+                                        console.log('updateDocConverterStatus() - useNewUI:', useNewUI, 'useVueDoc:', useVueDoc);
+                                        console.log('Raw values - useNewUI:', localStorage.getItem('useNewUI'), 'vueDocConverter:', localStorage.getItem('feature_vueDocConverter'));
+                                        
+                                        // Wenn global Vue.js deaktiviert ist, ist auch der Dokumentenkonverter deaktiviert
+                                        if (!useNewUI) {
+                                            statusElement.innerHTML = '<span class="text-gray-700">✗ Klassische Implementierung (Global deaktiviert)</span>';
+                                            return;
+                                        }
+                                        
+                                        if (useVueDoc) {
+                                            statusElement.innerHTML = '<span class="text-green-600">✓ Vue.js-Implementierung</span>';
+                                        } else {
+                                            statusElement.innerHTML = '<span class="text-gray-700">✗ Klassische Implementierung</span>';
+                                        }
+                                        
+                                        // Auch Buttons entsprechend hervorheben
+                                        const enableVueDocButton = document.getElementById('enableVueDocButton');
+                                        const enableClassicDocButton = document.getElementById('enableClassicDocButton');
+                                        
+                                        if (enableVueDocButton && enableClassicDocButton) {
+                                            if (useVueDoc) {
+                                                enableVueDocButton.classList.add('nscale-btn-primary');
+                                                enableVueDocButton.classList.remove('nscale-btn-secondary');
+                                                enableClassicDocButton.classList.add('nscale-btn-secondary');
+                                                enableClassicDocButton.classList.remove('nscale-btn-primary');
+                                            } else {
+                                                enableVueDocButton.classList.add('nscale-btn-secondary');
+                                                enableVueDocButton.classList.remove('nscale-btn-primary');
+                                                enableClassicDocButton.classList.add('nscale-btn-primary');
+                                                enableClassicDocButton.classList.remove('nscale-btn-secondary');
+                                            }
+                                        }
+                                    }
+                                    
+                                    /**
+                                     * Aktualisiert die Anzeige für die Admin-Komponenten
+                                     */
+                                    function updateAdminStatus() {
+                                        const statusElement = document.getElementById('currentAdminSetting');
+                                        if (!statusElement) {
+                                            console.warn('Admin-Status-Element nicht gefunden');
+                                            return;
+                                        }
+                                        
+                                        const useNewUI = localStorage.getItem('useNewUI') === 'true'; 
+                                        const useVueAdmin = localStorage.getItem('feature_vueAdmin') === 'true';
+                                        console.log('updateAdminStatus() - useNewUI:', useNewUI, 'useVueAdmin:', useVueAdmin);
+                                        console.log('Raw values - useNewUI:', localStorage.getItem('useNewUI'), 'feature_vueAdmin:', localStorage.getItem('feature_vueAdmin'));
+                                        
+                                        // Wenn global Vue.js deaktiviert ist, sind auch die Admin-Komponenten deaktiviert
+                                        if (!useNewUI) {
+                                            statusElement.innerHTML = '<span class="text-gray-700">✗ Klassische Implementierung (Global deaktiviert)</span>';
+                                            return;
+                                        }
+                                        
+                                        if (useVueAdmin) {
+                                            statusElement.innerHTML = '<span class="text-green-600">✓ Vue.js-Implementierung</span>';
+                                        } else {
+                                            statusElement.innerHTML = '<span class="text-gray-700">✗ Klassische Implementierung</span>';
+                                        }
+                                    }
+                                    
+                                    /**
+                                     * Aktualisiert die Anzeige für den Entwicklermodus
+                                     */
+                                    function updateDevModeStatus() {
+                                        const statusElement = document.getElementById('currentDevModeSetting');
+                                        if (!statusElement) {
+                                            console.warn('DevMode-Status-Element nicht gefunden');
+                                            return;
+                                        }
+                                        
+                                        const devMode = localStorage.getItem('devMode') === 'true';
+                                        console.log('updateDevModeStatus() - devMode:', devMode, 'raw value:', localStorage.getItem('devMode'));
+                                        
+                                        if (devMode) {
+                                            statusElement.innerHTML = '<span class="text-green-600">✓ Aktiviert</span>';
+                                        } else {
+                                            statusElement.innerHTML = '<span class="text-gray-700">✗ Deaktiviert</span>';
+                                        }
+                                        
+                                        // Auch Buttons entsprechend hervorheben
+                                        const enableDevModeButton = document.getElementById('enableDevModeButton');
+                                        const disableDevModeButton = document.getElementById('disableDevModeButton');
+                                        
+                                        if (enableDevModeButton && disableDevModeButton) {
+                                            if (devMode) {
+                                                enableDevModeButton.classList.add('nscale-btn-primary');
+                                                enableDevModeButton.classList.remove('nscale-btn-secondary');
+                                                disableDevModeButton.classList.add('nscale-btn-secondary');
+                                                disableDevModeButton.classList.remove('nscale-btn-primary');
+                                            } else {
+                                                enableDevModeButton.classList.add('nscale-btn-secondary');
+                                                enableDevModeButton.classList.remove('nscale-btn-primary');
+                                                disableDevModeButton.classList.add('nscale-btn-primary');
+                                                disableDevModeButton.classList.remove('nscale-btn-secondary');
+                                            }
+                                        }
+                                    }
+                                    
+                                    /**
+                                     * Richtet Event-Listener für die Buttons ein
+                                     */
+                                    function setupEventListeners() {
+                                        // UI-Version Buttons
+                                        const enableVueButton = document.getElementById('enableVueButton');
+                                        const enableClassicButton = document.getElementById('enableClassicButton');
+                                        
+                                        if (enableVueButton) {
+                                            // Falls der Button bereits einen Event-Listener hat, diesen entfernen
+                                            enableVueButton.removeEventListener('click', function(){});
+                                            
+                                            enableVueButton.addEventListener('click', function() {
+                                                console.log('Vue.js-UI aktivieren');
+                                                localStorage.setItem('useNewUI', 'true');
+                                                
+                                                // Debug-Log nach dem Setzen
+                                                console.log('useNewUI nach Setzen:', localStorage.getItem('useNewUI'));
+                                                
+                                                // UI aktualisieren bevor die Seite neu geladen wird
+                                                updateUIStatus();
+                                                
+                                                // Verzögerung, um sicherzustellen, dass localStorage persistent ist
+                                                setTimeout(function() {
+                                                    console.log('Überprüfe useNewUI vor Reload:', localStorage.getItem('useNewUI'));
+                                                    alert('Vue.js-UI wurde aktiviert. Die Seite wird neu geladen.');
+                                                    window.location.reload();
+                                                }, 100);
+                                            });
+                                        }
+                                        
+                                        if (enableClassicButton) {
+                                            // Falls der Button bereits einen Event-Listener hat, diesen entfernen
+                                            enableClassicButton.removeEventListener('click', function(){});
+                                            
+                                            enableClassicButton.addEventListener('click', function() {
+                                                console.log('Klassische UI aktivieren');
+                                                localStorage.setItem('useNewUI', 'false');
+                                                
+                                                // Debug-Log nach dem Setzen
+                                                console.log('useNewUI nach Setzen:', localStorage.getItem('useNewUI'));
+                                                
+                                                // UI aktualisieren bevor die Seite neu geladen wird
+                                                updateUIStatus();
+                                                
+                                                // Verzögerung, um sicherzustellen, dass localStorage persistent ist
+                                                setTimeout(function() {
+                                                    console.log('Überprüfe useNewUI vor Reload:', localStorage.getItem('useNewUI'));
+                                                    alert('Klassische UI wurde aktiviert. Die Seite wird neu geladen.');
+                                                    window.location.reload();
+                                                }, 100);
+                                            });
+                                        }
+                                        
+                                        // DocConverter Buttons
+                                        const enableVueDocButton = document.getElementById('enableVueDocButton');
+                                        const enableClassicDocButton = document.getElementById('enableClassicDocButton');
+                                        
+                                        if (enableVueDocButton) {
+                                            // Falls der Button bereits einen Event-Listener hat, diesen entfernen
+                                            enableVueDocButton.removeEventListener('click', function(){});
+                                            
+                                            enableVueDocButton.addEventListener('click', function() {
+                                                console.log('Vue.js-DocConverter aktivieren');
+                                                localStorage.setItem('feature_vueDocConverter', 'true');
+                                                
+                                                // Debug-Log nach dem Setzen
+                                                console.log('feature_vueDocConverter nach Setzen:', localStorage.getItem('feature_vueDocConverter'));
+                                                
+                                                // UI aktualisieren bevor die Seite neu geladen wird
+                                                updateDocConverterStatus();
+                                                
+                                                // Verzögerung, um sicherzustellen, dass localStorage persistent ist
+                                                setTimeout(function() {
+                                                    console.log('Überprüfe feature_vueDocConverter vor Reload:', localStorage.getItem('feature_vueDocConverter'));
+                                                    alert('Vue.js-Implementierung für den Dokumentenkonverter wurde aktiviert. Die Seite wird neu geladen.');
+                                                    window.location.reload();
+                                                }, 100);
+                                            });
+                                        }
+                                        
+                                        if (enableClassicDocButton) {
+                                            // Falls der Button bereits einen Event-Listener hat, diesen entfernen
+                                            enableClassicDocButton.removeEventListener('click', function(){});
+                                            
+                                            enableClassicDocButton.addEventListener('click', function() {
+                                                console.log('Klassischen DocConverter aktivieren');
+                                                localStorage.setItem('feature_vueDocConverter', 'false');
+                                                
+                                                // Debug-Log nach dem Setzen
+                                                console.log('feature_vueDocConverter nach Setzen:', localStorage.getItem('feature_vueDocConverter'));
+                                                
+                                                // UI aktualisieren bevor die Seite neu geladen wird
+                                                updateDocConverterStatus();
+                                                
+                                                // Verzögerung, um sicherzustellen, dass localStorage persistent ist
+                                                setTimeout(function() {
+                                                    console.log('Überprüfe feature_vueDocConverter vor Reload:', localStorage.getItem('feature_vueDocConverter'));
+                                                    alert('Klassische Implementierung für den Dokumentenkonverter wurde aktiviert. Die Seite wird neu geladen.');
+                                                    window.location.reload();
+                                                }, 100);
+                                            });
+                                        }
+                                        
+                                        // Admin-Komponenten Buttons
+                                        const enableVueAdminButton = document.getElementById('enableVueAdminButton');
+                                        const enableClassicAdminButton = document.getElementById('enableClassicAdminButton');
+                                        
+                                        if (enableVueAdminButton) {
+                                            // Falls der Button bereits einen Event-Listener hat, diesen entfernen
+                                            enableVueAdminButton.removeEventListener('click', function(){});
+                                            
+                                            enableVueAdminButton.addEventListener('click', function() {
+                                                console.log('Vue.js-Admin aktivieren');
+                                                localStorage.setItem('feature_vueAdmin', 'true');
+                                                
+                                                // Debug-Log nach dem Setzen
+                                                console.log('feature_vueAdmin nach Setzen:', localStorage.getItem('feature_vueAdmin'));
+                                                
+                                                // UI aktualisieren bevor die Seite neu geladen wird
+                                                updateAdminStatus();
+                                                
+                                                // Verzögerung, um sicherzustellen, dass localStorage persistent ist
+                                                setTimeout(function() {
+                                                    console.log('Überprüfe feature_vueAdmin vor Reload:', localStorage.getItem('feature_vueAdmin'));
+                                                    alert('Vue.js-Implementierung für Admin-Komponenten wurde aktiviert. Die Seite wird neu geladen.');
+                                                    window.location.reload();
+                                                }, 100);
+                                            });
+                                        }
+                                        
+                                        if (enableClassicAdminButton) {
+                                            // Falls der Button bereits einen Event-Listener hat, diesen entfernen
+                                            enableClassicAdminButton.removeEventListener('click', function(){});
+                                            
+                                            enableClassicAdminButton.addEventListener('click', function() {
+                                                console.log('Klassische Admin-Komponenten aktivieren');
+                                                localStorage.setItem('feature_vueAdmin', 'false');
+                                                
+                                                // Debug-Log nach dem Setzen
+                                                console.log('feature_vueAdmin nach Setzen:', localStorage.getItem('feature_vueAdmin'));
+                                                
+                                                // UI aktualisieren bevor die Seite neu geladen wird
+                                                updateAdminStatus();
+                                                
+                                                // Verzögerung, um sicherzustellen, dass localStorage persistent ist
+                                                setTimeout(function() {
+                                                    console.log('Überprüfe feature_vueAdmin vor Reload:', localStorage.getItem('feature_vueAdmin'));
+                                                    alert('Klassische Implementierung für Admin-Komponenten wurde aktiviert. Die Seite wird neu geladen.');
+                                                    window.location.reload();
+                                                }, 100);
+                                            });
+                                        }
+                                        
+                                        // DevMode Buttons
+                                        const enableDevModeButton = document.getElementById('enableDevModeButton');
+                                        const disableDevModeButton = document.getElementById('disableDevModeButton');
+                                        
+                                        if (enableDevModeButton) {
+                                            // Falls der Button bereits einen Event-Listener hat, diesen entfernen
+                                            enableDevModeButton.removeEventListener('click', function(){});
+                                            
+                                            enableDevModeButton.addEventListener('click', function() {
+                                                console.log('Entwicklermodus aktivieren');
+                                                localStorage.setItem('devMode', 'true');
+                                                
+                                                // Debug-Log nach dem Setzen
+                                                console.log('devMode nach Setzen:', localStorage.getItem('devMode'));
+                                                
+                                                // UI aktualisieren bevor die Seite neu geladen wird
+                                                updateDevModeStatus();
+                                                
+                                                // Verzögerung, um sicherzustellen, dass localStorage persistent ist
+                                                setTimeout(function() {
+                                                    console.log('Überprüfe devMode vor Reload:', localStorage.getItem('devMode'));
+                                                    alert('Entwicklermodus wurde aktiviert. Die Seite wird neu geladen.');
+                                                    window.location.reload();
+                                                }, 100);
+                                            });
+                                        }
+                                        
+                                        if (disableDevModeButton) {
+                                            // Falls der Button bereits einen Event-Listener hat, diesen entfernen
+                                            disableDevModeButton.removeEventListener('click', function(){});
+                                            
+                                            disableDevModeButton.addEventListener('click', function() {
+                                                console.log('Entwicklermodus deaktivieren');
+                                                localStorage.setItem('devMode', 'false');
+                                                
+                                                // Debug-Log nach dem Setzen
+                                                console.log('devMode nach Setzen:', localStorage.getItem('devMode'));
+                                                
+                                                // UI aktualisieren bevor die Seite neu geladen wird
+                                                updateDevModeStatus();
+                                                
+                                                // Verzögerung, um sicherzustellen, dass localStorage persistent ist
+                                                setTimeout(function() {
+                                                    console.log('Überprüfe devMode vor Reload:', localStorage.getItem('devMode'));
+                                                    alert('Entwicklermodus wurde deaktiviert. Die Seite wird neu geladen.');
+                                                    window.location.reload();
+                                                }, 100);
+                                            });
+                                        }
+                                        
+                                        console.log('Event-Listener für alle Buttons konfiguriert');
+                                    } // Ende von setupEventListeners()
+                                    
+                                    /**
+                                     * Funktionen und DOM-Elemente initialisieren wenn das Dokument geladen ist
+                                     */
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        // Debug-Logging: Zeige die aktuellen Werte beim Seitenstart
+                                        console.log('Feature-Toggle Status beim Laden:');
+                                        console.log('- useNewUI:', localStorage.getItem('useNewUI'));
+                                        console.log('- feature_vueDocConverter:', localStorage.getItem('feature_vueDocConverter'));
+                                        console.log('- devMode:', localStorage.getItem('devMode'));
+                                        
+                                        // Feature-Toggle-Container suchen
+                                        const featureContainer = document.getElementById('feature-toggle-container');
+                                        
+                                        // Nur initialisieren, wenn der Container bereits sichtbar ist (was unwahrscheinlich ist)
+                                        // Ansonsten wird die Initialisierung durch admin.js beim Tab-Wechsel ausgelöst
+                                        if (featureContainer && featureContainer.offsetParent !== null) {
+                                            console.log('Feature-Toggle-Container ist bereits sichtbar, initialisiere sofort');
+                                            window.initFeatureUI();
+                                        } else {
+                                            console.log('Feature-Toggle-Container ist nicht sichtbar, Initialisierung erfolgt bei Tab-Wechsel');
+                                        }
+                                        
+                                        // Wir überlassen die eigentliche Initialisierung dem Tab-Wechsel in admin.js
+                                        console.log('Feature-Toggle UI wird via Tab-Wechsel in admin.js initialisiert');
+                                    });
+                                    
+                                    // Wir entfernen den load-Event-Handler, um doppelte Initialisierungen zu vermeiden
+                                })(); // Ende der IIFE
+                                </script>
+                            </div>
+
+                            <!-- Feedback-Tab -->
+                            <div v-if="adminTab === 'feedback'" class="admin-panel-content" data-tab="feedback">
+                                <div class="flex justify-end mb-6">
+                                    <button @click="loadFeedbackStats(); loadNegativeFeedback()" class="nscale-btn-secondary">
+                                        <i class="fas fa-sync-alt mr-2"></i>
+                                        Aktualisieren
+                                    </button>
+                                </div>
+                                
+                                <div class="admin-stats-grid grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                                    <div class="admin-stat-card">
+                                        <div class="admin-stat-value">{{ feedbackStats.total || 0 }}</div>
+                                        <div class="admin-stat-label">Gesamtes Feedback</div>
+                                    </div>
+                                    <div class="admin-stat-card">
+                                        <div class="admin-stat-value">{{ feedbackStats.positive || 0 }}</div>
+                                        <div class="admin-stat-label">Positiv</div>
+                                    </div>
+                                    <div class="admin-stat-card negative">
+                                        <div class="admin-stat-value">{{ feedbackStats.negative || 0 }}</div>
+                                        <div class="admin-stat-label">Negativ</div>
+                                    </div>
+                                    <div class="admin-stat-card">
+                                        <div class="admin-stat-value">{{ Math.round((feedbackStats.positive || 0) / (feedbackStats.total || 1) * 100) }}%</div>
+                                        <div class="admin-stat-label">Zufriedenheit</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="admin-card">
+                                    <div class="admin-card-title">Negatives Feedback</div>
+                                    <div v-if="negativeFeedback.length === 0" class="text-gray-500 italic p-4 text-center">
+                                        Kein negatives Feedback vorhanden
+                                    </div>
+                                    <div v-else class="grid grid-cols-1 gap-6">
+                                        <div v-for="feedback in negativeFeedback" :key="feedback.id" class="border-b border-gray-200 py-4">
+                                            <!-- Frage hinzufügen -->
+                                            <div v-if="feedback.question" class="mb-4">
+                                                <div class="font-medium mb-2">Frage:</div>
+                                                <div class="text-sm text-gray-800 p-3 bg-gray-50 rounded border-l-4 border-blue-500">
+                                                    {{ feedback.question }}
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Antwort hinzufügen -->
+                                            <div v-if="feedback.answer" class="mb-4">
+                                                <div class="font-medium mb-2">Antwort:</div>
+                                                <div class="text-sm text-gray-700 p-3 bg-gray-50 rounded border-l-4 border-green-500">
+                                                    {{ feedback.answer }}
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Feedback-Kommentar -->
+                                            <div class="mt-3">
+                                                <div class="font-medium mb-2">Kommentar:</div>
+                                                <div class="text-sm text-red-600 p-3 bg-red-50 rounded border-l-4 border-red-500">
+                                                    {{ feedback.comment || 'Kein Kommentar' }}
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Meta-Informationen -->
+                                            <div class="flex justify-between items-center mt-3 text-xs text-gray-500">
+                                                <div>
+                                                    <span class="font-medium">Nutzer:</span> {{ feedback.user_email }}
+                                                </div>
+                                                <div>
+                                                    <span class="font-medium">Datum:</span> {{ new Date(feedback.created_at * 1000).toLocaleString() }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- MOTD-Tab und Vorschau -->
+                            <div v-if="adminTab === 'motd'" class="admin-panel-content" data-tab="motd">
+                                <div class="flex flex-col lg:flex-row gap-6">
+                                    <!-- MOTD Form -->
+                                    <div class="flex-1">
+                                        <div class="admin-card">
+                                            <div class="admin-card-title">Message of the Day Konfiguration</div>
+                                            
+                                            <div class="mb-4">
+                                                <label class="admin-label">MOTD aktivieren</label>
+                                                <div class="flex items-center">
+                                                    <input type="checkbox" v-model="motdConfig.enabled" class="mr-2">
+                                                    <span class="text-sm text-gray-600">Aktiviert die Anzeige der MOTD für alle Benutzer</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-4">
+                                                <label class="admin-label">Format</label>
+                                                <select v-model="motdConfig.format" class="nscale-input w-full">
+                                                    <option value="markdown">Markdown</option>
+                                                    <option value="text">Einfacher Text</option>
+                                                    <option value="html">HTML (nur für fortgeschrittene Benutzer)</option>
+                                                </select>
+                                                <p class="text-xs text-gray-500 mt-1">Markdown wird für die Formatierung empfohlen.</p>
+                                            </div>
+
+                                            <div class="mb-4">
+                                                <label class="admin-label">Inhalt</label>
+                                                <textarea 
+                                                    v-model="motdConfig.content" 
+                                                    class="nscale-input w-full h-64 font-mono text-sm" 
+                                                    placeholder="Inhalt der MOTD..."
+                                                ></textarea>
+                                                <p class="text-xs text-gray-500 mt-1">
+                                                    <i class="fas fa-info-circle mr-1"></i>
+                                                    Markdown wird unterstützt, z.B. **fett** oder Listen mit - (Bindestrich)
+                                                </p>
+                                            </div>
+                                            
+                                            <div class="mb-4">
+                                                <label class="admin-label">Erscheinungsbild</label>
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label class="text-sm font-medium mb-1 block">Farbschema</label>
+                                                        <select v-model="selectedColorTheme" class="nscale-input w-full" @change="applyColorTheme">
+                                                            <option value="warning">Warnung (Gelb)</option>
+                                                            <option value="info">Information (Blau)</option>
+                                                            <option value="success">Erfolg (Grün)</option>
+                                                            <option value="danger">Gefahr (Rot)</option>
+                                                            <option value="neutral">Neutral (Grau)</option>
+                                                            <option value="custom">Benutzerdefiniert</option>
+                                                        </select>
+                                                    </div>
+                                                    
+                                                    <div v-if="selectedColorTheme === 'custom'" class="grid grid-cols-3 gap-2">
+                                                        <div>
+                                                            <label class="text-xs text-gray-600 mb-1 block">Hintergrund</label>
+                                                            <input type="color" v-model="motdConfig.style.backgroundColor" class="w-full h-10 cursor-pointer">
+                                                        </div>
+                                                        <div>
+                                                            <label class="text-xs text-gray-600 mb-1 block">Rand</label>
+                                                            <input type="color" v-model="motdConfig.style.borderColor" class="w-full h-10 cursor-pointer">
+                                                        </div>
+                                                        <div>
+                                                            <label class="text-xs text-gray-600 mb-1 block">Text</label>
+                                                            <input type="color" v-model="motdConfig.style.textColor" class="w-full h-10 cursor-pointer">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mb-4">
+                                                <label class="admin-label">Anzeigeoptionen</label>
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div class="flex items-center">
+                                                        <input type="checkbox" v-model="motdConfig.display.dismissible" class="mr-2">
+                                                        <span class="text-sm">Schließbar (X-Button anzeigen)</span>
+                                                    </div>
+                                                    <div class="flex items-center">
+                                                        <input type="checkbox" v-model="motdConfig.display.showInChat" class="mr-2">
+                                                        <span class="text-sm">Im Chat anzeigen</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex space-x-4 mt-4">
+                                            <button @click="resetMotdConfig" class="nscale-btn-secondary">
+                                                <i class="fas fa-undo mr-2"></i>
+                                                Zurücksetzen
+                                            </button>
+                                            <button @click="saveMotdConfig" class="nscale-btn-primary">
+                                                <i class="fas fa-save mr-2"></i>
+                                                Speichern
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- MOTD Vorschau - KORRIGIERT für MOTD-Textfarbe -->
+                                    <div class="w-full lg:w-1/3 flex flex-col">
+                                        <div class="admin-card h-full">
+                                            <div class="admin-card-title">Vorschau</div>
+                                            <div class="p-4 border rounded-lg flex-1 mt-4" 
+                                                :style="{
+                                                    backgroundColor: motdConfig.style.backgroundColor,
+                                                    borderColor: motdConfig.style.borderColor,
+                                                    color: motdConfig.style.textColor,
+                                                    borderWidth: '1px',
+                                                    borderStyle: 'solid'
+                                                }">
+                                                <div v-if="motdConfig.display.dismissible" class="float-right cursor-pointer">×</div>
+                                                <div v-html="formatMotdContent(motdConfig.content)"></div>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-2">
+                                                <i class="fas fa-info-circle mr-1"></i>
+                                                So wird die Nachricht für die Benutzer angezeigt
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Navigation Toggle Button -->
+                    <button @click="toggleSettings" class="floating-action-button">
+                        <i class="fas fa-universal-access"></i>
+                    </button>
+                </main>
+            </div>
+        </div>
+    
+        <!-- Settings Panel mit @click.stop um Event-Propagation zu stoppen -->
+        <div v-if="showSettingsPanel" @click.stop class="settings-panel transform transition-transform">
+            <div class="settings-panel-header">
+                <h3 class="settings-panel-title">Einstellungen</h3>
+                <button @click.stop="toggleSettings" class="settings-panel-close">×</button>
+            </div>
+            <!-- Vue-Mount-Punkt für die Settings-Komponente -->
+            <div id="vue-settings-mount"></div>
+            <!-- Legacy Settings Panel (wird durch Vue-Komponente ersetzt) -->
+            <div v-if="false" class="settings-panel-content">
+                <div class="settings-section">
+                    <h4 class="settings-section-title">Erscheinungsbild</h4>
+                    
+                    <!-- Farbschema als Radio-Buttons -->
+                    <div class="settings-option">
+                        <label class="settings-option-label">Farbschema</label>
+                        <div class="theme-options">
+                            <div class="theme-option">
+                                <input type="radio" id="theme-light" 
+                                    name="theme" value="light" 
+                                    v-model="currentTheme" 
+                                    class="theme-radio">
+                                <label for="theme-light" class="theme-label">
+                                    <i class="fas fa-sun theme-icon"></i>
+                                    <span>Hell</span>
+                                </label>
+                            </div>
+                            <div class="theme-option">
+                                <input type="radio" id="theme-dark" 
+                                    name="theme" value="dark" 
+                                    v-model="currentTheme" 
+                                    class="theme-radio">
+                                <label for="theme-dark" class="theme-label">
+                                    <i class="fas fa-moon theme-icon"></i>
+                                    <span>Dunkel</span>
+                                </label>
+                            </div>
+                            <div class="theme-option">
+                                <input type="radio" id="theme-contrast" 
+                                    name="theme" value="contrast" 
+                                    v-model="currentTheme" 
+                                    class="theme-radio">
+                                <label for="theme-contrast" class="theme-label">
+                                    <i class="fas fa-adjust theme-icon"></i>
+                                    <span>Kontrast</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Schriftgröße als Radio-Buttons -->
+                    <div class="settings-option">
+                        <label class="settings-option-label">Schriftgröße</label>
+                        <div class="font-size-options">
+                            <div class="font-size-option">
+                                <input type="radio" id="size-small" 
+                                    name="fontSize" value="small" 
+                                    v-model="currentFontSize" 
+                                    class="font-size-radio">
+                                <label for="size-small" class="font-size-label font-size-small">
+                                    <span>Klein</span>
+                                </label>
+                            </div>
+                            <div class="font-size-option">
+                                <input type="radio" id="size-medium" 
+                                    name="fontSize" value="medium" 
+                                    v-model="currentFontSize" 
+                                    class="font-size-radio">
+                                <label for="size-medium" class="font-size-label font-size-medium">
+                                    <span>Mittel</span>
+                                </label>
+                            </div>
+                            <div class="font-size-option">
+                                <input type="radio" id="size-large" 
+                                    name="fontSize" value="large" 
+                                    v-model="currentFontSize" 
+                                    class="font-size-radio">
+                                <label for="size-large" class="font-size-label font-size-large">
+                                    <span>Groß</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h4 class="settings-section-title">Barrierefreiheit</h4>
+                    <div class="accessibility-container">
+                        <label class="accessibility-option">
+                            <input type="checkbox" 
+                                v-model="accessibilitySettings.reduceMotion" 
+                                @click.stop
+                                class="accessibility-checkbox">
+                            <div>
+                                <span class="accessibility-label">Animationen reduzieren</span>
+                                <span class="accessibility-description">Reduziert oder deaktiviert Bewegungseffekte und Animationen</span>
+                            </div>
+                        </label>
+                        
+                        <label class="accessibility-option">
+                            <input type="checkbox" 
+                                v-model="accessibilitySettings.simpleLanguage" 
+                                @click.stop
+                                class="accessibility-checkbox">
+                            <div>
+                                <span class="accessibility-label">Einfache Sprache bevorzugen</span>
+                                <span class="accessibility-description">Vereinfacht Formulierungen und Erklärungen in Antworten</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Feedback-Kommentar-Dialog -->
+        <div v-if="showFeedbackDialog" class="modal-overlay">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h3 class="modal-title">Feedback hinzufügen</h3>
+                    <button @click="showFeedbackDialog = false" class="modal-close">×</button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-gray-600 mb-4">Bitte teilen Sie uns mit, warum diese Antwort nicht hilfreich war:</p>
+                    <textarea 
+                        v-model="feedbackComment" 
+                        class="nscale-input w-full h-32 mb-4" 
+                        placeholder="Ihr Feedback..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button @click="showFeedbackDialog = false" class="nscale-btn-secondary">Abbrechen</button>
+                    <button @click="submitFeedbackComment" class="nscale-btn-primary">Senden</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- NEU: Quellenerklärungs-Dialog -->
+        <!-- Verbessertes Erklärungs-Dialog Template -->
+        <div v-if="showExplanationDialog" class="modal-overlay">
+            <div class="modal-container max-w-3xl">
+                <div class="modal-header">
+                    <h3 class="modal-title">Antwort-Erklärung</h3>
+                    <button @click="closeExplanationDialog" class="modal-close">×</button>
+                </div>
+                <div class="modal-body overflow-y-auto max-h-[70vh]">
+                    <div v-if="explanationLoading" class="p-4 text-center">
+                        <div class="loader mx-auto mb-3"></div>
+                        <p>Erklärung wird geladen...</p>
+                    </div>
+                    <div v-else-if="currentExplanation" class="p-6">
+                        <div class="mb-6">
+                            <h3 class="text-lg font-semibold mb-2">Ursprüngliche Frage:</h3>
+                            <div class="p-3 bg-gray-50 rounded border border-gray-200">
+                                {{ currentExplanation.original_question }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <h3 class="text-lg font-semibold mb-2">Verwendete Quellen:</h3>
+                            <div v-if="currentExplanation.source_references && currentExplanation.source_references.length" 
+                                class="space-y-3">
+                                <div v-for="(source, index) in currentExplanation.source_references" 
+                                    :key="source.source_id"
+                                    class="p-3 bg-gray-50 rounded border border-gray-200">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="font-semibold text-green-700">{{ source.source_id }}</span>
+                                        <span class="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                            {{ source.usage_count || 0 }}× verwendet
+                                        </span>
+                                    </div>
+                                    <div class="mb-1">
+                                        <span class="font-medium">Datei:</span> {{ source.file }}
+                                    </div>
+                                    <div v-if="source.title" class="mb-1">
+                                        <span class="font-medium">Abschnitt:</span> {{ source.title }}
+                                    </div>
+                                    <div class="mt-2 p-2 bg-white rounded border border-gray-200 text-sm">
+                                        {{ source.preview || 'Keine Vorschau verfügbar' }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-else class="p-3 bg-gray-50 rounded border border-gray-200 text-gray-500 italic">
+                                Keine Quellen gefunden.
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h3 class="text-lg font-semibold mb-2">Erläuterung:</h3>
+                            <div class="p-3 bg-gray-50 rounded border border-gray-200 whitespace-pre-line">
+                                {{ currentExplanation.explanation_text || 'Keine Erläuterung verfügbar.' }}
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else class="p-4 text-center">
+                        <p>Keine Erklärungsdaten verfügbar.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button @click="closeExplanationDialog" class="nscale-btn-secondary">Schließen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Container für das Quellen-Popup -->
+    <div id="source-popup-container"></div>
+    
+    <!-- CSS Force-Reload Script -->
+    <script>
+        // Hilfsfunktion zum Neuladen aller CSS-Dateien
+        function reloadCSS() {
+            console.log("Force-Reload aller CSS-Dateien...");
+            
+            // Alle CSS-Links finden
+            const cssLinks = document.querySelectorAll('link[rel="stylesheet"]');
+            
+            cssLinks.forEach(link => {
+                // Aktuelle Href auslesen
+                const href = link.getAttribute('href');
+                
+                if (href && href.includes('/static/css/')) {
+                    // Timestamp als Query-Parameter hinzufügen
+                    const updatedHref = href.includes('?') 
+                        ? href.split('?')[0] + '?v=' + Date.now() 
+                        : href + '?v=' + Date.now();
+                    
+                    // Neuen Link erstellen
+                    const newLink = document.createElement('link');
+                    newLink.rel = 'stylesheet';
+                    newLink.href = updatedHref;
+                    
+                    // Alten Link ersetzen
+                    link.parentNode.replaceChild(newLink, link);
+                    
+                    console.log(`CSS neu geladen: ${href} -> ${updatedHref}`);
+                }
+            });
+        }
+
+        // Sofortiges Ausführen nach Seitenladung
+        window.addEventListener('DOMContentLoaded', reloadCSS);
+    </script>
+    
+    <!-- JavaScript-Module einbinden -->
+    <script src="/static/js/chat.js" type="module"></script>
+    <script src="/static/js/feedback.js" type="module"></script>
+    <script src="/static/js/admin.js" type="module"></script>
+    <script src="/static/js/settings.js" type="module"></script>
+    <script src="/static/js/source-references.js" type="module"></script>
+    <script src="/static/js/app.js" type="module"></script>
+    <script src="/static/js/app-extensions.js" type="module"></script>
+    <script src="/static/js/enhanced-chat.js" type="module"></script>
+    <script src="/static/js/vue-settings-integration.js" type="module"></script>
+    
+    <!-- Verbesserungen und Bugfixes -->
+    <script>
+        /**
+         * Entfernt die Debug-Informationen zur message_id aus dem DOM
+         */
+        function removeMessageIdDebugInfo() {
+            // Führe die Funktion in regelmäßigen Abständen aus, um auch dynamisch hinzugefügte Elemente zu erfassen
+            setInterval(() => {
+                // Finde alle Elemente mit dem Debug-Text zur message_id
+                const debugElements = document.querySelectorAll('div[style*="font-size: 10px"][style*="color: gray"]');
+                
+                debugElements.forEach(element => {
+                    // Prüfe, ob der Text "message_id:" enthält
+                    if (element.textContent && element.textContent.includes('message_id:')) {
+                        // Debug-Element ausblenden
+                        element.style.display = 'none';
+                    }
+                });
+            }, 1000); // Alle Sekunde prüfen
+        }
+
+        /**
+         * Verbessert die Anzeige von Nachrichtenaktionen (Feedback-Buttons, Quellenbuttons)
+         * nach dem Streaming.
+         */
+        function enhanceMessageActions() {
+            // Überwacht die isStreaming-Variable der App und setzt eine Klasse am body-Element
+            const checkStreamingState = () => {
+                // Zugriff auf Vue-App und isStreaming-Status
+                if (window.app && window.app.$data && window.app.$data.isStreaming !== undefined) {
+                    const isStreaming = window.app.$data.isStreaming;
+                    
+                    // Setze/entferne die Klasse basierend auf dem Streaming-Status
+                    if (isStreaming) {
+                        document.body.classList.add('is-streaming');
+                    } else {
+                        document.body.classList.remove('is-streaming');
+                        
+                        // Nach Streaming-Ende alle message-actions einblenden
+                        setTimeout(() => {
+                            document.querySelectorAll('.message-actions').forEach(elem => {
+                                elem.style.opacity = '1';
+                            });
+                        }, 500); // Kurze Verzögerung für bessere Benutzererfahrung
+                    }
+                }
+            };
+            
+            // Regelmäßig den Streaming-Status prüfen
+            setInterval(checkStreamingState, 500);
+        }
+
+        /**
+         * Verbessert die Titelgenerierung für kurze Nachrichten
+         */
+        function enhanceTitleGeneration() {
+            // Überschreibe die automatische Titelgenerierung
+            if (window.updateSessionTitle) {
+                const originalUpdateTitle = window.updateSessionTitle;
+                
+                window.updateSessionTitle = async function(sessionId) {
+                    try {
+                        // Originalmethode aufrufen
+                        const result = await originalUpdateTitle(sessionId);
+                        
+                        // Nach jedem Streaming die Sitzungsliste neu laden
+                        if (window.app && window.app.loadSessions) {
+                            await window.app.loadSessions();
+                        }
+                        
+                        return result;
+                    } catch (error) {
+                        console.error("Fehler bei verbesserter Titelgenerierung:", error);
+                        // Originalmethode im Fehlerfall aufrufen
+                        return await originalUpdateTitle(sessionId);
+                    }
+                };
+            }
+            
+            // Nach Streaming-Ende automatisch den Titel aktualisieren
+            const watchStreamingForTitleUpdate = () => {
+                // Zugriff auf Vue-App und isStreaming-Status
+                if (window.app && window.app.$data) {
+                    const isStreaming = window.app.$data.isStreaming;
+                    const currentSessionId = window.app.$data.currentSessionId;
+                    
+                    // Wenn Streaming gerade beendet wurde, Titel aktualisieren
+                    if (isStreaming === false && currentSessionId) {
+                        // Suche die aktuelle Sitzung
+                        const sessions = window.app.$data.sessions || [];
+                        const currentSession = sessions.find(s => s.id === currentSessionId);
+                        
+                        // Nur aktualisieren, wenn der Titel noch "Neue Unterhaltung" ist
+                        if (currentSession && currentSession.title === "Neue Unterhaltung") {
+                            console.log("Streaming beendet, aktualisiere Titel für 'Neue Unterhaltung'");
+                            
+                            // Verzögerung für Server-Kommunikation
+                            setTimeout(() => {
+                                if (window.updateSessionTitle) {
+                                    window.updateSessionTitle(currentSessionId);
+                                }
+                            }, 1000);
+                        }
+                    }
+                }
+            };
+            
+            // Regelmäßig prüfen
+            setInterval(watchStreamingForTitleUpdate, 1000);
+        }
+        
+        /**
+         * Verbessert die Quellenreferenzen-Funktionalität durch Popup-Anzeige
+         */
+        function enhanceSourceReferences() {
+            // Globales Objekt für die Quellenverwaltung
+            window.sourceRefState = {
+                showSourcePopup: false,
+                sourcePopupContent: {
+                    title: '',
+                    text: '',
+                    file: '',
+                    sourceId: ''
+                },
+                sourcePopupPosition: {
+                    top: 0,
+                    left: 0
+                }
+            };
+            
+            // Handler für Klicks auf Quellenreferenzen
+            const originalHandler = window.showSourcePopupHandler;
+            window.showSourcePopupHandler = function(event, sourceId) {
+                // Position des Popups berechnen
+                const rect = event.target.getBoundingClientRect();
+                
+                // Globalen Zustand aktualisieren
+                window.sourceRefState.sourcePopupPosition = {
+                    top: rect.bottom + window.scrollY,
+                    left: rect.left + window.scrollX
+                };
+                
+                // Vorläufigen Inhalt setzen
+                window.sourceRefState.sourcePopupContent = {
+                    title: `Quelle ${sourceId}`,
+                    text: "Lade Quelleninformationen...",
+                    sourceId: sourceId
+                };
+                
+                // Popup anzeigen
+                window.sourceRefState.showSourcePopup = true;
+                
+                // Popup-Container aktualisieren
+                renderSourcePopup();
+                
+                // Versuche den originalen Handler aufzurufen, wenn vorhanden
+                if (typeof originalHandler === 'function') {
+                    try {
+                        originalHandler(event, sourceId);
+                    } catch (e) {
+                        console.error("Fehler beim Aufrufen des originalen Handlers:", e);
+                        // Fallback-Text im Popup anzeigen
+                        window.sourceRefState.sourcePopupContent.text = 
+                            "Dieses Feature ist gerade in Entwicklung. Bitte benutzen Sie die 'Antwort erklären'-Funktion für detaillierte Quellenangaben.";
+                    }
+                }
+            };
+            
+            // Funktion zum Schließen des Popups
+            window.closeSourcePopup = () => {
+                window.sourceRefState.showSourcePopup = false;
+                
+                // Popup-Container aktualisieren
+                renderSourcePopup();
+            };
+            
+            // Container für Quellen-Popup erstellen oder aktualisieren
+            function renderSourcePopup() {
+                let popupContainer = document.getElementById('source-popup-container');
+                
+                if (!popupContainer) {
+                    // Erstelle den Container und füge ihn zum DOM hinzu
+                    popupContainer = document.createElement('div');
+                    popupContainer.id = 'source-popup-container';
+                    document.body.appendChild(popupContainer);
+                }
+                
+                const state = window.sourceRefState;
+                
+                if (!state.showSourcePopup) {
+                    popupContainer.innerHTML = '';
+                    return;
+                }
+                
+                const position = state.sourcePopupPosition;
+                const content = state.sourcePopupContent;
+                
+                popupContainer.innerHTML = `
+                    <div class="source-popup" style="top: ${position.top}px; left: ${position.left}px;">
+                        <div class="source-popup-title">${content.title || 'Quellendetails'}</div>
+                        ${content.file ? `<div class="source-popup-file">Datei: ${content.file}</div>` : ''}
+                        <div class="source-popup-content">${content.text || 'Keine Informationen verfügbar'}</div>
+                        <div class="source-popup-close" onclick="window.closeSourcePopup()">Schließen</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Behandlung von Fehlern bei der Erklärungsfunktion
+        function fixExplanationErrors() {
+            // Warten bis das Originalobjekt existiert
+            const waitForObject = setInterval(() => {
+                if (window.loadExplanation) {
+                    clearInterval(waitForObject);
+                    
+                    // Original-Funktion speichern
+                    const originalLoadExplanation = window.loadExplanation;
+                    
+                    // Überschreiben mit verbesserten Fehlerbehandlung
+                    window.loadExplanation = async function(message) {
+                        try {
+                            // Überprüfen, ob Quellenreferenzen vorhanden sind
+                            if (!message || !message.message || !window.hasSourceReferences(message.message)) {
+                                console.log("Keine Quellenreferenzen in der Nachricht gefunden");
+                                
+                                // Statt Fehler anzuzeigen, zeigen wir eine freundliche Nachricht
+                                window.showExplanationDialog = true;
+                                window.currentExplanation = {
+                                    original_question: message.message || "Keine Frage gefunden",
+                                    explanation_text: "Für diese Antwort sind keine Quellen verfügbar. Die Antwort wurde basierend auf dem allgemeinen Wissen des Assistenten generiert.",
+                                    source_references: []
+                                };
+                                return;
+                            }
+                            
+                            // Prüfe, ob message_id vorhanden ist
+                            if (!message.id) {
+                                console.log("Keine gültige message_id für Erklärung vorhanden");
+                                
+                                // Wir verwenden einen Timestamp als temporäre ID
+                                message.id = Date.now();
+                                console.log(`Verwende temporäre message_id: ${message.id}`);
+                            }
+                            
+                            // Rufe die Original-Funktion auf, mit Fehlerbehandlung
+                            await originalLoadExplanation(message);
+                            
+                        } catch (error) {
+                            console.error("Fehler in verbesserter loadExplanation-Funktion:", error);
+                            
+                            // Fallback-Informationen bereitstellen
+                            window.showExplanationDialog = true;
+                            window.currentExplanation = {
+                                original_question: message?.message || "Keine Frage gefunden",
+                                explanation_text: "Es ist ein Fehler bei der Generierung der Erklärung aufgetreten. Bitte versuchen Sie es später erneut oder kontaktieren Sie den Administrator.",
+                                source_references: []
+                            };
+                        }
+                    };
+                    
+                    console.log("loadExplanation-Funktion erfolgreich verbessert");
+                }
+            }, 200);
+        }
+
+        // Initialisierung aller Verbesserungen
+        document.addEventListener('DOMContentLoaded', () => {
+            // Kurze Verzögerung, um sicherzustellen, dass alle Komponenten geladen sind
+            setTimeout(() => {
+                console.log("Initialisiere Verbesserungen...");
+                
+                // Entferne message_id Debug-Informationen
+                removeMessageIdDebugInfo();
+                
+                // Verbessere Nachrichtenaktionen
+                enhanceMessageActions();
+                
+                // Verbessere Titelgenerierung
+                enhanceTitleGeneration();
+                
+                // Verbessere Quellenreferenzen
+                enhanceSourceReferences();
+                
+                // Behebe Fehler in der Erklärungsfunktion
+                fixExplanationErrors();
+                
+                console.log("Alle Verbesserungen erfolgreich initialisiert");
+            }, 1000);
+        });
+    </script>
+    <script>
+      // Basis-URLs für die Verwendung der Vue.js-Komponenten
+      window.NSCALE_VUE_ASSETS_PATH = '/static/vue/assets/';
+      window.NSCALE_VUE_COMPONENTS_PATH = '/static/vue/components/';
+      
+      // Einfaches Feature-Toggle-Mechanismus 
+      // Wird nur im Admin-Bereich angezeigt, nicht als schwebender Button
+      const featureToggleStore = {
+        state: {
+          useNewUI: localStorage.getItem('useNewUI') === 'true' || false,
+          features: {
+            vueDocConverter: localStorage.getItem('feature_vueDocConverter') === 'true' || true,
+            vueChat: localStorage.getItem('feature_vueChat') === 'true' || false,
+            vueAdmin: localStorage.getItem('feature_vueAdmin') === 'true' || false,
+            vueSettings: localStorage.getItem('feature_vueSettings') === 'true' || false
+          },
+          devMode: localStorage.getItem('devMode') === 'true' || 
+                  window.location.hostname === 'localhost' || 
+                  window.location.hostname === '127.0.0.1'
+        },
+        
+        isFeatureEnabled(featureName) {
+          if (!this.state.useNewUI) return false;
+          return this.state.features[featureName] || false;
+        },
+        
+        toggleNewUI(value) {
+          this.state.useNewUI = value;
+          localStorage.setItem('useNewUI', value.toString());
+          
+          // Wenn wir zur alten UI wechseln, speichere aktuelle Feature-Einstellungen
+          if (!value) {
+            localStorage.setItem('featureSettings', JSON.stringify(this.state.features));
+          } else {
+            // Versuche gespeicherte Einstellungen wiederherzustellen
+            try {
+              const savedSettings = JSON.parse(localStorage.getItem('featureSettings'));
+              if (savedSettings) {
+                this.state.features = { ...this.state.features, ...savedSettings };
+              }
+            } catch (e) {
+              console.error('Fehler beim Wiederherstellen der Feature-Einstellungen:', e);
+            }
+          }
+          
+          // Aktualisiere die Seite, um die Änderungen anzuwenden
+          window.location.reload();
+        },
+        
+        toggleFeature(featureName, value) {
+          if (this.state.features.hasOwnProperty(featureName)) {
+            this.state.features[featureName] = value;
+            localStorage.setItem(`feature_${featureName}`, value.toString());
+          }
+        }
+      };
+      
+      // Globalen Zugriff auf Feature-Toggle-Store ermöglichen
+      window.featureToggleStore = featureToggleStore;
+    </script>
+    <!-- Feature-Toggle-basierte Initialisierung von Vue.js-Komponenten -->
+    <script>
+        // DocConverter-Initialisierung mit Feature-Toggle-Integration
+        document.addEventListener('DOMContentLoaded', () => {
+            // Prüfe Feature-Toggle für den DocConverter
+            const shouldUseVueDocConverter = window.featureToggleStore && 
+                                           window.featureToggleStore.isFeatureEnabled('vueDocConverter');
+            
+            // Kombiniere Feature-Toggle mit Admin-Bereichsprüfung
+            const checkAdminView = setInterval(() => {
+                const isAdmin = document.querySelector('.admin-panel-content') !== null;
+                const docConverterTab = document.querySelector('.admin-nav-item.active') !== null && 
+                                       (document.querySelector('#adminTab[value="docConverter"]') !== null || 
+                                        document.querySelector('[data-tab="docConverter"].active') !== null);
+                const mountPoint = document.getElementById('doc-converter-app');
+                
+                // Lade Komponente nur, wenn Feature aktiviert ist und Admin-Bereich aktiv
+                if ((shouldUseVueDocConverter || isAdmin) && docConverterTab && mountPoint && !window.docConverterInitialized) {
+                    console.log('DocConverter-Tab aktiv, lade Vue.js-Komponente...');
+                    
+                    // Ladevorgang mit Loading-Indikator
+                    mountPoint.innerHTML = '<div class="loading-container"><div class="loader"></div><p>Dokumentenkonverter wird geladen...</p></div>';
+                    
+                    // Asynchrones Laden der Vue.js-Komponente
+                    try {
+                        // Pfade für die Vue.js-Komponente (optimierter Ansatz)
+                        const possiblePaths = [
+                            '/static/js/vue/doc-converter.js', // Primärer Pfad - direkt im JS-Verzeichnis
+                            '/src/standalone/doc-converter.js', // Erster Fallback-Pfad
+                            '/frontend/vue/standalone/doc-converter.js' // Zweiter Fallback-Pfad
+                        ];
+                        
+                        let loadedScript = false;
+                        let currentPathIndex = 0;
+                        
+                        const tryNextScript = () => {
+                            if (currentPathIndex >= possiblePaths.length) {
+                                console.error('Alle Pfade für den DocConverter fehlgeschlagen');
+                                console.warn("Alle Vue.js-Ladeversuche fehlgeschlagen, verwende Fallback-UI");
+                                
+                                // Lade die Fallback JavaScript-Implementierung
+                                mountPoint.innerHTML = `
+                                    <div class="p-6">
+                                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                                            <div class="flex">
+                                                <div class="flex-shrink-0">
+                                                    <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                                                </div>
+                                                <div class="ml-3">
+                                                    <p class="text-sm text-yellow-700">
+                                                        Die Vue.js-Komponente konnte nicht geladen werden. Die Fallback-UI wird verwendet.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="fallback-container">
+                                            <div class="loader"></div>
+                                            <p class="mt-4 text-gray-600 text-center">Initialisiere Fallback-Lösung...</p>
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                // Lade das Fallback-Skript
+                                const fallbackScript = document.createElement('script');
+                                fallbackScript.src = '/static/js/doc-converter-fallback.js';
+                                fallbackScript.onerror = () => {
+                                    mountPoint.innerHTML = `
+                                        <div class="p-6">
+                                            <h2 class="text-xl font-semibold mb-4">Dokumenten-Konverter</h2>
+                                            <p class="mb-6">Mit diesem Tool können Sie verschiedene Dokumenttypen (PDF, DOCX, XLSX, etc.) in durchsuchbaren Text für das nscale DMS konvertieren.</p>
+                                            
+                                            <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+                                                <div class="flex">
+                                                    <div class="flex-shrink-0">
+                                                        <i class="fas fa-exclamation-circle text-red-500"></i>
+                                                    </div>
+                                                    <div class="ml-3">
+                                                        <p class="text-sm text-red-700">
+                                                            Fehler: Weder die Vue.js-Komponente noch die Fallback-Lösung konnten geladen werden.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="border rounded-lg p-6 bg-white shadow-sm">
+                                                <h3 class="text-lg font-medium mb-4">Einfache Upload-Funktion</h3>
+                                                
+                                                <form action="/api/admin/upload/document" method="post" enctype="multipart/form-data" class="space-y-4">
+                                                    <div>
+                                                        <label class="block text-gray-700 text-sm font-medium mb-2">Datei auswählen</label>
+                                                        <input type="file" name="file" class="border rounded p-2 w-full" accept=".pdf,.docx,.doc,.xlsx,.xls,.pptx,.ppt,.html,.txt">
+                                                    </div>
+                                                    
+                                                    <div>
+                                                        <label class="block text-gray-700 text-sm font-medium mb-2">Optionen</label>
+                                                        <div class="flex items-center">
+                                                            <input type="checkbox" name="post_processing" id="post_processing" checked class="mr-2">
+                                                            <label for="post_processing" class="text-sm text-gray-600">Nachbearbeitung aktivieren (verbessert Struktur und Format)</label>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="pt-4">
+                                                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded">
+                                                            <i class="fas fa-upload mr-2"></i>Dokument hochladen und konvertieren
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    `;
+                                };
+                                document.body.appendChild(fallbackScript);
+                                return;
+                            }
+                            
+                            const scriptPath = possiblePaths[currentPathIndex];
+                            currentPathIndex++;
+                            
+                            console.log(`Versuche DocConverter zu laden von: ${scriptPath}`);
+                            const script = document.createElement('script');
+                            script.src = scriptPath;
+                            script.type = 'module';
+                            script.onerror = tryNextScript;
+                            script.onload = () => {
+                                console.log(`DocConverter erfolgreich geladen von: ${scriptPath}`);
+                                loadedScript = true;
+                            };
+                            document.body.appendChild(script);
+                        };
+                        
+                        // Starte den Ladevorgang
+                        tryNextScript();
+                        
+                        // Markiere als initialisiert
+                        window.docConverterInitialized = true;
+                        clearInterval(checkAdminView);
+                        
+                    } catch (error) {
+                        console.error('Fehler beim Initialisieren des DocConverters:', error);
+                        mountPoint.innerHTML = '<div class="error-container"><p>Fehler beim Laden des Dokumentenkonverters</p></div>';
+                    }
+                }
+            }, 1000);
+        });
+        
+        // Allgemeine Hilfsfunktion zum Laden und Mounten von Vue.js-Komponenten
+        window.loadVueComponent = function(featureName, mountElementId, scriptPath, fallbackPath) {
+            if (!window.featureToggleStore) return false;
+            
+            // Prüfe Feature-Toggle
+            const isEnabled = window.featureToggleStore.isFeatureEnabled(featureName);
+            if (!isEnabled) return false;
+            
+            const mountElement = document.getElementById(mountElementId);
+            if (!mountElement) {
+                console.warn(`Mount-Element für ${featureName} nicht gefunden (#${mountElementId})`);
+                return false;
+            }
+            
+            console.log(`Lade Vue.js-Komponente für Feature ${featureName}...`);
+            
+            // Loading-Indikator anzeigen
+            mountElement.innerHTML = '<div class="loading-container"><div class="loader"></div><p>Komponente wird geladen...</p></div>';
+            
+            // Asynchrones Laden der Komponente
+            try {
+                const script = document.createElement('script');
+                script.src = scriptPath;
+                script.type = 'module';
+                script.onerror = () => {
+                    if (fallbackPath) {
+                        console.warn(`Konnte Hauptpfad nicht laden, versuche Fallback für ${featureName}...`);
+                        const fallbackScript = document.createElement('script');
+                        fallbackScript.src = fallbackPath;
+                        fallbackScript.type = 'module';
+                        fallbackScript.onerror = () => {
+                            console.error(`Fehler beim Laden von ${featureName}`);
+                            mountElement.innerHTML = '<div class="error-container"><p>Fehler beim Laden der Komponente</p></div>';
+                        };
+                        document.body.appendChild(fallbackScript);
+                    } else {
+                        console.error(`Fehler beim Laden von ${featureName}`);
+                        mountElement.innerHTML = '<div class="error-container"><p>Fehler beim Laden der Komponente</p></div>';
+                    }
+                };
+                
+                document.body.appendChild(script);
+                return true;
+                
+            } catch (error) {
+                console.error(`Fehler beim Initialisieren von ${featureName}:`, error);
+                mountElement.innerHTML = '<div class="error-container"><p>Fehler beim Laden der Komponente</p></div>';
+                return false;
+            }
+        };
+    </script>
+    <!-- Erweiterte Funktionen und Vue.js-Integration werden bereits oben geladen -->
+</body>
+</html>

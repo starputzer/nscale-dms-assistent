@@ -1,64 +1,68 @@
 <template>
   <div class="admin-sub-view">
     <h1>{{ viewTitle }}</h1>
-    <p>Diese Funktion ist noch in Entwicklung.</p>
     
-    <div class="placeholder-container">
-      <div class="placeholder-message">
-        <i :class="['fas', placeholderIcon]"></i>
-        <p>{{ placeholderText }}</p>
+    <div class="tabs-container">
+      <div class="tabs">
+        <button 
+          class="tab-button" 
+          :class="{ active: activeTab === 'status' }"
+          @click="activeTab = 'status'"
+        >
+          <i class="fas fa-tachometer-alt"></i>
+          System-Status
+        </button>
+        <button 
+          class="tab-button" 
+          :class="{ active: activeTab === 'logs' }"
+          @click="activeTab = 'logs'"
+        >
+          <i class="fas fa-clipboard-list"></i>
+          Protokolle
+        </button>
+      </div>
+      
+      <div class="tab-content">
+        <keep-alive>
+          <component :is="activeComponent"></component>
+        </keep-alive>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed, markRaw } from 'vue';
 import { useRoute } from 'vue-router';
+import SystemStatus from '@/components/admin/system/SystemStatus.vue';
+import SystemLogs from '@/components/admin/system/SystemLogs.vue';
 
 const route = useRoute();
+const activeTab = ref('status');
 
-// View-spezifische Daten basierend auf dem Dateinamen
-const viewConfig = computed(() => {
+// View-spezifische Daten basierend auf dem Route-Namen
+const viewTitle = computed(() => {
   const viewName = route.name || '';
   
   switch(viewName) {
-    case 'AdminUsers':
-      return {
-        title: 'Benutzerverwaltung',
-        icon: 'fa-users',
-        text: 'Hier werden bald Benutzereinträge angezeigt.'
-      };
     case 'AdminSystem':
-      return {
-        title: 'Systemüberwachung',
-        icon: 'fa-chart-line',
-        text: 'Hier werden bald Systemdaten angezeigt.'
-      };
-    case 'AdminFeedback':
-      return {
-        title: 'Feedback-Analyse',
-        icon: 'fa-comments',
-        text: 'Hier werden bald Feedback-Daten angezeigt.'
-      };
-    case 'AdminMotd':
-      return {
-        title: 'MOTD-Konfiguration',
-        icon: 'fa-bullhorn',
-        text: 'Hier wird bald die MOTD-Konfiguration angezeigt.'
-      };
+      return 'Systemüberwachung';
     default:
-      return {
-        title: 'Administration',
-        icon: 'fa-cog',
-        text: 'Dieser Bereich ist in Entwicklung.'
-      };
+      return 'Administration';
   }
 });
 
-const viewTitle = computed(() => viewConfig.value.title);
-const placeholderIcon = computed(() => viewConfig.value.icon);
-const placeholderText = computed(() => viewConfig.value.text);
+// Aktive Komponente basierend auf dem ausgewählten Tab
+const activeComponent = computed(() => {
+  switch(activeTab.value) {
+    case 'status':
+      return markRaw(SystemStatus);
+    case 'logs':
+      return markRaw(SystemLogs);
+    default:
+      return markRaw(SystemStatus);
+  }
+});
 </script>
 
 <style scoped>
@@ -66,50 +70,84 @@ const placeholderText = computed(() => viewConfig.value.text);
   padding: 1.5rem;
 }
 
-.placeholder-container {
-  margin-top: 2rem;
-  padding: 3rem;
-  background-color: var(--nscale-gray-light, #f8f9fa);
-  border-radius: 8px;
-  border: 1px dashed var(--nscale-gray-medium, #e0e3e8);
+.tabs-container {
+  margin-top: 1.5rem;
 }
 
-.placeholder-message {
+.tabs {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: var(--nscale-gray-dark, #4a5568);
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 1.5rem;
 }
 
-.placeholder-message i {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  opacity: 0.5;
+.tab-button {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #64748b;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: -1px;
+}
+
+.tab-button:hover {
+  color: #3b82f6;
+}
+
+.tab-button.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+}
+
+.tab-content {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Dark Mode Anpassungen */
-:global(.theme-dark) .placeholder-container {
-  background-color: #2a2a2a;
-  border-color: #444;
+:global(.theme-dark) .tabs {
+  border-bottom-color: #444;
 }
 
-:global(.theme-dark) .placeholder-message {
-  color: #f0f0f0;
+:global(.theme-dark) .tab-button {
+  color: #aaa;
+}
+
+:global(.theme-dark) .tab-button:hover,
+:global(.theme-dark) .tab-button.active {
+  color: #3b82f6;
 }
 
 /* Kontrast-Modus Anpassungen */
-:global(.theme-contrast) .placeholder-container {
-  background-color: #000000;
-  border: 2px solid #ffeb3b;
+:global(.theme-contrast) .tabs {
+  border-bottom-color: #ffeb3b;
 }
 
-:global(.theme-contrast) .placeholder-message {
+:global(.theme-contrast) .tab-button {
+  color: #fff;
+}
+
+:global(.theme-contrast) .tab-button:hover {
   color: #ffeb3b;
 }
 
-:global(.theme-contrast) .placeholder-message i {
+:global(.theme-contrast) .tab-button.active {
   color: #ffeb3b;
+  border-bottom-color: #ffeb3b;
 }
 </style>

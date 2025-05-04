@@ -104,6 +104,14 @@ frontend_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__f
 app.mount("/static", StaticFiles(directory=frontend_path), name="static")
 logger.info(f"Frontend gemountet von: {frontend_path}")
 
+# Explizit den API static Ordner mounten
+api_static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+if os.path.exists(api_static_path):
+    app.mount("/api/static", StaticFiles(directory=api_static_path), name="api_static")
+    logger.info(f"API static Verzeichnis gemountet von: {api_static_path}")
+else:
+    logger.warning(f"API static Verzeichnis nicht gefunden: {api_static_path}")
+
 # Mount Vue.js static assets mit absoluten Pfaden
 vue_app_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "nscale-vue")
 logger.info(f"Vue.js App-Pfad: {vue_app_path}")
@@ -140,11 +148,12 @@ vue_paths_to_mount = [
         "name": "vue_static_common_components",
         "description": "Vue.js Common Components"
     },
+    # Wichtigstes Mount-Punkt für Standalone-Skripte - direkt auf die Quelle
     {
         "url_path": "/static/vue/standalone",
         "directory": os.path.join(vue_app_path, "src/standalone"),
         "name": "vue_static_standalone",
-        "description": "Vue.js Standalone Scripts"
+        "description": "Vue.js Standalone Scripts (Primärquelle)"
     },
     {
         "url_path": "/static/vue/assets/js",
@@ -154,9 +163,104 @@ vue_paths_to_mount = [
     }
 ]
 
-# Versuche, alle Vue.js-Verzeichnisse zu mounten
+# Prüfe, ob das nscale-vue/src/standalone Verzeichnis existiert
+standalone_dir = os.path.join(vue_app_path, "src/standalone")
+logger.info(f"Absoluter Pfad zum Standalone-Verzeichnis: {os.path.abspath(standalone_dir)}")
+logger.info(f"Verzeichnis existiert: {os.path.exists(standalone_dir)}")
+logger.info(f"Inhalt des Verzeichnisses: {os.listdir(standalone_dir) if os.path.exists(standalone_dir) else 'Nicht gefunden'}")
+
+if os.path.exists(standalone_dir):
+    # Kopiere die Dateien ins static-Verzeichnis für direkten Zugriff
+    static_standalone_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend/static/vue/standalone")
+    os.makedirs(static_standalone_dir, exist_ok=True)
+    
+    for js_file in os.listdir(standalone_dir):
+        if js_file.endswith('.js'):
+            source_path = os.path.join(standalone_dir, js_file)
+            target_path = os.path.join(static_standalone_dir, js_file)
+            try:
+                # Datei kopieren statt Symlink
+                import shutil
+                shutil.copy2(source_path, target_path)
+                logger.info(f"Datei kopiert: {source_path} -> {target_path}")
+            except Exception as copy_err:
+                logger.error(f"Fehler beim Kopieren der Datei {js_file}: {copy_err}")
+    
+    # Direkt mounten - wichtig: zuerst frontend/static/vue/standalone für /static/vue/standalone
+    try:
+        app.mount(
+            "/static/vue/standalone",
+            StaticFiles(directory=static_standalone_dir),
+            name="vue_static_standalone_direct"
+        )
+        logger.info(f"Vue.js Standalone-Skripte direkt gemountet von {static_standalone_dir}")
+        
+        # Workaround: Mount-Punkt direkt für /js/ für alte Pfadreferenzen
+        js_static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static/js")
+        if os.path.exists(js_static_path):
+            app.mount("/js", StaticFiles(directory=js_static_path), name="js_static")
+            logger.info(f"JS static Verzeichnis direkt gemountet von: {js_static_path}")
+        else:
+            logger.warning(f"JS static Verzeichnis nicht gefunden: {js_static_path}")
+            
+        # Zusätzlicher Mount-Punkt für Vue.js-Skripts
+        js_vue_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend/js/vue")
+        if os.path.exists(js_vue_path):
+            app.mount("/static/js/vue", StaticFiles(directory=js_vue_path), name="js_vue_static")
+            logger.info(f"Vue.js Skripts direkt gemountet von: {js_vue_path}")
+        else:
+            logger.warning(f"Vue.js Skript-Verzeichnis nicht gefunden: {js_vue_path}")
+        
+        # Erstelle das statische Verzeichnis falls es nicht existiert
+        frontend_static_js_vue_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend/static/js/vue")
+        os.makedirs(frontend_static_js_vue_path, exist_ok=True)
+        
+        # Kopiere die Vue.js-Skriptdateien ins static-Verzeichnis
+        if os.path.exists(js_vue_path):
+            try:
+                for js_file in os.listdir(js_vue_path):
+                    if js_file.endswith('.js'):
+                        source_path = os.path.join(js_vue_path, js_file)
+                        target_path = os.path.join(frontend_static_js_vue_path, js_file)
+                        import shutil
+                        shutil.copy2(source_path, target_path)
+                        logger.info(f"Vue.js-Skript kopiert: {source_path} -> {target_path}")
+            except Exception as e:
+                logger.error(f"Fehler beim Kopieren der Vue.js-Skripte: {e}")
+    except Exception as e:
+        logger.error(f"Fehler beim Mounten des static Vue.js Standalone-Verzeichnisses: {e}")
+        
+    # Auch das Quellverzeichnis als /src/standalone mounten
+    try:
+        app.mount(
+            "/src/standalone",
+            StaticFiles(directory=standalone_dir),
+            name="vue_standalone_src_direct"
+        )
+        logger.info(f"Vue.js Standalone-Skripte (Quelle) direkt gemountet von {standalone_dir}")
+    except Exception as e:
+        logger.error(f"Fehler beim Mounten des Quell-Standalone-Verzeichnisses: {e}")
+
+# Direkt als /frontend/vue/standalone mounten für einfachen Zugriff
+frontend_vue_standalone = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend/vue/standalone")
+if os.path.exists(frontend_vue_standalone):
+    try:
+        app.mount(
+            "/frontend/vue/standalone",
+            StaticFiles(directory=frontend_vue_standalone),
+            name="frontend_vue_standalone_direct"
+        )
+        logger.info(f"Frontend Vue.js Standalone-Skripte direkt gemountet von {frontend_vue_standalone}")
+    except Exception as e:
+        logger.error(f"Fehler beim Mounten des Frontend Vue.js Standalone-Verzeichnisses: {e}")
+
+# Versuche, alle anderen Vue.js-Verzeichnisse zu mounten
 successful_mounts = 0
 for path_config in vue_paths_to_mount:
+    # Überspringe den Standalone-Pfad, da wir ihn bereits direkt gemountet haben
+    if path_config["url_path"] == "/static/vue/standalone":
+        continue
+        
     dir_path = path_config["directory"]
     if os.path.exists(dir_path):
         try:

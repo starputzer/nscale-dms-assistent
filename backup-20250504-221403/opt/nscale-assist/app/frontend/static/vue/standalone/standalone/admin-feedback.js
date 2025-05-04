@@ -1,0 +1,1 @@
+/opt/nscale-assist/app/nscale-vue/src/standalone/admin-feedback.js

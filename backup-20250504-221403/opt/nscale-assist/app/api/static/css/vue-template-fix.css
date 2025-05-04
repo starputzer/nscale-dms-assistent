@@ -1,0 +1,46 @@
+/**
+ * Vue Template Fix CSS
+ * Versteckt und deaktiviert Inline-Skripts in Vue-Templates
+ * 
+ * WICHTIG: Diese CSS-Datei darf keine Selektoren enthalten, die mit dem Feedback-System kollidieren!
+ */
+
+/* Verstecke alle Vue-Template-Scripts */
+script[data-vue-fixed="true"],
+.vue-template-script-hidden {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* DocConverter auf Hauptseite ausblenden - NUR DocConverter-spezifische Selektoren! */
+body:not(.admin-page) #doc-converter-app,
+body:not(.admin-page) #doc-converter-container,
+body:not(.admin-page) [id^="doc-converter"],
+body:not(.admin-page) [class^="doc-converter"],
+[data-disabled-on-main="true"][id^="doc-converter"] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Keine Einschränkung der Dokument-Konverter-Anzeige im Admin-Bereich */
+/* Der Konverter soll im Admin-Bereich immer angezeigt werden, egal welcher Tab */
+/* Frühere Einschränkung entfernt, da diese zu Problemen führte */
+
+/* CSS-basierte Fallback-Lösung für Vue-Template <script>-Tags */
+div[data-script-id] {
+    position: relative;
+}
+
+div[data-script-id]::before {
+    content: attr(data-script-id);
+    display: none;
+    font-size: 0;
+}

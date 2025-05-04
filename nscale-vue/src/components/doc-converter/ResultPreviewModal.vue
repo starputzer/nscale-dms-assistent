@@ -58,17 +58,36 @@
               </div>
               
               <div v-else>
-                <!-- Markdown Vorschau -->
-                <div v-if="isMarkdown" class="markdown-preview" v-html="renderedMarkdown"></div>
+                <!-- Verwende den ContentRenderer für Markdown und Text -->
+                <ContentRenderer 
+                  v-if="isMarkdown" 
+                  :content="previewContent"
+                  type="markdown"
+                  class="markdown-preview"
+                />
                 
                 <!-- Text Vorschau -->
-                <pre v-else-if="isText" class="text-preview">{{ previewContent }}</pre>
+                <ContentRenderer
+                  v-else-if="isText"
+                  :content="previewContent"
+                  type="text"
+                  class="text-preview"
+                />
                 
-                <!-- HTML Vorschau -->
-                <iframe v-else-if="isHtml" class="html-preview" :srcdoc="previewContent"></iframe>
+                <!-- HTML Vorschau mit SafeIframe -->
+                <SafeIframe
+                  v-else-if="isHtml"
+                  :content="previewContent"
+                  class="html-preview"
+                />
                 
                 <!-- JSON Vorschau -->
-                <pre v-else-if="isJson" class="json-preview">{{ prettifiedJson }}</pre>
+                <ContentRenderer
+                  v-else-if="isJson"
+                  :content="previewContent"
+                  type="json"
+                  class="json-preview"
+                />
                 
                 <!-- Fallback für unbekannte Formate -->
                 <div v-else class="unsupported-format">
@@ -184,7 +203,8 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useDocConverterStore } from '@/stores/docConverterStore';
-import { marked } from 'marked';
+import ContentRenderer from '@/components/common/ContentRenderer.vue';
+import SafeIframe from '@/components/common/SafeIframe.vue';
 
 // Props
 const props = defineProps({
@@ -248,28 +268,7 @@ const formatLabel = computed(() => {
   return formatMap[props.previewData?.format] || props.previewData?.format || 'Unbekannt';
 });
 
-const renderedMarkdown = computed(() => {
-  if (!previewContent.value || !isMarkdown.value) return '';
-  
-  try {
-    return marked(previewContent.value, { breaks: true });
-  } catch (error) {
-    console.error('Fehler beim Rendern des Markdowns:', error);
-    return '<p>Fehler beim Rendern des Markdowns</p>';
-  }
-});
-
-const prettifiedJson = computed(() => {
-  if (!previewContent.value || !isJson.value) return '';
-  
-  try {
-    const jsonObj = JSON.parse(previewContent.value);
-    return JSON.stringify(jsonObj, null, 2);
-  } catch (error) {
-    console.error('Fehler beim Formatieren des JSONs:', error);
-    return previewContent.value;
-  }
-});
+// Wir verwenden jetzt die ContentRenderer-Komponente für die Rendering-Logik
 
 // Methoden
 const loadPreviewContent = async () => {

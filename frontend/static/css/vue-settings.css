@@ -1,0 +1,84 @@
+/**
+ * vue-settings.css
+ * Styles für die Integration der Vue.js-basierten Einstellungskomponente
+ */
+
+/* Übergeordneter Container für Vue-Einstellungen */
+#vue-settings-mount {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+
+/* Hintergrund für das ganze Panel */
+.vue-settings-active .settings-panel {
+    background-color: var(--nscale-light-bg, #f8f9fa);
+    padding: 0;
+    overflow: hidden;
+}
+
+/* Allgemeine Anpassungen für Vue im klassischen UI */
+.vue-settings-active .settings-panel h1,
+.vue-settings-active .settings-panel h2 {
+    font-family: var(--nscale-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+}
+
+/* Container für die eigentliche Vue-Komponente */
+.settings-container {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    padding: 0;
+}
+
+/* Anpassungen für das dunkle Theme */
+.theme-dark .vue-settings-active .settings-panel {
+    background-color: #121212;
+}
+
+/* Anpassungen für das Kontrast-Theme */
+.theme-contrast .vue-settings-active .settings-panel {
+    background-color: #000;
+    border: 2px solid #ffeb3b;
+}
+
+/* Anpassungen für die responsive Darstellung */
+@media (max-width: 768px) {
+    .vue-settings-active .settings-panel {
+        width: 95%;
+        max-width: 95%;
+        height: 90%;
+        max-height: 90%;
+        overflow: auto;
+    }
+}
+
+/* Animationen für das Ein- und Ausblenden */
+.vue-settings-active .settings-panel {
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+/* Integration in das klassische UI-System */
+.reduce-motion .vue-settings-active .settings-panel {
+    transition: none;
+}
+
+/* Ladesymbole und Spinner */
+.vue-settings-active .spinner {
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-top: 3px solid var(--nscale-primary, #00a550);
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: vue-settings-spin 1s linear infinite;
+}
+
+@keyframes vue-settings-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Reduzierte Bewegung */
+.reduce-motion .vue-settings-active .spinner {
+    animation: none;
+}

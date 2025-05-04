@@ -1,0 +1,79 @@
+/**
+ * Hauptstile für Layout und Browserhöhenanpassung
+ */
+
+/* Stellt sicher, dass das Dokument die volle Höhe einnimmt */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* Wichtiger Fix für iOS Mobile Safari und andere Browser */
+body {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    min-height: fill-available;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Hauptcontainer, maximale Höhe für den verfügbaren Viewport */
+#app {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    min-height: fill-available;
+}
+
+/* Alternativer Ansatz mit CSS-Variables für die Höhe */
+:root {
+    --vh: 1vh;
+}
+
+/* Hauptcontainer mit CSS-Variable für flexiblere Höhenberechnung */
+.app-container, 
+.chat-container,
+.main-content,
+.content-wrapper {
+    min-height: calc(var(--vh, 1vh) * 100);
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+/* Hauptfenster skalieren */
+.main-window {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+}
+
+/* Chatbereich nimmt den verfügbaren Platz ein */
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+/* Eingabebereich bleibt unten fixiert */
+.chat-input-container {
+    position: sticky;
+    bottom: 0;
+    background-color: var(--nscale-background, #fff);
+    padding: 1rem;
+    border-top: 1px solid var(--nscale-border, #e2e8f0);
+    z-index: 10;
+}
+
+/* Fix für die Inhaltsseiten */
+.admin-panel-content,
+.content-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}

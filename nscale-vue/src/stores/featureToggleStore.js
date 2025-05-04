@@ -16,10 +16,10 @@ export const useFeatureToggleStore = defineStore('featureToggle', {
       // Dokumentenkonverter in Vue.js (erste migrierte Komponente)
       vueDocConverter: localStorage.getItem('feature_vueDocConverter') === 'true' || true,
       
-      // Chat-Komponente in Vue.js (noch nicht implementiert)
+      // Chat-Komponente in Vue.js (implementiert)
       vueChat: localStorage.getItem('feature_vueChat') === 'true' || false,
       
-      // Admin-Panel in Vue.js (noch nicht implementiert)
+      // Admin-Panel in Vue.js (teilweise implementiert)
       vueAdmin: localStorage.getItem('feature_vueAdmin') === 'true' || false,
       
       // Einstellungskomponente in Vue.js (noch nicht implementiert)
