@@ -21,9 +21,29 @@
     <link href="/static/css/vue-settings.css" rel="stylesheet">
     <!-- Zusätzliche CSS für Quellenreferenzen (wird dynamisch eingefügt) -->
     
+    <!-- CSS-Fix für Admin-Panel bei Vue-Initialisierungsproblemen -->
+    <style>
+        /* Standardmäßig alle Tabs verstecken (überschreibt Vue v-if) */
+        .admin-panel-content[data-tab] {
+            display: none !important;
+        }
+        
+        /* Erstes Tab standardmäßig anzeigen */
+        .admin-panel-content[data-tab="users"] {
+            display: block !important;
+        }
+        
+        /* Aktives Tab anzeigen */
+        .admin-panel-content.active-tab {
+            display: block !important;
+        }
+    </style>
+    
     <!-- Feature-Integration Skripte -->
     <script src="/static/js/chat-integration.js"></script>
     <script src="/static/js/admin-integration.js"></script>
+    <script src="/static/js/emergency-fix.js"></script>
+    <script src="/static/js/vue-rescue.js"></script>
 </head>
 <body class="min-h-screen bg-gray-50">
     <div id="app" class="h-screen flex flex-col">
@@ -188,35 +208,40 @@
                     <nav class="admin-nav">
                         <button 
                             @click="adminTab = 'users'" 
-                            :class="['admin-nav-item', adminTab === 'users' ? 'active' : '']">
+                            :class="['admin-nav-item', adminTab === 'users' ? 'active' : '']"
+                            data-tab="users">
                             <i class="fas fa-users"></i>
                             <span>Benutzer</span>
                         </button>
                         
                         <button 
                             @click="adminTab = 'system'; loadSystemStats()" 
-                            :class="['admin-nav-item', adminTab === 'system' ? 'active' : '']">
+                            :class="['admin-nav-item', adminTab === 'system' ? 'active' : '']"
+                            data-tab="system">
                             <i class="fas fa-chart-line"></i>
                             <span>System</span>
                         </button>
                         
                         <button 
                             @click="adminTab = 'docConverter'" 
-                            :class="['admin-nav-item', adminTab === 'docConverter' ? 'active' : '']">
+                            :class="['admin-nav-item', adminTab === 'docConverter' ? 'active' : '']"
+                            data-tab="docConverter">
                             <i class="fas fa-file-import"></i>
                             <span>Dokumente konvertieren</span>
                         </button>
 
                         <button 
                             @click="adminTab = 'feedback'; loadFeedbackStats(); loadNegativeFeedback()" 
-                            :class="['admin-nav-item', adminTab === 'feedback' ? 'active' : '']">
+                            :class="['admin-nav-item', adminTab === 'feedback' ? 'active' : '']"
+                            data-tab="feedback">
                             <i class="fas fa-comment-dots"></i>
                             <span>Feedback</span>
                         </button>
                         
                         <button 
                             @click="adminTab = 'motd'; loadMotdConfig()" 
-                            :class="['admin-nav-item', adminTab === 'motd' ? 'active' : '']">
+                            :class="['admin-nav-item', adminTab === 'motd' ? 'active' : '']"
+                            data-tab="motd">
                             <i class="fas fa-info-circle"></i>
                             <span>MOTD</span>
                         </button>
@@ -224,7 +249,8 @@
                         <!-- Feature-Toggle-Tab hinzugefügt -->
                         <button 
                             @click="adminTab = 'features'" 
-                            :class="['admin-nav-item', adminTab === 'features' ? 'active' : '']">
+                            :class="['admin-nav-item', adminTab === 'features' ? 'active' : '']"
+                            data-tab="features">
                             <i class="fas fa-toggle-on"></i>
                             <span>Features</span>
                         </button>
@@ -535,29 +561,25 @@
                                     <p>Debug-Info für DocConverter-Tab</p>
                                 </div>
                             
-                                <!-- Beide Implementierungen haben ihren eigenen Mount-Point -->
-                                <div id="doc-converter-app" class="vue-implementation">
+                                <!-- Container für Vue.js DocConverter -->
+                                <div id="doc-converter-app" style="display:none;">
+                                    <!-- Wird durch Vue.js befüllt -->
+                                </div>
+                                
+                                <!-- Container für klassischen DocConverter - wird dynamisch befüllt -->
+                                <div id="doc-converter-container">
                                     <div class="p-4">
                                         <div class="loader-container">
                                             <div class="loader"></div>
-                                            <p class="mt-4 text-gray-600">Vue.js-Dokumentenkonverter wird geladen...</p>
+                                            <p class="mt-4 text-gray-600">Dokumentenkonverter wird geladen...</p>
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <!-- Container für die klassische Implementierung -->
-                                <div id="doc-converter-container" class="classic-implementation" style="display:none;">
-                                    <div class="p-4">
-                                        <div class="loader-container">
-                                            <div class="loader"></div>
-                                            <p class="mt-4 text-gray-600">Klassischer Dokumentenkonverter wird geladen...</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Inline Skript, um den Dokumentenkonverter zu initialisieren -->
-                                <script>
-                                    console.log('DocConverter-Tab inline script ausgeführt');
+                            </div>
+                            
+                            <!-- Inline Skript, um den Dokumentenkonverter zu initialisieren -->
+                            <script>
+                                console.log('DocConverter-Tab inline script ausgeführt');
                                     
                                     // Feature-Toggle prüfen
                                     function loadAppropriateImplementation() {
@@ -645,7 +667,7 @@
                             </div>
                             
                             <!-- Feature-Toggle-Tab (Vanilla JS Version - keine Vue.js-Abhängigkeiten) -->
-                            <div v-if="adminTab === 'features'" class="admin-panel-content">
+                            <div v-if="adminTab === 'features'" class="admin-panel-content" data-tab="features">
                                 <!-- Dieser Container wird durch Vanilla JavaScript gefüllt -->
                                 <div id="feature-toggle-container">
                                     <!-- Einfache, direkte Feature-Toggle-UI -->
@@ -1887,6 +1909,9 @@
     <script src="/static/js/settings.js" type="module"></script>
     <script src="/static/js/source-references.js" type="module"></script>
     <script src="/static/js/app.js" type="module"></script>
+    <script src="/static/js/app-extensions.js" type="module"></script>
+    <script src="/static/js/enhanced-chat.js" type="module"></script>
+    <script src="/static/js/vue-settings-integration.js" type="module"></script>
     
     <!-- Verbesserungen und Bugfixes -->
     <script>
@@ -2434,9 +2459,6 @@
             }
         };
     </script>
-    <!-- Erweiterte Funktionen und Vue.js-Integration -->
-    <script src="js/app-extensions.js" type="module"></script>
-    <script src="js/enhanced-chat.js" type="module"></script>
-    <script src="js/vue-settings-integration.js" type="module"></script>
+    <!-- Erweiterte Funktionen und Vue.js-Integration werden bereits oben geladen -->
 </body>
 </html>

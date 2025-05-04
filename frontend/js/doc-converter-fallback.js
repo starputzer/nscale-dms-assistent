@@ -4,32 +4,51 @@
  */
 (function() {
     console.log('Lade klassische Dokumentenkonverter-Implementierung...');
-
-    // Hauptcontainer für den Dokumentenkonverter
-    const converterContainer = document.getElementById('doc-converter-container');
     
-    // Früher beenden, wenn der Container nicht gefunden wurde
-    if (!converterContainer) {
-        console.warn('Dokumentenkonverter-Container nicht gefunden!');
-        return;
-    }
+    // Variable für die Initialisierung
+    window.classicDocConverterInitialized = false;
 
-    // Statusanzeigen
-    let uploadStatus = null;
-    let conversionProgress = null;
-    let fileList = [];
-    let isProcessing = false;
+    // Funktion zum Initialisieren der UI mit Retry-Logik
+    function initializeConverter() {
+        // Vermeide doppelte Initialisierung
+        if (window.classicDocConverterInitialized) {
+            console.log('Klassischer DocConverter bereits initialisiert, überspringe...');
+            return;
+        }
+        
+        console.log('Suche nach Dokumentenkonverter-Container...');
+        
+        // Hauptcontainer für den Dokumentenkonverter (standard oder rescue mode)
+        const converterContainer = document.getElementById('doc-converter-container') || 
+                                  document.querySelector('#rescue-tab-doc-converter');
+        
+        // Wenn Container nicht gefunden, später erneut versuchen
+        if (!converterContainer) {
+            console.warn('Dokumentenkonverter-Container noch nicht gefunden, versuche später erneut...');
+            // Versuche es erneut, aber nur wenn noch nicht initialisiert
+            if (!window.classicDocConverterInitialized) {
+                setTimeout(initializeConverter, 500); // Wiederhole alle 500ms
+            }
+            return;
+        }
+        
+        console.log('Dokumentenkonverter-Container gefunden!');
+        
+        // Als initialisiert markieren
+        window.classicDocConverterInitialized = true;
+        
+        // Container gefunden, initialisiere UI
 
-    // Initialisierung
-    function init() {
-        renderUI();
-        setupEventListeners();
-    }
+        // Statusanzeigen
+        let uploadStatus = null;
+        let conversionProgress = null;
+        let fileList = [];
+        let isProcessing = false;
 
-    // Rendert die UI-Komponenten
-    function renderUI() {
-        // Haupt-UI-Struktur erstellen
-        converterContainer.innerHTML = `
+        // Rendert die UI-Komponenten
+        function renderUI() {
+            // Haupt-UI-Struktur erstellen
+            converterContainer.innerHTML = `
             <div class="doc-converter classic-ui">
                 <h2 class="text-xl font-semibold mb-4">Dokumentenkonverter</h2>
                 
@@ -108,51 +127,51 @@
         conversionProgress = document.getElementById('conversion-progress');
     }
 
-    // Richtet Event-Listener ein
-    function setupEventListeners() {
-        const fileUpload = document.getElementById('file-upload');
-        const clearFilesBtn = document.getElementById('clear-files');
-        const startConversionBtn = document.getElementById('start-conversion');
+        // Richtet Event-Listener ein
+        function setupEventListeners() {
+            const fileUpload = document.getElementById('file-upload');
+            const clearFilesBtn = document.getElementById('clear-files');
+            const startConversionBtn = document.getElementById('start-conversion');
 
-        if (fileUpload) {
+            if (fileUpload) {
             fileUpload.addEventListener('change', handleFileSelection);
         }
 
-        if (clearFilesBtn) {
+            if (clearFilesBtn) {
             clearFilesBtn.addEventListener('click', clearFileList);
         }
 
-        if (startConversionBtn) {
+            if (startConversionBtn) {
             startConversionBtn.addEventListener('click', startConversion);
         }
     }
 
-    // Verarbeitet die Dateiauswahl
-    function handleFileSelection(event) {
+        // Verarbeitet die Dateiauswahl
+        function handleFileSelection(event) {
         const files = event.target.files;
         
-        if (!files || files.length === 0) {
+            if (!files || files.length === 0) {
             if (uploadStatus) uploadStatus.textContent = 'Keine Dateien ausgewählt';
             return;
         }
 
         fileList = Array.from(files);
         
-        if (uploadStatus) {
+            if (uploadStatus) {
             uploadStatus.textContent = `${fileList.length} Datei(en) ausgewählt`;
         }
 
         updateFileListUI();
     }
 
-    // Aktualisiert die UI der Dateiliste
-    function updateFileListUI() {
+        // Aktualisiert die UI der Dateiliste
+        function updateFileListUI() {
         const fileListContainer = document.getElementById('file-list-container');
         const fileListElement = document.getElementById('file-list');
         
-        if (!fileListContainer || !fileListElement) return;
+            if (!fileListContainer || !fileListElement) return;
         
-        if (fileList.length === 0) {
+            if (fileList.length === 0) {
             fileListContainer.classList.add('hidden');
             return;
         }
@@ -186,40 +205,40 @@
         });
     }
 
-    // Entfernt eine Datei aus der Liste
-    function removeFile(index) {
+        // Entfernt eine Datei aus der Liste
+        function removeFile(index) {
         fileList.splice(index, 1);
         updateFileListUI();
         
-        if (uploadStatus) {
+            if (uploadStatus) {
             uploadStatus.textContent = fileList.length === 0 
                 ? 'Keine Dateien ausgewählt' 
                 : `${fileList.length} Datei(en) ausgewählt`;
         }
     }
 
-    // Leert die Dateiliste
-    function clearFileList() {
+        // Leert die Dateiliste
+        function clearFileList() {
         fileList = [];
         updateFileListUI();
         
-        if (uploadStatus) {
+            if (uploadStatus) {
             uploadStatus.textContent = 'Keine Dateien ausgewählt';
         }
 
         // Auch das Dateiauswahl-Input zurücksetzen
         const fileUpload = document.getElementById('file-upload');
-        if (fileUpload) fileUpload.value = '';
+            if (fileUpload) fileUpload.value = '';
     }
 
-    // Startet den Konvertierungsprozess
-    async function startConversion() {
-        if (isProcessing) {
+        // Startet den Konvertierungsprozess
+        async function startConversion() {
+            if (isProcessing) {
             alert('Es läuft bereits eine Konvertierung!');
             return;
         }
 
-        if (fileList.length === 0) {
+            if (fileList.length === 0) {
             alert('Bitte wählen Sie mindestens eine Datei aus.');
             return;
         }
@@ -231,7 +250,7 @@
         const resultsContainer = document.getElementById('conversion-results');
         const resultsList = document.getElementById('results-list');
 
-        if (!startConversionBtn || !progressBarInner || !progressText || !currentFileText || !resultsContainer || !resultsList) {
+            if (!startConversionBtn || !progressBarInner || !progressText || !currentFileText || !resultsContainer || !resultsList) {
             console.error('UI-Elemente für Konvertierung nicht gefunden!');
             return;
         }
@@ -294,8 +313,8 @@
         }, 1000);
     }
 
-    // Lädt eine Datei hoch und konvertiert sie
-    async function uploadAndConvertFile(file, postProcessing) {
+        // Lädt eine Datei hoch und konvertiert sie
+        async function uploadAndConvertFile(file, postProcessing) {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('post_processing', postProcessing);
@@ -330,11 +349,11 @@
         }
     }
 
-    // Zeigt die Konvertierungsergebnisse an
-    function displayResults(container, results) {
+        // Zeigt die Konvertierungsergebnisse an
+        function displayResults(container, results) {
         container.innerHTML = '';
 
-        if (results.length === 0) {
+            if (results.length === 0) {
             container.innerHTML = '<div class="text-gray-500">Keine Ergebnisse verfügbar</div>';
             return;
         }
@@ -376,9 +395,9 @@
         });
     }
 
-    // Hilfsfunktion: Formatiert Dateigröße benutzerfreundlich
-    function formatFileSize(bytes) {
-        if (bytes === 0) return '0 Bytes';
+        // Hilfsfunktion: Formatiert Dateigröße benutzerfreundlich
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
         
         const k = 1024;
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
@@ -387,13 +406,139 @@
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 
-    // Hilfsfunktion: Holt das Auth-Token aus dem lokalen Speicher
-    function getAuthToken() {
-        return localStorage.getItem('auth_token');
+        // Hilfsfunktion: Holt das Auth-Token aus dem lokalen Speicher
+        function getAuthToken() {
+            return localStorage.getItem('auth_token');
+        }
+        
+        // Initialisiere die UI
+        renderUI();
+        setupEventListeners();
+        console.log('Klassische Dokumentenkonverter-Implementierung erfolgreich initialisiert!');
     }
 
-    // Initialisierung starten
-    init();
-
-    console.log('Klassische Dokumentenkonverter-Implementierung geladen!');
+    // Globales Flag für den Tab-Change-Listener
+    window.classicTabChangeListenerInitialized = false;
+    
+    // Starte die Initialisierung mit Tab-Wechsel-Prüfung
+    function setupTabChangeListener() {
+        // Vermeide doppelte Initialisierung
+        if (window.classicTabChangeListenerInitialized) {
+            return;
+        }
+        window.classicTabChangeListenerInitialized = true;
+        
+        console.log('Richte Tab-Wechsel-Listener für klassischen DocConverter ein...');
+        
+        // Überwache Tab-Wechsel für den Fall, dass der Container dynamisch erstellt wird
+        const adminNavItems = document.querySelectorAll('.admin-nav-item');
+        if (adminNavItems.length > 0) {
+            adminNavItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Wenn zum DocConverter-Tab gewechselt wird
+                    if (this.getAttribute('data-tab') === 'docConverter' || 
+                        this.querySelector('input[value="docConverter"]')) {
+                        console.log('DocConverter-Tab aktiviert, versuche Initialisierung der klassischen Implementierung...');
+                        
+                        // Nur einen Initialisierungsversuch machen
+                        initializeConverter();
+                    }
+                });
+            });
+            console.log('Tab-Change-Listener für klassischen DocConverter eingerichtet');
+        }
+        
+        // Überwache auch Rescue-Mode Tab-Wechsel
+        function setupRescueTabListener() {
+            const rescueNavItems = document.querySelectorAll('.rescue-nav-item');
+            if (rescueNavItems.length > 0) {
+                rescueNavItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        // Wenn zum Rescue DocConverter-Tab gewechselt wird
+                        if (this.getAttribute('data-tab') === 'doc-converter') {
+                            console.log('Rescue DocConverter-Tab aktiviert, versuche Initialisierung der klassischen Implementierung...');
+                            
+                            // Nur einen Initialisierungsversuch machen
+                            initializeConverter();
+                        }
+                    });
+                });
+                console.log('Tab-Change-Listener für Rescue DocConverter eingerichtet');
+                return true;
+            }
+            return false;
+        }
+        
+        // Versuche sofort, ansonsten mit Verzögerung (wenn Rescue-Mode später aktiviert wird)
+        if (!setupRescueTabListener()) {
+            setTimeout(() => {
+                setupRescueTabListener();
+            }, 1000);
+        }
+    }
+    
+    // Globales Flag für den DOM-Observer
+    window.classicDOMObserverInitialized = false;
+    
+    // Alternative Methode zum Finden des DocConverter-Tabs über MutationObserver
+    function setupDOMObserver() {
+        // Vermeide doppelte Initialisierung
+        if (window.classicDOMObserverInitialized) {
+            return;
+        }
+        window.classicDOMObserverInitialized = true;
+        
+        console.log('Richte DOM-Observer für klassischen DocConverter ein...');
+        
+        // Beobachte DOM-Änderungen, um den Container zu finden, sobald er erstellt wird
+        const observer = new MutationObserver(function(mutations) {
+            // Wenn bereits initialisiert, nichts tun
+            if (window.classicDocConverterInitialized) {
+                return;
+            }
+            
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList' && mutation.addedNodes.length) {
+                    // Prüfe, ob ein DocConverter-Container hinzugefügt wurde
+                    const converterContainer = 
+                        document.getElementById('doc-converter-container') || 
+                        document.querySelector('#rescue-tab-doc-converter');
+                    
+                    if (converterContainer) {
+                        console.log('DocConverter-Container durch DOM-Mutation erkannt');
+                        initializeConverter();
+                    }
+                    
+                    // Prüfe auf Tab-Wechsel (Standard und Rescue Modus)
+                    const activeTab = 
+                        document.querySelector('[data-tab="docConverter"].active') || 
+                        document.querySelector('.rescue-nav-item[data-tab="doc-converter"].active');
+                    
+                    if (activeTab) {
+                        console.log('Aktiver DocConverter-Tab durch DOM-Mutation erkannt');
+                        initializeConverter();
+                    }
+                }
+            });
+        });
+        
+        // Den gesamten Body beobachten
+        observer.observe(document.body, { 
+            childList: true, 
+            subtree: true 
+        });
+        
+        console.log('DOM-Beobachter für klassischen DocConverter eingerichtet');
+    }
+    
+    // Hauptinitialisierung - nur einen Versuch starten
+    setTimeout(initializeConverter, 100);
+    
+    // Richte den Tab-Change-Listener ein
+    setupTabChangeListener();
+    
+    // Richte den DOM-Observer ein
+    setupDOMObserver();
+    
+    console.log('Klassische Dokumentenkonverter-Implementierungsskript geladen!');
 })();
