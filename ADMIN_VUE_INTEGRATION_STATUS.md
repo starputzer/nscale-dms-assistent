@@ -62,11 +62,16 @@ Diese Module sind an folgenden Orten verfügbar:
 2. **Module-Loading**: Die `type="module"` Attribute wurden entfernt, um die Browser-Kompatibilität zu verbessern.
 3. **Mount-Points**: Die DOM-Mount-Points werden jetzt korrekt erstellt und verwaltet.
 4. **Tab-Erkennung**: Die Erkennung aktiver Tabs wurde verbessert, um verschiedene Anzeigeszenarien abzudecken.
+5. **Endlosschleifen**: Multiple Initialisierungsversuche und Endlosschleifen wurden durch folgende Maßnahmen behoben:
+   - Verwendung des `data-vue-initialized` Attributs, um Mehrfachinitialisierungen zu verhindern
+   - Prüfung auf bereits geladene Skripte vor dem Hinzufügen neuer Skript-Tags
+   - Begrenzung der DOM-Beobachter-Versuche für DocConverter
+   - Hinzufügen von Timeouts, um Ressourcen zu sparen
+   - Verbesserte Prüfung, ob man sich im korrekten Tab befindet
 
 ## Bekannte Probleme
 
 1. **Statische Daten**: Die Vue.js-Komponenten zeigen aktuell nur Beispieldaten, keine echten API-Daten.
-2. **Teilweise Verzögerung** beim Initial-Laden von Komponenten.
 
 ## Nächste Schritte
 
@@ -92,7 +97,16 @@ window.adminIntegration.disableVueAdmin(); // Deaktiviert Vue.js für Admin
 
 ## Änderungshistorie
 
-- **05.05.2025**:
+- **05.05.2025 (Update 2)**:
+  - Behoben: Endlosschleifen in Vue.js-Integrationen
+  - Verhindert: Multiple Reinitialisierungen durch data-vue-initialized Attribute
+  - Implementiert: Prüfung auf bereits geladene Skripte vor dem Hinzufügen neuer
+  - Hinzugefügt: Globale Initialisierungsfunktionen für alle Admin-Komponenten
+  - Begrenzt: Anzahl der DOM-Beobachter-Versuche für DocConverter
+  - Hinzugefügt: Automatisches Beenden des DOM-Beobachters nach 10 Sekunden
+  - Verbessert: Prüfung, ob sich der Benutzer im korrekten Tab befindet
+
+- **05.05.2025 (Update 1)**:
   - Behoben: DOM-Manipulation für korrektes Rendering der Vue.js-Komponenten
   - Behoben: Script-Loading durch Änderung von type="module" zu type="text/javascript"
   - Verbessert: Erkennung aktiver Tabs durch mehrere Prüfmethoden
