@@ -30,6 +30,43 @@
     function log(...args) {
         if (config.enableLogging) {
             console.log(config.logPrefix, ...args);
+            
+            // Füge zusätzliche Debug-Information für bestimmte Fehleranalysen hinzu
+            if (args[0] && typeof args[0] === 'string' && args[0].includes('nicht korrekt initialisiert')) {
+                console.warn(config.logPrefix, '=== DETAILLIERTES FEHLER-LOGGING ===');
+                console.warn(config.logPrefix, 'DOM-Status:', {
+                    'document.readyState': document.readyState,
+                    'document.body exists': !!document.body,
+                    'window.Vue exists': !!window.Vue,
+                    'adminContainers': {
+                        '.admin-view': document.querySelector('.admin-view') ? 'gefunden' : 'nicht gefunden',
+                        '#admin-container': document.getElementById('admin-container') ? 'gefunden' : 'nicht gefunden',
+                        '.admin-panel': document.querySelector('.admin-panel') ? 'gefunden' : 'nicht gefunden',
+                        '.admin-panel-content': document.querySelectorAll('.admin-panel-content').length + ' gefunden'
+                    },
+                    'scripts loaded': Array.from(document.querySelectorAll('script')).map(s => s.src || 'inline script').filter(s => s !== 'inline script'),
+                    'css loaded': Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map(s => s.href)
+                });
+                
+                // Prüfe auf Vue-spezifische Fehler in der Konsole
+                if (window.console && window.console.error) {
+                    const originalConsoleError = window.console.error;
+                    window.console.error = function(...errorArgs) {
+                        if (errorArgs[0] && typeof errorArgs[0] === 'string' && 
+                            (errorArgs[0].includes('Vue') || errorArgs[0].includes('vue'))) {
+                            console.warn(config.logPrefix, 'Vue-Fehler erkannt:', ...errorArgs);
+                        }
+                        originalConsoleError.apply(console, errorArgs);
+                    };
+                    
+                    // Nach 5 Sekunden wieder zurücksetzen
+                    setTimeout(() => {
+                        if (window.console && window.console.error === window.console.error) {
+                            window.console.error = originalConsoleError;
+                        }
+                    }, 5000);
+                }
+            }
         }
     }
 
@@ -43,13 +80,50 @@
         // Prüfe nach Vue.js spezifischen Elementen
         const adminPanelElements = document.querySelectorAll('.admin-panel-content');
         const navItems = document.querySelectorAll('.admin-nav-item');
+        const docConverterApp = document.querySelector('#doc-converter-app .vue-initialized');
+        const vueElements = document.querySelectorAll('[data-v-component], [data-v-app], .v-app');
         
-        if (adminPanelElements.length > 0 && navItems.length > 0) {
+        // Alle gefundenen Elemente für Debug-Zwecke anzeigen
+        log('DOM-Analyse:', {
+            'adminPanelElements': adminPanelElements.length,
+            'navItems': navItems.length,
+            'docConverterApp': docConverterApp ? 'gefunden' : 'nicht gefunden',
+            'vueElements': vueElements.length,
+            'bodyClasses': document.body ? document.body.className : 'body nicht gefunden',
+            'adminView': document.querySelector('.admin-view') ? 'gefunden' : 'nicht gefunden'
+        });
+        
+        // Versuche, das Vue-Objekt im globalen Scope zu finden
+        const hasVueGlobal = typeof window.Vue !== 'undefined' || 
+                            typeof window.vue !== 'undefined' || 
+                            document.querySelector('[data-v-app]') !== null;
+        
+        // Prüfe mehrere Indikatoren, um zu erkennen, ob Vue.js korrekt initialisiert wurde
+        if ((adminPanelElements.length > 0 && navItems.length > 0) || 
+            (docConverterApp && docConverterApp.childElementCount > 0) ||
+            (vueElements.length > 0) ||
+            hasVueGlobal) {
+            
             log('Vue.js wurde erfolgreich initialisiert:', 
                 adminPanelElements.length, 'Panel-Elemente,', 
-                navItems.length, 'Navigations-Elemente gefunden');
+                navItems.length, 'Navigations-Elemente gefunden,',
+                vueElements.length, 'Vue-Elemente gefunden');
             vueInitialized = true;
             return true;
+        }
+        
+        // Spezielles Debug-Log für Admin-Bereich
+        const adminContainer = document.querySelector('.admin-view') || 
+                              document.getElementById('admin-container');
+        
+        if (adminContainer) {
+            log('Admin-Container gefunden, aber keine Vue.js-Elemente darin:', {
+                'innerHTML teilweise': adminContainer.innerHTML.substring(0, 150) + '...',
+                'childNodes': adminContainer.childNodes.length,
+                'classList': Array.from(adminContainer.classList),
+                'id': adminContainer.id,
+                'visible': adminContainer.offsetParent !== null
+            });
         }
         
         log('Vue.js wurde nicht korrekt initialisiert. Keine Vue-generierten Elemente gefunden.');
@@ -61,32 +135,96 @@
      * Erstellt eine Notfall-UI für den Admin-Bereich
      */
     function activateRescueMode() {
-        if (rescueActive) return;
+        if (rescueActive) {
+            log('Rettungsmodus bereits aktiv, überspringe Initialisierung');
+            return;
+        }
+        
         log('Aktiviere Rettungsmodus für Admin-Bereich');
+        console.warn('[Vue Rescue] Rescue-Mode Aktivierung gestartet');
+        
+        // Prüfe, welcher DocConverter-Bereich existiert
+        console.warn('[Vue Rescue] DocConverter-Bereiche:', {
+            '#doc-converter-app': document.getElementById('doc-converter-app') ? 'gefunden' : 'nicht gefunden',
+            '#doc-converter-container': document.getElementById('doc-converter-container') ? 'gefunden' : 'nicht gefunden'
+        });
         
         // Rettungs-CSS einfügen
         injectRescueStyles();
+        console.warn('[Vue Rescue] Rettungs-CSS eingefügt');
         
         // Admin-View finden oder erstellen
-        const adminViewContainer = document.querySelector('.admin-view') || 
-                                  document.getElementById('admin-container');
+        const adminContainers = [
+            { name: '.admin-view', element: document.querySelector('.admin-view') },
+            { name: '#admin-container', element: document.getElementById('admin-container') },
+            { name: '#doc-converter-app', element: document.getElementById('doc-converter-app') },
+            { name: '#doc-converter-container', element: document.getElementById('doc-converter-container') }
+        ];
+        
+        console.warn('[Vue Rescue] Verfügbare Container:', adminContainers.filter(c => c.element !== null).map(c => c.name));
+        
+        // Wähle den ersten verfügbaren Container
+        let adminViewContainer = null;
+        for (const container of adminContainers) {
+            if (container.element) {
+                adminViewContainer = container.element;
+                console.warn('[Vue Rescue] Verwende Container:', container.name);
+                break;
+            }
+        }
+        
+        // Fallback: Wenn kein Container gefunden, aber wir wissen, dass wir auf der Admin-Seite sind
+        if (!adminViewContainer && (window.location.href.includes('admin') || window.location.href.includes('converter'))) {
+            console.warn('[Vue Rescue] Kein Container gefunden, erstelle einen in der Hauptapp');
+            
+            // Erstelle einen Container in der app-Div
+            const appDiv = document.getElementById('app') || document.body;
+            adminViewContainer = document.createElement('div');
+            adminViewContainer.id = 'admin-rescue-container';
+            adminViewContainer.className = 'admin-view';
+            appDiv.appendChild(adminViewContainer);
+            
+            console.warn('[Vue Rescue] Container erstellt:', adminViewContainer.id);
+        }
         
         if (!adminViewContainer) {
             log('Fehler: Kein Admin-Container gefunden');
+            console.error('[Vue Rescue] Kein Admin-Container für Rescue-Mode gefunden!');
+            
+            // Liste alle verfügbaren Container auf, die wir hätten nutzen können
+            console.error('[Vue Rescue] Verfügbare Container im DOM:', 
+                Array.from(document.querySelectorAll('div[id]')).map(el => '#' + el.id));
             return;
         }
+        
+        // Protokolliere Container vor dem Leeren
+        console.warn('[Vue Rescue] Container vor dem Leeren:', {
+            id: adminViewContainer.id,
+            className: adminViewContainer.className,
+            childNodes: adminViewContainer.childNodes.length,
+            innerHTML: adminViewContainer.innerHTML.substring(0, 100) + '...'
+        });
         
         // Bestehenden Inhalt löschen
         adminViewContainer.innerHTML = '';
         
         // Rettungs-UI erstellen
         createRescueAdminPanel(adminViewContainer);
+        console.warn('[Vue Rescue] Rescue-Admin-Panel erstellt');
         
         // Initial ersten Tab anzeigen
         showTab(config.tabs[0].id);
+        console.warn('[Vue Rescue] Initial Tab angezeigt:', config.tabs[0].id);
+        
+        // Prüfe ob wir auf der DocConverter-Seite sind und zeige diesen Tab an
+        if (window.location.href.includes('doc-converter')) {
+            showTab('doc-converter');
+            console.warn('[Vue Rescue] DocConverter-Tab automatisch angezeigt');
+        }
         
         rescueActive = true;
         log('Rettungsmodus aktiviert');
+        console.warn('[Vue Rescue] Rescue-Mode erfolgreich aktiviert');
     }
 
     /**
@@ -488,57 +626,130 @@
      * Erstellt die Rettungs-UI für den Admin-Bereich
      */
     function createRescueAdminPanel(container) {
-        // Hauptcontainer
-        const rescuePanel = document.createElement('div');
-        rescuePanel.className = 'rescue-admin-view';
-        
-        // Header
-        const header = document.createElement('div');
-        header.className = 'rescue-admin-header';
-        header.innerHTML = `
-            <h1><i class="fas fa-tools"></i> Admin-Bereich (Notfall-Modus)</h1>
-            <button class="rescue-back-button" id="rescue-back-button">
-                <i class="fas fa-arrow-left"></i> Zurück zum Chat
-            </button>
-        `;
-        
-        // Content-Bereich mit Navigation und Tab-Inhalt
-        const content = document.createElement('div');
-        content.className = 'rescue-admin-content';
-        
-        // Navigation
-        const nav = document.createElement('div');
-        nav.className = 'rescue-admin-nav';
-        
-        // Tabs für jeden Bereich erstellen
-        config.tabs.forEach(tab => {
-            const navItem = document.createElement('div');
-            navItem.className = 'rescue-nav-item';
-            navItem.dataset.tab = tab.id;
-            navItem.innerHTML = `<i class="${tab.icon}"></i> ${tab.label}`;
-            navItem.addEventListener('click', () => showTab(tab.id));
-            nav.appendChild(navItem);
+        console.warn('[Vue Rescue] Erstelle Rescue-Admin-Panel im Container:', {
+            id: container.id,
+            className: container.className
         });
         
-        // Panel für Tab-Inhalte
-        const panel = document.createElement('div');
-        panel.className = 'rescue-admin-panel';
-        
-        // Tab-Inhalte erstellen
-        createTabContents(panel);
-        
-        // Zusammenfügen
-        content.appendChild(nav);
-        content.appendChild(panel);
-        rescuePanel.appendChild(header);
-        rescuePanel.appendChild(content);
-        container.appendChild(rescuePanel);
-        
-        // Zurück-Button-Funktionalität
-        document.getElementById('rescue-back-button').addEventListener('click', function() {
-            rescuePanel.remove();
-            rescueActive = false;
-        });
+        try {
+            // Hauptcontainer
+            const rescuePanel = document.createElement('div');
+            rescuePanel.className = 'rescue-admin-view';
+            rescuePanel.id = 'rescue-admin-panel-root';
+            
+            // Header
+            const header = document.createElement('div');
+            header.className = 'rescue-admin-header';
+            header.innerHTML = `
+                <h1><i class="fas fa-tools"></i> Admin-Bereich (Notfall-Modus)</h1>
+                <button class="rescue-back-button" id="rescue-back-button">
+                    <i class="fas fa-arrow-left"></i> Zurück zum Chat
+                </button>
+            `;
+            
+            console.warn('[Vue Rescue] Header erstellt');
+            
+            // Content-Bereich mit Navigation und Tab-Inhalt
+            const content = document.createElement('div');
+            content.className = 'rescue-admin-content';
+            
+            // Navigation
+            const nav = document.createElement('div');
+            nav.className = 'rescue-admin-nav';
+            
+            // Tabs für jeden Bereich erstellen
+            config.tabs.forEach(tab => {
+                const navItem = document.createElement('div');
+                navItem.className = 'rescue-nav-item';
+                navItem.setAttribute('data-tab', tab.id); // Explizit setAttribute verwenden
+                navItem.innerHTML = `<i class="${tab.icon}"></i> ${tab.label}`;
+                
+                // Verwende eine benannte Funktion statt einer Arrow-Funktion
+                function tabClickHandler() {
+                    console.warn('[Vue Rescue] Tab geklickt:', tab.id);
+                    showTab(tab.id);
+                }
+                
+                navItem.addEventListener('click', tabClickHandler);
+                nav.appendChild(navItem);
+            });
+            
+            console.warn('[Vue Rescue] Navigation mit', config.tabs.length, 'Tabs erstellt');
+            
+            // Panel für Tab-Inhalte
+            const panel = document.createElement('div');
+            panel.className = 'rescue-admin-panel';
+            panel.id = 'rescue-admin-content-panel';
+            
+            // Tab-Inhalte erstellen
+            createTabContents(panel);
+            
+            console.warn('[Vue Rescue] Tab-Inhalte erstellt');
+            
+            // Zusammenfügen
+            content.appendChild(nav);
+            content.appendChild(panel);
+            rescuePanel.appendChild(header);
+            rescuePanel.appendChild(content);
+            
+            // Alte Rescue-Panel entfernen, falls vorhanden
+            const oldPanel = document.getElementById('rescue-admin-panel-root');
+            if (oldPanel) {
+                console.warn('[Vue Rescue] Altes Rescue-Panel gefunden, entferne es');
+                oldPanel.remove();
+            }
+            
+            // In Container einfügen
+            container.appendChild(rescuePanel);
+            
+            console.warn('[Vue Rescue] Admin-Panel in DOM eingefügt');
+            
+            // Zurück-Button-Funktionalität
+            const backButton = document.getElementById('rescue-back-button');
+            if (backButton) {
+                backButton.addEventListener('click', function() {
+                    console.warn('[Vue Rescue] Zurück-Button geklickt');
+                    rescuePanel.remove();
+                    rescueActive = false;
+                    
+                    // Versuche, zur vorherigen Ansicht zurückzukehren
+                    if (window.history && window.history.back) {
+                        window.history.back();
+                    } else if (window.location.hash.includes('admin')) {
+                        window.location.hash = '';
+                    }
+                });
+                console.warn('[Vue Rescue] Zurück-Button-Funktionalität hinzugefügt');
+            } else {
+                console.warn('[Vue Rescue] Zurück-Button nicht gefunden!');
+            }
+            
+            // Status-Update
+            console.warn('[Vue Rescue] Rescue-Admin-Panel erfolgreich erstellt:', {
+                'rescuePanelId': rescuePanel.id,
+                'headerExists': !!document.querySelector('.rescue-admin-header'),
+                'navExists': !!document.querySelector('.rescue-admin-nav'),
+                'tabCount': document.querySelectorAll('.rescue-nav-item').length,
+                'contentPanelExists': !!document.getElementById('rescue-admin-content-panel')
+            });
+            
+            return true;
+        } catch (error) {
+            console.error('[Vue Rescue] Fehler beim Erstellen des Admin-Panels:', error);
+            
+            // Notfall-Fallback: Füge einen einfachen Text ein, damit der Benutzer weiß, dass etwas schief gelaufen ist
+            container.innerHTML = `
+                <div style="padding: 20px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; margin: 20px;">
+                    <h2 style="color: #721c24; margin-bottom: 10px;">Fehler beim Laden des Admin-Bereichs</h2>
+                    <p>Es gab ein Problem beim Laden des Admin-Bereichs. Bitte versuchen Sie es später erneut oder laden Sie die Seite neu.</p>
+                    <p style="font-size: 12px; margin-top: 10px;">Fehlermeldung: ${error.message}</p>
+                    <button style="padding: 8px 16px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px;" 
+                            onclick="window.location.reload()">Seite neu laden</button>
+                </div>
+            `;
+            
+            return false;
+        }
     }
 
     /**
@@ -1134,28 +1345,91 @@
      */
     function showTab(tabId) {
         log('Wechsle zu Tab:', tabId);
+        console.warn('[Vue Rescue] Tab-Wechsel zu:', tabId);
         
-        // Aktiven Tab in Navigation markieren
-        const navItems = document.querySelectorAll('.rescue-nav-item');
-        navItems.forEach(item => {
-            if (item.dataset.tab === tabId) {
-                item.classList.add('active');
-            } else {
-                item.classList.remove('active');
+        try {
+            // Status vor Tab-Wechsel protokollieren
+            console.warn('[Vue Rescue] Tab-Status vorher:', {
+                'currentTab': currentTab,
+                'navItems': document.querySelectorAll('.rescue-nav-item').length,
+                'tabContents': document.querySelectorAll('.rescue-tab-content').length,
+                'activeNav': document.querySelectorAll('.rescue-nav-item.active').length,
+                'activeContent': document.querySelectorAll('.rescue-tab-content.active').length
+            });
+            
+            // Aktiven Tab in Navigation markieren
+            const navItems = document.querySelectorAll('.rescue-nav-item');
+            console.warn('[Vue Rescue] Gefundene Nav-Items:', navItems.length);
+            
+            // Protokolliere gefundene Nav-Items und ihre data-tab Attribute
+            const navItemsData = Array.from(navItems).map(item => ({
+                dataTab: item.getAttribute('data-tab'),
+                isActive: item.classList.contains('active'),
+                isMatch: item.getAttribute('data-tab') === tabId
+            }));
+            console.warn('[Vue Rescue] Nav-Items Details:', navItemsData);
+            
+            // Aktiviere den richtigen Tab
+            navItems.forEach(item => {
+                const itemTabId = item.getAttribute('data-tab');
+                if (itemTabId === tabId) {
+                    item.classList.add('active');
+                    console.warn('[Vue Rescue] Tab aktiviert:', itemTabId);
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+            
+            // Tab-Inhalte ein-/ausblenden
+            const tabContents = document.querySelectorAll('.rescue-tab-content');
+            console.warn('[Vue Rescue] Gefundene Tab-Inhalte:', tabContents.length);
+            
+            // Protokolliere gefundene Tab-Inhalte und ihre IDs
+            const tabContentsData = Array.from(tabContents).map(content => ({
+                id: content.id,
+                isActive: content.classList.contains('active'),
+                isMatch: content.id === `rescue-tab-${tabId}`,
+                expectedId: `rescue-tab-${tabId}`
+            }));
+            console.warn('[Vue Rescue] Tab-Inhalte Details:', tabContentsData);
+            
+            // Aktiviere den richtigen Inhalt
+            let contentFound = false;
+            tabContents.forEach(content => {
+                if (content.id === `rescue-tab-${tabId}`) {
+                    content.classList.add('active');
+                    contentFound = true;
+                    console.warn('[Vue Rescue] Tab-Inhalt aktiviert:', content.id);
+                } else {
+                    content.classList.remove('active');
+                }
+            });
+            
+            // Prüfe, ob der Tab-Inhalt gefunden wurde
+            if (!contentFound) {
+                console.warn('[Vue Rescue] WARNUNG: Tab-Inhalt nicht gefunden für ID:', `rescue-tab-${tabId}`);
+                
+                // Versuche eine weniger strenge Suche
+                const alternativeContent = document.querySelector(`[id*="${tabId}"]`);
+                if (alternativeContent) {
+                    console.warn('[Vue Rescue] Alternativer Tab-Inhalt gefunden:', alternativeContent.id);
+                    alternativeContent.classList.add('active');
+                }
             }
-        });
-        
-        // Tab-Inhalte ein-/ausblenden
-        const tabContents = document.querySelectorAll('.rescue-tab-content');
-        tabContents.forEach(content => {
-            if (content.id === `rescue-tab-${tabId}`) {
-                content.classList.add('active');
-            } else {
-                content.classList.remove('active');
-            }
-        });
-        
-        currentTab = tabId;
+            
+            // Status nach Tab-Wechsel protokollieren
+            console.warn('[Vue Rescue] Tab-Status nachher:', {
+                'currentTab': tabId,
+                'activeNav': document.querySelectorAll('.rescue-nav-item.active').length,
+                'activeContent': document.querySelectorAll('.rescue-tab-content.active').length
+            });
+            
+            currentTab = tabId;
+            return true;
+        } catch (error) {
+            console.error('[Vue Rescue] Fehler beim Tab-Wechsel:', error);
+            return false;
+        }
     }
 
     /**
@@ -1164,26 +1438,92 @@
     function setupAdminButtonListener() {
         log('Suche nach Admin-Button...');
         
-        const adminButton = document.querySelector('button[title="Systemadministration"]') ||
-                           document.querySelector('.admin-button') ||
-                           document.querySelector('[data-action="admin"]');
+        // Suche nach verschiedenen möglichen Selektoren für den Admin-Button
+        const adminButtonSelectors = [
+            'button[title="Systemadministration"]',
+            '.admin-button',
+            '[data-action="admin"]',
+            'button[data-view="admin"]',
+            '.admin-icon',
+            'button.admin',
+            'a[href="#admin"]',
+            'button.navbar-button-admin'
+        ];
+        
+        // Protokolliere, welche Selektoren gefunden wurden
+        const foundSelectors = adminButtonSelectors.map(selector => {
+            const found = document.querySelector(selector) !== null;
+            return { selector, found };
+        });
+        
+        console.warn('[Vue Rescue] Admin-Button Selektoren:', foundSelectors);
+        
+        // Versuche, einen der Buttons zu finden
+        let adminButton = null;
+        for (const selector of adminButtonSelectors) {
+            const button = document.querySelector(selector);
+            if (button) {
+                adminButton = button;
+                console.warn('[Vue Rescue] Admin-Button gefunden mit Selektor:', selector);
+                break;
+            }
+        }
+        
+        // Alternativ nach Icon-Buttons suchen, die den Admin-Bereich öffnen könnten
+        if (!adminButton) {
+            const allButtons = document.querySelectorAll('button');
+            console.warn('[Vue Rescue] Insgesamt gefundene Buttons:', allButtons.length);
+            
+            // Protokolliere die ersten 5 Buttons für Debugging
+            if (allButtons.length > 0) {
+                const buttonSample = Array.from(allButtons).slice(0, 5);
+                console.warn('[Vue Rescue] Button-Stichprobe:', buttonSample.map(btn => ({
+                    textContent: btn.textContent.trim(),
+                    class: btn.className,
+                    id: btn.id,
+                    title: btn.title
+                })));
+            }
+        }
         
         if (adminButton) {
             log('Admin-Button gefunden, füge Click-Handler hinzu');
+            console.warn('[Vue Rescue] Füge Click-Handler zu Admin-Button hinzu:', {
+                text: adminButton.textContent.trim(),
+                class: adminButton.className,
+                id: adminButton.id
+            });
             
+            // Event-Listening für Klick
             adminButton.addEventListener('click', () => {
                 log('Admin-Button geklickt');
+                console.warn('[Vue Rescue] Admin-Button wurde geklickt');
+                
+                // DOM vor dem Timeout prüfen
+                console.warn('[Vue Rescue] DOM vor Timeout:', {
+                    'adminViewExists': document.querySelector('.admin-view') !== null,
+                    'adminPanelContentExists': document.querySelectorAll('.admin-panel-content').length
+                });
                 
                 // Warte kurz, um zu sehen, ob Vue.js die Admin-Ansicht korrekt initialisiert
                 setTimeout(() => {
+                    console.warn('[Vue Rescue] DOM nach Timeout:', {
+                        'adminViewExists': document.querySelector('.admin-view') !== null,
+                        'adminPanelContentExists': document.querySelectorAll('.admin-panel-content').length
+                    });
+                    
                     if (!checkVueInitialization()) {
                         log('Admin-Ansicht wurde nicht korrekt initialisiert, aktiviere Rettungsmodus');
+                        console.warn('[Vue Rescue] Aktiviere Rettungsmodus nach Admin-Button-Klick');
                         activateRescueMode();
+                    } else {
+                        console.warn('[Vue Rescue] Vue.js wurde erfolgreich initialisiert nach Admin-Button-Klick');
                     }
                 }, 500);
             });
         } else {
             log('Admin-Button nicht gefunden, prüfe erneut später');
+            console.warn('[Vue Rescue] Admin-Button nicht gefunden, versuche erneut später');
             
             // Erneut versuchen, falls der Button noch nicht existiert
             setTimeout(setupAdminButtonListener, 1000);
@@ -1196,15 +1536,64 @@
     function initializeRescueSystem() {
         log('Initialisiere Rettungssystem...');
         
+        // Debug: Protokolliere aktuelle URL und Hash
+        console.warn('[Vue Rescue] Startup Debug:', {
+            'URL': window.location.href,
+            'hash': window.location.hash,
+            'pathname': window.location.pathname,
+            'search': window.location.search,
+            'appState': window.app ? 'vorhanden' : 'nicht gefunden',
+            'vueState': window.Vue ? 'vorhanden' : 'nicht gefunden',
+            'docConverter': window.docConverter ? 'vorhanden' : 'nicht gefunden',
+            'featureToggle': window.featureToggleStore ? 'vorhanden' : 'nicht gefunden'
+        });
+        
+        // Liste vorhandene CSS-Klassen im body-Element
+        if (document.body) {
+            console.warn('[Vue Rescue] Body-Klassen:', document.body.className);
+        }
+        
         // Event-Listener für Admin-Button einrichten
         setupAdminButtonListener();
         
+        // Protokolliere DOM-Zustand vor Verzögerung
+        console.warn('[Vue Rescue] DOM vor Verzögerung:', {
+            'adminPanelExists': document.querySelector('.admin-panel') !== null,
+            'adminContainerExists': document.getElementById('admin-container') !== null,
+            'adminViewExists': document.querySelector('.admin-view') !== null,
+            'docConverterExists': document.getElementById('doc-converter-app') !== null || document.getElementById('doc-converter-container') !== null
+        });
+        
         // Verzögerte Prüfung auf Vue.js-Initialisierung
         setTimeout(() => {
+            console.warn('[Vue Rescue] Verzögerte Initialisierungsprüfung nach ' + config.initCheckDelay + 'ms');
+            
+            // Protokolliere DOM-Zustand nach Verzögerung
+            console.warn('[Vue Rescue] DOM nach Verzögerung:', {
+                'adminPanelExists': document.querySelector('.admin-panel') !== null,
+                'adminContainerExists': document.getElementById('admin-container') !== null,
+                'adminViewExists': document.querySelector('.admin-view') !== null,
+                'docConverterExists': document.getElementById('doc-converter-app') !== null || document.getElementById('doc-converter-container') !== null
+            });
+            
             const isVueInitialized = checkVueInitialization();
             
             if (!isVueInitialized) {
                 log('Vue.js wurde nicht korrekt initialisiert, aktiviere Rettungsmodus');
+                
+                // Prüfe verschiedene Indikatoren für einen aktiven Admin-Bereich
+                const adminIndicators = [
+                    { name: '.admin-view', found: document.querySelector('.admin-view') !== null },
+                    { name: '#admin-container', found: document.getElementById('admin-container') !== null },
+                    { name: '[data-view="admin"]', found: document.querySelector('[data-view="admin"]') !== null },
+                    { name: '.admin-panel', found: document.querySelector('.admin-panel') !== null },
+                    { name: '.admin-content', found: document.querySelector('.admin-content') !== null },
+                    { name: '#admin-app', found: document.getElementById('admin-app') !== null },
+                    { name: 'URL contains admin', found: window.location.href.includes('admin') },
+                    { name: 'Hash contains admin', found: window.location.hash.includes('admin') }
+                ];
+                
+                console.warn('[Vue Rescue] Admin-Indikatoren:', adminIndicators);
                 
                 // Prüfe, ob die Admin-Ansicht aktuell angezeigt wird
                 const adminView = document.querySelector('.admin-view') || 
@@ -1212,11 +1601,25 @@
                                  document.querySelector('[data-view="admin"]');
                 
                 // Prüfe, ob der Admin aktiv ist oder wir auf der Admin-Seite sind
-                const isAdminActive = adminView && (
+                let isAdminActive = adminView && (
                     adminView.style.display !== 'none' || 
                     document.location.hash.includes('admin') ||
                     document.querySelector('.admin-active') !== null
                 );
+                
+                // Wenn wir auf einer Admin-URL sind, betrachten wir Admin als aktiv
+                if (window.location.href.includes('admin')) {
+                    isAdminActive = true;
+                    console.warn('[Vue Rescue] Admin als aktiv erkannt über URL-Check');
+                }
+                
+                // Prüfe, ob der DocConverter aktiv sein könnte
+                if (window.location.href.includes('doc-converter') || 
+                    document.getElementById('doc-converter-app') || 
+                    document.getElementById('doc-converter-container')) {
+                    console.warn('[Vue Rescue] DocConverter-Bereich erkannt');
+                    isAdminActive = true;
+                }
                 
                 if (isAdminActive) {
                     log('Admin-Ansicht ist aktiv, aktiviere Rettungsmodus');
@@ -1228,6 +1631,16 @@
                 log('Vue.js wurde korrekt initialisiert, kein Rettungsmodus notwendig');
             }
         }, config.initCheckDelay);
+        
+        // 5 Sekunden Timercheck zur Diagnose
+        setTimeout(() => {
+            console.warn('[Vue Rescue] 5-Sekunden Status-Check:', {
+                'vueFehler': !checkVueInitialization(),
+                'rescueActive': rescueActive,
+                'adminBereichAktiv': document.querySelector('.admin-view') !== null,
+                'docConverterAktiv': document.getElementById('doc-converter-app') !== null || document.getElementById('doc-converter-container') !== null
+            });
+        }, 5000);
         
         // Wiederholte Prüfung für den Fall, dass die Admin-Ansicht später geöffnet wird
         setInterval(() => {
@@ -1244,8 +1657,13 @@
                 document.querySelector('.admin-active') !== null
             );
             
-            if (isAdminActive && !checkVueInitialization()) {
-                log('Admin-Ansicht wurde aktiviert, aber Vue.js nicht initialisiert. Aktiviere Rettungsmodus.');
+            // Auch prüfen, ob der DocConverter aktiv ist
+            const isDocConverterActive = 
+                document.getElementById('doc-converter-app') !== null || 
+                document.getElementById('doc-converter-container') !== null;
+            
+            if ((isAdminActive || isDocConverterActive) && !checkVueInitialization()) {
+                log('Admin-Ansicht oder DocConverter wurde aktiviert, aber Vue.js nicht initialisiert. Aktiviere Rettungsmodus.');
                 activateRescueMode();
             }
         }, 2000); // Alle 2 Sekunden prüfen
