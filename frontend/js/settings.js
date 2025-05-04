@@ -17,6 +17,9 @@ export function setupSettings(options) {
         simpleLanguage: localStorage.getItem('simpleLanguage') === 'true'
     });
     
+    // Flag für Vue-Integration
+    const useVueSettings = true; // Auf true setzen, um Vue-Komponente zu nutzen
+    
     /**
      * Öffnet/Schließt das Einstellungs-Panel
      */
@@ -31,9 +34,29 @@ export function setupSettings(options) {
             setTimeout(() => {
                 document.addEventListener('click', handleOutsideClick);
             }, 100);
+            
+            // Vue-Integration: Vue-Komponente mounten, wenn Settings geöffnet werden
+            if (useVueSettings && window.mountVueSettings && typeof window.mountVueSettings === 'function') {
+                setTimeout(() => {
+                    try {
+                        window.mountVueSettings('#vue-settings-mount');
+                    } catch (error) {
+                        console.error('Fehler beim Mounten der Vue-Settings-Komponente:', error);
+                    }
+                }, 100);
+            }
         } else {
             document.removeEventListener('keydown', handleEscapeKey);
             document.removeEventListener('click', handleOutsideClick);
+            
+            // Vue-Integration: Vue-Komponente unmounten, wenn Settings geschlossen werden
+            if (useVueSettings && window.unmountVueSettings && typeof window.unmountVueSettings === 'function') {
+                try {
+                    window.unmountVueSettings();
+                } catch (error) {
+                    console.error('Fehler beim Unmounten der Vue-Settings-Komponente:', error);
+                }
+            }
         }
     };
 
@@ -60,6 +83,15 @@ export function setupSettings(options) {
         showSettingsPanel.value = false;
         document.removeEventListener('keydown', handleEscapeKey);
         document.removeEventListener('click', handleOutsideClick);
+        
+        // Vue-Integration: Vue-Komponente unmounten, wenn Settings geschlossen werden
+        if (useVueSettings && window.unmountVueSettings && typeof window.unmountVueSettings === 'function') {
+            try {
+                window.unmountVueSettings();
+            } catch (error) {
+                console.error('Fehler beim Unmounten der Vue-Settings-Komponente:', error);
+            }
+        }
     };
     
     /**

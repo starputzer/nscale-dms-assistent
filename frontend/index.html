@@ -18,6 +18,7 @@
     <link href="/static/css/improved-ui.css" rel="stylesheet">
     <link href="/static/css/source-references.css" rel="stylesheet">
     <link href="/static/css/message-actions.css" rel="stylesheet">
+    <link href="/static/css/vue-settings.css" rel="stylesheet">
     <!-- Zusätzliche CSS für Quellenreferenzen (wird dynamisch eingefügt) -->
     
     <!-- Feature-Integration Skripte -->
@@ -1643,7 +1644,10 @@
                 <h3 class="settings-panel-title">Einstellungen</h3>
                 <button @click.stop="toggleSettings" class="settings-panel-close">×</button>
             </div>
-            <div class="settings-panel-content">
+            <!-- Vue-Mount-Punkt für die Settings-Komponente -->
+            <div id="vue-settings-mount"></div>
+            <!-- Legacy Settings Panel (wird durch Vue-Komponente ersetzt) -->
+            <div v-if="false" class="settings-panel-content">
                 <div class="settings-section">
                     <h4 class="settings-section-title">Erscheinungsbild</h4>
                     
@@ -2430,5 +2434,9 @@
             }
         };
     </script>
+    <!-- Erweiterte Funktionen und Vue.js-Integration -->
+    <script src="js/app-extensions.js" type="module"></script>
+    <script src="js/enhanced-chat.js" type="module"></script>
+    <script src="js/vue-settings-integration.js" type="module"></script>
 </body>
 </html>
