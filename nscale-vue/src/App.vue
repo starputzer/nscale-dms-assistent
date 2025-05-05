@@ -55,7 +55,7 @@
             @submit-feedback="submitFeedback"
             @show-feedback-dialog="openFeedbackDialog"
             @load-explanation="loadExplanation"
-            @show-sources-dialog="showSourcesDialog"
+            @show-sources-dialog="openSourcesDialog"
             @dismiss-motd="dismissMotd"
             @send-message="sendQuestion"
           />
@@ -477,7 +477,7 @@ function closeExplanationDialog() {
   currentExplanation.value = null;
 }
 
-function showSourcesDialog(message) {
+function openSourcesDialog(message) {
   // Quellen aus der Nachricht extrahieren
   /* Beispiel:
   const sources = extractSourceReferences(message.message);
