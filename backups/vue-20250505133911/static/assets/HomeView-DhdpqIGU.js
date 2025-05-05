@@ -1,2 +1,0 @@
-import{o as s,i as a,a as r,e as t,j as c}from"./vue-vendor-CBOooRdR.js";import{_ as n}from"./_plugin-vue_export-helper-DlAUqK2U.js";const m={class:"home-container"},_={__name:"HomeView",setup(d){const o=a();return s(()=>{o.push({name:"chat"})}),(i,e)=>(c(),r("div",m,e[0]||(e[0]=[t("div",{class:"loader"},null,-1),t("p",{class:"redirect-text"},"Leite um zum Chat...",-1)])))}},l=n(_,[["__scopeId","data-v-1dad487c"]]);export{l as default};
-//# sourceMappingURL=HomeView-DhdpqIGU.js.map
