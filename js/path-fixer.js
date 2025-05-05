@@ -6,14 +6,15 @@
 (function() {
     console.log("[Path-Fixer] Initialisierung...");
     
-    // Alle möglichen Pfad-Präfixe - Absolute Pfade entfernt, da sie zu 404-Fehlern führen
+    // Alle möglichen Pfad-Präfixe
     const pathPrefixes = [
         '/static/',
         '/frontend/',
         '/api/static/',
-        '/css/',
-        '/js/',
-        '/'
+        '/',
+        '/opt/nscale-assist/app/static/',
+        '/opt/nscale-assist/app/frontend/',
+        '/opt/nscale-assist/app/api/static/'
     ];
     
     // Schlüsseldateien, die geladen werden müssen
@@ -24,7 +25,6 @@
             'chat-overflow-fix.css',
             'doc-converter-fix.css',
             'doc-converter-position-fix.css',
-            'doc-converter-visibility-fix.css',
             'feedback-icons-fix.css',
             'feedback.css'
         ],
@@ -37,7 +37,6 @@
             'force-enable-vue.js',
             'force-doc-converter-cleanup.js',
             'doc-converter-visibility-fix.js',
-            'doc-converter-tab-init.js',
             'doc-converter-debug.js',
             'admin-tab-handler.js',
             'admin-doc-converter-fix.js',

@@ -158,12 +158,16 @@
             return;
         }
         
-        // CSS aus mehreren möglichen Quellen laden
+        // CSS aus mehreren möglichen Quellen laden - relative und absolute Pfade
         const cssPaths = [
+            'css/doc-converter-visibility-fix.css',
+            'static/css/doc-converter-visibility-fix.css',
+            'frontend/css/doc-converter-visibility-fix.css',
+            'api/static/css/doc-converter-visibility-fix.css',
+            '/css/doc-converter-visibility-fix.css',
             '/static/css/doc-converter-visibility-fix.css',
             '/frontend/css/doc-converter-visibility-fix.css',
-            '/api/static/css/doc-converter-visibility-fix.css',
-            '/css/doc-converter-visibility-fix.css'
+            '/api/static/css/doc-converter-visibility-fix.css'
         ];
         
         // Versuche alle CSS-Pfade

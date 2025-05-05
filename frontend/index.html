@@ -5,19 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>nscale DMS Assistent</title>
     
-    <!-- Kritische CSS für Vue-Template-Fix - früh laden für sofortige Wirkung -->
-    <link href="/static/css/vue-template-fix.css" rel="stylesheet">
-    <link href="/frontend/css/vue-template-fix.css" rel="stylesheet">
+    <!-- Kritische CSS für Vue-Template-Fix - früh laden für sofortige Wirkung (relative Pfade) -->
+    <link href="static/css/vue-template-fix.css" rel="stylesheet">
+    <link href="css/vue-template-fix.css" rel="stylesheet">
+    <link href="frontend/css/vue-template-fix.css" rel="stylesheet">
     
-    <!-- Kritisches JS für Vue-Template-Fix - früh laden für sofortige Wirkung -->
-    <script src="/static/js/vue-template-fix.js"></script>
-    <script src="/frontend/js/vue-template-fix.js"></script>
+    <!-- Kritisches JS für Vue-Template-Fix - früh laden für sofortige Wirkung (relative Pfade) -->
+    <script src="static/js/vue-template-fix.js"></script>
+    <script src="js/vue-template-fix.js"></script>
+    <script src="frontend/js/vue-template-fix.js"></script>
     
-    <!-- Path-Fixer - Kritisch für die Korrektur aller Pfade -->
-    <script src="/static/js/path-fixer.js"></script>
+    <!-- Path-Fixer - Kritisch für die Korrektur aller Pfade (mit relativen Pfaden) -->
+    <script src="static/js/path-fixer.js"></script>
+    <script src="js/path-fixer.js"></script>
     
-    <!-- DocConverter Tab Initialisierung - Verbesserte robuste Version -->
-    <script src="/static/js/doc-converter-tab-init.js"></script>
+    <!-- DocConverter Tab Initialisierung - Verbesserte robuste Version (relative Pfade) -->
+    <script src="static/js/doc-converter-tab-init.js"></script>
+    <script src="js/doc-converter-tab-init.js"></script>
     
     <!-- Standard-CSS-Dateien -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
@@ -61,9 +65,11 @@
     <!-- Force Cleanup - entfernt unerwünschte Dokumentenkonverter-Container -->
     <script src="/static/js/force-doc-converter-cleanup.js"></script>
     
-    <!-- Visibility Fix - Stellt sicher, dass DocConverter-Container immer sichtbar sind -->
-    <script src="/static/js/doc-converter-visibility-fix.js"></script>
-    <link href="/static/css/doc-converter-visibility-fix.css" rel="stylesheet">
+    <!-- Visibility Fix - Stellt sicher, dass DocConverter-Container immer sichtbar sind (multiple Pfade) -->
+    <script src="static/js/doc-converter-visibility-fix.js"></script>
+    <script src="js/doc-converter-visibility-fix.js"></script>
+    <link href="static/css/doc-converter-visibility-fix.css" rel="stylesheet">
+    <link href="css/doc-converter-visibility-fix.css" rel="stylesheet">
     
     <!-- Pfad-Tester - Testet automatisch alle möglichen Ressourcen-Pfade und findet funktionierende Alternativen -->
     <script src="/static/js/doc-converter-path-tester.js"></script>
