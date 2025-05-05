@@ -6,11 +6,9 @@
     <title>nscale DMS Assistent</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/vue@3.2.31/dist/vue.global.prod.js"></script>
+    <!-- Vue entfernt -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- Vue-Komponenten deaktivieren -->
-    <script src="/static/js/disable-vue-components.js"></script>
     <!-- Eigene CSS-Dateien mit dynamischem Cache-Busting -->
     <link href="/static/css/main.css" rel="stylesheet">
     <link href="/static/css/feedback.css" rel="stylesheet">
@@ -19,6 +17,9 @@
     <link href="/static/css/themes.css" rel="stylesheet">
     <link href="/static/css/improved-ui.css" rel="stylesheet">
     <link href="/static/css/source-references.css" rel="stylesheet">
+    <!-- Vue-Bereinigungsskript vor allen anderen Scripts laden -->
+    <script src="/frontend/js/cleanup-vue.js"></script>
+    <script src="/frontend/js/disable-vue-components.js"></script>
     <!-- Zusätzliche CSS für Quellenreferenzen (wird dynamisch eingefügt) -->
 </head>
 <body class="min-h-screen bg-gray-50">
@@ -979,14 +980,16 @@
         window.addEventListener('DOMContentLoaded', reloadCSS);
     </script>
     
-    <!-- JavaScript-Module einbinden -->
+    <!-- JavaScript-Module mit Vanilla JS Implementierungen einbinden -->
     <script src="/static/js/chat.js" type="module"></script>
     <script src="/static/js/feedback.js" type="module"></script>
     <script src="/static/js/admin.js" type="module"></script>
     <script src="/static/js/settings.js" type="module"></script>
     <script src="/static/js/source-references.js" type="module"></script>
     <script src="/static/js/app.js" type="module"></script>
-    <!-- Dokumentenkonverter Fallback-Implementierung -->
-    <script src="/static/js/doc-converter-fallback.js"></script>
+    <!-- Dokumentenkonverter Fallback-Implementierung (Vanilla JS) -->
+    <script src="/frontend/js/doc-converter-fallback.js"></script>
+    <!-- Vanilla JS Theme Handler -->
+    <script src="/static/js/theme-handler.js"></script>
 </body>
 </html>
