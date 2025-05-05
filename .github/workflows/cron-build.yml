@@ -1,0 +1,62 @@
+name: Nächtlicher Build
+
+# Zeitplan: Jede Nacht um 2 Uhr (UTC)
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  # Manuelle Auslösung für Tests
+  workflow_dispatch:
+
+jobs:
+  nightly-build:
+    name: Nächtlicher Build und Deployment
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      
+      - name: Node.js Setup
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'npm'
+          cache-dependency-path: 'nscale-vue/package-lock.json'
+      
+      - name: Install Dependencies
+        run: |
+          cd nscale-vue
+          npm ci
+      
+      - name: Build
+        run: |
+          cd nscale-vue
+          npm run build
+      
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+      
+      - name: Add to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+      
+      - name: Build kopieren
+        run: |
+          rsync -avz --delete nscale-vue/dist/ ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_DIR }}/nscale-vue/dist/
+      
+      - name: Auto-Build auf Server ausführen
+        run: |
+          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "cd ${{ secrets.DEPLOY_DIR }} && bash auto-build.sh"
+      
+      - name: Slack-Benachrichtigung
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: deployments
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: 'Nächtlicher Build'
+          SLACK_MESSAGE: 'Der nächtliche Build wurde abgeschlossen'
+          SLACK_FOOTER: 'GitHub Actions CI/CD'

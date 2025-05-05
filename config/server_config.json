@@ -1,0 +1,6 @@
+{
+  "useVueJS": true,
+  "vueJSBuildPath": "/opt/nscale-assist/app/nscale-vue/dist",
+  "debug": true,
+  "logLevel": "debug"
+}

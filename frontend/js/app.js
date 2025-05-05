@@ -507,6 +507,7 @@ createApp({
                 case 'system': return 'Systemüberwachung';
                 case 'feedback': return 'Feedback-Analyse';
                 case 'motd': return 'Message of the Day';
+                case 'doc-converter': return 'Dokumentenkonverter';
                 default: return 'Administration';
             }
         };

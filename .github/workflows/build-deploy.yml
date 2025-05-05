@@ -1,0 +1,177 @@
+name: Build und Deploy
+
+# Auslöser für den Workflow
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  # Manuelle Auslösung
+  workflow_dispatch:
+
+# Umgebungsvariablen
+env:
+  NODE_VERSION: '16'
+  PYTHON_VERSION: '3.9'
+
+# Jobs, die ausgeführt werden sollen
+jobs:
+  build:
+    name: Build Vue.js App
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      
+      - name: Node.js Setup
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'nscale-vue/package-lock.json'
+      
+      - name: Install Dependencies
+        run: |
+          cd nscale-vue
+          npm ci
+      
+      - name: Lint
+        run: |
+          cd nscale-vue
+          npm run lint
+      
+      - name: Build
+        run: |
+          cd nscale-vue
+          npm run build
+      
+      - name: Archiviere Build
+        uses: actions/upload-artifact@v3
+        with:
+          name: vue-build
+          path: nscale-vue/dist/
+          retention-days: 5
+
+  test-python:
+    name: Python Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      
+      - name: Python Setup
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements-converter.txt ]; then pip install -r requirements-converter.txt; fi
+      
+      - name: Linting mit flake8
+        run: |
+          # Syntax-Fehler und undefinierte Namen stoppen die Build
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # Exit-Zero erlaubt, dass Warnungen nicht zum Abbruch führen
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      
+      - name: Test mit pytest
+        run: |
+          # Führe Tests aus, falls vorhanden
+          if [ -d tests ]; then pytest; fi
+
+  deploy:
+    name: Deployment
+    needs: [build, test-python]
+    if: success() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      
+      - name: Download Build
+        uses: actions/download-artifact@v3
+        with:
+          name: vue-build
+          path: nscale-vue/dist/
+      
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+      
+      - name: Add to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+      
+      - name: Deployment-Verzeichnisse vorbereiten
+        run: |
+          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "mkdir -p ${{ secrets.DEPLOY_DIR }}/backups"
+      
+      - name: Build kopieren
+        run: |
+          rsync -avz --delete nscale-vue/dist/ ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_DIR }}/nscale-vue/dist/
+      
+      - name: Auto-Build-Skript kopieren
+        run: |
+          rsync -avz auto-build.sh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_DIR }}/
+      
+      - name: Build & Deploy ausführen
+        run: |
+          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "cd ${{ secrets.DEPLOY_DIR }} && bash auto-build.sh"
+      
+      - name: Deployment-Benachrichtigung
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: deployments
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: 'nscale-assist Vue.js Deployment'
+          SLACK_MESSAGE: 'Deployment auf ${{ secrets.DEPLOY_HOST }} abgeschlossen!'
+          SLACK_FOOTER: 'GitHub Actions CI/CD'
+
+  # Automatische Erstellung einer Tag-Version bei Änderungen an main
+  tag-version:
+    name: Tag Version
+    needs: deploy
+    if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Git Config
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+      
+      - name: Neues Tag erstellen
+        run: |
+          # Ermittle das aktuelle Datum als Versions-Basis
+          VERSION_DATE=$(date +'%Y.%m.%d')
+          
+          # Prüfe, ob an diesem Tag bereits Tags existieren
+          EXISTING_TAGS=$(git tag -l "v$VERSION_DATE*" | wc -l)
+          
+          # Erstelle neues Tag mit Suffix für Mehrfach-Deployments am gleichen Tag
+          if [ "$EXISTING_TAGS" -eq "0" ]; then
+            NEW_TAG="v$VERSION_DATE"
+          else
+            NEW_TAG="v$VERSION_DATE-$((EXISTING_TAGS+1))"
+          fi
+          
+          # Tag setzen und pushen
+          git tag -a "$NEW_TAG" -m "Release $NEW_TAG"
+          git push origin "$NEW_TAG"
+          
+          echo "Neues Tag erstellt: $NEW_TAG"

@@ -9,6 +9,8 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@3.2.31/dist/vue.global.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Vue-Komponenten deaktivieren -->
+    <script src="/static/js/disable-vue-components.js"></script>
     <!-- Eigene CSS-Dateien mit dynamischem Cache-Busting -->
     <link href="/static/css/main.css" rel="stylesheet">
     <link href="/static/css/feedback.css" rel="stylesheet">
@@ -207,6 +209,13 @@
                             <i class="fas fa-info-circle"></i>
                             <span>MOTD</span>
                         </button>
+                        
+                        <button 
+                            @click="adminTab = 'doc-converter'" 
+                            :class="['admin-nav-item', adminTab === 'doc-converter' ? 'active' : '']">
+                            <i class="fas fa-file-alt"></i>
+                            <span>Dokumentenkonverter</span>
+                        </button>
                     </nav>
                     
                     <div class="mt-auto p-4 text-sm text-gray-500">
@@ -367,6 +376,40 @@
                         </div>
                         
                         <div class="admin-content flex-1">
+                            <!-- Dokumentenkonverter-Tab -->
+                            <div v-if="adminTab === 'doc-converter'" class="admin-panel-content">
+                                <div class="admin-card">
+                                    <div class="admin-card-title">Dokumentenkonverter</div>
+                                    <div class="p-4">
+                                        <div class="mb-6">
+                                            <h3 class="text-lg font-medium mb-2">Dokument konvertieren</h3>
+                                            <p class="text-gray-600 mb-4">Laden Sie eine Datei hoch, um sie in das Markdown-Format zu konvertieren.</p>
+                                            
+                                            <div class="file-upload-container border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-500 transition-colors">
+                                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
+                                                <p class="mb-4">Ziehen Sie Dateien hierher oder</p>
+                                                <input type="file" id="doc-converter-file-input" class="hidden" multiple>
+                                                <label for="doc-converter-file-input" class="nscale-btn-primary cursor-pointer inline-block">Dateien auswählen</label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div id="upload-progress" class="hidden mb-6">
+                                            <h4 class="text-md font-medium mb-2">Konvertierung läuft...</h4>
+                                            <div class="w-full bg-gray-200 rounded-full h-4">
+                                                <div id="progress-bar" class="bg-green-500 h-4 rounded-full" style="width: 0%"></div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div id="conversion-results" class="hidden">
+                                            <h3 class="text-lg font-medium mb-2">Konvertierte Dokumente</h3>
+                                            <div id="results-list" class="space-y-4">
+                                                <!-- Ergebnisse werden hier dynamisch eingefügt -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <!-- Benutzer-Tab -->
                             <div v-if="adminTab === 'users'" class="admin-panel-content">
                                 <div class="admin-card mb-8">
@@ -943,5 +986,7 @@
     <script src="/static/js/settings.js" type="module"></script>
     <script src="/static/js/source-references.js" type="module"></script>
     <script src="/static/js/app.js" type="module"></script>
+    <!-- Dokumentenkonverter Fallback-Implementierung -->
+    <script src="/static/js/doc-converter-fallback.js"></script>
 </body>
 </html>

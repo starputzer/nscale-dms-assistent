@@ -92,10 +92,23 @@ if frontend_dir.exists():
         logger.info(f"JS-Dateien: {[f.name for f in js_dir.iterdir() if f.is_file()]}")
 
 # App Mounten mit normaler StaticFiles-Klasse
+# Statische Assets aus verschiedenen Verzeichnissen bereitstellen
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
+
+# Alte UI verwenden - keine Vue-Assets mehr einbinden
+logger.info("Verwende nur die klassische UI ohne Vue.js")
+
+# Favicon-Route für Vue.js entfernt
+# Verwende stattdessen das Standard-Favicon aus dem Frontend-Verzeichnis
 
 @app.get("/")
 async def root():
+    # Verwende immer die alte UI
+    return FileResponse("frontend/index.html")
+    
+@app.get("/app/{path:path}")
+async def vue_app(path: str):
+    # Verwende immer die alte UI
     return FileResponse("frontend/index.html")
         
 # Initialisiere Module
@@ -292,6 +305,8 @@ async def explain_answer(message_id: int, user_data: Dict[str, Any] = Depends(ge
     """
     try:
         # Hole die Nachricht aus der Datenbank
+        import sqlite3
+        import re
         conn = sqlite3.connect(Config.DB_PATH)
         cursor = conn.cursor()
         
