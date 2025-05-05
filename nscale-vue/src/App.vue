@@ -53,7 +53,7 @@
             :motd-dismissed="motdDismissed"
             @new-session="startNewSession"
             @submit-feedback="submitFeedback"
-            @show-feedback-dialog="showFeedbackDialog"
+            @show-feedback-dialog="openFeedbackDialog"
             @load-explanation="loadExplanation"
             @show-sources-dialog="showSourcesDialog"
             @dismiss-motd="dismissMotd"
@@ -399,7 +399,7 @@ function submitFeedback(payload) {
   */
 }
 
-function showFeedbackDialog(message) {
+function openFeedbackDialog(message) {
   currentFeedbackMessage.value = message;
   feedbackComment.value = message.feedback_comment || '';
   showFeedbackDialog.value = true;
