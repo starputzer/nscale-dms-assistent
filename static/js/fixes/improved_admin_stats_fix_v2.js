@@ -31,50 +31,50 @@
     // Dummy-Daten für System-Statistiken als Fallback
     const systemStatsDummy = {
         users: {
-            total: 12,
-            active: 8,
+            total: 4,
+            active: 2,
             admin: 2
         },
         system: {
-            uptime: "4 Tage, 7 Stunden",
-            cpu: "32%",
-            memory: "1.2 GB / 4.0 GB",
+            uptime: "2 Tage, 3 Stunden",
+            cpu: "12%",
+            memory: "0.7 GB / 4.0 GB",
             version: "2.1.5"
         },
         storage: {
-            documents: 438,
-            chunks: 12945,
-            embeddings: 12945,
-            size: "128 MB"
+            documents: 8,
+            chunks: 124,
+            embeddings: 124,
+            size: "4.8 MB"
         },
         performance: {
-            avg_response_time: "2.3s",
-            requests_per_minute: 4.2,
-            cached_responses: "18%",
-            embedding_generations: 784
+            avg_response_time: "1.8s",
+            requests_per_minute: 1.2,
+            cached_responses: "25%",
+            embedding_generations: 42
         }
     };
 
     // Dummy-Daten für Feedback-Statistiken als Fallback
     const feedbackStatsDummy = {
-        total: 52,
-        positive: 41,
-        negative: 11,
-        positive_rate: 0.79,
+        total: 10,
+        positive: 8,
+        negative: 2,
+        positive_rate: 0.8,
         negative_feedback: [
             {
                 id: 1,
-                user_email: 'benutzer@example.com',
+                user_email: 'admin@nscale.local',
                 timestamp: '2025-05-05T14:32:18',
-                message_text: 'Die Antwort hat meine Frage zur Systemarchitektur nicht beantwortet.',
-                comment: 'Nicht hilfreich, bitte verbessern'
+                message_text: 'Die Antwort enthielt keine relevanten Informationen zu meiner Anfrage über nscale-DMS.',
+                comment: 'Kontext fehlt, bitte prüfen'
             },
             {
                 id: 2,
-                user_email: 'tester@example.com',
+                user_email: 'tester@nscale.local',
                 timestamp: '2025-05-04T09:15:42',
-                message_text: 'Die gelieferten Quellenverweise sind nicht korrekt.',
-                comment: 'Falscher Kontext verwendet'
+                message_text: 'Die Antwort war zu allgemein und nicht auf unsere spezifische Implementierung bezogen.',
+                comment: 'Zu generische Antwort'
             }
         ]
     };
