@@ -1,13 +1,125 @@
 # React-Migrations-Aktionsplan
 
-## Überblick
+## WICHTIGER HINWEIS: PRIORISIERUNG DER TESTS UND VANILLA-JS-STABILISIERUNG
 
-Dieser Aktionsplan definiert die Strategie und konkreten Schritte für die vollständige Migration des nscale-assist Frontends von Vanilla JavaScript zu React. Der Plan ist in Phasen aufgeteilt, wobei jede Phase aufeinander aufbaut und den Grundsatz der schrittweisen Migration mit paralleler Implementierung verfolgt.
+**Die aktuelle Priorität liegt auf der Stabilisierung und dem Testing der Vanilla-JS-Implementierung.** Die in diesem Dokument beschriebene React-Migration ist ein zukünftiger Plan, der erst nach erfolgreicher Stabilisierung der aktuellen Implementierung in Betracht gezogen wird.
 
-## Phasen und Timeline
+## Testprioritäten vor jeder React-Migration
+
+Der folgende Testplan muss implementiert und ausgeführt werden, bevor die React-Migration fortgesetzt werden kann:
+
+### Phase 0: Testinfrastruktur und Vanilla-JS-Stabilisierung (HÖCHSTE PRIORITÄT)
+
+| Bereich | Testtyp | Abdeckung | Status |
+|---------|---------|-----------|--------|
+| **UI-Komponenten** | Automatisiert | Kernfunktionen | In Bearbeitung |
+| **Ereignisbehandlung** | Manuell + Automatisiert | Kritische Interaktionen | In Bearbeitung |
+| **Fehlerbehandlung** | Automatisiert | Bekannte Fehlerszenarien | Geplant |
+| **Browser-Kompatibilität** | Manuell | Top 3 Browser | Geplant |
+| **Leistungsmetriken** | Automatisiert | Ladezeit, Reaktionszeit | Geplant |
+
+#### Konkrete Testmaßnahmen
+
+1. **Test-Runner-Optimierung**
+   - Integration der Test-Suite in die CI/CD-Pipeline
+   - Automatisierte Tests bei jedem Push ausführen
+   - Reporting-System für Testergebnisse implementieren
+
+   ```javascript
+   // test_runner.js
+   class TestRunner {
+     constructor() {
+       this.tests = [];
+       this.results = { passed: 0, failed: 0, skipped: 0 };
+     }
+     
+     addTest(name, testFunction) {
+       this.tests.push({ name, testFunction });
+     }
+     
+     async runTests() {
+       for (const test of this.tests) {
+         try {
+           await test.testFunction();
+           console.log(`✅ ${test.name} passed`);
+           this.results.passed++;
+         } catch (error) {
+           console.error(`❌ ${test.name} failed: ${error.message}`);
+           this.results.failed++;
+         }
+       }
+       
+       this.generateReport();
+     }
+     
+     generateReport() {
+       // Ausführliches Testreport generieren
+     }
+   }
+   ```
+
+2. **Kritische UI-Tests**
+   - Text-Streaming-Funktionalität
+   - Session-Input-Persistenz
+   - Admin-Panel Funktionalität
+   - MOTD-Anzeige und Vorschau
+   - Dokumentenkonverter
+
+   ```javascript
+   // ui_tests.js
+   const textStreamingTest = async () => {
+     // Vorbereitungen für den Test
+     const sessionId = await createNewSession();
+     
+     // Test-Frage stellen
+     const question = "Generiere einen langen Text über KI";
+     const response = await sendStreamingQuestion(sessionId, question);
+     
+     // Prüfen, ob die Antwort inkrementell angezeigt wurde
+     assert(response.streamingEvents.length > 1, "Antwort sollte inkrementell gestreamt werden");
+     assert(response.finalText.length > 0, "Finale Antwort sollte Text enthalten");
+   };
+   
+   const sessionInputPersistenceTest = async () => {
+     // Test implementieren
+   };
+   
+   // Weitere Tests für kritische Funktionen
+   ```
+
+3. **Konsistente Fehlerbehebungsstrategie**
+   - Alle Fixes in einem vereinheitlichten Bundle
+   - Robuste Fehlerbehandlung mit Fallback-Optionen
+   - Selbstheilende Mechanismen für bekannte Probleme
+
+   ```javascript
+   // error_handling_tests.js
+   const adminPanelErrorHandlingTest = async () => {
+     // Simuliere fehlende Daten vom Server
+     mockServerResponse('/api/admin/users', 500, { error: 'Internal server error' });
+     
+     // Versuche, den Admin-Bereich zu öffnen
+     await openAdminPanel();
+     
+     // Überprüfe, ob eine Fehlermeldung angezeigt wird
+     const errorMessage = getErrorMessage();
+     assert(errorMessage, "Fehler sollte angezeigt werden");
+     
+     // Überprüfe, ob Fallback-UI angezeigt wird
+     const fallbackUI = getFallbackUI();
+     assert(fallbackUI, "Fallback-UI sollte angezeigt werden");
+   };
+   ```
+
+## Zukünftiger React-Migrations-Aktionsplan (NACH erfolgreicher Stabilisierung)
+
+Dieser Aktionsplan definiert die Strategie und konkreten Schritte für die vollständige Migration des nscale-assist Frontends von Vanilla JavaScript zu React **nachdem die Vanilla-Version vollständig stabilisiert wurde**.
+
+### Phasen und Timeline
 
 | Phase | Beschreibung | Dauer | Priorität |
 |-------|-------------|-------|-----------|
+| 0 | Testinfrastruktur und Vanilla-JS-Stabilisierung | 4-6 Wochen | HÖCHSTE |
 | 1 | Grundlagenoptimierung | 2 Wochen | Hoch |
 | 2 | Dokumentenkonverter vervollständigen | 3 Wochen | Hoch |
 | 3 | Admin-Panel Migration abschließen | 4 Wochen | Mittel |
@@ -15,15 +127,15 @@ Dieser Aktionsplan definiert die Strategie und konkreten Schritte für die volls
 | 5 | Settings & Authentifizierung | 4 Wochen | Niedrig |
 | 6 | Vollständige App-Migration | 4-6 Wochen | Niedrig |
 
-## Phase 1: Grundlagenoptimierung (2 Wochen)
+### Phase 1: Grundlagenoptimierung (2 Wochen)
 
-### Ziele
+#### Ziele
 - Feature-Toggle-System finalisieren
 - Integration zwischen React und Vanilla JS verbessern
 - Testing-Framework einrichten
 - Redux-Store optimieren
 
-### Aufgaben
+#### Aufgaben
 
 1. **Feature-Toggle-Überarbeitung**
    - React-Toggle-Speicherung in localStorage vereinheitlichen
@@ -116,14 +228,14 @@ Dieser Aktionsplan definiert die Strategie und konkreten Schritte für die volls
    - Devtools-Integration für Entwicklung
    - Typensicherheit verbessern
 
-## Phase 2: Dokumentenkonverter vervollständigen (3 Wochen)
+### Phase 2: Dokumentenkonverter vervollständigen (3 Wochen)
 
-### Ziele
+#### Ziele
 - Vollständige Implementierung des Dokumentenkonverters in React
 - Nahtlose Integration mit bestehendem Backend
 - Verbesserte Benutzererfahrung
 
-### Aufgaben
+#### Aufgaben
 
 1. **API-Integration vervollständigen**
    - Redux-Slice für Dokumentenkonverter finalisieren
@@ -197,208 +309,28 @@ Dieser Aktionsplan definiert die Strategie und konkreten Schritte für die volls
    }
    ```
 
-## Phase 3: Admin-Panel Migration abschließen (4 Wochen)
+### Phase 3-6: Weitere Migrations-Phasen
 
-### Ziele
-- Vollständige Migration des Admin-Panels zu React
-- Integration aller Admin-Tabs
-- Verbessertes Datenmanagement
+Die Phasen 3-6 folgen dem gleichen Muster mit spezifischen Fokuspunkten für jede Komponente. Die detaillierte Planung dieser Phasen wird nach erfolgreicher Abschluss der Phase 0 (Stabilisierung) und Phase 1-2 aktualisiert.
 
-### Aufgaben
+## Test- und Qualitätssicherungsplan
 
-1. **Admin-Panel Framework finalisieren**
-   - Tab-Steuerung verbessern
-   - AdminViewBootstrap-Komponente erweitern
-   - Kommunikation mit Vanilla JS verbessern
+Vor, während und nach jeder Migrationsphase wird eine strenge Test- und Qualitätssicherung durchgeführt:
 
-2. **Admin-Tabs implementieren**
-   - UsersTab mit Benutzerverwaltungsfunktionen
-   - SystemTab mit Statistiken und Systemeinstellungen
-   - FeedbackTab mit Feedback-Verwaltung
-   - MotdTab mit Nachrichtenverwaltung
+### Vor der Migration
+- Vollständige Testsuite für die Vanilla-Version erstellen
+- Leistungsbaseline dokumentieren
+- Benutzertest-Szenarien definieren
 
-   ```tsx
-   // components/admin/tabs/UsersTab.tsx
-   const UsersTab = () => {
-     const dispatch = useDispatch();
-     const { users, loading, error } = useSelector(selectUsersState);
-     
-     useEffect(() => {
-       // Benutzer laden, wenn die Tab-Komponente montiert wird
-       dispatch(fetchUsers());
-     }, [dispatch]);
-     
-     const handleRoleChange = (userId: string, role: string) => {
-       dispatch(updateUserRole({ userId, role }));
-     };
-     
-     // Rest der Komponente...
-   }
-   ```
+### Während der Migration
+- Kontinuierliche Tests bei jedem Entwicklungsschritt
+- Vergleichende Tests zwischen Vanilla und React
+- Featureüberprüfung für funktionale Äquivalenz
 
-3. **Redux-State für Admin-Funktionen**
-   - Benutzerverwaltungs-Slice
-   - System-Konfigurations-Slice
-   - Feedback-Slice
-   - MOTD-Slice
-
-4. **Styling und Kompatibilität**
-   - CSS-Module für Styling-Isolation
-   - Anpassung an Designsystem
-   - Barrierefreiheit verbessern
-
-## Phase 4: Chat-Interface Migration (6 Wochen)
-
-### Ziele
-- Migration des komplexen Chat-Interfaces zu React
-- Unterstützung für Streaming-Antworten
-- Verbesserte Benutzerinteraktion
-
-### Aufgaben
-
-1. **Chat-Komponenten erstellen**
-   - MessageList und MessageItem Komponenten
-   - ChatInput mit Autofokus und Validierung
-   - Streaming-Text-Renderer
-
-   ```tsx
-   // components/chat/StreamingMessageContent.tsx
-   const StreamingMessageContent = ({ messageId, streamingText }) => {
-     const streamingRef = useRef(null);
-     
-     useEffect(() => {
-       // Auto-Scroll zur neuesten Nachricht
-       if (streamingRef.current) {
-         streamingRef.current.scrollIntoView({ behavior: 'smooth' });
-       }
-     }, [streamingText]);
-     
-     // Markdown-Rendering der Streaming-Nachricht
-     return (
-       <div 
-         className="message-content streaming" 
-         ref={streamingRef}
-         dangerouslySetInnerHTML={{ __html: marked(streamingText) }}
-       />
-     );
-   };
-   ```
-
-2. **Chat-Redux-State implementieren**
-   - Nachrichten-Slice mit Streaming-Unterstützung
-   - Sitzungsmanagement-Slice
-   - Benutzereinstellungen-Slice
-
-3. **Server-Sent Events Integration**
-   - ESE für Text-Streaming
-   - Fortschrittsanzeige
-   - Abbruchfunktionalität
-
-   ```typescript
-   // redux/slices/chatMessageSlice.ts
-   export const streamChatMessage = createAsyncThunk(
-     'chat/streamMessage',
-     async ({ sessionId, message }, { dispatch, signal }) => {
-       const controller = new AbortController();
-       
-       // AbortSignal vom Thunk mit dem Controller verknüpfen
-       const abortSignal = signal.addEventListener('abort', () => {
-         controller.abort();
-       });
-       
-       try {
-         // Server-Sent Events einrichten
-         const eventSource = new EventSource(
-           `/api/chat/stream?sessionId=${sessionId}&message=${encodeURIComponent(message)}`,
-           { signal: controller.signal }
-         );
-         
-         return new Promise((resolve, reject) => {
-           let fullText = '';
-           
-           eventSource.onmessage = (event) => {
-             const chunk = JSON.parse(event.data);
-             fullText += chunk.text;
-             
-             // Stream-Update im Redux-Store
-             dispatch(updateStreamingMessage({
-               sessionId,
-               messageId: chunk.messageId,
-               text: fullText,
-               done: false
-             }));
-           };
-           
-           eventSource.onerror = (error) => {
-             eventSource.close();
-             reject(new Error('Stream-Verbindung unterbrochen'));
-           };
-           
-           eventSource.addEventListener('done', (event) => {
-             const finalMessage = JSON.parse(event.data);
-             eventSource.close();
-             resolve(finalMessage);
-           });
-         });
-       } finally {
-         signal.removeEventListener('abort', abortSignal);
-       }
-     }
-   );
-   ```
-
-4. **Sitzungsmanagement**
-   - Sitzungsliste für mehrere Chats
-   - Persistierung zwischen Seitenbesuchen
-   - Integration mit Vanilla JS für Abwärtskompatibilität
-
-## Phase 5: Settings & Authentifizierung (4 Wochen)
-
-### Ziele
-- Migration des Einstellungspanels zu React
-- Implementierung der Authentifizierung in React
-- Verbesserung der Benutzerfreundlichkeit
-
-### Aufgaben
-
-1. **Settings-Panel implementieren**
-   - Themes-Management
-   - Barrierefreiheitseinstellungen
-   - Benutzereinstellungen
-
-2. **Authentifizierung in React**
-   - Login/Registrierungs-Formulare
-   - Token-Management
-   - Benutzersitzungsverwaltung
-
-3. **Integration mit bestehenden System**
-   - Nahtloser Übergang zwischen Vanilla JS und React
-   - Zustandssynchronisation
-   - Persistierung von Einstellungen
-
-## Phase 6: Vollständige App-Migration (4-6 Wochen)
-
-### Ziele
-- Vollständige Migration zur React-App
-- Entfernung der Vanilla-JS-Komponenten
-- Optimierung und Finalisierung
-
-### Aufgaben
-
-1. **App-Layout als React-Komponente**
-   - Haupt-Layout-Komponente erstellen
-   - Routing vollständig in React implementieren
-   - Responsive Design finalisieren
-
-2. **Vanilla-JS-Komponenten graduell entfernen**
-   - Schrittweise Deaktivierung alter Komponenten
-   - Sicherstellen, dass alle Funktionalität in React implementiert ist
-   - A/B-Tests für kritische Komponenten
-
-3. **Finalisierung**
-   - Leistungsoptimierung (Code-Splitting, Lazy Loading)
-   - Umfangreiche Tests
-   - Dokumentation aktualisieren
+### Nach der Migration
+- Vollständige Regression-Tests
+- Leistungsvergleiche
+- Benutzerakzeptanztests
 
 ## Risikomanagement
 
@@ -418,4 +350,8 @@ Dieser Aktionsplan definiert die Strategie und konkreten Schritte für die volls
 
 ## Fazit
 
-Dieser Aktionsplan bietet einen strukturierten Ansatz für die Migration von Vanilla JavaScript zu React. Durch die schrittweise Implementierung mit Feature-Toggles und Fallback-Mechanismen wird das Risiko minimiert und eine kontinuierliche Bereitstellung ermöglicht.
+Die höchste Priorität liegt aktuell auf der Testinfrastruktur und Stabilisierung der Vanilla-JS-Version. Der hier dargestellte React-Migrations-Aktionsplan wird erst nach erfolgreichem Abschluss dieser kritischen Phase in Betracht gezogen. Durch die schrittweise Implementierung mit Feature-Toggles und Fallback-Mechanismen wird das Risiko einer erneuten gescheiterten Migration minimiert.
+
+---
+
+Zuletzt aktualisiert: 06.05.2025
