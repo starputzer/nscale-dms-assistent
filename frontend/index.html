@@ -6,168 +6,159 @@
     <title>nscale DMS Assistent</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Vue entfernt -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- Eigene CSS-Dateien mit dynamischem Cache-Busting -->
-    <link href="/static/css/main.css" rel="stylesheet">
-    <link href="/static/css/feedback.css" rel="stylesheet">
-    <link href="/static/css/admin.css" rel="stylesheet">
-    <link href="/static/css/settings.css" rel="stylesheet">
-    <link href="/static/css/themes.css" rel="stylesheet">
-    <link href="/static/css/improved-ui.css" rel="stylesheet">
-    <link href="/static/css/source-references.css" rel="stylesheet">
-    <!-- Vue-Bereinigungsskript vor allen anderen Scripts laden -->
-    <script src="/frontend/js/cleanup-vue.js"></script>
-    <script src="/frontend/js/disable-vue-components.js"></script>
-    <!-- Zusätzliche CSS für Quellenreferenzen (wird dynamisch eingefügt) -->
+    <link href="/static/css/main.css?v=1683292800" rel="stylesheet">
+    <link href="/static/css/feedback.css?v=1683292800" rel="stylesheet">
+    <link href="/static/css/admin.css?v=1683292800" rel="stylesheet">
+    <link href="/static/css/settings.css?v=1683292800" rel="stylesheet">
+    <link href="/static/css/themes.css?v=1683292800" rel="stylesheet">
+    <link href="/static/css/improved-ui.css?v=1683292800" rel="stylesheet">
+    <link href="/static/css/source-references.css?v=1683292800" rel="stylesheet">
+    <link href="/frontend/css/motd.css?v=20250506" rel="stylesheet">
+    
+    <!-- CSS-Fallback-Script für korrekte CSS-Ladung -->
+    <script src="/static/js/css-fallback.js"></script>
+    
+    <!-- Metadaten für Implementierung -->
+    <meta name="implementation" content="vanilla-js">
+    <meta name="framework" content="none">
+    <meta name="framework-migration" content="react-in-progress">
 </head>
 <body class="min-h-screen bg-gray-50">
     <div id="app" class="h-screen flex flex-col">
         <!-- Login & Register -->
-        <div v-if="!token" class="flex items-center justify-center h-full bg-gray-50">
+        <div id="login-section" class="flex items-center justify-center h-full bg-gray-50">
             <div class="nscale-card max-w-md w-full p-8">
                 <div class="text-center mb-8">
                     <div class="nscale-logo mx-auto">nscale DMS Assistent</div>
                     <p class="text-gray-500 mt-2">Ihr Digitalisierungspartner für DMS-Lösungen</p>
                 </div>
                 
-                <!-- MOTD auch auf der Login-Seite anzeigen -->
-                <div v-if="motd && motd.enabled && !motdDismissed" 
-                     :style="{
-                       backgroundColor: motd.style.backgroundColor,
-                       borderColor: motd.style.borderColor,
-                       color: motd.style.textColor,
-                       border: '1px solid ' + motd.style.borderColor
-                     }"
-                     class="p-4 mb-4 rounded-lg relative">
-                    <button v-if="motd.display.dismissible" 
-                            @click="dismissMotd" 
-                            class="absolute top-2 right-2 font-bold"
-                            :style="{ color: motd.style.textColor }">
-                        ×
-                    </button>
-                    <div v-html="formatMotdContent(motd.content)" class="motd-content"></div>
+                <!-- MOTD auf der Login-Seite -->
+                <div id="login-motd" class="p-4 mb-4 rounded-lg relative" style="display: none;">
+                    <!-- MOTD-Inhalt wird dynamisch eingefügt -->
+                    <button id="motd-dismiss-btn" class="absolute top-2 right-2 font-bold">×</button>
+                    <div id="motd-content" class="motd-content"></div>
                 </div>
                 
                 <div class="flex border-b border-gray-200 mb-6">
-                    <button @click="authMode = 'login'" 
-                        :class="['py-2 px-4 w-1/2 text-center focus:outline-none', 
-                        authMode === 'login' ? 'border-b-2 border-green-500 text-green-600 font-medium' : 'text-gray-500']">
+                    <button id="login-tab-btn" 
+                        class="py-2 px-4 w-1/2 text-center focus:outline-none border-b-2 border-green-500 text-green-600 font-medium">
                         Anmelden
                     </button>
-                    <button @click="authMode = 'register'" 
-                        :class="['py-2 px-4 w-1/2 text-center focus:outline-none', 
-                        authMode === 'register' ? 'border-b-2 border-green-500 text-green-600 font-medium' : 'text-gray-500']">
+                    <button id="register-tab-btn" 
+                        class="py-2 px-4 w-1/2 text-center focus:outline-none text-gray-500">
                         Registrieren
                     </button>
                 </div>
                 
                 <!-- Login Form -->
-                <form v-if="authMode === 'login'" @submit.prevent="login" class="space-y-4">
+                <form id="login-form" class="space-y-4">
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-2" for="email">E-Mail</label>
-                        <input v-model="email" class="nscale-input w-full" 
-                            id="email" type="email" placeholder="Ihre E-Mail-Adresse" required>
+                        <input id="login-email" class="nscale-input w-full" 
+                            type="email" placeholder="Ihre E-Mail-Adresse" required>
                     </div>
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-2" for="password">Passwort</label>
-                        <input v-model="password" class="nscale-input w-full" 
-                            id="password" type="password" placeholder="Ihr Passwort" required>
+                        <input id="login-password" class="nscale-input w-full" 
+                            type="password" placeholder="Ihr Passwort" required>
                     </div>
                     <div class="flex items-center justify-between mt-6">
                         <button class="nscale-btn-primary w-full" 
-                            type="submit" :disabled="loading">
-                            <span v-if="loading" class="loading-dots">Anmelden</span>
-                            <span v-else>Anmelden</span>
+                            type="submit" id="login-button">
+                            <span id="login-loading" class="loading-dots" style="display: none;">Anmelden</span>
+                            <span id="login-normal">Anmelden</span>
                         </button>
                     </div>
                     <div class="text-center mt-4">
-                        <a class="text-sm text-nscale hover:text-nscale-dark" href="#" @click.prevent="authMode = 'reset'">
+                        <a class="text-sm text-nscale hover:text-nscale-dark" href="#" id="forgot-password-link">
                             Passwort vergessen?
                         </a>
                     </div>
-                    <div v-if="errorMessage" class="mt-4 text-red-500 text-sm text-center">{{ errorMessage }}</div>
+                    <div id="login-error" class="mt-4 text-red-500 text-sm text-center" style="display: none;"></div>
                 </form>
                 
                 <!-- Register Form -->
-                <form v-if="authMode === 'register'" @submit.prevent="register" class="space-y-4">
+                <form id="register-form" class="space-y-4" style="display: none;">
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-2" for="reg-email">E-Mail</label>
-                        <input v-model="email" class="nscale-input w-full" 
-                            id="reg-email" type="email" placeholder="Ihre E-Mail-Adresse" required>
+                        <input id="register-email" class="nscale-input w-full" 
+                            type="email" placeholder="Ihre E-Mail-Adresse" required>
                     </div>
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-2" for="reg-password">Passwort</label>
-                        <input v-model="password" class="nscale-input w-full" 
-                            id="reg-password" type="password" placeholder="Ihr sicheres Passwort" required>
+                        <input id="register-password" class="nscale-input w-full" 
+                            type="password" placeholder="Ihr sicheres Passwort" required>
                     </div>
                     <div class="flex items-center justify-between mt-6">
                         <button class="nscale-btn-primary w-full" 
-                            type="submit" :disabled="loading">
-                            <span v-if="loading" class="loading-dots">Registrieren</span>
-                            <span v-else>Registrieren</span>
+                            type="submit" id="register-button">
+                            <span id="register-loading" class="loading-dots" style="display: none;">Registrieren</span>
+                            <span id="register-normal">Registrieren</span>
                         </button>
                     </div>
-                    <div v-if="errorMessage" class="mt-4 text-red-500 text-sm text-center">{{ errorMessage }}</div>
+                    <div id="register-error" class="mt-4 text-red-500 text-sm text-center" style="display: none;"></div>
                 </form>
                 
                 <!-- Reset Password Form -->
-                <form v-if="authMode === 'reset'" @submit.prevent="resetPassword" class="space-y-4">
+                <form id="reset-form" class="space-y-4" style="display: none;">
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-2" for="reset-email">E-Mail</label>
-                        <input v-model="email" class="nscale-input w-full" 
-                            id="reset-email" type="email" placeholder="Ihre E-Mail-Adresse" required>
+                        <input id="reset-email" class="nscale-input w-full" 
+                            type="email" placeholder="Ihre E-Mail-Adresse" required>
                     </div>
                     <div class="flex items-center justify-between mt-6">
                         <button class="nscale-btn-primary w-full" 
-                            type="submit" :disabled="loading">
-                            <span v-if="loading" class="loading-dots">Passwort zurücksetzen</span>
-                            <span v-else>Passwort zurücksetzen</span>
+                            type="submit" id="reset-button">
+                            <span id="reset-loading" class="loading-dots" style="display: none;">Passwort zurücksetzen</span>
+                            <span id="reset-normal">Passwort zurücksetzen</span>
                         </button>
                     </div>
                     <div class="text-center mt-4">
-                        <a class="text-sm text-nscale hover:text-nscale-dark" href="#" @click.prevent="authMode = 'login'">
+                        <a class="text-sm text-nscale hover:text-nscale-dark" href="#" id="back-to-login-link">
                             Zurück zur Anmeldung
                         </a>
                     </div>
-                    <div v-if="successMessage" class="mt-4 text-green-600 text-sm text-center">{{ successMessage }}</div>
-                    <div v-if="errorMessage" class="mt-4 text-red-500 text-sm text-center">{{ errorMessage }}</div>
+                    <div id="reset-success" class="mt-4 text-green-600 text-sm text-center" style="display: none;"></div>
+                    <div id="reset-error" class="mt-4 text-red-500 text-sm text-center" style="display: none;"></div>
                 </form>
             </div>
         </div>
         
         <!-- Main Application (Chat + Admin) -->
-        <div v-else class="flex flex-col h-screen">
+        <div id="main-app" class="flex flex-col h-screen" style="display: none;">
             <!-- Navigation Header -->
             <header class="nscale-header p-4 shadow-sm">
                 <div class="container mx-auto flex justify-between items-center">
                     <div class="flex items-center">
-                        <img src="/static/images/senmvku-logo.png" alt="Berlin Logo" class="h-12 mr-4">
+                        <img src="/frontend/images/senmvku-logo.png" alt="Berlin Logo" class="h-12 mr-4" onerror="this.onerror=null; this.src='/static/images/senmvku-logo.png'; console.log('Fallback zu /static/images/senmvku-logo.png');">
                         <div class="nscale-logo">nscale DMS Assistent</div>
                     </div>
                     
-                    <!-- Simplified Navigation Menu -->
+                    <!-- Navigation Menu -->
                     <div class="flex items-center space-x-4">
                         <button 
-                            @click="startNewSession" 
+                            id="new-session-btn" 
                             class="nscale-btn-primary flex items-center">
                             <i class="fas fa-plus mr-2"></i>
                             Neue Unterhaltung
                         </button>
 
-                        <!-- NEU: Admin-Konfigurationsbutton, nur für Admins sichtbar -->
+                        <!-- Admin-Konfigurationsbutton, nur für Admins sichtbar -->
                         <button 
-                            v-if="userRole === 'admin'"
-                            @click="activeView = activeView === 'chat' ? 'admin' : 'chat'" 
+                            id="admin-toggle-btn"
                             class="nscale-btn-secondary flex items-center"
-                            title="Systemadministration">
+                            title="Systemadministration"
+                            style="display: none;">
                             <i class="fas fa-cog mr-2"></i>
                             <span class="hidden md:inline">Administration</span>
                         </button>
 
                         <button 
-                            @click="logout" 
+                            id="logout-btn" 
                             class="nscale-btn-secondary flex items-center">
                             <i class="fas fa-sign-out-alt mr-2"></i>
                             Abmelden
@@ -179,188 +170,99 @@
             <!-- Main Content with Admin Sidebar -->
             <div class="flex flex-1 overflow-hidden container mx-auto my-4">
                 <!-- Admin Sidebar - Only visible when in admin mode -->
-                <aside v-if="activeView === 'admin' && userRole === 'admin'" class="admin-sidebar w-64 flex-shrink-0 transition-all">
+                <aside id="admin-sidebar" class="admin-sidebar w-64 flex-shrink-0 transition-all" style="display: none;">
                     <div class="p-4 font-semibold text-lg">Systemadministration</div>
                     
                     <nav class="admin-nav">
                         <button 
-                            @click="adminTab = 'users'" 
-                            :class="['admin-nav-item', adminTab === 'users' ? 'active' : '']">
+                            id="users-tab-btn" 
+                            class="admin-nav-item active">
                             <i class="fas fa-users"></i>
                             <span>Benutzer</span>
                         </button>
                         
                         <button 
-                            @click="adminTab = 'system'; loadSystemStats()" 
-                            :class="['admin-nav-item', adminTab === 'system' ? 'active' : '']">
+                            id="system-tab-btn" 
+                            class="admin-nav-item">
                             <i class="fas fa-chart-line"></i>
                             <span>System</span>
                         </button>
                         
                         <button 
-                            @click="adminTab = 'feedback'; loadFeedbackStats(); loadNegativeFeedback()" 
-                            :class="['admin-nav-item', adminTab === 'feedback' ? 'active' : '']">
+                            id="feedback-tab-btn" 
+                            class="admin-nav-item">
                             <i class="fas fa-comment-dots"></i>
                             <span>Feedback</span>
                         </button>
                         
                         <button 
-                            @click="adminTab = 'motd'; loadMotdConfig()" 
-                            :class="['admin-nav-item', adminTab === 'motd' ? 'active' : '']">
+                            id="motd-tab-btn" 
+                            class="admin-nav-item">
                             <i class="fas fa-info-circle"></i>
                             <span>MOTD</span>
                         </button>
                         
                         <button 
-                            @click="adminTab = 'doc-converter'" 
-                            :class="['admin-nav-item', adminTab === 'doc-converter' ? 'active' : '']">
+                            id="doc-converter-tab-btn" 
+                            class="admin-nav-item">
                             <i class="fas fa-file-alt"></i>
                             <span>Dokumentenkonverter</span>
                         </button>
                     </nav>
                     
                     <div class="mt-auto p-4 text-sm text-gray-500">
-                        <p>Angemeldet als: <span class="font-semibold">{{ userRole }}</span></p>
+                        <p>Angemeldet als: <span id="user-role-display" class="font-semibold">-</span></p>
                     </div>
                 </aside>
 
                 <!-- Sessions Sidebar - Only visible in chat mode -->
-                <aside v-if="activeView === 'chat'" class="nscale-sidebar w-80 p-4 rounded-l-lg shadow-sm overflow-y-auto">
+                <aside id="sessions-sidebar" class="nscale-sidebar w-80 p-4 rounded-l-lg shadow-sm overflow-y-auto">
                     <h2 class="text-lg font-medium mb-6 text-gray-700">Unterhaltungen</h2>
-                    <ul class="space-y-2">
-                        <!-- Verbesserte Session-Items mit fester Breite und Ellipsis -->
-                        <li v-for="session in sessions" :key="session.id" 
-                            @click="loadSession(session.id)"
-                            :class="['nscale-session-item cursor-pointer', 
-                            currentSessionId === session.id ? 'active' : '']">
-                            <!-- Titel-Container mit ellipsis für lange Texte -->
-                            <div class="session-title-container">
-                                <i class="fas fa-comment text-gray-500"></i>
-                                <span class="session-title">{{ session.title }}</span>
-                            </div>
-                            <!-- Spezieller Button zum Löschen, der immer sichtbar und erreichbar ist -->
-                            <button @click.stop="deleteSession(session.id)" 
-                                class="session-delete-button" 
-                                title="Unterhaltung löschen">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </li>
+                    <ul id="sessions-list" class="space-y-2">
+                        <!-- Sessions werden hier dynamisch eingefügt -->
                     </ul>
                 </aside>
                 
                 <!-- Main Content Area -->
                 <main class="flex-1 flex flex-col bg-white overflow-hidden rounded-lg shadow-sm ml-4 relative">
                     <!-- Chat View -->
-                    <div v-if="activeView === 'chat'" class="h-full flex flex-col">
-                        <div v-if="!currentSessionId" class="flex h-full items-center justify-center text-gray-400 p-8">
+                    <div id="chat-view" class="h-full flex flex-col">
+                        <div id="no-session-view" class="flex h-full items-center justify-center text-gray-400 p-8">
                             <div class="text-center">
                                 <i class="fas fa-comment-dots text-5xl text-gray-300 mb-4"></i>
                                 <h3 class="text-lg font-medium mb-2">Keine Unterhaltung ausgewählt</h3>
                                 <p class="text-sm text-gray-500 mb-4">Wählen Sie eine Unterhaltung aus der Seitenleiste oder starten Sie eine neue.</p>
-                                <button @click="startNewSession" class="nscale-btn-primary">
+                                <button id="start-new-session-btn" class="nscale-btn-primary">
                                     <i class="fas fa-plus mr-2"></i>
                                     Neue Unterhaltung starten
                                 </button>
                             </div>
                         </div>
                         
-                        <div v-else class="chat-container h-full">
+                        <div id="chat-container" class="chat-container h-full" style="display: none;">
                             <!-- MOTD im Chat anzeigen -->
-                            <div v-if="motd && motd.enabled && motd.display.showInChat && !motdDismissed" 
-                                class="motd-banner p-4 mx-4 mt-4 mb-4 rounded-lg relative shadow-sm"
-                                :style="{
-                                    backgroundColor: motd.style.backgroundColor,
-                                    borderColor: motd.style.borderColor,
-                                    color: motd.style.textColor,
-                                    border: '1px solid ' + motd.style.borderColor
-                                }">
-                                <button v-if="motd.display.dismissible" 
-                                        @click="dismissMotd" 
-                                        class="absolute top-2 right-2 font-bold"
-                                        :style="{ color: motd.style.textColor }">
-                                    ×
-                                </button>
-                                <div v-html="formatMotdContent(motd.content)" class="motd-content"></div>
+                            <div id="chat-motd" class="motd-banner p-4 mx-4 mt-4 mb-4 rounded-lg relative shadow-sm" style="display: none;">
+                                <button id="chat-motd-dismiss-btn" class="absolute top-2 right-2 font-bold">×</button>
+                                <div id="chat-motd-content" class="motd-content"></div>
                             </div>
                             
                             <!-- Chat Messages -->
-                            <div class="message-container flex-1 overflow-y-auto p-4" ref="chatMessages">
-                                <!-- Nachrichten mit verbesserten Wrappern für korrekte Anzeige -->
-                                <div v-for="(message, index) in messages" :key="index" class="mb-6">
-                                    <!-- Systemnachricht -->
-                                    <div v-if="message.is_system" class="nscale-message-system">
-                                        <div v-html="formatMessage(message.message)" class="prose"></div>
-                                    </div>
-                                    
-                                    <!-- Benutzer- oder Assistenten-Nachricht mit Wrapper -->
-                                    <div v-else :class="['message-wrapper', message.is_user ? 'user-message' : 'assistant-message']">
-                                        <div :class="[message.is_user ? 'nscale-message-user' : 'nscale-message-assistant']">
-                                            <!-- Nachrichten-Inhalt -->
-                                            <div v-if="message.is_user" v-html="formatMessage(message.message)" class="prose"></div>
-                                            <div v-else v-html="formatMessageWithSources(message.message)" class="prose"></div>
-                                            
-                                            <!-- Feedback-Buttons nur für Assistenten-Nachrichten -->
-                                            <div v-if="!message.is_user" class="feedback-buttons">
-                                                <span v-if="message.feedback_comment" class="feedback-comment">{{ message.feedback_comment }}</span>
-                                                <button 
-                                                    @click="submitFeedback(message.id, currentSessionId, true)" 
-                                                    :class="['feedback-button', { 'selected': message.feedback_positive === true }]"
-                                                    title="Hilfreich">
-                                                    <i class="fas fa-thumbs-up"></i>
-                                                </button>
-                                                <button 
-                                                    @click="submitFeedback(message.id, currentSessionId, false)" 
-                                                    :class="['feedback-button', { 'selected negative': message.feedback_positive === false }]"
-                                                    title="Nicht hilfreich">
-                                                    <i class="fas fa-thumbs-down"></i>
-                                                </button>
-                                                <button 
-                                                    v-if="message.feedback_positive === false" 
-                                                    @click="showFeedbackCommentDialog(message)" 
-                                                    class="feedback-button"
-                                                    title="Kommentar hinzufügen">
-                                                    <i class="fas fa-comment"></i>
-                                                </button>
-                                            </div>
-                                            
-                                            <!-- Quellbuttons ohne v-if Bedingung für Debugging -->
-                                            <div v-if="!message.is_user" class="source-buttons mt-2">
-                                                <button class="source-btn" @click="loadExplanation(message)">
-                                                    <i class="fas fa-info-circle"></i>
-                                                    Antwort erklären
-                                                </button>
-                                                <button class="source-btn" @click="showSourcesDialog(message)">
-                                                    <i class="fas fa-bookmark"></i>
-                                                    Quellen anzeigen
-                                                </button>
-                                            </div>
-                                            
-                                            <!-- Debug-Info für message_id -->
-                                            <div style="font-size: 10px; color: gray; margin-top: 5px;">
-                                                message_id: {{message.id || 'undefined'}}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div v-if="isLoading" class="flex justify-center p-4">
-                                    <div class="loader"></div>
-                                </div>
+                            <div id="message-container" class="message-container flex-1 overflow-y-auto p-4">
+                                <!-- Nachrichten werden hier dynamisch eingefügt -->
                             </div>
                             
                             <!-- Input Area -->
                             <div class="input-container p-4 border-t border-gray-100 bg-white">
-                                <form @submit.prevent="sendQuestionStream" class="flex space-x-2">
-                                    <input v-model="question" class="nscale-input flex-1" 
-                                        placeholder="Stellen Sie Ihre Frage zur nscale DMS-Software..." 
-                                        :disabled="!currentSessionId || isLoading" />
-                                    <button type="submit" class="nscale-btn-primary flex items-center"
-                                        :disabled="!currentSessionId || !question || isLoading">
-                                        <span v-if="isLoading">
+                                <form id="chat-form" class="flex space-x-2">
+                                    <input id="question-input" class="nscale-input flex-1" 
+                                        placeholder="Stellen Sie Ihre Frage zur nscale DMS-Software..." />
+                                    <button type="submit" id="send-button" class="nscale-btn-primary flex items-center"
+                                        disabled>
+                                        <span id="send-loading" style="display: none;">
                                             <i class="fas fa-spinner fa-spin mr-2"></i>
                                             Wird gesendet...
                                         </span>
-                                        <span v-else>
+                                        <span id="send-normal">
                                             <i class="fas fa-paper-plane mr-2"></i>
                                             Senden
                                         </span>
@@ -371,392 +273,48 @@
                     </div>
                     
                     <!-- Admin View -->
-                    <div v-if="activeView === 'admin'" class="h-full flex flex-col p-6 overflow-auto">
+                    <div id="admin-view" class="h-full flex flex-col p-6 overflow-auto" style="display: none;">
                         <div class="mb-6">
-                            <h1 class="text-2xl font-semibold text-gray-800">{{ getAdminTabTitle() }}</h1>
+                            <h1 id="admin-tab-title" class="text-2xl font-semibold text-gray-800">Benutzer</h1>
                         </div>
                         
                         <div class="admin-content flex-1">
-                            <!-- Dokumentenkonverter-Tab -->
-                            <div v-if="adminTab === 'doc-converter'" class="admin-panel-content">
-                                <div class="admin-card">
-                                    <div class="admin-card-title">Dokumentenkonverter</div>
-                                    <div class="p-4">
-                                        <div class="mb-6">
-                                            <h3 class="text-lg font-medium mb-2">Dokument konvertieren</h3>
-                                            <p class="text-gray-600 mb-4">Laden Sie eine Datei hoch, um sie in das Markdown-Format zu konvertieren.</p>
-                                            
-                                            <div class="file-upload-container border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-500 transition-colors">
-                                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
-                                                <p class="mb-4">Ziehen Sie Dateien hierher oder</p>
-                                                <input type="file" id="doc-converter-file-input" class="hidden" multiple>
-                                                <label for="doc-converter-file-input" class="nscale-btn-primary cursor-pointer inline-block">Dateien auswählen</label>
-                                            </div>
-                                        </div>
-                                        
-                                        <div id="upload-progress" class="hidden mb-6">
-                                            <h4 class="text-md font-medium mb-2">Konvertierung läuft...</h4>
-                                            <div class="w-full bg-gray-200 rounded-full h-4">
-                                                <div id="progress-bar" class="bg-green-500 h-4 rounded-full" style="width: 0%"></div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div id="conversion-results" class="hidden">
-                                            <h3 class="text-lg font-medium mb-2">Konvertierte Dokumente</h3>
-                                            <div id="results-list" class="space-y-4">
-                                                <!-- Ergebnisse werden hier dynamisch eingefügt -->
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <!-- Admin Tabs werden dynamisch geladen -->
+                            <div id="users-tab" class="admin-panel-content">
+                                <!-- Benutzer-Tab-Inhalt -->
                             </div>
                             
-                            <!-- Benutzer-Tab -->
-                            <div v-if="adminTab === 'users'" class="admin-panel-content">
-                                <div class="admin-card mb-8">
-                                    <div class="admin-card-title">Neuen Benutzer erstellen</div>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div class="form-group">
-                                            <label class="admin-label">E-Mail</label>
-                                            <input v-model="newUser.email" type="email" class="nscale-input w-full" placeholder="E-Mail-Adresse">
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="admin-label">Passwort</label>
-                                            <input v-model="newUser.password" type="password" class="nscale-input w-full" placeholder="Passwort">
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="admin-label">Rolle</label>
-                                            <select v-model="newUser.role" class="nscale-input w-full">
-                                                <option value="user">Benutzer</option>
-                                                <option value="admin">Administrator</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="mt-4">
-                                        <button @click="createUser" class="nscale-btn-primary">
-                                            <i class="fas fa-user-plus mr-2"></i>
-                                            Benutzer erstellen
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div class="admin-card">
-                                    <div class="admin-card-title">Benutzerliste</div>
-                                    <div class="overflow-x-auto">
-                                        <table class="min-w-full admin-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>ID</th>
-                                                    <th>E-Mail</th>
-                                                    <th>Rolle</th>
-                                                    <th>Aktionen</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr v-for="user in adminUsers" :key="user.id">
-                                                    <td>{{ user.id }}</td>
-                                                    <td>{{ user.email }}</td>
-                                                    <td>
-                                                        <select 
-                                                            v-model="user.role" 
-                                                            @change="updateUserRole(user.id, user.role)"
-                                                            class="nscale-input">
-                                                            <option value="user">Benutzer</option>
-                                                            <option value="admin">Administrator</option>
-                                                        </select>
-                                                    </td>
-                                                    <td>
-                                                        <button @click="deleteUser(user.id)" class="admin-button-danger">
-                                                            <i class="fas fa-trash-alt mr-1"></i>
-                                                            Löschen
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                            <div id="system-tab" class="admin-panel-content" style="display: none;">
+                                <!-- System-Tab-Inhalt -->
                             </div>
                             
-                            <!-- System-Tab -->
-                            <div v-if="adminTab === 'system'" class="admin-panel-content">
-                                <div class="flex justify-end mb-6">
-                                    <button @click="loadSystemStats" class="nscale-btn-secondary">
-                                        <i class="fas fa-sync-alt mr-2"></i>
-                                        Aktualisieren
-                                    </button>
-                                </div>
-                                
-                                <div class="admin-stats-grid grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                                    <div class="admin-stat-card">
-                                        <div class="admin-stat-value">{{ systemStats.document_count || 0 }}</div>
-                                        <div class="admin-stat-label">Dokumente</div>
-                                    </div>
-                                    <div class="admin-stat-card">
-                                        <div class="admin-stat-value">{{ systemStats.chunk_count || 0 }}</div>
-                                        <div class="admin-stat-label">Chunks</div>
-                                    </div>
-                                    <div class="admin-stat-card">
-                                        <div class="admin-stat-value">{{ Object.keys(systemStats.documents || {}).length }}</div>
-                                        <div class="admin-stat-label">Quellen</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="admin-card mb-8">
-                                    <div class="admin-card-title">System-Aktionen</div>
-                                    <div class="admin-actions grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <button @click="reloadMotd" class="nscale-btn-secondary">
-                                            <i class="fas fa-sync-alt mr-2"></i>
-                                            MOTD neu laden
-                                        </button>
-                                        <button @click="clearModelCache" class="nscale-btn-secondary">
-                                            <i class="fas fa-trash-alt mr-2"></i>
-                                            Modell-Cache leeren
-                                        </button>
-                                        <button @click="clearEmbeddingCache" class="nscale-btn-secondary">
-                                            <i class="fas fa-trash-alt mr-2"></i>
-                                            Embedding-Cache leeren
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div class="admin-card">
-                                    <div class="admin-card-title">Dokumente</div>
-                                    <div class="overflow-x-auto">
-                                        <table class="min-w-full admin-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Datei</th>
-                                                    <th>Chunks</th>
-                                                    <th>Tokens</th>
-                                                    <th>Letzte Änderung</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr v-for="(docStats, filename) in systemStats.documents || {}" :key="filename">
-                                                    <td>{{ filename }}</td>
-                                                    <td>{{ docStats.chunks }}</td>
-                                                    <td>{{ docStats.total_tokens }}</td>
-                                                    <td>{{ docStats.modified }}</td>
-                                                </tr>
-                                                <tr v-if="Object.keys(systemStats.documents || {}).length === 0">
-                                                    <td colspan="4" class="text-center py-4 text-gray-500">Keine Dokumente vorhanden</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                            <div id="feedback-tab" class="admin-panel-content" style="display: none;">
+                                <!-- Feedback-Tab-Inhalt -->
                             </div>
                             
-                            <!-- Feedback-Tab -->
-                            <div v-if="adminTab === 'feedback'" class="admin-panel-content">
-                                <div class="flex justify-end mb-6">
-                                    <button @click="loadFeedbackStats(); loadNegativeFeedback()" class="nscale-btn-secondary">
-                                        <i class="fas fa-sync-alt mr-2"></i>
-                                        Aktualisieren
-                                    </button>
-                                </div>
-                                
-                                <div class="admin-stats-grid grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                                    <div class="admin-stat-card">
-                                        <div class="admin-stat-value">{{ feedbackStats.total || 0 }}</div>
-                                        <div class="admin-stat-label">Gesamtes Feedback</div>
-                                    </div>
-                                    <div class="admin-stat-card">
-                                        <div class="admin-stat-value">{{ feedbackStats.positive || 0 }}</div>
-                                        <div class="admin-stat-label">Positiv</div>
-                                    </div>
-                                    <div class="admin-stat-card negative">
-                                        <div class="admin-stat-value">{{ feedbackStats.negative || 0 }}</div>
-                                        <div class="admin-stat-label">Negativ</div>
-                                    </div>
-                                    <div class="admin-stat-card">
-                                        <div class="admin-stat-value">{{ Math.round((feedbackStats.positive || 0) / (feedbackStats.total || 1) * 100) }}%</div>
-                                        <div class="admin-stat-label">Zufriedenheit</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="admin-card">
-                                    <div class="admin-card-title">Negatives Feedback</div>
-                                    <div v-if="negativeFeedback.length === 0" class="text-gray-500 italic p-4 text-center">
-                                        Kein negatives Feedback vorhanden
-                                    </div>
-                                    <div v-else class="grid grid-cols-1 gap-6">
-                                        <div v-for="feedback in negativeFeedback" :key="feedback.id" class="border-b border-gray-200 py-4">
-                                            <!-- Frage hinzufügen -->
-                                            <div v-if="feedback.question" class="mb-4">
-                                                <div class="font-medium mb-2">Frage:</div>
-                                                <div class="text-sm text-gray-800 p-3 bg-gray-50 rounded border-l-4 border-blue-500">
-                                                    {{ feedback.question }}
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Antwort hinzufügen -->
-                                            <div v-if="feedback.answer" class="mb-4">
-                                                <div class="font-medium mb-2">Antwort:</div>
-                                                <div class="text-sm text-gray-700 p-3 bg-gray-50 rounded border-l-4 border-green-500">
-                                                    {{ feedback.answer }}
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Feedback-Kommentar -->
-                                            <div class="mt-3">
-                                                <div class="font-medium mb-2">Kommentar:</div>
-                                                <div class="text-sm text-red-600 p-3 bg-red-50 rounded border-l-4 border-red-500">
-                                                    {{ feedback.comment || 'Kein Kommentar' }}
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Meta-Informationen -->
-                                            <div class="flex justify-between items-center mt-3 text-xs text-gray-500">
-                                                <div>
-                                                    <span class="font-medium">Nutzer:</span> {{ feedback.user_email }}
-                                                </div>
-                                                <div>
-                                                    <span class="font-medium">Datum:</span> {{ new Date(feedback.created_at * 1000).toLocaleString() }}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div id="motd-tab" class="admin-panel-content" style="display: none;">
+                                <!-- MOTD-Tab-Inhalt -->
                             </div>
-                            <!-- MOTD-Tab und Vorschau -->
-                            <div v-if="adminTab === 'motd'" class="admin-panel-content">
-                                <div class="flex flex-col lg:flex-row gap-6">
-                                    <!-- MOTD Form -->
-                                    <div class="flex-1">
-                                        <div class="admin-card">
-                                            <div class="admin-card-title">Message of the Day Konfiguration</div>
-                                            
-                                            <div class="mb-4">
-                                                <label class="admin-label">MOTD aktivieren</label>
-                                                <div class="flex items-center">
-                                                    <input type="checkbox" v-model="motdConfig.enabled" class="mr-2">
-                                                    <span class="text-sm text-gray-600">Aktiviert die Anzeige der MOTD für alle Benutzer</span>
-                                                </div>
-                                            </div>
-
-                                            <div class="mb-4">
-                                                <label class="admin-label">Format</label>
-                                                <select v-model="motdConfig.format" class="nscale-input w-full">
-                                                    <option value="markdown">Markdown</option>
-                                                    <option value="text">Einfacher Text</option>
-                                                    <option value="html">HTML (nur für fortgeschrittene Benutzer)</option>
-                                                </select>
-                                                <p class="text-xs text-gray-500 mt-1">Markdown wird für die Formatierung empfohlen.</p>
-                                            </div>
-
-                                            <div class="mb-4">
-                                                <label class="admin-label">Inhalt</label>
-                                                <textarea 
-                                                    v-model="motdConfig.content" 
-                                                    class="nscale-input w-full h-64 font-mono text-sm" 
-                                                    placeholder="Inhalt der MOTD..."
-                                                ></textarea>
-                                                <p class="text-xs text-gray-500 mt-1">
-                                                    <i class="fas fa-info-circle mr-1"></i>
-                                                    Markdown wird unterstützt, z.B. **fett** oder Listen mit - (Bindestrich)
-                                                </p>
-                                            </div>
-                                            
-                                            <div class="mb-4">
-                                                <label class="admin-label">Erscheinungsbild</label>
-                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <div>
-                                                        <label class="text-sm font-medium mb-1 block">Farbschema</label>
-                                                        <select v-model="selectedColorTheme" class="nscale-input w-full" @change="applyColorTheme">
-                                                            <option value="warning">Warnung (Gelb)</option>
-                                                            <option value="info">Information (Blau)</option>
-                                                            <option value="success">Erfolg (Grün)</option>
-                                                            <option value="danger">Gefahr (Rot)</option>
-                                                            <option value="neutral">Neutral (Grau)</option>
-                                                            <option value="custom">Benutzerdefiniert</option>
-                                                        </select>
-                                                    </div>
-                                                    
-                                                    <div v-if="selectedColorTheme === 'custom'" class="grid grid-cols-3 gap-2">
-                                                        <div>
-                                                            <label class="text-xs text-gray-600 mb-1 block">Hintergrund</label>
-                                                            <input type="color" v-model="motdConfig.style.backgroundColor" class="w-full h-10 cursor-pointer">
-                                                        </div>
-                                                        <div>
-                                                            <label class="text-xs text-gray-600 mb-1 block">Rand</label>
-                                                            <input type="color" v-model="motdConfig.style.borderColor" class="w-full h-10 cursor-pointer">
-                                                        </div>
-                                                        <div>
-                                                            <label class="text-xs text-gray-600 mb-1 block">Text</label>
-                                                            <input type="color" v-model="motdConfig.style.textColor" class="w-full h-10 cursor-pointer">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="mb-4">
-                                                <label class="admin-label">Anzeigeoptionen</label>
-                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <div class="flex items-center">
-                                                        <input type="checkbox" v-model="motdConfig.display.dismissible" class="mr-2">
-                                                        <span class="text-sm">Schließbar (X-Button anzeigen)</span>
-                                                    </div>
-                                                    <div class="flex items-center">
-                                                        <input type="checkbox" v-model="motdConfig.display.showInChat" class="mr-2">
-                                                        <span class="text-sm">Im Chat anzeigen</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="flex space-x-4 mt-4">
-                                            <button @click="resetMotdConfig" class="nscale-btn-secondary">
-                                                <i class="fas fa-undo mr-2"></i>
-                                                Zurücksetzen
-                                            </button>
-                                            <button @click="saveMotdConfig" class="nscale-btn-primary">
-                                                <i class="fas fa-save mr-2"></i>
-                                                Speichern
-                                            </button>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- MOTD Vorschau - KORRIGIERT für MOTD-Textfarbe -->
-                                    <div class="w-full lg:w-1/3 flex flex-col">
-                                        <div class="admin-card h-full">
-                                            <div class="admin-card-title">Vorschau</div>
-                                            <div class="p-4 border rounded-lg flex-1 mt-4" 
-                                                :style="{
-                                                    backgroundColor: motdConfig.style.backgroundColor,
-                                                    borderColor: motdConfig.style.borderColor,
-                                                    color: motdConfig.style.textColor,
-                                                    borderWidth: '1px',
-                                                    borderStyle: 'solid'
-                                                }">
-                                                <div v-if="motdConfig.display.dismissible" class="float-right cursor-pointer">×</div>
-                                                <div v-html="formatMotdContent(motdConfig.content)"></div>
-                                            </div>
-                                            <p class="text-xs text-gray-500 mt-2">
-                                                <i class="fas fa-info-circle mr-1"></i>
-                                                So wird die Nachricht für die Benutzer angezeigt
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
+                            
+                            <div id="doc-converter-tab" class="admin-panel-content" style="display: none;">
+                                <!-- Dokumentenkonverter-Tab-Inhalt -->
                             </div>
                         </div>
                     </div>
                     
                     <!-- Navigation Toggle Button -->
-                    <button @click="toggleSettings" class="floating-action-button">
+                    <button id="settings-toggle-btn" class="floating-action-button">
                         <i class="fas fa-universal-access"></i>
                     </button>
                 </main>
             </div>
         </div>
     
-        <!-- Settings Panel mit @click.stop um Event-Propagation zu stoppen -->
-        <div v-if="showSettingsPanel" @click.stop class="settings-panel transform transition-transform">
+        <!-- Settings Panel -->
+        <div id="settings-panel" class="settings-panel transform transition-transform" style="display: none;">
             <div class="settings-panel-header">
                 <h3 class="settings-panel-title">Einstellungen</h3>
-                <button @click.stop="toggleSettings" class="settings-panel-close">×</button>
+                <button id="settings-close-btn" class="settings-panel-close">×</button>
             </div>
             <div class="settings-panel-content">
                 <div class="settings-section">
@@ -769,7 +327,7 @@
                             <div class="theme-option">
                                 <input type="radio" id="theme-light" 
                                     name="theme" value="light" 
-                                    v-model="currentTheme" 
+                                    checked
                                     class="theme-radio">
                                 <label for="theme-light" class="theme-label">
                                     <i class="fas fa-sun theme-icon"></i>
@@ -779,7 +337,6 @@
                             <div class="theme-option">
                                 <input type="radio" id="theme-dark" 
                                     name="theme" value="dark" 
-                                    v-model="currentTheme" 
                                     class="theme-radio">
                                 <label for="theme-dark" class="theme-label">
                                     <i class="fas fa-moon theme-icon"></i>
@@ -789,7 +346,6 @@
                             <div class="theme-option">
                                 <input type="radio" id="theme-contrast" 
                                     name="theme" value="contrast" 
-                                    v-model="currentTheme" 
                                     class="theme-radio">
                                 <label for="theme-contrast" class="theme-label">
                                     <i class="fas fa-adjust theme-icon"></i>
@@ -806,7 +362,6 @@
                             <div class="font-size-option">
                                 <input type="radio" id="size-small" 
                                     name="fontSize" value="small" 
-                                    v-model="currentFontSize" 
                                     class="font-size-radio">
                                 <label for="size-small" class="font-size-label font-size-small">
                                     <span>Klein</span>
@@ -815,7 +370,7 @@
                             <div class="font-size-option">
                                 <input type="radio" id="size-medium" 
                                     name="fontSize" value="medium" 
-                                    v-model="currentFontSize" 
+                                    checked
                                     class="font-size-radio">
                                 <label for="size-medium" class="font-size-label font-size-medium">
                                     <span>Mittel</span>
@@ -824,7 +379,6 @@
                             <div class="font-size-option">
                                 <input type="radio" id="size-large" 
                                     name="fontSize" value="large" 
-                                    v-model="currentFontSize" 
                                     class="font-size-radio">
                                 <label for="size-large" class="font-size-label font-size-large">
                                     <span>Groß</span>
@@ -839,8 +393,7 @@
                     <div class="accessibility-container">
                         <label class="accessibility-option">
                             <input type="checkbox" 
-                                v-model="accessibilitySettings.reduceMotion" 
-                                @click.stop
+                                id="reduce-motion-checkbox"
                                 class="accessibility-checkbox">
                             <div>
                                 <span class="accessibility-label">Animationen reduzieren</span>
@@ -850,8 +403,7 @@
                         
                         <label class="accessibility-option">
                             <input type="checkbox" 
-                                v-model="accessibilitySettings.simpleLanguage" 
-                                @click.stop
+                                id="simple-language-checkbox"
                                 class="accessibility-checkbox">
                             <div>
                                 <span class="accessibility-label">Einfache Sprache bevorzugen</span>
@@ -864,87 +416,50 @@
         </div>
         
         <!-- Feedback-Kommentar-Dialog -->
-        <div v-if="showFeedbackDialog" class="modal-overlay">
+        <div id="feedback-dialog" class="modal-overlay" style="display: none;">
             <div class="modal-container">
                 <div class="modal-header">
                     <h3 class="modal-title">Feedback hinzufügen</h3>
-                    <button @click="showFeedbackDialog = false" class="modal-close">×</button>
+                    <button id="feedback-dialog-close" class="modal-close">×</button>
                 </div>
                 <div class="modal-body">
                     <p class="text-gray-600 mb-4">Bitte teilen Sie uns mit, warum diese Antwort nicht hilfreich war:</p>
                     <textarea 
-                        v-model="feedbackComment" 
+                        id="feedback-comment-input"
                         class="nscale-input w-full h-32 mb-4" 
                         placeholder="Ihr Feedback..."></textarea>
                 </div>
                 <div class="modal-footer">
-                    <button @click="showFeedbackDialog = false" class="nscale-btn-secondary">Abbrechen</button>
-                    <button @click="submitFeedbackComment" class="nscale-btn-primary">Senden</button>
+                    <button id="feedback-cancel-btn" class="nscale-btn-secondary">Abbrechen</button>
+                    <button id="feedback-submit-btn" class="nscale-btn-primary">Senden</button>
                 </div>
             </div>
         </div>
         
-        <!-- NEU: Quellenerklärungs-Dialog -->
-        <div v-if="showExplanationDialog" class="modal-overlay">
+        <!-- Quellenerklärungs-Dialog -->
+        <div id="explanation-dialog" class="modal-overlay" style="display: none;">
             <div class="modal-container max-w-3xl">
                 <div class="modal-header">
                     <h3 class="modal-title">Antwort-Erklärung</h3>
-                    <button @click="closeExplanationDialog" class="modal-close">×</button>
+                    <button id="explanation-close-btn" class="modal-close">×</button>
                 </div>
                 <div class="modal-body overflow-y-auto max-h-[70vh]">
-                    <div v-if="explanationLoading" class="p-4 text-center">
+                    <div id="explanation-loading" class="p-4 text-center">
                         <div class="loader mx-auto mb-3"></div>
                         <p>Erklärung wird geladen...</p>
                     </div>
-                    <div v-else-if="currentExplanation" class="p-6">
-                        <h2 class="text-xl font-semibold mb-4">Antwort-Erklärung</h2>
-                        
-                        <div class="mb-4">
-                            <h3 class="font-medium text-sm text-gray-600">Ursprüngliche Frage:</h3>
-                            <p class="p-2 bg-gray-50 rounded">{{ currentExplanation.original_question }}</p>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <h3 class="font-medium text-sm text-gray-600">Verwendete Quellen:</h3>
-                            <div class="p-3 bg-gray-50 rounded">
-                                <div v-if="currentExplanation.source_references && currentExplanation.source_references.length" 
-                                     v-for="(source, index) in currentExplanation.source_references" 
-                                     :key="source.source_id"
-                                     class="mb-2 pb-2" 
-                                     :class="index < currentExplanation.source_references.length - 1 ? 'border-b border-gray-200' : ''">
-                                    <div class="flex justify-between">
-                                        <span class="font-medium">{{ source.source_id }}</span>
-                                        <span class="text-sm text-gray-500">{{ source.usage_count || 0 }}× verwendet</span>
-                                    </div>
-                                    <p class="text-sm">Datei: {{ source.file }}</p>
-                                    <p v-if="source.title" class="text-sm">Abschnitt: {{ source.title }}</p>
-                                    <div class="mt-1 text-xs bg-white p-2 rounded border border-gray-200">
-                                        {{ source.preview || 'Keine Vorschau verfügbar' }}
-                                    </div>
-                                </div>
-                                <p v-else class="text-sm text-gray-500">Keine Quellen gefunden.</p>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-4">
-                            <h3 class="font-medium text-sm text-gray-600">Erläuterung:</h3>
-                            <div class="p-3 bg-gray-50 rounded whitespace-pre-line">
-                                {{ currentExplanation.explanation_text || 'Keine Erläuterung verfügbar.' }}
-                            </div>
-                        </div>
-                    </div>
-                    <div v-else class="p-4 text-center">
-                        <p>Keine Erklärungsdaten verfügbar.</p>
+                    <div id="explanation-content" class="p-6" style="display: none;">
+                        <!-- Wird dynamisch gefüllt -->
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button @click="closeExplanationDialog" class="nscale-btn-secondary">Schließen</button>
+                    <button id="explanation-close-btn2" class="nscale-btn-secondary">Schließen</button>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- CSS Force-Reload Script -->
+    <!-- CSS Force-Reload Script und Login-Tab Funktionalität -->
     <script>
         // Hilfsfunktion zum Neuladen aller CSS-Dateien
         function reloadCSS() {
@@ -976,20 +491,103 @@
             });
         }
 
+        // Login-Tabs aktivieren
+        function setupLoginTabs() {
+            // Login-Tab aktivieren
+            const loginTabBtn = document.getElementById('login-tab-btn');
+            const registerTabBtn = document.getElementById('register-tab-btn');
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            
+            if (loginTabBtn) {
+                loginTabBtn.addEventListener('click', function() {
+                    // Tab-Buttons stylen
+                    loginTabBtn.classList.add('border-b-2', 'border-green-500', 'text-green-600');
+                    registerTabBtn.classList.remove('border-b-2', 'border-green-500', 'text-green-600');
+                    registerTabBtn.classList.add('text-gray-500');
+                    
+                    // Formulare umschalten
+                    loginForm.style.display = 'block';
+                    registerForm.style.display = 'none';
+                });
+            }
+            
+            if (registerTabBtn) {
+                registerTabBtn.addEventListener('click', function() {
+                    // Tab-Buttons stylen
+                    registerTabBtn.classList.add('border-b-2', 'border-green-500', 'text-green-600');
+                    loginTabBtn.classList.remove('border-b-2', 'border-green-500', 'text-green-600');
+                    loginTabBtn.classList.add('text-gray-500');
+                    
+                    // Formulare umschalten
+                    registerForm.style.display = 'block';
+                    loginForm.style.display = 'none';
+                });
+            }
+        }
+
         // Sofortiges Ausführen nach Seitenladung
-        window.addEventListener('DOMContentLoaded', reloadCSS);
+        window.addEventListener('DOMContentLoaded', function() {
+            reloadCSS();
+            setupLoginTabs();
+            
+            // Login-Button aktivieren
+            const loginButton = document.getElementById('login-button');
+            if (loginButton) loginButton.disabled = false;
+            
+            const registerButton = document.getElementById('register-button');
+            if (registerButton) registerButton.disabled = false;
+        });
     </script>
     
-    <!-- JavaScript-Module mit Vanilla JS Implementierungen einbinden -->
+    <!-- Vanilla JavaScript Funktionalität -->
+    <script src="/static/js/css-fallback.js"></script>
+    <script src="/static/js/theme-handler.js"></script>
+    <script src="/static/js/doc-converter-fallback.js"></script>
+    
+    <!-- React Feature Toggle System -->
+    <script src="/static/js/react-feature-toggle.js"></script>
+    
+    <!-- React Admin Integration -->
+    <script src="/static/js/admin-react-integration.js"></script>
+    
+    <!-- Unterstützende Module -->
     <script src="/static/js/chat.js" type="module"></script>
     <script src="/static/js/feedback.js" type="module"></script>
     <script src="/static/js/admin.js" type="module"></script>
     <script src="/static/js/settings.js" type="module"></script>
     <script src="/static/js/source-references.js" type="module"></script>
-    <script src="/static/js/app.js" type="module"></script>
-    <!-- Dokumentenkonverter Fallback-Implementierung (Vanilla JS) -->
-    <script src="/frontend/js/doc-converter-fallback.js"></script>
-    <!-- Vanilla JS Theme Handler -->
-    <script src="/static/js/theme-handler.js"></script>
+    
+    <!-- Die Haupt-JS-Implementierung laden -->
+    <script src="/static/js/app-vanilla.js?v=20250506" type="module"></script>
+    
+    <!-- Nicht-Modul-Version als Fallback -->
+    <script src="/static/js/vanilla-app.js?v=20250506"></script>
+    
+    <!-- Benachrichtigung über JS-Version -->
+    <script src="/static/js/vanilla-notification.js"></script>
+    
+    <!-- Login-Fallback-Skript -->
+    <script src="/static/js/login-fix.js"></script>
+    
+    <!-- Admin-Button-Fix Skript -->
+    <script src="/static/js/admin-button-fix.js"></script>
+    
+    <!-- Vanilla-Admin-Skript für die Admin-Funktionalität -->
+    <script src="/static/js/vanilla-admin.js"></script>
+
+    <!-- Zentrales Integrationsskript für alle verbesserten Fixes (2025-05-06) -->
+    <script src="/static/js/fixes/all_fixes_integration.js"></script>
+    
+    <!-- Legacy-Fixes (werden durch die verbesserten Fixes ersetzt) -->
+    <!-- Deaktiviert, da sie durch das zentrale Integrationsskript ersetzt wurden -->
+    <!-- 
+    <script src="/tests/session_visibility_fix.js"></script>
+    <script src="/tests/fixed_text_streaming.js"></script>
+    <script src="/tests/session_loader_fix.js"></script>
+    <script src="/static/js/session-highlighting-debug.js"></script>
+    <script src="/tests/improved_session_input_persister.js"></script>
+    <script src="/tests/all-fixes-bundle.js"></script>
+    -->
 </body>
 </html>

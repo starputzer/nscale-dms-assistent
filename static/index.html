@@ -1,16 +1,50 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + Vue</title>
-    <script type="module" crossorigin src="/assets/index-BNZV3Owa.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/vue-vendor-CBOooRdR.js">
-    <link rel="modulepreload" crossorigin href="/assets/http-xsH4HHeE.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-V5bdwM9X.css">
-  </head>
-  <body>
-    <div id="app"></div>
-  </body>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nscale DMS Assistent</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Eigene CSS-Dateien mit dynamischem Cache-Busting -->
+    <link href="/static/css/main.css?v=1683292800" rel="stylesheet">
+    <link href="/static/css/feedback.css?v=1683292800" rel="stylesheet">
+    <link href="/static/css/admin.css?v=1683292800" rel="stylesheet">
+    <link href="/static/css/settings.css?v=1683292800" rel="stylesheet">
+    <link href="/static/css/themes.css?v=1683292800" rel="stylesheet">
+    <link href="/static/css/improved-ui.css?v=1683292800" rel="stylesheet">
+    <link href="/static/css/source-references.css?v=1683292800" rel="stylesheet">
+    <link href="/frontend/css/motd.css?v=20250506" rel="stylesheet">
+    
+    <!-- CSS-Fallback-Script für korrekte CSS-Ladung -->
+    <script src="/static/js/css-fallback.js"></script>
+</head>
+<body class="min-h-screen bg-gray-50">
+    <div id="app" class="h-screen flex flex-col">
+        <!-- Weiterleitung zur Frontend-Version -->
+        <div class="flex h-full items-center justify-center">
+            <div class="text-center">
+                <h1 class="text-3xl font-bold mb-4">nscale DMS Assistent</h1>
+                <p class="text-lg mb-6">Bitte wechseln Sie zur Hauptseite:</p>
+                <a href="/frontend/" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg inline-block transition duration-300">
+                    Zur Hauptseite
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Basis-Funktionalität -->
+    <script src="/static/js/vanilla-app.js"></script>
+    
+    <!-- Benachrichtigung über JS-Version -->
+    <script src="/static/js/vanilla-notification.js"></script>
+    
+    <!-- Login-Fallback-Skript -->
+    <script src="/static/js/login-fix.js"></script>
+    
+    <!-- Zentrales Integrationsskript für alle verbesserten Fixes (2025-05-06) -->
+    <script src="/static/js/fixes/all_fixes_integration.js"></script>
+</body>
 </html>
