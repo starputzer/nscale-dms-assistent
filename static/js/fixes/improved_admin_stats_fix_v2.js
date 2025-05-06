@@ -31,7 +31,7 @@
     // Dummy-Daten für System-Statistiken als Fallback
     const systemStatsDummy = {
         users: {
-            total: 4,
+            total: 2,
             active: 2,
             admin: 2
         },
