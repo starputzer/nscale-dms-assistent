@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nscale DMS Assistent - Live Tests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+        
+        .test-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .test-results {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+        
+        .test-result {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 3px;
+        }
+        
+        .passed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .failed {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #eee;
+            padding: 8px;
+            margin-top: 10px;
+            font-family: monospace;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .token-input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-pending {
+            background-color: #ffc107;
+        }
+        
+        .status-running {
+            background-color: #17a2b8;
+            animation: pulse 1s infinite;
+        }
+        
+        .status-passed {
+            background-color: #28a745;
+        }
+        
+        .status-failed {
+            background-color: #dc3545;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>nscale DMS Assistent - Live Tests</h1>
+        <p>Dieser Test-Runner führt Tests gegen den laufenden Server aus, um die gemeldeten Probleme zu überprüfen.</p>
+        
+        <div class="test-section">
+            <div class="test-heading">
+                <h3>Authentifizierung</h3>
+                <button id="login-btn">Anmelden</button>
+            </div>
+            <div>
+                <input type="text" id="token-input" class="token-input" placeholder="JWT Token hier einfügen oder über Anmelden-Button erzeugen" />
+                <p>Status: <span id="auth-status">Nicht angemeldet</span></p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-heading">
+                <h3>Problem-Tests</h3>
+                <button id="run-all-tests-btn">Alle Tests ausführen</button>
+            </div>
+            
+            <div id="tests-container">
+                <!-- Test 1: Neue Unterhaltung Button -->
+                <details open>
+                    <summary>
+                        <span class="status-indicator status-pending" id="test1-status"></span>
+                        Test 1: "Neue Unterhaltung" Button und Tabs
+                    </summary>
+                    <p>Prüft, ob der "Neue Unterhaltung" Button korrekt funktioniert und keine doppelten aktiven Tabs erzeugt.</p>
+                    <button class="run-test-btn" data-test="1">Test ausführen</button>
+                    <div class="test-results" id="test1-results"></div>
+                    <div class="log" id="test1-log" style="display: none;"></div>
+                </details>
+                
+                <!-- Test 2: Session-Eingabefeld Test -->
+                <details open>
+                    <summary>
+                        <span class="status-indicator status-pending" id="test2-status"></span>
+                        Test 2: Session-Eingabefeld Test
+                    </summary>
+                    <p>Prüft, ob Texteingaben pro Tab/Session gespeichert und wiederhergestellt werden.</p>
+                    <button class="run-test-btn" data-test="2">Test ausführen</button>
+                    <div class="test-results" id="test2-results"></div>
+                    <div class="log" id="test2-log" style="display: none;"></div>
+                </details>
+                
+                <!-- Test 3: Text-Stream Test -->
+                <details open>
+                    <summary>
+                        <span class="status-indicator status-pending" id="test3-status"></span>
+                        Test 3: Text-Stream Test
+                    </summary>
+                    <p>Prüft, ob der Text-Stream Mechanismus funktioniert und Antworten inkrementell angezeigt werden.</p>
+                    <button class="run-test-btn" data-test="3">Test ausführen</button>
+                    <div class="test-results" id="test3-results"></div>
+                    <div class="log" id="test3-log" style="display: none;"></div>
+                </details>
+                
+                <!-- Test 4: Admin-Tab Test -->
+                <details open>
+                    <summary>
+                        <span class="status-indicator status-pending" id="test4-status"></span>
+                        Test 4: Admin-Tab Test
+                    </summary>
+                    <p>Prüft, ob der Admin-Tab korrekt geladen wird beim ersten Klick.</p>
+                    <button class="run-test-btn" data-test="4">Test ausführen</button>
+                    <div class="test-results" id="test4-results"></div>
+                    <div class="log" id="test4-log" style="display: none;"></div>
+                </details>
+                
+                <!-- Test 5: System-Tab Test -->
+                <details open>
+                    <summary>
+                        <span class="status-indicator status-pending" id="test5-status"></span>
+                        Test 5: System-Tab Test
+                    </summary>
+                    <p>Prüft, ob Systemstatistiken im Admin-System-Tab korrekt angezeigt werden.</p>
+                    <button class="run-test-btn" data-test="5">Test ausführen</button>
+                    <div class="test-results" id="test5-results"></div>
+                    <div class="log" id="test5-log" style="display: none;"></div>
+                </details>
+                
+                <!-- Test 6: Feedback-Tab Test -->
+                <details open>
+                    <summary>
+                        <span class="status-indicator status-pending" id="test6-status"></span>
+                        Test 6: Feedback-Tab Test
+                    </summary>
+                    <p>Prüft, ob Feedback-Statistiken im Admin-Feedback-Tab korrekt angezeigt werden.</p>
+                    <button class="run-test-btn" data-test="6">Test ausführen</button>
+                    <div class="test-results" id="test6-results"></div>
+                    <div class="log" id="test6-log" style="display: none;"></div>
+                </details>
+                
+                <!-- Test 7: MOTD-Tab Test -->
+                <details open>
+                    <summary>
+                        <span class="status-indicator status-pending" id="test7-status"></span>
+                        Test 7: MOTD-Tab Test
+                    </summary>
+                    <p>Prüft, ob die MOTD-Vorschau im Admin-MOTD-Tab korrekt formatiert wird.</p>
+                    <button class="run-test-btn" data-test="7">Test ausführen</button>
+                    <div class="test-results" id="test7-results"></div>
+                    <div class="log" id="test7-log" style="display: none;"></div>
+                </details>
+                
+                <!-- Test 8: Dokumentenkonverter-Tab Test -->
+                <details open>
+                    <summary>
+                        <span class="status-indicator status-pending" id="test8-status"></span>
+                        Test 8: Dokumentenkonverter-Tab Test
+                    </summary>
+                    <p>Prüft, ob der Dokumentenkonverter-Tab korrekte Konvertierungsoptionen anzeigt.</p>
+                    <button class="run-test-btn" data-test="8">Test ausführen</button>
+                    <div class="test-results" id="test8-results"></div>
+                    <div class="log" id="test8-log" style="display: none;"></div>
+                </details>
+                
+                <!-- Test 9: Feedback-Buttons Test -->
+                <details open>
+                    <summary>
+                        <span class="status-indicator status-pending" id="test9-status"></span>
+                        Test 9: Feedback-Buttons Test
+                    </summary>
+                    <p>Prüft, ob die Feedback-Buttons (Daumen hoch/runter) am unteren Rand der Nachrichten funktionieren.</p>
+                    <button class="run-test-btn" data-test="9">Test ausführen</button>
+                    <div class="test-results" id="test9-results"></div>
+                    <div class="log" id="test9-log" style="display: none;"></div>
+                </details>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Globale Variablen
+        let token = '';
+        const API_BASE_URL = 'http://localhost:8080/api';
+        
+        // Hilfsfunktionen
+        function updateTestStatus(testId, status) {
+            const statusElement = document.getElementById(`test${testId}-status`);
+            statusElement.className = `status-indicator status-${status}`;
+        }
+        
+        function addTestResult(testId, passed, message) {
+            const resultsElement = document.getElementById(`test${testId}-results`);
+            const resultElement = document.createElement('div');
+            resultElement.className = `test-result ${passed ? 'passed' : 'failed'}`;
+            resultElement.textContent = message;
+            resultsElement.appendChild(resultElement);
+            
+            // Update test status
+            updateTestStatus(testId, passed ? 'passed' : 'failed');
+        }
+        
+        function clearTestResults(testId) {
+            const resultsElement = document.getElementById(`test${testId}-results`);
+            resultsElement.innerHTML = '';
+            const logElement = document.getElementById(`test${testId}-log`);
+            logElement.innerHTML = '';
+            logElement.style.display = 'none';
+            updateTestStatus(testId, 'running');
+        }
+        
+        function log(testId, message) {
+            const logElement = document.getElementById(`test${testId}-log`);
+            logElement.style.display = 'block';
+            logElement.innerHTML += message + '\n';
+        }
+        
+        // API-Funktionen
+        async function login() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'test@test.com',
+                        password: '123'
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Login fehlgeschlagen: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                token = data.token;
+                document.getElementById('token-input').value = token;
+                document.getElementById('auth-status').textContent = 'Angemeldet als Admin';
+                
+                return token;
+            } catch (error) {
+                console.error('Login-Fehler:', error);
+                document.getElementById('auth-status').textContent = `Fehler: ${error.message}`;
+                return null;
+            }
+        }
+        
+        async function loadFrame(url, token) {
+            return new Promise((resolve, reject) => {
+                const iframe = document.createElement('iframe');
+                iframe.style.width = '1200px';
+                iframe.style.height = '800px';
+                iframe.style.border = 'none';
+                iframe.style.position = 'fixed';
+                iframe.style.top = '-9999px';
+                iframe.style.left = '-9999px';
+                
+                iframe.onload = () => {
+                    // Automatisch einloggen
+                    if (token) {
+                        try {
+                            localStorage.setItem('token', token);
+                            iframe.contentWindow.localStorage.setItem('token', token);
+                            console.log('Token im iFrame gesetzt:', token);
+                        } catch (e) {
+                            console.error('Fehler beim Setzen des Tokens:', e);
+                        }
+                    }
+                    
+                    resolve(iframe);
+                };
+                
+                iframe.onerror = (error) => {
+                    reject(error);
+                };
+                
+                iframe.src = url;
+                document.body.appendChild(iframe);
+            });
+        }
+        
+        // Test-Funktionen
+        async function runTest1() {
+            clearTestResults(1);
+            log(1, "Test 1: 'Neue Unterhaltung' Button und Tabs wird ausgeführt...");
+            
+            try {
+                if (!token) {
+                    token = await login();
+                    if (!token) throw new Error('Nicht angemeldet');
+                }
+                
+                const iframe = await loadFrame('http://localhost:8080/', token);
+                
+                // Warten, bis die Hauptansicht geladen ist
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Anzahl der Sessions vor dem Klick
+                const initialSessionItems = iframe.contentDocument.querySelectorAll('.nscale-session-item').length;
+                log(1, `Initiale Anzahl an Sessions: ${initialSessionItems}`);
+                
+                // "Neue Unterhaltung" Button finden und klicken
+                const newSessionBtn = iframe.contentDocument.getElementById('new-session-btn');
+                if (!newSessionBtn) {
+                    throw new Error("'Neue Unterhaltung' Button nicht gefunden");
+                }
+                
+                log(1, "Klicke auf 'Neue Unterhaltung' Button");
+                newSessionBtn.click();
+                
+                // Kurz warten, bis der erste Klick verarbeitet wurde
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Nochmal klicken, um das Problem mit doppelten Tabs zu testen
+                log(1, "Klicke erneut auf 'Neue Unterhaltung' Button");
+                newSessionBtn.click();
+                
+                // Warten, bis die Sessions geladen sind
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Anzahl der Sessions nach den Klicks
+                const updatedSessionItems = iframe.contentDocument.querySelectorAll('.nscale-session-item').length;
+                log(1, `Anzahl an Sessions nach den Klicks: ${updatedSessionItems}`);
+                
+                // Anzahl der aktiven Sessions
+                const activeSessionItems = iframe.contentDocument.querySelectorAll('.nscale-session-item.active').length;
+                log(1, `Anzahl an aktiven Sessions: ${activeSessionItems}`);
+                
+                // Prüfen, ob Admin-Button noch sichtbar ist
+                const adminButton = iframe.contentDocument.getElementById('admin-toggle-btn');
+                const adminButtonVisible = adminButton && window.getComputedStyle(adminButton).display !== 'none';
+                log(1, `Admin-Button sichtbar: ${adminButtonVisible}`);
+                
+                // Testergebnisse
+                addTestResult(1, updatedSessionItems > initialSessionItems, 
+                    `Neue Session wurde erstellt: ${updatedSessionItems} Sessions (vorher: ${initialSessionItems})`);
+                
+                addTestResult(1, activeSessionItems === 1, 
+                    `Aktive Sessions: ${activeSessionItems} (erwartet: 1)`);
+                
+                addTestResult(1, adminButtonVisible, 
+                    `Admin-Button ${adminButtonVisible ? 'ist' : 'ist nicht'} sichtbar`);
+                
+                // iFrame entfernen
+                document.body.removeChild(iframe);
+                
+                log(1, "Test 1 abgeschlossen.");
+            } catch (error) {
+                log(1, `Fehler: ${error.message}`);
+                addTestResult(1, false, `Test fehlgeschlagen: ${error.message}`);
+            }
+        }
+        
+        async function runTest2() {
+            clearTestResults(2);
+            log(2, "Test 2: Session-Eingabefeld Test wird ausgeführt...");
+            
+            try {
+                if (!token) {
+                    token = await login();
+                    if (!token) throw new Error('Nicht angemeldet');
+                }
+                
+                const iframe = await loadFrame('http://localhost:8080/', token);
+                
+                // Warten, bis die Hauptansicht geladen ist
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // "Neue Unterhaltung" Button finden und klicken für die erste Session
+                const newSessionBtn = iframe.contentDocument.getElementById('new-session-btn');
+                if (!newSessionBtn) {
+                    throw new Error("'Neue Unterhaltung' Button nicht gefunden");
+                }
+                
+                log(2, "Erstelle erste Session");
+                newSessionBtn.click();
+                
+                // Warten, bis die erste Session geladen ist
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Eingabefeld finden
+                const inputField = iframe.contentDocument.getElementById('question-input');
+                if (!inputField) {
+                    throw new Error("Eingabefeld nicht gefunden");
+                }
+                
+                // Text in das Eingabefeld der ersten Session eingeben
+                const text1 = "Dies ist ein Test für Session 1";
+                inputField.value = text1;
+                log(2, `Eingabe für Session 1: "${text1}"`);
+                
+                // Event auslösen, damit die Änderung gespeichert wird
+                const inputEvent = new Event('input', { bubbles: true });
+                inputField.dispatchEvent(inputEvent);
+                
+                // Kurz warten, bis der Text gespeichert wurde
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Eine zweite Session erstellen
+                log(2, "Erstelle zweite Session");
+                newSessionBtn.click();
+                
+                // Warten, bis die zweite Session geladen ist
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Text in das Eingabefeld der zweiten Session eingeben
+                const text2 = "Dies ist ein Test für Session 2";
+                inputField.value = text2;
+                log(2, `Eingabe für Session 2: "${text2}"`);
+                
+                // Event auslösen, damit die Änderung gespeichert wird
+                inputField.dispatchEvent(inputEvent);
+                
+                // Kurz warten, bis der Text gespeichert wurde
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Alle Sessions finden
+                const sessionItems = iframe.contentDocument.querySelectorAll('.nscale-session-item');
+                if (sessionItems.length < 2) {
+                    throw new Error("Weniger als 2 Sessions gefunden");
+                }
+                
+                // Erste Session wieder auswählen
+                log(2, "Wechsle zurück zur ersten Session");
+                sessionItems[sessionItems.length - 2].click();
+                
+                // Warten, bis die erste Session wieder geladen ist
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Prüfen, ob der Text der ersten Session wiederhergestellt wurde
+                const currentValue = inputField.value;
+                log(2, `Aktueller Wert im Eingabefeld: "${currentValue}"`);
+                
+                // Zurück zur zweiten Session wechseln
+                log(2, "Wechsle zurück zur zweiten Session");
+                sessionItems[sessionItems.length - 1].click();
+                
+                // Warten, bis die zweite Session wieder geladen ist
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Prüfen, ob der Text der zweiten Session wiederhergestellt wurde
+                const currentValue2 = inputField.value;
+                log(2, `Aktueller Wert im Eingabefeld: "${currentValue2}"`);
+                
+                // Testergebnisse
+                addTestResult(2, currentValue === text1, 
+                    `Text für Session 1 ${currentValue === text1 ? 'wurde' : 'wurde nicht'} korrekt wiederhergestellt`);
+                
+                addTestResult(2, currentValue2 === text2, 
+                    `Text für Session 2 ${currentValue2 === text2 ? 'wurde' : 'wurde nicht'} korrekt wiederhergestellt`);
+                
+                // iFrame entfernen
+                document.body.removeChild(iframe);
+                
+                log(2, "Test 2 abgeschlossen.");
+            } catch (error) {
+                log(2, `Fehler: ${error.message}`);
+                addTestResult(2, false, `Test fehlgeschlagen: ${error.message}`);
+            }
+        }
+        
+        async function runTest3() {
+            clearTestResults(3);
+            log(3, "Test 3: Text-Stream Test wird ausgeführt...");
+            
+            try {
+                if (!token) {
+                    token = await login();
+                    if (!token) throw new Error('Nicht angemeldet');
+                }
+                
+                // API-Aufruf direkt testen für streaming
+                log(3, "Sende Test-Frage direkt an die API und prüfe auf Streaming...");
+                
+                const controller = new AbortController();
+                setTimeout(() => controller.abort(), 15000); // 15 Sekunden Timeout
+                
+                const response = await fetch(`${API_BASE_URL}/chat/stream`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        question: "Was ist die Hauptfunktion der nscale-assist App?",
+                        session_id: null
+                    }),
+                    signal: controller.signal
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Stream-API-Fehler: ${response.status}`);
+                }
+                
+                // Prüfen, ob die Content-Type-Header für Server-Sent Events gesetzt sind
+                const contentType = response.headers.get('Content-Type');
+                const isSSE = contentType && contentType.includes('text/event-stream');
+                
+                log(3, `Antwort-Typ: ${contentType}, SSE: ${isSSE}`);
+                addTestResult(3, isSSE, `Server-Sent Events Header ${isSSE ? 'vorhanden' : 'nicht vorhanden'}`);
+                
+                if (!isSSE) {
+                    throw new Error("Server antwortet nicht mit Server-Sent Events");
+                }
+                
+                // Jetzt einen iFrame laden und im UI testen
+                const iframe = await loadFrame('http://localhost:8080/', token);
+                
+                // Warten, bis die Hauptansicht geladen ist
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Neue Session erstellen
+                const newSessionBtn = iframe.contentDocument.getElementById('new-session-btn');
+                if (!newSessionBtn) {
+                    throw new Error("'Neue Unterhaltung' Button nicht gefunden");
+                }
+                
+                log(3, "Erstelle neue Session für Streaming-Test");
+                newSessionBtn.click();
+                
+                // Warten, bis die Session geladen ist
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Eingabefeld und Senden-Button finden
+                const inputField = iframe.contentDocument.getElementById('question-input');
+                const sendButton = iframe.contentDocument.getElementById('send-button');
+                
+                if (!inputField || !sendButton) {
+                    throw new Error("Eingabefeld oder Senden-Button nicht gefunden");
+                }
+                
+                // Frage eingeben
+                inputField.value = "Was sind die Hauptfunktionen der nscale DMS-Software?";
+                
+                // Event auslösen, damit die Änderung gespeichert wird
+                const inputEvent = new Event('input', { bubbles: true });
+                inputField.dispatchEvent(inputEvent);
+                
+                // Senden-Button aktivieren (falls noch deaktiviert)
+                sendButton.disabled = false;
+                
+                // Anzahl der Nachrichten vorher
+                const messageContainer = iframe.contentDocument.getElementById('message-container');
+                const initialMessages = messageContainer ? messageContainer.children.length : 0;
+                log(3, `Initiale Anzahl an Nachrichten: ${initialMessages}`);
+                
+                // Frage senden
+                log(3, "Sende Frage...");
+                sendButton.click();
+                
+                // Auf das Streamen warten
+                let isStreaming = false;
+                let lastLength = 0;
+                let checkCount = 0;
+                
+                // Überprüfe, ob Streamen erfolgt (mehrere Nachrichten-Updates)
+                const checkStreaming = async () => {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    const assistantResponses = iframe.contentDocument.querySelectorAll('.assistant-message');
+                    const lastResponse = assistantResponses[assistantResponses.length - 1];
+                    
+                    if (lastResponse) {
+                        const currentLength = lastResponse.textContent.length;
+                        
+                        if (currentLength > 0 && currentLength > lastLength) {
+                            log(3, `Nachricht wird gestreamt: ${lastLength} -> ${currentLength} Zeichen`);
+                            isStreaming = true;
+                            lastLength = currentLength;
+                        }
+                    }
+                    
+                    checkCount++;
+                    if (checkCount < 10 && !isStreaming) {
+                        return await checkStreaming();
+                    }
+                    
+                    return isStreaming;
+                };
+                
+                const streamingDetected = await checkStreaming();
+                
+                // Testergebnisse
+                addTestResult(3, isStreaming, 
+                    `Streaming ${isStreaming ? 'funktioniert' : 'funktioniert nicht'}`);
+                
+                // iFrame entfernen
+                document.body.removeChild(iframe);
+                
+                log(3, "Test 3 abgeschlossen.");
+            } catch (error) {
+                log(3, `Fehler: ${error.message}`);
+                addTestResult(3, false, `Test fehlgeschlagen: ${error.message}`);
+            }
+        }
+        
+        async function runTest4() {
+            clearTestResults(4);
+            log(4, "Test 4: Admin-Tab Test wird ausgeführt...");
+            
+            try {
+                if (!token) {
+                    token = await login();
+                    if (!token) throw new Error('Nicht angemeldet');
+                }
+                
+                const iframe = await loadFrame('http://localhost:8080/', token);
+                
+                // Warten, bis die Hauptansicht geladen ist
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Admin-Button finden
+                const adminButton = iframe.contentDocument.getElementById('admin-toggle-btn');
+                if (!adminButton) {
+                    throw new Error("Admin-Button nicht gefunden");
+                }
+                
+                // Sicherstellen, dass wir in der Chat-Ansicht sind
+                const chatView = iframe.contentDocument.getElementById('chat-view');
+                const adminView = iframe.contentDocument.getElementById('admin-view');
+                
+                if (!chatView || !adminView) {
+                    throw new Error("Chat-View oder Admin-View nicht gefunden");
+                }
+                
+                if (chatView.style.display === 'none' || adminView.style.display !== 'none') {
+                    // Zur Chat-Ansicht wechseln, falls nötig
+                    log(4, "Wechsle zur Chat-Ansicht");
+                    adminButton.click();
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                // Admin-Button klicken
+                log(4, "Klicke auf Admin-Button");
+                adminButton.click();
+                
+                // Kurz warten, bis die Admin-Ansicht geladen ist
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Prüfen, ob die Admin-Ansicht angezeigt wird
+                const adminViewDisplayed = adminView.style.display !== 'none';
+                log(4, `Admin-View angezeigt: ${adminViewDisplayed}`);
+                
+                // Prüfen, ob der Benutzer-Tab aktiv ist
+                const usersTabContent = iframe.contentDocument.getElementById('users-tab');
+                const usersTabDisplayed = usersTabContent && usersTabContent.style.display !== 'none';
+                log(4, `Benutzer-Tab angezeigt: ${usersTabDisplayed}`);
+                
+                // Prüfen, ob der Inhalt geladen ist, nicht nur die Überschrift
+                const usersTable = usersTabContent ? usersTabContent.querySelector('table, .admin-table') : null;
+                const usersLoaded = usersTable !== null;
+                log(4, `Benutzer-Tabelle geladen: ${usersLoaded}`);
+                
+                // Testergebnisse
+                addTestResult(4, adminViewDisplayed, 
+                    `Admin-Ansicht wird ${adminViewDisplayed ? '' : 'nicht'} angezeigt`);
+                
+                addTestResult(4, usersTabDisplayed, 
+                    `Benutzer-Tab wird ${usersTabDisplayed ? '' : 'nicht'} angezeigt`);
+                
+                addTestResult(4, usersLoaded, 
+                    `Benutzer-Tabelle ist ${usersLoaded ? '' : 'nicht'} geladen`);
+                
+                // iFrame entfernen
+                document.body.removeChild(iframe);
+                
+                log(4, "Test 4 abgeschlossen.");
+            } catch (error) {
+                log(4, `Fehler: ${error.message}`);
+                addTestResult(4, false, `Test fehlgeschlagen: ${error.message}`);
+            }
+        }
+        
+        async function runTest5() {
+            clearTestResults(5);
+            log(5, "Test 5: System-Tab Test wird ausgeführt...");
+            
+            try {
+                if (!token) {
+                    token = await login();
+                    if (!token) throw new Error('Nicht angemeldet');
+                }
+                
+                const iframe = await loadFrame('http://localhost:8080/', token);
+                
+                // Warten, bis die Hauptansicht geladen ist
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Admin-Button finden und klicken
+                const adminButton = iframe.contentDocument.getElementById('admin-toggle-btn');
+                if (!adminButton) {
+                    throw new Error("Admin-Button nicht gefunden");
+                }
+                
+                log(5, "Öffne Admin-Ansicht");
+                adminButton.click();
+                
+                // Kurz warten, bis die Admin-Ansicht geladen ist
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // System-Tab-Button finden und klicken
+                const systemTabBtn = iframe.contentDocument.getElementById('system-tab-btn');
+                if (!systemTabBtn) {
+                    throw new Error("System-Tab-Button nicht gefunden");
+                }
+                
+                log(5, "Wechsle zum System-Tab");
+                systemTabBtn.click();
+                
+                // Warten, bis der System-Tab geladen ist
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Prüfen, ob der System-Tab angezeigt wird
+                const systemTabContent = iframe.contentDocument.getElementById('system-tab');
+                const systemTabDisplayed = systemTabContent && systemTabContent.style.display !== 'none';
+                log(5, `System-Tab angezeigt: ${systemTabDisplayed}`);
+                
+                // Prüfen, ob Systemstatistiken geladen sind
+                const statsElements = systemTabContent ? 
+                                     systemTabContent.querySelectorAll('.admin-stat-card, .stat-card, .system-stat-card') : [];
+                log(5, `Anzahl Statistik-Elemente: ${statsElements.length}`);
+                
+                // Prüfen auf System-Details mit Dokumentzahlen
+                const systemDetails = systemTabContent ? 
+                                     systemTabContent.querySelector('.admin-card, .system-details') : null;
+                const hasSystemDetails = systemDetails !== null;
+                log(5, `System-Details vorhanden: ${hasSystemDetails}`);
+                
+                // Prüfen, ob Dokument/Chunk-Zähler enthalten sind
+                let hasDocumentStats = false;
+                if (systemDetails) {
+                    const detailsText = systemDetails.textContent.toLowerCase();
+                    hasDocumentStats = detailsText.includes('dokument') || 
+                                      detailsText.includes('chunk') || 
+                                      detailsText.includes('embedding');
+                    
+                    log(5, `System-Details enthalten Dokument/Chunk-Statistiken: ${hasDocumentStats}`);
+                    
+                    // Log kompletten Text für Diagnose
+                    log(5, `System-Details Text: ${systemDetails.textContent}`);
+                }
+                
+                // Testergebnisse
+                addTestResult(5, systemTabDisplayed, 
+                    `System-Tab wird ${systemTabDisplayed ? '' : 'nicht'} angezeigt`);
+                
+                addTestResult(5, statsElements.length > 0, 
+                    `Systemstatistiken sind ${statsElements.length > 0 ? '' : 'nicht'} vorhanden (${statsElements.length} Elemente)`);
+                
+                addTestResult(5, hasSystemDetails, 
+                    `System-Details sind ${hasSystemDetails ? '' : 'nicht'} vorhanden`);
+                
+                addTestResult(5, hasDocumentStats, 
+                    `Dokument/Chunk-Statistiken sind ${hasDocumentStats ? '' : 'nicht'} vorhanden`);
+                
+                // iFrame entfernen
+                document.body.removeChild(iframe);
+                
+                log(5, "Test 5 abgeschlossen.");
+            } catch (error) {
+                log(5, `Fehler: ${error.message}`);
+                addTestResult(5, false, `Test fehlgeschlagen: ${error.message}`);
+            }
+        }
+        
+        async function runTest6() {
+            clearTestResults(6);
+            log(6, "Test 6: Feedback-Tab Test wird ausgeführt...");
+            
+            try {
+                if (!token) {
+                    token = await login();
+                    if (!token) throw new Error('Nicht angemeldet');
+                }
+                
+                const iframe = await loadFrame('http://localhost:8080/', token);
+                
+                // Warten, bis die Hauptansicht geladen ist
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Admin-Button finden und klicken
+                const adminButton = iframe.contentDocument.getElementById('admin-toggle-btn');
+                if (!adminButton) {
+                    throw new Error("Admin-Button nicht gefunden");
+                }
+                
+                log(6, "Öffne Admin-Ansicht");
+                adminButton.click();
+                
+                // Kurz warten, bis die Admin-Ansicht geladen ist
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Feedback-Tab-Button finden und klicken
+                const feedbackTabBtn = iframe.contentDocument.getElementById('feedback-tab-btn');
+                if (!feedbackTabBtn) {
+                    throw new Error("Feedback-Tab-Button nicht gefunden");
+                }
+                
+                log(6, "Wechsle zum Feedback-Tab");
+                feedbackTabBtn.click();
+                
+                // Warten, bis der Feedback-Tab geladen ist
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Prüfen, ob der Feedback-Tab angezeigt wird
+                const feedbackTabContent = iframe.contentDocument.getElementById('feedback-tab');
+                const feedbackTabDisplayed = feedbackTabContent && feedbackTabContent.style.display !== 'none';
+                log(6, `Feedback-Tab angezeigt: ${feedbackTabDisplayed}`);
+                
+                // Prüfen, ob Feedback-Statistiken geladen sind
+                const statsElements = feedbackTabContent ? 
+                                      feedbackTabContent.querySelectorAll('.admin-stat-card, .stat-card, .feedback-stats') : [];
+                log(6, `Anzahl Statistik-Elemente: ${statsElements.length}`);
+                
+                // Prüfen, ob negative Feedback-Einträge angezeigt werden
+                const negativeFeedbackContainer = feedbackTabContent ? 
+                                                  feedbackTabContent.querySelector('.space-y-4, .negative-feedback, .feedback-list') : null;
+                const hasNegativeFeedback = negativeFeedbackContainer !== null;
+                log(6, `Container für negatives Feedback vorhanden: ${hasNegativeFeedback}`);
+                
+                // Testergebnisse
+                addTestResult(6, feedbackTabDisplayed, 
+                    `Feedback-Tab wird ${feedbackTabDisplayed ? '' : 'nicht'} angezeigt`);
+                
+                addTestResult(6, statsElements.length > 0, 
+                    `Feedback-Statistiken sind ${statsElements.length > 0 ? '' : 'nicht'} vorhanden (${statsElements.length} Elemente)`);
+                
+                addTestResult(6, hasNegativeFeedback, 
+                    `Container für negatives Feedback ist ${hasNegativeFeedback ? '' : 'nicht'} vorhanden`);
+                
+                // iFrame entfernen
+                document.body.removeChild(iframe);
+                
+                log(6, "Test 6 abgeschlossen.");
+            } catch (error) {
+                log(6, `Fehler: ${error.message}`);
+                addTestResult(6, false, `Test fehlgeschlagen: ${error.message}`);
+            }
+        }
+        
+        async function runTest7() {
+            clearTestResults(7);
+            log(7, "Test 7: MOTD-Tab Test wird ausgeführt...");
+            
+            try {
+                if (!token) {
+                    token = await login();
+                    if (!token) throw new Error('Nicht angemeldet');
+                }
+                
+                const iframe = await loadFrame('http://localhost:8080/', token);
+                
+                // Warten, bis die Hauptansicht geladen ist
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Admin-Button finden und klicken
+                const adminButton = iframe.contentDocument.getElementById('admin-toggle-btn');
+                if (!adminButton) {
+                    throw new Error("Admin-Button nicht gefunden");
+                }
+                
+                log(7, "Öffne Admin-Ansicht");
+                adminButton.click();
+                
+                // Kurz warten, bis die Admin-Ansicht geladen ist
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // MOTD-Tab-Button finden und klicken
+                const motdTabBtn = iframe.contentDocument.getElementById('motd-tab-btn');
+                if (!motdTabBtn) {
+                    throw new Error("MOTD-Tab-Button nicht gefunden");
+                }
+                
+                log(7, "Wechsle zum MOTD-Tab");
+                motdTabBtn.click();
+                
+                // Warten, bis der MOTD-Tab geladen ist
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Prüfen, ob der MOTD-Tab angezeigt wird
+                const motdTabContent = iframe.contentDocument.getElementById('motd-tab');
+                const motdTabDisplayed = motdTabContent && motdTabContent.style.display !== 'none';
+                log(7, `MOTD-Tab angezeigt: ${motdTabDisplayed}`);
+                
+                // Prüfen, ob der MOTD-Editor geladen ist
+                const motdForm = motdTabContent ? motdTabContent.querySelector('#motd-form, form') : null;
+                const hasMOTDForm = motdForm !== null;
+                log(7, `MOTD-Formular vorhanden: ${hasMOTDForm}`);
+                
+                // Prüfen, ob die MOTD-Vorschau funktioniert
+                const motdPreview = motdTabContent ? motdTabContent.querySelector('#motd-preview, .motd-preview') : null;
+                const hasMOTDPreview = motdPreview !== null;
+                log(7, `MOTD-Vorschau vorhanden: ${hasMOTDPreview}`);
+                
+                // Inhalt für die MOTD-Eingabe setzen und auf Fehler bei der Vorschau achten
+                let previewWorks = false;
+                let errorDetected = false;
+                
+                if (hasMOTDForm && hasMOTDPreview) {
+                    const motdInput = motdForm.querySelector('#motd-content, textarea');
+                    const motdPreviewContent = motdTabContent.querySelector('#motd-preview-content, .motd-preview-content');
+                    
+                    if (motdInput && motdPreviewContent) {
+                        // Text setzen
+                        motdInput.value = "**Test-Nachricht mit Markdown**\n\nÜberprüfung der Formatierung.";
+                        
+                        // Event auslösen
+                        const inputEvent = new Event('input', { bubbles: true });
+                        motdInput.dispatchEvent(inputEvent);
+                        
+                        // Kurz warten und prüfen
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
+                        const previewContent = motdPreviewContent.innerHTML;
+                        log(7, `MOTD-Vorschau-Inhalt: ${previewContent}`);
+                        
+                        // Prüfen, ob starke Formatierung (Fett-Text) vorhanden ist
+                        previewWorks = previewContent.includes('<strong>') || previewContent.includes('<b>');
+                        
+                        // Prüfen, ob die Konsole Fehler enthält
+                        const consoleErrors = iframe.contentWindow.console.error;
+                        const originalConsoleError = iframe.contentWindow.console.error;
+                        
+                        let errorMessage = null;
+                        iframe.contentWindow.console.error = function(...args) {
+                            const errorText = args.join(' ');
+                            if (errorText.includes('trim') || errorText.includes('undefined')) {
+                                errorMessage = errorText;
+                                errorDetected = true;
+                            }
+                            originalConsoleError.apply(console, args);
+                        };
+                        
+                        // Nochmals die Vorschau aktualisieren, um mögliche Fehler zu erfassen
+                        motdInput.value += " Zusätzlicher Text.";
+                        motdInput.dispatchEvent(inputEvent);
+                        
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        
+                        // Konsole wiederherstellen
+                        iframe.contentWindow.console.error = originalConsoleError;
+                        
+                        if (errorMessage) {
+                            log(7, `MOTD-Vorschau-Fehler erkannt: ${errorMessage}`);
+                        }
+                    }
+                }
+                
+                // Testergebnisse
+                addTestResult(7, motdTabDisplayed, 
+                    `MOTD-Tab wird ${motdTabDisplayed ? '' : 'nicht'} angezeigt`);
+                
+                addTestResult(7, hasMOTDForm, 
+                    `MOTD-Formular ist ${hasMOTDForm ? '' : 'nicht'} vorhanden`);
+                
+                addTestResult(7, hasMOTDPreview, 
+                    `MOTD-Vorschau ist ${hasMOTDPreview ? '' : 'nicht'} vorhanden`);
+                
+                addTestResult(7, previewWorks, 
+                    `MOTD-Vorschau funktioniert ${previewWorks ? '' : 'nicht'} korrekt`);
+                
+                addTestResult(7, !errorDetected, 
+                    `MOTD-Vorschau ${errorDetected ? 'erzeugt' : 'erzeugt keine'} Fehler`);
+                
+                // iFrame entfernen
+                document.body.removeChild(iframe);
+                
+                log(7, "Test 7 abgeschlossen.");
+            } catch (error) {
+                log(7, `Fehler: ${error.message}`);
+                addTestResult(7, false, `Test fehlgeschlagen: ${error.message}`);
+            }
+        }
+        
+        async function runTest8() {
+            clearTestResults(8);
+            log(8, "Test 8: Dokumentenkonverter-Tab Test wird ausgeführt...");
+            
+            try {
+                if (!token) {
+                    token = await login();
+                    if (!token) throw new Error('Nicht angemeldet');
+                }
+                
+                const iframe = await loadFrame('http://localhost:8080/', token);
+                
+                // Warten, bis die Hauptansicht geladen ist
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Admin-Button finden und klicken
+                const adminButton = iframe.contentDocument.getElementById('admin-toggle-btn');
+                if (!adminButton) {
+                    throw new Error("Admin-Button nicht gefunden");
+                }
+                
+                log(8, "Öffne Admin-Ansicht");
+                adminButton.click();
+                
+                // Kurz warten, bis die Admin-Ansicht geladen ist
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Dokumentenkonverter-Tab-Button finden und klicken
+                const docConverterTabBtn = iframe.contentDocument.getElementById('doc-converter-tab-btn');
+                if (!docConverterTabBtn) {
+                    throw new Error("Dokumentenkonverter-Tab-Button nicht gefunden");
+                }
+                
+                log(8, "Wechsle zum Dokumentenkonverter-Tab");
+                docConverterTabBtn.click();
+                
+                // Warten, bis der Dokumentenkonverter-Tab geladen ist
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Prüfen, ob der Dokumentenkonverter-Tab angezeigt wird
+                const docConverterTabContent = iframe.contentDocument.getElementById('doc-converter-tab');
+                const docConverterTabDisplayed = docConverterTabContent && docConverterTabContent.style.display !== 'none';
+                log(8, `Dokumentenkonverter-Tab angezeigt: ${docConverterTabDisplayed}`);
+                
+                // Prüfen, ob ein "Zur Chat-Ansicht wechseln"-Button existiert
+                const backToChatBtn = docConverterTabContent ? 
+                                     docConverterTabContent.querySelector('#go-to-chat-btn, .go-to-chat-btn, [class*="chat"]') : null;
+                const hasChatButton = backToChatBtn !== null;
+                
+                // Falls es einen gibt, ist er sichtbar?
+                const chatButtonVisible = hasChatButton && window.getComputedStyle(backToChatBtn).display !== 'none';
+                log(8, `"Zur Chat-Ansicht"-Button vorhanden: ${hasChatButton}, sichtbar: ${chatButtonVisible}`);
+                
+                // Prüfen, ob ein Dokumentenkonverter-Formular vorhanden ist
+                const docConverterForm = docConverterTabContent ? 
+                                         docConverterTabContent.querySelector('#file-upload-form, #converter-form, form') : null;
+                const hasDocConverterForm = docConverterForm !== null;
+                log(8, `Dokumentenkonverter-Formular vorhanden: ${hasDocConverterForm}`);
+                
+                // Prüfen, ob ein File-Upload-Feld vorhanden ist
+                const fileUploadField = docConverterTabContent ? 
+                                        docConverterTabContent.querySelector('input[type="file"], #file-upload') : null;
+                const hasFileUpload = fileUploadField !== null;
+                log(8, `File-Upload-Feld vorhanden: ${hasFileUpload}`);
+                
+                // Prüfen, ob ein Ausgabeformat-Selector vorhanden ist
+                const outputFormatSelect = docConverterTabContent ? 
+                                          docConverterTabContent.querySelector('select, #output-format') : null;
+                const hasOutputFormatSelect = outputFormatSelect !== null;
+                log(8, `Ausgabeformat-Selector vorhanden: ${hasOutputFormatSelect}`);
+                
+                // Testergebnisse
+                addTestResult(8, docConverterTabDisplayed, 
+                    `Dokumentenkonverter-Tab wird ${docConverterTabDisplayed ? '' : 'nicht'} angezeigt`);
+                
+                addTestResult(8, !chatButtonVisible, 
+                    `"Zur Chat-Ansicht"-Button ist ${!chatButtonVisible ? 'nicht ' : ''}als einziger Button sichtbar`);
+                
+                addTestResult(8, hasDocConverterForm, 
+                    `Dokumentenkonverter-Formular ist ${hasDocConverterForm ? '' : 'nicht'} vorhanden`);
+                
+                addTestResult(8, hasFileUpload && hasOutputFormatSelect, 
+                    `Dokument-Upload-Funktionalität ist ${(hasFileUpload && hasOutputFormatSelect) ? '' : 'nicht'} vorhanden`);
+                
+                // iFrame entfernen
+                document.body.removeChild(iframe);
+                
+                log(8, "Test 8 abgeschlossen.");
+            } catch (error) {
+                log(8, `Fehler: ${error.message}`);
+                addTestResult(8, false, `Test fehlgeschlagen: ${error.message}`);
+            }
+        }
+        
+        async function runTest9() {
+            clearTestResults(9);
+            log(9, "Test 9: Feedback-Buttons Test wird ausgeführt...");
+            
+            try {
+                if (!token) {
+                    token = await login();
+                    if (!token) throw new Error('Nicht angemeldet');
+                }
+                
+                const iframe = await loadFrame('http://localhost:8080/', token);
+                
+                // Warten, bis die Hauptansicht geladen ist
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Neue Unterhaltung starten
+                const newSessionBtn = iframe.contentDocument.getElementById('new-session-btn');
+                if (!newSessionBtn) {
+                    throw new Error("'Neue Unterhaltung' Button nicht gefunden");
+                }
+                
+                log(9, "Erstelle neue Session für Feedback-Test");
+                newSessionBtn.click();
+                
+                // Warten, bis die Session geladen ist
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Eingabefeld und Senden-Button finden
+                const inputField = iframe.contentDocument.getElementById('question-input');
+                const sendButton = iframe.contentDocument.getElementById('send-button');
+                
+                if (!inputField || !sendButton) {
+                    throw new Error("Eingabefeld oder Senden-Button nicht gefunden");
+                }
+                
+                // Frage eingeben
+                inputField.value = "Was sind die Hauptfunktionen dieses Assistenten?";
+                
+                // Event auslösen, damit die Änderung gespeichert wird
+                const inputEvent = new Event('input', { bubbles: true });
+                inputField.dispatchEvent(inputEvent);
+                
+                // Senden-Button aktivieren (falls noch deaktiviert)
+                sendButton.disabled = false;
+                
+                // Frage senden
+                log(9, "Sende Frage für Feedback-Test...");
+                sendButton.click();
+                
+                // Warten, bis eine Antwort erscheint (30 Sekunden Timeout)
+                let assistantMessage = null;
+                let attempts = 0;
+                const maxAttempts = 30;
+                
+                while (!assistantMessage && attempts < maxAttempts) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    assistantMessage = iframe.contentDocument.querySelector('.assistant-message');
+                    attempts++;
+                    log(9, `Warte auf Antwort... (${attempts}/${maxAttempts})`);
+                }
+                
+                if (!assistantMessage) {
+                    throw new Error("Keine Antwort vom Assistenten erhalten");
+                }
+                
+                log(9, "Antwort erhalten, suche Feedback-Buttons...");
+                
+                // Kurz warten, bis die Feedback-Buttons gerendert werden
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Feedback-Buttons finden
+                const feedbackContainer = iframe.contentDocument.querySelector('.message-feedback, .feedback-buttons');
+                
+                if (!feedbackContainer) {
+                    // Suche direkt nach Daumen-Icons
+                    const thumbsUpIcon = iframe.contentDocument.querySelector('.fa-thumbs-up, .fa-thumb-up');
+                    const thumbsDownIcon = iframe.contentDocument.querySelector('.fa-thumbs-down, .fa-thumb-down');
+                    
+                    if (!thumbsUpIcon && !thumbsDownIcon) {
+                        throw new Error("Keine Feedback-Buttons gefunden");
+                    }
+                    
+                    log(9, `Feedback-Icons gefunden: Daumen hoch: ${thumbsUpIcon !== null}, Daumen runter: ${thumbsDownIcon !== null}`);
+                }
+                
+                const thumbsUpBtn = feedbackContainer ? 
+                                  feedbackContainer.querySelector('.positive-btn, .thumbs-up, [title*="hilfreich"]') : 
+                                  iframe.contentDocument.querySelector('.fa-thumbs-up, .fa-thumb-up').closest('button');
+                
+                const thumbsDownBtn = feedbackContainer ? 
+                                    feedbackContainer.querySelector('.negative-btn, .thumbs-down, [title*="nicht"]') : 
+                                    iframe.contentDocument.querySelector('.fa-thumbs-down, .fa-thumb-down').closest('button');
+                
+                const hasThumbsUpBtn = thumbsUpBtn !== null;
+                const hasThumbsDownBtn = thumbsDownBtn !== null;
+                
+                log(9, `Feedback-Buttons gefunden: Daumen hoch: ${hasThumbsUpBtn}, Daumen runter: ${hasThumbsDownBtn}`);
+                
+                // Prüfen, ob die Buttons sichtbar und klickbar sind
+                let thumbsUpVisible = false;
+                let thumbsDownVisible = false;
+                
+                if (hasThumbsUpBtn) {
+                    const computedStyle = window.getComputedStyle(thumbsUpBtn);
+                    thumbsUpVisible = computedStyle.display !== 'none' && computedStyle.visibility !== 'hidden';
+                    log(9, `Daumen hoch Button sichtbar: ${thumbsUpVisible}, Style: ${computedStyle.display}`);
+                }
+                
+                if (hasThumbsDownBtn) {
+                    const computedStyle = window.getComputedStyle(thumbsDownBtn);
+                    thumbsDownVisible = computedStyle.display !== 'none' && computedStyle.visibility !== 'hidden';
+                    log(9, `Daumen runter Button sichtbar: ${thumbsDownVisible}, Style: ${computedStyle.display}`);
+                }
+                
+                // Versuche, auf den Daumen-hoch-Button zu klicken
+                let thumbsUpClickable = false;
+                
+                if (hasThumbsUpBtn && thumbsUpVisible) {
+                    try {
+                        log(9, "Versuche, auf Daumen-hoch-Button zu klicken");
+                        thumbsUpBtn.click();
+                        
+                        // Kurz warten und prüfen, ob sich der Zustand geändert hat
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
+                        // Prüfen auf CSS-Klassen, die auf aktiven Zustand hindeuten
+                        thumbsUpClickable = thumbsUpBtn.classList.contains('active') || 
+                                          thumbsUpBtn.classList.contains('selected') ||
+                                          thumbsUpBtn.classList.contains('clicked');
+                        
+                        log(9, `Daumen-hoch-Button klickbar: ${thumbsUpClickable}`);
+                    } catch (e) {
+                        log(9, `Fehler beim Klicken auf Daumen-hoch-Button: ${e.message}`);
+                    }
+                }
+                
+                // Testergebnisse
+                addTestResult(9, hasThumbsUpBtn && hasThumbsDownBtn, 
+                    `Feedback-Buttons sind ${(hasThumbsUpBtn && hasThumbsDownBtn) ? '' : 'nicht'} vorhanden`);
+                
+                addTestResult(9, thumbsUpVisible && thumbsDownVisible, 
+                    `Feedback-Buttons sind ${(thumbsUpVisible && thumbsDownVisible) ? '' : 'nicht'} sichtbar`);
+                
+                addTestResult(9, thumbsUpClickable, 
+                    `Feedback-Buttons sind ${thumbsUpClickable ? '' : 'nicht'} klickbar`);
+                
+                // iFrame entfernen
+                document.body.removeChild(iframe);
+                
+                log(9, "Test 9 abgeschlossen.");
+            } catch (error) {
+                log(9, `Fehler: ${error.message}`);
+                addTestResult(9, false, `Test fehlgeschlagen: ${error.message}`);
+            }
+        }
+        
+        async function runAllTests() {
+            document.getElementById('run-all-tests-btn').disabled = true;
+            
+            await runTest1();
+            await runTest2();
+            await runTest3();
+            await runTest4();
+            await runTest5();
+            await runTest6();
+            await runTest7();
+            await runTest8();
+            await runTest9();
+            
+            document.getElementById('run-all-tests-btn').disabled = false;
+        }
+        
+        // Event-Listener einrichten
+        document.getElementById('login-btn').addEventListener('click', login);
+        
+        document.getElementById('token-input').addEventListener('input', function(e) {
+            token = e.target.value;
+            if (token) {
+                document.getElementById('auth-status').textContent = 'Token gesetzt';
+            } else {
+                document.getElementById('auth-status').textContent = 'Nicht angemeldet';
+            }
+        });
+        
+        document.getElementById('run-all-tests-btn').addEventListener('click', runAllTests);
+        
+        document.querySelectorAll('.run-test-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const testNumber = parseInt(this.getAttribute('data-test'));
+                switch(testNumber) {
+                    case 1: runTest1(); break;
+                    case 2: runTest2(); break;
+                    case 3: runTest3(); break;
+                    case 4: runTest4(); break;
+                    case 5: runTest5(); break;
+                    case 6: runTest6(); break;
+                    case 7: runTest7(); break;
+                    case 8: runTest8(); break;
+                    case 9: runTest9(); break;
+                }
+            });
+        });
+        
+        // Automatisch anmelden beim Laden
+        window.addEventListener('DOMContentLoaded', login);
+    </script>
+</body>
+</html>

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nscale-assist Admin Fix Test Runner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-top: 0;
+        }
+        .test-controls {
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .console {
+            background-color: #1e1e1e;
+            color: #dcdcdc;
+            padding: 15px;
+            border-radius: 4px;
+            height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin-top: 20px;
+        }
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #e7f3fe;
+            border-left: 4px solid #2196F3;
+        }
+        .log-entry {
+            margin: 2px 0;
+            line-height: 1.4;
+        }
+        .log-pass {
+            color: #4CAF50;
+        }
+        .log-fail {
+            color: #f44336;
+        }
+        .log-info {
+            color: #2196F3;
+        }
+        .log-warn {
+            color: #ff9800;
+        }
+        .test-description {
+            margin: 20px 0 10px;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-left: 4px solid #9e9e9e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>nscale-assist Admin Fix Tests</h1>
+        
+        <div class="test-description">
+            <p>Diese Testseite überprüft, ob die Bugfixes für folgende Probleme funktionieren:</p>
+            <ol>
+                <li>Admin-Button verschwindet nach "Neue Unterhaltung"</li>
+                <li>Beim ersten Klick auf "Administration" wird nur die Überschrift "Benutzer" angezeigt</li>
+                <li>Fehlende System- und Feedback-Statistiken</li>
+                <li>MOTD-Vorschaufehler</li>
+                <li>Fehlende Dokumentenkonverter-Buttons</li>
+            </ol>
+        </div>
+        
+        <div class="status" id="status">
+            Bereit zum Testen. Bitte stellen Sie sicher, dass Sie als Admin eingeloggt sind.
+        </div>
+        
+        <div class="test-controls">
+            <button id="run-dom-analyze">DOM Analyse</button>
+            <button id="run-admin-first-click-test">Admin First-Click Test</button>
+            <button id="run-admin-button-test">Admin Button Test</button>
+            <button id="run-stats-test">Statistik Tests</button>
+            <button id="run-motd-test">MOTD Test</button>
+            <button id="run-doc-converter-test">Dokumentenkonverter Test</button>
+            <button id="run-all-tests">Alle Tests ausführen</button>
+            <button id="clear-console">Konsole leeren</button>
+        </div>
+        
+        <div class="console" id="console"></div>
+    </div>
+
+    <script>
+        // Konsolen-Output umleiten, um ihn auf der Seite anzuzeigen
+        const consoleContainer = document.getElementById('console');
+        const statusContainer = document.getElementById('status');
+        
+        // Original-Konsolen-Methoden sichern
+        const originalConsoleLog = console.log;
+        const originalConsoleWarn = console.warn;
+        const originalConsoleError = console.error;
+        const originalConsoleInfo = console.info;
+        
+        // Funktionen zum Anzeigen in der UI-Konsole
+        function addLogEntry(message, type = 'default') {
+            const entry = document.createElement('div');
+            entry.classList.add('log-entry');
+            
+            // CSS-Klasse basierend auf dem Typ setzen
+            if (type) entry.classList.add(`log-${type}`);
+            
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            consoleContainer.appendChild(entry);
+            
+            // Zum Ende scrollen
+            consoleContainer.scrollTop = consoleContainer.scrollHeight;
+        }
+        
+        // Konsolen-Methoden überschreiben
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            addLogEntry(args.join(' '));
+        };
+        
+        console.warn = function(...args) {
+            originalConsoleWarn.apply(console, args);
+            addLogEntry(args.join(' '), 'warn');
+        };
+        
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            addLogEntry(args.join(' '), 'fail');
+        };
+        
+        console.info = function(...args) {
+            originalConsoleInfo.apply(console, args);
+            addLogEntry(args.join(' '), 'info');
+        };
+        
+        // Test-Pass- und Test-Fail-Funktionen zur Konsole hinzufügen
+        console.pass = function(...args) {
+            originalConsoleLog.apply(console, ["✅", ...args]);
+            addLogEntry(args.join(' '), 'pass');
+        };
+        
+        console.fail = function(...args) {
+            originalConsoleError.apply(console, ["❌", ...args]);
+            addLogEntry(args.join(' '), 'fail');
+        };
+        
+        // Funktion zum Laden eines Test-Skripts
+        function loadTestScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+        
+        // Event-Listener für Buttons
+        document.getElementById('run-admin-first-click-test').addEventListener('click', async function() {
+            statusContainer.textContent = 'Admin First-Click Test wird ausgeführt...';
+            addLogEntry('===== ADMIN FIRST-CLICK TEST WIRD GESTARTET =====', 'info');
+            
+            try {
+                await loadTestScript('../tests/admin_first_click_test.js');
+                statusContainer.textContent = 'Admin First-Click Test abgeschlossen.';
+            } catch (error) {
+                addLogEntry(`Fehler beim Laden des Tests: ${error}`, 'fail');
+                statusContainer.textContent = 'Fehler beim Laden des Tests.';
+            }
+        });
+        
+        document.getElementById('run-admin-button-test').addEventListener('click', async function() {
+            statusContainer.textContent = 'Admin Button Test wird ausgeführt...';
+            addLogEntry('===== ADMIN BUTTON TEST WIRD GESTARTET =====', 'info');
+            
+            try {
+                await loadTestScript('../tests/admin_button_test.js');
+                statusContainer.textContent = 'Admin Button Test abgeschlossen.';
+            } catch (error) {
+                addLogEntry(`Fehler beim Laden des Tests: ${error}`, 'fail');
+                statusContainer.textContent = 'Fehler beim Laden des Tests.';
+            }
+        });
+        
+        document.getElementById('run-stats-test').addEventListener('click', async function() {
+            statusContainer.textContent = 'Statistik Tests werden ausgeführt...';
+            addLogEntry('===== STATISTIK TESTS WERDEN GESTARTET =====', 'info');
+            
+            try {
+                await loadTestScript('../tests/admin_stats_test.js');
+                statusContainer.textContent = 'Statistik Tests abgeschlossen.';
+            } catch (error) {
+                addLogEntry(`Fehler beim Laden des Tests: ${error}`, 'fail');
+                statusContainer.textContent = 'Fehler beim Laden des Tests.';
+            }
+        });
+        
+        document.getElementById('run-motd-test').addEventListener('click', async function() {
+            statusContainer.textContent = 'MOTD Test wird ausgeführt...';
+            addLogEntry('===== MOTD TEST WIRD GESTARTET =====', 'info');
+            
+            try {
+                await loadTestScript('../tests/motd_test.js');
+                statusContainer.textContent = 'MOTD Test abgeschlossen.';
+            } catch (error) {
+                addLogEntry(`Fehler beim Laden des Tests: ${error}`, 'fail');
+                statusContainer.textContent = 'Fehler beim Laden des Tests.';
+            }
+        });
+        
+        document.getElementById('run-doc-converter-test').addEventListener('click', async function() {
+            statusContainer.textContent = 'Dokumentenkonverter Test wird ausgeführt...';
+            addLogEntry('===== DOKUMENTENKONVERTER TEST WIRD GESTARTET =====', 'info');
+            
+            try {
+                await loadTestScript('../tests/doc_converter_test.js');
+                statusContainer.textContent = 'Dokumentenkonverter Test abgeschlossen.';
+            } catch (error) {
+                addLogEntry(`Fehler beim Laden des Tests: ${error}`, 'fail');
+                statusContainer.textContent = 'Fehler beim Laden des Tests.';
+            }
+        });
+        
+        document.getElementById('run-all-tests').addEventListener('click', async function() {
+            statusContainer.textContent = 'Alle Tests werden ausgeführt...';
+            addLogEntry('===== ALLE TESTS WERDEN GESTARTET =====', 'info');
+            
+            const testScripts = [
+                '../tests/admin_first_click_test.js',
+                '../tests/admin_button_test.js',
+                '../tests/admin_stats_test.js',
+                '../tests/motd_test.js',
+                '../tests/doc_converter_test.js'
+            ];
+            
+            for (const script of testScripts) {
+                try {
+                    addLogEntry(`Loading test: ${script}`, 'info');
+                    await loadTestScript(script);
+                    addLogEntry(`Completed test: ${script}`, 'info');
+                    // Kurz warten zwischen den Tests
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                } catch (error) {
+                    addLogEntry(`Fehler beim Laden des Tests ${script}: ${error}`, 'fail');
+                }
+            }
+            
+            statusContainer.textContent = 'Alle Tests abgeschlossen.';
+        });
+        
+        document.getElementById('run-dom-analyze').addEventListener('click', async function() {
+            statusContainer.textContent = 'DOM-Analyse wird ausgeführt...';
+            addLogEntry('===== DOM-ANALYSE WIRD GESTARTET =====', 'info');
+            
+            try {
+                await loadTestScript('../tests/dom_analyze.js');
+                statusContainer.textContent = 'DOM-Analyse abgeschlossen.';
+            } catch (error) {
+                addLogEntry(`Fehler beim Laden der DOM-Analyse: ${error}`, 'fail');
+                statusContainer.textContent = 'Fehler beim Laden der DOM-Analyse.';
+            }
+        });
+        
+        document.getElementById('clear-console').addEventListener('click', function() {
+            consoleContainer.innerHTML = '';
+            addLogEntry('Konsole geleert.', 'info');
+        });
+        
+        // Prüfen, ob der Benutzer eingeloggt ist
+        function checkLoginStatus() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                statusContainer.textContent = 'Warnung: Sie sind nicht eingeloggt. Bitte loggen Sie sich als Administrator ein, um die Tests auszuführen.';
+                statusContainer.style.backgroundColor = '#fff3cd';
+                statusContainer.style.borderLeftColor = '#ffc107';
+            } else {
+                statusContainer.textContent = 'Bereit zum Testen. Token gefunden.';
+            }
+        }
+        
+        // Automatische Anmeldung
+        async function autoLogin() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                try {
+                    statusContainer.textContent = 'Automatische Anmeldung wird durchgeführt...';
+                    addLogEntry('Versuche automatische Anmeldung mit test@test.com / 123', 'info');
+                    
+                    // Prüfen ob Login-Form existiert
+                    const loginForm = document.getElementById('login-form');
+                    const emailInput = document.getElementById('login-email');
+                    const passwordInput = document.getElementById('login-password');
+                    const loginButton = document.getElementById('login-button');
+                    
+                    if (loginForm && emailInput && passwordInput && loginButton) {
+                        // Anmeldedaten eingeben
+                        emailInput.value = 'test@test.com';
+                        passwordInput.value = '123';
+                        
+                        // Form-Submit
+                        loginButton.click();
+                        
+                        // Warten auf Anmeldung
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        
+                        // Status prüfen
+                        const newToken = localStorage.getItem('token');
+                        if (newToken) {
+                            statusContainer.textContent = 'Automatische Anmeldung erfolgreich! Tests können nun ausgeführt werden.';
+                            statusContainer.style.backgroundColor = '#d4edda';
+                            statusContainer.style.borderLeftColor = '#28a745';
+                            addLogEntry('Anmeldung erfolgreich!', 'pass');
+                        } else {
+                            statusContainer.textContent = 'Automatische Anmeldung fehlgeschlagen. Bitte manuell einloggen.';
+                            statusContainer.style.backgroundColor = '#fff3cd';
+                            statusContainer.style.borderLeftColor = '#ffc107';
+                            addLogEntry('Anmeldung fehlgeschlagen.', 'fail');
+                        }
+                    } else {
+                        statusContainer.textContent = 'Login-Formular nicht gefunden. Sie befinden sich möglicherweise bereits im angemeldeten Bereich.';
+                        checkLoginStatus();
+                    }
+                } catch (error) {
+                    addLogEntry(`Fehler bei der automatischen Anmeldung: ${error}`, 'fail');
+                    statusContainer.textContent = 'Fehler bei der automatischen Anmeldung. Bitte manuell einloggen.';
+                    statusContainer.style.backgroundColor = '#fff3cd';
+                    statusContainer.style.borderLeftColor = '#ffc107';
+                }
+            } else {
+                checkLoginStatus();
+            }
+        }
+
+        // Bei Seitenladung automatische Anmeldung versuchen
+        document.addEventListener('DOMContentLoaded', autoLogin);
+    </script>
+</body>
+</html>

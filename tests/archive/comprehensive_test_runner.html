@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nscale-assist Umfassender Test-Runner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        .test-categories {
+            display: flex;
+            margin-top: 20px;
+        }
+        .category-sidebar {
+            width: 250px;
+            padding-right: 20px;
+        }
+        .category-content {
+            flex: 1;
+        }
+        .category-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .category-item {
+            padding: 10px 15px;
+            margin-bottom: 5px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .category-item:hover {
+            background-color: #e0e0e0;
+        }
+        .category-item.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .test-controls {
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        button.secondary {
+            background-color: #2196F3;
+        }
+        button.secondary:hover {
+            background-color: #0b7dda;
+        }
+        button.warning {
+            background-color: #ff9800;
+        }
+        button.warning:hover {
+            background-color: #e68a00;
+        }
+        button.danger {
+            background-color: #f44336;
+        }
+        button.danger:hover {
+            background-color: #d32f2f;
+        }
+        .console {
+            background-color: #1e1e1e;
+            color: #dcdcdc;
+            padding: 15px;
+            border-radius: 4px;
+            height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin-top: 20px;
+        }
+        .test-description {
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #4CAF50;
+        }
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #e7f3fe;
+            border-left: 4px solid #2196F3;
+        }
+        .log-entry {
+            margin: 2px 0;
+            line-height: 1.4;
+        }
+        .log-pass {
+            color: #4CAF50;
+        }
+        .log-fail {
+            color: #f44336;
+        }
+        .log-info {
+            color: #2196F3;
+        }
+        .log-warn {
+            color: #ff9800;
+        }
+        .test-panel {
+            display: none;
+        }
+        .test-panel.active {
+            display: block;
+        }
+        .server-login-section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f0f8ff;
+            border-radius: 5px;
+            border: 1px solid #b3e0ff;
+        }
+        .login-form {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .login-form input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>nscale-assist Umfassender Test-Runner</h1>
+        
+        <div class="server-login-section">
+            <h3>Server-Status & Login</h3>
+            <div id="server-status" class="status">
+                Prüfe Server-Status...
+            </div>
+            <div class="login-form">
+                <input type="email" id="test-email" placeholder="E-Mail" value="test@test.com">
+                <input type="password" id="test-password" placeholder="Passwort" value="123">
+                <button id="login-btn">Anmelden</button>
+            </div>
+        </div>
+        
+        <div class="test-categories">
+            <div class="category-sidebar">
+                <h3>Test-Kategorien</h3>
+                <ul class="category-list">
+                    <li class="category-item active" data-category="admin-tests">Admin-Panel Tests</li>
+                    <li class="category-item" data-category="ui-tests">UI-Komponenten Tests</li>
+                    <li class="category-item" data-category="bugfix-tests">Bugfix Tests</li>
+                    <li class="category-item" data-category="dom-tests">DOM & Struktur Tests</li>
+                    <li class="category-item" data-category="custom-tests">Benutzerdefinierte Tests</li>
+                </ul>
+            </div>
+            
+            <div class="category-content">
+                <!-- Admin-Panel Tests -->
+                <div id="admin-tests" class="test-panel active">
+                    <h2>Admin-Panel Tests</h2>
+                    <div class="test-description">
+                        <p>Diese Tests überprüfen die Funktionalität des Admin-Panels und seiner verschiedenen Tabs (Benutzer, System, Feedback, MOTD, Dokumentenkonverter).</p>
+                    </div>
+                    <div class="test-controls">
+                        <button class="run-test" data-test="admin-first-click">Admin First-Click Test</button>
+                        <button class="run-test" data-test="admin-button">Admin-Button Sichtbarkeit</button>
+                        <button class="run-test" data-test="admin-tabs">Admin-Tabs Test</button>
+                        <button class="run-test" data-test="admin-stats">Admin-Statistiken Test</button>
+                        <button class="run-test" data-test="motd">MOTD Test</button>
+                        <button class="run-test" data-test="doc-converter">Dokumentenkonverter Test</button>
+                        <button class="run-all-category">Alle Admin-Tests ausführen</button>
+                    </div>
+                </div>
+                
+                <!-- UI-Komponenten Tests -->
+                <div id="ui-tests" class="test-panel">
+                    <h2>UI-Komponenten Tests</h2>
+                    <div class="test-description">
+                        <p>Diese Tests überprüfen die UI-Komponenten auf korrekte Darstellung und Funktionalität.</p>
+                    </div>
+                    <div class="test-controls">
+                        <button class="run-test" data-test="chat-view">Chat-Ansicht Test</button>
+                        <button class="run-test" data-test="session-tabs">Session-Tabs Test</button>
+                        <button class="run-test" data-test="feedback-button">Feedback-Button Test</button>
+                        <button class="run-test" data-test="text-streaming">Text-Streaming Test</button>
+                        <button class="run-all-category">Alle UI-Tests ausführen</button>
+                    </div>
+                </div>
+                
+                <!-- Bugfix Tests -->
+                <div id="bugfix-tests" class="test-panel">
+                    <h2>Bugfix Tests</h2>
+                    <div class="test-description">
+                        <p>Diese Tests überprüfen, ob bekannte Fehler korrekt behoben wurden.</p>
+                    </div>
+                    <div class="test-controls">
+                        <button class="run-test" data-test="vue-cleanup">Vue-Bereinigung Test</button>
+                        <button class="run-test" data-test="issue-tests">Bekannte Probleme Test</button>
+                        <button class="run-all-category">Alle Bugfix-Tests ausführen</button>
+                    </div>
+                </div>
+                
+                <!-- DOM & Struktur Tests -->
+                <div id="dom-tests" class="test-panel">
+                    <h2>DOM & Struktur Tests</h2>
+                    <div class="test-description">
+                        <p>Diese Tests analysieren die DOM-Struktur und überprüfen wichtige Elemente.</p>
+                    </div>
+                    <div class="test-controls">
+                        <button class="run-test" data-test="dom-analyze">DOM-Analyse</button>
+                        <button class="run-test" data-test="logo-test">Logo Test</button>
+                        <button class="run-all-category">Alle DOM-Tests ausführen</button>
+                    </div>
+                </div>
+                
+                <!-- Benutzerdefinierte Tests -->
+                <div id="custom-tests" class="test-panel">
+                    <h2>Benutzerdefinierte Tests</h2>
+                    <div class="test-description">
+                        <p>Hier können Sie eigene Tests definieren und ausführen.</p>
+                    </div>
+                    <div class="test-controls">
+                        <textarea id="custom-test-code" rows="10" style="width: 100%; font-family: monospace; padding: 10px; margin-bottom: 10px;" placeholder="// JavaScript-Code für benutzerdefinierten Test eingeben..."></textarea>
+                        <button id="run-custom-test" class="secondary">Benutzerdefinierten Test ausführen</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="global-controls">
+            <h3>Globale Steuerung</h3>
+            <div class="test-controls">
+                <button id="run-all-tests" class="secondary">Alle Tests ausführen</button>
+                <button id="clear-console" class="warning">Konsole leeren</button>
+                <button id="reset-app" class="danger">App zurücksetzen</button>
+            </div>
+        </div>
+        
+        <div class="console-container">
+            <h3>Test-Konsole</h3>
+            <div class="console" id="console"></div>
+        </div>
+    </div>
+
+    <script>
+        // Konsolen-Umleitung
+        const consoleContainer = document.getElementById('console');
+        const serverStatus = document.getElementById('server-status');
+        
+        // Original-Konsolen-Methoden sichern
+        const originalConsoleLog = console.log;
+        const originalConsoleWarn = console.warn;
+        const originalConsoleError = console.error;
+        const originalConsoleInfo = console.info;
+        
+        // Funktionen zum Anzeigen in der UI-Konsole
+        function addLogEntry(message, type = 'default') {
+            const entry = document.createElement('div');
+            entry.classList.add('log-entry');
+            
+            // CSS-Klasse basierend auf dem Typ setzen
+            if (type) entry.classList.add(`log-${type}`);
+            
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            consoleContainer.appendChild(entry);
+            
+            // Zum Ende scrollen
+            consoleContainer.scrollTop = consoleContainer.scrollHeight;
+        }
+        
+        // Konsolen-Methoden überschreiben
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            addLogEntry(args.join(' '));
+        };
+        
+        console.warn = function(...args) {
+            originalConsoleWarn.apply(console, args);
+            addLogEntry(args.join(' '), 'warn');
+        };
+        
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            addLogEntry(args.join(' '), 'fail');
+        };
+        
+        console.info = function(...args) {
+            originalConsoleInfo.apply(console, args);
+            addLogEntry(args.join(' '), 'info');
+        };
+        
+        // Test-Pass- und Test-Fail-Funktionen zur Konsole hinzufügen
+        console.pass = function(...args) {
+            originalConsoleLog.apply(console, ["✅", ...args]);
+            addLogEntry(args.join(' '), 'pass');
+        };
+        
+        console.fail = function(...args) {
+            originalConsoleError.apply(console, ["❌", ...args]);
+            addLogEntry(args.join(' '), 'fail');
+        };
+        
+        // Kategorie-Wechsel
+        const categoryItems = document.querySelectorAll('.category-item');
+        const testPanels = document.querySelectorAll('.test-panel');
+        
+        categoryItems.forEach(item => {
+            item.addEventListener('click', function() {
+                // Aktive Klasse von allen Items entfernen
+                categoryItems.forEach(i => i.classList.remove('active'));
+                
+                // Aktive Klasse zu diesem Item hinzufügen
+                this.classList.add('active');
+                
+                // Aktives Panel anzeigen
+                const categoryId = this.getAttribute('data-category');
+                testPanels.forEach(panel => {
+                    if (panel.id === categoryId) {
+                        panel.classList.add('active');
+                    } else {
+                        panel.classList.remove('active');
+                    }
+                });
+            });
+        });
+        
+        // Funktion zum Laden eines Test-Skripts
+        function loadTestScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = () => {
+                    console.log(`Skript '${src}' erfolgreich geladen`, 'info');
+                    resolve();
+                };
+                script.onerror = (error) => {
+                    console.error(`Fehler beim Laden von '${src}': ${error}`);
+                    reject(error);
+                };
+                document.head.appendChild(script);
+            });
+        }
+        
+        // Test-Mapping
+        const testMapping = {
+            'admin-first-click': '../tests/admin_first_click_test.js',
+            'admin-button': '../tests/admin_button_test.js',
+            'admin-tabs': '../tests/admin_tab_test.js',
+            'admin-stats': '../tests/admin_stats_test.js',
+            'motd': '../tests/motd_test.js',
+            'doc-converter': '../tests/doc_converter_test.js',
+            'chat-view': '../tests/chat_view_test.js',
+            'session-tabs': '../tests/session_tabs_test.js',
+            'feedback-button': '../tests/feedback_button_test.js',
+            'text-streaming': '../tests/text_streaming_test.js',
+            'vue-cleanup': '../tests/bugfix_tests.js',
+            'issue-tests': '../tests/issue_tests.js',
+            'dom-analyze': '../tests/dom_analyze.js',
+            'logo-test': '../tests/logo_test.html'
+        };
+        
+        // Event-Listener für Test-Buttons
+        document.querySelectorAll('.run-test').forEach(button => {
+            button.addEventListener('click', async function() {
+                const testId = this.getAttribute('data-test');
+                const testScript = testMapping[testId];
+                
+                if (!testScript) {
+                    console.error(`Kein Test-Skript definiert für Test-ID '${testId}'`);
+                    return;
+                }
+                
+                console.log(`===== TEST '${testId}' WIRD GESTARTET =====`, 'info');
+                
+                try {
+                    await loadTestScript(testScript);
+                    console.log(`===== TEST '${testId}' ABGESCHLOSSEN =====`, 'info');
+                } catch (error) {
+                    console.error(`Fehler beim Ausführen des Tests '${testId}': ${error}`);
+                }
+            });
+        });
+        
+        // Event-Listener für "Alle Tests dieser Kategorie"-Buttons
+        document.querySelectorAll('.run-all-category').forEach(button => {
+            button.addEventListener('click', async function() {
+                // Finden der aktiven Kategorie
+                const activePanel = document.querySelector('.test-panel.active');
+                if (!activePanel) {
+                    console.error('Keine aktive Test-Kategorie gefunden');
+                    return;
+                }
+                
+                // Alle Test-Buttons in dieser Kategorie sammeln
+                const testButtons = activePanel.querySelectorAll('.run-test');
+                
+                console.log(`===== ALLE TESTS DER KATEGORIE '${activePanel.id}' WERDEN GESTARTET =====`, 'info');
+                
+                // Tests nacheinander ausführen
+                for (const button of testButtons) {
+                    const testId = button.getAttribute('data-test');
+                    const testScript = testMapping[testId];
+                    
+                    if (!testScript) {
+                        console.warn(`Überspringe Test '${testId}': Kein Test-Skript definiert`);
+                        continue;
+                    }
+                    
+                    console.log(`----- Starte Test '${testId}' -----`, 'info');
+                    
+                    try {
+                        await loadTestScript(testScript);
+                        console.log(`----- Test '${testId}' abgeschlossen -----`, 'info');
+                    } catch (error) {
+                        console.error(`Fehler beim Ausführen des Tests '${testId}': ${error}`);
+                    }
+                    
+                    // Kurze Pause zwischen den Tests
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                console.log(`===== ALLE TESTS DER KATEGORIE '${activePanel.id}' ABGESCHLOSSEN =====`, 'info');
+            });
+        });
+        
+        // Event-Listener für "Alle Tests ausführen"-Button
+        document.getElementById('run-all-tests').addEventListener('click', async function() {
+            console.log('===== ALLE TESTS WERDEN GESTARTET =====', 'info');
+            
+            // Alle Test-IDs sammeln
+            const allTestIds = Object.keys(testMapping);
+            
+            // Tests nacheinander ausführen
+            for (const testId of allTestIds) {
+                const testScript = testMapping[testId];
+                
+                console.log(`----- Starte Test '${testId}' -----`, 'info');
+                
+                try {
+                    await loadTestScript(testScript);
+                    console.log(`----- Test '${testId}' abgeschlossen -----`, 'info');
+                } catch (error) {
+                    console.error(`Fehler beim Ausführen des Tests '${testId}': ${error}`);
+                }
+                
+                // Kurze Pause zwischen den Tests
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            console.log('===== ALLE TESTS ABGESCHLOSSEN =====', 'info');
+        });
+        
+        // Event-Listener für "Konsole leeren"-Button
+        document.getElementById('clear-console').addEventListener('click', function() {
+            consoleContainer.innerHTML = '';
+            addLogEntry('Konsole geleert', 'info');
+        });
+        
+        // Event-Listener für "App zurücksetzen"-Button
+        document.getElementById('reset-app').addEventListener('click', function() {
+            if (confirm('Möchten Sie die App wirklich zurücksetzen? Alle Sitzungsdaten werden gelöscht.')) {
+                // Token entfernen
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                
+                // Alle anderen App-spezifischen Daten löschen
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key.startsWith('nscale-')) {
+                        localStorage.removeItem(key);
+                    }
+                }
+                
+                console.log('App wurde zurückgesetzt. Alle Sitzungsdaten wurden gelöscht.', 'info');
+                checkServerStatus();
+            }
+        });
+        
+        // Event-Listener für benutzerdefinierten Test
+        document.getElementById('run-custom-test').addEventListener('click', function() {
+            const customCode = document.getElementById('custom-test-code').value;
+            
+            if (!customCode.trim()) {
+                console.warn('Bitte geben Sie einen benutzerdefinierten Test-Code ein');
+                return;
+            }
+            
+            console.log('===== BENUTZERDEFINIERTER TEST WIRD AUSGEFÜHRT =====', 'info');
+            
+            try {
+                // Code in einer temporären Funktion ausführen, um Fehler zu isolieren
+                const executeCode = new Function(customCode);
+                executeCode();
+                
+                console.log('===== BENUTZERDEFINIERTER TEST ABGESCHLOSSEN =====', 'info');
+            } catch (error) {
+                console.error(`Fehler im benutzerdefinierten Test: ${error.message}`);
+            }
+        });
+        
+        // Login-Button Event-Listener
+        document.getElementById('login-btn').addEventListener('click', function() {
+            const email = document.getElementById('test-email').value;
+            const password = document.getElementById('test-password').value;
+            
+            if (!email || !password) {
+                console.warn('Bitte geben Sie E-Mail und Passwort ein');
+                return;
+            }
+            
+            manualLogin(email, password);
+        });
+        
+        // Server-Status prüfen
+        async function checkServerStatus() {
+            try {
+                serverStatus.textContent = 'Prüfe Server-Status...';
+                serverStatus.style.backgroundColor = '#e7f3fe';
+                serverStatus.style.borderLeftColor = '#2196F3';
+                
+                const response = await fetch('http://localhost:8080/', {
+                    method: 'HEAD',
+                    mode: 'no-cors',
+                    cache: 'no-cache'
+                });
+                
+                serverStatus.textContent = 'Server ist erreichbar! Bitte melden Sie sich an, um Tests auszuführen.';
+                serverStatus.style.backgroundColor = '#e8f5e9';
+                serverStatus.style.borderLeftColor = '#4CAF50';
+                
+                // Login-Status prüfen
+                const token = localStorage.getItem('token');
+                if (token) {
+                    serverStatus.textContent = 'Server ist erreichbar, und Sie sind angemeldet. Bereit zum Testen!';
+                    
+                    // Prüfen, ob Admin-Rechte vorhanden sind
+                    try {
+                        const response = await fetch('http://localhost:8080/api/user/role', {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.role === 'admin') {
+                                serverStatus.textContent = 'Server ist erreichbar, und Sie sind als Administrator angemeldet. Bereit zum Testen!';
+                            } else {
+                                serverStatus.textContent = `Server ist erreichbar, und Sie sind als ${data.role} angemeldet. Für einige Tests werden Administratorrechte benötigt!`;
+                                serverStatus.style.backgroundColor = '#fff3cd';
+                                serverStatus.style.borderLeftColor = '#ffc107';
+                            }
+                        }
+                    } catch (error) {
+                        console.warn('Fehler beim Prüfen der Benutzerrolle:', error);
+                    }
+                }
+            } catch (error) {
+                serverStatus.textContent = 'Server ist nicht erreichbar! Bitte starten Sie den Server.';
+                serverStatus.style.backgroundColor = '#ffebee';
+                serverStatus.style.borderLeftColor = '#f44336';
+                console.error('Fehler beim Prüfen des Server-Status:', error);
+            }
+        }
+        
+        // Manuelle Anmeldung
+        async function manualLogin(email, password) {
+            try {
+                serverStatus.textContent = 'Anmeldung läuft...';
+                serverStatus.style.backgroundColor = '#e7f3fe';
+                serverStatus.style.borderLeftColor = '#2196F3';
+                
+                const response = await fetch('http://localhost:8080/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('token', data.token);
+                    serverStatus.textContent = 'Anmeldung erfolgreich! Bereit zum Testen.';
+                    serverStatus.style.backgroundColor = '#e8f5e9';
+                    serverStatus.style.borderLeftColor = '#4CAF50';
+                    console.log('Anmeldung erfolgreich!', 'pass');
+                    
+                    // Benutzerrolle prüfen
+                    try {
+                        const roleResponse = await fetch('http://localhost:8080/api/user/role', {
+                            headers: {
+                                'Authorization': `Bearer ${data.token}`
+                            }
+                        });
+                        
+                        if (roleResponse.ok) {
+                            const roleData = await roleResponse.json();
+                            console.log(`Angemeldet als: ${roleData.role}`, 'info');
+                            
+                            if (roleData.role === 'admin') {
+                                serverStatus.textContent = 'Anmeldung erfolgreich! Sie sind als Administrator angemeldet. Bereit zum Testen.';
+                            } else {
+                                serverStatus.textContent = `Anmeldung erfolgreich! Sie sind als ${roleData.role} angemeldet. Für einige Tests werden Administratorrechte benötigt!`;
+                                serverStatus.style.backgroundColor = '#fff3cd';
+                                serverStatus.style.borderLeftColor = '#ffc107';
+                            }
+                        }
+                    } catch (error) {
+                        console.warn('Fehler beim Prüfen der Benutzerrolle:', error);
+                    }
+                } else {
+                    const errorData = await response.json();
+                    serverStatus.textContent = `Anmeldung fehlgeschlagen: ${errorData.detail || 'Ungültige Anmeldedaten'}`;
+                    serverStatus.style.backgroundColor = '#ffebee';
+                    serverStatus.style.borderLeftColor = '#f44336';
+                    console.error('Anmeldung fehlgeschlagen:', errorData.detail || 'Ungültige Anmeldedaten');
+                }
+            } catch (error) {
+                serverStatus.textContent = 'Anmeldung fehlgeschlagen: Verbindungsproblem';
+                serverStatus.style.backgroundColor = '#ffebee';
+                serverStatus.style.borderLeftColor = '#f44336';
+                console.error('Fehler bei der Anmeldung:', error);
+            }
+        }
+        
+        // Beim Laden der Seite den Server-Status prüfen
+        window.addEventListener('load', function() {
+            console.log('Umfassender Test-Runner geladen', 'info');
+            checkServerStatus();
+        });
+    </script>
+</body>
+</html>

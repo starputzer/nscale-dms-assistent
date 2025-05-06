@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nscale-assist Live-Validator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .app-container {
+            flex: 1;
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .app-frame {
+            flex: 2;
+            min-height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .results-panel {
+            flex: 1;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-left: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f2f9ff;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .btn {
+            padding: 10px 15px;
+            margin-right: 10px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn.run {
+            background-color: #2ecc71;
+        }
+        
+        .btn.run:hover {
+            background-color: #27ae60;
+        }
+        
+        .btn.reload {
+            background-color: #e74c3c;
+        }
+        
+        .btn.reload:hover {
+            background-color: #c0392b;
+        }
+        
+        .issue {
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border-radius: 4px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .issue-high {
+            background-color: #ffecec;
+            border-left-color: #e74c3c;
+        }
+        
+        .issue-medium {
+            background-color: #fff5e6;
+            border-left-color: #f39c12;
+        }
+        
+        .issue-low {
+            background-color: #f2f9ff;
+            border-left-color: #3498db;
+        }
+        
+        .issue-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .issue-title {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .issue-severity {
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: white;
+        }
+        
+        .severity-high {
+            background-color: #e74c3c;
+        }
+        
+        .severity-medium {
+            background-color: #f39c12;
+        }
+        
+        .severity-low {
+            background-color: #3498db;
+        }
+        
+        .issue-details {
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        
+        .issue-component {
+            font-size: 12px;
+            color: #888;
+            font-style: italic;
+        }
+        
+        .login-form {
+            max-width: 400px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .login-form h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .login-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .loading {
+            margin-top: 20px;
+            text-align: center;
+            font-style: italic;
+            color: #777;
+        }
+        
+        .summary {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f2f9ff;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .summary h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        
+        .summary-stat {
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .stat-value {
+            font-weight: normal;
+        }
+        
+        .stat-high {
+            color: #e74c3c;
+        }
+        
+        .stat-medium {
+            color: #f39c12;
+        }
+        
+        .stat-low {
+            color: #3498db;
+        }
+        
+        .stat-total {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>nscale-assist Live-Validator</h1>
+        
+        <div class="controls">
+            <p>Diese Seite führt einen Live-Validator für die nscale-assist Anwendung aus, um bekannte Probleme zu identifizieren und Diagnosen zu stellen. Um den Validator zu verwenden, klicken Sie auf die Schaltfläche unten.</p>
+            <button id="run-validator" class="btn run">Validator ausführen</button>
+            <button id="reload-app" class="btn reload">App neu laden</button>
+            <button id="toggle-results" class="btn">Ergebnisse ein-/ausblenden</button>
+        </div>
+        
+        <div class="app-container">
+            <iframe id="app-frame" class="app-frame" src="/"></iframe>
+            
+            <div id="results-panel" class="results-panel">
+                <h2>Diagnoseergebnisse</h2>
+                <div id="login-status" class="loading">Prüfe Login-Status...</div>
+                
+                <div id="login-form" class="login-form" style="display: none;">
+                    <h2>Anmeldung erforderlich</h2>
+                    <p>Bitte melden Sie sich an, um den Validator auszuführen:</p>
+                    
+                    <div class="form-group">
+                        <label for="email">E-Mail:</label>
+                        <input type="email" id="email" value="test@test.com" placeholder="E-Mail-Adresse">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Passwort:</label>
+                        <input type="password" id="password" value="123" placeholder="Passwort">
+                    </div>
+                    
+                    <button id="login-btn" class="login-btn">Anmelden</button>
+                </div>
+                
+                <div id="validator-results"></div>
+                
+                <div id="issues-summary" class="summary" style="display: none;">
+                    <h3>Zusammenfassung der Ergebnisse</h3>
+                    <div class="summary-stats">
+                        <div class="summary-stat">
+                            <span class="stat-label">Kritische Probleme:</span>
+                            <span id="high-count" class="stat-value stat-high">0</span>
+                        </div>
+                        <div class="summary-stat">
+                            <span class="stat-label">Mittelschwere Probleme:</span>
+                            <span id="medium-count" class="stat-value stat-medium">0</span>
+                        </div>
+                        <div class="summary-stat">
+                            <span class="stat-label">Geringfügige Probleme:</span>
+                            <span id="low-count" class="stat-value stat-low">0</span>
+                        </div>
+                        <div class="summary-stat">
+                            <span class="stat-label">Gesamt:</span>
+                            <span id="total-count" class="stat-value stat-total">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Hauptfunktionen für den Validator
+        document.addEventListener('DOMContentLoaded', function() {
+            const appFrame = document.getElementById('app-frame');
+            const resultsPanel = document.getElementById('results-panel');
+            const validatorResults = document.getElementById('validator-results');
+            const loginForm = document.getElementById('login-form');
+            const loginStatus = document.getElementById('login-status');
+            const issuesSummary = document.getElementById('issues-summary');
+            
+            // Buttons
+            const runValidatorBtn = document.getElementById('run-validator');
+            const reloadAppBtn = document.getElementById('reload-app');
+            const toggleResultsBtn = document.getElementById('toggle-results');
+            const loginBtn = document.getElementById('login-btn');
+            
+            // Warte, bis die App geladen ist
+            appFrame.onload = function() {
+                // Prüfe, ob der Benutzer angemeldet ist
+                setTimeout(checkLoginStatus, 1000);
+            };
+            
+            // Prüfe Login-Status
+            function checkLoginStatus() {
+                try {
+                    const token = appFrame.contentWindow.localStorage.getItem('token');
+                    
+                    if (token) {
+                        // Benutzer ist angemeldet
+                        loginStatus.textContent = 'Angemeldet ✓';
+                        loginStatus.style.color = '#2ecc71';
+                        loginForm.style.display = 'none';
+                    } else {
+                        // Benutzer ist nicht angemeldet
+                        loginStatus.textContent = 'Nicht angemeldet ✗';
+                        loginStatus.style.color = '#e74c3c';
+                        loginForm.style.display = 'block';
+                    }
+                } catch (e) {
+                    // Fehler beim Zugriff auf localStorage (wahrscheinlich Cross-Origin-Fehler)
+                    loginStatus.textContent = 'Konnte Login-Status nicht prüfen: ' + e.message;
+                    loginStatus.style.color = '#f39c12';
+                }
+            }
+            
+            // Anmeldung durchführen
+            loginBtn.addEventListener('click', function() {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                
+                loginStatus.textContent = 'Anmeldung läuft...';
+                loginStatus.style.color = '#f39c12';
+                
+                try {
+                    // Anmeldeformular in der App ausfüllen und absenden
+                    const appDocument = appFrame.contentDocument || appFrame.contentWindow.document;
+                    const emailInput = appDocument.querySelector('input[type="email"], input[name="email"]');
+                    const passwordInput = appDocument.querySelector('input[type="password"], input[name="password"]');
+                    const submitButton = appDocument.querySelector('button[type="submit"], input[type="submit"]');
+                    
+                    if (emailInput && passwordInput && submitButton) {
+                        emailInput.value = email;
+                        passwordInput.value = password;
+                        
+                        // Events auslösen
+                        const inputEvent = new Event('input', { bubbles: true });
+                        emailInput.dispatchEvent(inputEvent);
+                        passwordInput.dispatchEvent(inputEvent);
+                        
+                        // Formular absenden
+                        submitButton.click();
+                        
+                        // Nach kurzer Zeit Login-Status erneut prüfen
+                        setTimeout(checkLoginStatus, 2000);
+                    } else {
+                        loginStatus.textContent = 'Anmeldeformular konnte nicht gefunden werden';
+                        loginStatus.style.color = '#e74c3c';
+                    }
+                } catch (e) {
+                    loginStatus.textContent = 'Fehler bei der Anmeldung: ' + e.message;
+                    loginStatus.style.color = '#e74c3c';
+                }
+            });
+            
+            // Validator ausführen
+            runValidatorBtn.addEventListener('click', function() {
+                // Prüfe zuerst, ob der Benutzer angemeldet ist
+                const token = appFrame.contentWindow.localStorage.getItem('token');
+                
+                if (!token) {
+                    alert('Bitte melden Sie sich zuerst an, um den Validator auszuführen.');
+                    loginForm.style.display = 'block';
+                    return;
+                }
+                
+                validatorResults.innerHTML = '<div class="loading">Validator wird ausgeführt...</div>';
+                
+                // Validator-Skript injizieren
+                try {
+                    // Überwachungsfunktion für erfasste Probleme
+                    const capturedIssues = [];
+                    
+                    // Ursprüngliche Konsolenfunktionen speichern
+                    const originalConsoleLog = appFrame.contentWindow.console.log;
+                    const originalConsoleError = appFrame.contentWindow.console.error;
+                    
+                    // Konsolenfunktionen überschreiben, um Probleme zu erfassen
+                    appFrame.contentWindow.console.log = function() {
+                        originalConsoleLog.apply(console, arguments);
+                        
+                        // Überprüfen, ob es sich um eine Problemmeldung handelt
+                        const message = Array.from(arguments).join(' ');
+                        if (message.includes('[') && message.includes(']') && 
+                            (message.includes('HIGH') || message.includes('MEDIUM') || message.includes('LOW'))) {
+                            
+                            // Probleminformationen extrahieren
+                            const component = message.match(/\[(.*?)\]/)[1];
+                            const severity = message.includes('HIGH') ? 'high' : 
+                                            (message.includes('MEDIUM') ? 'medium' : 'low');
+                            const description = message.split(':').slice(1).join(':').trim();
+                            
+                            capturedIssues.push({
+                                component,
+                                severity,
+                                description,
+                                details: '',
+                                timestamp: new Date().toISOString()
+                            });
+                        }
+                    };
+                    
+                    appFrame.contentWindow.console.error = function() {
+                        originalConsoleError.apply(console, arguments);
+                        
+                        // Überprüfen, ob es sich um eine Problemmeldung handelt
+                        const message = Array.from(arguments).join(' ');
+                        if (!message.includes('Validator-Skript konnte nicht geladen werden')) {
+                            // Automatisch als kritisches Problem erfassen
+                            capturedIssues.push({
+                                component: 'Error',
+                                severity: 'high',
+                                description: message,
+                                details: '',
+                                timestamp: new Date().toISOString()
+                            });
+                        }
+                    };
+                    
+                    // Validator-Skript laden
+                    const script = appFrame.contentDocument.createElement('script');
+                    script.src = '/tests/live_validator.js';
+                    script.onload = function() {
+                        console.log('Validator-Skript geladen');
+                    };
+                    script.onerror = function() {
+                        console.error('Validator-Skript konnte nicht geladen werden');
+                        validatorResults.innerHTML = '<div class="error">Fehler: Validator-Skript konnte nicht geladen werden.</div>';
+                    };
+                    
+                    appFrame.contentDocument.head.appendChild(script);
+                    
+                    // Nach einer bestimmten Zeit Ergebnisse anzeigen
+                    setTimeout(function() {
+                        // Originalfunktionen wiederherstellen
+                        appFrame.contentWindow.console.log = originalConsoleLog;
+                        appFrame.contentWindow.console.error = originalConsoleError;
+                        
+                        renderIssues(capturedIssues);
+                    }, 15000);
+                } catch (e) {
+                    validatorResults.innerHTML = `<div class="error">Fehler beim Ausführen des Validators: ${e.message}</div>`;
+                }
+            });
+            
+            // App neu laden
+            reloadAppBtn.addEventListener('click', function() {
+                appFrame.src = appFrame.src;
+            });
+            
+            // Ergebnisse ein-/ausblenden
+            toggleResultsBtn.addEventListener('click', function() {
+                if (resultsPanel.style.display === 'none') {
+                    resultsPanel.style.display = 'block';
+                    toggleResultsBtn.textContent = 'Ergebnisse ausblenden';
+                } else {
+                    resultsPanel.style.display = 'none';
+                    toggleResultsBtn.textContent = 'Ergebnisse einblenden';
+                }
+            });
+            
+            // Probleme rendern
+            function renderIssues(issues) {
+                validatorResults.innerHTML = '';
+                
+                if (issues.length === 0) {
+                    validatorResults.innerHTML = '<div class="loading">Keine Probleme gefunden. Anwendung funktioniert korrekt.</div>';
+                    return;
+                }
+                
+                // Nach Schweregrad sortieren
+                const sortedIssues = [...issues].sort((a, b) => {
+                    const severityRank = { high: 3, medium: 2, low: 1 };
+                    return severityRank[b.severity] - severityRank[a.severity];
+                });
+                
+                // Probleme anzeigen
+                sortedIssues.forEach(issue => {
+                    const issueElement = document.createElement('div');
+                    issueElement.className = `issue issue-${issue.severity}`;
+                    
+                    const headerElement = document.createElement('div');
+                    headerElement.className = 'issue-header';
+                    
+                    const titleElement = document.createElement('div');
+                    titleElement.className = 'issue-title';
+                    titleElement.textContent = issue.description;
+                    
+                    const severityElement = document.createElement('div');
+                    severityElement.className = `issue-severity severity-${issue.severity}`;
+                    severityElement.textContent = issue.severity.toUpperCase();
+                    
+                    headerElement.appendChild(titleElement);
+                    headerElement.appendChild(severityElement);
+                    
+                    const componentElement = document.createElement('div');
+                    componentElement.className = 'issue-component';
+                    componentElement.textContent = `Komponente: ${issue.component}`;
+                    
+                    const detailsElement = document.createElement('div');
+                    detailsElement.className = 'issue-details';
+                    detailsElement.textContent = issue.details || 'Keine weiteren Details verfügbar.';
+                    
+                    issueElement.appendChild(headerElement);
+                    issueElement.appendChild(detailsElement);
+                    issueElement.appendChild(componentElement);
+                    
+                    validatorResults.appendChild(issueElement);
+                });
+                
+                // Zusammenfassung anzeigen
+                const highCount = sortedIssues.filter(i => i.severity === 'high').length;
+                const mediumCount = sortedIssues.filter(i => i.severity === 'medium').length;
+                const lowCount = sortedIssues.filter(i => i.severity === 'low').length;
+                
+                document.getElementById('high-count').textContent = highCount;
+                document.getElementById('medium-count').textContent = mediumCount;
+                document.getElementById('low-count').textContent = lowCount;
+                document.getElementById('total-count').textContent = sortedIssues.length;
+                
+                issuesSummary.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

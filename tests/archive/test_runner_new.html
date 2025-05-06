@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nscale DMS Assistent Tests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+        }
+        
+        .test-card {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .test-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .test-title h3 {
+            margin: 0;
+            margin-right: 10px;
+        }
+        
+        .test-description {
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        .secondary-btn {
+            background-color: #6c757d;
+        }
+        
+        .secondary-btn:hover {
+            background-color: #5a6268;
+        }
+        
+        .login-section {
+            background-color: #e9ecef;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .login-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        input {
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+        
+        .test-results {
+            margin-top: 20px;
+            border-top: 1px solid #dee2e6;
+            padding-top: 15px;
+        }
+        
+        .result-item {
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+        
+        .result-pass {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        
+        .result-fail {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .log-output {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .badge-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .badge-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .badge-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .test-iframe {
+            width: 100%;
+            height: 300px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .test-stats {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>nscale DMS Assistent Tests</h1>
+        <p>Auf dieser Seite können Sie Tests für die nscale DMS Assistent-Anwendung ausführen und die Ergebnisse überprüfen.</p>
+        
+        <div class="login-section">
+            <h2>Anmeldung</h2>
+            <p>Um die Tests ausführen zu können, müssen Sie sich zunächst anmelden.</p>
+            
+            <div class="login-form">
+                <input type="email" id="email-input" placeholder="E-Mail" value="test@test.com">
+                <input type="password" id="password-input" placeholder="Passwort" value="123">
+                <button id="login-btn">Anmelden</button>
+            </div>
+            
+            <div id="login-status" style="margin-top: 10px;">Status: Nicht angemeldet</div>
+        </div>
+        
+        <div class="button-group">
+            <button id="run-all-tests-btn">Alle Tests ausführen</button>
+            <button id="clear-results-btn" class="secondary-btn">Ergebnisse löschen</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>Verfügbare Tests</h2>
+            
+            <div class="test-card">
+                <div class="test-title">
+                    <h3>Session-Tabs-Test</h3>
+                    <span id="session-tabs-badge" class="badge badge-warning">Ausstehend</span>
+                </div>
+                <div class="test-description">
+                    Prüft, ob das Erstellen neuer Unterhaltungen korrekt funktioniert und keine doppelten aktiven Tabs erzeugt werden.
+                </div>
+                <button class="run-test-btn" data-test="session_tabs_test.js">Test ausführen</button>
+                <div id="session-tabs-results" class="test-results" style="display: none;"></div>
+            </div>
+            
+            <div class="test-card">
+                <div class="test-title">
+                    <h3>Admin-First-Click-Test</h3>
+                    <span id="admin-first-click-badge" class="badge badge-warning">Ausstehend</span>
+                </div>
+                <div class="test-description">
+                    Prüft, ob beim ersten Klick auf den Admin-Button die vollständige Admin-Ansicht geladen wird.
+                </div>
+                <button class="run-test-btn" data-test="admin_first_click_test.js">Test ausführen</button>
+                <div id="admin-first-click-results" class="test-results" style="display: none;"></div>
+            </div>
+            
+            <div class="test-card">
+                <div class="test-title">
+                    <h3>Text-Streaming-Test</h3>
+                    <span id="text-streaming-badge" class="badge badge-warning">Ausstehend</span>
+                </div>
+                <div class="test-description">
+                    Prüft, ob die Antworten des Assistenten inkrementell gestreamt werden statt nur am Ende vollständig angezeigt zu werden.
+                </div>
+                <button class="run-test-btn" data-test="text_streaming_test.js">Test ausführen</button>
+                <div id="text-streaming-results" class="test-results" style="display: none;"></div>
+            </div>
+            
+            <div class="test-card">
+                <div class="test-title">
+                    <h3>Dokumentenkonverter-Test</h3>
+                    <span id="doc-converter-badge" class="badge badge-warning">Ausstehend</span>
+                </div>
+                <div class="test-description">
+                    Prüft, ob der Dokumentenkonverter-Tab korrekt angezeigt wird und ein Formular statt eines "Zur Chat-Ansicht"-Buttons enthält.
+                </div>
+                <button class="run-test-btn" data-test="doc_converter_test.js">Test ausführen</button>
+                <div id="doc-converter-results" class="test-results" style="display: none;"></div>
+            </div>
+            
+            <div class="test-card">
+                <div class="test-title">
+                    <h3>Feedback-Button-Test</h3>
+                    <span id="feedback-button-badge" class="badge badge-warning">Ausstehend</span>
+                </div>
+                <div class="test-description">
+                    Prüft, ob die Feedback-Buttons (Daumen hoch/runter) am unteren Rand der Nachrichten korrekt angezeigt werden und auf Klicks reagieren.
+                </div>
+                <button class="run-test-btn" data-test="feedback_button_test.js">Test ausführen</button>
+                <div id="feedback-button-results" class="test-results" style="display: none;"></div>
+            </div>
+            
+            <div class="test-card">
+                <div class="test-title">
+                    <h3>Issue-Tests</h3>
+                    <span id="issue-tests-badge" class="badge badge-warning">Ausstehend</span>
+                </div>
+                <div class="test-description">
+                    Führt Tests für bekannte Probleme aus, um ihre Behebung zu überprüfen.
+                </div>
+                <button class="run-test-btn" data-test="issue_tests.js">Test ausführen</button>
+                <div id="issue-tests-results" class="test-results" style="display: none;"></div>
+            </div>
+            
+            <div class="test-card">
+                <div class="test-title">
+                    <h3>UI-Tests</h3>
+                    <span id="ui-tests-badge" class="badge badge-warning">Ausstehend</span>
+                </div>
+                <div class="test-description">
+                    Führt allgemeine UI-Tests aus, um die Benutzeroberfläche zu überprüfen.
+                </div>
+                <button class="run-test-btn" data-test="ui_tests.js">Test ausführen</button>
+                <div id="ui-tests-results" class="test-results" style="display: none;"></div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Testergebnisse</h2>
+            <div id="test-summary">
+                <div>Tests ausgeführt: <span id="tests-run">0</span></div>
+                <div>Tests bestanden: <span id="tests-passed">0</span></div>
+                <div>Tests fehlgeschlagen: <span id="tests-failed">0</span></div>
+                <div class="progress-bar">
+                    <div id="progress-bar-fill" class="progress-bar-fill"></div>
+                </div>
+            </div>
+            <div id="test-output" class="log-output"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Globale Variablen für den Test-Status
+        let isLoggedIn = false;
+        let token = '';
+        let currentTest = null;
+        let testResults = {
+            run: 0,
+            passed: 0,
+            failed: 0
+        };
+        
+        // DOM-Elemente
+        const loginBtn = document.getElementById('login-btn');
+        const emailInput = document.getElementById('email-input');
+        const passwordInput = document.getElementById('password-input');
+        const loginStatus = document.getElementById('login-status');
+        const runAllTestsBtn = document.getElementById('run-all-tests-btn');
+        const clearResultsBtn = document.getElementById('clear-results-btn');
+        const testOutput = document.getElementById('test-output');
+        const testButtons = document.querySelectorAll('.run-test-btn');
+        
+        // Anmeldungsfunktion
+        async function login() {
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            
+            loginStatus.textContent = 'Status: Anmeldung läuft...';
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Anmeldung fehlgeschlagen');
+                }
+                
+                const data = await response.json();
+                token = data.token;
+                isLoggedIn = true;
+                
+                localStorage.setItem('token', token);
+                loginStatus.textContent = 'Status: Angemeldet ✅';
+                
+                console.log('Anmeldung erfolgreich, Token:', token);
+                addToTestOutput('Anmeldung erfolgreich ✅');
+                
+                // Aktiviere die Test-Buttons
+                enableTestButtons();
+            } catch (error) {
+                console.error('Fehler bei der Anmeldung:', error);
+                loginStatus.textContent = 'Status: Anmeldung fehlgeschlagen ❌';
+                addToTestOutput(`Anmeldung fehlgeschlagen: ${error.message} ❌`);
+            }
+        }
+        
+        // Funktion zum Aktivieren der Test-Buttons
+        function enableTestButtons() {
+            testButtons.forEach(button => {
+                button.disabled = false;
+            });
+            runAllTestsBtn.disabled = false;
+        }
+        
+        // Funktion zum Deaktivieren der Test-Buttons
+        function disableTestButtons() {
+            testButtons.forEach(button => {
+                button.disabled = true;
+            });
+            runAllTestsBtn.disabled = true;
+        }
+        
+        // Funktion zum Hinzufügen von Ausgaben zum Test-Log
+        function addToTestOutput(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            testOutput.textContent += `[${timestamp}] ${message}\n`;
+            testOutput.scrollTop = testOutput.scrollHeight;
+        }
+        
+        // Funktion zum Ausführen eines einzelnen Tests
+        async function runTest(testFile) {
+            // Bereits laufenden Test abbrechen
+            if (currentTest) {
+                addToTestOutput(`Test ${currentTest} wurde abgebrochen, um ${testFile} auszuführen.`);
+                document.getElementById('test-iframe')?.remove();
+            }
+            
+            currentTest = testFile;
+            
+            // Ergebnisbereich anzeigen
+            const testId = testFile.replace('.js', '');
+            const resultsDiv = document.getElementById(`${testId}-results`);
+            if (resultsDiv) {
+                resultsDiv.style.display = 'block';
+                resultsDiv.innerHTML = '<div>Test läuft...</div>';
+            }
+            
+            // Status-Badge aktualisieren
+            const badgeId = `${testId}-badge`;
+            const badge = document.getElementById(badgeId);
+            if (badge) {
+                badge.className = 'badge badge-warning';
+                badge.textContent = 'Läuft';
+            }
+            
+            addToTestOutput(`Starte Test: ${testFile}`);
+            
+            // iFrame für Test erstellen
+            const iframe = document.createElement('iframe');
+            iframe.id = 'test-iframe';
+            iframe.className = 'test-iframe';
+            iframe.style.display = 'none'; // Verstecken, um Flickern zu vermeiden
+            document.body.appendChild(iframe);
+            
+            // Tests im iFrame ausführen
+            try {
+                // Token setzen
+                iframe.onload = function() {
+                    try {
+                        iframe.contentWindow.localStorage.setItem('token', token);
+                        
+                        // Test-Skript in iFrame laden
+                        const script = iframe.contentDocument.createElement('script');
+                        script.src = testFile;
+                        
+                        // Kommunikationskanal mit dem iFrame einrichten
+                        const testResults = {
+                            logs: [],
+                            passed: 0,
+                            failed: 0,
+                            total: 0,
+                            completed: false
+                        };
+                        
+                        // Konsole im iFrame überschreiben, um Logs abzufangen
+                        iframe.contentWindow.console.log = function(message) {
+                            testResults.logs.push({ type: 'log', message });
+                            console.log(`[${testFile}] ${message}`);
+                            addToTestOutput(`[${testFile}] ${message}`);
+                        };
+                        
+                        iframe.contentWindow.console.error = function(message) {
+                            testResults.logs.push({ type: 'error', message });
+                            console.error(`[${testFile}] ${message}`);
+                            addToTestOutput(`[${testFile}] ERROR: ${message}`);
+                        };
+                        
+                        iframe.contentDocument.body.appendChild(script);
+                        
+                        // Timeout für Test (30 Sekunden)
+                        setTimeout(function() {
+                            if (!testResults.completed) {
+                                testResults.completed = true;
+                                testResults.logs.push({ type: 'error', message: 'Test-Timeout nach 30 Sekunden' });
+                                finishTest(testFile, testResults);
+                            }
+                        }, 30000);
+                    } catch (error) {
+                        console.error('Fehler beim Ausführen des Tests:', error);
+                        addToTestOutput(`Fehler beim Ausführen von ${testFile}: ${error.message}`);
+                        
+                        // Test-Status aktualisieren
+                        if (badge) {
+                            badge.className = 'badge badge-danger';
+                            badge.textContent = 'Fehler';
+                        }
+                        
+                        if (resultsDiv) {
+                            resultsDiv.innerHTML = `<div class="result-item result-fail">Test konnte nicht ausgeführt werden: ${error.message}</div>`;
+                        }
+                    }
+                };
+                
+                // iFrame-URL setzen (muss nach onload definiert werden)
+                iframe.src = '/';
+                
+            } catch (error) {
+                console.error('Fehler beim Initialisieren des Tests:', error);
+                addToTestOutput(`Fehler beim Initialisieren von ${testFile}: ${error.message}`);
+                
+                // Test-Status aktualisieren
+                if (badge) {
+                    badge.className = 'badge badge-danger';
+                    badge.textContent = 'Fehler';
+                }
+                
+                if (resultsDiv) {
+                    resultsDiv.innerHTML = `<div class="result-item result-fail">Test konnte nicht initialisiert werden: ${error.message}</div>`;
+                }
+            }
+        }
+        
+        // Funktion zum Abschließen eines Tests und Aktualisieren der Ergebnisse
+        function finishTest(testFile, results) {
+            currentTest = null;
+            
+            // iFrame entfernen
+            document.getElementById('test-iframe')?.remove();
+            
+            // Ermitteln der Testergebnisse
+            const passedCount = results.logs.filter(log => 
+                log.type === 'log' && log.message.includes('PASS:')
+            ).length;
+            
+            const failedCount = results.logs.filter(log => 
+                log.type === 'error' && log.message.includes('FAIL:')
+            ).length;
+            
+            const totalCount = passedCount + failedCount;
+            
+            // Test-Status aktualisieren
+            const testId = testFile.replace('.js', '');
+            const badgeId = `${testId}-badge`;
+            const badge = document.getElementById(badgeId);
+            
+            if (badge) {
+                if (failedCount === 0 && passedCount > 0) {
+                    badge.className = 'badge badge-success';
+                    badge.textContent = 'Bestanden';
+                } else if (failedCount > 0) {
+                    badge.className = 'badge badge-danger';
+                    badge.textContent = 'Fehlgeschlagen';
+                } else {
+                    badge.className = 'badge badge-warning';
+                    badge.textContent = 'Keine Ergebnisse';
+                }
+            }
+            
+            // Ergebnisse anzeigen
+            const resultsDiv = document.getElementById(`${testId}-results`);
+            if (resultsDiv) {
+                let resultsHTML = '';
+                
+                // Zusammenfassung
+                if (totalCount > 0) {
+                    resultsHTML += `
+                        <div class="test-stats">
+                            ${passedCount}/${totalCount} Tests bestanden (${Math.round((passedCount/totalCount)*100)}%)
+                        </div>
+                    `;
+                }
+                
+                // Einzelne Testergebnisse
+                results.logs.forEach(log => {
+                    if ((log.type === 'log' && log.message.includes('PASS:')) || 
+                        (log.type === 'error' && log.message.includes('FAIL:'))) {
+                        
+                        const isPassed = log.type === 'log' && log.message.includes('PASS:');
+                        resultsHTML += `
+                            <div class="result-item ${isPassed ? 'result-pass' : 'result-fail'}">
+                                ${log.message}
+                            </div>
+                        `;
+                    }
+                });
+                
+                resultsDiv.innerHTML = resultsHTML;
+            }
+            
+            // Globale Teststatistiken aktualisieren
+            testResults.run += 1;
+            testResults.passed += (failedCount === 0 && passedCount > 0) ? 1 : 0;
+            testResults.failed += (failedCount > 0) ? 1 : 0;
+            
+            updateTestSummary();
+            
+            addToTestOutput(`Test ${testFile} abgeschlossen. Ergebnisse: ${passedCount} bestanden, ${failedCount} fehlgeschlagen`);
+            
+            // Testbuttons wieder aktivieren
+            enableTestButtons();
+        }
+        
+        // Funktion zum Aktualisieren der Teststatistiken
+        function updateTestSummary() {
+            document.getElementById('tests-run').textContent = testResults.run;
+            document.getElementById('tests-passed').textContent = testResults.passed;
+            document.getElementById('tests-failed').textContent = testResults.failed;
+            
+            // Fortschrittsbalken aktualisieren
+            const progressBar = document.getElementById('progress-bar-fill');
+            if (testResults.run > 0) {
+                const percentPassed = (testResults.passed / testResults.run) * 100;
+                progressBar.style.width = `${percentPassed}%`;
+                
+                if (percentPassed >= 80) {
+                    progressBar.style.backgroundColor = '#28a745'; // Grün
+                } else if (percentPassed >= 50) {
+                    progressBar.style.backgroundColor = '#ffc107'; // Gelb
+                } else {
+                    progressBar.style.backgroundColor = '#dc3545'; // Rot
+                }
+            } else {
+                progressBar.style.width = '0%';
+            }
+        }
+        
+        // Funktion zum Ausführen aller Tests
+        async function runAllTests() {
+            // Ergebnisse zurücksetzen
+            clearResults();
+            
+            // Tests nacheinander ausführen
+            const testFiles = [
+                'session_tabs_test.js',
+                'admin_first_click_test.js',
+                'text_streaming_test.js',
+                'doc_converter_test.js',
+                'feedback_button_test.js',
+                'issue_tests.js',
+                'ui_tests.js'
+            ];
+            
+            addToTestOutput('Starte alle Tests...');
+            disableTestButtons();
+            
+            for (const testFile of testFiles) {
+                // Warten, bis der vorherige Test abgeschlossen ist
+                while (currentTest) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
+                await runTest(testFile);
+                
+                // Kurze Pause zwischen den Tests
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            addToTestOutput('Alle Tests abgeschlossen.');
+            enableTestButtons();
+        }
+        
+        // Funktion zum Löschen der Testergebnisse
+        function clearResults() {
+            testResults = {
+                run: 0,
+                passed: 0,
+                failed: 0
+            };
+            
+            updateTestSummary();
+            testOutput.textContent = '';
+            
+            // Alle Badges zurücksetzen
+            const badges = document.querySelectorAll('.badge');
+            badges.forEach(badge => {
+                badge.className = 'badge badge-warning';
+                badge.textContent = 'Ausstehend';
+            });
+            
+            // Alle Ergebnisbereiche ausblenden
+            const resultsDivs = document.querySelectorAll('.test-results');
+            resultsDivs.forEach(div => {
+                div.style.display = 'none';
+                div.innerHTML = '';
+            });
+            
+            addToTestOutput('Testergebnisse wurden zurückgesetzt.');
+        }
+        
+        // Event-Listener
+        loginBtn.addEventListener('click', login);
+        
+        runAllTestsBtn.addEventListener('click', function() {
+            if (!isLoggedIn) {
+                addToTestOutput('Bitte melden Sie sich zuerst an.');
+                return;
+            }
+            
+            runAllTests();
+        });
+        
+        clearResultsBtn.addEventListener('click', clearResults);
+        
+        testButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                if (!isLoggedIn) {
+                    addToTestOutput('Bitte melden Sie sich zuerst an.');
+                    return;
+                }
+                
+                const testFile = this.getAttribute('data-test');
+                disableTestButtons();
+                runTest(testFile);
+            });
+            
+            // Buttons deaktivieren, bis Login erfolgt
+            button.disabled = true;
+        });
+        
+        // Autorun: Token aus localStorage prüfen
+        document.addEventListener('DOMContentLoaded', function() {
+            const storedToken = localStorage.getItem('token');
+            if (storedToken) {
+                token = storedToken;
+                isLoggedIn = true;
+                loginStatus.textContent = 'Status: Angemeldet (Token aus localStorage) ✅';
+                enableTestButtons();
+                addToTestOutput('Anmeldung wiederhergestellt aus localStorage ✅');
+            }
+        });
+        
+        // Initial deaktivieren
+        runAllTestsBtn.disabled = true;
+    </script>
+</body>
+</html>
