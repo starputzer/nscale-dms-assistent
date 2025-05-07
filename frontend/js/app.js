@@ -4,6 +4,8 @@ import { setupAdmin } from './admin.js';
 import { setupSettings } from './settings.js';
 import { setupSourceReferences } from './source-references.js';
 
+// Vue global verfügbar machen
+const Vue = window.Vue;
 const { createApp, ref, onMounted, watch, nextTick } = Vue;
 
 createApp({
