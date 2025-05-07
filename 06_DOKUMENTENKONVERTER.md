@@ -2,15 +2,15 @@
 
 ## Übersicht
 
-Der Dokumentenkonverter ist eine zentrale Komponente der nscale Assist App, die verschiedene Dokumentformate (PDF, DOCX, XLSX, PPTX, HTML, TXT) in durchsuchbaren Text konvertiert. Diese Komponente wurde zunächst für Vue.js neu implementiert, nach Aufgabe der Vue.js-Migration jedoch als robuste HTML/CSS/JS-Komponente optimiert und wird zukünftig in React implementiert.
+Der Dokumentenkonverter ist eine zentrale Komponente der nscale Assist App, die verschiedene Dokumentformate (PDF, DOCX, XLSX, PPTX, HTML, TXT) in durchsuchbaren Text konvertiert. Diese Komponente ist als robuste Vue 3 SFC-Komponente mit mehrschichtigen Fallback-Mechanismen implementiert.
 
 ## Architektur
 
 Der Dokumentenkonverter besteht aus folgenden Hauptkomponenten:
 
 1. **Frontend-Komponente**: 
-   - Aktuelle Implementierung in HTML/CSS/JavaScript
-   - Geplante React-Implementierung in der Zukunft
+   - Implementierung als Vue 3 Single File Components
+   - Robuste Fehlerbehandlung mit Fallback-Mechanismen
 
 2. **Mehrschichtige Fallback-Mechanismen**:
    - Robuste Fehlerbehandlung
@@ -97,107 +97,83 @@ Der Dokumentenkonverter implementiert mehrere Ebenen von Fallback-Mechanismen:
    - Unzureichende Fehlerbehandlung führte zu Abstürzen
    - Lösung: Umfassende Try-Catch-Mechanismen und graceful degradation
 
-## Lehren aus der Vue.js-Migration
+## Vue 3 SFC Implementierung
 
-Die versuchte Migration des Dokumentenkonverters zu Vue.js lieferte wichtige Erkenntnisse:
-
-1. **Pfadprobleme**: Die komplexe Pfadstruktur führte zu chronischen 404-Fehlern für Assets
-2. **DOM-Manipulationskonflikte**: Konflikte zwischen Vue.js-Rendering und direkter DOM-Manipulation
-3. **Styling-Inkonsistenzen**: Unterschiede im Styling zwischen Implementierungen
-4. **Komplexe Fallbacks**: Die mehrschichtigen Fallbacks erhöhten die Komplexität erheblich
-
-Diese Erkenntnisse fließen in die React-Migrationsstrategie ein, um ähnliche Probleme zu vermeiden.
-
-## Geplante React-Implementierung
-
-Die React-Implementation des Dokumentenkonverters wird folgende Verbesserungen enthalten:
+Die Vue 3 SFC-Implementierung des Dokumentenkonverters enthält folgende Komponenten:
 
 1. **Komponentenarchitektur**:
    ```
-   /components/doc-converter/
-   ├── DocConverterContainer.tsx     # Hauptcontainer-Komponente
-   ├── FileUpload.tsx                # Datei-Upload-Komponente
-   ├── ConversionProgress.tsx        # Fortschrittsanzeige
-   ├── DocumentList.tsx              # Liste konvertierter Dokumente
-   ├── ConversionResult.tsx          # Ergebnisanzeige
-   ├── DocumentPreview.tsx           # Dokumentvorschau
-   └── ErrorDisplay.tsx              # Fehleranzeige
+   src/components/admin/document-converter/
+   ├── DocConverterContainer.vue     # Hauptcontainer-Komponente
+   ├── FileUpload.vue                # Datei-Upload-Komponente
+   ├── ConversionProgress.vue        # Fortschrittsanzeige
+   ├── DocumentList.vue              # Liste konvertierter Dokumente
+   ├── ConversionResult.vue          # Ergebnisanzeige
+   ├── DocumentPreview.vue           # Dokumentvorschau
+   └── ErrorDisplay.vue              # Fehleranzeige
    ```
 
 2. **Zustandsverwaltung**:
-   - Lokaler Zustand mit useState/useReducer für UI-Zustand
-   - Globaler Zustand mit Redux/Context für Dokumentenkonvertierungsdaten
+   - Lokaler Zustand mit ref/reactive für UI-Zustand
+   - Globaler Zustand mit Pinia für Dokumentenkonvertierungsdaten
    - Klare Trennung zwischen UI-Zustand und Anwendungsdaten
 
 3. **API-Integration**:
    ```typescript
-   // docConverterAPI.ts
-   export const uploadDocument = async (file: File): Promise<UploadResult> => {
-     const formData = new FormData();
-     formData.append('file', file);
-     
-     const response = await fetch('/api/documents/upload', {
-       method: 'POST',
-       body: formData,
-     });
-     
-     if (!response.ok) {
-       throw new Error('Fehler beim Hochladen des Dokuments');
-     }
-     
-     return response.json();
-   };
+   // src/services/api/DocumentConverterService.ts
    
-   export const convertDocument = async (documentId: string): Promise<ConversionResult> => {
-     const response = await fetch(`/api/documents/${documentId}/convert`, {
-       method: 'POST',
-     });
+   import ApiService from './ApiService';
+   
+   export default {
+     uploadDocument(file: File) {
+       const formData = new FormData();
+       formData.append('file', file);
+       
+       return ApiService.post('/documents/upload', formData, {
+         headers: { 'Content-Type': 'multipart/form-data' }
+       });
+     },
      
-     if (!response.ok) {
-       throw new Error('Fehler bei der Konvertierung des Dokuments');
+     convertDocument(documentId: string) {
+       return ApiService.post(`/documents/${documentId}/convert`);
+     },
+     
+     getDocumentList() {
+       return ApiService.get('/documents');
      }
-     
-     return response.json();
-   };
+   }
    ```
 
-4. **Robuste Fehlerbehandlung**:
-   ```tsx
-   import React, { ErrorInfo, ReactNode } from 'react';
-
-   interface ErrorBoundaryProps {
-     children: ReactNode;
-     fallback: ReactNode;
-     onError?: (error: Error, errorInfo: ErrorInfo) => void;
-   }
-
-   interface ErrorBoundaryState {
-     hasError: boolean;
-     error?: Error;
-   }
-
-   class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-     constructor(props: ErrorBoundaryProps) {
-       super(props);
-       this.state = { hasError: false };
+4. **Robuste Fehlerbehandlung mit Composables**:
+   ```typescript
+   // src/composables/useErrorHandling.ts
+   
+   import { ref, onErrorCaptured } from 'vue';
+   
+   export function useErrorHandling() {
+     const error = ref(null);
+     const hasError = ref(false);
+     
+     function handleError(err) {
+       console.error('Komponente hat einen Fehler gemeldet:', err);
+       error.value = err;
+       hasError.value = true;
+       return true; // Verhindert, dass der Fehler sich weiter ausbreitet
      }
-
-     static getDerivedStateFromError(error: Error) {
-       return { hasError: true, error };
+     
+     function resetError() {
+       error.value = null;
+       hasError.value = false;
      }
-
-     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-       console.error('DocConverter component error:', error, errorInfo);
-       this.props.onError?.(error, errorInfo);
-     }
-
-     render() {
-       if (this.state.hasError) {
-         return this.props.fallback;
-       }
-
-       return this.props.children;
-     }
+     
+     onErrorCaptured(handleError);
+     
+     return {
+       error,
+       hasError,
+       handleError,
+       resetError
+     };
    }
    ```
 
@@ -252,4 +228,4 @@ Folgende Verbesserungen sind für den Dokumentenkonverter geplant:
 
 ---
 
-Zuletzt aktualisiert: 05.05.2025
+Zuletzt aktualisiert: 07.05.2025
