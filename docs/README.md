@@ -45,6 +45,15 @@ Sie ist in verschiedene Abschnitte unterteilt, die verschiedene Aspekte des Proj
 - [DATENPERSISTENZ](05_REFERENZEN/05_DATENPERSISTENZ.md) - Datenpersistenzmechanismen
 - [FEHLERANALYSE](05_REFERENZEN/06_FEHLERANALYSE.md) - Methoden zur Analyse von Fehlern
 
+### Systeme und Komponenten
+
+- [DIALOG SYSTEM](06_SYSTEME/01_DIALOG_SYSTEM.md) - Dialogsystem für Benutzerinteraktionen
+- [DOCUMENT CONVERTER STORE](06_SYSTEME/02_DOCUMENT_CONVERTER_STORE.md) - Store für den Dokumentenkonverter
+- [FEATURE TOGGLE SYSTEM](06_SYSTEME/03_FEATURE_TOGGLE_SYSTEM.md) - System zur Steuerung von Features
+- [FILE UPLOAD COMPONENT](06_SYSTEME/04_FILE_UPLOAD_COMPONENT.md) - Komponente für Datei-Uploads
+- [STATE FLOW DIAGRAM](06_SYSTEME/05_STATE_FLOW_DIAGRAM.md) - Diagramm des Zustandsflusses
+- [VUE3 SFC DOKUMENTENKONVERTER](06_SYSTEME/06_VUE3_SFC_DOKUMENTENKONVERTER.md) - Vue 3 SFC-Implementierung des Dokumentenkonverters
+
 ---
 
 *Letzte Aktualisierung: 08.05.2025*

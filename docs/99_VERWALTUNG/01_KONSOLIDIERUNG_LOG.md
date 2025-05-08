@@ -97,3 +97,18 @@ Status: Erfolgreich
 - ROADMAP.md -> docs/00_ROADMAP.md
 - ROLLENKONZEPT.md -> docs/04_FEATURES/02_ROLLENKONZEPT.md
 
+
+
+## Namenskorrektur - 08.05.2025 11:34:21
+
+### Umbenannte Dateien
+
+- docs/DIALOG_SYSTEM.md -> docs/06_SYSTEME/01_DIALOG_SYSTEM.md
+- docs/DOCUMENT_CONVERTER_STORE.md -> docs/06_SYSTEME/02_DOCUMENT_CONVERTER_STORE.md
+- docs/FEATURE_TOGGLE_SYSTEM.md -> docs/06_SYSTEME/03_FEATURE_TOGGLE_SYSTEM.md
+- docs/FILE_UPLOAD_COMPONENT.md -> docs/06_SYSTEME/04_FILE_UPLOAD_COMPONENT.md
+- docs/STATE_FLOW_DIAGRAM.md -> docs/06_SYSTEME/05_STATE_FLOW_DIAGRAM.md
+- docs/VUE3_SFC_DOKUMENTENKONVERTER.md -> docs/06_SYSTEME/06_VUE3_SFC_DOKUMENTENKONVERTER.md
+- docs/KONSOLIDIERUNG_LOG.md -> docs/99_VERWALTUNG/01_KONSOLIDIERUNG_LOG.md
+
+Die Dateien wurden nach der Namenskonvention in entsprechende Unterverzeichnisse verschoben.
