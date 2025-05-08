@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>nscale DMS Assistent - Admin Direct</title>
+
+  <!-- CSS Dependencies -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+  <!-- App CSS -->
+  <link href="/css/main.css" rel="stylesheet">
+  <link href="/css/themes.css" rel="stylesheet">
+  <link href="/css/improved-ui.css" rel="stylesheet">
+  <link href="/css/admin.css" rel="stylesheet">
+  <link href="/css/feedback.css" rel="stylesheet">
+  <link href="/css/message-actions.css" rel="stylesheet">
+  <link href="/css/settings.css" rel="stylesheet">
+  <link href="/css/source-references.css" rel="stylesheet">
+  
+  <!-- Vue and dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pinia@2.0.0/dist/pinia.iife.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Vue Mounting Element -->
+  <div id="admin-direct-app" class="h-screen flex flex-col">
+    <!-- Will be replaced by Vue app -->
+    <div class="flex items-center justify-center h-screen">
+      <div class="text-center p-8 bg-white rounded-lg shadow-md">
+        <div class="animate-spin mb-4 mx-auto h-12 w-12 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
+        <p class="text-lg">Loading Admin Panel...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Vue App Script -->
+  <script type="module">
+    // Import Vue components from CDN - this is for direct access without bundler
+    const { createApp, ref, computed, onMounted } = Vue;
+    const { createPinia, defineStore } = Pinia;
+    
+    // Create app with Pinia
+    const app = createApp({
+      setup() {
+        // Simple state for demonstration
+        const activeTab = ref('dashboard');
+        const isLoading = ref(true);
+        const authUser = ref({ 
+          role: 'admin',
+          email: 'admin@example.com',
+          id: 1
+        });
+        
+        onMounted(() => {
+          console.log('Admin Direct App mounted');
+          // Simulate loading
+          setTimeout(() => {
+            isLoading.value = false;
+          }, 1000);
+        });
+        
+        // Change tab handler
+        const setActiveTab = (tabId) => {
+          activeTab.value = tabId;
+          console.log(`Switched to tab: ${tabId}`);
+        };
+        
+        return {
+          activeTab,
+          isLoading,
+          authUser,
+          setActiveTab
+        };
+      },
+      template: `
+        <div class="admin-direct-wrapper h-full">
+          <header class="bg-indigo-600 text-white shadow-md p-4">
+            <div class="container mx-auto flex justify-between items-center">
+              <h1 class="text-xl font-bold">nscale DMS Assistent - Admin Panel</h1>
+              <div class="flex items-center space-x-4">
+                <span>{{ authUser.email }}</span>
+                <span class="bg-indigo-500 px-2 py-1 rounded text-sm">{{ authUser.role }}</span>
+              </div>
+            </div>
+          </header>
+          
+          <main class="container mx-auto p-4 flex h-[calc(100vh-64px)]">
+            <!-- Sidebar -->
+            <aside class="w-64 bg-white shadow-md rounded-lg p-4 mr-4">
+              <nav class="space-y-2">
+                <button 
+                  v-for="tab in tabs" 
+                  :key="tab.id"
+                  @click="setActiveTab(tab.id)"
+                  class="w-full text-left px-4 py-2 rounded-md transition-colors flex items-center"
+                  :class="activeTab === tab.id ? 'bg-indigo-100 text-indigo-700' : 'hover:bg-gray-100'"
+                >
+                  <i :class="['mr-2', tab.icon]"></i>
+                  <span>{{ tab.label }}</span>
+                </button>
+              </nav>
+            </aside>
+            
+            <!-- Content -->
+            <div class="flex-1 bg-white shadow-md rounded-lg p-6">
+              <div v-if="isLoading" class="flex items-center justify-center h-full">
+                <div class="animate-spin h-8 w-8 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
+              </div>
+              
+              <div v-else>
+                <!-- Dashboard -->
+                <div v-if="activeTab === 'dashboard'" class="space-y-6">
+                  <h2 class="text-2xl font-bold mb-4">Admin Dashboard</h2>
+                  
+                  <div class="grid grid-cols-3 gap-4">
+                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                      <h3 class="font-semibold text-blue-700">Users</h3>
+                      <p class="text-3xl font-bold">3</p>
+                    </div>
+                    
+                    <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                      <h3 class="font-semibold text-green-700">Documents</h3>
+                      <p class="text-3xl font-bold">42</p>
+                    </div>
+                    
+                    <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                      <h3 class="font-semibold text-purple-700">Sessions</h3>
+                      <p class="text-3xl font-bold">128</p>
+                    </div>
+                  </div>
+                  
+                  <div class="bg-white p-4 rounded-lg border border-gray-200">
+                    <h3 class="font-semibold mb-2">System Status</h3>
+                    <div class="space-y-2">
+                      <div class="flex justify-between">
+                        <span>CPU Usage</span>
+                        <span class="text-green-600">12%</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span>Memory Usage</span>
+                        <span class="text-green-600">28%</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span>Disk Usage</span>
+                        <span class="text-yellow-600">62%</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span>API Status</span>
+                        <span class="text-green-600">Online</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Users -->
+                <div v-else-if="activeTab === 'users'" class="space-y-6">
+                  <h2 class="text-2xl font-bold mb-4">User Management</h2>
+                  
+                  <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                      <thead class="bg-gray-50">
+                        <tr>
+                          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                          <td class="px-6 py-4 whitespace-nowrap">1</td>
+                          <td class="px-6 py-4 whitespace-nowrap">admin@example.com</td>
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800">Admin</span>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Active</span>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <button class="text-indigo-600 hover:text-indigo-900 mr-2">
+                              <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-red-600 hover:text-red-900">
+                              <i class="fas fa-trash"></i>
+                            </button>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="px-6 py-4 whitespace-nowrap">2</td>
+                          <td class="px-6 py-4 whitespace-nowrap">user@example.com</td>
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">User</span>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Active</span>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <button class="text-indigo-600 hover:text-indigo-900 mr-2">
+                              <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-red-600 hover:text-red-900">
+                              <i class="fas fa-trash"></i>
+                            </button>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="px-6 py-4 whitespace-nowrap">3</td>
+                          <td class="px-6 py-4 whitespace-nowrap">guest@example.com</td>
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">Guest</span>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Inactive</span>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <button class="text-indigo-600 hover:text-indigo-900 mr-2">
+                              <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-red-600 hover:text-red-900">
+                              <i class="fas fa-trash"></i>
+                            </button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                
+                <!-- Feature Toggles -->
+                <div v-else-if="activeTab === 'featureToggles'" class="space-y-6">
+                  <h2 class="text-2xl font-bold mb-4">Feature Toggles</h2>
+                  
+                  <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
+                    <p class="text-blue-800">
+                      <i class="fas fa-info-circle mr-2"></i>
+                      Manage feature toggles and migration settings. Changes take effect immediately.
+                    </p>
+                  </div>
+                  
+                  <div class="space-y-6">
+                    <div class="border border-gray-200 rounded-lg overflow-hidden">
+                      <div class="bg-gray-50 px-4 py-2 font-medium">SFC Migration Features</div>
+                      <div class="p-4 space-y-4">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <div class="font-medium">Admin Panel (SFC)</div>
+                            <div class="text-sm text-gray-600">Use Vue 3 SFC implementation for admin panel</div>
+                          </div>
+                          <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" checked class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                          </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <div class="font-medium">Doc Converter (SFC)</div>
+                            <div class="text-sm text-gray-600">Use Vue 3 SFC implementation for document converter</div>
+                          </div>
+                          <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                          </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <div class="font-medium">Chat Interface (SFC)</div>
+                            <div class="text-sm text-gray-600">Use Vue 3 SFC implementation for chat interface</div>
+                          </div>
+                          <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg overflow-hidden">
+                      <div class="bg-gray-50 px-4 py-2 font-medium">Core Features</div>
+                      <div class="p-4 space-y-4">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <div class="font-medium">Pinia Auth</div>
+                            <div class="text-sm text-gray-600">Use Pinia store for authentication</div>
+                          </div>
+                          <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" checked class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                          </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <div class="font-medium">Pinia UI</div>
+                            <div class="text-sm text-gray-600">Use Pinia store for UI state</div>
+                          </div>
+                          <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" checked class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Fallback content for other tabs -->
+                <div v-else>
+                  <h2 class="text-2xl font-bold mb-4">{{ getTabTitle(activeTab) }}</h2>
+                  <p class="text-gray-600">
+                    This tab content is being implemented. The content for this section is coming soon.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      `,
+      computed: {
+        tabs() {
+          return [
+            { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-tachometer-alt' },
+            { id: 'users', label: 'Users', icon: 'fas fa-users' },
+            { id: 'feedback', label: 'Feedback', icon: 'fas fa-comment' },
+            { id: 'motd', label: 'MOTD', icon: 'fas fa-bullhorn' },
+            { id: 'system', label: 'System', icon: 'fas fa-cogs' },
+            { id: 'featureToggles', label: 'Feature Toggles', icon: 'fas fa-toggle-on' }
+          ];
+        }
+      },
+      methods: {
+        getTabTitle(tabId) {
+          const tabMap = {
+            'dashboard': 'Dashboard',
+            'users': 'User Management',
+            'feedback': 'Feedback Analysis',
+            'motd': 'Message of the Day',
+            'system': 'System Monitoring',
+            'featureToggles': 'Feature Toggles'
+          };
+          
+          return tabMap[tabId] || 'Unknown Tab';
+        }
+      }
+    });
+    
+    // Use Pinia
+    const pinia = createPinia();
+    app.use(pinia);
+    
+    // Mount the app
+    app.mount('#admin-direct-app');
+  </script>
+  
+  <!-- Fallback for JavaScript disabled -->
+  <noscript>
+    <div class="flex items-center justify-center h-screen bg-gray-100">
+      <div class="text-center max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
+        <div class="text-red-600 text-4xl mb-4">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h1 class="text-xl font-bold mb-2">JavaScript erforderlich</h1>
+        <p class="text-gray-600">
+          Um die Admin-Oberfläche nutzen zu können, muss JavaScript aktiviert sein.
+          Bitte aktivieren Sie JavaScript in Ihrem Browser und laden Sie die Seite neu.
+        </p>
+      </div>
+    </div>
+  </noscript>
+</body>
+</html>
