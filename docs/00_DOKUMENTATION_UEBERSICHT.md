@@ -21,30 +21,33 @@ Dieses Dokument bietet einen Überblick über alle Dokumentationsdateien des nsc
 ## Komponenten & Implementation
 
 1. **[02_VANILLA_JS_IMPLEMENTIERUNG.md](./02_VANILLA_JS_IMPLEMENTIERUNG.md)** - Details zur ursprünglichen JavaScript-Implementierung
-2. **[06_DOKUMENTENKONVERTER.md](./06_DOKUMENTENKONVERTER.md)** - Dokumentation des Dokumentenkonverter-Moduls
-3. **[COMPONENT_STRUCTURE.md](./COMPONENT_STRUCTURE.md)** - Struktur und Organisation der Komponenten
-4. **[CLEANUP_VUE.md](./CLEANUP_VUE.md)** - Leitfaden zur Bereinigung der Vue-Implementierung
+2. **[06_DOKUMENTENKONVERTER.md](./06_DOKUMENTENKONVERTER.md)** - Dokumentation des Dokumentenkonverter-Moduls und seiner Komponenten
+3. **[06_SYSTEME/10_BASIS_UI_KOMPONENTEN.md](./06_SYSTEME/10_BASIS_UI_KOMPONENTEN.md)** - Dokumentation der Basis-UI-Komponenten
+4. **[COMPONENT_STRUCTURE.md](./COMPONENT_STRUCTURE.md)** - Struktur und Organisation der Komponenten
+5. **[CLEANUP_VUE.md](./CLEANUP_VUE.md)** - Leitfaden zur Bereinigung der Vue-Implementierung
 
 ## Hilfsdokumente & Anleitungen
 
-1. **[08_FEHLERBEHEBUNG.md](./08_FEHLERBEHEBUNG.md)** - Anleitung zur Behebung häufiger Fehler
-2. **[09_ENTWICKLUNGSANLEITUNG.md](./09_ENTWICKLUNGSANLEITUNG.md)** - Detaillierte Anleitung für Entwickler
-3. **[TESTING.md](./TESTING.md)** - Teststrategien und -verfahren
+1. **[02_ENTWICKLUNG/06_VITE_FEHLERBEHANDLUNG.md](./02_ENTWICKLUNG/06_VITE_FEHLERBEHANDLUNG.md)** - Behebung von Vite-spezifischen Fehlern
+2. **[02_ENTWICKLUNG/04_ENTWICKLUNGSANLEITUNG.md](./02_ENTWICKLUNG/04_ENTWICKLUNGSANLEITUNG.md)** - Detaillierte Anleitung für Entwickler
+3. **[02_ENTWICKLUNG/05_TESTEN.md](./02_ENTWICKLUNG/05_TESTEN.md)** - Teststrategien und -verfahren
 4. **[SECURITY.md](./SECURITY.md)** - Sicherheitsrichtlinien und Best Practices
 
 ## Technische Dokumentation
 
-1. **[docs/API_CLIENT.md](./docs/API_CLIENT.md)** - API-Client-Dokumentation
-2. **[docs/API_INTEGRATION.md](./docs/API_INTEGRATION.md)** - API-Integrationsanleitung
-3. **[docs/COMPONENT_GUIDE.md](./docs/COMPONENT_GUIDE.md)** - Leitfaden zur Komponentenentwicklung
-4. **[docs/DATA_PERSISTENCE.md](./docs/DATA_PERSISTENCE.md)** - Datenpersistenz-Strategien
-5. **[docs/ERROR_HANDLING.md](./docs/ERROR_HANDLING.md)** - Fehlerbehandlung und -meldungen
-6. **[docs/FRONTEND_FIXES.md](./docs/FRONTEND_FIXES.md)** - Behebung häufiger Frontend-Probleme
-7. **[docs/SETUP.md](./docs/SETUP.md)** - Einrichtung der Entwicklungsumgebung
-8. **[docs/STATE_FLOW_DIAGRAM.md](./docs/STATE_FLOW_DIAGRAM.md)** - Diagramm zum Datenfluss
-9. **[docs/STATE_MANAGEMENT.md](./docs/STATE_MANAGEMENT.md)** - Zustandsverwaltungsstrategie
-10. **[docs/TYPESCRIPT_TYPES.md](./docs/TYPESCRIPT_TYPES.md)** - TypeScript-Typen und -Interfaces
-11. **[docs/component_hierarchy.md](./docs/component_hierarchy.md)** - Hierarchie der Anwendungskomponenten
+1. **[05_REFERENZEN/04_API_CLIENT.md](./05_REFERENZEN/04_API_CLIENT.md)** - API-Client-Dokumentation
+2. **[02_ENTWICKLUNG/03_API_INTEGRATION.md](./02_ENTWICKLUNG/03_API_INTEGRATION.md)** - API-Integrationsanleitung
+3. **[02_ENTWICKLUNG/02_KOMPONENTEN_LEITFADEN.md](./02_ENTWICKLUNG/02_KOMPONENTEN_LEITFADEN.md)** - Leitfaden zur Komponentenentwicklung
+4. **[05_REFERENZEN/05_DATENPERSISTENZ.md](./05_REFERENZEN/05_DATENPERSISTENZ.md)** - Datenpersistenz-Strategien
+5. **[05_REFERENZEN/03_FEHLERBEHANDLUNG.md](./05_REFERENZEN/03_FEHLERBEHANDLUNG.md)** - Fehlerbehandlung, Fallback-Mechanismus und Fehlerwiederherstellung
+6. **[FRONTEND_FIXES.md](./FRONTEND_FIXES.md)** - Behebung häufiger Frontend-Probleme
+7. **[05_REFERENZEN/07_FRONTEND_LADEPROBLEME.md](./05_REFERENZEN/07_FRONTEND_LADEPROBLEME.md)** - Diagnose und Lösung von Frontend-Ladeproblemen
+8. **[02_ENTWICKLUNG/01_SETUP.md](./02_ENTWICKLUNG/01_SETUP.md)** - Einrichtung der Entwicklungsumgebung
+9. **[06_SYSTEME/05_STATE_FLOW_DIAGRAM.md](./06_SYSTEME/05_STATE_FLOW_DIAGRAM.md)** - Diagramm zum Datenfluss
+10. **[05_REFERENZEN/01_STATE_MANAGEMENT.md](./05_REFERENZEN/01_STATE_MANAGEMENT.md)** - Zustandsverwaltungsstrategie
+11. **[05_REFERENZEN/02_TYPESCRIPT_TYPEN.md](./05_REFERENZEN/02_TYPESCRIPT_TYPEN.md)** - TypeScript-Typen und -Interfaces
+12. **[01_ARCHITEKTUR/03_KOMPONENTEN_STRUKTUR.md](./01_ARCHITEKTUR/03_KOMPONENTEN_STRUKTUR.md)** - Hierarchie der Anwendungskomponenten
+13. **[06_SYSTEME/11_FRONTEND_STRUKTUR_BEREINIGUNG.md](./06_SYSTEME/11_FRONTEND_STRUKTUR_BEREINIGUNG.md)** - Bereinigung und Konsolidierung der Frontend-Struktur
 
 ## Sonstiges
 
@@ -64,11 +67,13 @@ Dieses Dokument bietet einen Überblick über alle Dokumentationsdateien des nsc
 - 09_ENTWICKLUNGSANLEITUNG.md - Praktische Entwicklungsanleitung
 
 ### Hohe Priorität
-- 01_ROADMAP.md - Verständnis der Projektrichtung
-- 03_LEKTIONEN_VUE_JS_MIGRATION.md - Wichtige Erkenntnisse aus früheren Migrationsversuchen
-- 06_DOKUMENTENKONVERTER.md - Kernkomponente der Anwendung
-- 08_FEHLERBEHEBUNG.md - Praktische Fehlerbehebung
-- docs/COMPONENT_GUIDE.md - Leitfaden für neue Komponenten
+- 00_ROADMAP.md - Verständnis der Projektrichtung
+- 03_MIGRATION/03_MIGRATIONS_ERKENNTNISSE.md - Wichtige Erkenntnisse aus früheren Migrationsversuchen
+- 04_FEATURES/01_DOKUMENTENKONVERTER.md - Kernkomponente der Anwendung
+- 05_REFERENZEN/03_FEHLERBEHANDLUNG.md - Robuste Fehlerbehandlung und Fallback-Strategie
+- 05_REFERENZEN/07_FRONTEND_LADEPROBLEME.md - Diagnose und Lösung von Frontend-Ladeproblemen
+- 02_ENTWICKLUNG/02_KOMPONENTEN_LEITFADEN.md - Leitfaden für neue Komponenten
+- FRONTEND_FIXES.md - Behebung häufiger Frontend-Probleme
 
 ### Mittlere Priorität
 - Alle anderen Kern-Dokumente zur Projektstruktur und -implementierung
@@ -79,4 +84,4 @@ Dieses Dokument bietet einen Überblick über alle Dokumentationsdateien des nsc
 
 ---
 
-Zuletzt aktualisiert: 10.05.2025
+Zuletzt aktualisiert: 08.05.2025 16:45

@@ -112,3 +112,29 @@ Status: Erfolgreich
 - docs/KONSOLIDIERUNG_LOG.md -> docs/99_VERWALTUNG/01_KONSOLIDIERUNG_LOG.md
 
 Die Dateien wurden nach der Namenskonvention in entsprechende Unterverzeichnisse verschoben.
+
+## Update Frontend-Laden - 08.05.2025 16:45:12
+
+### Neue Dateien
+
+- docs/05_REFERENZEN/07_FRONTEND_LADEPROBLEME.md - Dokumentation zu Frontend-Ladeproblemen und deren Behebung
+
+### Aktualisierte Dateien
+
+- docs/FRONTEND_FIXES.md - Ergänzt um Informationen zu MIME-Type-Fehlern in FastAPI/Vite-Umgebungen
+- docs/00_DOKUMENTATION_UEBERSICHT.md - Aktualisierung der Links und Hinzufügen neuer Dokumentationen zur Prioritätsliste
+
+Die Datei FRONTEND_LOADING_FIX.md wurde in das standardisierte Format 05_REFERENZEN/07_FRONTEND_LADEPROBLEME.md überführt und in die Dokumentationsstruktur integriert.
+
+## Neue Dokumentation - 08.05.2025 16:55:20
+
+### Neue Dateien
+
+- docs/02_ENTWICKLUNG/06_VITE_FEHLERBEHANDLUNG.md - Dokumentation zur Behebung von Vite-spezifischen Fehlern
+- docs/VITE_EISDIR_FIX.md - Detaillierte Beschreibung der EISDIR-Fehlerbehebung (wird später in die standardisierte Struktur überführt)
+
+### Aktualisierte Dateien
+
+- docs/00_DOKUMENTATION_UEBERSICHT.md - Aktualisiert mit Verweisen auf die neue Dokumentation
+
+Die Dokumentation beschreibt die Ursachen und Lösungen für den EISDIR-Fehler beim Starten des Vite-Entwicklungsservers und bietet allgemeine Richtlinien zur Fehlerbehebung in Vite.

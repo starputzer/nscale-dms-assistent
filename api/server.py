@@ -93,11 +93,18 @@ if frontend_dir.exists():
     if js_dir.exists():
         logger.info(f"JS-Dateien: {[f.name for f in js_dir.iterdir() if f.is_file()]}")
 
-# App Mounten mit normaler StaticFiles-Klasse
+# App Mounten mit normaler StaticFiles-Klasse für verschiedene Pfade
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
+app.mount("/css", StaticFiles(directory="frontend/css"), name="css")
+app.mount("/js", StaticFiles(directory="frontend/js"), name="js")
+app.mount("/images", StaticFiles(directory="frontend/images"), name="images")
 
 @app.get("/")
 async def root():
+    return FileResponse("frontend/index.html")
+    
+@app.get("/frontend/")
+async def frontend():
     return FileResponse("frontend/index.html")
         
 # Initialisiere Module
