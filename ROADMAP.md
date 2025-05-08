@@ -7,7 +7,7 @@ Diese Roadmap gibt einen Überblick über den aktuellen Entwicklungsstand und di
 ### Frontend-Strategie Änderung
 Die Anwendung hat eine wichtige Neuausrichtung bei der UI-Entwicklung durchlaufen:
 
-- [x] **Vue.js-Migration gestartet und aufgegeben**
+- [x] **Erste Vue.js-Migration gestartet und temporär aufgegeben**
   - [x] Feature-Toggle-Mechanismus implementiert
   - [x] Verschiedene Vue.js-Komponenten erstellt (inkl. Dokumentenkonverter)
   - [x] Robuste Fallback-Mechanismen implementiert
@@ -15,9 +15,15 @@ Die Anwendung hat eine wichtige Neuausrichtung bei der UI-Entwicklung durchlaufe
 
 - [x] **Neuimplementierung mit Vanilla JavaScript** (ABGESCHLOSSEN)
   - [x] Zentrale JavaScript-Module mit ES6-Modul-System entwickelt
-  - [x] Vollständige Entfernung der Vue.js-Komponenten und -Abhängigkeiten
+  - [x] Vollständige Entfernung der ersten Vue.js-Komponenten und -Abhängigkeiten
   - [x] Optimierte Dateistruktur mit zentralem `/shared/`-Verzeichnis
   - [x] Robuste Fehlerbehandlung und Fallback-Mechanismen implementiert
+
+- [ ] **Vue 3 SFC-Migration** (AKTUELLER FOKUS)
+  - [x] Vite als Build-Tool und Entwicklungsserver eingerichtet
+  - [ ] Erste Vue 3 SFC-Komponenten (Dokumentenkonverter, Admin-Komponenten)
+  - [ ] Pinia Stores für zentrale Zustandsverwaltung
+  - [ ] TypeScript-Integration für verbesserte Codequalität
 
 ### Lehren aus der Framework-Migration
 
@@ -60,8 +66,9 @@ Die folgenden wichtigen Erkenntnisse haben wir aus der Migration gewonnen:
 
 - [ ] **Technische Schulden abbauen**
   - [ ] Vollständige Bereinigung verbleibender Framework-Referenzen
-  - [ ] Code-Dokumentation vervollständigen
+  - [ ] Code-Dokumentation für Vue 3 SFC-Komponenten vervollständigen
   - [ ] Einheitliche Fehlermeldungen und -behandlung
+  - [ ] Vite-Konfiguration optimieren
   - *Aufwand: ~40 Stunden*
 
 ### Mittelfristig: August - Oktober 2025 (3 Monate)
@@ -108,15 +115,16 @@ Die folgenden wichtigen Erkenntnisse haben wir aus der Migration gewonnen:
   - [ ] Überarbeitung des Benutzermanagements für Administratoren
   - *Aufwand: ~50 Stunden*
 
-- [ ] **UI-Optimierungen**
-  - [ ] Überarbeitetes Chat-Interface mit verbesserten Interaktionsmöglichkeiten
-  - [ ] Optimierte mobile Erfahrung
-  - [ ] Erweiterte Personalisierungsoptionen
+- [ ] **UI-Optimierungen mit Vue 3 SFC**
+  - [ ] Überarbeitetes Chat-Interface mit reaktiven Vue 3-Komponenten
+  - [ ] Optimierte mobile Erfahrung mit responsiven Vue-Komponenten
+  - [ ] Erweiterte Personalisierungsoptionen über Pinia-Store
+  - [ ] Komponenten-Bibliothek für einheitliche UI-Elemente
   - *Aufwand: ~70 Stunden*
 
 ## Schlüsselprioritäten
 
-1. **HTML/CSS/JS Stabilität**: Die Vanilla-JavaScript-Implementierung muss zuerst fehlerfrei funktionieren, bevor andere Migrationen begonnen werden
+1. **Vue 3 SFC-Migration**: Fortsetzung und Optimierung der Vue 3 SFC-Integration
 2. **Stabilität und Robustheit**: Das System muss unter allen Umständen zuverlässig funktionieren
 3. **Benutzerfreundlichkeit**: Eine intuitive, einfach zu bedienende Oberfläche hat Priorität
 4. **Performance**: Schnelle Ladezeiten und Antworten sind wichtiger als zusätzliche Features
@@ -141,4 +149,4 @@ Die folgenden Bereiche werden kontinuierlich verbessert, parallel zu den oben ge
 
 ---
 
-Zuletzt aktualisiert: 06.05.2025
+Zuletzt aktualisiert: 08.05.2025

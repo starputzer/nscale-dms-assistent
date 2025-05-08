@@ -10,7 +10,7 @@ Der nscale DMS Assistent ist eine interaktive Anwendung, die Benutzern bei der N
 
 Die Anwendung ist in mehrere Schichten unterteilt:
 
-1. **Präsentationsschicht**: Frontend-Komponenten (HTML/CSS/JS, React [geplant])
+1. **Präsentationsschicht**: Frontend-Komponenten (HTML/CSS/JS, Vue 3 SFC [in Entwicklung])
 2. **Anwendungsschicht**: Backend-Server und API-Endpunkte (Python/Flask)
 3. **Geschäftslogikschicht**: Kernmodule für Funktionalitäten
 4. **Datenzugriffsschicht**: Interaktion mit Datenbanken und externen Diensten
@@ -19,7 +19,7 @@ Die Anwendung ist in mehrere Schichten unterteilt:
 
 ### Aktuelle Implementierung
 
-Das Frontend besteht aktuell aus einer klassischen HTML/CSS/JS-Architektur, nachdem die Vue.js-Migration aufgegeben wurde:
+Das Frontend besteht aktuell aus einer klassischen HTML/CSS/JS-Architektur, wobei die Migration zu Vue 3 SFC bereits begonnen wurde:
 
 ```
 frontend/
@@ -30,22 +30,20 @@ frontend/
 └── [weitere Dateien]   # Weitere Frontend-Assets
 ```
 
-### Geplante React-Architektur
+### Vue 3 SFC-Architektur
 
-Die React-Implementierung wird einer modularen Struktur folgen:
+Die Vue 3 SFC-Implementierung folgt einer modularen Struktur:
 
 ```
-nscale-react/
-├── src/
-│   ├── components/     # Wiederverwendbare Komponenten
-│   │   ├── admin/      # Admin-spezifische Komponenten
-│   │   ├── chat/       # Chat-Interface-Komponenten
-│   │   └── common/     # Gemeinsame Basiskomponenten 
-│   ├── pages/          # Hauptansichten (Seiten)
-│   ├── hooks/          # Benutzerdefinierte React-Hooks
-│   ├── context/        # React Context für Zustandsverwaltung
-│   └── standalone/     # Standalone-Komponenten zur Integration
-└── webpack.config.js   # Webpack-Build-Konfiguration
+src/
+├── components/         # Wiederverwendbare Komponenten
+│   ├── admin/          # Admin-spezifische Komponenten
+│   ├── chat/           # Chat-Interface-Komponenten
+│   └── common/         # Gemeinsame Basiskomponenten 
+├── views/              # Hauptansichten (Seiten)
+├── composables/        # Benutzerdefinierte Vue Composables
+├── stores/             # Pinia Stores für Zustandsverwaltung
+└── standalone/         # Standalone-Komponenten zur Integration
 ```
 
 ## Backend-Architektur
@@ -96,7 +94,7 @@ Die Komponenten kommunizieren über folgende Mechanismen:
 
 1. **REST-API**: Frontend und Backend kommunizieren über HTTP/REST
 2. **Event-System**: Frontend-Komponenten kommunizieren über ein Event-basiertes System
-3. **Zustandsverwaltung**: In der künftigen React-Implementierung wird Redux/Context API verwendet
+3. **Zustandsverwaltung**: In der Vue 3 SFC-Implementierung wird Pinia für die zentrale Zustandsverwaltung verwendet
 
 ## Feature-Toggle-System
 
@@ -106,18 +104,39 @@ Das Feature-Toggle-System ermöglicht die kontrollierte Aktivierung neuer Funkti
 2. **Serverseitige Konfiguration**: Globale Einstellungen in server_config.json
 3. **UI-Integration**: Admin-Interface zur Verwaltung der Feature-Toggles
 
-Das System wird für die React-Migration angepasst:
+Das System wird für die Vue 3 SFC-Migration mit Pinia eingesetzt:
 
 ```javascript
-// Überprüfung, ob ein Feature aktiviert ist
-function isFeatureEnabled(featureName) {
-  return localStorage.getItem(`feature_${featureName}`) === 'true';
-}
+// stores/featureToggles.js
+import { defineStore } from 'pinia';
 
-// Aktivierung/Deaktivierung eines Features
-function setFeatureEnabled(featureName, enabled) {
-  localStorage.setItem(`feature_${featureName}`, enabled ? 'true' : 'false');
-}
+export const useFeatureTogglesStore = defineStore('featureToggles', {
+  state: () => ({
+    useSfcChat: false,
+    useSfcAdmin: false,
+    useSfcDocConverter: false,
+  }),
+  
+  actions: {
+    toggleFeature(featureName) {
+      if (featureName in this.$state) {
+        this[featureName] = !this[featureName];
+        // Synchronisiere mit localStorage für Persistenz
+        localStorage.setItem(`feature_${featureName}`, this[featureName]);
+      }
+    },
+    
+    initFromLocalStorage() {
+      // Laden der Feature-Flags aus dem localStorage beim Start
+      Object.keys(this.$state).forEach(key => {
+        const stored = localStorage.getItem(`feature_${key}`);
+        if (stored !== null) {
+          this[key] = stored === 'true';
+        }
+      });
+    }
+  }
+});
 ```
 
 ## Sicherheitskonzept
@@ -151,9 +170,9 @@ Die Anwendung verwendet folgende Technologien:
 
 1. **Frontend**:
    - HTML5, CSS3, JavaScript (ES6+)
-   - Vue.js (aufgegeben)
-   - React mit TypeScript (geplant)
-   - Redux oder Context API für Zustandsverwaltung (geplant)
+   - Vue 3 mit TypeScript und Single File Components
+   - Pinia für zentrale Zustandsverwaltung
+   - Vite als Build-Tool und Entwicklungsserver
 
 2. **Backend**:
    - Python 3.9+
@@ -167,12 +186,12 @@ Die Anwendung verwendet folgende Technologien:
    - FAISS für Vektorspeicherung und -suche
 
 4. **Build-Tools**:
-   - Webpack/Vite für React-Builds (geplant)
+   - Vite für Vue 3 SFC-Builds
    - Python Virtual Environment
 
-## Probleme der aufgegebenen Vue.js-Migration
+## Herausforderungen der ersten Vue.js-Migration
 
-Die Vue.js-Migration wurde aufgrund folgender Probleme aufgegeben:
+Die erste Vue.js-Migration stieß auf folgende Herausforderungen:
 
 1. **404-Fehler bei statischen Ressourcen**: Trotz verschiedener Lösungsansätze blieben 404-Fehler persistent
 2. **DOM-Manipulationskonflikte**: Konflikte zwischen Vue.js-Rendering und direkter DOM-Manipulation
@@ -180,17 +199,17 @@ Die Vue.js-Migration wurde aufgrund folgender Probleme aufgegeben:
 4. **Styling-Inkonsistenzen**: Unterschiede im Styling zwischen Vue.js- und HTML/CSS/JS-Implementierungen
 5. **Komplexe Fallback-Mechanismen**: Zunehmende Komplexität der Fallback-Logik
 
-Diese Erkenntnisse werden in die React-Migrationsstrategie einbezogen, um ähnliche Probleme zu vermeiden.
+Diese Erkenntnisse wurden in die neue Vue 3 SFC-Migrationsstrategie einbezogen, um ähnliche Probleme zu vermeiden.
 
-## React-Migrationsstrategie
+## Vue 3 SFC-Migrationsstrategie
 
-Die Migration zu React wird folgende Hauptprinzipien verfolgen:
+Die Migration zu Vue 3 SFC folgt diesen Hauptprinzipien:
 
-1. **Klare Framework-Grenzen**: Strikte Trennung zwischen React und HTML/CSS/JS-Code
-2. **Einheitliches Asset-Management**: Konsistente Pfadstrategie mit Webpack
+1. **Klare Framework-Grenzen**: Strikte Trennung zwischen Vue-Komponenten und Legacy-Code
+2. **Einheitliches Asset-Management**: Konsistente Pfadstrategie mit Vite
 3. **Isolierte Komponenten**: Migration beginnt mit eigenständigen, isolierten Komponenten
 4. **Einfache Fallbacks**: Binary Fallback-Strategie statt Mehrfachebenen
-5. **Zentrale Zustandsverwaltung**: Klare Zustandsarchitektur mit Redux/Context API
+5. **Zentrale Zustandsverwaltung**: Klare Zustandsarchitektur mit Pinia
 
 ## Skalierbarkeit und Performance
 
@@ -218,9 +237,9 @@ Die Anwendung wurde für einfache Erweiterbarkeit konzipiert:
 2. **Plugin-System**: Erweiterungspunkte für zusätzliche Funktionalitäten
 3. **Standardisierte Schnittstellen**: Klare Vertragsdefinitionen zwischen Komponenten
 
-## Lehren aus der Vue.js-Migration
+## Lehren aus der ersten Vue.js-Migration
 
-Die folgenden Lehren aus der gescheiterten Vue.js-Migration sind besonders wichtig:
+Die folgenden Lehren aus der ersten Vue.js-Migration sind besonders wichtig:
 
 1. **Framework-Entscheidungen frühzeitig treffen**: Klare Festlegung auf ein primäres UI-Framework
 2. **Vermeidung hybrider Ansätze**: Keine Vermischung verschiedener UI-Paradigmen
@@ -228,8 +247,8 @@ Die folgenden Lehren aus der gescheiterten Vue.js-Migration sind besonders wicht
 4. **Strikte Trennung von Verantwortlichkeiten**: Klare Grenzen zwischen Komponenten definieren
 5. **Umfassende Tests**: Frühzeitig umfassende Tests implementieren
 
-Diese Lehren werden die Grundlage für eine erfolgreiche React-Migration bilden.
+Diese Lehren bilden die Grundlage für die erfolgreiche Vue 3 SFC-Migration.
 
 ---
 
-Zuletzt aktualisiert: 05.05.2025
+Zuletzt aktualisiert: 08.05.2025

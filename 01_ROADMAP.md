@@ -7,27 +7,27 @@ Diese Roadmap gibt einen Überblick über den aktuellen Entwicklungsstand und di
 ### Frontend-Strategie Änderung
 Die Anwendung durchläuft eine wichtige Neuausrichtung bei der UI-Entwicklung:
 
-- [x] **Vue.js-Migration gestartet** (AUFGEGEBEN)
+- [x] **Erste Vue.js-Migration gestartet** (AUFGEGEBEN)
   - [x] Feature-Toggle-Mechanismus implementiert
   - [x] Dokumentenkonverter als Vue.js-Komponente implementiert
   - [x] Admin-Bereich teilweise als Vue.js-Komponenten umgesetzt
   - [x] Umfangreiche Fallback-Mechanismen implementiert
 
-- [ ] **Zurück zur HTML/CSS/JS-Implementierung** (ABGESCHLOSSEN)
+- [x] **Zurück zur HTML/CSS/JS-Implementierung** (ABGESCHLOSSEN)
   - [x] Wiederherstellung der stabilen HTML/CSS/JS-basierten Oberfläche
   - [x] Entfernung der fehlerhaften Vue.js-Komponenten
   - [x] Optimierung der bestehenden UI für maximale Robustheit
 
-- [ ] **React-Migration starten** (AKTUELLER FOKUS)
-  - [ ] Projektstruktur für React-Integration vorbereiten
-  - [ ] Erste React-Komponenten entwickeln (Dokumentenkonverter)
-  - [ ] Build-Prozess für React-Komponenten einrichten
+- [ ] **Vue 3 SFC-Migration starten** (AKTUELLER FOKUS)
+  - [ ] Projektstruktur für Vue 3 SFC-Integration optimieren
+  - [ ] Erste Vue 3 SFC-Komponenten entwickeln (Dokumentenkonverter)
+  - [ ] Build-Prozess mit Vite für Vue 3 SFC verbessern
   - [ ] Nahtlose Integration in bestehende Architektur
-  - [ ] Feature-Toggle-System für React-Komponenten anpassen
+  - [ ] Feature-Toggle-System für Vue 3 SFC-Komponenten anpassen
 
-### Gründe für die Aufgabe der Vue.js-Migration
+### Gründe für die Aufgabe der ersten Vue.js-Migration
 
-Die Vue.js-Migration wurde aus folgenden Gründen aufgegeben:
+Die ursprüngliche Vue.js-Migration wurde aus folgenden Gründen temporär aufgegeben:
 
 1. **Persistente 404-Fehler**:
    - Trotz verschiedenster Lösungsansätze waren 404-Fehler für statische Ressourcen ein konstantes Problem
@@ -61,19 +61,19 @@ Das erweiterte Rollenkonzept wird in mehreren Phasen implementiert:
 - [x] **Robuste Basisimplementierung**: Der Dokumentenkonverter wurde als stabile HTML/CSS/JS-Komponente implementiert (ABGESCHLOSSEN)
 - [x] **Fallback-Mechanismen**: Mehrschichtige Fallback-Mechanismen für maximale Robustheit (ABGESCHLOSSEN)
 - [x] **Fehlerbehandlung**: Verbesserte Fehlerbehandlung und Diagnose (ABGESCHLOSSEN)
-- [ ] **React-Version entwickeln**: Implementierung des Dokumentenkonverters als React-Komponente (AKTUELLER FOKUS)
+- [ ] **Vue 3 SFC-Version entwickeln**: Implementierung des Dokumentenkonverters als Vue 3 SFC-Komponente (AKTUELLER FOKUS)
 - [ ] **Verbesserter PDF-Parser**: Bessere Erkennung von Tabellen und Strukturen in PDFs
 - [ ] **Batch-Konvertierung**: Möglichkeit, mehrere Dokumente gleichzeitig zu konvertieren
 
 ## Geplante Features
 
-### 1. React-Integration (Q3 2025)
+### 1. Vue 3 SFC-Integration (Q3 2025)
 
-- [ ] **Entwicklungsumgebung einrichten**: Setup für React mit TypeScript
-- [ ] **Komponenten-Bibliothek erstellen**: Grundlegende UI-Komponenten in React
-- [ ] **Zustandsverwaltung implementieren**: Effiziente Zustandsverwaltung mit Redux oder Context API
-- [ ] **Admin-Bereich migrieren**: Schrittweise Migration des Admin-Bereichs zu React
-- [ ] **Chat-Interface migrieren**: Neuimplementierung des Chat-Interfaces mit React
+- [ ] **Entwicklungsumgebung optimieren**: Verbessertes Setup für Vue 3 mit TypeScript und Vite
+- [ ] **Komponenten-Bibliothek erweitern**: Grundlegende UI-Komponenten als Vue 3 SFCs
+- [ ] **Zustandsverwaltung verbessern**: Effiziente Zustandsverwaltung mit Pinia
+- [ ] **Admin-Bereich migrieren**: Schrittweise Migration des Admin-Bereichs zu Vue 3 SFC
+- [ ] **Chat-Interface migrieren**: Neuimplementierung des Chat-Interfaces mit Vue 3 SFC
 
 ### 2. Verbesserte RAG-Engine (Q3 2025)
 
@@ -84,7 +84,7 @@ Das erweiterte Rollenkonzept wird in mehreren Phasen implementiert:
 
 ### 3. Benutzererfahrung (Q3-Q4 2025)
 
-- [ ] **Redesign der Chat-Oberfläche**: Moderneres und intuitiveres Design mit React-Komponenten
+- [ ] **Redesign der Chat-Oberfläche**: Moderneres und intuitiveres Design mit Vue 3 SFC-Komponenten
 - [ ] **Mobile Optimierung**: Verbesserte Nutzererfahrung auf Mobilgeräten
 - [ ] **Sprachsteuerung**: Möglichkeit, per Spracheingabe mit dem Assistenten zu interagieren
 - [ ] **Personalisierte Benutzereinstellungen**: Anpassbare Themen, Schriftgrößen und Layouts
@@ -111,17 +111,17 @@ Die folgenden Punkte wurden als technische Schulden identifiziert, die in zukün
 - [ ] **Test-Coverage erhöhen**: Erweiterung der automatisierten Tests
 - [ ] **Optimierung der Datenbankabfragen**: Verbesserung der Effizienz bei häufigen Abfragen
 - [ ] **Dokumentation aktualisieren**: Vollständige Dokumentation aller Komponenten und APIs
-- [ ] **Bereinigung des Code-Repositories**: Entfernung aller Überreste der Vue.js-Migration
+- [ ] **Bereinigung des Code-Repositories**: Entfernung aller Überreste der ersten Vue.js-Migration
 
-## Erkenntnisse aus der gescheiterten Vue.js-Migration
+## Erkenntnisse aus der ersten Vue.js-Migration
 
-Die folgenden Lehren wurden aus dem Scheitern der Vue.js-Migration gezogen:
+Die folgenden Lehren wurden aus den Herausforderungen der ersten Vue.js-Migration gezogen:
 
 1. **Framework-Entscheidungen frühzeitig treffen**: Klare Entscheidung für ein primäres UI-Framework
 2. **Vermeidung von Framework-Hybridansätzen**: Komplexität von parallelen Framework-Implementierungen unterschätzt
 3. **Konsequente Pfadstrategie**: Einheitliche Pfadstrategie für Assets von Anfang an implementieren
 4. **Inkrementelle Migration bevorzugen**: Klare, isolierte Komponenten zuerst migrieren
-5. **React als bessere Alternative**: Bessere TypeScript-Integration und weniger DOM-Manipulationsprobleme mit React
+5. **Vue 3 SFC als bessere Alternative**: Bessere Komponentenorganisation und modulare Struktur mit Vue 3 Single File Components
 
 ## Hinweise
 
@@ -130,4 +130,4 @@ Die folgenden Lehren wurden aus dem Scheitern der Vue.js-Migration gezogen:
 
 ---
 
-Zuletzt aktualisiert: 05.05.2025
+Zuletzt aktualisiert: 08.05.2025

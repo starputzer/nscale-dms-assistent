@@ -111,7 +111,7 @@ Die Anwendung durchläuft aktuell eine schrittweise Migration von einer klassisc
 
 Die aktuelle Entwicklung konzentriert sich auf:
 
-1. **React-Integration**: Planung und Beginn der React-Integration als alternative Richtung
+1. **Vue 3 SFC-Integration**: Fortsetzung und Optimierung der Vue 3 Single File Components Integration
 2. **Verbesserung der RAG-Engine**: Optimierung der Vektorindexierung und Hybridsuche
 3. **Benutzererfahrung**: Modernisierung der Chat-Oberfläche und mobile Optimierung
 4. **Rollenkonzept**: Implementierung eines erweiterten Rollenkonzepts mit spezifischen Berechtigungen
@@ -128,4 +128,4 @@ Die aktuelle Entwicklung konzentriert sich auf:
 
 ---
 
-Letzte Aktualisierung: 05.05.2025
+Letzte Aktualisierung: 08.05.2025

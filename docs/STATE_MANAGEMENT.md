@@ -2,7 +2,7 @@
 
 Dieses Dokument beschreibt die State-Management-Architektur des nscale DMS Assistenten, die auf Pinia basiert. Die Architektur ersetzt das bisherige System mit direkten reaktiven Referenzen und Prop-Passing durch einen zentralisierten, typensicheren State-Management-Ansatz.
 
-**Letzte Aktualisierung:** 07.05.2025
+**Letzte Aktualisierung:** 08.05.2025
 
 ## Inhaltsverzeichnis
 
