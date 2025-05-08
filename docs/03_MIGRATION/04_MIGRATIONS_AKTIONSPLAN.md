@@ -370,16 +370,50 @@ Dieser Aktionsplan definiert die Strategie und konkreten Schritte für die Migra
    - Fehlerbehandlung mit automatischem Fallback
    - Nahtloser Übergang zwischen Implementierungen
 
-### Phase 3-6: Weitere Migrations-Phasen
+### Phase 3: Admin-Komponenten (4 Wochen)
 
-Die Phasen 3-6 folgen dem gleichen Muster mit spezifischen Fokuspunkten für jede Komponente:
+#### Ziele
+- Vollständige Vue 3 SFC für Admin-Komponenten
+- Integration mit bestehender API
+- Feature-Toggle und Fallback-Implementierung
+- Umfassende Accessibility-Verbesserungen
+- Responsive Design
 
-- **Admin-Komponenten**: Benutzer-, Feedback-, System- und MOTD-Verwaltung
+#### Aufgaben und Status
+
+1. **Design und Analyse (ABGESCHLOSSEN: 08.05.2025)**
+   - ✅ Umfassende Analyse der bestehenden Admin-Funktionalitäten
+   - ✅ Wireframes und Mockups für alle Admin-Bereiche
+   - ✅ Komponentenhierarchie und Datenflussdiagramme
+   - ✅ TypeScript-Interfaces für Datenstrukturen
+   - ✅ Detaillierte Dokumentation in `docs/ADMIN_COMPONENTS_DESIGN.md`
+
+2. **Grundlegende Admin-Komponenten erstellen (TEILWEISE ABGESCHLOSSEN: 08.05.2025)**
+   - ✅ Admin-Panel mit Sidebar-Navigation und Lazy-Loading
+   - ✅ Admin-Dashboard mit Systemübersicht
+   - ✅ Feature-Toggle-Verwaltungskomponente
+   - 🔄 Benutzerverwaltungskomponenten
+   - 🔄 Systemstatistik-Komponenten
+
+3. **Erweiterte Admin-Komponenten (GEPLANT)**
+   - 📅 Feedback-Analyse-Komponenten
+   - 📅 MOTD-Editor mit Live-Vorschau
+   - 📅 Dokumentenkonverter-Verwaltung
+
+4. **Integration und Testing (GEPLANT)**
+   - 📅 Komponententests mit Jest und Vue Test Utils
+   - 📅 End-to-End-Tests für kritische Admin-Workflows
+   - 📅 Accessibility-Tests mit WCAG-Richtlinien
+
+### Phase 4-6: Weitere Migrations-Phasen
+
+Die Phasen 4-6 folgen dem gleichen Muster mit spezifischen Fokuspunkten für jede Komponente:
+
 - **Chat-Interface**: ChatView, MessageList, MessageItem, SessionTabs
 - **Einstellungen**: Allgemeine, Erscheinungsbild- und Kontoeinstellungen
 - **Authentifizierung**: Login, Registrierung, Passwort-Wiederherstellung
 
-Die detaillierte Planung dieser Phasen wird nach erfolgreicher Abschluss der Phase 0 (Stabilisierung) und Phase 1-2 aktualisiert.
+Die detaillierte Planung dieser Phasen wird nach erfolgreicher Abschluss der Phase 0 (Stabilisierung) und Phase 1-3 aktualisiert.
 
 ## Test- und Qualitätssicherungsplan
 
@@ -422,4 +456,4 @@ Die höchste Priorität liegt aktuell auf der Testinfrastruktur und Stabilisieru
 
 ---
 
-Zuletzt aktualisiert: 07.05.2025
+Zuletzt aktualisiert: 08.05.2025
