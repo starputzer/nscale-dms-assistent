@@ -25,7 +25,7 @@
     </header>
     
     <main class="app-main">
-      <router-view />
+      <ErrorReportingExample />
     </main>
     
     <footer class="app-footer">
@@ -40,6 +40,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useGlobalDialog } from '@/composables/useDialog';
+import ErrorReportingExample from './ErrorReportingExample.vue';
 
 // Theme-Zustand
 const isDarkMode = ref(false);

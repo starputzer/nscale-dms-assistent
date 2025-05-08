@@ -56,18 +56,63 @@ async def general_exception_handler(request, exc):
         content={"detail": str(exc)},
     )
 
-# Einfache Middleware für No-Cache-Header (robustere Lösung als NoCacheStaticFiles)
-class NoCacheMiddleware(BaseHTTPMiddleware):
+# Erweiterte Middleware für No-Cache-Header und MIME-Typ-Korrekturen
+class EnhancedMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
+        # Besseres MIME-Typ-Management - Setze Header schon VOR dem Aufruf
+        # für Pfade, die wir direkt identifizieren können
+        original_path = request.url.path
+        content_type = None
+        
+        # Vorab MIME-Type erkennen basierend auf Pfad und Dateiendung
+        if original_path.endswith(".css"):
+            content_type = "text/css"
+            logger.debug(f"CSS-Datei erkannt (vor Aufruf): {original_path}")
+        elif original_path.endswith(".js"):
+            content_type = "application/javascript"
+            logger.debug(f"JavaScript-Datei erkannt (vor Aufruf): {original_path}")
+        elif original_path.endswith((".png", ".jpg", ".jpeg", ".gif")):
+            ext = original_path.split(".")[-1].lower()
+            content_type = f"image/{ext if ext != 'jpg' else 'jpeg'}"
+        elif original_path.endswith(".svg"):
+            content_type = "image/svg+xml"
+        elif original_path.endswith(".json"):
+            content_type = "application/json"
+        
+        # Protokolliere wichtige Anfragen für die Fehlersuche
+        if ((original_path.startswith("/css/") or original_path.startswith("/static/css/")) and 
+            original_path.endswith(".css")):
+            logger.debug(f"CSS-Datei angefordert: {original_path}, Content-Type wird auf {content_type} gesetzt")
+            
+        # Lasse den Request durch die reguläre Middleware-Kette laufen
         response = await call_next(request)
-        if request.url.path.startswith("/static") and (request.url.path.endswith(".css") or request.url.path.endswith(".js")):
+        
+        # Stelle sicher, dass der richtige Content-Type gesetzt ist, egal was vorher passiert ist
+        if content_type:
+            current_content_type = response.headers.get("Content-Type", "")
+            
+            # Wenn Content-Type falsch oder nicht gesetzt ist, korrigiere ihn
+            if content_type not in current_content_type:
+                response.headers["Content-Type"] = content_type
+                logger.debug(f"Content-Type für {original_path} korrigiert auf {content_type} (war: {current_content_type})")
+        
+        # Spezielle Behandlung für JavaScript-Module
+        if original_path.endswith(".js") and "type=module" in original_path:
+            response.headers["Content-Type"] = "application/javascript"
+            logger.debug(f"Content-Type für JS-Modul {original_path} auf application/javascript gesetzt")
+        
+        # Setze No-Cache für statische Assets im Entwicklungsmodus
+        # In Produktion wäre Cache sinnvoll, mit Version-Parameter für Cache-Busting
+        if (original_path.startswith(("/static", "/css", "/js", "/images")) and 
+            original_path.endswith((".css", ".js"))):
             response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
             response.headers["Pragma"] = "no-cache"
             response.headers["Expires"] = "0"
+            
         return response
 
-# Füge die No-Cache-Middleware hinzu (vor der CORS-Middleware)
-app.add_middleware(NoCacheMiddleware)
+# Füge die erweiterte Middleware hinzu (vor der CORS-Middleware)
+app.add_middleware(EnhancedMiddleware)
 
 # CORS-Konfiguration
 app.add_middleware(
@@ -94,10 +139,26 @@ if frontend_dir.exists():
         logger.info(f"JS-Dateien: {[f.name for f in js_dir.iterdir() if f.is_file()]}")
 
 # App Mounten mit normaler StaticFiles-Klasse für verschiedene Pfade
-app.mount("/static", StaticFiles(directory="frontend"), name="static")
-app.mount("/css", StaticFiles(directory="frontend/css"), name="css")
-app.mount("/js", StaticFiles(directory="frontend/js"), name="js")
-app.mount("/images", StaticFiles(directory="frontend/images"), name="images")
+# Verbesserte Fehlerbehandlung bei Pfadzuordnungen
+def mount_static_directory(app, url_path, directory_path, name):
+    """Mountet ein Verzeichnis mit Fehlerbehandlung"""
+    directory = Path(directory_path)
+    if not directory.exists():
+        os.makedirs(directory, exist_ok=True)
+        logger.warning(f"Verzeichnis '{directory_path}' existierte nicht und wurde erstellt")
+    
+    app.mount(url_path, StaticFiles(directory=str(directory)), name=name)
+    logger.info(f"Statisches Verzeichnis erfolgreich gemountet: {url_path} -> {directory_path}")
+
+# Absolute Pfade für Verzeichnisse
+app_dir = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+frontend_dir = app_dir / "frontend"
+
+# Mounten der statischen Verzeichnisse mit Fehlerbehandlung
+mount_static_directory(app, "/static", frontend_dir, "static")
+mount_static_directory(app, "/css", frontend_dir / "css", "css")
+mount_static_directory(app, "/js", frontend_dir / "js", "js")
+mount_static_directory(app, "/images", frontend_dir / "images", "images")
 
 @app.get("/")
 async def root():

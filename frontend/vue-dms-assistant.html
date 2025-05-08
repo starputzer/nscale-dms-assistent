@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>nscale DMS Assistent - Vue 3</title>
+
+  <!-- CSS-Einbindungen -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+  <!-- Eigene CSS-Dateien -->
+  <link href="/frontend/css/main.css" rel="stylesheet">
+  <link href="/frontend/css/themes.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Vue Mounting Element -->
+  <div id="vue-dms-app" class="h-screen flex flex-col"></div>
+
+  <!-- Lade die Vue-Anwendung -->
+  <script type="module" src="/frontend/js/vue/main.js"></script>
+  
+  <!-- Fallback-Nachricht für JS-Deaktivierung -->
+  <noscript>
+    <div class="flex items-center justify-center h-screen bg-gray-100">
+      <div class="text-center max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
+        <div class="text-red-600 text-4xl mb-4">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h1 class="text-xl font-bold mb-2">JavaScript wird benötigt</h1>
+        <p class="text-gray-600">
+          Um den nscale DMS Assistenten nutzen zu können, muss JavaScript aktiviert sein.
+          Bitte aktivieren Sie JavaScript in Ihrem Browser und laden Sie die Seite neu.
+        </p>
+      </div>
+    </div>
+  </noscript>
+</body>
+</html>

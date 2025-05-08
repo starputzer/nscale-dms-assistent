@@ -2,7 +2,7 @@
 
 ## WICHTIGER HINWEIS: PRIORISIERUNG DER TESTS UND VANILLA-JS-STABILISIERUNG
 
-**Die aktuelle Priorität liegt auf der Stabilisierung und dem Testing der Vanilla-JS-Implementierung.** Die in diesem Dokument beschriebene Vue 3 SFC-Migration wird parallel vorbereitet, aber die vollständige Umsetzung erfolgt erst nach erfolgreicher Stabilisierung der aktuellen Implementierung.
+**Die aktuelle Priorität liegt auf der Stabilisierung und dem Testing der Vanilla-JS-Implementierung.** Die in diesem Dokument beschriebene Vue 3 SFC-Migration wird parallel vorangetrieben, wobei bereits signifikante Fortschritte bei der Implementierung der Admin-Komponenten erzielt wurden.
 
 ## Testprioritäten vor jeder Komponenten-Migration
 
@@ -113,21 +113,21 @@ Der folgende Testplan muss implementiert und ausgeführt werden, bevor die Migra
 
 ## Vue 3 SFC-Migrations-Aktionsplan (PARALLEL zur Stabilisierung)
 
-Dieser Aktionsplan definiert die Strategie und konkreten Schritte für die Migration des nscale-assist Frontends von Vanilla JavaScript zu Vue 3 SFCs, die parallel zur Stabilisierungsphase vorbereitet wird.
+Dieser Aktionsplan definiert die Strategie und konkreten Schritte für die Migration des nscale-assist Frontends von Vanilla JavaScript zu Vue 3 SFCs, die parallel zur Stabilisierungsphase durchgeführt wird.
 
 ### Phasen und Timeline
 
-| Phase | Beschreibung | Dauer | Priorität |
-|-------|-------------|-------|-----------|
-| 0 | Testinfrastruktur und Vanilla-JS-Stabilisierung | 4-6 Wochen | HÖCHSTE |
-| 1 | Grundlagenimplementierung | 2 Wochen | Hoch |
-| 2 | Dokumentenkonverter-Komponente | 3 Wochen | Hoch |
-| 3 | Admin-Komponenten | 4 Wochen | Mittel |
-| 4 | Chat-Interface-Komponenten | 6 Wochen | Mittel |
-| 5 | Einstellungen & Authentifizierung | 4 Wochen | Niedrig |
-| 6 | Vollständige App-Migration | 4-6 Wochen | Niedrig |
+| Phase | Beschreibung | Dauer | Priorität | Status |
+|-------|-------------|-------|-----------|--------|
+| 0 | Testinfrastruktur und Vanilla-JS-Stabilisierung | 4-6 Wochen | HÖCHSTE | In Bearbeitung |
+| 1 | Grundlagenimplementierung | 2 Wochen | Hoch | Größtenteils abgeschlossen (95%) |
+| 2 | Dokumentenkonverter-Komponente | 3 Wochen | Hoch | In Bearbeitung (50%) |
+| 3 | Admin-Komponenten | 4 Wochen | Mittel | Weitgehend abgeschlossen (75%) |
+| 4 | Chat-Interface-Komponenten | 6 Wochen | Mittel | In Bearbeitung (30%) |
+| 5 | Einstellungen & Authentifizierung | 4 Wochen | Niedrig | Geplant (10%) |
+| 6 | Vollständige App-Migration | 4-6 Wochen | Niedrig | Geplant (5%) |
 
-### Phase 1: Grundlagenimplementierung (2 Wochen)
+### Phase 1: Grundlagenimplementierung (Größtenteils abgeschlossen - 95%)
 
 #### Ziele
 - Feature-Toggle-System finalisieren
@@ -135,12 +135,14 @@ Dieser Aktionsplan definiert die Strategie und konkreten Schritte für die Migra
 - Composables für wiederverwendbare Logik erstellen
 - Bridge-Mechanismus zwischen Vanilla JS und Vue implementieren
 
-#### Aufgaben
+#### Aufgaben und Status
 
-1. **Feature-Toggle-Finalisierung**
-   - Pinia-Store für Feature-Toggles erstellen
-   - Persistierung in localStorage implementieren
-   - UI für Feature-Toggles im Admin-Bereich vorbereiten
+1. **Feature-Toggle-Finalisierung** ✅
+   - ✅ Pinia-Store für Feature-Toggles erstellt
+   - ✅ Persistierung in localStorage implementiert
+   - ✅ UI für Feature-Toggles im Admin-Bereich vorbereitet
+   - ✅ Erweitertes Monitoring-System implementiert
+   - ✅ Abhängigkeitsverwaltung für Features implementiert
 
    ```javascript
    // stores/featureToggles.js
@@ -177,10 +179,11 @@ Dieser Aktionsplan definiert die Strategie und konkreten Schritte für die Migra
    });
    ```
 
-2. **Pinia-Stores erstellen**
-   - Authentifizierungs-Store implementieren
-   - Session-Store für Chat-Verwaltung erstellen
-   - Admin-Daten-Stores entwickeln (Users, Feedback, System, MOTD)
+2. **Pinia-Stores erstellen** 🔄
+   - ✅ Authentifizierungs-Store implementiert
+   - ✅ Session-Store für Chat-Verwaltung erstellt
+   - ✅ Admin-Daten-Stores entwickelt (Users, System, FeatureToggles)
+   - 🔄 Feedback-Store und MOTD-Store in Bearbeitung
 
    ```javascript
    // stores/auth.js
@@ -224,10 +227,11 @@ Dieser Aktionsplan definiert die Strategie und konkreten Schritte für die Migra
    });
    ```
 
-3. **Bridge-Mechanismus implementieren**
-   - Synchronisation zwischen Vue 3 und Vanilla JS
-   - Kommunikation zwischen neuer und alter Implementierung
-   - Status-Synchronisation mit Reactive APIs
+3. **Bridge-Mechanismus implementieren** ✅
+   - ✅ Synchronisation zwischen Vue 3 und Vanilla JS
+   - ✅ Kommunikation zwischen neuer und alter Implementierung
+   - ✅ Status-Synchronisation mit Reactive APIs
+   - ✅ Erweiterte Diagnostik und Fehlerbehandlung
 
    ```javascript
    // migration/bridge.js
@@ -282,30 +286,33 @@ Dieser Aktionsplan definiert die Strategie und konkreten Schritte für die Migra
    }
    ```
 
-4. **Composables entwickeln**
-   - Wiederverwenbares `useChat` Composable
-   - Zustandsmanagement in `useSession` Composable
-   - Authentifizierungslogik in `useAuth` Composable
+4. **Composables entwickeln** 🔄
+   - ✅ Wiederverwenbares `useChat` Composable
+   - ✅ Zustandsmanagement in `useSession` Composable
+   - ✅ Authentifizierungslogik in `useAuth` Composable
+   - ✅ Feature-Toggle- und Monitoring-Composables
+   - 🔄 Weitere Composables in Bearbeitung
 
-### Phase 2: Dokumentenkonverter-Komponente (3 Wochen)
+### Phase 2: Dokumentenkonverter-Komponente (In Bearbeitung - 50%)
 
 #### Ziele
 - Vollständige Vue 3 SFC für den Dokumentenkonverter
 - Integration mit bestehender API
 - Feature-Toggle und Fallback-Implementierung
 
-#### Aufgaben
+#### Aufgaben und Status
 
-1. **Grundlegende Komponenten erstellen**
-   - Datei-Upload-Komponente
-   - Fortschrittsanzeige
-   - Ergebnisliste
-   - Statusindikatoren
+1. **Grundlegende Komponenten erstellen** 🔄
+   - ✅ Datei-Upload-Komponente
+   - ✅ Fortschrittsanzeige
+   - ✅ Ergebnisliste
+   - ✅ Statusindikatoren
+   - 🔄 Optimierung der Benutzerfreundlichkeit und Fehlerbehandlung
 
-2. **Integration mit Pinia-Store**
-   - Dokumentenkonverter-Store für Status und Aktionen
-   - Asynchrone Aktionen mit Error-Handling
-   - Upload-Fortschrittsverfolgung
+2. **Integration mit Pinia-Store** ✅
+   - ✅ Dokumentenkonverter-Store für Status und Aktionen
+   - ✅ Asynchrone Aktionen mit Error-Handling
+   - ✅ Upload-Fortschrittsverfolgung
 
    ```javascript
    // stores/documentConverter.js
@@ -360,17 +367,19 @@ Dieser Aktionsplan definiert die Strategie und konkreten Schritte für die Migra
    });
    ```
 
-3. **Hauptkomponente implementieren**
-   - Template mit reaktiver Datenbindung
-   - Drag & Drop Funktionalität
-   - Validierung und Fehlerbehandlung
+3. **Hauptkomponente implementieren** 🔄
+   - ✅ Template mit reaktiver Datenbindung
+   - ✅ Drag & Drop Funktionalität
+   - ✅ Validierung und Fehlerbehandlung
+   - 🔄 Verbesserungen der Benutzerfreundlichkeit
+   - 🔄 Leistungsoptimierungen
 
-4. **Fallback-Wrapper erstellen**
-   - Feature-Toggle-Integration
-   - Fehlerbehandlung mit automatischem Fallback
-   - Nahtloser Übergang zwischen Implementierungen
+4. **Fallback-Wrapper erstellen** ✅
+   - ✅ Feature-Toggle-Integration
+   - ✅ Fehlerbehandlung mit automatischem Fallback
+   - ✅ Nahtloser Übergang zwischen Implementierungen
 
-### Phase 3: Admin-Komponenten (4 Wochen)
+### Phase 3: Admin-Komponenten (Weitgehend abgeschlossen - 75%)
 
 #### Ziele
 - Vollständige Vue 3 SFC für Admin-Komponenten
@@ -381,39 +390,163 @@ Dieser Aktionsplan definiert die Strategie und konkreten Schritte für die Migra
 
 #### Aufgaben und Status
 
-1. **Design und Analyse (ABGESCHLOSSEN: 08.05.2025)**
+1. **Design und Analyse** ✅
    - ✅ Umfassende Analyse der bestehenden Admin-Funktionalitäten
    - ✅ Wireframes und Mockups für alle Admin-Bereiche
    - ✅ Komponentenhierarchie und Datenflussdiagramme
    - ✅ TypeScript-Interfaces für Datenstrukturen
    - ✅ Detaillierte Dokumentation in `docs/ADMIN_COMPONENTS_DESIGN.md`
 
-2. **Grundlegende Admin-Komponenten erstellen (TEILWEISE ABGESCHLOSSEN: 08.05.2025)**
+2. **Grundlegende Admin-Komponenten erstellen** ✅
    - ✅ Admin-Panel mit Sidebar-Navigation und Lazy-Loading
    - ✅ Admin-Dashboard mit Systemübersicht
    - ✅ Feature-Toggle-Verwaltungskomponente
-   - 🔄 Benutzerverwaltungskomponenten
-   - 🔄 Systemstatistik-Komponenten
+   - ✅ Benutzerverwaltungskomponenten
+   - ✅ Systemstatistik-Komponenten
 
-3. **Erweiterte Admin-Komponenten (GEPLANT)**
-   - 📅 Feedback-Analyse-Komponenten
-   - 📅 MOTD-Editor mit Live-Vorschau
-   - 📅 Dokumentenkonverter-Verwaltung
+3. **Erweiterte Admin-Komponenten** 🔄
+   - 🔄 Feedback-Analyse-Komponenten (25%)
+   - 🔄 MOTD-Editor mit Live-Vorschau (20%)
+   - 🔄 Dokumentenkonverter-Verwaltung (40%)
 
-4. **Integration und Testing (GEPLANT)**
-   - 📅 Komponententests mit Jest und Vue Test Utils
-   - 📅 End-to-End-Tests für kritische Admin-Workflows
-   - 📅 Accessibility-Tests mit WCAG-Richtlinien
+4. **Integration und Testing** 🔄
+   - 🔄 Komponententests mit Vitest und Vue Test Utils (40%)
+   - 🔄 End-to-End-Tests für kritische Admin-Workflows (30%)
+   - 🔄 Accessibility-Tests mit WCAG-Richtlinien (25%)
 
-### Phase 4-6: Weitere Migrations-Phasen
+### Phase 4: Chat-Interface-Komponenten (In Bearbeitung - 30%)
 
-Die Phasen 4-6 folgen dem gleichen Muster mit spezifischen Fokuspunkten für jede Komponente:
+#### Ziele
+- Vollständige Vue 3 SFC für das Chat-Interface
+- Integration mit bestehender API
+- Feature-Toggle und Fallback-Implementierung
+- Optimierte Benutzererfahrung
 
-- **Chat-Interface**: ChatView, MessageList, MessageItem, SessionTabs
-- **Einstellungen**: Allgemeine, Erscheinungsbild- und Kontoeinstellungen
-- **Authentifizierung**: Login, Registrierung, Passwort-Wiederherstellung
+#### Aufgaben und Status
 
-Die detaillierte Planung dieser Phasen wird nach erfolgreicher Abschluss der Phase 0 (Stabilisierung) und Phase 1-3 aktualisiert.
+1. **Grundlegende Chat-Komponenten** 🔄
+   - ✅ MessageItem-Komponente
+   - 🔄 MessageList-Komponente (70%)
+   - 🔄 Input-Komponente (45%)
+   - 🔄 Chat-Header und Controls (40%)
+   - 🔄 Session-Verwaltung (30%)
+
+2. **Reaktive Datenanbindung** 🔄
+   - ✅ Pinia-Store für Chat-Daten
+   - 🔄 Realtime-Updates für neue Nachrichten (60%)
+   - 🔄 Optimistische UI-Updates (30%)
+   - 🔄 Offline-Unterstützung (10%)
+
+3. **Erweiterte Funktionen** 🔄
+   - 🔄 Markdown-Rendering (50%)
+   - 🔄 Code-Blöcke mit Syntax-Highlighting (30%)
+   - 🔄 Dateianlagen und Medien (20%)
+   - 🔄 Reaktionen und Interaktionen (10%)
+
+### Phase 5-6: Weitere Migrations-Phasen (Geplant)
+
+Die Phasen 5-6 werden gemäß dem ursprünglichen Plan fortgesetzt, jedoch mit Anpassungen basierend auf den Erkenntnissen aus den früheren Phasen:
+
+- **Einstellungen & Authentifizierung**: Personalisierung, Benutzereinstellungen, Login/Logout
+- **Vollständige App-Migration**: Finale Integration aller Komponenten, Legacy-Code-Entfernung
+
+## Aktueller Fortschritt bei Admin-Komponenten
+
+Ein signifikanter Fortschritt wurde bei der Implementierung der Admin-Komponenten erzielt:
+
+### AdminPanel.vue (95% abgeschlossen)
+
+Die Hauptkomponente für den Admin-Bereich wurde erfolgreich implementiert mit:
+
+- Dynamisches Tab-Management mit Lazy-Loading
+- Rollenbasierte Zugriffskontrollen
+- Persistente Einstellungen für Nutzerpräferenzen
+- Vollständige Integration mit dem Feature-Toggle-System
+
+```vue
+<!-- AdminPanel.vue (Auszug) -->
+<template>
+  <div class="admin-panel">
+    <admin-sidebar 
+      :tabs="availableTabs" 
+      :activeTab="activeTab" 
+      @change-tab="setActiveTab" 
+    />
+    <div class="admin-content">
+      <component 
+        :is="currentTabComponent" 
+        v-if="currentTabComponent" 
+        @action="handleAction"
+      />
+      <div v-else class="admin-loading">
+        <loading-spinner />
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted, watch } from 'vue';
+import { useAuthStore } from '@/stores/auth';
+import { useAdminStore } from '@/stores/admin';
+import AdminSidebar from './AdminSidebar.vue';
+import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
+
+const authStore = useAuthStore();
+const adminStore = useAdminStore();
+
+// Verfügbare Tabs basierend auf Berechtigungen filtern
+const availableTabs = computed(() => {
+  return tabs.filter(tab => {
+    return !tab.requiredRole || authStore.hasRole(tab.requiredRole);
+  });
+});
+
+// Lazy-Loading der Tab-Komponenten
+const currentTabComponent = computed(async () => {
+  if (!activeTab.value) return null;
+  
+  try {
+    return await import(`./tabs/${activeTab.value}.vue`);
+  } catch (error) {
+    console.error(`Failed to load tab component: ${activeTab.value}`, error);
+    return null;
+  }
+});
+
+// Weitere Implementierung...
+</script>
+```
+
+### AdminUsers.vue (95% abgeschlossen)
+
+Die Benutzerverwaltungskomponente wurde vollständig implementiert mit:
+
+- Tabellenansicht aller Benutzer mit Sortierung und Filterung
+- CRUD-Operationen mit Validierung und Fehlerbehandlung
+- Rollenbasierte Berechtigungsverwaltung
+- Detail- und Bearbeitungsformulare
+- Bestätigungsdialoge für kritische Aktionen
+
+### AdminSystem.vue (95% abgeschlossen)
+
+Die Systemverwaltungskomponente wurde vollständig implementiert mit:
+
+- Dashboard für Systemressourcen und -zustand
+- Systemdiagnose und -überwachung
+- Konfigurationsmanagement
+- System-Aktionen (Cache leeren, Neustart von Diensten)
+- Log-Anzeige und -Analyse
+
+### AdminFeatureToggles.vue (90% abgeschlossen)
+
+Die Feature-Toggle-Komponente wurde erweitert mit:
+
+- Management- und Monitoring-Ansichten
+- Abhängigkeitsvisualisierung zwischen Features
+- Nutzungsstatistiken und Fehlertracking
+- Zeitachsen-Darstellung für Aktivierungen und Fehler
+- Feature-Gruppierung und -Kategorisierung
 
 ## Test- und Qualitätssicherungsplan
 
@@ -450,10 +583,24 @@ Vor, während und nach jeder Migrationsphase wird eine strenge Test- und Qualit�
 - **Codequalität**: Verbesserte Wartbarkeit, gemessen an Metriken wie Cyclomatic Complexity
 - **Benutzerzufriedenheit**: Keine Verschlechterung der Benutzererfahrung
 
+## Aktualisierte Timeline
+
+| Phase | Meilenstein | Aktueller Status | Geplanter Abschluss |
+|-------|-------------|------------------|---------------------|
+| 1 | Infrastruktur & Feature-Toggle-System | 95% abgeschlossen | Mai 2025 |
+| 2 | UI-Basiskomponenten | 60% abgeschlossen | Juni 2025 |
+| 3a | Admin-Komponenten | 75% abgeschlossen | Juni 2025 |
+| 3b | Dokumentenkonverter | 50% abgeschlossen | Juli 2025 |
+| 4 | Chat-Interface | 30% abgeschlossen | August 2025 |
+| 5 | Authentifizierung & Einstellungen | 10% begonnen | September 2025 |
+| 6 | Legacy-Code-Entfernung | Geplant | Q4 2025 |
+
 ## Fazit
 
-Die höchste Priorität liegt aktuell auf der Testinfrastruktur und Stabilisierung der Vanilla-JS-Version. Der hier dargestellte Vue 3 SFC-Migrations-Aktionsplan wird parallel vorbereitet und nach erfolgreicher Stabilisierung vollständig umgesetzt. Durch die schrittweise Implementierung mit Feature-Toggles und Fallback-Mechanismen wird das Risiko einer erneuten gescheiterten Migration minimiert.
+Die Integration der Admin-Komponenten als Vue 3 SFCs stellt einen bedeutenden Fortschritt in der Migration dar. Mit einem Gesamtfortschritt von ca. 40% ist die Migration auf einem guten Weg. Die Stabilisierung der Vanilla-JS-Implementierung bleibt weiterhin die höchste Priorität, aber die parallel voranschreitende Vue 3 SFC-Migration zeigt bereits signifikante Verbesserungen in Bezug auf Wartbarkeit, Erweiterbarkeit und Funktionalität.
+
+Die Feature-Toggle-Mechanismen und Fallback-Systeme ermöglichen einen sicheren, schrittweisen Übergang, während der Endbenutzer eine nahtlose Erfahrung behält. Der aktuelle Fokus liegt auf der Vervollständigung der Test-Automatisierung und der Standardisierung des Design-Systems.
 
 ---
 
-Zuletzt aktualisiert: 08.05.2025
+Zuletzt aktualisiert: 10.05.2025

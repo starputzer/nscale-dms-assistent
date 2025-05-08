@@ -517,7 +517,7 @@ export const useSessionStore = defineStore('session', () => {
 
 Dieses konsolidierte Dokument dient als wichtige Grundlage für die neue Vue 3 SFC-Migration, indem es die Erfahrungen aus der Vergangenheit nutzt, um eine erfolgreiche Implementierung zu gewährleisten.
 
-Zuletzt aktualisiert: 07.05.2025
+Zuletzt aktualisiert: 08.05.2025
 
 # 3 MIGRATIONS ERKENNTNISSE
 
@@ -1579,7 +1579,7 @@ export const useSessionStore = defineStore('session', () => {
 
 Dieses konsolidierte Dokument dient als wichtige Grundlage für die neue Vue 3 SFC-Migration, indem es die Erfahrungen aus der Vergangenheit nutzt, um eine erfolgreiche Implementierung zu gewährleisten.
 
-Zuletzt aktualisiert: 07.05.2025
+Zuletzt aktualisiert: 08.05.2025
 
 ---
 
@@ -2629,4 +2629,96 @@ export const useSessionStore = defineStore('session', () => {
 
 Dieses konsolidierte Dokument dient als wichtige Grundlage für die neue Vue 3 SFC-Migration, indem es die Erfahrungen aus der Vergangenheit nutzt, um eine erfolgreiche Implementierung zu gewährleisten.
 
-Zuletzt aktualisiert: 07.05.2025
+Zuletzt aktualisiert: 08.05.2025
+## Neue Erkenntnisse aus der aktuellen Vue 3 SFC-Migration
+
+Die aktuelle Vue 3 SFC-Migration hat bereits etwa 35% Fortschritt erreicht und es wurden mehrere wichtige Erkenntnisse gewonnen, die die bisherigen Lektionen bestätigen und ergänzen.
+
+### 1. Komponenten-Hierarchie und Datenfluss
+
+**Beobachtung**: Die Implementierung einer klaren Komponenten-Hierarchie hat sich als entscheidend für den Erfolg der Migration erwiesen.
+
+**Aktuelle Erkenntnis**:
+- Die Top-Down-Struktur mit App.vue als Hauptkomponente und klaren Zuständigkeiten für untergeordnete Komponenten führt zu besserer Wartbarkeit
+- Die Nutzung von Props für Datenübergabe und Events für Aufwärtskommunikation verhindert Zustandssynchronisationsprobleme
+- Die direkte Kommunikation mit dem DOM sollte vollständig vermieden werden
+
+### 2. Pinia-Store-Integration
+
+**Beobachtung**: Die zentrale Zustandsverwaltung mit Pinia hat sich als sehr effektiv erwiesen, erfordert aber konsistente Implementation.
+
+**Aktuelle Erkenntnis**:
+- Die Implementation von stores/auth.ts, sessions.ts, settings.ts und ui.ts ist weitgehend abgeschlossen und funktioniert gut
+- Stores sollten als einzige Quelle der Wahrheit für ihren jeweiligen Zustandsbereich dienen
+- Asynchrone Aktionen in Stores sollten optimistische Updates und Fehlerbehandlung berücksichtigen
+- Die TypeScript-Integration in Stores liefert wertvolle Typsicherheit für die gesamte Anwendung
+
+### 3. CSS-System und visuelle Konsistenz
+
+**Beobachtung**: Die visuellen Inkonsistenzen aus früheren Migrationsversuchen bestehen teilweise fort.
+
+**Aktuelle Erkenntnis**:
+- Unterschiedliche Benennungen für dieselben CSS-Variablen verursachen Inkonsistenzen (z.B. --primary vs --nscale-primary)
+- Die uneinheitliche Verwendung von CSS-Klassen erschwert die Wartung (z.B. .btn vs .button vs .nscale-btn)
+- Ein Design-System mit Basis-UI-Komponenten sollte prioritär entwickelt werden
+- Scoped CSS in Komponenten ist vorzuziehen, globale Styles sollten auf ein Minimum reduziert werden
+
+### 4. Bridge-Mechanismen und Feature-Toggles
+
+**Beobachtung**: Die Verbindung zwischen Vue 3-Komponenten und Legacy-Code wird durch komplexe Bridge-Mechanismen hergestellt.
+
+**Aktuelle Erkenntnis**:
+- Die aktuelle bridge/index.ts und bridge/setup.ts funktionieren, sind aber zu komplex und fehleranfällig
+- Feature-Toggles werden inkonsistent implementiert und geprüft
+- Die FeatureWrapper-Komponente könnte vereinfacht werden
+- Das Messaging zwischen Komponenten und Legacy-Code erfolgt über zu viele verschiedene Kanäle (Events, globale Objekte, direkte DOM-Manipulation)
+
+### 5. Test-Ecosystem und Qualitätssicherung
+
+**Beobachtung**: Die Testabdeckung ist weiterhin unzureichend, was die sichere Migration erschwert.
+
+**Aktuelle Erkenntnis**:
+- Nur wenige Komponenten (hauptsächlich in test/components/admin) haben automatisierte Tests
+- Eine Teststrategie mit Unit-, Integration- und visuellen Regressionstests ist dringend erforderlich
+- Vitest und Vue Test Utils sind bereits konfiguriert, werden aber zu wenig genutzt
+- Mocks für Pinia-Stores und Composables fehlen weitgehend
+
+### 6. Vite-Konfiguration und Asset-Management
+
+**Beobachtung**: Die Vite-Konfiguration funktioniert grundsätzlich, hat aber einige Schwachstellen.
+
+**Aktuelle Erkenntnis**:
+- Proxy-Einstellungen in vite.config.js müssen präziser konfiguriert werden (Port 5000 statt 8080)
+- Öffentliche Pfade und Aliase könnten besser organisiert werden
+- Die Entwicklungsumgebung könnte durch zusätzliche Vite-Plugins verbessert werden
+- HMR (Hot Module Replacement) funktioniert nicht immer zuverlässig
+
+### 7. Error Boundaries und Resilience
+
+**Beobachtung**: Die Fehlerbehandlung in Komponenten ist uneinheitlich implementiert.
+
+**Aktuelle Erkenntnis**:
+- Die ErrorBoundary-Komponente wird nicht konsequent verwendet
+- Fehlerberichte werden nicht zentralisiert gesammelt und ausgewertet
+- Die Fallback-Mechanismen sind teilweise noch zu komplex
+- Die Benutzerrückmeldung bei Fehlern ist oft unzureichend oder fehlt ganz
+
+### 8. Composition API und Reusable Logic
+
+**Beobachtung**: Die Composition API mit <script setup> wird konsequent genutzt, aber das Potenzial für wiederverwendbare Logik nicht voll ausgeschöpft.
+
+**Aktuelle Erkenntnis**:
+- Composables wie useAuth, useChat und useSettings sind gute Beispiele für wiederverwendbare Logik
+- Häufig genutzte Funktionalität sollte konsequenter in Composables ausgelagert werden
+- TypeScript-Integration in Composables verbessert die Entwicklererfahrung deutlich
+- Die Dokumentation von Composables und deren API sollte verbessert werden
+
+Diese neuen Erkenntnisse bestätigen die Wichtigkeit der bereits identifizierten Lektionen und zeigen auf, dass für eine erfolgreiche Migration zu Vue 3 SFC folgende Aspekte priorisiert werden sollten:
+
+1. Vereinheitlichung des CSS-Systems und Entwicklung eines konsistenten Design-Systems
+2. Vereinfachung der Bridge-Mechanismen zwischen Vue 3 und Legacy-Code
+3. Verbesserung der Testabdeckung für alle migrierten Komponenten
+4. Konsequentere Implementierung von Error Boundaries und Fallback-Strategien
+5. Ausweitung der Composition API-Nutzung für bessere Code-Wiederverwendung
+
+Diese Erkenntnisse fließen direkt in die Aktualisierung des Migrationsplans ein und werden bei der weiteren Implementierung berücksichtigt.

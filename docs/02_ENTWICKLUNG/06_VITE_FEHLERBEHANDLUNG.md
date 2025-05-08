@@ -1,207 +1,204 @@
-# Vite-Fehlerbehandlung
+# Vite Fehlerbehandlung und MIME-Typ-Konfiguration
 
 **Datum:** 08.05.2025
 
-## Übersicht
+## Überblick
 
-Dieses Dokument beschreibt häufige Fehler bei der Verwendung des Vite-Entwicklungsservers im nscale-assist-Projekt und deren Behebung. Es dient als Referenz für Entwickler, die auf ähnliche Probleme stoßen.
+Dieses Dokument beschreibt die Konfiguration von Vite zum korrekten Umgang mit verschiedenen Dateitypen, insbesondere CSS-Dateien, und die Behandlung von MIME-Typ-bezogenen Fehlern im nscale DMS Assistenten.
 
-## EISDIR-Fehler
+## Herausforderungen mit MIME-Typen in Vite
 
-### Symptome
+Vite verwendet ES-Module, die strenge MIME-Typ-Überprüfungen durchführen. Dies führt zu folgenden Herausforderungen:
 
-```
-Error: EISDIR: illegal operation on a directory, read
-Emitted 'error' event on ReadStream instance at:
-at emitErrorNT (node/streams/destroy:151:8)
-```
+1. **CSS-Imports in JavaScript**: Wenn CSS-Dateien direkt in JavaScript-Dateien importiert werden, müssen sie vom Browser als JavaScript geparst werden können, was zu MIME-Typ-Fehlern führt.
+2. **Inkonsistente Content-Type-Header**: Wenn der Server CSS-Dateien nicht mit dem korrekten MIME-Typ `text/css` ausliefert, werden sie vom Browser abgelehnt.
+3. **Symlink-Auflösung**: Bei Verwendung von symbolischen Links kann die Pfadauflösung zu falschen Content-Types führen.
 
-Dieser Fehler tritt auf, wenn versucht wird, einen ReadStream auf einem Verzeichnis zu erstellen, was eine unzulässige Operation ist.
+## Unsere Lösung
 
-### Ursachen
+### 1. CSS-Handling-Plugin für Vite
 
-1. **Symlink-Probleme**: Symlinks in `/frontend/static/` werden nicht korrekt aufgelöst
-2. **Fehlende Verzeichnisprüfung**: Unzureichende Prüfung, ob ein Pfad ein Verzeichnis oder eine Datei ist
-3. **Rollup-Konfigurationsprobleme**: Fehlerhafte Eingangspunkte in der Rollup-Konfiguration
-
-### Lösung
-
-Die Hauptlösung besteht aus mehreren Teilen:
-
-1. **Implementierung einer Symlink-Auflösungsfunktion**:
-   ```javascript
-   function resolveSymlinks(path) {
-     try {
-       if (!fs.existsSync(path)) return path;
-       const stats = fs.lstatSync(path);
-       if (!stats.isSymbolicLink()) return path;
-       
-       const target = fs.readlinkSync(path);
-       const resolvedPath = resolve(dirname(path), target);
-       return resolveSymlinks(resolvedPath); // Rekursive Auflösung
-     } catch (err) {
-       console.error(`Fehler beim Auflösen des Symlinks ${path}:`, err);
-       return path;
-     }
-   }
-   ```
-
-2. **Verbesserte Verzeichnisprüfung in der Middleware**:
-   ```javascript
-   // Löse Symlinks auf, bevor wir mit der Datei arbeiten
-   if (filePath && fs.existsSync(filePath)) {
-     try {
-       filePath = resolveSymlinks(filePath);
-     } catch (err) {
-       console.error('Fehler beim Auflösen des Symlinks:', err);
-     }
-   }
-   
-   // Überprüfe nochmals, ob der Pfad ein Verzeichnis ist
-   const finalStats = fs.statSync(filePath);
-   if (finalStats.isDirectory()) {
-     console.warn(`Verzeichnis statt Datei angefordert: ${filePath}`);
-     next();
-     return;
-   }
-   ```
-
-3. **Robuste Eingangspunktkonfiguration**:
-   ```javascript
-   rollupOptions: {
-     input: {
-       // Prüfe, ob die Pfade existieren, bevor sie als Input definiert werden
-       main: fs.existsSync(resolve(frontendDir, 'main.js')) ? 
-             resolve(frontendDir, 'main.js') : null,
-       // ... weitere Eingangspunkte
-     },
-     // Entferne null-Werte aus dem input-Objekt
-     get input() {
-       const input = this._input;
-       Object.keys(input).forEach(key => 
-         input[key] === null && delete input[key]);
-       return input;
-     },
-     // ... weitere Optionen
-   }
-   ```
-
-Die vollständige Implementierung wurde in der `vite.config.js` vorgenommen.
-
-## Cannot find module './App.vue'
-
-### Symptome
-
-```
-[vite] Error when evaluating entry point "src/main.js":
-Error: Cannot find module './App.vue'
-```
-
-### Ursachen
-
-1. **Falsche Pfadangaben**: Relative Imports in main.js zeigen auf nicht existierende Dateien
-2. **Alias-Konfigurationsprobleme**: Fehlkonfigurierte Alias-Pfade in Vite
-
-### Lösung
-
-1. **Korrektur der Importpfade**:
-   ```javascript
-   // Falsch
-   import App from './App.vue'
-   
-   // Korrekt (wenn App.vue im Vue-Unterverzeichnis liegt)
-   import App from './vue/App.vue'
-   ```
-
-2. **Verbesserung der Alias-Konfiguration**:
-   ```javascript
-   resolve: {
-     alias: {
-       '@': fileURLToPath(new URL('./src', import.meta.url)),
-       '@components': resolve(__dirname, 'frontend/vue/components'),
-       // ... weitere Aliase
-     }
-   }
-   ```
-
-## Failed to resolve import
-
-### Symptome
-
-```
-[vite] Failed to resolve import "vue" from "src/main.js"
-```
-
-### Ursachen
-
-1. **Fehlende Abhängigkeiten**: Vue ist nicht korrekt installiert
-2. **Falsche Konfiguration**: Vite kann die Vue-Installation nicht finden
-
-### Lösung
-
-1. **Überprüfung der Abhängigkeiten**:
-   ```bash
-   npm ls vue
-   ```
-
-2. **Explizite Pfadangabe in der Konfiguration**:
-   ```javascript
-   resolve: {
-     alias: {
-       'vue': resolve(projectRoot, 'node_modules/vue/dist/vue.esm-bundler.js'),
-     }
-   }
-   ```
-
-## Allgemeine Tipps zur Vite-Fehlerbehebung
-
-### 1. Debugging-Informationen hinzufügen
-
-Fügen Sie Debugging-Informationen zur Vite-Konfiguration hinzu:
+In der `vite.config.js` wurde ein spezielles Plugin implementiert, das CSS-Imports in JavaScript-Dateien erkennt und transformiert:
 
 ```javascript
-// Logging für den Entwicklungsprozess
-console.log('Vite-Konfiguration wird geladen');
-console.log(`Projekt-Verzeichnis: ${projectRoot}`);
-console.log(`Frontend-Verzeichnis: ${frontendDir}`);
+function cssHandlingPlugin() {
+  return {
+    name: 'css-handling',
+    transform(code, id) {
+      // Wenn es sich um einen CSS-Import in einer JS-Datei handelt
+      if (id.endsWith('.js') && code.includes('import') && code.includes('.css')) {
+        // Entferne CSS-Imports aus JS-Dateien
+        const newCode = code.replace(/import ['"].*\.css['"];?/g, '// CSS-Import wurde entfernt');
+        return {
+          code: newCode,
+          map: null
+        };
+      }
+      return null;
+    }
+  };
+}
 
-// Wichtige Dateien auf Existenz prüfen
-const mainJsPath = resolve(frontendDir, 'main.js');
-console.log(`main.js existiert: ${fs.existsSync(mainJsPath)}`);
+// In Plugins-Array einfügen
+export default defineConfig({
+  plugins: [
+    vue(),
+    cssHandlingPlugin(), // Plugin für korrektes CSS-Handling
+    // ...andere Plugins
+  ],
+  // ...weitere Konfiguration
+});
 ```
 
-### 2. Cache löschen
+### 2. CSS-Konfiguration
 
-Bei hartnäckigen Problemen kann es helfen, den Vite-Cache zu löschen:
-
-```bash
-rm -rf node_modules/.vite
-```
-
-### 3. Plugins überprüfen
-
-Überprüfen Sie die Plugins in `vite.config.js` auf Kompatibilitätsprobleme:
+Im CSS-Abschnitt der Vite-Konfiguration wurden Optionen angepasst, um CSS nicht als Module zu behandeln:
 
 ```javascript
-plugins: [
-  vue(),
-  // Weitere Plugins hier...
-],
+css: {
+  // Deaktiviere CSS-Module für globale Styles
+  modules: false,
+  // Keine CSS-Extraktion im Entwicklungsmodus
+  devSourcemap: true,
+  preprocessorOptions: {
+    css: {
+      // Keine Präprozessor-Optionen für reines CSS
+    }
+  }
+}
 ```
 
-### 4. Mit --debug starten
+### 3. Static Asset Handling
 
-Verwenden Sie den Debug-Modus, um detailliertere Fehlerinformationen zu erhalten:
+Für statische Assets wurde eine verbesserte Middleware implementiert:
+
+```javascript
+function staticAssetsPlugin() {
+  return {
+    name: 'static-assets-fix',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        // Verbesserte Pfadbehandlung
+        let relativePath = req.url;
+        
+        // Entferne bekannte Präfixe
+        if (relativePath.startsWith('/static/')) {
+          relativePath = relativePath.replace('/static/', '/');
+        } else if (relativePath.startsWith('/frontend/')) {
+          relativePath = relativePath.replace('/frontend/', '/');
+        }
+        
+        // Korrekter Content-Type basierend auf Dateiendung
+        let contentType = 'application/octet-stream';
+        const ext = relativePath.split('.').pop().toLowerCase();
+        if (ext === 'css') contentType = 'text/css';
+        else if (ext === 'js') contentType = 'application/javascript';
+        // ... weitere MIME-Typen
+
+        // Setze korrekten Content-Type
+        if (filePath && fs.existsSync(filePath)) {
+          res.writeHead(200, { 
+            'Content-Type': contentType,
+            'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
+          });
+          
+          try {
+            // Stream-Erstellung mit Fehlerbehandlung
+            // ...
+          } catch (err) {
+            // Fehlerbehandlung
+          }
+        }
+      });
+    },
+  };
+}
+```
+
+### 4. Symlink-Auflösung
+
+Für die korrekte Handhabung von Symlinks wurde eine Hilfsfunktion implementiert:
+
+```javascript
+function resolveSymlinks(path) {
+  try {
+    // Prüfe, ob der Pfad existiert
+    if (\!fs.existsSync(path)) {
+      return path;
+    }
+
+    // Prüfe, ob es ein Symlink ist
+    const stats = fs.lstatSync(path);
+    if (\!stats.isSymbolicLink()) {
+      return path;
+    }
+
+    // Löse den Symlink auf
+    const target = fs.readlinkSync(path);
+    const resolvedPath = resolve(dirname(path), target);
+    
+    // Rekursiv auflösen (falls der Symlink auf einen anderen Symlink zeigt)
+    return resolveSymlinks(resolvedPath);
+  } catch (err) {
+    console.error(`Fehler beim Auflösen des Symlinks ${path}:`, err);
+    return path;
+  }
+}
+```
+
+## Fehlerdiagnose und -behebung
+
+Wenn MIME-Typ-Fehler auftreten, prüfen Sie folgende Bereiche:
+
+### 1. Browser-Konsole 
+
+Prüfen Sie die Fehlermeldungen in der Browser-Konsole. Typische MIME-Typ-Fehler sehen so aus:
+
+```
+Failed to load module script: Expected a JavaScript module script but the server responded with a MIME type of "text/css".
+```
+
+oder
+
+```
+EISDIR: illegal operation on a directory, read
+```
+
+### 2. Netzwerk-Tab
+
+Im Network-Tab des Browsers können Sie sehen, mit welchem Content-Type Dateien geladen werden. CSS-Dateien sollten mit `text/css` und JS-Dateien mit `application/javascript` geladen werden.
+
+### 3. Server-Logs
+
+Erhöhen Sie das Debug-Level für detailliertere Logs:
+
+```python
+# In server.py
+logger.setLevel(logging.DEBUG)
+```
+
+### 4. Häufige Lösungen
+
+- **CSS-Import-Fehler**: Ersetzen Sie CSS-Imports in JS durch HTML `<link>`-Tags
+- **EISDIR-Fehler**: Überprüfen Sie Symlinks und Verzeichnisstrukturen
+- **Falsche MIME-Typen**: Stellen Sie sicher, dass der Server korrekte Content-Type-Header sendet
+- **Caching-Probleme**: Nutzen Sie Cache-Busting mit Versionsnummern (`?v=20250508`)
+
+## Fehlerbehebung mit dem Restart-Skript
+
+Das bereitgestellte `restart-dev-server.sh`-Skript kann verwendet werden, um die Entwicklungsserver neuzustarten und gängige Konfigurationsprobleme zu identifizieren:
 
 ```bash
-npx vite --debug
+chmod +x restart-dev-server.sh
+./restart-dev-server.sh
 ```
 
-## Verwandte Dokumente
+Das Skript überprüft:
+- Korrekte MIME-Typ-Konfiguration in `server.py`
+- CSS-Handling-Plugin in `vite.config.js`
+- Direkte Einbindung von CSS-Dateien in `index.html`
 
-- [01_SETUP.md](./01_SETUP.md) - Einrichtung der Entwicklungsumgebung
-- [05_REFERENZEN/07_FRONTEND_LADEPROBLEME.md](../05_REFERENZEN/07_FRONTEND_LADEPROBLEME.md) - Spezifische Probleme mit dem Laden von Frontend-Ressourcen
+## Fazit
 
----
-
-*Dieses Dokument wurde nach der Behebung eines EISDIR-Fehlers am 08.05.2025 erstellt und dient als Referenz für zukünftige ähnliche Probleme.*
+Die korrekte Konfiguration von MIME-Typen und die Trennung von CSS und JavaScript sind entscheidend für eine reibungslose Funktion des nscale DMS Assistenten im Entwicklungsmodus. Durch die implementierten Lösungen werden die häufigsten Fehlerquellen vermieden und eine robuste Ressourcenbereitstellung gewährleistet.
+EOL < /dev/null

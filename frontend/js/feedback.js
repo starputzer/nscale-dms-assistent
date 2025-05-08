@@ -12,15 +12,60 @@ export function setupFeedback(options) {
         feedbackMessage
     } = options;
     
+    // Feedback-Datenspeicher als Map für schnellen Zugriff
+    const feedbackStore = new Map();
+    
+    /**
+     * Prüft, ob für eine Nachricht bereits Feedback gegeben wurde
+     * @param {Object} message - Die zu prüfende Nachricht
+     * @returns {boolean} - true, wenn Feedback vorhanden ist
+     */
+    const isFeedbackGiven = (message) => {
+        if (!message) return false;
+        
+        // Prüfe zuerst direkt im message-Objekt
+        if (message.feedback_positive !== undefined) {
+            return true;
+        }
+        
+        // Fallback: Prüfe im Store
+        const messageId = message.id;
+        if (messageId && feedbackStore.has(messageId)) {
+            return true;
+        }
+        
+        return false;
+    };
+    
+    /**
+     * Gibt den Feedback-Typ (positiv/negativ) für eine Nachricht zurück
+     * @param {Object} message - Die zu prüfende Nachricht
+     * @returns {string|null} - 'positive', 'negative' oder null
+     */
+    const getFeedbackType = (message) => {
+        if (!message) return null;
+        
+        // Prüfe zuerst direkt im message-Objekt
+        if (message.feedback_positive !== undefined) {
+            return message.feedback_positive ? 'positive' : 'negative';
+        }
+        
+        // Fallback: Prüfe im Store
+        const messageId = message.id;
+        if (messageId && feedbackStore.has(messageId)) {
+            const feedback = feedbackStore.get(messageId);
+            return feedback.is_positive ? 'positive' : 'negative';
+        }
+        
+        return null;
+    };
+    
     /**
      * Sendet Feedback für eine Nachricht
      * @param {number} messageId - ID der Nachricht
      * @param {number} sessionId - ID der Session
      * @param {boolean} isPositive - Positives oder negatives Feedback
      */
-    // Diese Änderungen in feedback.js vornehmen
-
-    // Verbesserte submitFeedback-Funktion mit besserer Fehlerbehandlung und Fallback für message_id
     const submitFeedback = async (messageId, sessionId, isPositive) => {
         try {
             console.log(`Sende Feedback: message_id=${messageId}, session_id=${sessionId}, isPositive=${isPositive}`);
@@ -75,6 +120,13 @@ export function setupFeedback(options) {
             });
             
             console.log("✅ Feedback-Antwort vom Server:", response.data);
+            
+            // Speichere auch im lokalen Store
+            feedbackStore.set(numericMessageId, {
+                message_id: numericMessageId,
+                session_id: numericSessionId,
+                is_positive: isPositive
+            });
             
             // Aktualisiere den Feedback-Status in der Nachricht
             const messageIndex = messages.value.findIndex(m => m.id === numericMessageId);
@@ -183,6 +235,14 @@ export function setupFeedback(options) {
                 comment: feedbackComment.value
             });
             
+            // Speichere auch im lokalen Store
+            feedbackStore.set(messageId, {
+                message_id: messageId,
+                session_id: sessionId,
+                is_positive: false,
+                comment: feedbackComment.value
+            });
+            
             // Aktualisiere den Kommentar in der Nachricht
             const messageIndex = messages.value.findIndex(m => m.id === messageId);
             if (messageIndex >= 0) {
@@ -235,6 +295,9 @@ export function setupFeedback(options) {
             if (response.data.feedback) {
                 console.log(`Feedback gefunden für Nachricht ${messageId}:`, response.data.feedback);
                 
+                // Im lokalen Store speichern
+                feedbackStore.set(messageId, response.data.feedback);
+                
                 // Aktualisiere den Feedback-Status in der Nachricht
                 const messageIndex = messages.value.findIndex(m => m.id === messageId);
                 if (messageIndex >= 0) {
@@ -252,10 +315,46 @@ export function setupFeedback(options) {
         }
     };
     
+    /**
+     * Globaler Fallback für Feedback-Funktionen
+     * Diese Funktion stellt Feedback-Funktionen global zur Verfügung,
+     * damit die HTML-Template-Bindings sie nutzen können
+     */
+    const installFeedbackFallbacks = () => {
+        // Stelle sicher, dass window.feedbackHelpers existiert
+        if (!window.feedbackHelpers) {
+            window.feedbackHelpers = {};
+        }
+        
+        // Funktionen global verfügbar machen
+        window.feedbackHelpers.isFeedbackGiven = isFeedbackGiven;
+        window.feedbackHelpers.getFeedbackType = getFeedbackType;
+        window.feedbackHelpers.submitFeedback = submitFeedback;
+        window.feedbackHelpers.loadMessageFeedback = loadMessageFeedback;
+        
+        console.log("Feedback-Fallback-Funktionen global installiert");
+        
+        // Vue-Prototyp-Methoden (Kompatibilität mit älteren Vue-Versionen)
+        try {
+            if (Vue.prototype) {
+                Vue.prototype.$isFeedbackGiven = isFeedbackGiven;
+                Vue.prototype.$getFeedbackType = getFeedbackType;
+                console.log("Feedback-Funktionen in Vue.prototype installiert");
+            }
+        } catch (e) {
+            console.warn("Konnte Vue.prototype nicht erweitern:", e);
+        }
+    };
+    
+    // Installiere die Fallbacks sofort nach dem Setup
+    installFeedbackFallbacks();
+    
     return {
         submitFeedback,
         showFeedbackCommentDialog,
         submitFeedbackComment,
-        loadMessageFeedback
+        loadMessageFeedback,
+        isFeedbackGiven,
+        getFeedbackType
     };
 }

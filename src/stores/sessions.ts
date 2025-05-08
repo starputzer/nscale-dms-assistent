@@ -1,12 +1,13 @@
 import { defineStore } from 'pinia';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import type { 
   ChatSession, 
   ChatMessage, 
   StreamingStatus,
-  SendMessageParams
+  SendMessageParams,
+  SessionsState
 } from '../types/session';
 import { useAuthStore } from './auth';
 
@@ -16,6 +17,8 @@ import { useAuthStore } from './auth';
  * - Verwaltet die aktuelle aktive Session
  * - Speichert Nachrichten für jede Session
  * - Verarbeitet Nachrichten-Streaming
+ * - Optimierte Persistenz für große Datensätze
+ * - Automatische Synchronisation mit Server
  */
 export const useSessionsStore = defineStore('sessions', () => {
   // Referenz auf den Auth-Store für Benutzerinformationen
@@ -32,7 +35,17 @@ export const useSessionsStore = defineStore('sessions', () => {
   });
   const isLoading = ref<boolean>(false);
   const error = ref<string | null>(null);
-  const version = ref<number>(1); // Für Migrationen zwischen verschiedenen Speicherformaten
+  const version = ref<number>(2); // Für Migrationen zwischen verschiedenen Speicherformaten
+  const pendingMessages = ref<Record<string, ChatMessage[]>>({});
+  const syncStatus = ref<{
+    lastSyncTime: number;
+    isSyncing: boolean;
+    error: string | null;
+  }>({
+    lastSyncTime: 0,
+    isSyncing: false,
+    error: null
+  });
   
   // Migration von Legacy-Daten
   function migrateFromLegacyStorage() {
@@ -80,12 +93,38 @@ export const useSessionsStore = defineStore('sessions', () => {
   }
   
   // Initialisierung des Stores
-  function initialize() {
+  async function initialize(): Promise<void> {
     migrateFromLegacyStorage();
+    await synchronizeSessions();
+    
+    // Polling-Intervall für Synchronisation mit dem Server
+    let syncInterval: number | null = null;
+    
+    // Nur synchronisieren, wenn der Benutzer angemeldet ist
+    const unwatchAuth = watch(() => authStore.isAuthenticated, (isAuthenticated) => {
+      if (isAuthenticated) {
+        if (syncInterval === null) {
+          syncInterval = window.setInterval(() => {
+            synchronizeSessions();
+          }, 60000); // Alle 60 Sekunden synchronisieren
+        }
+      } else {
+        // Intervall beenden, wenn der Benutzer abgemeldet ist
+        if (syncInterval !== null) {
+          clearInterval(syncInterval);
+          syncInterval = null;
+        }
+      }
+    }, { immediate: true });
+    
+    // Cleanup-Funktion
+    return () => {
+      if (syncInterval !== null) {
+        clearInterval(syncInterval);
+      }
+      unwatchAuth();
+    };
   }
-  
-  // Bei Store-Erstellung initialisieren
-  initialize();
   
   // Getters
   const currentSession = computed(() => 
@@ -109,47 +148,107 @@ export const useSessionsStore = defineStore('sessions', () => {
   
   const isStreaming = computed(() => streaming.value.isActive);
   
+  // Aktuelle ausstehende Nachrichten für die aktuelle Session
+  const currentPendingMessages = computed(() => 
+    currentSessionId.value ? pendingMessages.value[currentSessionId.value] || [] : []
+  );
+  
+  // Alle Nachrichten der aktuellen Session (inklusive ausstehende)
+  const allCurrentMessages = computed(() => {
+    if (!currentSessionId.value) return [];
+    const sessionMessages = messages.value[currentSessionId.value] || [];
+    const pendingSessionMessages = pendingMessages.value[currentSessionId.value] || [];
+    
+    return [...sessionMessages, ...pendingSessionMessages].sort((a, b) => 
+      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+  });
+  
   // Actions
   /**
-   * Alle Sessions des angemeldeten Benutzers laden
+   * Alle Sessions des angemeldeten Benutzers laden und mit lokalem State synchronisieren
    */
-  async function fetchSessions(): Promise<void> {
-    if (!authStore.isAuthenticated) return;
+  async function synchronizeSessions(): Promise<void> {
+    if (!authStore.isAuthenticated || syncStatus.value.isSyncing) return;
     
-    isLoading.value = true;
+    syncStatus.value.isSyncing = true;
     error.value = null;
     
     try {
-      const response = await axios.get<ChatSession[]>('/api/sessions');
-      sessions.value = response.data;
+      const response = await axios.get<ChatSession[]>('/api/sessions', {
+        headers: authStore.createAuthHeaders(),
+        params: {
+          since: syncStatus.value.lastSyncTime
+        }
+      });
+      
+      // Server-Sessions mit dem lokalen Zustand zusammenführen
+      const serverSessions = response.data;
+      
+      if (serverSessions.length > 0) {
+        // Bestehende Sessions aktualisieren und neue hinzufügen
+        serverSessions.forEach(serverSession => {
+          const existingIndex = sessions.value.findIndex(s => s.id === serverSession.id);
+          
+          if (existingIndex !== -1) {
+            // Aktualisieren, aber nur, wenn der Server eine neuere Version hat
+            const localUpdatedAt = new Date(sessions.value[existingIndex].updatedAt).getTime();
+            const serverUpdatedAt = new Date(serverSession.updatedAt).getTime();
+            
+            if (serverUpdatedAt > localUpdatedAt) {
+              sessions.value[existingIndex] = {
+                ...sessions.value[existingIndex],
+                ...serverSession
+              };
+            }
+          } else {
+            // Neue Session hinzufügen
+            sessions.value.push(serverSession);
+          }
+        });
+        
+        // Gelöschte Sessions entfernen (wenn sie auf dem Server nicht mehr existieren)
+        const serverSessionIds = new Set(serverSessions.map(s => s.id));
+        sessions.value = sessions.value.filter(s => 
+          serverSessionIds.has(s.id) || s.isLocal === true
+        );
+      }
+      
+      syncStatus.value.lastSyncTime = Date.now();
+      syncStatus.value.error = null;
     } catch (err: any) {
-      console.error('Error fetching sessions:', err);
-      error.value = err.response?.data?.message || 'Fehler beim Laden der Sessions';
+      console.error('Error synchronizing sessions:', err);
+      syncStatus.value.error = err.response?.data?.message || 'Fehler bei der Synchronisation';
     } finally {
-      isLoading.value = false;
+      syncStatus.value.isSyncing = false;
     }
   }
   
   /**
    * Nachrichten für eine bestimmte Session laden
    */
-  async function fetchMessages(sessionId: string): Promise<void> {
-    if (!sessionId) return;
+  async function fetchMessages(sessionId: string): Promise<ChatMessage[]> {
+    if (!sessionId || !authStore.isAuthenticated) return [];
     
     isLoading.value = true;
     error.value = null;
     
     try {
-      const response = await axios.get<ChatMessage[]>(`/api/sessions/${sessionId}/messages`);
+      const response = await axios.get<ChatMessage[]>(`/api/sessions/${sessionId}/messages`, {
+        headers: authStore.createAuthHeaders()
+      });
       
       // Nachrichten für diese Session speichern
       messages.value = {
         ...messages.value,
         [sessionId]: response.data
       };
+      
+      return response.data;
     } catch (err: any) {
       console.error(`Error fetching messages for session ${sessionId}:`, err);
       error.value = err.response?.data?.message || 'Fehler beim Laden der Nachrichten';
+      return [];
     } finally {
       isLoading.value = false;
     }
@@ -159,32 +258,58 @@ export const useSessionsStore = defineStore('sessions', () => {
    * Erstellt eine neue Chat-Session und wechselt zu ihr
    */
   async function createSession(title: string = 'Neue Unterhaltung'): Promise<string> {
-    if (!authStore.isAuthenticated) {
-      throw new Error('Benutzer ist nicht angemeldet');
-    }
-    
     isLoading.value = true;
     error.value = null;
     
     try {
       const now = new Date().toISOString();
-      const payload = {
+      const sessionId = uuidv4();
+      
+      // Lokale Session erstellen, um sofortige UI-Aktualisierung zu ermöglichen
+      const newSession: ChatSession = {
+        id: sessionId,
         title,
-        userId: authStore.user?.id,
+        userId: authStore.user?.id || 'anonymous',
         createdAt: now,
-        updatedAt: now
+        updatedAt: now,
+        isLocal: true  // Markieren als lokal erstellt
       };
       
-      const response = await axios.post<ChatSession>('/api/sessions', payload);
-      const newSession = response.data;
-      
       sessions.value.push(newSession);
-      messages.value[newSession.id] = [];
+      messages.value[sessionId] = [];
       
       // Zur neuen Session wechseln
-      setCurrentSession(newSession.id);
+      setCurrentSession(sessionId);
       
-      return newSession.id;
+      // Mit dem Server synchronisieren, wenn angemeldet
+      if (authStore.isAuthenticated) {
+        try {
+          const payload = {
+            id: sessionId, // Gleiche ID verwenden, um Client und Server zu synchronisieren
+            title,
+            userId: authStore.user?.id,
+            createdAt: now,
+            updatedAt: now
+          };
+          
+          const response = await axios.post<ChatSession>('/api/sessions', payload, {
+            headers: authStore.createAuthHeaders()
+          });
+          
+          // Lokale Markierung entfernen
+          const index = sessions.value.findIndex(s => s.id === sessionId);
+          if (index !== -1) {
+            delete sessions.value[index].isLocal;
+          }
+          
+          return sessionId;
+        } catch (apiError) {
+          console.error('Error saving session to server:', apiError);
+          // Session bleibt als lokal markiert
+        }
+      }
+      
+      return sessionId;
     } catch (err: any) {
       console.error('Error creating session:', err);
       error.value = err.response?.data?.message || 'Fehler beim Erstellen der Session';
@@ -214,21 +339,35 @@ export const useSessionsStore = defineStore('sessions', () => {
   async function updateSessionTitle(sessionId: string, newTitle: string): Promise<void> {
     if (!sessionId) return;
     
-    try {
-      await axios.patch(`/api/sessions/${sessionId}`, { title: newTitle });
-      
-      // Update im lokalen State
-      const sessionIndex = sessions.value.findIndex(s => s.id === sessionId);
-      if (sessionIndex !== -1) {
-        sessions.value[sessionIndex] = {
-          ...sessions.value[sessionIndex],
-          title: newTitle,
-          updatedAt: new Date().toISOString()
-        };
+    // Optimistische Aktualisierung im lokalen State
+    const sessionIndex = sessions.value.findIndex(s => s.id === sessionId);
+    if (sessionIndex !== -1) {
+      sessions.value[sessionIndex] = {
+        ...sessions.value[sessionIndex],
+        title: newTitle,
+        updatedAt: new Date().toISOString()
+      };
+    }
+    
+    // Mit dem Server synchronisieren, wenn angemeldet
+    if (authStore.isAuthenticated) {
+      try {
+        await axios.patch(`/api/sessions/${sessionId}`, { title: newTitle }, {
+          headers: authStore.createAuthHeaders()
+        });
+      } catch (err: any) {
+        console.error(`Error updating session title for ${sessionId}:`, err);
+        error.value = err.response?.data?.message || 'Fehler beim Aktualisieren des Titels';
+        
+        // Bei Fehler lokale Änderung rückgängig machen
+        if (sessionIndex !== -1) {
+          const oldTitle = sessions.value[sessionIndex].title;
+          sessions.value[sessionIndex] = {
+            ...sessions.value[sessionIndex],
+            title: oldTitle
+          };
+        }
       }
-    } catch (err: any) {
-      console.error(`Error updating session title for ${sessionId}:`, err);
-      error.value = err.response?.data?.message || 'Fehler beim Aktualisieren des Titels';
     }
   }
   
@@ -238,25 +377,37 @@ export const useSessionsStore = defineStore('sessions', () => {
   async function archiveSession(sessionId: string): Promise<void> {
     if (!sessionId) return;
     
-    try {
-      await axios.delete(`/api/sessions/${sessionId}`);
-      
-      // Aus dem lokalen State entfernen
-      sessions.value = sessions.value.filter(s => s.id !== sessionId);
-      
-      // Nachrichten aus dem Store entfernen
-      if (messages.value[sessionId]) {
-        const { [sessionId]: _, ...rest } = messages.value;
-        messages.value = rest;
+    // Optimistische Löschung im lokalen State
+    const sessionsBefore = [...sessions.value];
+    const messagesBackup = {...messages.value};
+    
+    sessions.value = sessions.value.filter(s => s.id !== sessionId);
+    
+    // Nachrichten aus dem Store entfernen
+    if (messages.value[sessionId]) {
+      const { [sessionId]: _, ...rest } = messages.value;
+      messages.value = rest;
+    }
+    
+    // Wenn die aktuelle Session gelöscht wurde, zur ersten verfügbaren wechseln
+    if (currentSessionId.value === sessionId) {
+      currentSessionId.value = sessions.value.length > 0 ? sessions.value[0].id : null;
+    }
+    
+    // Mit dem Server synchronisieren, wenn angemeldet
+    if (authStore.isAuthenticated) {
+      try {
+        await axios.delete(`/api/sessions/${sessionId}`, {
+          headers: authStore.createAuthHeaders()
+        });
+      } catch (err: any) {
+        console.error(`Error archiving session ${sessionId}:`, err);
+        error.value = err.response?.data?.message || 'Fehler beim Archivieren der Session';
+        
+        // Bei Fehler lokale Änderung rückgängig machen
+        sessions.value = sessionsBefore;
+        messages.value = messagesBackup;
       }
-      
-      // Wenn die aktuelle Session gelöscht wurde, zur ersten verfügbaren wechseln
-      if (currentSessionId.value === sessionId) {
-        currentSessionId.value = sessions.value.length > 0 ? sessions.value[0].id : null;
-      }
-    } catch (err: any) {
-      console.error(`Error archiving session ${sessionId}:`, err);
-      error.value = err.response?.data?.message || 'Fehler beim Archivieren der Session';
     }
   }
   
@@ -272,18 +423,73 @@ export const useSessionsStore = defineStore('sessions', () => {
     
     const isPinned = !sessions.value[sessionIndex].isPinned;
     
-    try {
-      await axios.patch(`/api/sessions/${sessionId}`, { isPinned });
+    // Optimistische Aktualisierung im lokalen State
+    sessions.value[sessionIndex] = {
+      ...sessions.value[sessionIndex],
+      isPinned,
+      updatedAt: new Date().toISOString()
+    };
+    
+    // Mit dem Server synchronisieren, wenn angemeldet
+    if (authStore.isAuthenticated) {
+      try {
+        await axios.patch(`/api/sessions/${sessionId}`, { isPinned }, {
+          headers: authStore.createAuthHeaders()
+        });
+      } catch (err: any) {
+        console.error(`Error toggling pin status for session ${sessionId}:`, err);
+        error.value = err.response?.data?.message || 'Fehler beim Ändern des Pin-Status';
+        
+        // Bei Fehler lokale Änderung rückgängig machen
+        sessions.value[sessionIndex] = {
+          ...sessions.value[sessionIndex],
+          isPinned: !isPinned
+        };
+      }
+    }
+  }
+  
+  /**
+   * Synchronisiert lokale ausstehende Nachrichten mit dem Server
+   */
+  async function syncPendingMessages(): Promise<void> {
+    if (!authStore.isAuthenticated) return;
+    
+    // Alle Sessions mit ausstehenden Nachrichten durchgehen
+    for (const sessionId in pendingMessages.value) {
+      const pendingForSession = pendingMessages.value[sessionId];
       
-      // Update im lokalen State
-      sessions.value[sessionIndex] = {
-        ...sessions.value[sessionIndex],
-        isPinned,
-        updatedAt: new Date().toISOString()
-      };
-    } catch (err: any) {
-      console.error(`Error toggling pin status for session ${sessionId}:`, err);
-      error.value = err.response?.data?.message || 'Fehler beim Ändern des Pin-Status';
+      if (pendingForSession && pendingForSession.length > 0) {
+        for (const message of pendingForSession) {
+          try {
+            // Nachricht an den Server senden
+            const response = await axios.post(`/api/sessions/${sessionId}/messages`, {
+              content: message.content,
+              role: message.role
+            }, {
+              headers: authStore.createAuthHeaders()
+            });
+            
+            // Nachricht aus den ausstehenden entfernen
+            pendingMessages.value[sessionId] = pendingMessages.value[sessionId].filter(
+              m => m.id !== message.id
+            );
+            
+            // Nachricht mit Server-generierter ID zu normalen Nachrichten hinzufügen
+            if (!messages.value[sessionId]) {
+              messages.value[sessionId] = [];
+            }
+            
+            messages.value[sessionId].push({
+              ...message,
+              id: response.data.id || message.id,
+              status: 'sent'
+            });
+          } catch (err) {
+            console.error(`Error syncing pending message ${message.id}:`, err);
+          }
+        }
+      }
     }
   }
   
@@ -322,6 +528,15 @@ export const useSessionsStore = defineStore('sessions', () => {
     
     messages.value[sessionId].push(userMessage);
     
+    // Sitzung aktualisieren
+    const sessionIndex = sessions.value.findIndex(s => s.id === sessionId);
+    if (sessionIndex !== -1) {
+      sessions.value[sessionIndex] = {
+        ...sessions.value[sessionIndex],
+        updatedAt: timestamp
+      };
+    }
+    
     // Streaming-Status setzen
     streaming.value = {
       isActive: true,
@@ -329,13 +544,40 @@ export const useSessionsStore = defineStore('sessions', () => {
       currentSessionId: sessionId
     };
     
-    try {
-      // Anfrage-Payload
-      const payload = {
-        content,
-        role
+    // Falls nicht angemeldet, Nachricht zur ausstehenden Liste hinzufügen
+    if (!authStore.isAuthenticated) {
+      if (!pendingMessages.value[sessionId]) {
+        pendingMessages.value[sessionId] = [];
+      }
+      
+      pendingMessages.value[sessionId].push({
+        ...userMessage,
+        status: 'pending'
+      });
+      
+      // Fallback-Antwort erstellen
+      const assistantMessage: ChatMessage = {
+        id: `assistant-${uuidv4()}`,
+        sessionId,
+        content: 'Sie sind nicht angemeldet. Diese Nachricht wird gespeichert und gesendet, sobald Sie sich anmelden.',
+        role: 'assistant',
+        timestamp: new Date().toISOString(),
+        status: 'sent'
       };
       
+      messages.value[sessionId].push(assistantMessage);
+      
+      // Streaming beenden
+      streaming.value = {
+        isActive: false,
+        progress: 100,
+        currentSessionId: null
+      };
+      
+      return;
+    }
+    
+    try {
       // Event-Source für Streaming einrichten
       const eventSource = new EventSource(`/api/sessions/${sessionId}/stream?message=${encodeURIComponent(content)}`);
       
@@ -357,6 +599,18 @@ export const useSessionsStore = defineStore('sessions', () => {
       // Antwortnachricht zum lokalen State hinzufügen
       messages.value[sessionId].push(assistantMessage);
       
+      // Funktion zum Aktualisieren des Nachrichteninhalts
+      const updateMessageContent = (content: string) => {
+        const index = messages.value[sessionId].findIndex(m => m.id === assistantTempId);
+        if (index !== -1) {
+          messages.value[sessionId][index] = {
+            ...messages.value[sessionId][index],
+            content,
+            isStreaming: true
+          };
+        }
+      };
+      
       // Event-Handler für Streaming-Events
       eventSource.onmessage = (event) => {
         try {
@@ -365,16 +619,7 @@ export const useSessionsStore = defineStore('sessions', () => {
           if (data.type === 'content') {
             // Inhalt zur Antwort hinzufügen
             assistantContent += data.content;
-            
-            // Antwortnachricht im State aktualisieren
-            const index = messages.value[sessionId].findIndex(m => m.id === assistantTempId);
-            if (index !== -1) {
-              messages.value[sessionId][index] = {
-                ...messages.value[sessionId][index],
-                content: assistantContent,
-                isStreaming: true
-              };
-            }
+            updateMessageContent(assistantContent);
           } else if (data.type === 'metadata') {
             // Metadaten zur Antwort hinzufügen (z.B. Quellenangaben)
             const index = messages.value[sessionId].findIndex(m => m.id === assistantTempId);
@@ -498,7 +743,8 @@ export const useSessionsStore = defineStore('sessions', () => {
         messages.value[currentSessionId.value][streamingMessageIndex] = {
           ...messages.value[currentSessionId.value][streamingMessageIndex],
           isStreaming: false,
-          content: messages.value[currentSessionId.value][streamingMessageIndex].content + ' [abgebrochen]'
+          content: messages.value[currentSessionId.value][streamingMessageIndex].content + ' [abgebrochen]',
+          status: 'error'
         };
       }
     }
@@ -510,16 +756,26 @@ export const useSessionsStore = defineStore('sessions', () => {
   async function deleteMessage(sessionId: string, messageId: string): Promise<void> {
     if (!sessionId || !messageId) return;
     
-    try {
-      await axios.delete(`/api/sessions/${sessionId}/messages/${messageId}`);
-      
-      // Aus dem lokalen State entfernen
-      if (messages.value[sessionId]) {
-        messages.value[sessionId] = messages.value[sessionId].filter(m => m.id !== messageId);
+    // Optimistische Löschung im lokalen State
+    const messagesBackup = [...(messages.value[sessionId] || [])];
+    
+    if (messages.value[sessionId]) {
+      messages.value[sessionId] = messages.value[sessionId].filter(m => m.id !== messageId);
+    }
+    
+    // Mit dem Server synchronisieren, wenn angemeldet
+    if (authStore.isAuthenticated) {
+      try {
+        await axios.delete(`/api/sessions/${sessionId}/messages/${messageId}`, {
+          headers: authStore.createAuthHeaders()
+        });
+      } catch (err: any) {
+        console.error(`Error deleting message ${messageId}:`, err);
+        error.value = err.response?.data?.message || 'Fehler beim Löschen der Nachricht';
+        
+        // Bei Fehler lokale Änderung rückgängig machen
+        messages.value[sessionId] = messagesBackup;
       }
-    } catch (err: any) {
-      console.error(`Error deleting message ${messageId}:`, err);
-      error.value = err.response?.data?.message || 'Fehler beim Löschen der Nachricht';
     }
   }
   
@@ -532,6 +788,121 @@ export const useSessionsStore = defineStore('sessions', () => {
     await fetchMessages(sessionId);
   }
   
+  /**
+   * Exportiert alle Sessions und Nachrichten als JSON
+   */
+  function exportData(): string {
+    const exportData = {
+      sessions: sessions.value,
+      messages: messages.value,
+      version: version.value,
+      exportDate: new Date().toISOString()
+    };
+    
+    return JSON.stringify(exportData);
+  }
+  
+  /**
+   * Importiert Sessions und Nachrichten aus einer JSON-Datei
+   */
+  function importData(jsonData: string): boolean {
+    try {
+      const data = JSON.parse(jsonData);
+      
+      if (data.sessions && Array.isArray(data.sessions)) {
+        sessions.value = data.sessions;
+      }
+      
+      if (data.messages && typeof data.messages === 'object') {
+        messages.value = data.messages;
+      }
+      
+      if (data.version) {
+        version.value = data.version;
+      }
+      
+      return true;
+    } catch (err) {
+      console.error('Error importing data:', err);
+      error.value = 'Fehler beim Importieren der Daten. Das Format ist ungültig.';
+      return false;
+    }
+  }
+  
+  /**
+   * Bereinigt den Storage, indem ältere Nachrichten in den sessionStorage verschoben werden
+   */
+  function cleanupStorage() {
+    // Nachrichten-Limit pro Session
+    const messageLimit = 50;
+    
+    // Für jede Session
+    Object.keys(messages.value).forEach(sessionId => {
+      const sessionMessages = messages.value[sessionId];
+      
+      // Wenn mehr Nachrichten als das Limit
+      if (sessionMessages.length > messageLimit) {
+        // Die neuesten Nachrichten behalten
+        const recentMessages = sessionMessages.slice(-messageLimit);
+        // Die älteren Nachrichten in den sessionStorage auslagern
+        const olderMessages = sessionMessages.slice(0, -messageLimit);
+        
+        // Im localStorage nur die neuesten Nachrichten behalten
+        messages.value[sessionId] = recentMessages;
+        
+        // Ältere Nachrichten in den sessionStorage verschieben
+        try {
+          const existingOlder = JSON.parse(sessionStorage.getItem(`session_${sessionId}_older_messages`) || '[]');
+          sessionStorage.setItem(`session_${sessionId}_older_messages`, JSON.stringify([...existingOlder, ...olderMessages]));
+        } catch (e) {
+          console.error(`Error storing older messages for session ${sessionId}:`, e);
+        }
+      }
+    });
+  }
+  
+  /**
+   * Lädt ältere Nachrichten aus dem sessionStorage
+   */
+  function loadOlderMessages(sessionId: string): ChatMessage[] {
+    if (!sessionId) return [];
+    
+    try {
+      const olderMessages = JSON.parse(sessionStorage.getItem(`session_${sessionId}_older_messages`) || '[]');
+      
+      // Zu den aktuellen Nachrichten hinzufügen
+      if (olderMessages.length > 0) {
+        if (!messages.value[sessionId]) {
+          messages.value[sessionId] = [];
+        }
+        
+        // Zusammenführen und nach Zeitstempel sortieren
+        messages.value[sessionId] = [...olderMessages, ...messages.value[sessionId]].sort(
+          (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        );
+        
+        // Aus dem sessionStorage entfernen, da sie jetzt im Hauptspeicher sind
+        sessionStorage.removeItem(`session_${sessionId}_older_messages`);
+      }
+      
+      return olderMessages;
+    } catch (e) {
+      console.error(`Error loading older messages for session ${sessionId}:`, e);
+      return [];
+    }
+  }
+  
+  // Watch für automatische Synchronisation pendenter Nachrichten
+  watch(() => authStore.isAuthenticated, (isAuthenticated) => {
+    if (isAuthenticated) {
+      // Wenn der Benutzer angemeldet ist, ausstehende Nachrichten synchronisieren
+      syncPendingMessages();
+    }
+  });
+  
+  // Bei Store-Erstellung initialisieren
+  const cleanup = initialize();
+  
   // Öffentliche API des Stores
   return {
     // State
@@ -542,15 +913,20 @@ export const useSessionsStore = defineStore('sessions', () => {
     isLoading,
     error,
     version,
+    pendingMessages,
+    syncStatus,
     
     // Getters
     currentSession,
     currentMessages,
     sortedSessions,
     isStreaming,
+    currentPendingMessages,
+    allCurrentMessages,
     
     // Actions
-    fetchSessions,
+    initialize,
+    synchronizeSessions,
     fetchMessages,
     createSession,
     setCurrentSession,
@@ -561,17 +937,53 @@ export const useSessionsStore = defineStore('sessions', () => {
     cancelStreaming,
     deleteMessage,
     refreshSession,
-    migrateFromLegacyStorage
+    migrateFromLegacyStorage,
+    syncPendingMessages,
+    exportData,
+    importData,
+    cleanupStorage,
+    loadOlderMessages
   };
 }, {
   // Store serialization options für Persistenz
   persist: {
-    enabled: true,
-    strategies: [
-      {
-        storage: localStorage,
-        paths: ['sessions', 'currentSessionId', 'version'], // Nur diese Eigenschaften persistieren
-      },
+    // Verwende localStorage für die Persistenz
+    storage: localStorage,
+    
+    // Selektives Speichern bestimmter State-Elemente
+    paths: [
+      'sessions', 
+      'currentSessionId', 
+      'version',
+      'pendingMessages',
+      'syncStatus.lastSyncTime'
     ],
+    
+    // Optimierung für große Datasets
+    serializer: {
+      deserialize: (value) => {
+        try {
+          return JSON.parse(value);
+        } catch (err) {
+          console.error('Error deserializing store data:', err);
+          return {};
+        }
+      },
+      serialize: (state) => {
+        try {
+          // Optimierung: Speichere nur die Sitzungsmetadaten, nicht den vollständigen Nachrichtenverlauf
+          // Nachrichten werden separat in sessionStorage gespeichert oder können nachgeladen werden
+          const optimizedState = {
+            ...state,
+            // Nachrichten nicht persistieren, um Speicherplatz zu sparen
+            messages: {},
+          };
+          return JSON.stringify(optimizedState);
+        } catch (err) {
+          console.error('Error serializing store data:', err);
+          return '{}';
+        }
+      }
+    }
   },
 });

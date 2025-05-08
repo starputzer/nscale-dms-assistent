@@ -53,6 +53,7 @@ Sie ist in verschiedene Abschnitte unterteilt, die verschiedene Aspekte des Proj
 - [FILE UPLOAD COMPONENT](06_SYSTEME/04_FILE_UPLOAD_COMPONENT.md) - Komponente für Datei-Uploads
 - [STATE FLOW DIAGRAM](06_SYSTEME/05_STATE_FLOW_DIAGRAM.md) - Diagramm des Zustandsflusses
 - [VUE3 SFC DOKUMENTENKONVERTER](06_SYSTEME/06_VUE3_SFC_DOKUMENTENKONVERTER.md) - Vue 3 SFC-Implementierung des Dokumentenkonverters
+- [KONVERSIONSPROGRESS KOMPONENTE](06_SYSTEME/07_KONVERSIONSPROGRESS_KOMPONENTE.md) - Fortschrittsanzeige für Dokumentenkonvertierung
 
 ---
 

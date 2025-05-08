@@ -2,6 +2,8 @@
 
 Dieses Dokument beschreibt das Feature-Toggle-System, das für die schrittweise Migration der Anwendung zu Vue 3 Single File Components (SFC) implementiert wurde.
 
+**Update (Mai 2023)**: Das Feature-Toggle-System wurde erweitert und in das Admin-Panel integriert. Die Dokumentation wurde entsprechend aktualisiert.
+
 ## Übersicht
 
 Das Feature-Toggle-System ermöglicht eine graduelle Migration zu Vue 3 SFC, indem es:
@@ -168,9 +170,13 @@ export default defineComponent({
 </script>
 ```
 
-## 4. FeatureTogglesPanel Komponente
+## 4. Administrations-Integration
 
-Die `FeatureTogglesPanel` Komponente ist eine Administratoroberfläche zur Verwaltung von Feature-Flags.
+Das Feature-Toggle-System wurde vollständig in das Admin-Panel integriert, bestehend aus:
+
+- **FeatureTogglesPanel**: Kernkomponente für die Verwaltung von Feature-Flags
+- **AdminFeatureTogglesTab**: Integration als Tab im Admin-Panel
+- **ToastContainer**: Benachrichtigungskomponente für Feedback
 
 ### Hauptfeatures
 
@@ -179,40 +185,99 @@ Die `FeatureTogglesPanel` Komponente ist eine Administratoroberfläche zur Verwa
 - Fehleranzeige und -behebung
 - Benutzerrollenauswahl mit Zugriffssteuerung
 - Gruppen- und Kategorieansicht
+- Fehler-Simulation zur Validierung des Fallback-Mechanismus
+- Änderungshistorie mit Benutzer und Zeitstempel
+- Filter für Feature-Status (alle, aktive, inaktive, fehlerhafte Features)
+- Toast-Benachrichtigungen für Änderungen
 
-### Beispielanwendung
+### AdminFeatureTogglesTab
+
+Der neue AdminFeatureTogglesTab integriert die FeatureTogglesPanel-Komponente in das Admin-Panel und erweitert sie um zusätzliche Funktionen:
 
 ```vue
 <template>
-  <FeatureTogglesPanel
-    initialUserRole="developer"
-    @role-change="handleRoleChange"
-    @feature-change="handleFeatureChange"
-    @error-clear="handleErrorClear"
-  />
+  <div class="feature-toggles-tab">
+    <!-- Filter und Rollen-Steuerung -->
+    <div class="feature-toggles-controls">
+      <div class="feature-filter">
+        <label for="feature-filter">Filter:</label>
+        <select id="feature-filter" v-model="statusFilter">
+          <option value="all">Alle Features</option>
+          <option value="active">Aktive Features</option>
+          <option value="inactive">Inaktive Features</option>
+          <option value="errors">Fehlerhafte Features</option>
+          <option value="fallback">Fallback aktiv</option>
+        </select>
+      </div>
+      
+      <div class="feature-role-selector">
+        <label for="user-role">Rolle simulieren:</label>
+        <select id="user-role" v-model="currentUserRole">
+          <option value="guest">Gast</option>
+          <option value="user">Benutzer</option>
+          <option value="developer">Entwickler</option>
+          <option value="admin">Administrator</option>
+        </select>
+      </div>
+    </div>
+    
+    <!-- FeatureTogglesPanel einbinden -->
+    <FeatureTogglesPanel 
+      :initial-user-role="currentUserRole"
+      @role-change="handleRoleChange"
+      @feature-change="handleFeatureChange"
+    />
+    
+    <!-- Änderungshistorie -->
+    <div class="feature-history">
+      <h3>Änderungshistorie</h3>
+      <div class="feature-history-list">
+        <!-- Einträge der Änderungshistorie -->
+      </div>
+    </div>
+    
+    <!-- Fehler-Simulationsbereich -->
+    <div class="feature-simulation">
+      <h3>Fehler-Simulation</h3>
+      <p>Simulieren Sie Fehler in Features, um den Fallback-Mechanismus zu testen.</p>
+      
+      <div class="feature-simulation-controls">
+        <!-- Simulationssteuerung -->
+      </div>
+    </div>
+  </div>
 </template>
+```
 
-<script>
-import { defineComponent } from 'vue';
-import FeatureTogglesPanel from '@/components/admin/FeatureTogglesPanel.vue';
+### Toast-Benachrichtigungen
 
-export default defineComponent({
-  components: {
-    FeatureTogglesPanel
-  },
-  methods: {
-    handleRoleChange(role) {
-      console.log(`Benutzerrolle geändert: ${role}`);
-    },
-    handleFeatureChange(featureName, enabled) {
-      console.log(`Feature ${featureName} ${enabled ? 'aktiviert' : 'deaktiviert'}`);
-    },
-    handleErrorClear(featureName) {
-      console.log(`Fehler für Feature ${featureName} gelöscht`);
-    }
+Für ein verbessertes Benutzerfeedback wurde ein Toast-Benachrichtigungssystem implementiert:
+
+```typescript
+// useToast.ts
+export function useToast() {
+  function show(config: ToastShowConfig): string {
+    // Toast anzeigen...
   }
-});
-</script>
+  
+  function success(message: string, options?: ToastOptions): string {
+    return show({ message, type: 'success', options });
+  }
+  
+  function error(message: string, options?: ToastOptions): string {
+    return show({ message, type: 'error', options });
+  }
+  
+  // Weitere Methoden...
+  
+  return {
+    toasts: readonly(state.toasts),
+    show,
+    success,
+    error,
+    // ...
+  };
+}
 ```
 
 ## Verwendung des Feature-Toggle-Systems
@@ -465,13 +530,52 @@ persist: {
 - Stelle sicher, dass der Fallback immer funktioniert
 - Teste neue Features intensiv vor der allgemeinen Aktivierung
 
+## Neue Funktionen in der Admin-Panel-Integration
+
+### Umfassende Verwaltungsoberfläche
+
+Die Integration des Feature-Toggle-Systems in das Admin-Panel bietet:
+
+- **Intuitives UI**: Ein benutzerfreundliches Interface zur Verwaltung aller Features
+- **Übersichtliche Darstellung**: Gruppierung nach Kategorien und Statusinformationen
+- **Fehlervisualisierung**: Detaillierte Anzeige von Fehlern und Fallback-Status
+- **Dokumentation**: Eingebettete Dokumentation und Hilfe
+
+### Fehler-Simulation und Testen
+
+Die Fehler-Simulation ermöglicht es Administratoren:
+
+- Fehler in spezifischen Features zu simulieren
+- Verschiedene Fehlertypen zu testen (Rendering, Daten, API, Timeout)
+- Den Fallback-Mechanismus zu validieren
+- Die Fehlerbehandlung zu optimieren
+
+### Änderungshistorie
+
+Die Änderungshistorie bietet:
+
+- Chronologische Aufzeichnung aller Änderungen an Features
+- Informationen über Zeitpunkt, Benutzer und Art der Änderung
+- Persistenz im localStorage zur Nachverfolgung
+- Möglichkeit zur Filterung und Löschung des Verlaufs
+
+### Rollenbasierte Tests
+
+Die Rollensimulation ermöglicht:
+
+- Testen des Benutzererlebnisses für verschiedene Benutzerrollen
+- Validierung der Zugriffsrechte
+- Simulation von begrenzten Zugriffsszenarien
+- Optimierung des Feature-Sets für verschiedene Benutzergruppen
+
 ## Zusammenfassung
 
-Das Feature-Toggle-System ermöglicht eine schrittweise Migration zu Vue 3 SFC mit minimalem Risiko durch:
+Das erweiterte Feature-Toggle-System ermöglicht eine schrittweise Migration zu Vue 3 SFC mit minimalem Risiko durch:
 
 1. Fein abgestimmte Kontrolle über aktivierte Features
 2. Automatischen Fallback bei Problemen
 3. Umfassende Fehlererfassung und -berichterstattung
-4. Admin-Oberfläche zur einfachen Verwaltung
+4. Integrierte Admin-Oberfläche mit fortschrittlichen Verwaltungsfunktionen
+5. Dokumentation und Hilfswerkzeuge zur Unterstützung des Migrationsprozesses
 
-Durch diesen Ansatz kann die Anwendung sicher und kontrolliert migriert werden, wobei die Benutzer jederzeit eine funktionsfähige Anwendung erhalten.
+Durch diesen Ansatz kann die Anwendung sicher und kontrolliert migriert werden, wobei sowohl Entwickler als auch Administratoren umfassende Kontrolle über den Prozess haben und die Benutzer jederzeit eine funktionsfähige Anwendung erhalten.

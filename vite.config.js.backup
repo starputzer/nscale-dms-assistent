@@ -1,0 +1,94 @@
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import { fileURLToPath, URL } from 'url';
+import { resolve, join } from 'path';
+
+// Bestimme das Basisverzeichnis des Projekts
+const projectRoot = resolve(__dirname);
+const frontendDir = resolve(projectRoot, 'frontend');
+const distDir = resolve(projectRoot, 'api/frontend');
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [vue()],
+  
+  // Optimiere die Abhängigkeitsauflösung
+  optimizeDeps: {
+    include: ['vue'],
+    exclude: [],
+    esbuildOptions: {
+      // Behebe Probleme mit bestimmten Bibliotheken
+      define: {
+        global: 'globalThis',
+      },
+    },
+  },
+  
+  // Behebe den @vue/runtime-dom Fehler durch explizites Alias-Mapping
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@frontend': frontendDir,
+      '@assets': resolve(frontendDir, 'assets'),
+      '@components': resolve(frontendDir, 'vue/components'),
+      '@composables': resolve(frontendDir, 'vue/composables'),
+      // Explizites Mapping für problematische Vue-Module
+      'vue': resolve(projectRoot, 'node_modules/vue/dist/vue.esm-bundler.js'),
+      '@vue/runtime-dom': resolve(projectRoot, 'node_modules/@vue/runtime-dom/dist/runtime-dom.esm-bundler.js'),
+      '@vue/shared': resolve(projectRoot, 'node_modules/@vue/shared/dist/shared.esm-bundler.js'),
+      '@vue/reactivity': resolve(projectRoot, 'node_modules/@vue/reactivity/dist/reactivity.esm-bundler.js'),
+    },
+    extensions: ['.js', '.ts', '.vue', '.json'],
+  },
+  
+  // Server-Konfiguration für die Entwicklung
+  server: {
+    port: 3000,
+    strictPort: true,
+    cors: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+    },
+  },
+  
+  // Build-Optionen
+  build: {
+    outDir: distDir,
+    // Verbessere die Konsistenz von Dateipfaden im Build
+    assetsDir: 'assets',
+    emptyOutDir: true,
+    sourcemap: true,
+    // Erstelle separate Chunks für Vendor-Code
+    rollupOptions: {
+      input: {
+        main: resolve(frontendDir, 'main.js'),
+        admin: resolve(frontendDir, 'js/admin.js'),
+        docConverter: resolve(frontendDir, 'vue/doc-converter-app.js'),
+        dmsAssistant: resolve(frontendDir, 'vue-dms-assistant.html'),
+      },
+      output: {
+        entryFileNames: 'js/[name].js',
+        chunkFileNames: 'js/chunks/[name]-[hash].js',
+        assetFileNames: (assetInfo) => {
+          const extType = assetInfo.name.split('.').at(1);
+          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
+            return 'images/[name][extname]';
+          }
+          if (/css/i.test(extType)) {
+            return 'css/[name][extname]';
+          }
+          return 'assets/[name][extname]';
+        },
+        manualChunks: {
+          'vue-vendor': ['vue'],
+          'common-utils': [
+            './frontend/js/utils.ts',
+          ],
+        },
+      },
+    },
+  },
+});

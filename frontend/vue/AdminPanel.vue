@@ -6,7 +6,7 @@
     
     <div class="admin-tabs">
       <button 
-        v-for="tab in tabs" 
+        v-for="tab in visibleTabs" 
         :key="tab.id"
         @click="activeTab = tab.id"
         :class="{ active: activeTab === tab.id, 'nscale-btn': true }">
@@ -18,22 +18,28 @@
     <div class="admin-content">
       <component :is="currentTabComponent"></component>
     </div>
+    
+    <!-- Toast-Benachrichtigungen für Feedback -->
+    <ToastContainer position="bottom-right" />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed } from 'vue';
+import { defineComponent, ref, computed, watch } from 'vue';
 import UsersTab from './AdminUsersTab.vue';
 import SystemTab from './AdminSystemTab.vue';
 import FeedbackTab from './AdminFeedbackTab.vue';
 import MotdTab from './AdminMotdTab.vue';
 import DocConverterTab from './AdminDocConverterTab.vue';
+import FeatureTogglesTab from './AdminFeatureTogglesTab.vue';
+import ToastContainer from '@/components/ui/ToastContainer.vue';
 
 interface Tab {
   id: string;
   label: string;
   component: string;
   icon: string;
+  requiredRole?: string; // Optional: Erforderliche Rolle für Zugriff
 }
 
 export default defineComponent({
@@ -43,18 +49,40 @@ export default defineComponent({
     SystemTab,
     FeedbackTab,
     MotdTab,
-    DocConverterTab
+    DocConverterTab,
+    FeatureTogglesTab,
+    ToastContainer
   },
   setup() {
+    // Aktueller Benutzer und Rolle - in Produktion aus dem Auth-System holen
+    const currentUserRole = ref('admin'); // Für Demo-Zwecke als Admin
+    
     const tabs: Tab[] = [
       { id: 'users', label: 'Benutzer', component: 'UsersTab', icon: 'fas fa-users' },
       { id: 'system', label: 'System', component: 'SystemTab', icon: 'fas fa-cogs' },
       { id: 'feedback', label: 'Feedback', component: 'FeedbackTab', icon: 'fas fa-comment' },
       { id: 'motd', label: 'Nachrichten', component: 'MotdTab', icon: 'fas fa-bullhorn' },
-      { id: 'docConverter', label: 'Dokumentenkonverter', component: 'DocConverterTab', icon: 'fas fa-file-alt' }
+      { id: 'docConverter', label: 'Dokumentenkonverter', component: 'DocConverterTab', icon: 'fas fa-file-alt' },
+      { id: 'featureToggles', label: 'Feature-Toggles', component: 'FeatureTogglesTab', icon: 'fas fa-toggle-on', requiredRole: 'admin' }
     ];
     
+    // Filtert Tabs basierend auf Benutzerberechtigungen
+    const visibleTabs = computed(() => {
+      return tabs.filter(tab => {
+        // Wenn keine Rolle erforderlich ist oder Benutzer die Rolle hat
+        return !tab.requiredRole || tab.requiredRole === currentUserRole.value;
+      });
+    });
+    
     const activeTab = ref('users');
+    
+    // Stellt sicher, dass der aktive Tab auch sichtbar ist
+    watch(visibleTabs, (newVisibleTabs) => {
+      if (newVisibleTabs.findIndex(t => t.id === activeTab.value) === -1 && newVisibleTabs.length > 0) {
+        // Wenn der aktive Tab nicht mehr sichtbar ist, wechsle zum ersten sichtbaren Tab
+        activeTab.value = newVisibleTabs[0].id;
+      }
+    });
     
     const currentTabComponent = computed(() => {
       const tab = tabs.find(t => t.id === activeTab.value);
@@ -63,6 +91,7 @@ export default defineComponent({
     
     return {
       tabs,
+      visibleTabs,
       activeTab,
       currentTabComponent
     };

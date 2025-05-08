@@ -1,0 +1,473 @@
+/**
+ * nscale DMS Assistant Responsive Breakpoints System
+ * 
+ * Einheitliches System für responsives Design zur Verwendung in allen nscale DMS Assistant Komponenten.
+ * Dieses System gewährleistet ein konsistentes Erscheinungsbild auf allen Geräten.
+ * 
+ * Letzte Aktualisierung: 08.05.2025
+ */
+
+/* ===== 1. GRUNDLEGENDE MOBILE-FIRST EINSTELLUNGEN ===== */
+
+html {
+  box-sizing: border-box;
+  font-size: 16px; /* Basis-Schriftgröße für rem-Berechnungen */
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+body {
+  font-family: var(--nscale-font-family-base);
+  margin: 0;
+  padding: 0;
+  font-size: var(--nscale-font-size-base);
+  line-height: var(--nscale-line-height-normal);
+  color: var(--nscale-body-color);
+  background-color: var(--nscale-body-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img, video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ===== 2. BREAKPOINT-SYSTEM ===== */
+
+/* 
+ * Breakpoints basieren auf Standard-Gerätebreiten:
+ * - xs: Extra small (Mobiltelefone im Hochformat) < 480px
+ * - sm: Small (Mobiltelefone im Querformat) >= 480px
+ * - md: Medium (Tablets im Hochformat) >= 768px
+ * - lg: Large (Tablets im Querformat, kleine Desktops) >= 1024px
+ * - xl: Extra large (Desktop) >= 1280px
+ * - 2xl: Extra extra large (Große Desktops) >= 1536px
+ */
+
+/* ===== 3. CONTAINER-SYSTEM ===== */
+
+.nscale-container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--nscale-space-4);
+  padding-right: var(--nscale-space-4);
+}
+
+/* Container Breite für verschiedene Breakpoints */
+@media (min-width: 480px) {
+  .nscale-container {
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 640px) {
+  .nscale-container {
+    max-width: 600px;
+  }
+}
+
+@media (min-width: 768px) {
+  .nscale-container {
+    max-width: 720px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .nscale-container {
+    max-width: 960px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .nscale-container {
+    max-width: 1140px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .nscale-container {
+    max-width: 1320px;
+  }
+}
+
+/* ===== 4. RESPONSIVE GRID-SYSTEM ===== */
+
+.nscale-grid {
+  display: grid;
+  gap: var(--nscale-space-4);
+}
+
+/* Standard 1-Spalten-Grid auf mobilen Geräten */
+.nscale-grid {
+  grid-template-columns: 1fr;
+}
+
+/* Responsive Grid-Anpassungen */
+@media (min-width: 640px) {
+  .nscale-grid-cols-sm-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .nscale-grid-cols-md-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .nscale-grid-cols-md-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .nscale-grid-cols-lg-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .nscale-grid-cols-lg-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .nscale-grid-cols-lg-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .nscale-grid-cols-xl-5 {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  
+  .nscale-grid-cols-xl-6 {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+/* ===== 5. LAYOUT-ANPASSUNGEN ===== */
+
+/* Sidebar-Anpassung für verschiedene Bildschirmgrößen */
+@media (max-width: 768px) {
+  .nscale-layout {
+    flex-direction: column;
+  }
+  
+  .nscale-sidebar {
+    width: 100%;
+    position: fixed;
+    top: var(--nscale-header-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: var(--nscale-z-index-fixed);
+    transform: translateX(-100%);
+    transition: transform var(--nscale-transition-normal) ease;
+  }
+  
+  .nscale-sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .nscale-content {
+    margin-left: 0;
+  }
+  
+  .nscale-mobile-nav-toggle {
+    display: block;
+  }
+}
+
+@media (min-width: 769px) {
+  .nscale-layout {
+    flex-direction: row;
+  }
+  
+  .nscale-sidebar {
+    width: var(--nscale-sidebar-width);
+    position: sticky;
+    top: var(--nscale-header-height);
+    height: calc(100vh - var(--nscale-header-height));
+    transform: translateX(0) !important;
+  }
+  
+  .nscale-content {
+    margin-left: 0;
+    width: calc(100% - var(--nscale-sidebar-width));
+  }
+  
+  .nscale-mobile-nav-toggle {
+    display: none;
+  }
+}
+
+/* Größenanpassungen für Header-Elemente */
+@media (max-width: 480px) {
+  .nscale-header {
+    padding: 0 var(--nscale-space-2);
+  }
+  
+  .nscale-logo {
+    font-size: var(--nscale-font-size-lg);
+  }
+}
+
+/* ===== 6. ANPASSUNGEN FÜR KOMPONENTEN ===== */
+
+/* Nachrichtenanpassungen für mobile Geräte */
+@media (max-width: 640px) {
+  .nscale-message {
+    max-width: 90%;
+  }
+  
+  .nscale-input-container {
+    padding: var(--nscale-space-2);
+  }
+  
+  .nscale-message-container {
+    padding: var(--nscale-space-2);
+  }
+}
+
+/* Admin-Bereich Anpassungen */
+@media (max-width: 768px) {
+  .nscale-admin-container {
+    flex-direction: column;
+  }
+  
+  .nscale-admin-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--nscale-sidebar-border);
+  }
+  
+  .nscale-admin-content {
+    padding: var(--nscale-space-3);
+  }
+  
+  .nscale-admin-nav {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: var(--nscale-space-2);
+  }
+  
+  .nscale-admin-nav-item {
+    flex: 0 0 auto;
+    margin-right: var(--nscale-space-2);
+    margin-bottom: 0;
+  }
+}
+
+/* Formular-Komponenten-Anpassungen */
+@media (max-width: 640px) {
+  .nscale-form-group {
+    margin-bottom: var(--nscale-space-3);
+  }
+  
+  .nscale-input,
+  .nscale-select {
+    padding: var(--nscale-space-2);
+    font-size: var(--nscale-font-size-sm);
+  }
+  
+  .nscale-btn {
+    padding: var(--nscale-space-2) var(--nscale-space-3);
+    font-size: var(--nscale-font-size-sm);
+  }
+}
+
+/* ===== 7. HILFESKLASSEN FÜR RESPONSIVES VERHALTEN ===== */
+
+/* Responsive Sichtbarkeit */
+.nscale-hidden-xs {
+  display: none;
+}
+
+@media (min-width: 480px) {
+  .nscale-hidden-xs {
+    display: initial;
+  }
+  
+  .nscale-hidden-sm {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .nscale-hidden-sm {
+    display: initial;
+  }
+  
+  .nscale-hidden-md {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .nscale-hidden-md {
+    display: initial;
+  }
+  
+  .nscale-hidden-lg {
+    display: none;
+  }
+}
+
+@media (min-width: 1280px) {
+  .nscale-hidden-lg {
+    display: initial;
+  }
+  
+  .nscale-hidden-xl {
+    display: none;
+  }
+}
+
+/* Nur auf bestimmten Bildschirmgrößen anzeigen */
+.nscale-only-xs {
+  display: initial;
+}
+@media (min-width: 480px) {
+  .nscale-only-xs {
+    display: none;
+  }
+}
+
+.nscale-only-sm {
+  display: none;
+}
+@media (min-width: 480px) and (max-width: 767px) {
+  .nscale-only-sm {
+    display: initial;
+  }
+}
+
+.nscale-only-md {
+  display: none;
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .nscale-only-md {
+    display: initial;
+  }
+}
+
+.nscale-only-lg {
+  display: none;
+}
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .nscale-only-lg {
+    display: initial;
+  }
+}
+
+.nscale-only-xl {
+  display: none;
+}
+@media (min-width: 1280px) {
+  .nscale-only-xl {
+    display: initial;
+  }
+}
+
+/* ===== 8. RESPONSIVES TEXT-HANDLING ===== */
+
+/* Größe des Textes je nach Bildschirmgröße anpassen */
+@media (max-width: 480px) {
+  .nscale-responsive-text {
+    font-size: var(--nscale-font-size-sm);
+  }
+  
+  h1, .nscale-h1 {
+    font-size: var(--nscale-font-size-2xl);
+  }
+  
+  h2, .nscale-h2 {
+    font-size: var(--nscale-font-size-xl);
+  }
+  
+  h3, .nscale-h3 {
+    font-size: var(--nscale-font-size-lg);
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .nscale-responsive-text {
+    font-size: var(--nscale-font-size-base);
+  }
+  
+  h1, .nscale-h1 {
+    font-size: var(--nscale-font-size-3xl);
+  }
+  
+  h2, .nscale-h2 {
+    font-size: var(--nscale-font-size-2xl);
+  }
+  
+  h3, .nscale-h3 {
+    font-size: var(--nscale-font-size-xl);
+  }
+}
+
+@media (min-width: 769px) {
+  .nscale-responsive-text {
+    font-size: var(--nscale-font-size-base);
+  }
+  
+  h1, .nscale-h1 {
+    font-size: var(--nscale-font-size-4xl);
+  }
+  
+  h2, .nscale-h2 {
+    font-size: var(--nscale-font-size-3xl);
+  }
+  
+  h3, .nscale-h3 {
+    font-size: var(--nscale-font-size-2xl);
+  }
+}
+
+/* ===== 9. PRINT-MEDIA-QUERY ===== */
+
+@media print {
+  .nscale-no-print {
+    display: none !important;
+  }
+  
+  .nscale-print-full-width {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .nscale-container {
+    max-width: 100% !important;
+  }
+  
+  .nscale-sidebar {
+    display: none !important;
+  }
+  
+  .nscale-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+  
+  body {
+    font-size: 12pt;
+    background-color: white !important;
+    color: black !important;
+  }
+  
+  a {
+    text-decoration: underline;
+    color: #000 !important;
+  }
+  
+  a::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+  }
+}

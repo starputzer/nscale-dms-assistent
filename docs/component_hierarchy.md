@@ -23,6 +23,13 @@ App
 │   ├── AppMain
 │   └── AppFooter
 │
+├── Layout-Komponenten (Vue 3 SFC)
+│   ├── MainLayout (Hauptlayout mit Header, Sidebar, Content und Footer)
+│   ├── Header (Flexibler Header mit Logo, Titel und Aktionsbereich)
+│   ├── Sidebar (Zusammenklappbare Seitenleiste mit Navigation)
+│   ├── TabPanel (Tabs mit horizontaler oder vertikaler Ausrichtung)
+│   └── SplitPane (Teilbarer Bereich mit anpassbarer Trennlinie)
+│
 ├── Feature-Bereiche
 │   ├── DocConverter (Dokumentenkonverter)
 │   │   ├── SfcDocConverter (Vue 3 SFC)
@@ -93,6 +100,9 @@ Diese Komponenten kapseln Funktionalität und bieten zusätzliche Funktionen:
 Diese Komponenten verwalten Zustände und steuern andere Komponenten:
 
 - **AppLayout**: Hauptlayout der Anwendung
+- **MainLayout**: Flexibles Vue 3 SFC Hauptlayout mit Header, Sidebar, Content und Footer
+- **TabPanel**: Container für Tab-basierte Inhalte mit umfangreichen Funktionen
+- **SplitPane**: Teilbarer Container mit anpassbarer Trennlinie
 - **AdminPanel**: Container für Admin-Funktionen
 - **ChatView**: Container für Chat-Funktionen
 - **Settings**: Container für Einstellungen
@@ -101,6 +111,8 @@ Diese Komponenten verwalten Zustände und steuern andere Komponenten:
 
 Diese Komponenten sind hauptsächlich für die Darstellung zuständig:
 
+- **Header**: Flexibler Header mit Logo, Titel und Aktionsbereich
+- **Sidebar**: Zusammenklappbare Seitenleiste mit Navigation
 - **MessageItem**: Einzelne Chat-Nachricht
 - **AdminTab**: Einzelner Admin-Tab
 - **Button**, **Card**, **Modal**, etc.: Basis-UI-Komponenten

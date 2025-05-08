@@ -23,6 +23,17 @@ app.use(DialogPlugin);
 // App mounten
 app.mount('#app');
 
+// ErrorReportingService initialisieren
+import { useErrorReporting } from '@/utils/errorReportingService';
+const errorService = useErrorReporting({
+  captureUnhandledErrors: true,
+  captureUnhandledRejections: true,
+  consoleLogLevel: 'error',
+  privacy: {
+    stripPII: true
+  }
+});
+
 // Für Debugging-Zwecke in der Entwicklungsumgebung
 if (import.meta.env.DEV) {
   console.log('nscale DMS Assistent wurde gestartet');

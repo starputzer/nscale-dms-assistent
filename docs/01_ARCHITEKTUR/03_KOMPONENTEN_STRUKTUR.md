@@ -36,6 +36,10 @@ frontend/
 │   ├── source/                  # Quellenreferenz-Komponenten
 │   │   ├── SourceDialog.vue     # Quellen-Dialog
 │   │   └── ExplanationDialog.vue# Erklärungs-Dialog
+│   ├── layout/                  # Layout-Komponenten
+│   │   ├── MainLayout.vue       # Hauptlayout mit Header, Sidebar und Content
+│   │   ├── NavigationBar.vue    # Obere Navigationsleiste
+│   │   └── Sidebar.vue          # Seitliche Navigationsleiste
 │   └── ui/                      # UI-Komponenten
 │       ├── NScaleButton.vue     # Button-Komponente
 │       ├── NScaleCard.vue       # Card-Komponente
@@ -180,3 +184,272 @@ if (!featureToggles.useSfcChat) {
   window.initLegacyChat();
 }
 ```
+
+## Layout-Komponenten
+
+**Version:** 2.0  
+**Letzte Aktualisierung:** 09.05.2025
+
+Die Layout-Komponenten des nscale DMS Assistenten wurden grundlegend überarbeitet, um moderne UI-Praktiken zu implementieren und eine vollständige Integration mit dem neuen Design-System zu gewährleisten. Dieses Update betrifft primär die folgenden Komponenten:
+
+1. **MainLayout**: Die Hauptstruktur der Anwendung mit Slots für Header, Sidebar und Content
+2. **NavigationBar**: Die obere Navigationsleiste mit Logo, Titel und Aktionsbuttons
+3. **Sidebar**: Die seitliche Navigationsleiste mit Session-Liste und Aktionen
+
+### MainLayout
+
+Die `MainLayout`-Komponente dient als Grundstruktur der Anwendung und ist für das Arrangement der Hauptelemente verantwortlich. Sie unterstützt:
+
+- Flexible Konfiguration von Header, Sidebar und Footer
+- Responsive Design-Anpassungen für verschiedene Bildschirmgrößen
+- Theming-Integration mit Light/Dark/System-Modi
+- Bereistellen eines Layout-Kontexts für Kindkomponenten
+- Dynamische Sidebar-Steuerung (ein-/ausklappbar, vollständig ausblendbar)
+
+```vue
+<MainLayout
+  title="nscale DMS Assistent"
+  :sidebar-items="sessions"
+  :active-sidebar-item-id="currentSessionId"
+  sidebar-title="Unterhaltungen"
+  theme="system"
+  :sticky-header="true"
+  @sidebar-item-select="handleSessionSelect"
+>
+  <template #header>
+    <!-- Benutzerdefinierter Header -->
+  </template>
+  
+  <template #sidebar>
+    <!-- Benutzerdefinierte Sidebar -->
+  </template>
+  
+  <!-- Hauptinhalt -->
+  <div>Content der Anwendung</div>
+  
+  <template #footer>
+    <!-- Benutzerdefinierter Footer -->
+  </template>
+</MainLayout>
+```
+
+### NavigationBar
+
+Die `NavigationBar`-Komponente stellt die obere Navigationsleiste dar und bietet:
+
+- Logo- und Titelanzeige
+- Toggle-Button für die Sidebar
+- Responsive Design mit angepassten Layouts für mobile Ansichten
+- Dynamisch anpassbare Aktionsbuttons und Benutzermenü
+- Theme-Switching-Funktionalität
+- Slots für Anpassungen und Erweiterungen
+
+```vue
+<NavigationBar
+  title="nscale DMS Assistent"
+  :show-sidebar-toggle="true"
+  :user="currentUser"
+  :is-authenticated="true"
+  :user-role="userRole"
+  @sidebar-toggle="toggleSidebar"
+  @logout="handleLogout"
+  @new-chat="createNewChat"
+>
+  <template #logo>
+    <!-- Benutzerdefiniertes Logo -->
+  </template>
+  
+  <template #center>
+    <!-- Zentrale Elemente -->
+  </template>
+  
+  <template #right>
+    <!-- Rechte Aktionselemente -->
+  </template>
+</NavigationBar>
+```
+
+### Sidebar
+
+Die `Sidebar`-Komponente ist für die Navigation zwischen verschiedenen Inhalten verantwortlich:
+
+- Dynamische Item-Liste mit flexiblem Datenmodell
+- Unterstützung für Icons, Labels und Aktionen pro Element
+- Kollapsierbare Ansicht für platzsparende Darstellung
+- Konfigurierbares Löschen und Hinzufügen von Elementen
+- Responsive Design mit optimierter mobiler Darstellung
+- Integration mit dem zentralen UI-Store für konsistenten Zustand
+
+```vue
+<Sidebar
+  title="Unterhaltungen"
+  :items="sessions"
+  :active-item-id="currentSessionId"
+  :empty-message="Keine Unterhaltungen vorhanden"
+  :is-loading="isLoading"
+  :show-create-button="true"
+  create-button-text="Neue Unterhaltung starten"
+  @select="handleSessionSelect"
+  @delete="handleSessionDelete"
+  @create="createNewSession"
+  @toggle-collapse="handleSidebarToggle"
+>
+  <template #item-icon="{ item }">
+    <!-- Benutzerdefiniertes Icon pro Element -->
+  </template>
+  
+  <template #item-actions="{ item }">
+    <!-- Benutzerdefinierte Aktionen pro Element -->
+  </template>
+  
+  <template #footer>
+    <!-- Benutzerdefinierter Footer -->
+  </template>
+</Sidebar>
+```
+
+## Implementierungsdetails
+
+### BEM-basierte CSS-Struktur
+
+Alle Layout-Komponenten folgen nun dem BEM-Namensschema (Block-Element-Modifier), das die Wartbarkeit und Verständlichkeit des CSS verbessert:
+
+```css
+.n-sidebar__item--active {
+  background-color: var(--n-active-color, rgba(49, 130, 206, 0.1));
+}
+```
+
+### CSS-Variablen-Integration
+
+Die Komponenten nutzen das zentrale CSS-Variablen-System für konsistentes Styling und einfaches Theming:
+
+```css
+.n-navigation-bar {
+  height: var(--n-navigation-bar-height, 64px);
+  background-color: var(--n-navigation-bar-bg, var(--n-surface-color, #ffffff));
+  color: var(--n-navigation-bar-color, var(--n-text-color-primary, #2d3748));
+}
+```
+
+### Responsive Design-Strategie
+
+Alle Komponenten wurden mit einer "Mobile First"-Strategie implementiert:
+
+```css
+@media (max-width: 768px) {
+  .n-sidebar {
+    position: fixed;
+    left: 0;
+    top: var(--n-navigation-bar-height, 64px);
+    bottom: 0;
+    z-index: var(--n-z-index-sidebar, 90);
+    transform: translateX(0);
+    transition: transform 0.3s ease, width 0.3s ease;
+  }
+  
+  .n-sidebar--collapsed {
+    transform: translateX(calc(-1 * var(--n-sidebar-width, 280px)));
+  }
+}
+```
+
+### TypeScript-Integration
+
+Alle Komponenten verfügen über umfassende TypeScript-Typendefinitionen für bessere Entwicklerunterstützung und Fehlervermeidung:
+
+```typescript
+export interface NavigationBarProps {
+  /** Titel in der Navigationsleiste */
+  title?: string;
+  /** URL des Logos */
+  logo?: string;
+  /** Ob die Navigationsleiste in kondensierter Form angezeigt werden soll */
+  condensed?: boolean;
+  // ...weitere Eigenschaften
+}
+```
+
+### Slots für Flexibilität
+
+Alle Komponenten bieten verschiedene Slots, um Anpassungen ohne Änderung der Kernkomponenten zu ermöglichen:
+
+```vue
+<slot name="sidebar">
+  <Sidebar 
+    :items="sidebarItems"
+    :active-item-id="activeSidebarItemId"
+    :title="sidebarTitle"
+    @toggle-collapse="setSidebarCollapsed"
+    @select="handleSidebarItemSelect"
+  />
+</slot>
+```
+
+## Migrationsschritte für bestehenden Code
+
+Wenn Sie bestehenden Code auf die neuen Layout-Komponenten migrieren möchten, folgen Sie diesen Schritten:
+
+1. **Von globalen Layouts zu MainLayout migrieren**:
+   ```vue
+   <!-- Alt -->
+   <div class="app-container">
+     <header>...</header>
+     <aside>...</aside>
+     <main>...</main>
+   </div>
+   
+   <!-- Neu -->
+   <MainLayout>
+     <template #header>...</template>
+     <template #sidebar>...</template>
+     <div>...</div>
+   </MainLayout>
+   ```
+
+2. **Bestehende Navigationsleisten durch NavigationBar ersetzen**:
+   ```vue
+   <!-- Alt -->
+   <header class="navbar">...</header>
+   
+   <!-- Neu -->
+   <NavigationBar :show-sidebar-toggle="true" @sidebar-toggle="toggleSidebar" />
+   ```
+
+3. **Sidebar-Komponente integrieren**:
+   ```vue
+   <!-- Alt -->
+   <aside class="sidebar">
+     <ul class="session-list">
+       <li v-for="session in sessions" :key="session.id">...</li>
+     </ul>
+   </aside>
+   
+   <!-- Neu -->
+   <Sidebar 
+     :items="sessions" 
+     :active-item-id="currentSessionId"
+     @select="handleSessionSelect"
+   />
+   ```
+
+## Best Practices
+
+- Verwenden Sie stets die vordefinierten CSS-Variablen anstelle von hartcodierten Werten
+- Nutzen Sie die Slot-Mechanismen für Anpassungen, anstatt die Komponenten zu modifizieren
+- Folgen Sie dem BEM-Namensschema, wenn Sie neue Styles hinzufügen
+- Verwenden Sie die TypeScript-Interfaces für bessere Typüberprüfung und Autovervollständigung
+- Achten Sie auf die Mobile-First-Implementierung bei Anpassungen oder Erweiterungen
+
+## Aktuelle Limitations und geplante Erweiterungen
+
+- Die Unterstützung für verschachtelte Sidebar-Menüs ist noch nicht vollständig implementiert
+- Die Integration mit Routing-Systemen wird in einer zukünftigen Version optimiert
+- Weitere Anpassungsmöglichkeiten für die Sidebar-Animation sind geplant
+- Die Zugänglichkeit (Accessibility) wird in kommenden Updates verbessert
+
+## Zusammenfassung
+
+Die überarbeiteten Layout-Komponenten bieten eine solide Grundlage für konsistentes UI-Design im nscale DMS Assistenten. Sie verbessern nicht nur die visuelle Konsistenz, sondern erhöhen auch die Entwicklungsgeschwindigkeit durch wiederverwendbare, gut dokumentierte Komponenten.
+
+Die Integration mit dem Design-System und die konsistente Verwendung von CSS-Variablen ermöglichen ein einheitliches Erscheinungsbild und vereinfachen zukünftige Design-Änderungen und Anpassungen.
