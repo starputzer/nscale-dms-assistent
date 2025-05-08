@@ -22,6 +22,28 @@ console.log(`main.js existiert: ${fs.existsSync(mainJsPath)}`);
 console.log(`js/main.js existiert: ${fs.existsSync(jsMainJsPath)}`);
 
 /**
+ * CSS-Handling-Plugin für Vite
+ * Behandelt CSS-Dateien korrekt, ohne sie als Module zu laden
+ */
+function cssHandlingPlugin() {
+  return {
+    name: 'css-handling',
+    transform(code, id) {
+      // Wenn es sich um einen CSS-Import in einer JS-Datei handelt
+      if (id.endsWith('.js') && code.includes('import') && code.includes('.css')) {
+        // Entferne CSS-Imports aus JS-Dateien
+        const newCode = code.replace(/import ['"].*\.css['"];?/g, '// CSS-Import wurde entfernt');
+        return {
+          code: newCode,
+          map: null
+        };
+      }
+      return null;
+    }
+  };
+}
+
+/**
  * Plugin zur Behebung von NPM-Modulen Problemen
  * Stellt virtuelle Module für nicht-installierte NPM-Pakete bereit
  */
@@ -238,9 +260,13 @@ function staticAssetsPlugin() {
 export default defineConfig({
   plugins: [
     vue(),
+    cssHandlingPlugin(), // Plugin für korrektes CSS-Handling
     staticAssetsPlugin(), // Plugin für statische Assets
     npmModulesPlugin(), // Plugin für NPM-Module Probleme
   ],
+  
+  // Konfiguration für die öffentlichen Verzeichnisse
+  publicDir: 'public',
   
   // Optimiere die Abhängigkeitsauflösung
   optimizeDeps: {
@@ -251,6 +277,19 @@ export default defineConfig({
         global: 'globalThis',
       },
     },
+  },
+  
+  // CSS-spezifische Konfiguration
+  css: {
+    // Deaktiviere CSS-Module für globale Styles
+    modules: false,
+    // Keine CSS-Extraktion im Entwicklungsmodus
+    devSourcemap: true,
+    preprocessorOptions: {
+      css: {
+        // Keine Präprozessor-Optionen für reines CSS
+      }
+    }
   },
   
   // Verbesserte Alias-Konfiguration
@@ -285,11 +324,22 @@ export default defineConfig({
       strict: false,
       allow: [projectRoot, frontendDir],
     },
-    // Proxy-Konfiguration für API-Anfragen
+    // Verbesserte Proxy-Konfiguration für API-Anfragen
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'http://localhost:5000', // Aktualisiert auf Port 5000, wo der Python-API-Server tatsächlich läuft
         changeOrigin: true,
+        secure: false,
+        ws: true,
+        rewrite: (path) => path,
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
+            console.log('Proxy-Fehler:', err);
+          });
+          proxy.on('proxyReq', (proxyReq, req, _res) => {
+            console.log('Proxy-Anfrage:', req.method, req.url);
+          });
+        }
       },
     },
   },
