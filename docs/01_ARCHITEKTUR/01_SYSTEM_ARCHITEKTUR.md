@@ -10,7 +10,7 @@ Der nscale DMS Assistent ist eine interaktive Anwendung, die Benutzern bei der N
 
 Die Anwendung ist in mehrere Schichten unterteilt:
 
-1. **Präsentationsschicht**: Frontend-Komponenten (HTML/CSS/JS, Vue 3 SFC [in Entwicklung])
+1. **Präsentationsschicht**: Frontend-Komponenten (modulares Vanilla JavaScript mit ES6-Modulen)
 2. **Anwendungsschicht**: Backend-Server und API-Endpunkte (Python/Flask)
 3. **Geschäftslogikschicht**: Kernmodule für Funktionalitäten
 4. **Datenzugriffsschicht**: Interaktion mit Datenbanken und externen Diensten
@@ -19,32 +19,23 @@ Die Anwendung ist in mehrere Schichten unterteilt:
 
 ### Aktuelle Implementierung
 
-Das Frontend besteht aktuell aus einer klassischen HTML/CSS/JS-Architektur, wobei die Migration zu Vue 3 SFC bereits begonnen wurde:
+Das Frontend besteht aktuell aus einer modernen Vanilla-JavaScript-Architektur mit ES6-Modulen:
 
 ```
-frontend/
-├── css/                # CSS-Stylesheets
-├── js/                 # JavaScript-Module
-├── static/             # Statische Ressourcen
-├── index.html          # Haupt-HTML-Datei
-└── [weitere Dateien]   # Weitere Frontend-Assets
+shared/
+├── js/                 # Zentrale JavaScript-Module
+│   ├── modernized-app.js  # Haupt-Einstiegspunkt
+│   ├── chat.js         # Chat-Funktionalität
+│   ├── admin.js        # Admin-Panel-Funktionalität
+│   └── [weitere Module]
+├── css/                # Zentrale CSS-Stylesheets
+└── images/             # Zentrale Bild-Ressourcen
+
+frontend/               # Symlinks zu shared/ (für Kompatibilität)
+static/                 # Symlinks zu shared/ (für Kompatibilität)
 ```
 
-### Vue 3 SFC-Architektur
-
-Die Vue 3 SFC-Implementierung folgt einer modularen Struktur:
-
-```
-src/
-├── components/         # Wiederverwendbare Komponenten
-│   ├── admin/          # Admin-spezifische Komponenten
-│   ├── chat/           # Chat-Interface-Komponenten
-│   └── common/         # Gemeinsame Basiskomponenten 
-├── views/              # Hauptansichten (Seiten)
-├── composables/        # Benutzerdefinierte Vue Composables
-├── stores/             # Pinia Stores für Zustandsverwaltung
-└── standalone/         # Standalone-Komponenten zur Integration
-```
+Die Dateien in `/shared/` werden durch Symlinks in `/frontend/` und `/static/` verfügbar gemacht, um Kompatibilität mit bestehenden Pfaden zu gewährleisten.
 
 ## Backend-Architektur
 
@@ -94,7 +85,7 @@ Die Komponenten kommunizieren über folgende Mechanismen:
 
 1. **REST-API**: Frontend und Backend kommunizieren über HTTP/REST
 2. **Event-System**: Frontend-Komponenten kommunizieren über ein Event-basiertes System
-3. **Zustandsverwaltung**: In der Vue 3 SFC-Implementierung wird Pinia für die zentrale Zustandsverwaltung verwendet
+3. **Zustandsverwaltung**: Zentraler Anwendungszustand für alle Module
 
 ## Feature-Toggle-System
 
@@ -104,39 +95,18 @@ Das Feature-Toggle-System ermöglicht die kontrollierte Aktivierung neuer Funkti
 2. **Serverseitige Konfiguration**: Globale Einstellungen in server_config.json
 3. **UI-Integration**: Admin-Interface zur Verwaltung der Feature-Toggles
 
-Das System wird für die Vue 3 SFC-Migration mit Pinia eingesetzt:
+Das System für modulare Feature-Aktivierung:
 
 ```javascript
-// stores/featureToggles.js
-import { defineStore } from 'pinia';
+// Überprüfung, ob ein Feature aktiviert ist
+function isFeatureEnabled(featureName) {
+  return localStorage.getItem(`feature_${featureName}`) === 'true';
+}
 
-export const useFeatureTogglesStore = defineStore('featureToggles', {
-  state: () => ({
-    useSfcChat: false,
-    useSfcAdmin: false,
-    useSfcDocConverter: false,
-  }),
-  
-  actions: {
-    toggleFeature(featureName) {
-      if (featureName in this.$state) {
-        this[featureName] = !this[featureName];
-        // Synchronisiere mit localStorage für Persistenz
-        localStorage.setItem(`feature_${featureName}`, this[featureName]);
-      }
-    },
-    
-    initFromLocalStorage() {
-      // Laden der Feature-Flags aus dem localStorage beim Start
-      Object.keys(this.$state).forEach(key => {
-        const stored = localStorage.getItem(`feature_${key}`);
-        if (stored !== null) {
-          this[key] = stored === 'true';
-        }
-      });
-    }
-  }
-});
+// Aktivierung/Deaktivierung eines Features
+function setFeatureEnabled(featureName, enabled) {
+  localStorage.setItem(`feature_${featureName}`, enabled ? 'true' : 'false');
+}
 ```
 
 ## Sicherheitskonzept
@@ -152,7 +122,7 @@ Die Anwendung implementiert folgende Sicherheitsmaßnahmen:
 
 Die Anwendung wird wie folgt bereitgestellt:
 
-1. **Entwicklungsumgebung**: Lokale Entwicklung mit Hot-Reload
+1. **Entwicklungsumgebung**: Lokale Entwicklung
 2. **Testumgebung**: Interne Testinstanz mit automatisierten Builds
 3. **Produktionsumgebung**: Hochverfügbare Bereitstellung mit Lastverteilung
 
@@ -170,9 +140,8 @@ Die Anwendung verwendet folgende Technologien:
 
 1. **Frontend**:
    - HTML5, CSS3, JavaScript (ES6+)
-   - Vue 3 mit TypeScript und Single File Components
-   - Pinia für zentrale Zustandsverwaltung
-   - Vite als Build-Tool und Entwicklungsserver
+   - Modulares Vanilla JavaScript mit ES6-Modulen
+   - Zentrales objektorientiertes State-Management
 
 2. **Backend**:
    - Python 3.9+
@@ -186,30 +155,7 @@ Die Anwendung verwendet folgende Technologien:
    - FAISS für Vektorspeicherung und -suche
 
 4. **Build-Tools**:
-   - Vite für Vue 3 SFC-Builds
    - Python Virtual Environment
-
-## Herausforderungen der ersten Vue.js-Migration
-
-Die erste Vue.js-Migration stieß auf folgende Herausforderungen:
-
-1. **404-Fehler bei statischen Ressourcen**: Trotz verschiedener Lösungsansätze blieben 404-Fehler persistent
-2. **DOM-Manipulationskonflikte**: Konflikte zwischen Vue.js-Rendering und direkter DOM-Manipulation
-3. **Endlosschleifen**: Rekursive Initialisierungsversuche führten zu Endlosschleifen
-4. **Styling-Inkonsistenzen**: Unterschiede im Styling zwischen Vue.js- und HTML/CSS/JS-Implementierungen
-5. **Komplexe Fallback-Mechanismen**: Zunehmende Komplexität der Fallback-Logik
-
-Diese Erkenntnisse wurden in die neue Vue 3 SFC-Migrationsstrategie einbezogen, um ähnliche Probleme zu vermeiden.
-
-## Vue 3 SFC-Migrationsstrategie
-
-Die Migration zu Vue 3 SFC folgt diesen Hauptprinzipien:
-
-1. **Klare Framework-Grenzen**: Strikte Trennung zwischen Vue-Komponenten und Legacy-Code
-2. **Einheitliches Asset-Management**: Konsistente Pfadstrategie mit Vite
-3. **Isolierte Komponenten**: Migration beginnt mit eigenständigen, isolierten Komponenten
-4. **Einfache Fallbacks**: Binary Fallback-Strategie statt Mehrfachebenen
-5. **Zentrale Zustandsverwaltung**: Klare Zustandsarchitektur mit Pinia
 
 ## Skalierbarkeit und Performance
 
@@ -217,7 +163,7 @@ Die Anwendung implementiert folgende Maßnahmen für Skalierbarkeit und Performa
 
 1. **Optimierte Vektorsuche**: Effiziente Indizierung und Suche mit FAISS
 2. **Caching-Mechanismen**: Caching von häufigen Anfragen und Embedding-Vektoren
-3. **Lazy-Loading**: Komponenten werden bei Bedarf nachgeladen
+3. **Lazy-Loading**: Module werden bei Bedarf nachgeladen
 4. **Optimierte Assets**: Minifizierung und Bündelung von Frontend-Assets
 
 ## Fehlerbehandlung und Robustheit
@@ -237,18 +183,18 @@ Die Anwendung wurde für einfache Erweiterbarkeit konzipiert:
 2. **Plugin-System**: Erweiterungspunkte für zusätzliche Funktionalitäten
 3. **Standardisierte Schnittstellen**: Klare Vertragsdefinitionen zwischen Komponenten
 
-## Lehren aus der ersten Vue.js-Migration
+## Lehren aus der Framework-Migration
 
-Die folgenden Lehren aus der ersten Vue.js-Migration sind besonders wichtig:
+Die folgenden Lehren aus der Entfernung von UI-Frameworks sind besonders wichtig:
 
-1. **Framework-Entscheidungen frühzeitig treffen**: Klare Festlegung auf ein primäres UI-Framework
+1. **Framework-Entscheidungen frühzeitig treffen**: Klare Festlegung auf einen Technologie-Ansatz
 2. **Vermeidung hybrider Ansätze**: Keine Vermischung verschiedener UI-Paradigmen
 3. **Simplizität bevorzugen**: Einfachere Architekturen mit weniger Fehleranfälligkeit wählen
 4. **Strikte Trennung von Verantwortlichkeiten**: Klare Grenzen zwischen Komponenten definieren
 5. **Umfassende Tests**: Frühzeitig umfassende Tests implementieren
 
-Diese Lehren bilden die Grundlage für die erfolgreiche Vue 3 SFC-Migration.
+Diese Lehren werden die Grundlage für die zukünftige Weiterentwicklung des Systems bilden.
 
 ---
 
-Zuletzt aktualisiert: 08.05.2025
+Zuletzt aktualisiert: 05.05.2025

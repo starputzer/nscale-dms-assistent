@@ -1,4 +1,11 @@
-# Rollenkonzept
+# 2 ROLLENKONZEPT
+
+*Zusammengeführt aus mehreren Quelldateien am 08.05.2025*
+
+---
+
+
+## Aus ROLLENKONZEPT.md: Rollenkonzept
 
 Dieses Dokument beschreibt das aktuelle und geplante Rollenkonzept des nscale DMS Assistenten.
 
@@ -19,7 +26,10 @@ In der aktuellen Version des nscale DMS Assistenten sind folgende Rollen definie
    - Anzeige der eigenen Chat-Historie
    - Anpassung persönlicher Einstellungen
 
-**Hinweis:** Jeder Benutzer benötigt einen Account - es gibt keine Gastfunktionalität.
+3. **Gast**
+   - Eingeschränkter Zugriff auf das Chat-Interface
+   - Keine Speicherung von Chat-Verläufen
+   - Kein Zugriff auf erweiterte Funktionen
 
 ## Geplantes erweitertes Rollenkonzept
 
@@ -49,9 +59,14 @@ Diese Rollen definieren den grundlegenden Zugriff auf das System:
    - Grundlegende Dokumentenkonvertierung
    - Persönliche Einstellungen und Chat-Historie
 
+5. **Gast**
+   - Eingeschränkter Lesezugriff
+   - Temporäre Sitzungen ohne Persistenz
+   - Minimale Funktionalität
+
 ### 2. Funktionale Rollen
 
-Diese Rollen können zusätzlich zu den primären Rollen vergeben werden. Ein Benutzer kann mehrere funktionale Rollen gleichzeitig innehaben:
+Diese Rollen können zusätzlich zu den primären Rollen vergeben werden:
 
 1. **Feedback-Analyst**
    - Zugriff auf das Feedback-Verwaltungssystem
@@ -119,7 +134,7 @@ Die Berechtigungen werden nach dem Prinzip der geringsten Privilegien (Principle
    - `chat.history`: Zugriff auf Chat-Historie
    - `chat.moderate`: Moderation von Chat-Inhalten
 
-### Rollenzuweisung und Mehrfachrollen
+### Rollenzuweisung
 
 Die primären Rollen erhalten standardmäßig folgende Berechtigungen:
 
@@ -127,6 +142,7 @@ Die primären Rollen erhalten standardmäßig folgende Berechtigungen:
 - **Manager**: `system.view`, `users.view`, `users.manage`, `converter.use`, `converter.admin`, `feedback.view`, `feedback.analyze`, `chat.use`, `chat.history`
 - **Power User**: `converter.use`, `converter.batch`, `feedback.view`, `chat.use`, `chat.history`
 - **Benutzer**: `converter.use`, `chat.use`, `chat.history`
+- **Gast**: `chat.use` (eingeschränkt)
 
 Funktionale Rollen erhalten zusätzliche spezifische Berechtigungen:
 
@@ -135,9 +151,6 @@ Funktionale Rollen erhalten zusätzliche spezifische Berechtigungen:
 - **Content-Manager**: `system.view` (eingeschränkt), `converter.use`, `converter.admin`
 - **User-Manager**: `users.view`, `users.manage`
 - **Chat-Moderator**: `chat.use`, `chat.history`, `chat.moderate`
-
-Ein Benutzer mit mehreren Rollen erhält die Vereinigungsmenge aller Berechtigungen seiner Rollen. Beispiel:
-- Ein Benutzer mit der primären Rolle "Power User" und den funktionalen Rollen "Feedback-Analyst" und "Chat-Moderator" erhält alle Berechtigungen dieser drei Rollen.
 
 ## Technische Umsetzung
 
@@ -207,65 +220,6 @@ function AdminPanel({ user }) {
   );
 }
 ```
-
-## Benutzeroberfläche für Mehrfachrollen
-
-Die Benutzeroberfläche für die Verwaltung von Mehrfachrollen wird folgendermaßen umgesetzt:
-
-```html
-<!-- Beispiel für Benutzerbearbeitung mit Mehrfachrollen -->
-<div class="user-edit-panel">
-  <h3>Rollen für Benutzer: {{user.email}}</h3>
-  
-  <div class="role-section">
-    <h4>Primäre Rolle</h4>
-    <select v-model="user.primary_role">
-      <option value="admin">Administrator</option>
-      <option value="manager">Manager</option>
-      <option value="power_user">Power User</option>
-      <option value="user">Benutzer</option>
-    </select>
-  </div>
-  
-  <div class="role-section">
-    <h4>Funktionale Rollen</h4>
-    <div class="checkbox-list">
-      <label>
-        <input type="checkbox" v-model="user.functional_roles" value="feedback_analyst">
-        Feedback-Analyst
-      </label>
-      <label>
-        <input type="checkbox" v-model="user.functional_roles" value="system_monitor">
-        System-Monitor
-      </label>
-      <label>
-        <input type="checkbox" v-model="user.functional_roles" value="content_manager">
-        Content-Manager
-      </label>
-      <label>
-        <input type="checkbox" v-model="user.functional_roles" value="user_manager">
-        User-Manager
-      </label>
-      <label>
-        <input type="checkbox" v-model="user.functional_roles" value="chat_moderator">
-        Chat-Moderator
-      </label>
-    </div>
-  </div>
-  
-  <button @click="saveUserRoles">Speichern</button>
-</div>
-```
-
-## Vorteile des granularen Rollenkonzepts mit Mehrfachrollen
-
-Das erweiterte Rollenkonzept mit Mehrfachrollen bietet mehrere Vorteile:
-
-1. **Präzise Zugriffssteuerung**: Nutzer erhalten nur die Berechtigungen, die sie tatsächlich benötigen
-2. **Flexibilität**: Kombinationsmöglichkeiten von Rollen bieten große Flexibilität
-3. **Sicherheit**: Prinzip der geringsten Privilegien reduziert potenzielle Sicherheitsrisiken
-4. **Übersichtlichkeit**: Klare Trennung zwischen grundlegenden und funktionalen Rollen
-5. **Skalierbarkeit**: Einfache Erweiterung um neue Rollen und Berechtigungen
 
 ## Zukunftspläne
 
