@@ -104,7 +104,9 @@ const AdminUsers = defineAsyncComponent(() => import('./tabs/AdminUsers.vue'));
 const AdminFeedback = defineAsyncComponent(() => import('./tabs/AdminFeedback.vue'));
 const AdminMotd = defineAsyncComponent(() => import('./tabs/AdminMotd.vue'));
 const AdminSystem = defineAsyncComponent(() => import('./tabs/AdminSystem.vue'));
+const AdminSystemSettings = defineAsyncComponent(() => import('./tabs/AdminSystemSettings.vue'));
 const AdminFeatureToggles = defineAsyncComponent(() => import('./tabs/AdminFeatureToggles.vue'));
+const AdminLogViewer = defineAsyncComponent(() => import('./tabs/AdminLogViewerUpdated.vue'));
 
 // i18n
 const { t } = useI18n();
@@ -142,45 +144,59 @@ const themeClass = computed(() => {
 
 // Tab definitions with permissions and feature flags
 const allTabs = [
-  { 
-    id: 'dashboard', 
-    label: t('admin.tabs.dashboard', 'Dashboard'), 
-    component: AdminDashboard, 
+  {
+    id: 'dashboard',
+    label: t('admin.tabs.dashboard', 'Dashboard'),
+    component: AdminDashboard,
     icon: 'fas fa-tachometer-alt',
     requiredRole: 'admin',
   },
-  { 
-    id: 'users', 
-    label: t('admin.tabs.users', 'Benutzer'), 
-    component: AdminUsers, 
+  {
+    id: 'users',
+    label: t('admin.tabs.users', 'Benutzer'),
+    component: AdminUsers,
     icon: 'fas fa-users',
     requiredRole: 'admin',
   },
-  { 
-    id: 'feedback', 
-    label: t('admin.tabs.feedback', 'Feedback'), 
-    component: AdminFeedback, 
+  {
+    id: 'feedback',
+    label: t('admin.tabs.feedback', 'Feedback'),
+    component: AdminFeedback,
     icon: 'fas fa-comment',
     requiredRole: 'admin',
   },
-  { 
-    id: 'motd', 
-    label: t('admin.tabs.motd', 'Nachrichten'), 
-    component: AdminMotd, 
+  {
+    id: 'motd',
+    label: t('admin.tabs.motd', 'Nachrichten'),
+    component: AdminMotd,
     icon: 'fas fa-bullhorn',
     requiredRole: 'admin',
   },
-  { 
-    id: 'system', 
-    label: t('admin.tabs.system', 'System'), 
-    component: AdminSystem, 
+  {
+    id: 'system',
+    label: t('admin.tabs.system', 'System'),
+    component: AdminSystem,
     icon: 'fas fa-cogs',
     requiredRole: 'admin',
   },
-  { 
-    id: 'featureToggles', 
-    label: t('admin.tabs.featureToggles', 'Feature-Toggles'), 
-    component: AdminFeatureToggles, 
+  {
+    id: 'settings',
+    label: t('admin.tabs.settings', 'Einstellungen'),
+    component: AdminSystemSettings,
+    icon: 'fas fa-sliders-h',
+    requiredRole: 'admin',
+  },
+  {
+    id: 'logs',
+    label: t('admin.tabs.logs', 'Protokolle'),
+    component: AdminLogViewer,
+    icon: 'fas fa-clipboard-list',
+    requiredRole: 'admin',
+  },
+  {
+    id: 'featureToggles',
+    label: t('admin.tabs.featureToggles', 'Feature-Toggles'),
+    component: AdminFeatureToggles,
     icon: 'fas fa-toggle-on',
     requiredRole: 'admin',
     featureFlag: 'enableFeatureTogglesUi',
@@ -256,7 +272,7 @@ function handleAction(action: string, payload?: any) {
 // Loading data based on active tab
 async function loadDataForTab(tabId: string) {
   isLoading.value = true;
-  
+
   try {
     switch (tabId) {
       case 'dashboard':
@@ -280,6 +296,10 @@ async function loadDataForTab(tabId: string) {
         break;
       case 'system':
         await adminSystemStore.fetchStats();
+        break;
+      case 'logs':
+        // Load logs data will be implemented in the component
+        // No global store action needed at this point
         break;
       case 'featureToggles':
         await featureTogglesStore.loadFeatureToggles();
