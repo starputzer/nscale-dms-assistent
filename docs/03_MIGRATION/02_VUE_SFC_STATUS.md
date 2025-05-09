@@ -1,6 +1,6 @@
 # Status der Vue 3 SFC-Migration
 
-> **Aktualisierung (10.05.2025)**: Diese Dokumentation wurde umfassend überarbeitet, um den aktuellen Implementierungsstand aller Komponenten präzise darzustellen. Fortschritte in der Admin-Komponenten-Implementierung und zusätzliche Verbesserungen im Feature-Toggle-System wurden integriert. Detaillierte Komponentenstatus und Prozentsätze wurden aktualisiert.
+> **Aktualisierung (11.05.2025)**: Diese Dokumentation wurde umfassend überarbeitet, um den aktuellen Implementierungsstand aller Komponenten präzise darzustellen. Die Dokumentation zum Dokumentenkonverter wurde konsolidiert und aktualisiert, sowie detaillierte Informationen zur Komponentenhierarchie und Fehlerbehandlung hinzugefügt. Fortschritte in der Admin-Komponenten-Implementierung und zusätzliche Verbesserungen im Feature-Toggle-System wurden integriert. Detaillierte Komponentenstatus und Prozentsätze wurden aktualisiert.
 
 ## WICHTIGER HINWEIS: PRIORITÄT DER VANILLA-JS-STABILISIERUNG
 
@@ -187,6 +187,72 @@ configureBridge({
 installBridge(app);
 ```
 
+### Dokumentenkonverter-Implementierung
+
+Der Dokumentenkonverter wurde als modulares Vue 3 SFC-System implementiert und ist zu etwa 50% abgeschlossen:
+
+#### Komponentenhierarchie
+
+```
+src/components/admin/document-converter/
+├── DocConverterContainer.vue     # Hauptcontainer-Komponente (75%)
+├── FileUpload.vue                # Datei-Upload-Komponente (80%)
+├── ConversionProgress.vue        # Fortschrittsanzeige (85%)
+├── DocumentList.vue              # Liste konvertierter Dokumente (75%)
+├── ConversionResult.vue          # Ergebnisanzeige (65%)
+├── DocumentPreview.vue           # Dokumentvorschau (60%)
+├── ErrorDisplay.vue              # Fehleranzeige (90%)
+└── FallbackConverter.vue         # Fallback-Komponente (100%)
+```
+
+#### Pinia Store für Dokumentenkonverter
+
+Der Dokumentenkonverter verwendet einen dedizierten Pinia Store für die Zustandsverwaltung:
+
+```typescript
+// stores/documentConverter.ts
+export const useDocumentConverterStore = defineStore('documentConverter', () => {
+  // State
+  const isInitialized = ref(false);
+  const isLoading = ref(false);
+  const isUploading = ref(false);
+  const isConverting = ref(false);
+  const documents = ref<Document[]>([]);
+  const selectedDocumentId = ref<string | null>(null);
+  const error = ref<Error | null>(null);
+  
+  // Conversion tracking
+  const uploadProgress = ref(0);
+  const conversionProgress = ref(0);
+  const conversionStep = ref('');
+  const estimatedTimeRemaining = ref(0);
+  
+  // Actions
+  async function initialize() {
+    // Implementation...
+  }
+  
+  async function uploadDocument(file: File) {
+    // Implementation...
+  }
+  
+  // Weitere Actions...
+  
+  return {
+    // State und Actions...
+  };
+});
+```
+
+#### Mehrschichtige Fallback-Mechanismen
+
+Der Dokumentenkonverter implementiert robuste Fehlerbehandlung mit mehrschichtigen Fallback-Mechanismen:
+
+1. **Feature-Toggle**: Aktivierung/Deaktivierung über `useSfcDocConverter` Feature-Flag
+2. **ErrorBoundary**: Einfangen von Fehlern auf Komponentenebene
+3. **FallbackConverter**: Eine vereinfachte Version für kritische Fehler
+4. **Vanilla-JS-Fallback**: Automatischer Rückgriff auf die Legacy-Implementierung
+
 ### Admin-Komponenten-Implementierung
 
 Die Admin-Komponenten wurden erfolgreich als Vue 3 SFCs implementiert:
@@ -296,33 +362,6 @@ Die früheren Migrationsbemühungen haben uns wertvolle Lektionen gelehrt:
 
 Der in `all-fixes-bundle.js` implementierte Ansatz stellt sicher, dass kritische Funktionen wie Text-Streaming, Session-Input-Persistenz, Admin-Panel-Funktionalität, MOTD-Vorschau und Dokumentenkonverter stabil funktionieren, bevor wir sie durch Vue 3 SFC-Komponenten ersetzen.
 
-## Admin-Komponenten Implementierungsfortschritt
-
-Ein bedeutender Fortschritt wurde in der Implementierung der Admin-Komponenten erzielt:
-
-1. **AdminPanel.vue**: 
-   - ✅ Hauptkomponente mit Tab-Navigation implementiert 
-   - ✅ Lazy-Loading für Tab-Komponenten
-   - ✅ Rollenbasierte Zugriffskontrolle
-
-2. **AdminUsers.vue**:
-   - ✅ Benutzerverwaltung mit CRUD-Operationen
-   - ✅ Rollen- und Berechtigungsverwaltung
-   - ✅ Validierte Formulare mit Fehlerbehandlung
-   - ✅ Bestätigungsdialoge für kritische Aktionen
-
-3. **AdminSystem.vue**:
-   - ✅ Systemüberwachung mit visuellen Indikatoren
-   - ✅ Systemaktionen (Cache leeren, Dienste neu starten)
-   - ✅ Konfigurationsmanagement
-   - ✅ Logverwaltung und -analyse
-
-4. **AdminFeatureToggles.vue**:
-   - ✅ Verwaltung und Monitoring von Features
-   - ✅ Abhängigkeitsvisualisierung und -prüfung
-   - ✅ Fehler-Tracking mit Zeitachse
-   - ✅ Nutzungsstatistiken und Diagramme
-
 ## Nächste konkrete Schritte
 
 1. **Vervollständigung der Test-Automatisierung**
@@ -345,9 +384,11 @@ Ein bedeutender Fortschritt wurde in der Implementierung der Admin-Komponenten e
    - Abschluss der Tests für DocConverterContainer
    - Behebung von UI-Inkonsistenzen
    - Integration in die Gesamtanwendung
+   - Hinzufügen von OCR-Funktionalität für gescannte Dokumente
+   - Implementierung von Batch-Konvertierung für mehrere Dokumente
 
 Diese Schritte werden uns dem Ziel einer vollständigen Migration zu Vue 3 SFCs näherbringen, während wir gleichzeitig die Stabilität und Benutzerfreundlichkeit der aktuellen Anwendung gewährleisten.
 
 ---
 
-Zuletzt aktualisiert: 10.05.2025
+Zuletzt aktualisiert: 11.05.2025

@@ -1,6 +1,6 @@
 # Vue 3 SFC-Migration für den nscale DMS Assistenten
 
-*Datum: 10.05.2025*
+**Letzte Aktualisierung:** 11.05.2025
 
 ## Inhaltsverzeichnis
 
@@ -42,7 +42,11 @@
    1. [Aktuelle Phase](#aktuelle-phase)
    2. [Nächste Schritte](#nächste-schritte)
    3. [Zeitplanung](#zeitplanung)
-10. [Anhang](#anhang)
+10. [Detaillierte Komponenten-Dokumentation](#detaillierte-komponenten-dokumentation)
+    1. [Dokumentenkonverter](#dokumentenkonverter)
+    2. [Admin-Komponenten](#admin-komponenten)
+    3. [Chat-Interface](#chat-interface)
+11. [Anhang](#anhang)
     1. [Glossar](#glossar)
     2. [Nützliche Ressourcen](#nützliche-ressourcen)
     3. [Kontakt](#kontakt)
@@ -129,31 +133,6 @@ Die folgende Tabelle zeigt den Status der wichtigsten Komponenten:
 | **MainLayout.vue** | In Arbeit | 60% | Mittel |
 | **Header.vue** | In Arbeit | 65% | Mittel |
 | **TabPanel.vue** | In Arbeit | 50% | Niedrig |
-
-Besondere Fortschritte wurden bei den Admin-Komponenten erzielt:
-
-1. **AdminPanel.vue**: 
-   - ✅ Hauptkomponente mit Tab-Navigation implementiert 
-   - ✅ Lazy-Loading für Tab-Komponenten
-   - ✅ Rollenbasierte Zugriffskontrolle
-
-2. **AdminUsers.vue**:
-   - ✅ Benutzerverwaltung mit CRUD-Operationen
-   - ✅ Rollen- und Berechtigungsverwaltung
-   - ✅ Validierte Formulare mit Fehlerbehandlung
-   - ✅ Bestätigungsdialoge für kritische Aktionen
-
-3. **AdminSystem.vue**:
-   - ✅ Systemüberwachung mit visuellen Indikatoren
-   - ✅ Systemaktionen (Cache leeren, Dienste neu starten)
-   - ✅ Konfigurationsmanagement
-   - ✅ Logverwaltung und -analyse
-
-4. **AdminFeatureToggles.vue**:
-   - ✅ Verwaltung und Monitoring von Features
-   - ✅ Abhängigkeitsvisualisierung und -prüfung
-   - ✅ Fehler-Tracking mit Zeitachse
-   - ✅ Nutzungsstatistiken und Diagramme
 
 ## Architektur
 
@@ -1113,6 +1092,215 @@ Die nächsten Schritte in der Migration sind:
 
 Diese Zeitplanung berücksichtigt die verfügbaren Ressourcen (15 Wochenstunden) und enthält Puffer für unerwartete Probleme.
 
+## Detaillierte Komponenten-Dokumentation
+
+### Dokumentenkonverter
+
+Der Dokumentenkonverter wurde als modulares Vue 3 SFC-System implementiert, das verschiedene Dokumentformate in durchsuchbaren Text konvertieren kann. Die Migration ist zu etwa 50% abgeschlossen.
+
+#### Komponentenhierarchie
+
+```
+src/components/admin/document-converter/
+├── DocConverterContainer.vue     # Hauptcontainer-Komponente (75%)
+├── FileUpload.vue                # Datei-Upload-Komponente (80%)
+├── ConversionProgress.vue        # Fortschrittsanzeige (85%)
+├── DocumentList.vue              # Liste konvertierter Dokumente (75%)
+├── ConversionResult.vue          # Ergebnisanzeige (65%)
+├── DocumentPreview.vue           # Dokumentvorschau (60%)
+├── ErrorDisplay.vue              # Fehleranzeige (90%)
+└── FallbackConverter.vue         # Fallback-Komponente (100%)
+```
+
+#### DocConverterContainer.vue
+
+Die Hauptkomponente, die alle anderen Unterkomponenten koordiniert:
+
+```vue
+<template>
+  <div class="doc-converter-container" v-if="featureToggles.isDocConverterEnabled">
+    <div class="doc-converter-header">
+      <h2>{{ t('documentConverter.title', 'Dokumentenkonverter') }}</h2>
+      <p class="doc-converter-description">
+        {{ t('documentConverter.description', 'Konvertieren Sie Ihre Dokumente in ein nscale-kompatibles Format. Unterstützte Formate: PDF, DOCX, XLSX, PPTX, TXT.') }}
+      </p>
+    </div>
+
+    <!-- Fehleranzeige bei Initialisierungsproblemen -->
+    <ErrorDisplay 
+      v-if="error" 
+      :error="error" 
+      @retry="initialize" 
+    />
+
+    <div v-else class="doc-converter-content">
+      <!-- Upload-Bereich mit Drag & Drop Unterstützung -->
+      <FileUpload 
+        v-if="!isConverting && !conversionResult" 
+        @upload="startConversion" 
+        :is-uploading="isUploading"
+        :allowed-extensions="allowedExtensions"
+        :max-file-size="maxFileSize"
+      />
+
+      <!-- Fortschrittsanzeige während der Konvertierung -->
+      <ConversionProgress 
+        v-if="isConverting" 
+        :progress="conversionProgress" 
+        :current-step="conversionStep"
+        :estimated-time="estimatedTimeRemaining"
+        @cancel="handleCancelConversion"
+      />
+
+      <!-- Ergebnis der Konvertierung -->
+      <ConversionResult 
+        v-if="conversionResult" 
+        :result="conversionResult"
+        @close="clearConversionResult" 
+      />
+
+      <!-- Liste der konvertierten Dokumente -->
+      <DocumentList 
+        :documents="documents" 
+        :selected-document="selectedDocument"
+        :loading="isLoading"
+        @select="selectDocument"
+        @view="viewDocument"
+        @download="downloadDocument"
+        @delete="promptDeleteDocument"
+      />
+
+      <!-- Fallback-Konverter, falls etwas schief geht -->
+      <FallbackConverter 
+        v-if="useFallback" 
+        @retry="initialize" 
+      />
+    </div>
+  </div>
+</template>
+```
+
+#### DocumentConverterStore
+
+Die Zustandsverwaltung erfolgt über einen dedizierten Pinia Store:
+
+```typescript
+// stores/documentConverter.ts
+export const useDocumentConverterStore = defineStore('documentConverter', () => {
+  // State
+  const isInitialized = ref(false);
+  const isLoading = ref(false);
+  const isUploading = ref(false);
+  const isConverting = ref(false);
+  const documents = ref<Document[]>([]);
+  const selectedDocumentId = ref<string | null>(null);
+  const error = ref<Error | null>(null);
+  
+  // Conversion tracking
+  const uploadProgress = ref(0);
+  const conversionProgress = ref(0);
+  const conversionStep = ref('');
+  const estimatedTimeRemaining = ref(0);
+  
+  // Computed
+  const selectedDocument = computed(() => {
+    return documents.value.find(doc => doc.id === selectedDocumentId.value) || null;
+  });
+  
+  // Actions
+  async function initialize() {
+    if (isInitialized.value) return;
+    
+    isLoading.value = true;
+    error.value = null;
+    
+    try {
+      const docs = await documentService.getDocuments();
+      documents.value = docs;
+      isInitialized.value = true;
+    } catch (err) {
+      error.value = err as Error;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+  
+  // Weitere Actions...
+  
+  return {
+    // Exported state
+    isInitialized,
+    isLoading,
+    isUploading,
+    isConverting,
+    documents,
+    selectedDocumentId,
+    error,
+    uploadProgress,
+    conversionProgress,
+    conversionStep,
+    estimatedTimeRemaining,
+    selectedDocument,
+    
+    // Exported actions
+    initialize,
+    uploadDocument,
+    convertDocument,
+    selectDocument,
+    // Weitere Actions...
+  };
+});
+```
+
+#### Robuste Fehlerbehandlung
+
+Der Dokumentenkonverter implementiert mehrschichtige Fallback-Mechanismen:
+
+1. **Feature-Toggle**: Aktivierung/Deaktivierung der Vue 3-Version über den Feature-Toggle `useSfcDocConverter`
+2. **ErrorBoundary-Komponente**: Einfangen von Fehlern auf Komponentenebene
+3. **FallbackConverter**: Eine vereinfachte Version, die bei kritischen Fehlern verwendet wird
+4. **Vanilla-JS-Fallback**: Bei schwerwiegenden Problemen wird auf die alte Implementierung zurückgegriffen
+
+#### Laufende Entwicklung
+
+Die folgenden Aufgaben sind für die Fertigstellung des Dokumentenkonverters geplant:
+
+- Integration von OCR-Funktionalität für gescannte Dokumente
+- Batch-Verarbeitung für mehrere Dokumente gleichzeitig
+- Verbesserung der Benutzeroberfläche für Mobilgeräte
+- Erweiterung der Testabdeckung
+
+### Admin-Komponenten
+
+Die Admin-Komponenten wurden zu etwa 75% auf Vue 3 SFC migriert und bieten umfangreiche Verwaltungsfunktionen:
+
+#### Abgeschlossene Komponenten
+
+1. **AdminPanel.vue** (95%): Hauptkomponente mit Tab-Navigation und Benutzerberechtigungsprüfung
+2. **AdminUsers.vue** (95%): Benutzerverwaltung mit CRUD-Operationen
+3. **AdminSystem.vue** (95%): Systemüberwachung und -konfiguration
+4. **AdminFeatureToggles.vue** (90%): Verwaltung von Feature-Toggles mit erweitertem Monitoring
+
+#### In Entwicklung
+
+1. **AdminFeedback.vue** (25%): Feedback-Verwaltung und -Analyse
+2. **AdminMotdTab.vue** (20%): Verwaltung der Nachricht des Tages
+
+### Chat-Interface
+
+Die Migration des Chat-Interfaces ist zu etwa 30% abgeschlossen:
+
+#### Abgeschlossene Komponenten
+
+1. **MessageItem.vue** (90%): Darstellung einzelner Nachrichten
+2. **EnhancedMessageInput.vue** (70%): Eingabefeld mit erweiterten Funktionen
+
+#### In Entwicklung
+
+1. **MessageList.vue** (45%): Anzeige aller Nachrichten mit Virtualisierung
+2. **ChatView.vue** (40%): Gesamtansicht des Chat-Interfaces
+3. **SessionManager.vue** (30%): Verwaltung von Chat-Sitzungen
+
 ## Anhang
 
 ### Glossar
@@ -1140,4 +1328,4 @@ Bei Fragen zur Vue 3 SFC-Migration wenden Sie sich an das Entwicklungsteam (entw
 
 ---
 
-*Zuletzt aktualisiert: 10.05.2025*
+*Zuletzt aktualisiert: 11.05.2025*
