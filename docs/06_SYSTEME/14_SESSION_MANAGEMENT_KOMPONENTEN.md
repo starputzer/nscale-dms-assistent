@@ -91,6 +91,10 @@ Die `SessionItem`-Komponente stellt eine einzelne Session dar und bietet verschi
 - **Visuelle Hervorhebung** der aktiven und angehefteten Sessions
 - **Zeigt Meta-Informationen** wie Erstellungs- oder Aktualisierungsdatum
 - **Schnellzugriff auf Aktionen** wie Löschen, Umbenennen und Anheften
+- **Tag- und Kategoriesystem** zur besseren Organisation von Sessions
+- **Vorschau der letzten Nachricht** für schnelle Inhaltserkennung
+- **Multi-Select-Unterstützung** für Massenoperationen
+- **Archivierungsfunktion** für nicht mehr aktive Sessions
 - **Drag-Handle** für einfaches Verschieben
 - **Kontextmenü-Unterstützung** für erweiterte Funktionen
 
@@ -99,12 +103,28 @@ Die `SessionItem`-Komponente stellt eine einzelne Session dar und bietet verschi
   :session="session"
   :isActive="activeSessionId === session.id"
   :isPinned="session.isPinned"
+  :isSelected="selectedSessionIds.includes(session.id)"
   :showDragHandle="enableDragAndDrop"
+  :showCheckbox="isMultiSelectModeActive"
+  :showPreview="showPreview"
+  :preview="session.preview"
+  :messageCount="session.messageCount"
+  :tags="session.tags"
+  :category="session.category?.name"
+  :categoryColor="session.category?.color"
+  :showTagButton="true"
+  :showCategoryButton="true"
+  :showArchiveButton="true"
   @select="handleSessionSelect"
   @contextmenu="handleContextMenu"
   @pin="handlePinSession"
   @delete="handleDeleteSession"
   @rename="handleRenameSession"
+  @tag="handleAddTag"
+  @tag-click="handleTagClick"
+  @categorize="handleCategorize"
+  @archive="handleArchiveSession"
+  @toggle-select="handleToggleSelect"
 />
 ```
 
@@ -115,10 +135,21 @@ Die `SessionItem`-Komponente stellt eine einzelne Session dar und bietet verschi
 | `session` | `ChatSession` | - | Die Session, die angezeigt werden soll |
 | `isActive` | `boolean` | `false` | Ob diese Session momentan aktiv ist |
 | `isPinned` | `boolean` | `false` | Ob diese Session angeheftet ist |
+| `isSelected` | `boolean` | `false` | Ob diese Session ausgewählt ist (multi-select) |
 | `showDragHandle` | `boolean` | `true` | Ob ein Drag-Handle angezeigt werden soll |
 | `showMetadata` | `boolean` | `true` | Ob Metadaten wie das Datum angezeigt werden sollen |
 | `showActions` | `boolean` | `true` | Ob Aktionsschaltflächen angezeigt werden sollen |
 | `enableContextMenu` | `boolean` | `true` | Ob ein kontextuelles Menü aktiviert sein soll |
+| `showTagButton` | `boolean` | `false` | Ob Tagging-Funktionalität angezeigt werden soll |
+| `showCategoryButton` | `boolean` | `false` | Ob Kategorisierungs-Funktionalität angezeigt werden soll |
+| `showArchiveButton` | `boolean` | `false` | Ob Archivierungs-Funktionalität angezeigt werden soll |
+| `showPreview` | `boolean` | `false` | Ob ein Vorschau der letzten Nachricht angezeigt werden soll |
+| `showCheckbox` | `boolean` | `false` | Ob eine Checkbox für Multi-Select angezeigt werden soll |
+| `preview` | `string` | `''` | Vorschautext (z.B. letzte Nachricht) |
+| `messageCount` | `number` | `0` | Anzahl der Nachrichten in dieser Session |
+| `tags` | `Tag[]` | `[]` | Tags für diese Session |
+| `category` | `string` | `''` | Kategorie dieser Session |
+| `categoryColor` | `string` | `'#e2e8f0'` | Farbe der Kategorie |
 | `dateFormat` | `'relative' \| 'short' \| 'long'` | `'relative'` | Das zu verwendende Datumsformat |
 
 #### Events
@@ -130,6 +161,108 @@ Die `SessionItem`-Komponente stellt eine einzelne Session dar und bietet verschi
 | `rename` | `string` | Wird ausgelöst, wenn die Session umbenannt werden soll |
 | `delete` | `string` | Wird ausgelöst, wenn die Session gelöscht werden soll |
 | `contextmenu` | `MouseEvent, ChatSession` | Wird ausgelöst, wenn das Kontextmenü geöffnet werden soll |
+| `tag` | `string` | Wird ausgelöst, wenn die Session getaggt werden soll |
+| `tag-click` | `string` | Wird ausgelöst, wenn ein Tag angeklickt wurde |
+| `categorize` | `string` | Wird ausgelöst, wenn eine Kategorie zugewiesen werden soll |
+| `archive` | `string, boolean` | Wird ausgelöst, wenn eine Session archiviert/wiederhergestellt werden soll |
+| `toggle-select` | `string` | Wird ausgelöst, wenn der Auswahlstatus umgeschaltet werden soll |
+
+#### Tag-System
+
+Die Komponente unterstützt ein flexibles Tag-System zur Kategorisierung von Sessions:
+
+```typescript
+export interface Tag {
+  id: string;
+  name: string;
+  color?: string;
+}
+
+// Beispiel-Implementation im Template
+<div v-if="tags && tags.length > 0" class="n-session-item__tags">
+  <span
+    v-for="tag in tags"
+    :key="tag.id"
+    class="n-session-item__tag"
+    :style="{ backgroundColor: tag.color || '#e2e8f0' }"
+    @click.stop="$emit('tag-click', tag.id)"
+  >
+    {{ tag.name }}
+  </span>
+</div>
+```
+
+#### Kategorisierung
+
+Zusätzlich zu Tags können Sessions in übergeordnete Kategorien eingeordnet werden:
+
+```typescript
+export interface Category {
+  id: string;
+  name: string;
+  color?: string;
+}
+
+// Beispiel-Implementation im Template
+<div v-if="category" class="n-session-item__category">
+  <span
+    class="n-session-item__category-badge"
+    :style="{ backgroundColor: categoryColor }"
+  >
+    {{ category }}
+  </span>
+</div>
+```
+
+#### Vorschau
+
+Die Komponente kann eine Vorschau der letzten Nachricht anzeigen:
+
+```vue
+<div v-if="showPreview && preview" class="n-session-item__preview">
+  <span class="n-session-item__preview-content">{{ truncatedPreview }}</span>
+</div>
+
+<script setup>
+// Verkürzter Preview-Text
+const truncatedPreview = computed(() => {
+  if (!props.preview) return '';
+  return props.preview.length > 100
+    ? props.preview.substring(0, 100) + '...'
+    : props.preview;
+});
+</script>
+```
+
+#### Multi-Select-Modus
+
+Die Komponente unterstützt einen Multi-Select-Modus für Massenoperationen:
+
+```vue
+<div
+  v-if="showCheckbox"
+  class="n-session-item__checkbox"
+  @click.stop="$emit('toggle-select', session.id)"
+>
+  <input
+    type="checkbox"
+    :checked="isSelected"
+    @click.stop
+    aria-label="Session auswählen"
+  >
+</div>
+
+<script setup>
+// Click-Handler mit Multi-Select-Unterstützung
+function handleItemClick() {
+  if (props.showCheckbox) {
+    emit('toggle-select', props.session.id);
+  } else {
+    emit('select', props.session.id);
+  }
+}
+</script>
+```
 
 ### SessionActions
 

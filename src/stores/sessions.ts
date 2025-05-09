@@ -2,12 +2,14 @@ import { defineStore } from 'pinia';
 import { computed, ref, watch } from 'vue';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
-import type { 
-  ChatSession, 
-  ChatMessage, 
+import type {
+  ChatSession,
+  ChatMessage,
   StreamingStatus,
   SendMessageParams,
-  SessionsState
+  SessionsState,
+  SessionTag,
+  SessionCategory
 } from '../types/session';
 import { useAuthStore } from './auth';
 
@@ -23,7 +25,7 @@ import { useAuthStore } from './auth';
 export const useSessionsStore = defineStore('sessions', () => {
   // Referenz auf den Auth-Store für Benutzerinformationen
   const authStore = useAuthStore();
-  
+
   // State
   const sessions = ref<ChatSession[]>([]);
   const currentSessionId = ref<string | null>(null);
@@ -46,6 +48,28 @@ export const useSessionsStore = defineStore('sessions', () => {
     isSyncing: false,
     error: null
   });
+
+  // Verfügbare Tags und Kategorien
+  const availableTags = ref<SessionTag[]>([
+    { id: 'important', name: 'Wichtig', color: '#F56565' },
+    { id: 'work', name: 'Arbeit', color: '#3182CE' },
+    { id: 'personal', name: 'Persönlich', color: '#48BB78' },
+    { id: 'research', name: 'Recherche', color: '#9F7AEA' },
+    { id: 'followup', name: 'Nachverfolgen', color: '#ED8936' },
+    { id: 'draft', name: 'Entwurf', color: '#A0AEC0' }
+  ]);
+
+  const availableCategories = ref<SessionCategory[]>([
+    { id: 'general', name: 'Allgemein', color: '#718096' },
+    { id: 'support', name: 'Support', color: '#3182CE' },
+    { id: 'documentation', name: 'Dokumentation', color: '#48BB78' },
+    { id: 'training', name: 'Training', color: '#9F7AEA' },
+    { id: 'project', name: 'Projekt', color: '#ED8936' },
+    { id: 'archive', name: 'Archiv', color: '#A0AEC0' }
+  ]);
+
+  // Ausgewählte Sessions (für Multi-Select)
+  const selectedSessionIds = ref<string[]>([]);
   
   // Migration von Legacy-Daten
   function migrateFromLegacyStorage() {
@@ -137,13 +161,41 @@ export const useSessionsStore = defineStore('sessions', () => {
   
   const sortedSessions = computed(() => {
     return [...sessions.value].sort((a, b) => {
-      // Gepinnte Sessions zuerst
+      // Archivierte Sessions zuletzt
+      if (!a.isArchived && b.isArchived) return -1;
+      if (a.isArchived && !b.isArchived) return 1;
+
+      // Gepinnte Sessions zuerst (innerhalb ihrer Gruppe)
       if (a.isPinned && !b.isPinned) return -1;
       if (!a.isPinned && b.isPinned) return 1;
-      
+
       // Dann nach Datum (neueste zuerst)
       return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
     });
+  });
+
+  // Sessions mit Tags filtern
+  const getSessionsByTag = computed(() => (tagId: string) => {
+    return sessions.value.filter(session =>
+      session.tags?.some(tag => tag.id === tagId)
+    );
+  });
+
+  // Sessions nach Kategorie filtern
+  const getSessionsByCategory = computed(() => (categoryId: string) => {
+    return sessions.value.filter(session =>
+      session.category?.id === categoryId
+    );
+  });
+
+  // Archivierte Sessions
+  const archivedSessions = computed(() => {
+    return sessions.value.filter(session => session.isArchived);
+  });
+
+  // Aktive (nicht-archivierte) Sessions
+  const activeSessions = computed(() => {
+    return sessions.value.filter(session => !session.isArchived);
   });
   
   const isStreaming = computed(() => streaming.value.isActive);
@@ -903,6 +955,270 @@ export const useSessionsStore = defineStore('sessions', () => {
   // Bei Store-Erstellung initialisieren
   const cleanup = initialize();
   
+  /**
+   * Fügt einen Tag zu einer Session hinzu
+   */
+  async function addTagToSession(sessionId: string, tagId: string): Promise<void> {
+    if (!sessionId || !tagId) return;
+
+    // Session finden
+    const sessionIndex = sessions.value.findIndex(s => s.id === sessionId);
+    if (sessionIndex === -1) return;
+
+    // Tag finden
+    const tag = availableTags.value.find(t => t.id === tagId);
+    if (!tag) return;
+
+    // Optimistische Aktualisierung im lokalen State
+    if (!sessions.value[sessionIndex].tags) {
+      sessions.value[sessionIndex].tags = [];
+    }
+
+    // Überprüfen, ob der Tag bereits vorhanden ist
+    if (!sessions.value[sessionIndex].tags!.some(t => t.id === tagId)) {
+      sessions.value[sessionIndex].tags!.push(tag);
+      sessions.value[sessionIndex].updatedAt = new Date().toISOString();
+    }
+
+    // Mit dem Server synchronisieren, wenn angemeldet
+    if (authStore.isAuthenticated) {
+      try {
+        await axios.patch(`/api/sessions/${sessionId}`, {
+          tags: sessions.value[sessionIndex].tags
+        }, {
+          headers: authStore.createAuthHeaders()
+        });
+      } catch (err: any) {
+        console.error(`Error adding tag to session ${sessionId}:`, err);
+        error.value = err.response?.data?.message || 'Fehler beim Hinzufügen des Tags';
+      }
+    }
+  }
+
+  /**
+   * Entfernt einen Tag von einer Session
+   */
+  async function removeTagFromSession(sessionId: string, tagId: string): Promise<void> {
+    if (!sessionId || !tagId) return;
+
+    // Session finden
+    const sessionIndex = sessions.value.findIndex(s => s.id === sessionId);
+    if (sessionIndex === -1 || !sessions.value[sessionIndex].tags) return;
+
+    // Tag entfernen
+    sessions.value[sessionIndex].tags = sessions.value[sessionIndex].tags!.filter(t => t.id !== tagId);
+    sessions.value[sessionIndex].updatedAt = new Date().toISOString();
+
+    // Mit dem Server synchronisieren, wenn angemeldet
+    if (authStore.isAuthenticated) {
+      try {
+        await axios.patch(`/api/sessions/${sessionId}`, {
+          tags: sessions.value[sessionIndex].tags
+        }, {
+          headers: authStore.createAuthHeaders()
+        });
+      } catch (err: any) {
+        console.error(`Error removing tag from session ${sessionId}:`, err);
+        error.value = err.response?.data?.message || 'Fehler beim Entfernen des Tags';
+      }
+    }
+  }
+
+  /**
+   * Setzt die Kategorie einer Session
+   */
+  async function setCategoryForSession(sessionId: string, categoryId: string): Promise<void> {
+    if (!sessionId || !categoryId) return;
+
+    // Session finden
+    const sessionIndex = sessions.value.findIndex(s => s.id === sessionId);
+    if (sessionIndex === -1) return;
+
+    // Kategorie finden
+    const category = availableCategories.value.find(c => c.id === categoryId);
+    if (!category) return;
+
+    // Optimistische Aktualisierung im lokalen State
+    sessions.value[sessionIndex].category = category;
+    sessions.value[sessionIndex].updatedAt = new Date().toISOString();
+
+    // Mit dem Server synchronisieren, wenn angemeldet
+    if (authStore.isAuthenticated) {
+      try {
+        await axios.patch(`/api/sessions/${sessionId}`, {
+          category: sessions.value[sessionIndex].category
+        }, {
+          headers: authStore.createAuthHeaders()
+        });
+      } catch (err: any) {
+        console.error(`Error setting category for session ${sessionId}:`, err);
+        error.value = err.response?.data?.message || 'Fehler beim Setzen der Kategorie';
+      }
+    }
+  }
+
+  /**
+   * Entfernt die Kategorie einer Session
+   */
+  async function removeCategoryFromSession(sessionId: string): Promise<void> {
+    if (!sessionId) return;
+
+    // Session finden
+    const sessionIndex = sessions.value.findIndex(s => s.id === sessionId);
+    if (sessionIndex === -1) return;
+
+    // Optimistische Aktualisierung im lokalen State
+    sessions.value[sessionIndex].category = undefined;
+    sessions.value[sessionIndex].updatedAt = new Date().toISOString();
+
+    // Mit dem Server synchronisieren, wenn angemeldet
+    if (authStore.isAuthenticated) {
+      try {
+        await axios.patch(`/api/sessions/${sessionId}`, {
+          category: null
+        }, {
+          headers: authStore.createAuthHeaders()
+        });
+      } catch (err: any) {
+        console.error(`Error removing category from session ${sessionId}:`, err);
+        error.value = err.response?.data?.message || 'Fehler beim Entfernen der Kategorie';
+      }
+    }
+  }
+
+  /**
+   * Archiviert/dearchiviert eine Session
+   */
+  async function toggleArchiveSession(sessionId: string, archive: boolean = true): Promise<void> {
+    if (!sessionId) return;
+
+    // Session finden
+    const sessionIndex = sessions.value.findIndex(s => s.id === sessionId);
+    if (sessionIndex === -1) return;
+
+    // Optimistische Aktualisierung im lokalen State
+    sessions.value[sessionIndex].isArchived = archive;
+    sessions.value[sessionIndex].updatedAt = new Date().toISOString();
+
+    // Mit dem Server synchronisieren, wenn angemeldet
+    if (authStore.isAuthenticated) {
+      try {
+        await axios.patch(`/api/sessions/${sessionId}`, {
+          isArchived: archive
+        }, {
+          headers: authStore.createAuthHeaders()
+        });
+      } catch (err: any) {
+        console.error(`Error ${archive ? 'archiving' : 'unarchiving'} session ${sessionId}:`, err);
+        error.value = err.response?.data?.message || `Fehler beim ${archive ? 'Archivieren' : 'Dearchivieren'} der Session`;
+
+        // Bei Fehler lokale Änderung rückgängig machen
+        sessions.value[sessionIndex].isArchived = !archive;
+      }
+    }
+  }
+
+  /**
+   * Aktualisiert die Vorschau einer Session
+   */
+  function updateSessionPreview(sessionId: string, previewText: string, messageCount: number): void {
+    if (!sessionId) return;
+
+    const sessionIndex = sessions.value.findIndex(s => s.id === sessionId);
+    if (sessionIndex === -1) return;
+
+    sessions.value[sessionIndex].preview = previewText;
+    sessions.value[sessionIndex].messageCount = messageCount;
+  }
+
+  /**
+   * Wählt eine Session zur Massenbearbeitung aus
+   */
+  function selectSession(sessionId: string): void {
+    if (!sessionId) return;
+
+    if (!selectedSessionIds.value.includes(sessionId)) {
+      selectedSessionIds.value.push(sessionId);
+    }
+  }
+
+  /**
+   * Entfernt eine Session aus der Massenbearbeitungsauswahl
+   */
+  function deselectSession(sessionId: string): void {
+    if (!sessionId) return;
+
+    selectedSessionIds.value = selectedSessionIds.value.filter(id => id !== sessionId);
+  }
+
+  /**
+   * Schaltet den Auswahlstatus einer Session um
+   */
+  function toggleSessionSelection(sessionId: string): void {
+    if (!sessionId) return;
+
+    if (selectedSessionIds.value.includes(sessionId)) {
+      deselectSession(sessionId);
+    } else {
+      selectSession(sessionId);
+    }
+  }
+
+  /**
+   * Löscht den Massenauswahlstatus zurück
+   */
+  function clearSessionSelection(): void {
+    selectedSessionIds.value = [];
+  }
+
+  /**
+   * Massenoperation: Mehrere Sessions archivieren
+   */
+  async function archiveMultipleSessions(sessionIds: string[]): Promise<void> {
+    if (!sessionIds.length) return;
+
+    for (const sessionId of sessionIds) {
+      await toggleArchiveSession(sessionId, true);
+    }
+
+    clearSessionSelection();
+  }
+
+  /**
+   * Massenoperation: Mehrere Sessions löschen
+   */
+  async function deleteMultipleSessions(sessionIds: string[]): Promise<void> {
+    if (!sessionIds.length) return;
+
+    for (const sessionId of sessionIds) {
+      await archiveSession(sessionId);
+    }
+
+    clearSessionSelection();
+  }
+
+  /**
+   * Massenoperation: Allen ausgewählten Sessions einen Tag hinzufügen
+   */
+  async function addTagToMultipleSessions(sessionIds: string[], tagId: string): Promise<void> {
+    if (!sessionIds.length || !tagId) return;
+
+    for (const sessionId of sessionIds) {
+      await addTagToSession(sessionId, tagId);
+    }
+  }
+
+  /**
+   * Massenoperation: Allen ausgewählten Sessions eine Kategorie zuweisen
+   */
+  async function setCategoryForMultipleSessions(sessionIds: string[], categoryId: string): Promise<void> {
+    if (!sessionIds.length || !categoryId) return;
+
+    for (const sessionId of sessionIds) {
+      await setCategoryForSession(sessionId, categoryId);
+    }
+  }
+
   // Öffentliche API des Stores
   return {
     // State
@@ -915,7 +1231,10 @@ export const useSessionsStore = defineStore('sessions', () => {
     version,
     pendingMessages,
     syncStatus,
-    
+    availableTags,
+    availableCategories,
+    selectedSessionIds,
+
     // Getters
     currentSession,
     currentMessages,
@@ -923,7 +1242,11 @@ export const useSessionsStore = defineStore('sessions', () => {
     isStreaming,
     currentPendingMessages,
     allCurrentMessages,
-    
+    getSessionsByTag,
+    getSessionsByCategory,
+    archivedSessions,
+    activeSessions,
+
     // Actions
     initialize,
     synchronizeSessions,
@@ -942,21 +1265,44 @@ export const useSessionsStore = defineStore('sessions', () => {
     exportData,
     importData,
     cleanupStorage,
-    loadOlderMessages
+    loadOlderMessages,
+
+    // Neue Actions für Tagging und Kategorisierung
+    addTagToSession,
+    removeTagFromSession,
+    setCategoryForSession,
+    removeCategoryFromSession,
+    toggleArchiveSession,
+    updateSessionPreview,
+
+    // Auswahloperationen
+    selectSession,
+    deselectSession,
+    toggleSessionSelection,
+    clearSessionSelection,
+
+    // Massenoperationen
+    archiveMultipleSessions,
+    deleteMultipleSessions,
+    addTagToMultipleSessions,
+    setCategoryForMultipleSessions
   };
 }, {
   // Store serialization options für Persistenz
   persist: {
     // Verwende localStorage für die Persistenz
     storage: localStorage,
-    
+
     // Selektives Speichern bestimmter State-Elemente
     paths: [
-      'sessions', 
-      'currentSessionId', 
+      'sessions',
+      'currentSessionId',
       'version',
       'pendingMessages',
-      'syncStatus.lastSyncTime'
+      'syncStatus.lastSyncTime',
+      'availableTags',
+      'availableCategories',
+      'selectedSessionIds'
     ],
     
     // Optimierung für große Datasets
