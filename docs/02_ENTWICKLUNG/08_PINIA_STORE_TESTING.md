@@ -1,21 +1,27 @@
-# Pinia Store Testing Guide für nscale DMS Assistent
+# Pinia Store Testing für nScale DMS Assistent
+
+**Version:** 2.0  
+**Letzte Aktualisierung:** 10.05.2025
+
+Dieses Dokument beschreibt die Best Practices und Implementierungsdetails für das Testen von Pinia Stores im Rahmen der Vue 3 Migration des nScale DMS Assistenten.
 
 ## Inhaltsverzeichnis
 
 1. [Einführung](#einführung)
-2. [Testumgebung einrichten](#testumgebung-einrichten)
-3. [Grundlagen des Pinia-Store-Testings](#grundlagen-des-pinia-store-testings)
-4. [Mocking-Strategien](#mocking-strategien)
-5. [Store-spezifische Testansätze](#store-spezifische-testansätze)
-6. [Testen von Store-Interaktionen](#testen-von-store-interaktionen)
-7. [Testabdeckung und Best Practices](#testabdeckung-und-best-practices)
-8. [Testausführung und Integration in CI/CD](#testausführung-und-integration-in-cicd)
-9. [Beispiele und Codeauszüge](#beispiele-und-codeauszüge)
-10. [Fehlerbehebung und häufige Probleme](#fehlerbehebung-und-häufige-probleme)
+2. [Grundlegende Konzepte](#grundlegende-konzepte)
+3. [Test-Setup](#test-setup)
+4. [Unit-Tests für Stores](#unit-tests-für-stores)
+5. [Mocking von Store-Abhängigkeiten](#mocking-von-store-abhängigkeiten)
+6. [Store-Integration in Komponententests](#store-integration-in-komponententests)
+7. [Fortgeschrittene Techniken](#fortgeschrittene-techniken)
+8. [Best Practices](#best-practices)
+9. [Store-spezifische Testansätze](#store-spezifische-testansätze)
+10. [Beispiele](#beispiele)
+11. [Fehlerbehebung und häufige Probleme](#fehlerbehebung-und-häufige-probleme)
 
 ## Einführung
 
-Diese Dokumentation bietet einen ausführlichen Leitfaden zum Testen von Pinia-Stores im nscale DMS Assistenten. Pinia-Stores sind ein zentraler Bestandteil der Vue 3-basierten Architektur und erfordern gründliche Tests, um die korrekte Funktionalität und Robustheit der Anwendung zu gewährleisten.
+Pinia ist der offizielle State-Management-Store für Vue 3 und ersetzt Vuex. Die Testbarkeit ist einer der Hauptvorteile von Pinia, da es eine einfachere API bereitstellt und eine bessere TypeScript-Integration bietet. Dieses Dokument fokussiert sich auf effektive Strategien zum Testen von Pinia-Stores in der nScale DMS Assistenten-Anwendung.
 
 ### Warum Pinia-Stores testen?
 
@@ -31,22 +37,22 @@ Diese Dokumentation bietet einen ausführlichen Leitfaden zum Testen von Pinia-S
 - Validierung der Fehlerbehandlung und Edge Cases
 - Sicherstellung der korrekten Interaktionen zwischen Stores
 
-## Testumgebung einrichten
+## Grundlegende Konzepte
 
-### Benötigte Abhängigkeiten
+Pinia-Stores bestehen aus den folgenden Hauptelementen:
 
-Für das Testen von Pinia-Stores werden folgende Werkzeuge verwendet:
+- **State**: Die Daten, die der Store verwaltet
+- **Getters**: Berechnete Eigenschaften, die auf dem State basieren
+- **Actions**: Methoden, die den State ändern können, einschließlich asynchroner Operationen
 
-```json
-// Relevante Teile aus package.json
-{
-  "devDependencies": {
-    "vitest": "^0.34.6",
-    "jsdom": "^22.1.0",
-    "@vue/test-utils": "^2.4.1"
-  }
-}
-```
+Beim Testen von Stores konzentrieren wir uns auf alle drei Elemente, um sicherzustellen, dass:
+
+1. Der initiale State korrekt definiert ist
+2. Getter die richtigen Werte basierend auf dem State zurückgeben
+3. Actions den State korrekt modifizieren 
+4. Asynchrone Operationen korrekt funktionieren
+
+## Test-Setup
 
 ### Ordnerstruktur
 
@@ -66,160 +72,244 @@ Tests für Pinia-Stores sind wie folgt organisiert:
     # ... weitere Store-Tests
 ```
 
-### Test-Setup-Datei
+### Grundlegendes Setup
 
-Eine gemeinsame Setup-Datei sorgt für konsistente Testumgebungen:
+Für das Testen von Pinia-Stores verwenden wir Vitest zusammen mit der `@pinia/testing`-Bibliothek:
 
 ```typescript
-// /test/stores/__setup__/testSetup.ts
-import { beforeEach, afterEach, vi } from 'vitest';
+// test/setup.ts (Auszug)
+import { beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import axios from 'axios';
 
-// Mock für Axios
-vi.mock('axios');
-
-// Mock für localStorage
-export const mockLocalStorage = () => {
-  const store: Record<string, string> = {};
-  
-  return {
-    getItem: vi.fn((key: string) => store[key] || null),
-    setItem: vi.fn((key: string, value: string) => { store[key] = value; }),
-    removeItem: vi.fn((key: string) => { delete store[key]; }),
-    clear: vi.fn(() => { Object.keys(store).forEach(key => delete store[key]); })
-  };
-};
-
-// Vor jedem Test ausgeführte Funktion
+// Vor jedem Test ein frisches Pinia erstellen
 beforeEach(() => {
-  // Pinia für jeden Test zurücksetzen
+  setActivePinia(createPinia());
+});
+```
+
+### Test-Helpers für Stores
+
+Wir haben einen speziellen Helper für das Erstellen von Store-Tests entwickelt:
+
+```typescript
+// test/stores/__setup__/testSetup.ts
+import { createPinia, setActivePinia } from 'pinia';
+import { ApiService } from '@/services/api/ApiService';
+import { vi } from 'vitest';
+
+// ApiService mocken (wird in vielen Stores verwendet)
+vi.mock('@/services/api/ApiService', () => ({
+  ApiService: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn()
+  }
+}));
+
+export function setupStoreTest() {
+  // Vor jedem Test neues Pinia erstellen
   setActivePinia(createPinia());
   
   // Mocks zurücksetzen
   vi.clearAllMocks();
   
-  // localStorage und sessionStorage mocken
-  vi.stubGlobal('localStorage', mockLocalStorage());
-  vi.stubGlobal('sessionStorage', mockLocalStorage());
-});
+  // ApiService-Mocks zurückgeben für einfachen Zugriff
+  return {
+    apiMocks: {
+      get: ApiService.get as ReturnType<typeof vi.fn>,
+      post: ApiService.post as ReturnType<typeof vi.fn>,
+      put: ApiService.put as ReturnType<typeof vi.fn>,
+      delete: ApiService.delete as ReturnType<typeof vi.fn>
+    }
+  };
+}
 ```
 
-## Grundlagen des Pinia-Store-Testings
+## Unit-Tests für Stores
 
-### Store-Initialisierung für Tests
-
-In jedem Test sollte ein frischer Store initialisiert werden, um isolierte Tests zu ermöglichen:
+### Testen des initialen State
 
 ```typescript
-import { setActivePinia, createPinia } from 'pinia';
+// test/stores/auth.spec.ts
+import { describe, it, expect } from 'vitest';
 import { useAuthStore } from '@/stores/auth';
+import { setupStoreTest } from './__setup__/testSetup';
 
 describe('Auth Store', () => {
   beforeEach(() => {
-    // Pinia für jeden Test neu initialisieren
-    setActivePinia(createPinia());
+    setupStoreTest();
   });
-  
-  it('sollte mit Standardwerten initialisiert werden', () => {
+
+  it('hat den korrekten initialen State', () => {
     const store = useAuthStore();
-    expect(store.user).toBeNull();
-    expect(store.token).toBeNull();
+    
     expect(store.isAuthenticated).toBe(false);
+    expect(store.user).toBeNull();
+    expect(store.error).toBeNull();
+    expect(store.isLoading).toBe(false);
   });
-});
-```
-
-### Testen des State
-
-Prüfe, ob der State korrekt initialisiert wird und auf Aktionen reagiert:
-
-```typescript
-it('sollte den Benutzer nach erfolgreichem Login setzen', async () => {
-  // Arrange
-  const store = useAuthStore();
-  vi.mocked(axios.post).mockResolvedValueOnce({
-    data: {
-      success: true,
-      token: 'mock-token',
-      user: { id: '1', email: 'test@example.com' }
-    }
-  });
-  
-  // Act
-  await store.login({ email: 'test@example.com', password: 'password' });
-  
-  // Assert
-  expect(store.user).toEqual({ id: '1', email: 'test@example.com' });
-  expect(store.token).toBe('mock-token');
 });
 ```
 
 ### Testen von Getters
 
-Reaktive Getter sollten auf State-Änderungen reagieren:
-
 ```typescript
-it('sollte isAuthenticated korrekt berechnen', async () => {
-  // Arrange
-  const store = useAuthStore();
-  expect(store.isAuthenticated).toBe(false);
+// test/stores/sessions.spec.ts
+import { describe, it, expect } from 'vitest';
+import { useSessionsStore } from '@/stores/sessions';
+import { setupStoreTest } from './__setup__/testSetup';
+
+describe('Sessions Store - Getters', () => {
+  beforeEach(() => {
+    setupStoreTest();
+  });
+
+  it('activeSession gibt die aktive Session zurück', () => {
+    const store = useSessionsStore();
+    
+    // State direkt setzen
+    store.sessions = [
+      { id: '1', title: 'Session 1', isActive: false },
+      { id: '2', title: 'Session 2', isActive: true },
+      { id: '3', title: 'Session 3', isActive: false }
+    ];
+    store.activeSessionId = '2';
+    
+    // Getter testen
+    expect(store.activeSession).toEqual({ id: '2', title: 'Session 2', isActive: true });
+  });
   
-  // Act
-  store.token = 'mock-token';
-  store.user = { id: '1', email: 'test@example.com' };
-  
-  // Assert
-  expect(store.isAuthenticated).toBe(true);
+  it('recentSessions gibt die letzten 5 Sessions sortiert nach Datum zurück', () => {
+    const store = useSessionsStore();
+    const now = new Date();
+    
+    // Sessions mit unterschiedlichen Daten
+    store.sessions = [
+      { id: '1', title: 'Älteste', lastAccessed: new Date(now.getTime() - 5000).toISOString() },
+      { id: '2', title: 'Neuer', lastAccessed: new Date(now.getTime() - 3000).toISOString() },
+      { id: '3', title: 'Neueste', lastAccessed: new Date(now.getTime() - 1000).toISOString() },
+      { id: '4', title: 'Alt', lastAccessed: new Date(now.getTime() - 4000).toISOString() },
+      { id: '5', title: 'Mittel', lastAccessed: new Date(now.getTime() - 2000).toISOString() },
+      { id: '6', title: 'Uralt', lastAccessed: new Date(now.getTime() - 6000).toISOString() }
+    ];
+    
+    const recent = store.recentSessions;
+    
+    expect(recent).toHaveLength(5);
+    expect(recent[0].title).toBe('Neueste');
+    expect(recent[1].title).toBe('Mittel');
+    expect(recent[2].title).toBe('Neuer');
+    expect(recent[3].title).toBe('Alt');
+    expect(recent[4].title).toBe('Älteste');
+  });
 });
 ```
 
 ### Testen von Actions
 
-Tests für Actions sollten sowohl erfolgreiche als auch fehlerhafte Durchläufe abdecken:
-
 ```typescript
-it('sollte bei fehlgeschlagenem Login einen Fehler setzen', async () => {
-  // Arrange
-  const store = useAuthStore();
-  vi.mocked(axios.post).mockResolvedValueOnce({
-    data: {
-      success: false,
-      message: 'Ungültige Anmeldedaten'
-    }
+// test/stores/auth.spec.ts
+import { describe, it, expect, vi } from 'vitest';
+import { useAuthStore } from '@/stores/auth';
+import { setupStoreTest } from './__setup__/testSetup';
+
+describe('Auth Store - Actions', () => {
+  let apiMocks;
+  
+  beforeEach(() => {
+    apiMocks = setupStoreTest().apiMocks;
   });
-  
-  // Act
-  const result = await store.login({ email: 'test@example.com', password: 'password' });
-  
-  // Assert
-  expect(result).toBe(false);
-  expect(store.error).toBe('Ungültige Anmeldedaten');
-  expect(store.isAuthenticated).toBe(false);
+
+  it('login setzt isAuthenticated nach erfolgreicher Anmeldung', async () => {
+    const store = useAuthStore();
+    
+    // API-Mock konfigurieren
+    apiMocks.post.mockResolvedValue({
+      data: {
+        success: true,
+        user: {
+          id: '123',
+          name: 'Test User',
+          email: 'test@example.com',
+          role: 'user'
+        },
+        token: 'fake-jwt-token'
+      }
+    });
+    
+    // Action ausführen
+    await store.login('test@example.com', 'password');
+    
+    // Ergebnisse prüfen
+    expect(store.isAuthenticated).toBe(true);
+    expect(store.user).toEqual({
+      id: '123',
+      name: 'Test User',
+      email: 'test@example.com',
+      role: 'user'
+    });
+    expect(store.error).toBeNull();
+    
+    // API-Aufruf prüfen
+    expect(apiMocks.post).toHaveBeenCalledWith('/auth/login', {
+      email: 'test@example.com',
+      password: 'password'
+    });
+  });
+
+  it('login setzt error-State bei Fehler', async () => {
+    const store = useAuthStore();
+    
+    // API-Fehler simulieren
+    apiMocks.post.mockRejectedValue({
+      response: {
+        data: {
+          success: false,
+          message: 'Ungültige Anmeldedaten'
+        }
+      }
+    });
+    
+    // Action ausführen
+    await store.login('test@example.com', 'wrong-password');
+    
+    // Ergebnisse prüfen
+    expect(store.isAuthenticated).toBe(false);
+    expect(store.user).toBeNull();
+    expect(store.error).toBe('Ungültige Anmeldedaten');
+  });
 });
 ```
 
-## Mocking-Strategien
+## Mocking von Store-Abhängigkeiten
+
+Häufig haben Stores Abhängigkeiten zu anderen Stores oder Services. Diese sollten für isolierte Tests gemockt werden.
 
 ### API-Anfragen mocken
 
-Axios-Anfragen werden mit vi.mock gemockt:
-
 ```typescript
-// auth.spec.ts
-import axios from 'axios';
+// Beispiel für API-Mocking
 import { vi } from 'vitest';
+import { ApiService } from '@/services/api/ApiService';
 
-vi.mock('axios');
+vi.mock('@/services/api/ApiService', () => ({
+  ApiService: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn()
+  }
+}));
 
 describe('Auth Store', () => {
   beforeEach(() => {
-    vi.mocked(axios.post).mockReset();
+    vi.mocked(ApiService.post).mockReset();
   });
 
   it('sollte einen Benutzer anmelden', async () => {
     // Mock für POST-Anfrage
-    vi.mocked(axios.post).mockResolvedValueOnce({
+    vi.mocked(ApiService.post).mockResolvedValueOnce({
       data: {
         success: true,
         token: 'mock-token',
@@ -232,77 +322,359 @@ describe('Auth Store', () => {
 });
 ```
 
-### Browser-APIs mocken
-
-Für Tests, die mit localStorage oder anderen Browser-APIs interagieren:
+### Mocking anderer Stores
 
 ```typescript
-// Mocks für Browser-APIs
-const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn()
-};
+// test/stores/documentConverter.spec.ts
+import { describe, it, expect, vi } from 'vitest';
+import { useDocumentConverterStore } from '@/stores/documentConverter';
+import { useSettingsStore } from '@/stores/settings';
+import { setupStoreTest } from './__setup__/testSetup';
 
-vi.stubGlobal('localStorage', localStorageMock);
-
-it('sollte Daten im localStorage speichern', async () => {
-  // Arrange
-  const store = useSettingsStore();
-  
-  // Act
-  store.setTheme('dark');
-  
-  // Assert - Automatische Persistenz prüfen
-  expect(localStorageMock.setItem).toHaveBeenCalledWith(
-    expect.stringContaining('settings'), 
-    expect.stringContaining('dark')
-  );
-});
-```
-
-### Datum und Zeit mocken
-
-Um konsistente Zeitstempel in Tests zu gewährleisten:
-
-```typescript
-// Test-Setup
-const mockDate = (isoDate: string) => {
-  const date = new Date(isoDate);
-  vi.spyOn(global.Date, 'now').mockReturnValue(date.getTime());
-  return date;
-};
-
-it('sollte den Token-Ablaufzeitpunkt korrekt berechnen', () => {
-  // Arrange
-  const store = useAuthStore();
-  mockDate('2023-01-01T12:00:00Z');
-  
-  // Act
-  store.expiresAt = Date.now() + 3600 * 1000; // 1 Stunde
-  
-  // Assert
-  expect(store.tokenExpiresIn).toBe(3600);
-});
-```
-
-### Store-Abhängigkeiten mocken
-
-Für das Testen von Stores, die andere Stores verwenden:
-
-```typescript
-// sessions.spec.ts
-import { useAuthStore } from '@/stores/auth';
-
-vi.mock('@/stores/auth', () => ({
-  useAuthStore: vi.fn(() => ({
-    isAuthenticated: true,
-    token: 'mock-token',
-    user: { id: '1', email: 'test@example.com' },
-    createAuthHeaders: () => ({ Authorization: 'Bearer mock-token' })
+// Settings-Store mocken
+vi.mock('@/stores/settings', () => ({
+  useSettingsStore: vi.fn(() => ({
+    documentSettings: {
+      maxFileSize: 10 * 1024 * 1024, // 10MB
+      allowedTypes: ['.pdf', '.docx', '.xlsx', '.pptx'],
+      compressionEnabled: true
+    }
   }))
 }));
+
+describe('DocumentConverter Store', () => {
+  beforeEach(() => {
+    setupStoreTest();
+  });
+
+  it('validateFile verwendet die Settings aus dem Settings-Store', () => {
+    const store = useDocumentConverterStore();
+    
+    // Test mit gültigem Dokument
+    const validFile = new File(['content'], 'test.pdf', { type: 'application/pdf' });
+    Object.defineProperty(validFile, 'size', { value: 5 * 1024 * 1024 }); // 5MB
+    
+    expect(store.validateFile(validFile)).toBe(true);
+    
+    // Test mit ungültigem Dokument (zu groß)
+    const tooLargeFile = new File(['content'], 'large.pdf', { type: 'application/pdf' });
+    Object.defineProperty(tooLargeFile, 'size', { value: 15 * 1024 * 1024 }); // 15MB
+    
+    expect(store.validateFile(tooLargeFile)).toBe(false);
+    expect(store.error).toContain('Datei zu groß');
+  });
+});
+```
+
+### Mocking von LocalStorage
+
+```typescript
+// test/stores/persistedStore.spec.ts
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { usePersistentStore } from '@/stores/persistentStore';
+import { setupStoreTest } from './__setup__/testSetup';
+
+describe('Persistent Store', () => {
+  // LocalStorage-Mock
+  const localStorageMock = (() => {
+    let store = {};
+    
+    return {
+      getItem: vi.fn(key => store[key] || null),
+      setItem: vi.fn((key, value) => { store[key] = value.toString(); }),
+      removeItem: vi.fn(key => { delete store[key]; }),
+      clear: vi.fn(() => { store = {}; })
+    };
+  })();
+  
+  beforeEach(() => {
+    setupStoreTest();
+    
+    // LocalStorage-Mock global verfügbar machen
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true
+    });
+    
+    // Mocks zurücksetzen
+    vi.clearAllMocks();
+    localStorageMock.clear();
+  });
+
+  it('lädt den Zustand aus dem LocalStorage beim Initializieren', () => {
+    // Zustand im LocalStorage simulieren
+    localStorageMock.getItem.mockReturnValueOnce(JSON.stringify({
+      theme: 'dark',
+      fontSize: 'large',
+      showSidebar: false
+    }));
+    
+    const store = usePersistentStore();
+    
+    // Prüfen, ob der Zustand geladen wurde
+    expect(store.theme).toBe('dark');
+    expect(store.fontSize).toBe('large');
+    expect(store.showSidebar).toBe(false);
+    
+    // Prüfen, ob der richtige Schlüssel verwendet wurde
+    expect(localStorageMock.getItem).toHaveBeenCalledWith('nscale-settings');
+  });
+});
+```
+
+## Store-Integration in Komponententests
+
+Für Komponententests verwenden wir `createTestingPinia`, um Mock-Stores zu erstellen:
+
+```typescript
+// test/components/chat/MessageList.spec.ts
+import { mount } from '@vue/test-utils';
+import { createTestingPinia } from '@pinia/testing';
+import MessageList from '@/components/chat/MessageList.vue';
+import { useSessionsStore } from '@/stores/sessions';
+import { describe, it, expect, vi } from 'vitest';
+
+describe('MessageList.vue mit Store-Integration', () => {
+  it('rendert Nachrichten aus dem Store', async () => {
+    // Komponente mit Test-Pinia mounten
+    const wrapper = mount(MessageList, {
+      global: {
+        plugins: [
+          createTestingPinia({
+            createSpy: vi.fn,
+            initialState: {
+              sessions: {
+                activeSessionId: 'session-1',
+                sessions: [
+                  {
+                    id: 'session-1',
+                    messages: [
+                      { id: 'msg-1', content: 'Hallo', sender: 'user', timestamp: new Date().toISOString() },
+                      { id: 'msg-2', content: 'Wie kann ich helfen?', sender: 'assistant', timestamp: new Date().toISOString() }
+                    ]
+                  }
+                ]
+              }
+            }
+          })
+        ]
+      }
+    });
+    
+    // Store nach dem Mounting abrufen
+    const sessionsStore = useSessionsStore();
+    
+    // Prüfen, ob Komponente die Nachrichten rendert
+    expect(wrapper.findAll('.message-item')).toHaveLength(2);
+    expect(wrapper.text()).toContain('Hallo');
+    expect(wrapper.text()).toContain('Wie kann ich helfen?');
+    
+    // Zusätzliche Nachricht dem Store hinzufügen
+    await sessionsStore.addMessage({
+      sessionId: 'session-1',
+      message: {
+        id: 'msg-3',
+        content: 'Ich habe eine Frage',
+        sender: 'user',
+        timestamp: new Date().toISOString()
+      }
+    });
+    
+    // Prüfen, ob die neue Nachricht angezeigt wird
+    await wrapper.vm.$nextTick();
+    expect(wrapper.findAll('.message-item')).toHaveLength(3);
+    expect(wrapper.text()).toContain('Ich habe eine Frage');
+  });
+});
+```
+
+## Fortgeschrittene Techniken
+
+### Testen von Store-Plugins
+
+```typescript
+// test/stores/plugins/persistencePlugin.spec.ts
+import { setActivePinia, createPinia } from 'pinia';
+import { persistencePlugin } from '@/stores/plugins/persistencePlugin';
+import { defineStore } from 'pinia';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+describe('Persistence Plugin', () => {
+  // LocalStorage-Mock
+  const localStorageMock = (() => {
+    let store = {};
+    
+    return {
+      getItem: vi.fn(key => store[key] || null),
+      setItem: vi.fn((key, value) => { store[key] = value.toString(); }),
+      removeItem: vi.fn(key => { delete store[key]; }),
+      clear: vi.fn(() => { store = {}; })
+    };
+  })();
+  
+  beforeEach(() => {
+    // LocalStorage-Mock global verfügbar machen
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true
+    });
+    
+    // Mocks zurücksetzen
+    vi.clearAllMocks();
+    localStorageMock.clear();
+  });
+
+  it('speichert Store-Änderungen im LocalStorage', async () => {
+    // Test-Store mit Persistence-Plugin definieren
+    const useTestStore = defineStore('test', {
+      state: () => ({
+        count: 0,
+        name: 'test'
+      }),
+      persist: {
+        enabled: true,
+        storageKey: 'test-store'
+      }
+    });
+    
+    // Pinia mit Plugin erstellen
+    const pinia = createPinia();
+    pinia.use(persistencePlugin);
+    setActivePinia(pinia);
+    
+    // Store instanziieren
+    const store = useTestStore();
+    
+    // Store-State aktualisieren
+    store.count = 42;
+    store.name = 'updated';
+    
+    // Warten auf den nächsten Tick für die Reaktivität
+    await new Promise(resolve => setTimeout(resolve, 0));
+    
+    // Prüfen, ob LocalStorage mit richtigen Daten und Schlüssel aufgerufen wurde
+    expect(localStorageMock.setItem).toHaveBeenCalledWith(
+      'test-store',
+      expect.stringContaining('"count":42')
+    );
+    expect(localStorageMock.setItem).toHaveBeenCalledWith(
+      'test-store',
+      expect.stringContaining('"name":"updated"')
+    );
+  });
+});
+```
+
+### Testen von Store-Interaktionen
+
+```typescript
+// test/stores/integration/store-interactions.spec.ts
+import { setActivePinia, createPinia } from 'pinia';
+import { useAuthStore } from '@/stores/auth';
+import { useSessionsStore } from '@/stores/sessions';
+import { ApiService } from '@/services/api/ApiService';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+describe('Store-Interaktionen', () => {
+  beforeEach(() => {
+    // Pinia zurücksetzen
+    setActivePinia(createPinia());
+    
+    // API-Mocks zurücksetzen
+    vi.clearAllMocks();
+  });
+
+  it('lädt Sitzungen nach erfolgreicher Anmeldung', async () => {
+    // Stores initialisieren
+    const authStore = useAuthStore();
+    const sessionsStore = useSessionsStore();
+    
+    // API-Mocks konfigurieren
+    vi.spyOn(ApiService, 'post').mockResolvedValueOnce({
+      data: {
+        success: true,
+        user: { id: '123', name: 'Test User' },
+        token: 'fake-token'
+      }
+    });
+    
+    vi.spyOn(ApiService, 'get').mockResolvedValueOnce({
+      data: {
+        sessions: [
+          { id: 'session-1', title: 'Session 1' },
+          { id: 'session-2', title: 'Session 2' }
+        ]
+      }
+    });
+    
+    // Sessions-Store-Methode überwachen
+    const loadSessionsSpy = vi.spyOn(sessionsStore, 'loadSessions');
+    
+    // Anmelden
+    await authStore.login('test@example.com', 'password');
+    
+    // Prüfen, ob loadSessions aufgerufen wurde
+    expect(loadSessionsSpy).toHaveBeenCalled();
+    
+    // Prüfen, ob Sessions geladen wurden
+    expect(sessionsStore.sessions).toHaveLength(2);
+    expect(sessionsStore.sessions[0].id).toBe('session-1');
+    expect(sessionsStore.sessions[1].id).toBe('session-2');
+  });
+});
+```
+
+## Best Practices
+
+### 1. Isolierung von Store-Tests
+
+- Jeden Store isoliert testen, um Abhängigkeiten zu minimieren
+- Externe Abhängigkeiten mocken (API, andere Stores, Browser-APIs)
+- Vor jedem Test einen frischen Store-Zustand erstellen
+
+### 2. Testing-Hierarchie
+
+Folgende Testabdeckung für Stores anstreben:
+
+1. **Basisebene**: Initialer State und einfache Getter
+2. **Mittlere Ebene**: Actions und komplexere Getter
+3. **Fortgeschrittene Ebene**: Asynchrone Operationen und Fehlerbehandlung
+4. **Integrationstests**: Interaktionen zwischen Stores
+
+### 3. Realistic Mocking
+
+- API-Antworten realistisch mocken, einschließlich Datenstrukturen und Fehlerszenarien
+- Fehlerszenarien gründlich testen (Netzwerkfehler, Server-Fehler, Validierungsfehler)
+- Verschiedene Edge-Cases testen (leere Arrays, null-Werte, große Datensätze)
+
+### 4. Testabdeckung
+
+Empfohlene Testabdeckung für verschiedene Store-Typen:
+
+| Store-Typ | Minimale Abdeckung | Ziel-Abdeckung | Priorität |
+|-----------|-------------------|---------------|-----------|
+| Auth      | 85%               | 95%           | Hoch      |
+| Sessions  | 80%               | 90%           | Hoch      |
+| UI        | 70%               | 85%           | Mittel    |
+| DocumentConverter | 75% | 90% | Mittel |
+| Admin-Stores | 70% | 80% | Niedrig |
+
+### 5. Arrange-Act-Assert
+
+Alle Tests sollten dem AAA-Pattern folgen:
+
+```typescript
+it('aktualisiert den Benutzernamen nach Bearbeitung', async () => {
+  // Arrange
+  const store = useUserStore();
+  store.user = { id: '1', name: 'Alter Name' };
+  
+  // Act
+  await store.updateUserName('Neuer Name');
+  
+  // Assert
+  expect(store.user.name).toBe('Neuer Name');
+});
 ```
 
 ## Store-spezifische Testansätze
@@ -372,48 +744,6 @@ describe('Sessions Store', () => {
       // Test-Implementierung
     });
   });
-  
-  describe('Offline-Unterstützung', () => {
-    it('sollte pendente Nachrichten speichern', async () => {
-      // Test-Implementierung
-    });
-    
-    it('sollte pendente Nachrichten synchronisieren', async () => {
-      // Test-Implementierung
-    });
-  });
-});
-```
-
-### UI-Store
-
-UI-Store-Tests konzentrieren sich auf:
-
-1. **Theme-Umschaltung**
-2. **Sidebar-Konfiguration**
-3. **Modal- und Toast-Verwaltung**
-4. **Responsive Layout-Anpassungen**
-
-```typescript
-// ui.spec.ts
-describe('UI Store', () => {
-  describe('Theme', () => {
-    it('sollte zwischen Light und Dark Mode wechseln', () => {
-      // Test-Implementierung
-    });
-  });
-  
-  describe('Sidebar', () => {
-    it('sollte die Sidebar öffnen und schließen', () => {
-      // Test-Implementierung
-    });
-  });
-  
-  describe('Notifications', () => {
-    it('sollte Toasts anzeigen und entfernen', () => {
-      // Test-Implementierung
-    });
-  });
 });
 ```
 
@@ -444,306 +774,125 @@ describe('DocumentConverter Store', () => {
       // Test-Implementierung
     });
   });
-  
-  describe('Filterung', () => {
-    it('sollte Dokumente nach Format filtern', () => {
-      // Test-Implementierung
-    });
-  });
 });
 ```
 
-## Testen von Store-Interaktionen
+## Beispiele
 
-### Grundlagen
-
-Store-Interaktionstests prüfen das Zusammenspiel mehrerer Stores:
+### Beispiel: Vollständiger Test für Auth-Store
 
 ```typescript
-// integration/store-interactions.spec.ts
-describe('Store Interaktionen', () => {
-  it('sollte pendente Nachrichten synchronisieren, wenn der Benutzer sich anmeldet', async () => {
-    // Arrange
-    const authStore = useAuthStore();
-    const sessionsStore = useSessionsStore();
-    
-    // Synchronisations-Spy
-    const syncSpy = vi.spyOn(sessionsStore, 'syncPendingMessages');
-    
-    // Act - Login durchführen
-    await authStore.login({ email: 'test@example.com', password: 'password' });
-    
-    // Assert - Überprüfen, ob die Synchronisation aufgerufen wurde
-    expect(syncSpy).toHaveBeenCalled();
-  });
-});
-```
-
-### Komplexe Workflows
-
-Teste komplexe Abläufe über mehrere Stores hinweg:
-
-```typescript
-it('sollte den vollständigen Login-Workflow durchführen', async () => {
-  // Arrange
-  const authStore = useAuthStore();
-  const uiStore = useUIStore();
-  const sessionsStore = useSessionsStore();
-  
-  // Mocks für alle beteiligten API-Aufrufe
-  
-  // Act - Vollständigen Workflow ausführen
-  // 1. Login
-  await authStore.login({ email: 'test@example.com', password: 'password' });
-  
-  // 2. UI-Einstellungen anwenden
-  if (authStore.user?.settings?.darkMode) {
-    uiStore.enableDarkMode();
-  }
-  
-  // 3. Sessions synchronisieren
-  await sessionsStore.synchronizeSessions();
-  
-  // Assert - Überprüfen des Endzustands
-  expect(authStore.isAuthenticated).toBe(true);
-  expect(uiStore.darkMode).toBe(true);
-  expect(sessionsStore.sessions.length).toBeGreaterThan(0);
-});
-```
-
-### Aktionsverkettung
-
-Tests für verkettete Aktionen über mehrere Stores:
-
-```typescript
-it('sollte bei API-Fehler einen Toast anzeigen', async () => {
-  // Arrange
-  const authStore = useAuthStore();
-  const uiStore = useUIStore();
-  
-  // Mock für fehlgeschlagenen API-Aufruf
-  vi.mocked(axios.post).mockRejectedValueOnce(new Error('Network Error'));
-  
-  // Spy auf UI-Toast-Methode
-  const showErrorSpy = vi.spyOn(uiStore, 'showError');
-  
-  // Act
-  try {
-    await authStore.login({ email: 'test@example.com', password: 'password' });
-  } catch (error) {
-    // Fehlerbehandlung
-    uiStore.showError('Login fehlgeschlagen: Netzwerkfehler');
-  }
-  
-  // Assert
-  expect(showErrorSpy).toHaveBeenCalledWith('Login fehlgeschlagen: Netzwerkfehler');
-});
-```
-
-## Testabdeckung und Best Practices
-
-### Empfohlene Testabdeckung
-
-Angestrebte Testabdeckung für verschiedene Store-Typen:
-
-| Store-Typ | Minimale Abdeckung | Ziel-Abdeckung | Priorität |
-|-----------|-------------------|---------------|-----------|
-| Auth      | 85%               | 95%           | Hoch      |
-| Sessions  | 80%               | 90%           | Hoch      |
-| UI        | 70%               | 85%           | Mittel    |
-| DocumentConverter | 75% | 90% | Mittel |
-| Admin-Stores | 70% | 80% | Niedrig |
-
-### Best Practices
-
-1. **Isolierte Tests**: Jeder Test sollte unabhängig von anderen Tests sein
-2. **Arrange-Act-Assert**: Klare Struktur in jedem Test
-3. **Mocks auf ein Minimum beschränken**: Nur notwendige Abhängigkeiten mocken
-4. **Edge Cases testen**: Auch ungewöhnliche Szenarien abdecken
-5. **Beschreibende Namen**: Aussagekräftige Test-Beschreibungen verwenden
-
-### Anti-Patterns vermeiden
-
-1. **Übermäßiges Mocken**: Zu viele Mocks können die Aussagekraft der Tests verringern
-2. **Test-Abhängigkeiten**: Tests sollten nicht voneinander abhängen
-3. **Globaler Zustand**: Vermeiden von globalen Test-Fixtures
-4. **Zu wenig Assertions**: Zu oberflächliche Tests ohne aussagekräftige Überprüfungen
-5. **Zu komplexe Tests**: Tests sollten einzelne Funktionalitäten prüfen, nicht komplette Workflows
-
-## Testausführung und Integration in CI/CD
-
-### Testausführung
-
-Tests können wie folgt ausgeführt werden:
-
-```bash
-# Alle Tests ausführen
-npm run test
-
-# Nur Store-Tests ausführen
-npm run test -- -t "stores"
-
-# Tests im Watch-Modus ausführen
-npm run test:watch
-
-# Testabdeckung messen
-npm run test:coverage
-```
-
-### CI/CD-Integration
-
-In der CI/CD-Pipeline sollten Tests automatisch ausgeführt werden:
-
-```yaml
-# Beispiel für GitHub Actions
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-      - run: npm ci
-      - run: npm run test
-      - run: npm run test:coverage
-      # Optional: Abdeckungsbericht hochladen
-      - uses: codecov/codecov-action@v2
-```
-
-## Beispiele und Codeauszüge
-
-### Vollständige Beispiele
-
-#### Auth-Store-Test
-
-```typescript
-// Beispiel für Auth-Store-Test
+// test/stores/auth.spec.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { setActivePinia, createPinia } from 'pinia';
 import { useAuthStore } from '@/stores/auth';
-import axios from 'axios';
-
-vi.mock('axios');
+import { setupStoreTest } from './__setup__/testSetup';
+import { ApiService } from '@/services/api/ApiService';
 
 describe('Auth Store', () => {
+  let apiMocks;
+  
   beforeEach(() => {
-    setActivePinia(createPinia());
-    vi.mocked(axios.post).mockReset();
+    apiMocks = setupStoreTest().apiMocks;
+    localStorage.clear();
   });
 
-  describe('Login', () => {
-    it('sollte bei erfolgreicher Anmeldung den Benutzer setzen', async () => {
-      // Arrange
+  describe('Initialer State', () => {
+    it('hat den korrekten initialen State', () => {
       const store = useAuthStore();
-      vi.mocked(axios.post).mockResolvedValueOnce({
-        data: {
-          success: true,
-          token: 'mock-token',
-          user: { id: '1', email: 'test@example.com', roles: ['user'] }
-        }
-      });
       
-      // Act
-      const result = await store.login({ 
-        email: 'test@example.com', 
-        password: 'password' 
-      });
+      expect(store.isAuthenticated).toBe(false);
+      expect(store.user).toBeNull();
+      expect(store.error).toBeNull();
+      expect(store.isLoading).toBe(false);
+      expect(store.token).toBeNull();
+    });
+
+    it('lädt den Token aus dem LocalStorage, wenn vorhanden', () => {
+      // Token im LocalStorage simulieren
+      localStorage.setItem('auth-token', 'saved-token');
       
-      // Assert
-      expect(result).toBe(true);
-      expect(store.token).toBe('mock-token');
-      expect(store.user).toEqual({ id: '1', email: 'test@example.com', roles: ['user'] });
+      const store = useAuthStore();
+      
+      expect(store.token).toBe('saved-token');
       expect(store.isAuthenticated).toBe(true);
     });
   });
-});
-```
 
-#### UI-Store-Test
-
-```typescript
-// Beispiel für UI-Store-Test
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { setActivePinia, createPinia } from 'pinia';
-import { useUIStore } from '@/stores/ui';
-
-describe('UI Store', () => {
-  beforeEach(() => {
-    setActivePinia(createPinia());
-    vi.stubGlobal('document', {
-      documentElement: {
-        classList: {
-          add: vi.fn(),
-          remove: vi.fn()
-        },
-        setAttribute: vi.fn()
-      }
-    });
-  });
-
-  describe('Dark Mode', () => {
-    it('sollte den Dark Mode umschalten', () => {
-      // Arrange
-      const store = useUIStore();
-      expect(store.darkMode).toBe(false);
+  describe('Getters', () => {
+    it('isAdmin gibt true zurück, wenn der Benutzer ein Admin ist', () => {
+      const store = useAuthStore();
       
-      // Act
-      store.toggleDarkMode();
+      // Normalen Benutzer simulieren
+      store.user = { id: '1', name: 'User', role: 'user' };
+      expect(store.isAdmin).toBe(false);
       
-      // Assert
-      expect(store.darkMode).toBe(true);
-      expect(store.isDarkMode).toBe(true);
-      expect(document.documentElement.classList.add).toHaveBeenCalledWith('dark');
+      // Admin-Benutzer simulieren
+      store.user = { id: '2', name: 'Admin', role: 'admin' };
+      expect(store.isAdmin).toBe(true);
+    });
+
+    it('userInitials gibt die Initialen des Benutzernamens zurück', () => {
+      const store = useAuthStore();
+      
+      // Ohne Benutzer
+      expect(store.userInitials).toBe('');
+      
+      // Einfacher Name
+      store.user = { id: '1', name: 'John Doe', role: 'user' };
+      expect(store.userInitials).toBe('JD');
+      
+      // Komplexer Name
+      store.user = { id: '1', name: 'Jean-Claude Van Damme', role: 'user' };
+      expect(store.userInitials).toBe('JV');
     });
   });
-});
-```
 
-#### Store-Interaktionstest
-
-```typescript
-// Beispiel für Store-Interaktionstest
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { setActivePinia, createPinia } from 'pinia';
-import { useAuthStore } from '@/stores/auth';
-import { useSessionsStore } from '@/stores/sessions';
-
-describe('Store Interaktionen', () => {
-  beforeEach(() => {
-    setActivePinia(createPinia());
-  });
-
-  it('sollte Sessions nach erfolgreichem Login synchronisieren', async () => {
-    // Arrange
-    const authStore = useAuthStore();
-    const sessionsStore = useSessionsStore();
-    
-    // Login-Mock
-    vi.mocked(axios.post).mockResolvedValueOnce({
-      data: {
-        success: true,
-        token: 'mock-token',
-        user: { id: '1', email: 'test@example.com' }
-      }
+  describe('Actions', () => {
+    it('login setzt den Benutzer und Token nach erfolgreicher Anmeldung', async () => {
+      const store = useAuthStore();
+      
+      // Login-Erfolg simulieren
+      apiMocks.post.mockResolvedValue({
+        data: {
+          success: true,
+          user: { id: '1', name: 'Test User', role: 'user' },
+          token: 'test-token'
+        }
+      });
+      
+      await store.login('test@example.com', 'password');
+      
+      expect(store.isAuthenticated).toBe(true);
+      expect(store.user).toEqual({ id: '1', name: 'Test User', role: 'user' });
+      expect(store.token).toBe('test-token');
+      expect(store.error).toBeNull();
+      expect(store.isLoading).toBe(false);
+      
+      // Token sollte im LocalStorage gespeichert sein
+      expect(localStorage.getItem('auth-token')).toBe('test-token');
     });
-    
-    // Sessions-Sync-Spy
-    const syncSpy = vi.spyOn(sessionsStore, 'synchronizeSessions');
-    syncSpy.mockResolvedValue();
-    
-    // Act
-    await authStore.login({ email: 'test@example.com', password: 'password' });
-    
-    // Sessions manuell synchronisieren (in einer realen Anwendung könnte dies
-    // durch einen watch-Effekt automatisch geschehen)
-    if (authStore.isAuthenticated) {
-      await sessionsStore.synchronizeSessions();
-    }
-    
-    // Assert
-    expect(authStore.isAuthenticated).toBe(true);
-    expect(syncSpy).toHaveBeenCalled();
+
+    it('login setzt error-State bei Anmeldefehler', async () => {
+      const store = useAuthStore();
+      
+      // Login-Fehler simulieren
+      apiMocks.post.mockRejectedValue({
+        response: {
+          data: {
+            success: false,
+            message: 'Ungültige Anmeldedaten'
+          }
+        }
+      });
+      
+      await store.login('wrong@example.com', 'wrong-password');
+      
+      expect(store.isAuthenticated).toBe(false);
+      expect(store.user).toBeNull();
+      expect(store.token).toBeNull();
+      expect(store.error).toBe('Ungültige Anmeldedaten');
+      expect(store.isLoading).toBe(false);
+    });
   });
 });
 ```
@@ -754,7 +903,7 @@ describe('Store Interaktionen', () => {
 
 1. **Reaktivität in Tests funktioniert nicht**
    - Problem: Änderungen an reaktiven Werten werden nicht erkannt
-   - Lösung: `await nextTick()` verwenden, um auf Vue-Reaktivitätsupdates zu warten
+   - Lösung: `await nextTick()` oder `await wrapper.vm.$nextTick()` verwenden, um auf Vue-Reaktivitätsupdates zu warten
 
 2. **Asynchrone Tests schlagen fehl**
    - Problem: Tests beenden sich, bevor asynchrone Operationen abgeschlossen sind
@@ -767,10 +916,6 @@ describe('Store Interaktionen', () => {
 4. **Store-Zustand bleibt zwischen Tests bestehen**
    - Problem: Store-Änderungen beeinflussen nachfolgende Tests
    - Lösung: `setActivePinia(createPinia())` in jedem Test aufrufen
-
-5. **Fehlende Testabdeckung für computed-Werte**
-   - Problem: Computed-Eigenschaften werden nicht vollständig getestet
-   - Lösung: Verschiedene State-Kombinationen erstellen und jede berechnete Eigenschaft testen
 
 ### Debugging von Store-Tests
 
@@ -793,26 +938,13 @@ it('sollte einen komplexen Zustand korrekt verwalten', async () => {
 });
 ```
 
-Nutze `vi.spyOn()` für tieferes Debugging:
-
-```typescript
-// Funktion überwachen, die intern aufgerufen wird
-const processDataSpy = vi.spyOn(helpers, 'processData');
-
-await store.action();
-
-// Überprüfen, wie die Funktion aufgerufen wurde
-console.log('processData wurde aufgerufen mit:', processDataSpy.mock.calls);
-```
-
 ## Zusammenfassung
 
-Das Testen von Pinia-Stores ist ein entscheidender Bestandteil der Qualitätssicherung im nscale DMS Assistenten. Durch gut strukturierte, gründliche Tests können wir die Zuverlässigkeit und Wartbarkeit unserer Stores gewährleisten, insbesondere während der Migration von Vanilla JavaScript zu Vue 3 SFC.
+Das Testen von Pinia-Stores ist ein entscheidender Bestandteil der Qualitätssicherung im nScale DMS Assistenten. Durch gut strukturierte, gründliche Tests können wir die Zuverlässigkeit und Wartbarkeit unserer Stores gewährleisten, insbesondere während der Migration von Vanilla JavaScript zu Vue 3 SFC.
 
-Folge diesen Richtlinien, um hochwertige Tests zu erstellen, die zur langfristigen Stabilität und Codequalität des Projekts beitragen.
+Verwenden Sie diesen Leitfaden als Referenz für das Erstellen von Store-Tests. Durch die Einhaltung dieser Best Practices und die Verwendung der bereitgestellten Testtools können Sie robuste und wartbare Tests für alle Store-Komponenten in der Anwendung entwickeln.
 
 ---
 
-Erstellt: Mai 2025  
-Letzte Aktualisierung: Mai 2025  
-Autor: Claude Code
+Erstellt: 10.05.2025  
+Letzte Aktualisierung: 10.05.2025
