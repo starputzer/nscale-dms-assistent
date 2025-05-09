@@ -107,21 +107,29 @@ Bei deaktiviertem Feature oder während der Wartung zeigt der Converter eine ver
 - **Einfache Konvertierung**: Grundlegende Konvertierungsfunktionen bleiben verfügbar
 - **Zugriffsanfrage**: Benutzer können bei Bedarf Zugriff anfordern
 
-## Integration mit DocumentConverterStore
+## Integration mit DocumentConverterStore und API-Services
 
-Die Komponenten sind vollständig mit dem Pinia-basierten DocumentConverterStore integriert.
+Die Komponenten sind vollständig mit dem Pinia-basierten DocumentConverterStore integriert und nutzen eine verbesserte API-Service-Architektur.
 
 ### Store-Struktur:
 - **Zustand**: Verwaltung des Anwendungszustands (Dokumente, Fortschritt, etc.)
 - **Getter**: Bereitstellen abgeleiteter Zustandswerte (gefilterte Dokumente, etc.)
 - **Aktionen**: Ausführen von Operationen (Upload, Konvertierung, Löschen, etc.)
 - **Persistenz**: Speichern relevanter Daten im lokalen Speicher
+- **API-Integration**: Kommunikation mit Backend-Services über den DocumentConverterServiceWrapper
+
+### Service-Wrapper-Architektur:
+- **DocumentConverterServiceWrapper**: Abstraktionsschicht für alle API-Aufrufe
+- **Standardisierte Fehlerhandhabung**: Einheitliches Fehlerformat und -behandlung
+- **Robuste Fehlerberichterstattung**: Detaillierte Fehlerinformationen und Lösungsvorschläge
+- **Verbesserte Logging-Funktionalität**: Umfassende Protokollierung von API-Interaktionen
 
 ### Reaktivität und Zustandsverwaltung:
 - **Zentrale Datenverwaltung**: Alle Komponenten arbeiten mit demselben Zustand
 - **Reaktive Aktualisierungen**: Änderungen werden automatisch in allen Komponenten aktualisiert
-- **Konsistente Fehlerbehandlung**: Zentralisiertes Fehler-Reporting und -Behandlung
+- **Konsistente Fehlerbehandlung**: Zentralisiertes Fehler-Reporting und -Behandlung mit ErrorDisplay-Komponente
 - **Optimierte Leistung**: Effiziente Zustandsänderungen und -berechnungen
+- **Verbesserte Benutzerführung**: Kontextbezogene Fehlermeldungen und Hilfestellungen
 
 ## Leistung und Optimierungen
 

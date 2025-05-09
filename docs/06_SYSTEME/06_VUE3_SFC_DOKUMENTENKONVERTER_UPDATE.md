@@ -285,7 +285,113 @@ Die Backend-API wurde um neue Endpunkte erweitert:
 | `/api/documents/{id}/resume`     | PUT     | Setzt eine pausierte Konvertierung fort |
 | `/api/conversion/queue`          | GET     | Ruft Status der Konvertierungswarteschlange ab |
 
-## 5. Barrierefreiheit (ARIA)
+## 5. Backend-Anbindung und Fehlerbehandlung
+
+### 5.1 Verbesserte API-Integration
+
+Die Kommunikation mit dem Backend wurde grundlegend überarbeitet und folgt nun einer mehrschichtigen Architektur mit verbesserter Fehlerbehandlung:
+
+#### DocumentConverterServiceWrapper
+
+Der neue `DocumentConverterServiceWrapper` dient als Vermittlungsschicht zwischen dem Store und dem grundlegenden API-Service:
+
+```typescript
+// src/services/api/DocumentConverterServiceWrapper.ts
+export interface ConversionError extends ErrorObject {
+  documentId?: string;        // Betroffene Dokument-ID
+  originalError?: Error;      // Ursprünglicher Fehler
+  timestamp: Date;            // Zeitstempel
+  message: string;            // Benutzerfreundliche Fehlermeldung
+  code: string;               // Fehlercode (z.B. 'UPLOAD_FAILED')
+  type: string;               // Fehlertyp (z.B. 'network', 'server')
+  resolution?: string;        // Lösungsvorschlag
+  helpItems?: string[];       // Hilfestellungen
+  details?: string;           // Technische Details
+}
+```
+
+**Hauptvorteile des ServiceWrappers:**
+
+1. **Standardisierte Fehlerbehandlung**: Alle API-Fehler werden in ein einheitliches Format konvertiert
+2. **Intelligente Fehlererkennung**: Der ServiceWrapper analysiert Fehlermeldungen, um den Fehlertyp automatisch zu bestimmen
+3. **Benutzerfreundliche Fehlermeldungen**: Kontextbezogene Lösungsvorschläge und Hilfestellungen
+4. **Detailliertes Logging**: Umfassendes Logging für verbesserte Diagnose
+5. **Einheitliche Fortschrittsüberwachung**: Für Uploads und Konvertierungen
+
+#### Beispiel: Verbesserte Upload-Fehlerbehandlung
+
+```typescript
+public async uploadDocument(
+  file: File,
+  onProgress?: (progress: number) => void
+): Promise<string> {
+  try {
+    this.logger.info(`Starte Upload für ${file.name} (${formatFileSize(file.size)})`);
+    return await this.service.uploadDocument(file, onProgress);
+  } catch (error) {
+    const convertedError = this.convertError(error, 'UPLOAD_FAILED', 'network', {
+      message: `Fehler beim Hochladen der Datei ${file.name}`,
+      resolution: 'Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.',
+      helpItems: [
+        'Stellen Sie sicher, dass Ihre Internetverbindung stabil ist',
+        'Versuchen Sie, die Datei in einem anderen Format zu speichern',
+        'Reduzieren Sie die Dateigröße, falls möglich'
+      ]
+    });
+
+    this.logger.error('Fehler beim Hochladen:', convertedError);
+    throw convertedError;
+  }
+}
+```
+
+### 5.2 Integration in die UI-Komponenten
+
+Die ErrorDisplay-Komponente wurde aktualisiert, um die neuen strukturierten Fehlermeldungen optimal zu nutzen:
+
+```typescript
+// Auszug aus ErrorDisplay.vue
+<template>
+  <div class="error-display" role="alert">
+    <div class="error-icon" :class="errorTypeClass">
+      <i :class="errorTypeIcon"></i>
+    </div>
+    <div class="error-content">
+      <h3>{{ errorTitle }}</h3>
+      <p class="error-message">{{ error.message }}</p>
+
+      <!-- Lösungsvorschlag -->
+      <p v-if="error.resolution" class="error-resolution">
+        {{ error.resolution }}
+      </p>
+
+      <!-- Hilfestellungen -->
+      <ul v-if="error.helpItems && error.helpItems.length > 0" class="error-help-items">
+        <li v-for="(item, index) in error.helpItems" :key="index">
+          {{ item }}
+        </li>
+      </ul>
+
+      <!-- Technische Details (für Entwickler) -->
+      <details v-if="error.details" class="error-technical-details">
+        <summary>Technische Details</summary>
+        <pre>{{ error.details }}</pre>
+      </details>
+
+      <div class="error-actions">
+        <button @click="emit('retry')" class="retry-button">
+          {{ t('common.retry', 'Erneut versuchen') }}
+        </button>
+        <button v-if="canShowSupport" @click="emit('support')" class="support-button">
+          {{ t('common.contactSupport', 'Support kontaktieren') }}
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+## 6. Barrierefreiheit (ARIA)
 
 Die überarbeiteten Komponenten erfüllen alle Anforderungen an Barrierefreiheit:
 
@@ -316,7 +422,7 @@ Alle Komponenten verwenden umfassende ARIA-Attribute:
 
 Beispiel aus FileUploadV2:
 ```html
-<div 
+<div
   role="button"
   tabindex="0"
   :aria-disabled="isUploading"

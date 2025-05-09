@@ -1,9 +1,12 @@
 import { defineStore } from 'pinia';
 import DocumentConverterService from '@/services/api/DocumentConverterService';
-import { 
-  ConversionResult, 
-  ConversionSettings, 
-  SupportedFormat 
+import DocumentConverterApi from '@/services/api/DocumentConverterApi';
+import DocumentConverterServiceWrapper, { ConversionError } from '@/services/api/DocumentConverterServiceWrapper';
+import {
+  ConversionResult,
+  ConversionSettings,
+  SupportedFormat,
+  DocumentMetadata
 } from '@/types/documentConverter';
 
 /**
@@ -79,6 +82,15 @@ export interface DocumentConverterState {
   
   // Flag, ob die Daten initialisiert wurden
   initialized: boolean;
+  
+  // Flag, ob gerade Daten geladen werden
+  isLoading: boolean;
+  
+  // Flag, ob der Fallback-Konverter verwendet werden soll
+  useFallback: boolean;
+  
+  // ID des aktiven Konvertierungsprozesses
+  activeConversionId: string | null;
 }
 
 /**
@@ -104,9 +116,14 @@ export const useDocumentConverterStore = defineStore('documentConverter', {
       preserveFormatting: true,
       extractMetadata: true,
       extractTables: true,
+      ocrEnabled: false,
+      ocrLanguage: 'de',
     },
     lastUpdated: null,
     initialized: false,
+    isLoading: false,
+    useFallback: false,
+    activeConversionId: null
   }),
 
   /**
@@ -195,11 +212,18 @@ export const useDocumentConverterStore = defineStore('documentConverter', {
     },
 
     /**
-     * Prüft, ob es unterstützte Dateiformate gibt
+     * Liefert die unterstützten Dateiformate
      */
     supportedFormats: (): SupportedFormat[] => {
       return ['pdf', 'docx', 'xlsx', 'pptx', 'html', 'txt'];
     },
+    
+    /**
+     * Liefert die maximale Dateigröße in Bytes
+     */
+    maxFileSize: (): number => {
+      return 20 * 1024 * 1024; // 20 MB
+    }
   },
 
   /**
@@ -212,14 +236,19 @@ export const useDocumentConverterStore = defineStore('documentConverter', {
     async initialize(): Promise<void> {
       if (this.initialized) return;
 
+      this.isLoading = true;
+      this.error = null;
+
       try {
-        const documents = await DocumentConverterService.getDocuments();
+        const documents = await DocumentConverterServiceWrapper.getDocuments();
         this.convertedDocuments = documents;
         this.initialized = true;
         this.lastUpdated = new Date();
         this.error = null;
       } catch (err) {
         this.setError('INITIALIZATION_FAILED', err);
+      } finally {
+        this.isLoading = false;
       }
     },
 
@@ -244,7 +273,7 @@ export const useDocumentConverterStore = defineStore('documentConverter', {
         this.uploadedFiles.push(uploadedFile);
         
         // Datei hochladen mit Fortschrittsanzeige
-        const documentId = await DocumentConverterService.uploadDocument(
+        const documentId = await DocumentConverterServiceWrapper.uploadDocument(
           file,
           (progress: number) => {
             // Upload-Fortschritt aktualisieren
@@ -284,10 +313,12 @@ export const useDocumentConverterStore = defineStore('documentConverter', {
     /**
      * Konvertiert ein hochgeladenes Dokument
      * @param documentId - Die ID des zu konvertierenden Dokuments
+     * @param progressCallback - Callback-Funktion für Fortschrittsaktualisierungen
      * @param settings - Optionale Konvertierungseinstellungen
      */
     async convertDocument(
       documentId: string,
+      progressCallback?: (progress: number, step: string, timeRemaining: number | null) => void,
       settings?: Partial<ConversionSettings>
     ): Promise<boolean> {
       try {
@@ -296,6 +327,7 @@ export const useDocumentConverterStore = defineStore('documentConverter', {
         this.conversionStep = 'Initialisiere Konvertierung...';
         this.error = null;
         this.currentView = 'conversion';
+        this.activeConversionId = documentId;
         
         // Dokumentstatus aktualisieren
         const docIndex = this.convertedDocuments.findIndex(doc => doc.id === documentId);
@@ -309,29 +341,70 @@ export const useDocumentConverterStore = defineStore('documentConverter', {
           ...settings
         };
         
+        // Eigenen Fortschritts-Callback für Store-Aktualisierungen
+        const updateProgress = (progress: number, step: string, timeRemaining: number | null) => {
+          this.conversionProgress = progress;
+          this.conversionStep = step;
+          this.estimatedTimeRemaining = timeRemaining || 0;
+          
+          // Progresscallback weiterleiten, falls vorhanden
+          if (progressCallback) {
+            progressCallback(progress, step, timeRemaining);
+          }
+        };
+        
         // Konvertierung mit Fortschrittsanzeige starten
-        const result = await DocumentConverterService.convertDocument(
+        const result = await DocumentConverterServiceWrapper.convertDocument(
           documentId,
           mergedSettings,
-          (progress: number, step: string, timeRemaining: number) => {
-            this.conversionProgress = progress;
-            this.conversionStep = step;
-            this.estimatedTimeRemaining = timeRemaining;
-          }
+          updateProgress
         );
         
-        // Dokument mit Ergebnis aktualisieren
-        if (docIndex !== -1) {
-          this.convertedDocuments[docIndex] = {
-            ...this.convertedDocuments[docIndex],
-            ...result,
-            status: 'success',
-            convertedAt: new Date()
-          };
-        }
+        // Polling für Fortschrittsaktualisierungen
+        const pollInterval = setInterval(async () => {
+          if (!this.isConverting) {
+            clearInterval(pollInterval);
+            return;
+          }
+          
+          try {
+            const status = await DocumentConverterServiceWrapper.getConversionStatus(documentId);
+            updateProgress(
+              status.progress, 
+              status.step || 'Verarbeite Dokument...', 
+              status.estimatedTimeRemaining || null
+            );
+            
+            if (status.status === 'success' || status.status === 'error') {
+              clearInterval(pollInterval);
+              if (status.status === 'success') {
+                // Erfolgreich konvertiert
+                const document = await DocumentConverterServiceWrapper.getDocument(documentId);
+                
+                // Dokument mit Ergebnis aktualisieren
+                if (docIndex !== -1) {
+                  this.convertedDocuments[docIndex] = {
+                    ...this.convertedDocuments[docIndex],
+                    ...document,
+                    status: 'success',
+                    convertedAt: new Date()
+                  };
+                }
+                
+                this.currentView = 'results';
+                this.selectedDocumentId = documentId;
+                this.isConverting = false;
+              } else if (status.status === 'error') {
+                // Fehler bei der Konvertierung
+                throw new Error(status.error || 'Unbekannter Fehler bei der Konvertierung');
+              }
+            }
+          } catch (err) {
+            clearInterval(pollInterval);
+            throw err;
+          }
+        }, 1000);
         
-        this.currentView = 'results';
-        this.selectedDocumentId = documentId;
         this.lastUpdated = new Date();
         return true;
       } catch (err) {
@@ -344,9 +417,9 @@ export const useDocumentConverterStore = defineStore('documentConverter', {
           this.convertedDocuments[docIndex].error = err instanceof Error ? err.message : 'Unbekannter Fehler';
         }
         
-        return false;
-      } finally {
         this.isConverting = false;
+        this.activeConversionId = null;
+        return false;
       }
     },
 
@@ -356,7 +429,7 @@ export const useDocumentConverterStore = defineStore('documentConverter', {
      */
     async deleteDocument(documentId: string): Promise<boolean> {
       try {
-        await DocumentConverterService.deleteDocument(documentId);
+        await DocumentConverterServiceWrapper.deleteDocument(documentId);
         
         // Dokument aus der Liste entfernen
         this.convertedDocuments = this.convertedDocuments.filter(
@@ -383,12 +456,13 @@ export const useDocumentConverterStore = defineStore('documentConverter', {
     async cancelConversion(documentId: string): Promise<void> {
       try {
         // API-Aufruf zum Abbrechen der Konvertierung
-        await ApiService.post(`/api/documents/${documentId}/cancel`);
+        await DocumentConverterServiceWrapper.cancelConversion(documentId);
         
         // Status zurücksetzen
         this.isConverting = false;
         this.conversionProgress = 0;
         this.conversionStep = '';
+        this.activeConversionId = null;
         
         // Dokument-Status aktualisieren
         const docIndex = this.convertedDocuments.findIndex(doc => doc.id === documentId);
@@ -444,13 +518,19 @@ export const useDocumentConverterStore = defineStore('documentConverter', {
      */
     setError(code: string, error: any): void {
       console.error(`DocumentConverterStore error (${code}):`, error);
-      
-      this.error = {
-        code,
-        message: error instanceof Error ? error.message : String(error),
-        details: error,
-        timestamp: new Date()
-      };
+
+      // Wenn bereits ein formatierter Fehler (ConversionError) vorliegt, diesen verwenden
+      if (error && typeof error === 'object' && 'code' in error && 'type' in error && 'timestamp' in error) {
+        this.error = error;
+      } else {
+        // Sonst einen neuen Error erstellen
+        this.error = {
+          code,
+          message: error instanceof Error ? error.message : String(error),
+          details: error instanceof Error ? error.stack : JSON.stringify(error, null, 2),
+          timestamp: new Date()
+        };
+      }
     },
 
     /**
@@ -472,11 +552,44 @@ export const useDocumentConverterStore = defineStore('documentConverter', {
      */
     async refreshDocuments(): Promise<void> {
       try {
-        const documents = await DocumentConverterService.getDocuments();
+        this.isLoading = true;
+        const documents = await DocumentConverterServiceWrapper.getDocuments();
         this.convertedDocuments = documents;
         this.lastUpdated = new Date();
+        this.isLoading = false;
       } catch (err) {
         this.setError('REFRESH_FAILED', err);
+        this.isLoading = false;
+      }
+    },
+    
+    /**
+     * Aktiviert oder deaktiviert den Fallback-Konverter
+     */
+    setUseFallback(value: boolean): void {
+      this.useFallback = value;
+    },
+    
+    /**
+     * Prüft, ob ein Format unterstützt wird
+     */
+    isSupportedFormat(format: string): boolean {
+      return DocumentConverterServiceWrapper.isFormatSupported(format);
+    },
+    
+    /**
+     * Lädt ein konvertiertes Dokument herunter
+     */
+    async downloadDocument(documentId: string): Promise<void> {
+      try {
+        const document = this.convertedDocuments.find(doc => doc.id === documentId);
+        if (!document) {
+          throw new Error('Dokument nicht gefunden');
+        }
+
+        await DocumentConverterServiceWrapper.downloadDocument(documentId, document.originalName);
+      } catch (err) {
+        this.setError('DOWNLOAD_FAILED', err);
       }
     }
   },

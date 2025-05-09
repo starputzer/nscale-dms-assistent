@@ -1,6 +1,6 @@
 # Dokumentenkonverter
 
-**Version:** 2.0.0 | **Letzte Aktualisierung:** 11.05.2025 | **Status:** Aktiv in Entwicklung
+**Version:** 2.1.0 | **Letzte Aktualisierung:** 14.05.2025 | **Status:** Aktiv in Entwicklung
 
 ## 1. Übersicht
 
@@ -92,33 +92,80 @@ doc_converter/
 
 ### 2.4 API-Integration
 
-Der Dokumentenkonverter kommuniziert mit dem Backend über einen spezialisierten Service:
+Der Dokumentenkonverter kommuniziert mit dem Backend über einen spezialisierten Service mit einem Wrapper für verbesserte Fehlerbehandlung:
+
+#### 2.4.1 DocumentConverterService
+
+Die Kernimplementierung stellt die direkte Verbindung zur API bereit:
 
 ```typescript
-// src/services/api/DocumentConverterService.ts
-import ApiService from './ApiService';
-
-export default {
-  uploadDocument(file: File) {
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    return ApiService.post('/documents/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
-  },
-  
-  convertDocument(documentId: string) {
-    return ApiService.post(`/documents/${documentId}/convert`);
-  },
-  
-  getDocumentList() {
-    return ApiService.get('/documents');
-  }
+// Auszug aus src/services/api/DocumentConverterService.ts
+export interface IDocumentConverterService {
+  uploadDocument(file: File, onProgress?: (progress: number) => void): Promise<string>;
+  convertDocument(
+    documentId: string,
+    settings?: Partial<ConversionSettings>,
+    onProgress?: (progress: number, step: string, timeRemaining: number) => void
+  ): Promise<ConversionResult>;
+  getDocuments(): Promise<ConversionResult[]>;
+  getDocument(documentId: string): Promise<ConversionResult>;
+  deleteDocument(documentId: string): Promise<void>;
+  downloadDocument(
+    documentId: string,
+    filename?: string,
+    onProgress?: (progress: number) => void
+  ): Promise<Blob>;
+  getConversionStatus(documentId: string): Promise<ConversionProgress>;
+  cancelConversion(documentId: string): Promise<void>;
 }
 ```
 
-**API-Endpunkte:**
+#### 2.4.2 DocumentConverterServiceWrapper
+
+Der neue `DocumentConverterServiceWrapper` erweitert den Basis-Service um folgende Funktionen:
+
+- **Standardisierte Fehlerbehandlung**: Konvertiert unterschiedliche Fehlerformate in ein einheitliches `ConversionError`-Format
+- **Intelligente Fehlererkennung**: Analysiert Fehlermeldungen, um den Fehlertyp automatisch zu bestimmen
+- **Benutzerfreundliche Fehlermeldungen**: Liefert kontextbezogene Lösungsvorschläge und Hilfestellungen
+- **Detailliertes Logging**: Protokolliert alle Operationen und Fehler für bessere Diagnose
+- **Verbesserte Fortschrittsüberwachung**: Fortschrittsweitergabe für Uploads und Konvertierungen
+
+```typescript
+// Auszug aus src/services/api/DocumentConverterServiceWrapper.ts
+export interface ConversionError extends ErrorObject {
+  documentId?: string;
+  originalError?: Error;
+  timestamp: Date;
+}
+
+class DocumentConverterServiceWrapper {
+  // ...
+
+  public async uploadDocument(file: File, onProgress?: (progress: number) => void): Promise<string> {
+    try {
+      this.logger.info(`Starte Upload für ${file.name} (${formatFileSize(file.size)})`);
+      return await this.service.uploadDocument(file, onProgress);
+    } catch (error) {
+      const convertedError = this.convertError(error, 'UPLOAD_FAILED', 'network', {
+        message: `Fehler beim Hochladen der Datei ${file.name}`,
+        resolution: 'Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.',
+        helpItems: [
+          'Stellen Sie sicher, dass Ihre Internetverbindung stabil ist',
+          'Versuchen Sie, die Datei in einem anderen Format zu speichern',
+          'Reduzieren Sie die Dateigröße, falls möglich'
+        ]
+      });
+
+      this.logger.error('Fehler beim Hochladen:', convertedError);
+      throw convertedError;
+    }
+  }
+
+  // Weitere Methoden...
+}
+```
+
+#### 2.4.3 API-Endpunkte
 
 | Endpunkt                        | Methode | Beschreibung                    |
 |---------------------------------|---------|--------------------------------|
@@ -130,6 +177,8 @@ export default {
 | `/api/documents/{id}/content`   | GET     | Ruft konvertierten Inhalt ab   |
 | `/api/documents/{id}/download`  | GET     | Lädt Dokument herunter         |
 | `/api/documents/{id}`           | DELETE  | Löscht ein Dokument            |
+| `/api/documents/{id}/cancel`    | POST    | Bricht eine Konvertierung ab   |
+| `/api/documents/upload/multiple`| POST    | Lädt mehrere Dokumente hoch    |
 
 ## 3. Komponenten-Dokumentation
 
@@ -890,6 +939,7 @@ Folgende Verbesserungen sind für den Dokumentenkonverter geplant:
 
 | Datum | Version | Autor | Änderungen |
 |-------|---------|-------|------------|
+| 14.05.2025 | 2.1.0 | Claude | Verbesserung der API-Integration mit DocumentConverterServiceWrapper. Implementierung standardisierter Fehlerformate und verbesserter Fehlerbehandlung. Aktualisierung der Dokumentation zur API-Service-Architektur. |
 | 11.05.2025 | 2.0.0 | Claude | Umfassende Konsolidierung der Dokumentenkonverter-Dokumentation aus verschiedenen Quellen. Ergänzung der Store-Dokumentation und Aktualisierung des Migrationsstatus. |
 | 08.05.2025 | 1.2.0 | Team | Ergänzung um Dokumentation zu Vue 3 SFC-Implementierung und aktuellen Migrationsstatus. |
 | 07.05.2025 | 1.1.0 | Team | Hinzufügung von Abschnitten zu Robustheitsmechanismen und zukünftigen Verbesserungen. |

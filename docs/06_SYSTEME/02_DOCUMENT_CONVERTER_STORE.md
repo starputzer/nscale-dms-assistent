@@ -254,6 +254,119 @@ Der Store ist so konfiguriert, dass er bestimmte Teile des Zustands im localStor
 
 Diese Persistenz ermöglicht es der Anwendung, den Zustand zwischen Seitenaktualisierungen zu behalten und die Benutzererfahrung zu verbessern.
 
+## API-Integration
+
+Der DocumentConverterStore kommuniziert nicht mehr direkt mit dem DocumentConverterService, sondern verwendet den neuen DocumentConverterServiceWrapper, der eine verbesserte Fehlerbehandlung und standardisierte Fehlerformate bietet.
+
+### DocumentConverterServiceWrapper
+
+```typescript
+// Auszug aus DocumentConverterServiceWrapper.ts
+class DocumentConverterServiceWrapper {
+  // Basis DocumentConverterService-Instanz
+  private service: IDocumentConverterService;
+  private logger: LogService;
+
+  // Dokument hochladen mit verbesserter Fehlerbehandlung
+  public async uploadDocument(
+    file: File,
+    onProgress?: (progress: number) => void
+  ): Promise<string>;
+
+  // Dokument konvertieren mit verbesserter Fehlerbehandlung
+  public async convertDocument(
+    documentId: string,
+    settings?: Partial<ConversionSettings>,
+    onProgress?: (progress: number, step: string, timeRemaining: number) => void
+  ): Promise<ConversionResult>;
+
+  // Weitere Methoden mit verbesserter Fehlerbehandlung...
+
+  // Standardisierte Fehlerkonvertierung
+  private convertError(
+    error: unknown,
+    code: string,
+    type: 'network' | 'format' | 'server' | 'permission' | 'validation' | 'timeout' | 'unknown' = 'unknown',
+    additional: Partial<ConversionError> = {}
+  ): ConversionError;
+}
+
+// Standardisiertes Fehlerformat
+export interface ConversionError extends ErrorObject {
+  documentId?: string;        // Betroffene Dokument-ID
+  originalError?: Error;      // Ursprünglicher Fehler
+  timestamp: Date;            // Zeitstempel
+  message: string;            // Benutzerfreundliche Fehlermeldung
+  code: string;               // Fehlercode (z.B. 'UPLOAD_FAILED')
+  type: string;               // Fehlertyp (z.B. 'network', 'server')
+  resolution?: string;        // Lösungsvorschlag
+  helpItems?: string[];       // Hilfestellungen
+  details?: string;           // Technische Details
+}
+```
+
+### Store-Integration mit dem ServiceWrapper
+
+Der Store verwendet den ServiceWrapper für alle API-Aufrufe:
+
+```typescript
+// Auszug aus documentConverter.ts
+import documentConverterServiceWrapper from '@/services/api/DocumentConverterServiceWrapper';
+
+// In defineStore:
+actions: {
+  async uploadDocument(file: File) {
+    try {
+      state.isUploading = true;
+      state.uploadProgress = 0;
+
+      // Verwendung des ServiceWrappers mit Fortschrittsanzeige
+      const documentId = await documentConverterServiceWrapper.uploadDocument(
+        file,
+        (progress) => {
+          state.uploadProgress = progress;
+        }
+      );
+
+      return documentId;
+    } catch (error) {
+      // Der Wrapper hat den Fehler bereits in das ConversionError-Format konvertiert
+      state.error = error as ConversionError;
+      throw error;
+    } finally {
+      state.isUploading = false;
+    }
+  }
+
+  // Weitere Aktionen...
+}
+```
+
+### Verbesserte Fehlerbehandlung
+
+Der ServiceWrapper bietet folgende Verbesserungen bei der Fehlerbehandlung:
+
+1. **Einheitliches Fehlerformat**: Alle API-Fehler werden in das `ConversionError`-Format konvertiert.
+2. **Intelligente Fehlererkennung**: Analyse von Fehlermeldungen zur automatischen Bestimmung des Fehlertyps.
+3. **Benutzerfreundliche Fehlermeldungen**: Kontextbezogene Lösungsvorschläge und Hilfestellungen.
+4. **Lösungsorientierte Fehler**: Jeder Fehler enthält Vorschläge zur Behebung.
+5. **Detailliertes Logging**: Protokollierung aller Operationen für bessere Diagnose.
+
+### API-Endpunkte
+
+| Endpunkt                        | Methode | Beschreibung                    | Fehlerbehandlung |
+|---------------------------------|---------|--------------------------------|-----------------|
+| `/api/documents/upload`         | POST    | Lädt ein Dokument hoch         | Netzwerk, Format, Größe |
+| `/api/documents/{id}/convert`   | POST    | Startet Konvertierungsprozess  | Server, Format, Timeout |
+| `/api/documents/{id}/status`    | GET     | Ruft Konvertierungsstatus ab   | Server, Nicht gefunden |
+| `/api/documents`                | GET     | Ruft alle Dokumente ab         | Server, Berechtigung |
+| `/api/documents/{id}`           | GET     | Ruft Dokumentdetails ab        | Server, Nicht gefunden |
+| `/api/documents/{id}/content`   | GET     | Ruft konvertierten Inhalt ab   | Server, Formatierung |
+| `/api/documents/{id}/download`  | GET     | Lädt Dokument herunter         | Netzwerk, Nicht gefunden |
+| `/api/documents/{id}`           | DELETE  | Löscht ein Dokument            | Server, Berechtigung |
+| `/api/documents/{id}/cancel`    | POST    | Bricht Konvertierung ab        | Server, Status |
+| `/api/documents/upload/multiple`| POST    | Lädt mehrere Dokumente hoch    | Netzwerk, Format, Größe |
+
 ## Beispiel-Verwendung
 
 ```typescript

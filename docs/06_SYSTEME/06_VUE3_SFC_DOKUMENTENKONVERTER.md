@@ -1,6 +1,6 @@
 # Vue 3 SFC-Migration: Dokumentenkonverter
 
-**Zuletzt aktualisiert:** 08.05.2025 | **Version:** 1.0.0 | **Status:** In Entwicklung
+**Zuletzt aktualisiert:** 14.05.2025 | **Version:** 1.1.0 | **Status:** In Entwicklung
 
 ## 1. Übersicht und Zielsetzung
 
@@ -632,56 +632,121 @@ export default defineComponent({
 
 ### Interaktion mit dem Backend
 
-Der DocumentConverterStore kommuniziert mit dem Backend über den `DocumentConverterService`, der eine Abstraktion der API-Aufrufe bietet:
+#### API-Service-Architektur
+
+Die Kommunikation mit dem Backend wurde grundlegend überarbeitet und folgt nun einem mehrschichtigen Ansatz:
+
+1. **DocumentConverterService**: Die Basis-Implementierung, die direkt mit der API kommuniziert
+2. **DocumentConverterServiceWrapper**: Erweitert den Basis-Service um verbesserte Fehlerbehandlung und standardisierte Fehlerformate
+3. **DocumentConverterStore**: Verwendet den ServiceWrapper für alle API-Interaktionen und zentrale Fehlerbehandlung
+
+Diese Architektur bietet zahlreiche Vorteile:
+
+- **Standardisierte Fehlerbehandlung**: Alle API-Fehler werden in ein einheitliches Format konvertiert
+- **Intelligente Fehlererkennung**: Der Fehlertyp wird automatisch durch Analyse der Fehlermeldung erkannt
+- **Benutzerfreundliche Fehlermeldungen**: Kontextbezogene Lösungsvorschläge und Hilfestellungen
+- **Detailliertes Logging**: Umfassendes Logging für Diagnose und Fehlersuche
+- **Verbessertes Fehler-Reporting**: Strukturierte Fehlerinformationen für Monitoring und Analyse
+- **Einheitliches Error-Handling**: Konsistente Fehlerbehandlung in allen Komponenten
+
+#### DocumentConverterService
 
 ```typescript
 // Auszug aus DocumentConverterService.ts
-class DocumentConverterService {
-  // Dokument hochladen
-  async uploadDocument(
-    file: File, 
-    onProgress?: (progress: number) => void
-  ): Promise<string>;
-  
-  // Dokument konvertieren
-  async convertDocument(
-    documentId: string, 
+export interface IDocumentConverterService {
+  uploadDocument(file: File, onProgress?: (progress: number) => void): Promise<string>;
+  convertDocument(
+    documentId: string,
     settings?: Partial<ConversionSettings>,
     onProgress?: (progress: number, step: string, timeRemaining: number) => void
   ): Promise<ConversionResult>;
-  
-  // Konvertierungsstatus abrufen
-  async getConversionStatus(documentId: string): Promise<{
-    status: 'pending' | 'processing' | 'success' | 'error';
-    progress: number;
-    step?: string;
-    estimatedTimeRemaining?: number;
-    error?: string;
-  }>;
-  
-  // Dokumente abrufen
-  async getDocuments(): Promise<ConversionResult[]>;
-  
-  // Dokument herunterladen
-  async downloadDocument(documentId: string, filename?: string): Promise<void>;
-  
-  // Dokument löschen
-  async deleteDocument(documentId: string): Promise<void>;
+  getDocuments(): Promise<ConversionResult[]>;
+  getDocument(documentId: string): Promise<ConversionResult>;
+  deleteDocument(documentId: string): Promise<void>;
+  downloadDocument(
+    documentId: string,
+    filename?: string,
+    onProgress?: (progress: number) => void
+  ): Promise<Blob>;
+  getConversionStatus(documentId: string): Promise<ConversionProgress>;
+  cancelConversion(documentId: string): Promise<void>;
 }
 ```
 
-**API-Endpunkte:**
+#### Neuer DocumentConverterServiceWrapper
 
-| Endpunkt                        | Methode | Beschreibung                    |
-|---------------------------------|---------|--------------------------------|
-| `/api/documents/upload`         | POST    | Lädt ein Dokument hoch         |
-| `/api/documents/{id}/convert`   | POST    | Startet Konvertierungsprozess  |
-| `/api/documents/{id}/status`    | GET     | Ruft Konvertierungsstatus ab   |
-| `/api/documents`                | GET     | Ruft alle Dokumente ab         |
-| `/api/documents/{id}`           | GET     | Ruft Dokumentdetails ab        |
-| `/api/documents/{id}/content`   | GET     | Ruft konvertierten Inhalt ab   |
-| `/api/documents/{id}/download`  | GET     | Lädt Dokument herunter         |
-| `/api/documents/{id}`           | DELETE  | Löscht ein Dokument            |
+Der neue `DocumentConverterServiceWrapper` erweitert den Basis-Service um folgende Funktionen:
+
+```typescript
+// Auszug aus DocumentConverterServiceWrapper.ts
+export interface ConversionError extends ErrorObject {
+  documentId?: string;        // Betroffene Dokument-ID
+  originalError?: Error;      // Ursprünglicher Fehler
+  timestamp: Date;            // Zeitstempel
+  message: string;            // Benutzerfreundliche Fehlermeldung
+  code: string;               // Fehlercode (z.B. 'UPLOAD_FAILED')
+  type: string;               // Fehlertyp (z.B. 'network', 'server')
+  resolution?: string;        // Lösungsvorschlag
+  helpItems?: string[];       // Hilfestellungen
+  details?: string;           // Technische Details
+}
+
+class DocumentConverterServiceWrapper {
+  // Dokument hochladen mit verbesserter Fehlerbehandlung
+  public async uploadDocument(file: File, onProgress?: (progress: number) => void): Promise<string> {
+    try {
+      this.logger.info(`Starte Upload für ${file.name} (${formatFileSize(file.size)})`);
+      return await this.service.uploadDocument(file, onProgress);
+    } catch (error) {
+      const convertedError = this.convertError(error, 'UPLOAD_FAILED', 'network', {
+        message: `Fehler beim Hochladen der Datei ${file.name}`,
+        resolution: 'Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.',
+        helpItems: [
+          'Stellen Sie sicher, dass Ihre Internetverbindung stabil ist',
+          'Versuchen Sie, die Datei in einem anderen Format zu speichern',
+          'Reduzieren Sie die Dateigröße, falls möglich'
+        ]
+      });
+
+      this.logger.error('Fehler beim Hochladen:', convertedError);
+      throw convertedError;
+    }
+  }
+
+  // Standardisierte Fehlerkonvertierung
+  private convertError(
+    error: unknown,
+    code: string,
+    type: 'network' | 'format' | 'server' | 'permission' | 'validation' | 'timeout' | 'unknown' = 'unknown',
+    additional: Partial<ConversionError> = {}
+  ): ConversionError;
+}
+```
+
+**Hauptvorteile des ServiceWrappers:**
+
+1. **Standardisierte Fehlerbehandlung**: Alle API-Fehler werden in ein einheitliches Format konvertiert
+2. **Intelligente Fehlererkennung**: Fehlertyp wird automatisch erkannt durch Analyse der Fehlermeldung
+3. **Benutzerfreundliche Fehlermeldungen**: Kontextbezogene Lösungsvorschläge und Hilfestellungen
+4. **Detailliertes Logging**: Umfassendes Logging für Diagnose und Fehlersuche
+5. **Verbesserte Fortschrittsüberwachung**: Einheitliche Behandlung von Fortschrittsinformationen
+
+#### API-Endpunkte mit Fehlerbehandlung
+
+Die folgende Tabelle zeigt die verfügbaren API-Endpunkte und ihre spezifische Fehlerbehandlung durch den DocumentConverterServiceWrapper:
+
+| Endpunkt                        | Methode | Beschreibung                    | Fehlerbehandlung | Lösungsvorschläge |
+|---------------------------------|---------|--------------------------------|-----------------|-------------------|
+| `/api/documents/upload`         | POST    | Lädt ein Dokument hoch         | Netzwerk, Format, Größe | Internetverbindung prüfen, Dateiformat konvertieren, Dateigröße reduzieren |
+| `/api/documents/{id}/convert`   | POST    | Startet Konvertierungsprozess  | Server, Format, Timeout | Mit anderem Format versuchen, Server-Status prüfen, kleinere Datei versuchen |
+| `/api/documents/{id}/status`    | GET     | Ruft Konvertierungsstatus ab   | Server, Nicht gefunden | Konvertierung neu starten, Server-Status prüfen |
+| `/api/documents`                | GET     | Ruft alle Dokumente ab         | Server, Berechtigung | Berechtigungen prüfen, Neuanmeldung versuchen |
+| `/api/documents/{id}`           | GET     | Ruft Dokumentdetails ab        | Server, Nicht gefunden | Dokument erneut hochladen, Dokument-ID prüfen |
+| `/api/documents/{id}/content`   | GET     | Ruft konvertierten Inhalt ab   | Server, Formatierung | Erneute Konvertierung mit anderen Einstellungen |
+| `/api/documents/{id}/download`  | GET     | Lädt Dokument herunter         | Netzwerk, Nicht gefunden | Internetverbindung prüfen, Dokument erneut suchen |
+| `/api/documents/{id}`           | DELETE  | Löscht ein Dokument            | Server, Berechtigung | Berechtigungen prüfen, Administrator kontaktieren |
+| `/api/documents/{id}/cancel`    | POST    | Bricht Konvertierung ab        | Server, Status | Seite neu laden, erneut versuchen |
+| `/api/documents/upload/multiple`| POST    | Lädt mehrere Dokumente hoch    | Netzwerk, Format, Größe | Einzeln hochladen, Formate prüfen, Größe reduzieren |
 
 ### Persistenz und Caching
 
@@ -819,6 +884,23 @@ Für die Qualitätssicherung der SFC-Migration wurden umfangreiche Tests impleme
 - Parallele Tests für alte und neue Implementierung
 
 ## 6. Bekannte Probleme und Lösungsansätze
+
+### Gelöste Herausforderungen
+
+1. **Fehlerbehandlung bei API-Aufrufen**
+   - **Problem**: Uneinheitliche Fehlerformate und unzureichende Fehlerinformationen
+   - **Lösung**: Einführung des DocumentConverterServiceWrapper mit standardisiertem Fehlerformat und kontextbezogenen Lösungsvorschlägen
+   - **Status**: Vollständig implementiert
+
+2. **Benutzerfeedback bei API-Problemen**
+   - **Problem**: Fehlendes konkretes Feedback bei API-Problemen
+   - **Lösung**: Umfassende Fehleranalyse mit benutzerfreundlichen Meldungen und spezifischen Hilfestellungen
+   - **Status**: Vollständig implementiert
+
+3. **Inkonsistente API-Integration**
+   - **Problem**: Direkter Zugriff auf API-Dienste ohne einheitliche Fehlerhandhabung
+   - **Lösung**: Mehrschichtige Service-Architektur mit Basis-Service und ServiceWrapper
+   - **Status**: Vollständig implementiert
 
 ### Aktuelle Herausforderungen
 
