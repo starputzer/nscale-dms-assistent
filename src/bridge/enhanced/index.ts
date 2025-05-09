@@ -1,6 +1,6 @@
 /**
  * Hauptexport-Datei für die verbesserte Bridge
- * 
+ *
  * Diese Datei exportiert alle Komponenten der verbesserten Bridge und
  * stellt ein Vue-Plugin für die einfache Integration bereit.
  */
@@ -8,6 +8,7 @@
 import { App, Plugin } from 'vue';
 import { BridgeConfiguration, BridgeAPI, LogLevel } from './types';
 import { EnhancedBridge } from './bridgeCore';
+import { createChatBridge, ChatBridge, ChatBridgeConfiguration } from './chatBridge';
 
 /**
  * Erzeugt eine Bridge-Instanz mit den angegebenen Konfigurationsoptionen
@@ -30,33 +31,72 @@ export const BridgePlugin: Plugin = {
       healthCheckInterval: 30000,
       autoRecovery: true
     };
-    
+
     // Bridge mit zusammengeführter Konfiguration erstellen
     const bridge = createBridge({
       ...defaultConfig,
       ...config
     });
-    
+
     // Bridge verbinden
     bridge.connect();
-    
+
     // Bridge-API bereitstellen
     const api = bridge.exposeGlobalAPI();
-    
+
     // Bridge für Komponenten verfügbar machen
     app.provide('bridge', api);
-    
+
     // Bridge-Instanz auf der App speichern
     app.config.globalProperties.$bridge = api;
-    
+
     // Cleanup beim App-Unmount
     const originalUnmount = app.unmount;
     app.unmount = function() {
       bridge.disconnect();
       originalUnmount.call(this);
     };
-    
+
     console.info('Enhanced Bridge Plugin installiert');
+  }
+};
+
+/**
+ * Chat-Bridge-Plugin
+ */
+export const ChatBridgePlugin: Plugin = {
+  install(app: App, options?: {
+    bridgeConfig?: Partial<BridgeConfiguration>,
+    chatConfig?: Partial<ChatBridgeConfiguration>
+  }) {
+    // Bridge-Plugin installieren
+    BridgePlugin.install(app, options?.bridgeConfig);
+
+    // Bridge-Instanz holen
+    const bridge = app.config.globalProperties.$bridge;
+
+    // Chat-Bridge erstellen
+    const chatBridge = createChatBridge(bridge, options?.chatConfig);
+
+    // Chat-Bridge initialisieren
+    chatBridge.initialize().catch(error => {
+      console.error('Fehler bei der Chat-Bridge-Initialisierung:', error);
+    });
+
+    // Chat-Bridge für Komponenten verfügbar machen
+    app.provide('chatBridge', chatBridge);
+
+    // Chat-Bridge-Instanz auf der App speichern
+    app.config.globalProperties.$chatBridge = chatBridge;
+
+    // Cleanup beim App-Unmount
+    const originalUnmount = app.unmount;
+    app.unmount = function() {
+      chatBridge.destroy();
+      originalUnmount.call(this);
+    };
+
+    console.info('Chat Bridge Plugin installiert');
   }
 };
 
@@ -70,8 +110,9 @@ export { EnhancedStateManager } from './stateManager';
 export { BridgeStatusManager } from './statusManager';
 export { SelfHealingBridge } from './selfHealing';
 export { EnhancedBridge } from './bridgeCore';
+export { ChatBridge, createChatBridge } from './chatBridge';
 
-// Export des Komposable
+// Export der Komposables
 export { useBridge } from './bridgeCore';
 
 // Standard-Export für Plugin
