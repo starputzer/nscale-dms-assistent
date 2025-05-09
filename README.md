@@ -67,7 +67,8 @@ Das Frontend verwendet folgende Hauptkomponenten:
 - **Vue 3 Composables**: Wiederverwendbare Logik
 - **Vue 3 SFC-Komponenten**: UI-Komponenten mit Template, Script und Style in einer Datei
 - **TypeScript**: Typsicherheit für verbesserte Codequalität
+- **Optimierte Bridge**: Leistungsstarke Bridge zwischen Legacy-Code und Vue 3-Komponenten
 
 ---
 
-Zuletzt aktualisiert: 08.05.2025
+Zuletzt aktualisiert: 10.05.2025

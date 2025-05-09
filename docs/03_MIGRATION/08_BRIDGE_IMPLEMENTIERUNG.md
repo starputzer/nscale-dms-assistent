@@ -2,6 +2,8 @@
 
 Dieses Dokument beschreibt die Architektur und Implementierung einer verbesserten Bridge für die Kommunikation zwischen Legacy-Vanilla-JavaScript-Code und modernen Vue 3-Komponenten im nscale DMS Assistenten.
 
+> **Hinweis:** Eine optimierte Version der Bridge mit verbesserter Performance, Zuverlässigkeit und erweiterter Funktionalität ist in [09_OPTIMIZED_BRIDGE_DOKUMENTATION.md](./09_OPTIMIZED_BRIDGE_DOKUMENTATION.md) dokumentiert.
+
 ## Inhaltsverzeichnis
 
 1. [Architekturübersicht](#architekturübersicht)
