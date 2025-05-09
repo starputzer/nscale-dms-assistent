@@ -1,0 +1,488 @@
+// nscale DMS Assistent Design System
+// Einheitliches Design-System für die Vue 3 Migration
+// Letzte Aktualisierung: 09.05.2025
+
+// -----------------------------------------------------------------------------
+// Farbdefinitionen: Basis-Farben (Design Tokens)
+// -----------------------------------------------------------------------------
+
+:root {
+  // Primäre Markenfarben
+  --nscale-color-green-50: #f0faf5;
+  --nscale-color-green-100: #e0f5ea;
+  --nscale-color-green-200: #c3ebda;
+  --nscale-color-green-300: #9addc1;
+  --nscale-color-green-400: #56c596;
+  --nscale-color-green-500: #00a550; // Hauptmarkenfarbe
+  --nscale-color-green-600: #009046;
+  --nscale-color-green-700: #006e34;
+  --nscale-color-green-800: #004f25;
+  --nscale-color-green-900: #00391b;
+
+  // Neutralfarben
+  --nscale-color-gray-50: #f8f9fa;
+  --nscale-color-gray-100: #f0f2f5;
+  --nscale-color-gray-200: #e2e8f0;
+  --nscale-color-gray-300: #cbd5e1;
+  --nscale-color-gray-400: #94a3b8;
+  --nscale-color-gray-500: #64748b;
+  --nscale-color-gray-600: #475569;
+  --nscale-color-gray-700: #334155;
+  --nscale-color-gray-800: #1e293b;
+  --nscale-color-gray-900: #0f172a;
+  --nscale-color-white: #ffffff;
+  --nscale-color-black: #000000;
+
+  // Status- und Feedbackfarben
+  --nscale-color-red-500: #dc2626;     // Fehler
+  --nscale-color-red-100: #fee2e2;     // Fehler (leicht)
+  --nscale-color-amber-500: #f59e0b;   // Warnung
+  --nscale-color-amber-100: #fef3c7;   // Warnung (leicht)
+  --nscale-color-blue-500: #3b82f6;    // Info
+  --nscale-color-blue-100: #dbeafe;    // Info (leicht)
+  --nscale-color-emerald-500: #10b981; // Erfolg
+  --nscale-color-emerald-100: #d1fae5; // Erfolg (leicht)
+
+  // Accent-Farben für spezielle Hervorhebungen
+  --nscale-color-indigo-500: #6366f1;
+  --nscale-color-indigo-100: #e0e7ff;
+  --nscale-color-purple-500: #a855f7;
+  --nscale-color-purple-100: #f3e8ff;
+  --nscale-color-pink-500: #ec4899;
+  --nscale-color-pink-100: #fce7f3;
+}
+
+// -----------------------------------------------------------------------------
+// Semantische Farben (Design-System-Farben)
+// -----------------------------------------------------------------------------
+
+:root {
+  // Primärfarben
+  --nscale-primary: var(--nscale-color-green-500);
+  --nscale-primary-dark: var(--nscale-color-green-600);
+  --nscale-primary-light: var(--nscale-color-green-200);
+  --nscale-primary-ultra-light: var(--nscale-color-green-50);
+  
+  // Feedbackfarben
+  --nscale-error: var(--nscale-color-red-500);
+  --nscale-error-light: var(--nscale-color-red-100);
+  --nscale-warning: var(--nscale-color-amber-500);
+  --nscale-warning-light: var(--nscale-color-amber-100);
+  --nscale-success: var(--nscale-color-emerald-500);
+  --nscale-success-light: var(--nscale-color-emerald-100);
+  --nscale-info: var(--nscale-color-blue-500);
+  --nscale-info-light: var(--nscale-color-blue-100);
+  
+  // Neutrale Farben
+  --nscale-background: var(--nscale-color-white);
+  --nscale-foreground: var(--nscale-color-gray-800);
+  --nscale-muted: var(--nscale-color-gray-500);
+  --nscale-muted-light: var(--nscale-color-gray-200);
+  --nscale-border: var(--nscale-color-gray-200);
+  --nscale-focus-ring: rgba(0, 165, 80, 0.5);
+}
+
+// -----------------------------------------------------------------------------
+// Typographie
+// -----------------------------------------------------------------------------
+
+:root {
+  // Schriftfamilien
+  --nscale-font-family-base: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, 'Helvetica Neue', sans-serif;
+  --nscale-font-family-mono: 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
+  
+  // Schriftgrößen
+  --nscale-font-size-xs: 0.75rem;    /* 12px */
+  --nscale-font-size-sm: 0.875rem;   /* 14px */
+  --nscale-font-size-base: 1rem;     /* 16px */
+  --nscale-font-size-lg: 1.125rem;   /* 18px */
+  --nscale-font-size-xl: 1.25rem;    /* 20px */
+  --nscale-font-size-2xl: 1.5rem;    /* 24px */
+  --nscale-font-size-3xl: 1.875rem;  /* 30px */
+  --nscale-font-size-4xl: 2.25rem;   /* 36px */
+  
+  // Schriftgewichte
+  --nscale-font-weight-light: 300;
+  --nscale-font-weight-normal: 400;
+  --nscale-font-weight-medium: 500;
+  --nscale-font-weight-semibold: 600;
+  --nscale-font-weight-bold: 700;
+  
+  // Zeilenhöhen
+  --nscale-line-height-none: 1;
+  --nscale-line-height-tight: 1.25;
+  --nscale-line-height-normal: 1.5;
+  --nscale-line-height-relaxed: 1.75;
+  
+  // Buchstabenabstände
+  --nscale-letter-spacing-tight: -0.025em;
+  --nscale-letter-spacing-normal: 0;
+  --nscale-letter-spacing-wide: 0.025em;
+}
+
+// -----------------------------------------------------------------------------
+// Abstandssystem (4px-Raster)
+// -----------------------------------------------------------------------------
+
+:root {
+  --nscale-space-1: 0.25rem;   /* 4px */
+  --nscale-space-2: 0.5rem;    /* 8px */
+  --nscale-space-3: 0.75rem;   /* 12px */
+  --nscale-space-4: 1rem;      /* 16px */
+  --nscale-space-5: 1.25rem;   /* 20px */
+  --nscale-space-6: 1.5rem;    /* 24px */
+  --nscale-space-8: 2rem;      /* 32px */
+  --nscale-space-10: 2.5rem;   /* 40px */
+  --nscale-space-12: 3rem;     /* 48px */
+  --nscale-space-16: 4rem;     /* 64px */
+  --nscale-space-20: 5rem;     /* 80px */
+  --nscale-space-24: 6rem;     /* 96px */
+}
+
+// -----------------------------------------------------------------------------
+// Layout-Variablen
+// -----------------------------------------------------------------------------
+
+:root {
+  // Container-Größen
+  --nscale-container-sm: 640px;
+  --nscale-container-md: 768px;
+  --nscale-container-lg: 1024px;
+  --nscale-container-xl: 1280px;
+  
+  // Layout-Elemente
+  --nscale-sidebar-width: 280px;
+  --nscale-sidebar-width-collapsed: 60px;
+  --nscale-header-height: 64px;
+  --nscale-footer-height: 48px;
+  --nscale-content-max-width: 1200px;
+  
+  // Grid-Spalten
+  --nscale-grid-columns: 12;
+  --nscale-grid-gap: var(--nscale-space-4);
+}
+
+// -----------------------------------------------------------------------------
+// Responsive Breakpoints
+// -----------------------------------------------------------------------------
+
+:root {
+  --nscale-screen-xs: 480px;
+  --nscale-screen-sm: 640px;
+  --nscale-screen-md: 768px;
+  --nscale-screen-lg: 1024px;
+  --nscale-screen-xl: 1280px;
+  --nscale-screen-2xl: 1536px;
+}
+
+// -----------------------------------------------------------------------------
+// Komponenten-Stilisierung
+// -----------------------------------------------------------------------------
+
+:root {
+  // Rahmenradien
+  --nscale-border-radius-none: 0;
+  --nscale-border-radius-sm: 0.25rem; /* 4px */
+  --nscale-border-radius-md: 0.5rem;  /* 8px */
+  --nscale-border-radius-lg: 0.75rem; /* 12px */
+  --nscale-border-radius-xl: 1rem;    /* 16px */
+  --nscale-border-radius-2xl: 1.5rem; /* 24px */
+  --nscale-border-radius-full: 9999px;
+  
+  // Schatten
+  --nscale-shadow-none: none;
+  --nscale-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --nscale-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --nscale-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --nscale-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --nscale-shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  
+  // Übergangszeiten
+  --nscale-transition-quick: 150ms;
+  --nscale-transition-normal: 300ms;
+  --nscale-transition-slow: 500ms;
+  
+  // Z-Indizes
+  --nscale-z-index-hide: -1;
+  --nscale-z-index-base: 0;
+  --nscale-z-index-raised: 10;
+  --nscale-z-index-dropdown: 1000;
+  --nscale-z-index-sticky: 1020;
+  --nscale-z-index-fixed: 1030;
+  --nscale-z-index-popover: 1040;
+  --nscale-z-index-modal: 1050;
+  --nscale-z-index-tooltip: 1060;
+  --nscale-z-index-notification: 1070;
+}
+
+// -----------------------------------------------------------------------------
+// Komponenten-spezifische Farbvariablen
+// -----------------------------------------------------------------------------
+
+:root {
+  // Allgemeine UI-Elemente
+  --nscale-body-bg: var(--nscale-background);
+  --nscale-body-color: var(--nscale-foreground);
+  --nscale-border-color: var(--nscale-border);
+  --nscale-focus-ring-color: var(--nscale-focus-ring);
+  
+  // Card-Variablen
+  --nscale-card-bg: var(--nscale-background);
+  --nscale-card-color: var(--nscale-foreground);
+  --nscale-card-border: var(--nscale-border);
+  --nscale-card-shadow: var(--nscale-shadow-md);
+  
+  // Button-Variablen
+  --nscale-btn-primary-bg: var(--nscale-primary);
+  --nscale-btn-primary-text: var(--nscale-color-white);
+  --nscale-btn-primary-border: transparent;
+  --nscale-btn-primary-hover-bg: var(--nscale-primary-dark);
+  --nscale-btn-primary-active-bg: var(--nscale-color-green-700);
+  --nscale-btn-primary-focus-ring: var(--nscale-focus-ring);
+  
+  --nscale-btn-secondary-bg: var(--nscale-color-white);
+  --nscale-btn-secondary-text: var(--nscale-primary);
+  --nscale-btn-secondary-border: var(--nscale-primary);
+  --nscale-btn-secondary-hover-bg: var(--nscale-primary-ultra-light);
+  --nscale-btn-secondary-active-bg: var(--nscale-primary-light);
+  
+  --nscale-btn-danger-bg: var(--nscale-error);
+  --nscale-btn-danger-text: var(--nscale-color-white);
+  --nscale-btn-danger-border: transparent;
+  --nscale-btn-danger-hover-bg: var(--nscale-color-red-500);
+  --nscale-btn-danger-active-bg: var(--nscale-color-red-500);
+  
+  // Form-Elemente
+  --nscale-input-bg: var(--nscale-background);
+  --nscale-input-text: var(--nscale-foreground);
+  --nscale-input-border: var(--nscale-border);
+  --nscale-input-focus-border: var(--nscale-primary);
+  --nscale-input-placeholder: var(--nscale-muted);
+  --nscale-input-disabled-bg: var(--nscale-color-gray-100);
+  --nscale-input-disabled-text: var(--nscale-muted);
+  
+  // Chat-Komponenten
+  --nscale-message-user-bg: var(--nscale-primary-light);
+  --nscale-message-user-text: var(--nscale-foreground);
+  --nscale-message-user-border: transparent;
+  
+  --nscale-message-assistant-bg: var(--nscale-background);
+  --nscale-message-assistant-text: var(--nscale-foreground);
+  --nscale-message-assistant-border: var(--nscale-border);
+  
+  // Feedback-Komponenten
+  --nscale-alert-info-bg: var(--nscale-info-light);
+  --nscale-alert-info-text: var(--nscale-color-blue-500);
+  --nscale-alert-info-border: var(--nscale-info);
+  
+  --nscale-alert-success-bg: var(--nscale-success-light);
+  --nscale-alert-success-text: var(--nscale-success);
+  --nscale-alert-success-border: var(--nscale-success);
+  
+  --nscale-alert-warning-bg: var(--nscale-warning-light);
+  --nscale-alert-warning-text: var(--nscale-warning);
+  --nscale-alert-warning-border: var(--nscale-warning);
+  
+  --nscale-alert-error-bg: var(--nscale-error-light);
+  --nscale-alert-error-text: var(--nscale-error);
+  --nscale-alert-error-border: var(--nscale-error);
+}
+
+// -----------------------------------------------------------------------------
+// Dark Mode
+// -----------------------------------------------------------------------------
+
+[data-theme="dark"] {
+  // Anpassung der semantischen Farben
+  --nscale-primary: var(--nscale-color-green-400);
+  --nscale-primary-dark: var(--nscale-color-green-500);
+  --nscale-primary-light: var(--nscale-color-green-800);
+  --nscale-primary-ultra-light: var(--nscale-color-green-900);
+  
+  // Hintergrund und Text
+  --nscale-background: var(--nscale-color-gray-900);
+  --nscale-foreground: var(--nscale-color-gray-100);
+  --nscale-muted: var(--nscale-color-gray-400);
+  --nscale-muted-light: var(--nscale-color-gray-700);
+  --nscale-border: var(--nscale-color-gray-700);
+  --nscale-focus-ring: rgba(86, 197, 150, 0.5);
+  
+  // Anpassungen für UI-Komponenten
+  --nscale-card-bg: var(--nscale-color-gray-800);
+  --nscale-card-border: var(--nscale-color-gray-700);
+  
+  // Button-Anpassungen
+  --nscale-btn-secondary-bg: var(--nscale-color-gray-800);
+  --nscale-btn-secondary-hover-bg: var(--nscale-color-gray-700);
+  
+  // Form-Elemente
+  --nscale-input-bg: var(--nscale-color-gray-800);
+  --nscale-input-border: var(--nscale-color-gray-600);
+  --nscale-input-disabled-bg: var(--nscale-color-gray-900);
+  --nscale-input-disabled-text: var(--nscale-color-gray-500);
+  
+  // Chat-Anpassungen
+  --nscale-message-user-bg: var(--nscale-color-green-900);
+  --nscale-message-assistant-bg: var(--nscale-color-gray-800);
+  --nscale-message-assistant-border: var(--nscale-color-gray-700);
+  
+  // Schatten-Anpassungen
+  --nscale-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --nscale-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
+  --nscale-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7), 0 4px 6px -2px rgba(0, 0, 0, 0.5);
+  --nscale-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
+}
+
+// -----------------------------------------------------------------------------
+// Kontrast-Modus
+// -----------------------------------------------------------------------------
+
+[data-theme="contrast"] {
+  // Anpassung der Primärfarbe für höheren Kontrast
+  --nscale-primary: #ffeb3b; // Gelb für höheren Kontrast
+  --nscale-primary-dark: #ffd600;
+  --nscale-primary-light: #fff9c4;
+  --nscale-primary-ultra-light: #fffde7;
+  
+  // Neutrale Farben mit höherem Kontrast
+  --nscale-background: var(--nscale-color-black);
+  --nscale-foreground: var(--nscale-color-white);
+  --nscale-muted: var(--nscale-color-gray-300);
+  --nscale-muted-light: var(--nscale-color-gray-700);
+  --nscale-border: var(--nscale-color-gray-300);
+  --nscale-focus-ring: rgba(255, 235, 59, 0.7);
+  
+  // Stärkere Feedbackfarben
+  --nscale-error: #ff1744;
+  --nscale-warning: #ff9100;
+  --nscale-success: #00e676;
+  --nscale-info: #2979ff;
+  
+  // Barrierefreiheitsverbesserungen
+  --nscale-input-border: var(--nscale-color-gray-300);
+  --nscale-input-focus-border: var(--nscale-primary);
+  
+  // Verstärkte Fokus-Stile
+  --nscale-focus-ring-width: 3px;
+  
+  // Verstärkte Button-Kontraste
+  --nscale-btn-primary-bg: var(--nscale-primary);
+  --nscale-btn-primary-text: var(--nscale-color-black);
+  --nscale-btn-primary-hover-bg: var(--nscale-primary-dark);
+  
+  --nscale-btn-secondary-bg: var(--nscale-color-black);
+  --nscale-btn-secondary-text: var(--nscale-primary);
+  --nscale-btn-secondary-border: var(--nscale-primary);
+  
+  // Chat-Anpassungen
+  --nscale-message-user-bg: var(--nscale-primary);
+  --nscale-message-user-text: var(--nscale-color-black);
+  --nscale-message-user-border: transparent;
+  
+  --nscale-message-assistant-bg: var(--nscale-color-black);
+  --nscale-message-assistant-text: var(--nscale-color-white);
+  --nscale-message-assistant-border: var(--nscale-color-white);
+}
+
+// -----------------------------------------------------------------------------
+// Reduzierte Bewegung
+// -----------------------------------------------------------------------------
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.reduce-motion * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+// -----------------------------------------------------------------------------
+// Fokus-Stile
+// -----------------------------------------------------------------------------
+
+:focus-visible {
+  outline: 2px solid var(--nscale-focus-ring-color);
+  outline-offset: 2px;
+}
+
+[data-theme="dark"] :focus-visible {
+  outline-color: var(--nscale-primary);
+}
+
+[data-theme="contrast"] :focus-visible {
+  outline-width: 3px;
+}
+
+// -----------------------------------------------------------------------------
+// Utility-Mixins für SCSS-Import
+// -----------------------------------------------------------------------------
+
+@mixin nscale-screen-xs {
+  @media (min-width: var(--nscale-screen-xs)) {
+    @content;
+  }
+}
+
+@mixin nscale-screen-sm {
+  @media (min-width: var(--nscale-screen-sm)) {
+    @content;
+  }
+}
+
+@mixin nscale-screen-md {
+  @media (min-width: var(--nscale-screen-md)) {
+    @content;
+  }
+}
+
+@mixin nscale-screen-lg {
+  @media (min-width: var(--nscale-screen-lg)) {
+    @content;
+  }
+}
+
+@mixin nscale-screen-xl {
+  @media (min-width: var(--nscale-screen-xl)) {
+    @content;
+  }
+}
+
+@mixin nscale-screen-2xl {
+  @media (min-width: var(--nscale-screen-2xl)) {
+    @content;
+  }
+}
+
+// Flexbox Mixins
+@mixin nscale-flex($direction: row, $wrap: nowrap, $justify: flex-start, $align: stretch) {
+  display: flex;
+  flex-direction: $direction;
+  flex-wrap: $wrap;
+  justify-content: $justify;
+  align-items: $align;
+}
+
+// Grid Mixins
+@mixin nscale-grid($columns: var(--nscale-grid-columns), $gap: var(--nscale-grid-gap)) {
+  display: grid;
+  grid-template-columns: repeat($columns, 1fr);
+  gap: $gap;
+}
+
+// Container Mixin
+@mixin nscale-container($max-width: var(--nscale-container-lg)) {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--nscale-space-4);
+  padding-right: var(--nscale-space-4);
+  max-width: $max-width;
+}

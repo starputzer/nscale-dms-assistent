@@ -1,0 +1,346 @@
+// main.scss
+// Main entry point for nscale-assist app design system
+// Imports all component SCSS files and establishes global styles
+
+// Import variables first so they're available to all other files
+@use 'variables';
+
+// Import core components
+@use 'typography';
+@use 'layout';
+@use 'forms';
+
+// Reset and base styles
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  // Light theme (default)
+  --bg-primary: #{variables.$light-bg-primary};
+  --bg-secondary: #{variables.$light-bg-secondary};
+  --bg-tertiary: #{variables.$light-bg-tertiary};
+  --text-primary: #{variables.$light-text-primary};
+  --text-secondary: #{variables.$light-text-secondary};
+  --text-tertiary: #{variables.$light-text-tertiary};
+  --border-color: #{variables.$light-border-color};
+  
+  // Primary colors
+  --primary-50: #{variables.$primary-50};
+  --primary-100: #{variables.$primary-100};
+  --primary-200: #{variables.$primary-200};
+  --primary-300: #{variables.$primary-300};
+  --primary-400: #{variables.$primary-400};
+  --primary-500: #{variables.$primary-500};
+  --primary-600: #{variables.$primary-600};
+  --primary-700: #{variables.$primary-700};
+  --primary-800: #{variables.$primary-800};
+  --primary-900: #{variables.$primary-900};
+  --primary-950: #{variables.$primary-950};
+  
+  // Success colors
+  --success-50: #{variables.$success-50};
+  --success-100: #{variables.$success-100};
+  --success-500: #{variables.$success-500};
+  --success-600: #{variables.$success-600};
+  --success-700: #{variables.$success-700};
+  
+  // Warning colors
+  --warning-50: #{variables.$warning-50};
+  --warning-100: #{variables.$warning-100};
+  --warning-500: #{variables.$warning-500};
+  --warning-600: #{variables.$warning-600};
+  --warning-700: #{variables.$warning-700};
+  
+  // Error colors
+  --error-50: #{variables.$error-50};
+  --error-100: #{variables.$error-100};
+  --error-500: #{variables.$error-500};
+  --error-600: #{variables.$error-600};
+  --error-700: #{variables.$error-700};
+  
+  // Info colors
+  --info-50: #{variables.$info-50};
+  --info-100: #{variables.$info-100};
+  --info-500: #{variables.$info-500};
+  --info-600: #{variables.$info-600};
+  --info-700: #{variables.$info-700};
+  
+  // Focus
+  --focus-ring-color: #{variables.$focus-ring-color};
+  
+  // Shadow
+  --shadow-sm: #{variables.$shadow-sm};
+  --shadow-md: #{variables.$shadow-md};
+  --shadow-lg: #{variables.$shadow-lg};
+  --shadow-xl: #{variables.$shadow-xl};
+}
+
+// Dark theme
+html[data-theme="dark"] {
+  --bg-primary: #{variables.$dark-bg-primary};
+  --bg-secondary: #{variables.$dark-bg-secondary};
+  --bg-tertiary: #{variables.$dark-bg-tertiary};
+  --text-primary: #{variables.$dark-text-primary};
+  --text-secondary: #{variables.$dark-text-secondary};
+  --text-tertiary: #{variables.$dark-text-tertiary};
+  --border-color: #{variables.$dark-border-color};
+  
+  // Adjust shadows for dark mode
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+}
+
+// High contrast theme
+html[data-theme="high-contrast"] {
+  --bg-primary: #{variables.$hc-bg-primary};
+  --bg-secondary: #{variables.$hc-bg-secondary};
+  --bg-tertiary: #{variables.$hc-bg-tertiary};
+  --text-primary: #{variables.$hc-text-primary};
+  --text-secondary: #{variables.$hc-text-secondary};
+  --text-tertiary: #{variables.$hc-text-tertiary};
+  --border-color: #{variables.$hc-border-color};
+  
+  // Increase contrast for focus states
+  --focus-ring-color: rgba(255, 255, 255, 0.8);
+  
+  // Make interactive elements more distinguishable
+  --primary-600: lighten(#{variables.$primary-600}, 20%);
+  --primary-700: lighten(#{variables.$primary-700}, 20%);
+  
+  --success-600: lighten(#{variables.$success-600}, 20%);
+  --warning-600: lighten(#{variables.$warning-600}, 20%);
+  --error-600: lighten(#{variables.$error-600}, 20%);
+  --info-600: lighten(#{variables.$info-600}, 20%);
+}
+
+// Base HTML element styles
+html, body {
+  min-height: 100%;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+// Utility mixins
+@mixin focusRing {
+  outline: variables.$focus-ring-width solid var(--focus-ring-color);
+  outline-offset: variables.$focus-ring-offset;
+}
+
+// Accessibility
+.focus-visible:focus,
+:focus-visible {
+  @include focusRing;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// Component-specific themes
+.nscale-card {
+  background-color: var(--bg-primary);
+  border: variables.$border-width-thin solid var(--border-color);
+  border-radius: variables.$border-radius-lg;
+  box-shadow: var(--shadow-sm);
+  padding: variables.$spacing-4;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  
+  &:hover {
+    box-shadow: var(--shadow-md);
+  }
+  
+  &--interactive {
+    cursor: pointer;
+    
+    &:hover {
+      transform: translateY(-2px);
+    }
+  }
+}
+
+.nscale-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: variables.$btn-padding-y variables.$btn-padding-x;
+  font-weight: variables.$btn-font-weight;
+  font-size: variables.$font-size-base;
+  border: variables.$border-width-thin solid transparent;
+  border-radius: variables.$btn-border-radius;
+  transition: all variables.$transition-fast variables.$transition-ease;
+  cursor: pointer;
+  
+  &:focus {
+    @include focusRing;
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  &--primary {
+    background-color: var(--primary-600);
+    color: white;
+    
+    &:hover {
+      background-color: var(--primary-700);
+    }
+  }
+  
+  &--secondary {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+    
+    &:hover {
+      background-color: var(--bg-secondary);
+    }
+  }
+  
+  &--success {
+    background-color: var(--success-600);
+    color: white;
+    
+    &:hover {
+      background-color: var(--success-700);
+    }
+  }
+  
+  &--warning {
+    background-color: var(--warning-600);
+    color: white;
+    
+    &:hover {
+      background-color: var(--warning-700);
+    }
+  }
+  
+  &--error {
+    background-color: var(--error-600);
+    color: white;
+    
+    &:hover {
+      background-color: var(--error-700);
+    }
+  }
+  
+  &--info {
+    background-color: var(--info-600);
+    color: white;
+    
+    &:hover {
+      background-color: var(--info-700);
+    }
+  }
+  
+  &--text {
+    background-color: transparent;
+    color: var(--primary-600);
+    
+    &:hover {
+      color: var(--primary-700);
+      text-decoration: underline;
+    }
+  }
+  
+  &--sm {
+    padding: calc(#{variables.$btn-padding-y} * 0.75) calc(#{variables.$btn-padding-x} * 0.75);
+    font-size: variables.$font-size-sm;
+  }
+  
+  &--lg {
+    padding: calc(#{variables.$btn-padding-y} * 1.25) calc(#{variables.$btn-padding-x} * 1.25);
+    font-size: variables.$font-size-lg;
+  }
+  
+  &--icon {
+    padding: variables.$spacing-2;
+    border-radius: variables.$border-radius-full;
+    
+    svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
+}
+
+// Animation utilities
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fade-in {
+  animation: fadeIn variables.$transition-normal variables.$transition-ease-out;
+}
+
+.slide-in {
+  animation: slideIn variables.$transition-normal variables.$transition-ease-out;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+// Custom scrollbar for better UX
+.custom-scrollbar {
+  /* Webkit browsers (Chrome, Safari) */
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: variables.$border-radius-full;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: var(--text-tertiary);
+    border-radius: variables.$border-radius-full;
+    
+    &:hover {
+      background: var(--text-secondary);
+    }
+  }
+  
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-tertiary) var(--bg-secondary);
+}
