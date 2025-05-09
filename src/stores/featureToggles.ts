@@ -533,6 +533,81 @@ export const useFeatureTogglesStore = defineStore('featureToggles', () => {
     useLegacyBridge.value = true;
   }
   
+  /**
+   * Lädt Feature Toggles vom API-Server
+   */
+  async function loadFeatureToggles(): Promise<boolean> {
+    try {
+      // API-Aufruf simulieren oder echten API-Call durchführen
+      console.log('Loading feature toggles from API...');
+
+      // In der echten Implementierung:
+      // const response = await axios.get('/api/features');
+      // configureFeatures(response.data.features);
+
+      // Hier nur Beispiel-Implementation
+      return true;
+    } catch (error) {
+      console.error('Fehler beim Laden der Feature-Toggles:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Setzt Fallback-Features, wenn API-Call fehlschlägt
+   */
+  function setFallbackFeatures(): void {
+    // Sicherstellen, dass kritische Features aktiviert sind
+    usePiniaAuth.value = true;
+    usePiniaSessions.value = true;
+    usePiniaUI.value = true;
+    usePiniaSettings.value = true;
+
+    // Moderne UI-Features aktivieren
+    useNewUIComponents.value = true;
+    useToastNotifications.value = true;
+
+    // Legacy-Bridge für Übergangszeitraum aktivieren
+    useLegacyBridge.value = true;
+
+    // Abhängig von der Phase der Migration können SFC-Features aktiviert werden
+    useSfcAdmin.value = true; // Admin-Bereich ist bereits migriert
+  }
+
+  /**
+   * Aktualisiert die Features vom Server
+   */
+  async function refreshFeatures(): Promise<boolean> {
+    return loadFeatureToggles();
+  }
+
+  /**
+   * Prüft ob ein Feature aktiviert ist
+   */
+  function isFeatureEnabled(featureName: string): boolean {
+    return isEnabled(featureName);
+  }
+
+  /**
+   * Ermittelt die Fallback-Route für ein Feature
+   */
+  function getFeatureFallbackRoute(featureName: string): string | null {
+    // Mapping von Features zu Fallback-Routen
+    const fallbackRoutes: Record<string, string> = {
+      'useSfcChat': '/',
+      'useSfcDocConverter': '/documents-legacy',
+      'useSfcAdmin': '/admin-legacy',
+      'useSfcSettings': '/settings-legacy'
+    };
+
+    return fallbackRoutes[featureName] || null;
+  }
+
+  /**
+   * Prüft, ob ein Feature vollständig geladen ist
+   */
+  const isLoaded = ref<boolean>(false);
+
   return {
     // State
     version,
@@ -549,25 +624,26 @@ export const useFeatureTogglesStore = defineStore('featureToggles', () => {
     useLegacyBridge,
     migrateLocalStorage,
     useModernDocConverter,
-    
+    isLoaded,
+
     // SFC-Migration Features
     useSfcDocConverter,
     useSfcAdmin,
     useSfcChat,
     useSfcSettings,
-    
+
     // Fehler-Tracking
     errors,
     activeFallbacks,
     featureConfigs,
-    
+
     // Getters
     areAllStoresEnabled,
     isLegacyModeActive,
     areSfcFeaturesEnabled,
     getFeatureStatus,
     allFeatureConfigs,
-    
+
     // Fehler- und Fallback-Verwaltung
     reportFeatureError,
     clearFeatureErrors,
@@ -575,15 +651,22 @@ export const useFeatureTogglesStore = defineStore('featureToggles', () => {
     setFallbackMode,
     isFeatureAvailableForRole,
     areDependenciesSatisfied,
-    
+
     // Feature-Management
     toggleFeature,
     isEnabled,
+    isFeatureEnabled,
     setFeature,
     enableFeature,
     disableFeature,
     configureFeatures,
-    
+
+    // API-Integration
+    loadFeatureToggles,
+    refreshFeatures,
+    setFallbackFeatures,
+    getFeatureFallbackRoute,
+
     // Modus-Verwaltung
     enableAllFeatures,
     enableCoreFeatures,
