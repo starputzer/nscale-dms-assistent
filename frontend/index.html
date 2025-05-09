@@ -6,69 +6,68 @@
     <title>nscale DMS Assistent</title>
     
     <!-- Externe CDN-Abhängigkeiten - mit Cache-Busting-Parameter für zuverlässiges Laden -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css?v=20250508" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css?v=20250508">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css?v=20250508214949" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css?v=20250508214949">
+    
+    <!-- Vue und erforderliche Abhängigkeiten - Reihenfolge ist wichtig! -->
     <script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@vueuse/shared@9.13.0/index.iife.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@vueuse/core@9.13.0/index.iife.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-demi@0.13.11/lib/index.iife.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pinia@2.0.33/dist/pinia.iife.js"></script>
+    
+    <!-- Weitere Hilfsbibliotheken -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <!-- CSS direkt einbinden mit Cache-Busting - Hinweis: keine type="module" bei link-Tags -->
-    <link rel="stylesheet" href="/css/main.css?v=20250508">
-    <link rel="stylesheet" href="/css/themes.css?v=20250508">
-    <link rel="stylesheet" href="/css/improved-ui.css?v=20250508">
-    <link rel="stylesheet" href="/css/admin.css?v=20250508">
-    <link rel="stylesheet" href="/css/feedback.css?v=20250508">
-    <link rel="stylesheet" href="/css/message-actions.css?v=20250508">
-    <link rel="stylesheet" href="/css/settings.css?v=20250508">
-    <link rel="stylesheet" href="/css/source-references.css?v=20250508">
+    <link rel="stylesheet" href="/css/main.css?v=20250508214949">
+    <link rel="stylesheet" href="/css/themes.css?v=20250508214949">
+    <link rel="stylesheet" href="/css/improved-ui.css?v=20250508214949">
+    <link rel="stylesheet" href="/css/admin.css?v=20250508214949">
+    <link rel="stylesheet" href="/css/feedback.css?v=20250508214949">
+    <link rel="stylesheet" href="/css/message-actions.css?v=20250508214949">
+    <link rel="stylesheet" href="/css/settings.css?v=20250508214949">
+    <link rel="stylesheet" href="/css/source-references.css?v=20250508214949">
+    <link rel="stylesheet" href="/frontend/css/interaction-fix.css?v=20250508214949">
     
-    <!-- Extra-Skript für CSS-Fehlerbehandlung (fallback) -->
-    <script>
-        // Prüfe, ob alle CSS-Dateien korrekt geladen wurden
-        document.addEventListener('DOMContentLoaded', () => {
-            const cssFiles = [
-                '/css/main.css',
-                '/css/themes.css',
-                '/css/improved-ui.css',
-                '/css/admin.css',
-                '/css/feedback.css',
-                '/css/message-actions.css',
-                '/css/settings.css',
-                '/css/source-references.css'
-            ];
-            
-            // Überprüfe für jede Datei, ob sie bereits als Stylesheet vorhanden ist
-            cssFiles.forEach(cssFile => {
-                const cssFileBase = cssFile.split('?')[0]; // Entferne potentiellen Query-Parameter
-                const isLoaded = Array.from(document.styleSheets).some(
-                    sheet => sheet.href && sheet.href.includes(cssFileBase)
-                );
-                
-                if (!isLoaded) {
-                    console.warn(`CSS-Datei ${cssFile} wurde nicht geladen, versuche erneut`);
-                    const link = document.createElement('link');
-                    link.rel = 'stylesheet';
-                    link.href = `${cssFile}?fallback=true&v=${new Date().getTime()}`;
-                    document.head.appendChild(link);
-                }
-            });
-        });
-    </script>
+    <!-- Verbesserte CSS-Preloader mit Verifikation und inline-Fallbacks -->
+    <script src="/frontend/css-preloader.js?v=20250508214949"></script>
+    
+    <!-- CSS-Pfad-Fixer für korrekte Stylesheet-Pfade -->
+    <script src="/frontend/css-path-fix.js?v=20250508214949"></script>
 
     <!-- Haupt-JavaScript-Datei direkt einbinden - definitiv als Modul, aber ohne CSS-Importe -->
-    <script type="module" src="/js/main.js?v=20250508"></script>
+    <script type="module" src="/js/main.js?v=20250508214949"></script>
+    
+    <!-- Bridge-Fix für Event-Handling und Feature-Toggles -->
+    <script defer src="/frontend/bridge-fix.js?v=20250508214949"></script>
+    
+    <!-- Reparatur für interaktive Elemente -->
+    <script defer src="/frontend/repair-interaction.js?v=20250508214949"></script>
+    
+    <!-- Erweiterte Reparatur für die Hauptanwendung -->
+    <script defer src="/frontend/advanced-repair.js?v=20250508214949"></script>
+    
+    <!-- Direkter Event-Handler für kritische Aktionen -->
+    <script defer src="/frontend/direct-event-handler.js?v=20250508214949"></script>
+    
+    <!-- Interaktivitäts-Testskript - für Fehlersuche bei Problemen -->
+    <script defer src="/frontend/interactivity-test.js?v=20250508214949"></script>
     
     <!-- Fallback für ältere Browser oder fehlende ES-Module-Unterstützung -->
     <script nomodule>
         console.warn('Browser unterstützt keine ES-Module. Verwende Fallback.');
         // Lade Legacy-Script synchron
         const fallbackScript = document.createElement('script');
-        fallbackScript.src = '/js/app.js?v=20250508';
+        fallbackScript.src = '/js/app.js?v=20250508214949';
         document.head.appendChild(fallbackScript);
     </script>
 </head>
 <body class="min-h-screen bg-gray-50">
     <div id="app" class="h-screen flex flex-col">
+        <!-- Vue 3 Mount-Punkt -->
+        <div id="vue-dms-app"></div>
         <!-- Login & Register -->
         <div v-if="!token" class="flex items-center justify-center h-full bg-gray-50">
             <div class="nscale-card max-w-md w-full p-8">

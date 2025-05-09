@@ -1,146 +1,205 @@
 /**
  * nscale DMS Assistant Theme Hook
- * 
+ *
  * Vue Composition API Hook für die Verwendung des Theme-Systems in Vue-Komponenten.
  * Bietet reaktive Zugriffsmöglichkeiten auf das aktuelle Theme und Theme-Änderungen.
- * 
- * Letzte Aktualisierung: 08.05.2025
+ *
+ * Letzte Aktualisierung: 09.05.2025
  */
 
-import { ref, onMounted, onUnmounted, readonly } from 'vue';
-import { themeManager, THEMES } from '@/assets/theme-switcher';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
+
+/**
+ * Theme-Optionen für das nscale DMS Assistenten Design-System
+ */
+export const THEMES = {
+  LIGHT: 'light',
+  DARK: 'dark',
+  CONTRAST: 'contrast'
+} as const;
+
+type Theme = typeof THEMES[keyof typeof THEMES];
 
 /**
  * Hook für die Theme-Verwaltung in Vue-Komponenten
  * @returns Ein Objekt mit reaktiven Theme-Eigenschaften und -Methoden
  */
 export function useTheme() {
-  const currentTheme = ref(themeManager.getCurrentTheme());
-  const useSystemTheme = ref(themeManager.isUsingSystemTheme());
+  // Reaktiver Zustand für aktuelles Theme und User-Einstellungen
+  const currentTheme = ref<Theme>(getInitialTheme());
+  const useSystemTheme = ref<boolean>(localStorage.getItem('nscale-system-theme') === 'true');
   const systemIsDark = ref(window.matchMedia('(prefers-color-scheme: dark)').matches);
-  
-  // Überwachen von Theme-Änderungen
-  const handleThemeChange = (event: CustomEvent) => {
-    currentTheme.value = event.detail.theme;
-    useSystemTheme.value = event.detail.useSystemTheme;
-  };
-  
-  // Überwachen von Änderungen an der Systemeinstellung
-  const handleSystemThemeChange = (event: MediaQueryListEvent) => {
-    systemIsDark.value = event.matches;
-    
-    // Theme aktualisieren, wenn Systemeinstellung verwendet wird
-    if (useSystemTheme.value) {
-      currentTheme.value = systemIsDark.value ? THEMES.DARK : THEMES.LIGHT;
+  const isChangingTheme = ref<boolean>(false);
+
+  /**
+   * Ermittelt das initiale Theme basierend auf localStorage oder System-Einstellungen
+   */
+  function getInitialTheme(): Theme {
+    // Gespeichertes Theme prüfen
+    const savedTheme = localStorage.getItem('nscale-theme') as Theme | null;
+
+    // Wenn ein Theme gespeichert ist und gültig ist, dieses verwenden
+    if (savedTheme && Object.values(THEMES).includes(savedTheme as any)) {
+      return savedTheme;
     }
-  };
-  
-  // Event-Listener beim Mounten hinzufügen
-  onMounted(() => {
-    document.addEventListener('nscale-theme-change', handleThemeChange as EventListener);
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleSystemThemeChange);
-  });
-  
-  // Event-Listener beim Unmounten entfernen
-  onUnmounted(() => {
-    document.removeEventListener('nscale-theme-change', handleThemeChange as EventListener);
-    window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', handleSystemThemeChange);
-  });
-  
+
+    // Wenn System-Theme-Preference aktiviert oder nichts gespeichert ist
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return prefersDark ? THEMES.DARK : THEMES.LIGHT;
+  }
+
   /**
-   * Wechselt zu einem spezifischen Theme
-   * @param theme Das Theme, zu dem gewechselt werden soll
+   * Wendet ein Theme an und speichert die Auswahl
    */
-  const setTheme = (theme: string) => {
-    if (Object.values(THEMES).includes(theme)) {
-      themeManager.setTheme(theme);
-      currentTheme.value = theme;
+  function setTheme(theme: Theme): void {
+    if (!Object.values(THEMES).includes(theme as any)) {
+      console.error(`Ungültiges Theme: ${theme}`);
+      return;
     }
-  };
-  
+
+    isChangingTheme.value = true;
+
+    // Theme am HTML-Element anwenden
+    document.documentElement.setAttribute('data-theme', theme);
+
+    // Theme in localStorage speichern
+    localStorage.setItem('nscale-theme', theme);
+
+    // Reaktiven Zustand aktualisieren
+    currentTheme.value = theme;
+
+    // Event für andere Komponenten auslösen
+    document.dispatchEvent(new CustomEvent('nscale-theme-change', {
+      detail: { theme, useSystemTheme: useSystemTheme.value }
+    }));
+
+    // Transitions ermöglichen
+    setTimeout(() => {
+      isChangingTheme.value = false;
+    }, 300);
+  }
+
   /**
-   * Aktiviert oder deaktiviert die Verwendung des Systemthemes
-   * @param value Ob das Systemtheme verwendet werden soll
+   * Wechselt zwischen hellem und dunklem Theme
    */
-  const setUseSystemTheme = (value: boolean) => {
-    themeManager.setUseSystemTheme(value);
-    useSystemTheme.value = value;
-    
-    // Wenn Systemeinstellung, dann aktuelle Einstellung anwenden
-    if (value) {
-      currentTheme.value = systemIsDark.value ? THEMES.DARK : THEMES.LIGHT;
-    }
-  };
-  
-  /**
-   * Überprüft, ob das aktuelle Theme dunkel ist
-   * @returns Ob das aktuelle Theme dunkel ist
-   */
-  const isDarkTheme = () => {
-    return currentTheme.value === THEMES.DARK || 
-      (useSystemTheme.value && systemIsDark.value);
-  };
-  
-  /**
-   * Überprüft, ob das aktuelle Theme der Kontrastmodus ist
-   * @returns Ob das aktuelle Theme der Kontrastmodus ist
-   */
-  const isContrastTheme = () => {
-    return currentTheme.value === THEMES.CONTRAST;
-  };
-  
-  /**
-   * Wechselt zwischen den verfügbaren Themes
-   */
-  const toggleTheme = () => {
+  function toggleTheme(): void {
     // Wenn Systemeinstellung, dann zu manuellem Modus wechseln
     if (useSystemTheme.value) {
       setUseSystemTheme(false);
       // Mit aktuellem Theme beginnen
       const startTheme = systemIsDark.value ? THEMES.DARK : THEMES.LIGHT;
-      const nextTheme = getNextTheme(startTheme);
+      const nextTheme = startTheme === THEMES.LIGHT ? THEMES.DARK : THEMES.LIGHT;
       setTheme(nextTheme);
       return;
     }
-    
-    // Zum nächsten Theme wechseln
-    const nextTheme = getNextTheme(currentTheme.value);
-    setTheme(nextTheme);
-  };
-  
+
+    // Zwischen hell und dunkel wechseln
+    const newTheme = currentTheme.value === THEMES.LIGHT ? THEMES.DARK : THEMES.LIGHT;
+    setTheme(newTheme);
+  }
+
   /**
-   * Bestimmt das nächste Theme in der Rotation
-   * @param currentTheme Das aktuelle Theme
-   * @returns Das nächste Theme
+   * Wechselt zum Kontrast-Modus oder zurück
    */
-  const getNextTheme = (current: string) => {
-    switch (current) {
-      case THEMES.LIGHT:
-        return THEMES.DARK;
-      case THEMES.DARK:
-        return THEMES.CONTRAST;
-      case THEMES.CONTRAST:
-        return THEMES.LIGHT;
-      default:
-        return THEMES.LIGHT;
+  function toggleContrastMode(): void {
+    const isContrast = currentTheme.value === THEMES.CONTRAST;
+    setTheme(isContrast ? THEMES.LIGHT : THEMES.CONTRAST);
+
+    // System-Theme-Synchronisation deaktivieren, da manuelle Auswahl
+    if (useSystemTheme.value) {
+      setUseSystemTheme(false);
+    }
+  }
+
+  /**
+   * Aktiviert oder deaktiviert die Synchronisation mit Systemeinstellungen
+   */
+  function setUseSystemTheme(value: boolean): void {
+    useSystemTheme.value = value;
+    localStorage.setItem('nscale-system-theme', value.toString());
+
+    if (value) {
+      // Bei Aktivierung System-Theme anwenden
+      const isDarkMode = systemIsDark.value;
+      setTheme(isDarkMode ? THEMES.DARK : THEMES.LIGHT);
+    }
+
+    // Event für andere Komponenten auslösen
+    document.dispatchEvent(new CustomEvent('nscale-theme-change', {
+      detail: { theme: currentTheme.value, useSystemTheme: value }
+    }));
+  }
+
+  // Überwachen von Änderungen an der Systemeinstellung
+  const handleSystemThemeChange = (event: MediaQueryListEvent) => {
+    systemIsDark.value = event.matches;
+
+    // Theme aktualisieren, wenn Systemeinstellung verwendet wird
+    if (useSystemTheme.value) {
+      setTheme(event.matches ? THEMES.DARK : THEMES.LIGHT);
     }
   };
-  
+
+  // Event-Listener beim Mounten hinzufügen
+  onMounted(() => {
+    // Initialen Theme-Zustand anwenden
+    setTheme(currentTheme.value);
+
+    // MediaQuery für Systemeinstellung überwachen
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleSystemThemeChange);
+
+    // Event-Listener für Tastenkombinationen
+    const keydownHandler = (event: KeyboardEvent) => {
+      // Alt+Shift+D für Dark Mode Toggle
+      if (event.altKey && event.shiftKey && event.key === 'D') {
+        toggleTheme();
+        event.preventDefault();
+      }
+
+      // Alt+Shift+C für Kontrast-Modus Toggle
+      if (event.altKey && event.shiftKey && event.key === 'C') {
+        toggleContrastMode();
+        event.preventDefault();
+      }
+    };
+
+    document.addEventListener('keydown', keydownHandler);
+
+    // Aufräumen wenn die Komponente zerstört wird
+    onUnmounted(() => {
+      window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', handleSystemThemeChange);
+      document.removeEventListener('keydown', keydownHandler);
+    });
+  });
+
+  // Computed Properties
+  const isDarkTheme = computed(() => currentTheme.value === THEMES.DARK ||
+    (useSystemTheme.value && systemIsDark.value));
+  const isContrastTheme = computed(() => currentTheme.value === THEMES.CONTRAST);
+  const isLightTheme = computed(() => currentTheme.value === THEMES.LIGHT &&
+    !(useSystemTheme.value && systemIsDark.value));
+
+  // API des Composables
   return {
-    // Reaktive Eigenschaften
-    currentTheme: readonly(currentTheme),
-    useSystemTheme: readonly(useSystemTheme),
-    systemIsDark: readonly(systemIsDark),
-    
-    // Konstanten
-    THEMES,
-    
-    // Methoden
-    setTheme,
-    setUseSystemTheme,
+    // State
+    currentTheme,
+    useSystemTheme,
+    systemIsDark,
+    isChangingTheme,
+
+    // Computed
     isDarkTheme,
+    isLightTheme,
     isContrastTheme,
-    toggleTheme
+
+    // Actions
+    setTheme,
+    toggleTheme,
+    toggleContrastMode,
+    setUseSystemTheme,
+
+    // Constants
+    THEMES
   };
 }
 

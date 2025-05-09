@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nscale DMS Assistent - Original UI Fix</title>
+    
+    <!-- Externe CDN-Abhängigkeiten - mit Cache-Busting-Parameter für zuverlässiges Laden -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css?v=20250508214949" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css?v=20250508214949">
+    
+    <!-- Vue und erforderliche Abhängigkeiten - Reihenfolge ist wichtig! -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@vueuse/shared@9.13.0/index.iife.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@vueuse/core@9.13.0/index.iife.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-demi@0.13.11/lib/index.iife.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pinia@2.0.33/dist/pinia.iife.js"></script>
+    
+    <!-- Weitere Hilfsbibliotheken -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- CSS direkt einbinden mit Cache-Busting - Hinweis: keine type="module" bei link-Tags -->
+    <link rel="stylesheet" href="/css/main.css?v=20250508214949">
+    <link rel="stylesheet" href="/css/themes.css?v=20250508214949">
+    <link rel="stylesheet" href="/css/improved-ui.css?v=20250508214949">
+    <link rel="stylesheet" href="/css/admin.css?v=20250508214949">
+    <link rel="stylesheet" href="/css/feedback.css?v=20250508214949">
+    <link rel="stylesheet" href="/css/message-actions.css?v=20250508214949">
+    <link rel="stylesheet" href="/css/settings.css?v=20250508214949">
+    <link rel="stylesheet" href="/css/source-references.css?v=20250508214949">
+    <link rel="stylesheet" href="/frontend/css/interaction-fix.css?v=20250508214949">
+
+    <!-- Feature-Flags Aktivierung vor allem anderen -->
+    <script>
+        // Feature Flags explizit aktivieren
+        localStorage.setItem('useVueComponents', 'true');
+        localStorage.setItem('useVueDocConverter', 'true');
+        
+        // Feature-Toggles aus localStorage laden und aktualisieren
+        let featureToggles = {};
+        try {
+            const storedToggles = localStorage.getItem('featureToggles');
+            featureToggles = storedToggles ? JSON.parse(storedToggles) : {};
+        } catch (e) {
+            console.error('Fehler beim Laden der Feature-Toggles:', e);
+            featureToggles = {};
+        }
+        
+        // SFC-Features aktivieren
+        featureToggles.useSfcAdmin = true;
+        featureToggles.useSfcDocConverter = true;
+        featureToggles.useSfcChat = true;
+        featureToggles.useSfcSettings = true;
+        
+        // Abhängigkeiten aktivieren
+        featureToggles.usePiniaAuth = true;
+        featureToggles.usePiniaUI = true;
+        featureToggles.usePiniaSessions = true;
+        featureToggles.usePiniaSettings = true;
+        featureToggles.useLegacyBridge = true;
+        
+        // Feature-Toggles speichern
+        localStorage.setItem('featureToggles', JSON.stringify(featureToggles));
+        console.log('Feature Flags wurden aktiviert');
+    </script>
+    
+    <!-- Verbesserte CSS-Preloader mit Verifikation und inline-Fallbacks -->
+    <script src="/frontend/css-preloader.js?v=20250508214949"></script>
+    
+    <!-- CSS-Pfad-Fixer für korrekte Stylesheet-Pfade -->
+    <script src="/frontend/css-path-fix.js?v=20250508214949"></script>
+</head>
+<body class="min-h-screen bg-gray-50">
+    <div id="app" class="h-screen flex flex-col">
+        <!-- Login & Register -->
+        <div v-if="!token" class="flex items-center justify-center h-full bg-gray-50">
+            <div class="nscale-card max-w-md w-full p-8">
+                <div class="text-center mb-8">
+                    <div class="nscale-logo mx-auto">
+                        <img src="/images/senmvku-logo.png" alt="nscale Logo" class="h-12 mx-auto">
+                    </div>
+                    <p class="text-gray-500 mt-2">Ihr Digitalisierungspartner für DMS-Lösungen</p>
+                </div>
+                
+                <div v-if="authMode === 'login'">
+                    <h1 class="text-2xl font-bold mb-6 text-center">Anmelden</h1>
+                    
+                    <div v-if="successMessage" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+                        {{ successMessage }}
+                    </div>
+                    
+                    <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                        {{ errorMessage }}
+                    </div>
+                    
+                    <form @submit.prevent="login" class="space-y-4">
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700">E-Mail</label>
+                            <input type="email" id="email" v-model="email" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        
+                        <div>
+                            <label for="password" class="block text-sm font-medium text-gray-700">Passwort</label>
+                            <input type="password" id="password" v-model="password" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <div class="flex items-center">
+                                <input id="remember_me" type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                <label for="remember_me" class="ml-2 block text-sm text-gray-700">
+                                    Angemeldet bleiben
+                                </label>
+                            </div>
+                            
+                            <div class="text-sm">
+                                <a href="#" @click.prevent="authMode = 'reset-password'" class="font-medium text-indigo-600 hover:text-indigo-500">
+                                    Passwort vergessen?
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <button type="submit" :disabled="loading" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <span v-if="loading">Wird angemeldet...</span>
+                                <span v-else>Anmelden</span>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-6 text-center">
+                        <p class="text-sm text-gray-600">
+                            Noch kein Konto?
+                            <a href="#" @click.prevent="authMode = 'register'" class="font-medium text-indigo-600 hover:text-indigo-500">
+                                Registrieren
+                            </a>
+                        </p>
+                    </div>
+                </div>
+                
+                <div v-else-if="authMode === 'register'">
+                    <h1 class="text-2xl font-bold mb-6 text-center">Registrieren</h1>
+                    
+                    <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                        {{ errorMessage }}
+                    </div>
+                    
+                    <form @submit.prevent="register" class="space-y-4">
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700">E-Mail</label>
+                            <input type="email" id="email" v-model="email" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        
+                        <div>
+                            <label for="password" class="block text-sm font-medium text-gray-700">Passwort</label>
+                            <input type="password" id="password" v-model="password" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        
+                        <div>
+                            <button type="submit" :disabled="loading" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <span v-if="loading">Wird registriert...</span>
+                                <span v-else>Registrieren</span>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-6 text-center">
+                        <p class="text-sm text-gray-600">
+                            Bereits ein Konto?
+                            <a href="#" @click.prevent="authMode = 'login'" class="font-medium text-indigo-600 hover:text-indigo-500">
+                                Anmelden
+                            </a>
+                        </p>
+                    </div>
+                </div>
+                
+                <div v-else-if="authMode === 'reset-password'">
+                    <h1 class="text-2xl font-bold mb-6 text-center">Passwort zurücksetzen</h1>
+                    
+                    <div v-if="successMessage" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+                        {{ successMessage }}
+                    </div>
+                    
+                    <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                        {{ errorMessage }}
+                    </div>
+                    
+                    <form @submit.prevent="resetPassword" class="space-y-4">
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700">E-Mail</label>
+                            <input type="email" id="email" v-model="email" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        
+                        <div>
+                            <button type="submit" :disabled="loading" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <span v-if="loading">Wird zurückgesetzt...</span>
+                                <span v-else>Passwort zurücksetzen</span>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-6 text-center">
+                        <p class="text-sm text-gray-600">
+                            <a href="#" @click.prevent="authMode = 'login'" class="font-medium text-indigo-600 hover:text-indigo-500">
+                                Zurück zum Login
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Application (wenn eingeloggt) -->
+        <div v-else class="flex flex-col h-full">
+            <!-- Header -->
+            <header class="bg-white shadow-sm border-b border-gray-200">
+                <div class="flex justify-between items-center px-4 py-3">
+                    <div class="flex items-center space-x-2">
+                        <div class="nscale-logo">
+                            <img src="/images/senmvku-logo.png" alt="nscale Logo" class="h-8">
+                        </div>
+                        <h1 class="text-lg font-semibold">nscale DMS Assistent</h1>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <!-- Admin-Toggle (nur für Admins sichtbar) -->
+                        <button v-if="userRole === 'admin'" @click="toggleAdminView" class="text-indigo-600 hover:text-indigo-800">
+                            <i class="fas" :class="activeView === 'chat' ? 'fa-tools' : 'fa-comments'"></i>
+                            <span class="ml-1 hidden md:inline">{{ activeView === 'chat' ? 'Admin' : 'Chat' }}</span>
+                        </button>
+                        
+                        <!-- Einstellungen-Toggle -->
+                        <button @click="toggleSettings" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        
+                        <!-- Logout -->
+                        <button @click="logout" class="flex items-center text-red-600 hover:text-red-800">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span class="ml-1 hidden md:inline">Abmelden</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- MOTD -->
+            <div v-if="motd && motd.enabled && !motdDismissed && motd.display.showInChat" class="motd-container" :style="{
+                backgroundColor: motd.style.backgroundColor || '#fff3cd',
+                borderColor: motd.style.borderColor || '#ffeeba',
+                color: motd.style.textColor || '#856404'
+            }">
+                <div class="motd-content">
+                    <div class="motd-icon" v-if="motd.style.iconClass">
+                        <i :class="'fas fa-' + motd.style.iconClass"></i>
+                    </div>
+                    <div class="motd-text" v-html="formatMotdContent(motd.content)"></div>
+                </div>
+                <button v-if="motd.display.dismissible" @click="dismissMotd" class="motd-dismiss">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Main Content Container -->
+            <main class="flex-1 flex overflow-hidden">
+                <!-- Chat View -->
+                <div v-if="activeView === 'chat'" class="flex flex-1 h-full">
+                    <!-- Sidebar mit Unterhaltungen -->
+                    <div class="w-64 bg-gray-50 border-r border-gray-200 flex flex-col h-full sessions-sidebar">
+                        <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                            <h2 class="font-medium text-gray-700">Unterhaltungen</h2>
+                            <button @click="startNewSession" class="text-indigo-600 hover:text-indigo-800" title="Neue Unterhaltung starten">
+                                <i class="fas fa-plus-circle"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="overflow-y-auto flex-1 p-2">
+                            <div v-if="sessions.length === 0" class="text-center text-gray-500 p-4">
+                                Keine Unterhaltungen vorhanden
+                            </div>
+                            
+                            <div v-for="session in sessions" :key="session.id" 
+                                 @click="loadSession(session.id)"
+                                 class="session-item p-2 mb-1 rounded hover:bg-gray-200 cursor-pointer flex justify-between items-center"
+                                 :class="{ 'bg-indigo-100': currentSessionId === session.id }">
+                                <div class="truncate">
+                                    {{ session.title }}
+                                </div>
+                                <button @click.stop="deleteSession(session.id)" class="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat-Bereich -->
+                    <div class="flex-1 flex flex-col h-full">
+                        <!-- Messages -->
+                        <div ref="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4">
+                            <div v-if="messages.length === 0" class="text-center text-gray-500 h-full flex flex-col justify-center items-center">
+                                <p class="mb-2">Starten Sie eine neue Unterhaltung</p>
+                                <p class="text-sm">Stellen Sie eine Frage zu nscale DMS</p>
+                            </div>
+                            
+                            <div v-for="(message, index) in messages" :key="index" class="message-container" :class="{ 'user-message': message.is_user, 'assistant-message': !message.is_user }">
+                                <!-- Benutzernachricht -->
+                                <div v-if="message.is_user" class="user-message-content">
+                                    <div class="message-header">
+                                        <div class="message-icon">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div class="message-info">
+                                            <span class="message-sender">Sie</span>
+                                            <span class="message-time" v-if="message.timestamp">{{ new Date(message.timestamp).toLocaleString() }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="message-text">
+                                        {{ message.text }}
+                                    </div>
+                                </div>
+                                
+                                <!-- Assistentennachricht -->
+                                <div v-else class="assistant-message-content">
+                                    <div class="message-header">
+                                        <div class="message-icon">
+                                            <i class="fas fa-robot"></i>
+                                        </div>
+                                        <div class="message-info">
+                                            <span class="message-sender">Assistent</span>
+                                            <span class="message-time" v-if="message.timestamp">{{ new Date(message.timestamp).toLocaleString() }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="message-text" v-html="formatMessageWithSources(message.text)"></div>
+                                    
+                                    <!-- Feedback für Assistentennachrichten -->
+                                    <div v-if="!message.is_user" class="message-actions">
+                                        <div class="message-feedback">
+                                            <button @click="showFeedbackDialog = true; feedbackMessage = message" 
+                                                    class="feedback-button" 
+                                                    :class="{ 'feedback-given': isFeedbackGiven ? isFeedbackGiven(message) : false }">
+                                                <i class="fas fa-thumbs-up" v-if="getFeedbackType ? getFeedbackType(message) === 'positive' : false"></i>
+                                                <i class="fas fa-thumbs-down" v-if="getFeedbackType ? getFeedbackType(message) === 'negative' : false"></i>
+                                                <i class="far fa-thumbs-up" v-if="!(getFeedbackType ? getFeedbackType(message) : null)"></i>
+                                                Feedback
+                                            </button>
+                                            <button @click="toggleSourceReferences(message)" class="source-button">
+                                                <i class="fas fa-book"></i>
+                                                <span>Quellen</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Quellenreferenzen -->
+                                    <div v-if="isSourceReferencesVisible(message)" class="source-references">
+                                        <div class="source-header">
+                                            <h3>Quellenangaben</h3>
+                                            <button @click="toggleSourceReferences(message)" class="close-button">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <div class="source-content" v-if="!isLoadingSourceReferences(message)">
+                                            <div v-if="getSourceReferences(message).length > 0">
+                                                <div v-for="(source, idx) in getSourceReferences(message)" :key="idx" class="source-item">
+                                                    <div class="source-title" @click="toggleSourceDetail(message, idx)">
+                                                        <span>{{ source.title || 'Quelle ' + (idx + 1) }}</span>
+                                                        <i class="fas" :class="isSourceDetailOpen(message, idx) ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                                                    </div>
+                                                    <div v-if="isSourceDetailOpen(message, idx)" class="source-detail">
+                                                        <div class="source-metadata">
+                                                            <div><strong>Datei:</strong> {{ source.filename || 'Unbekannt' }}</div>
+                                                            <div><strong>Relevanz:</strong> {{ (source.score * 100).toFixed(1) }}%</div>
+                                                        </div>
+                                                        <div class="source-text" v-html="formatMessage(source.text || 'Kein Text verfügbar')"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div v-else class="no-sources">
+                                                Keine Quellenangaben verfügbar
+                                            </div>
+                                        </div>
+                                        <div v-else class="loading-sources">
+                                            <div class="loading-spinner"></div>
+                                            <span>Quellen werden geladen...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Lade-Animation für Streaming -->
+                            <div v-if="isStreaming" class="typing-indicator">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                        
+                        <!-- Input -->
+                        <div class="p-4 border-t border-gray-200">
+                            <form @submit.prevent="sendMessage" class="flex space-x-2">
+                                <input type="text" 
+                                       v-model="question" 
+                                       :disabled="isLoading || isStreaming" 
+                                       class="flex-1 rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                       placeholder="Stellen Sie eine Frage zu nscale...">
+                                <button type="submit" 
+                                        :disabled="isLoading || isStreaming || !question.trim()" 
+                                        class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md px-4 py-2 flex items-center justify-center">
+                                    <i class="fas fa-paper-plane" v-if="!isLoading && !isStreaming"></i>
+                                    <i class="fas fa-spinner fa-spin" v-else></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Admin Panel -->
+                <div v-if="activeView === 'admin'" class="flex flex-1 h-full">
+                    <!-- Admin Sidebar -->
+                    <div class="w-64 bg-gray-50 border-r border-gray-200 flex flex-col h-full">
+                        <div class="p-4 border-b border-gray-200">
+                            <h2 class="font-medium text-gray-700">Administration</h2>
+                        </div>
+                        
+                        <div class="overflow-y-auto flex-1">
+                            <div class="p-2">
+                                <button @click="adminTab = 'users'" class="admin-tab-button w-full" :class="{ active: adminTab === 'users' }">
+                                    <i class="fas fa-users"></i>
+                                    <span>Benutzer</span>
+                                </button>
+                                <button @click="adminTab = 'system'" class="admin-tab-button w-full" :class="{ active: adminTab === 'system' }">
+                                    <i class="fas fa-server"></i>
+                                    <span>System</span>
+                                </button>
+                                <button @click="adminTab = 'feedback'" class="admin-tab-button w-full" :class="{ active: adminTab === 'feedback' }">
+                                    <i class="fas fa-comments"></i>
+                                    <span>Feedback</span>
+                                </button>
+                                <button @click="adminTab = 'motd'" class="admin-tab-button w-full" :class="{ active: adminTab === 'motd' }">
+                                    <i class="fas fa-bullhorn"></i>
+                                    <span>MOTD</span>
+                                </button>
+                                <button @click="adminTab = 'doc-converter'" class="admin-tab-button w-full" :class="{ active: adminTab === 'doc-converter' }">
+                                    <i class="fas fa-file-alt"></i>
+                                    <span>Dokumente</span>
+                                </button>
+                                <button @click="adminTab = 'feature-toggles'" class="admin-tab-button w-full" :class="{ active: adminTab === 'feature-toggles' }">
+                                    <i class="fas fa-toggle-on"></i>
+                                    <span>Features</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Admin Content -->
+                    <div class="flex-1 flex flex-col h-full">
+                        <div class="p-4 border-b border-gray-200">
+                            <h1 class="text-xl font-medium text-gray-900">{{ getAdminTabTitle() }}</h1>
+                        </div>
+                        
+                        <div id="admin-content" class="overflow-y-auto p-4 flex-1">
+                            <!-- Dynamischer Admin-Inhalt wird hier geladen -->
+                            <div v-if="adminTab === 'feature-toggles'" class="feature-toggles-container">
+                                <h2 class="text-lg font-semibold mb-4">Feature-Toggles Verwaltung</h2>
+                                
+                                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                                    <div class="flex">
+                                        <div class="flex-shrink-0">
+                                            <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm text-yellow-700">
+                                                Das Ändern von Feature-Toggles kann die Funktionalität der Anwendung beeinflussen.
+                                                Bitte nutzen Sie diese Funktion mit Vorsicht.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <div class="bg-white p-4 rounded shadow">
+                                        <h3 class="font-medium text-gray-700 mb-2">Vue 3 SFC-Komponenten</h3>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between items-center">
+                                                <span>Admin-Bereich (SFC)</span>
+                                                <button @click="toggleFeature('useSfcAdmin')" class="px-3 py-1 rounded text-white font-medium" :class="features.useSfcAdmin ? 'bg-green-500' : 'bg-gray-400'">
+                                                    {{ features.useSfcAdmin ? 'Aktiviert' : 'Deaktiviert' }}
+                                                </button>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span>Dokumentenkonverter (SFC)</span>
+                                                <button @click="toggleFeature('useSfcDocConverter')" class="px-3 py-1 rounded text-white font-medium" :class="features.useSfcDocConverter ? 'bg-green-500' : 'bg-gray-400'">
+                                                    {{ features.useSfcDocConverter ? 'Aktiviert' : 'Deaktiviert' }}
+                                                </button>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span>Chat (SFC)</span>
+                                                <button @click="toggleFeature('useSfcChat')" class="px-3 py-1 rounded text-white font-medium" :class="features.useSfcChat ? 'bg-green-500' : 'bg-gray-400'">
+                                                    {{ features.useSfcChat ? 'Aktiviert' : 'Deaktiviert' }}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-white p-4 rounded shadow">
+                                        <h3 class="font-medium text-gray-700 mb-2">Abhängigkeiten</h3>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between items-center">
+                                                <span>Auth Store</span>
+                                                <button @click="toggleFeature('usePiniaAuth')" class="px-3 py-1 rounded text-white font-medium" :class="features.usePiniaAuth ? 'bg-green-500' : 'bg-gray-400'">
+                                                    {{ features.usePiniaAuth ? 'Aktiviert' : 'Deaktiviert' }}
+                                                </button>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span>UI Store</span>
+                                                <button @click="toggleFeature('usePiniaUI')" class="px-3 py-1 rounded text-white font-medium" :class="features.usePiniaUI ? 'bg-green-500' : 'bg-gray-400'">
+                                                    {{ features.usePiniaUI ? 'Aktiviert' : 'Deaktiviert' }}
+                                                </button>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span>Legacy Bridge</span>
+                                                <button @click="toggleFeature('useLegacyBridge')" class="px-3 py-1 rounded text-white font-medium" :class="features.useLegacyBridge ? 'bg-green-500' : 'bg-gray-400'">
+                                                    {{ features.useLegacyBridge ? 'Aktiviert' : 'Deaktiviert' }}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex justify-end space-x-2">
+                                    <button @click="enableAllFeatures" class="bg-indigo-600 text-white px-4 py-2 rounded">
+                                        Alle Features aktivieren
+                                    </button>
+                                    <button @click="resetFeatures" class="bg-gray-200 text-gray-800 px-4 py-2 rounded">
+                                        Zurücksetzen
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <!-- Debug-Informationen im Entwicklungsmodus -->
+        <div class="fixed bottom-4 right-4 bg-black/80 text-green-400 p-2 rounded text-xs font-mono z-50">
+            Fix-Version v1.0
+        </div>
+    </div>
+    
+    <!-- Die JS-Scripts am Ende für bessere Performance (ohne Module-Type) -->
+    <script>
+        // Die gesamte Vue-App-Logik
+        const { createApp, ref, reactive, computed, watch, onMounted, nextTick } = Vue;
+        
+        // Vorhandene Daten laden oder Standard-Daten festlegen
+        function loadFromLocalStorage(key, defaultValue) {
+            try {
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : defaultValue;
+            } catch (e) {
+                console.error(`Fehler beim Laden von ${key}:`, e);
+                return defaultValue;
+            }
+        }
+        
+        // Hauptanwendung
+        createApp({
+            setup() {
+                // Auth State
+                const token = ref(localStorage.getItem('token') || '');
+                const email = ref('');
+                const password = ref('');
+                const authMode = ref('login');
+                const loading = ref(false);
+                const errorMessage = ref('');
+                const successMessage = ref('');
+                const userRole = ref('user'); // Standardmäßig normaler Benutzer
+                
+                // App State
+                const activeView = ref('chat'); // 'chat' oder 'admin'
+                const adminTab = ref('users');
+                const settingsVisible = ref(false);
+                const showFeedbackDialog = ref(false);
+                
+                // MOTD
+                const motd = ref(loadFromLocalStorage('motd', {
+                    enabled: true,
+                    content: 'Willkommen beim nscale DMS Assistenten! Dieser Assistent hilft Ihnen bei Fragen rund um nscale.',
+                    format: 'text',
+                    style: {
+                        backgroundColor: '#fff3cd',
+                        borderColor: '#ffeeba',
+                        textColor: '#856404',
+                        iconClass: 'info-circle'
+                    },
+                    display: {
+                        dismissible: true,
+                        showOnStartup: true,
+                        showInChat: true,
+                        showInEverySession: false,
+                        position: 'top'
+                    }
+                }));
+                const motdDismissed = ref(localStorage.getItem('motdDismissed') === 'true');
+                
+                // Chat State
+                const sessions = ref(loadFromLocalStorage('sessions', []));
+                const currentSessionId = ref(loadFromLocalStorage('currentSessionId', null));
+                const messages = ref(loadFromLocalStorage('messages', {}));
+                const question = ref('');
+                const isLoading = ref(false);
+                const isStreaming = ref(false);
+                
+                // Feature Toggles für Admin-Panel
+                const features = reactive({
+                    useSfcAdmin: true,
+                    useSfcDocConverter: false,
+                    useSfcChat: false,
+                    usePiniaAuth: true,
+                    usePiniaUI: true,
+                    usePiniaSessions: true,
+                    useLegacyBridge: true
+                });
+                
+                // Beim Start Features aus localStorage laden
+                onMounted(() => {
+                    try {
+                        const storedToggles = localStorage.getItem('featureToggles');
+                        const toggles = storedToggles ? JSON.parse(storedToggles) : {};
+                        
+                        // Features aktualisieren
+                        Object.entries(toggles).forEach(([key, value]) => {
+                            if (key in features) {
+                                features[key] = value;
+                            }
+                        });
+                        
+                        // Demo-Admin-Rolle
+                        userRole.value = 'admin';
+                        
+                        // Automatisch einloggen in der Fix-Version (Demo-Zweck)
+                        if (!token.value) {
+                            token.value = 'demo-token';
+                            localStorage.setItem('token', token.value);
+                        }
+                    } catch (e) {
+                        console.error('Fehler beim Laden der Feature-Toggles:', e);
+                    }
+                });
+                
+                // Berechnete Eigenschaften
+                const currentMessages = computed(() => {
+                    if (!currentSessionId.value || !messages.value[currentSessionId.value]) {
+                        return [];
+                    }
+                    return messages.value[currentSessionId.value];
+                });
+                
+                // Feedback-Funktionen
+                const feedbackMessage = ref(null);
+                const feedbackType = ref(null);
+                const feedbackComment = ref('');
+                const feedbacks = ref(loadFromLocalStorage('feedbacks', {}));
+                
+                // Admin-Daten
+                const usersList = ref([
+                    { id: 1, email: 'admin@example.com', role: 'admin', is_active: true },
+                    { id: 2, email: 'user1@example.com', role: 'user', is_active: true },
+                    { id: 3, email: 'user2@example.com', role: 'user', is_active: false }
+                ]);
+                
+                const systemStats = ref([
+                    { name: 'API-Status', value: 'Online', status: 'success' },
+                    { name: 'Dokumente', value: '2543', status: 'normal' },
+                    { name: 'Speicherplatz', value: '65%', status: 'warning' },
+                    { name: 'Aktive Benutzer', value: '12', status: 'normal' }
+                ]);
+                
+                const feedbackStats = ref({
+                    positive: 24,
+                    negative: 7,
+                    total: 31
+                });
+                
+                const recentFeedback = ref([
+                    { type: 'positive', message: 'Sehr hilfreiche Antwort zur nscale-Konfiguration', comment: 'Genau was ich brauchte!', timestamp: new Date().toISOString() },
+                    { type: 'negative', message: 'Antwort auf Berechtigungsfrage war ungenau', comment: 'Die beschriebenen Schritte funktionieren nicht wie angegeben.', timestamp: new Date().toISOString() }
+                ]);
+                
+                // Auth-Funktionen
+                function login() {
+                    loading.value = true;
+                    setTimeout(() => {
+                        if (email.value === 'admin@example.com' && password.value === 'admin') {
+                            token.value = 'demo-admin-token';
+                            localStorage.setItem('token', token.value);
+                            userRole.value = 'admin';
+                        } else if (email.value && password.value) {
+                            token.value = 'demo-user-token';
+                            localStorage.setItem('token', token.value);
+                            userRole.value = 'user';
+                        } else {
+                            errorMessage.value = 'Bitte geben Sie eine E-Mail und ein Passwort ein.';
+                        }
+                        loading.value = false;
+                    }, 1000);
+                }
+                
+                function register() {
+                    loading.value = true;
+                    setTimeout(() => {
+                        if (email.value && password.value) {
+                            successMessage.value = 'Registrierung erfolgreich. Sie können sich jetzt anmelden.';
+                            authMode.value = 'login';
+                        } else {
+                            errorMessage.value = 'Bitte geben Sie eine E-Mail und ein Passwort ein.';
+                        }
+                        loading.value = false;
+                    }, 1000);
+                }
+                
+                function resetPassword() {
+                    loading.value = true;
+                    setTimeout(() => {
+                        if (email.value) {
+                            successMessage.value = 'Eine E-Mail mit Anweisungen zum Zurücksetzen des Passworts wurde gesendet.';
+                        } else {
+                            errorMessage.value = 'Bitte geben Sie eine E-Mail-Adresse ein.';
+                        }
+                        loading.value = false;
+                    }, 1000);
+                }
+                
+                function logout() {
+                    token.value = '';
+                    localStorage.removeItem('token');
+                    authMode.value = 'login';
+                    userRole.value = 'guest';
+                }
+                
+                // Chat-Funktionen
+                function startNewSession() {
+                    const id = 'session-' + Date.now();
+                    const title = 'Neue Unterhaltung';
+                    sessions.value.unshift({ id, title, timestamp: new Date().toISOString() });
+                    localStorage.setItem('sessions', JSON.stringify(sessions.value));
+                    
+                    // Leere Nachrichtenliste für diese Session
+                    if (!messages.value[id]) {
+                        messages.value[id] = [];
+                    }
+                    localStorage.setItem('messages', JSON.stringify(messages.value));
+                    
+                    loadSession(id);
+                }
+                
+                function loadSession(id) {
+                    currentSessionId.value = id;
+                    localStorage.setItem('currentSessionId', id);
+                    
+                    // Scrolle zum Anfang der Session
+                    nextTick(() => {
+                        const chatMessagesElement = document.querySelector('.chat-messages');
+                        if (chatMessagesElement) {
+                            chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
+                        }
+                    });
+                }
+                
+                function deleteSession(id) {
+                    if (confirm('Möchten Sie diese Unterhaltung wirklich löschen?')) {
+                        const index = sessions.value.findIndex(s => s.id === id);
+                        if (index !== -1) {
+                            sessions.value.splice(index, 1);
+                            
+                            // Lösche die Nachrichten für diese Session
+                            delete messages.value[id];
+                            
+                            localStorage.setItem('sessions', JSON.stringify(sessions.value));
+                            localStorage.setItem('messages', JSON.stringify(messages.value));
+                            
+                            // Wenn die aktuelle Session gelöscht wurde, lade die erste verfügbare
+                            if (currentSessionId.value === id) {
+                                if (sessions.value.length > 0) {
+                                    loadSession(sessions.value[0].id);
+                                } else {
+                                    currentSessionId.value = null;
+                                    localStorage.removeItem('currentSessionId');
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                function sendMessage() {
+                    if (!question.value.trim() || isLoading.value || isStreaming.value) return;
+                    
+                    // Stelle sicher, dass eine aktive Session existiert
+                    if (!currentSessionId.value) {
+                        startNewSession();
+                    }
+                    
+                    // Benutzer-Nachricht hinzufügen
+                    const userMessage = {
+                        is_user: true,
+                        text: question.value,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    if (!messages.value[currentSessionId.value]) {
+                        messages.value[currentSessionId.value] = [];
+                    }
+                    
+                    messages.value[currentSessionId.value].push(userMessage);
+                    
+                    // Speichere die aktualisierten Nachrichten
+                    localStorage.setItem('messages', JSON.stringify(messages.value));
+                    
+                    // Aktualisiere den Titel der Session basierend auf der ersten Nachricht
+                    if (messages.value[currentSessionId.value].length === 1) {
+                        const sessionIndex = sessions.value.findIndex(s => s.id === currentSessionId.value);
+                        if (sessionIndex !== -1) {
+                            sessions.value[sessionIndex].title = question.value.length > 30 
+                                ? question.value.substring(0, 30) + '...' 
+                                : question.value;
+                            localStorage.setItem('sessions', JSON.stringify(sessions.value));
+                        }
+                    }
+                    
+                    // Leere das Eingabefeld
+                    const questionText = question.value;
+                    question.value = '';
+                    
+                    // Scrolle zum Ende der Nachrichten
+                    nextTick(() => {
+                        const chatMessagesElement = document.querySelector('.chat-messages');
+                        if (chatMessagesElement) {
+                            chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
+                        }
+                    });
+                    
+                    // Simuliere Streamen der Antwort
+                    isStreaming.value = true;
+                    
+                    // Demo-Antwort basierend auf der Frage
+                    let demoResponse = '';
+                    if (questionText.toLowerCase().includes('nscale')) {
+                        demoResponse = 'nscale DMS ist eine umfassende Enterprise-Content-Management-Lösung von Ceyoniq Technology. Sie bietet Funktionen zur digitalen Dokumentenverwaltung, Archivierung und Prozessoptimierung. Typischerweise wird nscale in Unternehmen eingesetzt, um Dokumente strukturiert zu verwalten, rechtssicher zu archivieren und in bestehende Geschäftsprozesse zu integrieren.';
+                    } else if (questionText.toLowerCase().includes('dokument')) {
+                        demoResponse = 'Dokumente können in nscale DMS auf verschiedene Arten importiert werden: über den Scan-Client, als Datei-Upload, per E-Mail-Integration oder durch automatisierte Batch-Verarbeitung. Nach dem Import werden sie indiziert, verschlagwortet und stehen für die Suche zur Verfügung. Die Dokumentenkonvertierung unterstützt verschiedene Formate wie PDF, Office-Dokumente, E-Mails und Bilddateien.';
+                    } else if (questionText.toLowerCase().includes('berechtig') || questionText.toLowerCase().includes('recht')) {
+                        demoResponse = 'Berechtigungen in nscale DMS werden über ein feingranulares Rollenkonzept gesteuert. Administratoren können Benutzergruppen und Rollen definieren und diesen spezifische Rechte für den Zugriff auf Dokumente, Ordner und Funktionen zuweisen. Die Berechtigungen können auf verschiedenen Ebenen konfiguriert werden: global, auf Archiv-Ebene oder dokumentenspezifisch.';
+                    } else {
+                        demoResponse = 'Vielen Dank für Ihre Frage. Als nscale DMS Assistent kann ich Ihnen bei Fragen zur Dokumentenverwaltung, Archivierung, nscale-Konfiguration und vielen weiteren Themen im Kontext von Enterprise Content Management helfen. Bitte stellen Sie spezifischere Fragen zu nscale, damit ich Ihnen besser weiterhelfen kann.';
+                    }
+                    
+                    // Antwort simulieren mit Verzögerung
+                    setTimeout(() => {
+                        isStreaming.value = false;
+                        
+                        const assistantMessage = {
+                            is_user: false,
+                            text: demoResponse,
+                            timestamp: new Date().toISOString(),
+                            source_docs: []
+                        };
+                        
+                        messages.value[currentSessionId.value].push(assistantMessage);
+                        localStorage.setItem('messages', JSON.stringify(messages.value));
+                        
+                        nextTick(() => {
+                            const chatMessagesElement = document.querySelector('.chat-messages');
+                            if (chatMessagesElement) {
+                                chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
+                            }
+                        });
+                    }, 1500);
+                }
+                
+                // Toggle Funktionen
+                function toggleAdminView() {
+                    activeView.value = activeView.value === 'chat' ? 'admin' : 'chat';
+                }
+                
+                function toggleSettings() {
+                    settingsVisible.value = !settingsVisible.value;
+                }
+                
+                // Feedback-Funktionen
+                function submitFeedback(type) {
+                    feedbackType.value = type;
+                }
+                
+                function submitFeedbackWithComment() {
+                    if (!feedbackMessage.value || !feedbackType.value) return;
+                    
+                    // Speichere das Feedback
+                    if (!feedbacks.value[currentSessionId.value]) {
+                        feedbacks.value[currentSessionId.value] = {};
+                    }
+                    
+                    const messageId = feedbackMessage.value.timestamp;
+                    feedbacks.value[currentSessionId.value][messageId] = {
+                        type: feedbackType.value,
+                        comment: feedbackComment.value,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    localStorage.setItem('feedbacks', JSON.stringify(feedbacks.value));
+                    
+                    // Dialog schließen und Daten zurücksetzen
+                    showFeedbackDialog.value = false;
+                    feedbackMessage.value = null;
+                    feedbackType.value = null;
+                    feedbackComment.value = '';
+                }
+                
+                function isFeedbackGiven(message) {
+                    if (!message || !message.timestamp || !feedbacks.value[currentSessionId.value]) return false;
+                    return !!feedbacks.value[currentSessionId.value][message.timestamp];
+                }
+                
+                function getFeedbackType(message) {
+                    if (!message || !message.timestamp || !feedbacks.value[currentSessionId.value]) return null;
+                    const feedback = feedbacks.value[currentSessionId.value][message.timestamp];
+                    return feedback ? feedback.type : null;
+                }
+                
+                // Quellen-Funktionen
+                const visibleSourceReferences = ref({});
+                const loadingSourceReferences = ref({});
+                const sourceDetails = ref({});
+                
+                function toggleSourceReferences(message) {
+                    if (!message || !message.timestamp) return;
+                    
+                    const messageId = message.timestamp;
+                    
+                    if (!visibleSourceReferences.value[messageId]) {
+                        visibleSourceReferences.value[messageId] = true;
+                        
+                        // Simuliere Laden von Quellen
+                        loadingSourceReferences.value[messageId] = true;
+                        setTimeout(() => {
+                            loadingSourceReferences.value[messageId] = false;
+                        }, 1000);
+                    } else {
+                        visibleSourceReferences.value[messageId] = false;
+                    }
+                }
+                
+                function isSourceReferencesVisible(message) {
+                    if (!message || !message.timestamp) return false;
+                    return visibleSourceReferences.value[message.timestamp] || false;
+                }
+                
+                function isLoadingSourceReferences(message) {
+                    if (!message || !message.timestamp) return false;
+                    return loadingSourceReferences.value[message.timestamp] || false;
+                }
+                
+                function getSourceReferences(message) {
+                    if (!message || !message.timestamp) return [];
+                    return message.source_docs || [];
+                }
+                
+                function toggleSourceDetail(message, sourceIndex) {
+                    if (!message || !message.timestamp) return;
+                    
+                    const messageId = message.timestamp;
+                    
+                    if (!sourceDetails.value[messageId]) {
+                        sourceDetails.value[messageId] = {};
+                    }
+                    
+                    sourceDetails.value[messageId][sourceIndex] = !sourceDetails.value[messageId][sourceIndex];
+                }
+                
+                function isSourceDetailOpen(message, sourceIndex) {
+                    if (!message || !message.timestamp) return false;
+                    
+                    const messageId = message.timestamp;
+                    
+                    if (!sourceDetails.value[messageId]) {
+                        return false;
+                    }
+                    
+                    return sourceDetails.value[messageId][sourceIndex] || false;
+                }
+                
+                // Formatierungsfunktionen
+                function formatMessage(text) {
+                    return text; // In der Demo ohne spezielle Formatierung
+                }
+                
+                function formatMessageWithSources(text) {
+                    return text; // In der Demo ohne spezielle Formatierung
+                }
+                
+                function formatMotdContent(content) {
+                    return content; // In der Demo ohne spezielle Formatierung
+                }
+                
+                function dismissMotd() {
+                    motdDismissed.value = true;
+                    localStorage.setItem('motdDismissed', 'true');
+                }
+                
+                // Admin-Funktionen
+                function getAdminTabTitle() {
+                    switch (adminTab.value) {
+                        case 'users': return 'Benutzerverwaltung';
+                        case 'system': return 'System-Überwachung';
+                        case 'feedback': return 'Feedback-Analyse';
+                        case 'motd': return 'Message of the Day';
+                        case 'doc-converter': return 'Dokumentenkonverter';
+                        case 'feature-toggles': return 'Feature-Toggles';
+                        default: return 'Administration';
+                    }
+                }
+                
+                // Feature-Toggle Funktionen
+                function toggleFeature(featureName) {
+                    if (featureName in features) {
+                        features[featureName] = !features[featureName];
+                        
+                        // Feature-Toggles in localStorage aktualisieren
+                        let toggles = {};
+                        try {
+                            const storedToggles = localStorage.getItem('featureToggles');
+                            toggles = storedToggles ? JSON.parse(storedToggles) : {};
+                        } catch (e) {
+                            toggles = {};
+                        }
+                        
+                        toggles[featureName] = features[featureName];
+                        localStorage.setItem('featureToggles', JSON.stringify(toggles));
+                    }
+                }
+                
+                function enableAllFeatures() {
+                    Object.keys(features).forEach(key => {
+                        features[key] = true;
+                    });
+                    
+                    // Feature-Toggles in localStorage aktualisieren
+                    let toggles = {};
+                    try {
+                        const storedToggles = localStorage.getItem('featureToggles');
+                        toggles = storedToggles ? JSON.parse(storedToggles) : {};
+                    } catch (e) {
+                        toggles = {};
+                    }
+                    
+                    Object.keys(features).forEach(key => {
+                        toggles[key] = true;
+                    });
+                    
+                    localStorage.setItem('featureToggles', JSON.stringify(toggles));
+                }
+                
+                function resetFeatures() {
+                    Object.keys(features).forEach(key => {
+                        // Standard-Werte
+                        if (key === 'useSfcAdmin' || key === 'usePiniaAuth' || key === 'usePiniaUI' || key === 'usePiniaSessions' || key === 'useLegacyBridge') {
+                            features[key] = true;
+                        } else {
+                            features[key] = false;
+                        }
+                    });
+                    
+                    // Feature-Toggles in localStorage aktualisieren
+                    let toggles = {};
+                    try {
+                        const storedToggles = localStorage.getItem('featureToggles');
+                        toggles = storedToggles ? JSON.parse(storedToggles) : {};
+                    } catch (e) {
+                        toggles = {};
+                    }
+                    
+                    Object.keys(features).forEach(key => {
+                        toggles[key] = features[key];
+                    });
+                    
+                    localStorage.setItem('featureToggles', JSON.stringify(toggles));
+                }
+                
+                return {
+                    // Auth
+                    token,
+                    email,
+                    password,
+                    authMode,
+                    loading,
+                    errorMessage,
+                    successMessage,
+                    userRole,
+                    login,
+                    register,
+                    resetPassword,
+                    logout,
+                    
+                    // App
+                    activeView,
+                    adminTab,
+                    settingsVisible,
+                    toggleAdminView,
+                    toggleSettings,
+                    
+                    // MOTD
+                    motd,
+                    motdDismissed,
+                    dismissMotd,
+                    formatMotdContent,
+                    
+                    // Chat
+                    sessions,
+                    currentSessionId,
+                    messages: currentMessages,
+                    question,
+                    isLoading,
+                    isStreaming,
+                    startNewSession,
+                    loadSession,
+                    deleteSession,
+                    sendMessage,
+                    
+                    // Feedback
+                    showFeedbackDialog,
+                    feedbackMessage,
+                    feedbackType,
+                    feedbackComment,
+                    submitFeedback,
+                    submitFeedbackWithComment,
+                    isFeedbackGiven,
+                    getFeedbackType,
+                    
+                    // Sources
+                    toggleSourceReferences,
+                    isSourceReferencesVisible,
+                    isLoadingSourceReferences,
+                    getSourceReferences,
+                    toggleSourceDetail,
+                    isSourceDetailOpen,
+                    formatMessage,
+                    formatMessageWithSources,
+                    
+                    // Admin
+                    getAdminTabTitle,
+                    usersList,
+                    systemStats,
+                    feedbackStats,
+                    recentFeedback,
+                    
+                    // Feature-Toggles
+                    features,
+                    toggleFeature,
+                    enableAllFeatures,
+                    resetFeatures
+                };
+            }
+        }).mount('#app');
+    </script>
+    
+    <!-- Reparatur für interaktive Elemente -->
+    <script defer src="/frontend/repair-interaction.js?v=20250508214949"></script>
+    
+    <!-- Erweiterte Reparatur für die Hauptanwendung -->
+    <script defer src="/frontend/advanced-repair.js?v=20250508214949"></script>
+    
+    <!-- Direkter Event-Handler für kritische Aktionen -->
+    <script defer src="/frontend/direct-event-handler.js?v=20250508214949"></script>
+    
+    <!-- Interaktivitäts-Testskript - für Fehlersuche bei Problemen -->
+    <script defer src="/frontend/interactivity-test.js?v=20250508214949"></script>
+</body>
+</html>

@@ -4,6 +4,7 @@
     role="region" 
     aria-live="polite" 
     aria-label="Dokumentenkonvertierungsfortschritt"
+    data-testid="conversion-progress-container"
   >
     <h3 class="conversion-title">
       {{ t('documentConverter.conversionInProgress', 'Konvertierung läuft...') }}
@@ -27,12 +28,16 @@
           'stage-active': stageIndex === index,
           'stage-pending': stageIndex < index
         }"
+        data-testid="conversion-stage"
       >
         <div class="stage-indicator">
           <i v-if="stageIndex > index" class="fa fa-check"></i>
           <span v-else>{{ index + 1 }}</span>
         </div>
-        <div class="stage-label">{{ stage }}</div>
+        <div class="stage-label">{{ stage.name }}</div>
+        <div v-if="stage.description && stageIndex === index" class="stage-description">
+          {{ stage.description }}
+        </div>
       </div>
       <div class="stages-connector"></div>
     </div>
@@ -45,35 +50,47 @@
         aria-valuemin="0" 
         aria-valuemax="100"
         :aria-label="`${progress}% abgeschlossen`"
+        data-testid="progress-bar-container"
       >
         <div 
           class="progress-bar" 
           :style="{ width: `${progress}%` }"
+          :class="{ 'progress-bar--paused': isPaused }"
+          data-testid="progress-bar"
         ></div>
         <div v-if="isIndeterminate" class="progress-bar-indeterminate"></div>
       </div>
       
       <div class="progress-info">
-        <span class="progress-percentage">{{ progress }}%</span>
-        <span v-if="estimatedTimeRemaining > 0" class="estimated-time">
-          {{ t('documentConverter.estimatedTimeRemaining', 'Verbleibend') }}: {{ formatTime(estimatedTimeRemaining) }}
-        </span>
+        <span class="progress-percentage" data-testid="progress-percentage">{{ progress }}%</span>
+        <div class="progress-details">
+          <span v-if="isPaused" class="progress-paused">
+            <i class="fa fa-pause-circle"></i>
+            {{ t('documentConverter.pausedStatus', 'Pausiert') }}
+          </span>
+          <span v-else-if="estimatedCompletionTime" class="estimated-completion">
+            {{ t('documentConverter.estimatedCompletion', 'Fertig um') }}: {{ formatTime(estimatedCompletionTime) }}
+          </span>
+          <span v-else-if="estimatedTimeRemaining > 0" class="estimated-time">
+            {{ t('documentConverter.estimatedTimeRemaining', 'Verbleibend') }}: {{ formatDuration(estimatedTimeRemaining) }}
+          </span>
+        </div>
       </div>
     </div>
     
     <div class="step-details">
       <div class="current-step-container">
         <div class="current-step-label">{{ t('documentConverter.currentStep', 'Aktueller Schritt') }}:</div>
-        <div class="current-step">{{ currentStep }}</div>
+        <div class="current-step" data-testid="current-step">{{ currentStep }}</div>
       </div>
       
       <transition name="fade">
-        <div v-if="details" class="step-details-text">
+        <div v-if="details" class="step-details-text" data-testid="step-details">
           <pre>{{ details }}</pre>
         </div>
       </transition>
       
-      <div v-if="warnings && warnings.length > 0" class="conversion-warnings">
+      <div v-if="warnings && warnings.length > 0" class="conversion-warnings" data-testid="conversion-warnings">
         <div class="warning-label">
           <i class="fa fa-exclamation-triangle warning-icon" aria-hidden="true"></i>
           {{ t('documentConverter.warnings', 'Hinweise') }}:
@@ -89,20 +106,22 @@
     <div class="actions">
       <button 
         class="cancel-button" 
-        @click="emit('cancel')" 
+        @click="handleCancel" 
         :disabled="progress >= 100 || !canCancel"
         :aria-label="t('documentConverter.cancelConversion', 'Konvertierung abbrechen')"
+        data-testid="cancel-button"
       >
         <i class="fa fa-times" aria-hidden="true"></i>
         {{ t('documentConverter.cancelConversion', 'Abbrechen') }}
       </button>
       
       <button 
-        v-if="canPause" 
+        v-if="canPause && !isPaused" 
         class="pause-button" 
-        @click="emit('pause')"
-        :disabled="progress >= 100 || isPaused"
+        @click="handlePause"
+        :disabled="progress >= 100"
         :aria-label="t('documentConverter.pauseConversion', 'Konvertierung pausieren')"
+        data-testid="pause-button"
       >
         <i class="fa fa-pause" aria-hidden="true"></i>
         {{ t('documentConverter.pause', 'Pausieren') }}
@@ -111,25 +130,134 @@
       <button 
         v-if="canPause && isPaused" 
         class="resume-button" 
-        @click="emit('resume')"
+        @click="handleResume"
         :aria-label="t('documentConverter.resumeConversion', 'Konvertierung fortsetzen')"
+        data-testid="resume-button"
       >
         <i class="fa fa-play" aria-hidden="true"></i>
         {{ t('documentConverter.resume', 'Fortsetzen') }}
       </button>
+      
+      <button
+        v-if="showDebugButton"
+        class="debug-button"
+        @click="toggleDebugInfo"
+        :aria-label="showDebugInfo ? 'Debug-Informationen ausblenden' : 'Debug-Informationen anzeigen'"
+        data-testid="debug-button"
+      >
+        <i class="fa fa-bug" aria-hidden="true"></i>
+        {{ showDebugInfo ? t('documentConverter.hideDebug', 'Debug ausblenden') : t('documentConverter.showDebug', 'Debug anzeigen') }}
+      </button>
     </div>
     
-    <div v-if="logs && logs.length > 0" class="conversion-logs">
+    <transition name="slide">
+      <div v-if="showDebugInfo" class="debug-info" data-testid="debug-info">
+        <h4 class="debug-info-title">{{ t('documentConverter.debugInfo', 'Debug-Informationen') }}</h4>
+        <div class="debug-info-content">
+          <div class="debug-info-section">
+            <h5>{{ t('documentConverter.conversionPhases', 'Konvertierungsphasen') }}</h5>
+            <ul class="debug-phase-list">
+              <li 
+                v-for="(phase, idx) in phaseTimings" 
+                :key="idx" 
+                class="debug-phase-item"
+                :class="{ 'debug-phase-item--current': idx === currentPhaseIndex }"
+              >
+                <span class="debug-phase-name">{{ phase.name }}</span>
+                <span class="debug-phase-timing">
+                  {{ phase.startTime ? formatTime(phase.startTime) : '-' }} →
+                  {{ phase.endTime ? formatTime(phase.endTime) : phase.startTime ? '...' : '-' }}
+                  ({{ phase.duration !== null ? `${phase.duration.toFixed(1)}s` : '-' }})
+                </span>
+              </li>
+            </ul>
+          </div>
+          
+          <div class="debug-info-section">
+            <h5>{{ t('documentConverter.performanceMetrics', 'Leistungsmetriken') }}</h5>
+            <div class="debug-metrics">
+              <div class="debug-metric">
+                <span class="debug-metric-label">{{ t('documentConverter.avgProcessingSpeed', 'Durchschn. Verarbeitungsgeschwindigkeit') }}:</span>
+                <span class="debug-metric-value">{{ avgProcessingSpeed }}</span>
+              </div>
+              <div class="debug-metric">
+                <span class="debug-metric-label">{{ t('documentConverter.startTime', 'Startzeit') }}:</span>
+                <span class="debug-metric-value">{{ formatTime(startTime) }}</span>
+              </div>
+              <div class="debug-metric">
+                <span class="debug-metric-label">{{ t('documentConverter.elapsedTime', 'Verstrichene Zeit') }}:</span>
+                <span class="debug-metric-value">{{ formatDuration(elapsedTimeSeconds) }}</span>
+              </div>
+              <div class="debug-metric">
+                <span class="debug-metric-label">{{ t('documentConverter.timeRemaining', 'Verbleibende Zeit') }}:</span>
+                <span class="debug-metric-value">{{ formatDuration(estimatedTimeRemaining) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="debug-controls">
+          <button 
+            class="debug-action-btn" 
+            @click="simulateError"
+            data-testid="simulate-error-btn"
+          >
+            {{ t('documentConverter.simulateError', 'Fehler simulieren') }}
+          </button>
+          <button 
+            class="debug-action-btn" 
+            @click="adjustTimeEstimation(0.8)"
+            title="Zeitschätzung beschleunigen"
+            data-testid="accelerate-btn"
+          >
+            {{ t('documentConverter.accelerate', 'Beschleunigen') }}
+          </button>
+          <button 
+            class="debug-action-btn" 
+            @click="adjustTimeEstimation(1.2)"
+            title="Zeitschätzung verlangsamen"
+            data-testid="decelerate-btn"
+          >
+            {{ t('documentConverter.decelerate', 'Verlangsamen') }}
+          </button>
+        </div>
+      </div>
+    </transition>
+    
+    <div v-if="logs && logs.length > 0" class="conversion-logs" data-testid="conversion-logs">
       <details class="logs-details">
         <summary class="logs-summary">
           {{ t('documentConverter.showLogs', 'Konvertierungsprotokolle anzeigen') }}
+          <span class="logs-count" :class="{ 'logs-count--warning': hasWarningLogs, 'logs-count--error': hasErrorLogs }">
+            {{ logs.length }}
+          </span>
         </summary>
         <div class="logs-container">
-          <div v-for="(log, index) in logs" :key="index" class="log-entry">
-            <span class="log-timestamp">{{ formatTimestamp(log.timestamp) }}</span>
-            <span class="log-level" :class="`log-level-${log.level}`">{{ log.level }}</span>
+          <div v-for="(log, index) in logs" :key="index" class="log-entry" :class="`log-level-${log.level}`">
+            <span class="log-timestamp">{{ formatLogTime(log.timestamp) }}</span>
+            <span class="log-level">{{ log.level.toUpperCase() }}</span>
             <span class="log-message">{{ log.message }}</span>
           </div>
+        </div>
+        <div class="logs-actions">
+          <button 
+            class="logs-action-btn" 
+            @click="clearLogs"
+            :title="t('documentConverter.clearLogs', 'Protokolle löschen')"
+            data-testid="clear-logs-btn"
+          >
+            <i class="fa fa-trash" aria-hidden="true"></i>
+            {{ t('documentConverter.clearLogs', 'Protokolle löschen') }}
+          </button>
+          <button 
+            class="logs-action-btn" 
+            @click="exportLogs"
+            :title="t('documentConverter.exportLogs', 'Protokolle exportieren')"
+            data-testid="export-logs-btn"
+          >
+            <i class="fa fa-download" aria-hidden="true"></i>
+            {{ t('documentConverter.exportLogs', 'Exportieren') }}
+          </button>
         </div>
       </details>
     </div>
@@ -137,10 +265,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useI18n } from '@/composables/useI18n';
+import { useDocumentConverterStore } from '@/stores/documentConverter';
 
-const { t } = useI18n();
+interface ConversionPhase {
+  name: string;
+  startTime: Date | null;
+  endTime: Date | null;
+  duration: number | null;
+}
+
+interface Log {
+  timestamp: Date;
+  level: 'info' | 'warning' | 'error';
+  message: string;
+}
 
 // Definiere die Props mit TypeScript-Typen
 interface Props {
@@ -186,6 +326,9 @@ interface Props {
   
   /** Flag, ob eine unbestimmte Fortschrittsanzeige angezeigt werden soll */
   isIndeterminate?: boolean;
+  
+  /** Flag, ob Debug-Informationen angezeigt werden können */
+  showDebugButton?: boolean;
 }
 
 // Definiere die Standardwerte für die Props
@@ -197,12 +340,13 @@ const props = withDefaults(defineProps<Props>(), {
   documentIndex: undefined,
   totalDocuments: 0,
   details: '',
-  canPause: false,
+  canPause: true,
   isPaused: false,
   canCancel: true,
   warnings: () => [],
   logs: () => [],
-  isIndeterminate: false
+  isIndeterminate: false,
+  showDebugButton: false
 });
 
 // Definiere die Emits
@@ -210,24 +354,61 @@ const emit = defineEmits<{
   (e: 'cancel'): void;
   (e: 'pause'): void;
   (e: 'resume'): void;
+  (e: 'error', error: Error): void;
 }>();
+
+const { t } = useI18n();
+const store = useDocumentConverterStore();
+
+// Interne Zustandsvariablen
+const showDebugInfo = ref(false);
+const startTime = ref<Date>(new Date());
+const phaseTimings = ref<ConversionPhase[]>([
+  { name: 'Initialisierung', startTime: new Date(), endTime: null, duration: null },
+  { name: 'Extraktion', startTime: null, endTime: null, duration: null },
+  { name: 'Verarbeitung', startTime: null, endTime: null, duration: null },
+  { name: 'Formatierung', startTime: null, endTime: null, duration: null },
+  { name: 'Fertigstellung', startTime: null, endTime: null, duration: null }
+]);
+
+const currentPhaseIndex = ref(0);
+const internalLogs = ref<Log[]>([]);
+const timeEstimationFactor = ref(1);
+const avgSpeed = ref<number | null>(null);
+const elapsedTimeSeconds = ref(0);
+const timeUpdater = ref<number | null>(null);
+const estimatedCompletionTime = ref<Date | null>(null);
 
 // Definiere die Konvertierungsphasen
 const stages = [
-  t('documentConverter.stage.preparation', 'Vorbereitung'),
-  t('documentConverter.stage.extraction', 'Extraktion'),
-  t('documentConverter.stage.processing', 'Verarbeitung'),
-  t('documentConverter.stage.formatting', 'Formatierung'),
-  t('documentConverter.stage.finalization', 'Fertigstellung')
+  { 
+    name: t('documentConverter.stage.preparation', 'Vorbereitung'),
+    description: t('documentConverter.stage.preparationDesc', 'Dokumentanalyse und Vorbereitung der Konvertierung')
+  },
+  { 
+    name: t('documentConverter.stage.extraction', 'Extraktion'),
+    description: t('documentConverter.stage.extractionDesc', 'Inhaltsextraktion und Metadatensammlung')
+  },
+  { 
+    name: t('documentConverter.stage.processing', 'Verarbeitung'),
+    description: t('documentConverter.stage.processingDesc', 'Strukturerkennung und Inhaltsverarbeitung')
+  },
+  { 
+    name: t('documentConverter.stage.formatting', 'Formatierung'),
+    description: t('documentConverter.stage.formattingDesc', 'Anwendung von Formaten und Strukturen')
+  },
+  { 
+    name: t('documentConverter.stage.finalization', 'Fertigstellung'),
+    description: t('documentConverter.stage.finalizationDesc', 'Ergebniszusammenstellung und Finalisierung')
+  }
 ];
 
-// Berechne den aktuellen Schritt basierend auf dem Fortschritt
+// Berechnete Eigenschaften
 const stageIndex = computed(() => {
   if (props.progress >= 100) return stages.length - 1;
   return Math.min(Math.floor(props.progress / (100 / stages.length)), stages.length - 1);
 });
 
-// Bestimme das Icon des Dokuments basierend auf dem Dateinamen
 const documentIcon = computed(() => {
   if (!props.documentName) return 'fa fa-file';
   
@@ -249,12 +430,180 @@ const documentIcon = computed(() => {
   return fileIcons[extension] || 'fa fa-file';
 });
 
+const combinedLogs = computed(() => {
+  const externalLogs = (props.logs || []).map(log => ({
+    timestamp: log.timestamp instanceof Date ? log.timestamp : new Date(log.timestamp),
+    level: log.level,
+    message: log.message
+  }));
+  
+  return [...internalLogs.value, ...externalLogs].sort((a, b) => 
+    a.timestamp.getTime() - b.timestamp.getTime()
+  );
+});
+
+const hasWarningLogs = computed(() => {
+  return combinedLogs.value.some(log => log.level === 'warning');
+});
+
+const hasErrorLogs = computed(() => {
+  return combinedLogs.value.some(log => log.level === 'error');
+});
+
+const avgProcessingSpeed = computed(() => {
+  if (avgSpeed.value === null) {
+    return t('documentConverter.notAvailable', 'Nicht verfügbar');
+  }
+  
+  return `${avgSpeed.value.toFixed(2)} %/s`;
+});
+
+// Methoden
+function handleCancel(): void {
+  addLog('info', 'Konvertierung wurde vom Benutzer abgebrochen');
+  emit('cancel');
+}
+
+function handlePause(): void {
+  addLog('info', 'Konvertierung wurde vom Benutzer pausiert');
+  emit('pause');
+}
+
+function handleResume(): void {
+  addLog('info', 'Konvertierung wurde vom Benutzer fortgesetzt');
+  emit('resume');
+}
+
+function toggleDebugInfo(): void {
+  showDebugInfo.value = !showDebugInfo.value;
+}
+
+function addLog(level: 'info' | 'warning' | 'error', message: string): void {
+  internalLogs.value.push({
+    timestamp: new Date(),
+    level,
+    message
+  });
+  
+  // Logs auf eine vernünftige Größe begrenzen
+  if (internalLogs.value.length > 100) {
+    internalLogs.value = internalLogs.value.slice(-100);
+  }
+}
+
+function clearLogs(): void {
+  internalLogs.value = [];
+}
+
+function exportLogs(): void {
+  // Alle Logs als JSON exportieren
+  const exportData = combinedLogs.value.map(log => ({
+    timestamp: log.timestamp.toISOString(),
+    level: log.level,
+    message: log.message
+  }));
+  
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `conversion_logs_${new Date().toISOString().replace(/:/g, '-')}.json`;
+  a.click();
+  
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Simuliert einen Fehler (nur für Debugging-Zwecke)
+ */
+function simulateError(): void {
+  addLog('error', 'Simulierter Fehler während der Konvertierung');
+  emit('error', new Error('Simulierter Fehler während der Konvertierung'));
+}
+
+/**
+ * Passt den Faktor für die Zeitschätzung an (nur für Debugging-Zwecke)
+ */
+function adjustTimeEstimation(factor: number): void {
+  timeEstimationFactor.value = factor;
+  addLog('info', `Zeitschätzungsfaktor auf ${factor} angepasst`);
+  updateTimeEstimation();
+}
+
+/**
+ * Aktualisiert die Zeitschätzung basierend auf dem aktuellen Fortschritt
+ */
+function updateTimeEstimation(): void {
+  if (props.isPaused) return;
+  
+  const currentProgress = props.progress;
+  const currentTime = new Date();
+  const elapsedMs = currentTime.getTime() - startTime.value.getTime();
+  
+  // Verstrichene Zeit in Sekunden
+  elapsedTimeSeconds.value = elapsedMs / 1000;
+  
+  // Durchschnittsgeschwindigkeit berechnen (% pro Sekunde)
+  if (currentProgress > 0 && elapsedMs > 0) {
+    avgSpeed.value = (currentProgress / elapsedMs) * 1000;
+  }
+  
+  // Verbleibende Zeit berechnen
+  if (avgSpeed.value !== null && currentProgress < 100) {
+    const remainingProgress = 100 - currentProgress;
+    const estimatedRemainingMs = (remainingProgress / avgSpeed.value) * 1000;
+    
+    // Angepasste Schätzung mit Faktor
+    const adjustedEstimatedRemainingMs = estimatedRemainingMs * timeEstimationFactor.value;
+    
+    // Geschätzten Abschlusszeitpunkt berechnen
+    estimatedCompletionTime.value = new Date(currentTime.getTime() + adjustedEstimatedRemainingMs);
+  } else if (currentProgress >= 100) {
+    estimatedCompletionTime.value = new Date();
+  }
+}
+
+/**
+ * Aktualisiert den Phasenstatus basierend auf dem aktuellen Fortschritt
+ */
+function updatePhaseStatus(): void {
+  const newPhaseIndex = stageIndex.value;
+  
+  // Wenn sich die Phase geändert hat
+  if (newPhaseIndex !== currentPhaseIndex.value) {
+    // Vorherige Phase abschließen
+    if (currentPhaseIndex.value < phaseTimings.value.length) {
+      const now = new Date();
+      phaseTimings.value[currentPhaseIndex.value].endTime = now;
+      
+      // Dauer berechnen
+      const phase = phaseTimings.value[currentPhaseIndex.value];
+      if (phase.startTime) {
+        phase.duration = (now.getTime() - phase.startTime.getTime()) / 1000;
+      }
+      
+      // Log
+      addLog('info', `Phase "${phaseTimings.value[currentPhaseIndex.value].name}" abgeschlossen`);
+    }
+    
+    // Neue Phase starten
+    if (newPhaseIndex < phaseTimings.value.length) {
+      phaseTimings.value[newPhaseIndex].startTime = new Date();
+      addLog('info', `Phase "${phaseTimings.value[newPhaseIndex].name}" gestartet`);
+    }
+    
+    // Aktuellen Phasenindex aktualisieren
+    currentPhaseIndex.value = newPhaseIndex;
+  }
+}
+
 /**
  * Formatiert die geschätzte verbleibende Zeit in ein benutzerfreundliches Format
  * @param seconds - Die verbleibende Zeit in Sekunden
  * @returns Formatierte Zeit als String (z.B. "2 Min 30 Sek" oder "30 Sek")
  */
-function formatTime(seconds: number): string {
+function formatDuration(seconds: number): string {
   if (!seconds || seconds <= 0) return '';
   
   const minutes = Math.floor(seconds / 60);
@@ -262,35 +611,97 @@ function formatTime(seconds: number): string {
   
   if (minutes > 0) {
     if (remainingSeconds > 0) {
-      return `${minutes} Min ${remainingSeconds} Sek`;
+      return `${minutes} ${minutes === 1 ? 'Min' : 'Min'} ${remainingSeconds} ${remainingSeconds === 1 ? 'Sek' : 'Sek'}`;
     }
-    return `${minutes} Min`;
+    return `${minutes} ${minutes === 1 ? 'Min' : 'Min'}`;
   } else {
-    return `${remainingSeconds} Sek`;
+    return `${remainingSeconds} ${remainingSeconds === 1 ? 'Sek' : 'Sek'}`;
   }
 }
 
 /**
- * Formatiert einen Zeitstempel für die Protokollanzeige
- * @param timestamp - Das zu formatierende Datum oder der Zeitstempel
- * @returns Formatierter Zeitstempel als String (HH:MM:SS)
+ * Formatiert ein Datum in ein lesbares Zeitformat (HH:MM:SS)
  */
-function formatTimestamp(timestamp: Date | string): string {
-  const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
+function formatTime(date: Date | null): string {
+  if (!date) return '';
   
-  const hours = date.getHours().toString().padStart(2, '0');
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  const seconds = date.getSeconds().toString().padStart(2, '0');
-  
-  return `${hours}:${minutes}:${seconds}`;
+  return date.toLocaleTimeString('de-DE', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
 }
 
-// Animation für fließenden Übergang
-watch(() => props.progress, (newValue, oldValue) => {
-  if (newValue === 100 && oldValue < 100) {
-    // Konvertierung abgeschlossen - hier könnte eine Animation oder ein Ereignis ausgelöst werden
+/**
+ * Formatiert einen Zeitstempel für die Protokollanzeige
+ */
+function formatLogTime(timestamp: Date): string {
+  return timestamp.toLocaleTimeString('de-DE', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    fractionalSecondDigits: 3
+  });
+}
+
+// Initialisierung
+onMounted(() => {
+  addLog('info', 'Konvertierungsprozess gestartet');
+  
+  // Timer für die Zeitaktualisierung starten
+  timeUpdater.value = window.setInterval(() => {
+    if (!props.isPaused) {
+      updateTimeEstimation();
+    }
+  }, 1000);
+});
+
+// Aufräumen beim Unmount
+onUnmounted(() => {
+  // Timer stoppen
+  if (timeUpdater.value !== null) {
+    clearInterval(timeUpdater.value);
   }
-}, { immediate: false });
+});
+
+// Beobachter für Fortschritt und Phasenwechsel
+watch(() => props.progress, (newProgress) => {
+  updatePhaseStatus();
+  
+  // Bei 100% alle Logs exportieren
+  if (newProgress >= 100) {
+    addLog('info', 'Konvertierungsprozess abgeschlossen');
+    
+    // Letzte Phase abschließen
+    const lastPhaseIndex = phaseTimings.value.length - 1;
+    if (phaseTimings.value[lastPhaseIndex].endTime === null && phaseTimings.value[lastPhaseIndex].startTime !== null) {
+      const now = new Date();
+      phaseTimings.value[lastPhaseIndex].endTime = now;
+      phaseTimings.value[lastPhaseIndex].duration = (now.getTime() - phaseTimings.value[lastPhaseIndex].startTime!.getTime()) / 1000;
+    }
+  }
+});
+
+// Warnungen beobachten
+watch(() => props.warnings, (newWarnings) => {
+  if (newWarnings && newWarnings.length > 0) {
+    // Neue Warnungen als Logs hinzufügen
+    for (const warning of newWarnings) {
+      if (!internalLogs.value.some(log => log.level === 'warning' && log.message === warning)) {
+        addLog('warning', warning);
+      }
+    }
+  }
+});
+
+// Pause/Fortsetzen beobachten
+watch(() => props.isPaused, (isPaused) => {
+  if (isPaused) {
+    addLog('info', 'Konvertierung pausiert');
+  } else {
+    addLog('info', 'Konvertierung fortgesetzt');
+  }
+});
 </script>
 
 <style scoped>
@@ -354,6 +765,7 @@ watch(() => props.progress, (newValue, oldValue) => {
   align-items: center;
   position: relative;
   z-index: 2;
+  max-width: 120px;
 }
 
 .stage-indicator {
@@ -372,11 +784,19 @@ watch(() => props.progress, (newValue, oldValue) => {
 }
 
 .stage-label {
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   text-align: center;
   color: #6c757d;
   transition: color 0.3s ease;
-  max-width: 80px;
+  max-width: 120px;
+  margin-bottom: 0.5rem;
+}
+
+.stage-description {
+  font-size: 0.75rem;
+  text-align: center;
+  color: #6c757d;
+  max-width: 120px;
 }
 
 .stages-connector {
@@ -423,7 +843,7 @@ watch(() => props.progress, (newValue, oldValue) => {
   background-color: #e9ecef;
   border-radius: 5px;
   overflow: hidden;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   position: relative;
 }
 
@@ -432,6 +852,16 @@ watch(() => props.progress, (newValue, oldValue) => {
   background-color: #4a6cf7;
   border-radius: 5px;
   transition: width 0.3s ease-in-out;
+}
+
+.progress-bar--paused {
+  background-image: repeating-linear-gradient(
+    45deg,
+    #4a6cf7 0px,
+    #4a6cf7 10px,
+    #7089f9 10px,
+    #7089f9 20px
+  );
 }
 
 .progress-bar-indeterminate {
@@ -466,7 +896,25 @@ watch(() => props.progress, (newValue, oldValue) => {
   color: #4a6cf7;
 }
 
-.estimated-time {
+.progress-details {
+  display: flex;
+  align-items: center;
+  color: #6c757d;
+}
+
+.progress-paused {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 500;
+  color: #fd7e14;
+}
+
+.progress-paused i {
+  font-size: 0.9rem;
+}
+
+.estimated-completion, .estimated-time {
   color: #6c757d;
 }
 
@@ -481,7 +929,7 @@ watch(() => props.progress, (newValue, oldValue) => {
 .current-step-container {
   display: flex;
   align-items: flex-start;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .current-step-label {
@@ -551,16 +999,19 @@ watch(() => props.progress, (newValue, oldValue) => {
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.75rem;
   margin-bottom: 1rem;
 }
 
 .cancel-button,
 .pause-button,
-.resume-button {
+.resume-button,
+.debug-button {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0.5rem;
   border: none;
   border-radius: 4px;
   padding: 0.6rem 1.25rem;
@@ -597,21 +1048,128 @@ watch(() => props.progress, (newValue, oldValue) => {
   background-color: #27ae60;
 }
 
+.debug-button {
+  background-color: #6c757d;
+  color: white;
+}
+
+.debug-button:hover:not(:disabled) {
+  background-color: #5a6268;
+}
+
 .cancel-button:disabled,
 .pause-button:disabled,
-.resume-button:disabled {
+.resume-button:disabled,
+.debug-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.cancel-button i,
-.pause-button i,
-.resume-button i {
-  margin-right: 0.5rem;
+.debug-info {
+  background-color: #343a40;
+  color: #f8f9fa;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.debug-info-title {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  color: #f8f9fa;
+}
+
+.debug-info-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.debug-info-section {
+  margin-bottom: 1rem;
+}
+
+.debug-info-section h5 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: #adb5bd;
+}
+
+.debug-phase-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.debug-phase-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.debug-phase-item--current {
+  background-color: rgba(74, 108, 247, 0.3);
+  border-left: 3px solid #4a6cf7;
+}
+
+.debug-phase-name {
+  font-weight: 500;
+}
+
+.debug-phase-timing {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: #adb5bd;
+}
+
+.debug-metrics {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+.debug-metric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.debug-metric-label {
+  color: #adb5bd;
+}
+
+.debug-metric-value {
+  font-family: monospace;
+  color: #f8f9fa;
+}
+
+.debug-controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.debug-action-btn {
+  background-color: #495057;
+  color: #f8f9fa;
+  border: none;
+  border-radius: 4px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.debug-action-btn:hover {
+  background-color: #6c757d;
 }
 
 .conversion-logs {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
 }
 
 .logs-details {
@@ -626,6 +1184,9 @@ watch(() => props.progress, (newValue, oldValue) => {
   cursor: pointer;
   font-weight: 500;
   color: #495057;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   transition: background-color 0.2s;
 }
 
@@ -633,24 +1194,45 @@ watch(() => props.progress, (newValue, oldValue) => {
   background-color: #e9ecef;
 }
 
+.logs-count {
+  background-color: #6c757d;
+  color: white;
+  border-radius: 10px;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  min-width: 20px;
+  text-align: center;
+}
+
+.logs-count--warning {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.logs-count--error {
+  background-color: #e74c3c;
+}
+
 .logs-container {
   max-height: 200px;
   overflow-y: auto;
   background-color: #212529;
-  color: #f8f9fa;
   padding: 0.75rem;
   font-family: monospace;
   font-size: 0.8rem;
 }
 
 .log-entry {
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.4rem;
   line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
 }
 
 .log-timestamp {
   color: #6c757d;
   margin-right: 0.5rem;
+  flex-shrink: 0;
 }
 
 .log-level {
@@ -658,31 +1240,59 @@ watch(() => props.progress, (newValue, oldValue) => {
   padding: 0.1rem 0.25rem;
   border-radius: 3px;
   margin-right: 0.5rem;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  text-transform: uppercase;
+  width: 50px;
+  text-align: center;
+  flex-shrink: 0;
 }
 
 .log-level-info {
-  background-color: #4a6cf7;
   color: white;
+  background-color: #4a6cf7;
 }
 
 .log-level-warning {
-  background-color: #f39c12;
-  color: white;
+  color: #212529;
+  background-color: #ffc107;
 }
 
 .log-level-error {
-  background-color: #e74c3c;
   color: white;
+  background-color: #e74c3c;
 }
 
 .log-message {
   color: #f8f9fa;
+  word-break: break-word;
 }
 
-/* Fade Transition für Details */
+.logs-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background-color: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+}
+
+.logs-action-btn {
+  background-color: #e9ecef;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.logs-action-btn:hover {
+  background-color: #dee2e6;
+}
+
+/* Fade-In/Out-Animation für Details */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s, transform 0.3s;
@@ -694,29 +1304,40 @@ watch(() => props.progress, (newValue, oldValue) => {
   transform: translateY(-10px);
 }
 
-/* Responsive Anpassungen */
+/* Slide-Animation für Debug-Info */
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.3s ease;
+  max-height: 600px;
+  overflow: hidden;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+
+/* Responsive Styles */
 @media (max-width: 768px) {
   .progress-stages {
-    display: none; /* Auf kleinen Bildschirmen ausblenden */
+    display: none;
+  }
+  
+  .debug-info-content {
+    grid-template-columns: 1fr;
   }
   
   .actions {
-    flex-wrap: wrap;
+    flex-direction: column;
   }
   
   .cancel-button,
   .pause-button,
-  .resume-button {
-    flex: 1 0 auto;
-    min-width: 120px;
-  }
-  
-  .step-details-text {
-    max-height: 100px;
-  }
-  
-  .logs-container {
-    max-height: 150px;
+  .resume-button,
+  .debug-button {
+    width: 100%;
   }
 }
 </style>

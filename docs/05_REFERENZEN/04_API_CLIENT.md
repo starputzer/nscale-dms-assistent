@@ -1,686 +1,421 @@
-# API-Client für nscale DMS Assistenten
+# API-Integration für nscale-assist
 
-Diese Dokumentation beschreibt den optimierten API-Client für den nscale DMS Assistenten, der zuverlässige HTTP-Anfragen mit automatischem Token-Handling, Retry-Logik, Ratengrenzenerkennung und verbessertem SSE-Streaming ermöglicht.
+Diese Dokumentation beschreibt die API-Integration des nscale-assist Frontends mit dem Backend-System.
 
-## Inhaltsverzeichnis
+## Architektur
 
-1. [Architekturübersicht](#architekturübersicht)
-2. [Getting Started](#getting-started)
-3. [ApiService](#apiservice)
-4. [RequestQueue](#requestqueue)
-5. [RetryHandler](#retryhandler)
-6. [RateLimitHandler](#ratelimithandler)
-7. [StreamingService](#streamingservice)
-8. [ChatService](#chatservice)
-9. [Fehlerbehandlung](#fehlerbehandlung)
-10. [Erweiterte Konfiguration](#erweiterte-konfiguration)
+Die API-Integration basiert auf einer modularen Service-Architektur mit folgenden Komponenten:
 
-## Architekturübersicht
-
-Die API-Client-Architektur besteht aus mehreren spezialisierten Komponenten:
+1. **Zentraler ApiService**: Basisdienst für alle HTTP-Anfragen mit Fehlerbehandlung, Authentifizierung und Datentransformation
+2. **Spezialisierte Service-Module**: Domänenspezifische Dienste für Authentifizierung, Sessions, Dokumente und Administration
+3. **Caching und Offline-Support**: Mechanismen für Datenvorhaltung, Offline-Modus und Synchronisation
+4. **Typdefinitionen**: Umfassende TypeScript-Interfaces für API-Kommunikation
 
 ```
-                ┌─────────────────┐
-                │  Vue Components │
-                └────────┬────────┘
-                         │
-                         ▼
-             ┌───────────────────────┐
-             │   Service Composables │
-             └───────────┬───────────┘
-                         │
-       ┌─────────────────┴──────────────────┐
-       │                                    │
-┌──────▼──────┐                      ┌──────▼──────┐
-│ ChatService │◄────────────────────►│  ApiService  │
-└──────┬──────┘                      └──────┬───────┘
-       │                                    │
-       │                           ┌────────┴────────┐
-       │                           │                 │
-┌──────▼──────┐              ┌─────▼─────┐    ┌──────▼──────┐
-│StreamingServ│              │RequestQueue│    │ RetryHandler│
-└─────────────┘              └───────────┘    └──────┬──────┘
-                                                     │
-                                              ┌──────▼──────┐
-                                              │RateLimitHand│
-                                              └─────────────┘
+┌─────────────────┐     ┌───────────────────┐     ┌────────────────┐
+│                 │     │                   │     │                │
+│  Vue Components ├─────┤ Service-Module    ├─────┤    Backend     │
+│                 │     │                   │     │                │
+└─────────────────┘     └───────┬───────────┘     └────────────────┘
+                               │
+                       ┌───────┴───────┐
+                       │               │
+                       │   ApiService  │
+                       │               │
+                       └───────┬───────┘
+                               │
+                       ┌───────┴───────┐
+                       │  Offline &    │
+                       │    Cache      │
+                       │               │
+                       └───────────────┘
 ```
 
-Diese Architektur bietet:
+## Zentrale Dienste
 
-- **Zentralisierten API-Zugriff** durch ApiService
-- **Robuste Fehlerbehandlung** mit Wiederholungsmechanismen
-- **Warteschlangen für parallele Anfragen** zur Leistungsoptimierung
-- **Rate-Limiting-Erkennung** zur Vermeidung von API-Begrenzungen
-- **Verbesserte Chat-Streaming-Funktionalität** über den StreamingService
-- **Hohe Abstraktionsebene** über den ChatService für einfache Verwendung
+### ApiService
 
-## Getting Started
+Der `ApiService` ist die Hauptklasse für alle HTTP-Anfragen und bietet:
 
-### Installation und Einrichtung
+- Konfigurierbare Axios-Instanz mit Interceptors
+- Automatisches Token-Management
+- Fehlerbehandlung mit standardisierten Fehlerobjekten
+- Wiederholungsversuche bei Netzwerkfehlern
+- Request-Queuing zur Parallelitätskontrolle
+- Rate-Limiting-Erkennung und -Behandlung
 
 ```typescript
-// In einer Vue-Komponente mit Composition API
-import { useChat } from '@/composables/useChat';
-import { ref } from 'vue';
+// Beispiel: GET-Anfrage mit dem ApiService
+import { apiService } from '@/services/api/ApiService';
 
-export default {
-  setup() {
-    const { sendMessage, isStreaming, messages } = useChat();
-    const message = ref('');
-    const sessionId = ref(null);
-    
-    const submitMessage = async () => {
-      if (!message.value.trim()) return;
-      
-      await sendMessage({
-        sessionId: sessionId.value,
-        content: message.value,
-        autoCreateSession: true, // Erstellt automatisch eine neue Session, wenn nötig
-        stream: true, // Aktiviert Streaming-Modus
-        onChunk: (chunk) => {
-          console.log('Neues Chunk erhalten:', chunk);
-        },
-        onComplete: (completeMessage) => {
-          console.log('Antwort abgeschlossen:', completeMessage);
-        }
-      });
-      
-      message.value = '';
-    };
-    
-    return {
-      message,
-      submitMessage,
-      isStreaming,
-      messages
-    };
-  }
+const response = await apiService.get('/endpoint', { 
+  param1: 'value1' 
+}, {
+  retry: true,
+  maxRetries: 3,
+  showErrorToast: true
+});
+
+if (response.success) {
+  // Daten verarbeiten
+  const data = response.data;
+} else {
+  // Fehlerbehandlung
+  console.error(response.error);
 }
 ```
 
-### Direkter API-Zugriff
+### CachedApiService
+
+Der `CachedApiService` erweitert den ApiService um Caching-Funktionalität:
+
+- Lokales Caching von GET-Anfragen
+- Stale-While-Revalidate-Strategie
+- Automatische Cache-Invalidierung bei Änderungsoperationen
+- Offline-Fallback für gecachte Daten
 
 ```typescript
-import { apiService } from '@/services/api/ApiService';
+// Beispiel: Gecachte GET-Anfrage
+import { cachedApiService } from '@/services/api/CachedApiService';
 
-// GET-Anfrage
-const getUserProfile = async () => {
-  try {
-    const response = await apiService.get('/api/profile');
-    if (response.success) {
-      return response.data;
-    }
-    throw new Error(response.message || 'Fehler beim Abrufen des Profils');
-  } catch (error) {
-    console.error('Profilfehler:', error);
-    throw error;
-  }
-};
-
-// POST-Anfrage mit Optionen
-const updateSettings = async (settings) => {
-  try {
-    const response = await apiService.post('/api/settings', settings, {
-      priority: 80, // Höhere Priorität
-      retry: true,  // Erneute Versuche bei Fehlern
-      refreshToken: true, // Automatischer Token-Refresh bei 401
-      showErrorToast: true // Automatische Fehleranzeige
-    });
-    return response.success;
-  } catch (error) {
-    console.error('Einstellungsfehler:', error);
-    return false;
-  }
-};
+const response = await cachedApiService.get('/cached-endpoint', null, {
+  cache: true,
+  cacheTTL: 300, // 5 Minuten Cache-Lebensdauer
+  staleWhileRevalidate: true // Sofortige Antwort aus Cache, Aktualisierung im Hintergrund
+});
 ```
 
-## ApiService
+## Spezifische Service-Module
 
-Der ApiService ist die zentrale Klasse für die Verwaltung aller HTTP-Anfragen und bietet eine einheitliche Schnittstelle für die gesamte Anwendung.
+### AuthService
 
-### Hauptfunktionen
+Der `AuthService` verwaltet Authentifizierung und Benutzerberechtigungen:
 
-- **Standardisierte HTTP-Methoden**: GET, POST, PUT, PATCH, DELETE
-- **Automatisches Token-Handling**: Fügt Auth-Token hinzu und erneuert es bei Bedarf
-- **Robuste Fehlerbehandlung**: Strukturierte Fehlerantworten und automatische Wiederholungsversuche
-- **Fortschrittsverfolgung**: Upload- und Download-Fortschritt
-- **Anfragenwarteschlange**: Optimale Parallelität von Anfragen
-- **Rate-Limit-Erkennung**: Automatische Anpassung an API-Ratelimits
-
-### Beispiele
-
-#### Basis-GET-Anfrage
+- Login/Logout-Funktionalität
+- Token-Verwaltung und -Erneuerung
+- Berechtigungsprüfungen
+- Events für Authentifizierungsänderungen
 
 ```typescript
-import { apiService } from '@/services/api/ApiService';
+// Beispiel: Anmeldung und Berechtigungsprüfung
+import { authService } from '@/services/api/AuthService';
 
-// Einfache GET-Anfrage
-const getUsers = async () => {
-  const response = await apiService.get('/api/users');
-  return response.data;
-};
+// Anmeldung
+const loginResult = await authService.login({
+  email: 'user@example.com',
+  password: 'password'
+});
+
+// Berechtigungsprüfung
+if (authService.hasRole('admin')) {
+  // Admin-spezifische Aktionen ausführen
+}
 ```
 
-#### POST-Anfrage mit Fehlerbehandlung
+### SessionService
+
+Der `SessionService` verwaltet Chat-Sessions und deren Nachrichten:
+
+- Session-CRUD-Operationen
+- Nachrichtenverwaltung
+- Streaming-Support für Echtzeit-Antworten
+- Offline-Unterstützung für Sessions
 
 ```typescript
-// POST-Anfrage mit benutzerdefinierter Fehlerbehandlung
-const createUser = async (userData) => {
-  try {
-    const response = await apiService.post('/api/users', userData, {
-      errorHandler: (error) => {
-        if (error.code === 'USER_EXISTS') {
-          // Spezifische Behandlung
-          showDuplicateUserError();
-        }
-      }
-    });
-    return response.data;
-  } catch (error) {
-    // Allgemeine Fehlerbehandlung
-    return null;
+// Beispiel: Streaming-Nachricht senden
+import { sessionService } from '@/services/api/SessionService';
+
+const response = await sessionService.sendMessage('session-123', {
+  content: 'Wie kann ich ein Dokument konvertieren?',
+  stream: true
+}, {
+  onChunk: (chunk) => {
+    // UI für jedes empfangene Teilstück aktualisieren
+    console.log('Neues Chunk:', chunk);
+  },
+  onComplete: (message) => {
+    // UI nach Abschluss aktualisieren
+    console.log('Vollständige Nachricht:', message);
   }
-};
+});
 ```
 
-#### Datei-Upload mit Fortschrittsanzeige
+### DocumentService
+
+Der `DocumentService` verwaltet den Dokumentenkonverter:
+
+- Dokumenten-Upload mit Fortschrittsanzeige
+- Konvertierung mit Status-Tracking
+- Download und Dokumenten-Verwaltung
+- Offline-Unterstützung für bereits konvertierte Dokumente
 
 ```typescript
-// Datei-Upload mit Fortschrittsverfolgung
-const uploadFile = async (file) => {
-  const response = await apiService.uploadFile('/api/documents/upload', file, {
-    fieldName: 'document',
-    metadata: { documentType: 'invoice' },
-    onProgress: (progressEvent) => {
-      const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-      updateProgressBar(percentCompleted);
-    }
-  });
-  return response.data;
-};
-```
+// Beispiel: Dokument hochladen und konvertieren
+import { documentService } from '@/services/api/DocumentService';
 
-#### Anfrage abbrechen
-
-```typescript
-// Abbrechbare Anfrage
-const searchDocuments = async (query) => {
-  const cancelToken = apiService.createCancelToken();
-  
-  try {
-    const response = await apiService.get('/api/documents/search', 
-      { query }, 
-      { cancelToken }
-    );
-    return response.data;
-  } catch (error) {
-    if (apiService.isCancel(error)) {
-      console.log('Anfrage wurde abgebrochen');
-      return [];
-    }
-    throw error;
+// Dokument hochladen
+const uploadResponse = await documentService.uploadDocument(
+  file,
+  { documentType: 'contract' },
+  (progress) => {
+    console.log(`Upload-Fortschritt: ${progress}%`);
   }
-};
+);
 
-// An anderer Stelle, um die Anfrage abzubrechen:
-cancelToken.cancel('Suche abgebrochen');
-```
-
-## RequestQueue
-
-Der RequestQueue-Mechanismus steuert die Parallelität von API-Anfragen und implementiert eine Prioritätswarteschlange.
-
-### Hauptfunktionen
-
-- **Begrenzung paralleler Anfragen**: Verhindert Server-Überlastung und Client-Browserprobleme
-- **Prioritätsbasierte Warteschlange**: Wichtige Anfragen werden zuerst verarbeitet
-- **Automatische Abbrüche**: Verhindert übermäßige Warteschlangengröße
-- **Timeout-Mechanismus**: Bricht Anfragen nach bestimmter Wartezeit ab
-
-### Beispiel
-
-```typescript
-import { useApiQueue } from '@/composables/useApiQueue';
-
-const { enqueue, isPaused, pauseQueue, resumeQueue } = useApiQueue();
-
-// Anfrage mit Priorität zur Warteschlange hinzufügen
-const loadData = async () => {
-  try {
-    // Niedrige Priorität für Hintergrundaufgaben
-    const backgroundTask = enqueue(() => fetchBackgroundData(), 30);
-    
-    // Hohe Priorität für Benutzeranfragen
-    const userRequestTask = enqueue(() => fetchUserData(), 80);
-    
-    const [backgroundData, userData] = await Promise.all([
-      backgroundTask,
-      userRequestTask
-    ]);
-    
-    return { backgroundData, userData };
-  } catch (error) {
-    console.error('Fehler beim Laden der Daten', error);
-    return null;
-  }
-};
-
-// Warteschlange pausieren/fortsetzen
-const togglePause = () => {
-  if (isPaused.value) {
-    resumeQueue();
-  } else {
-    pauseQueue();
-  }
-};
-```
-
-## RetryHandler
-
-Der RetryHandler implementiert eine robuste Wiederholungsstrategie für fehlgeschlagene API-Anfragen mit exponentieller Backoff-Verzögerung.
-
-### Hauptfunktionen
-
-- **Selektive Wiederholungen**: Basierend auf HTTP-Status und Fehlertyp
-- **Exponentielle Backoff-Strategie**: Zunehmende Verzögerung bei wiederholten Fehlern
-- **Jitter-Mechanismus**: Verhindert gleichzeitige Wiederholungen
-- **Konfigurierbare Einstellungen**: Anpassbare Wiederholungsversuche und Verzögerungen
-
-### Beispiel
-
-```typescript
-import { apiService } from '@/services/api/ApiService';
-
-// Der RetryHandler wird automatisch vom ApiService verwendet
-// Sie können die Retry-Einstellungen pro Anfrage anpassen:
-
-const fetchReliableData = async () => {
-  try {
-    const response = await apiService.get('/api/critical-data', null, {
-      // 5 Wiederholungsversuche statt des globalen Standardwerts
-      maxRetries: 5,
-      
-      // Idempotenz für POST-Anfragen (zur sicheren Wiederholung)
-      isIdempotent: true
-    });
-    return response.data;
-  } catch (error) {
-    // Trotz Wiederholungsversuchen trat ein Fehler auf
-    console.error('Kritischer Fehler trotz mehrerer Versuche:', error);
-    throw error;
-  }
-};
-```
-
-## RateLimitHandler
-
-Der RateLimitHandler erkennt API-Ratenbegrenzungen und passt die Anfragenrate entsprechend an, um 429-Fehler zu vermeiden.
-
-### Hauptfunktionen
-
-- **Automatische Header-Erkennung**: Erkennt verschiedene Ratelimit-Header-Formate
-- **Adaptive Drosselung**: Passt Anfragenrate basierend auf verbleibenden Limits an
-- **Proaktive Verzögerung**: Verlangsamt Anfragen, wenn Limits fast erreicht sind
-- **Transparente Integration**: Funktioniert automatisch mit ApiService
-
-### Beispiel
-
-```typescript
-import { apiService } from '@/services/api/ApiService';
-import { logService } from '@/services/log/LogService';
-
-// Anfragen mit Rate-Limit-Berücksichtigung
-const batchProcess = async (items) => {
-  for (const item of items) {
-    try {
-      // ApiService wird automatisch gedrosselt, wenn Rate-Limits erreicht werden
-      await apiService.post('/api/process', item);
-      
-      // Status-Informationen protokollieren
-      logService.info('Element verarbeitet', { itemId: item.id });
-    } catch (error) {
-      if (error.code === 'ERR_RATE_LIMITED') {
-        logService.warn('Rate-Limit erreicht, pausiere Batch-Prozess');
-        
-        // Längere Pause bei Ratenlimit-Fehler
-        await new Promise(resolve => setTimeout(resolve, 60000));
-        
-        // Element erneut zur Warteschlange hinzufügen
-        items.push(item);
-        continue;
-      }
-      
-      logService.error('Fehler bei Elementverarbeitung', { 
-        itemId: item.id, 
-        error 
-      });
-    }
-  }
-};
-```
-
-## StreamingService
-
-Der StreamingService bietet eine robuste Implementation von Server-Sent Events (SSE) für Chat-Streaming und Echtzeit-Updates.
-
-### Hauptfunktionen
-
-- **Stabile Verbindung**: Automatische Wiederverbindung bei Netzwerkfehlern
-- **Strukturierte Events**: Typisierte Event-Handling für verschiedene SSE-Event-Typen
-- **Fortschrittsverfolgung**: Integrierte Fortschritts-Updates
-- **Lebenszyklus-Management**: Automatische Ressourcenbereinigung
-- **Typisierung**: Vollständige TypeScript-Unterstützung
-
-### Beispiel
-
-```typescript
-import { createStreamingConnection } from '@/services/api/StreamingService';
-
-// Streaming-Verbindung erstellen
-const startStreaming = () => {
-  const streamingConnection = createStreamingConnection({
-    url: '/api/stream',
-    params: {
-      query: 'Wichtige Updates'
+if (uploadResponse.success) {
+  // Dokument konvertieren
+  const convertResponse = await documentService.convertDocument(
+    {
+      documentId: uploadResponse.data.id,
+      targetFormat: 'pdf'
     },
-    onMessage: (event) => {
-      if (event.type === 'content') {
-        // Neuen Inhalt verarbeiten
-        appendContent(event.content);
-      } else if (event.type === 'metadata') {
-        // Metadaten verarbeiten
-        updateMetadata(event.metadata);
-      }
-    },
-    onProgress: (progress) => {
-      // Fortschritt aktualisieren (0-100)
-      updateProgressBar(progress);
-    },
-    onError: (error) => {
-      console.error('Stream-Fehler:', error);
-      showErrorMessage(error.message);
-    },
-    onComplete: (fullResponse) => {
-      console.log('Stream abgeschlossen:', fullResponse);
-      showCompletionMessage();
-    },
-    // Streaming-Optionen
-    autoReconnect: true,
-    maxReconnectAttempts: 5
-  });
-  
-  // Stream später beenden
-  setTimeout(() => {
-    streamingConnection.close();
-  }, 60000); // Nach 1 Minute schließen
-};
+    (status, progress) => {
+      console.log(`Konvertierung ${status}, Fortschritt: ${progress}%`);
+    }
+  );
+}
 ```
 
-## ChatService
+### AdminService
 
-Der ChatService bietet eine höhere Abstraktionsebene für Chat-Funktionen und verwendet ApiService und StreamingService für die API-Kommunikation.
+Der `AdminService` bietet Administratorfunktionen:
 
-### Hauptfunktionen
-
-- **Session-Management**: Erstellen, Laden und Verwalten von Chat-Sessions
-- **Nachrichtenhandling**: Senden und Empfangen von Chat-Nachrichten
-- **Echtzeit-Streaming**: Optimierte SSE-Streaming-Implementierung
-- **Abbrechen-Unterstützung**: Einfaches Abbrechen laufender Streams
-
-### Beispiel
+- Systeminfo und -statistiken
+- Benutzerverwaltung
+- Feature-Flag-Konfiguration
+- Systemeinstellungen
 
 ```typescript
-import { chatService } from '@/services/api/ChatService';
+// Beispiel: Feature-Flag aktualisieren
+import { adminService } from '@/services/api/AdminService';
 
-// Verwaltung von Chat-Sessions
-const manageChat = async () => {
-  try {
-    // Neue Session erstellen
-    const session = await chatService.createSession({
-      title: 'Support-Anfrage',
-      initialMessage: 'Ich benötige Hilfe bei der Dokumentenkonvertierung'
-    });
-    
-    // Nachricht mit Streaming senden
-    let responseText = '';
-    
-    const message = await chatService.sendMessage(
-      session.id,
-      'Wie konvertiere ich ein Dokument in PDF?',
-      {
-        stream: true,
-        onChunk: (chunk) => {
-          // Chunk zur Antwort hinzufügen
-          responseText += chunk;
-          // UI aktualisieren
-          updateResponseUI(responseText);
-        },
-        onComplete: (message) => {
-          console.log('Vollständige Antwort:', message);
-          markMessageAsComplete();
-        },
-        onProgress: (progress) => {
-          updateProgressIndicator(progress);
-        },
-        onError: (error) => {
-          showErrorMessage(error.message);
-        }
-      }
-    );
-    
-    // Streaming abbrechen (falls nötig)
-    if (userCancelled) {
-      chatService.cancelStream(session.id);
-    }
-    
-    return message;
-  } catch (error) {
-    console.error('Chat-Fehler:', error);
-    return null;
-  }
-};
+// Prüfen, ob Admin-Rechte vorhanden sind
+if (adminService.hasAdminAccess()) {
+  // Feature-Flag aktivieren/deaktivieren
+  const response = await adminService.updateFeatureFlag(
+    'document-converter-v2',
+    true
+  );
+}
+```
+
+## Offline-Unterstützung
+
+### OfflineManager
+
+Der `OfflineManager` bietet zentrale Offline-Funktionalität:
+
+- Offline-Status-Erkennung
+- UI-Benachrichtigungen über Offline-Modus
+- Synchronisationswarteschlange für Offline-Änderungen
+- Automatische Wiederherstellung bei Netzwerkwiederherstellung
+
+```typescript
+// Beispiel: Offline-Status-Handling
+import { offlineManager } from '@/services/api/OfflineManager';
+
+// Offline-Status abfragen
+if (offlineManager.isOfflineMode()) {
+  // Offline-spezifische UI anzeigen
+}
+
+// Event-Listener für Offline-Status
+offlineManager.on('offline', () => {
+  // UI für Offline-Modus aktualisieren
+});
+
+offlineManager.on('online', () => {
+  // UI für Online-Modus aktualisieren
+});
+```
+
+## IndexedDB-Integration
+
+Die Anwendung nutzt IndexedDB für lokale Datenspeicherung:
+
+- Anwendungsdaten: Sessions, Nachrichten, Dokumente
+- API-Cache für schnellere Antwortzeiten
+- Warteschlange für Offline-Änderungen
+
+Der `IndexedDBService` bietet eine einfache API für die Interaktion mit IndexedDB:
+
+```typescript
+// Beispiel: IndexedDB-Operationen
+import { defaultIndexedDBService } from '@/services/storage/IndexedDBService';
+
+// Daten speichern
+await defaultIndexedDBService.add('documents', document);
+
+// Daten abfragen
+const documents = await defaultIndexedDBService.query('documents', {
+  index: 'uploadedAt',
+  direction: 'prev', // Neueste zuerst
+  limit: 10
+});
 ```
 
 ## Fehlerbehandlung
 
-Die API-Client-Architektur bietet ein umfassendes Fehlerbehandlungssystem mit strukturierten Fehlertypen und automatischen Aktionen.
+Die API-Integration implementiert eine mehrstufige Fehlerbehandlung:
 
-### Fehlertypen
-
-Jeder Fehler folgt einer konsistenten Struktur:
+1. **Automatische Wiederholungsversuche**: Bei Netzwerkfehlern oder bestimmten HTTP-Statuscodes
+2. **Token-Refresh**: Automatische Erneuerung bei 401-Antworten
+3. **Standardisierte Fehlerobjekte**: Einheitliches Format für alle API-Fehler
+4. **UI-Integration**: Optional automatische Toast-Benachrichtigungen
 
 ```typescript
-interface ApiError {
-  code: string;      // Fehlercode, z.B. 'ERR_NETWORK', 'ERR_TIMEOUT'
-  message: string;   // Benutzerfreundliche Fehlermeldung
-  status?: number;   // HTTP-Statuscode (wenn verfügbar)
-  details?: any;     // Zusätzliche Fehlerdetails
-  stack?: string;    // Stack-Trace (nur im Entwicklungsmodus)
+// Beispiel: Benutzerdefinierte Fehlerbehandlung
+import { apiService } from '@/services/api/ApiService';
+
+try {
+  const response = await apiService.get('/endpoint', null, {
+    showErrorToast: false, // Toast-Benachrichtigung deaktivieren
+    errorHandler: (error) => {
+      // Benutzerdefinierte Fehlerbehandlung
+      if (error.code === 'ERR_RATE_LIMITED') {
+        console.log('Rate-Limit erreicht, bitte warten Sie einen Moment');
+      }
+    }
+  });
+} catch (error) {
+  // Fallback-Fehlerbehandlung
 }
 ```
 
-### Häufige Fehlercodes
+## Typensicherheit
 
-| Code | Beschreibung | HTTP-Status |
-|------|--------------|-------------|
-| ERR_NETWORK | Netzwerkfehler bei der Kommunikation mit dem Server | - |
-| ERR_TIMEOUT | Die Anfrage hat das Zeitlimit überschritten | 408 |
-| ERR_CANCELLED | Die Anfrage wurde abgebrochen | - |
-| ERR_BAD_REQUEST | Ungültige Anfrage | 400 |
-| ERR_UNAUTHORIZED | Nicht autorisiert | 401 |
-| ERR_FORBIDDEN | Zugriff verweigert | 403 |
-| ERR_NOT_FOUND | Ressource nicht gefunden | 404 |
-| ERR_VALIDATION | Validierungsfehler | 422 |
-| ERR_RATE_LIMITED | Zu viele Anfragen, bitte warten Sie | 429 |
-| ERR_SERVER | Interner Serverfehler | 500 |
+Die API-Integration nutzt umfassende TypeScript-Definitionen für maximale Typensicherheit:
 
-### Beispiele zur Fehlerbehandlung
-
-#### Basisbeispiel
+- `ApiResponse<T>`: Generisches Antwortformat mit Typsicherheit für Daten
+- Domänenspezifische Interfaces: z.B. `User`, `ChatSession`, `Document`
+- Enum-Typen für Status und Konstanten
 
 ```typescript
+// Beispiel: Typensicherheit mit generischen Antworten
 import { apiService } from '@/services/api/ApiService';
+import { ChatSession, ApiResponse } from '@/types/api';
 
-const getUserData = async (userId) => {
-  try {
-    const response = await apiService.get(`/api/users/${userId}`);
-    return response.data;
-  } catch (error) {
-    // Strukturierter Fehler mit Code und Nachricht
-    console.error(`Fehler (${error.code}): ${error.message}`);
-    
-    // Spezifische Fehlerbehandlung basierend auf Code
-    switch (error.code) {
-      case 'ERR_NOT_FOUND':
-        return { error: 'Benutzer nicht gefunden' };
-      case 'ERR_UNAUTHORIZED':
-        redirectToLogin();
-        return null;
-      case 'ERR_RATE_LIMITED':
-        await sleep(2000); // Kurze Verzögerung
-        return await getUserData(userId); // Erneuter Versuch
-      default:
-        return { error: 'Konnte Benutzerdaten nicht laden' };
-    }
+async function fetchSessions(): Promise<ChatSession[]> {
+  const response: ApiResponse<ChatSession[]> = await apiService.get('/sessions');
+  
+  if (response.success && response.data) {
+    return response.data; // Typsicher: ChatSession[]
   }
-};
+  
+  return [];
+}
 ```
 
-#### Erweiterte Fehlerbehandlung
+## Best Practices
+
+### Service-Nutzung
+
+1. **Verwende domänenspezifische Services**: Nutze spezialisierte Services statt direkter ApiService-Aufrufe
+2. **Fehlerbehandlung**: Implementiere immer Fehlerbehandlung für API-Aufrufe
+3. **Caching-Strategien**: Nutze Cache für häufig abgerufene, selten ändernde Daten
+
+### Offline-Unterstützung
+
+1. **Offline-Status-Prüfung**: Prüfe den Offline-Status vor API-Aufrufen
+2. **Optimistische UI-Updates**: Aktualisiere die UI sofort und synchronisiere später
+3. **Nutzerfeedback**: Zeige klare Hinweise auf Offline-Modus und Synchronisationsstatus
+
+### Typensicherheit
+
+1. **Generische Typen**: Nutze immer generische Typen für ApiResponse
+2. **Interface-Definitionen**: Definiere klare Interfaces für alle API-Objekte
+3. **Type Guards**: Implementiere Type Guards für bedingte Typprüfungen
+
+## Anlagen
+
+### Code-Beispiele
+
+**Vollständiger API-Aufruf mit Fehlerbehandlung:**
 
 ```typescript
-import { apiService } from '@/services/api/ApiService';
+import { documentService } from '@/services/api/DocumentService';
+import { TargetFormat } from '@/types/documentConverter';
 
-const processDocument = async (documentId) => {
+async function convertDocument(documentId: string): Promise<void> {
   try {
-    // Maximale Wiederholungsversuche und benutzerdefinierte Fehlerbehandlung
-    const response = await apiService.post(
-      `/api/documents/${documentId}/process`, 
-      null,
+    // Statusanzeige aktivieren
+    this.isConverting = true;
+    this.conversionProgress = 0;
+    
+    // Konvertierung starten
+    const response = await documentService.convertDocument(
       {
-        // Wiederholungsoptionen
-        maxRetries: 3,
-        
-        // Benutzerdefinierte Fehlerbehandlung
-        errorHandler: (error) => {
-          if (error.code === 'ERR_DOCUMENT_LOCKED') {
-            showNotification('Dokument wird bereits bearbeitet');
-          } else if (error.status === 413) {
-            showNotification('Dokument ist zu groß für die Verarbeitung');
-          }
-        },
-        
-        // Keine Fehlertoasts für diese Anfrage anzeigen
-        showErrorToast: false
+        documentId,
+        targetFormat: TargetFormat.PDF,
+        ocrEnabled: true,
+        quality: 90
+      },
+      (status, progress) => {
+        // UI-Update bei Statusänderungen
+        this.conversionStatus = status;
+        this.conversionProgress = progress || 0;
       }
     );
     
-    return response.data;
-  } catch (error) {
-    // Details-Objekt aus dem Fehler extrahieren
-    const details = error.details || {};
-    
-    // Anwendungsspezifische Fehlerlogik
-    if (details.retryAfter) {
-      // Nach einer bestimmten Zeit erneut versuchen
-      await sleep(details.retryAfter * 1000);
-      return await processDocument(documentId);
+    if (response.success && response.data) {
+      // Erfolgreich
+      this.$toast.success('Dokument erfolgreich konvertiert');
+      this.convertedDocument = response.data;
+    } else {
+      // Fehlerbehandlung
+      this.$toast.error(`Konvertierung fehlgeschlagen: ${response.message}`);
     }
-    
-    // Fehlerereignis zur Analyse auslösen
-    trackError('document_processing_failed', {
-      documentId,
-      errorCode: error.code,
-      statusCode: error.status
-    });
-    
-    throw error; // Weiterleiten für übergeordnete Fehlerbehandlung
+  } catch (error) {
+    // Fehlerbehandlung für unerwartete Fehler
+    console.error('Konvertierungsfehler:', error);
+    this.$toast.error('Ein unerwarteter Fehler ist aufgetreten');
+  } finally {
+    // Status zurücksetzen
+    this.isConverting = false;
   }
-};
-```
-
-## Erweiterte Konfiguration
-
-Die API-Client-Komponenten können durch Anpassung der Konfigurationsdateien und Parameter optimiert werden.
-
-### Globale Konfiguration (apiConfig)
-
-Die apiConfig-Datei (`src/services/api/config.ts`) enthält globale Einstellungen für alle API-Anfragen:
-
-```typescript
-// Beispiel für die Anpassung der API-Konfiguration
-import { apiConfig } from '@/services/api/config';
-
-// Erweitere die Standard-Timeout-Einstellungen
-apiConfig.TIMEOUTS.DEFAULT = 60000; // 60 Sekunden
-apiConfig.TIMEOUTS.UPLOAD = 300000; // 5 Minuten für Uploads
-
-// Anpassen der Wiederholungseinstellungen
-apiConfig.RETRY.MAX_RETRIES = 5;
-apiConfig.RETRY.BASE_DELAY = 2000;
-
-// Parallel Queue-Einstellungen ändern
-apiConfig.QUEUE.MAX_CONCURRENT_REQUESTS = 10;
-
-// Debug-Einstellungen
-if (process.env.NODE_ENV === 'development') {
-  apiConfig.DEBUG.VERBOSE = true;
-  apiConfig.DEBUG.LOG_REQUESTS = true;
 }
 ```
 
-### Anfragenspezifische Optionen
-
-Viele Einstellungen können auch pro Anfrage überschrieben werden:
+**Offline-Unterstützung mit Synchronisation:**
 
 ```typescript
-// Anfragenspezifische Konfiguration
-const response = await apiService.get('/api/large-dataset', null, {
-  // Längeres Timeout
-  timeout: 120000,
-  
-  // Höhere Priorität
-  priority: 90,
-  
-  // Keine Wiederholungsversuche
-  retry: false,
-  
-  // Rate-Limiting ignorieren
-  handleRateLimit: false,
-  
-  // Automatisches Token-Refresh deaktivieren
-  refreshToken: false,
-  
-  // Keine Toast-Benachrichtigungen anzeigen
-  showErrorToast: false,
-  
-  // Fortschritts-Callback
-  onProgress: (event) => updateProgress(event)
-});
-```
+import { sessionService } from '@/services/api/SessionService';
+import { offlineManager } from '@/services/api/OfflineManager';
 
-### Logging konfigurieren
-
-Die Logging-Funktionalität kann für verschiedene Umgebungen konfiguriert werden:
-
-```typescript
-import { LogService, LogLevel } from '@/services/log/LogService';
-
-// Globale Logging-Konfiguration
-LogService.configure({
-  // Logging-Level
-  level: process.env.NODE_ENV === 'production' ? LogLevel.WARN : LogLevel.DEBUG,
+async function sendMessage(sessionId: string, content: string): Promise<void> {
+  // Im Offline-Modus zur Warteschlange hinzufügen
+  if (offlineManager.isOfflineMode()) {
+    // Optimistische UI-Aktualisierung
+    this.addLocalMessage({
+      sessionId,
+      content,
+      role: 'user',
+      timestamp: new Date().toISOString(),
+      pending: true
+    });
+    
+    // Zur Sync-Queue hinzufügen
+    await offlineManager.addSyncRequest({
+      url: `/sessions/${sessionId}/messages`,
+      method: 'POST',
+      data: { content },
+      metadata: { type: 'message', sessionId }
+    });
+    
+    this.$toast.info('Nachricht wird gesendet, sobald wieder online');
+    return;
+  }
   
-  // Nur bestimmte Module protokollieren
-  enabledModules: ['ApiService', 'ChatService', 'AuthService'],
-  
-  // Weitere Optionen
-  colorize: true,
-  timestamp: true,
-  
-  // Remote-Logging aktivieren
-  enableRemote: process.env.NODE_ENV === 'production',
-  remoteUrl: 'https://logging.example.com/api/logs'
-});
+  // Im Online-Modus normal senden
+  try {
+    const response = await sessionService.sendMessage(sessionId, { content });
+    
+    if (response.success && response.data) {
+      // Nachricht wurde erfolgreich gesendet
+    }
+  } catch (error) {
+    console.error('Fehler beim Senden der Nachricht:', error);
+    this.$toast.error('Nachricht konnte nicht gesendet werden');
+  }
+}
 ```

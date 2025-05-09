@@ -8,6 +8,9 @@ import App from './App.vue';
 import { setupBridge } from './migration/bridge';
 import { useFeatureTogglesStore } from './stores/featureToggles';
 
+// Importiere das Design-System
+import '../src/assets/design-system.scss';
+
 // Legacy-Import für Abwärtskompatibilität
 import './js/app.js';
 

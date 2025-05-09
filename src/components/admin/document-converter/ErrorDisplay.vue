@@ -5,64 +5,94 @@
     role="alert" 
     aria-live="assertive"
   >
-    <div class="error-icon" aria-hidden="true">
-      <i :class="errorIcon"></i>
-    </div>
-    <div class="error-content">
-      <h3 class="error-title">{{ errorTitle }}</h3>
-      <p class="error-message">{{ errorMessage }}</p>
+    <div class="error-display__header">
+      <div class="error-display__title-area">
+        <div class="error-display__icon" aria-hidden="true">
+          <i :class="errorIcon"></i>
+        </div>
+        <h3 class="error-display__title">{{ errorTitle }}</h3>
+      </div>
       
-      <div v-if="errorDetails && (showDetails || detailsVisible)" class="error-details">
+      <div class="error-display__actions">
         <button 
-          class="toggle-details-btn" 
+          v-if="isClosable"
+          @click="handleClose" 
+          class="error-display__close-btn" 
+          aria-label="Fehlermeldung schließen"
+        >
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+    </div>
+    
+    <div class="error-display__content">
+      <p class="error-display__message">{{ errorMessage }}</p>
+      
+      <div v-if="errorDetails && (showDetails || detailsVisible)" class="error-display__details">
+        <button 
+          class="error-display__toggle-details" 
           @click="toggleDetails"
           :aria-expanded="detailsVisible"
           aria-controls="error-details-content"
         >
-          {{ $t(detailsVisible ? 'errorDisplay.hideDetails' : 'errorDisplay.showDetails') }}
+          <i :class="detailsVisible ? 'fa fa-chevron-up' : 'fa fa-chevron-down'" aria-hidden="true"></i>
+          {{ detailsVisible ? $t('errorDisplay.hideDetails', 'Details ausblenden') : $t('errorDisplay.showDetails', 'Details anzeigen') }}
         </button>
         
         <pre 
           v-if="detailsVisible" 
           id="error-details-content" 
-          class="error-details-content"
+          class="error-display__details-content"
         >{{ errorDetails }}</pre>
       </div>
       
-      <div class="error-resolution" v-if="errorResolution">
-        <h4 class="resolution-title">{{ $t('errorDisplay.resolutionTitle') }}</h4>
-        <p class="resolution-text">{{ errorResolution }}</p>
+      <div class="error-display__resolution" v-if="errorResolution">
+        <h4 class="error-display__resolution-title">{{ $t('errorDisplay.resolutionTitle', 'Lösungsvorschlag') }}</h4>
+        <p class="error-display__resolution-text" v-html="formattedResolution"></p>
+      </div>
+
+      <div class="error-display__help-items" v-if="helpItems.length > 0">
+        <h4 class="error-display__help-title">{{ $t('errorDisplay.helpItemsTitle', 'Mögliche Lösungsschritte') }}</h4>
+        <ul class="error-display__help-list">
+          <li 
+            v-for="(item, index) in helpItems" 
+            :key="index" 
+            class="error-display__help-item"
+          >
+            {{ item }}
+          </li>
+        </ul>
       </div>
       
-      <div class="error-actions">
+      <div class="error-display__action-buttons">
         <button
           v-if="canRetry"
           @click="handleRetry"
-          class="retry-btn"
-          :aria-label="$t('errorDisplay.retryAriaLabel')"
+          class="error-display__action-btn error-display__retry-btn"
+          :aria-label="$t('errorDisplay.retryAriaLabel', 'Erneut versuchen')"
         >
           <i class="fa fa-redo" aria-hidden="true"></i> 
-          {{ $t('errorDisplay.retry') }}
+          {{ $t('errorDisplay.retry', 'Erneut versuchen') }}
         </button>
         
         <button
           v-if="canContactSupport"
           @click="handleContactSupport"
-          class="support-btn"
-          :aria-label="$t('errorDisplay.contactSupportAriaLabel')"
+          class="error-display__action-btn error-display__support-btn"
+          :aria-label="$t('errorDisplay.contactSupportAriaLabel', 'Support kontaktieren')"
         >
           <i class="fa fa-headset" aria-hidden="true"></i> 
-          {{ $t('errorDisplay.contactSupport') }}
+          {{ $t('errorDisplay.contactSupport', 'Support kontaktieren') }}
         </button>
         
         <button
           v-if="showFallbackOption"
           @click="handleFallback"
-          class="fallback-btn"
-          :aria-label="$t('errorDisplay.fallbackAriaLabel')"
+          class="error-display__action-btn error-display__fallback-btn"
+          :aria-label="$t('errorDisplay.fallbackAriaLabel', 'Alternative Version verwenden')"
         >
           <i class="fa fa-file-alt" aria-hidden="true"></i> 
-          {{ $t('errorDisplay.fallback') }}
+          {{ $t('errorDisplay.fallback', 'Alternative Version verwenden') }}
         </button>
       </div>
     </div>
@@ -70,12 +100,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
 /**
  * Mögliche Fehlertypen im Dokumentenkonverter
  */
-export type ErrorType = 'network' | 'format' | 'server' | 'permission' | 'unknown';
+export type ErrorType = 'network' | 'format' | 'server' | 'permission' | 'validation' | 'timeout' | 'unknown';
 
 /**
  * Interface für strukturierte Fehlerobjekte
@@ -87,6 +117,7 @@ export interface ErrorObject {
   type?: ErrorType;
   stack?: string;
   resolution?: string;
+  helpItems?: string[];
 }
 
 /**
@@ -110,6 +141,12 @@ interface Props {
   
   /** Ob eine Fallback-Option angezeigt werden soll */
   showFallbackOption?: boolean;
+  
+  /** Ob die Komponente schließbar ist */
+  isClosable?: boolean;
+  
+  /** Zusätzliche Lösungsvorschläge */
+  helpItems?: string[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -117,13 +154,16 @@ const props = withDefaults(defineProps<Props>(), {
   errorType: 'unknown',
   canRetry: true,
   canContactSupport: false,
-  showFallbackOption: false
+  showFallbackOption: false,
+  isClosable: false,
+  helpItems: () => []
 });
 
 const emit = defineEmits<{
   (e: 'retry'): void;
   (e: 'contact-support'): void;
   (e: 'fallback'): void;
+  (e: 'close'): void;
 }>();
 
 // Lokaler Zustand
@@ -132,7 +172,7 @@ const detailsVisible = ref(false);
 /**
  * Berechnet den Fehlertyp aus dem Fehler oder verwendet den übergebenen Typ
  */
-const resolvedErrorType = computed((): ErrorType => {
+const errorType = computed((): ErrorType => {
   // Wenn ein Typ explizit als Prop angegeben wurde, diesen verwenden
   if (props.errorType !== 'unknown') {
     return props.errorType;
@@ -143,40 +183,65 @@ const resolvedErrorType = computed((): ErrorType => {
     // Für ErrorObject-Objekte
     if ('type' in props.error && typeof props.error.type === 'string') {
       const type = props.error.type as string;
-      if (['network', 'format', 'server', 'permission'].includes(type)) {
+      if (['network', 'format', 'server', 'permission', 'validation', 'timeout'].includes(type)) {
         return type as ErrorType;
       }
     }
     
     // Versuche, den Typ aus der Fehlermeldung zu ermitteln
-    const errorMessage = 'message' in props.error ? props.error.message : '';
+    const errorMessage = getErrorMessage(props.error);
     
     if (typeof errorMessage === 'string') {
-      if (errorMessage.toLowerCase().includes('netzwerk') || 
-          errorMessage.toLowerCase().includes('network') ||
-          errorMessage.toLowerCase().includes('verbindung') ||
-          errorMessage.toLowerCase().includes('connection')) {
+      const messageLower = errorMessage.toLowerCase();
+      
+      if (messageLower.includes('netzwerk') || 
+          messageLower.includes('network') ||
+          messageLower.includes('verbindung') ||
+          messageLower.includes('connection')) {
         return 'network';
       }
       
-      if (errorMessage.toLowerCase().includes('format') || 
-          errorMessage.toLowerCase().includes('datei') ||
-          errorMessage.toLowerCase().includes('file') ||
-          errorMessage.toLowerCase().includes('konvertierung')) {
+      if (messageLower.includes('format') || 
+          messageLower.includes('typ') ||
+          messageLower.includes('konvertierung')) {
         return 'format';
       }
       
-      if (errorMessage.toLowerCase().includes('server') ||
-          errorMessage.toLowerCase().includes('dienst') ||
-          errorMessage.toLowerCase().includes('service')) {
+      if (messageLower.includes('server') ||
+          messageLower.includes('dienst') ||
+          messageLower.includes('service')) {
         return 'server';
       }
       
-      if (errorMessage.toLowerCase().includes('berechtigung') ||
-          errorMessage.toLowerCase().includes('permission') ||
-          errorMessage.toLowerCase().includes('zugriff') ||
-          errorMessage.toLowerCase().includes('access')) {
+      if (messageLower.includes('berechtigung') ||
+          messageLower.includes('permission') ||
+          messageLower.includes('zugriff') ||
+          messageLower.includes('access')) {
         return 'permission';
+      }
+      
+      if (messageLower.includes('validierung') ||
+          messageLower.includes('validation') ||
+          messageLower.includes('gültig') ||
+          messageLower.includes('valid')) {
+        return 'validation';
+      }
+      
+      if (messageLower.includes('timeout') ||
+          messageLower.includes('zeitüberschreitung') ||
+          messageLower.includes('zu lange')) {
+        return 'timeout';
+      }
+    }
+    
+    // Für JavaScript Error-Objekte
+    if (props.error instanceof Error) {
+      const errorName = props.error.name;
+      if (errorName === 'NetworkError' || errorName === 'AbortError') {
+        return 'network';
+      }
+      if (errorName === 'TimeoutError') {
+        return 'timeout';
       }
     }
   }
@@ -193,14 +258,16 @@ const errorIcon = computed(() => {
     format: 'fa fa-file-excel',
     server: 'fa fa-server',
     permission: 'fa fa-lock',
+    validation: 'fa fa-exclamation-triangle',
+    timeout: 'fa fa-clock',
     unknown: 'fa fa-exclamation-circle'
   };
   
-  return iconMap[resolvedErrorType.value];
+  return iconMap[errorType.value];
 });
 
 /**
- * Extrahiert den Fehlertitel basierend auf dem Fehlertyp
+ * Extrahiert den Fehlertitel basierend auf dem Fehlertyp und Code
  */
 const errorTitle = computed(() => {
   // Prüfe, ob ein spezifischer Titel im Fehlerobjekt existiert
@@ -208,49 +275,67 @@ const errorTitle = computed(() => {
     const code = props.error.code;
     
     if (code === 'FILE_FORMAT_ERROR') {
-      return $t('errorDisplay.fileFormatError');
+      return $t('errorDisplay.fileFormatError', 'Fehler beim Dateiformat');
     }
     if (code === 'SERVER_ERROR') {
-      return $t('errorDisplay.serverError');
+      return $t('errorDisplay.serverError', 'Serverfehler');
     }
     if (code === 'NETWORK_ERROR') {
-      return $t('errorDisplay.networkError');
+      return $t('errorDisplay.networkError', 'Netzwerkfehler');
     }
     if (code === 'PERMISSION_ERROR') {
-      return $t('errorDisplay.permissionError');
+      return $t('errorDisplay.permissionError', 'Berechtigungsfehler');
+    }
+    if (code === 'VALIDATION_ERROR') {
+      return $t('errorDisplay.validationError', 'Validierungsfehler');
+    }
+    if (code === 'TIMEOUT_ERROR') {
+      return $t('errorDisplay.timeoutError', 'Zeitüberschreitung');
+    }
+    if (code === 'CONVERSION_FAILED') {
+      return $t('errorDisplay.conversionError', 'Konvertierungsfehler');
     }
   }
   
   // Fallback auf typenbasierte Titel
   const titleMap: Record<ErrorType, string> = {
-    network: $t('errorDisplay.networkProblem'),
-    format: $t('errorDisplay.formatProblem'),
-    server: $t('errorDisplay.serverProblem'),
-    permission: $t('errorDisplay.permissionProblem'),
-    unknown: $t('errorDisplay.unknownProblem')
+    network: $t('errorDisplay.networkProblem', 'Netzwerkfehler'),
+    format: $t('errorDisplay.formatProblem', 'Dateiformat-Fehler'),
+    server: $t('errorDisplay.serverProblem', 'Serverfehler'),
+    permission: $t('errorDisplay.permissionProblem', 'Berechtigungsfehler'),
+    validation: $t('errorDisplay.validationProblem', 'Validierungsfehler'),
+    timeout: $t('errorDisplay.timeoutProblem', 'Zeitüberschreitung'),
+    unknown: $t('errorDisplay.unknownProblem', 'Fehler aufgetreten')
   };
   
-  return titleMap[resolvedErrorType.value];
+  return titleMap[errorType.value];
 });
 
 /**
  * Extrahiert die benutzerfreundliche Fehlermeldung aus dem Fehler
  */
 const errorMessage = computed((): string => {
-  if (typeof props.error === 'string') {
-    return props.error;
-  }
-  
-  if (props.error instanceof Error) {
-    return props.error.message || $t('errorDisplay.defaultMessage');
-  }
-  
-  if (typeof props.error === 'object' && props.error !== null && 'message' in props.error) {
-    return props.error.message as string || $t('errorDisplay.defaultMessage');
-  }
-  
-  return $t('errorDisplay.defaultMessage');
+  return getErrorMessage(props.error);
 });
+
+/**
+ * Helper-Funktion zum Extrahieren der Fehlermeldung aus verschiedenen Fehlertypen
+ */
+function getErrorMessage(error: Error | ErrorObject | string): string {
+  if (typeof error === 'string') {
+    return error;
+  }
+  
+  if (error instanceof Error) {
+    return error.message || $t('errorDisplay.defaultMessage', 'Ein unerwarteter Fehler ist aufgetreten.');
+  }
+  
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    return error.message as string || $t('errorDisplay.defaultMessage', 'Ein unerwarteter Fehler ist aufgetreten.');
+  }
+  
+  return $t('errorDisplay.defaultMessage', 'Ein unerwarteter Fehler ist aufgetreten.');
+}
 
 /**
  * Extrahiert technische Details aus dem Fehler, falls vorhanden
@@ -294,14 +379,44 @@ const errorResolution = computed((): string | null => {
   
   // Fallback auf typenbasierte Lösungsvorschläge
   const resolutionMap: Record<ErrorType, string> = {
-    network: $t('errorDisplay.networkResolution'),
-    format: $t('errorDisplay.formatResolution'),
-    server: $t('errorDisplay.serverResolution'),
-    permission: $t('errorDisplay.permissionResolution'),
-    unknown: $t('errorDisplay.unknownResolution')
+    network: $t('errorDisplay.networkResolution', 'Überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut. Bei anhaltenden Problemen kontaktieren Sie bitte den Support.'),
+    format: $t('errorDisplay.formatResolution', 'Die hochgeladene Datei hat ein nicht unterstütztes Format oder ist beschädigt. Versuchen Sie, die Datei in einem anderen Format zu speichern oder eine andere Datei zu verwenden.'),
+    server: $t('errorDisplay.serverResolution', 'Der Server konnte die Anfrage nicht verarbeiten. Bitte versuchen Sie es später erneut oder wenden Sie sich an den Support, wenn das Problem bestehen bleibt.'),
+    permission: $t('errorDisplay.permissionResolution', 'Sie haben nicht die erforderlichen Berechtigungen für diese Aktion. Wenden Sie sich an Ihren Administrator, um die entsprechenden Rechte zu erhalten.'),
+    validation: $t('errorDisplay.validationResolution', 'Bitte überprüfen Sie die Eingabedaten auf Fehler und stellen Sie sicher, dass alle erforderlichen Felder ausgefüllt sind.'),
+    timeout: $t('errorDisplay.timeoutResolution', 'Die Operation hat zu lange gedauert und wurde abgebrochen. Bitte versuchen Sie es später erneut oder mit einer kleineren Datei.'),
+    unknown: $t('errorDisplay.unknownResolution', 'Bitte versuchen Sie es erneut oder wenden Sie sich an den Support, wenn das Problem bestehen bleibt.')
   };
   
-  return resolutionMap[resolvedErrorType.value];
+  return resolutionMap[errorType.value];
+});
+
+/**
+ * Formatiert den Lösungsvorschlag für HTML-Anzeige
+ */
+const formattedResolution = computed(() => {
+  if (!errorResolution.value) return '';
+  
+  // Einfache Formatierung für URLs
+  return errorResolution.value
+    .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>')
+    .replace(/\n/g, '<br>');
+});
+
+/**
+ * Extrahiert Lösungsschritte aus dem Fehler, falls vorhanden
+ */
+const helpItems = computed((): string[] => {
+  // Prüfe, ob spezifische Hilfspunkte im Fehlerobjekt existieren
+  if (typeof props.error === 'object' && props.error !== null && 'helpItems' in props.error) {
+    const items = props.error.helpItems as string[] | undefined;
+    if (Array.isArray(items)) {
+      return items;
+    }
+  }
+  
+  // Sonst die aus den Props verwenden
+  return props.helpItems;
 });
 
 /**
@@ -333,257 +448,294 @@ function handleFallback(): void {
 }
 
 /**
- * i18n-Fallback für Texte
+ * Löst das close-Event aus
  */
-function $t(key: string): string {
-  const messages: Record<string, string> = {
-    'errorDisplay.networkProblem': 'Netzwerkfehler',
-    'errorDisplay.formatProblem': 'Dateiformat-Fehler',
-    'errorDisplay.serverProblem': 'Serverfehler',
-    'errorDisplay.permissionProblem': 'Berechtigungsfehler',
-    'errorDisplay.unknownProblem': 'Fehler aufgetreten',
-    
-    'errorDisplay.fileFormatError': 'Fehler beim Dateiformat',
-    'errorDisplay.serverError': 'Serverfehler',
-    'errorDisplay.networkError': 'Netzwerkfehler',
-    'errorDisplay.permissionError': 'Berechtigungsfehler',
-    
-    'errorDisplay.defaultMessage': 'Ein unerwarteter Fehler ist aufgetreten.',
-    
-    'errorDisplay.networkResolution': 'Überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut. Bei anhaltenden Problemen kontaktieren Sie bitte den Support.',
-    'errorDisplay.formatResolution': 'Die hochgeladene Datei hat ein nicht unterstütztes Format oder ist beschädigt. Versuchen Sie, die Datei in einem anderen Format zu speichern oder eine andere Datei zu verwenden.',
-    'errorDisplay.serverResolution': 'Der Server konnte die Anfrage nicht verarbeiten. Bitte versuchen Sie es später erneut oder wenden Sie sich an den Support, wenn das Problem bestehen bleibt.',
-    'errorDisplay.permissionResolution': 'Sie haben nicht die erforderlichen Berechtigungen für diese Aktion. Wenden Sie sich an Ihren Administrator, um die entsprechenden Rechte zu erhalten.',
-    'errorDisplay.unknownResolution': 'Bitte versuchen Sie es erneut oder wenden Sie sich an den Support, wenn das Problem bestehen bleibt.',
-    
-    'errorDisplay.resolutionTitle': 'Lösungsvorschlag',
-    'errorDisplay.showDetails': 'Technische Details anzeigen',
-    'errorDisplay.hideDetails': 'Technische Details ausblenden',
-    'errorDisplay.retry': 'Erneut versuchen',
-    'errorDisplay.contactSupport': 'Support kontaktieren',
-    'errorDisplay.fallback': 'Einfache Version verwenden',
-    
-    'errorDisplay.retryAriaLabel': 'Aktion erneut versuchen',
-    'errorDisplay.contactSupportAriaLabel': 'Support über dieses Problem kontaktieren',
-    'errorDisplay.fallbackAriaLabel': 'Alternative Version mit eingeschränkter Funktionalität verwenden'
-  };
-  
-  return messages[key] || key;
+function handleClose(): void {
+  emit('close');
 }
+
+/**
+ * i18n-Hilfsfunktion
+ */
+function $t(key: string, fallback: string): string {
+  return fallback;
+}
+
+// Initialisierung
+onMounted(() => {
+  // Automatisches Anzeigen der Details bei bestimmten Fehlertypen
+  if (errorType.value === 'server' || errorType.value === 'unknown') {
+    detailsVisible.value = props.showDetails;
+  }
+});
 </script>
 
 <style scoped>
 .error-display {
-  display: flex;
-  padding: 1.5rem;
+  background-color: #fff;
   border-radius: 8px;
-  margin-bottom: 1.5rem;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-  position: relative;
+  margin-bottom: 1.5rem;
   overflow: hidden;
+  position: relative;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Fehlertyp-spezifische Stile */
 .error-display--network {
-  background-color: #e7f5ff;
   border-left: 5px solid #4dabf7;
-  color: #1c7ed6;
 }
 
 .error-display--format {
-  background-color: #fff3bf;
   border-left: 5px solid #fab005;
-  color: #e67700;
 }
 
 .error-display--server {
-  background-color: #ffe3e3;
   border-left: 5px solid #fa5252;
-  color: #c92a2a;
 }
 
 .error-display--permission {
-  background-color: #e5dbff;
   border-left: 5px solid #7950f2;
-  color: #5f3dc4;
+}
+
+.error-display--validation {
+  border-left: 5px solid #ff922b;
+}
+
+.error-display--timeout {
+  border-left: 5px solid #74c0fc;
 }
 
 .error-display--unknown {
-  background-color: #f8f9fa;
   border-left: 5px solid #adb5bd;
-  color: #495057;
 }
 
-.error-icon {
-  font-size: 2.25rem;
-  margin-right: 1.5rem;
+.error-display__header {
   display: flex;
-  align-items: flex-start;
-  padding-top: 0.25rem;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background-color: rgba(0, 0, 0, 0.02);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.error-content {
-  flex: 1;
-  min-width: 0;
+.error-display__title-area {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-.error-title {
-  margin: 0 0 0.75rem;
+.error-display__icon {
+  font-size: 1.5rem;
+}
+
+.error-display--network .error-display__icon { color: #4dabf7; }
+.error-display--format .error-display__icon { color: #fab005; }
+.error-display--server .error-display__icon { color: #fa5252; }
+.error-display--permission .error-display__icon { color: #7950f2; }
+.error-display--validation .error-display__icon { color: #ff922b; }
+.error-display--timeout .error-display__icon { color: #74c0fc; }
+.error-display--unknown .error-display__icon { color: #adb5bd; }
+
+.error-display__title {
+  margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
+  color: #343a40;
 }
 
-.error-message {
-  margin: 0 0 1rem;
-  line-height: 1.5;
-  color: #495057;
-}
-
-.error-details {
-  margin: 1rem 0;
-  position: relative;
-}
-
-.toggle-details-btn {
+.error-display__close-btn {
   background: none;
   border: none;
-  padding: 0.375rem 0.75rem;
-  color: inherit;
-  font-size: 0.875rem;
+  color: #adb5bd;
+  font-size: 1.25rem;
   cursor: pointer;
-  text-decoration: underline;
-  margin-left: -0.75rem;
-  display: inline-flex;
-  align-items: center;
-}
-
-.toggle-details-btn:hover {
-  text-decoration: none;
-}
-
-.toggle-details-btn::before {
-  content: "";
-  display: inline-block;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  margin-right: 0.375rem;
-}
-
-.toggle-details-btn[aria-expanded="true"]::before {
-  border-width: 6px 4px 0 4px;
-  border-color: currentColor transparent transparent transparent;
-}
-
-.toggle-details-btn[aria-expanded="false"]::before {
-  border-width: 4px 0 4px 6px;
-  border-color: transparent transparent transparent currentColor;
-}
-
-.error-details-content {
-  margin-top: 0.75rem;
-  padding: 1rem;
-  background-color: rgba(0, 0, 0, 0.04);
-  border-radius: 4px;
-  font-family: monospace;
-  font-size: 0.85rem;
-  white-space: pre-wrap;
-  overflow-x: auto;
-  color: #495057;
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.error-resolution {
-  background-color: rgba(255, 255, 255, 0.5);
-  padding: 1rem;
-  border-radius: 4px;
-  margin: 1rem 0;
-}
-
-.resolution-title {
-  font-size: 1rem;
-  margin: 0 0 0.5rem;
-  font-weight: 600;
-}
-
-.resolution-text {
-  margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.5;
-}
-
-.error-actions {
+  padding: 0;
+  width: 30px;
+  height: 30px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
 }
 
-.retry-btn, 
-.support-btn, 
-.fallback-btn {
-  padding: 0.5rem 1.25rem;
-  border-radius: 4px;
-  font-size: 0.95rem;
+.error-display__close-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #495057;
+}
+
+.error-display__content {
+  padding: 1.5rem;
+}
+
+.error-display__message {
+  margin: 0 0 1.25rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #495057;
+}
+
+.error-display__details {
+  margin-bottom: 1.25rem;
+}
+
+.error-display__toggle-details {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #6c757d;
+  font-size: 0.9rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.error-display__toggle-details:hover {
+  color: #343a40;
+}
+
+.error-display__details-content {
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+  white-space: pre-wrap;
+  overflow-x: auto;
+  max-height: 300px;
+  overflow-y: auto;
+  color: #495057;
+  margin: 0;
+}
+
+.error-display__resolution {
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border-left: 3px solid #0d7a40;
+}
+
+.error-display__resolution-title {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #343a40;
+}
+
+.error-display__resolution-text {
+  margin: 0;
+  line-height: 1.5;
+  color: #495057;
+}
+
+.error-display__resolution-text a {
+  color: #0d7a40;
+  text-decoration: none;
+}
+
+.error-display__resolution-text a:hover {
+  text-decoration: underline;
+}
+
+.error-display__help-items {
+  margin-bottom: 1.25rem;
+}
+
+.error-display__help-title {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #343a40;
+}
+
+.error-display__help-list {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.error-display__help-item {
+  margin-bottom: 0.5rem;
+  color: #495057;
+  line-height: 1.5;
+}
+
+.error-display__help-item:last-child {
+  margin-bottom: 0;
+}
+
+.error-display__action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.error-display__action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  font-size: 0.95rem;
   font-weight: 500;
-  transition: all 0.2s ease;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
   border: 1px solid transparent;
 }
 
-.retry-btn {
-  background-color: #fff;
-  border-color: currentColor;
+.error-display__retry-btn {
+  background-color: #0d7a40;
+  color: white;
 }
 
-.retry-btn:hover {
-  background-color: rgba(255, 255, 255, 0.8);
+.error-display__retry-btn:hover {
+  background-color: #0a6032;
 }
 
-.support-btn {
-  background-color: rgba(0, 0, 0, 0.05);
+.error-display__support-btn {
+  background-color: #f8f9fa;
+  border-color: #ced4da;
   color: #495057;
 }
 
-.support-btn:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+.error-display__support-btn:hover {
+  background-color: #e9ecef;
 }
 
-.fallback-btn {
-  background-color: rgba(0, 0, 0, 0.05);
-  color: #495057;
+.error-display__fallback-btn {
+  background-color: #fff3bf;
+  color: #e67700;
+  border-color: #ffec99;
 }
 
-.fallback-btn:hover {
-  background-color: rgba(0, 0, 0, 0.1);
-}
-
-/* Fokus-Stile für Barrierefreiheit */
-.toggle-details-btn:focus,
-.retry-btn:focus,
-.support-btn:focus,
-.fallback-btn:focus {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
+.error-display__fallback-btn:hover {
+  background-color: #ffec99;
 }
 
 @media (max-width: 768px) {
-  .error-display {
+  .error-display__header {
+    padding: 1rem;
+  }
+  
+  .error-display__content {
+    padding: 1rem;
+  }
+  
+  .error-display__action-buttons {
     flex-direction: column;
-    padding: 1.25rem;
   }
   
-  .error-icon {
-    margin-right: 0;
-    margin-bottom: 1rem;
-    justify-content: center;
-  }
-  
-  .error-actions {
+  .error-display__action-btn {
+    width: 100%;
     justify-content: center;
   }
 }

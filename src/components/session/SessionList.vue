@@ -6,7 +6,7 @@
       'n-session-list--empty': !isLoading && visibleSessions.length === 0 
     }"
   >
-    <!-- Header mit Suchfeld und Sortierung -->
+    <!-- Header mit Suchfeld, Sortierung und Filtern -->
     <div class="n-session-list__header">
       <div class="n-session-list__search">
         <input
@@ -17,9 +17,9 @@
           :disabled="isLoading"
           @input="handleSearch"
         />
-        <button 
-          v-if="searchQuery" 
-          class="n-session-list__search-clear" 
+        <button
+          v-if="searchQuery"
+          class="n-session-list__search-clear"
           @click="clearSearch"
           aria-label="Suche löschen"
         >
@@ -29,45 +29,273 @@
           </svg>
         </button>
       </div>
-      
-      <div class="n-session-list__sort">
-        <button 
-          class="n-session-list__sort-toggle" 
-          @click="toggleSortOptions"
-          :aria-expanded="showSortOptions"
-          aria-controls="sort-options"
-          aria-label="Sortieroptionen"
+
+      <!-- Sortierung -->
+      <div class="n-session-list__actions">
+        <div class="n-session-list__sort">
+          <button
+            class="n-session-list__sort-toggle"
+            @click="toggleSortOptions"
+            :aria-expanded="showSortOptions"
+            aria-controls="sort-options"
+            aria-label="Sortieroptionen"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="7 11 12 6 17 11"></polyline>
+              <polyline points="7 17 12 12 17 17"></polyline>
+            </svg>
+            <span class="n-session-list__sort-text">{{ sortOptions[currentSort].label }}</span>
+          </button>
+
+          <div
+            id="sort-options"
+            v-show="showSortOptions"
+            class="n-session-list__sort-options"
+            ref="sortOptionsMenu"
+          >
+            <button
+              v-for="(option, key) in sortOptions"
+              :key="key"
+              class="n-session-list__sort-option"
+              :class="{ 'n-session-list__sort-option--active': currentSort === key }"
+              @click="setSortOption(key)"
+            >
+              {{ option.label }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Filteroption -->
+        <div v-if="enableFiltering" class="n-session-list__filter">
+          <button
+            class="n-session-list__filter-toggle"
+            @click="toggleFilterOptions"
+            :class="{ 'n-session-list__filter-toggle--active': currentFilter.type !== 'none' }"
+            aria-label="Filteroptionen"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+            <span class="n-session-list__filter-text">
+              {{ currentFilter.type !== 'none' ? 'Filter aktiv' : 'Filter' }}
+            </span>
+          </button>
+
+          <div
+            v-if="showFilterOptions"
+            class="n-session-list__filter-options"
+          >
+            <div class="n-session-list__filter-section">
+              <div class="n-session-list__filter-section-title">Status</div>
+              <button
+                class="n-session-list__filter-option"
+                :class="{ 'n-session-list__filter-option--active': currentFilter.type === 'status' && currentFilter.value === 'archived' }"
+                @click="setFilter('status', 'archived')"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+                  <line x1="16" y1="2" x2="16" y2="22"></line>
+                  <line x1="8" y1="2" x2="8" y2="22"></line>
+                  <line x1="2" y1="12" x2="22" y2="12"></line>
+                </svg>
+                Archivierte
+              </button>
+              <button
+                class="n-session-list__filter-option"
+                :class="{ 'n-session-list__filter-option--active': currentFilter.type === 'status' && currentFilter.value === 'pinned' }"
+                @click="setFilter('status', 'pinned')"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                Angeheftete
+              </button>
+            </div>
+
+            <!-- Tags -->
+            <div v-if="props.enableTags && props.availableTags.length > 0" class="n-session-list__filter-section">
+              <div class="n-session-list__filter-section-title">Tags</div>
+              <button
+                v-for="tag in props.availableTags"
+                :key="tag"
+                class="n-session-list__filter-option"
+                :class="{ 'n-session-list__filter-option--active': currentFilter.type === 'tag' && currentFilter.value === tag }"
+                @click="setFilter('tag', tag)"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                  <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                </svg>
+                {{ tag }}
+              </button>
+            </div>
+
+            <!-- Kategorien -->
+            <div v-if="props.enableCategories && props.availableCategories.length > 0" class="n-session-list__filter-section">
+              <div class="n-session-list__filter-section-title">Kategorien</div>
+              <button
+                v-for="category in props.availableCategories"
+                :key="category"
+                class="n-session-list__filter-option"
+                :class="{ 'n-session-list__filter-option--active': currentFilter.type === 'category' && currentFilter.value === category }"
+                @click="setFilter('category', category)"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="4 7 4 4 20 4 20 7"></polyline>
+                  <line x1="9" y1="20" x2="15" y2="20"></line>
+                  <line x1="12" y1="4" x2="12" y2="20"></line>
+                </svg>
+                {{ category }}
+              </button>
+            </div>
+
+            <!-- Filter zurücksetzen -->
+            <button
+              v-if="currentFilter.type !== 'none'"
+              class="n-session-list__filter-reset"
+              @click="resetFilter"
+            >
+              Filter zurücksetzen
+            </button>
+          </div>
+        </div>
+
+        <!-- Multi-Select-Modus Toggle -->
+        <button
+          v-if="visibleSessions.length > 1"
+          class="n-session-list__multi-select-toggle"
+          :class="{ 'n-session-list__multi-select-toggle--active': multiSelectMode }"
+          @click="toggleMultiSelectMode"
+          aria-label="Mehrfachauswahl aktivieren/deaktivieren"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="7 11 12 6 17 11"></polyline>
-            <polyline points="7 17 12 12 17 17"></polyline>
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
           </svg>
-          <span class="n-session-list__sort-text">{{ sortOptions[currentSort].label }}</span>
         </button>
-        
-        <div 
-          id="sort-options"
-          v-show="showSortOptions" 
-          class="n-session-list__sort-options"
-          ref="sortOptionsMenu"
+      </div>
+
+      <!-- Aktive Filter-Anzeige -->
+      <div
+        v-if="currentFilter.type !== 'none'"
+        class="n-session-list__active-filter"
+      >
+        <span class="n-session-list__active-filter-label">
+          Filter aktiv:
+          <strong>
+            {{
+              currentFilter.type === 'tag' ? `Tag: ${currentFilter.value}` :
+              currentFilter.type === 'category' ? `Kategorie: ${currentFilter.value}` :
+              currentFilter.type === 'status' && currentFilter.value === 'archived' ? 'Archivierte' :
+              currentFilter.type === 'status' && currentFilter.value === 'pinned' ? 'Angeheftete' : ''
+            }}
+          </strong>
+        </span>
+        <button
+          class="n-session-list__active-filter-clear"
+          @click="resetFilter"
+          aria-label="Filter entfernen"
         >
-          <button 
-            v-for="(option, key) in sortOptions" 
-            :key="key"
-            class="n-session-list__sort-option"
-            :class="{ 'n-session-list__sort-option--active': currentSort === key }"
-            @click="setSortOption(key)"
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Multi-Select-Status -->
+      <div
+        v-if="multiSelectMode && selectedSessionIds.length > 0"
+        class="n-session-list__selection-bar"
+      >
+        <span class="n-session-list__selection-count">
+          {{ selectedSessionIds.length }} {{ selectedSessionIds.length === 1 ? 'Unterhaltung' : 'Unterhaltungen' }} ausgewählt
+        </span>
+
+        <div class="n-session-list__selection-actions">
+          <button
+            class="n-session-list__selection-action"
+            @click="handleBulkAction('archive')"
+            aria-label="Ausgewählte archivieren"
           >
-            {{ option.label }}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+              <line x1="16" y1="2" x2="16" y2="22"></line>
+              <line x1="8" y1="2" x2="8" y2="22"></line>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+            </svg>
+            <span>Archivieren</span>
+          </button>
+
+          <button
+            v-if="props.enableTags"
+            class="n-session-list__selection-action"
+            @click="showBulkTagDialog"
+            aria-label="Tags hinzufügen"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+              <line x1="7" y1="7" x2="7.01" y2="7"></line>
+            </svg>
+            <span>Tag hinzufügen</span>
+          </button>
+
+          <button
+            class="n-session-list__selection-action n-session-list__selection-action--danger"
+            @click="confirmBulkDelete"
+            aria-label="Ausgewählte löschen"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+            <span>Löschen</span>
+          </button>
+
+          <button
+            class="n-session-list__selection-action n-session-list__selection-action--secondary"
+            @click="clearSelection"
+            aria-label="Auswahl aufheben"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            <span>Auswahl aufheben</span>
           </button>
         </div>
       </div>
     </div>
     
-    <!-- Ladezustand -->
-    <div v-if="isLoading" class="n-session-list__loading">
+    <!-- Ladezustand mit Spinner oder Skeleton-Loading -->
+    <div v-if="isLoading && !shouldShowSkeletons" class="n-session-list__loading">
       <div class="n-session-list__spinner"></div>
       <span>Lade Unterhaltungen...</span>
+    </div>
+
+    <!-- Skeleton Loading für bessere UX -->
+    <div v-else-if="shouldShowSkeletons" class="n-session-list__skeleton-container">
+      <!-- Mehrere Skeleton-Items für realistischeres Loading -->
+      <div
+        v-for="i in 5"
+        :key="i"
+        class="n-session-list__skeleton-item"
+        :style="{
+          animationDelay: `${i * 0.1}s`,
+          opacity: 1 - (i * 0.15)
+        }"
+      >
+        <div class="n-session-list__skeleton-icon"></div>
+        <div class="n-session-list__skeleton-content">
+          <div class="n-session-list__skeleton-title"></div>
+          <div class="n-session-list__skeleton-date"></div>
+        </div>
+      </div>
     </div>
     
     <!-- Leer-Zustand -->
@@ -96,7 +324,32 @@
       </button>
     </div>
     
-    <!-- Session-Liste mit Drag-and-Drop -->
+    <!-- Session-Liste mit virtueller Scrolling und Drag-and-Drop -->
+    <RecycleScroller
+      v-else-if="enableVirtualScrolling && visibleSessions.length > virtualScrollThreshold"
+      class="n-session-list__items n-session-list__virtual-scroller"
+      :items="visibleSessions"
+      :item-size="sessionItemHeight"
+      :key-field="'id'"
+      :buffer="400"
+      v-slot="{ item, index }"
+    >
+      <SessionItem
+        :session="item"
+        :is-active="activeSessionId === item.id"
+        :is-pinned="item.isPinned"
+        :show-drag-handle="false" <!-- Disabled for virtual scrolling -->
+        :index="index"
+        :tag="item.tag"
+        @select="handleSessionSelect"
+        @contextmenu="handleContextMenu"
+        @pin="handlePinSession"
+        @delete="handleConfirmDelete"
+        @rename="handleRenameSession"
+      />
+    </RecycleScroller>
+
+    <!-- Normale Liste mit Drag-and-Drop für weniger Sessions -->
     <draggable
       v-else
       v-model="draggableSessions"
@@ -116,6 +369,7 @@
           :is-pinned="element.isPinned"
           :show-drag-handle="enableDragAndDrop"
           :index="index"
+          :tag="element.tag"
           @select="handleSessionSelect"
           @contextmenu="handleContextMenu"
           @pin="handlePinSession"
@@ -153,7 +407,7 @@
         <span class="n-session-list__context-menu-title">{{ contextSession?.title || 'Unterhaltung' }}</span>
       </div>
       <div class="n-session-list__context-menu-content">
-        <button 
+        <button
           class="n-session-list__context-menu-item"
           @click="handleContextMenuAction('rename')"
           role="menuitem"
@@ -164,7 +418,8 @@
           </svg>
           <span>Umbenennen</span>
         </button>
-        <button 
+
+        <button
           class="n-session-list__context-menu-item"
           @click="handleContextMenuAction('pin')"
           role="menuitem"
@@ -175,7 +430,78 @@
           </svg>
           <span>{{ contextSession?.isPinned ? 'Anheften aufheben' : 'Anheften' }}</span>
         </button>
-        <button 
+
+        <!-- Archivieren / Aus Archiv wiederherstellen -->
+        <button
+          class="n-session-list__context-menu-item"
+          @click="handleContextMenuAction('archive')"
+          role="menuitem"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+            <line x1="16" y1="2" x2="16" y2="22"></line>
+            <line x1="8" y1="2" x2="8" y2="22"></line>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+          </svg>
+          <span>{{ contextSession?.isArchived ? 'Aus Archiv wiederherstellen' : 'Archivieren' }}</span>
+        </button>
+
+        <!-- Tags, falls aktiviert -->
+        <div v-if="props.enableTags" class="n-session-list__context-menu-section">
+          <div class="n-session-list__context-menu-section-title">Tags</div>
+
+          <!-- Tag hinzufügen -->
+          <button
+            class="n-session-list__context-menu-item"
+            @click="handleContextMenuAction('addTag')"
+            role="menuitem"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+              <line x1="7" y1="7" x2="7.01" y2="7"></line>
+            </svg>
+            <span>Tag hinzufügen</span>
+          </button>
+
+          <!-- Vorhandene Tags entfernen -->
+          <div v-if="contextSession?.tags && contextSession.tags.length > 0">
+            <button
+              v-for="tag in contextSession.tags"
+              :key="tag"
+              class="n-session-list__context-menu-item n-session-list__context-menu-item--tag"
+              @click="handleContextMenuAction('removeTag', tag)"
+              role="menuitem"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+              <span>Tag entfernen: {{ tag }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Kategorien, falls aktiviert -->
+        <div v-if="props.enableCategories" class="n-session-list__context-menu-section">
+          <div class="n-session-list__context-menu-section-title">Kategorie</div>
+
+          <button
+            v-for="category in props.availableCategories"
+            :key="category"
+            class="n-session-list__context-menu-item"
+            :class="{ 'n-session-list__context-menu-item--active': contextSession?.category === category }"
+            @click="handleContextMenuAction('setCategory', category)"
+            role="menuitem"
+          >
+            <svg v-if="contextSession?.category === category" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>{{ category }}</span>
+          </button>
+        </div>
+
+        <!-- Löschen (immer am Ende) -->
+        <button
           class="n-session-list__context-menu-item n-session-list__context-menu-item--danger"
           @click="handleContextMenuAction('delete')"
           role="menuitem"
@@ -256,7 +582,10 @@ import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useSessionsStore } from '@/stores/sessions';
 import type { ChatSession } from '@/types/session';
 import draggable from 'vuedraggable';
+import { RecycleScroller } from 'vue-virtual-scroller';
+import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
 import SessionItem from './SessionItem.vue';
+import NewSessionButton from './NewSessionButton.vue';
 
 interface Props {
   /** Array der anzuzeigenden Sessions */
@@ -279,6 +608,24 @@ interface Props {
   defaultSort?: 'newest' | 'oldest' | 'alphabetical' | 'lastUpdated';
   /** Ob Filterfunktionen verfügbar sein sollen */
   enableFiltering?: boolean;
+  /** Ob virtuelles Scrolling aktiviert sein soll (für große Listen) */
+  enableVirtualScrolling?: boolean;
+  /** Ab wie vielen Elementen virtuelles Scrolling aktiviert wird */
+  virtualScrollThreshold?: number;
+  /** Höhe eines Session-Elements in Pixeln für virtuelles Scrolling */
+  sessionItemHeight?: number;
+  /** Ob die Skeleton-Loading-Animation angezeigt werden soll */
+  showSkeletonLoading?: boolean;
+  /** Ob die archivierte Sessions angezeigt werden sollen */
+  showArchived?: boolean;
+  /** Ob das Tagging-System aktiviert sein soll */
+  enableTags?: boolean;
+  /** Verfügbare Tags für Sessions */
+  availableTags?: string[];
+  /** Ob die Kategorisierung aktiviert sein soll */
+  enableCategories?: boolean;
+  /** Verfügbare Kategorien für Sessions */
+  availableCategories?: string[];
 }
 
 // Default-Werte für Props
@@ -292,7 +639,16 @@ const props = withDefaults(defineProps<Props>(), {
   enableDragAndDrop: true,
   enableSorting: true,
   defaultSort: 'lastUpdated',
-  enableFiltering: true
+  enableFiltering: true,
+  enableVirtualScrolling: true,
+  virtualScrollThreshold: 30,
+  sessionItemHeight: 70,
+  showSkeletonLoading: true,
+  showArchived: false,
+  enableTags: false,
+  availableTags: () => [],
+  enableCategories: false,
+  availableCategories: () => []
 });
 
 // Events
@@ -309,6 +665,18 @@ const emit = defineEmits<{
   (e: 'create'): void;
   /** Wird ausgelöst, wenn die Reihenfolge der Sessions geändert wurde */
   (e: 'reorder', sessions: ChatSession[]): void;
+  /** Wird ausgelöst, wenn eine Session archiviert wird */
+  (e: 'archive', sessionId: string, archived: boolean): void;
+  /** Wird ausgelöst, wenn ein Tag zu einer Session hinzugefügt wird */
+  (e: 'tag', sessionId: string, tag: string): void;
+  /** Wird ausgelöst, wenn ein Tag von einer Session entfernt wird */
+  (e: 'untag', sessionId: string, tag: string): void;
+  /** Wird ausgelöst, wenn eine Session einer Kategorie zugeordnet wird */
+  (e: 'categorize', sessionId: string, category: string): void;
+  /** Wird ausgelöst, wenn eine Mehrfachauswahl stattgefunden hat */
+  (e: 'selection-change', selectedSessionIds: string[]): void;
+  /** Wird ausgelöst, wenn eine Mehrfachaktion ausgeführt wird */
+  (e: 'bulk-action', action: string, sessionIds: string[]): void;
 }>();
 
 // Store
@@ -330,6 +698,23 @@ const renameValue = ref('');
 const renameInput = ref<HTMLInputElement | null>(null);
 const contextMenu = ref<HTMLElement | null>(null);
 
+// Neue Zustandsvariablen für erweiterte Features
+const selectedSessionIds = ref<string[]>([]);
+const showArchiveDialog = ref(false);
+const sessionToArchive = ref<ChatSession | null>(null);
+const showTagDialog = ref(false);
+const sessionToTag = ref<ChatSession | null>(null);
+const selectedTag = ref<string>('');
+const showCategoryDialog = ref(false);
+const sessionToCategories = ref<ChatSession | null>(null);
+const selectedCategory = ref<string>('');
+const currentFilter = ref<{
+  type: 'tag' | 'category' | 'status' | 'none';
+  value: string;
+}>({ type: 'none', value: '' });
+const multiSelectMode = ref(false);
+const showSkeletons = ref(props.showSkeletonLoading);
+
 // Sortieroptionen
 const sortOptions = {
   newest: { label: 'Neueste zuerst', compareFn: (a: ChatSession, b: ChatSession) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime() },
@@ -339,31 +724,129 @@ const sortOptions = {
 };
 
 // Computed Properties
-const filteredSessions = computed(() => {
+const filteredBySearchSessions = computed(() => {
   if (!searchQuery.value) return props.sessions;
-  
+
   const query = searchQuery.value.toLowerCase().trim();
-  return props.sessions.filter(session => 
+  return props.sessions.filter(session =>
     session.title.toLowerCase().includes(query)
   );
 });
 
+const filteredByTagsAndCategories = computed(() => {
+  let sessions = filteredBySearchSessions.value;
+
+  // Filter nach Tags, Kategorien oder Status
+  if (currentFilter.value.type !== 'none' && currentFilter.value.value) {
+    switch (currentFilter.value.type) {
+      case 'tag':
+        // Filter nach Tag
+        sessions = sessions.filter(session =>
+          session.tags?.includes(currentFilter.value.value)
+        );
+        break;
+      case 'category':
+        // Filter nach Kategorie
+        sessions = sessions.filter(session =>
+          session.category === currentFilter.value.value
+        );
+        break;
+      case 'status':
+        // Filter nach Status (archived, pinned)
+        if (currentFilter.value.value === 'archived') {
+          sessions = sessions.filter(session => !!session.isArchived);
+        } else if (currentFilter.value.value === 'pinned') {
+          sessions = sessions.filter(session => !!session.isPinned);
+        }
+        break;
+    }
+  } else if (!props.showArchived) {
+    // Wenn keine Filter aktiv sind, archivierte Sessions ausblenden,
+    // außer der Prop showArchived ist true
+    sessions = sessions.filter(session => !session.isArchived);
+  }
+
+  return sessions;
+});
+
 const sortedSessions = computed(() => {
   // Gepinnte Sessions immer oben
-  const pinnedSessions = filteredSessions.value.filter(s => s.isPinned);
-  const unpinnedSessions = filteredSessions.value.filter(s => !s.isPinned);
-  
+  const pinnedSessions = filteredByTagsAndCategories.value.filter(s => s.isPinned);
+  const unpinnedSessions = filteredByTagsAndCategories.value.filter(s => !s.isPinned);
+
   // Sortiere beide Gruppen individuell
   const sortFn = sortOptions[currentSort.value].compareFn;
   pinnedSessions.sort(sortFn);
   unpinnedSessions.sort(sortFn);
-  
+
   // Kombiniere beide sortierten Arrays
   return [...pinnedSessions, ...unpinnedSessions];
 });
 
 const visibleSessions = computed(() => {
   return sortedSessions.value;
+});
+
+// Berechnet, ob Skeleton-Loading angezeigt werden soll
+const shouldShowSkeletons = computed(() => {
+  return props.isLoading && props.showSkeletonLoading && showSkeletons.value;
+});
+
+// Gruppierte Sessions nach Tag
+const sessionsByTag = computed(() => {
+  if (!props.enableTags) return {};
+
+  const result: Record<string, ChatSession[]> = {};
+
+  // Erstelle einen Eintrag für jeden verfügbaren Tag
+  props.availableTags.forEach(tag => {
+    result[tag] = [];
+  });
+
+  // Ordne Sessions den entsprechenden Tags zu
+  filteredBySearchSessions.value.forEach(session => {
+    const tags = session.tags || [];
+    tags.forEach(tag => {
+      if (result[tag]) {
+        result[tag].push(session);
+      }
+    });
+
+    // Sessions ohne Tags unter "Untagged"
+    if (tags.length === 0) {
+      if (!result['untagged']) {
+        result['untagged'] = [];
+      }
+      result['untagged'].push(session);
+    }
+  });
+
+  return result;
+});
+
+// Gruppierte Sessions nach Kategorie
+const sessionsByCategory = computed(() => {
+  if (!props.enableCategories) return {};
+
+  const result: Record<string, ChatSession[]> = {};
+
+  // Erstelle einen Eintrag für jede verfügbare Kategorie
+  props.availableCategories.forEach(category => {
+    result[category] = [];
+  });
+
+  // Ordne Sessions den entsprechenden Kategorien zu
+  filteredBySearchSessions.value.forEach(session => {
+    const category = session.category || 'uncategorized';
+
+    if (!result[category]) {
+      result[category] = [];
+    }
+
+    result[category].push(session);
+  });
+
+  return result;
 });
 
 // Für Draggable - zweiseitige Bindung ist erfordert
@@ -386,6 +869,7 @@ function clearSearch() {
 
 function toggleSortOptions() {
   showSortOptions.value = !showSortOptions.value;
+  showFilterOptions.value = false; // Andere Dropdown schließen
 }
 
 function setSortOption(option: string) {
@@ -393,6 +877,140 @@ function setSortOption(option: string) {
     currentSort.value = option as keyof typeof sortOptions;
     showSortOptions.value = false;
   }
+}
+
+// Referenz und Zustand für Filter-Optionen
+const showFilterOptions = ref(false);
+const filterOptionsRef = ref<HTMLElement | null>(null);
+
+function toggleFilterOptions() {
+  showFilterOptions.value = !showFilterOptions.value;
+  showSortOptions.value = false; // Andere Dropdown schließen
+}
+
+// Filter setzen
+function setFilter(type: 'tag' | 'category' | 'status', value: string) {
+  if (currentFilter.value.type === type && currentFilter.value.value === value) {
+    // Wenn der gleiche Filter nochmal geklickt wird, zurücksetzen
+    resetFilter();
+  } else {
+    currentFilter.value = { type, value };
+  }
+  showFilterOptions.value = false;
+}
+
+// Filter zurücksetzen
+function resetFilter() {
+  currentFilter.value = { type: 'none', value: '' };
+  showFilterOptions.value = false;
+}
+
+// Multi-Select-Modus umschalten
+function toggleMultiSelectMode() {
+  multiSelectMode.value = !multiSelectMode.value;
+
+  // Bei Deaktivierung die Auswahl zurücksetzen
+  if (!multiSelectMode.value) {
+    clearSelection();
+  }
+}
+
+// Auswahl löschen
+function clearSelection() {
+  selectedSessionIds.value = [];
+  emit('selection-change', []);
+}
+
+// Session zur Auswahl hinzufügen/entfernen
+function toggleSessionSelection(sessionId: string, isSelected: boolean) {
+  if (isSelected) {
+    // Zur Auswahl hinzufügen, wenn noch nicht vorhanden
+    if (!selectedSessionIds.value.includes(sessionId)) {
+      selectedSessionIds.value.push(sessionId);
+    }
+  } else {
+    // Aus Auswahl entfernen
+    selectedSessionIds.value = selectedSessionIds.value.filter(id => id !== sessionId);
+  }
+
+  // Event auslösen
+  emit('selection-change', selectedSessionIds.value);
+}
+
+// Bulk-Aktionen verarbeiten
+function handleBulkAction(action: string) {
+  if (selectedSessionIds.value.length === 0) return;
+
+  switch (action) {
+    case 'archive':
+      confirmBulkArchive();
+      break;
+    case 'delete':
+      confirmBulkDelete();
+      break;
+    case 'tag':
+      showBulkTagDialog();
+      break;
+    default:
+      // Generisches Event auslösen
+      emit('bulk-action', action, selectedSessionIds.value);
+  }
+}
+
+// Bulk-Delete-Dialog anzeigen
+function confirmBulkDelete() {
+  // Bestätigungsdialog anzeigen
+  if (confirm(`Möchten Sie wirklich ${selectedSessionIds.value.length} Unterhaltungen löschen? Diese Aktion kann nicht rückgängig gemacht werden.`)) {
+    // Bulk-Delete durchführen
+    emit('bulk-action', 'delete', selectedSessionIds.value);
+    clearSelection();
+  }
+}
+
+// Bulk-Archive-Dialog anzeigen
+function confirmBulkArchive() {
+  if (confirm(`Möchten Sie wirklich ${selectedSessionIds.value.length} Unterhaltungen archivieren?`)) {
+    // Bulk-Archive durchführen
+    emit('bulk-action', 'archive', selectedSessionIds.value);
+    clearSelection();
+  }
+}
+
+// Bulk-Tag-Dialog anzeigen
+function showBulkTagDialog() {
+  // In einer realen Implementierung würde hier ein Dialog angezeigt werden,
+  // in dem der Benutzer einen Tag auswählen kann
+  // Für diese Demo einfach eine Prompt verwenden
+  const tag = prompt('Bitte geben Sie einen Tag ein:');
+  if (tag) {
+    emit('bulk-action', 'tag', selectedSessionIds.value, tag);
+    clearSelection();
+  }
+}
+
+// Session archivieren
+function handleArchiveSession(sessionId: string) {
+  if (confirm('Möchten Sie diese Unterhaltung wirklich archivieren?')) {
+    emit('archive', sessionId, true);
+  }
+}
+
+// Session aus Archiv wiederherstellen
+function handleUnarchiveSession(sessionId: string) {
+  emit('archive', sessionId, false);
+}
+
+// Tag zu Session hinzufügen
+function handleAddTagToSession(sessionId: string) {
+  const tag = prompt('Bitte geben Sie einen Tag ein:');
+  if (tag) {
+    emit('tag', sessionId, tag);
+  }
+}
+
+// Tag von Session entfernen
+function handleRemoveTagFromSession(sessionId: string, tag: string) {
+  emit('untag', sessionId, tag);
 }
 
 function handleSessionSelect(sessionId: string) {

@@ -1,255 +1,184 @@
-&lt;template>
-  &lt;div class="nscale-theme-switcher">
-    &lt;div class="nscale-theme-switcher-header">
-      &lt;h3 class="nscale-theme-switcher-title">{{ $t('themeSettings') }}&lt;/h3>
-    &lt;/div>
+<template>
+  <div class="theme-switcher">
+    <label class="theme-option">
+      <input
+        type="radio"
+        name="theme"
+        :value="THEMES.LIGHT"
+        :checked="currentTheme === THEMES.LIGHT && !useSystemTheme"
+        @change="setTheme(THEMES.LIGHT)"
+      />
+      <span class="theme-preview light">
+        <span class="theme-name">Hell</span>
+      </span>
+    </label>
     
-    &lt;div class="nscale-theme-switcher-body">
-      &lt;div class="nscale-form-group">
-        &lt;label class="nscale-checkbox-label">
-          &lt;input
-            type="checkbox"
-            v-model="useSystemTheme"
-            @change="updateSystemThemePreference"
-          />
-          {{ $t('useSystemTheme') }}
-        &lt;/label>
-      &lt;/div>
-      
-      &lt;div class="nscale-theme-options" v-if="!useSystemTheme">
-        &lt;button
-          class="nscale-theme-option"
-          :class="{ active: currentTheme === 'light' }"
-          @click="selectTheme('light')"
-        >
-          &lt;div class="nscale-theme-preview light-theme-preview">
-            &lt;div class="preview-header">&lt;/div>
-            &lt;div class="preview-sidebar">&lt;/div>
-            &lt;div class="preview-content">&lt;/div>
-          &lt;/div>
-          &lt;span>{{ $t('lightTheme') }}&lt;/span>
-        &lt;/button>
-        
-        &lt;button
-          class="nscale-theme-option"
-          :class="{ active: currentTheme === 'dark' }"
-          @click="selectTheme('dark')"
-        >
-          &lt;div class="nscale-theme-preview dark-theme-preview">
-            &lt;div class="preview-header">&lt;/div>
-            &lt;div class="preview-sidebar">&lt;/div>
-            &lt;div class="preview-content">&lt;/div>
-          &lt;/div>
-          &lt;span>{{ $t('darkTheme') }}&lt;/span>
-        &lt;/button>
-        
-        &lt;button
-          class="nscale-theme-option"
-          :class="{ active: currentTheme === 'contrast' }"
-          @click="selectTheme('contrast')"
-        >
-          &lt;div class="nscale-theme-preview contrast-theme-preview">
-            &lt;div class="preview-header">&lt;/div>
-            &lt;div class="preview-sidebar">&lt;/div>
-            &lt;div class="preview-content">&lt;/div>
-          &lt;/div>
-          &lt;span>{{ $t('contrastTheme') }}&lt;/span>
-        &lt;/button>
-      &lt;/div>
-    &lt;/div>
+    <label class="theme-option">
+      <input
+        type="radio"
+        name="theme"
+        :value="THEMES.DARK"
+        :checked="currentTheme === THEMES.DARK && !useSystemTheme"
+        @change="setTheme(THEMES.DARK)"
+      />
+      <span class="theme-preview dark">
+        <span class="theme-name">Dunkel</span>
+      </span>
+    </label>
     
-    &lt;div class="nscale-theme-switcher-footer">
-      &lt;p class="nscale-text-sm nscale-text-gray-600">
-        {{ useSystemTheme ? $t('systemThemeDescription') : $t('manualThemeDescription') }}
-      &lt;/p>
-    &lt;/div>
-  &lt;/div>
-&lt;/template>
-
-&lt;script>
-import { ref, onMounted, onUnmounted } from 'vue';
-import { themeManager, THEMES } from '@/assets/theme-switcher';
-
-export default {
-  name: 'ThemeSwitcher',
-  
-  setup() {
-    const currentTheme = ref('light');
-    const useSystemTheme = ref(true);
+    <label class="theme-option">
+      <input
+        type="radio"
+        name="theme"
+        :value="THEMES.CONTRAST"
+        :checked="currentTheme === THEMES.CONTRAST"
+        @change="setTheme(THEMES.CONTRAST)"
+      />
+      <span class="theme-preview contrast">
+        <span class="theme-name">Kontrast</span>
+      </span>
+    </label>
     
-    // Theme-Änderung überwachen
-    const handleThemeChange = (event) => {
-      currentTheme.value = event.detail.theme;
-      useSystemTheme.value = event.detail.useSystemTheme;
-    };
-    
-    // Initial-Werte setzen
-    onMounted(() => {
-      currentTheme.value = themeManager.getCurrentTheme();
-      useSystemTheme.value = themeManager.isUsingSystemTheme();
-      
-      // Event-Listener registrieren
-      document.addEventListener('nscale-theme-change', handleThemeChange);
-    });
-    
-    // Event-Listener entfernen
-    onUnmounted(() => {
-      document.removeEventListener('nscale-theme-change', handleThemeChange);
-    });
-    
-    // Theme manuell auswählen
-    const selectTheme = (theme) => {
-      if (Object.values(THEMES).includes(theme)) {
-        themeManager.setTheme(theme);
-        currentTheme.value = theme;
-      }
-    };
-    
-    // Verwendung des Systemthemes aktualisieren
-    const updateSystemThemePreference = () => {
-      themeManager.setUseSystemTheme(useSystemTheme.value);
-    };
-    
-    return {
-      currentTheme,
-      useSystemTheme,
-      selectTheme,
-      updateSystemThemePreference,
-    };
-  }
-};
-&lt;/script>
+    <label class="system-theme-option">
+      <input
+        type="checkbox"
+        :checked="useSystemTheme"
+        @change="setUseSystemTheme(!useSystemTheme)"
+      />
+      <span>Systemeinstellung verwenden</span>
+    </label>
+  </div>
+</template>
 
-&lt;style scoped>
-.nscale-theme-switcher {
-  background-color: var(--nscale-card-bg);
-  border-radius: var(--nscale-border-radius-md);
-  box-shadow: var(--nscale-shadow-md);
-  overflow: hidden;
-  border: 1px solid var(--nscale-card-border);
-}
+<script setup lang="ts">
+import { useTheme } from '@/composables/useTheme';
 
-.nscale-theme-switcher-header {
-  padding: var(--nscale-space-4);
-  border-bottom: 1px solid var(--nscale-card-border);
-}
+const { 
+  currentTheme, 
+  useSystemTheme,
+  setTheme, 
+  setUseSystemTheme,
+  THEMES 
+} = useTheme();
+</script>
 
-.nscale-theme-switcher-title {
-  margin: 0;
-  font-size: var(--nscale-font-size-lg);
-  font-weight: var(--nscale-font-weight-semibold);
-  color: var(--nscale-body-color);
-}
-
-.nscale-theme-switcher-body {
-  padding: var(--nscale-space-4);
-}
-
-.nscale-theme-options {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: var(--nscale-space-4);
-  margin-top: var(--nscale-space-4);
-}
-
-.nscale-theme-option {
-  background: none;
-  border: 1px solid var(--nscale-card-border);
-  border-radius: var(--nscale-border-radius-md);
-  padding: var(--nscale-space-3);
-  cursor: pointer;
+<style scoped>
+.theme-switcher {
   display: flex;
   flex-direction: column;
+  gap: var(--nscale-space-4);
+  padding: var(--nscale-space-4);
+  border-radius: var(--nscale-border-radius-md);
+  background-color: var(--nscale-background);
+  box-shadow: var(--nscale-shadow-sm);
+  border: 1px solid var(--nscale-border);
+  max-width: 300px;
+}
+
+.theme-option {
+  cursor: pointer;
+  display: flex;
   align-items: center;
-  transition: all var(--nscale-transition-quick) ease;
 }
 
-.nscale-theme-option:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--nscale-shadow-md);
+.theme-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
 }
 
-.nscale-theme-option.active {
-  border-color: var(--nscale-primary);
-  box-shadow: 0 0 0 2px rgba(0, 165, 80, 0.2);
-}
-
-.nscale-theme-preview {
-  width: 100%;
-  height: 100px;
-  border-radius: var(--nscale-border-radius-sm);
-  margin-bottom: var(--nscale-space-2);
-  overflow: hidden;
-  border: 1px solid var(--nscale-card-border);
-  display: grid;
-  grid-template-rows: 20px 1fr;
-  grid-template-columns: 30px 1fr;
-  grid-template-areas:
-    "header header"
-    "sidebar content";
-}
-
-.preview-header {
-  grid-area: header;
-}
-
-.preview-sidebar {
-  grid-area: sidebar;
-}
-
-.preview-content {
-  grid-area: content;
+.theme-preview {
+  flex-grow: 1;
+  height: 60px;
+  border-radius: var(--nscale-border-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border: 2px solid transparent;
+  transition: border-color var(--nscale-transition-quick) ease;
 }
 
 /* Light Theme Preview */
-.light-theme-preview .preview-header {
+.theme-preview.light {
   background-color: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  color: #1e293b;
+  box-shadow: var(--nscale-shadow-sm);
 }
 
-.light-theme-preview .preview-sidebar {
-  background-color: #f8f9fa;
-  border-right: 1px solid #e2e8f0;
-}
-
-.light-theme-preview .preview-content {
-  background-color: #ffffff;
+.theme-preview.light::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #00a550;
 }
 
 /* Dark Theme Preview */
-.dark-theme-preview .preview-header {
-  background-color: #1e1e1e;
-  border-bottom: 1px solid #333333;
+.theme-preview.dark {
+  background-color: #0f172a;
+  color: #f8f9fa;
 }
 
-.dark-theme-preview .preview-sidebar {
-  background-color: #2a2a2a;
-  border-right: 1px solid #333333;
-}
-
-.dark-theme-preview .preview-content {
-  background-color: #121212;
+.theme-preview.dark::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #56c596;
 }
 
 /* Contrast Theme Preview */
-.contrast-theme-preview .preview-header {
+.theme-preview.contrast {
   background-color: #000000;
-  border-bottom: 1px solid #ffeb3b;
+  color: #ffffff;
 }
 
-.contrast-theme-preview .preview-sidebar {
-  background-color: #000000;
-  border-right: 1px solid #ffeb3b;
+.theme-preview.contrast::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #ffeb3b;
 }
 
-.contrast-theme-preview .preview-content {
-  background-color: #000000;
-}
-
-.nscale-theme-switcher-footer {
-  padding: var(--nscale-space-4);
-  border-top: 1px solid var(--nscale-card-border);
+.theme-name {
   font-size: var(--nscale-font-size-sm);
-  color: var(--nscale-gray-600);
+  font-weight: var(--nscale-font-weight-medium);
 }
-&lt;/style>
+
+/* Selected Theme Style */
+input[type="radio"]:checked + .theme-preview {
+  border-color: var(--nscale-primary);
+}
+
+input[type="radio"]:focus-visible + .theme-preview {
+  outline: 2px solid var(--nscale-focus-ring);
+  outline-offset: 2px;
+}
+
+.system-theme-option {
+  display: flex;
+  align-items: center;
+  gap: var(--nscale-space-2);
+  margin-top: var(--nscale-space-2);
+  cursor: pointer;
+  font-size: var(--nscale-font-size-sm);
+  color: var(--nscale-foreground);
+}
+
+.system-theme-option input[type="checkbox"] {
+  accent-color: var(--nscale-primary);
+}
+</style>

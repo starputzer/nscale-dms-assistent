@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nscale DMS Assistent - Standalone</title>
+    
+    <!-- CSS imports -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/themes.css">
+    <link rel="stylesheet" href="/css/improved-ui.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="/css/feedback.css">
+    <link rel="stylesheet" href="/css/message-actions.css">
+    <link rel="stylesheet" href="/css/settings.css">
+    <link rel="stylesheet" href="/css/source-references.css">
+    
+    <style>
+        .content-area {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background-color: #4f46e5;
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            background-color: #4f46e5;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            margin-right: 8px;
+            transition: background-color 0.2s;
+        }
+        
+        .btn:hover {
+            background-color: #4338ca;
+        }
+        
+        .btn-secondary {
+            background-color: #9ca3af;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #6b7280;
+        }
+        
+        .chat-container {
+            display: flex;
+            height: 600px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background-color: #f9fafb;
+            border-right: 1px solid #e5e7eb;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .session-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .session-item:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .session-item.active {
+            background-color: #e0e7ff;
+        }
+        
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+        }
+        
+        .message {
+            margin-bottom: 16px;
+            max-width: 80%;
+        }
+        
+        .message.user {
+            margin-left: auto;
+            background-color: #e0e7ff;
+            padding: 12px;
+            border-radius: 8px 8px 0 8px;
+        }
+        
+        .message.assistant {
+            background-color: #f3f4f6;
+            padding: 12px;
+            border-radius: 8px 8px 8px 0;
+        }
+        
+        .message-input {
+            padding: 16px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+        }
+        
+        .message-input input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+        
+        .app-info {
+            margin-top: 40px;
+            padding: 16px;
+            background-color: #f3f4f6;
+            border-radius: 8px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="content-area">
+        <div class="header">
+            <h1 class="text-2xl font-bold">nscale DMS Assistent - Standalone</h1>
+            <p>Vereinfachte Version des Chat-Interfaces für Demozwecke</p>
+        </div>
+        
+        <div class="card">
+            <div class="chat-container">
+                <div class="sidebar">
+                    <div class="sidebar-header">
+                        <h2 class="font-medium">Unterhaltungen</h2>
+                        <button class="text-indigo-600" title="Neue Unterhaltung">
+                            <i class="fas fa-plus-circle"></i>
+                        </button>
+                    </div>
+                    <div class="session-list">
+                        <div class="session-item active">
+                            <div class="truncate">Neue Unterhaltung</div>
+                        </div>
+                        <div class="session-item">
+                            <div class="truncate">Archivsuche</div>
+                        </div>
+                        <div class="session-item">
+                            <div class="truncate">nscale Konfiguration</div>
+                        </div>
+                        <div class="session-item">
+                            <div class="truncate">Dokument-Import</div>
+                        </div>
+                        <div class="session-item">
+                            <div class="truncate">Benutzerrechte</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chat-main">
+                    <div class="chat-messages">
+                        <div class="message assistant">
+                            <div class="message-content">
+                                <p>Hallo! Ich bin der nscale DMS Assistent. Wie kann ich Ihnen heute bei nscale helfen?</p>
+                            </div>
+                        </div>
+                        
+                        <div class="message user">
+                            <div class="message-content">
+                                <p>Wie kann ich Dokumente in nscale importieren?</p>
+                            </div>
+                        </div>
+                        
+                        <div class="message assistant">
+                            <div class="message-content">
+                                <p>In nscale haben Sie mehrere Möglichkeiten, Dokumente zu importieren:</p>
+                                <ol>
+                                    <li><strong>Drag & Drop:</strong> Ziehen Sie Dokumente direkt in die nscale-Oberfläche</li>
+                                    <li><strong>Import-Dialog:</strong> Verwenden Sie die Funktion "Importieren" im Menü</li>
+                                    <li><strong>Scan-Client:</strong> Scannen Sie Dokumente direkt ins System</li>
+                                    <li><strong>Batch-Import:</strong> Nutzen Sie den automatisierten Import-Prozess für große Mengen</li>
+                                </ol>
+                                <p>Welche Methode interessiert Sie am meisten?</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="message-input">
+                        <input type="text" placeholder="Stellen Sie eine Frage zu nscale...">
+                        <button class="btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="text-xl font-semibold mb-4">Administrations-Optionen</h2>
+            <div class="flex flex-wrap gap-4">
+                <button class="btn">
+                    <i class="fas fa-users mr-2"></i> Benutzer verwalten
+                </button>
+                <button class="btn">
+                    <i class="fas fa-file-alt mr-2"></i> Dokumente verwalten
+                </button>
+                <button class="btn">
+                    <i class="fas fa-cog mr-2"></i> Systemeinstellungen
+                </button>
+                <button class="btn">
+                    <i class="fas fa-database mr-2"></i> Archiv-Funktionen
+                </button>
+                <button class="btn btn-secondary">
+                    <i class="fas fa-sign-out-alt mr-2"></i> Abmelden
+                </button>
+            </div>
+        </div>
+        
+        <div class="app-info">
+            <p>Diese Standalone-Version des nscale DMS Assistenten dient nur zu Demozwecken.</p>
+            <p>&copy; 2023 nscale DMS Assistent</p>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Feature-Flags für Vue 3 SFC-Komponenten aktivieren
+            localStorage.setItem('useVueComponents', 'true');
+            localStorage.setItem('useVueDocConverter', 'true');
+            
+            // Feature-Toggles aus dem Pinia-Store aktualisieren
+            let featureToggles = {};
+            try {
+                const storedToggles = localStorage.getItem('featureToggles');
+                featureToggles = storedToggles ? JSON.parse(storedToggles) : {};
+            } catch (e) {
+                featureToggles = {};
+            }
+            
+            // SFC-Features aktivieren
+            featureToggles.useSfcAdmin = true;
+            featureToggles.useSfcDocConverter = true;
+            featureToggles.useSfcChat = true;
+            featureToggles.useSfcSettings = true;
+            
+            // Abhängigkeiten aktivieren
+            featureToggles.usePiniaAuth = true;
+            featureToggles.usePiniaUI = true;
+            featureToggles.usePiniaSessions = true;
+            featureToggles.usePiniaSettings = true;
+            featureToggles.useLegacyBridge = true;
+            
+            // Feature-Toggles speichern
+            localStorage.setItem('featureToggles', JSON.stringify(featureToggles));
+            
+            console.log('Feature-Flags wurden aktiviert für künftige Vue 3 SFC-Komponenten.');
+            
+            // Einfache Demo-Funktionalität
+            const messageInput = document.querySelector('.message-input input');
+            const sendButton = document.querySelector('.message-input button');
+            const chatMessages = document.querySelector('.chat-messages');
+            const sessionItems = document.querySelectorAll('.session-item');
+            
+            // Send-Button-Handler
+            function sendMessage() {
+                if (!messageInput.value.trim()) return;
+                
+                // Nachricht des Benutzers hinzufügen
+                const userMessage = document.createElement('div');
+                userMessage.className = 'message user';
+                userMessage.innerHTML = `<div class="message-content"><p>${messageInput.value}</p></div>`;
+                chatMessages.appendChild(userMessage);
+                
+                // Scroll zum Ende
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                // Nachricht des Assistenten nach einer kurzen Verzögerung hinzufügen
+                setTimeout(() => {
+                    const assistantMessage = document.createElement('div');
+                    assistantMessage.className = 'message assistant';
+                    assistantMessage.innerHTML = `<div class="message-content"><p>Dies ist eine Demo-Antwort auf Ihre Nachricht: "${messageInput.value}"</p></div>`;
+                    chatMessages.appendChild(assistantMessage);
+                    
+                    // Scroll zum Ende
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    
+                    // Input leeren
+                    messageInput.value = '';
+                }, 1000);
+            }
+            
+            sendButton.addEventListener('click', sendMessage);
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            // Session-Auswahl
+            sessionItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    // Aktive Klasse von allen entfernen
+                    sessionItems.forEach(si => si.classList.remove('active'));
+                    // Aktive Klasse zum angeklickten Element hinzufügen
+                    item.classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

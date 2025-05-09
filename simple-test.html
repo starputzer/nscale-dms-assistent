@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Einfacher Vue-Test</title>
+    
+    <!-- Vue direkt laden - Entwicklungsversion mit Fehlermeldungen -->
+    <script src="https://unpkg.com/vue@3.2.47/dist/vue.global.js"></script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        button {
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        
+        pre {
+            background-color: #f7f7f7;
+            padding: 10px;
+            border-radius: 4px;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h1>Einfacher Vue-Test</h1>
+        
+        <div class="card">
+            <h2>Feature-Flags aktivieren</h2>
+            <p>Klicke auf den Button, um alle Feature-Flags für Vue 3 SFC zu aktivieren:</p>
+            <button @click="enableFeatures">Features aktivieren</button>
+            <button @click="showFeatures">Features anzeigen</button>
+            
+            <div v-if="featuresVisible">
+                <h3>Aktuelle Feature-Flags:</h3>
+                <pre>{{ JSON.stringify(featureFlags, null, 2) }}</pre>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Test zur Vue-App</h2>
+            <p>Öffne diese URLs zum Testen der Vue-App:</p>
+            <ul>
+                <li><a href="/frontend/index.html">Standard App</a></li>
+                <li><a href="/frontend/vue-dms-assistant.html">Vue 3 App (Original)</a></li>
+            </ul>
+            <button @click="activateAndRedirect">Vue-App öffnen (mit aktivierten Features)</button>
+        </div>
+        
+        <div class="card">
+            <h2>Status</h2>
+            <p>{{ statusMessage }}</p>
+        </div>
+    </div>
+    
+    <script>
+        const { createApp, ref } = Vue;
+        
+        createApp({
+            setup() {
+                const statusMessage = ref('Bereit.');
+                const featuresVisible = ref(false);
+                const featureFlags = ref({});
+                
+                function enableFeatures() {
+                    try {
+                        // Direkte localStorage-Flags setzen
+                        localStorage.setItem('useVueComponents', 'true');
+                        localStorage.setItem('useVueDocConverter', 'true');
+                        
+                        // Feature-Toggles aus localStorage laden und aktualisieren
+                        let toggles = {};
+                        try {
+                            const stored = localStorage.getItem('featureToggles');
+                            toggles = stored ? JSON.parse(stored) : {};
+                        } catch (e) {
+                            toggles = {};
+                        }
+                        
+                        // SFC-Features aktivieren
+                        toggles.useSfcAdmin = true;
+                        toggles.useSfcDocConverter = true;
+                        toggles.useSfcChat = true;
+                        toggles.useSfcSettings = true;
+                        
+                        // Abhängigkeiten aktivieren
+                        toggles.usePiniaAuth = true;
+                        toggles.usePiniaUI = true;
+                        toggles.usePiniaSessions = true;
+                        toggles.usePiniaSettings = true;
+                        toggles.useLegacyBridge = true;
+                        
+                        // Feature-Toggles speichern
+                        localStorage.setItem('featureToggles', JSON.stringify(toggles));
+                        
+                        statusMessage.value = 'Features wurden aktiviert!';
+                        console.log('Alle Features wurden aktiviert:', toggles);
+                        
+                        // Feature-Flags aktualisieren
+                        featureFlags.value = {
+                            localStorage: {
+                                useVueComponents: localStorage.getItem('useVueComponents'),
+                                useVueDocConverter: localStorage.getItem('useVueDocConverter')
+                            },
+                            featureToggles: toggles
+                        };
+                    } catch (e) {
+                        statusMessage.value = `Fehler: ${e.message}`;
+                        console.error('Fehler beim Aktivieren der Features:', e);
+                    }
+                }
+                
+                function showFeatures() {
+                    try {
+                        // Feature-Flags aus localStorage laden
+                        featureFlags.value = {
+                            localStorage: {
+                                useVueComponents: localStorage.getItem('useVueComponents'),
+                                useVueDocConverter: localStorage.getItem('useVueDocConverter')
+                            },
+                            featureToggles: JSON.parse(localStorage.getItem('featureToggles') || '{}')
+                        };
+                        
+                        featuresVisible.value = true;
+                        statusMessage.value = 'Features wurden geladen.';
+                    } catch (e) {
+                        statusMessage.value = `Fehler: ${e.message}`;
+                        console.error('Fehler beim Laden der Features:', e);
+                    }
+                }
+                
+                function activateAndRedirect() {
+                    enableFeatures();
+                    statusMessage.value = 'Features aktiviert, Weiterleitung in 2 Sekunden...';
+                    
+                    setTimeout(() => {
+                        window.location.href = '/frontend/vue-dms-assistant.html';
+                    }, 2000);
+                }
+                
+                return {
+                    statusMessage,
+                    featuresVisible,
+                    featureFlags,
+                    enableFeatures,
+                    showFeatures,
+                    activateAndRedirect
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

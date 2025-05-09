@@ -21,8 +21,9 @@
         <div 
           v-if="message.status === 'error'" 
           class="n-message-item__status n-message-item__status--error"
+          role="alert"
         >
-          <span class="n-message-item__error-icon">⚠️</span>
+          <span class="n-message-item__error-icon" aria-hidden="true">⚠️</span>
           <span>Fehler</span>
         </div>
       </div>
@@ -43,18 +44,20 @@
             class="n-message-item__feedback-btn"
             :class="{ 'n-message-item__feedback-btn--active': feedback === 'positive' }"
             title="Positives Feedback"
+            aria-label="Positive Bewertung geben"
             @click="handleFeedback('positive')"
           >
-            <span class="n-message-item__feedback-icon">👍</span>
+            <span class="n-message-item__feedback-icon" aria-hidden="true">👍</span>
           </button>
           <button
             type="button"
             class="n-message-item__feedback-btn"
             :class="{ 'n-message-item__feedback-btn--active': feedback === 'negative' }"
             title="Negatives Feedback"
+            aria-label="Negative Bewertung geben"
             @click="handleFeedback('negative')"
           >
-            <span class="n-message-item__feedback-icon">👎</span>
+            <span class="n-message-item__feedback-icon" aria-hidden="true">👎</span>
           </button>
         </div>
         
@@ -64,9 +67,10 @@
             type="button"
             class="n-message-item__action-btn"
             title="Quellen anzeigen"
+            aria-label="Quellenangaben anzeigen"
             @click="$emit('view-sources', { messageId: message.id })"
           >
-            <span class="n-message-item__btn-icon">📄</span>
+            <span class="n-message-item__btn-icon" aria-hidden="true">📄</span>
             <span class="n-message-item__btn-text">Quellen</span>
           </button>
           
@@ -75,9 +79,10 @@
             type="button"
             class="n-message-item__action-btn"
             title="Antwort erklären"
+            aria-label="Antwort erklären lassen"
             @click="$emit('view-explanation', { messageId: message.id })"
           >
-            <span class="n-message-item__btn-icon">ℹ️</span>
+            <span class="n-message-item__btn-icon" aria-hidden="true">ℹ️</span>
             <span class="n-message-item__btn-text">Erklären</span>
           </button>
           
@@ -86,9 +91,10 @@
             type="button"
             class="n-message-item__action-btn"
             title="Erneut versuchen"
+            aria-label="Antwort erneut generieren"
             @click="$emit('retry', { messageId: message.id })"
           >
-            <span class="n-message-item__btn-icon">🔄</span>
+            <span class="n-message-item__btn-icon" aria-hidden="true">🔄</span>
             <span class="n-message-item__btn-text">Wiederholen</span>
           </button>
           
@@ -96,9 +102,10 @@
             type="button"
             class="n-message-item__action-btn n-message-item__action-btn--danger"
             title="Nachricht löschen"
+            aria-label="Nachricht löschen"
             @click="handleDelete"
           >
-            <span class="n-message-item__btn-icon">🗑️</span>
+            <span class="n-message-item__btn-icon" aria-hidden="true">🗑️</span>
             <span class="n-message-item__btn-text">Löschen</span>
           </button>
         </div>
@@ -111,7 +118,7 @@
         <div class="n-message-item__references-heading">
           Quellen
         </div>
-        <ul class="n-message-item__references-list">
+        <ul class="n-message-item__references-list" role="list">
           <li 
             v-for="(source, index) in message.metadata.sourceReferences" 
             :key="source.id"
@@ -134,9 +141,22 @@
 import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import hljs from 'highlight.js';
 import { useUIStore } from '@/stores/ui';
 import type { ChatMessage, SourceReference } from '@/types/session';
 import { highlightCode, linkifySourceReferences } from '@/utils/messageFormatter';
+
+// Konfiguration für marked (Markdown-Parser)
+marked.setOptions({
+  renderer: new marked.Renderer(),
+  highlight: function(code, lang) {
+    const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+    return hljs.highlight(code, { language }).value;
+  },
+  langPrefix: 'hljs language-',
+  breaks: true,
+  gfm: true
+});
 
 // Props Definition
 interface Props {
@@ -214,7 +234,26 @@ const formattedContent = computed(() => {
   }
   
   // HTML bereinigen, um XSS zu verhindern
-  content = DOMPurify.sanitize(content);
+  content = DOMPurify.sanitize(content, {
+    ALLOWED_TAGS: [
+      'a', 'b', 'blockquote', 'br', 'code', 'div', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'hr', 'i', 'img', 'li', 'ol', 'p', 'pre', 's', 'span', 'strong', 'table', 'tbody',
+      'td', 'th', 'thead', 'tr', 'ul'
+    ],
+    ALLOWED_ATTR: [
+      'href', 'src', 'alt', 'class', 'id', 'style', 'target', 'rel', 
+      'data-source-id', 'data-language'
+    ],
+    ADD_ATTR: ['target'],
+    FORBID_TAGS: ['script', 'style', 'iframe', 'frame', 'object'],
+    FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover'],
+    ALLOW_UNKNOWN_PROTOCOLS: false,
+    USE_PROFILES: { html: true },
+    CUSTOM_ELEMENT_HANDLING: {
+      allowCustomizedBuiltInElements: false,
+      allowElements: false
+    }
+  });
   
   return content;
 });
@@ -289,34 +328,82 @@ function handleDelete(): void {
   }
 }
 
+// Code-Blöcke mit Syntax-Highlighting formatieren
+function applyCodeHighlighting(): void {
+  if (!contentElement.value) return;
+  
+  // Alle pre>code Elemente finden
+  const codeBlocks = contentElement.value.querySelectorAll('pre code');
+  
+  // Über alle Code-Blöcke iterieren
+  codeBlocks.forEach((block) => {
+    // Sprache aus dem Klassenattribut extrahieren
+    const classAttr = block.getAttribute('class') || '';
+    const langMatch = classAttr.match(/language-(\w+)/);
+    const language = langMatch ? langMatch[1] : 'plaintext';
+    
+    try {
+      // Highlight.js anwenden
+      if (props.highlightCodeBlocks && hljs.getLanguage(language)) {
+        hljs.highlightElement(block as HTMLElement);
+      }
+      
+      // Sprachinformation hinzufügen
+      const parent = block.parentElement;
+      if (parent && language !== 'plaintext') {
+        const langDisplay = document.createElement('div');
+        langDisplay.className = 'n-message-item__code-lang';
+        langDisplay.textContent = language;
+        parent.insertBefore(langDisplay, block);
+      }
+    } catch (e) {
+      console.error('Error highlighting code block:', e);
+    }
+  });
+  
+  // Links bearbeiten - alle externen Links in neuen Tabs öffnen
+  const links = contentElement.value.querySelectorAll('a[href^="http"]');
+  links.forEach((link) => {
+    link.setAttribute('target', '_blank');
+    link.setAttribute('rel', 'noopener noreferrer');
+  });
+}
+
+// Quellenreferenzen klickbar machen
+function setupSourceReferenceClicks(): void {
+  if (!contentElement.value) return;
+  
+  // Alle Quellenreferenzen finden
+  contentElement.value.querySelectorAll('.source-reference').forEach(element => {
+    element.addEventListener('click', (e) => {
+      e.preventDefault();
+      const sourceId = (e.currentTarget as HTMLElement).dataset.sourceId;
+      if (sourceId) {
+        emit('view-sources', { messageId: props.message.id });
+      }
+    });
+  });
+}
+
 // Lifecycle Hooks
 onMounted(() => {
   nextTick(() => {
-    if (props.highlightCodeBlocks && contentElement.value) {
-      highlightCode(contentElement.value);
+    if (props.highlightCodeBlocks) {
+      applyCodeHighlighting();
     }
     
-    // Event-Listener für Quellen-Klicks hinzufügen
-    if (contentElement.value) {
-      contentElement.value.querySelectorAll('.source-reference').forEach(element => {
-        element.addEventListener('click', (e) => {
-          e.preventDefault();
-          const sourceId = (e.currentTarget as HTMLElement).dataset.sourceId;
-          if (sourceId) {
-            emit('view-sources', { messageId: props.message.id });
-          }
-        });
-      });
-    }
+    setupSourceReferenceClicks();
   });
 });
 
 // Watches
 watch(() => props.message.content, () => {
   nextTick(() => {
-    if (props.highlightCodeBlocks && contentElement.value) {
-      highlightCode(contentElement.value);
+    if (props.highlightCodeBlocks) {
+      applyCodeHighlighting();
     }
+    
+    setupSourceReferenceClicks();
   });
 });
 </script>
@@ -455,6 +542,18 @@ watch(() => props.message.content, () => {
   color: var(--nscale-code-text, #e2e8f0);
   border-radius: var(--nscale-border-radius-md, 0.5rem);
   overflow-x: auto;
+  position: relative;
+}
+
+.n-message-item__text :deep(pre .n-message-item__code-lang) {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: var(--nscale-font-size-xs, 0.75rem);
+  padding: 2px 8px;
+  background-color: rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.8);
+  border-radius: 0 var(--nscale-border-radius-sm, 0.25rem) 0 var(--nscale-border-radius-sm, 0.25rem);
 }
 
 .n-message-item__text :deep(pre code) {
@@ -667,6 +766,40 @@ watch(() => props.message.content, () => {
 @media (prefers-reduced-motion: reduce) {
   .n-message-item--streaming .n-message-item__text::after {
     animation: none;
+  }
+}
+
+/* Dunkles Theme Unterstützung */
+@media (prefers-color-scheme: dark) {
+  .n-message-item--user .n-message-item__content {
+    background-color: var(--nscale-dark-message-user-bg, #153226);
+    color: var(--nscale-dark-message-user-text, #e2e8f0);
+  }
+  
+  .n-message-item--assistant .n-message-item__content {
+    background-color: var(--nscale-dark-message-assistant-bg, #1a1a1a);
+    color: var(--nscale-dark-message-assistant-text, #e2e8f0);
+    border-color: var(--nscale-dark-border-color, #333);
+  }
+  
+  .n-message-item--system .n-message-item__content {
+    background-color: var(--nscale-dark-message-system-bg, #1e1e1e);
+    color: var(--nscale-dark-message-system-text, #94a3b8);
+  }
+  
+  .n-message-item__text :deep(code) {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .n-message-item__text :deep(pre) {
+    background-color: var(--nscale-dark-code-bg, #1a1a1a);
+    color: var(--nscale-dark-code-text, #f1f5f9);
+    border: 1px solid var(--nscale-dark-border-color, #333);
+  }
+  
+  .n-message-item__reference {
+    background-color: var(--nscale-dark-surface-color, #1a1a1a);
+    border-color: var(--nscale-dark-border-color, #333);
   }
 }
 </style>

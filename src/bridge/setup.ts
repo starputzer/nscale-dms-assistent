@@ -25,7 +25,7 @@ export const BRIDGE_CONFIG = {
   LEGACY_EVENTS_ENABLED: true,
   
   // Debug-Modus für die Bridge
-  DEBUG: false
+  DEBUG: true
 };
 
 /**

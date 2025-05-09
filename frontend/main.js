@@ -1,12 +1,13 @@
 /**
  * Haupteinstiegspunkt für die nscale DMS Assistent Anwendung
- * 
+ *
  * Diese Datei initialisiert sowohl die Legacy-Anwendung als auch die neuen
  * Vue 3 SFC-Komponenten in einem hybriden Ansatz.
  */
 
 // CSS wird über link-Tags in der index.html eingebunden
-// Keine direkten CSS-Importe hier, um MIME-Typ-Fehler zu vermeiden
+// Design-System wird direkt importiert, da es SCSS ist und von Vite verarbeitet wird
+import '../src/assets/design-system.scss';
 
 // Vue 3 Importe
 import { createApp } from 'vue';

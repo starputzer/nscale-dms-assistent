@@ -4,81 +4,91 @@
     role="region"
     aria-labelledby="document-list-title"
   >
-    <div class="document-list-header">
-      <h3 id="document-list-title">{{ $t('documentList.title') }}</h3>
-      
-      <div class="document-list-actions">
-        <div class="filter-container">
-          <label for="status-filter" class="sr-only">{{ $t('documentList.statusFilter') }}</label>
-          <select 
-            id="status-filter" 
-            v-model="statusFilter" 
-            class="status-filter"
+    <div class="document-list__header">
+      <div class="document-list__title-area">
+        <h3 id="document-list-title">{{ $t('documentList.title', 'Konvertierte Dokumente') }}</h3>
+        <div class="document-list__stats">
+          <span class="document-list__document-count">{{ filteredDocuments.length }} {{ $t('documentList.documentsFound', 'Dokumente gefunden') }}</span>
+          <span v-if="selectedDocuments.length > 0" class="document-list__selected-count">({{ selectedDocuments.length }} {{ $t('documentList.selected', 'ausgewählt') }})</span>
+        </div>
+      </div>
+
+      <div class="document-list__actions">
+        <div class="document-list__filter-container">
+          <label for="status-filter" class="sr-only">{{ $t('documentList.statusFilter', 'Nach Status filtern') }}</label>
+          <select
+            id="status-filter"
+            v-model="statusFilter"
+            class="document-list__status-filter"
             aria-label="Status Filter"
+            data-testid="status-filter"
           >
-            <option value="">{{ $t('documentList.allStatuses') }}</option>
-            <option value="success">{{ $t('documentList.statusSuccess') }}</option>
-            <option value="error">{{ $t('documentList.statusError') }}</option>
-            <option value="pending">{{ $t('documentList.statusPending') }}</option>
-            <option value="processing">{{ $t('documentList.statusProcessing') }}</option>
+            <option value="">{{ $t('documentList.allStatuses', 'Alle Status') }}</option>
+            <option value="success">{{ $t('documentList.statusSuccess', 'Erfolgreich') }}</option>
+            <option value="error">{{ $t('documentList.statusError', 'Fehler') }}</option>
+            <option value="pending">{{ $t('documentList.statusPending', 'Ausstehend') }}</option>
+            <option value="processing">{{ $t('documentList.statusProcessing', 'In Bearbeitung') }}</option>
           </select>
         </div>
-        
-        <div class="filter-container">
-          <label for="format-filter" class="sr-only">{{ $t('documentList.formatFilter') }}</label>
+
+        <div class="document-list__filter-container">
+          <label for="format-filter" class="sr-only">{{ $t('documentList.formatFilter', 'Nach Format filtern') }}</label>
           <select 
             id="format-filter" 
             v-model="formatFilter" 
-            class="format-filter"
+            class="document-list__format-filter"
             aria-label="Format Filter"
           >
-            <option value="">{{ $t('documentList.allFormats') }}</option>
+            <option value="">{{ $t('documentList.allFormats', 'Alle Formate') }}</option>
             <option v-for="format in supportedFormats" :key="format" :value="format">
               {{ format.toUpperCase() }}
             </option>
           </select>
         </div>
         
-        <div class="sort-container">
-          <label for="sort-by" class="sr-only">{{ $t('documentList.sortBy') }}</label>
+        <div class="document-list__sort-container">
+          <label for="sort-by" class="sr-only">{{ $t('documentList.sortBy', 'Sortieren nach') }}</label>
           <select 
             id="sort-by" 
             v-model="sortBy" 
-            class="sort-by"
+            class="document-list__sort-by"
             aria-label="Sort By"
           >
-            <option value="name">{{ $t('documentList.sortByName') }}</option>
-            <option value="date">{{ $t('documentList.sortByDate') }}</option>
-            <option value="size">{{ $t('documentList.sortBySize') }}</option>
-            <option value="format">{{ $t('documentList.sortByFormat') }}</option>
+            <option value="name">{{ $t('documentList.sortByName', 'Name') }}</option>
+            <option value="date">{{ $t('documentList.sortByDate', 'Datum') }}</option>
+            <option value="size">{{ $t('documentList.sortBySize', 'Größe') }}</option>
+            <option value="format">{{ $t('documentList.sortByFormat', 'Format') }}</option>
           </select>
           
           <button 
             @click="toggleSortDirection"
-            class="sort-direction"
-            :title="sortDirection === 'asc' ? $t('documentList.sortAscending') : $t('documentList.sortDescending')"
+            class="document-list__sort-direction"
+            :title="sortDirection === 'asc' ? $t('documentList.sortAscending', 'Aufsteigend sortieren') : $t('documentList.sortDescending', 'Absteigend sortieren')"
             aria-label="Toggle Sort Direction"
           >
             <i :class="sortDirection === 'asc' ? 'fa fa-sort-up' : 'fa fa-sort-down'"></i>
           </button>
         </div>
         
-        <div class="search-container">
-          <label for="search-input" class="sr-only">{{ $t('documentList.search') }}</label>
-          <div class="search-input-wrapper">
-            <input 
+        <div class="document-list__search-container">
+          <label for="search-input" class="sr-only">{{ $t('documentList.search', 'Suchen') }}</label>
+          <div class="document-list__search-input-wrapper">
+            <i class="fa fa-search document-list__search-icon"></i>
+            <input
               id="search-input"
-              type="text" 
-              v-model="searchQuery" 
-              :placeholder="$t('documentList.searchPlaceholder')" 
-              class="search-input"
+              type="text"
+              v-model="searchQuery"
+              :placeholder="$t('documentList.searchPlaceholder', 'Dokumente durchsuchen...')"
+              class="document-list__search-input"
               aria-label="Search documents"
+              data-testid="search-input"
             />
-            <button 
+            <button
               v-if="searchQuery"
               @click="clearSearch"
-              class="clear-search-btn"
+              class="document-list__clear-search-btn"
               aria-label="Clear search"
+              data-testid="clear-search-btn"
             >
               <i class="fa fa-times"></i>
             </button>
@@ -86,145 +96,220 @@
         </div>
       </div>
     </div>
+
+    <!-- Batch Actions when multiple documents are selected -->
+    <div v-if="selectedDocuments.length > 0" class="document-list__batch-actions" data-testid="batch-actions">
+      <div class="document-list__batch-action-buttons">
+        <button 
+          @click="downloadSelectedDocuments" 
+          class="document-list__batch-action-btn" 
+          :disabled="!hasSuccessfulSelected"
+        >
+          <i class="fa fa-download"></i> {{ $t('documentList.downloadSelected', 'Ausgewählte herunterladen') }}
+        </button>
+        <button 
+          @click="confirmDeleteSelected" 
+          class="document-list__batch-action-btn document-list__batch-action-btn--danger"
+        >
+          <i class="fa fa-trash"></i> {{ $t('documentList.deleteSelected', 'Ausgewählte löschen') }}
+        </button>
+      </div>
+
+      <button @click="clearSelection" class="document-list__clear-selection-btn">
+        <i class="fa fa-times"></i> {{ $t('documentList.clearSelection', 'Auswahl aufheben') }}
+      </button>
+    </div>
     
     <!-- Loading state -->
     <div 
       v-if="loading" 
-      class="loading-indicator"
+      class="document-list__loading-indicator"
       role="status"
       aria-live="polite"
     >
-      <div class="spinner" aria-hidden="true"></div>
-      <p>{{ $t('documentList.loading') }}</p>
+      <div class="document-list__spinner" aria-hidden="true"></div>
+      <p>{{ $t('documentList.loading', 'Lade Dokumente...') }}</p>
     </div>
     
     <!-- Empty state -->
     <div 
-      v-else-if="filteredAndSortedDocuments.length === 0" 
-      class="empty-state"
+      v-else-if="filteredDocuments.length === 0" 
+      class="document-list__empty-state"
       role="status"
       aria-live="polite"
     >
-      <p v-if="documents.length === 0">
-        {{ $t('documentList.noDocuments') }}
+      <div class="document-list__empty-icon">
+        <i class="fa fa-file-alt"></i>
+      </div>
+      <p v-if="documents.length === 0" class="document-list__empty-message">
+        {{ $t('documentList.noDocuments', 'Keine Dokumente gefunden. Laden Sie Dokumente hoch, um sie zu konvertieren.') }}
       </p>
-      <p v-else>
-        {{ $t('documentList.noMatchingDocuments') }}
+      <p v-else class="document-list__empty-message">
+        {{ $t('documentList.noMatchingDocuments', 'Keine Dokumente entsprechen Ihren Filterkriterien.') }}
       </p>
       <button 
+        v-if="hasActiveFilters"
         @click="clearFilters" 
-        class="clear-filters-btn"
+        class="document-list__clear-filters-btn"
       >
-        {{ $t('documentList.clearFilters') }}
+        <i class="fa fa-filter-slash"></i> {{ $t('documentList.clearFilters', 'Filter zurücksetzen') }}
       </button>
     </div>
     
     <!-- Document list -->
-    <ul 
-      v-else 
-      class="document-items"
+    <ul
+      v-else
+      class="document-list__items"
       role="list"
       aria-label="Converted documents list"
+      data-testid="document-list"
     >
-      <li 
-        v-for="document in paginatedDocuments" 
-        :key="document.id" 
-        class="document-item"
-        :class="{ 
-          'document-item--selected': selectedDocument?.id === document.id,
-          [`document-item--${document.status}`]: true 
+      <li
+        v-for="document in paginatedDocuments"
+        :key="document.id"
+        class="document-list__item"
+        :class="{
+          'document-list__item--selected': isSelected(document.id),
+          [`document-list__item--${document.status}`]: true
         }"
         role="listitem"
-        :aria-selected="selectedDocument?.id === document.id"
-        @click="selectDocument(document)"
-        @keydown.enter="selectDocument(document)"
-        @keydown.space="selectDocument(document)"
-        @keydown.delete="handleKeyboardDelete(document)"
+        :aria-selected="isSelected(document.id)"
+        @click.stop="toggleDocumentSelection(document)"
+        @keydown.enter="toggleDocumentSelection(document)"
+        @keydown.space="toggleDocumentSelection(document)"
+        @keydown.delete="confirmDelete(document)"
         tabindex="0"
+        data-testid="document-item"
       >
+        <div class="document-list__checkbox">
+          <input
+            type="checkbox"
+            :id="`document-${document.id}`"
+            :checked="isSelected(document.id)"
+            @change="toggleDocumentSelection(document)"
+            @click.stop
+            class="document-list__select-checkbox"
+            aria-label="Select document"
+            data-testid="document-checkbox"
+          />
+        </div>
         <div 
-          class="document-icon" 
-          :class="`document-icon--${document.originalFormat}`"
+          class="document-list__icon" 
+          :class="`document-list__icon--${document.originalFormat}`"
           aria-hidden="true"
         >
           <i :class="getFormatIcon(document.originalFormat)"></i>
         </div>
         
-        <div class="document-info">
-          <h4 class="document-name">{{ document.originalName }}</h4>
-          
-          <div class="document-meta">
-            <span class="document-format">
-              <span class="meta-label" aria-hidden="true">{{ $t('documentList.format') }}:</span>
+        <div class="document-list__info">
+          <h4 class="document-list__name">
+            {{ document.originalName }}
+            <span v-if="document.metadata?.title && document.metadata.title !== document.originalName" class="document-list__title">({{ document.metadata.title }})</span>
+          </h4>
+
+          <div class="document-list__meta">
+            <span class="document-list__format">
+              <span class="document-list__meta-label" aria-hidden="true">{{ $t('documentList.format', 'Format') }}:</span>
               <span>{{ document.originalFormat.toUpperCase() }}</span>
             </span>
             
-            <span class="document-size">
-              <span class="meta-label" aria-hidden="true">{{ $t('documentList.size') }}:</span>
+            <span class="document-list__size">
+              <span class="document-list__meta-label" aria-hidden="true">{{ $t('documentList.size', 'Größe') }}:</span>
               <span>{{ formatFileSize(document.size) }}</span>
             </span>
             
-            <span class="document-date">
-              <span class="meta-label" aria-hidden="true">{{ $t('documentList.date') }}:</span>
+            <span class="document-list__date">
+              <span class="document-list__meta-label" aria-hidden="true">{{ $t('documentList.date', 'Datum') }}:</span>
               <span>{{ formatDate(document.convertedAt || document.uploadedAt) }}</span>
             </span>
           </div>
           
-          <div 
-            v-if="document.status" 
-            class="document-status"
-            :class="`document-status--${document.status}`"
+          <div
+            v-if="document.status"
+            class="document-list__status"
+            :class="`document-list__status--${document.status}`"
           >
-            <span v-if="document.status === 'success'" class="status-icon">
-              <i class="fa fa-check-circle"></i>
+            <div class="document-list__metadata-tags" v-if="document.metadata?.keywords && document.metadata.keywords.length > 0">
+              <span
+                v-for="(keyword, keywordIdx) in displayedKeywords(document)"
+                :key="`${document.id}-${keywordIdx}`"
+                class="document-list__keyword"
+              >
+                {{ keyword }}
+              </span>
+              <span v-if="hasMoreKeywords(document)" class="document-list__more-keywords">
+                +{{ document.metadata.keywords.length - maxKeywords }}
+              </span>
+            </div>
+            <span class="document-list__status-icon">
+              <i :class="getStatusIcon(document.status)"></i>
             </span>
-            <span v-else-if="document.status === 'error'" class="status-icon">
-              <i class="fa fa-exclamation-circle"></i>
-            </span>
-            <span v-else-if="document.status === 'pending'" class="status-icon">
-              <i class="fa fa-clock"></i>
-            </span>
-            <span v-else-if="document.status === 'processing'" class="status-icon">
-              <i class="fa fa-spinner fa-spin"></i>
-            </span>
+            <span class="document-list__status-text">{{ getStatusText(document.status) }}</span>
             
-            <span class="status-text">{{ getStatusText(document.status) }}</span>
-            
-            <span v-if="document.error" class="status-error-message">
+            <span v-if="document.error" class="document-list__status-error-message">
               {{ document.error }}
             </span>
           </div>
         </div>
         
-        <div class="document-actions">
-          <button 
-            @click.stop="viewDocument(document)" 
-            class="action-btn" 
+        <div class="document-list__actions">
+          <button
+            @click.stop="viewDocument(document)"
+            class="document-list__action-btn"
             :disabled="document.status !== 'success'"
-            :aria-label="$t('documentList.viewDocument', { name: document.originalName })"
-            :title="$t('documentList.viewDocument', { name: document.originalName })"
+            :aria-label="$t('documentList.viewDocument', { name: document.originalName }, `Dokument anzeigen: ${document.originalName}`)"
+            :title="$t('documentList.viewDocument', { name: document.originalName }, `Dokument anzeigen: ${document.originalName}`)"
+            data-testid="view-document-btn"
           >
             <i class="fa fa-eye" aria-hidden="true"></i>
           </button>
-          
-          <button 
-            @click.stop="downloadDocument(document)" 
-            class="action-btn" 
+
+          <button
+            @click.stop="downloadDocument(document)"
+            class="document-list__action-btn"
             :disabled="document.status !== 'success'"
-            :aria-label="$t('documentList.downloadDocument', { name: document.originalName })"
-            :title="$t('documentList.downloadDocument', { name: document.originalName })"
+            :aria-label="$t('documentList.downloadDocument', { name: document.originalName }, `Dokument herunterladen: ${document.originalName}`)"
+            :title="$t('documentList.downloadDocument', { name: document.originalName }, `Dokument herunterladen: ${document.originalName}`)"
+            data-testid="download-document-btn"
           >
             <i class="fa fa-download" aria-hidden="true"></i>
           </button>
-          
-          <button 
-            @click.stop="confirmDelete(document)" 
-            class="action-btn action-btn--danger"
-            :aria-label="$t('documentList.deleteDocument', { name: document.originalName })"
-            :title="$t('documentList.deleteDocument', { name: document.originalName })"
-          >
-            <i class="fa fa-trash" aria-hidden="true"></i>
-          </button>
+
+          <div class="document-list__action-dropdown">
+            <button
+              @click.stop="toggleActionMenu(document.id)"
+              class="document-list__action-dropdown-toggle"
+              :aria-expanded="openActionMenuId === document.id"
+              data-testid="action-dropdown-toggle"
+            >
+              <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+            </button>
+
+            <div
+              v-if="openActionMenuId === document.id"
+              class="document-list__action-dropdown-menu"
+              data-testid="action-dropdown-menu"
+            >
+              <button
+                @click.stop="confirmDelete(document)"
+                class="document-list__dropdown-action-btn document-list__dropdown-action-btn--danger"
+                data-testid="delete-document-btn"
+              >
+                <i class="fa fa-trash" aria-hidden="true"></i>
+                {{ $t('documentList.delete', 'Löschen') }}
+              </button>
+              
+              <button
+                v-if="document.status === 'error'"
+                @click.stop="retryConversion(document)"
+                class="document-list__dropdown-action-btn"
+                data-testid="retry-conversion-btn"
+              >
+                <i class="fa fa-redo" aria-hidden="true"></i>
+                {{ $t('documentList.retry', 'Erneut versuchen') }}
+              </button>
+            </div>
+          </div>
         </div>
       </li>
     </ul>
@@ -232,31 +317,31 @@
     <!-- Pagination -->
     <div 
       v-if="totalPages > 1" 
-      class="pagination"
+      class="document-list__pagination"
       role="navigation"
       aria-label="Pagination controls"
     >
       <button 
         @click="prevPage" 
         :disabled="currentPage === 1"
-        class="pagination-btn"
+        class="document-list__pagination-btn"
         aria-label="Previous page"
       >
         <i class="fa fa-chevron-left" aria-hidden="true"></i>
-        <span>{{ $t('documentList.prevPage') }}</span>
+        <span>{{ $t('documentList.prevPage', 'Zurück') }}</span>
       </button>
       
-      <span class="pagination-info" aria-live="polite">
-        {{ $t('documentList.pageInfo', { current: currentPage, total: totalPages }) }}
+      <span class="document-list__pagination-info" aria-live="polite">
+        {{ $t('documentList.pageInfo', { current: currentPage, total: totalPages }, `Seite ${currentPage} von ${totalPages}`) }}
       </span>
       
       <button 
         @click="nextPage" 
         :disabled="currentPage === totalPages"
-        class="pagination-btn"
+        class="document-list__pagination-btn"
         aria-label="Next page"
       >
-        <span>{{ $t('documentList.nextPage') }}</span>
+        <span>{{ $t('documentList.nextPage', 'Weiter') }}</span>
         <i class="fa fa-chevron-right" aria-hidden="true"></i>
       </button>
     </div>
@@ -264,9 +349,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { ConversionResult, SupportedFormat } from '@/types/documentConverter';
-import { useDialog } from '@/composables/useDialog';
+import { useGlobalDialog } from '@/composables/useDialog';
+import { useToasts } from '@/composables/useToast';
 
 // Interface für Props
 interface Props {
@@ -290,10 +376,12 @@ const emit = defineEmits<{
   (e: 'view', documentId: string): void;
   (e: 'download', documentId: string): void;
   (e: 'delete', documentId: string): void;
+  (e: 'retry', documentId: string): void;
 }>();
 
-// Dialog-Dienst für Bestätigungsdialoge
-const dialog = useDialog();
+// Services
+const dialog = useGlobalDialog();
+const toast = useToasts();
 
 // Zustandsvariablen
 const searchQuery = ref('');
@@ -303,25 +391,26 @@ const currentPage = ref(1);
 const itemsPerPage = ref(10);
 const sortBy = ref<'name' | 'date' | 'size' | 'format'>('date');
 const sortDirection = ref<'asc' | 'desc'>('desc');
+const selectedDocuments = ref<string[]>([]);
+const openActionMenuId = ref<string | null>(null);
+const maxKeywords = 3; // Maximale Anzahl anzuzeigender Keywords
 
 /**
- * Gefilterte und sortierte Dokumente
+ * Gefilterte Dokumente basierend auf Suchbegriff und Filtern
  */
-const filteredAndSortedDocuments = computed(() => {
-  // Filter anwenden
+const filteredDocuments = computed(() => {
   let result = props.documents.filter(doc => {
-    // Suchwort filtern
-    const matchesSearch = !searchQuery.value || 
-      doc.originalName.toLowerCase().includes(searchQuery.value.toLowerCase());
-    
+    // Suchbegriff filtern
+    const matchesSearch = !searchQuery.value ||
+      doc.originalName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      (doc.metadata?.title && doc.metadata.title.toLowerCase().includes(searchQuery.value.toLowerCase()));
+
     // Format filtern
-    const matchesFormat = !formatFilter.value || 
-      doc.originalFormat === formatFilter.value;
-    
+    const matchesFormat = !formatFilter.value || doc.originalFormat === formatFilter.value;
+
     // Status filtern
-    const matchesStatus = !statusFilter.value || 
-      doc.status === statusFilter.value;
-    
+    const matchesStatus = !statusFilter.value || doc.status === statusFilter.value;
+
     return matchesSearch && matchesFormat && matchesStatus;
   });
   
@@ -352,10 +441,17 @@ const filteredAndSortedDocuments = computed(() => {
 });
 
 /**
+ * Prüft, ob Filter aktiv sind
+ */
+const hasActiveFilters = computed(() => {
+  return searchQuery.value || statusFilter.value || formatFilter.value;
+});
+
+/**
  * Anzahl der Seiten für die Paginierung
  */
 const totalPages = computed(() => {
-  return Math.max(1, Math.ceil(filteredAndSortedDocuments.value.length / itemsPerPage.value));
+  return Math.max(1, Math.ceil(filteredDocuments.value.length / itemsPerPage.value));
 });
 
 /**
@@ -364,14 +460,34 @@ const totalPages = computed(() => {
 const paginatedDocuments = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value;
   const end = start + itemsPerPage.value;
-  return filteredAndSortedDocuments.value.slice(start, end);
+  return filteredDocuments.value.slice(start, end);
 });
 
 /**
- * Wählt ein Dokument aus
+ * Prüft, ob ein Dokument ausgewählt ist
  */
-function selectDocument(document: ConversionResult): void {
-  emit('select', document.id);
+function isSelected(documentId: string): boolean {
+  return selectedDocuments.value.includes(documentId);
+}
+
+/**
+ * Wählt ein Dokument aus oder hebt die Auswahl auf
+ */
+function toggleDocumentSelection(document: ConversionResult): void {
+  const documentId = document.id;
+
+  if (isSelected(documentId)) {
+    selectedDocuments.value = selectedDocuments.value.filter(id => id !== documentId);
+  } else {
+    selectedDocuments.value.push(documentId);
+  }
+
+  // Wenn ein Dokument ausgewählt ist, es auch in der übergeordneten Komponente markieren
+  if (selectedDocuments.value.length === 1) {
+    emit('select', selectedDocuments.value[0]);
+  } else if (selectedDocuments.value.length === 0 && props.selectedDocument) {
+    emit('select', '');
+  }
 }
 
 /**
@@ -397,11 +513,11 @@ function downloadDocument(document: ConversionResult): void {
  */
 async function confirmDelete(document: ConversionResult): Promise<void> {
   const confirmed = await dialog.confirm({
-    title: $t('documentList.deleteConfirmTitle'),
-    message: $t('documentList.deleteConfirmMessage', { name: document.originalName }),
+    title: $t('documentList.deleteConfirmTitle', 'Dokument löschen'),
+    message: $t('documentList.deleteConfirmMessage', { name: document.originalName }, `Sind Sie sicher, dass Sie das Dokument "${document.originalName}" löschen möchten?`),
     type: 'warning',
-    confirmButtonText: $t('documentList.delete'),
-    cancelButtonText: $t('documentList.cancel')
+    confirmButtonText: $t('documentList.delete', 'Löschen'),
+    cancelButtonText: $t('documentList.cancel', 'Abbrechen')
   });
   
   if (confirmed) {
@@ -410,10 +526,115 @@ async function confirmDelete(document: ConversionResult): Promise<void> {
 }
 
 /**
+ * Versucht die Konvertierung eines fehlgeschlagenen Dokuments erneut
+ */
+function retryConversion(document: ConversionResult): void {
+  emit('retry', document.id);
+}
+
+/**
  * Löscht ein Dokument
  */
 function deleteDocument(document: ConversionResult): void {
   emit('delete', document.id);
+  
+  // Aus der Auswahl entfernen, falls vorhanden
+  if (isSelected(document.id)) {
+    selectedDocuments.value = selectedDocuments.value.filter(id => id !== document.id);
+  }
+}
+
+/**
+ * Öffnet/Schließt das Aktionsmenü für ein Dokument
+ */
+function toggleActionMenu(documentId: string): void {
+  if (openActionMenuId.value === documentId) {
+    openActionMenuId.value = null;
+  } else {
+    openActionMenuId.value = documentId;
+  }
+}
+
+/**
+ * Schließt das Aktionsmenü beim Klick außerhalb
+ */
+function handleClickOutside(event: MouseEvent): void {
+  if (openActionMenuId.value) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.document-list__action-dropdown-menu') && !target.closest('.document-list__action-dropdown-toggle')) {
+      openActionMenuId.value = null;
+    }
+  }
+}
+
+/**
+ * Löscht die Auswahl aller Dokumente
+ */
+function clearSelection(): void {
+  selectedDocuments.value = [];
+  emit('select', '');
+}
+
+/**
+ * Lädt ausgewählte Dokumente herunter
+ */
+function downloadSelectedDocuments(): void {
+  if (selectedDocuments.value.length === 0) return;
+
+  // Für jedes ausgewählte Dokument mit Status "success" den Download auslösen
+  const successDocs = props.documents.filter(doc =>
+    selectedDocuments.value.includes(doc.id) && doc.status === 'success'
+  );
+
+  if (successDocs.length === 0) {
+    toast.error($t('documentList.noSuccessfulDocuments', 'Keine erfolgreich konvertierten Dokumente ausgewählt'));
+    return;
+  }
+
+  // Bei mehr als 5 Dokumenten Bestätigung anfordern
+  if (successDocs.length > 5) {
+    dialog.confirm({
+      title: $t('documentList.bulkDownloadTitle', 'Mehrere Dokumente herunterladen'),
+      message: $t('documentList.bulkDownloadConfirm', { count: successDocs.length }, `Möchten Sie ${successDocs.length} Dokumente herunterladen?`),
+      confirmButtonText: $t('documentList.download', 'Herunterladen'),
+      cancelButtonText: $t('documentList.cancel', 'Abbrechen')
+    }).then(confirmed => {
+      if (confirmed) {
+        successDocs.forEach(doc => emit('download', doc.id));
+        toast.success($t('documentList.downloadStarted', { count: successDocs.length }, `Download von ${successDocs.length} Dokumenten gestartet`));
+      }
+    });
+  } else {
+    successDocs.forEach(doc => emit('download', doc.id));
+    toast.success($t('documentList.downloadStarted', { count: successDocs.length }, `Download von ${successDocs.length} Dokumenten gestartet`));
+  }
+}
+
+/**
+ * Bestätigt und löscht ausgewählte Dokumente
+ */
+async function confirmDeleteSelected(): Promise<void> {
+  if (selectedDocuments.value.length === 0) return;
+
+  const confirmed = await dialog.confirm({
+    title: $t('documentList.deleteMultipleTitle', 'Mehrere Dokumente löschen'),
+    message: $t('documentList.deleteMultipleConfirm', { count: selectedDocuments.value.length }, `Sind Sie sicher, dass Sie ${selectedDocuments.value.length} Dokumente löschen möchten?`),
+    type: 'warning',
+    confirmButtonText: $t('documentList.delete', 'Löschen'),
+    cancelButtonText: $t('documentList.cancel', 'Abbrechen')
+  });
+
+  if (confirmed) {
+    // Kopie der ausgewählten IDs erstellen, bevor wir die Liste ändern
+    const docsToDelete = [...selectedDocuments.value];
+    
+    for (const id of docsToDelete) {
+      emit('delete', id);
+    }
+    
+    toast.success($t('documentList.documentsDeleted', { count: docsToDelete.length }, `${docsToDelete.length} Dokumente wurden gelöscht`));
+    selectedDocuments.value = [];
+  }
 }
 
 /**
@@ -465,13 +686,31 @@ function getFormatIcon(format: string): string {
   const icons: Record<string, string> = {
     pdf: 'fa fa-file-pdf',
     docx: 'fa fa-file-word',
+    doc: 'fa fa-file-word',
     xlsx: 'fa fa-file-excel',
+    xls: 'fa fa-file-excel',
     pptx: 'fa fa-file-powerpoint',
+    ppt: 'fa fa-file-powerpoint',
     html: 'fa fa-file-code',
+    htm: 'fa fa-file-code',
     txt: 'fa fa-file-alt'
   };
   
   return icons[format] || 'fa fa-file';
+}
+
+/**
+ * Liefert das Icon für den Status
+ */
+function getStatusIcon(status: string): string {
+  const icons: Record<string, string> = {
+    success: 'fa fa-check-circle',
+    error: 'fa fa-exclamation-circle',
+    pending: 'fa fa-clock',
+    processing: 'fa fa-spinner fa-spin'
+  };
+  
+  return icons[status] || 'fa fa-question-circle';
 }
 
 /**
@@ -511,90 +750,96 @@ function formatDate(timestamp?: Date | string): string {
  */
 function getStatusText(status: string): string {
   const statusTexts: Record<string, string> = {
-    success: $t('documentList.statusSuccess'),
-    error: $t('documentList.statusError'),
-    pending: $t('documentList.statusPending'),
-    processing: $t('documentList.statusProcessing')
+    success: $t('documentList.statusSuccess', 'Erfolgreich'),
+    error: $t('documentList.statusError', 'Fehler'),
+    pending: $t('documentList.statusPending', 'Ausstehend'),
+    processing: $t('documentList.statusProcessing', 'In Bearbeitung')
   };
   
   return statusTexts[status] || status;
 }
 
 /**
- * Behandelt Löschen-Tastendruck für Dokumente
+ * Gibt die anzuzeigenden Keywords zurück (begrenzt auf maxKeywords)
  */
-function handleKeyboardDelete(document: ConversionResult): void {
-  confirmDelete(document);
+function displayedKeywords(document: ConversionResult): string[] {
+  if (!document.metadata?.keywords || !Array.isArray(document.metadata.keywords)) {
+    return [];
+  }
+  
+  return document.metadata.keywords.slice(0, maxKeywords);
 }
 
-// i18n-Fallback für Texte
-function $t(key: string, params: Record<string, any> = {}): string {
-  const messages: Record<string, string> = {
-    'documentList.title': 'Konvertierte Dokumente',
-    'documentList.statusFilter': 'Nach Status filtern',
-    'documentList.allStatuses': 'Alle Status',
-    'documentList.statusSuccess': 'Erfolgreich',
-    'documentList.statusError': 'Fehler',
-    'documentList.statusPending': 'Ausstehend',
-    'documentList.statusProcessing': 'In Bearbeitung',
-    'documentList.formatFilter': 'Nach Format filtern',
-    'documentList.allFormats': 'Alle Formate',
-    'documentList.sortBy': 'Sortieren nach',
-    'documentList.sortByName': 'Name',
-    'documentList.sortByDate': 'Datum',
-    'documentList.sortBySize': 'Größe',
-    'documentList.sortByFormat': 'Format',
-    'documentList.sortAscending': 'Aufsteigend sortieren',
-    'documentList.sortDescending': 'Absteigend sortieren',
-    'documentList.search': 'Suchen',
-    'documentList.searchPlaceholder': 'Dokumente durchsuchen...',
-    'documentList.format': 'Format',
-    'documentList.size': 'Größe',
-    'documentList.date': 'Datum',
-    'documentList.loading': 'Lade Dokumente...',
-    'documentList.noDocuments': 'Keine Dokumente gefunden. Laden Sie Dokumente hoch, um sie zu konvertieren.',
-    'documentList.noMatchingDocuments': 'Keine Dokumente entsprechen Ihren Filterkriterien.',
-    'documentList.clearFilters': 'Filter zurücksetzen',
-    'documentList.viewDocument': 'Dokument anzeigen: {name}',
-    'documentList.downloadDocument': 'Dokument herunterladen: {name}',
-    'documentList.deleteDocument': 'Dokument löschen: {name}',
-    'documentList.deleteConfirmTitle': 'Dokument löschen',
-    'documentList.deleteConfirmMessage': 'Sind Sie sicher, dass Sie das Dokument "{name}" löschen möchten?',
-    'documentList.delete': 'Löschen',
-    'documentList.cancel': 'Abbrechen',
-    'documentList.prevPage': 'Zurück',
-    'documentList.nextPage': 'Weiter',
-    'documentList.pageInfo': 'Seite {current} von {total}'
-  };
-  
-  let message = messages[key] || key;
-  
-  // Parameter ersetzen
-  Object.entries(params).forEach(([param, value]) => {
-    message = message.replace(new RegExp(`\\{${param}\\}`, 'g'), String(value));
-  });
-  
-  return message;
+/**
+ * Prüft, ob es mehr Keywords gibt als angezeigt werden
+ */
+function hasMoreKeywords(document: ConversionResult): boolean {
+  return document.metadata?.keywords && 
+         Array.isArray(document.metadata.keywords) && 
+         document.metadata.keywords.length > maxKeywords;
 }
+
+/**
+ * Prüft, ob erfolgreiche Dokumente in der Auswahl sind
+ */
+const hasSuccessfulSelected = computed(() => {
+  return props.documents.some(doc =>
+    selectedDocuments.value.includes(doc.id) && doc.status === 'success'
+  );
+});
+
+// i18n Hilfsfunktion
+function $t(key: string, params: Record<string, any> = {}, fallback: string = key): string {
+  // In einer echten Implementierung würde hier die i18n-Bibliothek verwendet werden
+  if (typeof fallback === 'string') {
+    let result = fallback;
+    // Parameter ersetzen
+    Object.entries(params).forEach(([param, value]) => {
+      result = result.replace(new RegExp(`\\{${param}\\}`, 'g'), String(value));
+    });
+    return result;
+  }
+  return fallback;
+}
+
+// Event-Listener für Klick außerhalb des Aktionsmenüs und Lebenszyklus-Hooks
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
 
 // Beobachter für Filter und Sortierung - Zurücksetzen der Seitennummer
 watch([searchQuery, statusFilter, formatFilter, sortBy, sortDirection], () => {
   currentPage.value = 1;
 });
+
+// Synchronisierung mit der übergeordneten Komponente
+watch(() => props.selectedDocument, (newDoc) => {
+  if (newDoc && !selectedDocuments.value.includes(newDoc.id)) {
+    // Die Auswahl im Store wurde aktualisiert, aber nicht hier
+    selectedDocuments.value = [newDoc.id];
+  } else if (!newDoc && selectedDocuments.value.length > 0) {
+    // Der Store hat keine Auswahl mehr, aber wir haben noch eine
+    selectedDocuments.value = [];
+  }
+});
 </script>
 
 <style scoped>
-/* Basisstile */
+/* Base Styles */
 .document-list {
-  background-color: white;
+  background-color: #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   padding: 1.5rem;
-  overflow: hidden;
+  margin-bottom: 1.5rem;
 }
 
-/* Header und Aktionen */
-.document-list-header {
+/* Header and Title Area */
+.document-list__header {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -602,51 +847,120 @@ watch([searchQuery, statusFilter, formatFilter, sortBy, sortDirection], () => {
 }
 
 @media (min-width: 768px) {
-  .document-list-header {
+  .document-list__header {
     flex-direction: row;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
   }
 }
 
-.document-list-header h3 {
-  margin: 0;
-  font-size: 1.25rem;
-  color: #343a40;
+.document-list__title-area {
+  flex-shrink: 0;
 }
 
-.document-list-actions {
+.document-list__header h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  color: #0d7a40;
+  font-weight: 600;
+}
+
+.document-list__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.document-list__selected-count {
+  font-weight: 500;
+  color: #4a6cf7;
+}
+
+/* Actions Row */
+.document-list__actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
   align-items: center;
+  margin-top: 0.5rem;
 }
 
-/* Filter und Suchfeld */
-.search-input, 
-.format-filter,
-.status-filter,
-.sort-by {
+.document-list__filter-container,
+.document-list__sort-container {
+  position: relative;
+}
+
+.document-list__status-filter,
+.document-list__format-filter,
+.document-list__sort-by {
   padding: 0.5rem;
   border: 1px solid #ced4da;
   border-radius: 4px;
   font-size: 0.9rem;
+  color: #495057;
+  background-color: #fff;
   min-width: 120px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23495057' d='M4 8l4-4 1.5 1.5L4 11 0.5 7.5 2 6l2 2z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 0.75rem;
+  padding-right: 2rem;
 }
 
-.search-input {
-  min-width: 200px;
+.document-list__sort-container {
+  display: flex;
+  align-items: center;
 }
 
-.search-input-wrapper {
+.document-list__sort-direction {
+  background: none;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -2.25rem;
+  z-index: 2;
+  position: relative;
+}
+
+/* Search Input */
+.document-list__search-container {
+  flex-grow: 1;
+  max-width: 300px;
+}
+
+.document-list__search-input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.clear-search-btn {
+.document-list__search-icon {
   position: absolute;
-  right: 8px;
+  left: 0.75rem;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.document-list__search-input {
+  padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  width: 100%;
+  color: #495057;
+}
+
+.document-list__clear-search-btn {
+  position: absolute;
+  right: 0.75rem;
   background: none;
   border: none;
   color: #6c757d;
@@ -655,234 +969,133 @@ watch([searchQuery, statusFilter, formatFilter, sortBy, sortDirection], () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
 }
 
-.clear-search-btn:hover {
-  color: #343a40;
-}
-
-.sort-container {
+/* Batch Actions */
+.document-list__batch-actions {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-}
-
-.sort-direction {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #6c757d;
-}
-
-.sort-direction:hover {
-  color: #343a40;
-}
-
-/* Dokumentenliste */
-.document-items {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  border-top: 1px solid #e9ecef;
-}
-
-.document-item {
-  display: flex;
-  align-items: flex-start;
-  padding: 1rem;
-  border-bottom: 1px solid #e9ecef;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.document-item:hover {
   background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+  animation: fadeIn 0.3s ease;
 }
 
-.document-item:focus {
-  outline: 2px solid #4a6cf7;
-  outline-offset: -2px;
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.document-item--selected {
-  background-color: #e7f5ff;
-}
-
-/* Status-spezifische Stile */
-.document-item--error {
-  border-left: 3px solid #dc3545;
-}
-
-.document-item--success {
-  border-left: 3px solid #28a745;
-}
-
-.document-item--pending {
-  border-left: 3px solid #6c757d;
-}
-
-.document-item--processing {
-  border-left: 3px solid #fd7e14;
-}
-
-/* Dokument-Icon */
-.document-icon {
-  width: 44px;
-  height: 44px;
+.document-list__batch-action-buttons {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  margin-right: 1rem;
-  color: white;
-  flex-shrink: 0;
-}
-
-.document-icon--pdf { background-color: #e74c3c; }
-.document-icon--docx { background-color: #3498db; }
-.document-icon--xlsx { background-color: #2ecc71; }
-.document-icon--pptx { background-color: #e67e22; }
-.document-icon--html { background-color: #9b59b6; }
-.document-icon--txt { background-color: #95a5a6; }
-
-/* Dokument-Informationen */
-.document-info {
-  flex: 1;
-  min-width: 0; /* Für Textüberlauf */
-}
-
-.document-name {
-  margin: 0 0 0.25rem;
-  font-size: 1rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.document-meta {
-  display: flex;
+  gap: 0.75rem;
   flex-wrap: wrap;
-  gap: 1rem;
-  font-size: 0.85rem;
-  color: #6c757d;
-  margin-bottom: 0.5rem;
 }
 
-.meta-label {
-  font-weight: 500;
-  margin-right: 0.25rem;
-}
-
-/* Status-Anzeige */
-.document-status {
-  display: flex;
+.document-list__batch-action-btn {
+  display: inline-flex;
   align-items: center;
-  font-size: 0.85rem;
   gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.document-status--success {
-  color: #28a745;
-}
-
-.document-status--error {
-  color: #dc3545;
-}
-
-.document-status--pending {
-  color: #6c757d;
-}
-
-.document-status--processing {
-  color: #fd7e14;
-}
-
-.status-error-message {
-  margin-left: 0.5rem;
-  font-style: italic;
-}
-
-/* Aktionen */
-.document-actions {
-  display: flex;
-  gap: 0.5rem;
-  margin-left: 1rem;
-}
-
-.action-btn {
-  background: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
   border: none;
   cursor: pointer;
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  color: #6c757d;
-  transition: background-color 0.2s, color 0.2s;
+  background-color: #4a6cf7;
+  color: white;
+  transition: all 0.2s;
 }
 
-.action-btn:hover {
-  background-color: #e9ecef;
-  color: #343a40;
+.document-list__batch-action-btn:hover:not(:disabled) {
+  background-color: #3a5be7;
 }
 
-.action-btn:focus {
-  outline: 2px solid #4a6cf7;
-  outline-offset: 2px;
-}
-
-.action-btn:disabled {
-  opacity: 0.5;
+.document-list__batch-action-btn:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-.action-btn--danger:hover {
-  background-color: #fee2e2;
-  color: #dc3545;
+.document-list__batch-action-btn--danger {
+  background-color: #e74c3c;
 }
 
-/* Leerer Zustand */
-.empty-state {
-  padding: 2rem;
-  text-align: center;
-  color: #6c757d;
-  border: 1px dashed #ced4da;
-  border-radius: 4px;
-  margin-top: 1rem;
+.document-list__batch-action-btn--danger:hover {
+  background-color: #c0392b;
 }
 
-.clear-filters-btn {
-  margin-top: 0.75rem;
-  padding: 0.5rem 1rem;
-  background-color: #e9ecef;
+.document-list__clear-selection-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: none;
   border: none;
-  border-radius: 4px;
+  color: #6c757d;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: background-color 0.2s;
 }
 
-.clear-filters-btn:hover {
-  background-color: #ced4da;
+.document-list__clear-selection-btn:hover {
+  color: #495057;
 }
 
-/* Ladeindikator */
-.loading-indicator {
+/* Empty State */
+.document-list__empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: #6c757d;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.document-list__empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #ced4da;
+}
+
+.document-list__empty-message {
+  margin-bottom: 1.5rem;
+  max-width: 400px;
+}
+
+.document-list__clear-filters-btn {
+  padding: 0.5rem 1rem;
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.document-list__clear-filters-btn:hover {
+  background-color: #e9ecef;
+}
+
+/* Loading State */
+.document-list__loading-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
   color: #6c757d;
 }
 
-.spinner {
+.document-list__spinner {
   width: 40px;
   height: 40px;
   border: 3px solid #e9ecef;
@@ -892,16 +1105,293 @@ watch([searchQuery, statusFilter, formatFilter, sortBy, sortDirection], () => {
   margin-bottom: 1rem;
 }
 
-/* Paginierung */
-.pagination {
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Document List Items */
+.document-list__items {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem;
+}
+
+.document-list__item {
+  display: flex;
+  align-items: flex-start;
+  padding: 1rem;
+  border-bottom: 1px solid #e9ecef;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.document-list__item:last-child {
+  border-bottom: none;
+}
+
+.document-list__item:hover {
+  background-color: #f8f9fa;
+}
+
+.document-list__item:focus {
+  outline: 2px solid #4a6cf7;
+  outline-offset: -2px;
+}
+
+.document-list__item--selected {
+  background-color: #e7f5ff;
+}
+
+.document-list__item--selected:hover {
+  background-color: #dbeeff;
+}
+
+/* Status Indicators */
+.document-list__item--success {
+  border-left: 3px solid #28a745;
+}
+
+.document-list__item--error {
+  border-left: 3px solid #dc3545;
+}
+
+.document-list__item--pending {
+  border-left: 3px solid #6c757d;
+}
+
+.document-list__item--processing {
+  border-left: 3px solid #fd7e14;
+}
+
+/* Checkbox */
+.document-list__checkbox {
+  display: flex;
+  align-items: center;
+  margin-right: 0.75rem;
+}
+
+.document-list__select-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* Document Icon */
+.document-list__icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  margin-right: 1rem;
+  color: white;
+  flex-shrink: 0;
+}
+
+.document-list__icon--pdf { background-color: #e74c3c; }
+.document-list__icon--docx, .document-list__icon--doc { background-color: #3498db; }
+.document-list__icon--xlsx, .document-list__icon--xls { background-color: #2ecc71; }
+.document-list__icon--pptx, .document-list__icon--ppt { background-color: #e67e22; }
+.document-list__icon--html, .document-list__icon--htm { background-color: #9b59b6; }
+.document-list__icon--txt { background-color: #95a5a6; }
+
+/* Document Info */
+.document-list__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.document-list__name {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  font-weight: 500;
+  word-break: break-word;
+  color: #212529;
+}
+
+.document-list__title {
+  font-size: 0.85rem;
+  color: #6c757d;
+  font-weight: normal;
+  margin-left: 0.5rem;
+}
+
+.document-list__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-bottom: 0.5rem;
+}
+
+.document-list__meta-label {
+  font-weight: 500;
+  margin-right: 0.25rem;
+}
+
+/* Document Status */
+.document-list__status {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.document-list__status-icon {
+  margin-right: 0.25rem;
+}
+
+.document-list__status--success {
+  color: #28a745;
+}
+
+.document-list__status--error {
+  color: #dc3545;
+}
+
+.document-list__status--pending {
+  color: #6c757d;
+}
+
+.document-list__status--processing {
+  color: #fd7e14;
+}
+
+.document-list__status-error-message {
+  font-style: italic;
+  max-width: 400px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Keywords Tags */
+.document-list__metadata-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-right: 0.75rem;
+}
+
+.document-list__keyword {
+  background-color: #f0f4ff;
+  color: #4a6cf7;
+  padding: 0.125rem 0.375rem;
+  border-radius: 100px;
+  font-size: 0.75rem;
+}
+
+.document-list__more-keywords {
+  color: #6c757d;
+  font-size: 0.75rem;
+  padding: 0.125rem 0.25rem;
+}
+
+/* Document Actions */
+.document-list__actions {
+  display: flex;
+  gap: 0.25rem;
+  margin-left: 1rem;
+}
+
+.document-list__action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: #6c757d;
+  transition: all 0.2s;
+}
+
+.document-list__action-btn:hover:not(:disabled) {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.document-list__action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.document-list__action-dropdown {
+  position: relative;
+}
+
+.document-list__action-dropdown-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: #6c757d;
+}
+
+.document-list__action-dropdown-toggle:hover {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.document-list__action-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  min-width: 160px;
+  animation: fadeIn 0.2s ease;
+}
+
+.document-list__dropdown-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #495057;
+  transition: background-color 0.2s;
+}
+
+.document-list__dropdown-action-btn:hover {
+  background-color: #f8f9fa;
+}
+
+.document-list__dropdown-action-btn--danger {
+  color: #dc3545;
+}
+
+.document-list__dropdown-action-btn--danger:hover {
+  background-color: #f8d7da;
+}
+
+/* Pagination */
+.document-list__pagination {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 1.5rem;
   gap: 1rem;
+  margin-top: 1.5rem;
 }
 
-.pagination-btn {
+.document-list__pagination-btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -910,29 +1400,26 @@ watch([searchQuery, statusFilter, formatFilter, sortBy, sortDirection], () => {
   border: 1px solid #ced4da;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  font-size: 0.9rem;
+  color: #495057;
+  transition: all 0.2s;
 }
 
-.pagination-btn:hover:not(:disabled) {
+.document-list__pagination-btn:hover:not(:disabled) {
   background-color: #e9ecef;
 }
 
-.pagination-btn:focus {
-  outline: 2px solid #4a6cf7;
-  outline-offset: 2px;
-}
-
-.pagination-btn:disabled {
+.document-list__pagination-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.pagination-info {
+.document-list__pagination-info {
   font-size: 0.9rem;
   color: #6c757d;
 }
 
-/* Screen reader only class */
+/* Helper Classes */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -945,9 +1432,56 @@ watch([searchQuery, statusFilter, formatFilter, sortBy, sortDirection], () => {
   border: 0;
 }
 
-/* Animation */
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .document-list {
+    padding: 1rem;
+  }
+  
+  .document-list__actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  
+  .document-list__filter-container,
+  .document-list__sort-container,
+  .document-list__search-container {
+    width: 100%;
+    max-width: none;
+  }
+  
+  .document-list__filter-container select,
+  .document-list__sort-container select {
+    width: 100%;
+  }
+  
+  .document-list__batch-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .document-list__batch-action-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .document-list__clear-selection-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .document-list__item {
+    flex-wrap: wrap;
+  }
+  
+  .document-list__info {
+    flex: 0 0 calc(100% - 80px);
+  }
+  
+  .document-list__actions {
+    margin-left: 58px;
+    margin-top: 0.75rem;
+  }
 }
 </style>

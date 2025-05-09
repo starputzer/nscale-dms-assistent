@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>nscale DMS Assistent - Launcher</title>
+  
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9fafb;
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    
+    .header {
+      background-color: #4f46e5;
+      color: white;
+      padding: 20px;
+      border-radius: 8px 8px 0 0;
+      margin-bottom: 0;
+    }
+    
+    h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    
+    .subheader {
+      color: rgba(255, 255, 255, 0.8);
+      margin-top: 8px;
+    }
+    
+    .content {
+      background-color: white;
+      border-radius: 0 0 8px 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+    
+    .card {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      background-color: #fff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    
+    .card h2 {
+      margin-top: 0;
+      font-size: 18px;
+      color: #111827;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .card-content {
+      color: #4b5563;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .button {
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    
+    .button:hover {
+      background-color: #4338ca;
+    }
+    
+    .button.secondary {
+      background-color: #9ca3af;
+    }
+    
+    .button.secondary:hover {
+      background-color: #6b7280;
+    }
+    
+    .button.warning {
+      background-color: #f59e0b;
+    }
+    
+    .button.warning:hover {
+      background-color: #d97706;
+    }
+    
+    .tag {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-right: 6px;
+    }
+    
+    .tag.standard {
+      background-color: #e0e7ff;
+      color: #4f46e5;
+    }
+    
+    .tag.fixed {
+      background-color: #dcfce7;
+      color: #16a34a;
+    }
+    
+    .tag.experimental {
+      background-color: #fef3c7;
+      color: #d97706;
+    }
+    
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      color: #6b7280;
+      font-size: 14px;
+    }
+    
+    .status-panel {
+      background-color: #f3f4f6;
+      border-radius: 4px;
+      padding: 15px;
+      margin-top: 20px;
+    }
+    
+    .status-header {
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #374151;
+    }
+    
+    .status-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .status-item:last-child {
+      border-bottom: none;
+    }
+    
+    .status-label {
+      color: #4b5563;
+    }
+    
+    .status-value {
+      font-family: monospace;
+    }
+    
+    .status-value.enabled {
+      color: #16a34a;
+    }
+    
+    .status-value.disabled {
+      color: #dc2626;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>nscale DMS Assistent - Anwendungs-Launcher</h1>
+      <div class="subheader">
+        Starte verschiedene Versionen der Anwendung und Diagnosewerkzeuge
+      </div>
+    </div>
+    
+    <div class="content">
+      <div class="card">
+        <h2>Original-Versionen</h2>
+        <div class="card-content">
+          <p>Diese Versionen sind die ursprünglichen Implementierungen der Anwendung:</p>
+          
+          <div class="button-group">
+            <a href="/frontend/index.html" class="button" target="_blank">
+              <span class="tag standard">Standard</span>
+              Original-Anwendung
+            </a>
+            <a href="/frontend/vue-dms-assistant.html" class="button" target="_blank">
+              <span class="tag standard">Vue 3</span>
+              Vue-Implementierung
+            </a>
+            <a href="/frontend/admin-direct.html" class="button" target="_blank">
+              <span class="tag standard">Admin</span>
+              Admin-Panel
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <h2>Korrigierte Versionen</h2>
+        <div class="card-content">
+          <p>Diese Versionen enthalten Fixes für die Ladeprobleme mit Vue 3 SFC-Komponenten:</p>
+          
+          <div class="button-group">
+            <a href="/frontend/vue-dms-assistant-fixed.html" class="button" target="_blank">
+              <span class="tag fixed">Fixed</span>
+              Vue 3 SFC (korrigiert)
+            </a>
+            <a href="/standalone-app.html" class="button" target="_blank">
+              <span class="tag fixed">Standalone</span>
+              Eigenständige App
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <h2>Diagnose-Tools</h2>
+        <div class="card-content">
+          <p>Diese Tools helfen bei der Diagnose und dem Testen der Anwendung:</p>
+          
+          <div class="button-group">
+            <a href="/quickstart.html" class="button secondary" target="_blank">
+              Quickstart Diagnose
+            </a>
+            <a href="/simple-test.html" class="button secondary" target="_blank">
+              Simple Test
+            </a>
+            <a href="/direct-launch.html" class="button secondary" target="_blank">
+              Direct Launch
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <h2>Feature-Flags Status</h2>
+        <div class="card-content">
+          <p>Aktueller Status der Feature-Flags für Vue 3 SFC-Komponenten:</p>
+          
+          <div class="status-panel">
+            <div class="status-header">localStorage Flags</div>
+            <div id="localStorage-flags">
+              <div class="status-item">
+                <span class="status-label">Prüfe Status...</span>
+                <span class="status-value">-</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="status-panel">
+            <div class="status-header">Feature Toggles (Pinia)</div>
+            <div id="featureToggles-status">
+              <div class="status-item">
+                <span class="status-label">Prüfe Status...</span>
+                <span class="status-value">-</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="button-group">
+            <button id="enable-features" class="button">Alle Features aktivieren</button>
+            <button id="reset-features" class="button warning">Features zurücksetzen</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <h2>Dokumentation</h2>
+        <div class="card-content">
+          <p>Detaillierte Dokumentation zur Vue 3 SFC Implementation und zu den Ladeproblemen:</p>
+          
+          <div class="button-group">
+            <a href="/LADEPROBLEME_ANALYSE.md" class="button secondary" target="_blank">
+              Analyse der Ladeprobleme
+            </a>
+            <a href="/VUE3_LOADINGPROBLEM_FIX.md" class="button secondary" target="_blank">
+              Lösung der Ladeprobleme
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer">
+      nscale DMS Assistent &copy; 2023
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Feature Flags Status laden
+      updateFeatureFlagsStatus();
+      
+      // Event Listener für Buttons
+      document.getElementById('enable-features').addEventListener('click', enableAllFeatures);
+      document.getElementById('reset-features').addEventListener('click', resetAllFeatures);
+    });
+    
+    // Feature Flags Status aktualisieren
+    function updateFeatureFlagsStatus() {
+      // localStorage Flags
+      const localStorageFlags = {
+        'useVueComponents': localStorage.getItem('useVueComponents') === 'true',
+        'useVueDocConverter': localStorage.getItem('useVueDocConverter') === 'true'
+      };
+      
+      // Feature Toggles aus localStorage
+      let featureToggles = {};
+      try {
+        const storedToggles = localStorage.getItem('featureToggles');
+        featureToggles = storedToggles ? JSON.parse(storedToggles) : {};
+      } catch (e) {
+        console.error('Fehler beim Laden der Feature-Toggles:', e);
+        featureToggles = {};
+      }
+      
+      // localStorage Flags anzeigen
+      const localStorageFlagsElement = document.getElementById('localStorage-flags');
+      localStorageFlagsElement.innerHTML = '';
+      
+      Object.entries(localStorageFlags).forEach(([key, value]) => {
+        const item = document.createElement('div');
+        item.className = 'status-item';
+        item.innerHTML = `
+          <span class="status-label">${key}</span>
+          <span class="status-value ${value ? 'enabled' : 'disabled'}">${value ? 'Aktiviert' : 'Deaktiviert'}</span>
+        `;
+        localStorageFlagsElement.appendChild(item);
+      });
+      
+      // Feature Toggles anzeigen
+      const featureTogglesElement = document.getElementById('featureToggles-status');
+      featureTogglesElement.innerHTML = '';
+      
+      // Relevante Toggles filtern und anzeigen
+      const relevantToggles = [
+        'useSfcAdmin', 'useSfcDocConverter', 'useSfcChat', 'useSfcSettings',
+        'usePiniaAuth', 'usePiniaUI', 'usePiniaSessions', 'usePiniaSettings',
+        'useLegacyBridge'
+      ];
+      
+      relevantToggles.forEach(key => {
+        const value = featureToggles[key] === true;
+        const item = document.createElement('div');
+        item.className = 'status-item';
+        item.innerHTML = `
+          <span class="status-label">${key}</span>
+          <span class="status-value ${value ? 'enabled' : 'disabled'}">${value ? 'Aktiviert' : 'Deaktiviert'}</span>
+        `;
+        featureTogglesElement.appendChild(item);
+      });
+    }
+    
+    // Alle Features aktivieren
+    function enableAllFeatures() {
+      // Direkte localStorage-Flags setzen
+      localStorage.setItem('useVueComponents', 'true');
+      localStorage.setItem('useVueDocConverter', 'true');
+      
+      // Feature-Toggles aus localStorage laden und aktualisieren
+      let featureToggles = {};
+      try {
+        const storedToggles = localStorage.getItem('featureToggles');
+        featureToggles = storedToggles ? JSON.parse(storedToggles) : {};
+      } catch (e) {
+        console.error('Fehler beim Laden der Feature-Toggles:', e);
+        featureToggles = {};
+      }
+      
+      // SFC-Features aktivieren
+      featureToggles.useSfcAdmin = true;
+      featureToggles.useSfcDocConverter = true;
+      featureToggles.useSfcChat = true;
+      featureToggles.useSfcSettings = true;
+      
+      // Abhängigkeiten aktivieren
+      featureToggles.usePiniaAuth = true;
+      featureToggles.usePiniaUI = true;
+      featureToggles.usePiniaSessions = true;
+      featureToggles.usePiniaSettings = true;
+      featureToggles.useLegacyBridge = true;
+      
+      // Feature-Toggles speichern
+      localStorage.setItem('featureToggles', JSON.stringify(featureToggles));
+      
+      alert('Alle Vue 3 SFC Features wurden aktiviert!');
+      updateFeatureFlagsStatus();
+    }
+    
+    // Alle Features zurücksetzen
+    function resetAllFeatures() {
+      if (confirm('Möchten Sie wirklich alle Feature-Flags zurücksetzen?')) {
+        localStorage.removeItem('useVueComponents');
+        localStorage.removeItem('useVueDocConverter');
+        localStorage.removeItem('featureToggles');
+        
+        alert('Alle Feature-Flags wurden zurückgesetzt!');
+        updateFeatureFlagsStatus();
+      }
+    }
+  </script>
+</body>
+</html>

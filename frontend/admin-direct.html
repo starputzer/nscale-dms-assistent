@@ -6,27 +6,171 @@
   <title>nscale DMS Assistent - Admin Direct</title>
 
   <!-- CSS Dependencies -->
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css?v=20250508214949" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css?v=20250508214949">
   
-  <!-- App CSS -->
-  <link href="/css/main.css" rel="stylesheet">
-  <link href="/css/themes.css" rel="stylesheet">
-  <link href="/css/improved-ui.css" rel="stylesheet">
-  <link href="/css/admin.css" rel="stylesheet">
-  <link href="/css/feedback.css" rel="stylesheet">
-  <link href="/css/message-actions.css" rel="stylesheet">
-  <link href="/css/settings.css" rel="stylesheet">
-  <link href="/css/source-references.css" rel="stylesheet">
+  <!-- App CSS mit Cache-Busting -->
+  <link href="/css/main.css?v=20250508214949" rel="stylesheet">
+  <link href="/css/themes.css?v=20250508214949" rel="stylesheet">
+  <link href="/css/improved-ui.css?v=20250508214949" rel="stylesheet">
+  <link href="/css/admin.css?v=20250508214949" rel="stylesheet">
+  <link href="/css/feedback.css?v=20250508214949" rel="stylesheet">
+  <link href="/css/message-actions.css?v=20250508214949" rel="stylesheet">
+  <link href="/css/settings.css?v=20250508214949" rel="stylesheet">
+  <link href="/css/source-references.css?v=20250508214949" rel="stylesheet">
+  <link href="/frontend/css/admin-panel.css?v=20250508214949" rel="stylesheet">
+  
+  <!-- Inline CSS-Root-Variablen zur Sicherheit -->
+  <style>
+    /* Admin-Bereich Styling */
+    body {
+      background-color: #f5f7fa;
+      color: #333;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .admin-panel {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    
+    .admin-panel__header {
+      background-color: #00a550;
+      color: white;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .admin-panel__title {
+      margin: 0;
+      font-weight: 600;
+    }
+    
+    .admin-panel__main {
+      display: flex;
+      flex: 1;
+    }
+    
+    .admin-panel__sidebar {
+      width: 250px;
+      background-color: white;
+      border-right: 1px solid #e5e5e5;
+    }
+    
+    .admin-panel__nav {
+      padding: 1rem 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .admin-panel__nav-item {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      text-align: left;
+      transition: all 0.2s;
+    }
+    
+    .admin-panel__nav-item:hover {
+      background-color: #f5f5f5;
+    }
+    
+    .admin-panel__nav-item--active {
+      background-color: #00a550;
+      color: white;
+    }
+    
+    .admin-panel__nav-icon {
+      margin-right: 0.75rem;
+    }
+    
+    .admin-panel__content {
+      flex: 1;
+      padding: 1.5rem;
+      background-color: white;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      margin: 1rem;
+      border-radius: 4px;
+    }
+    
+    /* Stat Cards */
+    .admin-stat-card {
+      padding: 1.5rem;
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .admin-stat-card--blue {
+      background-color: #e6f7ff;
+      border: 1px solid #91d5ff;
+      color: #1890ff;
+    }
+    
+    .admin-stat-card--green {
+      background-color: #f6ffed;
+      border: 1px solid #b7eb8f;
+      color: #52c41a;
+    }
+    
+    .admin-stat-card--purple {
+      background-color: #f9f0ff;
+      border: 1px solid #d3adf7;
+      color: #722ed1;
+    }
+    
+    .admin-stat-title {
+      margin-top: 0;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+    
+    .admin-stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0;
+    }
+    
+    .admin-status-panel {
+      padding: 1.5rem;
+      border-radius: 4px;
+      background-color: white;
+      border: 1px solid #e5e5e5;
+    }
+    
+    /* User Role Badge */
+    .admin-panel__role {
+      background-color: rgba(0, 165, 80, 0.2);
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+    }
+    
+    .admin-panel__role--admin {
+      background-color: rgba(0, 165, 80, 0.3);
+    }
+  </style>
   
   <!-- Vue and dependencies -->
   <script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.prod.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pinia@2.0.0/dist/pinia.iife.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@vueuse/shared@9.13.0/index.iife.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@vueuse/core@9.13.0/index.iife.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue-demi@0.13.11/lib/index.iife.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pinia@2.0.33/dist/pinia.iife.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body>
   <!-- Vue Mounting Element -->
   <div id="admin-direct-app" class="h-screen flex flex-col">
     <!-- Will be replaced by Vue app -->
@@ -39,8 +183,8 @@
   </div>
 
   <!-- Main Vue App Script -->
-  <script type="module">
-    // Import Vue components from CDN - this is for direct access without bundler
+  <script>
+    // Import Vue components from global variables - this is for direct access without bundler
     const { createApp, ref, computed, onMounted } = Vue;
     const { createPinia, defineStore } = Pinia;
     
@@ -78,36 +222,38 @@
         };
       },
       template: `
-        <div class="admin-direct-wrapper h-full">
-          <header class="bg-indigo-600 text-white shadow-md p-4">
+        <div class="admin-panel h-full">
+          <header class="admin-panel__header">
             <div class="container mx-auto flex justify-between items-center">
-              <h1 class="text-xl font-bold">nscale DMS Assistent - Admin Panel</h1>
-              <div class="flex items-center space-x-4">
-                <span>{{ authUser.email }}</span>
-                <span class="bg-indigo-500 px-2 py-1 rounded text-sm">{{ authUser.role }}</span>
+              <h1 class="admin-panel__title">nscale DMS Assistent - Admin Panel</h1>
+              <div class="admin-panel__user-info">
+                <span class="admin-panel__user-email">{{ authUser.email }}</span>
+                <span class="admin-panel__role" :class="\`admin-panel__role--\${authUser.role}\`">
+                  {{ authUser.role }}
+                </span>
               </div>
             </div>
           </header>
           
-          <main class="container mx-auto p-4 flex h-[calc(100vh-64px)]">
+          <main class="admin-panel__main">
             <!-- Sidebar -->
-            <aside class="w-64 bg-white shadow-md rounded-lg p-4 mr-4">
-              <nav class="space-y-2">
+            <aside class="admin-panel__sidebar">
+              <nav class="admin-panel__nav">
                 <button 
                   v-for="tab in tabs" 
                   :key="tab.id"
                   @click="setActiveTab(tab.id)"
-                  class="w-full text-left px-4 py-2 rounded-md transition-colors flex items-center"
-                  :class="activeTab === tab.id ? 'bg-indigo-100 text-indigo-700' : 'hover:bg-gray-100'"
+                  class="admin-panel__nav-item"
+                  :class="{ 'admin-panel__nav-item--active': activeTab === tab.id }"
                 >
-                  <i :class="['mr-2', tab.icon]"></i>
-                  <span>{{ tab.label }}</span>
+                  <i :class="['admin-panel__nav-icon', tab.icon]"></i>
+                  <span class="admin-panel__nav-label">{{ tab.label }}</span>
                 </button>
               </nav>
             </aside>
             
             <!-- Content -->
-            <div class="flex-1 bg-white shadow-md rounded-lg p-6">
+            <div class="admin-panel__content">
               <div v-if="isLoading" class="flex items-center justify-center h-full">
                 <div class="animate-spin h-8 w-8 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
               </div>
@@ -118,23 +264,23 @@
                   <h2 class="text-2xl font-bold mb-4">Admin Dashboard</h2>
                   
                   <div class="grid grid-cols-3 gap-4">
-                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                      <h3 class="font-semibold text-blue-700">Users</h3>
-                      <p class="text-3xl font-bold">3</p>
+                    <div class="admin-stat-card admin-stat-card--blue">
+                      <h3 class="admin-stat-title">Users</h3>
+                      <p class="admin-stat-value">3</p>
                     </div>
                     
-                    <div class="bg-green-50 p-4 rounded-lg border border-green-200">
-                      <h3 class="font-semibold text-green-700">Documents</h3>
-                      <p class="text-3xl font-bold">42</p>
+                    <div class="admin-stat-card admin-stat-card--green">
+                      <h3 class="admin-stat-title">Documents</h3>
+                      <p class="admin-stat-value">42</p>
                     </div>
                     
-                    <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                      <h3 class="font-semibold text-purple-700">Sessions</h3>
-                      <p class="text-3xl font-bold">128</p>
+                    <div class="admin-stat-card admin-stat-card--purple">
+                      <h3 class="admin-stat-title">Sessions</h3>
+                      <p class="admin-stat-value">128</p>
                     </div>
                   </div>
                   
-                  <div class="bg-white p-4 rounded-lg border border-gray-200">
+                  <div class="admin-status-panel">
                     <h3 class="font-semibold mb-2">System Status</h3>
                     <div class="space-y-2">
                       <div class="flex justify-between">

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>nscale DMS Assistent - Vue 3 (Fixed)</title>
+
+  <!-- CSS-Einbindungen -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+  <!-- Eigene CSS-Dateien -->
+  <link href="/frontend/css/main.css" rel="stylesheet">
+  <link href="/frontend/css/themes.css" rel="stylesheet">
+  <link href="/frontend/css/improved-ui.css" rel="stylesheet">
+  <link href="/frontend/css/admin.css" rel="stylesheet">
+  <link href="/frontend/css/feedback.css" rel="stylesheet">
+  <link href="/frontend/css/message-actions.css" rel="stylesheet">
+  <link href="/frontend/css/settings.css" rel="stylesheet">
+  
+  <!-- Vue direkt einbinden - VOR dem Modul-Skript -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pinia@2.0.33/dist/pinia.iife.js"></script>
+  
+  <!-- Feature-Flags Management einbinden -->
+  <script src="/frontend/js/feature-flags.js"></script>
+  
+  <!-- Feature Flags aktivieren -->
+  <script>
+    // Aktiviere alle Feature-Flags beim Laden der Seite
+    if (window.featureFlags) {
+      window.featureFlags.enableAllVueFeatures();
+    } else {
+      // Fallback, falls feature-flags.js nicht geladen wurde
+      localStorage.setItem('useVueComponents', 'true');
+      localStorage.setItem('useVueDocConverter', 'true');
+      
+      try {
+        const featureToggles = JSON.parse(localStorage.getItem('featureToggles') || '{}');
+        featureToggles.useSfcAdmin = true;
+        featureToggles.useSfcDocConverter = true;
+        featureToggles.useSfcChat = true;
+        featureToggles.useSfcSettings = true;
+        featureToggles.usePiniaAuth = true;
+        featureToggles.usePiniaUI = true;
+        localStorage.setItem('featureToggles', JSON.stringify(featureToggles));
+      } catch (e) {
+        console.error('Fehler beim Setzen der Feature Toggles:', e);
+      }
+    }
+  </script>
+  
+  <style>
+    .loading-indicator {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.9);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      font-family: Arial, sans-serif;
+    }
+    
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #4f46e5;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    
+    .loading-header {
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: #4f46e5;
+    }
+    
+    .loading-text {
+      font-size: 16px;
+      color: #6b7280;
+    }
+    
+    .debug-panel {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: #4ade80;
+      font-family: monospace;
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      z-index: 1001;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Vue Mounting Element -->
+  <div id="vue-dms-app" class="h-screen flex flex-col"></div>
+  
+  <!-- Lade-Indikator -->
+  <div class="loading-indicator" id="loading-indicator">
+    <div class="loading-spinner"></div>
+    <div class="loading-header">nscale DMS Assistent</div>
+    <div class="loading-text" id="loading-status">Vue 3 Anwendung wird geladen...</div>
+  </div>
+  
+  <!-- Debug-Panel -->
+  <div class="debug-panel" id="debug-panel">
+    Vue 3 SFC Fixed Mode
+  </div>
+
+  <!-- Lade die korrigierte Vue-Anwendung als Modul, nachdem Vue global verfügbar ist -->
+  <script type="module">
+    // Status aktualisieren
+    function updateStatus(message) {
+      const status = document.getElementById('loading-status');
+      if (status) {
+        status.textContent = message;
+      }
+      console.log(`[Status] ${message}`);
+    }
+    
+    // Fehler anzeigen
+    function showError(message, error) {
+      const container = document.getElementById('vue-dms-app');
+      if (container) {
+        container.innerHTML = `
+          <div style="padding: 20px; color: #ef4444; background-color: #fee2e2; border: 1px solid #fecaca; border-radius: 4px; margin: 20px;">
+            <h2 style="margin-bottom: 10px;">Fehler beim Laden der Vue 3 SFC App</h2>
+            <p>${message}</p>
+            <pre style="background-color: #ffe4e6; padding: 10px; margin-top: 10px; overflow: auto; font-size: 12px;">${error?.stack || 'Keine weiteren Details verfügbar'}</pre>
+          </div>
+        `;
+      }
+      
+      // Loading-Indikator ausblenden
+      const loadingIndicator = document.getElementById('loading-indicator');
+      if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+      }
+    }
+    
+    try {
+      // App laden
+      updateStatus('App-Komponenten werden geladen...');
+      
+      // Importiere die korrigierte main.js
+      import('/frontend/js/vue/main-fixed.js')
+        .then(module => {
+          updateStatus('App wird initialisiert...');
+          const result = module.default.initialize();
+          
+          if (result) {
+            updateStatus('App erfolgreich initialisiert!');
+            
+            // Lade-Indikator nach erfolgreicher Initialisierung ausblenden
+            setTimeout(() => {
+              const loadingIndicator = document.getElementById('loading-indicator');
+              if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+              }
+            }, 1000);
+          } else {
+            // Bei Fehlern, die nicht als Exception geworfen werden
+            showError('Die App konnte nicht initialisiert werden. Siehe Konsole für Details.', new Error('Initialisierung fehlgeschlagen'));
+          }
+        })
+        .catch(error => {
+          console.error('Fehler beim Laden der App:', error);
+          showError('Fehler beim Laden der App-Module:', error);
+        });
+    } catch (error) {
+      console.error('Fehler beim Laden der Vue 3 SFC App:', error);
+      showError('Allgemeiner Fehler beim Laden der App:', error);
+    }
+  </script>
+  
+  <!-- Fallback-Nachricht für JS-Deaktivierung -->
+  <noscript>
+    <div class="flex items-center justify-center h-screen bg-gray-100">
+      <div class="text-center max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
+        <div class="text-red-600 text-4xl mb-4">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h1 class="text-xl font-bold mb-2">JavaScript wird benötigt</h1>
+        <p class="text-gray-600">
+          Um den nscale DMS Assistenten nutzen zu können, muss JavaScript aktiviert sein.
+          Bitte aktivieren Sie JavaScript in Ihrem Browser und laden Sie die Seite neu.
+        </p>
+      </div>
+    </div>
+  </noscript>
+</body>
+</html>

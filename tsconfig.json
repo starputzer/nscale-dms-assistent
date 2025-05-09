@@ -12,49 +12,38 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    
-    /* Vue und JSX/TSX Support */
     "jsx": "preserve",
     
-    /* Strict Mode mit eingeschränkten Regeln für Migration */
-    "strict": false,
-    "noImplicitAny": false,
-    "strictNullChecks": false,
-    
-    /* Erweiterter Check und bessere Fehlermeldungen */
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
+    /* Linting */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     
     /* Pfad-Aliase für konsistente Imports */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["frontend/*"],
-      "@js/*": ["frontend/js/*"],
-      "@css/*": ["frontend/css/*"],
-      "@components/*": ["frontend/components/*"],
-      "@assets/*": ["frontend/assets/*"],
-      "@vue/*": ["frontend/vue/*"]
+      "@/*": ["src/*"]
     },
     
+    /* Typen-Definitionen */
     "typeRoots": [
       "./node_modules/@types",
-      "./frontend/types"
+      "./src/types"
     ]
   },
   "include": [
-    "frontend/**/*.ts",
-    "frontend/**/*.d.ts",
-    "frontend/**/*.tsx",
-    "frontend/**/*.vue",
-    "frontend/**/*.js"
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue"
   ],
   "exclude": [
     "node_modules",
-    "_vue_backup",
-    "_vue_backup_files",
-    "_vue_backup_final",
-    "_old_vue_backup"
+    "dist",
+    "public"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

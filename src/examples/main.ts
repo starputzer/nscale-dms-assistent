@@ -6,6 +6,7 @@ import DialogPlugin from '@/plugins/dialog';
 
 // Styles
 import './styles/main.css';
+import '@/assets/design-system.scss';
 
 // App erstellen
 const app = createApp(App);

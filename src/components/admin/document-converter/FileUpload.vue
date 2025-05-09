@@ -1,19 +1,33 @@
 <template>
   <div 
     class="file-upload"
-    :class="{ 'file-upload--dragging': isDragging, 'file-upload--disabled': isUploading }"
+    :class="{ 
+      'file-upload--dragging': isDragging, 
+      'file-upload--disabled': isUploading,
+      'file-upload--error': hasUploadError
+    }"
     @dragover.prevent="onDragOver"
     @dragleave.prevent="onDragLeave"
     @drop.prevent="onDrop"
+    role="region"
+    aria-label="Datei-Upload-Bereich"
   >
     <div class="file-upload__content">
       <div class="file-upload__icon">
-        <i class="fa fa-cloud-upload-alt"></i>
+        <i class="fa fa-cloud-upload-alt" aria-hidden="true"></i>
       </div>
       <div class="file-upload__text">
         <p v-if="!isUploading">
           {{ t('documentConverter.dropFiles', 'Datei hier ablegen oder') }} 
-          <span @click="triggerFileInput" class="file-upload__browse">
+          <span 
+            @click="triggerFileInput" 
+            @keydown.enter="triggerFileInput"
+            @keydown.space="triggerFileInput"
+            tabindex="0"
+            role="button"
+            aria-label="Datei auswählen"
+            class="file-upload__browse"
+          >
             {{ t('documentConverter.browse', 'auswählen') }}
           </span>
         </p>
@@ -24,6 +38,10 @@
           {{ t('documentConverter.supportedFormats', 'Unterstützte Formate:') }} 
           {{ props.allowedExtensions.map(ext => ext.toUpperCase()).join(', ') }}
         </p>
+        <p class="file-upload__size-hint">
+          {{ t('documentConverter.maxSize', 'Maximale Dateigröße:') }} 
+          {{ formatFileSize(props.maxFileSize) }}
+        </p>
       </div>
       <input 
         type="file" 
@@ -32,45 +50,132 @@
         :accept="props.allowedExtensions.map(ext => '.' + ext).join(',')"
         class="file-upload__input"
         :disabled="isUploading"
+        aria-label="Datei auswählen"
       >
     </div>
 
     <div v-if="isUploading" class="file-upload__progress">
-      <div class="file-upload__progress-bar" :style="{ width: `${uploadProgress}%` }"></div>
+      <div 
+        class="file-upload__progress-bar" 
+        :style="{ width: `${uploadProgress}%` }"
+        role="progressbar"
+        :aria-valuenow="uploadProgress"
+        aria-valuemin="0"
+        aria-valuemax="100"
+      ></div>
       <div class="file-upload__progress-text">{{ uploadProgress }}%</div>
+    </div>
+
+    <div v-if="hasUploadError" class="file-upload__error">
+      <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+      <span>{{ uploadError }}</span>
     </div>
 
     <div v-if="selectedFile && !isUploading" class="file-upload__selected">
       <div class="file-upload__selected-file">
-        <span class="file-upload__selected-name">{{ selectedFile.name }}</span>
-        <span class="file-upload__selected-size">({{ formatFileSize(selectedFile.size) }})</span>
+        <div class="file-upload__file-icon" :class="`file-upload__file-icon--${fileFormat}`">
+          <i :class="getFormatIcon(fileFormat)" aria-hidden="true"></i>
+        </div>
+        <div class="file-upload__file-info">
+          <span class="file-upload__selected-name">{{ selectedFile.name }}</span>
+          <span class="file-upload__selected-size">({{ formatFileSize(selectedFile.size) }})</span>
+        </div>
       </div>
       <div class="file-upload__actions">
         <button 
           @click="uploadSelectedFile" 
           class="file-upload__upload-btn"
+          aria-label="Datei konvertieren"
         >
           {{ t('documentConverter.convert', 'Konvertieren') }}
         </button>
         <button 
           @click="clearSelectedFile" 
           class="file-upload__clear-btn"
+          aria-label="Auswahl abbrechen"
         >
           {{ t('common.cancel', 'Abbrechen') }}
         </button>
+      </div>
+    </div>
+
+    <div v-if="!selectedFile && !isUploading" class="file-upload__examples">
+      <div class="file-upload__examples-header">
+        <span>{{ t('documentConverter.examplesTitle', 'Beispiele') }}</span>
+        <button 
+          @click="toggleExamples" 
+          class="file-upload__examples-toggle"
+          :aria-expanded="showExamples"
+          aria-controls="file-examples-section"
+        >
+          <i :class="showExamples ? 'fa fa-chevron-up' : 'fa fa-chevron-down'" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div v-if="showExamples" id="file-examples-section" class="file-upload__examples-content">
+        <div 
+          v-for="example in exampleFiles" 
+          :key="example.name" 
+          class="file-upload__example-item"
+          @click="useExampleFile(example)"
+          @keydown.enter="useExampleFile(example)"
+          tabindex="0"
+          role="button"
+          :aria-label="`Beispieldatei ${example.name} verwenden`"
+        >
+          <div class="file-upload__example-icon" :class="`file-upload__file-icon--${example.format}`">
+            <i :class="getFormatIcon(example.format)" aria-hidden="true"></i>
+          </div>
+          <div class="file-upload__example-info">
+            <span class="file-upload__example-name">{{ example.name }}</span>
+            <span class="file-upload__example-description">{{ example.description }}</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useGlobalDialog } from '@/composables/useDialog';
-import { useI18n } from '@/composables/useI18n';
 
 // Dialog-Service für Fehlermeldungen
 const dialog = useGlobalDialog();
-const { t } = useI18n();
+
+// Beispieldateien für den Benutzer
+interface ExampleFile {
+  name: string;
+  format: string;
+  description: string;
+  url: string;
+}
+
+const exampleFiles: ExampleFile[] = [
+  {
+    name: 'Beispiel-Dokument.pdf',
+    format: 'pdf',
+    description: 'Ein Beispiel-PDF mit Text und Tabellen',
+    url: '/examples/Beispiel-Dokument.pdf'
+  },
+  {
+    name: 'Tabellen-Beispiel.xlsx',
+    format: 'xlsx',
+    description: 'Excel-Datei mit verschiedenen Tabellen',
+    url: '/examples/Tabellen-Beispiel.xlsx'
+  },
+  {
+    name: 'Präsentation.pptx',
+    format: 'pptx',
+    description: 'Eine kurze Beispiel-Präsentation',
+    url: '/examples/Präsentation.pptx'
+  },
+  {
+    name: 'Textdokument.docx',
+    format: 'docx',
+    description: 'Word-Dokument mit formatiertem Text',
+    url: '/examples/Textdokument.docx'
+  }
+];
 
 interface FileUploadProps {
   isUploading?: boolean;
@@ -94,6 +199,17 @@ const emit = defineEmits<{
 const fileInput = ref<HTMLInputElement | null>(null);
 const selectedFile = ref<File | null>(null);
 const isDragging = ref<boolean>(false);
+const uploadError = ref<string>('');
+const showExamples = ref<boolean>(false);
+
+// Berechne das Dateiformat der ausgewählten Datei
+const fileFormat = computed(() => {
+  if (!selectedFile.value) return '';
+  return selectedFile.value.name.split('.').pop()?.toLowerCase() || '';
+});
+
+// Prüfe, ob ein Upload-Fehler vorliegt
+const hasUploadError = computed(() => !!uploadError.value);
 
 // Datei-Auswahl Dialog öffnen
 function triggerFileInput(): void {
@@ -132,34 +248,22 @@ function onFileSelected(event: Event): void {
 
 // Datei validieren und auswählen
 function validateAndSelectFile(file: File): void {
-  // Dateityp überprüfen
-  const supportedTypes = [
-    'application/pdf',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    'text/html',
-    'text/plain'
-  ];
+  // Fehler zurücksetzen
+  uploadError.value = '';
   
+  // Dateityp überprüfen
   const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
   
-  if (!supportedTypes.includes(file.type) && !props.allowedExtensions.includes(fileExtension)) {
-    dialog.error({
-      title: t('documentConverter.error', 'Fehler'),
-      message: t('documentConverter.unsupportedFormat', 
-        `Nicht unterstütztes Dateiformat. Bitte laden Sie eine Datei mit einer der folgenden Erweiterungen hoch: ${props.allowedExtensions.join(', ')}`)
-    });
+  if (!props.allowedExtensions.includes(fileExtension)) {
+    uploadError.value = t('documentConverter.unsupportedFormat', 
+      `Nicht unterstütztes Dateiformat. Bitte laden Sie eine Datei mit einer der folgenden Erweiterungen hoch: ${props.allowedExtensions.join(', ')}`);
     return;
   }
   
   // Dateigröße überprüfen
   if (file.size > props.maxFileSize) {
-    dialog.error({
-      title: t('documentConverter.error', 'Fehler'),
-      message: t('documentConverter.fileTooLarge', 
-        `Die Datei ist zu groß. Maximale Dateigröße: ${formatFileSize(props.maxFileSize)}`)
-    });
+    uploadError.value = t('documentConverter.fileTooLarge', 
+      `Die Datei ist zu groß. Maximale Dateigröße: ${formatFileSize(props.maxFileSize)}`);
     return;
   }
   
@@ -169,6 +273,7 @@ function validateAndSelectFile(file: File): void {
 // Ausgewählte Datei zurücksetzen
 function clearSelectedFile(): void {
   selectedFile.value = null;
+  uploadError.value = '';
   if (fileInput.value) {
     fileInput.value.value = '';
   }
@@ -182,6 +287,47 @@ function uploadSelectedFile(): void {
   }
 }
 
+// Beispieldateien ein-/ausblenden
+function toggleExamples(): void {
+  showExamples.value = !showExamples.value;
+}
+
+// Beispieldatei verwenden
+async function useExampleFile(example: ExampleFile): Promise<void> {
+  try {
+    const response = await fetch(example.url);
+    if (!response.ok) {
+      throw new Error(`HTTP-Fehler: ${response.status}`);
+    }
+    
+    const blob = await response.blob();
+    const file = new File([blob], example.name, { type: getMimeType(example.format) });
+    
+    validateAndSelectFile(file);
+  } catch (error) {
+    console.error('Fehler beim Laden der Beispieldatei:', error);
+    dialog.error({
+      title: t('documentConverter.error', 'Fehler'),
+      message: t('documentConverter.exampleFileError', 'Die Beispieldatei konnte nicht geladen werden.')
+    });
+  }
+}
+
+// Hilfsfunktion für MIME-Typen
+function getMimeType(format: string): string {
+  const mimeTypes: Record<string, string> = {
+    pdf: 'application/pdf',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    html: 'text/html',
+    htm: 'text/html',
+    txt: 'text/plain'
+  };
+  
+  return mimeTypes[format] || 'application/octet-stream';
+}
+
 // Dateigröße formatieren
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 Bytes';
@@ -191,6 +337,30 @@ function formatFileSize(bytes: number): string {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Dateiformat-Icon ermitteln
+function getFormatIcon(format: string): string {
+  const icons: Record<string, string> = {
+    pdf: 'fa fa-file-pdf',
+    docx: 'fa fa-file-word',
+    doc: 'fa fa-file-word',
+    xlsx: 'fa fa-file-excel',
+    xls: 'fa fa-file-excel',
+    pptx: 'fa fa-file-powerpoint',
+    ppt: 'fa fa-file-powerpoint',
+    html: 'fa fa-file-code',
+    htm: 'fa fa-file-code',
+    txt: 'fa fa-file-alt'
+  };
+  
+  return icons[format] || 'fa fa-file';
+}
+
+// i18n Hilfsfunktion
+function t(key: string, fallback: string): string {
+  // In einer echten Implementierung würde hier die i18n-Bibliothek verwendet werden
+  return fallback;
 }
 </script>
 
@@ -214,6 +384,10 @@ function formatFileSize(bytes: number): string {
   cursor: not-allowed;
 }
 
+.file-upload--error {
+  border-color: #dc3545;
+}
+
 .file-upload__content {
   display: flex;
   flex-direction: column;
@@ -235,9 +409,20 @@ function formatFileSize(bytes: number): string {
   color: #4a6cf7;
   cursor: pointer;
   text-decoration: underline;
+  font-weight: 500;
 }
 
-.file-upload__hint {
+.file-upload__browse:hover {
+  text-decoration: none;
+}
+
+.file-upload__browse:focus {
+  outline: 2px solid #4a6cf7;
+  outline-offset: 2px;
+}
+
+.file-upload__hint,
+.file-upload__size-hint {
   font-size: 0.85rem;
   color: #6c757d;
   margin-top: 0.5rem;
@@ -248,7 +433,7 @@ function formatFileSize(bytes: number): string {
 }
 
 .file-upload__progress {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
   background-color: #e9ecef;
   border-radius: 4px;
   overflow: hidden;
@@ -269,6 +454,19 @@ function formatFileSize(bytes: number): string {
   transform: translate(-50%, -50%);
   font-size: 0.75rem;
   color: #6c757d;
+  font-weight: 500;
+}
+
+.file-upload__error {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #dc3545;
+  font-size: 0.9rem;
+  padding: 0.75rem;
+  background-color: #f8d7da;
+  border-radius: 4px;
 }
 
 .file-upload__selected {
@@ -285,16 +483,43 @@ function formatFileSize(bytes: number): string {
 .file-upload__selected-file {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1rem;
+}
+
+.file-upload__file-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.file-upload__file-icon--pdf { background-color: #e74c3c; }
+.file-upload__file-icon--docx, .file-upload__file-icon--doc { background-color: #3498db; }
+.file-upload__file-icon--xlsx, .file-upload__file-icon--xls { background-color: #2ecc71; }
+.file-upload__file-icon--pptx, .file-upload__file-icon--ppt { background-color: #e67e22; }
+.file-upload__file-icon--html, .file-upload__file-icon--htm { background-color: #9b59b6; }
+.file-upload__file-icon--txt { background-color: #95a5a6; }
+
+.file-upload__file-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
 }
 
 .file-upload__selected-name {
   font-weight: 500;
+  color: #212529;
+  word-break: break-all;
 }
 
 .file-upload__selected-size {
   color: #6c757d;
   font-size: 0.9rem;
+  margin-top: 0.25rem;
 }
 
 .file-upload__actions {
@@ -310,6 +535,12 @@ function formatFileSize(bytes: number): string {
   border-radius: 4px;
   cursor: pointer;
   flex: 1;
+  transition: background-color 0.2s;
+  font-weight: 500;
+}
+
+.file-upload__upload-btn:hover {
+  background-color: #3a5be7;
 }
 
 .file-upload__clear-btn {
@@ -318,5 +549,136 @@ function formatFileSize(bytes: number): string {
   border: 1px solid #ced4da;
   border-radius: 4px;
   cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.file-upload__clear-btn:hover {
+  background-color: #dee2e6;
+}
+
+.file-upload__examples {
+  margin-top: 2rem;
+  border-top: 1px solid #e9ecef;
+  padding-top: 1rem;
+}
+
+.file-upload__examples-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.file-upload__examples-header span {
+  font-weight: 500;
+  color: #495057;
+}
+
+.file-upload__examples-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6c757d;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.file-upload__examples-toggle:hover {
+  color: #495057;
+}
+
+.file-upload__examples-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.file-upload__example-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 4px;
+  background-color: white;
+  border: 1px solid #e9ecef;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.file-upload__example-item:hover {
+  background-color: #f8f9fa;
+  border-color: #ced4da;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.file-upload__example-item:focus {
+  outline: 2px solid #4a6cf7;
+  outline-offset: 2px;
+}
+
+.file-upload__example-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: white;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.file-upload__example-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.file-upload__example-name {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #212529;
+}
+
+.file-upload__example-description {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-top: 0.25rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .file-upload {
+    padding: 1.5rem;
+  }
+  
+  .file-upload__examples-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .file-upload__selected-file {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .file-upload__file-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1.25rem;
+  }
+  
+  .file-upload__actions {
+    flex-direction: column;
+  }
 }
 </style>

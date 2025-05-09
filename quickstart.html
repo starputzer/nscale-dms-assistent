@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nscale DMS Assistent - Quickstart</title>
+    
+    <!-- CSS imports -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/themes.css">
+    <link rel="stylesheet" href="/css/improved-ui.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="/css/feedback.css">
+    <link rel="stylesheet" href="/css/message-actions.css">
+    <link rel="stylesheet" href="/css/settings.css">
+    <link rel="stylesheet" href="/css/source-references.css">
+    
+    <!-- Import Vue direkt -->
+    <script src="https://unpkg.com/vue@3.2.47/dist/vue.global.js"></script>
+    
+    <style>
+        .quickstart-panel {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .app-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .app-card h2 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 16px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .primary-button {
+            background-color: #4f46e5;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .secondary-button {
+            background-color: #9ca3af;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .warning-button {
+            background-color: #f59e0b;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .log-panel {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 16px;
+            background-color: #1e293b;
+            color: #a5f3fc;
+            font-family: monospace;
+            height: 200px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin-bottom: 4px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 4px;
+        }
+        
+        .log-time {
+            color: #94a3b8;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div id="app" class="min-h-screen p-4">
+        <header class="bg-indigo-600 text-white p-4 rounded-lg mb-6">
+            <h1 class="text-2xl font-bold">nscale DMS Assistent - Quickstart</h1>
+            <p>Diagnosetool für Ladeprobleme bei Vue 3 SFC-Komponenten</p>
+        </header>
+        
+        <div class="quickstart-panel">
+            <div class="app-card">
+                <h2 class="text-xl font-semibold">Standard HTML-Anwendung</h2>
+                <p class="mb-4">Startet die ursprüngliche HTML/CSS/JS-Anwendung ohne Vue 3 Komponenten.</p>
+                <div class="button-group">
+                    <button @click="openStandardApp" class="primary-button">
+                        <i class="fas fa-play mr-2"></i> Standard App starten
+                    </button>
+                </div>
+            </div>
+            
+            <div class="app-card">
+                <h2 class="text-xl font-semibold">Feature Toggle Diagnose</h2>
+                <p class="mb-4">Status der Feature-Toggles für Vue 3 SFC-Komponenten:</p>
+                
+                <div class="mb-4">
+                    <div v-for="(value, key) in featureStatus" :key="key" class="flex justify-between items-center mb-2 pb-2 border-b border-gray-200">
+                        <span>{{ key }}:</span>
+                        <span :class="value ? 'text-green-600' : 'text-red-600'">
+                            {{ value ? 'Aktiviert' : 'Deaktiviert' }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button @click="enableAllFeatures" class="primary-button">
+                        <i class="fas fa-toggle-on mr-2"></i> Alle Features aktivieren
+                    </button>
+                    <button @click="checkFeatureStatus" class="secondary-button">
+                        <i class="fas fa-sync mr-2"></i> Status aktualisieren
+                    </button>
+                    <button @click="clearAllFeatures" class="warning-button">
+                        <i class="fas fa-trash mr-2"></i> Alle Features zurücksetzen
+                    </button>
+                </div>
+            </div>
+            
+            <div class="app-card">
+                <h2 class="text-xl font-semibold">Vue 3 SFC Anwendung</h2>
+                <p class="mb-2">Direkte Umleitung zur originalen Vue 3 SFC Implementierung:</p>
+                <div class="button-group mb-4">
+                    <button @click="openOriginalVueApp" class="primary-button">
+                        <i class="fas fa-external-link-alt mr-2"></i> Originale Vue App öffnen
+                    </button>
+                </div>
+                
+                <p class="mb-2">Index.html mit Feature-Flag Fix:</p>
+                <div class="button-group">
+                    <button @click="openFixedApp" class="primary-button">
+                        <i class="fas fa-wrench mr-2"></i> Fixierte Version öffnen
+                    </button>
+                </div>
+            </div>
+            
+            <div class="app-card">
+                <h2 class="text-xl font-semibold">Debug Informationen</h2>
+                <p class="mb-4">Status der Mount-Punkte auf aktueller Seite:</p>
+                
+                <div class="mb-4">
+                    <div v-for="(exists, id) in mountPoints" :key="id" class="flex justify-between items-center mb-2">
+                        <span>{{ id }}:</span>
+                        <span :class="exists ? 'text-green-600' : 'text-red-600'">
+                            {{ exists ? 'Vorhanden' : 'Nicht gefunden' }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button @click="createMountPoints" class="primary-button">
+                        <i class="fas fa-plus-circle mr-2"></i> Mount-Punkte erstellen
+                    </button>
+                    <button @click="reloadDebugInfo" class="secondary-button">
+                        <i class="fas fa-sync mr-2"></i> Status aktualisieren
+                    </button>
+                </div>
+            </div>
+            
+            <div class="log-panel">
+                <div v-for="(entry, index) in logs" :key="index" class="log-entry">
+                    <span class="log-time">[{{ entry.time }}]</span>
+                    <span>{{ entry.message }}</span>
+                </div>
+                <div v-if="logs.length === 0" class="text-gray-400 italic">
+                    Noch keine Log-Einträge vorhanden...
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const { createApp, ref, onMounted } = Vue;
+        
+        createApp({
+            setup() {
+                const logs = ref([]);
+                const featureStatus = ref({});
+                const mountPoints = ref({});
+                
+                // Logging-Funktion
+                function log(message) {
+                    const now = new Date().toLocaleTimeString();
+                    logs.value.push({ time: now, message });
+                    console.log(`[${now}] ${message}`);
+                    
+                    // Scroll to bottom of log
+                    setTimeout(() => {
+                        const logPanel = document.querySelector('.log-panel');
+                        if (logPanel) {
+                            logPanel.scrollTop = logPanel.scrollHeight;
+                        }
+                    }, 0);
+                }
+                
+                // Feature-Status prüfen
+                function checkFeatureStatus() {
+                    log('Prüfe Feature-Status...');
+                    
+                    try {
+                        // Direkte localStorage-Flags
+                        const useVueComponents = localStorage.getItem('useVueComponents') === 'true';
+                        const useVueDocConverter = localStorage.getItem('useVueDocConverter') === 'true';
+                        
+                        // Feature-Toggles aus dem Pinia-Store
+                        let featureToggles = {};
+                        try {
+                            const storedToggles = localStorage.getItem('featureToggles');
+                            featureToggles = storedToggles ? JSON.parse(storedToggles) : {};
+                        } catch (e) {
+                            log(`Fehler beim Parsen der Feature-Toggles: ${e.message}`);
+                            featureToggles = {};
+                        }
+                        
+                        // Status aktualisieren
+                        featureStatus.value = {
+                            'useVueComponents (localStorage)': useVueComponents,
+                            'useVueDocConverter (localStorage)': useVueDocConverter,
+                            'useSfcAdmin (Pinia)': featureToggles.useSfcAdmin || false,
+                            'useSfcDocConverter (Pinia)': featureToggles.useSfcDocConverter || false,
+                            'useSfcChat (Pinia)': featureToggles.useSfcChat || false,
+                            'useSfcSettings (Pinia)': featureToggles.useSfcSettings || false,
+                            'usePiniaAuth (dep)': featureToggles.usePiniaAuth || false,
+                            'usePiniaUI (dep)': featureToggles.usePiniaUI || false
+                        };
+                        
+                        log('Feature-Status aktualisiert');
+                    } catch (e) {
+                        log(`Fehler beim Prüfen des Feature-Status: ${e.message}`);
+                    }
+                }
+                
+                // Alle Features aktivieren
+                function enableAllFeatures() {
+                    log('Aktiviere alle Features...');
+                    
+                    try {
+                        // Direkte localStorage-Flags setzen
+                        localStorage.setItem('useVueComponents', 'true');
+                        localStorage.setItem('useVueDocConverter', 'true');
+                        
+                        // Feature-Toggles aus dem Pinia-Store aktualisieren
+                        let featureToggles = {};
+                        try {
+                            const storedToggles = localStorage.getItem('featureToggles');
+                            featureToggles = storedToggles ? JSON.parse(storedToggles) : {};
+                        } catch (e) {
+                            featureToggles = {};
+                        }
+                        
+                        // SFC-Features aktivieren
+                        featureToggles.useSfcAdmin = true;
+                        featureToggles.useSfcDocConverter = true;
+                        featureToggles.useSfcChat = true;
+                        featureToggles.useSfcSettings = true;
+                        
+                        // Abhängigkeiten aktivieren
+                        featureToggles.usePiniaAuth = true;
+                        featureToggles.usePiniaUI = true;
+                        featureToggles.usePiniaSessions = true;
+                        featureToggles.usePiniaSettings = true;
+                        featureToggles.useLegacyBridge = true;
+                        
+                        // Feature-Toggles speichern
+                        localStorage.setItem('featureToggles', JSON.stringify(featureToggles));
+                        
+                        log('Alle Features wurden aktiviert');
+                        checkFeatureStatus();
+                    } catch (e) {
+                        log(`Fehler beim Aktivieren der Features: ${e.message}`);
+                    }
+                }
+                
+                // Alle Features zurücksetzen
+                function clearAllFeatures() {
+                    log('Setze alle Features zurück...');
+                    
+                    try {
+                        localStorage.removeItem('useVueComponents');
+                        localStorage.removeItem('useVueDocConverter');
+                        localStorage.removeItem('featureToggles');
+                        
+                        log('Alle Features wurden zurückgesetzt');
+                        checkFeatureStatus();
+                    } catch (e) {
+                        log(`Fehler beim Zurücksetzen der Features: ${e.message}`);
+                    }
+                }
+                
+                // Mount-Punkte prüfen
+                function checkMountPoints() {
+                    log('Prüfe Mount-Punkte...');
+                    
+                    const mountPointIds = [
+                        'vue-app',
+                        'vue-dms-app',
+                        'doc-converter-mount',
+                        'admin-mount'
+                    ];
+                    
+                    const result = {};
+                    mountPointIds.forEach(id => {
+                        result[id] = !!document.getElementById(id);
+                    });
+                    
+                    mountPoints.value = result;
+                    log('Mount-Punkt-Status aktualisiert');
+                }
+                
+                // Mount-Punkte erstellen
+                function createMountPoints() {
+                    log('Erstelle fehlende Mount-Punkte...');
+                    
+                    const mountPointIds = [
+                        'vue-app',
+                        'vue-dms-app',
+                        'doc-converter-mount',
+                        'admin-mount'
+                    ];
+                    
+                    let created = 0;
+                    
+                    mountPointIds.forEach(id => {
+                        if (!document.getElementById(id)) {
+                            const mountPoint = document.createElement('div');
+                            mountPoint.id = id;
+                            mountPoint.style.cssText = 'display: none;';
+                            document.body.appendChild(mountPoint);
+                            created++;
+                        }
+                    });
+                    
+                    log(`${created} Mount-Punkte erstellt`);
+                    checkMountPoints();
+                }
+                
+                // Debug-Informationen neu laden
+                function reloadDebugInfo() {
+                    checkFeatureStatus();
+                    checkMountPoints();
+                    log('Debug-Informationen aktualisiert');
+                }
+                
+                // Navigation functions
+                function openStandardApp() {
+                    log('Öffne Standard-App...');
+                    window.location.href = '/frontend/index.html';
+                }
+                
+                function openOriginalVueApp() {
+                    log('Öffne originale Vue 3 App...');
+                    // Aktiviere alle Features vor dem Öffnen
+                    enableAllFeatures();
+                    setTimeout(() => {
+                        window.location.href = '/frontend/vue-dms-assistant.html';
+                    }, 500);
+                }
+                
+                function openFixedApp() {
+                    log('Öffne fixierte App-Version...');
+                    // Aktiviere alle Features vor dem Öffnen
+                    enableAllFeatures();
+                    setTimeout(() => {
+                        window.location.href = '/frontend/index-dev.html';
+                    }, 500);
+                }
+                
+                // Initialisierung
+                onMounted(() => {
+                    log('Quickstart-Tool initialisiert');
+                    reloadDebugInfo();
+                });
+                
+                return {
+                    logs,
+                    featureStatus,
+                    mountPoints,
+                    checkFeatureStatus,
+                    enableAllFeatures,
+                    clearAllFeatures,
+                    createMountPoints,
+                    reloadDebugInfo,
+                    openStandardApp,
+                    openOriginalVueApp,
+                    openFixedApp
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
