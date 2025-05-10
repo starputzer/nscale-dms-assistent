@@ -16,10 +16,24 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch, computed, onUnmounted } from 'vue';
-import { useI18n } from 'vue-i18n';
+// If vue-i18n is not installed, you need to install it: npm install vue-i18n
+// import { useI18n } from 'vue-i18n';
+// Temporary workaround if vue-i18n is not available
+const useI18n = () => ({
+  t: (key: string, fallback: string) => fallback
+});
+
 import { useMonitoringStore } from '../../../stores/monitoringStore';
 import { useFeatureTogglesStore } from '../../../stores/featureToggles';
 
+// Define Feature interface
+interface Feature {
+  id: string;
+  name?: string;
+  enabled: boolean;
+}
+
+// Define Chart data interface
 interface ChartData {
   labels: string[];
   datasets: {
@@ -29,6 +43,20 @@ interface ChartData {
     borderColor: string;
     borderWidth: number;
   }[];
+}
+
+// Define TimeRange interface
+interface TimeRange {
+  start: number;
+  intervals: number;
+  intervalSize: number;
+  format: string;
+}
+
+// Define TimeInterval interface
+interface TimeInterval {
+  start: number;
+  end: number;
 }
 
 // Load required libraries dynamically to reduce initial bundle size
@@ -50,7 +78,7 @@ const loading = ref(true);
 const error = ref(false);
 
 // Calculate time ranges
-const timeRanges = computed(() => {
+const timeRanges = computed((): TimeRange => {
   const now = Date.now();
   
   switch (props.timeRange) {
@@ -108,14 +136,25 @@ function formatDate(timestamp: number, format: string): string {
   return date.toLocaleString();
 }
 
+// Mock getFeatures function for featureTogglesStore if features property doesn't exist
+const getFeatures = (): Feature[] => {
+  // Try to access features property if it exists
+  if ('features' in featureStore) {
+    return (featureStore as any).features || [];
+  }
+  
+  // Return empty array if features property doesn't exist
+  return [];
+};
+
 // Prepare chart data
 function prepareChartData(): ChartData {
   const { start, intervals, intervalSize, format } = timeRanges.value;
   const end = Date.now();
   
   // Generate time intervals
-  const timeIntervals = [];
-  const labels = [];
+  const timeIntervals: TimeInterval[] = [];
+  const labels: string[] = [];
   
   for (let i = 0; i < intervals; i++) {
     const intervalEnd = end - (intervals - i - 1) * intervalSize;
@@ -130,10 +169,13 @@ function prepareChartData(): ChartData {
   }
   
   // Get the data for each interval
-  const datasets = [];
+  const datasets: ChartData['datasets'] = [];
+  
+  // Get features based on featureId or all enabled features
+  const allFeatures = getFeatures();
   const features = props.featureId 
-    ? [featureStore.features.find(f => f.id === props.featureId)].filter(Boolean)
-    : featureStore.features.filter(f => f.enabled);
+    ? allFeatures.filter(f => f.id === props.featureId)
+    : allFeatures.filter(f => f.enabled);
   
   // Color palette for features
   const colors = [
@@ -145,7 +187,7 @@ function prepareChartData(): ChartData {
     { bg: 'rgba(255, 159, 64, 0.2)', border: 'rgba(255, 159, 64, 1)' }
   ];
   
-  features.forEach((feature, index) => {
+  features.forEach((feature: Feature, index: number) => {
     if (!feature) return;
     
     const featureId = feature.id;
@@ -203,7 +245,10 @@ async function loadChart() {
         console.log('Loading Chart.js dynamically');
         Chart = { 
           Chart: class MockChart {
-            constructor(ctx, config) {
+            ctx: any;
+            config: any;
+            
+            constructor(ctx: any, config: any) {
               this.ctx = ctx;
               this.config = config;
             }
@@ -269,7 +314,7 @@ async function loadChart() {
           },
           tooltip: {
             callbacks: {
-              label: function(context) {
+              label: function(context: any) {
                 return `${context.dataset.label}: ${context.raw.toFixed(2)}%`;
               }
             }

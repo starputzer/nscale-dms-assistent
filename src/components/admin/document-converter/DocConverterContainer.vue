@@ -33,13 +33,47 @@
     <div v-else class="doc-converter-content">
       <!-- Konvertierungsansicht -->
       <div v-if="!showStats" class="doc-converter-view">
+        <!-- Tabs für normale und Batch-Upload-Modi -->
+        <div class="doc-converter-upload-tabs" v-if="!isConverting && !conversionResult">
+          <button
+            class="doc-converter-upload-tab"
+            :class="{ 'active': uploadMode === 'single' }"
+            @click="uploadMode = 'single'"
+          >
+            {{ t('documentConverter.uploadModes.single', 'Einzelupload') }}
+          </button>
+          <button
+            class="doc-converter-upload-tab"
+            :class="{ 'active': uploadMode === 'batch' }"
+            @click="uploadMode = 'batch'"
+          >
+            {{ t('documentConverter.uploadModes.batch', 'Batch-Upload') }}
+          </button>
+        </div>
+
         <!-- Upload-Bereich mit Drag & Drop Unterstützung -->
         <FileUpload
-          v-if="!isConverting && !conversionResult"
+          v-if="!isConverting && !conversionResult && uploadMode === 'single'"
           @upload="startConversion"
           :is-uploading="isUploading"
           :allowed-extensions="allowedExtensions"
           :max-file-size="maxFileSize"
+        />
+
+        <!-- Batch-Upload für mehrere Dateien gleichzeitig -->
+        <BatchUpload
+          v-if="!isConverting && !conversionResult && uploadMode === 'batch'"
+          :max-files="25"
+          :max-file-size="maxFileSize"
+          :max-total-size="500 * 1024 * 1024"
+          :allowed-extensions="allowedExtensions"
+          :enable-prioritization="true"
+          :enable-auto-convert="true"
+          :enable-resume="true"
+          @start-batch="handleBatchStart"
+          @upload-single="startConversion"
+          @batch-completed="handleBatchComplete"
+          @batch-canceled="handleBatchCancel"
         />
 
         <!-- Fortschrittsanzeige während der Konvertierung -->
@@ -102,6 +136,7 @@ import { ConversionResult } from '@/types/documentConverter';
 
 // Komponenten importieren
 import FileUpload from './FileUpload.vue';
+import BatchUpload from './BatchUpload.vue';
 import ConversionProgress from './ConversionProgress.vue';
 import ConversionResult from './ConversionResult.vue';
 import DocumentList from './DocumentList.vue';
@@ -144,6 +179,7 @@ const conversionResult = ref<ConversionResult | null>(null);
 const activeConversion = ref<string | null>(null);
 const useFallback = ref<boolean>(false);
 const showStats = ref<boolean>(false);
+const uploadMode = ref<'single' | 'batch'>('single');
 
 // Konfigurationswerte für Upload
 const allowedExtensions = [
@@ -302,6 +338,46 @@ function clearConversionResult() {
   clearSelection();
 }
 
+/**
+ * Startet einen Batch-Upload
+ * @param files Array von Dateien für den Batch-Upload
+ * @param priorities Zuordnung von File-IDs zu Prioritäten
+ */
+async function handleBatchStart(files: File[], priorities: Record<string, string>) {
+  console.log(`Starting batch upload of ${files.length} files`);
+  // Prioritäten basierte Sortierung
+  const priorityOrder: Record<string, number> = { 'high': 0, 'normal': 1, 'low': 2 };
+
+  // Sortiere Dateien nach Priorität
+  const sortedFiles = [...files].sort((a, b) => {
+    const fileIdA = `batch-${a.name}-${a.size}`;
+    const fileIdB = `batch-${b.name}-${b.size}`;
+    return priorityOrder[priorities[fileIdA] || 'normal'] - priorityOrder[priorities[fileIdB] || 'normal'];
+  });
+
+  // Verarbeite jede Datei in der sortierten Reihenfolge
+  for (const file of sortedFiles) {
+    await startConversion(file);
+  }
+}
+
+/**
+ * Verarbeitet Ergebnisse des Batch-Uploads
+ * @param results Ergebnisse des Batch-Uploads
+ */
+function handleBatchComplete(results: any[]) {
+  console.log(`Batch upload completed with ${results.length} files`);
+  // Bei Bedarf zusätzliche Logik für abgeschlossene Batches
+}
+
+/**
+ * Behandelt Abbruch eines Batch-Uploads
+ */
+function handleBatchCancel() {
+  console.log('Batch upload was canceled');
+  // Bei Bedarf zusätzliche Logik für abgebrochene Batches
+}
+
 // Lebenszyklus-Hooks
 onMounted(() => {
   // Beim Mounten initialisieren
@@ -458,6 +534,35 @@ onBeforeUnmount(() => {
 
 .doc-converter-btn-danger:hover {
   background-color: #b91c1c;
+}
+
+/* Upload-Mode-Tabs */
+.doc-converter-upload-tabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  gap: 0.5rem;
+}
+
+.doc-converter-upload-tab {
+  background-color: #f0f0f0;
+  color: #666;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.doc-converter-upload-tab:hover {
+  background-color: #e0e0e0;
+}
+
+.doc-converter-upload-tab.active {
+  background-color: #0d7a40;
+  color: white;
 }
 
 /* Animation für Übergänge */

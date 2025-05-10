@@ -16,7 +16,7 @@ tags: ["Migration", "Vue3", "Status", "Planung", "Roadmap"]
 
 ## Executive Summary
 
-Dieses Dokument beschreibt den aktuellen Status und detaillierten Plan zur Migration der nScale DMS Assistent Frontend-Anwendung von Vanilla JavaScript zu Vue 3 Single File Components (SFC). Die Migration befindet sich aktuell in einer fortgeschrittenen Implementierungsphase mit einem aktualisierten Gesamtfortschritt von ca. 68-72%. Die Infrastruktur, das Build-System und das Feature-Toggle-System sind bereits vollständig umgesetzt, während zentrale UI-Komponenten wie die MessageList, SessionList und SessionManager nun komplett migriert sind.
+Dieses Dokument beschreibt den aktuellen Status und detaillierten Plan zur Migration der nScale DMS Assistent Frontend-Anwendung von Vanilla JavaScript zu Vue 3 Single File Components (SFC). Die Migration befindet sich aktuell in einer fortgeschrittenen Implementierungsphase mit einem aktualisierten Gesamtfortschritt von ca. 75-78%. Die Infrastruktur, das Build-System und das Feature-Toggle-System sind bereits vollständig umgesetzt, während zentrale UI-Komponenten wie die MessageList, SessionList und SessionManager nun komplett migriert sind. Der Dokumentenkonverter ist zu 100% abgeschlossen, einschließlich der BatchUpload-Komponente für Massenupload-Funktionalität.
 
 Die Analyse der bestehenden Chat-Komponenten hat gezeigt, dass die Migration schneller als ursprünglich geplant voranschreitet. Insbesondere sind die MessageList, SessionList und SessionManager-Komponenten zu 100% abgeschlossen und implementieren sogar fortschrittlichere Features als ursprünglich dokumentiert, darunter verbesserte Virtualisierung, optimierte Barrierefreiheit, erweiterte Filteroptionen, Kategorisierungssystem und Multi-Select-Funktionalität für Massenoperationen.
 
@@ -37,12 +37,12 @@ Die vollständige Migration wird voraussichtlich in 5-7 Monaten abgeschlossen se
 | **UI-Basiskomponenten** | ~65% | In Bearbeitung | Hoch |
 | **Layout-Komponenten** | ~55% | In Bearbeitung | Mittel |
 | **Feedback-Komponenten** | ~45% | In Bearbeitung | Mittel |
-| **Dokumentenkonverter** | ~85% | In Bearbeitung | Mittel |
+| **Dokumentenkonverter** | ~100% | Abgeschlossen | Mittel |
 | **Chat-Interface** | ~75% | Aktiv in Bearbeitung | Hoch |
 | **Admin-Bereich** | ~80% | Größtenteils abgeschlossen | Mittel |
 | **Bridge-Mechanismen** | ~90% | Nahezu abgeschlossen | Mittel |
 | **Tests** | ~40% | In Bearbeitung | Hoch |
-| **GESAMTFORTSCHRITT** | **~72-76%** | **In Bearbeitung** | |
+| **GESAMTFORTSCHRITT** | **~75-78%** | **In Bearbeitung** | |
 
 ### 1.2 Aktueller Status der Tests und Fehlerbereinigung
 
@@ -113,13 +113,13 @@ Die vollständige Migration wird voraussichtlich in 5-7 Monaten abgeschlossen se
 | InputToolbar | /frontend/js/chat.js:927-1050 | ~50% | Mittel | Niedrig | ui-store |
 | StreamingIndicator | /frontend/js/chat.js:1052-1120 | ~60% | Niedrig | Niedrig | sessions-store |
 
-#### 2.2.2 Dokumentenkonverter-Komponenten (15% ausstehend)
+#### 2.2.2 Dokumentenkonverter-Komponenten (0% ausstehend)
 
 | Komponente | Vanilla JS-Datei | Status | Priorität | Komplexität | Abhängigkeiten |
 |------------|------------------|--------|-----------|-------------|----------------|
 | DocumentPreview | /frontend/js/app-extensions.js:210-355 | 100% | Mittel | Mittel | document-converter-store |
 | ConversionStats | /frontend/js/app-extensions.js:357-420 | 100% | Niedrig | Niedrig | document-converter-store |
-| BatchUpload | /frontend/js/app-extensions.js:422-520 | 0% | Niedrig | Mittel | document-converter-store, ui-store |
+| BatchUpload | /frontend/js/app-extensions.js:422-520 | 100% | Niedrig | Mittel | document-converter-store, ui-store |
 
 #### 2.2.3 Einstellungen-Komponenten (90% ausstehend)
 

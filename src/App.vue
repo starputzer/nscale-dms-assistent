@@ -11,11 +11,11 @@
       <template #fallback="{ error, resetFallback }">
         <div class="app-fallback">
           <div class="app-fallback__content">
-            <h1 class="app-fallback__title">{{ $t('app.error.title') }}</h1>
-            <p class="app-fallback__message">{{ $t('app.error.message') }}</p>
-            <p v-if="error" class="app-fallback__details">{{ error.message }}</p>
+            <h1 class="app-fallback__title">{{ t('app.error.title') }}</h1>
+            <p class="app-fallback__message">{{ t('app.error.message') }}</p>
+            <p v-if="error" class="app-fallback__details">{{ error?.message }}</p>
             <button @click="resetFallback" class="nscale-btn-primary app-fallback__button">
-              {{ $t('app.error.retry') }}
+              {{ t('app.error.retry') }}
             </button>
           </div>
         </div>
@@ -27,13 +27,13 @@
           :showHeader="true"
           :showFooter="true"
           :sidebarItems="navigationItems"
-          :sidebarCollapsed="uiStore.sidebarCollapsed"
-          @update:sidebarCollapsed="uiStore.setSidebarCollapsed"
+          :sidebarCollapsed="uiStore.sidebarIsCollapsed"
+          @update:sidebarCollapsed="uiStore.setSidebarIsCollapsed"
           @sidebar-item-select="handleNavigationSelect"
         >
           <template #header>
             <Header
-              :user="authStore.user"
+              :user="headerUser"
               @logout="handleLogout"
             />
           </template>
@@ -43,27 +43,27 @@
               <KeepAlive>
                 <ErrorBoundary
                   :key="$route.path"
-                  :featureFlag="getFeatureFlagFromRoute($route.name)"
+                  :featureFlag="getFeatureFlagFromRoute($route.name?.toString())"
                   @error="handleViewError"
                 >
                   <component :is="Component" />
 
                   <template #error="{ error, retry }">
                     <div class="view-error">
-                      <h3 class="view-error__title">{{ $t('app.viewError.title') }}</h3>
-                      <p class="view-error__message">{{ error.message }}</p>
+                      <h3 class="view-error__title">{{ t('app.viewError.title') }}</h3>
+                      <p class="view-error__message">{{ error?.message }}</p>
                       <div class="view-error__actions">
                         <button
                           @click="retry"
                           class="nscale-btn-primary view-error__retry"
                         >
-                          {{ $t('app.viewError.retry') }}
+                          {{ t('app.viewError.retry') }}
                         </button>
                         <button
                           @click="handleNavigateHome"
                           class="nscale-btn-secondary"
                         >
-                          {{ $t('app.viewError.home') }}
+                          {{ t('app.viewError.home') }}
                         </button>
                       </div>
                     </div>
@@ -77,9 +77,9 @@
             <div class="app-footer">
               <p>© {{ currentYear }} nscale DMS Assistent</p>
               <div class="app-footer__links">
-                <a href="#" @click.prevent="openSettings">{{ $t('app.footer.settings') }}</a>
-                <a href="#" @click.prevent="toggleTheme">{{ $t('app.footer.theme') }}</a>
-                <a href="#" @click.prevent="showAbout">{{ $t('app.footer.about') }}</a>
+                <a href="#" @click.prevent="openSettings">{{ t('app.footer.settings') }}</a>
+                <a href="#" @click.prevent="toggleTheme">{{ t('app.footer.theme') }}</a>
+                <a href="#" @click.prevent="showAbout">{{ t('app.footer.about') }}</a>
               </div>
             </div>
           </template>
@@ -91,21 +91,21 @@
           <transition name="fade" mode="out-in">
             <ErrorBoundary
               :key="$route.path"
-              :featureFlag="getFeatureFlagFromRoute($route.name)"
+              :featureFlag="getFeatureFlagFromRoute($route.name?.toString())"
               @error="handleViewError"
             >
               <component :is="Component" />
 
               <template #error="{ error, retry }">
                 <div class="view-error">
-                  <h3 class="view-error__title">{{ $t('app.viewError.title') }}</h3>
-                  <p class="view-error__message">{{ error.message }}</p>
+                  <h3 class="view-error__title">{{ t('app.viewError.title') }}</h3>
+                  <p class="view-error__message">{{ error?.message }}</p>
                   <div class="view-error__actions">
                     <button
                       @click="retry"
                       class="nscale-btn-primary view-error__retry"
                     >
-                      {{ $t('app.viewError.retry') }}
+                      {{ t('app.viewError.retry') }}
                     </button>
                   </div>
                 </div>
@@ -122,9 +122,9 @@
 
     <!-- Offline Status Banner -->
     <div v-if="isOffline" class="offline-banner">
-      {{ $t('app.offline.message') }}
+      {{ t('app.offline.message') }}
       <button @click="checkConnection" class="offline-banner__retry">
-        {{ $t('app.offline.retry') }}
+        {{ t('app.offline.retry') }}
       </button>
     </div>
 
@@ -132,7 +132,7 @@
     <div v-if="!storeInitializationComplete" class="app-initialization-overlay">
       <div class="app-initialization-content">
         <div class="app-initialization-spinner"></div>
-        <p>{{ $t('app.initializing') }}</p>
+        <p>{{ t('app.initializing') }}</p>
       </div>
     </div>
   </div>
@@ -140,7 +140,14 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, provide, watch, onBeforeUnmount } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { useRouter, useRoute, RouteRecordName } from 'vue-router';
+// If you're having issues with vue-i18n, you can implement a temporary solution:
+// Uncomment this if vue-i18n is not installed
+/*
+const useI18n = () => ({
+  t: (key: string) => key // Simple fallback that returns the key
+});
+*/
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
 import { useUIStore } from '@/stores/ui';
@@ -159,6 +166,13 @@ import Header from '@/components/layout/Header.vue';
 import Toast from '@/components/ui/Toast.vue';
 import DialogProvider from '@/components/dialog/DialogProvider.vue';
 import ErrorBoundary from '@/components/shared/ErrorBoundary.vue';
+
+// Define interfaces for header user
+interface HeaderUser {
+  name?: string;
+  avatar?: string;
+  email?: string;
+}
 
 // i18n
 const { t } = useI18n();
@@ -179,7 +193,6 @@ const fallbackManager = useFallbackManager();
 const isOffline = ref(false);
 const initializationComplete = ref(false);
 const storeInitializationComplete = computed(() => isInitialized.value);
-const storeInitializationStatus = computed(() => storeStatus.value);
 
 // Theme-Informationen
 const {
@@ -189,6 +202,17 @@ const {
   isContrastTheme,
   setTheme
 } = useTheme();
+
+// Convert authStore.user to HeaderUser format
+const headerUser = computed<HeaderUser | undefined>(() => {
+  if (!authStore.user) return undefined;
+  
+  return {
+    name: authStore.user.displayName || authStore.user.email,
+    email: authStore.user.email,
+    avatar: undefined // Add avatar property if it exists in your user object
+  };
+});
 
 // Abgeleitete Werte
 const themeClass = computed(() => {
@@ -273,7 +297,7 @@ async function handleLogout() {
     uiStore.showSuccess(t('auth.logout.success'));
   } catch (error) {
     uiStore.showError(t('auth.logout.error'));
-    errorReporting.captureError(error, {
+    errorReporting.captureError(error as Error, {
       severity: 'medium',
       source: {
         type: 'component',
@@ -290,8 +314,8 @@ async function handleLogout() {
 function handleError(error: any) {
   console.error('App Error:', error);
 
-  errorReporting.captureError(error.originalError, {
-    severity: error.severity as any,
+  errorReporting.captureError(error.originalError as Error, {
+    severity: error.severity as ErrorSeverity,
     source: {
       type: 'component',
       name: error.component || 'App'
@@ -319,10 +343,10 @@ function handleFallback(error: any) {
   uiStore.showError(t('app.criticalError'), {
     duration: 0,
     closable: true,
-    action: {
+    actions: [{
       label: t('app.reload'),
       onClick: () => window.location.reload()
-    }
+    }]
   });
 }
 
@@ -335,8 +359,8 @@ function handleViewError(error: any) {
   const routeName = route.name as string;
   const featureFlag = getFeatureFlagFromRoute(routeName);
 
-  errorReporting.captureError(error.originalError, {
-    severity: error.severity as any,
+  errorReporting.captureError(error.originalError as Error, {
+    severity: error.severity as ErrorSeverity,
     source: {
       type: 'component',
       name: error.component || routeName
@@ -400,12 +424,18 @@ function toggleTheme() {
  * Zeigt Informationen über die Anwendung
  */
 function showAbout() {
-  uiStore.showDialog({
-    title: t('app.about.title'),
-    content: t('app.about.content'),
-    confirmText: t('common.ok'),
-    type: 'info'
-  });
+  // Check if the showDialog method exists on uiStore
+  if ('showDialog' in uiStore) {
+    (uiStore as any).showDialog({
+      title: t('app.about.title'),
+      content: t('app.about.content'),
+      confirmText: t('common.ok'),
+      type: 'info'
+    });
+  } else {
+    // Fallback if showDialog doesn't exist
+    uiStore.showInfo(t('app.about.title') + ': ' + t('app.about.content'));
+  }
 }
 
 // Netzwerkstatus überwachen
@@ -477,7 +507,7 @@ async function initializeApp() {
   } catch (error) {
     console.error('Error initializing app:', error);
 
-    errorReporting.captureError(error, {
+    errorReporting.captureError(error as Error, {
       severity: 'high',
       source: {
         type: 'system',
@@ -490,10 +520,10 @@ async function initializeApp() {
     uiStore.showError(t('app.initError'), {
       duration: 0,
       closable: true,
-      action: {
+      actions: [{
         label: t('app.reload'),
         onClick: () => window.location.reload()
-      }
+      }]
     });
   }
 }
@@ -525,7 +555,7 @@ onMounted(() => {
   isOffline.value = !navigator.onLine;
 
   // API-Fehler abfangen
-  window.addEventListener('api:error', (event: any) => {
+  window.addEventListener('api:error', (event: CustomEvent) => {
     const detail = event.detail;
 
     errorReporting.captureApiError(
