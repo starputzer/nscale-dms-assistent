@@ -642,33 +642,482 @@ describe('DocumentConverter Store', () => {
     it('sollte die Ansicht ändern können', () => {
       // Arrange
       const store = useDocumentConverterStore();
-      
+
       // Act
       store.setView('list');
-      
+
       // Assert
       expect(store.currentView).toBe('list');
     });
-    
+
     it('sollte Konvertierungseinstellungen aktualisieren können', () => {
       // Arrange
       const store = useDocumentConverterStore();
-      
+
       // Standardeinstellungen prüfen
       expect(store.conversionSettings.preserveFormatting).toBe(true);
       expect(store.conversionSettings.extractMetadata).toBe(true);
       expect(store.conversionSettings.extractTables).toBe(true);
-      
+
       // Act
       store.updateSettings({
         preserveFormatting: false,
         extractMetadata: false
       });
-      
+
       // Assert
       expect(store.conversionSettings.preserveFormatting).toBe(false);
       expect(store.conversionSettings.extractMetadata).toBe(false);
       expect(store.conversionSettings.extractTables).toBe(true); // Unverändert
+    });
+  });
+
+  describe('Erweiterte Funktionalitäten', () => {
+    it('sollte den Fortschritt während einer Konvertierung protokollieren und aktualisieren', async () => {
+      // Arrange
+      const store = useDocumentConverterStore();
+
+      // Mock für getConversionStatus mit unterschiedlichen Statuswerten
+      const statusMocks = [
+        { progress: 25, step: 'Parsing document...', estimatedTimeRemaining: 30, status: 'processing' },
+        { progress: 50, step: 'Extracting text...', estimatedTimeRemaining: 20, status: 'processing' },
+        { progress: 75, step: 'Analyzing content...', estimatedTimeRemaining: 10, status: 'processing' },
+        { progress: 100, step: 'Finalizing...', estimatedTimeRemaining: 0, status: 'success' }
+      ];
+
+      let currentStatusIndex = 0;
+      vi.mocked(DocumentConverterService.getConversionStatus).mockImplementation(async () => {
+        return statusMocks[currentStatusIndex++];
+      });
+
+      // Mock für getDocument, um ein erfolgreiches Ergebnis zurückzugeben
+      vi.mocked(DocumentConverterService.getDocument).mockResolvedValueOnce(mockConversionResult);
+
+      // Dokument zum Store hinzufügen
+      store.convertedDocuments = [{ ...mockDocument }];
+
+      // Mock für convertDocument, um eine erfolgreiche Konvertierung zu simulieren
+      vi.mocked(DocumentConverterService.convertDocument).mockImplementation(
+        async (documentId, settings, progressCallback) => {
+          if (progressCallback) {
+            progressCallback(25, 'Initial processing...', 45);
+          }
+          return mockConversionResult;
+        }
+      );
+
+      // Mock für setInterval und clearInterval
+      const originalSetInterval = global.setInterval;
+      const originalClearInterval = global.clearInterval;
+
+      let intervalCallback: Function | null = null;
+      let intervalCleared = false;
+
+      global.setInterval = vi.fn((callback, delay) => {
+        intervalCallback = callback as Function;
+        return 123 as any; // Irgendeine ID
+      });
+
+      global.clearInterval = vi.fn((id) => {
+        intervalCleared = true;
+      });
+
+      // Act
+      const convertPromise = store.convertDocument('doc-123');
+
+      // Manuell die Fortschrittsabfrage simulieren
+      if (intervalCallback) {
+        await intervalCallback();
+      }
+
+      // Assert - Prüfen, ob Fortschritt korrekt aktualisiert wurde
+      expect(store.conversionProgress).toBe(25); // Vom ersten Status-Update
+      expect(store.conversionStep).toBe('Parsing document...');
+      expect(store.estimatedTimeRemaining).toBe(30);
+
+      // Mehr Status-Updates simulieren
+      if (intervalCallback) {
+        await intervalCallback();
+        await intervalCallback();
+      }
+
+      // Assert
+      expect(store.conversionProgress).toBe(75);
+      expect(store.conversionStep).toBe('Analyzing content...');
+      expect(store.estimatedTimeRemaining).toBe(10);
+
+      // Letztes Status-Update simulieren
+      if (intervalCallback) {
+        await intervalCallback();
+      }
+
+      // Auf Abschluss des Promises warten
+      const result = await convertPromise;
+
+      // Assert
+      expect(result).toBe(true);
+      expect(store.isConverting).toBe(false);
+      expect(store.conversionProgress).toBe(100);
+      expect(store.conversionStep).toBe('Finalizing...');
+      expect(store.estimatedTimeRemaining).toBe(0);
+      expect(intervalCleared).toBe(true); // Intervall sollte gelöscht worden sein
+
+      // Dokument sollte mit erfolgreicher Konvertierung aktualisiert sein
+      expect(store.convertedDocuments[0].status).toBe('success');
+
+      // Auf Erfolgsansicht umschalten
+      expect(store.currentView).toBe('results');
+      expect(store.selectedDocumentId).toBe('doc-123');
+
+      // Cleanup
+      global.setInterval = originalSetInterval;
+      global.clearInterval = originalClearInterval;
+    });
+
+    it('sollte den Fallback-Konverter aktivieren/deaktivieren können', () => {
+      // Arrange
+      const store = useDocumentConverterStore();
+      expect(store.useFallback).toBe(false);
+
+      // Act
+      store.setUseFallback(true);
+
+      // Assert
+      expect(store.useFallback).toBe(true);
+
+      // Act - Zurücksetzen
+      store.setUseFallback(false);
+
+      // Assert
+      expect(store.useFallback).toBe(false);
+    });
+
+    it('sollte ein Dokument herunterladen können', async () => {
+      // Arrange
+      const store = useDocumentConverterStore();
+      store.convertedDocuments = [{ ...mockConversionResult }];
+
+      // Mock für downloadDocument
+      const mockedBlob = new Blob(['test content'], { type: 'application/pdf' });
+      vi.mocked(DocumentConverterService.downloadDocument).mockResolvedValueOnce(mockedBlob);
+
+      // Act
+      await store.downloadDocument('doc-123');
+
+      // Assert
+      expect(DocumentConverterService.downloadDocument).toHaveBeenCalledWith(
+        'doc-123',
+        'test.pdf'
+      );
+      expect(store.error).toBeNull();
+    });
+
+    it('sollte einen Fehler beim Herunterladen setzen', async () => {
+      // Arrange
+      const store = useDocumentConverterStore();
+      store.convertedDocuments = [{ ...mockConversionResult }];
+
+      // Mock für fehlgeschlagenen Download
+      const mockError = new Error('Download fehlgeschlagen');
+      vi.mocked(DocumentConverterService.downloadDocument).mockRejectedValueOnce(mockError);
+
+      // Act
+      await store.downloadDocument('doc-123');
+
+      // Assert
+      expect(DocumentConverterService.downloadDocument).toHaveBeenCalledWith(
+        'doc-123',
+        'test.pdf'
+      );
+      expect(store.error).not.toBeNull();
+      expect(store.error!.code).toBe('DOWNLOAD_FAILED');
+      expect(store.error!.message).toBe('Download fehlgeschlagen');
+    });
+
+    it('sollte einen Fehler setzen, wenn das Dokument zum Herunterladen nicht gefunden wird', async () => {
+      // Arrange
+      const store = useDocumentConverterStore();
+      store.convertedDocuments = [{ ...mockConversionResult }];
+
+      // Act
+      await store.downloadDocument('nicht-vorhanden');
+
+      // Assert
+      expect(DocumentConverterService.downloadDocument).not.toHaveBeenCalled();
+      expect(store.error).not.toBeNull();
+      expect(store.error!.code).toBe('DOWNLOAD_FAILED');
+      expect(store.error!.message).toBe('Dokument nicht gefunden');
+    });
+
+    it('sollte prüfen, ob ein Dateiformat unterstützt wird', () => {
+      // Arrange
+      const store = useDocumentConverterStore();
+      vi.mocked(DocumentConverterService.isFormatSupported).mockImplementation((format) => {
+        return ['pdf', 'docx', 'xlsx', 'pptx', 'html', 'txt'].includes(format);
+      });
+
+      // Act & Assert
+      expect(store.isSupportedFormat('pdf')).toBe(true);
+      expect(store.isSupportedFormat('docx')).toBe(true);
+      expect(store.isSupportedFormat('png')).toBe(false);
+      expect(store.isSupportedFormat('exe')).toBe(false);
+    });
+  });
+
+  describe('Fehlerbehandlung und Selbstheilung', () => {
+    it('sollte einen formatieerten Fehler vom ConversionError-Typ korrekt verarbeiten', () => {
+      // Arrange
+      const store = useDocumentConverterStore();
+      const formattedError = {
+        code: 'TEST_ERROR',
+        message: 'Formatierter Fehler',
+        type: 'format',
+        timestamp: new Date(),
+        helpItems: ['Hilfe 1', 'Hilfe 2']
+      };
+
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      // Act
+      store.setError('IGNORED_CODE', formattedError);
+
+      // Assert - sollte den vorgefertigten Fehler verwenden
+      expect(store.error).toEqual(formattedError);
+
+      // Cleanup
+      consoleSpy.mockRestore();
+    });
+
+    it('sollte OCR-spezifische Konvertierungseinstellungen verarbeiten', () => {
+      // Arrange
+      const store = useDocumentConverterStore();
+
+      // Standardeinstellungen prüfen
+      expect(store.conversionSettings.ocrEnabled).toBe(false);
+      expect(store.conversionSettings.ocrLanguage).toBe('de');
+
+      // Act
+      store.updateSettings({
+        ocrEnabled: true,
+        ocrLanguage: 'en'
+      });
+
+      // Assert
+      expect(store.conversionSettings.ocrEnabled).toBe(true);
+      expect(store.conversionSettings.ocrLanguage).toBe('en');
+
+      // Bei einer Konvertierung sollten diese Einstellungen verwendet werden
+      vi.mocked(DocumentConverterService.convertDocument).mockResolvedValueOnce(mockConversionResult);
+
+      // Dokument zum Store hinzufügen
+      store.convertedDocuments = [{ ...mockDocument }];
+
+      // Act
+      store.convertDocument('doc-123');
+
+      // Assert
+      expect(DocumentConverterService.convertDocument).toHaveBeenCalledWith(
+        'doc-123',
+        expect.objectContaining({
+          ocrEnabled: true,
+          ocrLanguage: 'en'
+        }),
+        expect.any(Function)
+      );
+    });
+
+    it('sollte den aktiven Konvertierungs-ID richtig verwalten', async () => {
+      // Arrange
+      const store = useDocumentConverterStore();
+      vi.mocked(DocumentConverterService.convertDocument).mockImplementation(async () => {
+        return mockConversionResult;
+      });
+
+      // Dokument zum Store hinzufügen
+      store.convertedDocuments = [{ ...mockDocument }];
+
+      // Act - Konvertierung starten
+      const convertPromise = store.convertDocument('doc-123');
+
+      // Assert - während der Konvertierung
+      expect(store.activeConversionId).toBe('doc-123');
+
+      // Konvertierung abschließen
+      await convertPromise;
+
+      // Assert - nach erfolgreicher Konvertierung
+      expect(store.activeConversionId).toBeNull();
+
+      // Act - Fehlerfall simulieren
+      vi.mocked(DocumentConverterService.convertDocument).mockRejectedValueOnce(
+        new Error('Konvertierungsfehler')
+      );
+
+      // Konvertierung mit Fehler starten
+      await store.convertDocument('doc-123');
+
+      // Assert - nach fehlerhafter Konvertierung
+      expect(store.activeConversionId).toBeNull();
+    });
+  });
+
+  describe('Persistenz und Serialisierung', () => {
+    it('sollte eine Date-Objekte korrekt serialisieren und deserialisieren', () => {
+      // Arrange
+      const store = useDocumentConverterStore();
+      store.convertedDocuments = [{ ...mockConversionResult }];
+      store.lastUpdated = new Date('2023-01-15T12:00:00Z');
+
+      // Date-Objekte serialisieren (direkt aus Store-Implementation)
+      const serializer = {
+        serialize: (state: any) => {
+          return JSON.stringify(state, (key, value) => {
+            if (value instanceof Date) {
+              return { __type: 'date', value: value.toISOString() };
+            }
+            return value;
+          });
+        },
+        deserialize: (serializedState: string) => {
+          return JSON.parse(serializedState, (key, value) => {
+            if (value && typeof value === 'object' && value.__type === 'date') {
+              return new Date(value.value);
+            }
+            return value;
+          });
+        }
+      };
+
+      // Act
+      const serialized = serializer.serialize({
+        convertedDocuments: store.convertedDocuments,
+        lastUpdated: store.lastUpdated
+      });
+
+      const deserialized = serializer.deserialize(serialized);
+
+      // Assert
+      expect(deserialized.lastUpdated).toBeInstanceOf(Date);
+      expect(deserialized.lastUpdated.toISOString()).toBe('2023-01-15T12:00:00.000Z');
+
+      // Konvertiertes Dokument sollte auch Date-Objekte enthalten
+      expect(deserialized.convertedDocuments[0].uploadedAt).toBeInstanceOf(Date);
+      expect(deserialized.convertedDocuments[0].convertedAt).toBeInstanceOf(Date);
+    });
+  });
+
+  describe('Erweiterte API-Interaktionen', () => {
+    it('sollte mit einem Timeout während der Konvertierung umgehen können', async () => {
+      // Arrange
+      const store = useDocumentConverterStore();
+
+      // Mock für getConversionStatus, der nach einer Weile ein Timeout simuliert
+      let callCount = 0;
+      vi.mocked(DocumentConverterService.getConversionStatus).mockImplementation(async () => {
+        callCount++;
+        if (callCount < 3) {
+          return {
+            progress: 25 * callCount,
+            step: `Step ${callCount}`,
+            estimatedTimeRemaining: 30 - (10 * callCount),
+            status: 'processing'
+          };
+        }
+        throw new Error('Timeout');
+      });
+
+      // Mock für convertDocument
+      vi.mocked(DocumentConverterService.convertDocument).mockResolvedValueOnce(mockConversionResult);
+
+      // Dokument zum Store hinzufügen
+      store.convertedDocuments = [{ ...mockDocument }];
+
+      // Mock für setInterval und clearInterval
+      const originalSetInterval = global.setInterval;
+      const originalClearInterval = global.clearInterval;
+
+      let intervalCallback: Function | null = null;
+
+      global.setInterval = vi.fn((callback, delay) => {
+        intervalCallback = callback as Function;
+        return 123 as any;
+      });
+
+      global.clearInterval = vi.fn();
+
+      // Act
+      const convertPromise = store.convertDocument('doc-123');
+
+      // Manuell die Fortschrittsabfrage simulieren
+      if (intervalCallback) {
+        await intervalCallback();
+        await intervalCallback();
+        // Dritter Aufruf wird fehlschlagen
+        await intervalCallback();
+      }
+
+      // Auf Abschluss des Promises warten
+      const result = await convertPromise;
+
+      // Assert
+      expect(store.isConverting).toBe(false);
+      expect(store.error).not.toBeNull();
+      expect(store.error!.code).toBe('CONVERSION_FAILED');
+      expect(store.convertedDocuments[0].status).toBe('error');
+
+      // Cleanup
+      global.setInterval = originalSetInterval;
+      global.clearInterval = originalClearInterval;
+    });
+
+    it('sollte beim Neuladen der Dokumentliste die ausgewählten Dokumente beibehalten', async () => {
+      // Arrange
+      const store = useDocumentConverterStore();
+      store.convertedDocuments = [{ ...mockConversionResult }];
+      store.selectedDocumentId = 'doc-123';
+      store.currentView = 'results';
+
+      // Mock für die API, die eine Liste zurückgibt, die das ausgewählte Dokument enthält
+      vi.mocked(DocumentConverterService.getDocuments).mockResolvedValueOnce([
+        { ...mockConversionResult, updatedInfo: 'some new info' },
+        { id: 'doc-456', originalName: 'another.pdf', status: 'pending', size: 5000, uploadedAt: new Date() }
+      ]);
+
+      // Act
+      await store.refreshDocuments();
+
+      // Assert
+      expect(store.convertedDocuments).toHaveLength(2);
+      expect(store.selectedDocumentId).toBe('doc-123'); // Sollte beibehalten werden
+      expect(store.currentView).toBe('results'); // Ansicht sollte auch beibehalten werden
+    });
+
+    it('sollte beim Aktualisieren der Dokumentliste den Status aktualisieren, wenn ein Dokument konvertiert wurde', async () => {
+      // Arrange
+      const store = useDocumentConverterStore();
+
+      // Ein Dokument im "processing" Status hinzufügen
+      store.convertedDocuments = [{
+        id: 'doc-123',
+        originalName: 'test.pdf',
+        originalFormat: 'pdf',
+        size: 12345,
+        uploadedAt: new Date('2023-01-01T12:00:00Z'),
+        status: 'processing'
+      }];
+
+      // Mock für refreshDocuments, der ein erfolgreich konvertiertes Dokument zurückgibt
+      vi.mocked(DocumentConverterService.getDocuments).mockResolvedValueOnce([
+        { ...mockConversionResult }
+      ]);
+
+      // Act
+      await store.refreshDocuments();
+
+      // Assert
+      expect(store.convertedDocuments).toHaveLength(1);
+      expect(store.convertedDocuments[0].status).toBe('success');
+      expect(store.convertedDocuments[0].convertedText).toBe('Extracted text from the document');
     });
   });
 });

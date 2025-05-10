@@ -15,13 +15,16 @@ import {
 
 /**
  * Tests für den Sessions-Store
- * 
+ *
  * Testet:
  * - Session-CRUD-Operationen
  * - Nachrichtenverwaltung
  * - Streaming-Funktionalität
  * - Synchronisation mit dem Server
  * - Offline-Unterstützung
+ * - Metadaten und Tagging
+ * - Massenoperationen und Gruppierung
+ * - Speicheroptimierung und Performance
  */
 describe('Sessions Store', () => {
   // Mock-Daten
@@ -393,17 +396,17 @@ describe('Sessions Store', () => {
       // Arrange
       const store = useSessionsStore();
       const sessionId = 'test-session-123';
-      
+
       // Streaming aktiv setzen
       store.streaming = {
         isActive: true,
         progress: 50,
         currentSessionId: sessionId
       };
-      
+
       // Streaming-Nachricht hinzufügen
       store.messages[sessionId] = [
-        createMockMessage({ 
+        createMockMessage({
           sessionId,
           role: 'assistant',
           isStreaming: true,
@@ -411,26 +414,188 @@ describe('Sessions Store', () => {
         })
       ];
       store.currentSessionId = sessionId;
-      
+
       // Mock für das window.dispatchEvent
       const dispatchEventSpy = vi.spyOn(window, 'dispatchEvent');
-      
+
       // Act
       store.cancelStreaming();
-      
+
       // Assert
       expect(store.streaming.isActive).toBe(false);
       expect(store.streaming.progress).toBe(0);
       expect(store.streaming.currentSessionId).toBeNull();
-      
+
       // Nachrichtenstatus sollte aktualisiert sein
       expect(store.messages[sessionId][0].isStreaming).toBe(false);
       expect(store.messages[sessionId][0].status).toBe('error');
       expect(store.messages[sessionId][0].content).toContain('[abgebrochen]');
-      
+
       // Verify event dispatch
       expect(dispatchEventSpy).toHaveBeenCalledWith(expect.any(CustomEvent));
       expect(dispatchEventSpy.mock.calls[0][0].type).toBe('cancel-streaming');
+    });
+
+    it('sollte mit Streaming-Metadaten umgehen können', async () => {
+      // Arrange
+      const store = useSessionsStore();
+      const sessionId = 'test-session-123';
+      const messageContent = 'Test-Nachricht';
+
+      // Bestehende Session hinzufügen
+      store.sessions = [createMockSession({ id: sessionId })];
+      store.messages[sessionId] = [];
+      store.currentSessionId = sessionId;
+
+      // Mock für EventSource
+      let mockEventSource: MockEventSource;
+      vi.stubGlobal('EventSource', class extends MockEventSource {
+        constructor(url: string) {
+          super(url);
+          mockEventSource = this;
+        }
+      });
+
+      // Act - Nachricht senden
+      store.sendMessage({ sessionId, content: messageContent });
+      await waitForPromises();
+
+      // Streaming mit Metadaten simulieren
+      mockEventSource!.emit('message', {
+        type: 'content',
+        content: 'Antwort mit '
+      });
+      await waitForPromises();
+
+      mockEventSource!.emit('message', {
+        type: 'content',
+        content: 'Metadaten'
+      });
+      await waitForPromises();
+
+      // Metadaten-Event senden
+      mockEventSource!.emit('message', {
+        type: 'metadata',
+        metadata: {
+          sources: ['dokument-1.pdf', 'dokument-2.pdf'],
+          confidence: 0.92
+        }
+      });
+      await waitForPromises();
+
+      // Streaming abschließen
+      mockEventSource!.emit('done', {
+        id: 'response-123',
+        content: 'Antwort mit Metadaten',
+        metadata: {
+          sources: ['dokument-1.pdf', 'dokument-2.pdf'],
+          confidence: 0.92
+        }
+      });
+      await waitForPromises();
+
+      // Assert - Nachricht sollte Metadaten enthalten
+      expect(store.messages[sessionId][1].metadata).toBeDefined();
+      expect(store.messages[sessionId][1].metadata.sources).toEqual(['dokument-1.pdf', 'dokument-2.pdf']);
+      expect(store.messages[sessionId][1].metadata.confidence).toBe(0.92);
+    });
+
+    it('sollte mit Streaming-Fehlern umgehen können', async () => {
+      // Arrange
+      const store = useSessionsStore();
+      const sessionId = 'test-session-123';
+      const messageContent = 'Test-Nachricht';
+
+      // Bestehende Session hinzufügen
+      store.sessions = [createMockSession({ id: sessionId })];
+      store.messages[sessionId] = [];
+      store.currentSessionId = sessionId;
+
+      // Mock für EventSource
+      let mockEventSource: MockEventSource;
+      vi.stubGlobal('EventSource', class extends MockEventSource {
+        constructor(url: string) {
+          super(url);
+          mockEventSource = this;
+        }
+      });
+
+      // Act - Nachricht senden
+      store.sendMessage({ sessionId, content: messageContent });
+      await waitForPromises();
+
+      // Anfängliche Streaming-Antwort
+      mockEventSource!.emit('message', {
+        type: 'content',
+        content: 'Beginn der Antwort'
+      });
+      await waitForPromises();
+
+      // Fehler während des Streamings simulieren
+      mockEventSource!.emitError(new Error('Verbindungsfehler'));
+      await waitForPromises();
+
+      // Assert - Nachrichtenstatus sollte auf Fehler sein
+      expect(store.messages[sessionId][1].status).toBe('error');
+      expect(store.streaming.isActive).toBe(false);
+      expect(store.error).toBeDefined();
+      expect(store.error).toContain('Fehler bei der Kommunikation');
+    });
+
+    it('sollte den Fortschritt während des Streamings aktualisieren', async () => {
+      // Arrange
+      const store = useSessionsStore();
+      const sessionId = 'test-session-123';
+      const messageContent = 'Test-Nachricht';
+
+      // Bestehende Session hinzufügen
+      store.sessions = [createMockSession({ id: sessionId })];
+      store.messages[sessionId] = [];
+      store.currentSessionId = sessionId;
+
+      // Mock für EventSource
+      let mockEventSource: MockEventSource;
+      vi.stubGlobal('EventSource', class extends MockEventSource {
+        constructor(url: string) {
+          super(url);
+          mockEventSource = this;
+        }
+      });
+
+      // Act - Nachricht senden
+      store.sendMessage({ sessionId, content: messageContent });
+      await waitForPromises();
+
+      // Fortschritts-Event senden
+      mockEventSource!.emit('message', {
+        type: 'progress',
+        progress: 25
+      });
+      await waitForPromises();
+
+      // Assert - Fortschritt sollte aktualisiert sein
+      expect(store.streaming.progress).toBe(25);
+
+      // Weiteren Fortschritt simulieren
+      mockEventSource!.emit('message', {
+        type: 'progress',
+        progress: 75
+      });
+      await waitForPromises();
+
+      // Assert - Fortschritt sollte weiter aktualisiert sein
+      expect(store.streaming.progress).toBe(75);
+
+      // Abschluss
+      mockEventSource!.emit('done', {
+        id: 'response-123',
+        content: 'Fertige Antwort'
+      });
+      await waitForPromises();
+
+      // Assert - Streaming sollte abgeschlossen sein
+      expect(store.streaming.isActive).toBe(false);
+      expect(store.streaming.progress).toBe(100);
     });
   });
   
@@ -637,65 +802,462 @@ describe('Sessions Store', () => {
       const store = useSessionsStore();
       const session1 = createMockSession({ id: 'session-1' });
       const session2 = createMockSession({ id: 'session-2' });
-      
+
       store.sessions = [session1, session2];
       store.currentSessionId = 'session-2';
-      
+
       // Act & Assert
       expect(store.currentSession).toEqual(session2);
-      
+
       // Wenn keine aktuelle Session vorhanden ist
       store.currentSessionId = 'nicht-vorhanden';
       expect(store.currentSession).toBeNull();
     });
-    
+
     it('sollte die aktuellen Nachrichten korrekt berechnen', () => {
       // Arrange
       const store = useSessionsStore();
       const sessionId = 'test-session-123';
       const messages = [createMockMessage({ sessionId })];
-      
+
       store.messages = { [sessionId]: messages };
       store.currentSessionId = sessionId;
-      
+
       // Act & Assert
       expect(store.currentMessages).toEqual(messages);
-      
+
       // Wenn keine aktuelle Session vorhanden ist
       store.currentSessionId = null;
       expect(store.currentMessages).toEqual([]);
     });
-    
+
     it('sollte Sessions korrekt sortieren', () => {
       // Arrange
       const store = useSessionsStore();
-      
+
       // Sessions mit unterschiedlichen Zeitstempeln und Pin-Status
-      const olderSession = createMockSession({ 
-        id: 'older', 
+      const olderSession = createMockSession({
+        id: 'older',
         updatedAt: '2023-01-01T10:00:00Z',
         isPinned: false
       });
-      const newerSession = createMockSession({ 
-        id: 'newer', 
+      const newerSession = createMockSession({
+        id: 'newer',
         updatedAt: '2023-01-01T11:00:00Z',
         isPinned: false
       });
-      const pinnedOlderSession = createMockSession({ 
-        id: 'pinned-older', 
+      const pinnedOlderSession = createMockSession({
+        id: 'pinned-older',
         updatedAt: '2023-01-01T09:00:00Z',
         isPinned: true
       });
-      
+
       store.sessions = [olderSession, newerSession, pinnedOlderSession];
-      
+
       // Act & Assert
       const sortedSessions = store.sortedSessions;
-      
+
       // Gepinnte Sessions sollten zuerst kommen, dann nach Datum sortiert
       expect(sortedSessions[0].id).toBe('pinned-older');
       expect(sortedSessions[1].id).toBe('newer');
       expect(sortedSessions[2].id).toBe('older');
+    });
+
+    it('sollte Sessions nach Tag filtern können', () => {
+      // Arrange
+      const store = useSessionsStore();
+
+      // Sessions mit verschiedenen Tags erstellen
+      const session1 = createMockSession({
+        id: 'session-1',
+        tags: [{ id: 'important', name: 'Wichtig', color: '#F56565' }]
+      });
+      const session2 = createMockSession({
+        id: 'session-2',
+        tags: [{ id: 'work', name: 'Arbeit', color: '#3182CE' }]
+      });
+      const session3 = createMockSession({
+        id: 'session-3',
+        tags: [
+          { id: 'important', name: 'Wichtig', color: '#F56565' },
+          { id: 'work', name: 'Arbeit', color: '#3182CE' }
+        ]
+      });
+
+      store.sessions = [session1, session2, session3];
+
+      // Act & Assert
+      const importantSessions = store.getSessionsByTag.value('important');
+      const workSessions = store.getSessionsByTag.value('work');
+
+      expect(importantSessions).toHaveLength(2);
+      expect(importantSessions.map(s => s.id)).toContain('session-1');
+      expect(importantSessions.map(s => s.id)).toContain('session-3');
+
+      expect(workSessions).toHaveLength(2);
+      expect(workSessions.map(s => s.id)).toContain('session-2');
+      expect(workSessions.map(s => s.id)).toContain('session-3');
+    });
+
+    it('sollte Sessions nach Kategorie filtern können', () => {
+      // Arrange
+      const store = useSessionsStore();
+
+      // Sessions mit verschiedenen Kategorien erstellen
+      const session1 = createMockSession({
+        id: 'session-1',
+        category: { id: 'general', name: 'Allgemein', color: '#718096' }
+      });
+      const session2 = createMockSession({
+        id: 'session-2',
+        category: { id: 'support', name: 'Support', color: '#3182CE' }
+      });
+      const session3 = createMockSession({
+        id: 'session-3',
+        category: { id: 'support', name: 'Support', color: '#3182CE' }
+      });
+
+      store.sessions = [session1, session2, session3];
+
+      // Act & Assert
+      const generalSessions = store.getSessionsByCategory.value('general');
+      const supportSessions = store.getSessionsByCategory.value('support');
+
+      expect(generalSessions).toHaveLength(1);
+      expect(generalSessions[0].id).toBe('session-1');
+
+      expect(supportSessions).toHaveLength(2);
+      expect(supportSessions.map(s => s.id)).toContain('session-2');
+      expect(supportSessions.map(s => s.id)).toContain('session-3');
+    });
+
+    it('sollte archivierte und aktive Sessions separat zurückgeben', () => {
+      // Arrange
+      const store = useSessionsStore();
+
+      // Sessions mit verschiedenem Archivierungsstatus erstellen
+      const activeSession1 = createMockSession({ id: 'active-1', isArchived: false });
+      const activeSession2 = createMockSession({ id: 'active-2', isArchived: false });
+      const archivedSession = createMockSession({ id: 'archived-1', isArchived: true });
+
+      store.sessions = [activeSession1, activeSession2, archivedSession];
+
+      // Act & Assert
+      expect(store.activeSessions).toHaveLength(2);
+      expect(store.activeSessions.map(s => s.id)).toContain('active-1');
+      expect(store.activeSessions.map(s => s.id)).toContain('active-2');
+
+      expect(store.archivedSessions).toHaveLength(1);
+      expect(store.archivedSessions[0].id).toBe('archived-1');
+    });
+
+    it('sollte alle aktuellen Nachrichten einschließlich ausstehender zurückgeben', () => {
+      // Arrange
+      const store = useSessionsStore();
+      const sessionId = 'test-session-123';
+
+      // Reguläre und ausstehende Nachrichten hinzufügen
+      const regularMessages = [
+        createMockMessage({ id: 'regular-1', sessionId, content: 'Reguläre Nachricht' })
+      ];
+      const pendingMessages = [
+        createMockMessage({
+          id: 'pending-1',
+          sessionId,
+          content: 'Ausstehende Nachricht',
+          status: 'pending'
+        })
+      ];
+
+      store.messages = { [sessionId]: regularMessages };
+      store.pendingMessages = { [sessionId]: pendingMessages };
+      store.currentSessionId = sessionId;
+
+      // Act & Assert
+      expect(store.allCurrentMessages).toHaveLength(2);
+      expect(store.allCurrentMessages.map(m => m.id)).toContain('regular-1');
+      expect(store.allCurrentMessages.map(m => m.id)).toContain('pending-1');
+      expect(store.allCurrentMessages).toEqual(expect.arrayContaining([
+        expect.objectContaining({ id: 'regular-1' }),
+        expect.objectContaining({ id: 'pending-1' })
+      ]));
+    });
+  });
+
+  describe('Session Tags und Kategorien', () => {
+    it('sollte einer Session einen Tag hinzufügen können', async () => {
+      // Arrange
+      const store = useSessionsStore();
+      const sessionId = 'test-session-123';
+      const tagId = 'important';
+
+      // Session ohne Tags erstellen
+      store.sessions = [createMockSession({ id: sessionId })];
+
+      // Tag in verfügbaren Tags hinzufügen
+      store.availableTags = [
+        { id: 'important', name: 'Wichtig', color: '#F56565' }
+      ];
+
+      // Mock für die API-Anfrage
+      vi.mocked(axios.patch).mockResolvedValueOnce(createApiResponse({}));
+
+      // Act
+      await store.addTagToSession(sessionId, tagId);
+
+      // Assert
+      expect(store.sessions[0].tags).toBeDefined();
+      expect(store.sessions[0].tags).toHaveLength(1);
+      expect(store.sessions[0].tags![0].id).toBe('important');
+
+      // Verify API call
+      expect(axios.patch).toHaveBeenCalledWith(
+        `/api/sessions/${sessionId}`,
+        { tags: store.sessions[0].tags },
+        { headers: { Authorization: 'Bearer mock-token' } }
+      );
+    });
+
+    it('sollte einen Tag von einer Session entfernen können', async () => {
+      // Arrange
+      const store = useSessionsStore();
+      const sessionId = 'test-session-123';
+      const tagId = 'important';
+
+      // Session mit Tags erstellen
+      store.sessions = [
+        createMockSession({
+          id: sessionId,
+          tags: [
+            { id: 'important', name: 'Wichtig', color: '#F56565' },
+            { id: 'work', name: 'Arbeit', color: '#3182CE' }
+          ]
+        })
+      ];
+
+      // Mock für die API-Anfrage
+      vi.mocked(axios.patch).mockResolvedValueOnce(createApiResponse({}));
+
+      // Act
+      await store.removeTagFromSession(sessionId, tagId);
+
+      // Assert
+      expect(store.sessions[0].tags).toHaveLength(1);
+      expect(store.sessions[0].tags![0].id).toBe('work');
+
+      // Verify API call
+      expect(axios.patch).toHaveBeenCalledWith(
+        `/api/sessions/${sessionId}`,
+        { tags: store.sessions[0].tags },
+        { headers: { Authorization: 'Bearer mock-token' } }
+      );
+    });
+
+    it('sollte die Kategorie einer Session setzen können', async () => {
+      // Arrange
+      const store = useSessionsStore();
+      const sessionId = 'test-session-123';
+      const categoryId = 'support';
+
+      // Session ohne Kategorie erstellen
+      store.sessions = [createMockSession({ id: sessionId })];
+
+      // Kategorie in verfügbaren Kategorien hinzufügen
+      store.availableCategories = [
+        { id: 'support', name: 'Support', color: '#3182CE' }
+      ];
+
+      // Mock für die API-Anfrage
+      vi.mocked(axios.patch).mockResolvedValueOnce(createApiResponse({}));
+
+      // Act
+      await store.setCategoryForSession(sessionId, categoryId);
+
+      // Assert
+      expect(store.sessions[0].category).toBeDefined();
+      expect(store.sessions[0].category!.id).toBe('support');
+
+      // Verify API call
+      expect(axios.patch).toHaveBeenCalledWith(
+        `/api/sessions/${sessionId}`,
+        { category: store.sessions[0].category },
+        { headers: { Authorization: 'Bearer mock-token' } }
+      );
+    });
+
+    it('sollte die Kategorie einer Session entfernen können', async () => {
+      // Arrange
+      const store = useSessionsStore();
+      const sessionId = 'test-session-123';
+
+      // Session mit Kategorie erstellen
+      store.sessions = [
+        createMockSession({
+          id: sessionId,
+          category: { id: 'support', name: 'Support', color: '#3182CE' }
+        })
+      ];
+
+      // Mock für die API-Anfrage
+      vi.mocked(axios.patch).mockResolvedValueOnce(createApiResponse({}));
+
+      // Act
+      await store.removeCategoryFromSession(sessionId);
+
+      // Assert
+      expect(store.sessions[0].category).toBeUndefined();
+
+      // Verify API call
+      expect(axios.patch).toHaveBeenCalledWith(
+        `/api/sessions/${sessionId}`,
+        { category: null },
+        { headers: { Authorization: 'Bearer mock-token' } }
+      );
+    });
+
+    it('sollte eine Session archivieren/dearchivieren können', async () => {
+      // Arrange
+      const store = useSessionsStore();
+      const sessionId = 'test-session-123';
+
+      // Session erstellen
+      store.sessions = [createMockSession({ id: sessionId, isArchived: false })];
+
+      // Mock für die API-Anfrage
+      vi.mocked(axios.patch).mockResolvedValueOnce(createApiResponse({}));
+
+      // Act - Session archivieren
+      await store.toggleArchiveSession(sessionId, true);
+
+      // Assert
+      expect(store.sessions[0].isArchived).toBe(true);
+
+      // Verify API call
+      expect(axios.patch).toHaveBeenCalledWith(
+        `/api/sessions/${sessionId}`,
+        { isArchived: true },
+        { headers: { Authorization: 'Bearer mock-token' } }
+      );
+
+      // Reset Mock
+      vi.mocked(axios.patch).mockReset();
+      vi.mocked(axios.patch).mockResolvedValueOnce(createApiResponse({}));
+
+      // Act - Session dearchivieren
+      await store.toggleArchiveSession(sessionId, false);
+
+      // Assert
+      expect(store.sessions[0].isArchived).toBe(false);
+
+      // Verify API call
+      expect(axios.patch).toHaveBeenCalledWith(
+        `/api/sessions/${sessionId}`,
+        { isArchived: false },
+        { headers: { Authorization: 'Bearer mock-token' } }
+      );
+    });
+  });
+
+  describe('Massenoperationen', () => {
+    it('sollte Sessions für die Massenbearbeitung auswählen können', () => {
+      // Arrange
+      const store = useSessionsStore();
+      const sessionId1 = 'session-1';
+      const sessionId2 = 'session-2';
+
+      // Act - Sessions auswählen
+      store.selectSession(sessionId1);
+      store.selectSession(sessionId2);
+
+      // Assert
+      expect(store.selectedSessionIds).toHaveLength(2);
+      expect(store.selectedSessionIds).toContain(sessionId1);
+      expect(store.selectedSessionIds).toContain(sessionId2);
+    });
+
+    it('sollte eine Session aus der Auswahl entfernen können', () => {
+      // Arrange
+      const store = useSessionsStore();
+      store.selectedSessionIds = ['session-1', 'session-2', 'session-3'];
+
+      // Act
+      store.deselectSession('session-2');
+
+      // Assert
+      expect(store.selectedSessionIds).toHaveLength(2);
+      expect(store.selectedSessionIds).toContain('session-1');
+      expect(store.selectedSessionIds).toContain('session-3');
+      expect(store.selectedSessionIds).not.toContain('session-2');
+    });
+
+    it('sollte die Sitzungsauswahl umschalten können', () => {
+      // Arrange
+      const store = useSessionsStore();
+      store.selectedSessionIds = ['session-1'];
+
+      // Act - Vorhandene Session abwählen
+      store.toggleSessionSelection('session-1');
+
+      // Assert
+      expect(store.selectedSessionIds).toHaveLength(0);
+
+      // Act - Nicht vorhandene Session auswählen
+      store.toggleSessionSelection('session-2');
+
+      // Assert
+      expect(store.selectedSessionIds).toHaveLength(1);
+      expect(store.selectedSessionIds).toContain('session-2');
+    });
+
+    it('sollte alle ausgewählten Sessions archivieren können', async () => {
+      // Arrange
+      const store = useSessionsStore();
+
+      // Sessions erstellen
+      store.sessions = [
+        createMockSession({ id: 'session-1', isArchived: false }),
+        createMockSession({ id: 'session-2', isArchived: false })
+      ];
+
+      // Sessions auswählen
+      store.selectedSessionIds = ['session-1', 'session-2'];
+
+      // Spy für toggleArchiveSession
+      const toggleArchiveSpy = vi.spyOn(store, 'toggleArchiveSession').mockResolvedValue();
+
+      // Act
+      await store.archiveMultipleSessions(['session-1', 'session-2']);
+
+      // Assert
+      expect(toggleArchiveSpy).toHaveBeenCalledTimes(2);
+      expect(toggleArchiveSpy).toHaveBeenCalledWith('session-1', true);
+      expect(toggleArchiveSpy).toHaveBeenCalledWith('session-2', true);
+      expect(store.selectedSessionIds).toHaveLength(0); // Auswahl zurückgesetzt
+    });
+
+    it('sollte allen ausgewählten Sessions einen Tag hinzufügen können', async () => {
+      // Arrange
+      const store = useSessionsStore();
+
+      // Sessions erstellen
+      store.sessions = [
+        createMockSession({ id: 'session-1' }),
+        createMockSession({ id: 'session-2' })
+      ];
+
+      // Sessions auswählen
+      store.selectedSessionIds = ['session-1', 'session-2'];
+
+      // Spy für addTagToSession
+      const addTagSpy = vi.spyOn(store, 'addTagToSession').mockResolvedValue();
+
+      // Act
+      await store.addTagToMultipleSessions(['session-1', 'session-2'], 'important');
+
+      // Assert
+      expect(addTagSpy).toHaveBeenCalledTimes(2);
+      expect(addTagSpy).toHaveBeenCalledWith('session-1', 'important');
+      expect(addTagSpy).toHaveBeenCalledWith('session-2', 'important');
     });
   });
 });
