@@ -359,14 +359,30 @@ Die `ChatContainer`-Komponente dient als Hauptcontainer für die Chat-Funktional
 | `showMessageActions` | `boolean` | `true` | Ob Aktionen angezeigt werden sollen |
 | `canRenameSession` | `boolean` | `true` | Ob die Session umbenannt werden kann |
 | `canExportSession` | `boolean` | `true` | Ob die Session exportiert werden kann |
+| `canArchiveSession` | `boolean` | `true` | Ob die Session archiviert werden kann |
 | `canClearSession` | `boolean` | `true` | Ob die Session geleert werden kann |
+
+#### Events
+
+| Name | Payload | Beschreibung |
+|------|---------|--------------|
+| `message-sent` | `{ content: string, sessionId: string }` | Wird ausgelöst, wenn eine Nachricht gesendet wurde |
+| `message-received` | `{ message: ChatMessage, sessionId: string }` | Wird ausgelöst, wenn eine Nachricht empfangen wurde |
+| `error` | `{ error: string, context?: string }` | Wird ausgelöst, wenn ein Fehler auftritt |
+| `session-renamed` | `{ sessionId: string, title: string }` | Wird ausgelöst, wenn eine Session umbenannt wurde |
+| `session-archived` | `{ sessionId: string, isArchived: boolean }` | Wird ausgelöst, wenn eine Session archiviert oder dearchiviert wurde |
+| `session-cleared` | `{ sessionId: string }` | Wird ausgelöst, wenn alle Nachrichten einer Session gelöscht wurden |
+| `messages-loaded` | `{ count: number, direction: 'up' \| 'down' }` | Wird ausgelöst, wenn weitere Nachrichten geladen wurden |
+| `scroll` | `{ isAtBottom: boolean, scrollTop: number }` | Wird ausgelöst, wenn das Scrollen sich verändert hat |
 
 #### Technische Details
 
-- **Session-Verwaltung**: Integriert mit dem Pinia SessionsStore
-- **Modale Dialoge**: Implementiert für Quellen und Erklärungen
+- **Session-Verwaltung**: Vollständig integriert mit dem Pinia SessionsStore für Operationen wie Umbenennen, Exportieren und Archivieren
+- **Erweiterte Quellen-Anzeige**: Modal-Dialog mit Sortierungs-, Filter- und Suchfunktionen
 - **Event-Handling**: Fungiert als Vermittler zwischen Komponenten und Store
-- **Responsives Design**: Anpassung an verschiedene Bildschirmgrößen
+- **Responsives Design**: Optimiert für Desktop- und Mobile-Nutzung mit spezifischen Touch-Gesten
+- **Touch-Unterstützung**: Implementiert Swipe- und Long-Press-Gesten für verbesserte Mobile-Interaktion
+- **Barrierefreiheit**: Vollständige ARIA-Unterstützung und semantische HTML-Struktur für Screenreader
 
 ## Pinia Store-Integration
 
@@ -600,43 +616,55 @@ Die Migration der Chat-Interface-Komponenten zu Vue 3 SFCs ist fortgeschrittener
 | MessageList | ~90% | 100% | Abgeschlossen | Hoch |
 | MessageItem | ~85% | ~95% | Nahezu abgeschlossen | Hoch |
 | ChatInput | ~80% | ~90% | Nahezu abgeschlossen | Hoch |
-| ChatContainer | ~60% | ~75% | Aktiv in Entwicklung | Hoch |
+| ChatContainer | ~60% | 100% | Abgeschlossen | Hoch |
 | SessionList | Nicht explizit angegeben | 100% | Abgeschlossen | Hoch |
 | SessionItem | Nicht explizit angegeben | ~95% | Nahezu abgeschlossen | Hoch |
 | SessionActions | Nicht explizit angegeben | ~90% | Nahezu abgeschlossen | Mittel |
 | SessionManager | ~40% | ~80% | Aktiv in Entwicklung | Mittel |
 | Chat-Bridge | ~85% | ~90% | Nahezu abgeschlossen | Mittel |
-| Styling & Theming | ~75% | ~85% | Aktiv in Entwicklung | Mittel |
+| Styling & Theming | ~75% | ~95% | Nahezu abgeschlossen | Mittel |
 | Tests | ~25% | ~40% | In Entwicklung | Mittel |
 
 ### Wesentliche Fortschritte und Erkenntnisse
 
 1. **Verbesserte Virtualisierung**: Die virtualisierte Listenimplementierung ist ausgereifter als dokumentiert, mit dynamischer Höhenberechnung mittels ResizeObserver und optimierten Scroll-Event-Handlern.
 
-2. **Erweiterte Session-Management-Funktionen**: Die SessionList-Komponente bietet zahlreiche Features, die in der ursprünglichen Dokumentation nicht erwähnt wurden:
-   - Multi-Select für Massenoperationen
-   - Fortschrittliches Tagging- und Kategorisierungssystem
-   - Erweiterte Filterfunktionen
-   - Skeleton Loading für verbesserte UX
-   - Virtualisierung für große Listen
+2. **Erweitertes Session-Management**: Die ChatContainer-Komponente bietet ein vollständiges Session-Management:
+   - Umbenennen von Sessions
+   - Exportieren als Textdateien
+   - Archivieren und Wiederherstellung von Sessions
+   - Löschen aller Nachrichten einer Session
 
-3. **Barrierefreiheit**: Die tatsächliche Implementierung legt größeren Wert auf Barrierefreiheit mit:
-   - Umfassenden ARIA-Attributen
+3. **Verbesserte Quellen-Anzeige**: Der Dialog zur Anzeige von Quellenreferenzen wurde stark verbessert:
+   - Sortierung nach Relevanz, Titel oder Seitennummer
+   - Volltextsuche in Quelleninhalten und -titeln
+   - Filterung nach Relevanz
+   - Kopieren von Quellen in die Zwischenablage
+
+4. **Mobile Touch-Optimierung**: Die Touch-Interaktion auf mobilen Geräten wurde durch folgende Features verbessert:
+   - Swipe-Gesten für häufige Aktionen (links für Quellen anzeigen, rechts für Dialog schließen)
+   - Long-Press-Gesten für Kontextmenüs
+   - Optimierte Touchpunkt-Größen und Abstände
+   - Einmaliger Hinweis auf verfügbare Touch-Gesten
+
+5. **Barrierefreiheit**: Die Implementierung legt großen Wert auf Barrierefreiheit mit:
+   - Umfassenden ARIA-Rollen, -Attributen und -Labels
+   - Semantischen HTML5-Strukturen
    - Vollständiger Tastaturnavigation
    - Reduzierte-Bewegung-Unterstützung
    - Screen-Reader-Optimierungen
 
-4. **Responsive Design**: Die Komponenten sind vollständig responsive mit anpassungsfähigem Layout und Touch-freundlicher Bedienung auf mobilen Geräten.
+6. **Responsives Design**: Die Komponenten sind vollständig responsive mit anpassungsfähigem Layout und optimaler Bedienung auf allen Geräten.
 
-5. **Bridge-Integration**: Die Bridge-Komponenten für die Kommunikation mit Legacy-Code sind weiter fortgeschritten als dokumentiert.
+7. **Bridge-Integration**: Die Integration mit dem Sessions-Store und der Bridge ist vollständig implementiert.
 
 ### Nächste Schritte
 
-1. **Abschluss der Tests**: Erhöhung der Testabdeckung von ~40% auf >80%.
+1. **Abschluss der Tests**: Implementierung von Unit- und E2E-Tests für die neuen Funktionalitäten und Erhöhung der Testabdeckung von ~40% auf >80%.
 2. **Performance-Optimierungen**: Weitere Optimierungen für sehr große Chat-Verläufe (>1000 Nachrichten).
-3. **Verbesserung der mobilen UX**: Optimierungen speziell für Touch-Interaktionen.
-4. **Feature-Toggle-Standardwerte**: Nach abgeschlossener Validierung die Feature-Toggles für stabile Komponenten auf `true` setzen.
-5. **Kontinuierliche Integration**: Automatisierte Tests in der CI-Pipeline für neue SFC-Komponenten.
+3. **Feature-Toggle-Standardwerte**: Nach abgeschlossener Validierung die Feature-Toggles für die ChatContainer-Komponente auf `true` setzen.
+4. **Kontinuierliche Integration**: Automatisierte Tests in der CI-Pipeline für die Chat-Komponenten.
+5. **User Experience Evaluierung**: Durchführung von Benutzertests zur Validierung der mobilen Touch-Optimierungen und Quellen-Anzeige.
 
 Die weitere Migration der Chat-Komponenten erfolgt weiterhin schrittweise unter Verwendung von Feature-Toggles, wobei die meisten Kernkomponenten bereits weiter fortgeschritten sind als initial dokumentiert.
 
@@ -679,7 +707,7 @@ export const DEFAULT_FEATURE_TOGGLES = {
 
 1. **Sehr lange Konversationen**: Bei extrem langen Konversationen (>1000 Nachrichten) kann es zu Performance-Einbußen kommen, auch mit virtualisiertem Rendering.
 2. **Komplexe Markdown-Inhalte**: Sehr komplexe Markdown-Formatierungen mit vielen eingebetteten Elementen können zu Rendering-Verzögerungen führen.
-3. **Mobile Touchevents**: Einige Touch-Gesten auf mobilen Geräten können von der scroll-detection-Logik falsch interpretiert werden.
+3. **Mobile Touchevents**: Implementiert sind Swipe-Gesten (links für Quellen anzeigen, rechts für Dialog schließen) und Long-Press-Aktionen. Bei sehr schnellen Gesten kann es in seltenen Fällen zu Fehlinterpretationen kommen.
 4. **Offline-Unterstützung**: Die Offline-Unterstützung ist beschränkt und erfordert eine manuelle Synchronisation nach Wiederverbindung.
 5. **Browser-Kompatibilität**: Volle Funktionalität ist nur in modernen Browsern verfügbar (IE11 wird nicht unterstützt).
 
