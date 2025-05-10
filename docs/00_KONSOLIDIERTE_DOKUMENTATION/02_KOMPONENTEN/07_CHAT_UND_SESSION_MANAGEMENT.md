@@ -1307,6 +1307,20 @@ function handleFileUpload(files: File[]) {
 
 ### SessionManager
 
+Die `SessionManager`-Komponente ist ein vollständiges System zur Verwaltung und Organisation von Chat-Sitzungen mit umfangreichen Funktionen:
+
+- **Dynamische Sortierung und Filterung**: Vollständiges Filterset mit Kategorien, Tags, Pinned und Archiviert
+- **Drag-and-Drop**: Flexible Neuordnung von Sitzungen
+- **Multi-Select-Modus**: Ermöglicht Massenoperationen auf mehreren Sitzungen gleichzeitig
+- **Kategoriesystem**: Organisation von Sitzungen in übergeordnete Kategorien
+- **Tag-System**: Feingranulare Markierung von Sitzungen mit Tags
+- **Archivierungssystem**: Bewegung von Sitzungen in ein Archiv für bessere Organisation
+- **Kontextmenüs**: Erweiterte Aktionen für jede Sitzung
+- **Zugänglichkeit**: Vollständige Tastaturbedienung und ARIA-Attribute
+- **Responsive Design**: Optimiert für alle Bildschirmgrößen
+
+#### Vollständiges Implementierungsbeispiel
+
 ```vue
 <template>
   <SessionManager
@@ -1315,19 +1329,37 @@ function handleFileUpload(files: File[]) {
     :loading="sessionsStore.isLoading"
     :searchEnabled="true"
     :sortable="true"
+    :availableCategories="sessionsStore.availableCategories"
+    :availableTags="sessionsStore.availableTags"
+    :categoriesEnabled="true"
+    :tagsEnabled="true"
+    :multiSelectEnabled="true"
+    :selectedSessionIds="selectedIds"
     @session-selected="handleSessionSelect"
     @session-created="handleSessionCreate"
     @session-deleted="handleSessionDelete"
     @session-updated="handleSessionUpdate"
     @session-pinned="handleSessionPin"
+    @session-categorized="handleSessionCategorize"
+    @session-uncategorized="handleSessionUncategorize"
+    @session-tagged="handleSessionTag"
+    @session-untagged="handleSessionUntag"
+    @session-archived="handleSessionArchive"
+    @session-toggle-select="handleSessionToggleSelect"
+    @sessions-archive-multi="handleSessionsArchiveMulti"
+    @sessions-delete-multi="handleSessionsDeleteMulti"
+    @sessions-tag-multi="handleSessionsTagMulti"
+    @sessions-categorize-multi="handleSessionsCategorizeMulti"
   />
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import { SessionManager } from '@/components/chat';
 import { useSessionsStore } from '@/stores/sessions';
 
 const sessionsStore = useSessionsStore();
+const selectedIds = ref<string[]>([]);
 
 function handleSessionSelect(sessionId: string) {
   sessionsStore.setCurrentSession(sessionId);
@@ -1348,8 +1380,96 @@ function handleSessionUpdate(payload: { id: string, title: string }) {
 function handleSessionPin(payload: { id: string, isPinned: boolean }) {
   sessionsStore.togglePinSession(payload.id);
 }
+
+function handleSessionCategorize(payload: { id: string, categoryId: string }) {
+  sessionsStore.setCategoryForSession(payload.id, payload.categoryId);
+}
+
+function handleSessionUncategorize(sessionId: string) {
+  sessionsStore.removeCategoryFromSession(sessionId);
+}
+
+function handleSessionTag(payload: { id: string, tagId: string }) {
+  sessionsStore.addTagToSession(payload.id, payload.tagId);
+}
+
+function handleSessionUntag(payload: { id: string, tagId: string }) {
+  sessionsStore.removeTagFromSession(payload.id, payload.tagId);
+}
+
+function handleSessionArchive(payload: { id: string, isArchived: boolean }) {
+  sessionsStore.toggleArchiveSession(payload.id, payload.isArchived);
+}
+
+function handleSessionToggleSelect(sessionId: string) {
+  const index = selectedIds.value.indexOf(sessionId);
+  if (index === -1) {
+    selectedIds.value.push(sessionId);
+  } else {
+    selectedIds.value.splice(index, 1);
+  }
+}
+
+// Multi-Select-Operationen
+function handleSessionsArchiveMulti(sessionIds: string[]) {
+  sessionsStore.archiveMultipleSessions(sessionIds);
+  selectedIds.value = [];
+}
+
+function handleSessionsDeleteMulti(sessionIds: string[]) {
+  sessionsStore.deleteMultipleSessions(sessionIds);
+  selectedIds.value = [];
+}
+
+function handleSessionsTagMulti(payload: { ids: string[], tagId: string }) {
+  sessionsStore.addTagToMultipleSessions(payload.ids, payload.tagId);
+  selectedIds.value = [];
+}
+
+function handleSessionsCategorizeMulti(payload: { ids: string[], categoryId: string }) {
+  sessionsStore.setCategoryForMultipleSessions(payload.ids, payload.categoryId);
+  selectedIds.value = [];
+}
 </script>
 ```
+
+#### Erweiterte Props-Referenz
+
+| Name | Typ | Standardwert | Beschreibung |
+|------|-----|--------------|--------------|
+| `sessions` | `ChatSession[]` | `[]` | Liste aller Sitzungen |
+| `currentSessionId` | `string \| null` | `null` | ID der aktiven Sitzung |
+| `loading` | `boolean` | `false` | Ladezustand |
+| `searchEnabled` | `boolean` | `true` | Aktiviert die Suchfunktion |
+| `sortable` | `boolean` | `true` | Aktiviert Drag & Drop |
+| `collapsed` | `boolean` | `false` | Minimierter Zustand |
+| `maxSessions` | `number` | `0` | Max. Anzahl der Sitzungen (0 = unbegrenzt) |
+| `availableCategories` | `SessionCategory[]` | `[]` | Verfügbare Kategorien |
+| `availableTags` | `SessionTag[]` | `[]` | Verfügbare Tags |
+| `categoriesEnabled` | `boolean` | `true` | Aktiviert Kategoriesystem |
+| `tagsEnabled` | `boolean` | `true` | Aktiviert Tag-System |
+| `multiSelectEnabled` | `boolean` | `true` | Aktiviert Mehrfachauswahl |
+| `selectedSessionIds` | `string[]` | `[]` | Ausgewählte Session-IDs |
+
+#### Erweiterte Events-Referenz
+
+| Name | Payload | Beschreibung |
+|------|---------|--------------|
+| `session-selected` | `string` | Sitzung ausgewählt |
+| `session-created` | `string` | Neue Sitzung erstellt |
+| `session-deleted` | `string` | Sitzung gelöscht |
+| `session-updated` | `{ id: string, title: string }` | Sitzung umbenannt |
+| `session-pinned` | `{ id: string, isPinned: boolean }` | Pin-Status geändert |
+| `session-categorized` | `{ id: string, categoryId: string }` | Kategorie zugewiesen |
+| `session-uncategorized` | `string` | Kategorie entfernt |
+| `session-tagged` | `{ id: string, tagId: string }` | Tag hinzugefügt |
+| `session-untagged` | `{ id: string, tagId: string }` | Tag entfernt |
+| `session-archived` | `{ id: string, isArchived: boolean }` | Archivierungsstatus geändert |
+| `session-toggle-select` | `string` | Auswahlstatus umgeschaltet |
+| `sessions-archive-multi` | `string[]` | Mehrere Sitzungen archiviert |
+| `sessions-delete-multi` | `string[]` | Mehrere Sitzungen gelöscht |
+| `sessions-tag-multi` | `{ ids: string[], tagId: string }` | Tag zu mehreren Sitzungen |
+| `sessions-categorize-multi` | `{ ids: string[], categoryId: string }` | Kategorie zu mehreren Sitzungen |
 
 ## Tests und Qualitätssicherung
 
