@@ -183,40 +183,362 @@ Die wichtigsten Komponenten der Anwendung sind:
 
 #### MainLayout.vue - Hauptlayoutkomponente
 
+Die optimierte MainLayout-Komponente bietet umfangreiche Anpassungsmöglichkeiten für das Layout der Anwendung:
+
 ```vue
 <template>
-  <div class="main-layout">
-    <header-component />
-    <div class="main-content">
-      <sidebar-component v-if="showSidebar" />
-      <main class="content-area">
-        <slot />
+  <div
+    ref="layoutRef"
+    class="n-main-layout"
+    :class="{
+      'n-main-layout--sidebar-collapsed': isSidebarCollapsed,
+      'n-main-layout--sidebar-hidden': !showSidebar,
+      'n-main-layout--footer-hidden': !showFooter,
+      [`n-main-layout--${theme}`]: true,
+      [`n-main-layout--grid-${gridLayout}`]: true,
+      [`n-main-layout--content-width-${contentWidth}`]: true,
+      'n-main-layout--has-sidebar-overlay': hasSidebarOverlay,
+      'n-main-layout--mobile': isMobile
+    }"
+    :style="customStyles"
+  >
+    <!-- Header -->
+    <header
+      v-if="showHeader"
+      class="n-main-layout__header"
+      :class="{
+        'n-main-layout__header--sticky': stickyHeader,
+        'n-main-layout__header--elevated': headerElevation,
+        [`n-main-layout__header--${headerSize}`]: true
+      }"
+    >
+      <slot name="header">
+        <Header
+          :title="title"
+          :show-toggle-button="showSidebar"
+          :logo="logo"
+          :logo-alt="logoAlt"
+          :size="headerSize"
+          :user="user"
+          @toggle-sidebar="toggleSidebar"
+        />
+      </slot>
+    </header>
+
+    <div class="n-main-layout__body">
+      <!-- Sidebar -->
+      <aside
+        v-if="showSidebar"
+        class="n-main-layout__sidebar"
+        :class="{
+          'n-main-layout__sidebar--fixed': sidebarFixed,
+          'n-main-layout__sidebar--elevated': sidebarElevation
+        }"
+      >
+        <slot name="sidebar">
+          <Sidebar
+            :items="sidebarItems"
+            :active-item-id="activeSidebarItemId"
+            :title="sidebarTitle"
+            :collapsed="isSidebarCollapsed"
+            @toggle-collapse="setSidebarCollapsed"
+            @select="handleSidebarItemSelect"
+          />
+        </slot>
+      </aside>
+
+      <!-- Sidebar Overlay für mobile Ansicht -->
+      <div
+        v-if="hasSidebarOverlay && showSidebar"
+        class="n-main-layout__sidebar-overlay"
+        @click="closeSidebarOnMobile"
+      ></div>
+
+      <!-- Main Content -->
+      <main
+        class="n-main-layout__content"
+        :class="{
+          'n-main-layout__content--has-padding': contentPadding,
+          [`n-main-layout__content--align-${contentAlignment}`]: true,
+          'n-main-layout__content--full-height': fullHeightContent
+        }"
+      >
+        <div
+          class="n-main-layout__content-container"
+          :class="{
+            [`n-main-layout__content-container--width-${contentWidth}`]: true
+          }"
+        >
+          <slot></slot>
+        </div>
       </main>
     </div>
-    <footer-component v-if="showFooter" />
+
+    <!-- Footer -->
+    <footer
+      v-if="showFooter"
+      class="n-main-layout__footer"
+      :class="{
+        'n-main-layout__footer--sticky': stickyFooter,
+        'n-main-layout__footer--elevated': footerElevation
+      }"
+    >
+      <slot name="footer">
+        <div class="n-main-layout__footer-content">
+          <p>© {{ currentYear }} {{ footerText || title }}</p>
+          <div v-if="showVersionInfo" class="n-main-layout__version-info">
+            <span>Version {{ versionInfo }}</span>
+          </div>
+        </div>
+      </slot>
+    </footer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, computed, provide, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useUIStore } from '@/stores/ui';
-import HeaderComponent from '@/components/header/HeaderComponent.vue';
-import SidebarComponent from '@/components/sidebar/SidebarComponent.vue';
-import FooterComponent from '@/components/footer/FooterComponent.vue';
+import Header from './Header.vue';
+import Sidebar from './Sidebar.vue';
 
-const route = useRoute();
-const uiStore = useUIStore();
+// Umfangreiche Props-Definition für maximale Anpassungsfähigkeit
+export interface MainLayoutProps {
+  title?: string;
+  logo?: string;
+  logoAlt?: string;
+  showHeader?: boolean;
+  showSidebar?: boolean;
+  showFooter?: boolean;
+  sidebarItems?: SidebarItem[];
+  sidebarCollapsed?: boolean;
+  theme?: 'light' | 'dark' | 'system';
+  stickyHeader?: boolean;
+  stickyFooter?: boolean;
+  sidebarTitle?: string;
+  activeSidebarItemId?: string;
+  gridLayout?: 'default' | 'sidebar-left' | 'sidebar-right' | 'full-width' | 'centered';
+  contentWidth?: 'narrow' | 'medium' | 'wide' | 'full';
+  contentPadding?: boolean;
+  contentAlignment?: 'left' | 'center' | 'right';
+  fullHeightContent?: boolean;
+  sidebarFixed?: boolean;
+  customCssVars?: Record<string, string>;
+  user?: {
+    name?: string;
+    avatar?: string;
+    email?: string;
+  };
+  headerSize?: 'small' | 'medium' | 'large';
+  headerElevation?: boolean;
+  sidebarElevation?: boolean;
+  footerElevation?: boolean;
+  footerText?: string;
+  versionInfo?: string;
+  showVersionInfo?: boolean;
+}
 
-// Bestimme, ob Sidebar angezeigt werden soll
-const showSidebar = computed(() => {
-  return !route.meta.hideSidebar && uiStore.isSidebarVisible;
-});
+export interface SidebarItem {
+  id: string;
+  label: string;
+  icon?: string;
+  route?: string;
+  children?: SidebarItem[];
+  disabled?: boolean;
+  active?: boolean;
+  badge?: string | number;
+  badgeType?: 'default' | 'primary' | 'success' | 'warning' | 'error';
+  permissions?: string[];
+  tooltip?: string;
+}
 
-// Bestimme, ob Footer angezeigt werden soll
-const showFooter = computed(() => {
-  return !route.meta.hideFooter;
-});
+// Weitere Implementierungsdetails weggelassen der Kürze halber
+</script>
+```
+
+#### Header.vue - Header-Komponente
+
+Die Header-Komponente ist eine flexible Komponente für den oberen Bereich der Anwendung, die zahlreiche Funktionen bietet:
+
+```vue
+<template>
+  <div
+    ref="headerRef"
+    class="n-header"
+    :class="{
+      'n-header--fixed': fixed,
+      'n-header--bordered': bordered,
+      'n-header--elevated': elevated,
+      [`n-header--${size}`]: true,
+      'n-header--has-navigation': showNavigation,
+      'n-header--search-active': isSearchActive,
+      'n-header--notification-active': isNotificationActive,
+      'n-header--mobile': isMobile
+    }"
+    :style="{ height: `${computedHeight}px`, ...customStyles }"
+  >
+    <div class="n-header__left">
+      <!-- Toggle Button für Sidebar -->
+      <button
+        v-if="showToggleButton"
+        class="n-header__toggle-btn"
+        @click="handleToggleClick"
+        aria-label="Seitenleiste umschalten"
+        type="button"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <!-- SVG-Pfade für Hamburger-Icon -->
+        </svg>
+      </button>
+
+      <!-- Logo -->
+      <div class="n-header__logo">
+        <slot name="logo">
+          <div v-if="logo" class="n-header__logo-image">
+            <img :src="logo" :alt="logoAlt || title" />
+          </div>
+        </slot>
+      </div>
+
+      <!-- Titel -->
+      <h1 v-if="title && showTitle" class="n-header__title">
+        <slot name="title">{{ title }}</slot>
+      </h1>
+    </div>
+
+    <div class="n-header__center">
+      <slot name="center">
+        <!-- Dynamische Navigation -->
+        <nav v-if="showNavigation && navigationItems.length > 0" class="n-header__navigation">
+          <ul class="n-header__nav-list">
+            <!-- Reguläre Navigationspunkte -->
+            <li
+              v-for="item in visibleNavigationItems"
+              :key="item.id"
+              class="n-header__nav-item"
+              :class="{ 'n-header__nav-item--active': isActiveNavigationItem(item) }"
+            >
+              <!-- Navigation-Item-Rendering -->
+            </li>
+
+            <!-- "Mehr" Dropdown für Overflow-Items -->
+            <li v-if="hasOverflowingItems" class="n-header__nav-item n-header__nav-item--more">
+              <!-- "Mehr" Button und Dropdown -->
+            </li>
+          </ul>
+        </nav>
+
+        <!-- Suchleiste -->
+        <div v-if="showSearch" class="n-header__search" :class="{ 'n-header__search--active': isSearchActive }">
+          <!-- Suchfunktionalität und Autovervollständigung -->
+        </div>
+      </slot>
+    </div>
+
+    <div class="n-header__right">
+      <slot name="right">
+        <div class="n-header__actions">
+          <!-- Suchknopf für mobile Ansicht -->
+          <button v-if="showSearch && isMobile && !isSearchActive"
+            class="n-header__action-button n-header__action-button--search"
+            @click="toggleSearch"
+            aria-label="Suche"
+            type="button"
+          ></button>
+
+          <!-- Benachrichtigungen -->
+          <div v-if="$slots.notifications" class="n-header__notifications">
+            <slot name="notifications"></slot>
+          </div>
+          <div v-else-if="showNotifications" class="n-header__notification-center">
+            <!-- Benachrichtigungssystem -->
+          </div>
+
+          <!-- Benutzermenü -->
+          <div v-if="$slots.user" class="n-header__user">
+            <slot name="user"></slot>
+          </div>
+          <div v-else-if="user" class="n-header__user-menu">
+            <!-- Benutzermenü mit Dropdown -->
+          </div>
+        </div>
+      </slot>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+// TypeScript-Interfaces für die Komponente
+export interface NavigationItem {
+  id: string;
+  label: string;
+  icon?: string | object;
+  href?: string;
+  active?: boolean;
+  badge?: string | number;
+  badgeType?: 'default' | 'primary' | 'success' | 'warning' | 'error';
+  tooltip?: string;
+  permissions?: string[];
+  onClick?: () => void;
+}
+
+export interface SearchResult {
+  id: string;
+  title: string;
+  description?: string;
+  icon?: string | object;
+  category?: string;
+  url?: string;
+  onSelect?: (result: SearchResult) => void;
+}
+
+export interface Notification {
+  id: string;
+  title: string;
+  message?: string;
+  type?: 'default' | 'info' | 'success' | 'warning' | 'error';
+  icon?: string | object;
+  read?: boolean;
+  time?: Date | number | string;
+  action?: string | (() => void);
+  actionLabel?: string;
+}
+
+// Umfangreiche Props-Definition
+export interface HeaderProps {
+  title?: string;
+  logo?: string;
+  logoAlt?: string;
+  fixed?: boolean;
+  bordered?: boolean;
+  elevated?: boolean;
+  size?: 'small' | 'medium' | 'large';
+  height?: number;
+  showTitle?: boolean;
+  showToggleButton?: boolean;
+  showNavigation?: boolean;
+  navigationItems?: NavigationItem[];
+  activeNavigationId?: string;
+  maxVisibleNavigationItems?: number;
+  showSearch?: boolean;
+  searchPlaceholder?: string;
+  searchMinLength?: number;
+  searchDebounce?: number;
+  showNotifications?: boolean;
+  notifications?: Notification[];
+  notificationSettingsLink?: string;
+  showNotificationSettings?: boolean;
+  user?: {
+    name?: string;
+    avatar?: string;
+    email?: string;
+    role?: string;
+  };
+  userMenuItems?: UserMenuItem[];
+  showLogout?: boolean;
+  customStyles?: Record<string, string>;
+}
+
+// Weitere Implementierungsdetails weggelassen der Kürze halber
 </script>
 ```
 
