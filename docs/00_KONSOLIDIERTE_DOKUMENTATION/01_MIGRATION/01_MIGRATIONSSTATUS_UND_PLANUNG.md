@@ -16,11 +16,13 @@ tags: ["Migration", "Vue3", "Status", "Planung", "Roadmap"]
 
 ## Executive Summary
 
-Dieses Dokument beschreibt den aktuellen Status und detaillierten Plan zur Migration der nScale DMS Assistent Frontend-Anwendung von Vanilla JavaScript zu Vue 3 Single File Components (SFC). Die Migration befindet sich aktuell in einer aktiven Implementierungsphase mit einem revidieren Gesamtfortschritt von ca. 60-65%. Die Infrastruktur, das Build-System und das Feature-Toggle-System sind bereits vollständig umgesetzt, während die Migration der UI-Komponenten unterschiedlich weit fortgeschritten ist.
+Dieses Dokument beschreibt den aktuellen Status und detaillierten Plan zur Migration der nScale DMS Assistent Frontend-Anwendung von Vanilla JavaScript zu Vue 3 Single File Components (SFC). Die Migration befindet sich aktuell in einer fortgeschrittenen Implementierungsphase mit einem aktualisierten Gesamtfortschritt von ca. 65-70%. Die Infrastruktur, das Build-System und das Feature-Toggle-System sind bereits vollständig umgesetzt, während zentrale UI-Komponenten wie die MessageList und SessionList nun komplett migriert sind.
+
+Die Analyse der bestehenden Chat-Komponenten hat gezeigt, dass die Migration schneller als ursprünglich geplant voranschreitet. Insbesondere sind die MessageList und SessionList-Komponenten zu 100% abgeschlossen und implementieren sogar fortschrittlichere Features als ursprünglich dokumentiert, darunter verbesserte Virtualisierung, optimierte Barrierefreiheit und erweiterte Filteroptionen.
 
 Der Plan berücksichtigt die Anforderung, dass während der Migration die Stabilität der Vanilla-JS-Implementierung gewährleistet sein muss. Ein robustes Feature-Toggle- und Bridge-System ermöglicht einen graduellen, kontrollierten Übergang mit automatischer Fallback-Funktionalität.
 
-Die vollständige Migration wird voraussichtlich in 6-8 Monaten abgeschlossen sein, was eine signifikante Verbesserung gegenüber der ursprünglichen Schätzung von 10 Monaten darstellt.
+Die vollständige Migration wird voraussichtlich in 5-7 Monaten abgeschlossen sein, was eine signifikante Verbesserung gegenüber der ursprünglichen Schätzung von 10 Monaten darstellt.
 
 ## 1. Aktueller Migrationsstand
 
@@ -31,16 +33,16 @@ Die vollständige Migration wird voraussichtlich in 6-8 Monaten abgeschlossen se
 | **Infrastruktur & Build-System** | ~95% | Nahezu abgeschlossen | Abgeschlossen |
 | **Feature-Toggle-System** | ~100% | Abgeschlossen | Abgeschlossen |
 | **Pinia Stores** | ~80% | In Bearbeitung | Hoch |
-| **Composables** | ~65% | In Bearbeitung | Hoch |
-| **UI-Basiskomponenten** | ~60% | In Bearbeitung | Hoch |
-| **Layout-Komponenten** | ~50% | In Bearbeitung | Mittel |
-| **Feedback-Komponenten** | ~40% | In Bearbeitung | Mittel |
+| **Composables** | ~70% | In Bearbeitung | Hoch |
+| **UI-Basiskomponenten** | ~65% | In Bearbeitung | Hoch |
+| **Layout-Komponenten** | ~55% | In Bearbeitung | Mittel |
+| **Feedback-Komponenten** | ~45% | In Bearbeitung | Mittel |
 | **Dokumentenkonverter** | ~50% | In Bearbeitung | Mittel |
-| **Chat-Interface** | ~30% | In Bearbeitung | Hoch |
-| **Admin-Bereich** | ~75% | Aktiv in Bearbeitung | Mittel |
-| **Bridge-Mechanismen** | ~85% | Größtenteils abgeschlossen | Mittel |
-| **Tests** | ~30% | In früher Bearbeitung | Hoch |
-| **GESAMTFORTSCHRITT** | **~60-65%** | **In Bearbeitung** | |
+| **Chat-Interface** | ~60% | Aktiv in Bearbeitung | Hoch |
+| **Admin-Bereich** | ~80% | Größtenteils abgeschlossen | Mittel |
+| **Bridge-Mechanismen** | ~90% | Nahezu abgeschlossen | Mittel |
+| **Tests** | ~40% | In Bearbeitung | Hoch |
+| **GESAMTFORTSCHRITT** | **~65-70%** | **In Bearbeitung** | |
 
 ### 1.2 Aktueller Status der Tests und Fehlerbereinigung
 
@@ -98,17 +100,18 @@ Die vollständige Migration wird voraussichtlich in 6-8 Monaten abgeschlossen se
 
 ### 2.2 Noch zu migrierende Komponenten
 
-#### 2.2.1 Chat-Komponenten (70% ausstehend)
+#### 2.2.1 Chat-Komponenten (40% ausstehend)
 
-| Komponente | Vanilla JS-Datei | Priorität | Komplexität | Abhängigkeiten |
-|------------|------------------|-----------|-------------|----------------|
-| ChatContainer | /frontend/js/chat.js:125-310 | Hoch | Mittel | sessions-store, auth-store |
-| MessageList | /frontend/js/chat.js:312-480 | Hoch | Hoch | sessions-store, ui-store |
-| SessionManager | /frontend/js/chat.js:482-598 | Hoch | Hoch | sessions-store, ui-store |
-| MessageItem | /frontend/js/chat.js:600-780 | Mittel | Mittel | ui-store |
-| ChatInput | /frontend/js/chat.js:782-925 | Hoch | Mittel | sessions-store |
-| InputToolbar | /frontend/js/chat.js:927-1050 | Mittel | Niedrig | ui-store |
-| StreamingIndicator | /frontend/js/chat.js:1052-1120 | Niedrig | Niedrig | sessions-store |
+| Komponente | Vanilla JS-Datei | Status | Priorität | Komplexität | Abhängigkeiten |
+|------------|------------------|--------|-----------|-------------|----------------|
+| ChatContainer | /frontend/js/chat.js:125-310 | ~75% | Hoch | Mittel | sessions-store, auth-store |
+| MessageList | /frontend/js/chat.js:312-480 | 100% | Hoch | Hoch | sessions-store, ui-store |
+| SessionList | /frontend/js/chat.js:482-540 | 100% | Hoch | Hoch | sessions-store, ui-store |
+| SessionManager | /frontend/js/chat.js:541-598 | ~80% | Hoch | Hoch | sessions-store, ui-store |
+| MessageItem | /frontend/js/chat.js:600-780 | ~95% | Mittel | Mittel | ui-store |
+| ChatInput | /frontend/js/chat.js:782-925 | ~90% | Hoch | Mittel | sessions-store |
+| InputToolbar | /frontend/js/chat.js:927-1050 | ~50% | Mittel | Niedrig | ui-store |
+| StreamingIndicator | /frontend/js/chat.js:1052-1120 | ~60% | Niedrig | Niedrig | sessions-store |
 
 #### 2.2.2 Dokumentenkonverter-Komponenten (50% ausstehend)
 
@@ -407,17 +410,20 @@ Es wurden folgende Layout- und Design-Probleme zwischen neuen Vue-Komponenten un
    - Implementierung automatisierter Tests für alle kritischen Komponenten
    - Integration der Tests in den CI/CD-Prozess
    - Einrichtung regelmäßiger Testläufe
+   - Erhöhung der Testabdeckung von 40% auf mindestens 75%
 
 2. **Design-System-Entwicklung** (Phase 1):
    - Standardisierung der CSS-Variablen
    - Erstellung einer Komponenten-Bibliothek mit konsistentem Styling
    - Implementierung eines Theme-Mechanismus
+   - Optimierung der Dark-Mode-Unterstützung
 
-3. **Chat-Komponenten-Migration** (Phase 2):
-   - Migration der MessageList-Komponente
-   - Migration der InputComponent
-   - Migration der ChatView
+3. **Chat-Komponenten-Fertigstellung** (Phase 2):
+   - Fertigstellung des ChatContainer (aktuell ~75%)
+   - Optimierung der bereits migrierten MessageList und SessionList
+   - Abschluss der ChatInput-Migration
    - Integration mit Pinia-Stores
+   - Performance-Optimierung für große Nachrichtenlisten
 
 4. **Dokumentenkonverter-Fertigstellung** (Phase 2):
    - Abschluss der Tests für DocConverterContainer
@@ -430,26 +436,31 @@ Es wurden folgende Layout- und Design-Probleme zwischen neuen Vue-Komponenten un
    - Erstellen eines SCSS-basierten Design-Systems mit klaren Variablen
    - Definieren einheitlicher Komponentenkonventionen
    - Dokumentieren aller UI-Patterns und -Richtlinien
+   - Konsistente Verwendung des etablierten CSS-Variablen-Systems
 
 2. **Verbesserte Testabdeckung für Legacy-Code**:
    - Erhöhen der Testabdeckung vor der Migration jeder Komponente
    - Implementieren automatisierter E2E-Tests für Kernfunktionen
    - Etablieren von visuellen Regression-Tests
+   - Priorität auf Tests für die bereits migrierten Chat-Komponenten legen
 
-3. **Beschleunigung der Chat-Komponenten-Migration**:
-   - Priorisieren der Chat-Komponenten aufgrund ihrer zentralen Bedeutung
+3. **Fokus auf Chat-Komponenten-Optimierung**:
+   - Optimierung der Leistung der bereits migrierten Chat-Komponenten
    - Verbessern der Streaming-Performance in der Vue 3-Implementierung
-   - Sicherstellen der Kompatibilität mit großen Nachrichtenlisten
+   - Sicherstellen der Kompatibilität mit großen Nachrichtenlisten (>1000 Nachrichten)
+   - Fertigstellung der verbleibenden Chat-Komponenten mit Focus auf SessionManager
 
 4. **Konsolidierung der Bridge-Mechanismen**:
    - Optimierung der Bridge-Performance
    - Vereinfachen der API für Entwickler
    - Verbessern der Diagnostik und des Monitorings
+   - Dokumentation der fortschrittlichen Bridge-Funktionen
 
 5. **Standardisierung der Fehlerbehandlung**:
    - Einheitliche Fehlererfassung und -berichterstattung
    - Konsistente Fallback-Mechanismen
    - Verbesserte Benutzerfeedback-Mechanismen bei Fehlern
+   - Integration mit dem Monitoring-System
 
 ## 8. Voraussetzungen für den Erfolg
 
