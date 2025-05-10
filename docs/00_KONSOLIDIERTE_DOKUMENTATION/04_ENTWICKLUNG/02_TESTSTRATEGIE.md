@@ -1,6 +1,6 @@
 ---
 title: "Test-Strategie und Implementierung"
-version: "1.1.0"
+version: "1.2.0"
 date: "10.05.2025"
 lastUpdate: "10.05.2025"
 author: "Martin Heinrich"
@@ -12,7 +12,7 @@ tags: ["Tests", "Qualitätssicherung", "Vitest", "Playwright", "Vue 3", "Pinia"]
 
 # Test-Strategie und Implementierung
 
-> **Letzte Aktualisierung:** 10.05.2025 | **Version:** 1.1.0 | **Status:** Aktiv
+> **Letzte Aktualisierung:** 10.05.2025 | **Version:** 1.2.0 | **Status:** Aktiv
 
 ## Inhaltsverzeichnis
 
@@ -93,13 +93,13 @@ Die Teststrategie umfasst mehrere Ebenen:
 
 | Komponente | Aktuell | Ziel | Zeitrahmen |
 |------------|---------|------|------------|
-| Chat-Funktionalität | ~90% | 95% | Q3 2025 |
+| Chat-Funktionalität | ~92% | 95% | Q3 2025 |
 | Session-Management | ~85% | 90% | Q3 2025 |
-| Dokumentenkonverter | ~78% | 90% | Q4 2025 |
+| Dokumentenkonverter | ~85% | 90% | Q4 2025 |
 | UI-Basiskomponenten | ~85% | 85% | Q1 2026 |
-| Admin-Komponenten | ~80% | 85% | Q1 2026 |
-| Vue-Komponenten (gesamt) | ~82% | 85% | Q1 2026 |
-| E2E-Abdeckung | 45% | 70% | Q2 2026 |
+| Admin-Komponenten | ~82% | 85% | Q1 2026 |
+| Vue-Komponenten (gesamt) | ~83% | 85% | Q1 2026 |
+| E2E-Abdeckung | 55% | 70% | Q2 2026 |
 | Visuelle Abdeckung | 35% | 60% | Q3 2026 |
 | Barrierefreiheit | 30% | 80% | Q3 2026 |
 
@@ -642,11 +642,23 @@ e2e/
   │   └── document-converter-page.ts
   ├── tests/              # Testdateien nach Funktionalität geordnet
   │   ├── auth/           # Authentifizierungstests
+  │   │   ├── login.spec.ts
+  │   │   └── password-reset.spec.ts
   │   ├── chat/           # Chat-Systemtests
+  │   │   ├── basic-chat.spec.ts
+  │   │   └── message-streaming.spec.ts
   │   ├── document-converter/ # Dokumentenkonverter-Tests
+  │   │   ├── document-conversion.spec.ts
+  │   │   └── error-handling.spec.ts
   │   ├── admin/          # Admin-Bereichstests
+  │   │   ├── feature-toggles.spec.ts
+  │   │   ├── user-management.spec.ts
+  │   │   └── system-settings.spec.ts
   │   ├── error-handling/ # Fehlerbehandlungstests
+  │   │   └── network-errors.spec.ts
   │   └── visual/         # Visuelle Regressionstests
+  │       ├── mobile-responsive.spec.ts
+  │       └── visual-regression.spec.ts
   └── utils/              # Hilfsfunktionen für Tests
       └── test-helpers.ts
 ```
@@ -665,6 +677,12 @@ export class LoginPage {
   readonly passwordInput: Locator;
   readonly loginButton: Locator;
   readonly errorMessage: Locator;
+  readonly forgotPasswordLink: Locator;
+  readonly resetEmailInput: Locator;
+  readonly resetRequestButton: Locator;
+  readonly resetPasswordInput: Locator;
+  readonly resetPasswordConfirmInput: Locator;
+  readonly resetPasswordButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -672,6 +690,12 @@ export class LoginPage {
     this.passwordInput = page.locator('input[name="password"]');
     this.loginButton = page.locator('button[type="submit"]');
     this.errorMessage = page.locator('[data-testid="error-message"]');
+    this.forgotPasswordLink = page.locator('a[href*="forgot-password"]');
+    this.resetEmailInput = page.locator('input[name="reset-email"]');
+    this.resetRequestButton = page.locator('button[aria-label="Passwort zurücksetzen"]');
+    this.resetPasswordInput = page.locator('input[name="new-password"]');
+    this.resetPasswordConfirmInput = page.locator('input[name="confirm-password"]');
+    this.resetPasswordButton = page.locator('button[aria-label="Passwort speichern"]');
   }
 
   async navigate() {
@@ -688,6 +712,34 @@ export class LoginPage {
     await expect(this.errorMessage).toBeVisible();
     await expect(this.errorMessage).toContainText(message);
   }
+  
+  /**
+   * Navigiert zur Passwort-vergessen-Seite.
+   */
+  async navigateToForgotPassword() {
+    await this.forgotPasswordLink.click();
+    await this.resetEmailInput.waitFor({ state: 'visible' });
+  }
+
+  /**
+   * Fordert einen Passwort-Reset für eine E-Mail-Adresse an.
+   * @param email E-Mail-Adresse für den Reset
+   */
+  async requestPasswordReset(email: string) {
+    await this.resetEmailInput.fill(email);
+    await this.resetRequestButton.click();
+  }
+
+  /**
+   * Setzt das Passwort zurück mit einem Token aus der URL.
+   * @param newPassword Neues Passwort
+   * @param confirmPassword Passwort zur Bestätigung
+   */
+  async resetPassword(newPassword: string, confirmPassword: string) {
+    await this.resetPasswordInput.fill(newPassword);
+    await this.resetPasswordConfirmInput.fill(confirmPassword);
+    await this.resetPasswordButton.click();
+  }
 }
 ```
 
@@ -699,12 +751,15 @@ Die folgenden kritischen Benutzerflüsse werden durch E2E-Tests abgedeckt:
    - Login mit gültigen Anmeldedaten
    - Login mit ungültigen Anmeldedaten
    - Logout
+   - Passwort-Reset-Prozess
    - Automatische Weiterleitung zur Login-Seite bei nicht authentifizierten Anfragen
    - Persistenz der Authentifizierung nach Browser-Refresh
 
 2. **Chat-System**:
    - Senden einer Nachricht und Empfangen einer Antwort
    - Streaming von Antworten
+   - Unterbrechen des Streaming-Prozesses
+   - Wiederverbindung nach Netzwerkfehler
    - Erstellen, Umbenennen und Löschen von Chat-Sessions
    - Wechseln zwischen Sessions
    - Tagging und Kategorisierung von Sessions
@@ -714,11 +769,18 @@ Die folgenden kritischen Benutzerflüsse werden durch E2E-Tests abgedeckt:
    - Anzeigen der Dokumentvorschau
    - Herunterladen konvertierter Dokumente
    - Löschen von Dokumenten
+   - Fehlerbehandlung bei ungültigen Dateiformaten
+   - Fehlerbehandlung bei zu großen Dateien
+   - Behandlung serverseitiger Fehler
+   - Wiederverbindung nach Netzwerkfehler
+   - Behandlung von Timeouts
 
 4. **Admin-Bereich**:
    - Benutzerverwaltung (Erstellen, Bearbeiten, Löschen)
    - Feature-Toggles (Aktivieren, Deaktivieren)
-   - Systemeinstellungen
+   - Systemeinstellungen (Loglevel, API-Timeouts, Dokumentgrößen)
+   - Aktivieren und Deaktivieren des Wartungsmodus
+   - Zurücksetzen auf Standardwerte
 
 5. **Fehlerbehandlung**:
    - Netzwerkfehler während des Nachrichtensendens
@@ -765,6 +827,154 @@ test.describe('Authentifizierungs-Flow', () => {
     const errorMessage = loginPage.errorMessage;
     await expect(errorMessage).toBeVisible();
     await expect(errorMessage).toContainText('Ungültige Anmeldedaten');
+  });
+});
+```
+
+**Beispiel: E2E-Test für Streaming-Nachrichten**:
+
+```typescript
+// e2e/tests/chat/message-streaming.spec.ts
+import { test, expect } from '@playwright/test';
+import { ChatPage } from '../../pages/chat-page';
+
+test.describe('Chat-Nachrichtenstreaming', () => {
+  test.use({ storageState: './e2e/fixtures/user-auth.json' });
+  
+  test('Streaming von Assistentenantworten', async ({ page }) => {
+    const chatPage = new ChatPage(page);
+    await chatPage.goto();
+
+    // Nachricht senden, die eine längere Antwort erfordert
+    const testMessage = 'Erkläre mir die gesamte Geschichte der künstlichen Intelligenz in mindestens 500 Wörtern';
+    await chatPage.sendMessage(testMessage);
+
+    // Prüfen, ob die Benutzernachricht angezeigt wird
+    await chatPage.expectLastUserMessageContains(testMessage);
+    
+    // Auf das Erscheinen des Streaming-Indikators warten
+    await expect(chatPage.streamingIndicator).toBeVisible();
+    
+    // Erste Version der Antwort speichern
+    await chatPage.waitForAssistantResponseStart();
+    const initialResponse = await chatPage.getLastAssistantMessageText();
+    
+    // Warten, um das Streaming zu beobachten
+    await page.waitForTimeout(2000);
+    
+    // Zweite Version der Antwort speichern und vergleichen
+    const updatedResponse = await chatPage.getLastAssistantMessageText();
+    
+    // Die aktualisierte Antwort sollte länger sein als die ursprüngliche (Streaming)
+    expect(updatedResponse.length).toBeGreaterThan(initialResponse.length);
+    
+    // Warten, bis das Streaming abgeschlossen ist
+    await chatPage.waitForStreamingComplete();
+    
+    // Prüfen, ob der Streaming-Indikator verschwunden ist
+    await expect(chatPage.streamingIndicator).not.toBeVisible();
+    
+    // Die endgültige Antwort sollte noch länger sein
+    const finalResponse = await chatPage.getLastAssistantMessageText();
+    expect(finalResponse.length).toBeGreaterThan(updatedResponse.length);
+  });
+  
+  test('Unterbrechen des Streaming-Prozesses', async ({ page }) => {
+    const chatPage = new ChatPage(page);
+    await chatPage.goto();
+    
+    // Nachricht senden, die eine längere Antwort erfordert
+    await chatPage.sendMessage('Erkläre die Relativitätstheorie in allen Details');
+    
+    // Warten auf den Beginn des Streamings
+    await expect(chatPage.streamingIndicator).toBeVisible();
+    await chatPage.waitForAssistantResponseStart();
+    
+    // Streaming abbrechen
+    await chatPage.cancelAssistantResponse();
+    
+    // Prüfen, ob der Streaming-Indikator verschwunden ist
+    await expect(chatPage.streamingIndicator).not.toBeVisible();
+    
+    // Prüfen, ob eine Abbruchmeldung erscheint
+    await expect(page.locator('.response-cancelled')).toBeVisible();
+  });
+  
+  test('Wiederherstellen der Verbindung nach einem Netzwerkfehler', async ({ page, context }) => {
+    const chatPage = new ChatPage(page);
+    await chatPage.goto();
+    
+    // Nachricht senden
+    await chatPage.sendMessage('Erzähle mir eine lange Geschichte');
+    
+    // Warten auf den Beginn des Streamings
+    await expect(chatPage.streamingIndicator).toBeVisible();
+    await chatPage.waitForAssistantResponseStart();
+    
+    // Netzwerkverbindung unterbrechen
+    await context.setOffline(true);
+    
+    // Prüfen, ob eine Netzwerkfehlermeldung angezeigt wird
+    await expect(page.locator('.network-error')).toBeVisible();
+    
+    // Netzwerkverbindung wiederherstellen
+    await context.setOffline(false);
+    
+    // Prüfen, ob das Streaming fortgesetzt wird
+    await expect(page.locator('.reconnecting')).toBeVisible();
+    await expect(chatPage.streamingIndicator).toBeVisible({ timeout: 10000 });
+    
+    // Warten, bis das Streaming abgeschlossen ist
+    await chatPage.waitForStreamingComplete();
+    
+    // Endgültige Antwort prüfen
+    const finalResponse = await chatPage.getLastAssistantMessageText();
+    expect(finalResponse.length).toBeGreaterThan(0);
+  });
+});
+```
+
+**Beispiel: E2E-Test für den Admin-Bereich (Systemeinstellungen)**:
+
+```typescript
+// e2e/tests/admin/system-settings.spec.ts
+import { test, expect } from '@playwright/test';
+import { AdminPage } from '../../pages/admin-page';
+
+test.describe('Systemeinstellungen im Admin-Bereich', () => {
+  test.use({ storageState: './e2e/fixtures/admin-auth.json' });
+  
+  test('Ändern des System-Loglevels', async ({ page }) => {
+    const adminPage = new AdminPage(page);
+    await page.goto('/');
+    
+    // Admin-Panel öffnen
+    await adminPage.openAdminPanel();
+    
+    // Zum System-Tab wechseln
+    await adminPage.switchToTab('system');
+    
+    // Aktuellen Loglevel speichern, um ihn später wiederherzustellen
+    const initialLoglevel = await page.locator('select[name="loglevel"]').inputValue();
+    
+    // Loglevel ändern
+    await page.selectOption('select[name="loglevel"]', 'debug');
+    
+    // Speichern-Button klicken
+    await page.click('button[aria-label="Einstellungen speichern"]');
+    
+    // Prüfen, ob eine Erfolgsmeldung angezeigt wird
+    await expect(page.locator('.success-message')).toBeVisible();
+    
+    // Prüfen, ob der Loglevel geändert wurde
+    await expect(page.locator('select[name="loglevel"]')).toHaveValue('debug');
+    
+    // Zurücksetzen auf ursprünglichen Wert
+    await page.selectOption('select[name="loglevel"]', initialLoglevel);
+    await page.click('button[aria-label="Einstellungen speichern"]');
+    
+    // Admin-Panel schließen
+    await adminPage.closeAdminPanel();
   });
 });
 ```
