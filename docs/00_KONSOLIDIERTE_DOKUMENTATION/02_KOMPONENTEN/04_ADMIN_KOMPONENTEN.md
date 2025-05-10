@@ -27,6 +27,7 @@ tags: ["Admin", "Vue", "Komponenten", "Pinia", "SFC"]
    - [AdminSystem](#adminsystem)
    - [AdminFeatureToggles](#adminfeaturetoggles)
    - [AdminLogViewer](#adminlogviewer)
+   - [AdminFeedback](#adminfeedback)
 4. [Pinia Stores](#pinia-stores)
    - [Admin Store Struktur](#admin-store-struktur)
    - [Beispiel: useAdminUsersStore](#beispiel-useadminusersstore)
@@ -39,6 +40,7 @@ tags: ["Admin", "Vue", "Komponenten", "Pinia", "SFC"]
    - [Systemüberwachung](#systemüberwachung)
    - [Feature-Toggle-Management](#feature-toggle-management)
    - [Log-Verwaltung](#log-verwaltung)
+   - [Feedback-Verwaltung](#feedback-verwaltung)
 8. [Integration und Migration](#integration-und-migration)
    - [Feature-Toggles](#feature-toggles)
    - [Kompatibilität mit Legacy-Code](#kompatibilität-mit-legacy-code)
@@ -81,6 +83,7 @@ AdminView.vue (Router-Komponente)
     │   ├── AdminSystem.vue
     │   ├── AdminFeatureToggles.vue
     │   ├── AdminLogViewer.vue
+    │   ├── AdminFeedback.vue
     │   └── AdminSystemSettings.vue
     └── UI-Komponenten
         ├── Toast.vue
@@ -224,6 +227,182 @@ Eine Komponente zur Anzeige und Filterung von Systemlogs:
 - Filterung nach Log-Level, Zeitraum und Suchbegriff
 - Detailansicht für einzelne Log-Einträge
 - Export-Funktion für Log-Daten
+
+### AdminFeedback
+
+Eine umfassende Komponente zur Verwaltung und Analyse von Benutzerfeedback:
+
+- Tabellarische Darstellung aller Feedback-Einträge mit Pagination
+- Umfangreiche Filter- und Suchfunktionen:
+  - Filterung nach Zeitraum (Datum von/bis)
+  - Filterung nach Kommentaren (mit/ohne Kommentare)
+  - Volltextsuche über alle Feedback-Daten
+- Detailansicht für einzelne Feedback-Einträge mit vollständigem Kontext
+- Statistische Auswertungen und Visualisierungen:
+  - Verteilung des Feedbacks nach Quelle (Diagramm)
+  - Trend-Analyse über Zeiträume (Liniendiagramm)
+  - Zusammenfassung wichtiger Metriken (Karten)
+- Export-Funktion für gefilterte Feedback-Daten im CSV-Format
+- Responsive Design für optimale Nutzung auf Desktop und Mobilgeräten
+
+```vue
+<!-- Vereinfachte Version von AdminFeedback.vue -->
+<template>
+  <div class="admin-feedback" data-test="admin-feedback">
+    <!-- Statistik-Karten für schnellen Überblick -->
+    <div class="stats-section" data-test="stats-section">
+      <div class="stat-card">
+        <h3>Gesamt</h3>
+        <div class="stat-value">{{ stats.total }}</div>
+      </div>
+      <div class="stat-card">
+        <h3>Durchschnitt</h3>
+        <div class="stat-value">{{ stats.averageRating.toFixed(1) }}</div>
+      </div>
+      <div class="stat-card">
+        <h3>Positiv</h3>
+        <div class="stat-value">{{ stats.positiveCount }}</div>
+      </div>
+      <div class="stat-card">
+        <h3>Negativ</h3>
+        <div class="stat-value">{{ stats.negativeCount }}</div>
+      </div>
+      <div class="stat-card">
+        <h3>Mit Kommentaren</h3>
+        <div class="stat-value">{{ stats.withCommentsCount }}</div>
+      </div>
+    </div>
+    
+    <!-- Visualisierungen -->
+    <div class="chart-container" :class="isMobile ? 'mobile-layout' : 'desktop-layout'">
+      <div class="chart" data-test="source-chart-container">
+        <h3>Feedback nach Quelle</h3>
+        <canvas ref="sourceChartRef"></canvas>
+      </div>
+      <div class="chart" data-test="trend-chart-container">
+        <h3>Feedback-Trend</h3>
+        <canvas ref="trendChartRef"></canvas>
+      </div>
+    </div>
+    
+    <!-- Filter-Bereich -->
+    <div class="filters-section" data-test="feedback-filters">
+      <div class="date-filters">
+        <BaseInput
+          type="date"
+          label="Von"
+          v-model="startDate"
+          @update:modelValue="updateDateFilter"
+        />
+        <BaseInput
+          type="date"
+          label="Bis"
+          v-model="endDate"
+          @update:modelValue="updateDateFilter"
+        />
+        <BaseCheckbox
+          label="Nur mit Kommentaren"
+          v-model="showOnlyWithComments"
+          @update:modelValue="toggleCommentFilter"
+        />
+      </div>
+      <div class="search-filter">
+        <BaseInput
+          type="search"
+          label="Suche"
+          placeholder="Suche nach Inhalten, Quellen oder Benutzern..."
+          v-model="searchTerm"
+          @update:modelValue="debouncedSearch"
+        />
+        <BaseButton @click="resetFilters">Filter zurücksetzen</BaseButton>
+        <BaseButton @click="exportToCsv">Als CSV exportieren</BaseButton>
+      </div>
+    </div>
+    
+    <!-- Feedback-Tabelle -->
+    <div class="feedback-table-container" data-test="feedback-table">
+      <table class="feedback-table">
+        <thead>
+          <tr>
+            <th @click="sortBy('timestamp')">Datum</th>
+            <th @click="sortBy('rating')">Bewertung</th>
+            <th>Quelle</th>
+            <th>Kommentar</th>
+            <th>Benutzer</th>
+            <th>Aktionen</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in paginatedFeedback" :key="item.id" @click="showDetail(item)">
+            <td>{{ formatDateForDisplay(item.timestamp) }}</td>
+            <td>
+              <div class="rating" :class="getRatingClass(item.rating)">
+                {{ item.rating }}
+              </div>
+            </td>
+            <td>{{ item.source }}</td>
+            <td class="comment-cell">
+              {{ truncateComment(item.comment) }}
+            </td>
+            <td>{{ item.userId }}</td>
+            <td>
+              <BaseButton size="small" @click.stop="showDetail(item)">Details</BaseButton>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <!-- Pagination -->
+      <div class="pagination">
+        <BaseButton 
+          :disabled="currentPage === 1" 
+          @click="currentPage--"
+        >
+          Zurück
+        </BaseButton>
+        <span>Seite {{ currentPage }} von {{ totalPages }}</span>
+        <BaseButton 
+          :disabled="currentPage === totalPages" 
+          @click="currentPage++"
+        >
+          Weiter
+        </BaseButton>
+      </div>
+    </div>
+    
+    <!-- Detail-Modal -->
+    <Dialog v-model="showDetailModal" title="Feedback-Details">
+      <template v-if="selectedFeedback">
+        <div class="feedback-detail">
+          <div class="detail-header">
+            <h3>Feedback vom {{ formatDateForDisplay(selectedFeedback.timestamp) }}</h3>
+            <div class="rating" :class="getRatingClass(selectedFeedback.rating)">
+              {{ selectedFeedback.rating }}
+            </div>
+          </div>
+          
+          <div class="detail-info">
+            <div class="info-item">
+              <strong>Benutzer:</strong> {{ selectedFeedback.userId }}
+            </div>
+            <div class="info-item">
+              <strong>Sitzung:</strong> {{ selectedFeedback.sessionId }}
+            </div>
+            <div class="info-item">
+              <strong>Quelle:</strong> {{ selectedFeedback.source }}
+            </div>
+          </div>
+          
+          <div class="detail-comment">
+            <h4>Kommentar:</h4>
+            <p>{{ selectedFeedback.comment || 'Kein Kommentar vorhanden' }}</p>
+          </div>
+        </div>
+      </template>
+    </Dialog>
+  </div>
+</template>
+```
 
 ## Pinia Stores
 
@@ -427,15 +606,31 @@ export interface SystemStats {
 // Feedback-Einträge
 export interface FeedbackEntry {
   id: string;
-  message_id: string;
-  session_id: string;
-  user_id: string;
-  user_email: string;
-  is_positive: boolean;
-  comment: string | null;
-  question: string;
-  answer: string;
-  created_at: number;
+  sessionId: string;
+  timestamp: string;
+  rating: number;
+  comment: string;
+  source: string;
+  userId: string;
+}
+
+// Feedback-Statistiken
+export interface FeedbackStats {
+  total: number;
+  averageRating: number;
+  positiveCount: number;
+  negativeCount: number;
+  withCommentsCount: number;
+  bySource: Record<string, number>;
+  byWeek: Record<string, number>;
+}
+
+// Feedback-Filter
+export interface FeedbackFilter {
+  startDate: string | null;
+  endDate: string | null;
+  onlyWithComments: boolean;
+  searchTerm: string;
 }
 ```
 
@@ -479,6 +674,23 @@ Die Log-Verwaltung umfasst:
 - Detailansicht für ausgewählte Log-Einträge
 - Export-Funktion für Log-Daten
 - Automatische Aktualisierung in konfigurierbaren Intervallen
+
+### Feedback-Verwaltung
+
+Die Feedback-Verwaltung umfasst:
+
+- Tabellarische Darstellung aller Feedback-Einträge mit Pagination und Sortierung
+- Umfangreiche Filteroptionen:
+  - Zeitraumfilter mit Datumswählern
+  - Anzeige von Einträgen mit Kommentaren
+  - Suchfunktion für Volltextsuche
+- Detailansicht für einzelne Feedback-Einträge
+- Statistische Visualisierungen:
+  - Verteilung des Feedbacks nach Quellen (Kreisdiagramm)
+  - Feedback-Trends über Zeit (Liniendiagramm)
+  - Übersichtskarten mit wichtigen Kennzahlen
+- Export-Funktion für Feedback-Daten im CSV-Format
+- Responsive Design für Desktop und Mobile mit optimierter Darstellung
 
 ## Integration und Migration
 
