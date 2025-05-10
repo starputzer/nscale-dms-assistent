@@ -1,6 +1,6 @@
 ---
 title: "UI-Basiskomponenten"
-version: "1.3.0"
+version: "1.4.0"
 date: "09.05.2025"
 lastUpdate: "10.05.2025"
 author: "Martin Heinrich"
@@ -12,11 +12,11 @@ tags: ["UI", "Komponenten", "Design", "Vue3"]
 
 # UI-Basiskomponenten
 
-> **Letzte Aktualisierung:** 10.05.2025 | **Version:** 1.3.0 | **Status:** Aktiv
+> **Letzte Aktualisierung:** 10.05.2025 | **Version:** 1.4.0 | **Status:** Aktiv
 
 ## Übersicht
 
-Die UI-Basiskomponenten bilden das Fundament der nscale DMS Assistent-Benutzeroberfläche und wurden als Teil der Vue 3 SFC-Migration implementiert. Sie bieten ein konsistentes Design und Verhalten über die gesamte Anwendung hinweg. Der aktuelle Fertigstellungsgrad der UI-Basiskomponenten liegt bei ca. 75%.
+Die UI-Basiskomponenten bilden das Fundament der nscale DMS Assistent-Benutzeroberfläche und wurden als Teil der Vue 3 SFC-Migration implementiert. Sie bieten ein konsistentes Design und Verhalten über die gesamte Anwendung hinweg. Der aktuelle Fertigstellungsgrad der UI-Basiskomponenten liegt bei ca. 90% nach der Implementierung weiterer wichtiger UI-Elemente wie Badge, Breadcrumb, ProgressBar, Tabs und Stepper.
 
 ## Implementierte Komponenten
 
@@ -27,6 +27,11 @@ Die UI-Basiskomponenten bilden das Fundament der nscale DMS Assistent-Benutzerob
 | **TextArea.vue** | Fertiggestellt | 100% | Hoch |
 | **Toggle.vue** | Fertiggestellt | 100% | Hoch |
 | **Tooltip.vue** | Fertiggestellt | 100% | Hoch |
+| **Badge.vue** | Fertiggestellt | 100% | Hoch |
+| **Breadcrumb.vue** | Fertiggestellt | 100% | Hoch |
+| **ProgressBar.vue** | Fertiggestellt | 100% | Hoch |
+| **Tabs.vue** | Fertiggestellt | 100% | Hoch |
+| **Stepper.vue** | Fertiggestellt | 100% | Hoch |
 | **Card.vue** | Fertiggestellt | 85% | Hoch |
 | **Alert.vue** | Fertiggestellt | 80% | Hoch |
 | **Modal.vue** | Fertiggestellt | 70% | Mittel |
@@ -51,6 +56,11 @@ src/components/
 │   │   ├── TextArea.vue
 │   │   ├── Toggle.vue
 │   │   ├── Tooltip.vue
+│   │   ├── Badge.vue
+│   │   ├── Breadcrumb.vue
+│   │   ├── ProgressBar.vue
+│   │   ├── Tabs.vue
+│   │   ├── Stepper.vue
 │   │   ├── Card.vue
 │   │   ├── Alert.vue
 │   │   ├── Modal.vue
@@ -60,6 +70,11 @@ src/components/
 │   │   ├── TextAreaExample.vue
 │   │   ├── ToggleExample.vue
 │   │   ├── TooltipExample.vue
+│   │   ├── BadgeExample.vue
+│   │   ├── BreadcrumbExample.vue
+│   │   ├── ProgressBarExample.vue
+│   │   ├── TabsExample.vue
+│   │   ├── StepperExample.vue
 │   │   ├── UIComponentsDemo.vue
 │   │   ├── index.ts    # Beispiel-Export
 │   │   └── README.md   # Dokumentation für Beispielverwendung
@@ -712,25 +727,16 @@ Die `SettingsView` integriert das SettingsPanel in die Anwendung und bietet:
 Folgende UI-Basiskomponenten müssen noch vollständig implementiert werden:
 
 1. **Formular-Komponenten**:
-   - Checkbox
-   - Radio
-   - Select
    - Form (mit Validierung)
 
-2. **Feedback-Komponenten**:
-   - Badge
-   - ProgressBar
-
-3. **Navigation**:
-   - Breadcrumb
-   - Tabs
-   - Stepper
-   - Pagination (teilweise implementiert)
-
-4. **Data-Display**:
-   - Table (teilweise implementiert)
+2. **Data-Display**:
    - TreeView
    - Timeline
+
+3. **Navigation**:
+   - Pagination (teilweise implementiert)
+
+Hinweis: Alle bisher als fehlend markierten Komponenten (Badge, Breadcrumb, ProgressBar, Tabs, Stepper) wurden in der aktuellen Version implementiert und stehen nun zur Verfügung.
 
 ## Herausforderungen bei der UI-Komponenten-Migration
 
@@ -748,20 +754,20 @@ Bei der Migration der UI-Komponenten sind folgende Herausforderungen aufgetreten
    - Standardisierung der CSS-Variablen-Namen
    - Umstellung auf einheitliches Farbschema
    - Migration zu SCSS für alle Komponenten
-   
+
 2. **Vollständiges UI-Komponenten-Kit**:
-   - Implementierung der fehlenden Komponenten
+   - Implementierung der verbleibenden Komponenten (Form, TreeView, Timeline)
+   - Verbesserung der teilweise implementierten Komponenten (Pagination, Table)
    - Einheitliche API für alle Komponenten
-   - Vollständige TypeScript-Integration
-   
+
 3. **Barrierefreiheit verbessern**:
    - WCAG 2.1 AA-Konformität für alle Komponenten
    - Tastaturbedienung und Screenreader-Unterstützung
    - Fokus-Management in komplexen Komponenten
-   
+
 4. **Dokumentation & Storybook**:
    - Interaktive Dokumentation mit Storybook
-   - Anwendungsbeispiele für alle Komponenten
+   - Weitere Anwendungsbeispiele und Integrations-Muster
    - API-Dokumentation für Entwickler
 
 ## Styleguide und Best Practices

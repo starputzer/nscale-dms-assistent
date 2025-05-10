@@ -8,3 +8,8 @@ export { default as FocusTrap } from './FocusTrap.vue';
 export { default as TextArea } from './TextArea.vue';
 export { default as Toggle } from './Toggle.vue';
 export { default as Tooltip } from './Tooltip.vue';
+export { default as Badge } from './Badge.vue';
+export { default as Breadcrumb } from './Breadcrumb.vue';
+export { default as ProgressBar } from './ProgressBar.vue';
+export { default as Tabs } from './Tabs.vue';
+export { default as Stepper } from './Stepper.vue';

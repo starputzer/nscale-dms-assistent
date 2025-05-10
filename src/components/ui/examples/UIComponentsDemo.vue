@@ -21,7 +21,7 @@
     </main>
 
     <footer>
-      <p>UI Components v1.0.0 - Documentation available in <code>/docs/00_KONSOLIDIERTE_DOKUMENTATION/02_KOMPONENTEN/02_UI_BASISKOMPONENTEN.md</code></p>
+      <p>UI Components v1.3.0 - Documentation available in <code>/docs/00_KONSOLIDIERTE_DOKUMENTATION/02_KOMPONENTEN/02_UI_BASISKOMPONENTEN.md</code></p>
     </footer>
   </div>
 </template>
@@ -31,11 +31,21 @@ import { ref, computed } from 'vue';
 import TextAreaExample from './TextAreaExample.vue';
 import ToggleExample from './ToggleExample.vue';
 import TooltipExample from './TooltipExample.vue';
+import BadgeExample from './BadgeExample.vue';
+import BreadcrumbExample from './BreadcrumbExample.vue';
+import ProgressBarExample from './ProgressBarExample.vue';
+import TabsExample from './TabsExample.vue';
+import StepperExample from './StepperExample.vue';
 
 const tabs = [
   { id: 'textarea', label: 'TextArea' },
   { id: 'toggle', label: 'Toggle' },
-  { id: 'tooltip', label: 'Tooltip' }
+  { id: 'tooltip', label: 'Tooltip' },
+  { id: 'badge', label: 'Badge' },
+  { id: 'breadcrumb', label: 'Breadcrumb' },
+  { id: 'progressbar', label: 'ProgressBar' },
+  { id: 'tabs', label: 'Tabs' },
+  { id: 'stepper', label: 'Stepper' }
 ];
 
 const activeTab = ref('textarea');
@@ -48,6 +58,16 @@ const activeComponent = computed(() => {
       return ToggleExample;
     case 'tooltip':
       return TooltipExample;
+    case 'badge':
+      return BadgeExample;
+    case 'breadcrumb':
+      return BreadcrumbExample;
+    case 'progressbar':
+      return ProgressBarExample;
+    case 'tabs':
+      return TabsExample;
+    case 'stepper':
+      return StepperExample;
     default:
       return TextAreaExample;
   }
