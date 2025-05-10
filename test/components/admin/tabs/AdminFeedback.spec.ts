@@ -4,6 +4,46 @@ import { createTestingPinia } from '@pinia/testing';
 import AdminFeedback from '@/components/admin/tabs/AdminFeedback.vue';
 import { useAdminFeedbackStore } from '@/stores/admin/feedback';
 import type { FeedbackEntry } from '@/types/admin';
+import { createI18n } from 'vue-i18n';
+
+// Create a basic i18n instance for testing
+const i18n = createI18n({
+  legacy: false,
+  locale: 'de',
+  messages: {
+    de: {
+      'admin.feedback.title': 'Feedback',
+      'admin.feedback.noData': 'Keine Feedback-Daten vorhanden',
+      'admin.feedback.export': 'Als CSV exportieren',
+      'admin.feedback.resetFilters': 'Filter zurücksetzen',
+      'admin.feedback.search': 'Suche',
+      'admin.feedback.from': 'Von',
+      'admin.feedback.to': 'Bis',
+      'admin.feedback.onlyWithComments': 'Nur mit Kommentaren',
+      'admin.feedback.dateRange': 'Zeitraum',
+      'admin.feedback.filter': 'Filter',
+      'admin.feedback.details': 'Details',
+      'admin.feedback.user': 'Benutzer',
+      'admin.feedback.session': 'Sitzung',
+      'admin.feedback.source': 'Quelle',
+      'admin.feedback.rating': 'Bewertung',
+      'admin.feedback.comment': 'Kommentar',
+      'admin.feedback.date': 'Datum',
+      'admin.feedback.actions': 'Aktionen',
+      'admin.feedback.sourceChart': 'Feedback nach Quelle',
+      'admin.feedback.trendChart': 'Feedback-Trend',
+      'admin.feedback.total': 'Gesamt',
+      'admin.feedback.average': 'Durchschnitt',
+      'admin.feedback.positive': 'Positiv',
+      'admin.feedback.negative': 'Negativ',
+      'admin.feedback.withComments': 'Mit Kommentaren',
+      'admin.feedback.back': 'Zurück',
+      'admin.feedback.next': 'Weiter',
+      'admin.feedback.page': 'Seite',
+      'admin.feedback.of': 'von'
+    }
+  }
+});
 
 // Mock the Chart.js component to avoid rendering issues in tests
 vi.mock('chart.js', () => ({
@@ -96,11 +136,18 @@ describe('AdminFeedback Component', () => {
                 loading: false
               }
             }
-          })
+          }),
+          i18n
         ],
         stubs: {
           'Chart': true,
-          'Dialog': true
+          'Dialog': true,
+          'BaseInput': true,
+          'BaseButton': true,
+          'BaseCheckbox': true
+        },
+        mocks: {
+          $t: (key: string) => key
         }
       }
     });
@@ -135,11 +182,18 @@ describe('AdminFeedback Component', () => {
                 loading: false
               }
             }
-          })
+          }),
+          i18n
         ],
         stubs: {
           'Chart': true,
-          'Dialog': true
+          'Dialog': true,
+          'BaseInput': true,
+          'BaseButton': true,
+          'BaseCheckbox': true
+        },
+        mocks: {
+          $t: (key: string) => key
         }
       }
     });
@@ -196,11 +250,18 @@ describe('AdminFeedback Component', () => {
                 loading: false
               }
             }
-          })
+          }),
+          i18n
         ],
         stubs: {
           'Chart': true,
-          'Dialog': true
+          'Dialog': true,
+          'BaseInput': true,
+          'BaseButton': true,
+          'BaseCheckbox': true
+        },
+        mocks: {
+          $t: (key: string) => key
         }
       }
     });
@@ -252,11 +313,18 @@ describe('AdminFeedback Component', () => {
                 loading: false
               }
             }
-          })
+          }),
+          i18n
         ],
         stubs: {
           'Chart': true,
-          'Dialog': true
+          'Dialog': true,
+          'BaseInput': true,
+          'BaseButton': true,
+          'BaseCheckbox': true
+        },
+        mocks: {
+          $t: (key: string) => key
         }
       }
     });
@@ -313,11 +381,18 @@ describe('AdminFeedback Component', () => {
                 loading: false
               }
             }
-          })
+          }),
+          i18n
         ],
         stubs: {
           'Chart': true,
-          'Dialog': true
+          'Dialog': true,
+          'BaseInput': true,
+          'BaseButton': true,
+          'BaseCheckbox': true
+        },
+        mocks: {
+          $t: (key: string) => key
         }
       }
     });
@@ -358,11 +433,18 @@ describe('AdminFeedback Component', () => {
                 loading: false
               }
             }
-          })
+          }),
+          i18n
         ],
         stubs: {
           'Chart': true,
-          'Dialog': true
+          'Dialog': true,
+          'BaseInput': true,
+          'BaseButton': true,
+          'BaseCheckbox': true
+        },
+        mocks: {
+          $t: (key: string) => key
         }
       }
     });
@@ -408,11 +490,18 @@ describe('AdminFeedback Component', () => {
                 loading: false
               }
             }
-          })
+          }),
+          i18n
         ],
         stubs: {
           'Chart': true,
-          'Dialog': true
+          'Dialog': true,
+          'BaseInput': true,
+          'BaseButton': true,
+          'BaseCheckbox': true
+        },
+        mocks: {
+          $t: (key: string) => key
         }
       }
     });
