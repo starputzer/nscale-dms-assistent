@@ -489,6 +489,143 @@ const activeTabId = computed({
 });
 ```
 
+### 5. Drawer
+
+Die `Drawer`-Komponente bietet ein seitenbasiertes Overlay-Menü oder Panel, das von den Rändern des Fensters eingeblendet werden kann.
+
+#### Eigenschaften
+
+| Eigenschaft | Typ | Standard | Beschreibung |
+|-------------|-----|----------|--------------|
+| `modelValue` | Boolean | - | Steuert die Sichtbarkeit des Drawers (v-model) |
+| `position` | String | `'right'` | Position des Drawers (`'left'`, `'right'`, `'top'`, `'bottom'`) |
+| `size` | String | `'medium'` | Größe des Drawers (`'small'`, `'medium'`, `'large'`, `'xlarge'`, `'auto'`) |
+| `customSize` | String | - | Benutzerdefinierte Weite (bei left/right) oder Höhe (bei top/bottom) |
+| `bordered` | Boolean | `true` | Steuert, ob der Drawer einen sichtbaren Rahmen hat |
+| `elevated` | Boolean | `true` | Steuert, ob der Drawer einen Schattenwurf hat |
+| `closeOnEscape` | Boolean | `true` | Steuert, ob der Drawer per ESC-Taste geschlossen werden kann |
+| `title` | String | - | Titel des Drawers (optional) |
+| `showCloseButton` | Boolean | `true` | Steuert, ob ein Schließen-Button angezeigt wird |
+| `hasBackdrop` | Boolean | `true` | Steuert, ob ein Hintergrund-Overlay angezeigt wird |
+| `closeOnBackdropClick` | Boolean | `true` | Steuert, ob ein Klick auf den Hintergrund den Drawer schließt |
+| `fullScreen` | Boolean | `false` | Steuert, ob der Drawer als Vollbild angezeigt wird |
+| `resizable` | Boolean | `false` | Steuert, ob der Drawer in der Größe veränderbar ist |
+| `zIndex` | Number | `1000` | Z-Index des Drawers |
+
+#### Events
+
+| Event | Parameter | Beschreibung |
+|-------|-----------|--------------|
+| `update:modelValue` | `value: boolean` | Wird ausgelöst, wenn sich der Sichtbarkeitszustand ändert |
+| `open` | - | Wird ausgelöst, wenn der Drawer geöffnet wird |
+| `close` | - | Wird ausgelöst, wenn der Drawer geschlossen wird |
+| `resize` | `size: number` | Wird ausgelöst, wenn die Größe des Drawers geändert wird |
+
+#### Slots
+
+| Name | Beschreibung |
+|------|--------------|
+| `header` | Inhalt für den Header des Drawers |
+| `default` | Hauptinhalt des Drawers |
+| `footer` | Inhalt für den Footer des Drawers |
+
+#### Verwendung
+
+```vue
+<template>
+  <Button @click="showDrawer = true">Open Drawer</Button>
+
+  <Drawer
+    v-model="showDrawer"
+    title="Settings"
+    position="right"
+    size="large"
+    :closeOnBackdropClick="true"
+  >
+    <div class="drawer-content">
+      <h3>Application Settings</h3>
+      <p>Configure your preferences here.</p>
+      <!-- Drawer content -->
+    </div>
+
+    <template #footer>
+      <Button variant="secondary" @click="showDrawer = false">Cancel</Button>
+      <Button variant="primary" @click="saveSettings">Save</Button>
+    </template>
+  </Drawer>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import { Drawer, Button } from '@/components/layout';
+
+const showDrawer = ref(false);
+
+function saveSettings() {
+  // Save settings logic
+  showDrawer.value = false;
+}
+</script>
+```
+
+### 6. Footer
+
+Die `Footer`-Komponente bietet einen flexiblen Fußbereich für die Anwendung mit verschiedenen Anpassungsmöglichkeiten.
+
+#### Eigenschaften
+
+| Eigenschaft | Typ | Standard | Beschreibung |
+|-------------|-----|----------|--------------|
+| `copyright` | String | - | Copyright-Text (ohne Jahr) |
+| `version` | String | - | Versionsnummer |
+| `versionPrefix` | String | `'Version'` | Präfix für die Versionsnummer |
+| `showVersion` | Boolean | `true` | Steuert, ob die Versionsnummer angezeigt werden soll |
+| `sticky` | Boolean | `false` | Steuert, ob der Footer sticky ist (am unteren Bildschirmrand fixiert) |
+| `elevated` | Boolean | `false` | Steuert, ob der Footer einen Schattenwurf hat |
+| `fixed` | Boolean | `false` | Steuert, ob der Footer fixiert ist (unabhängig vom Scroll-Status) |
+| `bordered` | Boolean | `true` | Steuert, ob der Footer eine Umrandung hat |
+| `size` | String | `'medium'` | Größe des Footers (`'small'`, `'medium'`, `'large'`) |
+| `variant` | String | `'default'` | Variante des Footers (`'default'`, `'minimal'`, `'compact'`, `'dark'`, `'primary'`) |
+| `fullWidth` | Boolean | `false` | Steuert, ob der Footer die volle Breite einnimmt |
+| `stackOnMobile` | Boolean | `true` | Steuert, ob auf Mobilgeräten die Bereiche übereinander gestapelt werden |
+
+#### Slots
+
+| Name | Beschreibung |
+|------|--------------|
+| `left` | Inhalt für den linken Bereich des Footers |
+| `default` | Inhalt für den mittleren Bereich des Footers |
+| `right` | Inhalt für den rechten Bereich des Footers |
+| `links` | Spezieller Slot für Footer-Links |
+
+#### Verwendung
+
+```vue
+<template>
+  <Footer
+    copyright="nScale DMS Assistent"
+    version="1.5.0"
+    variant="default"
+    size="medium"
+    :elevated="true"
+  >
+    <template #left>
+      <div>Zusätzliche Informationen</div>
+    </template>
+
+    <template #links>
+      <a href="/impressum">Impressum</a>
+      <a href="/datenschutz">Datenschutz</a>
+      <a href="/kontakt">Kontakt</a>
+    </template>
+
+    <template #right>
+      <div>Powered by nScale</div>
+    </template>
+  </Footer>
+</template>
+```
+
 ## Zukünftige Entwicklung
 
 Für zukünftige Versionen der Layout-Komponenten sind folgende Funktionen geplant:
@@ -502,3 +639,5 @@ Für zukünftige Versionen der Layout-Komponenten sind folgende Funktionen gepla
 ## Fazit
 
 Die Layout-Komponenten des nScale DMS Assistenten bieten eine robuste Grundlage für die Erstellung moderner, reaktionsfähiger und barrierefreier Benutzeroberflächen. Durch ihre Flexibilität, Anpassbarkeit und Leistungsfähigkeit eignen sie sich ideal für komplexe Unternehmensanwendungen mit hohen Anforderungen an Benutzerfreundlichkeit und Zuverlässigkeit.
+
+Mit der Vervollständigung der Layout-Komponenten wurde die Migration in diesem Bereich erfolgreich abgeschlossen und bietet nun ein vollständiges Set an Komponenten für die Strukturierung von Benutzeroberflächen.

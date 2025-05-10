@@ -146,7 +146,7 @@ Die vollständige Migration wird voraussichtlich in 5-7 Monaten abgeschlossen se
 
 ### 2.3 Gemeinsame UI-Komponenten
 
-#### 2.3.1 Layout-Komponenten (15% ausstehend)
+#### 2.3.1 Layout-Komponenten (0% ausstehend)
 
 | Komponente | Status | Priorität | Komplexität | Abhängigkeiten |
 |------------|--------|-----------|-------------|----------------|
@@ -154,9 +154,9 @@ Die vollständige Migration wird voraussichtlich in 5-7 Monaten abgeschlossen se
 | Header | 100% | Hoch | Niedrig | auth-store, ui-store |
 | Sidebar | 100% | Hoch | Mittel | sessions-store, ui-store |
 | TabPanel | 100% | Mittel | Niedrig | ui-store |
-| SplitPane | 75% | Niedrig | Mittel | ui-store |
-| Drawer | 30% | Niedrig | Niedrig | ui-store |
-| Footer | 20% | Niedrig | Niedrig | keine |
+| SplitPane | 100% | Niedrig | Mittel | ui-store |
+| Drawer | 100% | Niedrig | Niedrig | ui-store |
+| Footer | 100% | Niedrig | Niedrig | keine |
 
 #### 2.3.2 UI-Basiskomponenten (40% ausstehend)
 
