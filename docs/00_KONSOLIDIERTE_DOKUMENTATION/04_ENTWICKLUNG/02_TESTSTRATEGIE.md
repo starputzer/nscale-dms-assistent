@@ -1,6 +1,6 @@
 ---
 title: "Test-Strategie und Implementierung"
-version: "1.0.0"
+version: "1.1.0"
 date: "10.05.2025"
 lastUpdate: "10.05.2025"
 author: "Martin Heinrich"
@@ -12,7 +12,7 @@ tags: ["Tests", "Qualitätssicherung", "Vitest", "Playwright", "Vue 3", "Pinia"]
 
 # Test-Strategie und Implementierung
 
-> **Letzte Aktualisierung:** 10.05.2025 | **Version:** 1.0.0 | **Status:** Aktiv
+> **Letzte Aktualisierung:** 10.05.2025 | **Version:** 1.1.0 | **Status:** Aktiv
 
 ## Inhaltsverzeichnis
 
@@ -93,15 +93,15 @@ Die Teststrategie umfasst mehrere Ebenen:
 
 | Komponente | Aktuell | Ziel | Zeitrahmen |
 |------------|---------|------|------------|
-| Chat-Funktionalität | ~85% | 95% | Q3 2025 |
-| Session-Management | ~80% | 90% | Q3 2025 |
-| Dokumentenkonverter | ~75% | 90% | Q4 2025 |
-| UI-Basiskomponenten | ~60% | 85% | Q1 2026 |
-| Admin-Komponenten | ~75% | 85% | Q1 2026 |
-| Vue-Komponenten (gesamt) | variiert | 85% | Q1 2026 |
-| E2E-Abdeckung | 40% | 70% | Q2 2026 |
-| Visuelle Abdeckung | 30% | 60% | Q3 2026 |
-| Barrierefreiheit | 25% | 80% | Q3 2026 |
+| Chat-Funktionalität | ~90% | 95% | Q3 2025 |
+| Session-Management | ~85% | 90% | Q3 2025 |
+| Dokumentenkonverter | ~78% | 90% | Q4 2025 |
+| UI-Basiskomponenten | ~85% | 85% | Q1 2026 |
+| Admin-Komponenten | ~80% | 85% | Q1 2026 |
+| Vue-Komponenten (gesamt) | ~82% | 85% | Q1 2026 |
+| E2E-Abdeckung | 45% | 70% | Q2 2026 |
+| Visuelle Abdeckung | 35% | 60% | Q3 2026 |
+| Barrierefreiheit | 30% | 80% | Q3 2026 |
 
 ## Unit-Tests
 
@@ -284,6 +284,114 @@ describe('MessageList.vue - Testing Library', () => {
     
     expect(onSelectMessage).toHaveBeenCalledWith('1');
   });
+});
+```
+
+**Beispiel: Admin-Komponente Test (AdminSystemSettings)**:
+
+```typescript
+// test/components/admin/tabs/AdminSystemSettings.spec.ts
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { mount, flushPromises } from '@vue/test-utils';
+import AdminSystemSettings from '@/components/admin/tabs/AdminSystemSettings.vue';
+import { createTestingPinia } from '@pinia/testing';
+
+describe('AdminSystemSettings.vue', () => {
+  // Mock Abhängigkeiten
+  vi.mock('@/composables/useToast', () => ({
+    useToast: () => ({
+      showToast: vi.fn()
+    })
+  }));
+  
+  it('fetches settings on mount', async () => {
+    // Create pinia and get store before mounting
+    const pinia = createTestingPinia({ createSpy: vi.fn });
+    
+    // Get the store and spy on it
+    const { useAdminSettingsStore } = await import('@/stores/admin/settings');
+    const settingsStore = useAdminSettingsStore(pinia);
+    settingsStore.fetchSettings = vi.fn().mockResolvedValue({});
+    
+    // Mount with the prepared store
+    const wrapper = mount(AdminSystemSettings, {
+      global: {
+        plugins: [pinia],
+        mocks: {
+          $t: (key, fallback) => fallback || key
+        }
+      }
+    });
+    
+    await flushPromises();
+    
+    // Verify the component called the store method
+    expect(settingsStore.fetchSettings).toHaveBeenCalled();
+  });
+  
+  it('saves settings when calling saveSettings', async () => {
+    const pinia = createTestingPinia({ createSpy: vi.fn });
+    
+    const { useAdminSettingsStore } = await import('@/stores/admin/settings');
+    const settingsStore = useAdminSettingsStore(pinia);
+    
+    // Spy on methods
+    settingsStore.updateSettings = vi.fn();
+    settingsStore.saveSettings = vi.fn().mockResolvedValue({});
+    
+    const wrapper = mount(AdminSystemSettings, {
+      global: {
+        plugins: [pinia],
+        mocks: { $t: (key, fallback) => fallback || key }
+      }
+    });
+    
+    await flushPromises();
+    
+    // Call saveSettings method directly
+    await wrapper.vm.saveSettings();
+    
+    // Store methods should have been called
+    expect(settingsStore.updateSettings).toHaveBeenCalled();
+    expect(settingsStore.saveSettings).toHaveBeenCalled();
+  });
+  
+  it('handles errors when clearing cache', async () => {
+    const pinia = createTestingPinia({ createSpy: vi.fn });
+    
+    const { useAdminSystemStore } = await import('@/stores/admin/system');
+    const systemStore = useAdminSystemStore(pinia);
+    
+    // Mock console.error to avoid test output noise
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    
+    // Make clearCache throw an error
+    const testError = new Error('Test error');
+    systemStore.clearCache = vi.fn().mockRejectedValue(testError);
+    
+    const wrapper = mount(AdminSystemSettings, {
+      global: {
+        plugins: [pinia],
+        mocks: { $t: (key, fallback) => fallback || key }
+      }
+    });
+    
+    await flushPromises();
+    
+    // Set up the state for clearing cache
+    wrapper.vm.showClearCacheConfirm = true;
+    
+    // Call the clearCache method
+    await wrapper.vm.clearCache();
+    
+    // Dialog should be closed and error should be handled
+    expect(wrapper.vm.showClearCacheConfirm).toBe(false);
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Error clearing cache:', testError);
+    
+    consoleErrorSpy.mockRestore();
+  });
+  
+  // Weitere Tests für Fehlerbehandlung, Benutzerinteraktionen, etc.
 });
 ```
 
@@ -747,23 +855,75 @@ import { fileURLToPath } from 'node:url';
 export default defineConfig({
   plugins: [Vue()],
   test: {
+    // Globale Konfiguration
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./test/setup.ts'],
-    include: ['**/*.{test,spec}.{js,ts,jsx,tsx}'],
-    exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**'],
+    
+    // Testabdeckung
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/',
+        'test/',
+        '**/*.d.ts',
+        '**/*.spec.ts',
+        'dist/',
+        'coverage/',
+        'public/',
+        'frontend/', // Legacy-Code
+      ],
+      // Zielabdeckungen
       branches: 80,
       functions: 80,
       lines: 80,
       statements: 80
     },
+    
+    // Parallelisierung für schnelleres Testen
+    pool: 'threads',
+    poolOptions: {
+      threads: {
+        singleThread: false,
+      },
+    },
+    
+    // Testmuster und Ausschluss
+    include: [
+      'test/**/*.spec.ts',
+      'test/**/*.spec.js',
+      'src/**/*.spec.ts',
+      'src/**/__tests__/**/*.ts',
+    ],
+    exclude: [
+      'test/vanilla/**/*.spec.js', // diese nutzen vanilla.vitest.config.js
+      'e2e/**',
+      'node_modules/',
+    ],
+    
+    // Berichterstattung und UI
+    reporters: ['default'],
+    outputFile: './test-results/results.json',
+    
+    // Timeouts
+    testTimeout: 10000,
+    hookTimeout: 10000,
+    
+    // Debugging-Unterstützung
+    onConsoleLog(log, type) {
+      if (log.includes('Vue warn')) {
+        console.warn('Vue warning detected in tests:', log);
+      }
+      return false; // gibt die Konsole trotzdem aus
+    },
+  },
+  resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-    }
-  }
+      'test': fileURLToPath(new URL('./test', import.meta.url)),
+    },
+  },
 });
 ```
 
@@ -822,8 +982,9 @@ export default config;
 
 ```typescript
 // test/setup.ts
-import { vi, beforeEach, afterEach } from 'vitest';
+import { vi, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import { config } from '@vue/test-utils';
+import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/vue';
 import * as matchers from '@testing-library/jest-dom/matchers';
 import { expect } from 'vitest';
@@ -833,52 +994,355 @@ expect.extend(matchers);
 
 // Vue Test Utils global mocks
 config.global.mocks = {
-  $t: (key: string) => key,
+  $t: (key: string) => key, // Mock für i18n
   $router: {
     push: vi.fn(),
     replace: vi.fn(),
     go: vi.fn(),
     back: vi.fn(),
-    forward: vi.fn()
+    forward: vi.fn(),
   },
   $route: {
     params: {},
     query: {},
     path: '/',
-    name: null
+    name: 'home',
   }
 };
 
-// LocalStorage Mock
-const localStorageMock = (() => {
+// Konfiguration für sämtliche Komponenten
+config.global.stubs = {
+  // Stub für externe Komponenten, die nicht getestet werden müssen
+  'font-awesome-icon': true,
+  'router-link': true,
+  // Spezielle Komponenten, wenn nötig
+};
+
+// Mock für window.matchMedia
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+});
+
+// Mock für window.Blob
+class MockBlob {
+  size: number;
+  type: string;
+  
+  constructor(parts: any[], options?: BlobPropertyBag) {
+    this.size = parts.reduce((acc, part) => acc + (typeof part === 'string' ? part.length : part.size || 0), 0);
+    this.type = options?.type || '';
+  }
+
+  text() {
+    return Promise.resolve('mock-blob-text');
+  }
+
+  arrayBuffer() {
+    return Promise.resolve(new ArrayBuffer(this.size));
+  }
+
+  slice(start?: number, end?: number, contentType?: string) {
+    return new MockBlob([], { type: contentType || this.type });
+  }
+}
+
+global.Blob = MockBlob as any;
+global.File = class extends MockBlob {
+  name: string;
+  lastModified: number;
+  
+  constructor(parts: any[], name: string, options?: FilePropertyBag) {
+    super(parts, options);
+    this.name = name;
+    this.lastModified = options?.lastModified || Date.now();
+  }
+} as any;
+
+// Mock für URL.createObjectURL
+URL.createObjectURL = vi.fn().mockImplementation(() => 'mock-object-url');
+URL.revokeObjectURL = vi.fn();
+
+// Mock für window.fetch
+global.fetch = vi.fn();
+
+// Mock für FormData (wird für FileUpload gebraucht)
+global.FormData = class {
+  private data: Record<string, any> = {};
+  
+  append(key: string, value: any) {
+    this.data[key] = value;
+  }
+  
+  get(key: string) {
+    return this.data[key];
+  }
+  
+  has(key: string) {
+    return key in this.data;
+  }
+  
+  delete(key: string) {
+    delete this.data[key];
+  }
+  
+  getAll(key: string) {
+    return this.data[key] ? [this.data[key]] : [];
+  }
+
+  forEach(callback: (value: any, key: string) => void) {
+    Object.entries(this.data).forEach(([key, value]) => callback(value, key));
+  }
+};
+
+// Mock für Timing-Funktionen
+global.setTimeout = vi.fn() as any;
+global.clearTimeout = vi.fn() as any;
+global.setInterval = vi.fn() as any;
+global.clearInterval = vi.fn() as any;
+global.requestAnimationFrame = vi.fn() as any;
+global.cancelAnimationFrame = vi.fn() as any;
+
+// Mock für lokalen und Session Storage
+const mockStorage = () => {
   let store: Record<string, string> = {};
   return {
-    getItem: vi.fn((key: string) => store[key] || null),
-    setItem: vi.fn((key: string, value: string) => {
+    getItem(key: string) {
+      return store[key] || null;
+    },
+    setItem(key: string, value: string) {
       store[key] = value.toString();
-    }),
-    removeItem: vi.fn((key: string) => {
+    },
+    removeItem(key: string) {
       delete store[key];
-    }),
-    clear: vi.fn(() => {
+    },
+    clear() {
       store = {};
-    })
+    },
+    length: 0,
+    key(index: number) {
+      return Object.keys(store)[index] || null;
+    }
   };
-})();
+};
 
-// Vor jedem Test
-beforeEach(() => {
-  // localStorage Mock zuweisen
-  Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+Object.defineProperty(window, 'localStorage', {
+  value: mockStorage(),
+});
+
+Object.defineProperty(window, 'sessionStorage', {
+  value: mockStorage(),
+});
+
+// Mock für EventSource (für Streaming-Tests)
+class MockEventSource {
+  url: string;
+  onmessage: ((event: MessageEvent) => void) | null = null;
+  onerror: ((event: Event) => void) | null = null;
+  onopen: ((event: Event) => void) | null = null;
+  readyState: number = 0;
+  withCredentials: boolean = false;
+  CONNECTING: number = 0;
+  OPEN: number = 1;
+  CLOSED: number = 2;
   
-  // Weiteres Setup je nach Bedarf
+  private eventListeners: Record<string, Array<(event: MessageEvent) => void>> = {};
+  
+  constructor(url: string) {
+    this.url = url;
+    this.readyState = this.CONNECTING;
+    
+    // Automatisch nach Erstellung "verbinden"
+    setTimeout(() => {
+      this.readyState = this.OPEN;
+      if (this.onopen) {
+        this.onopen(new Event('open'));
+      }
+    }, 0);
+  }
+  
+  addEventListener(type: string, listener: (event: MessageEvent) => void): void {
+    if (!this.eventListeners[type]) {
+      this.eventListeners[type] = [];
+    }
+    this.eventListeners[type].push(listener);
+  }
+  
+  removeEventListener(type: string, listener: (event: MessageEvent) => void): void {
+    if (this.eventListeners[type]) {
+      this.eventListeners[type] = this.eventListeners[type].filter(l => l !== listener);
+    }
+  }
+  
+  dispatchEvent(event: Event): boolean {
+    return true;
+  }
+  
+  close(): void {
+    this.readyState = this.CLOSED;
+  }
+  
+  // Test-Hilfsmethoden
+  emit(type: string, data: any): void {
+    const event = new MessageEvent(type, { data: typeof data === 'string' ? data : JSON.stringify(data) });
+    
+    // Spezifischen Event-Handler aufrufen
+    if (type === 'message' && this.onmessage) {
+      this.onmessage(event);
+    }
+    
+    // Alle Event-Listener für diesen Typ aufrufen
+    if (this.eventListeners[type]) {
+      this.eventListeners[type].forEach(listener => listener(event));
+    }
+  }
+  
+  emitError(error: Error): void {
+    if (this.onerror) {
+      this.onerror(new Event('error'));
+    }
+  }
+}
+
+vi.stubGlobal('EventSource', MockEventSource);
+
+// Automatische Bereinigung von Testing Library
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.resetModules();
+  localStorage.clear();
+  sessionStorage.clear();
 });
 
-// Nach jedem Test
-afterEach(() => {
-  vi.resetAllMocks();
-  cleanup();
+// Testing Library: benutzerdefinierte Übereinstimmungen
+import { configure } from '@testing-library/dom';
+
+configure({
+  testIdAttribute: 'data-testid',
+  asyncUtilTimeout: 5000,
 });
+
+// Mock für ResizeObserver
+class ResizeObserverMock {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+}
+
+window.ResizeObserver = ResizeObserverMock as any;
+
+// Mock für IntersectionObserver
+class IntersectionObserverMock {
+  callback: IntersectionObserverCallback;
+  elements: Set<Element>;
+  
+  constructor(callback: IntersectionObserverCallback) {
+    this.callback = callback;
+    this.elements = new Set();
+  }
+  
+  observe(element: Element) {
+    this.elements.add(element);
+  }
+  
+  unobserve(element: Element) {
+    this.elements.delete(element);
+  }
+  
+  disconnect() {
+    this.elements.clear();
+  }
+  
+  // Hilfsmethode für Tests
+  triggerEntries(entries: IntersectionObserverEntry[]) {
+    this.callback(entries, this);
+  }
+}
+
+window.IntersectionObserver = IntersectionObserverMock as any;
+
+// Hilfsfunktionen für Tests
+export function flushPromises() {
+  return new Promise(resolve => setTimeout(resolve, 0));
+}
+
+export function createMockAxiosResponse(data: any, status = 200, statusText = 'OK') {
+  return {
+    data,
+    status,
+    statusText,
+    headers: {},
+    config: {},
+  };
+}
+
+export function createMockAxiosError(message = 'Network Error', status = 500) {
+  const error = new Error(message) as any;
+  error.response = {
+    status,
+    data: { error: message },
+    statusText: 'Internal Server Error',
+    headers: {},
+    config: {},
+  };
+  error.isAxiosError = true;
+  error.message = message;
+  return error;
+}
+
+// Test-Daten-Generatoren
+export const mockUtils = {
+  createUser: (overrides = {}) => ({
+    id: 'user-1',
+    email: 'test@example.com',
+    username: 'testuser',
+    role: 'user',
+    displayName: 'Test User',
+    lastLogin: new Date().toISOString(),
+    ...overrides
+  }),
+  
+  createSession: (overrides = {}) => ({
+    id: 'session-1',
+    title: 'Test Session',
+    userId: 'user-1',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    isPinned: false,
+    ...overrides
+  }),
+  
+  createMessage: (overrides = {}) => ({
+    id: 'message-1',
+    sessionId: 'session-1',
+    content: 'Test message content',
+    role: 'user',
+    timestamp: new Date().toISOString(),
+    status: 'sent',
+    ...overrides
+  }),
+  
+  createDocument: (overrides = {}) => ({
+    id: 'doc-1',
+    name: 'test-document.pdf',
+    size: 1024,
+    type: 'application/pdf',
+    status: 'converted',
+    userId: 'user-1',
+    createdAt: new Date().toISOString(),
+    ...overrides
+  }),
+};
 ```
 
 ### CI/CD-Integration
