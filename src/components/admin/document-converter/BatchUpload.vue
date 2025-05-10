@@ -135,17 +135,45 @@
         </h4>
         
         <div class="batch-upload__files">
-          <div 
-            v-for="(file, index) in batchFiles" 
-            :key="file.id" 
+          <div
+            v-for="(file, index) in batchFiles"
+            :key="file.id"
             class="batch-upload__file-item"
             :class="{
               'batch-upload__file-item--invalid': file.validationStatus === 'invalid',
               'batch-upload__file-item--uploading': file.status === 'uploading',
               'batch-upload__file-item--uploaded': file.status === 'uploaded',
-              'batch-upload__file-item--error': file.error
+              'batch-upload__file-item--error': file.error,
+              'batch-upload__file-item--swiping': fileSwiping === file.id
+            }"
+            v-touch="{
+              left: () => handleSwipeLeft(file.id, index),
+              right: () => handleSwipeRight(file.id, index),
+              tap: () => handleFileTap(file.id, index)
             }"
           >
+            <!-- Touch Action Overlay for Mobile -->
+            <div v-if="fileSwiping === file.id" class="batch-upload__touch-actions">
+              <button
+                v-if="touchActionButtons.get(file.id) === true"
+                class="batch-upload__touch-btn batch-upload__touch-upload-btn"
+                @click.stop="uploadSingleFile(index)"
+                :aria-label="t('documentConverter.batchUpload.uploadNow', `Datei '${file.file.name}' jetzt hochladen`)"
+              >
+                <i class="fa fa-upload" aria-hidden="true"></i>
+                <span>{{ t('documentConverter.batchUpload.uploadNow', 'Jetzt hochladen') }}</span>
+              </button>
+              <button
+                v-if="touchActionButtons.get(file.id) === false"
+                class="batch-upload__touch-btn batch-upload__touch-remove-btn"
+                @click.stop="removeFile(index)"
+                :aria-label="t('documentConverter.batchUpload.removeFile', `Datei '${file.file.name}' entfernen`)"
+              >
+                <i class="fa fa-trash" aria-hidden="true"></i>
+                <span>{{ t('documentConverter.batchUpload.remove', 'Entfernen') }}</span>
+              </button>
+            </div>
+
             <div class="batch-upload__file-header">
               <div class="batch-upload__file-icon" aria-hidden="true">
                 <i :class="getFileIcon(file.file)"></i>
@@ -331,6 +359,7 @@ import { useDocumentConverterStore } from '@/stores/documentConverter';
 import { useGlobalDialog } from '@/composables/useDialog';
 import { useI18n } from '@/composables/useI18n';
 import { useToast } from '@/composables/useToast';
+import { vTouch } from '@/directives/touch-directives';
 
 // Services und Dependencies
 const documentConverterStore = useDocumentConverterStore();
@@ -455,6 +484,9 @@ const currentFileName = ref<string>('');
 const estimatedTimeRemaining = ref<number>(0);
 const uploadStartTime = ref<Date | null>(null);
 const resumableUploads = ref<Map<string, any>>(new Map());
+// Mobile touch gesture state
+const fileSwiping = ref<string | null>(null);
+const touchActionButtons = ref<Map<string, boolean>>(new Map());
 
 // MIME-Typen zu Dateiendungen zuordnen
 const mimeTypesMap = {
@@ -1202,6 +1234,66 @@ function getFileIcon(file: File): string {
   return fileIcons[extension] || 'fa fa-file';
 }
 
+// Touch gesture handlers for mobile
+function handleSwipeLeft(fileId: string, index: number): void {
+  // Left swipe to show upload action (if valid)
+  const file = batchFiles.value[index];
+
+  // Reset any previous swiping state
+  fileSwiping.value = null;
+  touchActionButtons.value.clear();
+
+  if (file.validationStatus === 'valid' && !isProcessing.value && !file.status) {
+    fileSwiping.value = fileId;
+    touchActionButtons.value.set(fileId, true);
+
+    // Add upload action button
+    setScreenReaderMessage(t('documentConverter.batchUpload.swipeLeftForUpload',
+      'Nach links gewischt für Upload-Option von Datei: ' + file.file.name));
+
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+      if (fileSwiping.value === fileId) {
+        fileSwiping.value = null;
+        touchActionButtons.value.delete(fileId);
+      }
+    }, 3000);
+  }
+}
+
+function handleSwipeRight(fileId: string, index: number): void {
+  // Right swipe to show delete action
+  if (isProcessing.value && batchFiles.value[index].status === 'uploading') {
+    return; // Don't allow during active upload
+  }
+
+  // Reset any previous swiping state
+  fileSwiping.value = null;
+  touchActionButtons.value.clear();
+
+  fileSwiping.value = fileId;
+  touchActionButtons.value.set(fileId, false); // false indicates delete action
+
+  setScreenReaderMessage(t('documentConverter.batchUpload.swipeRightForDelete',
+    'Nach rechts gewischt für Lösch-Option von Datei: ' + batchFiles.value[index].file.name));
+
+  // Auto-hide after 3 seconds
+  setTimeout(() => {
+    if (fileSwiping.value === fileId) {
+      fileSwiping.value = null;
+      touchActionButtons.value.delete(fileId);
+    }
+  }, 3000);
+}
+
+function handleFileTap(fileId: string, index: number): void {
+  // Clear any active swipe actions when tapping on a file
+  if (fileSwiping.value) {
+    fileSwiping.value = null;
+    touchActionButtons.value.clear();
+  }
+}
+
 // Screen Reader Meldung setzen
 function setScreenReaderMessage(message: string): void {
   screenReaderMessage.value = message;
@@ -1507,6 +1599,9 @@ onUnmounted(() => {
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  position: relative; /* For positioning touch action overlay */
+  overflow: hidden; /* For swipe animation */
+  transition: transform 0.3s ease; /* For swipe animations */
 }
 
 .batch-upload__file-item--invalid {
@@ -1527,6 +1622,74 @@ onUnmounted(() => {
 .batch-upload__file-item--error {
   border-color: #fc8181;
   background-color: #fff5f5;
+}
+
+.batch-upload__file-item--swiping {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Touch Action Overlay */
+.batch-upload__touch-actions {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  z-index: 10;
+  border-radius: 6px;
+  animation: fadeIn 0.2s ease;
+}
+
+.batch-upload__touch-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: 8px;
+  border: none;
+  min-width: 120px;
+  min-height: 100px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.batch-upload__touch-btn i {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.batch-upload__touch-upload-btn {
+  background-color: #4a6cf7;
+  color: white;
+}
+
+.batch-upload__touch-upload-btn:active {
+  background-color: #3a5be7;
+  transform: scale(0.95);
+}
+
+.batch-upload__touch-remove-btn {
+  background-color: #e53e3e;
+  color: white;
+}
+
+.batch-upload__touch-remove-btn:active {
+  background-color: #c53030;
+  transform: scale(0.95);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .batch-upload__file-header {
@@ -1867,33 +2030,91 @@ onUnmounted(() => {
     align-items: flex-start;
     gap: 1rem;
   }
-  
+
   .batch-upload__priority {
     width: 100%;
+    display: flex;
+    align-items: center;
   }
-  
+
+  .batch-upload__label {
+    min-width: 120px;
+  }
+
   .batch-upload__select {
     flex: 1;
+    height: 44px; /* Touch-friendly height */
+    font-size: 1rem; /* Larger text for better readability */
   }
-  
+
   .batch-upload__file-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
-  
+
   .batch-upload__file-actions {
     align-self: flex-end;
-    margin-top: -2rem;
+    margin-top: -2.5rem;
   }
-  
+
+  .batch-upload__action-btn,
+  .batch-upload__remove-btn {
+    width: 44px;  /* Touch-friendly target size */
+    height: 44px; /* Touch-friendly target size */
+    font-size: 1.25rem; /* Larger icons */
+  }
+
+  .batch-upload__file-priority-select {
+    height: 36px; /* Touch-friendly height */
+    min-width: 100px; /* Wider for better touch target */
+    font-size: 0.875rem;
+  }
+
   .batch-upload__actions {
     flex-direction: column;
+    gap: 1rem;
   }
-  
+
+  .batch-upload__start-btn,
+  .batch-upload__clear-btn,
+  .batch-upload__cancel-btn {
+    padding: 0.875rem 1.5rem; /* Taller buttons */
+    font-size: 1rem; /* Larger text */
+    width: 100%; /* Full width */
+    justify-content: center;
+  }
+
   .batch-upload__batch-stats {
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.75rem;
+  }
+
+  .batch-upload__option {
+    margin-top: 0.5rem;
+  }
+
+  .batch-upload__checkbox {
+    width: 22px; /* Larger checkbox */
+    height: 22px; /* Larger checkbox */
+  }
+
+  .batch-upload__checkbox-label {
+    font-size: 1rem; /* Larger text */
+    padding: 8px 0; /* Creates larger touch target */
+  }
+
+  .batch-upload__quick-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .batch-upload__quick-action {
+    padding: 0.5rem 0.75rem; /* Larger buttons */
+    font-size: 0.875rem; /* Larger text */
+    flex: 1 0 auto;
+    min-width: 130px;
+    text-align: center;
   }
 }
 
@@ -1901,28 +2122,81 @@ onUnmounted(() => {
   .batch-upload {
     padding: 1rem;
   }
-  
+
   .batch-upload__dropzone {
-    padding: 1.5rem 1rem;
+    padding: 2rem 1rem; /* More vertical space for touch */
+    min-height: 150px; /* Ensures adequate touch target size */
   }
-  
+
   .batch-upload__icon {
-    font-size: 2rem;
+    font-size: 2.5rem; /* Larger icon */
   }
-  
+
   .batch-upload__prompt {
-    font-size: 0.875rem;
+    font-size: 1rem; /* Larger text */
+    padding: 0.5rem 0; /* More vertical padding */
   }
-  
+
+  .batch-upload__browse {
+    padding: 0.25rem 0; /* Creates better touch target */
+    display: inline-block;
+  }
+
   .batch-upload__stats {
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    padding: 1rem;
   }
-  
+
   .batch-upload__stat-item {
     flex-direction: row;
     justify-content: space-between;
     width: 100%;
+    padding: 0.5rem 0; /* More vertical padding */
+  }
+
+  .batch-upload__stat-label,
+  .batch-upload__stat-value {
+    font-size: 1rem; /* Larger text */
+  }
+
+  /* Improve file items display for small screens */
+  .batch-upload__file-item {
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .batch-upload__file-name {
+    font-size: 1rem; /* Larger text */
+    padding: 0.25rem 0; /* Better touch target */
+  }
+
+  .batch-upload__file-meta {
+    font-size: 0.875rem; /* Slightly larger text */
+  }
+
+  /* Optimize scrollable list for touch */
+  .batch-upload__files {
+    max-height: 350px;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    scrollbar-width: thin; /* Modern browsers */
+  }
+
+  /* Make validation messages more prominent */
+  .batch-upload__validating,
+  .batch-upload__invalid,
+  .batch-upload__error {
+    font-size: 0.875rem; /* Larger text */
+    padding: 0.75rem; /* More padding */
+  }
+
+  /* Resume button optimization */
+  .batch-upload__resume-btn {
+    padding: 0.5rem 1rem; /* Larger button */
+    font-size: 0.875rem; /* Larger text */
+    width: 100%; /* Full width */
+    justify-content: center;
+    margin-top: 0.5rem;
   }
 }
 </style>

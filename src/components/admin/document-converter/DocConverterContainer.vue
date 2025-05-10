@@ -573,17 +573,86 @@ onBeforeUnmount(() => {
 /* Responsive Design */
 @media (max-width: 768px) {
   .doc-converter-container {
-    padding: 1rem;
+    padding: 1.25rem;
     margin: 0 0.5rem;
+    border-radius: 8px;
   }
-  
+
+  .doc-converter-header {
+    margin-bottom: 1.5rem;
+  }
+
   .doc-converter-header h2 {
     font-size: 1.5rem;
+    margin-bottom: 0.75rem;
   }
-  
+
+  .doc-converter-description {
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  .doc-converter-tabs {
+    margin-top: 1.25rem;
+  }
+
+  .doc-converter-tab-btn {
+    padding: 0.75rem 1.5rem;
+    height: 44px; /* Touch-friendly height */
+    font-size: 1rem;
+    min-width: 120px; /* Better touch target */
+    border-radius: 6px;
+  }
+
+  .doc-converter-upload-tabs {
+    display: flex;
+    width: 100%;
+  }
+
+  .doc-converter-upload-tab {
+    flex: 1;
+    height: 44px; /* Touch-friendly height */
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+  }
+
   .doc-converter-btn {
-    padding: 0.6rem 1.2rem;
-    font-size: 0.9rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    height: 44px; /* Touch-friendly height */
+    min-width: 120px; /* Better touch target */
+    border-radius: 8px;
+  }
+
+  .doc-converter-controls {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .doc-converter-btn-primary,
+  .doc-converter-btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .doc-converter-container {
+    padding: 1rem;
+    margin: 0;
+  }
+
+  .doc-converter-tabs {
+    width: 100%;
+  }
+
+  .doc-converter-tab-btn {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.95rem;
+    padding: 0.75rem 0.5rem;
   }
 }
 </style>

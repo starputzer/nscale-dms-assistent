@@ -78,6 +78,7 @@ Die Mobile Optimierung des nscale DMS Assistenten stellt sicher, dass die Anwend
 - Mobile-optimierte Layout-Komponenten (Sidebar, Header)
 - Standardisierte Touch-Direktiven
 - Themenfähigkeit inklusive Dark Mode
+- Touch-optimierte Dokumentenkonverter-Komponenten
 
 #### Verbesserungspotenzial
 
@@ -767,49 +768,132 @@ const isMobile = computed(() => width.value < 768); // MD breakpoint
 
 ### Dokumentenkonverter
 
-Der Dokumentenkonverter ist ebenfalls für mobile Nutzung optimiert:
+Der Dokumentenkonverter wurde umfassend für mobile Nutzung optimiert:
 
-```vue
-<template>
-  <div class="document-converter" :class="{ 'document-converter--mobile': isMobile }">
-    <!-- Mobile-optimierte Datei-Upload-Komponente -->
-    <FileUpload
-      v-if="!isConverting && !conversionResult"
-      :is-mobile="isMobile"
-      @upload="startConversion"
-    />
+#### Überblick
+
+Die Dokumentenkonverter-Komponenten wurden speziell für Touch-Geräte und mobile Viewports angepasst mit folgenden Optimierungen:
+
+- Touch-freundliche Bedienelemente mit mindestens 44×44px Größe
+- Swipe-Gesten für häufige Aktionen (Datei-Upload, Dokument-Aktionen)
+- Alternative Layouts für verschiedene Bildschirmgrößen
+- Optimierte Ladestrategie für mobile Netzwerke
+
+#### Implementierte Komponenten
+
+Folgende Komponenten wurden für mobile Geräte optimiert:
+
+1. **DocConverterContainer**: Anpassungsfähiges Layout mit responsiver Tabnavigation
+2. **BatchUpload**: Touch-optimierte Datei-Upload-Funktionalität mit Swipe-Gesten
+3. **DocumentList**: Mobile-optimierte Listenansicht mit kartenbasiertem Layout
+4. **ConversionProgress**: Alternative Visualisierung für kleine Bildschirme
+
+#### Touch-Optimierungen
+
+Beispiel für die touch-optimierte BatchUpload-Komponente:
+
+```javascript
+// Touch-Gesten-Handler für mobile Geräte
+function handleSwipeLeft(fileId: string, index: number): void {
+  // Links wischen, um Upload-Aktion anzuzeigen (falls gültig)
+  const file = batchFiles.value[index];
+  
+  // Vorherigen Wisch-Status zurücksetzen
+  fileSwiping.value = null;
+  touchActionButtons.value.clear();
+  
+  if (file.validationStatus === 'valid' && !isProcessing.value && !file.status) {
+    fileSwiping.value = fileId;
+    touchActionButtons.value.set(fileId, true);
     
-    <!-- Fortschrittsanzeige mit mobiler Optimierung -->
-    <ConversionProgress
-      v-if="isConverting"
-      :progress="conversionProgress"
-      :current-step="conversionStep"
-      :is-mobile="isMobile"
-      @cancel="cancelConversion"
-    />
-    
-    <!-- Mobile-optimierte Dokumentenliste -->
-    <DocumentList
-      :documents="documents"
-      :is-mobile="isMobile"
-      :selected-document="selectedDocument"
-      @select="selectDocument"
-      @view="viewDocument"
-      @download="downloadDocument"
-      @delete="confirmDeleteDocument"
-    />
+    // Upload-Aktionsbutton hinzufügen
+    setScreenReaderMessage(t('documentConverter.batchUpload.swipeLeftForUpload', 
+      'Nach links gewischt für Upload-Option von Datei: ' + file.file.name));
+  }
+}
+```
+
+#### Responsive Layouts
+
+Die DocumentList-Komponente verwendet ein responsives Kartendesign für mobile Ansichten:
+
+```scss
+@media (max-width: 768px) {
+  .document-list__item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas: 
+      "checkbox title"
+      "info info"
+      "actions actions";
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+  
+  .document-list__item-actions {
+    grid-area: actions;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .document-list__action-btn {
+    min-width: 44px; /* Touch-freundliche Breite */
+    height: 44px;    /* Touch-freundliche Höhe */
+    border-radius: 8px;
+  }
+}
+```
+
+#### Optimierte Fortschrittsanzeige
+
+Die ConversionProgress-Komponente bietet eine spezielle mobile Darstellung:
+
+```html
+<!-- Mobile-optimierte Schrittanzeige -->
+<div 
+  class="conversion-progress__steps conversion-progress__steps--mobile"
+  aria-hidden="true"
+>
+  <div 
+    v-for="(step, index) in conversionSteps"
+    :key="'mobile-' + index"
+    class="conversion-progress__step"
+    :class="{
+      'conversion-progress__step--active': currentStepIndex === index,
+      'conversion-progress__step--completed': currentStepIndex > index
+    }"
+  >
+    <div class="conversion-progress__step-icon">
+      <i :class="getStepIcon(index)"></i>
+    </div>
+    <div class="conversion-progress__step-label">
+      <span class="conversion-progress__step-number">{{ index + 1 }}.</span> {{ step.label }}
+    </div>
   </div>
-</template>
+</div>
+```
 
-<script setup lang="ts">
-import { computed } from 'vue';
-import { useWindowSize } from '@/composables/useWindowSize';
-import { useDocumentConverter } from '@/composables/useDocumentConverter';
-// ...
+#### Mobile Testing
 
-const { width } = useWindowSize();
-const isMobile = computed(() => width.value < 768); // MD breakpoint
-</script>
+Für die Qualitätssicherung des Dokumentenkonverters wird eine spezielle mobile Testinfrastruktur verwendet:
+
+```typescript
+// E2E-Test für mobile Ansicht des Dokumentenkonverters
+test.describe('Mobile Dokumentenkonverter', () => {
+  test.use({
+    viewport: { width: 375, height: 667 }
+  });
+
+  test('zeigt mobile Layout korrekt an', async ({ page }) => {
+    // Dokumentenkonverter-Seite laden und mobile Darstellung prüfen
+    // ...
+  });
+
+  test('unterstützt Swipe-Gesten auf Dateien', async ({ page }) => {
+    // Swipe-Gesten testen
+    // ...
+  });
+});
 ```
 
 ### Admin-Panel

@@ -658,27 +658,152 @@ function t(key: string, fallback: string): string {
 /* Responsive Design */
 @media (max-width: 768px) {
   .file-upload {
-    padding: 1.5rem;
+    padding: 1.75rem 1.5rem;
+    border-width: 2px;
+    border-radius: 8px;
   }
-  
-  .file-upload__examples-content {
-    grid-template-columns: 1fr;
+
+  .file-upload__content {
+    padding: 0.5rem;
   }
-  
+
+  .file-upload__icon {
+    font-size: 3rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .file-upload__text {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .file-upload__browse {
+    padding: 0.5rem 0;
+    display: inline-block;
+    min-height: 44px; /* Touch-friendly height */
+    font-size: 1.1rem;
+  }
+
+  .file-upload__hint,
+  .file-upload__size-hint {
+    font-size: 0.9rem;
+    margin-top: 0.75rem;
+  }
+
+  /* Progress bar improvements */
+  .file-upload__progress {
+    height: 12px; /* Taller progress bar */
+    margin-top: 1.75rem;
+    border-radius: 6px;
+  }
+
+  .file-upload__progress-text {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4a6cf7;
+    top: 16px; /* Position below bar instead of on top */
+  }
+
+  /* Selected file improvements */
+  .file-upload__selected {
+    margin-top: 1.75rem;
+    padding: 1.25rem;
+    border-radius: 8px;
+  }
+
   .file-upload__selected-file {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
+    flex-direction: row; /* Keep horizontal on tablets */
+    align-items: center;
+    gap: 1rem;
   }
-  
+
   .file-upload__file-icon {
-    width: 36px;
-    height: 36px;
-    font-size: 1.25rem;
+    width: 44px; /* Touch-friendly size */
+    height: 44px; /* Touch-friendly size */
+    font-size: 1.5rem;
+    flex-shrink: 0;
   }
-  
+
+  .file-upload__file-info {
+    flex: 1;
+    min-width: 0; /* Prevent overflow */
+  }
+
+  .file-upload__selected-name {
+    font-size: 1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .file-upload__selected-size {
+    font-size: 0.9rem;
+  }
+
+  /* Actions become full-width buttons */
   .file-upload__actions {
     flex-direction: column;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .file-upload__upload-btn,
+  .file-upload__clear-btn {
+    height: 44px; /* Touch-friendly height */
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    border-radius: 6px;
+  }
+
+  /* Examples grid for tablets */
+  .file-upload__examples-content {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+
+  .file-upload__examples-toggle {
+    width: 44px; /* Touch-friendly width */
+    height: 44px; /* Touch-friendly height */
+  }
+
+  .file-upload__example-item {
+    min-height: 44px; /* Touch-friendly height */
+  }
+}
+
+/* Small mobile screens */
+@media (max-width: 480px) {
+  .file-upload {
+    padding: 1.25rem 1rem;
+  }
+
+  .file-upload__icon {
+    font-size: 2.5rem;
+  }
+
+  .file-upload__text p {
+    font-size: 0.95rem;
+  }
+
+  .file-upload__selected-file {
+    flex-direction: column; /* Stack on small mobile */
+    align-items: flex-start;
+  }
+
+  .file-upload__file-icon {
+    margin-bottom: 0.5rem;
+  }
+
+  .file-upload__examples-content {
+    grid-template-columns: 1fr; /* Single column on small mobile */
+  }
+
+  .file-upload__error {
+    font-size: 0.85rem;
+    padding: 0.75rem 0.5rem;
   }
 }
 </style>

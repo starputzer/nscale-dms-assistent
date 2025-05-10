@@ -18,12 +18,13 @@
     </div>
 
     <div class="conversion-progress__visualization">
-      <div 
-        class="conversion-progress__steps"
+      <!-- Desktop steps visualization -->
+      <div
+        class="conversion-progress__steps conversion-progress__steps--desktop"
         aria-hidden="true"
       >
-        <div 
-          v-for="(step, index) in conversionSteps" 
+        <div
+          v-for="(step, index) in conversionSteps"
           :key="index"
           class="conversion-progress__step"
           :class="{
@@ -32,18 +33,49 @@
           }"
         >
           <div class="conversion-progress__step-icon">
-            <i 
+            <i
               :class="
-                currentStepIndex > index 
-                  ? 'fa fa-check' 
-                  : currentStepIndex === index 
-                    ? 'fa fa-spinner fa-spin' 
+                currentStepIndex > index
+                  ? 'fa fa-check'
+                  : currentStepIndex === index
+                    ? 'fa fa-spinner fa-spin'
                     : 'fa fa-circle'
               "
             ></i>
           </div>
           <div class="conversion-progress__step-label">
             {{ step.label }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile optimized steps visualization -->
+      <div
+        class="conversion-progress__steps conversion-progress__steps--mobile"
+        aria-hidden="true"
+      >
+        <div
+          v-for="(step, index) in conversionSteps"
+          :key="'mobile-' + index"
+          class="conversion-progress__step"
+          :class="{
+            'conversion-progress__step--active': currentStepIndex === index,
+            'conversion-progress__step--completed': currentStepIndex > index
+          }"
+        >
+          <div class="conversion-progress__step-icon">
+            <i
+              :class="
+                currentStepIndex > index
+                  ? 'fa fa-check-circle'
+                  : currentStepIndex === index
+                    ? 'fa fa-spinner fa-spin'
+                    : 'fa fa-circle'
+              "
+            ></i>
+          </div>
+          <div class="conversion-progress__step-label">
+            <span class="conversion-progress__step-number">{{ index + 1 }}.</span> {{ step.label }}
           </div>
         </div>
       </div>
@@ -352,13 +384,22 @@ onMounted(() => {
 }
 
 .conversion-progress__steps {
-  display: flex;
-  justify-content: space-between;
   margin-bottom: 1.5rem;
   position: relative;
 }
 
-.conversion-progress__steps::before {
+.conversion-progress__steps--mobile {
+  display: none; /* Hide on desktop */
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.conversion-progress__steps--desktop {
+  display: flex; /* Show on desktop */
+  justify-content: space-between;
+}
+
+.conversion-progress__steps--desktop::before {
   content: '';
   position: absolute;
   top: 14px;
@@ -411,6 +452,13 @@ onMounted(() => {
   max-width: 100px;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.conversion-progress__step-number {
+  display: none; /* Hide on desktop */
+  font-weight: 600;
+  color: #444;
+  margin-right: 0.25rem;
 }
 
 .conversion-progress__step--active .conversion-progress__step-label {
@@ -600,28 +648,160 @@ onMounted(() => {
 /* Responsive Design */
 @media (max-width: 768px) {
   .conversion-progress {
-    padding: 1rem;
+    padding: 1.25rem;
+    border-radius: 8px;
   }
-  
-  .conversion-progress__steps {
-    display: none; /* Schritte auf kleinen Bildschirmen ausblenden */
+
+  .conversion-progress__header {
+    margin-bottom: 1.25rem;
   }
-  
+
+  .conversion-progress__title {
+    font-size: 1.2rem;
+  }
+
+  .conversion-progress__cancel-btn {
+    width: 44px; /* Touch-friendly size */
+    height: 44px; /* Touch-friendly size */
+    font-size: 1.2rem;
+  }
+
+  /* Mobile steps visualization */
+  .conversion-progress__steps--mobile {
+    display: flex; /* Show on mobile */
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+  }
+
+  .conversion-progress__steps--desktop {
+    display: none; /* Hide on mobile */
+  }
+
+  .conversion-progress__step {
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 0;
+  }
+
+  .conversion-progress__step-icon {
+    font-size: 1.2rem;
+    min-width: 44px; /* Touch-friendly size */
+    height: 44px; /* Touch-friendly size */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .conversion-progress__step-label {
+    font-size: 0.95rem;
+    margin-top: 0;
+    text-align: left;
+    white-space: normal; /* Allow wrapping on mobile */
+    max-width: none;
+  }
+
+  .conversion-progress__step-number {
+    display: inline-block; /* Show on mobile */
+  }
+
+  /* Progress bar improvements */
+  .conversion-progress__bar-container {
+    height: 12px; /* Taller progress bar */
+    margin: 1.5rem 0;
+  }
+
+  .conversion-progress__progress-text {
+    margin-top: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .conversion-progress__percentage {
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  .conversion-progress__estimated-time {
+    font-size: 0.95rem;
+    color: #666;
+    margin-top: 0.5rem;
+    width: 100%;
+  }
+
+  /* Operation details */
   .conversion-progress__current-operation {
     flex-direction: column;
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.25rem;
   }
-  
+
   .conversion-progress__operation-label {
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #444;
   }
-  
+
+  .conversion-progress__operation-text {
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  /* Action buttons */
   .conversion-progress__actions {
     flex-direction: column;
+    gap: 0.75rem;
   }
-  
+
   .conversion-progress__action-btn {
     width: 100%;
     justify-content: center;
+    height: 44px; /* Touch-friendly height */
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+
+  /* Warnings section */
+  .conversion-progress__warnings {
+    margin-top: 1.25rem;
+  }
+
+  .conversion-progress__warning-item {
+    padding: 1rem;
+    border-radius: 8px;
+  }
+
+  .conversion-progress__warning-icon {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+  }
+
+  /* Details toggle */
+  .conversion-progress__toggle-details {
+    width: 44px; /* Touch-friendly width */
+    height: 44px; /* Touch-friendly height */
+    font-size: 1.2rem;
+  }
+}
+
+/* Small mobile screens */
+@media (max-width: 480px) {
+  .conversion-progress {
+    padding: 1rem;
+  }
+
+  .conversion-progress__details-content {
+    font-size: 0.8rem;
+    max-height: 150px;
+  }
+
+  .conversion-progress__info-header {
+    font-size: 0.95rem;
   }
 }
 </style>

@@ -170,11 +170,16 @@
         class="document-list__item"
         :class="{
           'document-list__item--selected': isSelected(document.id),
-          [`document-list__item--${document.status}`]: true
+          [`document-list__item--${document.status}`]: true,
+          'document-list__item--swiping': swipingDocumentId === document.id
         }"
         role="listitem"
         :aria-selected="isSelected(document.id)"
-        @click.stop="toggleDocumentSelection(document)"
+        v-touch="{
+          tap: () => toggleDocumentSelection(document),
+          left: () => handleSwipeLeft(document),
+          right: () => handleSwipeRight(document),
+        }"
         @keydown.enter="toggleDocumentSelection(document)"
         @keydown.space="toggleDocumentSelection(document)"
         @keydown.delete="confirmDelete(document)"
@@ -353,6 +358,10 @@ import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { ConversionResult, SupportedFormat } from '@/types/documentConverter';
 import { useGlobalDialog } from '@/composables/useDialog';
 import { useToasts } from '@/composables/useToast';
+import { vTouch } from '@/directives/touch-directives';
+
+// State for mobile touch gestures
+const swipingDocumentId = ref<string | null>(null);
 
 // Interface für Props
 interface Props {
@@ -826,6 +835,49 @@ watch(() => props.selectedDocument, (newDoc) => {
     selectedDocuments.value = [];
   }
 });
+
+/**
+ * Handle swipe gestures for mobile
+ */
+
+/**
+ * Handle left swipe on document item - trigger download action
+ */
+function handleSwipeLeft(document: ConversionResult): void {
+  if (document.status === 'success') {
+    // Show download action
+    swipingDocumentId.value = document.id;
+
+    // Trigger download after short delay for visual feedback
+    setTimeout(() => {
+      emit('download', document.id);
+
+      // Toast notification
+      toast.success($t('documentList.downloadStarted', { count: 1 }, 'Download gestartet'));
+
+      // Reset swiping state after delay
+      setTimeout(() => {
+        swipingDocumentId.value = null;
+      }, 500);
+    }, 300);
+  }
+}
+
+/**
+ * Handle right swipe on document item - open delete confirmation
+ */
+function handleSwipeRight(document: ConversionResult): void {
+  // Show delete indicator
+  swipingDocumentId.value = document.id;
+
+  // Show delete confirmation after short delay
+  setTimeout(() => {
+    confirmDelete(document);
+
+    // Reset swiping state
+    swipingDocumentId.value = null;
+  }, 300);
+}
 </script>
 
 <style scoped>
@@ -1437,51 +1489,287 @@ watch(() => props.selectedDocument, (newDoc) => {
   .document-list {
     padding: 1rem;
   }
-  
+
+  /* Header adjustments */
+  .document-list__header {
+    margin-bottom: 1.25rem;
+  }
+
+  .document-list__title-area {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  .document-list__title-area h3 {
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Filter controls adjustments */
   .document-list__actions {
     flex-direction: column;
     align-items: stretch;
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
-  
+
   .document-list__filter-container,
   .document-list__sort-container,
   .document-list__search-container {
     width: 100%;
     max-width: none;
   }
-  
+
   .document-list__filter-container select,
   .document-list__sort-container select {
     width: 100%;
+    height: 44px; /* Touch-friendly height */
+    font-size: 1rem; /* Larger text */
+    padding: 0.5rem 1rem;
   }
-  
+
+  .document-list__sort-direction {
+    width: 44px;
+    height: 44px; /* Touch-friendly height */
+    font-size: 1.2rem; /* Larger icon */
+  }
+
+  .document-list__search-input-wrapper {
+    height: 44px; /* Touch-friendly height */
+  }
+
+  .document-list__search-input {
+    font-size: 1rem; /* Larger text */
+    padding-left: 2.5rem; /* More space for search icon */
+  }
+
+  .document-list__search-icon {
+    font-size: 1.2rem; /* Larger icon */
+    left: 1rem;
+  }
+
+  .document-list__clear-search-btn {
+    width: 44px; /* Touch-friendly width */
+    height: 44px; /* Touch-friendly height */
+    font-size: 1.2rem; /* Larger icon */
+  }
+
+  /* Batch action adjustments */
   .document-list__batch-actions {
     flex-direction: column;
     gap: 0.75rem;
+    padding: 0.75rem;
   }
-  
+
   .document-list__batch-action-buttons {
     flex-direction: column;
     width: 100%;
+    gap: 0.75rem;
   }
-  
+
+  .document-list__batch-action-btn {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    height: 44px; /* Touch-friendly height */
+    white-space: nowrap;
+  }
+
   .document-list__clear-selection-btn {
     width: 100%;
     justify-content: center;
+    height: 44px; /* Touch-friendly height */
+    font-size: 1rem;
   }
-  
+
+  /* Document item adjustments */
+  .document-list__items {
+    gap: 1rem; /* More space between items */
+  }
+
   .document-list__item {
     flex-wrap: wrap;
+    padding: 1rem;
+    border-radius: 8px; /* Larger radius */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    margin-bottom: 0.75rem; /* Additional space between items */
   }
-  
+
+  .document-list__checkbox {
+    width: 44px; /* Touch-friendly size */
+    height: 44px; /* Touch-friendly size */
+  }
+
+  .document-list__select-checkbox {
+    width: 24px; /* Larger checkbox */
+    height: 24px; /* Larger checkbox */
+  }
+
   .document-list__info {
     flex: 0 0 calc(100% - 80px);
+    padding: 0.5rem 0;
   }
-  
-  .document-list__actions {
-    margin-left: 58px;
+
+  .document-list__name {
+    font-size: 1.1rem; /* Larger font */
+    margin-bottom: 0.5rem;
+    word-break: break-word; /* Prevent text overflow */
+  }
+
+  .document-list__metadata {
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+  }
+
+  .document-list__item-actions {
+    margin-left: 58px; /* Align with content after checkbox */
     margin-top: 0.75rem;
+    gap: 0.75rem;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    width: 100%;
   }
+
+  .document-list__action-btn {
+    min-width: 44px; /* Touch-friendly width */
+    height: 44px; /* Touch-friendly height */
+    font-size: 1.1rem; /* Larger icon */
+    border-radius: 8px; /* More rounded corners */
+    flex: 1; /* Equal width buttons */
+    justify-content: center;
+  }
+
+  /* Pagination adjustments */
+  .document-list__pagination {
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .document-list__pagination-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .document-list__pagination-button {
+    width: 44px; /* Touch-friendly width */
+    height: 44px; /* Touch-friendly height */
+    font-size: 1.1rem; /* Larger icons */
+  }
+
+  .document-list__page-size-selector {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .document-list__page-size-selector select {
+    height: 44px; /* Touch-friendly height */
+    font-size: 1rem; /* Larger text */
+    padding: 0 1rem;
+  }
+}
+
+/* Smaller mobile screens */
+@media (max-width: 480px) {
+  .document-list {
+    padding: 0.75rem;
+  }
+
+  .document-list__item {
+    padding: 0.75rem;
+  }
+
+  .document-list__item-actions {
+    overflow-x: auto; /* Allow scrolling for many actions */
+    scrollbar-width: none; /* Hide scrollbar in modern browsers */
+    -ms-overflow-style: none; /* Hide scrollbar in IE/Edge */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling for iOS */
+    padding-bottom: 0.5rem;
+  }
+
+  .document-list__item-actions::-webkit-scrollbar {
+    display: none; /* Hide scrollbar in WebKit browsers */
+  }
+
+  .document-list__action-btn {
+    white-space: nowrap;
+    flex: 0 0 auto;
+    min-width: 100px;
+  }
+
+  /* Optimize for touch swipe with visual indicator */
+  .document-list__item-actions::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0.5rem;
+    width: 30px;
+    height: 44px;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.8));
+    pointer-events: none;
+  }
+}
+
+/* Swipe Gesture Indicator Styles */
+.document-list__item--swiping {
+  position: relative;
+  transition: transform 0.3s ease;
+  overflow: hidden;
+}
+
+.document-list__item--swiping::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.05);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.document-list__item--swiping::after {
+  content: "←";
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  font-size: 1.5rem;
+  color: #4a6cf7;
+  z-index: 2;
+  animation: bounce 0.5s infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes bounce {
+  from { transform: translateY(-50%) translateX(-5px); }
+  to { transform: translateY(-50%) translateX(5px); }
+}
+/* Swipe gesture indicator styles */
+.document-list__item--swiping {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+}
+
+.document-list__item--swiping::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.05);
+  z-index: 0;
+  animation: swipeHighlight 0.5s ease;
+}
+
+@keyframes swipeHighlight {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
 }
 </style>

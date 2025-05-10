@@ -1,0 +1,77 @@
+/**
+ * Touch Focus Management Styles
+ * 
+ * These styles improve the focus handling for touch vs keyboard interactions
+ * on mobile devices.
+ * 
+ * - The .using-touch class is added to the body when touch interactions are detected
+ * - The .using-keyboard class is added when keyboard navigation is detected
+ */
+
+/* Hide focus outlines for touch users */
+body.using-touch {
+  * {
+    &:focus:not([data-focus-visible-added]) {
+      outline: none !important;
+      box-shadow: none !important;
+    }
+  }
+  
+  /* Specific handling for form inputs */
+  button, 
+  [role="button"],
+  a,
+  select,
+  .touch-target {
+    &:focus:not([data-focus-visible-added]) {
+      outline: none !important;
+      box-shadow: none !important;
+    }
+    
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+}
+
+/* Show focus outlines for keyboard users */
+body.using-keyboard {
+  * {
+    &:focus {
+      outline: 2px solid #4a6cf7 !important;
+      outline-offset: 2px !important;
+    }
+  }
+  
+  /* Specific handling for form inputs */
+  input, 
+  select, 
+  textarea {
+    &:focus {
+      border-color: #4a6cf7 !important;
+      box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.25) !important;
+    }
+  }
+}
+
+/* Touch-friendly target sizing */
+.touch-target {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  
+  /* Provide a larger effective tap target without changing the visual appearance */
+  position: relative;
+  
+  &::after {
+    content: "";
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    bottom: -8px;
+    left: -8px;
+    z-index: 1;
+  }
+}
