@@ -457,9 +457,10 @@ describe('AdminFeedback Component', () => {
       click: vi.fn(),
       remove: vi.fn()
     };
+    const originalCreateElement = document.createElement;
     document.createElement = vi.fn().mockImplementation((tag) => {
       if (tag === 'a') return mockLink;
-      return document.createElement(tag);
+      return originalCreateElement.call(document, tag);
     });
     
     // Call export function
