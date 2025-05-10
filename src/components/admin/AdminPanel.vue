@@ -104,6 +104,7 @@ const AdminUsers = defineAsyncComponent(() => import('./tabs/AdminUsers.vue'));
 const AdminFeedback = defineAsyncComponent(() => import('./tabs/AdminFeedback.vue'));
 const AdminMotd = defineAsyncComponent(() => import('./tabs/AdminMotd.vue'));
 const AdminSystem = defineAsyncComponent(() => import('./tabs/AdminSystem.vue'));
+const AdminStatistics = defineAsyncComponent(() => import('./tabs/AdminStatistics.vue'));
 const AdminSystemSettings = defineAsyncComponent(() => import('./tabs/AdminSystemSettings.vue'));
 const AdminFeatureToggles = defineAsyncComponent(() => import('./tabs/AdminFeatureToggles.vue'));
 const AdminLogViewer = defineAsyncComponent(() => import('./tabs/AdminLogViewerUpdated.vue'));
@@ -177,6 +178,13 @@ const allTabs = [
     label: t('admin.tabs.system', 'System'),
     component: AdminSystem,
     icon: 'fas fa-cogs',
+    requiredRole: 'admin',
+  },
+  {
+    id: 'statistics',
+    label: t('admin.tabs.statistics', 'Statistiken'),
+    component: AdminStatistics,
+    icon: 'fas fa-chart-line',
     requiredRole: 'admin',
   },
   {
@@ -295,6 +303,9 @@ async function loadDataForTab(tabId: string) {
         await adminMotdStore.fetchConfig();
         break;
       case 'system':
+        await adminSystemStore.fetchStats();
+        break;
+      case 'statistics':
         await adminSystemStore.fetchStats();
         break;
       case 'logs':

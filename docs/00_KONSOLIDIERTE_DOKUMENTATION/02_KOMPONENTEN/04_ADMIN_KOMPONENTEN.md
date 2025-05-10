@@ -25,9 +25,11 @@ tags: ["Admin", "Vue", "Komponenten", "Pinia", "SFC"]
    - [AdminDashboard](#admindashboard)
    - [AdminUsers](#adminusers)
    - [AdminSystem](#adminsystem)
+   - [AdminStatistics](#adminstatistics)
    - [AdminFeatureToggles](#adminfeaturetoggles)
    - [AdminLogViewer](#adminlogviewer)
    - [AdminFeedback](#adminfeedback)
+   - [AdminMotd](#adminmotd)
 4. [Pinia Stores](#pinia-stores)
    - [Admin Store Struktur](#admin-store-struktur)
    - [Beispiel: useAdminUsersStore](#beispiel-useadminusersstore)
@@ -41,6 +43,7 @@ tags: ["Admin", "Vue", "Komponenten", "Pinia", "SFC"]
    - [Feature-Toggle-Management](#feature-toggle-management)
    - [Log-Verwaltung](#log-verwaltung)
    - [Feedback-Verwaltung](#feedback-verwaltung)
+   - [MOTD-Verwaltung](#motd-verwaltung)
 8. [Integration und Migration](#integration-und-migration)
    - [Feature-Toggles](#feature-toggles)
    - [Kompatibilität mit Legacy-Code](#kompatibilität-mit-legacy-code)
@@ -81,9 +84,11 @@ AdminView.vue (Router-Komponente)
     │   ├── AdminDashboard.vue
     │   ├── AdminUsers.vue
     │   ├── AdminSystem.vue
+    │   ├── AdminStatistics.vue
     │   ├── AdminFeatureToggles.vue
     │   ├── AdminLogViewer.vue
     │   ├── AdminFeedback.vue
+    │   ├── AdminMotd.vue
     │   └── AdminSystemSettings.vue
     └── UI-Komponenten
         ├── Toast.vue
@@ -210,6 +215,23 @@ Eine Komponente zur Überwachung und Konfiguration des Systemzustands:
 - Systemstatistiken und Leistungskennzahlen
 - Wartungsfunktionen und Systemkonfiguration
 
+### AdminStatistics
+
+Eine umfangreiche Analyse- und Visualisierungskomponente für Systemdaten und Nutzungsstatistiken:
+
+- Umschaltbare Ansichten (Übersicht, Benutzeraktivität, Sitzungen, Feedback, Leistung)
+- Flexibel konfigurierbare Zeiträume (Tag, Woche, Monat, Jahr)
+- Interaktive Diagramme zur Visualisierung von:
+  - Nutzungstrends im Zeitverlauf (Sitzungen, Nachrichten)
+  - Systemperformance (Antwortzeiten, Ressourcennutzung)
+  - Benutzeraktivität mit Segmentierung
+  - Feedback-Auswertungen und Trends
+  - Sitzungsverteilungen nach Zeit, Dauer und Gerät
+- Detaillierte Statistik-Karten für wichtige Kennzahlen
+- Export-Funktionen für Rohdaten und Diagramme
+- Responsive Gestaltung für verschiedene Bildschirmgrößen
+- Echtzeit-Datenaktualisierung durch AdminSystemStore
+
 ### AdminFeatureToggles
 
 Eine Komponente zur Verwaltung und Überwachung von Feature-Flags:
@@ -244,6 +266,23 @@ Eine umfassende Komponente zur Verwaltung und Analyse von Benutzerfeedback:
   - Zusammenfassung wichtiger Metriken (Karten)
 - Export-Funktion für gefilterte Feedback-Daten im CSV-Format
 - Responsive Design für optimale Nutzung auf Desktop und Mobilgeräten
+
+### AdminMotd
+
+Eine leistungsfähige Komponente zur Verwaltung und Bearbeitung von Message of the Day (MOTD) Nachrichten:
+
+- WYSIWYG-Editor für Message of the Day mit Markdown-Unterstützung
+- Live-Vorschau der MOTD-Nachrichten
+- Ausführliche Stilanpassungen:
+  - Hintergrund-, Rahmen- und Textfarbe
+  - Ikonauswahl für die Nachricht
+  - Position und Darstellungsoptionen
+- Zeitplanungsfunktion für automatische Anzeige:
+  - Start- und Enddatum für die Nachricht
+  - Zielgruppenauswahl (alle Benutzer, nur Admins, nur Standard-Benutzer)
+- Versionsverwaltung mit Verlauf früherer MOTD-Nachrichten
+- Formatierungshilfen für Markdown mit intuitiver Toolbar
+- Responsive Design für verschiedene Bildschirmgrößen
 
 ```vue
 <!-- Vereinfachte Version von AdminFeedback.vue -->
@@ -691,6 +730,27 @@ Die Feedback-Verwaltung umfasst:
   - Übersichtskarten mit wichtigen Kennzahlen
 - Export-Funktion für Feedback-Daten im CSV-Format
 - Responsive Design für Desktop und Mobile mit optimierter Darstellung
+
+### MOTD-Verwaltung
+
+Die MOTD-Verwaltung (Message of the Day) umfasst:
+
+- Vollständigen WYSIWYG-Editor für Nachrichten mit Markdown-Unterstützung
+- Echtzeitvorschau der Nachricht mit originalgetreuer Darstellung
+- Erweiterte Anpassungsoptionen:
+  - Formatauswahl (Markdown, HTML, Text)
+  - Farbeinstellungen für Design und Erscheinungsbild
+  - Positionierung der Nachricht in der Anwendung
+- Zeitsteuerung für die Nachrichtenanzeige:
+  - Konfigurierbare Start- und Endzeiten
+  - Zielgruppenspezifische Anzeige (Administratoren/Benutzer)
+- Versionskontrolle und Verlaufsverwaltung:
+  - Historische Versionen einsehen und wiederherstellen
+  - Änderungsprotokoll mit Benutzer- und Zeitstempeln
+- Benutzerfreundlicher Markdown-Editor mit Funktionsleiste:
+  - Formatierungswerkzeuge für einfache Textgestaltung
+  - Hilfebereich mit Markdown-Syntax
+- Vollständig responsives Design für verschiedene Geräte
 
 ## Integration und Migration
 
