@@ -1,6 +1,6 @@
 ---
 title: "UI-Basiskomponenten"
-version: "1.1.0"
+version: "1.3.0"
 date: "09.05.2025"
 lastUpdate: "10.05.2025"
 author: "Martin Heinrich"
@@ -12,11 +12,11 @@ tags: ["UI", "Komponenten", "Design", "Vue3"]
 
 # UI-Basiskomponenten
 
-> **Letzte Aktualisierung:** 10.05.2025 | **Version:** 1.1.0 | **Status:** Aktiv
+> **Letzte Aktualisierung:** 10.05.2025 | **Version:** 1.3.0 | **Status:** Aktiv
 
 ## Übersicht
 
-Die UI-Basiskomponenten bilden das Fundament der nscale DMS Assistent-Benutzeroberfläche und wurden als Teil der Vue 3 SFC-Migration implementiert. Sie bieten ein konsistentes Design und Verhalten über die gesamte Anwendung hinweg. Der aktuelle Fertigstellungsgrad der UI-Basiskomponenten liegt bei ca. 65%.
+Die UI-Basiskomponenten bilden das Fundament der nscale DMS Assistent-Benutzeroberfläche und wurden als Teil der Vue 3 SFC-Migration implementiert. Sie bieten ein konsistentes Design und Verhalten über die gesamte Anwendung hinweg. Der aktuelle Fertigstellungsgrad der UI-Basiskomponenten liegt bei ca. 75%.
 
 ## Implementierte Komponenten
 
@@ -24,6 +24,9 @@ Die UI-Basiskomponenten bilden das Fundament der nscale DMS Assistent-Benutzerob
 |------------|--------|----------------------|------------------------|
 | **Button.vue** | Fertiggestellt | 95% | Hoch |
 | **Input.vue** | Fertiggestellt | 90% | Hoch |
+| **TextArea.vue** | Fertiggestellt | 100% | Hoch |
+| **Toggle.vue** | Fertiggestellt | 100% | Hoch |
+| **Tooltip.vue** | Fertiggestellt | 100% | Hoch |
 | **Card.vue** | Fertiggestellt | 85% | Hoch |
 | **Alert.vue** | Fertiggestellt | 80% | Hoch |
 | **Modal.vue** | Fertiggestellt | 70% | Mittel |
@@ -45,10 +48,21 @@ src/components/
 │   ├── base/           # Grundlegende UI-Elemente
 │   │   ├── Button.vue
 │   │   ├── Input.vue
+│   │   ├── TextArea.vue
+│   │   ├── Toggle.vue
+│   │   ├── Tooltip.vue
 │   │   ├── Card.vue
 │   │   ├── Alert.vue
 │   │   ├── Modal.vue
+│   │   ├── FocusTrap.vue
 │   │   └── index.ts    # Komponenten-Export
+│   ├── examples/       # Beispiel-Implementierungen
+│   │   ├── TextAreaExample.vue
+│   │   ├── ToggleExample.vue
+│   │   ├── TooltipExample.vue
+│   │   ├── UIComponentsDemo.vue
+│   │   ├── index.ts    # Beispiel-Export
+│   │   └── README.md   # Dokumentation für Beispielverwendung
 │   ├── feedback/       # Feedback-bezogene Komponenten
 │   │   └── Alert.vue
 │   ├── data/           # Daten-bezogene Komponenten
@@ -226,6 +240,60 @@ $colors: (
   --n-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
   --n-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
 }
+```
+
+## Komponenten-Beispiele und Demos
+
+Für alle UI-Komponenten wurden interaktive Beispiele erstellt, die unter `src/components/ui/examples/` zu finden sind. Diese Beispiele demonstrieren die verschiedenen Funktionen und Konfigurationsmöglichkeiten jeder Komponente.
+
+### Verwendung der Beispielkomponenten
+
+Die Beispiele können wie folgt verwendet werden:
+
+```vue
+<template>
+  <div>
+    <UIComponentsDemo />
+  </div>
+</template>
+
+<script setup>
+import { UIComponentsDemo } from '@/components/ui/examples';
+</script>
+```
+
+Alternativ können auch einzelne Beispielkomponenten importiert werden:
+
+```vue
+<template>
+  <div>
+    <TextAreaExample />
+    <ToggleExample />
+    <TooltipExample />
+  </div>
+</template>
+
+<script setup>
+import { TextAreaExample, ToggleExample, TooltipExample } from '@/components/ui/examples';
+</script>
+```
+
+### Demo-Route hinzufügen
+
+Um die Beispiele über eine eigene Route verfügbar zu machen, kann folgende Konfiguration zum Router hinzugefügt werden:
+
+```typescript
+// In router/index.ts
+import { UIComponentsDemo } from '@/components/ui/examples';
+
+const routes = [
+  // ... bestehende Routen
+  {
+    path: '/ui-components-demo',
+    name: 'UIComponentsDemo',
+    component: UIComponentsDemo
+  }
+];
 ```
 
 ## Beispiel-Komponenten
@@ -647,21 +715,18 @@ Folgende UI-Basiskomponenten müssen noch vollständig implementiert werden:
    - Checkbox
    - Radio
    - Select
-   - TextArea
-   - Toggle
    - Form (mit Validierung)
-   
+
 2. **Feedback-Komponenten**:
-   - Tooltip
    - Badge
    - ProgressBar
-   
+
 3. **Navigation**:
    - Breadcrumb
    - Tabs
    - Stepper
    - Pagination (teilweise implementiert)
-   
+
 4. **Data-Display**:
    - Table (teilweise implementiert)
    - TreeView

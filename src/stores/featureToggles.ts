@@ -85,6 +85,16 @@ export const useFeatureTogglesStore = defineStore('featureToggles', () => {
   
   // Feature-Konfigurationen
   const featureConfigs = reactive<Record<string, FeatureConfig>>({
+    // UI Features
+    uiComponentsDemo: {
+      name: 'UI Components Demo',
+      description: 'Demo der UI-Basiskomponenten mit interaktiven Beispielen',
+      group: 'uiFeatures',
+      stable: true,
+      requiredRole: 'developer',
+      hasFallback: false,
+      dependencies: ['useNewUIComponents']
+    },
     // SFC-Migration Features
     useSfcDocConverter: {
       name: 'SFC Dokumentenkonverter',
@@ -135,7 +145,8 @@ export const useFeatureTogglesStore = defineStore('featureToggles', () => {
   const useToastNotifications = ref<boolean>(true);
   const useModernSidebar = ref<boolean>(true);
   const useNewAdminPanel = ref<boolean>(true);
-  
+  const uiComponentsDemo = ref<boolean>(true);
+
   // Theme Features
   const useDarkMode = ref<boolean>(true);
   const useThemeCustomization = ref<boolean>(true);
@@ -619,6 +630,7 @@ export const useFeatureTogglesStore = defineStore('featureToggles', () => {
     useToastNotifications,
     useModernSidebar,
     useNewAdminPanel,
+    uiComponentsDemo,
     useDarkMode,
     useThemeCustomization,
     useLegacyBridge,
@@ -687,6 +699,7 @@ export const useFeatureTogglesStore = defineStore('featureToggles', () => {
       'useToastNotifications',
       'useModernSidebar',
       'useNewAdminPanel',
+      'uiComponentsDemo',
       'useDarkMode',
       'useThemeCustomization',
       'useLegacyBridge',

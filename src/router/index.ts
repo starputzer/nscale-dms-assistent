@@ -28,6 +28,17 @@ const routes: Array<RouteRecordRaw> = [
     }
   },
   {
+    path: '/ui-components-demo',
+    name: 'UIComponentsDemo',
+    component: () => import('@/views/UIComponentsDemoView.vue'),
+    meta: {
+      requiresAuth: true,
+      adminOnly: true,
+      title: 'UI Components Demo',
+      featureFlag: 'uiComponentsDemo'
+    }
+  },
+  {
     path: '/enhanced-chat',
     name: 'EnhancedChat',
     component: () => import('@/views/EnhancedChatView.vue'),
