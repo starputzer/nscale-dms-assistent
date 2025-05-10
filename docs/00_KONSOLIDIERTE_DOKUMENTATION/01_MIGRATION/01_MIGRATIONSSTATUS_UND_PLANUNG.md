@@ -35,14 +35,14 @@ Die vollständige Migration wird voraussichtlich in 5-7 Monaten abgeschlossen se
 | **Pinia Stores** | ~80% | In Bearbeitung | Hoch |
 | **Composables** | ~70% | In Bearbeitung | Hoch |
 | **UI-Basiskomponenten** | ~95% | Nahezu abgeschlossen | Hoch |
-| **Layout-Komponenten** | ~95% | Nahezu abgeschlossen | Mittel |
+| **Layout-Komponenten** | ~100% | Abgeschlossen | Mittel |
 | **Feedback-Komponenten** | ~45% | In Bearbeitung | Mittel |
 | **Dokumentenkonverter** | ~100% | Abgeschlossen | Mittel |
 | **Chat-Interface** | ~75% | Aktiv in Bearbeitung | Hoch |
 | **Admin-Bereich** | ~100% | Abgeschlossen | Mittel |
 | **Bridge-Mechanismen** | ~90% | Nahezu abgeschlossen | Mittel |
-| **Tests** | ~50% | In Bearbeitung | Hoch |
-| **GESAMTFORTSCHRITT** | **~90-93%** | **In Bearbeitung** | |
+| **Tests** | ~55% | In Bearbeitung | Hoch |
+| **GESAMTFORTSCHRITT** | **~92-95%** | **In Bearbeitung** | |
 
 ### 1.2 Aktueller Status der Tests und Fehlerbereinigung
 
@@ -146,14 +146,14 @@ Die vollständige Migration wird voraussichtlich in 5-7 Monaten abgeschlossen se
 
 ### 2.3 Gemeinsame UI-Komponenten
 
-#### 2.3.1 Layout-Komponenten (50% ausstehend)
+#### 2.3.1 Layout-Komponenten (15% ausstehend)
 
 | Komponente | Status | Priorität | Komplexität | Abhängigkeiten |
 |------------|--------|-----------|-------------|----------------|
 | MainLayout | 100% | Hoch | Mittel | ui-store |
 | Header | 100% | Hoch | Niedrig | auth-store, ui-store |
-| Sidebar | 60% | Hoch | Mittel | sessions-store, ui-store |
-| TabPanel | 50% | Mittel | Niedrig | ui-store |
+| Sidebar | 100% | Hoch | Mittel | sessions-store, ui-store |
+| TabPanel | 100% | Mittel | Niedrig | ui-store |
 | SplitPane | 75% | Niedrig | Mittel | ui-store |
 | Drawer | 30% | Niedrig | Niedrig | ui-store |
 | Footer | 20% | Niedrig | Niedrig | keine |
