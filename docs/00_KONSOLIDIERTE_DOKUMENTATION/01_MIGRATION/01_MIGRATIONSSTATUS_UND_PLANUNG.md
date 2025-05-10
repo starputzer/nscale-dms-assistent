@@ -16,7 +16,7 @@ tags: ["Migration", "Vue3", "Status", "Planung", "Roadmap"]
 
 ## Executive Summary
 
-Dieses Dokument beschreibt den aktuellen Status und detaillierten Plan zur Migration der nScale DMS Assistent Frontend-Anwendung von Vanilla JavaScript zu Vue 3 Single File Components (SFC). Die Migration befindet sich aktuell in einer fortgeschrittenen Implementierungsphase mit einem aktualisierten Gesamtfortschritt von ca. 85-88%. Die Infrastruktur, das Build-System und das Feature-Toggle-System sind bereits vollständig umgesetzt, während zentrale UI-Komponenten wie die MessageList, SessionList und SessionManager nun komplett migriert sind. Der Dokumentenkonverter und der Einstellungsbereich sind zu 100% abgeschlossen, einschließlich der BatchUpload-Komponente und sämtlicher Einstellungs-Komponenten für Theme-Anpassung und Barrierefreiheit.
+Dieses Dokument beschreibt den aktuellen Status und detaillierten Plan zur Migration der nScale DMS Assistent Frontend-Anwendung von Vanilla JavaScript zu Vue 3 Single File Components (SFC). Die Migration befindet sich aktuell in einer fortgeschrittenen Implementierungsphase mit einem aktualisierten Gesamtfortschritt von ca. 86-89%. Die Infrastruktur, das Build-System und das Feature-Toggle-System sind bereits vollständig umgesetzt, während zentrale UI-Komponenten wie die MessageList, SessionList und SessionManager nun komplett migriert sind. Der Dokumentenkonverter und der Einstellungsbereich sind zu 100% abgeschlossen, einschließlich der BatchUpload-Komponente und sämtlicher Einstellungs-Komponenten für Theme-Anpassung und Barrierefreiheit, für die jetzt auch umfassende Testsuites entwickelt wurden.
 
 Die Analyse der bestehenden Chat-Komponenten hat gezeigt, dass die Migration schneller als ursprünglich geplant voranschreitet. Insbesondere sind die MessageList, SessionList und SessionManager-Komponenten zu 100% abgeschlossen und implementieren sogar fortschrittlichere Features als ursprünglich dokumentiert, darunter verbesserte Virtualisierung, optimierte Barrierefreiheit, erweiterte Filteroptionen, Kategorisierungssystem und Multi-Select-Funktionalität für Massenoperationen.
 
@@ -41,8 +41,8 @@ Die vollständige Migration wird voraussichtlich in 5-7 Monaten abgeschlossen se
 | **Chat-Interface** | ~75% | Aktiv in Bearbeitung | Hoch |
 | **Admin-Bereich** | ~100% | Abgeschlossen | Mittel |
 | **Bridge-Mechanismen** | ~90% | Nahezu abgeschlossen | Mittel |
-| **Tests** | ~40% | In Bearbeitung | Hoch |
-| **GESAMTFORTSCHRITT** | **~85-88%** | **In Bearbeitung** | |
+| **Tests** | ~45% | In Bearbeitung | Hoch |
+| **GESAMTFORTSCHRITT** | **~86-89%** | **In Bearbeitung** | |
 
 ### 1.2 Aktueller Status der Tests und Fehlerbereinigung
 
@@ -58,6 +58,8 @@ Die vollständige Migration wird voraussichtlich in 5-7 Monaten abgeschlossen se
 | **Chat-Nachrichtenliste** | Manuell getestet | ⚠️ Teilweise | Niedrig |
 | **Input-Komponente** | Minimal getestet | ⚠️ Teilweise | Sehr niedrig |
 | **Responsive Layout** | Manuell getestet | ⚠️ Teilweise | Niedrig |
+| **PrivacySettings** | Automatisiert getestet | ✅ Ja | Hoch |
+| **AccessibilitySettings** | Automatisiert getestet | ✅ Ja | Hoch |
 
 ## 2. Vollständiges Komponenten-Inventar
 
@@ -410,7 +412,7 @@ Es wurden folgende Layout- und Design-Probleme zwischen neuen Vue-Komponenten un
 ### 7.1 Unmittelbare nächste Schritte
 
 1. **Vervollständigung der Test-Automatisierung** (Phase 1):
-   - Implementierung automatisierter Tests für alle kritischen Komponenten
+   - ✅ Implementierung automatisierter Tests für die Settings-Komponenten (abgeschlossen am 10.05.2025)
    - Integration der Tests in den CI/CD-Prozess
    - Einrichtung regelmäßiger Testläufe
    - Erhöhung der Testabdeckung von 40% auf mindestens 75%
