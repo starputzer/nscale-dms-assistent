@@ -5,6 +5,22 @@
       <p class="doc-converter-description">
         {{ t('documentConverter.description', 'Konvertieren Sie Ihre Dokumente in ein nscale-kompatibles Format. Unterstützte Formate: PDF, DOCX, XLSX, PPTX, TXT.') }}
       </p>
+      <div class="doc-converter-tabs">
+        <button
+          class="doc-converter-tab-btn"
+          :class="{ 'active': !showStats }"
+          @click="showStats = false"
+        >
+          {{ t('documentConverter.tabs.converter', 'Konverter') }}
+        </button>
+        <button
+          class="doc-converter-tab-btn"
+          :class="{ 'active': showStats }"
+          @click="showStats = true"
+        >
+          {{ t('documentConverter.tabs.statistics', 'Statistik') }}
+        </button>
+      </div>
     </div>
 
     <!-- Fehleranzeige bei Initialisierungsproblemen -->
@@ -15,57 +31,63 @@
     />
 
     <div v-else class="doc-converter-content">
-      <!-- Upload-Bereich mit Drag & Drop Unterstützung -->
-      <FileUpload 
-        v-if="!isConverting && !conversionResult" 
-        @upload="startConversion" 
-        :is-uploading="isUploading"
-        :allowed-extensions="allowedExtensions"
-        :max-file-size="maxFileSize"
-      />
+      <!-- Konvertierungsansicht -->
+      <div v-if="!showStats" class="doc-converter-view">
+        <!-- Upload-Bereich mit Drag & Drop Unterstützung -->
+        <FileUpload
+          v-if="!isConverting && !conversionResult"
+          @upload="startConversion"
+          :is-uploading="isUploading"
+          :allowed-extensions="allowedExtensions"
+          :max-file-size="maxFileSize"
+        />
 
-      <!-- Fortschrittsanzeige während der Konvertierung -->
-      <ConversionProgress 
-        v-if="isConverting" 
-        :progress="conversionProgress" 
-        :current-step="conversionStep"
-        :estimated-time="estimatedTimeRemaining"
-        @cancel="handleCancelConversion"
-      />
+        <!-- Fortschrittsanzeige während der Konvertierung -->
+        <ConversionProgress
+          v-if="isConverting"
+          :progress="conversionProgress"
+          :current-step="conversionStep"
+          :estimated-time="estimatedTimeRemaining"
+          @cancel="handleCancelConversion"
+        />
 
-      <!-- Ergebnis der Konvertierung -->
-      <ConversionResult 
-        v-if="conversionResult" 
-        :result="conversionResult"
-        @close="clearConversionResult" 
-      />
+        <!-- Ergebnis der Konvertierung -->
+        <ConversionResult
+          v-if="conversionResult"
+          :result="conversionResult"
+          @close="clearConversionResult"
+        />
 
-      <!-- Liste der konvertierten Dokumente -->
-      <DocumentList 
-        :documents="documents" 
-        :selected-document="selectedDocument"
-        :loading="isLoading"
-        @select="selectDocument"
-        @view="viewDocument"
-        @download="downloadDocument"
-        @delete="promptDeleteDocument"
-      />
+        <!-- Liste der konvertierten Dokumente -->
+        <DocumentList
+          :documents="documents"
+          :selected-document="selectedDocument"
+          :loading="isLoading"
+          @select="selectDocument"
+          @view="viewDocument"
+          @download="downloadDocument"
+          @delete="promptDeleteDocument"
+        />
 
-      <!-- Fallback-Konverter, falls etwas schief geht -->
-      <FallbackConverter 
-        v-if="useFallback" 
-        @retry="initialize" 
-      />
+        <!-- Fallback-Konverter, falls etwas schief geht -->
+        <FallbackConverter
+          v-if="useFallback"
+          @retry="initialize"
+        />
 
-      <!-- Steuerelemente am unteren Rand -->
-      <div class="doc-converter-controls" v-if="conversionResult">
-        <button 
-          class="doc-converter-btn doc-converter-btn-primary" 
-          @click="clearConversionResult"
-        >
-          {{ t('documentConverter.newConversion', 'Neue Konvertierung') }}
-        </button>
+        <!-- Steuerelemente am unteren Rand -->
+        <div class="doc-converter-controls" v-if="conversionResult">
+          <button
+            class="doc-converter-btn doc-converter-btn-primary"
+            @click="clearConversionResult"
+          >
+            {{ t('documentConverter.newConversion', 'Neue Konvertierung') }}
+          </button>
+        </div>
       </div>
+
+      <!-- Statistikansicht -->
+      <ConversionStats v-else />
     </div>
   </div>
 </template>
@@ -85,6 +107,7 @@ import ConversionResult from './ConversionResult.vue';
 import DocumentList from './DocumentList.vue';
 import ErrorDisplay from './ErrorDisplay.vue';
 import FallbackConverter from './FallbackConverter.vue';
+import ConversionStats from './ConversionStats.vue';
 
 // Feature-Toggle für bedingte Anzeige
 const featureToggles = useFeatureToggles();
@@ -120,6 +143,7 @@ const estimatedTimeRemaining = ref<number>(0);
 const conversionResult = ref<ConversionResult | null>(null);
 const activeConversion = ref<string | null>(null);
 const useFallback = ref<boolean>(false);
+const showStats = ref<boolean>(false);
 
 // Konfigurationswerte für Upload
 const allowedExtensions = [
@@ -344,6 +368,40 @@ onBeforeUnmount(() => {
 }
 
 /* Steuerelemente am unteren Rand */
+.doc-converter-tabs {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+  gap: 0.5rem;
+}
+
+.doc-converter-tab-btn {
+  background-color: #f0f0f0;
+  color: #666;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.doc-converter-tab-btn:hover {
+  background-color: #e0e0e0;
+}
+
+.doc-converter-tab-btn.active {
+  background-color: #0d7a40;
+  color: white;
+}
+
+.doc-converter-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
 .doc-converter-controls {
   margin-top: 2rem;
   display: flex;

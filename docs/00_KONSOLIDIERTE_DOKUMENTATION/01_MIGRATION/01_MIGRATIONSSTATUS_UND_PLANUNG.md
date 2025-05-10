@@ -37,12 +37,12 @@ Die vollständige Migration wird voraussichtlich in 5-7 Monaten abgeschlossen se
 | **UI-Basiskomponenten** | ~65% | In Bearbeitung | Hoch |
 | **Layout-Komponenten** | ~55% | In Bearbeitung | Mittel |
 | **Feedback-Komponenten** | ~45% | In Bearbeitung | Mittel |
-| **Dokumentenkonverter** | ~50% | In Bearbeitung | Mittel |
+| **Dokumentenkonverter** | ~85% | In Bearbeitung | Mittel |
 | **Chat-Interface** | ~75% | Aktiv in Bearbeitung | Hoch |
 | **Admin-Bereich** | ~80% | Größtenteils abgeschlossen | Mittel |
 | **Bridge-Mechanismen** | ~90% | Nahezu abgeschlossen | Mittel |
 | **Tests** | ~40% | In Bearbeitung | Hoch |
-| **GESAMTFORTSCHRITT** | **~70-74%** | **In Bearbeitung** | |
+| **GESAMTFORTSCHRITT** | **~72-76%** | **In Bearbeitung** | |
 
 ### 1.2 Aktueller Status der Tests und Fehlerbereinigung
 
@@ -113,13 +113,13 @@ Die vollständige Migration wird voraussichtlich in 5-7 Monaten abgeschlossen se
 | InputToolbar | /frontend/js/chat.js:927-1050 | ~50% | Mittel | Niedrig | ui-store |
 | StreamingIndicator | /frontend/js/chat.js:1052-1120 | ~60% | Niedrig | Niedrig | sessions-store |
 
-#### 2.2.2 Dokumentenkonverter-Komponenten (50% ausstehend)
+#### 2.2.2 Dokumentenkonverter-Komponenten (15% ausstehend)
 
-| Komponente | Vanilla JS-Datei | Priorität | Komplexität | Abhängigkeiten |
-|------------|------------------|-----------|-------------|----------------|
-| DocumentViewer | /frontend/js/app-extensions.js:210-355 | Mittel | Mittel | document-converter-store |
-| ConversionStats | /frontend/js/app-extensions.js:357-420 | Niedrig | Niedrig | document-converter-store |
-| BatchUpload | /frontend/js/app-extensions.js:422-520 | Niedrig | Mittel | document-converter-store, ui-store |
+| Komponente | Vanilla JS-Datei | Status | Priorität | Komplexität | Abhängigkeiten |
+|------------|------------------|--------|-----------|-------------|----------------|
+| DocumentPreview | /frontend/js/app-extensions.js:210-355 | 100% | Mittel | Mittel | document-converter-store |
+| ConversionStats | /frontend/js/app-extensions.js:357-420 | 100% | Niedrig | Niedrig | document-converter-store |
+| BatchUpload | /frontend/js/app-extensions.js:422-520 | 0% | Niedrig | Mittel | document-converter-store, ui-store |
 
 #### 2.2.3 Einstellungen-Komponenten (90% ausstehend)
 

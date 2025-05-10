@@ -241,6 +241,24 @@
       <!-- Text-Vorschau mit Syntaxhervorhebung -->
       <div v-else-if="isText" class="document-preview__text-container">
         <div v-if="textContent" class="document-preview__text-content">
+          <div class="document-preview__text-toolbar" v-if="isCode.value || isStructuredData.value">
+            <div class="document-preview__text-info" v-if="isCode.value">
+              <span class="document-preview__text-language">{{ getLanguageLabel() }}</span>
+            </div>
+            <label class="document-preview__syntax-toggle">
+              <input type="checkbox" v-model="useSyntaxHighlighting" />
+              <span>{{ t('documentPreview.syntaxHighlighting', 'Syntax-Hervorhebung') }}</span>
+            </label>
+            <button
+              v-if="isStructuredData.value && !isFeatureEnabled('documentPreviewLegacy')"
+              @click="toggleFormatting"
+              class="document-preview__format-btn"
+              :title="t('documentPreview.formatCode', 'Code formatieren')"
+            >
+              <i class="fa fa-indent" aria-hidden="true"></i>
+              {{ t('documentPreview.format', 'Formatieren') }}
+            </button>
+          </div>
           <pre v-if="!useSyntaxHighlighting">{{ textContent }}</pre>
           <div v-else v-html="highlightedText" class="document-preview__highlighted-text"></div>
         </div>
@@ -334,6 +352,83 @@
         </div>
       </div>
       
+      <!-- Word-Dokument-Vorschau -->
+      <div v-else-if="isWord" class="document-preview__word-container">
+        <div v-if="documentUrl || textContent" class="document-preview__word-content">
+          <div v-if="textContent" class="document-preview__text-content">
+            <pre>{{ textContent }}</pre>
+          </div>
+          <iframe
+            v-else-if="documentUrl"
+            :src="documentUrl"
+            class="document-preview__word-frame"
+            title="Word-Dokument-Vorschau"
+            loading="lazy"
+            data-testid="word-preview"
+          ></iframe>
+        </div>
+        <div v-else class="document-preview__word-placeholder">
+          <i class="fa fa-file-word document-preview__word-placeholder-icon"></i>
+          <p>{{ t('documentPreview.wordNotAvailable', 'Word-Dokument-Vorschau nicht verfügbar') }}</p>
+        </div>
+      </div>
+
+      <!-- Audio-Player-Vorschau -->
+      <div v-else-if="isAudio" class="document-preview__media-container document-preview__audio-container">
+        <div v-if="documentUrl" class="document-preview__audio-player">
+          <audio
+            controls
+            :src="documentUrl"
+            class="document-preview__audio-element"
+            data-testid="audio-preview"
+          >
+            {{ t('documentPreview.audioNotSupported', 'Ihr Browser unterstützt das Audio-Format nicht.') }}
+          </audio>
+          <div class="document-preview__audio-info">
+            <div v-if="document?.metadata?.duration" class="document-preview__media-duration">
+              <span class="document-preview__media-label">{{ t('documentPreview.duration', 'Dauer') }}:</span>
+              <span class="document-preview__media-value">{{ formatDuration(document.metadata.duration) }}</span>
+            </div>
+            <div v-if="document?.metadata?.bitrate" class="document-preview__media-bitrate">
+              <span class="document-preview__media-label">{{ t('documentPreview.bitrate', 'Bitrate') }}:</span>
+              <span class="document-preview__media-value">{{ formatBitrate(document.metadata.bitrate) }}</span>
+            </div>
+          </div>
+        </div>
+        <div v-else class="document-preview__media-placeholder">
+          <i class="fa fa-file-audio document-preview__media-placeholder-icon"></i>
+          <p>{{ t('documentPreview.audioNotAvailable', 'Audio-Vorschau nicht verfügbar') }}</p>
+        </div>
+      </div>
+
+      <!-- Video-Player-Vorschau -->
+      <div v-else-if="isVideo" class="document-preview__media-container document-preview__video-container">
+        <div v-if="documentUrl" class="document-preview__video-player">
+          <video
+            controls
+            :src="documentUrl"
+            class="document-preview__video-element"
+            data-testid="video-preview"
+          >
+            {{ t('documentPreview.videoNotSupported', 'Ihr Browser unterstützt das Video-Format nicht.') }}
+          </video>
+          <div class="document-preview__video-info">
+            <div v-if="document?.metadata?.duration" class="document-preview__media-duration">
+              <span class="document-preview__media-label">{{ t('documentPreview.duration', 'Dauer') }}:</span>
+              <span class="document-preview__media-value">{{ formatDuration(document.metadata.duration) }}</span>
+            </div>
+            <div v-if="document?.metadata?.resolution" class="document-preview__media-resolution">
+              <span class="document-preview__media-label">{{ t('documentPreview.resolution', 'Auflösung') }}:</span>
+              <span class="document-preview__media-value">{{ document.metadata.resolution }}</span>
+            </div>
+          </div>
+        </div>
+        <div v-else class="document-preview__media-placeholder">
+          <i class="fa fa-file-video document-preview__media-placeholder-icon"></i>
+          <p>{{ t('documentPreview.videoNotAvailable', 'Video-Vorschau nicht verfügbar') }}</p>
+        </div>
+      </div>
+
       <!-- Fallback-Vorschau -->
       <div v-else class="document-preview__fallback">
         <div class="document-preview__fallback-icon">
@@ -475,10 +570,12 @@ import { ref, computed, reactive, onMounted, onBeforeUnmount, watch, nextTick } 
 import { ConversionResult } from '@/types/documentConverter';
 import { useI18n } from '@/composables/useI18n';
 import { useDocumentConverterStore } from '@/stores/documentConverter';
+import { useFeatureToggles } from '@/composables/useFeatureToggles';
 import hljs from 'highlight.js';
 
 const { t } = useI18n();
 const store = useDocumentConverterStore();
+const { isFeatureEnabled } = useFeatureToggles();
 
 // Props-Definition
 interface Props {
@@ -513,6 +610,7 @@ const previewContainer = ref<HTMLElement | null>(null);
 const showKeyboardLegend = ref(false);
 const useSyntaxHighlighting = ref(true);
 const highlightedText = ref('');
+const isFormattedText = ref(false);
 const rotation = ref(0);
 const currentSlideUrl = ref<string | null>(null);
 const slideThumbnails = ref<string[]>([]);
@@ -525,7 +623,7 @@ const zoomStep = 0.1;
 // Berechnete Eigenschaften
 const documentIcon = computed(() => {
   if (!props.document) return 'fa fa-file';
-  
+
   const extension = props.document.originalFormat.toLowerCase();
   const icons: Record<string, string> = {
     pdf: 'fa fa-file-pdf',
@@ -540,14 +638,46 @@ const documentIcon = computed(() => {
     jpeg: 'fa fa-file-image',
     gif: 'fa fa-file-image',
     bmp: 'fa fa-file-image',
+    webp: 'fa fa-file-image',
+    svg: 'fa fa-file-image',
     html: 'fa fa-file-code',
     htm: 'fa fa-file-code',
     txt: 'fa fa-file-alt',
     csv: 'fa fa-file-csv',
     json: 'fa fa-file-code',
-    xml: 'fa fa-file-code'
+    xml: 'fa fa-file-code',
+    yaml: 'fa fa-file-code',
+    yml: 'fa fa-file-code',
+    toml: 'fa fa-file-code',
+    ini: 'fa fa-file-code',
+    // Code-Dateien
+    js: 'fa fa-file-code',
+    ts: 'fa fa-file-code',
+    jsx: 'fa fa-file-code',
+    tsx: 'fa fa-file-code',
+    py: 'fa fa-file-code',
+    rb: 'fa fa-file-code',
+    php: 'fa fa-file-code',
+    go: 'fa fa-file-code',
+    java: 'fa fa-file-code',
+    c: 'fa fa-file-code',
+    cpp: 'fa fa-file-code',
+    cs: 'fa fa-file-code',
+    sql: 'fa fa-file-code',
+    // Multimedia
+    mp3: 'fa fa-file-audio',
+    wav: 'fa fa-file-audio',
+    ogg: 'fa fa-file-audio',
+    flac: 'fa fa-file-audio',
+    aac: 'fa fa-file-audio',
+    m4a: 'fa fa-file-audio',
+    mp4: 'fa fa-file-video',
+    webm: 'fa fa-file-video',
+    ogv: 'fa fa-file-video',
+    mov: 'fa fa-file-video',
+    avi: 'fa fa-file-video'
   };
-  
+
   return icons[extension] || 'fa fa-file';
 });
 
@@ -567,7 +697,17 @@ const isHtml = computed(() => {
 
 const isText = computed(() => {
   const format = props.document?.originalFormat.toLowerCase() || '';
-  return ['txt', 'csv', 'json', 'xml', 'md', 'js', 'ts', 'css', 'py', 'java', 'c', 'cpp'].includes(format);
+  return ['txt', 'csv', 'json', 'xml', 'md', 'js', 'ts', 'css', 'py', 'java', 'c', 'cpp', 'rb', 'php', 'go', 'rust', 'sql', 'yaml', 'yml', 'toml', 'ini'].includes(format);
+});
+
+const isCode = computed(() => {
+  const format = props.document?.originalFormat.toLowerCase() || '';
+  return ['js', 'ts', 'jsx', 'tsx', 'py', 'java', 'c', 'cpp', 'cs', 'rb', 'php', 'go', 'rust', 'sql', 'html', 'css', 'scss', 'sass'].includes(format);
+});
+
+const isStructuredData = computed(() => {
+  const format = props.document?.originalFormat.toLowerCase() || '';
+  return ['json', 'xml', 'yaml', 'yml', 'toml'].includes(format);
 });
 
 const isExcel = computed(() => {
@@ -578,6 +718,25 @@ const isExcel = computed(() => {
 const isPowerPoint = computed(() => {
   const format = props.document?.originalFormat.toLowerCase() || '';
   return format === 'pptx' || format === 'ppt';
+});
+
+const isWord = computed(() => {
+  const format = props.document?.originalFormat.toLowerCase() || '';
+  return format === 'docx' || format === 'doc';
+});
+
+const isAudio = computed(() => {
+  const format = props.document?.originalFormat.toLowerCase() || '';
+  return ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a'].includes(format);
+});
+
+const isVideo = computed(() => {
+  const format = props.document?.originalFormat.toLowerCase() || '';
+  return ['mp4', 'webm', 'ogv', 'mov', 'avi'].includes(format);
+});
+
+const isMedia = computed(() => {
+  return isAudio.value || isVideo.value;
 });
 
 const showPagination = computed(() => {
@@ -862,26 +1021,110 @@ function formatMetadataKey(key: string): string {
 
 function formatMetadataValue(value: any): string {
   if (value === null || value === undefined) return '';
-  
+
   if (value instanceof Date) {
     return formatDate(value);
   }
-  
+
   if (typeof value === 'object') {
-    return JSON.stringify(value);
+    try {
+      return JSON.stringify(value, null, 2);
+    } catch (err) {
+      return String(value);
+    }
   }
-  
+
   return String(value);
+}
+
+function formatDuration(seconds?: number): string {
+  if (!seconds) return '00:00';
+
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+function formatBitrate(bitrate?: number): string {
+  if (!bitrate) return '0 kbps';
+
+  if (bitrate >= 1000000) {
+    return `${(bitrate / 1000000).toFixed(2)} Mbps`;
+  } else {
+    return `${(bitrate / 1000).toFixed(0)} kbps`;
+  }
 }
 
 function applySyntaxHighlighting() {
   if (!textContent.value) return;
-  
+
   try {
     // Dateiendung für automatische Spracherkennung extrahieren
     const format = props.document?.originalFormat.toLowerCase() || '';
-    
-    // Code-Block mit Syntax-Highlighting rendern
+
+    // Spezielle Formatierung für strukturierte Daten
+    if (isStructuredData.value) {
+      try {
+        if (format === 'json') {
+          // JSON formatieren und highlighten
+          const formattedJson = JSON.stringify(JSON.parse(textContent.value), null, 2);
+          const result = hljs.highlight(formattedJson, { language: 'json' });
+          highlightedText.value = `<pre><code class="hljs json">${result.value}</code></pre>`;
+          return;
+        } else if (format === 'xml') {
+          // XML einfach highlighten (Formatierung wäre komplexer)
+          const result = hljs.highlight(textContent.value, { language: 'xml' });
+          highlightedText.value = `<pre><code class="hljs xml">${result.value}</code></pre>`;
+          return;
+        } else if (['yaml', 'yml', 'toml'].includes(format)) {
+          // YAML/TOML-Highlighting
+          const lang = format === 'toml' ? 'toml' : 'yaml';
+          const result = hljs.highlight(textContent.value, { language: lang });
+          highlightedText.value = `<pre><code class="hljs ${lang}">${result.value}</code></pre>`;
+          return;
+        }
+      } catch (formatErr) {
+        console.warn(`Formatierung von ${format} fehlgeschlagen:`, formatErr);
+        // Fallback zur normalen Hervorhebung
+      }
+    }
+
+    // Spezielle Erkennung für Code-Dateien
+    if (isCode.value) {
+      const languageMap: Record<string, string> = {
+        'js': 'javascript',
+        'ts': 'typescript',
+        'jsx': 'javascript',
+        'tsx': 'typescript',
+        'py': 'python',
+        'rb': 'ruby',
+        'cs': 'csharp',
+        'go': 'go',
+        'rust': 'rust',
+        'java': 'java',
+        'c': 'c',
+        'cpp': 'cpp',
+        'php': 'php',
+        'html': 'html',
+        'css': 'css',
+        'scss': 'scss',
+        'sass': 'scss',
+        'sql': 'sql'
+      };
+
+      const language = languageMap[format] || format;
+      try {
+        const result = hljs.highlight(textContent.value, { language });
+        highlightedText.value = `<pre><code class="hljs ${language}">${result.value}</code></pre>`;
+        return;
+      } catch (langErr) {
+        console.warn(`Sprach-Highlighting für ${language} fehlgeschlagen:`, langErr);
+        // Fallback zur automatischen Erkennung
+      }
+    }
+
+    // Fallback: Automatische Spracherkennung
     const result = hljs.highlightAuto(textContent.value, [format]);
     highlightedText.value = `<pre><code class="hljs ${format}">${result.value}</code></pre>`;
   } catch (err) {
@@ -1065,15 +1308,108 @@ async function loadDocumentContent() {
   }
 }
 
+// Zusätzliche Methoden
+function getLanguageLabel(): string {
+  if (!props.document) return '';
+
+  const format = props.document.originalFormat.toLowerCase();
+  const languageMap: Record<string, string> = {
+    'js': 'JavaScript',
+    'ts': 'TypeScript',
+    'jsx': 'React JSX',
+    'tsx': 'React TSX',
+    'py': 'Python',
+    'rb': 'Ruby',
+    'cs': 'C#',
+    'go': 'Go',
+    'rust': 'Rust',
+    'java': 'Java',
+    'c': 'C',
+    'cpp': 'C++',
+    'php': 'PHP',
+    'html': 'HTML',
+    'css': 'CSS',
+    'scss': 'SCSS',
+    'sass': 'SASS',
+    'sql': 'SQL',
+    'json': 'JSON',
+    'xml': 'XML',
+    'yaml': 'YAML',
+    'yml': 'YAML',
+    'toml': 'TOML',
+    'ini': 'INI'
+  };
+
+  return languageMap[format] || format.toUpperCase();
+}
+
+function toggleFormatting() {
+  if (!textContent.value || !isStructuredData.value) return;
+
+  const format = props.document?.originalFormat.toLowerCase() || '';
+
+  if (format === 'json') {
+    try {
+      if (!isFormattedText.value) {
+        // Format JSON
+        const formattedJson = JSON.stringify(JSON.parse(textContent.value), null, 2);
+        textContent.value = formattedJson;
+        isFormattedText.value = true;
+      } else {
+        // Compact JSON
+        const compactJson = JSON.stringify(JSON.parse(textContent.value));
+        textContent.value = compactJson;
+        isFormattedText.value = false;
+      }
+
+      // Aktualisiere Syntax-Highlighting
+      if (useSyntaxHighlighting.value) {
+        applySyntaxHighlighting();
+      }
+    } catch (err) {
+      console.error('JSON-Formatierung fehlgeschlagen:', err);
+    }
+  } else if (format === 'xml') {
+    // XML-Formatierung erfordert eine spezielle Bibliothek - hier vereinfachte Version
+    try {
+      if (!isFormattedText.value) {
+        // Einfache, sehr grundlegende XML-Formatierung
+        // Eine richtige XML-Formatierungsbibliothek wäre besser
+        const formatted = textContent.value
+          .replace(/><(\/?[\w:\-]+)/g, '>\n<$1')  // Neue Zeile nach dem schließenden Tag
+          .replace(/(<\/[\w:\-]+>)\s*<([\w:\-]+)/g, '$1\n<$2')  // Neue Zeile zwischen schließendem und öffnendem Tag
+          .split('\n')
+          .map((line, index, array) => {
+            const depth = (line.match(/<\/[\w:\-]+>/g) || []).length;
+            const prevDepth = index > 0 ? (array[index-1].match(/<[\w:\-]+>/g) || []).length : 0;
+            const indent = Math.max(0, prevDepth - depth);
+            return '  '.repeat(indent) + line;
+          })
+          .join('\n');
+
+        textContent.value = formatted;
+        isFormattedText.value = true;
+      }
+
+      // Aktualisiere Syntax-Highlighting
+      if (useSyntaxHighlighting.value) {
+        applySyntaxHighlighting();
+      }
+    } catch (err) {
+      console.error('XML-Formatierung fehlgeschlagen:', err);
+    }
+  }
+}
+
 // Lebenszyklusmethoden
 onMounted(() => {
   loadDocumentContent();
-  
+
   // Fokus auf den Container setzen
   if (previewContainer.value) {
     previewContainer.value.focus();
   }
-  
+
   // PDF-Nachrichten-Listener
   window.addEventListener('message', handlePdfMessage);
 });
@@ -1379,6 +1715,57 @@ watch(() => props.document, () => {
   line-height: 1.5;
 }
 
+.document-preview__text-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  margin-bottom: 0.75rem;
+  border-radius: 4px 4px 0 0;
+}
+
+.document-preview__text-language {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  background-color: #e7f5ff;
+  color: #4a6cf7;
+  border-radius: 4px;
+}
+
+.document-preview__syntax-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.document-preview__syntax-toggle input {
+  margin: 0;
+}
+
+.document-preview__format-btn {
+  background-color: #f8f9fa;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  color: #495057;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: all 0.2s;
+}
+
+.document-preview__format-btn:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+
 .document-preview__text-content pre {
   margin: 0;
   white-space: pre-wrap;
@@ -1633,6 +2020,126 @@ watch(() => props.document, () => {
 
 .document-preview__retry-btn:hover {
   background-color: #3a5be7;
+}
+
+/* Word-Dokument-Vorschau */
+.document-preview__word-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.document-preview__word-content {
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.document-preview__word-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  min-height: 300px;
+}
+
+.document-preview__word-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: #6c757d;
+}
+
+.document-preview__word-placeholder-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #adb5bd;
+}
+
+/* Media-Container für Audio/Video */
+.document-preview__media-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.document-preview__audio-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.document-preview__video-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.document-preview__audio-player {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.document-preview__audio-element {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.document-preview__video-player {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.document-preview__video-element {
+  width: 100%;
+  max-height: 500px;
+  margin-bottom: 1rem;
+}
+
+.document-preview__audio-info,
+.document-preview__video-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.document-preview__media-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #6c757d;
+}
+
+.document-preview__media-placeholder-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #adb5bd;
+}
+
+.document-preview__media-label {
+  font-weight: 600;
+  color: #495057;
+  margin-right: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.document-preview__media-value {
+  color: #6c757d;
+  font-size: 0.85rem;
 }
 
 /* Fallback-Anzeige */
