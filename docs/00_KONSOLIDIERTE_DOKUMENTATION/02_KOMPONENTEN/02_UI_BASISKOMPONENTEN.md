@@ -2,7 +2,7 @@
 title: "UI-Basiskomponenten"
 version: "1.1.0"
 date: "09.05.2025"
-lastUpdate: "15.05.2025"
+lastUpdate: "10.05.2025"
 author: "Martin Heinrich"
 status: "Aktiv"
 priority: "Hoch"
@@ -12,7 +12,7 @@ tags: ["UI", "Komponenten", "Design", "Vue3"]
 
 # UI-Basiskomponenten
 
-> **Letzte Aktualisierung:** 15.05.2025 | **Version:** 1.1.0 | **Status:** Aktiv
+> **Letzte Aktualisierung:** 10.05.2025 | **Version:** 1.1.0 | **Status:** Aktiv
 
 ## Übersicht
 
@@ -724,4 +724,4 @@ Bei der Migration der UI-Komponenten sind folgende Herausforderungen aufgetreten
 
 ---
 
-Zuletzt aktualisiert: 15.05.2025
+Zuletzt aktualisiert: 10.05.2025
