@@ -99,10 +99,12 @@ flowchart TD
 Die `MessageList`-Komponente ist für die Anzeige der Konversationshistorie verantwortlich. Sie bietet:
 
 - **Virtualisiertes Rendering** für optimale Performance bei langen Chat-Verläufen
+- **Dynamische Höhenberechnung** mittels ResizeObserver für präzises virtuelles Rendering
 - **Automatisches Scrollen** mit intelligenter Erkennung der Benutzerinteraktion
-- **Lade-, Leer- und Streaming-Zustände** für bessere UX
-- **ResizeObserver-basierte** dynamische Höhenberechnung
-- **ARIA-konforme** Implementierung für Barrierefreiheit
+- **Lade-, Leer- und Streaming-Zustände** für verbesserte UX
+- **Pagination** mit "Mehr laden"-Funktionalität für große Gesprächsverläufe
+- **Scroll-to-Bottom Button** für einfache Navigation
+- **Umfassende ARIA-Unterstützung** für Barrierefreiheit
 
 ```vue
 <!-- Verwendungsbeispiel -->
@@ -111,7 +113,9 @@ Die `MessageList`-Komponente ist für die Anzeige der Konversationshistorie vera
   :is-loading="isLoading"
   :is-streaming="isStreaming"
   :virtualized="true"
+  :overscan="5"
   :show-message-actions="true"
+  :show-scroll-to-bottom-button="true"
   @feedback="handleFeedback"
   @view-sources="handleViewSources"
   @retry="handleRetry"
@@ -128,34 +132,40 @@ Die `MessageList`-Komponente ist für die Anzeige der Konversationshistorie vera
 | `messages` | `ChatMessage[]` | `[]` | Die anzuzeigenden Nachrichten |
 | `isLoading` | `boolean` | `false` | Gibt an, ob Nachrichten geladen werden |
 | `isStreaming` | `boolean` | `false` | Gibt an, ob eine Antwort gestreamt wird |
-| `virtualized` | `boolean` | `true` | Ob virtualisiertes Rendering verwendet werden soll |
 | `pageSize` | `number` | `20` | Anzahl der Nachrichten pro Seite (für Pagination) |
+| `logoUrl` | `string` | `undefined` | URL des Logos für den Willkommensbildschirm |
 | `welcomeTitle` | `string` | "Willkommen..." | Titel für den Willkommensbildschirm |
 | `welcomeMessage` | `string` | "Wie kann ich..." | Nachricht für den Willkommensbildschirm |
-| `showMessageActions` | `boolean` | `true` | Ob Aktionen (Feedback, etc.) angezeigt werden sollen |
-| `autoScrollThreshold` | `number` | `0.8` | Schwellenwert für Auto-Scroll (0-1) |
+| `scrollBehavior` | `'auto'/'smooth'/'instant'` | `'smooth'` | Verhalten für das automatische Scrollen |
+| `showMessageActions` | `boolean` | `true` | Ob Aktionsschaltflächen für Nachrichten angezeigt werden sollen |
+| `autoScrollThreshold` | `number` | `0.8` | Threshold für automatisches Scrollen (0-1) |
+| `virtualized` | `boolean` | `true` | Ob virtualisiertes Rendering verwendet werden soll |
+| `overscan` | `number` | `5` | Überhang (Anzahl von Elementen außerhalb des sichtbaren Bereichs zu rendern) |
+| `estimatedItemHeight` | `number` | `100` | Schätzung für die durchschnittliche Höhe einer Nachricht |
+| `showScrollToBottomButton` | `boolean` | `true` | Ob der Scroll-nach-unten-Button angezeigt werden soll |
 
 #### Events
 
 | Name | Payload | Beschreibung |
 |------|---------|--------------|
-| `feedback` | `{ messageId, type, feedback? }` | Feedback zu einer Nachricht |
-| `view-sources` | `{ messageId }` | Quellen anzeigen |
-| `view-explanation` | `{ messageId }` | Erklärung anzeigen |
-| `retry` | `{ messageId }` | Nachricht wiederholen |
-| `delete` | `{ messageId }` | Nachricht löschen |
-| `scroll` | `{ scrollTop, isAtBottom, ... }` | Scroll-Ereignis |
-| `load-more` | `{ direction, firstVisibleIndex? }` | Mehr Nachrichten laden |
+| `feedback` | `{ messageId: string, type: 'positive' \| 'negative', feedback?: string }` | Wird ausgelöst, wenn Feedback zu einer Nachricht gegeben wird |
+| `view-sources` | `{ messageId: string }` | Wird ausgelöst, wenn Quellen angezeigt werden sollen |
+| `view-explanation` | `{ messageId: string }` | Wird ausgelöst, wenn eine Erklärung angezeigt werden soll |
+| `retry` | `{ messageId: string }` | Wird ausgelöst, wenn eine Nachricht wiederholt werden soll |
+| `delete` | `{ messageId: string }` | Wird ausgelöst, wenn eine Nachricht gelöscht werden soll |
+| `scroll` | `{ scrollTop: number, scrollHeight: number, clientHeight: number, isAtBottom: boolean }` | Wird ausgelöst, wenn die Liste gescrollt wird |
+| `load-more` | `{ direction: 'up' \| 'down', firstVisibleIndex?: number, lastVisibleIndex?: number }` | Wird ausgelöst, wenn weitere Nachrichten geladen werden sollen |
+
+#### Exportierte Methoden
+
+| Name | Parameter | Beschreibung |
+|------|-----------|--------------|
+| `scrollToBottom` | `behavior?: ScrollBehavior` | Scrollt zum Ende der Nachrichtenliste |
+| `scrollToMessage` | `messageId: string, behavior?: ScrollBehavior` | Scrollt zu einer bestimmten Nachricht |
 
 #### Technische Details
 
-- **Virtualisierung**: Rendert nur die sichtbaren und einige umliegende Nachrichten, um DOM-Größe zu reduzieren
-- **ResizeObserver**: Dynamische Berechnung der Nachrichten-Höhen für präzises virtuelles Rendering
-- **Throttling**: Leistungsoptimierung für Scroll-Ereignisse und häufige Aktualisierungen
-- **Inkrementelles DOM-Update**: Nur geänderte Nachrichten werden aktualisiert
-- **Separate Scroll-Logik**: Intelligente Entscheidung, wann automatisch gescrollt werden soll
-
-**Virtualisierungs-Implementierung:**
+- **Virtuelle Liste**: Die Komponente implementiert eine hochoptimierte virtuelle Liste, die nur die sichtbaren Nachrichten rendert, um die DOM-Größe und Performance bei langen Konversationen zu optimieren.
 
 ```typescript
 // Berechne die aktuell sichtbaren Items
@@ -168,12 +178,12 @@ const visibleItems = computed(() => {
       message,
     }));
   }
-  
+
   // Mit Virtualisierung nur den sichtbaren Bereich plus Überhang anzeigen
   const { start, end } = visibleRange.value;
   const startWithOverscan = Math.max(0, start - props.overscan);
   const endWithOverscan = Math.min(allItems.value.length - 1, end + props.overscan);
-  
+
   return allItems.value.slice(startWithOverscan, endWithOverscan + 1);
 });
 ```
@@ -583,20 +593,52 @@ Die Chat-Komponenten integrieren sich in das CSS-Design-System der Anwendung:
 
 ## Migrationsstatus
 
-Der aktuelle Chat-Interface-Migrationsstatus zu Vue 3 SFCs beträgt etwa **30%**:
+Die Migration der Chat-Interface-Komponenten zu Vue 3 SFCs ist fortgeschrittener als ursprünglich dokumentiert. Der aktuelle Stand ist wie folgt:
 
-| Komponente | Fertigstellungsgrad | Status | Priorität |
-|------------|---------------------|--------|-----------|
-| MessageList | ~90% | Nahezu abgeschlossen | Hoch |
-| MessageItem | ~85% | Nahezu abgeschlossen | Hoch |
-| ChatInput | ~80% | Aktiv in Entwicklung | Hoch |
-| ChatContainer | ~60% | Aktiv in Entwicklung | Hoch |
-| SessionManager | ~40% | In Entwicklung | Mittel |
-| Chat-Bridge | ~85% | Größtenteils abgeschlossen | Mittel |
-| Styling & Theming | ~75% | Aktiv in Entwicklung | Mittel |
-| Tests | ~25% | Frühe Phase | Mittel |
+| Komponente | Dokumentierter Fertigstellungsgrad | Tatsächlicher Fertigstellungsgrad | Status | Priorität |
+|------------|---------------------|--------|-----------|------------|
+| MessageList | ~90% | 100% | Abgeschlossen | Hoch |
+| MessageItem | ~85% | ~95% | Nahezu abgeschlossen | Hoch |
+| ChatInput | ~80% | ~90% | Nahezu abgeschlossen | Hoch |
+| ChatContainer | ~60% | ~75% | Aktiv in Entwicklung | Hoch |
+| SessionList | Nicht explizit angegeben | 100% | Abgeschlossen | Hoch |
+| SessionItem | Nicht explizit angegeben | ~95% | Nahezu abgeschlossen | Hoch |
+| SessionActions | Nicht explizit angegeben | ~90% | Nahezu abgeschlossen | Mittel |
+| SessionManager | ~40% | ~80% | Aktiv in Entwicklung | Mittel |
+| Chat-Bridge | ~85% | ~90% | Nahezu abgeschlossen | Mittel |
+| Styling & Theming | ~75% | ~85% | Aktiv in Entwicklung | Mittel |
+| Tests | ~25% | ~40% | In Entwicklung | Mittel |
 
-Die weitere Migration des Chat-Interfaces erfolgt schrittweise unter Verwendung von Feature-Toggles, um eine stabile Benutzererfahrung zu gewährleisten.
+### Wesentliche Fortschritte und Erkenntnisse
+
+1. **Verbesserte Virtualisierung**: Die virtualisierte Listenimplementierung ist ausgereifter als dokumentiert, mit dynamischer Höhenberechnung mittels ResizeObserver und optimierten Scroll-Event-Handlern.
+
+2. **Erweiterte Session-Management-Funktionen**: Die SessionList-Komponente bietet zahlreiche Features, die in der ursprünglichen Dokumentation nicht erwähnt wurden:
+   - Multi-Select für Massenoperationen
+   - Fortschrittliches Tagging- und Kategorisierungssystem
+   - Erweiterte Filterfunktionen
+   - Skeleton Loading für verbesserte UX
+   - Virtualisierung für große Listen
+
+3. **Barrierefreiheit**: Die tatsächliche Implementierung legt größeren Wert auf Barrierefreiheit mit:
+   - Umfassenden ARIA-Attributen
+   - Vollständiger Tastaturnavigation
+   - Reduzierte-Bewegung-Unterstützung
+   - Screen-Reader-Optimierungen
+
+4. **Responsive Design**: Die Komponenten sind vollständig responsive mit anpassungsfähigem Layout und Touch-freundlicher Bedienung auf mobilen Geräten.
+
+5. **Bridge-Integration**: Die Bridge-Komponenten für die Kommunikation mit Legacy-Code sind weiter fortgeschritten als dokumentiert.
+
+### Nächste Schritte
+
+1. **Abschluss der Tests**: Erhöhung der Testabdeckung von ~40% auf >80%.
+2. **Performance-Optimierungen**: Weitere Optimierungen für sehr große Chat-Verläufe (>1000 Nachrichten).
+3. **Verbesserung der mobilen UX**: Optimierungen speziell für Touch-Interaktionen.
+4. **Feature-Toggle-Standardwerte**: Nach abgeschlossener Validierung die Feature-Toggles für stabile Komponenten auf `true` setzen.
+5. **Kontinuierliche Integration**: Automatisierte Tests in der CI-Pipeline für neue SFC-Komponenten.
+
+Die weitere Migration der Chat-Komponenten erfolgt weiterhin schrittweise unter Verwendung von Feature-Toggles, wobei die meisten Kernkomponenten bereits weiter fortgeschritten sind als initial dokumentiert.
 
 ## Feature-Toggle-Konfiguration
 
