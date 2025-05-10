@@ -1,8 +1,8 @@
 ---
 title: "UI-Basiskomponenten"
-version: "1.0.0"
+version: "1.1.0"
 date: "09.05.2025"
-lastUpdate: "09.05.2025"
+lastUpdate: "15.05.2025"
 author: "Martin Heinrich"
 status: "Aktiv"
 priority: "Hoch"
@@ -12,11 +12,11 @@ tags: ["UI", "Komponenten", "Design", "Vue3"]
 
 # UI-Basiskomponenten
 
-> **Letzte Aktualisierung:** 09.05.2025 | **Version:** 1.0.0 | **Status:** Aktiv
+> **Letzte Aktualisierung:** 15.05.2025 | **Version:** 1.1.0 | **Status:** Aktiv
 
 ## Übersicht
 
-Die UI-Basiskomponenten bilden das Fundament der nscale DMS Assistent-Benutzeroberfläche und wurden als Teil der Vue 3 SFC-Migration implementiert. Sie bieten ein konsistentes Design und Verhalten über die gesamte Anwendung hinweg. Der aktuelle Fertigstellungsgrad der UI-Basiskomponenten liegt bei ca. 60%.
+Die UI-Basiskomponenten bilden das Fundament der nscale DMS Assistent-Benutzeroberfläche und wurden als Teil der Vue 3 SFC-Migration implementiert. Sie bieten ein konsistentes Design und Verhalten über die gesamte Anwendung hinweg. Der aktuelle Fertigstellungsgrad der UI-Basiskomponenten liegt bei ca. 65%.
 
 ## Implementierte Komponenten
 
@@ -31,34 +31,46 @@ Die UI-Basiskomponenten bilden das Fundament der nscale DMS Assistent-Benutzerob
 | **FeatureWrapper.vue** | Fertiggestellt | 90% | N/A |
 | **Dialog.vue** | Fertiggestellt | 70% | Mittel |
 | **Toast.vue** | Fertiggestellt | 80% | Mittel |
+| **SettingsPanel.vue** | Fertiggestellt | 100% | Hoch |
+| **AppearanceSettings.vue** | Fertiggestellt | 100% | Hoch |
+| **NotificationSettings.vue** | Fertiggestellt | 100% | Hoch |
+| **PrivacySettings.vue** | Fertiggestellt | 100% | Hoch |
+| **AccessibilitySettings.vue** | Fertiggestellt | 100% | Hoch |
 
 ## Komponenten-Verzeichnisstruktur
 
 ```
-src/components/ui/
-├── base/             # Grundlegende UI-Elemente
-│   ├── Button.vue
-│   ├── Input.vue
-│   ├── Card.vue
-│   ├── Alert.vue
-│   ├── Modal.vue
-│   └── index.ts      # Komponenten-Export
-├── feedback/         # Feedback-bezogene Komponenten
-│   └── Alert.vue
-├── data/             # Daten-bezogene Komponenten
-│   ├── Table.vue
-│   ├── Pagination.vue
-│   └── List.vue
-├── layout/           # Layout-Komponenten
-│   ├── Container.vue
-│   ├── Row.vue
-│   └── Col.vue
-├── Dialog.vue        # Dialoge und Modals
-├── Toast.vue         # Toast-Benachrichtigungen
-├── ToastContainer.vue
-├── LoadingOverlay.vue
-├── Notification.vue
-└── index.ts          # Haupt-Export aller UI-Komponenten
+src/components/
+├── ui/                 # Allgemeine UI-Komponenten
+│   ├── base/           # Grundlegende UI-Elemente
+│   │   ├── Button.vue
+│   │   ├── Input.vue
+│   │   ├── Card.vue
+│   │   ├── Alert.vue
+│   │   ├── Modal.vue
+│   │   └── index.ts    # Komponenten-Export
+│   ├── feedback/       # Feedback-bezogene Komponenten
+│   │   └── Alert.vue
+│   ├── data/           # Daten-bezogene Komponenten
+│   │   ├── Table.vue
+│   │   ├── Pagination.vue
+│   │   └── List.vue
+│   ├── layout/         # Layout-Komponenten
+│   │   ├── Container.vue
+│   │   ├── Row.vue
+│   │   └── Col.vue
+│   ├── Dialog.vue      # Dialoge und Modals
+│   ├── Toast.vue       # Toast-Benachrichtigungen
+│   ├── ToastContainer.vue
+│   ├── LoadingOverlay.vue
+│   ├── Notification.vue
+│   └── index.ts        # Haupt-Export aller UI-Komponenten
+└── settings/           # Einstellungsbezogene Komponenten
+    ├── SettingsPanel.vue
+    ├── AppearanceSettings.vue
+    ├── NotificationSettings.vue
+    ├── PrivacySettings.vue
+    └── AccessibilitySettings.vue
 ```
 
 ## Design-System-Integration
@@ -521,318 +533,111 @@ function onClick(event: MouseEvent) {
 </style>
 ```
 
-### Input.vue
+## SettingsPanel und Einstellungs-Komponenten
 
+Das SettingsPanel bietet eine zentrale Benutzeroberfläche zur Verwaltung aller Anwendungseinstellungen. 
+
+### SettingsPanel
+
+Die `SettingsPanel`-Komponente ist ein Container für verschiedene Einstellungskategorien mit einer einheitlichen Navigation.
+
+**Eigenschaften:**
+- `isVisible`: Steuert die Sichtbarkeit des Panels
+- `activeCategory` (intern): Aktuell ausgewählte Kategorie
+
+**Events:**
+- `close`: Wird ausgelöst, wenn das Panel geschlossen wird
+- `save`: Wird ausgelöst, wenn Einstellungen gespeichert werden
+
+**Beispiel:**
 ```vue
-<template>
-  <div 
-    :class="[
-      'n-input-wrapper',
-      `n-input-wrapper--${size}`,
-      { 
-        'n-input-wrapper--disabled': disabled,
-        'n-input-wrapper--error': error,
-        'n-input-wrapper--success': success,
-        'n-input-wrapper--with-prefix': $slots.prefix || prefix,
-        'n-input-wrapper--with-suffix': $slots.suffix || suffix
-      }
-    ]"
-  >
-    <label 
-      v-if="label" 
-      :for="inputId" 
-      class="n-input-label"
-    >
-      {{ label }}
-      <span v-if="required" class="n-input-required">*</span>
-    </label>
-    
-    <div class="n-input-container">
-      <div v-if="$slots.prefix || prefix" class="n-input-prefix">
-        <slot name="prefix">{{ prefix }}</slot>
-      </div>
-      
-      <input
-        :id="inputId"
-        ref="inputRef"
-        :class="['n-input', { 'n-input--error': error, 'n-input--success': success }]"
-        :type="type"
-        :value="modelValue"
-        :placeholder="placeholder"
-        :disabled="disabled"
-        :required="required"
-        :readonly="readonly"
-        :name="name"
-        :tabindex="tabindex"
-        :autocomplete="autocomplete"
-        v-bind="$attrs"
-        @input="updateValue"
-        @blur="handleBlur"
-        @focus="handleFocus"
-      >
-      
-      <div v-if="$slots.suffix || suffix" class="n-input-suffix">
-        <slot name="suffix">{{ suffix }}</slot>
-      </div>
-    </div>
-    
-    <div v-if="$slots.hint || hint || error || success" class="n-input-hint">
-      <slot name="hint">
-        <span v-if="error" class="n-input-hint--error">{{ error }}</span>
-        <span v-else-if="success" class="n-input-hint--success">{{ success }}</span>
-        <span v-else-if="hint">{{ hint }}</span>
-      </slot>
-    </div>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { useId } from '@/composables/useId';
-
-// Typen
-type InputType = 'text' | 'password' | 'email' | 'number' | 'tel' | 'url' | 'search' | 'date' | 'time' | 'datetime-local';
-type InputSize = 'sm' | 'md' | 'lg';
-type InputAutocomplete = 'on' | 'off' | 'name' | 'email' | 'username' | 'current-password' | 'new-password' | 'one-time-code' | 'tel' | 'url';
-
-// Props
-const props = withDefaults(defineProps<{
-  modelValue?: string | number;
-  label?: string;
-  placeholder?: string;
-  type?: InputType;
-  size?: InputSize;
-  error?: string;
-  success?: string;
-  hint?: string;
-  prefix?: string;
-  suffix?: string;
-  name?: string;
-  tabindex?: number;
-  required?: boolean;
-  disabled?: boolean;
-  readonly?: boolean;
-  autofocus?: boolean;
-  autocomplete?: InputAutocomplete;
-  id?: string;
-}>(), {
-  modelValue: '',
-  type: 'text',
-  size: 'md',
-  tabindex: 0,
-  autocomplete: 'off'
-});
-
-// Emits
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void;
-  (e: 'blur', event: FocusEvent): void;
-  (e: 'focus', event: FocusEvent): void;
-}>();
-
-// Refs
-const inputRef = ref<HTMLInputElement | null>(null);
-const { id: generatedId } = useId('input');
-
-// Computed
-const inputId = computed(() => props.id || generatedId.value);
-
-// Methods
-function updateValue(event: Event) {
-  const target = event.target as HTMLInputElement;
-  emit('update:modelValue', target.value);
-}
-
-function handleBlur(event: FocusEvent) {
-  emit('blur', event);
-}
-
-function handleFocus(event: FocusEvent) {
-  emit('focus', event);
-}
-
-// Lifecycle
-onMounted(() => {
-  if (props.autofocus && inputRef.value) {
-    inputRef.value.focus();
-  }
-});
-</script>
-
-<style lang="scss">
-.n-input-wrapper {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  font-family: var(--n-font-family);
-  
-  &--disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-  
-  // Größen
-  &--sm {
-    .n-input-container {
-      height: 2rem;
-    }
-    
-    .n-input, .n-input-prefix, .n-input-suffix {
-      font-size: var(--n-font-size-sm);
-    }
-    
-    .n-input-label {
-      font-size: var(--n-font-size-xs);
-      margin-bottom: var(--n-spacing-xs);
-    }
-    
-    .n-input-hint {
-      font-size: var(--n-font-size-xs);
-      margin-top: var(--n-spacing-xs);
-    }
-  }
-  
-  &--md {
-    .n-input-container {
-      height: 2.5rem;
-    }
-    
-    .n-input, .n-input-prefix, .n-input-suffix {
-      font-size: var(--n-font-size-md);
-    }
-    
-    .n-input-label {
-      font-size: var(--n-font-size-sm);
-      margin-bottom: var(--n-spacing-xs);
-    }
-    
-    .n-input-hint {
-      font-size: var(--n-font-size-sm);
-      margin-top: var(--n-spacing-xs);
-    }
-  }
-  
-  &--lg {
-    .n-input-container {
-      height: 3rem;
-    }
-    
-    .n-input, .n-input-prefix, .n-input-suffix {
-      font-size: var(--n-font-size-lg);
-    }
-    
-    .n-input-label {
-      font-size: var(--n-font-size-md);
-      margin-bottom: var(--n-spacing-sm);
-    }
-    
-    .n-input-hint {
-      font-size: var(--n-font-size-md);
-      margin-top: var(--n-spacing-sm);
-    }
-  }
-}
-
-.n-input-label {
-  font-weight: 500;
-  color: var(--n-color-text-primary);
-}
-
-.n-input-required {
-  color: var(--n-color-error);
-  margin-left: 2px;
-}
-
-.n-input-container {
-  position: relative;
-  display: flex;
-  width: 100%;
-  border: 1px solid var(--n-color-border);
-  border-radius: var(--n-border-radius);
-  background-color: var(--n-color-background-base);
-  transition: all var(--n-transition) var(--n-ease);
-  
-  &:focus-within {
-    border-color: var(--n-color-primary);
-    box-shadow: 0 0 0 3px rgba(var(--n-color-primary-rgb), 0.4);
-  }
-  
-  .n-input-wrapper--error & {
-    border-color: var(--n-color-error);
-    
-    &:focus-within {
-      box-shadow: 0 0 0 3px rgba(var(--n-color-error-rgb), 0.4);
-    }
-  }
-  
-  .n-input-wrapper--success & {
-    border-color: var(--n-color-success);
-    
-    &:focus-within {
-      box-shadow: 0 0 0 3px rgba(var(--n-color-success-rgb), 0.4);
-    }
-  }
-  
-  .n-input-wrapper--disabled & {
-    background-color: var(--n-color-background-alt);
-    border-color: var(--n-color-border);
-    
-    &:focus-within {
-      box-shadow: none;
-    }
-  }
-}
-
-.n-input {
-  flex: 1;
-  border: none;
-  background: transparent;
-  padding: 0 var(--n-spacing-md);
-  color: var(--n-color-text-primary);
-  outline: none;
-  width: 100%;
-  height: 100%;
-  
-  &::placeholder {
-    color: var(--n-color-text-hint);
-  }
-  
-  &:disabled {
-    cursor: not-allowed;
-  }
-}
-
-.n-input-prefix, .n-input-suffix {
-  display: flex;
-  align-items: center;
-  padding: 0 var(--n-spacing-md);
-  color: var(--n-color-text-secondary);
-}
-
-.n-input-prefix {
-  border-right: 1px solid var(--n-color-border);
-}
-
-.n-input-suffix {
-  border-left: 1px solid var(--n-color-border);
-}
-
-.n-input-hint {
-  min-height: 1.25rem;
-  margin-top: var(--n-spacing-xs);
-  font-size: var(--n-font-size-sm);
-  color: var(--n-color-text-secondary);
-  
-  &--error {
-    color: var(--n-color-error);
-  }
-  
-  &--success {
-    color: var(--n-color-success);
-  }
-}
-</style>
+<SettingsPanel 
+  :isVisible="showSettings" 
+  @close="showSettings = false" 
+  @save="handleSettingsSaved" 
+/>
 ```
+
+### AppearanceSettings
+
+Die `AppearanceSettings`-Komponente ermöglicht die Anpassung des Erscheinungsbilds der Anwendung.
+
+**Features:**
+- Themenwahl (Hell/Dunkel und vordefinierte Designs)
+- Schriftgröße und Schriftart-Einstellungen
+- Zeilenhöhenanpassung
+- Erstellung benutzerdefinierter Themes
+
+**Events:**
+- `apply-settings`: Wird ausgelöst, wenn Einstellungen geändert werden
+- `reset`: Wird ausgelöst, wenn Einstellungen zurückgesetzt werden
+
+### NotificationSettings
+
+Die `NotificationSettings`-Komponente steuert alle Benachrichtigungseinstellungen.
+
+**Features:**
+- Globales Ein-/Ausschalten von Benachrichtigungen
+- Tonbenachrichtigungen
+- Desktop-Benachrichtigungen mit Berechtigungsanfrage
+- Einstellungen für verschiedene Benachrichtigungstypen (Session-Abschluss, Erwähnungen)
+- Test-Funktion für Benachrichtigungen
+
+**Events:**
+- `apply-settings`: Wird ausgelöst, wenn Einstellungen geändert werden
+- `reset`: Wird ausgelöst, wenn Einstellungen zurückgesetzt werden
+
+### PrivacySettings
+
+Die `PrivacySettings`-Komponente verwaltet datenschutzbezogene Einstellungen.
+
+**Features:**
+- Datenspeicherungsoptionen (Chat-Verläufe, Einstellungen)
+- Einstellungen für Analytik und Fehlerberichte
+- Cookie-Management
+- Funktionen zum Löschen des Chat-Verlaufs
+- Datenexport-Funktionalität
+- Option zum Entfernen aller gespeicherten Daten
+
+**Events:**
+- `apply-settings`: Wird ausgelöst, wenn Einstellungen geändert werden
+- `reset`: Wird ausgelöst, wenn Einstellungen zurückgesetzt werden
+
+### AccessibilitySettings
+
+Die `AccessibilitySettings`-Komponente verbessert die Zugänglichkeit der Anwendung.
+
+**Features:**
+- Reduzierte Bewegungen für Animationen
+- Hochkontrastmodus
+- Textgrößenanpassungen
+- Screenreader-Unterstützung
+- Tastaturkürzel-Optionen
+- Verbesserte Fokusanzeigen
+
+**Events:**
+- `apply-settings`: Wird ausgelöst, wenn Einstellungen geändert werden
+- `reset`: Wird ausgelöst, wenn Einstellungen zurückgesetzt werden
+
+## Integration des SettingsPanel
+
+Die Einstellungskomponenten sind vollständig in das Vue 3 SFC-System integriert und nutzen:
+
+- Pinia-Store (`useSettingsStore`) zur zentralen Verwaltung aller Einstellungen
+- TypeScript-Interfaces für typsichere Einstellungsobjekte
+- Lokalspeicher zur persistenten Datenspeicherung
+- Reaktivität für sofortige Änderungen
+- Responsive Design für alle Bildschirmgrößen
+- I18n für mehrsprachige Unterstützung
+
+## Verbindung zur SettingsView
+
+Die `SettingsView` integriert das SettingsPanel in die Anwendung und bietet:
+
+- Übersichtsseite mit Karten für die verschiedenen Einstellungskategorien
+- Shortcuts für häufig verwendete Einstellungen
+- Systeminformationen
+- Toggle zum Ein-/Ausblenden des SettingsPanels
 
 ## Noch zu implementierende Komponenten
 
@@ -919,4 +724,4 @@ Bei der Migration der UI-Komponenten sind folgende Herausforderungen aufgetreten
 
 ---
 
-Zuletzt aktualisiert: 09.05.2025
+Zuletzt aktualisiert: 15.05.2025
