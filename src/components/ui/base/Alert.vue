@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 
 /**
  * Alert component for displaying messages, notifications, or feedback
@@ -102,16 +102,20 @@ function closeAlert() {
 const alertIcon = computed(() => props.icon || null);
 
 // Auto-close alert if timeout is provided
+let timer: number | undefined;
+
 onMounted(() => {
   if (props.timeout > 0) {
-    const timer = setTimeout(() => {
+    timer = setTimeout(() => {
       closeAlert();
-    }, props.timeout);
-    
-    // Clean up timer if component unmounts
-    onUnmounted(() => {
-      clearTimeout(timer);
-    });
+    }, props.timeout) as unknown as number;
+  }
+});
+
+// Clean up timer if component unmounts
+onUnmounted(() => {
+  if (timer) {
+    clearTimeout(timer);
   }
 });
 </script>

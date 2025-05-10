@@ -7,6 +7,7 @@ import { initializeStores } from './stores/storeInitializer';
 
 // Styles
 import './assets/styles/main.scss';
+import './assets/styles/touch-focus.scss';
 
 // Initialisiere API-Service und App
 const initApp = async () => {

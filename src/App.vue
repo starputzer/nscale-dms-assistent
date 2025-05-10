@@ -28,7 +28,7 @@
           :showFooter="true"
           :sidebarItems="navigationItems"
           :sidebarCollapsed="uiStore.sidebarIsCollapsed"
-          @update:sidebarCollapsed="uiStore.setSidebarIsCollapsed"
+          @update:sidebarCollapsed="toggleSidebarCollapsed"
           @sidebar-item-select="handleNavigationSelect"
         >
           <template #header>
@@ -119,6 +119,7 @@
     <!-- UI Components -->
     <Toast />
     <DialogProvider />
+    <MobileFocusManager />
 
     <!-- Offline Status Banner -->
     <div v-if="isOffline" class="offline-banner">
@@ -140,7 +141,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, provide, watch, onBeforeUnmount } from 'vue';
-import { useRouter, useRoute, RouteRecordName } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
+import { useMobileFocus } from './composables/useMobileFocus';
 // If you're having issues with vue-i18n, you can implement a temporary solution:
 // Uncomment this if vue-i18n is not installed
 /*
@@ -156,8 +158,8 @@ import { useFeatureTogglesStore } from '@/stores/featureToggles';
 import { useErrorReporting } from '@/utils/errorReportingService';
 import { useFallbackManager } from '@/utils/fallbackManager';
 import { useTheme } from '@/composables/useTheme';
-import { isInitialized, storeStatus } from '@/stores/storeInitializer';
-import type { ErrorSeverity, ErrorCategory } from '@/components/shared/ErrorBoundary.vue';
+import { isInitialized } from '@/stores/storeInitializer';
+import type { ErrorSeverity } from '@/components/shared/ErrorBoundary.vue';
 import type { SidebarItem } from '@/components/layout/MainLayout.vue';
 
 // Import von Komponenten
@@ -166,12 +168,21 @@ import Header from '@/components/layout/Header.vue';
 import Toast from '@/components/ui/Toast.vue';
 import DialogProvider from '@/components/dialog/DialogProvider.vue';
 import ErrorBoundary from '@/components/shared/ErrorBoundary.vue';
+import MobileFocusManager from '@/components/shared/MobileFocusManager.vue';
 
 // Define interfaces for header user
 interface HeaderUser {
   name?: string;
   avatar?: string;
   email?: string;
+}
+
+// Define interface for custom api:error event
+interface ApiErrorEventDetail {
+  url?: string;
+  message: string;
+  handled?: boolean;
+  [key: string]: any;
 }
 
 // i18n
@@ -275,6 +286,18 @@ const routeFeatureFlagMap: Record<string, string> = {
   'Settings': 'useSfcSettings',
   'Login': 'useSfcLogin'
 };
+
+// Toggle sidebar collapsed state - fix for setSidebarIsCollapsed missing
+function toggleSidebarCollapsed(collapsed: boolean) {
+  // Check if uiStore has the method, if not, provide an alternative implementation
+  if ('setSidebarIsCollapsed' in uiStore) {
+    (uiStore as any).setSidebarIsCollapsed(collapsed);
+  } else {
+    // Fallback implementation if the method doesn't exist
+    console.warn('setSidebarIsCollapsed method not found in uiStore, using fallback implementation');
+    (uiStore as any).sidebarIsCollapsed = collapsed;
+  }
+}
 
 // Event-Handler
 /**
@@ -545,6 +568,25 @@ provide('errorReporting', errorReporting);
 // Fallback-Manager zur Verfügung stellen
 provide('fallbackManager', fallbackManager);
 
+// Handler for custom API error events
+function handleApiError(event: CustomEvent<ApiErrorEventDetail>) {
+  const detail = event.detail;
+
+  errorReporting.captureApiError(
+    detail.url || 'unknown',
+    detail.message,
+    {
+      severity: 'medium',
+      context: detail
+    }
+  );
+
+  // Fehler anzeigen, wenn nicht schon durch den ApiService geschehen
+  if (!detail.handled) {
+    uiStore.showError(detail.message);
+  }
+}
+
 // Lifecycle-Hooks
 onMounted(() => {
   // Event-Listener für Online/Offline-Status
@@ -554,24 +596,24 @@ onMounted(() => {
   // Anfänglichen Netzwerkstatus prüfen
   isOffline.value = !navigator.onLine;
 
-  // API-Fehler abfangen
-  window.addEventListener('api:error', (event: CustomEvent) => {
-    const detail = event.detail;
+  // API-Fehler abfangen - fixed by using a properly typed event listener
+  window.addEventListener('api:error', handleApiError as EventListener);
 
-    errorReporting.captureApiError(
-      detail.url || 'unknown',
-      detail.message,
-      {
-        severity: 'medium',
-        context: detail
+  // Setup focus management for mobile and keyboard users
+  const { usingTouch, usingKeyboard } = useMobileFocus();
+
+  // Set initial focus to main app area when appropriate
+  if (!usingTouch.value) {
+    // Focus the first focusable element in the main content area
+    // This helps keyboard users navigate more efficiently
+    const mainContent = document.querySelector('.app-container');
+    if (mainContent) {
+      const firstFocusable = mainContent.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      if (firstFocusable instanceof HTMLElement) {
+        firstFocusable.focus({ preventScroll: true });
       }
-    );
-
-    // Fehler anzeigen, wenn nicht schon durch den ApiService geschehen
-    if (!detail.handled) {
-      uiStore.showError(detail.message);
     }
-  });
+  }
 
   // App initialisieren
   initializeApp();
@@ -581,7 +623,7 @@ onBeforeUnmount(() => {
   // Event-Listener entfernen
   window.removeEventListener('online', handleOnline);
   window.removeEventListener('offline', handleOffline);
-  window.removeEventListener('api:error', () => {});
+  window.removeEventListener('api:error', handleApiError as EventListener);
 });
 
 // Route-Änderungen überwachen

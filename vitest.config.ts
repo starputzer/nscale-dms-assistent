@@ -21,7 +21,7 @@ export default defineConfig({
     
     // Testabdeckung
     coverage: {
-      provider: 'c8',
+      provider: 'v8',
       reporter: ['text', 'json', 'html'],
       exclude: [
         'node_modules/',
@@ -62,10 +62,8 @@ export default defineConfig({
     ],
     
     // Berichterstattung und UI
-    reporters: ['default', 'html'],
-    outputFile: {
-      html: './test-results/html/index.html',
-    },
+    reporters: ['default'],
+    outputFile: './test-results/results.json',
     
     // Timeouts
     testTimeout: 10000,
