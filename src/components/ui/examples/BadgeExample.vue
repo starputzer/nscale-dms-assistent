@@ -1,7 +1,7 @@
 <template>
   <div class="component-demo">
     <h2>Badge Component</h2>
-    
+
     <div class="demo-section">
       <h3>Basic Badges</h3>
       <div class="badge-examples">
@@ -57,19 +57,19 @@
             <div class="badge-box">Top Right (Default)</div>
           </Badge>
         </div>
-        
+
         <div class="badge-container">
           <Badge dot variant="primary" position="top-left">
             <div class="badge-box">Top Left</div>
           </Badge>
         </div>
-        
+
         <div class="badge-container">
           <Badge dot variant="primary" position="bottom-right">
             <div class="badge-box">Bottom Right</div>
           </Badge>
         </div>
-        
+
         <div class="badge-container">
           <Badge dot variant="primary" position="bottom-left">
             <div class="badge-box">Bottom Left</div>
@@ -84,11 +84,11 @@
         <Badge dot variant="primary">
           <Button>Messages</Button>
         </Badge>
-        
+
         <Badge dot variant="error">
           <Button>Alerts</Button>
         </Badge>
-        
+
         <Badge dot variant="success">
           <Button>Updates</Button>
         </Badge>
@@ -101,11 +101,11 @@
         <Badge :value="5" variant="primary">
           <Button iconLeft="inbox">Inbox</Button>
         </Badge>
-        
+
         <Badge :value="99" variant="error" :max="99">
           <Button iconLeft="notifications">Notifications</Button>
         </Badge>
-        
+
         <Badge :value="3" variant="success">
           <Button iconLeft="message">Messages</Button>
         </Badge>
@@ -116,20 +116,18 @@
       <h3>Hidden Badges</h3>
       <div class="badge-examples">
         <Badge :value="hideCount ? 0 : 5" variant="primary" :hidden="hideCount">
-          <Button>{{ hideCount ? 'Show' : 'Hide' }} Badge</Button>
+          <Button>{{ hideCount ? "Show" : "Hide" }} Badge</Button>
         </Badge>
-        
-        <Button @click="hideCount = !hideCount">
-          Toggle Badge
-        </Button>
+
+        <Button @click="hideCount = !hideCount"> Toggle Badge </Button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Badge, Button } from '../base';
+import { ref } from "vue";
+import { Badge, Button } from "../base";
 
 const count = ref(5);
 const largeCount = ref(142);
@@ -208,7 +206,7 @@ h3 {
   .demo-section {
     background-color: var(--color-background-dark);
   }
-  
+
   .badge-box {
     background-color: var(--color-gray-800);
   }

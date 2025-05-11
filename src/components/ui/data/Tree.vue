@@ -1,5 +1,5 @@
 <template>
-  <div 
+  <div
     class="n-tree-container"
     :class="{
       'n-tree-container--bordered': bordered,
@@ -10,12 +10,19 @@
     <div v-if="loading" class="n-tree-loading-overlay" aria-live="polite">
       <div class="n-tree-loading-spinner">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <circle class="n-tree-spinner-path" cx="12" cy="12" r="10" fill="none" stroke-width="3" />
+          <circle
+            class="n-tree-spinner-path"
+            cx="12"
+            cy="12"
+            r="10"
+            fill="none"
+            stroke-width="3"
+          />
         </svg>
       </div>
       <span>{{ loadingText }}</span>
     </div>
-    
+
     <!-- Search bar -->
     <div v-if="searchable" class="n-tree-search">
       <input
@@ -27,7 +34,7 @@
         aria-label="Search tree"
       />
     </div>
-    
+
     <!-- Tree -->
     <div class="n-tree-wrapper">
       <div v-if="computedItems.length === 0" class="n-tree-empty">
@@ -35,7 +42,7 @@
           {{ emptyText }}
         </slot>
       </div>
-      
+
       <ul v-else class="n-tree" role="tree" :aria-label="ariaLabel">
         <TreeNode
           v-for="(item, index) in computedItems"
@@ -80,16 +87,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, provide, onMounted } from 'vue';
-import TreeNode from './TreeNode.vue';
+import { ref, computed, watch, provide, onMounted } from "vue";
+import TreeNode from "./TreeNode.vue";
 
 /**
  * Tree component for displaying hierarchical data
  * @displayName Tree
  * @example
- * <Tree 
- *   :items="treeData" 
- *   label-prop="name" 
+ * <Tree
+ *   :items="treeData"
+ *   label-prop="name"
  *   @select="handleNodeSelect"
  * />
  */
@@ -153,16 +160,16 @@ export interface TreeProps {
 }
 
 const props = withDefaults(defineProps<TreeProps>(), {
-  labelProp: 'label',
-  childrenProp: 'children',
-  iconProp: 'icon',
-  isLeafProp: 'isLeaf',
+  labelProp: "label",
+  childrenProp: "children",
+  iconProp: "icon",
+  isLeafProp: "isLeaf",
   bordered: false,
   loading: false,
-  loadingText: 'Loading data...',
-  emptyText: 'No data available',
+  loadingText: "Loading data...",
+  emptyText: "No data available",
   searchable: false,
-  searchPlaceholder: 'Search...',
+  searchPlaceholder: "Search...",
   defaultExpandedKeys: () => [],
   defaultExpandAll: false,
   selectable: true,
@@ -170,26 +177,28 @@ const props = withDefaults(defineProps<TreeProps>(), {
   checkable: false,
   cascadeCheck: true,
   disabledKeys: () => [],
-  ariaLabel: 'Tree',
+  ariaLabel: "Tree",
 });
 
 const emit = defineEmits<{
-  (e: 'update:expandedKeys', keys: (string | number)[]): void;
-  (e: 'update:selectedKeys', keys: (string | number)[]): void;
-  (e: 'update:checkedKeys', keys: (string | number)[]): void;
-  (e: 'expand', item: any, expanded: boolean): void;
-  (e: 'select', item: any, selected: boolean): void;
-  (e: 'check', item: any, checked: boolean): void;
-  (e: 'search', term: string): void;
+  (e: "update:expandedKeys", keys: (string | number)[]): void;
+  (e: "update:selectedKeys", keys: (string | number)[]): void;
+  (e: "update:checkedKeys", keys: (string | number)[]): void;
+  (e: "expand", item: any, expanded: boolean): void;
+  (e: "select", item: any, selected: boolean): void;
+  (e: "check", item: any, checked: boolean): void;
+  (e: "search", term: string): void;
 }>();
 
 // State
-const searchTerm = ref('');
-const internalExpandedKeys = ref<(string | number)[]>([...props.defaultExpandedKeys]);
+const searchTerm = ref("");
+const internalExpandedKeys = ref<(string | number)[]>([
+  ...props.defaultExpandedKeys,
+]);
 const internalSelectedKeys = ref<(string | number)[]>([]);
 
 // Provide context values to tree nodes
-provide('treeContext', {
+provide("treeContext", {
   labelProp: props.labelProp,
   childrenProp: props.childrenProp,
   iconProp: props.iconProp,
@@ -204,28 +213,29 @@ provide('treeContext', {
 // Computed properties
 const computedItems = computed(() => {
   let items = [...props.items];
-  
+
   // Filter items by search term
   if (searchTerm.value) {
     const term = searchTerm.value.toLowerCase();
     items = filterTreeByTerm(items, term);
-    
+
     // Auto-expand parent nodes of matches when searching
     if (items.length > 0) {
       const expandedParentKeys = collectParentKeys(props.items, items);
-      internalExpandedKeys.value = [...new Set([
-        ...internalExpandedKeys.value,
-        ...expandedParentKeys
-      ])];
+      internalExpandedKeys.value = [
+        ...new Set([...internalExpandedKeys.value, ...expandedParentKeys]),
+      ];
     }
   }
-  
+
   return items;
 });
 
 // The actually used expandedKeys: controlled prop or internal state
 const expandedKeys = computed(() => {
-  return props.expandedKeys !== undefined ? props.expandedKeys : internalExpandedKeys.value;
+  return props.expandedKeys !== undefined
+    ? props.expandedKeys
+    : internalExpandedKeys.value;
 });
 
 // Methods
@@ -233,14 +243,14 @@ const expandedKeys = computed(() => {
  * Get a unique key for a node
  */
 function getNodeKey(item: any, index: number): string | number {
-  if (typeof props.nodeKey === 'function') {
+  if (typeof props.nodeKey === "function") {
     return props.nodeKey(item);
   }
-  
+
   if (props.nodeKey && item[props.nodeKey] !== undefined) {
     return item[props.nodeKey];
   }
-  
+
   // Fallback to index, but this is not recommended for expandable trees
   return index;
 }
@@ -250,22 +260,27 @@ function getNodeKey(item: any, index: number): string | number {
  */
 function handleToggle(item: any, expanded: boolean): void {
   const key = getItemKey(item);
-  
+
   if (props.expandedKeys === undefined) {
     // In uncontrolled mode, manage expanded keys internally
     if (expanded) {
       internalExpandedKeys.value = [...internalExpandedKeys.value, key];
     } else {
-      internalExpandedKeys.value = internalExpandedKeys.value.filter(k => k !== key);
+      internalExpandedKeys.value = internalExpandedKeys.value.filter(
+        (k) => k !== key,
+      );
     }
   }
-  
-  emit('update:expandedKeys', props.expandedKeys !== undefined ? 
-    (expanded ? 
-      [...props.expandedKeys, key] : 
-      props.expandedKeys.filter(k => k !== key)) 
-    : internalExpandedKeys.value);
-  emit('expand', item, expanded);
+
+  emit(
+    "update:expandedKeys",
+    props.expandedKeys !== undefined
+      ? expanded
+        ? [...props.expandedKeys, key]
+        : props.expandedKeys.filter((k) => k !== key)
+      : internalExpandedKeys.value,
+  );
+  emit("expand", item, expanded);
 }
 
 /**
@@ -273,28 +288,35 @@ function handleToggle(item: any, expanded: boolean): void {
  */
 function handleSelect(item: any, selected: boolean): void {
   const key = getItemKey(item);
-  
+
   if (props.selectedKeys === undefined) {
     // In uncontrolled mode, manage selected keys internally
     if (props.multiple) {
       if (selected) {
         internalSelectedKeys.value = [...internalSelectedKeys.value, key];
       } else {
-        internalSelectedKeys.value = internalSelectedKeys.value.filter(k => k !== key);
+        internalSelectedKeys.value = internalSelectedKeys.value.filter(
+          (k) => k !== key,
+        );
       }
     } else {
       internalSelectedKeys.value = selected ? [key] : [];
     }
   }
-  
-  emit('update:selectedKeys', props.selectedKeys !== undefined ? 
-    (props.multiple ? 
-      (selected ? 
-        [...props.selectedKeys, key] : 
-        props.selectedKeys.filter(k => k !== key)) 
-      : (selected ? [key] : [])) 
-    : internalSelectedKeys.value);
-  emit('select', item, selected);
+
+  emit(
+    "update:selectedKeys",
+    props.selectedKeys !== undefined
+      ? props.multiple
+        ? selected
+          ? [...props.selectedKeys, key]
+          : props.selectedKeys.filter((k) => k !== key)
+        : selected
+          ? [key]
+          : []
+      : internalSelectedKeys.value,
+  );
+  emit("select", item, selected);
 }
 
 /**
@@ -302,16 +324,16 @@ function handleSelect(item: any, selected: boolean): void {
  */
 function handleCheck(item: any, checked: boolean): void {
   const key = getItemKey(item);
-  
+
   let newCheckedKeys = [...(props.checkedKeys || [])];
-  
+
   if (props.cascadeCheck) {
     // Handle cascaded checking - collecting all affected keys
     const { checkedKeys, indeterminateKeys } = calculateCheckedKeys(
       props.items,
       key,
       checked,
-      [...newCheckedKeys]
+      [...newCheckedKeys],
     );
     newCheckedKeys = checkedKeys;
   } else {
@@ -319,12 +341,12 @@ function handleCheck(item: any, checked: boolean): void {
     if (checked) {
       newCheckedKeys.push(key);
     } else {
-      newCheckedKeys = newCheckedKeys.filter(k => k !== key);
+      newCheckedKeys = newCheckedKeys.filter((k) => k !== key);
     }
   }
-  
-  emit('update:checkedKeys', newCheckedKeys);
-  emit('check', item, checked);
+
+  emit("update:checkedKeys", newCheckedKeys);
+  emit("check", item, checked);
 }
 
 /**
@@ -332,26 +354,26 @@ function handleCheck(item: any, checked: boolean): void {
  */
 function handleSearch(term: string): void {
   searchTerm.value = term;
-  emit('search', term);
+  emit("search", term);
 }
 
 /**
  * Get an item key using the nodeKey configuration
  */
 function getItemKey(item: any): string | number {
-  if (typeof props.nodeKey === 'function') {
+  if (typeof props.nodeKey === "function") {
     return props.nodeKey(item);
   }
-  
+
   if (props.nodeKey && item[props.nodeKey] !== undefined) {
     return item[props.nodeKey];
   }
-  
+
   // Fallback using item properties
   if (item.id !== undefined) return item.id;
   if (item.key !== undefined) return item.key;
   if (item[props.labelProp]) return item[props.labelProp];
-  
+
   // This is problematic but a last resort
   return JSON.stringify(item);
 }
@@ -361,20 +383,20 @@ function getItemKey(item: any): string | number {
  */
 function filterTreeByTerm(items: any[], term: string): any[] {
   const results: any[] = [];
-  
+
   for (const item of items) {
     const newItem = { ...item };
-    
+
     // Check if current node matches
-    const label = String(newItem[props.labelProp] || '');
+    const label = String(newItem[props.labelProp] || "");
     const matches = label.toLowerCase().includes(term);
-    
+
     // Check if any children match
     let matchingChildren: any[] = [];
     if (newItem[props.childrenProp] && newItem[props.childrenProp].length) {
       matchingChildren = filterTreeByTerm(newItem[props.childrenProp], term);
     }
-    
+
     // Include node if it matches or has matching children
     if (matches || matchingChildren.length > 0) {
       if (matchingChildren.length > 0) {
@@ -383,129 +405,153 @@ function filterTreeByTerm(items: any[], term: string): any[] {
       results.push(newItem);
     }
   }
-  
+
   return results;
 }
 
 /**
  * Collect parent node keys of matched items
  */
-function collectParentKeys(allItems: any[], matchedItems: any[], path: any[] = [], result: (string | number)[] = []): (string | number)[] {
+function collectParentKeys(
+  allItems: any[],
+  matchedItems: any[],
+  path: any[] = [],
+  result: (string | number)[] = [],
+): (string | number)[] {
   for (const item of allItems) {
     const currentPath = [...path, item];
     const key = getItemKey(item);
-    
+
     // Check if any matched item is a descendant of this item
-    let isParentOfMatch = matchedItems.some(matchedItem => {
+    let isParentOfMatch = matchedItems.some((matchedItem) => {
       // Direct match
       if (matchedItem === item) return true;
-      
+
       // Check in children
       if (item[props.childrenProp] && item[props.childrenProp].length) {
-        return matchedItem[props.childrenProp]?.some((child: any) => 
-          matchedItems.includes(child)
+        return matchedItem[props.childrenProp]?.some((child: any) =>
+          matchedItems.includes(child),
         );
       }
-      
+
       return false;
     });
-    
+
     // If this is a parent of a match, add its key to result
     if (isParentOfMatch && !result.includes(key)) {
       result.push(key);
     }
-    
+
     // Recursively check children
     if (item[props.childrenProp] && item[props.childrenProp].length) {
-      collectParentKeys(item[props.childrenProp], matchedItems, currentPath, result);
+      collectParentKeys(
+        item[props.childrenProp],
+        matchedItems,
+        currentPath,
+        result,
+      );
     }
   }
-  
+
   return result;
 }
 
 /**
  * Calculate checked and indeterminate keys when using cascade mode
  */
-function calculateCheckedKeys(items: any[], targetKey: string | number, checked: boolean, currentCheckedKeys: (string | number)[]): { 
-  checkedKeys: (string | number)[], 
-  indeterminateKeys: (string | number)[] 
+function calculateCheckedKeys(
+  items: any[],
+  targetKey: string | number,
+  checked: boolean,
+  currentCheckedKeys: (string | number)[],
+): {
+  checkedKeys: (string | number)[];
+  indeterminateKeys: (string | number)[];
 } {
   // Clone the current checked keys
   let newCheckedKeys = [...currentCheckedKeys];
   let indeterminateKeys: (string | number)[] = [];
-  
+
   // Function to get all descendant keys of a node
   function getAllDescendantKeys(item: any): (string | number)[] {
     const keys: (string | number)[] = [];
     const key = getItemKey(item);
     keys.push(key);
-    
+
     if (item[props.childrenProp] && item[props.childrenProp].length) {
       for (const child of item[props.childrenProp]) {
         keys.push(...getAllDescendantKeys(child));
       }
     }
-    
+
     return keys;
   }
-  
+
   // Function to find an item by its key
   function findItemByKey(items: any[], key: string | number): any | null {
     for (const item of items) {
       const itemKey = getItemKey(item);
       if (itemKey === key) return item;
-      
+
       if (item[props.childrenProp] && item[props.childrenProp].length) {
         const found = findItemByKey(item[props.childrenProp], key);
         if (found) return found;
       }
     }
-    
+
     return null;
   }
-  
+
   // Find the target item
   const targetItem = findItemByKey(items, targetKey);
   if (!targetItem) return { checkedKeys: newCheckedKeys, indeterminateKeys };
-  
+
   // Get all descendant keys
   const descendantKeys = getAllDescendantKeys(targetItem);
-  
+
   if (checked) {
     // Add target and all descendants to checked keys
     newCheckedKeys = [...new Set([...newCheckedKeys, ...descendantKeys])];
   } else {
     // Remove target and all descendants from checked keys
-    newCheckedKeys = newCheckedKeys.filter(key => !descendantKeys.includes(key));
+    newCheckedKeys = newCheckedKeys.filter(
+      (key) => !descendantKeys.includes(key),
+    );
   }
-  
+
   // Calculate indeterminate keys by checking parents
-  function updateParentCheckedState(items: any[], parentPath: any[] = []): void {
+  function updateParentCheckedState(
+    items: any[],
+    parentPath: any[] = [],
+  ): void {
     for (const item of items) {
       const key = getItemKey(item);
       const currentPath = [...parentPath, item];
-      
+
       if (item[props.childrenProp] && item[props.childrenProp].length > 0) {
         updateParentCheckedState(item[props.childrenProp], currentPath);
-        
+
         // Count checked and total children
-        const childKeys = item[props.childrenProp].map((child: any) => getItemKey(child));
-        const checkedChildCount = childKeys.filter(k => newCheckedKeys.includes(k)).length;
-        
+        const childKeys = item[props.childrenProp].map((child: any) =>
+          getItemKey(child),
+        );
+        const checkedChildCount = childKeys.filter((k) =>
+          newCheckedKeys.includes(k),
+        ).length;
+
         if (checkedChildCount === 0) {
           // None checked - remove parent
-          newCheckedKeys = newCheckedKeys.filter(k => k !== key);
-          indeterminateKeys = indeterminateKeys.filter(k => k !== key);
+          newCheckedKeys = newCheckedKeys.filter((k) => k !== key);
+          indeterminateKeys = indeterminateKeys.filter((k) => k !== key);
         } else if (checkedChildCount === childKeys.length) {
           // All checked - add parent
           if (!newCheckedKeys.includes(key)) {
             newCheckedKeys.push(key);
           }
-          indeterminateKeys = indeterminateKeys.filter(k => k !== key);
+          indeterminateKeys = indeterminateKeys.filter((k) => k !== key);
         } else {
           // Some checked - indeterminate
-          newCheckedKeys = newCheckedKeys.filter(k => k !== key);
+          newCheckedKeys = newCheckedKeys.filter((k) => k !== key);
           if (!indeterminateKeys.includes(key)) {
             indeterminateKeys.push(key);
           }
@@ -513,9 +559,9 @@ function calculateCheckedKeys(items: any[], targetKey: string | number, checked:
       }
     }
   }
-  
+
   updateParentCheckedState(items);
-  
+
   return { checkedKeys: newCheckedKeys, indeterminateKeys };
 }
 
@@ -524,11 +570,11 @@ function calculateCheckedKeys(items: any[], targetKey: string | number, checked:
 onMounted(() => {
   if (props.defaultExpandAll) {
     const allExpandableKeys: (string | number)[] = [];
-    
+
     function collectExpandableKeys(items: any[]): void {
       for (const item of items) {
         const key = getItemKey(item);
-        
+
         // Only add keys for nodes that have children
         if (item[props.childrenProp] && item[props.childrenProp].length > 0) {
           allExpandableKeys.push(key);
@@ -536,18 +582,22 @@ onMounted(() => {
         }
       }
     }
-    
+
     collectExpandableKeys(props.items);
     internalExpandedKeys.value = allExpandableKeys;
   }
 });
 
 // Watch for changes in selectedKeys prop
-watch(() => props.selectedKeys, (newKeys) => {
-  if (newKeys !== undefined) {
-    internalSelectedKeys.value = [...newKeys];
-  }
-}, { immediate: true });
+watch(
+  () => props.selectedKeys,
+  (newKeys) => {
+    if (newKeys !== undefined) {
+      internalSelectedKeys.value = [...newKeys];
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <style scoped>
@@ -561,7 +611,7 @@ watch(() => props.selectedKeys, (newKeys) => {
   --n-tree-node-selected-color: var(--nscale-gray-900);
   --n-tree-loading-bg: rgba(255, 255, 255, 0.7);
   --n-tree-loading-text: var(--nscale-gray-600);
-  
+
   width: 100%;
   position: relative;
   font-family: var(--nscale-font-family-base);

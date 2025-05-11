@@ -1,8 +1,8 @@
 <template>
   <Teleport to="body">
     <TransitionGroup name="n-dialog-backdrop" tag="div">
-      <div 
-        v-for="dialog in dialogService.dialogs" 
+      <div
+        v-for="dialog in dialogService.dialogs"
         :key="dialog.id"
         class="n-dialog-backdrop"
         :class="{ 'n-dialog-backdrop--modal': dialog.options.modal }"
@@ -13,24 +13,24 @@
         tabindex="-1"
       >
         <Transition :name="`n-dialog-${dialog.options.animation}`">
-          <div 
+          <div
             v-show="dialog.visible"
             :id="`dialog-${dialog.id}`"
             class="n-dialog-container"
             :class="[
               `n-dialog--${dialog.options.position}`,
               { 'n-dialog--fullscreen': dialog.isFullscreen },
-              dialog.options.customClass
+              dialog.options.customClass,
             ]"
             @click.stop
           >
             <FocusTrap :active="dialog.visible">
-              <div 
+              <div
                 class="n-dialog"
                 :class="[
                   `n-dialog--${dialog.options.size}`,
                   `n-dialog--${dialog.options.type}`,
-                  { 'n-dialog--scrollable': dialog.options.scrollable }
+                  { 'n-dialog--scrollable': dialog.options.scrollable },
                 ]"
                 role="dialog"
                 aria-modal="true"
@@ -41,32 +41,36 @@
               >
                 <!-- Header -->
                 <div class="n-dialog__header">
-                  <div 
-                    :id="`dialog-title-${dialog.id}`" 
+                  <div
+                    :id="`dialog-title-${dialog.id}`"
                     class="n-dialog__title"
                   >
-                    <component 
+                    <component
                       v-if="getTypeIcon(dialog.options.type)"
                       :is="getTypeIcon(dialog.options.type)"
                       class="n-dialog__type-icon"
                     />
                     {{ dialog.options.title }}
                   </div>
-                  
+
                   <div class="n-dialog__header-actions">
-                    <button 
+                    <button
                       v-if="dialog.options.fullscreenable"
                       class="n-dialog__action-button n-dialog__fullscreen-button"
                       type="button"
                       @click="toggleFullscreen(dialog.id)"
-                      :aria-label="dialog.isFullscreen ? $t('dialog.exitFullscreen') : $t('dialog.enterFullscreen')"
+                      :aria-label="
+                        dialog.isFullscreen
+                          ? $t('dialog.exitFullscreen')
+                          : $t('dialog.enterFullscreen')
+                      "
                     >
-                      <component 
+                      <component
                         :is="dialog.isFullscreen ? MinimizeIcon : MaximizeIcon"
                       />
                     </button>
-                    
-                    <button 
+
+                    <button
                       v-if="dialog.options.showClose"
                       class="n-dialog__action-button n-dialog__close-button"
                       type="button"
@@ -77,31 +81,42 @@
                     </button>
                   </div>
                 </div>
-                
+
                 <!-- Content -->
-                <div 
+                <div
                   :id="`dialog-content-${dialog.id}`"
                   class="n-dialog__content"
-                  :class="{ 'n-dialog__content--scrollable': dialog.options.scrollable }"
+                  :class="{
+                    'n-dialog__content--scrollable': dialog.options.scrollable,
+                  }"
                 >
                   <!-- Named slot für komplexeren Inhalt -->
-                  <slot 
-                    :name="`content-${dialog.id}`" 
+                  <slot
+                    :name="`content-${dialog.id}`"
                     :dialog="dialog"
                     :close-dialog="() => closeDialog(dialog.id)"
                   >
                     <!-- Standard-Inhalt für einfache Dialoge -->
-                    <div v-if="dialog.options.message" class="n-dialog__message">
+                    <div
+                      v-if="dialog.options.message"
+                      class="n-dialog__message"
+                    >
                       {{ dialog.options.message }}
                     </div>
-                    
+
                     <!-- Prompt-Input -->
-                    <div v-if="dialog.options.type === 'prompt'" class="n-dialog__prompt">
-                      <label :for="`dialog-input-${dialog.id}`" class="n-dialog__input-label">
-                        {{ dialog.options.inputLabel || $t('dialog.input') }}
+                    <div
+                      v-if="dialog.options.type === 'prompt'"
+                      class="n-dialog__prompt"
+                    >
+                      <label
+                        :for="`dialog-input-${dialog.id}`"
+                        class="n-dialog__input-label"
+                      >
+                        {{ dialog.options.inputLabel || $t("dialog.input") }}
                       </label>
-                      
-                      <input 
+
+                      <input
                         :id="`dialog-input-${dialog.id}`"
                         :type="dialog.options.inputType || 'text'"
                         v-model="dialog.inputValue"
@@ -110,13 +125,15 @@
                         :maxlength="dialog.options.maxLength"
                         :required="dialog.options.required"
                         class="n-dialog__input"
-                        :class="{ 'n-dialog__input--error': !dialog.inputValid }"
+                        :class="{
+                          'n-dialog__input--error': !dialog.inputValid,
+                        }"
                         @input="dialog.validateInput && dialog.validateInput()"
                         @keydown.enter="handlePromptEnter(dialog)"
                       />
-                      
-                      <div 
-                        v-if="!dialog.inputValid" 
+
+                      <div
+                        v-if="!dialog.inputValid"
                         class="n-dialog__input-error"
                       >
                         {{ dialog.inputError }}
@@ -124,38 +141,42 @@
                     </div>
                   </slot>
                 </div>
-                
+
                 <!-- Footer -->
-                <div 
-                  v-if="hasFooterButtons(dialog)"
-                  class="n-dialog__footer"
-                >
-                  <slot 
-                    :name="`footer-${dialog.id}`" 
+                <div v-if="hasFooterButtons(dialog)" class="n-dialog__footer">
+                  <slot
+                    :name="`footer-${dialog.id}`"
                     :dialog="dialog"
                     :close-dialog="() => closeDialog(dialog.id)"
                   >
-                    <template v-if="dialog.options.buttons && dialog.options.buttons.length">
-                      <button 
+                    <template
+                      v-if="
+                        dialog.options.buttons && dialog.options.buttons.length
+                      "
+                    >
+                      <button
                         v-for="(button, index) in dialog.options.buttons"
                         :key="index"
                         class="n-dialog__button"
                         :class="[
                           `n-dialog__button--${button.variant || 'primary'}`,
-                          { 'n-dialog__button--loading': button.loading }
+                          { 'n-dialog__button--loading': button.loading },
                         ]"
                         :type="button.type || 'button'"
                         :disabled="button.disabled"
                         @click="handleButtonClick(dialog, button, $event)"
                       >
-                        <component 
-                          v-if="button.icon && !button.loading" 
+                        <component
+                          v-if="button.icon && !button.loading"
                           :is="getButtonIcon(button.icon)"
                           class="n-dialog__button-icon"
                         />
-                        
-                        <SpinnerIcon v-if="button.loading" class="n-dialog__button-spinner" />
-                        
+
+                        <SpinnerIcon
+                          v-if="button.loading"
+                          class="n-dialog__button-spinner"
+                        />
+
                         <span>{{ button.label }}</span>
                       </button>
                     </template>
@@ -171,20 +192,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { dialogService, type DialogButton, type DialogType, type DialogInstance } from '@/services/ui/DialogService';
-import FocusTrap from '@/components/ui/base/FocusTrap.vue';
+import { ref, onMounted, onUnmounted, nextTick } from "vue";
+import { useI18n } from "vue-i18n";
+import {
+  dialogService,
+  type DialogButton,
+  type DialogType,
+  type DialogInstance,
+} from "@/services/ui/DialogService";
+import FocusTrap from "@/components/ui/base/FocusTrap.vue";
 
 // Icons
-import SuccessIcon from '@/components/icons/SuccessIcon.vue';
-import ErrorIcon from '@/components/icons/ErrorIcon.vue';
-import WarningIcon from '@/components/icons/WarningIcon.vue';
-import InfoIcon from '@/components/icons/InfoIcon.vue';
-import CloseIcon from '@/components/icons/CloseIcon.vue';
-import MaximizeIcon from '@/components/icons/MaximizeIcon.vue';
-import MinimizeIcon from '@/components/icons/MinimizeIcon.vue';
-import SpinnerIcon from '@/components/icons/SpinnerIcon.vue';
+import SuccessIcon from "@/components/icons/SuccessIcon.vue";
+import ErrorIcon from "@/components/icons/ErrorIcon.vue";
+import WarningIcon from "@/components/icons/WarningIcon.vue";
+import InfoIcon from "@/components/icons/InfoIcon.vue";
+import CloseIcon from "@/components/icons/CloseIcon.vue";
+import MaximizeIcon from "@/components/icons/MaximizeIcon.vue";
+import MinimizeIcon from "@/components/icons/MinimizeIcon.vue";
+import SpinnerIcon from "@/components/icons/SpinnerIcon.vue";
 
 // i18n
 const { t } = useI18n();
@@ -217,25 +243,29 @@ function handleEscKey(dialog: DialogInstance): void {
 }
 
 // Button-Klick
-async function handleButtonClick(dialog: DialogInstance, button: DialogButton, event: MouseEvent): Promise<void> {
+async function handleButtonClick(
+  dialog: DialogInstance,
+  button: DialogButton,
+  event: MouseEvent,
+): Promise<void> {
   // Wenn onClick definiert ist, ausführen
   if (button.onClick) {
     // Wenn es sich um eine Promise handelt, warten
     try {
       const result = button.onClick(event);
-      
+
       // Wenn die Funktion false zurückgibt, Dialog nicht schließen
       if (result === false) {
         return;
       }
-      
+
       // Wenn es eine Promise ist, warten
       if (result instanceof Promise) {
         // Button in Ladestand versetzen
         button.loading = true;
         const asyncResult = await result;
         button.loading = false;
-        
+
         // Wenn die Promise false zurückgibt, Dialog nicht schließen
         if (asyncResult === false) {
           return;
@@ -243,45 +273,51 @@ async function handleButtonClick(dialog: DialogInstance, button: DialogButton, e
       }
     } catch (error) {
       // Fehler im Button-Handler
-      console.error('Error in dialog button handler:', error);
+      console.error("Error in dialog button handler:", error);
       return;
     }
   }
-  
+
   // Dialog schließen, wenn closeDialog nicht explizit auf false gesetzt ist
   if (button.closeDialog !== false) {
     // Wenn verzögertes Schließen konfiguriert ist
     if (button.autoCloseDelay && button.autoCloseDelay > 0) {
       setTimeout(() => {
-        closeDialog(dialog.id, typeof button.returnValue === 'function' 
-          ? button.returnValue() 
-          : button.returnValue);
+        closeDialog(
+          dialog.id,
+          typeof button.returnValue === "function"
+            ? button.returnValue()
+            : button.returnValue,
+        );
       }, button.autoCloseDelay);
     } else {
-      closeDialog(dialog.id, typeof button.returnValue === 'function' 
-        ? button.returnValue() 
-        : button.returnValue);
+      closeDialog(
+        dialog.id,
+        typeof button.returnValue === "function"
+          ? button.returnValue()
+          : button.returnValue,
+      );
     }
   }
 }
 
 // Enter-Taste bei Prompt
 function handlePromptEnter(dialog: DialogInstance): void {
-  if (dialog.options.type !== 'prompt') return;
-  
+  if (dialog.options.type !== "prompt") return;
+
   // Finde den Bestätigungs-Button
   const confirmButton = dialog.options.buttons?.find(
-    button => button.variant === 'primary'
+    (button) => button.variant === "primary",
   );
-  
+
   if (confirmButton) {
     // Validiere die Eingabe
     if (dialog.validateInput && !dialog.validateInput()) {
       return;
     }
-    
+
     // Klick simulieren
-    handleButtonClick(dialog, confirmButton, new MouseEvent('click'));
+    handleButtonClick(dialog, confirmButton, new MouseEvent("click"));
   }
 }
 
@@ -293,17 +329,22 @@ function hasFooterButtons(dialog: DialogInstance): boolean {
 // Icon für Dialog-Typ
 function getTypeIcon(type?: DialogType) {
   switch (type) {
-    case 'success': return SuccessIcon;
-    case 'error': return ErrorIcon;
-    case 'warning': return WarningIcon;
-    case 'info': return InfoIcon;
-    default: return null;
+    case "success":
+      return SuccessIcon;
+    case "error":
+      return ErrorIcon;
+    case "warning":
+      return WarningIcon;
+    case "info":
+      return InfoIcon;
+    default:
+      return null;
   }
 }
 
 // Icon für Button
 function getButtonIcon(icon: string | (() => any)) {
-  if (typeof icon === 'function') {
+  if (typeof icon === "function") {
     return icon();
   }
   return icon;
@@ -311,7 +352,7 @@ function getButtonIcon(icon: string | (() => any)) {
 
 // Listen-Managment für ESC-Taste global
 function handleGlobalEscKey(event: KeyboardEvent): void {
-  if (event.key === 'Escape' && dialogService.activeDialog) {
+  if (event.key === "Escape" && dialogService.activeDialog) {
     const dialog = dialogService.activeDialog;
     if (dialog.options.escClosable) {
       closeDialog(dialog.id);
@@ -323,15 +364,15 @@ function handleGlobalEscKey(event: KeyboardEvent): void {
 
 // Body-Overflow bei Modalen Dialogen
 function updateBodyOverflow(): void {
-  if (typeof document === 'undefined') return;
-  
+  if (typeof document === "undefined") return;
+
   // Prüfen, ob mindestens ein modaler Dialog sichtbar ist
   const hasModalDialogs = dialogService.dialogs.some(
-    dialog => dialog.visible && dialog.options.modal
+    (dialog) => dialog.visible && dialog.options.modal,
   );
-  
+
   // Body-Overflow entsprechend setzen
-  document.body.style.overflow = hasModalDialogs ? 'hidden' : '';
+  document.body.style.overflow = hasModalDialogs ? "hidden" : "";
 }
 
 // Dialog fokussieren, wenn er geöffnet wird
@@ -339,7 +380,7 @@ function focusDialog(id: string): void {
   nextTick(() => {
     const dialog = document.getElementById(`dialog-${id}`);
     if (dialog) {
-      const focusable = dialog.querySelector('[tabindex]') as HTMLElement;
+      const focusable = dialog.querySelector("[tabindex]") as HTMLElement;
       if (focusable) {
         focusable.focus();
       }
@@ -350,23 +391,23 @@ function focusDialog(id: string): void {
 // Lifecycle-Hooks
 onMounted(() => {
   // Globaler ESC-Handler
-  if (typeof window !== 'undefined') {
-    window.addEventListener('keydown', handleGlobalEscKey);
+  if (typeof window !== "undefined") {
+    window.addEventListener("keydown", handleGlobalEscKey);
   }
-  
+
   // Body-Overflow initial setzen
   updateBodyOverflow();
 });
 
 onUnmounted(() => {
   // Cleanup
-  if (typeof window !== 'undefined') {
-    window.removeEventListener('keydown', handleGlobalEscKey);
+  if (typeof window !== "undefined") {
+    window.removeEventListener("keydown", handleGlobalEscKey);
   }
-  
+
   // Body-Overflow zurücksetzen
-  if (typeof document !== 'undefined') {
-    document.body.style.overflow = '';
+  if (typeof document !== "undefined") {
+    document.body.style.overflow = "";
   }
 });
 </script>
@@ -403,7 +444,9 @@ onUnmounted(() => {
 .n-dialog {
   background-color: var(--n-background-color, #ffffff);
   border-radius: var(--n-border-radius, 4px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
   width: 100%;
   max-width: 100%;
   display: flex;
@@ -590,7 +633,9 @@ onUnmounted(() => {
   border-radius: var(--n-border-radius-sm, 3px);
   background-color: var(--n-input-background, #ffffff);
   color: var(--n-text-color, #1a202c);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .n-dialog__input:focus {
@@ -636,7 +681,10 @@ onUnmounted(() => {
   border-radius: var(--n-border-radius-sm, 3px);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
   position: relative;
   gap: 6px;
 }
@@ -757,7 +805,9 @@ onUnmounted(() => {
 
 .n-dialog-zoom-enter-active,
 .n-dialog-zoom-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
 .n-dialog-zoom-enter-from,
@@ -768,7 +818,9 @@ onUnmounted(() => {
 
 .n-dialog-slide-up-enter-active,
 .n-dialog-slide-up-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
 .n-dialog-slide-up-enter-from,
@@ -779,7 +831,9 @@ onUnmounted(() => {
 
 .n-dialog-slide-down-enter-active,
 .n-dialog-slide-down-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
 .n-dialog-slide-down-enter-from,
@@ -790,7 +844,9 @@ onUnmounted(() => {
 
 .n-dialog-slide-left-enter-active,
 .n-dialog-slide-left-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
 .n-dialog-slide-left-enter-from,
@@ -801,7 +857,9 @@ onUnmounted(() => {
 
 .n-dialog-slide-right-enter-active,
 .n-dialog-slide-right-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
 .n-dialog-slide-right-enter-from,
@@ -828,7 +886,7 @@ onUnmounted(() => {
   .n-dialog-slide-right-leave-active {
     transition-duration: 0.01ms !important;
   }
-  
+
   .n-dialog-zoom-enter-from,
   .n-dialog-zoom-leave-to,
   .n-dialog-slide-up-enter-from,
@@ -849,59 +907,62 @@ onUnmounted(() => {
     background-color: var(--n-background-color-dark, #1a202c);
     color: var(--n-text-color-dark, #f7fafc);
   }
-  
+
   .n-dialog__header {
     border-bottom-color: var(--n-border-color-dark, #2d3748);
   }
-  
+
   .n-dialog__title {
     color: var(--n-heading-color-dark, #f7fafc);
   }
-  
+
   .n-dialog__action-button {
     color: var(--n-text-secondary-color-dark, #a0aec0);
   }
-  
+
   .n-dialog__action-button:hover {
     background-color: var(--n-hover-color-dark, rgba(255, 255, 255, 0.1));
     color: var(--n-text-color-dark, #f7fafc);
   }
-  
+
   .n-dialog__content {
     color: var(--n-text-color-dark, #e2e8f0);
   }
-  
+
   .n-dialog__input {
     background-color: var(--n-input-background-dark, #2d3748);
     color: var(--n-text-color-dark, #f7fafc);
     border-color: var(--n-border-color-dark, #4a5568);
   }
-  
+
   .n-dialog__input-label {
     color: var(--n-label-color-dark, #e2e8f0);
   }
-  
+
   .n-dialog__footer {
     border-top-color: var(--n-border-color-dark, #2d3748);
     background-color: var(--n-footer-background-dark, #171923);
   }
-  
+
   .n-dialog__button--secondary {
     background-color: var(--n-secondary-background-dark, #2d3748);
     color: var(--n-secondary-color-dark, #e2e8f0);
     border-color: var(--n-border-color-dark, #4a5568);
   }
-  
+
   .n-dialog__button--secondary:hover:not(:disabled) {
     background-color: var(--n-secondary-background-darker, #4a5568);
   }
-  
+
   .n-dialog__button--tertiary {
     color: var(--n-primary-color-dark, #63b3ed);
   }
-  
+
   .n-dialog__button--tertiary:hover:not(:disabled) {
-    background-color: var(--n-tertiary-background-dark, rgba(99, 179, 237, 0.1));
+    background-color: var(
+      --n-tertiary-background-dark,
+      rgba(99, 179, 237, 0.1)
+    );
   }
 }
 
@@ -910,25 +971,25 @@ onUnmounted(() => {
   .n-dialog-backdrop {
     padding: 1rem 0.5rem;
   }
-  
+
   .n-dialog--small,
   .n-dialog--medium,
   .n-dialog--large {
     max-width: 100%;
   }
-  
+
   .n-dialog__header {
     padding: 12px 16px;
   }
-  
+
   .n-dialog__content {
     padding: 16px;
   }
-  
+
   .n-dialog__footer {
     padding: 12px 16px;
   }
-  
+
   .n-dialog__button {
     padding: 8px 12px;
   }

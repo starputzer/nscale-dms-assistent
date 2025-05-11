@@ -1,5 +1,5 @@
 <template>
-  <div 
+  <div
     class="n-list-container"
     :class="{
       'n-list-container--bordered': bordered,
@@ -10,17 +10,24 @@
     <div v-if="loading" class="n-list-loading-overlay" aria-live="polite">
       <div class="n-list-loading-spinner">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <circle class="n-list-spinner-path" cx="12" cy="12" r="10" fill="none" stroke-width="3" />
+          <circle
+            class="n-list-spinner-path"
+            cx="12"
+            cy="12"
+            r="10"
+            fill="none"
+            stroke-width="3"
+          />
         </svg>
       </div>
       <span>{{ loadingText }}</span>
     </div>
-    
+
     <!-- Header slot -->
     <div v-if="$slots.header" class="n-list-header">
       <slot name="header"></slot>
     </div>
-    
+
     <!-- Search and actions bar -->
     <div v-if="searchable || $slots.actions" class="n-list-actions">
       <div v-if="searchable" class="n-list-search">
@@ -37,9 +44,9 @@
         <slot name="actions"></slot>
       </div>
     </div>
-    
+
     <!-- List -->
-    <ul 
+    <ul
       class="n-list"
       :class="{
         'n-list--bordered': bordered,
@@ -49,26 +56,26 @@
         'n-list--large': size === 'large',
         'n-list--vertical': layout === 'vertical',
         'n-list--horizontal': layout === 'horizontal',
-        'n-list--grid': layout === 'grid'
+        'n-list--grid': layout === 'grid',
       }"
       role="list"
       :aria-busy="loading ? 'true' : 'false'"
     >
       <template v-if="computedItems.length > 0">
-        <li 
-          v-for="(item, index) in computedItems" 
+        <li
+          v-for="(item, index) in computedItems"
           :key="getItemKey(item, index)"
           class="n-list-item"
           :class="{
             'n-list-item--clickable': itemClickable,
-            'n-list-item--active': isItemActive(item, index)
+            'n-list-item--active': isItemActive(item, index),
           }"
           @click="itemClickable ? handleItemClick(item, index) : null"
         >
           <!-- Default item rendering -->
-          <slot 
-            name="item" 
-            :item="item" 
+          <slot
+            name="item"
+            :item="item"
             :index="index"
             :active="isItemActive(item, index)"
           >
@@ -77,7 +84,7 @@
               <div v-if="$slots.prefix" class="n-list-item-prefix">
                 <slot name="prefix" :item="item" :index="index"></slot>
               </div>
-              
+
               <!-- Main item content -->
               <div class="n-list-item-main">
                 <!-- Title -->
@@ -86,15 +93,18 @@
                     {{ getItemProp(item, titleProp) }}
                   </slot>
                 </div>
-                
+
                 <!-- Description -->
-                <div v-if="descriptionProp && getItemProp(item, descriptionProp)" class="n-list-item-description">
+                <div
+                  v-if="descriptionProp && getItemProp(item, descriptionProp)"
+                  class="n-list-item-description"
+                >
                   <slot name="description" :item="item" :index="index">
                     {{ getItemProp(item, descriptionProp) }}
                   </slot>
                 </div>
               </div>
-              
+
               <!-- Item suffix (actions, badges, etc.) -->
               <div v-if="$slots.suffix" class="n-list-item-suffix">
                 <slot name="suffix" :item="item" :index="index"></slot>
@@ -103,7 +113,7 @@
           </slot>
         </li>
       </template>
-      
+
       <!-- Empty state -->
       <li v-if="computedItems.length === 0" class="n-list-empty" role="status">
         <slot name="empty">
@@ -113,12 +123,12 @@
         </slot>
       </li>
     </ul>
-    
+
     <!-- Footer slot -->
     <div v-if="$slots.footer" class="n-list-footer">
       <slot name="footer"></slot>
     </div>
-    
+
     <!-- Pagination -->
     <div v-if="pagination && totalItems > 0" class="n-list-pagination">
       <Pagination
@@ -126,7 +136,9 @@
         :total-items="totalItems"
         :page-size="pageSize"
         :page-size-options="pageSizeOptions"
-        :size="size === 'large' ? 'medium' : (size === 'small' ? 'small' : 'small')"
+        :size="
+          size === 'large' ? 'medium' : size === 'small' ? 'small' : 'small'
+        "
         @update:model-value="handlePageChange"
         @update:page-size="handlePageSizeChange"
       />
@@ -135,14 +147,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
-import Pagination from './Pagination.vue';
+import { ref, computed, watch } from "vue";
+import Pagination from "./Pagination.vue";
 
 /**
  * List component for displaying collections of content
  * @displayName List
  * @example
- * <List 
+ * <List
  *   :items="[{title: 'Item 1', description: 'Description 1'}, {title: 'Item 2'}]"
  *   title-prop="title"
  *   description-prop="description"
@@ -158,7 +170,7 @@ export interface ListProps {
   /** Function to get a unique key for each item */
   keyProp?: string | ((item: any, index: number) => string | number);
   /** List layout orientation */
-  layout?: 'vertical' | 'horizontal' | 'grid';
+  layout?: "vertical" | "horizontal" | "grid";
   /** Whether the list has borders */
   bordered?: boolean;
   /** Whether to show hover state on items */
@@ -170,7 +182,7 @@ export interface ListProps {
   /** Text to display when there are no items */
   emptyText?: string;
   /** Size variant for the list */
-  size?: 'small' | 'medium' | 'large';
+  size?: "small" | "medium" | "large";
   /** Whether the list items are clickable */
   itemClickable?: boolean;
   /** Currently active item by index or key */
@@ -196,32 +208,32 @@ export interface ListProps {
 }
 
 const props = withDefaults(defineProps<ListProps>(), {
-  titleProp: 'title',
-  layout: 'vertical',
+  titleProp: "title",
+  layout: "vertical",
   bordered: false,
   hoverable: true,
   loading: false,
-  loadingText: 'Loading data...',
-  emptyText: 'No data available',
-  size: 'medium',
+  loadingText: "Loading data...",
+  emptyText: "No data available",
+  size: "medium",
   itemClickable: false,
   searchable: false,
-  searchPlaceholder: 'Search...',
-  initialSearchTerm: '',
+  searchPlaceholder: "Search...",
+  initialSearchTerm: "",
   pagination: false,
   page: 1,
   pageSize: 10,
   totalItems: 0,
-  pageSizeOptions: () => [10, 25, 50, 100]
+  pageSizeOptions: () => [10, 25, 50, 100],
 });
 
 const emit = defineEmits<{
-  (e: 'item-click', item: any, index: number): void;
-  (e: 'search', term: string): void;
-  (e: 'page-change', page: number): void;
-  (e: 'page-size-change', pageSize: number): void;
-  (e: 'update:page', page: number): void;
-  (e: 'update:activeItem', value: number | string | null): void;
+  (e: "item-click", item: any, index: number): void;
+  (e: "search", term: string): void;
+  (e: "page-change", page: number): void;
+  (e: "page-size-change", pageSize: number): void;
+  (e: "update:page", page: number): void;
+  (e: "update:activeItem", value: number | string | null): void;
 }>();
 
 // State
@@ -232,93 +244,98 @@ const internalPageSize = ref(props.pageSize);
 // Computed values
 const computedItems = computed(() => {
   let items = [...props.items];
-  
+
   // Apply search if needed
   if (props.searchable && searchTerm.value) {
     const term = searchTerm.value.toLowerCase();
-    
+
     if (props.filterFn) {
       // Use custom filter function if provided
-      items = items.filter(item => props.filterFn!(item, term));
+      items = items.filter((item) => props.filterFn!(item, term));
     } else {
       // Default filtering logic
-      items = items.filter(item => {
+      items = items.filter((item) => {
         const title = getItemProp(item, props.titleProp);
-        const description = props.descriptionProp ? getItemProp(item, props.descriptionProp) : null;
-        
+        const description = props.descriptionProp
+          ? getItemProp(item, props.descriptionProp)
+          : null;
+
         return (
-          (title && String(title).toLowerCase().includes(term)) || 
+          (title && String(title).toLowerCase().includes(term)) ||
           (description && String(description).toLowerCase().includes(term))
         );
       });
     }
   }
-  
+
   // Apply pagination if needed
   if (props.pagination && !props.totalItems) {
     const start = (currentPage.value - 1) * internalPageSize.value;
     const end = start + internalPageSize.value;
     items = items.slice(start, end);
   }
-  
+
   return items;
 });
 
 // Methods
 function getItemProp(item: any, prop?: string): any {
   if (!prop) return null;
-  
+
   // Handle nested paths with dot notation
-  if (prop.includes('.')) {
-    return prop.split('.').reduce((obj, path) => {
+  if (prop.includes(".")) {
+    return prop.split(".").reduce((obj, path) => {
       return obj && obj[path] !== undefined ? obj[path] : null;
     }, item);
   }
-  
+
   return item[prop];
 }
 
 function getItemKey(item: any, index: number): string | number {
-  if (typeof props.keyProp === 'function') {
+  if (typeof props.keyProp === "function") {
     return props.keyProp(item, index);
   }
-  
+
   if (props.keyProp && item[props.keyProp] !== undefined) {
     return item[props.keyProp];
   }
-  
+
   // Fall back to index if no key is specified or found
   return index;
 }
 
 function isItemActive(item: any, index: number): boolean {
   if (props.activeItem === undefined) return false;
-  
-  if (typeof props.activeItem === 'function') {
+
+  if (typeof props.activeItem === "function") {
     return props.activeItem(item);
   }
-  
-  if (typeof props.activeItem === 'number') {
+
+  if (typeof props.activeItem === "number") {
     return index === props.activeItem;
   }
-  
+
   // If activeItem is a string, compare with the item's key
   const itemKey = getItemKey(item, index);
   return String(itemKey) === String(props.activeItem);
 }
 
 function handleItemClick(item: any, index: number): void {
-  emit('item-click', item, index);
-  
+  emit("item-click", item, index);
+
   // Update active item if it's being tracked with v-model
   const itemKey = getItemKey(item, index);
-  emit('update:activeItem', typeof props.activeItem === 'number' ? index : itemKey);
+  emit(
+    "update:activeItem",
+    typeof props.activeItem === "number" ? index : itemKey,
+  );
 }
 
 function handleSearch(term: string): void {
   searchTerm.value = term;
-  emit('search', term);
-  
+  emit("search", term);
+
   // Reset to first page when searching
   if (props.pagination) {
     handlePageChange(1);
@@ -327,29 +344,35 @@ function handleSearch(term: string): void {
 
 function handlePageChange(page: number): void {
   currentPage.value = page;
-  emit('page-change', page);
-  emit('update:page', page);
+  emit("page-change", page);
+  emit("update:page", page);
 }
 
 function handlePageSizeChange(size: number): void {
   internalPageSize.value = size;
-  
+
   // Reset to first page when changing page size
   currentPage.value = 1;
-  
-  emit('page-size-change', size);
-  emit('page-change', 1);
-  emit('update:page', 1);
+
+  emit("page-size-change", size);
+  emit("page-change", 1);
+  emit("update:page", 1);
 }
 
 // Watchers
-watch(() => props.page, (newPage) => {
-  currentPage.value = newPage;
-});
+watch(
+  () => props.page,
+  (newPage) => {
+    currentPage.value = newPage;
+  },
+);
 
-watch(() => props.pageSize, (newSize) => {
-  internalPageSize.value = newSize;
-});
+watch(
+  () => props.pageSize,
+  (newSize) => {
+    internalPageSize.value = newSize;
+  },
+);
 </script>
 
 <style scoped>
@@ -360,7 +383,7 @@ watch(() => props.pageSize, (newSize) => {
   --n-list-active-border: var(--nscale-primary);
   --n-list-loading-bg: rgba(255, 255, 255, 0.7);
   --n-list-loading-text: var(--nscale-gray-600);
-  
+
   width: 100%;
   position: relative;
   background-color: var(--nscale-white);

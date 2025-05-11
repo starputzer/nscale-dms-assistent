@@ -6,8 +6,8 @@
     </header>
 
     <nav class="demo-nav">
-      <button 
-        v-for="tab in tabs" 
+      <button
+        v-for="tab in tabs"
         :key="tab.id"
         :class="['nav-button', { active: activeTab === tab.id }]"
         @click="activeTab = tab.id"
@@ -21,52 +21,57 @@
     </main>
 
     <footer>
-      <p>UI Components v1.3.0 - Documentation available in <code>/docs/00_KONSOLIDIERTE_DOKUMENTATION/02_KOMPONENTEN/02_UI_BASISKOMPONENTEN.md</code></p>
+      <p>
+        UI Components v1.3.0 - Documentation available in
+        <code
+          >/docs/00_KONSOLIDIERTE_DOKUMENTATION/02_KOMPONENTEN/02_UI_BASISKOMPONENTEN.md</code
+        >
+      </p>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import TextAreaExample from './TextAreaExample.vue';
-import ToggleExample from './ToggleExample.vue';
-import TooltipExample from './TooltipExample.vue';
-import BadgeExample from './BadgeExample.vue';
-import BreadcrumbExample from './BreadcrumbExample.vue';
-import ProgressBarExample from './ProgressBarExample.vue';
-import TabsExample from './TabsExample.vue';
-import StepperExample from './StepperExample.vue';
+import { ref, computed } from "vue";
+import TextAreaExample from "./TextAreaExample.vue";
+import ToggleExample from "./ToggleExample.vue";
+import TooltipExample from "./TooltipExample.vue";
+import BadgeExample from "./BadgeExample.vue";
+import BreadcrumbExample from "./BreadcrumbExample.vue";
+import ProgressBarExample from "./ProgressBarExample.vue";
+import TabsExample from "./TabsExample.vue";
+import StepperExample from "./StepperExample.vue";
 
 const tabs = [
-  { id: 'textarea', label: 'TextArea' },
-  { id: 'toggle', label: 'Toggle' },
-  { id: 'tooltip', label: 'Tooltip' },
-  { id: 'badge', label: 'Badge' },
-  { id: 'breadcrumb', label: 'Breadcrumb' },
-  { id: 'progressbar', label: 'ProgressBar' },
-  { id: 'tabs', label: 'Tabs' },
-  { id: 'stepper', label: 'Stepper' }
+  { id: "textarea", label: "TextArea" },
+  { id: "toggle", label: "Toggle" },
+  { id: "tooltip", label: "Tooltip" },
+  { id: "badge", label: "Badge" },
+  { id: "breadcrumb", label: "Breadcrumb" },
+  { id: "progressbar", label: "ProgressBar" },
+  { id: "tabs", label: "Tabs" },
+  { id: "stepper", label: "Stepper" },
 ];
 
-const activeTab = ref('textarea');
+const activeTab = ref("textarea");
 
 const activeComponent = computed(() => {
   switch (activeTab.value) {
-    case 'textarea':
+    case "textarea":
       return TextAreaExample;
-    case 'toggle':
+    case "toggle":
       return ToggleExample;
-    case 'tooltip':
+    case "tooltip":
       return TooltipExample;
-    case 'badge':
+    case "badge":
       return BadgeExample;
-    case 'breadcrumb':
+    case "breadcrumb":
       return BreadcrumbExample;
-    case 'progressbar':
+    case "progressbar":
       return ProgressBarExample;
-    case 'tabs':
+    case "tabs":
       return TabsExample;
-    case 'stepper':
+    case "stepper":
       return StepperExample;
     default:
       return TextAreaExample;
@@ -76,7 +81,15 @@ const activeComponent = computed(() => {
 
 <style scoped>
 .ui-components-demo {
-  font-family: var(--font-family, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-family: var(
+    --font-family,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif
+  );
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
@@ -141,11 +154,11 @@ footer {
   .nav-button {
     background-color: var(--color-background-dark);
   }
-  
+
   .nav-button:hover {
     background-color: var(--color-primary-dark);
   }
-  
+
   .demo-content {
     background-color: var(--color-background-dark);
   }
@@ -156,7 +169,7 @@ footer {
     flex-direction: column;
     gap: 5px;
   }
-  
+
   .nav-button {
     width: 100%;
   }

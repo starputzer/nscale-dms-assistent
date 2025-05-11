@@ -1,12 +1,25 @@
 <template>
   <Teleport to="body">
     <Transition name="fade">
-      <div v-if="isVisible" class="dialog-overlay" @click.self="handleOverlayClick">
+      <div
+        v-if="isVisible"
+        class="dialog-overlay"
+        @click.self="handleOverlayClick"
+      >
         <Transition name="slide-fade">
-          <div v-if="isVisible" class="dialog-container" role="dialog" aria-modal="true">
+          <div
+            v-if="isVisible"
+            class="dialog-container"
+            role="dialog"
+            aria-modal="true"
+          >
             <div class="dialog-header">
               <h2 class="dialog-title">{{ title }}</h2>
-              <button class="dialog-close" @click="cancel" aria-label="Schließen">
+              <button
+                class="dialog-close"
+                @click="cancel"
+                aria-label="Schließen"
+              >
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
@@ -14,17 +27,19 @@
               <p>{{ message }}</p>
             </div>
             <div class="dialog-footer">
-              <button 
-                v-if="showCancelButton" 
-                class="dialog-btn dialog-btn-cancel" 
+              <button
+                v-if="showCancelButton"
+                class="dialog-btn dialog-btn-cancel"
                 @click="cancel"
-                ref="cancelButtonRef">
+                ref="cancelButtonRef"
+              >
                 {{ cancelButtonText }}
               </button>
-              <button 
-                class="dialog-btn dialog-btn-confirm" 
+              <button
+                class="dialog-btn dialog-btn-confirm"
                 @click="confirm"
-                ref="confirmButtonRef">
+                ref="confirmButtonRef"
+              >
                 {{ confirmButtonText }}
               </button>
             </div>
@@ -36,7 +51,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue';
+import {
+  ref,
+  onMounted,
+  onBeforeUnmount,
+  computed,
+  watch,
+  nextTick,
+} from "vue";
 
 interface DialogProps {
   // Dialog grundlegende Texte
@@ -44,12 +66,12 @@ interface DialogProps {
   message?: string;
   confirmButtonText?: string;
   cancelButtonText?: string;
-  
+
   // Dialog Optionen
   isVisible?: boolean;
   showCancelButton?: boolean;
-  type?: 'info' | 'warning' | 'error' | 'success' | 'confirm';
-  
+  type?: "info" | "warning" | "error" | "success" | "confirm";
+
   // Events
   onConfirm?: () => void;
   onCancel?: () => void;
@@ -57,19 +79,19 @@ interface DialogProps {
 }
 
 const props = withDefaults(defineProps<DialogProps>(), {
-  title: 'Bestätigung',
-  message: 'Sind Sie sicher?',
-  confirmButtonText: 'Bestätigen',
-  cancelButtonText: 'Abbrechen',
+  title: "Bestätigung",
+  message: "Sind Sie sicher?",
+  confirmButtonText: "Bestätigen",
+  cancelButtonText: "Abbrechen",
   isVisible: false,
   showCancelButton: true,
-  type: 'confirm'
+  type: "confirm",
 });
 
 const emit = defineEmits<{
-  (e: 'confirm'): void;
-  (e: 'cancel'): void;
-  (e: 'update:isVisible', value: boolean): void;
+  (e: "confirm"): void;
+  (e: "cancel"): void;
+  (e: "update:isVisible", value: boolean): void;
 }>();
 
 // Refs
@@ -83,15 +105,15 @@ const handleOverlayClick = () => {
 };
 
 const confirm = () => {
-  emit('confirm');
-  emit('update:isVisible', false);
+  emit("confirm");
+  emit("update:isVisible", false);
   props.onConfirm?.();
   props.onClose?.();
 };
 
 const cancel = () => {
-  emit('cancel');
-  emit('update:isVisible', false);
+  emit("cancel");
+  emit("update:isVisible", false);
   props.onCancel?.();
   props.onClose?.();
 };
@@ -99,19 +121,22 @@ const cancel = () => {
 // Tastatur-Events
 const handleKeyDown = (event: KeyboardEvent) => {
   if (!props.isVisible) return;
-  
-  if (event.key === 'Escape') {
+
+  if (event.key === "Escape") {
     event.preventDefault();
     cancel();
-  } else if (event.key === 'Enter') {
+  } else if (event.key === "Enter") {
     event.preventDefault();
     confirm();
-  } else if (event.key === 'Tab') {
+  } else if (event.key === "Tab") {
     // Tab-Navigation innerhalb des Dialogs einschränken
     if (!event.shiftKey && document.activeElement === confirmButtonRef.value) {
       event.preventDefault();
       cancelButtonRef.value?.focus();
-    } else if (event.shiftKey && document.activeElement === cancelButtonRef.value) {
+    } else if (
+      event.shiftKey &&
+      document.activeElement === cancelButtonRef.value
+    ) {
       event.preventDefault();
       confirmButtonRef.value?.focus();
     }
@@ -119,21 +144,24 @@ const handleKeyDown = (event: KeyboardEvent) => {
 };
 
 // Fokusmanagement
-watch(() => props.isVisible, async (newValue) => {
-  if (newValue) {
-    // Warten bis nach DOM-Update und dann Fokus setzen
-    await nextTick();
-    confirmButtonRef.value?.focus();
-  }
-});
+watch(
+  () => props.isVisible,
+  async (newValue) => {
+    if (newValue) {
+      // Warten bis nach DOM-Update und dann Fokus setzen
+      await nextTick();
+      confirmButtonRef.value?.focus();
+    }
+  },
+);
 
 // Event Listener Installation/Deinstallation
 onMounted(() => {
-  document.addEventListener('keydown', handleKeyDown);
+  document.addEventListener("keydown", handleKeyDown);
 });
 
 onBeforeUnmount(() => {
-  document.removeEventListener('keydown', handleKeyDown);
+  document.removeEventListener("keydown", handleKeyDown);
 });
 </script>
 
@@ -218,7 +246,9 @@ onBeforeUnmount(() => {
   font-weight: 500;
   cursor: pointer;
   border: none;
-  transition: background-color 0.2s, box-shadow 0.2s;
+  transition:
+    background-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .dialog-btn:focus {
@@ -287,11 +317,11 @@ onBeforeUnmount(() => {
   .dialog-container {
     width: 95%;
   }
-  
+
   .dialog-footer {
     flex-direction: column;
   }
-  
+
   .dialog-btn {
     width: 100%;
   }

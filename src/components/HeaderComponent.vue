@@ -2,60 +2,55 @@
   <header class="nscale-header">
     <div class="header-container">
       <div class="header-logo">
-        <img src="@/assets/images/senmvku-logo.png" alt="nscale DMS" class="logo-image">
+        <img
+          src="@/assets/images/senmvku-logo.png"
+          alt="nscale DMS"
+          class="logo-image"
+        />
         <h1 class="logo-text">nscale DMS Assistent</h1>
       </div>
-      
+
       <div class="header-actions">
-        <button 
-          class="action-button new-chat-btn" 
+        <button
+          class="action-button new-chat-btn"
           @click="createNewSession"
           title="Neue Unterhaltung"
         >
           <i class="fas fa-plus-circle"></i>
           <span class="button-text">Neue Unterhaltung</span>
         </button>
-        
-        <button 
+
+        <button
           v-if="isAdmin"
-          class="action-button admin-btn" 
+          class="action-button admin-btn"
           @click="navigateToAdmin"
           title="Administration"
         >
           <i class="fas fa-cog"></i>
           <span class="button-text">Administration</span>
         </button>
-        
+
         <div class="settings-dropdown">
-          <button 
+          <button
             class="action-button settings-btn"
             @click="toggleSettingsMenu"
             title="Einstellungen"
           >
             <i class="fas fa-ellipsis-v"></i>
           </button>
-          
+
           <div v-if="showSettingsMenu" class="settings-menu">
-            <button 
-              class="settings-item theme-toggle"
-              @click="toggleTheme"
-            >
+            <button class="settings-item theme-toggle" @click="toggleTheme">
               <i :class="isDarkTheme ? 'fas fa-sun' : 'fas fa-moon'"></i>
-              {{ isDarkTheme ? 'Helles Design' : 'Dunkles Design' }}
+              {{ isDarkTheme ? "Helles Design" : "Dunkles Design" }}
             </button>
-            
-            <button 
-              class="settings-item"
-              @click="navigateToSettings"
-            >
+
+            <button class="settings-item" @click="navigateToSettings">
               <i class="fas fa-sliders-h"></i>
               Einstellungen
             </button>
-            
-            <button 
-              class="settings-item logout-btn"
-              @click="logout"
-            >
+
+            <button class="settings-item logout-btn" @click="logout">
               <i class="fas fa-sign-out-alt"></i>
               Abmelden
             </button>
@@ -67,58 +62,58 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, inject } from 'vue';
-import { useStore } from 'vuex';
-import { useRouter } from 'vue-router';
-import { useAuth } from '@/composables/useAuth';
-import { useSettings } from '@/composables/useSettings';
+import { ref, computed, onMounted, onUnmounted, inject } from "vue";
+import { useStore } from "vuex";
+import { useRouter } from "vue-router";
+import { useAuth } from "@/composables/useAuth";
+import { useSettings } from "@/composables/useSettings";
 
 const store = useStore();
 const router = useRouter();
 const { logout: authLogout } = useAuth();
 const { toggleTheme } = useSettings();
 
-const isDarkTheme = inject('isDarkTheme') as unknown as boolean;
+const isDarkTheme = inject("isDarkTheme") as unknown as boolean;
 
 const showSettingsMenu = ref(false);
-const isAdmin = computed(() => store.getters['auth/isAdmin']);
+const isAdmin = computed(() => store.getters["auth/isAdmin"]);
 
 function toggleSettingsMenu() {
   showSettingsMenu.value = !showSettingsMenu.value;
 }
 
 function createNewSession() {
-  store.dispatch('sessions/createSession');
+  store.dispatch("sessions/createSession");
 }
 
 function navigateToAdmin() {
-  router.push('/admin');
+  router.push("/admin");
 }
 
 function navigateToSettings() {
-  router.push('/settings');
+  router.push("/settings");
   showSettingsMenu.value = false;
 }
 
 async function logout() {
   await authLogout();
-  router.push('/login');
+  router.push("/login");
 }
 
 // Close settings menu when clicking outside
 function handleClickOutside(event: MouseEvent) {
   const target = event.target as HTMLElement;
-  if (!target.closest('.settings-dropdown') && showSettingsMenu.value) {
+  if (!target.closest(".settings-dropdown") && showSettingsMenu.value) {
     showSettingsMenu.value = false;
   }
 }
 
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
+  document.addEventListener("click", handleClickOutside);
 });
 
 onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside);
+  document.removeEventListener("click", handleClickOutside);
 });
 </script>
 
@@ -180,7 +175,8 @@ onUnmounted(() => {
   background-color: var(--nscale-gray);
 }
 
-.new-chat-btn i, .admin-btn i {
+.new-chat-btn i,
+.admin-btn i {
   margin-right: 8px;
 }
 
@@ -232,16 +228,16 @@ onUnmounted(() => {
   .button-text {
     display: none;
   }
-  
+
   .logo-text {
     display: none;
   }
-  
+
   .header-logo {
     flex: 1;
     justify-content: center;
   }
-  
+
   .nscale-header {
     padding: 0.75rem;
   }

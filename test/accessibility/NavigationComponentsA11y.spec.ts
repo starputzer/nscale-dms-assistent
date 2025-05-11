@@ -1,19 +1,26 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount } from '@vue/test-utils';
-import { toHaveNoViolations } from 'jest-axe';
-import { runAxeTest, wcag21aaRules } from './setup-axe';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { mount } from "@vue/test-utils";
+import { runAxeTest, toHaveNoViolations, wcag21aaRules } from "./setup-axe";
 
 // Import Navigation-Komponenten
-import TabPanel from '@/components/layout/TabPanel.vue';
-import Sidebar from '@/components/layout/Sidebar.vue';
-import Drawer from '@/components/layout/Drawer.vue';
-import Header from '@/components/layout/Header.vue';
-import Footer from '@/components/layout/Footer.vue';
+import TabPanel from "@/components/layout/TabPanel.vue";
+import Sidebar from "@/components/layout/Sidebar.vue";
+import Drawer from "@/components/layout/Drawer.vue";
+import Header from "@/components/layout/Header.vue";
+import Footer from "@/components/layout/Footer.vue";
 
-// Jest-Axe Matcher erweitern
-expect.extend(toHaveNoViolations);
+// Define custom matcher for Vitest
+expect.extend({
+  toHaveNoViolations(received) {
+    const result = toHaveNoViolations(received);
+    return {
+      message: () => result.message(),
+      pass: result.pass,
+    };
+  },
+});
 
-describe('Navigation- und Layout-Komponenten Barrierefreiheitstests', () => {
+describe("Navigation- und Layout-Komponenten Barrierefreiheitstests", () => {
   let wrapper: any;
 
   afterEach(() => {
@@ -23,18 +30,18 @@ describe('Navigation- und Layout-Komponenten Barrierefreiheitstests', () => {
   });
 
   // TabPanel-Komponente
-  describe('TabPanel', () => {
+  describe("TabPanel", () => {
     const defaultTabs = [
       { id: "tab1", label: "Tab 1", icon: "icon-home" },
       { id: "tab2", label: "Tab 2", icon: "icon-settings" },
       { id: "tab3", label: "Tab 3", icon: "icon-user" },
     ];
 
-    it('sollte grundlegende Barrierefreiheitsanforderungen erfüllen', async () => {
+    it("sollte grundlegende Barrierefreiheitsanforderungen erfüllen", async () => {
       wrapper = mount(TabPanel, {
         props: {
           tabs: defaultTabs,
-          activeId: 'tab1'
+          activeId: "tab1",
         },
         slots: {
           tab1: '<div class="tab-content">Tab 1 Inhalt</div>',
@@ -52,11 +59,11 @@ describe('Navigation- und Layout-Komponenten Barrierefreiheitstests', () => {
       expect(results).toHaveNoViolations();
     });
 
-    it('sollte korrekte ARIA-Attribute für Tabs verwenden', async () => {
+    it("sollte korrekte ARIA-Attribute für Tabs verwenden", async () => {
       wrapper = mount(TabPanel, {
         props: {
           tabs: defaultTabs,
-          activeId: 'tab1'
+          activeId: "tab1",
         },
         slots: {
           tab1: '<div class="tab-content">Tab 1 Inhalt</div>',
@@ -72,43 +79,43 @@ describe('Navigation- und Layout-Komponenten Barrierefreiheitstests', () => {
       // Prüfe, ob alle Tabs korrekte Attribute haben
       const tabs = wrapper.findAll('[role="tab"]');
       expect(tabs.length).toBe(defaultTabs.length);
-      
+
       // Prüfe Tab-Attribute (aria-selected, aria-controls)
       tabs.forEach((tab, index) => {
         const tabId = defaultTabs[index].id;
-        expect(tab.attributes('id')).toBe(`tab-${tabId}`);
-        expect(tab.attributes('aria-controls')).toBe(`panel-${tabId}`);
-        
-        if (tabId === 'tab1') {
-          expect(tab.attributes('aria-selected')).toBe('true');
-          expect(tab.attributes('tabindex')).toBe('0');
+        expect(tab.attributes("id")).toBe(`tab-${tabId}`);
+        expect(tab.attributes("aria-controls")).toBe(`panel-${tabId}`);
+
+        if (tabId === "tab1") {
+          expect(tab.attributes("aria-selected")).toBe("true");
+          expect(tab.attributes("tabindex")).toBe("0");
         } else {
-          expect(tab.attributes('aria-selected')).toBe('false');
-          expect(tab.attributes('tabindex')).toBe('-1');
+          expect(tab.attributes("aria-selected")).toBe("false");
+          expect(tab.attributes("tabindex")).toBe("-1");
         }
       });
 
       // Prüfe, ob alle Panels korrekte Attribute haben
       const panels = wrapper.findAll('[role="tabpanel"]');
       expect(panels.length).toBe(defaultTabs.length);
-      
+
       // Prüfe Panel-Attribute (aria-labelledby)
       panels.forEach((panel, index) => {
         const tabId = defaultTabs[index].id;
-        expect(panel.attributes('id')).toBe(`panel-${tabId}`);
-        expect(panel.attributes('aria-labelledby')).toBe(`tab-${tabId}`);
-        
-        if (tabId !== 'tab1') {
-          expect(panel.attributes('hidden')).toBeDefined();
+        expect(panel.attributes("id")).toBe(`panel-${tabId}`);
+        expect(panel.attributes("aria-labelledby")).toBe(`tab-${tabId}`);
+
+        if (tabId !== "tab1") {
+          expect(panel.attributes("hidden")).toBeDefined();
         }
       });
     });
 
-    it('sollte mit der Tastatur bedienbar sein', async () => {
+    it("sollte mit der Tastatur bedienbar sein", async () => {
       wrapper = mount(TabPanel, {
         props: {
           tabs: defaultTabs,
-          activeId: 'tab1'
+          activeId: "tab1",
         },
         slots: {
           tab1: '<div class="tab-content">Tab 1 Inhalt</div>',
@@ -119,28 +126,28 @@ describe('Navigation- und Layout-Komponenten Barrierefreiheitstests', () => {
 
       // Finde den aktiven Tab
       const activeTab = wrapper.find('[role="tab"][aria-selected="true"]');
-      
+
       // Simuliere Tastendruck Rechts
-      await activeTab.trigger('keydown', { key: 'ArrowRight' });
-      
+      await activeTab.trigger("keydown", { key: "ArrowRight" });
+
       // Prüfe, ob update:active-id emittiert wurde
-      expect(wrapper.emitted()).toHaveProperty('update:active-id');
-      expect(wrapper.emitted()['update:active-id'][0]).toEqual(['tab2']);
-      
+      expect(wrapper.emitted()).toHaveProperty("update:active-id");
+      expect(wrapper.emitted()["update:active-id"][0]).toEqual(["tab2"]);
+
       // Simuliere v-model Update
-      await wrapper.setProps({ activeId: 'tab2' });
-      
+      await wrapper.setProps({ activeId: "tab2" });
+
       // Simuliere Tastendruck Links vom neuen aktiven Tab
       const newActiveTab = wrapper.find('[role="tab"][aria-selected="true"]');
-      await newActiveTab.trigger('keydown', { key: 'ArrowLeft' });
-      
+      await newActiveTab.trigger("keydown", { key: "ArrowLeft" });
+
       // Prüfe, ob update:active-id wieder emittiert wurde
-      expect(wrapper.emitted()['update:active-id'][1]).toEqual(['tab1']);
+      expect(wrapper.emitted()["update:active-id"][1]).toEqual(["tab1"]);
     });
   });
 
   // Sidebar-Komponente
-  describe('Sidebar', () => {
+  describe("Sidebar", () => {
     const defaultItems = [
       { id: "item1", label: "Element 1", icon: "icon-home" },
       { id: "item2", label: "Element 2", icon: "icon-settings" },
@@ -156,11 +163,11 @@ describe('Navigation- und Layout-Komponenten Barrierefreiheitstests', () => {
       },
     ];
 
-    it('sollte grundlegende Barrierefreiheitsanforderungen erfüllen', async () => {
+    it("sollte grundlegende Barrierefreiheitsanforderungen erfüllen", async () => {
       wrapper = mount(Sidebar, {
         props: {
           items: defaultItems,
-          title: 'Navigation'
+          title: "Navigation",
         },
         global: {
           stubs: {
@@ -173,11 +180,11 @@ describe('Navigation- und Layout-Komponenten Barrierefreiheitstests', () => {
       expect(results).toHaveNoViolations();
     });
 
-    it('sollte korrekte ARIA-Attribute für Navigation verwenden', async () => {
+    it("sollte korrekte ARIA-Attribute für Navigation verwenden", async () => {
       wrapper = mount(Sidebar, {
         props: {
           items: defaultItems,
-          title: 'Hauptnavigation'
+          title: "Hauptnavigation",
         },
         global: {
           stubs: {
@@ -189,29 +196,33 @@ describe('Navigation- und Layout-Komponenten Barrierefreiheitstests', () => {
       // Prüfe Navigation Landmarks
       const nav = wrapper.find('[role="navigation"]');
       expect(nav.exists()).toBe(true);
-      expect(nav.attributes('aria-label')).toBe('Hauptnavigation');
+      expect(nav.attributes("aria-label")).toBe("Hauptnavigation");
 
       // Prüfe Erweiterbares Element
-      const expandableItem = wrapper.findAll('.n-sidebar__nav-item').at(3);
-      const expandButton = expandableItem.find('.n-sidebar__nav-link-wrapper');
-      
+      const expandableItem = wrapper.findAll(".n-sidebar__nav-item").at(3);
+      const expandButton = expandableItem.find(".n-sidebar__nav-link-wrapper");
+
       // Prüfe Button-Attribute
-      expect(expandButton.attributes('aria-expanded')).toBe('false');
-      expect(expandButton.attributes('aria-controls')).toBeDefined();
-      
+      expect(expandButton.attributes("aria-expanded")).toBe("false");
+      expect(expandButton.attributes("aria-controls")).toBeDefined();
+
       // Klappe auf und prüfe Änderung
-      await expandButton.trigger('click');
+      await expandButton.trigger("click");
       await wrapper.vm.$nextTick();
-      
+
       // Prüfe, ob aria-expanded geändert wurde
-      expect(expandableItem.find('.n-sidebar__nav-link-wrapper').attributes('aria-expanded')).toBe('true');
+      expect(
+        expandableItem
+          .find(".n-sidebar__nav-link-wrapper")
+          .attributes("aria-expanded"),
+      ).toBe("true");
     });
 
-    it('sollte kollabierte Seitenleiste korrekt mit ARIA kennzeichnen', async () => {
+    it("sollte kollabierte Seitenleiste korrekt mit ARIA kennzeichnen", async () => {
       wrapper = mount(Sidebar, {
         props: {
           items: defaultItems,
-          collapsed: true
+          collapsed: true,
         },
         global: {
           stubs: {
@@ -221,67 +232,67 @@ describe('Navigation- und Layout-Komponenten Barrierefreiheitstests', () => {
       });
 
       // Prüfe, ob Sidebar den kollabierten Zustand korrekt kennzeichnet
-      const sidebar = wrapper.find('.n-sidebar');
-      expect(sidebar.classes()).toContain('n-sidebar--collapsed');
-      
+      const sidebar = wrapper.find(".n-sidebar");
+      expect(sidebar.classes()).toContain("n-sidebar--collapsed");
+
       // Prüfe Toggle-Button
-      const toggleButton = wrapper.find('.n-sidebar__toggle-btn');
-      expect(toggleButton.attributes('aria-expanded')).toBe('false');
-      expect(toggleButton.attributes('aria-label')).toBeDefined();
-      
+      const toggleButton = wrapper.find(".n-sidebar__toggle-btn");
+      expect(toggleButton.attributes("aria-expanded")).toBe("false");
+      expect(toggleButton.attributes("aria-label")).toBeDefined();
+
       // Prüfe, ob Icons in der kollabierten Ansicht Labels haben
-      const navItems = wrapper.findAll('.n-sidebar__nav-item');
-      navItems.forEach(item => {
-        const icon = item.find('.n-sidebar__icon');
+      const navItems = wrapper.findAll(".n-sidebar__nav-item");
+      navItems.forEach((item) => {
+        const icon = item.find(".n-sidebar__icon");
         if (icon.exists()) {
           // Icon sollte aria-hidden sein, aber beschriftet über umgebendes Element
-          expect(icon.attributes('aria-hidden')).toBe('true');
+          expect(icon.attributes("aria-hidden")).toBe("true");
         }
-        
+
         // Prüfe, ob Item trotz Kollabierung accessible ist
-        const link = item.find('.n-sidebar__nav-link');
-        expect(link.attributes('aria-label') || link.text()).toBeTruthy();
+        const link = item.find(".n-sidebar__nav-link");
+        expect(link.attributes("aria-label") || link.text()).toBeTruthy();
       });
     });
   });
 
   // Drawer-Komponente (wenn verfügbar)
-  describe('Drawer', () => {
-    it('sollte grundlegende Barrierefreiheitsanforderungen erfüllen', async () => {
+  describe("Drawer", () => {
+    it("sollte grundlegende Barrierefreiheitsanforderungen erfüllen", async () => {
       try {
         wrapper = mount(Drawer, {
           props: {
             modelValue: true,
-            title: 'Testdrawer',
-            position: 'right'
+            title: "Testdrawer",
+            position: "right",
           },
           slots: {
-            default: '<div>Drawer-Inhalt</div>',
-            footer: '<button>Schließen</button>'
+            default: "<div>Drawer-Inhalt</div>",
+            footer: "<button>Schließen</button>",
           },
           global: {
             stubs: {
-              teleport: true
-            }
-          }
+              teleport: true,
+            },
+          },
         });
       } catch (error) {
         // Falls Komponente Teleport oder andere spezielle Anforderungen hat
         wrapper = mount(Drawer, {
           props: {
             modelValue: true,
-            title: 'Testdrawer',
-            position: 'right'
+            title: "Testdrawer",
+            position: "right",
           },
           slots: {
-            default: '<div>Drawer-Inhalt</div>',
-            footer: '<button>Schließen</button>'
+            default: "<div>Drawer-Inhalt</div>",
+            footer: "<button>Schließen</button>",
           },
           global: {
             stubs: {
-              teleport: true
-            }
-          }
+              teleport: true,
+            },
+          },
         });
       }
 
@@ -290,56 +301,56 @@ describe('Navigation- und Layout-Komponenten Barrierefreiheitstests', () => {
         expect(results).toHaveNoViolations();
 
         // Spezifische Tests für Drawer
-        expect(wrapper.attributes('role')).toBe('dialog');
-        expect(wrapper.attributes('aria-modal')).toBe('true');
-        expect(wrapper.attributes('aria-labelledby')).toBeDefined();
+        expect(wrapper.attributes("role")).toBe("dialog");
+        expect(wrapper.attributes("aria-modal")).toBe("true");
+        expect(wrapper.attributes("aria-labelledby")).toBeDefined();
       }
     });
   });
 
   // Header-Komponente
-  describe('Header', () => {
-    it('sollte grundlegende Barrierefreiheitsanforderungen erfüllen', async () => {
+  describe("Header", () => {
+    it("sollte grundlegende Barrierefreiheitsanforderungen erfüllen", async () => {
       try {
         wrapper = mount(Header, {
           props: {
-            title: 'Titel der Anwendung'
+            title: "Titel der Anwendung",
           },
           global: {
             stubs: {
-              RouterLink: true
-            }
-          }
+              RouterLink: true,
+            },
+          },
         });
 
         const results = await runAxeTest(wrapper.element);
         expect(results).toHaveNoViolations();
 
         // Header sollte role="banner" haben
-        expect(wrapper.attributes('role')).toBe('banner');
+        expect(wrapper.attributes("role")).toBe("banner");
       } catch (error) {
-        console.log('Header kann nicht getestet werden:', error);
+        console.log("Header kann nicht getestet werden:", error);
       }
     });
   });
 
   // Footer-Komponente
-  describe('Footer', () => {
-    it('sollte grundlegende Barrierefreiheitsanforderungen erfüllen', async () => {
+  describe("Footer", () => {
+    it("sollte grundlegende Barrierefreiheitsanforderungen erfüllen", async () => {
       try {
         wrapper = mount(Footer, {
           slots: {
-            default: '<p>© 2025 nscale DMS Assistent</p>'
-          }
+            default: "<p>© 2025 nscale DMS Assistent</p>",
+          },
         });
 
         const results = await runAxeTest(wrapper.element);
         expect(results).toHaveNoViolations();
 
         // Footer sollte role="contentinfo" haben
-        expect(wrapper.attributes('role')).toBe('contentinfo');
+        expect(wrapper.attributes("role")).toBe("contentinfo");
       } catch (error) {
-        console.log('Footer kann nicht getestet werden:', error);
+        console.log("Footer kann nicht getestet werden:", error);
       }
     });
   });

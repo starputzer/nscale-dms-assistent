@@ -1,12 +1,12 @@
-import { createApp } from 'vue';
-import { createPinia } from 'pinia';
-import App from './App.vue';
-import router from './router';
-import DialogPlugin from '@/plugins/dialog';
+import { createApp } from "vue";
+import { createPinia } from "pinia";
+import App from "./App.vue";
+import router from "./router";
+import DialogPlugin from "@/plugins/dialog";
 
 // Styles
-import './styles/main.css';
-import '@/assets/design-system.scss';
+import "./styles/main.css";
+import "@/assets/design-system.scss";
 
 // App erstellen
 const app = createApp(App);
@@ -22,21 +22,21 @@ app.use(router);
 app.use(DialogPlugin);
 
 // App mounten
-app.mount('#app');
+app.mount("#app");
 
 // ErrorReportingService initialisieren
-import { useErrorReporting } from '@/utils/errorReportingService';
+import { useErrorReporting } from "@/utils/errorReportingService";
 const errorService = useErrorReporting({
   captureUnhandledErrors: true,
   captureUnhandledRejections: true,
-  consoleLogLevel: 'error',
+  consoleLogLevel: "error",
   privacy: {
-    stripPII: true
-  }
+    stripPII: true,
+  },
 });
 
 // Für Debugging-Zwecke in der Entwicklungsumgebung
 if (import.meta.env.DEV) {
-  console.log('nscale DMS Assistent wurde gestartet');
-  console.log('Vue Version:', app.version);
+  console.log("nscale DMS Assistent wurde gestartet");
+  console.log("Vue Version:", app.version);
 }

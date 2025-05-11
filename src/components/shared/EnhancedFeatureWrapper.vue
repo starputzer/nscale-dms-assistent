@@ -17,52 +17,44 @@
     @reset="handleReset"
   >
     <!-- Neue Komponente (Standard-Slot) -->
-    <component 
+    <component
       v-if="!useIntermediateComponent"
-      :is="newComponent" 
+      :is="newComponent"
       v-bind="$attrs"
     >
       <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
         <slot :name="slot" v-bind="slotProps" />
       </template>
     </component>
-    
+
     <!-- Intermediäre Komponente (falls vorhanden und aktiviert) -->
-    <component 
+    <component
       v-else-if="intermediateComponent"
-      :is="intermediateComponent" 
+      :is="intermediateComponent"
       v-bind="$attrs"
     >
       <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
         <slot :name="slot" v-bind="slotProps" />
       </template>
     </component>
-    
+
     <!-- Fehlerzustand (Slot "error") -->
     <template #error="{ error, retry, report }">
-      <slot 
-        name="error" 
-        :error="error" 
-        :retry="retry" 
-        :report="report"
-      >
+      <slot name="error" :error="error" :retry="retry" :report="report">
         <!-- Standard-Fehlerdarstellung, wenn kein Error-Slot bereitgestellt wurde -->
         <div v-if="showErrorUI" class="feature-error">
           <div class="feature-error-header">
-            <h3>{{ $t('featureWrapper.errorTitle', 'Fehler aufgetreten') }}</h3>
+            <h3>{{ $t("featureWrapper.errorTitle", "Fehler aufgetreten") }}</h3>
             <div class="feature-error-actions">
-              <button 
-                class="feature-error-retry" 
-                @click="retry"
-              >
-                {{ $t('featureWrapper.retry', 'Erneut versuchen') }}
+              <button class="feature-error-retry" @click="retry">
+                {{ $t("featureWrapper.retry", "Erneut versuchen") }}
               </button>
-              <button 
+              <button
                 v-if="!isGlobalFallbackActive"
-                class="feature-error-fallback" 
+                class="feature-error-fallback"
                 @click="activateGlobalFallback"
               >
-                {{ $t('featureWrapper.useFallback', 'Fallback verwenden') }}
+                {{ $t("featureWrapper.useFallback", "Fallback verwenden") }}
               </button>
             </div>
           </div>
@@ -70,49 +62,42 @@
             <p class="feature-error-message">{{ error.message }}</p>
             <div v-if="showDebugInfo" class="feature-error-debug">
               <pre>{{ error.stack }}</pre>
-              <button 
-                class="feature-error-report" 
-                @click="report"
-              >
-                {{ $t('featureWrapper.reportError', 'Fehler melden') }}
+              <button class="feature-error-report" @click="report">
+                {{ $t("featureWrapper.reportError", "Fehler melden") }}
               </button>
             </div>
           </div>
         </div>
         <!-- Minimale Fehleranzeige, wenn showErrorUI=false -->
         <div v-else class="feature-error-minimal">
-          <button 
-            class="feature-error-retry-minimal" 
-            @click="retry"
-          >
-            {{ $t('featureWrapper.retry', 'Erneut versuchen') }}
+          <button class="feature-error-retry-minimal" @click="retry">
+            {{ $t("featureWrapper.retry", "Erneut versuchen") }}
           </button>
         </div>
       </slot>
     </template>
-    
+
     <!-- Fallback (Slot "fallback") -->
     <template #fallback="{ error, resetFallback }">
       <slot name="fallback" :error="error" :reset-fallback="resetFallback">
-        <component 
-          :is="legacyComponent" 
-          v-bind="$attrs"
-        >
+        <component :is="legacyComponent" v-bind="$attrs">
           <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
             <slot :name="slot" v-bind="slotProps" />
           </template>
         </component>
-        
+
         <!-- Admin-Reset-Kontrolle, wenn showAdminControls aktiviert ist -->
         <div v-if="showAdminControls" class="feature-admin-controls">
-          <button 
-            class="feature-reset-fallback" 
-            @click="resetFallback"
-          >
-            {{ $t('featureWrapper.resetFallback', 'Fallback zurücksetzen') }}
+          <button class="feature-reset-fallback" @click="resetFallback">
+            {{ $t("featureWrapper.resetFallback", "Fallback zurücksetzen") }}
           </button>
           <span class="feature-admin-info">
-            {{ $t('featureWrapper.adminInfo', 'Admin: Feature zurückgesetzt zu normaler Ansicht') }}
+            {{
+              $t(
+                "featureWrapper.adminInfo",
+                "Admin: Feature zurückgesetzt zu normaler Ansicht",
+              )
+            }}
           </span>
         </div>
       </slot>
@@ -121,15 +106,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, getCurrentInstance, inject } from 'vue';
-import { useFeatureToggles } from '@/composables/useFeatureToggles';
-import { useLogger } from '@/composables/useLogger';
-import ErrorBoundary, { 
-  type FallbackStrategy, 
-  type ErrorSeverity, 
+import {
+  computed,
+  ref,
+  watch,
+  onMounted,
+  getCurrentInstance,
+  inject,
+} from "vue";
+import { useFeatureToggles } from "@/composables/useFeatureToggles";
+import { useLogger } from "@/composables/useLogger";
+import ErrorBoundary, {
+  type FallbackStrategy,
+  type ErrorSeverity,
   type ErrorCategory,
-  type BoundaryError
-} from '@/components/shared/ErrorBoundary.vue';
+  type BoundaryError,
+} from "@/components/shared/ErrorBoundary.vue";
 
 /**
  * Definiert die Props für den EnhancedFeatureWrapper
@@ -176,28 +168,37 @@ interface EnhancedFeatureWrapperProps {
 // Props-Definition mit Standardwerten
 const props = withDefaults(defineProps<EnhancedFeatureWrapperProps>(), {
   maxRetries: 3,
-  fallbackStrategy: 'threshold',
+  fallbackStrategy: "threshold",
   retryInterval: 5000, // 5 Sekunden
   permanent: false,
   errorCategories: () => [],
-  minSeverity: 'medium',
+  minSeverity: "medium",
   errorThreshold: 3,
   logErrors: true,
   reportErrors: true,
   deduplicateErrors: true,
   useIntermediateFailover: false,
   showErrorUI: true,
-  showDebugInfo: process.env.NODE_ENV !== 'production',
-  showAdminControls: false
+  showDebugInfo: process.env.NODE_ENV !== "production",
+  showAdminControls: false,
 });
 
 // Definieren der Emits
 const emit = defineEmits<{
-  (e: 'feature-error', error: BoundaryError, feature: string): void;
-  (e: 'feature-fallback', error: BoundaryError, feature: string): void;
-  (e: 'feature-retry', error: BoundaryError, feature: string, attempt: number): void;
-  (e: 'feature-reset', feature: string, success: boolean): void;
-  (e: 'component-mounted', feature: string, stage: 'new' | 'intermediate' | 'legacy'): void;
+  (e: "feature-error", error: BoundaryError, feature: string): void;
+  (e: "feature-fallback", error: BoundaryError, feature: string): void;
+  (
+    e: "feature-retry",
+    error: BoundaryError,
+    feature: string,
+    attempt: number,
+  ): void;
+  (e: "feature-reset", feature: string, success: boolean): void;
+  (
+    e: "component-mounted",
+    feature: string,
+    stage: "new" | "intermediate" | "legacy",
+  ): void;
 }>();
 
 // Feature-Toggles und Logger verwenden
@@ -205,21 +206,24 @@ const featureToggles = useFeatureToggles();
 const logger = useLogger();
 
 // Status zum Tracking, ob der globale Fallback aktiv ist
-const isGlobalFallbackActive = computed(() => 
-  featureToggles.isFallbackActive(props.feature)
+const isGlobalFallbackActive = computed(() =>
+  featureToggles.isFallbackActive(props.feature),
 );
 
 // Aktueller Benutzer und Berechtigungen
-const userInfo = inject('userInfo', { role: 'user', isAdmin: false });
+const userInfo = inject("userInfo", { role: "user", isAdmin: false });
 
 // Versucht, den globalen Fallback zu aktivieren
 function activateGlobalFallback(): void {
   featureToggles.activateFallback(props.feature);
-  
-  logger.info(`[FeatureWrapper] Globaler Fallback für ${props.feature} manuell aktiviert`, {
-    user: userInfo.role,
-    feature: props.feature
-  });
+
+  logger.info(
+    `[FeatureWrapper] Globaler Fallback für ${props.feature} manuell aktiviert`,
+    {
+      user: userInfo.role,
+      feature: props.feature,
+    },
+  );
 }
 
 // Handler für ErrorBoundary-Events
@@ -228,10 +232,10 @@ function handleError(error: BoundaryError): void {
     feature: props.feature,
     error: error.message,
     severity: error.severity,
-    category: error.category
+    category: error.category,
   });
-  
-  emit('feature-error', error, props.feature);
+
+  emit("feature-error", error, props.feature);
 }
 
 function handleFallback(error: BoundaryError): void {
@@ -239,62 +243,64 @@ function handleFallback(error: BoundaryError): void {
     feature: props.feature,
     error: error.message,
     severity: error.severity,
-    category: error.category
+    category: error.category,
   });
-  
-  emit('feature-fallback', error, props.feature);
+
+  emit("feature-fallback", error, props.feature);
 }
 
 function handleRetry(error: BoundaryError): void {
   logger.info(`[FeatureWrapper] Wiederholungsversuch für ${props.feature}`, {
     feature: props.feature,
-    error: error.message
+    error: error.message,
   });
-  
+
   // Aktuelle Anzahl der Versuche ermitteln
   const currentRetries = error.context?.retryCount || 1;
-  
-  emit('feature-retry', error, props.feature, currentRetries);
+
+  emit("feature-retry", error, props.feature, currentRetries);
 }
 
 function handleReset(success: boolean): void {
   logger.info(`[FeatureWrapper] Fallback für ${props.feature} zurückgesetzt`, {
     feature: props.feature,
-    success
+    success,
   });
-  
-  emit('feature-reset', props.feature, success);
+
+  emit("feature-reset", props.feature, success);
 }
 
 // Bei Komponentenmountierung Erfolg melden
 onMounted(() => {
   // Bestimmen, welche Komponente verwendet wird
-  let stage: 'new' | 'intermediate' | 'legacy';
-  
-  if (featureToggles.isFallbackActive(props.feature) || 
-      !featureToggles.shouldUseFeature(props.feature)) {
-    stage = 'legacy';
+  let stage: "new" | "intermediate" | "legacy";
+
+  if (
+    featureToggles.isFallbackActive(props.feature) ||
+    !featureToggles.shouldUseFeature(props.feature)
+  ) {
+    stage = "legacy";
   } else if (props.useIntermediateFailover && props.intermediateComponent) {
-    stage = 'intermediate';
+    stage = "intermediate";
   } else {
-    stage = 'new';
+    stage = "new";
   }
-  
+
   // Status emittieren
-  emit('component-mounted', props.feature, stage);
-  
+  emit("component-mounted", props.feature, stage);
+
   // Loggen
   logger.debug(`[FeatureWrapper] Komponente für ${props.feature} gemountet`, {
     feature: props.feature,
-    stage
+    stage,
   });
 });
 
 // Übersetzungsfunktion
 function $t(key: string, fallback: string): string {
   // Fallback für i18n
-  const i18n = inject('i18n', null);
-  if (i18n && typeof i18n.t === 'function') {
+  const i18n = inject("i18n", null);
+  if (i18n && typeof i18n.t === "function") {
     return i18n.t(key);
   }
   return fallback;
@@ -451,7 +457,7 @@ function $t(key: string, fallback: string): string {
     align-items: flex-start;
     gap: 0.5rem;
   }
-  
+
   .feature-admin-controls {
     left: 1rem;
     right: 1rem;

@@ -21,33 +21,43 @@
         <div class="settings-group">
           <label>
             Max Files:
-            <input type="number" v-model.number="maxFiles" min="1" max="100">
+            <input type="number" v-model.number="maxFiles" min="1" max="100" />
           </label>
-          
+
           <label>
             Max File Size (MB):
-            <input type="number" v-model.number="maxFileSizeMB" min="1" max="1000">
+            <input
+              type="number"
+              v-model.number="maxFileSizeMB"
+              min="1"
+              max="1000"
+            />
           </label>
-          
+
           <label>
             Max Total Size (MB):
-            <input type="number" v-model.number="maxTotalSizeMB" min="1" max="2000">
+            <input
+              type="number"
+              v-model.number="maxTotalSizeMB"
+              min="1"
+              max="2000"
+            />
           </label>
         </div>
 
         <div class="settings-group">
           <label>
-            <input type="checkbox" v-model="enablePrioritization">
+            <input type="checkbox" v-model="enablePrioritization" />
             Enable Prioritization
           </label>
-          
+
           <label>
-            <input type="checkbox" v-model="enableAutoConvert">
+            <input type="checkbox" v-model="enableAutoConvert" />
             Auto-Convert After Upload
           </label>
-          
+
           <label>
-            <input type="checkbox" v-model="enableResume">
+            <input type="checkbox" v-model="enableResume" />
             Enable Resume Support
           </label>
         </div>
@@ -56,11 +66,11 @@
           <label>Allowed Extensions:</label>
           <div class="extension-toggles">
             <label v-for="ext in availableExtensions" :key="ext">
-              <input 
-                type="checkbox" 
-                :value="ext" 
+              <input
+                type="checkbox"
+                :value="ext"
                 v-model="selectedExtensions"
-              >
+              />
               {{ ext.toUpperCase() }}
             </label>
           </div>
@@ -73,7 +83,9 @@
       <div class="log-container">
         <div v-for="(log, index) in eventLogs" :key="index" class="log-entry">
           <span class="log-time">{{ log.time }}</span>
-          <span class="log-type" :class="`log-type--${log.type}`">{{ log.type.toUpperCase() }}</span>
+          <span class="log-type" :class="`log-type--${log.type}`">{{
+            log.type.toUpperCase()
+          }}</span>
           <span class="log-message">{{ log.message }}</span>
         </div>
       </div>
@@ -83,9 +95,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import BatchUpload from '@/components/admin/document-converter/BatchUpload.vue';
-import { useToast } from '@/composables/useToast';
+import { ref, computed } from "vue";
+import BatchUpload from "@/components/admin/document-converter/BatchUpload.vue";
+import { useToast } from "@/composables/useToast";
 
 const toast = useToast();
 
@@ -99,9 +111,16 @@ const enableResume = ref(true);
 
 // Available extensions
 const availableExtensions = [
-  'pdf', 'docx', 'xlsx', 'pptx', 'html', 'htm', 'txt', 'csv'
+  "pdf",
+  "docx",
+  "xlsx",
+  "pptx",
+  "html",
+  "htm",
+  "txt",
+  "csv",
 ];
-const selectedExtensions = ref(['pdf', 'docx', 'xlsx', 'pptx', 'html', 'txt']);
+const selectedExtensions = ref(["pdf", "docx", "xlsx", "pptx", "html", "txt"]);
 
 // Computed properties for BatchUpload component
 const maxFileSize = computed(() => maxFileSizeMB.value * 1024 * 1024);
@@ -111,47 +130,59 @@ const allowedExtensions = computed(() => selectedExtensions.value);
 // Event logs
 interface LogEntry {
   time: string;
-  type: 'info' | 'success' | 'warning' | 'error';
+  type: "info" | "success" | "warning" | "error";
   message: string;
 }
 
 const eventLogs = ref<LogEntry[]>([]);
 
 // Helper function to add log entry
-function addLog(type: 'info' | 'success' | 'warning' | 'error', message: string): void {
+function addLog(
+  type: "info" | "success" | "warning" | "error",
+  message: string,
+): void {
   const now = new Date();
   const time = now.toLocaleTimeString();
   eventLogs.value.unshift({ time, type, message });
 }
 
 // Event handlers
-function handleBatchStart(files: File[], priorities: Record<string, string>): void {
-  addLog('info', `Starting batch upload with ${files.length} files`);
-  
-  const priorityDistribution = Object.values(priorities).reduce((acc, priority) => {
-    acc[priority] = (acc[priority] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-  
-  addLog('info', `Priority distribution: ${JSON.stringify(priorityDistribution)}`);
-  
+function handleBatchStart(
+  files: File[],
+  priorities: Record<string, string>,
+): void {
+  addLog("info", `Starting batch upload with ${files.length} files`);
+
+  const priorityDistribution = Object.values(priorities).reduce(
+    (acc, priority) => {
+      acc[priority] = (acc[priority] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+
+  addLog(
+    "info",
+    `Priority distribution: ${JSON.stringify(priorityDistribution)}`,
+  );
+
   // Show toast notification
   toast.info(`Starting upload of ${files.length} files`);
 }
 
 function handleSingleUpload(file: File, priority: string): void {
-  addLog('info', `Single file upload: ${file.name} (Priority: ${priority})`);
+  addLog("info", `Single file upload: ${file.name} (Priority: ${priority})`);
   toast.info(`Uploading ${file.name}`);
 }
 
 function handleBatchComplete(results: any[]): void {
-  addLog('success', `Batch upload completed with ${results.length} files`);
+  addLog("success", `Batch upload completed with ${results.length} files`);
   toast.success(`Successfully uploaded ${results.length} files`);
 }
 
 function handleBatchCancel(): void {
-  addLog('warning', 'Batch upload was canceled');
-  toast.warning('Upload canceled');
+  addLog("warning", "Batch upload was canceled");
+  toast.warning("Upload canceled");
 }
 
 // Clear log
@@ -160,12 +191,14 @@ function clearLog(): void {
 }
 
 // Initial log entry
-addLog('info', 'BatchUpload component initialized');
+addLog("info", "BatchUpload component initialized");
 </script>
 
 <style scoped>
 .batch-upload-example {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;

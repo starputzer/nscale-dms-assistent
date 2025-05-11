@@ -1,15 +1,18 @@
 <template>
   <nav class="n-breadcrumb" aria-label="Breadcrumb">
-    <ol 
-      class="n-breadcrumb__list" 
-      :class="{ 
-        'n-breadcrumb--collapsed': isCollapsed && itemCount > maxVisible 
+    <ol
+      class="n-breadcrumb__list"
+      :class="{
+        'n-breadcrumb--collapsed': isCollapsed && itemCount > maxVisible,
       }"
     >
       <template v-for="(item, index) in processedItems" :key="index">
         <!-- When collapsed, show ellipsis for hidden items -->
-        <li v-if="item.isCollapse" class="n-breadcrumb__item n-breadcrumb__item--collapse">
-          <button 
+        <li
+          v-if="item.isCollapse"
+          class="n-breadcrumb__item n-breadcrumb__item--collapse"
+        >
+          <button
             class="n-breadcrumb__collapse-btn"
             @click="toggleCollapse"
             :aria-expanded="!isCollapsed"
@@ -19,29 +22,43 @@
               <span class="n-breadcrumb__dots">...</span>
             </slot>
             <span class="n-breadcrumb__sr-only">
-              {{ isCollapsed ? 'Show all breadcrumbs' : 'Collapse breadcrumbs' }}
+              {{
+                isCollapsed ? "Show all breadcrumbs" : "Collapse breadcrumbs"
+              }}
             </span>
           </button>
 
           <!-- Hidden menu with full breadcrumb list -->
-          <div v-if="showCollapseMenu" class="n-breadcrumb__collapse-menu" id="breadcrumb-items">
+          <div
+            v-if="showCollapseMenu"
+            class="n-breadcrumb__collapse-menu"
+            id="breadcrumb-items"
+          >
             <ul class="n-breadcrumb__collapse-list">
-              <li 
-                v-for="(hiddenItem, hiddenIndex) in hiddenItems" 
-                :key="`hidden-${hiddenIndex}`" 
+              <li
+                v-for="(hiddenItem, hiddenIndex) in hiddenItems"
+                :key="`hidden-${hiddenIndex}`"
                 class="n-breadcrumb__collapse-item"
               >
-                <a 
-                  v-if="hiddenItem.href" 
-                  :href="hiddenItem.href" 
+                <a
+                  v-if="hiddenItem.href"
+                  :href="hiddenItem.href"
                   class="n-breadcrumb__collapse-link"
                   @click="handleLinkClick($event, hiddenItem, hiddenIndex + 1)"
                 >
-                  <component v-if="hiddenItem.icon" :is="hiddenItem.icon" class="n-breadcrumb__icon" />
+                  <component
+                    v-if="hiddenItem.icon"
+                    :is="hiddenItem.icon"
+                    class="n-breadcrumb__icon"
+                  />
                   {{ hiddenItem.text }}
                 </a>
                 <span v-else class="n-breadcrumb__collapse-text">
-                  <component v-if="hiddenItem.icon" :is="hiddenItem.icon" class="n-breadcrumb__icon" />
+                  <component
+                    v-if="hiddenItem.icon"
+                    :is="hiddenItem.icon"
+                    class="n-breadcrumb__icon"
+                  />
                   {{ hiddenItem.text }}
                 </span>
               </li>
@@ -50,32 +67,45 @@
         </li>
 
         <!-- Regular breadcrumb item -->
-        <li 
-          v-else 
+        <li
+          v-else
           class="n-breadcrumb__item"
-          :class="{ 
-            'n-breadcrumb__item--active': item.active || index === itemCount - 1,
-            'n-breadcrumb__item--disabled': item.disabled 
+          :class="{
+            'n-breadcrumb__item--active':
+              item.active || index === itemCount - 1,
+            'n-breadcrumb__item--disabled': item.disabled,
           }"
         >
-          <a 
-            v-if="item.href && !item.active && !item.disabled" 
-            :href="item.href" 
+          <a
+            v-if="item.href && !item.active && !item.disabled"
+            :href="item.href"
             class="n-breadcrumb__link"
             @click="handleLinkClick($event, item, index)"
           >
-            <component v-if="item.icon" :is="item.icon" class="n-breadcrumb__icon" />
+            <component
+              v-if="item.icon"
+              :is="item.icon"
+              class="n-breadcrumb__icon"
+            />
             {{ item.text }}
           </a>
-          <span v-else class="n-breadcrumb__text" :aria-current="item.active ? 'page' : undefined">
-            <component v-if="item.icon" :is="item.icon" class="n-breadcrumb__icon" />
+          <span
+            v-else
+            class="n-breadcrumb__text"
+            :aria-current="item.active ? 'page' : undefined"
+          >
+            <component
+              v-if="item.icon"
+              :is="item.icon"
+              class="n-breadcrumb__icon"
+            />
             {{ item.text }}
           </span>
-          
+
           <!-- Separator between items (unless last) -->
-          <span 
-            v-if="index < itemCount - 1 && !item.isCollapse" 
-            class="n-breadcrumb__separator" 
+          <span
+            v-if="index < itemCount - 1 && !item.isCollapse"
+            class="n-breadcrumb__separator"
             aria-hidden="true"
           >
             <slot name="separator">
@@ -89,8 +119,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { computed, ref, watch } from "vue";
+import { useRouter } from "vue-router";
 
 /**
  * Breadcrumb component that displays navigation paths.
@@ -131,11 +161,11 @@ export interface BreadcrumbProps {
 }
 
 const props = withDefaults(defineProps<BreadcrumbProps>(), {
-  separator: '/',
+  separator: "/",
   maxVisible: 3,
   alwaysShowHome: true,
   alwaysShowCurrent: true,
-  useRouter: true
+  useRouter: true,
 });
 
 // Optional Vue Router integration
@@ -158,23 +188,29 @@ const hiddenItems = computed(() => {
   const visibleCount = props.maxVisible;
   const startIndex = props.alwaysShowHome ? 1 : 0;
   const endIndex = itemCount.value - (props.alwaysShowCurrent ? 1 : 0);
-  
+
   // How many items we need to hide
   const itemsToHide = itemCount.value - visibleCount;
-  
+
   if (itemsToHide <= 0) {
     return [];
   }
-  
+
   // If we only hide one or two items, it's better to just show all
   if (itemsToHide <= 2 && itemCount.value > 4) {
     return [];
   }
-  
+
   // Calculate range to hide - we want to hide items in the middle
   const hideStartIndex = startIndex;
-  const hideEndIndex = Math.min(endIndex, itemCount.value - (visibleCount - (props.alwaysShowHome ? 1 : 0) - (props.alwaysShowCurrent ? 1 : 0)));
-  
+  const hideEndIndex = Math.min(
+    endIndex,
+    itemCount.value -
+      (visibleCount -
+        (props.alwaysShowHome ? 1 : 0) -
+        (props.alwaysShowCurrent ? 1 : 0)),
+  );
+
   return props.items.slice(hideStartIndex, hideEndIndex);
 });
 
@@ -183,24 +219,24 @@ const processedItems = computed(() => {
   if (itemCount.value <= props.maxVisible || !isCollapsed.value) {
     return props.items;
   }
-  
+
   const result = [...props.items];
-  
+
   // Only insert collapse item if we have items to hide
   if (hiddenItems.value.length > 0) {
     // Where to insert the collapse item
     const insertIndex = props.alwaysShowHome ? 1 : 0;
-    
+
     // Remove hidden items
     result.splice(insertIndex, hiddenItems.value.length);
-    
+
     // Insert collapse item
     result.splice(insertIndex, 0, {
-      text: '...',
-      isCollapse: true
+      text: "...",
+      isCollapse: true,
     });
   }
-  
+
   return result;
 });
 
@@ -217,7 +253,7 @@ function toggleCollapse() {
 function closeCollapseMenu(event: MouseEvent) {
   if (showCollapseMenu.value) {
     const target = event.target as Node;
-    const breadcrumb = document.querySelector('.n-breadcrumb');
+    const breadcrumb = document.querySelector(".n-breadcrumb");
     if (breadcrumb && !breadcrumb.contains(target)) {
       showCollapseMenu.value = false;
     }
@@ -225,36 +261,40 @@ function closeCollapseMenu(event: MouseEvent) {
 }
 
 // Handle breadcrumb link clicks
-function handleLinkClick(event: MouseEvent, item: BreadcrumbItem, index: number) {
+function handleLinkClick(
+  event: MouseEvent,
+  item: BreadcrumbItem,
+  index: number,
+) {
   // Prevent default browser navigation when using Vue Router
   if (props.useRouter && item.href && router) {
     event.preventDefault();
     router.push(item.href);
     showCollapseMenu.value = false;
   }
-  
+
   // Emit click event with item and index
-  emit('click', item, index, event);
+  emit("click", item, index, event);
 }
 
 // Add and remove click event listener for closing collapse menu
 watch(showCollapseMenu, (isVisible) => {
   if (isVisible) {
-    document.addEventListener('click', closeCollapseMenu);
+    document.addEventListener("click", closeCollapseMenu);
   } else {
-    document.removeEventListener('click', closeCollapseMenu);
+    document.removeEventListener("click", closeCollapseMenu);
   }
 });
 
 // Clean up event listener
 onBeforeUnmount(() => {
-  document.removeEventListener('click', closeCollapseMenu);
+  document.removeEventListener("click", closeCollapseMenu);
 });
 
 // Emit events
 const emit = defineEmits<{
   /** Emitted when a breadcrumb item is clicked */
-  (e: 'click', item: BreadcrumbItem, index: number, event: MouseEvent): void;
+  (e: "click", item: BreadcrumbItem, index: number, event: MouseEvent): void;
 }>();
 </script>
 
@@ -262,7 +302,15 @@ const emit = defineEmits<{
 .n-breadcrumb {
   /* Base styles */
   display: block;
-  font-family: var(--n-font-family, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-family: var(
+    --n-font-family,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif
+  );
   font-size: var(--n-font-size-sm, 0.875rem);
   line-height: 1.5;
   color: var(--n-color-text-primary, #1a202c);
@@ -379,7 +427,11 @@ const emit = defineEmits<{
   background-color: var(--n-color-white, #ffffff);
   border: 1px solid var(--n-color-border, #e2e8f0);
   border-radius: 0.25rem;
-  box-shadow: var(--n-shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06));
+  box-shadow: var(
+    --n-shadow-md,
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06)
+  );
   padding: 0.5rem 0;
 }
 
@@ -418,10 +470,13 @@ const emit = defineEmits<{
 
 /* Responsive styles */
 @media (max-width: 640px) {
-  .n-breadcrumb--responsive .n-breadcrumb__item:not(:first-child):not(:last-child):not(.n-breadcrumb__item--collapse) {
+  .n-breadcrumb--responsive
+    .n-breadcrumb__item:not(:first-child):not(:last-child):not(
+      .n-breadcrumb__item--collapse
+    ) {
     display: none;
   }
-  
+
   .n-breadcrumb--responsive .n-breadcrumb__separator {
     margin: 0 0.25rem;
   }
@@ -432,51 +487,51 @@ const emit = defineEmits<{
   .n-breadcrumb {
     color: var(--n-color-text-primary-dark, #f7fafc);
   }
-  
+
   .n-breadcrumb__link {
     color: var(--n-color-primary-light, #4299e1);
   }
-  
+
   .n-breadcrumb__link:hover {
     color: var(--n-color-primary-light, #4299e1);
     background-color: var(--n-color-gray-700, #2d3748);
   }
-  
+
   .n-breadcrumb__item--active .n-breadcrumb__text {
     color: var(--n-color-text-primary-dark, #f7fafc);
   }
-  
+
   .n-breadcrumb__item--disabled .n-breadcrumb__text {
     color: var(--n-color-text-disabled-dark, #718096);
   }
-  
+
   .n-breadcrumb__separator {
     color: var(--n-color-text-secondary-dark, #a0aec0);
   }
-  
+
   .n-breadcrumb__collapse-btn {
     color: var(--n-color-primary-light, #4299e1);
   }
-  
+
   .n-breadcrumb__collapse-btn:hover {
     background-color: var(--n-color-gray-700, #2d3748);
     color: var(--n-color-primary-light, #4299e1);
   }
-  
+
   .n-breadcrumb__collapse-menu {
     background-color: var(--n-color-gray-800, #1a202c);
     border-color: var(--n-color-gray-700, #2d3748);
   }
-  
+
   .n-breadcrumb__collapse-link {
     color: var(--n-color-text-primary-dark, #f7fafc);
   }
-  
+
   .n-breadcrumb__collapse-link:hover {
     background-color: var(--n-color-gray-700, #2d3748);
     color: var(--n-color-primary-light, #4299e1);
   }
-  
+
   .n-breadcrumb__collapse-text {
     color: var(--n-color-text-secondary-dark, #a0aec0);
   }

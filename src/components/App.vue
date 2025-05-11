@@ -1,59 +1,60 @@
 <template>
   <div id="app" :class="appClasses">
     <!-- Navigation bar at the top -->
-    <NavigationBar 
-      @new-chat="createNewSession"
-      @logout="logout"
-    />
-    
+    <NavigationBar @new-chat="createNewSession" @logout="logout" />
+
     <!-- Main content area with sidebar and chat view -->
     <main class="app-main">
       <!-- Sidebar with chat sessions -->
       <Sidebar v-if="isAuthenticated" />
-      
+
       <!-- Main chat view or welcome/auth screen -->
       <div class="content-area">
         <div v-if="!isAuthenticated" class="auth-container">
           <div class="auth-form">
             <div class="auth-logo">
-              <img src="/images/senmvku-logo.png" alt="nscale Logo" class="auth-logo-image">
+              <img
+                src="/images/senmvku-logo.png"
+                alt="nscale Logo"
+                class="auth-logo-image"
+              />
               <h1 class="auth-title">nscale DMS Assistent</h1>
             </div>
-            
+
             <div class="login-form">
               <div class="form-group">
                 <label for="username">Benutzername</label>
-                <input 
-                  type="text" 
-                  id="username" 
-                  v-model="credentials.username" 
-                  class="nscale-input" 
+                <input
+                  type="text"
+                  id="username"
+                  v-model="credentials.username"
+                  class="nscale-input"
                   placeholder="Benutzername"
                   :disabled="isLoggingIn"
                   @keyup.enter="login"
-                >
+                />
               </div>
-              
+
               <div class="form-group">
                 <label for="password">Passwort</label>
-                <input 
-                  type="password" 
-                  id="password" 
-                  v-model="credentials.password" 
-                  class="nscale-input" 
+                <input
+                  type="password"
+                  id="password"
+                  v-model="credentials.password"
+                  class="nscale-input"
                   placeholder="Passwort"
                   :disabled="isLoggingIn"
                   @keyup.enter="login"
-                >
+                />
               </div>
-              
+
               <div v-if="loginError" class="login-error">
                 {{ loginError }}
               </div>
-              
-              <button 
-                class="nscale-btn-primary login-btn" 
-                @click="login" 
+
+              <button
+                class="nscale-btn-primary login-btn"
+                @click="login"
                 :disabled="isLoggingIn || !canLogin"
               >
                 <span v-if="isLoggingIn" class="loading-spinner-small"></span>
@@ -62,15 +63,30 @@
             </div>
           </div>
         </div>
-        
+
         <ChatView v-else-if="isAuthenticated && currentSessionId" />
-        
-        <div v-else-if="isAuthenticated && !currentSessionId" class="welcome-container">
+
+        <div
+          v-else-if="isAuthenticated && !currentSessionId"
+          class="welcome-container"
+        >
           <div class="welcome-content">
-            <img src="/images/senmvku-logo.png" alt="nscale Logo" class="welcome-logo">
-            <h1 class="welcome-title">Willkommen beim nscale DMS Assistenten</h1>
-            <p class="welcome-text">Starten Sie eine neue Unterhaltung oder wählen Sie eine bestehende aus.</p>
-            <button class="nscale-btn-primary new-chat-btn" @click="createNewSession">
+            <img
+              src="/images/senmvku-logo.png"
+              alt="nscale Logo"
+              class="welcome-logo"
+            />
+            <h1 class="welcome-title">
+              Willkommen beim nscale DMS Assistenten
+            </h1>
+            <p class="welcome-text">
+              Starten Sie eine neue Unterhaltung oder wählen Sie eine bestehende
+              aus.
+            </p>
+            <button
+              class="nscale-btn-primary new-chat-btn"
+              @click="createNewSession"
+            >
               <i class="fas fa-plus-circle"></i>
               Neue Unterhaltung starten
             </button>
@@ -78,12 +94,12 @@
         </div>
       </div>
     </main>
-    
+
     <!-- System message area for notifications -->
     <div v-if="hasSystemMessages" class="system-messages">
-      <div 
-        v-for="(message, index) in systemMessages" 
-        :key="index" 
+      <div
+        v-for="(message, index) in systemMessages"
+        :key="index"
         class="system-message"
         :class="message.type"
       >
@@ -98,14 +114,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
-import { useAuthStore } from '../stores/auth';
-import { useSessionsStore } from '../stores/sessions';
-import { useSettingsStore } from '../stores/settings';
-import { useUIStore } from '../stores/ui';
-import NavigationBar from './NavigationBar.vue';
-import Sidebar from './Sidebar.vue';
-import ChatView from './ChatView.vue';
+import { ref, computed, onMounted, watch } from "vue";
+import { useAuthStore } from "../stores/auth";
+import { useSessionsStore } from "../stores/sessions";
+import { useSettingsStore } from "../stores/settings";
+import { useUIStore } from "../stores/ui";
+import NavigationBar from "./NavigationBar.vue";
+import Sidebar from "./Sidebar.vue";
+import ChatView from "./ChatView.vue";
 
 // Stores
 const authStore = useAuthStore();
@@ -115,8 +131,8 @@ const uiStore = useUIStore();
 
 // Auth state
 const credentials = ref({
-  username: '',
-  password: ''
+  username: "",
+  password: "",
 });
 const loginError = ref<string | null>(null);
 const isLoggingIn = ref(false);
@@ -131,14 +147,15 @@ const isDarkTheme = computed(() => uiStore.isDarkMode);
 const isHighContrast = computed(() => settingsStore.a11y.highContrast);
 
 const appClasses = computed(() => ({
-  'theme-dark': isDarkTheme.value,
-  'theme-light': !isDarkTheme.value,
-  'high-contrast': isHighContrast.value
+  "theme-dark": isDarkTheme.value,
+  "theme-light": !isDarkTheme.value,
+  "high-contrast": isHighContrast.value,
 }));
 
-const canLogin = computed(() => 
-  credentials.value.username.trim() !== '' && 
-  credentials.value.password.trim() !== ''
+const canLogin = computed(
+  () =>
+    credentials.value.username.trim() !== "" &&
+    credentials.value.password.trim() !== "",
 );
 
 const hasSystemMessages = computed(() => systemMessages.value.length > 0);
@@ -147,7 +164,7 @@ const hasSystemMessages = computed(() => systemMessages.value.length > 0);
 onMounted(async () => {
   // Load settings
   await settingsStore.fetchSettings();
-  
+
   // Check if user is already authenticated
   if (isAuthenticated.value) {
     await sessionsStore.fetchSessions();
@@ -155,56 +172,66 @@ onMounted(async () => {
 });
 
 // Watch for auth state changes
-watch(() => authStore.isAuthenticated, (newValue) => {
-  if (newValue) {
-    sessionsStore.fetchSessions();
-  }
-});
+watch(
+  () => authStore.isAuthenticated,
+  (newValue) => {
+    if (newValue) {
+      sessionsStore.fetchSessions();
+    }
+  },
+);
 
 // Watch for UI store toasts to show as system messages
-watch(() => uiStore.toasts, (newToasts) => {
-  if (newToasts.length > 0) {
-    const newMessage = {
-      type: newToasts[0].type,
-      text: newToasts[0].message
-    };
-    systemMessages.value.push(newMessage);
-    
-    // Auto-dismiss after 5 seconds
-    setTimeout(() => {
-      const index = systemMessages.value.findIndex(m => m.text === newMessage.text);
-      if (index !== -1) {
-        dismissSystemMessage(index);
-      }
-    }, 5000);
-  }
-}, { deep: true });
+watch(
+  () => uiStore.toasts,
+  (newToasts) => {
+    if (newToasts.length > 0) {
+      const newMessage = {
+        type: newToasts[0].type,
+        text: newToasts[0].message,
+      };
+      systemMessages.value.push(newMessage);
+
+      // Auto-dismiss after 5 seconds
+      setTimeout(() => {
+        const index = systemMessages.value.findIndex(
+          (m) => m.text === newMessage.text,
+        );
+        if (index !== -1) {
+          dismissSystemMessage(index);
+        }
+      }, 5000);
+    }
+  },
+  { deep: true },
+);
 
 // Methods
 async function login() {
   if (!canLogin.value || isLoggingIn.value) return;
-  
+
   loginError.value = null;
   isLoggingIn.value = true;
-  
+
   try {
     const success = await authStore.login({
       username: credentials.value.username,
-      password: credentials.value.password
+      password: credentials.value.password,
     });
-    
+
     if (success) {
-      credentials.value.password = ''; // Clear password
+      credentials.value.password = ""; // Clear password
       await sessionsStore.fetchSessions();
-      
+
       // Show welcome message
-      addSystemMessage('success', 'Erfolgreich angemeldet');
+      addSystemMessage("success", "Erfolgreich angemeldet");
     } else {
-      loginError.value = authStore.error || 'Benutzername oder Passwort falsch';
+      loginError.value = authStore.error || "Benutzername oder Passwort falsch";
     }
   } catch (error) {
-    loginError.value = 'Fehler bei der Anmeldung. Bitte versuchen Sie es erneut.';
-    console.error('Login error:', error);
+    loginError.value =
+      "Fehler bei der Anmeldung. Bitte versuchen Sie es erneut.";
+    console.error("Login error:", error);
   } finally {
     isLoggingIn.value = false;
   }
@@ -213,24 +240,24 @@ async function login() {
 function logout() {
   authStore.logout();
   // Navigate to login view
-  addSystemMessage('info', 'Sie wurden abgemeldet');
+  addSystemMessage("info", "Sie wurden abgemeldet");
 }
 
 async function createNewSession() {
   try {
-    await sessionsStore.createSession('Neue Unterhaltung');
+    await sessionsStore.createSession("Neue Unterhaltung");
   } catch (error) {
-    addSystemMessage('error', 'Fehler beim Erstellen einer neuen Unterhaltung');
-    console.error('Error creating session:', error);
+    addSystemMessage("error", "Fehler beim Erstellen einer neuen Unterhaltung");
+    console.error("Error creating session:", error);
   }
 }
 
 function addSystemMessage(type: string, text: string) {
   systemMessages.value.push({ type, text });
-  
+
   // Auto-dismiss after 5 seconds
   setTimeout(() => {
-    const index = systemMessages.value.findIndex(m => m.text === text);
+    const index = systemMessages.value.findIndex((m) => m.text === text);
     if (index !== -1) {
       dismissSystemMessage(index);
     }
@@ -243,15 +270,15 @@ function dismissSystemMessage(index: number) {
 
 function getSystemMessageIcon(type: string): string {
   switch (type) {
-    case 'success':
-      return 'fas fa-check-circle';
-    case 'error':
-      return 'fas fa-exclamation-circle';
-    case 'warning':
-      return 'fas fa-exclamation-triangle';
-    case 'info':
+    case "success":
+      return "fas fa-check-circle";
+    case "error":
+      return "fas fa-exclamation-circle";
+    case "warning":
+      return "fas fa-exclamation-triangle";
+    case "info":
     default:
-      return 'fas fa-info-circle';
+      return "fas fa-info-circle";
   }
 }
 </script>
@@ -261,7 +288,19 @@ function getSystemMessageIcon(type: string): string {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  font-family: var(--font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif);
+  font-family: var(
+    --font-family,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    "Open Sans",
+    "Helvetica Neue",
+    sans-serif
+  );
   color: var(--nscale-text, #333333);
   background-color: var(--nscale-background, white);
 }
@@ -474,12 +513,20 @@ function getSystemMessageIcon(type: string): string {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Theme classes */
@@ -518,13 +565,13 @@ function getSystemMessageIcon(type: string): string {
   .app-main {
     flex-direction: column;
   }
-  
+
   .auth-form {
     width: 90%;
     max-width: none;
     padding: 1.5rem;
   }
-  
+
   .system-messages {
     bottom: 1rem;
     right: 1rem;

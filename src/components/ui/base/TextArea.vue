@@ -1,15 +1,15 @@
 <template>
-  <div 
+  <div
     class="n-textarea-wrapper"
-    :class="{ 
-      'n-textarea-wrapper--disabled': disabled, 
+    :class="{
+      'n-textarea-wrapper--disabled': disabled,
       'n-textarea-wrapper--error': !!error,
-      'n-textarea-wrapper--focused': isFocused
+      'n-textarea-wrapper--focused': isFocused,
     }"
   >
-    <label 
-      v-if="label" 
-      :for="textareaId" 
+    <label
+      v-if="label"
+      :for="textareaId"
       class="n-textarea-label"
       :class="{ 'n-textarea-label--required': required }"
     >
@@ -44,33 +44,50 @@
 
       <div class="n-textarea-controls">
         <div v-if="showMarkdownToggle" class="n-textarea-markdown-toggle">
-          <button 
-            type="button" 
+          <button
+            type="button"
             class="n-textarea-toggle-btn"
             :class="{ 'n-textarea-toggle-btn--active': showMarkdownPreview }"
             @click="toggleMarkdownPreview"
             aria-pressed="showMarkdownPreview"
           >
             <span class="n-textarea-toggle-icon">
-              <svg class="n-textarea-icon" viewBox="0 0 24 24" width="16" height="16">
-                <path d="M3 4H21V6H3V4ZM3 19H21V21H3V19ZM21 8H8V16H21V8ZM6 8H3V10H6V8ZM3 12H6V14H3V12Z"/>
+              <svg
+                class="n-textarea-icon"
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+              >
+                <path
+                  d="M3 4H21V6H3V4ZM3 19H21V21H3V19ZM21 8H8V16H21V8ZM6 8H3V10H6V8ZM3 12H6V14H3V12Z"
+                />
               </svg>
             </span>
             Vorschau
           </button>
         </div>
 
-        <div v-if="maxlength && showCharacterCount" class="n-textarea-character-count">
+        <div
+          v-if="maxlength && showCharacterCount"
+          class="n-textarea-character-count"
+        >
           {{ characterCount }} / {{ maxlength }}
         </div>
       </div>
 
       <!-- Markdown-Vorschau -->
-      <div v-if="showMarkdownPreview && showMarkdownToggle" class="n-textarea-markdown-preview">
+      <div
+        v-if="showMarkdownPreview && showMarkdownToggle"
+        class="n-textarea-markdown-preview"
+      >
         <div class="n-textarea-preview-content" v-html="markdownPreview"></div>
       </div>
 
-      <div v-if="helperText || error || $slots.helper" class="n-textarea-helper-text" :id="helperId">
+      <div
+        v-if="helperText || error || $slots.helper"
+        class="n-textarea-helper-text"
+        :id="helperId"
+      >
         <slot name="helper">
           <span v-if="error" class="n-textarea-error-text">{{ error }}</span>
           <span v-else-if="helperText">{{ helperText }}</span>
@@ -81,18 +98,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue';
-import { uniqueId } from 'lodash';
-import { marked } from 'marked';
+import { ref, computed, onMounted, watch, nextTick } from "vue";
+import { uniqueId } from "lodash";
+import { marked } from "marked";
 
 /**
  * Advanced TextArea component with autoresize, character count, and markdown support
  * @displayName TextArea
  * @example
- * <TextArea 
- *   v-model="comment" 
- *   label="Comments" 
- *   placeholder="Enter your comments here" 
+ * <TextArea
+ *   v-model="comment"
+ *   label="Comments"
+ *   placeholder="Enter your comments here"
  *   :auto-resize="true"
  *   :show-character-count="true"
  * />
@@ -143,7 +160,7 @@ export interface TextAreaProps {
 }
 
 const props = withDefaults(defineProps<TextAreaProps>(), {
-  placeholder: '',
+  placeholder: "",
   disabled: false,
   required: false,
   showCharacterCount: false,
@@ -154,24 +171,26 @@ const props = withDefaults(defineProps<TextAreaProps>(), {
   minHeight: 80,
   maxHeight: 300,
   spellcheck: true,
-  autocapitalize: 'sentences',
-  autocorrect: 'on',
+  autocapitalize: "sentences",
+  autocorrect: "on",
   showMarkdownToggle: false,
-  customStyles: () => ({})
+  customStyles: () => ({}),
 });
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void;
-  (e: 'focus', event: FocusEvent): void;
-  (e: 'blur', event: FocusEvent): void;
-  (e: 'input', event: Event): void;
-  (e: 'keydown', event: KeyboardEvent): void;
+  (e: "update:modelValue", value: string): void;
+  (e: "focus", event: FocusEvent): void;
+  (e: "blur", event: FocusEvent): void;
+  (e: "input", event: Event): void;
+  (e: "keydown", event: KeyboardEvent): void;
 }>();
 
 // Internal state
-const textareaId = computed(() => props.id || uniqueId('n-textarea-'));
+const textareaId = computed(() => props.id || uniqueId("n-textarea-"));
 const helperId = computed(() => `${textareaId.value}-helper`);
-const ariaDescribedby = computed(() => props.helperText || props.error ? helperId.value : undefined);
+const ariaDescribedby = computed(() =>
+  props.helperText || props.error ? helperId.value : undefined,
+);
 const textareaRef = ref<HTMLTextAreaElement | null>(null);
 const isFocused = ref(false);
 const textareaHeight = ref<number | null>(null);
@@ -188,7 +207,8 @@ const textareaStyles = computed(() => {
 
   if (props.autoResize && textareaHeight.value) {
     styles.height = `${textareaHeight.value}px`;
-    styles.overflow = textareaHeight.value >= props.maxHeight ? 'auto' : 'hidden';
+    styles.overflow =
+      textareaHeight.value >= props.maxHeight ? "auto" : "hidden";
   }
 
   return styles;
@@ -196,12 +216,12 @@ const textareaStyles = computed(() => {
 
 // Compute markdown preview
 const markdownPreview = computed(() => {
-  if (!props.modelValue || !showMarkdownPreview.value) return '';
-  
+  if (!props.modelValue || !showMarkdownPreview.value) return "";
+
   try {
     return marked.parse(props.modelValue, { breaks: true, sanitize: true });
   } catch (error) {
-    console.error('Error parsing markdown:', error);
+    console.error("Error parsing markdown:", error);
     return props.modelValue;
   }
 });
@@ -210,10 +230,10 @@ const markdownPreview = computed(() => {
 function handleInput(event: Event) {
   const target = event.target as HTMLTextAreaElement;
   const value = target.value;
-  
-  emit('update:modelValue', value);
-  emit('input', event);
-  
+
+  emit("update:modelValue", value);
+  emit("input", event);
+
   // Auto-resize the textarea if enabled
   if (props.autoResize) {
     nextTick(() => resizeTextarea());
@@ -222,16 +242,16 @@ function handleInput(event: Event) {
 
 function handleFocus(event: FocusEvent) {
   isFocused.value = true;
-  emit('focus', event);
+  emit("focus", event);
 }
 
 function handleBlur(event: FocusEvent) {
   isFocused.value = false;
-  emit('blur', event);
+  emit("blur", event);
 }
 
 function handleKeydown(event: KeyboardEvent) {
-  emit('keydown', event);
+  emit("keydown", event);
 }
 
 // Toggle markdown preview
@@ -242,16 +262,16 @@ function toggleMarkdownPreview() {
 // Resize textarea based on content
 function resizeTextarea() {
   if (!textareaRef.value || !props.autoResize) return;
-  
+
   // Reset height to measure actual scrollHeight
-  textareaRef.value.style.height = 'auto';
-  
+  textareaRef.value.style.height = "auto";
+
   // Calculate new height within min/max constraints
   const newHeight = Math.min(
     Math.max(textareaRef.value.scrollHeight, props.minHeight),
-    props.maxHeight
+    props.maxHeight,
   );
-  
+
   // Only update if height changed
   if (newHeight !== textareaHeight.value) {
     textareaHeight.value = newHeight;
@@ -259,11 +279,14 @@ function resizeTextarea() {
 }
 
 // Handle changes to the model value
-watch(() => props.modelValue, () => {
-  if (props.autoResize) {
-    nextTick(() => resizeTextarea());
-  }
-});
+watch(
+  () => props.modelValue,
+  () => {
+    if (props.autoResize) {
+      nextTick(() => resizeTextarea());
+    }
+  },
+);
 
 // Focus the textarea if autofocus is enabled
 onMounted(() => {
@@ -272,7 +295,7 @@ onMounted(() => {
       textareaRef.value?.focus();
     });
   }
-  
+
   // Initial resize
   if (props.autoResize) {
     nextTick(() => resizeTextarea());
@@ -286,7 +309,15 @@ onMounted(() => {
   flex-direction: column;
   width: 100%;
   margin-bottom: 1rem;
-  font-family: var(--n-font-family, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-family: var(
+    --n-font-family,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif
+  );
 }
 
 .n-textarea-label {
@@ -319,7 +350,7 @@ onMounted(() => {
 /* Focus state */
 .n-textarea-wrapper--focused .n-textarea-field-wrapper {
   border-color: var(--n-color-primary, #3b82f6);
-  box-shadow: 0 0 0 3px rgba(var(--n-color-primary-rgb, '59, 130, 246'), 0.2);
+  box-shadow: 0 0 0 3px rgba(var(--n-color-primary-rgb, "59, 130, 246"), 0.2);
 }
 
 /* Error state */
@@ -327,8 +358,9 @@ onMounted(() => {
   border-color: var(--n-color-error, #ef4444);
 }
 
-.n-textarea-wrapper--error.n-textarea-wrapper--focused .n-textarea-field-wrapper {
-  box-shadow: 0 0 0 3px rgba(var(--n-color-error-rgb, '239, 68, 68'), 0.2);
+.n-textarea-wrapper--error.n-textarea-wrapper--focused
+  .n-textarea-field-wrapper {
+  box-shadow: 0 0 0 3px rgba(var(--n-color-error-rgb, "239, 68, 68"), 0.2);
 }
 
 /* Disabled state */
@@ -371,7 +403,8 @@ onMounted(() => {
   padding: 0.25rem 0.75rem;
   border-top: 1px solid var(--n-color-border, #e2e8f0);
   background-color: var(--n-color-background-alt, #f8fafc);
-  border-radius: 0 0 var(--n-border-radius, 0.375rem) var(--n-border-radius, 0.375rem);
+  border-radius: 0 0 var(--n-border-radius, 0.375rem)
+    var(--n-border-radius, 0.375rem);
 }
 
 /* Character count */
@@ -498,58 +531,58 @@ onMounted(() => {
   .n-textarea-label {
     color: var(--n-color-text-primary, #f1f5f9);
   }
-  
+
   .n-textarea-field-wrapper {
     background-color: var(--n-color-background-alt, #1e293b);
     border-color: var(--n-color-border, #334155);
   }
-  
+
   .n-textarea-field {
     color: var(--n-color-text-primary, #f1f5f9);
   }
-  
+
   .n-textarea-field::placeholder {
     color: var(--n-color-text-secondary, #94a3b8);
   }
-  
+
   .n-textarea-wrapper--disabled .n-textarea-field-wrapper {
     background-color: var(--n-color-background-dark, #0f172a);
   }
-  
+
   .n-textarea-controls {
     background-color: rgba(30, 41, 59, 0.5);
     border-color: var(--n-color-border, #334155);
   }
-  
+
   .n-textarea-toggle-btn {
     background-color: var(--n-color-background-alt, #1e293b);
     border-color: var(--n-color-border, #334155);
     color: var(--n-color-text-secondary, #94a3b8);
   }
-  
+
   .n-textarea-toggle-btn:hover {
     background-color: var(--n-color-background-dark, #0f172a);
   }
-  
+
   .n-textarea-toggle-btn--active {
     background-color: rgba(59, 130, 246, 0.2);
     border-color: var(--n-color-primary, #3b82f6);
   }
-  
+
   .n-textarea-markdown-preview {
     background-color: var(--n-color-background-alt, #1e293b);
     border-color: var(--n-color-border, #334155);
   }
-  
+
   .n-textarea-preview-content {
     color: var(--n-color-text-primary, #f1f5f9);
   }
-  
+
   .n-textarea-preview-content :deep(pre),
   .n-textarea-preview-content :deep(code) {
     background-color: var(--n-color-background-dark, #0f172a);
   }
-  
+
   .n-textarea-preview-content :deep(blockquote) {
     border-color: var(--n-color-border, #334155);
     color: var(--n-color-text-secondary, #94a3b8);
@@ -561,12 +594,12 @@ onMounted(() => {
   .n-textarea-label {
     font-size: var(--n-font-size-xs, 0.75rem);
   }
-  
+
   .n-textarea-field {
     font-size: var(--n-font-size-sm, 0.875rem);
     padding: 0.5rem 0.75rem;
   }
-  
+
   .n-textarea-controls {
     padding: 0.25rem 0.5rem;
   }

@@ -15,8 +15,8 @@ export interface User {
 }
 
 export enum UserRole {
-  ADMIN = 'admin',
-  USER = 'user'
+  ADMIN = "admin",
+  USER = "user",
 }
 
 export interface NewUser {
@@ -54,7 +54,7 @@ export interface SystemStats {
 }
 
 export interface SystemAction {
-  type: 'clear-cache' | 'clear-embedding-cache' | 'reload-motd' | 'reindex';
+  type: "clear-cache" | "clear-embedding-cache" | "reload-motd" | "reindex";
   name: string;
   description: string;
   requiresConfirmation: boolean;
@@ -100,7 +100,7 @@ export interface FeedbackFilter {
  */
 export interface MotdConfig {
   enabled: boolean;
-  format: 'markdown' | 'html' | 'text';
+  format: "markdown" | "html" | "text";
   content: string;
   style: MotdStyle;
   display: MotdDisplay;
@@ -114,7 +114,7 @@ export interface MotdStyle {
 }
 
 export interface MotdDisplay {
-  position: 'top' | 'bottom';
+  position: "top" | "bottom";
   dismissible: boolean;
   showOnStartup: boolean;
   showInChat: boolean;
@@ -138,7 +138,7 @@ export interface DocConverterJob {
   id: string;
   fileName: string;
   fileSize: number;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: "pending" | "processing" | "completed" | "failed";
   created_at: number;
   updated_at: number;
   error?: string;

@@ -1,23 +1,27 @@
-import { defineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
-import { fileURLToPath, URL } from 'url';
-import { resolve, join, dirname } from 'path';
-import fs from 'fs';
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import { fileURLToPath, URL } from "url";
+import { resolve, join, dirname } from "path";
+import fs from "fs";
+import compression from "vite-plugin-compression";
+import { visualizer } from "rollup-plugin-visualizer";
+import { ViteImageOptimizer } from "vite-plugin-image-optimizer";
 
 // Bestimme das Basisverzeichnis des Projekts
 const projectRoot = resolve(__dirname);
-const frontendDir = resolve(projectRoot, 'frontend');
-const distDir = resolve(projectRoot, 'api/frontend');
+const frontendDir = resolve(projectRoot, "frontend");
+const distDir = resolve(projectRoot, "api/frontend");
+const isProduction = process.env.NODE_ENV === "production";
 
 // Logging für den Entwicklungsprozess
-console.log('Vite-Konfiguration wird geladen');
+console.log("Vite-Konfiguration wird geladen");
 console.log(`Projekt-Verzeichnis: ${projectRoot}`);
 console.log(`Frontend-Verzeichnis: ${frontendDir}`);
 console.log(`Dist-Verzeichnis: ${distDir}`);
 
 // Wichtige Dateien auf Existenz prüfen
-const mainJsPath = resolve(frontendDir, 'main.js');
-const jsMainJsPath = resolve(frontendDir, 'js/main.js');
+const mainJsPath = resolve(frontendDir, "main.js");
+const jsMainJsPath = resolve(frontendDir, "js/main.js");
 console.log(`main.js existiert: ${fs.existsSync(mainJsPath)}`);
 console.log(`js/main.js existiert: ${fs.existsSync(jsMainJsPath)}`);
 
@@ -27,19 +31,26 @@ console.log(`js/main.js existiert: ${fs.existsSync(jsMainJsPath)}`);
  */
 function cssHandlingPlugin() {
   return {
-    name: 'css-handling',
+    name: "css-handling",
     transform(code, id) {
       // Wenn es sich um einen CSS-Import in einer JS-Datei handelt
-      if (id.endsWith('.js') && code.includes('import') && code.includes('.css')) {
+      if (
+        id.endsWith(".js") &&
+        code.includes("import") &&
+        code.includes(".css")
+      ) {
         // Entferne CSS-Imports aus JS-Dateien
-        const newCode = code.replace(/import ['"].*\.css['"];?/g, '// CSS-Import wurde entfernt');
+        const newCode = code.replace(
+          /import ['"].*\.css['"];?/g,
+          "// CSS-Import wurde entfernt",
+        );
         return {
           code: newCode,
-          map: null
+          map: null,
         };
       }
       return null;
-    }
+    },
   };
 }
 
@@ -49,18 +60,18 @@ function cssHandlingPlugin() {
  */
 function npmModulesPlugin() {
   return {
-    name: 'npm-modules-fix',
+    name: "npm-modules-fix",
     resolveId(id) {
       // Behandelt uuid und andere problematische Module
-      if (id === 'uuid') {
+      if (id === "uuid") {
         // Virtuelles Modul für uuid
-        return '\0virtual:uuid';
+        return "\0virtual:uuid";
       }
       return null;
     },
     load(id) {
       // Stellt virtuellen Code für uuid-Modul bereit
-      if (id === '\0virtual:uuid') {
+      if (id === "\0virtual:uuid") {
         return `
           import { v4 } from '/src/vue-implementation/utils/uuidUtil';
           export { v4 };
@@ -68,7 +79,7 @@ function npmModulesPlugin() {
         `;
       }
       return null;
-    }
+    },
   };
 }
 
@@ -92,9 +103,9 @@ function resolveSymlinks(path) {
     // Löse den Symlink auf
     const target = fs.readlinkSync(path);
     const resolvedPath = resolve(dirname(path), target);
-    
+
     console.log(`Symlink aufgelöst: ${path} -> ${resolvedPath}`);
-    
+
     // Rekursiv auflösen (falls der Symlink auf einen anderen Symlink zeigt)
     return resolveSymlinks(resolvedPath);
   } catch (err) {
@@ -109,98 +120,116 @@ function resolveSymlinks(path) {
  */
 function staticAssetsPlugin() {
   return {
-    name: 'static-assets-fix',
+    name: "static-assets-fix",
     configureServer(server) {
-      // Middleware für /static/, /frontend/ und direkte Pfade 
+      // Middleware für /static/, /frontend/ und direkte Pfade
       server.middlewares.use((req, res, next) => {
         // Verbesserte Pfadbehandlung - unterstützt verschiedene Pfadpräfixe
         let relativePath = req.url;
         let directPath = false;
-        
+
         // Behandle /frontend/ Endpunkt direkt
-        if (relativePath === '/frontend/' || relativePath === '/frontend') {
-          const indexPath = resolve(frontendDir, 'index.html');
+        if (relativePath === "/frontend/" || relativePath === "/frontend") {
+          const indexPath = resolve(frontendDir, "index.html");
           if (fs.existsSync(indexPath)) {
-            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.writeHead(200, { "Content-Type": "text/html" });
             fs.createReadStream(indexPath).pipe(res);
             return;
           }
         }
-        
+
         // Entferne bekannte Präfixe
-        if (relativePath.startsWith('/static/')) {
-          relativePath = relativePath.replace('/static/', '/');
-        } else if (relativePath.startsWith('/frontend/')) {
-          relativePath = relativePath.replace('/frontend/', '/');
+        if (relativePath.startsWith("/static/")) {
+          relativePath = relativePath.replace("/static/", "/");
+        } else if (relativePath.startsWith("/frontend/")) {
+          relativePath = relativePath.replace("/frontend/", "/");
         }
-        
+
         // Entferne führenden Slash
-        if (relativePath.startsWith('/')) {
+        if (relativePath.startsWith("/")) {
           relativePath = relativePath.substring(1);
         }
-        
+
         // Bestimme Dateityp und Pfade
-        const ext = relativePath.split('.').pop().toLowerCase();
-        const cssPath = resolve(frontendDir, 'css', relativePath.replace('css/', ''));
-        const jsPath = resolve(frontendDir, 'js', relativePath.replace('js/', ''));
-        const imagesPath = resolve(frontendDir, 'images', relativePath.replace('images/', ''));
-        
+        const ext = relativePath.split(".").pop().toLowerCase();
+        const cssPath = resolve(
+          frontendDir,
+          "css",
+          relativePath.replace("css/", ""),
+        );
+        const jsPath = resolve(
+          frontendDir,
+          "js",
+          relativePath.replace("js/", ""),
+        );
+        const imagesPath = resolve(
+          frontendDir,
+          "images",
+          relativePath.replace("images/", ""),
+        );
+
         // Korrekter Content-Type basierend auf Dateiendung
-        let contentType = 'application/octet-stream';
-        if (ext === 'css') contentType = 'text/css';
-        else if (ext === 'js') contentType = 'application/javascript';
-        else if (ext === 'png') contentType = 'image/png';
-        else if (ext === 'jpg' || ext === 'jpeg') contentType = 'image/jpeg';
-        else if (ext === 'svg') contentType = 'image/svg+xml';
-        else if (ext === 'html') contentType = 'text/html';
-        
+        let contentType = "application/octet-stream";
+        if (ext === "css") contentType = "text/css";
+        else if (ext === "js") contentType = "application/javascript";
+        else if (ext === "png") contentType = "image/png";
+        else if (ext === "jpg" || ext === "jpeg") contentType = "image/jpeg";
+        else if (ext === "svg") contentType = "image/svg+xml";
+        else if (ext === "html") contentType = "text/html";
+
         // Lokalisiere die Datei in verschiedenen möglichen Verzeichnissen
         let filePath = null;
-        
+
         // CSS-Dateien
-        if (relativePath.startsWith('css/') || relativePath.endsWith('.css')) {
-          const cssName = relativePath.replace('css/', '');
-          filePath = resolve(frontendDir, 'css', cssName);
-          contentType = 'text/css';
-        } 
+        if (relativePath.startsWith("css/") || relativePath.endsWith(".css")) {
+          const cssName = relativePath.replace("css/", "");
+          filePath = resolve(frontendDir, "css", cssName);
+          contentType = "text/css";
+        }
         // JS-Dateien
-        else if (relativePath.startsWith('js/') || relativePath.endsWith('.js')) {
-          const jsName = relativePath.replace('js/', '');
-          filePath = resolve(frontendDir, 'js', jsName);
-          contentType = 'application/javascript';
-        } 
+        else if (
+          relativePath.startsWith("js/") ||
+          relativePath.endsWith(".js")
+        ) {
+          const jsName = relativePath.replace("js/", "");
+          filePath = resolve(frontendDir, "js", jsName);
+          contentType = "application/javascript";
+        }
         // Bild-Dateien
-        else if (relativePath.startsWith('images/') || 
-                ['png', 'jpg', 'jpeg', 'svg', 'gif'].includes(ext)) {
-          const imgName = relativePath.replace('images/', '');
-          filePath = resolve(frontendDir, 'images', imgName);
+        else if (
+          relativePath.startsWith("images/") ||
+          ["png", "jpg", "jpeg", "svg", "gif"].includes(ext)
+        ) {
+          const imgName = relativePath.replace("images/", "");
+          filePath = resolve(frontendDir, "images", imgName);
           // MIME-Typ bereits oben festgelegt
         }
         // Versuche direkt im frontend-Verzeichnis
         else {
           filePath = resolve(frontendDir, relativePath);
         }
-        
+
         // Löse Symlinks auf, bevor wir mit der Datei arbeiten
         if (filePath && fs.existsSync(filePath)) {
           try {
             filePath = resolveSymlinks(filePath);
           } catch (err) {
-            console.error('Fehler beim Auflösen des Symlinks:', err);
+            console.error("Fehler beim Auflösen des Symlinks:", err);
           }
         }
-        
+
         // Prüfe, ob die Datei existiert und keine Verzeichnis ist
         if (filePath && fs.existsSync(filePath)) {
           // Überprüfe, ob es sich um ein Verzeichnis handelt
           const stats = fs.statSync(filePath);
           if (stats.isDirectory()) {
             // Wenn es ein Verzeichnis ist, prüfe auf index.html oder ignoriere
-            const indexPath = resolve(filePath, 'index.html');
+            const indexPath = resolve(filePath, "index.html");
             if (fs.existsSync(indexPath)) {
-              res.writeHead(200, { 
-                'Content-Type': 'text/html',
-                'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
+              res.writeHead(200, {
+                "Content-Type": "text/html",
+                "Cache-Control":
+                  "no-store, no-cache, must-revalidate, max-age=0",
               });
               fs.createReadStream(indexPath).pipe(res);
               return;
@@ -209,13 +238,13 @@ function staticAssetsPlugin() {
             next();
             return;
           }
-          
+
           // Es ist eine Datei, sende sie
-          res.writeHead(200, { 
-            'Content-Type': contentType,
-            'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
+          res.writeHead(200, {
+            "Content-Type": contentType,
+            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
           });
-          
+
           try {
             // Überprüfe nochmals, ob der Pfad ein Verzeichnis ist (für den Fall einer Symlink-Auflösung)
             const finalStats = fs.statSync(filePath);
@@ -224,31 +253,31 @@ function staticAssetsPlugin() {
               next();
               return;
             }
-            
+
             // Sichere Erstellung des ReadStreams
             const readStream = fs.createReadStream(filePath);
-            
+
             // Fehlerbehandlung für den Stream
-            readStream.on('error', (streamErr) => {
+            readStream.on("error", (streamErr) => {
               console.error(`Stream-Fehler für ${filePath}:`, streamErr);
               if (!res.headersSent) {
-                res.writeHead(500, { 'Content-Type': 'text/plain' });
+                res.writeHead(500, { "Content-Type": "text/plain" });
                 res.end(`Fehler beim Lesen der Datei: ${streamErr.message}`);
               }
             });
-            
+
             // Pipe zum Response
             readStream.pipe(res);
           } catch (err) {
             console.error(`Fehler beim Lesen der Datei ${filePath}:`, err);
             if (!res.headersSent) {
-              res.writeHead(500, { 'Content-Type': 'text/plain' });
+              res.writeHead(500, { "Content-Type": "text/plain" });
               res.end(`Serverfehler: ${err.message}`);
             }
           }
           return;
         }
-        
+
         // Wenn keine spezielle Behandlung erforderlich ist, weiter zum nächsten Middleware
         next();
       });
@@ -263,56 +292,117 @@ export default defineConfig({
     cssHandlingPlugin(), // Plugin für korrektes CSS-Handling
     staticAssetsPlugin(), // Plugin für statische Assets
     npmModulesPlugin(), // Plugin für NPM-Module Probleme
-  ],
-  
+    // Sicheres Image-Optimierungs-Plugin für Produktion
+    isProduction && ViteImageOptimizer({
+      png: {
+        quality: 80,
+        compressionLevel: 8,
+      },
+      jpeg: {
+        quality: 80,
+        progressive: true,
+      },
+      jpg: {
+        quality: 80,
+        progressive: true,
+      },
+      webp: {
+        lossless: false,
+        quality: 80,
+      },
+      svg: {
+        multipass: true,
+        plugins: [
+          {
+            name: 'preset-default',
+            params: {
+              overrides: {
+                cleanupNumericValues: false,
+                removeViewBox: false,
+              },
+            },
+          },
+        ],
+      },
+      cache: true,
+      logStats: true,
+    }),
+    // Kompression für bessere Produktionsperformance
+    isProduction && compression({
+      algorithm: 'gzip',
+      ext: '.gz',
+      threshold: 10240, // Mindestgröße für Kompression (10KB)
+      deleteOriginFile: false,
+    }),
+    // Bündel-Visualisierung für Analysen
+    process.env.ANALYZE && visualizer({
+      filename: './stats.html',
+      open: true,
+      gzipSize: true,
+      brotliSize: true,
+    }),
+  ].filter(Boolean), // Entferne alle falsy-Werte aus der Plugin-Liste
+
   // Konfiguration für die öffentlichen Verzeichnisse
-  publicDir: 'public',
-  
+  publicDir: "public",
+
   // Optimiere die Abhängigkeitsauflösung
   optimizeDeps: {
-    include: ['vue'],
+    include: ['vue', 'vue-router', 'pinia', '@vueuse/core'],
     exclude: [],
     esbuildOptions: {
       define: {
-        global: 'globalThis',
+        global: "globalThis",
+      },
+      target: 'es2020',
+      supported: { 
+        'top-level-await': true 
       },
     },
   },
-  
+
   // CSS-spezifische Konfiguration
   css: {
     // Deaktiviere CSS-Module für globale Styles
     modules: false,
-    // Keine CSS-Extraktion im Entwicklungsmodus
-    devSourcemap: true,
-    preprocessorOptions: {
-      css: {
-        // Keine Präprozessor-Optionen für reines CSS
-      }
-    }
+    // Nur Sourcemaps im Entwicklungsmodus
+    devSourcemap: !isProduction,
+    // Simplified PostCSS configuration without dynamic requires
+    postcss: {
+      plugins: []
+    },
   },
-  
+
   // Verbesserte Alias-Konfiguration
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
-      '@frontend': frontendDir,
-      '@assets': resolve(frontendDir, 'assets'),
-      '@components': resolve(frontendDir, 'vue/components'),
-      '@composables': resolve(frontendDir, 'vue/composables'),
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
+      "@frontend": frontendDir,
+      "@assets": resolve(frontendDir, "assets"),
+      "@components": resolve(frontendDir, "vue/components"),
+      "@composables": resolve(frontendDir, "vue/composables"),
       // Statische Assets-Aliase
-      '/static/css/': resolve(frontendDir, 'css') + '/',
-      '/static/js/': resolve(frontendDir, 'js') + '/',
-      '/static/images/': resolve(frontendDir, 'images') + '/',
+      "/static/css/": resolve(frontendDir, "css") + "/",
+      "/static/js/": resolve(frontendDir, "js") + "/",
+      "/static/images/": resolve(frontendDir, "images") + "/",
       // Vue-Module
-      'vue': resolve(projectRoot, 'node_modules/vue/dist/vue.esm-bundler.js'),
-      '@vue/runtime-dom': resolve(projectRoot, 'node_modules/@vue/runtime-dom/dist/runtime-dom.esm-bundler.js'),
-      '@vue/shared': resolve(projectRoot, 'node_modules/@vue/shared/dist/shared.esm-bundler.js'),
-      '@vue/reactivity': resolve(projectRoot, 'node_modules/@vue/reactivity/dist/reactivity.esm-bundler.js'),
+      vue: resolve(projectRoot, "node_modules/vue/dist/vue.esm-bundler.js"),
+      "@vue/runtime-dom": resolve(
+        projectRoot,
+        "node_modules/@vue/runtime-dom/dist/runtime-dom.esm-bundler.js",
+      ),
+      "@vue/shared": resolve(
+        projectRoot,
+        "node_modules/@vue/shared/dist/shared.esm-bundler.js",
+      ),
+      "@vue/reactivity": resolve(
+        projectRoot,
+        "node_modules/@vue/reactivity/dist/reactivity.esm-bundler.js",
+      ),
     },
-    extensions: ['.js', '.ts', '.vue', '.json'],
+    extensions: [".js", ".ts", ".vue", ".json"],
   },
-  
+
   // Server-Konfiguration für die Entwicklung
   server: {
     port: 3000,
@@ -326,71 +416,131 @@ export default defineConfig({
     },
     // Verbesserte Proxy-Konfiguration für API-Anfragen
     proxy: {
-      '/api': {
-        target: 'http://localhost:5000', // Aktualisiert auf Port 5000, wo der Python-API-Server tatsächlich läuft
+      "/api": {
+        target: "http://localhost:8080", // API-Server auf Port 8080
         changeOrigin: true,
         secure: false,
         ws: true,
         rewrite: (path) => path,
         configure: (proxy, _options) => {
-          proxy.on('error', (err, _req, _res) => {
-            console.log('Proxy-Fehler:', err);
+          proxy.on("error", (err, _req, _res) => {
+            console.log("Proxy-Fehler:", err);
           });
-          proxy.on('proxyReq', (proxyReq, req, _res) => {
-            console.log('Proxy-Anfrage:', req.method, req.url);
+          proxy.on("proxyReq", (proxyReq, req, _res) => {
+            console.log("Proxy-Anfrage:", req.method, req.url);
           });
-        }
+        },
       },
     },
   },
-  
+
   // Build-Optionen
   build: {
     outDir: distDir,
-    assetsDir: 'assets',
+    assetsDir: "assets",
     emptyOutDir: true,
-    sourcemap: true,
+    sourcemap: !isProduction, // Sourcemaps nur im Entwicklungsmodus
     
-    // Kopieren von statischen Dateien während des Builds
+    // Optimierung für Produktion
+    minify: isProduction ? 'terser' : false,
+    terserOptions: isProduction ? {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        pure_funcs: ["console.log", "console.debug", "console.info"],
+      }
+    } : undefined,
+
+    // Verbesserte Aufteilung der Chunks
     rollupOptions: {
+      // Fixed input configuration to avoid duplicate property error
       input: {
         // Prüfe, ob die Pfade existieren, bevor sie als Input definiert werden
-        main: fs.existsSync(resolve(frontendDir, 'main.js')) ? resolve(frontendDir, 'main.js') : null,
-        admin: fs.existsSync(resolve(frontendDir, 'js/admin.js')) ? resolve(frontendDir, 'js/admin.js') : null,
-        docConverter: fs.existsSync(resolve(frontendDir, 'vue/doc-converter-app.js')) ? resolve(frontendDir, 'vue/doc-converter-app.js') : null,
-        dmsAssistant: fs.existsSync(resolve(frontendDir, 'vue-dms-assistant.html')) ? resolve(frontendDir, 'vue-dms-assistant.html') : null,
-        index: resolve(frontendDir, 'index.html'),
+        main: fs.existsSync(resolve(frontendDir, "main.js"))
+          ? resolve(frontendDir, "main.js")
+          : null,
+        admin: fs.existsSync(resolve(frontendDir, "js/admin.js"))
+          ? resolve(frontendDir, "js/admin.js")
+          : null,
+        docConverter: fs.existsSync(
+          resolve(frontendDir, "vue/doc-converter-app.js"),
+        )
+          ? resolve(frontendDir, "vue/doc-converter-app.js")
+          : null,
+        dmsAssistant: fs.existsSync(
+          resolve(frontendDir, "vue-dms-assistant.html"),
+        )
+          ? resolve(frontendDir, "vue-dms-assistant.html")
+          : null,
+        index: resolve(frontendDir, "index.html"),
       },
-      // Entferne null-Werte aus dem input-Objekt
-      get input() {
-        const input = this._input;
-        Object.keys(input).forEach(key => input[key] === null && delete input[key]);
-        return input;
-      },
-      set input(value) {
-        this._input = value;
-      },
-      _input: {},
       output: {
-        entryFileNames: 'js/[name].js',
-        chunkFileNames: 'js/chunks/[name]-[hash].js',
+        entryFileNames: isProduction ? "js/[name].[hash].js" : "js/[name].js",
+        chunkFileNames: isProduction 
+          ? "js/chunks/[name]-[hash].js" 
+          : "js/chunks/[name].js",
         assetFileNames: (assetInfo) => {
-          const extType = assetInfo.name.split('.').at(1);
-          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
-            return 'images/[name][extname]';
+          const extType = assetInfo.name?.split(".").pop();
+          if (extType && /png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
+            return "images/[name].[hash][extname]";
           }
-          if (/css/i.test(extType)) {
-            return 'css/[name][extname]';
+          if (extType && /css/i.test(extType)) {
+            return "css/[name].[hash][extname]";
           }
-          return 'assets/[name][extname]';
+          if (extType && /woff2?|ttf|eot/i.test(extType)) {
+            return "fonts/[name].[hash][extname]";
+          }
+          return "assets/[name].[hash][extname]";
         },
-        manualChunks: {
-          'vue-vendor': ['vue'],
-          'common-utils': [
-            './frontend/js/utils.ts',
-          ],
+        manualChunks: (id) => {
+          // Vendor-Bibliotheken
+          if (id.includes('node_modules')) {
+            if (id.includes('vue')) return 'vendor-vue';
+            if (id.includes('pinia')) return 'vendor-pinia';
+            if (id.includes('router')) return 'vendor-router';
+            if (id.includes('axios')) return 'vendor-axios';
+            if (id.includes('chart')) return 'vendor-chart';
+            if (id.includes('marked')) return 'vendor-marked';
+            if (id.includes('vueuse')) return 'vendor-vueuse';
+            return 'vendor';
+          }
+
+          // App-Komponenten
+          if (id.includes('/components/')) {
+            if (id.includes('/admin/')) return 'components-admin';
+            if (id.includes('/chat/')) return 'components-chat';
+            if (id.includes('/ui/')) return 'components-ui';
+            if (id.includes('/shared/')) return 'components-shared';
+            return 'components';
+          }
+
+          // Stores
+          if (id.includes('/stores/')) {
+            if (id.includes('/admin/')) return 'stores-admin';
+            if (id.includes('/sessions')) return 'stores-sessions';
+            return 'stores';
+          }
+
+          // Services
+          if (id.includes('/services/')) {
+            if (id.includes('/api/')) return 'services-api';
+            return 'services';
+          }
+
+          // Bridge-System
+          if (id.includes('/bridge/')) {
+            return 'bridge';
+          }
+          
+          return undefined; // Standardverhalten für nicht zugeordnete Module
         },
       },
     },
+
+    // Verbesserte Caching-Strategie
+    assetsInlineLimit: 10240, // 10kb
+    cssCodeSplit: true,
+    target: 'es2019',
+    modulePreload: true,
   },
 });

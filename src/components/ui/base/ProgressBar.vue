@@ -1,6 +1,6 @@
 <template>
-  <div 
-    class="n-progress-bar" 
+  <div
+    class="n-progress-bar"
     :class="[
       `n-progress-bar--${size}`,
       `n-progress-bar--${variant}`,
@@ -8,8 +8,8 @@
         'n-progress-bar--striped': striped,
         'n-progress-bar--animated': animated,
         'n-progress-bar--rounded': rounded,
-        'n-progress-bar--labeled': showLabel
-      }
+        'n-progress-bar--labeled': showLabel,
+      },
     ]"
     :aria-valuenow="value"
     :aria-valuemin="min"
@@ -18,25 +18,26 @@
     role="progressbar"
     v-bind="$attrs"
   >
-    <div 
+    <div
       class="n-progress-bar__track"
       :style="{ height: trackHeight }"
       :class="{ 'n-progress-bar__track--indeterminate': indeterminate }"
     >
-      <div 
+      <div
         class="n-progress-bar__fill"
         :style="{ width: progressWidth }"
         :class="{ 'n-progress-bar__fill--indeterminate': indeterminate }"
       ></div>
     </div>
-    
+
     <transition name="n-progress-bar-label">
-      <div 
-        v-if="showLabel && !indeterminate" 
+      <div
+        v-if="showLabel && !indeterminate"
         class="n-progress-bar__label"
         :class="{
-          'n-progress-bar__label--inside': labelPosition === 'inside' && value >= labelThreshold,
-          'n-progress-bar__label--outside': labelPosition === 'outside'
+          'n-progress-bar__label--inside':
+            labelPosition === 'inside' && value >= labelThreshold,
+          'n-progress-bar__label--outside': labelPosition === 'outside',
         }"
       >
         <slot name="label">
@@ -48,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed } from "vue";
 
 /**
  * ProgressBar component that displays progress status.
@@ -66,9 +67,9 @@ export interface ProgressBarProps {
   /** Maximum value (usually 100) */
   max?: number;
   /** Size variant */
-  size?: 'small' | 'medium' | 'large';
+  size?: "small" | "medium" | "large";
   /** Color variant */
-  variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info';
+  variant?: "primary" | "secondary" | "success" | "warning" | "error" | "info";
   /** Whether to show striped effect */
   striped?: boolean;
   /** Whether to animate the stripes */
@@ -78,7 +79,7 @@ export interface ProgressBarProps {
   /** Whether to show a label with the progress */
   showLabel?: boolean;
   /** Position of the label */
-  labelPosition?: 'inside' | 'outside';
+  labelPosition?: "inside" | "outside";
   /** Threshold value for showing label inside (when labelPosition is 'inside') */
   labelThreshold?: number;
   /** Custom format for the label */
@@ -95,29 +96,29 @@ const props = withDefaults(defineProps<ProgressBarProps>(), {
   value: 0,
   min: 0,
   max: 100,
-  size: 'medium',
-  variant: 'primary',
+  size: "medium",
+  variant: "primary",
   striped: false,
   animated: false,
   rounded: true,
   showLabel: false,
-  labelPosition: 'inside',
+  labelPosition: "inside",
   labelThreshold: 30,
   indeterminate: false,
-  trackHeight: ''
+  trackHeight: "",
 });
 
 // Compute normalized progress width as percentage
 const progressWidth = computed(() => {
-  if (props.indeterminate) return '100%';
-  
+  if (props.indeterminate) return "100%";
+
   // Clamp value between min and max
   const clampedValue = Math.max(props.min, Math.min(props.max, props.value));
-  
+
   // Calculate percentage
   const range = props.max - props.min;
-  if (range <= 0) return '0%';
-  
+  if (range <= 0) return "0%";
+
   const percentage = ((clampedValue - props.min) / range) * 100;
   return `${percentage}%`;
 });
@@ -127,11 +128,11 @@ const formattedValue = computed(() => {
   if (props.format) {
     return props.format(props.value, props.min, props.max);
   }
-  
+
   // Default formatting as percentage
   const range = props.max - props.min;
-  if (range <= 0) return '0%';
-  
+  if (range <= 0) return "0%";
+
   const percentage = Math.round(((props.value - props.min) / range) * 100);
   return `${percentage}%`;
 });
@@ -141,7 +142,7 @@ const ariaValueText = computed(() => {
   if (props.ariaValueText) {
     return props.ariaValueText;
   }
-  return props.indeterminate ? 'Loading...' : formattedValue.value;
+  return props.indeterminate ? "Loading..." : formattedValue.value;
 });
 </script>
 
@@ -150,7 +151,15 @@ const ariaValueText = computed(() => {
   /* Base styles */
   position: relative;
   width: 100%;
-  font-family: var(--n-font-family, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-family: var(
+    --n-font-family,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif
+  );
   font-size: var(--n-font-size-sm, 0.875rem);
   line-height: 1.5;
   display: flex;
@@ -298,7 +307,9 @@ const ariaValueText = computed(() => {
 /* Label transition */
 .n-progress-bar-label-enter-active,
 .n-progress-bar-label-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
 .n-progress-bar-label-enter-from,
@@ -312,7 +323,7 @@ const ariaValueText = computed(() => {
   .n-progress-bar__track {
     background-color: var(--n-color-gray-700, #4a5568);
   }
-  
+
   .n-progress-bar__label--outside {
     color: var(--n-color-text-primary-dark, #f7fafc);
   }

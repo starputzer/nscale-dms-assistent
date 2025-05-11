@@ -1,10 +1,10 @@
 <template>
-  <div 
-    class="n-card" 
+  <div
+    class="n-card"
     :class="[
       `n-card--${variant}`,
       `n-card--${size}`,
-      { 'n-card--interactive': interactive }
+      { 'n-card--interactive': interactive },
     ]"
     :tabindex="interactive ? 0 : undefined"
     @click="handleClick"
@@ -20,11 +20,11 @@
       </div>
       <slot name="header"></slot>
     </div>
-    
+
     <div class="n-card-body" :style="bodyStyles">
       <slot></slot>
     </div>
-    
+
     <div v-if="$slots.footer" class="n-card-footer">
       <slot name="footer"></slot>
     </div>
@@ -32,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed } from "vue";
 
 /**
  * Card component that serves as a container for various content types
@@ -49,9 +49,9 @@ export interface CardProps {
   /** The title of the card */
   title?: string;
   /** Appearance variant of the card */
-  variant?: 'default' | 'elevated' | 'bordered' | 'flat';
+  variant?: "default" | "elevated" | "bordered" | "flat";
   /** Size variant affecting padding and content density */
-  size?: 'small' | 'medium' | 'large';
+  size?: "small" | "medium" | "large";
   /** Whether the card can be interacted with (adds hover effects and focus) */
   interactive?: boolean;
   /** Custom padding for the card body */
@@ -63,48 +63,50 @@ export interface CardProps {
 }
 
 const props = withDefaults(defineProps<CardProps>(), {
-  variant: 'default',
-  size: 'medium',
-  interactive: false
+  variant: "default",
+  size: "medium",
+  interactive: false,
 });
 
 const emit = defineEmits<{
-  (e: 'click', event: MouseEvent | KeyboardEvent): void;
+  (e: "click", event: MouseEvent | KeyboardEvent): void;
 }>();
 
 // Check if the card has a header (title, headerActions slot, or header slot)
 const slots = defineSlots();
 const hasHeader = computed(() => {
-  return !!props.title || !!slots.title || !!slots.headerActions || !!slots.header;
+  return (
+    !!props.title || !!slots.title || !!slots.headerActions || !!slots.header
+  );
 });
 
 // Calculate body styles based on props
 const bodyStyles = computed(() => {
   const styles: Record<string, string> = {};
-  
+
   if (props.padding) {
     styles.padding = props.padding;
   }
-  
+
   if (props.minHeight) {
     styles.minHeight = props.minHeight;
   }
-  
+
   return styles;
 });
 
 // Handle click event for interactive cards
 function handleClick(event: MouseEvent) {
   if (props.interactive) {
-    emit('click', event);
+    emit("click", event);
   }
 }
 
 // Handle keyboard events for interactive cards (accessibility)
 function handleKeyDown(event: KeyboardEvent) {
-  if (props.interactive && (event.key === 'Enter' || event.key === ' ')) {
+  if (props.interactive && (event.key === "Enter" || event.key === " ")) {
     event.preventDefault();
-    emit('click', event);
+    emit("click", event);
   }
 }
 </script>
@@ -118,9 +120,12 @@ function handleKeyDown(event: KeyboardEvent) {
   flex-direction: column;
   width: 100%;
   box-sizing: border-box;
-  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease,
+    border-color 0.2s ease;
   position: relative;
-  max-width: v-bind('props.maxWidth');
+  max-width: v-bind("props.maxWidth");
 }
 
 /* Variant styles */
@@ -131,7 +136,9 @@ function handleKeyDown(event: KeyboardEvent) {
 
 .n-card--elevated {
   border: 1px solid var(--n-color-gray-100, #f7fafc);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .n-card--bordered {

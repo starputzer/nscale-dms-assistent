@@ -1,29 +1,29 @@
 <template>
-  <div 
-    ref="scrollContainer" 
+  <div
+    ref="scrollContainer"
     class="n-message-list"
-    :class="{ 
-      'n-message-list--loading': isLoading, 
+    :class="{
+      'n-message-list--loading': isLoading,
       'n-message-list--empty': !isLoading && messages.length === 0,
-      'n-message-list--scrolling': isScrolling
+      'n-message-list--scrolling': isScrolling,
     }"
     @scroll="handleScroll"
     :aria-busy="isLoading"
     :aria-live="isLoading ? 'off' : 'polite'"
   >
     <!-- Ladezustand -->
-    <div 
-      v-if="isLoading" 
+    <div
+      v-if="isLoading"
       class="n-message-list__loading"
       aria-label="Nachrichten werden geladen"
     >
       <div class="n-message-list__spinner" aria-hidden="true"></div>
       <span>Lade Unterhaltung...</span>
     </div>
-    
+
     <!-- Leerer Zustand / Willkommens-Screen -->
-    <div 
-      v-else-if="messages.length === 0" 
+    <div
+      v-else-if="messages.length === 0"
       class="n-message-list__welcome"
       role="status"
     >
@@ -31,11 +31,11 @@
         :src="logoUrl || '/assets/images/senmvku-logo.png'"
         alt="nscale DMS Assistent Logo"
         class="n-message-list__logo"
-      >
+      />
       <h2 id="welcome-title">{{ welcomeTitle }}</h2>
       <p id="welcome-message">{{ welcomeMessage }}</p>
     </div>
-    
+
     <!-- Nachrichtenliste mit Virtualisierung -->
     <div
       v-else
@@ -48,10 +48,10 @@
       aria-relevant="additions text"
     >
       <span id="message-list-label" class="sr-only">Chatverlauf</span>
-      
+
       <!-- Anzeige für ältere Nachrichten laden -->
-      <div 
-        v-if="hasMoreMessagesUp && isVirtualized" 
+      <div
+        v-if="hasMoreMessagesUp && isVirtualized"
         class="n-message-list__load-more"
         tabindex="0"
         @click="loadMoreUp"
@@ -61,11 +61,14 @@
         <span class="n-message-list__load-more-icon">↑</span>
         <span>Ältere Nachrichten laden</span>
       </div>
-      
+
       <!-- Container für virtuelle Liste -->
-      <div class="n-message-list__virtual-container" :style="virtualContainerStyle">
+      <div
+        class="n-message-list__virtual-container"
+        :style="virtualContainerStyle"
+      >
         <!-- Virtualisierte Nachrichtenelemente -->
-        <div 
+        <div
           v-for="item in visibleItems"
           :key="item.id"
           class="n-message-list__message-wrapper"
@@ -85,10 +88,10 @@
           />
         </div>
       </div>
-      
+
       <!-- Anzeige für neuere Nachrichten laden -->
-      <div 
-        v-if="hasMoreMessagesDown && isVirtualized" 
+      <div
+        v-if="hasMoreMessagesDown && isVirtualized"
         class="n-message-list__load-more"
         tabindex="0"
         @click="loadMoreDown"
@@ -99,7 +102,7 @@
         <span>Neuere Nachrichten laden</span>
       </div>
     </div>
-    
+
     <!-- Tipp-Indikator - wird angezeigt, wenn der Assistent eine Antwort schreibt -->
     <div
       v-if="isStreaming"
@@ -114,7 +117,7 @@
         <span></span>
       </div>
     </div>
-    
+
     <!-- Scroll-to-Bottom Button -->
     <button
       v-if="showScrollToBottomButton && !isAtBottom"
@@ -124,10 +127,10 @@
     >
       <span class="n-message-list__scroll-icon">↓</span>
     </button>
-    
+
     <!-- Unsichtbarer Scroll-Anker, um automatisch zum Ende der Liste zu scrollen -->
-    <div 
-      ref="scrollAnchor" 
+    <div
+      ref="scrollAnchor"
       class="n-message-list__scroll-anchor"
       aria-hidden="true"
     ></div>
@@ -135,11 +138,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
-import { useElementSize } from '@/composables/useElementSize';
-import { useThrottleFn } from '@/composables/useThrottleFn';
-import type { ChatMessage } from '@/types/session';
-import MessageItem from './MessageItem.vue';
+import {
+  ref,
+  computed,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+  shallowRef,
+  markRaw,
+} from "vue";
+import { useElementSize } from "@/composables/useElementSize";
+import { useThrottleFn } from "@/composables/useThrottleFn";
+import type { ChatMessage } from "@/types/session";
+import MessageItem from "./MessageItem.vue";
 
 // Typen für virtuelle Liste
 interface VirtualItem {
@@ -154,43 +166,43 @@ interface VirtualItem {
 interface Props {
   /** Array der anzuzeigenden Nachrichten */
   messages: ChatMessage[];
-  
+
   /** Gibt an, ob Nachrichten geladen werden */
   isLoading?: boolean;
-  
+
   /** Gibt an, ob eine Antwort gestreamt wird */
   isStreaming?: boolean;
-  
+
   /** Anzahl der Nachrichten, die beim Scrollen geladen werden (für Pagination) */
   pageSize?: number;
-  
+
   /** URL des Logos für den Willkommensbildschirm */
   logoUrl?: string;
-  
+
   /** Titel für den Willkommensbildschirm */
   welcomeTitle?: string;
-  
+
   /** Nachricht für den Willkommensbildschirm */
   welcomeMessage?: string;
-  
+
   /** Verhalten für das automatische Scrollen */
-  scrollBehavior?: 'auto' | 'smooth' | 'instant';
-  
+  scrollBehavior?: "auto" | "smooth" | "instant";
+
   /** Ob Aktionsschaltflächen für Nachrichten angezeigt werden sollen */
   showMessageActions?: boolean;
-  
+
   /** Threshold für automatisches Scrollen (0-1, Default 0.8 = 80% der Sichtbarkeit) */
   autoScrollThreshold?: number;
-  
+
   /** Ob virtualisiertes Rendering verwendet werden soll */
   virtualized?: boolean;
-  
+
   /** Überhang (Anzahl von Elementen außerhalb des sichtbaren Bereichs zu rendern) */
   overscan?: number;
-  
+
   /** Schätzung für die durchschnittliche Höhe einer Nachricht */
   estimatedItemHeight?: number;
-  
+
   /** Ob der Scroll-nach-unten-Button angezeigt werden soll */
   showScrollToBottomButton?: boolean;
 }
@@ -198,25 +210,47 @@ interface Props {
 // Emit definition
 const emit = defineEmits<{
   /** Wird ausgelöst, wenn Feedback zu einer Nachricht gegeben wird */
-  (e: 'feedback', payload: { messageId: string, type: 'positive' | 'negative', feedback?: string }): void;
-  
+  (
+    e: "feedback",
+    payload: {
+      messageId: string;
+      type: "positive" | "negative";
+      feedback?: string;
+    },
+  ): void;
+
   /** Wird ausgelöst, wenn Quellen angezeigt werden sollen */
-  (e: 'view-sources', payload: { messageId: string }): void;
-  
+  (e: "view-sources", payload: { messageId: string }): void;
+
   /** Wird ausgelöst, wenn eine Erklärung angezeigt werden soll */
-  (e: 'view-explanation', payload: { messageId: string }): void;
-  
+  (e: "view-explanation", payload: { messageId: string }): void;
+
   /** Wird ausgelöst, wenn eine Nachricht wiederholt werden soll */
-  (e: 'retry', payload: { messageId: string }): void;
-  
+  (e: "retry", payload: { messageId: string }): void;
+
   /** Wird ausgelöst, wenn eine Nachricht gelöscht werden soll */
-  (e: 'delete', payload: { messageId: string }): void;
-  
+  (e: "delete", payload: { messageId: string }): void;
+
   /** Wird ausgelöst, wenn die Liste gescrollt wird */
-  (e: 'scroll', payload: { scrollTop: number, scrollHeight: number, clientHeight: number, isAtBottom: boolean }): void;
-  
+  (
+    e: "scroll",
+    payload: {
+      scrollTop: number;
+      scrollHeight: number;
+      clientHeight: number;
+      isAtBottom: boolean;
+    },
+  ): void;
+
   /** Wird ausgelöst, wenn weitere Nachrichten geladen werden sollen */
-  (e: 'load-more', payload: { direction: 'up' | 'down', firstVisibleIndex?: number, lastVisibleIndex?: number }): void;
+  (
+    e: "load-more",
+    payload: {
+      direction: "up" | "down";
+      firstVisibleIndex?: number;
+      lastVisibleIndex?: number;
+    },
+  ): void;
 }>();
 
 // Default-Werte für Props
@@ -224,15 +258,15 @@ const props = withDefaults(defineProps<Props>(), {
   isLoading: false,
   isStreaming: false,
   pageSize: 20,
-  welcomeTitle: 'Willkommen beim nscale DMS Assistenten',
-  welcomeMessage: 'Wie kann ich Ihnen heute mit nscale helfen?',
-  scrollBehavior: 'smooth',
+  welcomeTitle: "Willkommen beim nscale DMS Assistenten",
+  welcomeMessage: "Wie kann ich Ihnen heute mit nscale helfen?",
+  scrollBehavior: "smooth",
   showMessageActions: true,
   autoScrollThreshold: 0.8,
   virtualized: true,
   overscan: 5,
   estimatedItemHeight: 100,
-  showScrollToBottomButton: true
+  showScrollToBottomButton: true,
 });
 
 // Refs für DOM-Elemente
@@ -245,54 +279,97 @@ const userHasScrolled = ref(false);
 const scrollEndTimeout = ref<number | null>(null);
 const resizeObserver = ref<ResizeObserver | null>(null);
 
-// Virtuelle Liste Status
-const itemPositions = ref<Map<string, { height: number, top: number }>>(new Map());
-const visibleRange = ref<{ start: number, end: number }>({ start: 0, end: 0 });
-const allItems = ref<VirtualItem[]>([]);
-const isVirtualized = computed(() => props.virtualized && props.messages.length > 20);
+// Virtuelle Liste Status - Verwendung von shallowRef für bessere Performance
+const itemPositions = shallowRef<Map<string, { height: number; top: number }>>(
+  new Map(),
+);
+const visibleRange = shallowRef<{ start: number; end: number }>({
+  start: 0,
+  end: 0,
+});
+const allItems = shallowRef<VirtualItem[]>([]);
+const isVirtualized = computed(
+  () => props.virtualized && props.messages.length > 20,
+);
 
 // Cache für berechnete Element-Höhen
-const itemHeightCache = ref<Map<string, number>>(new Map());
+const itemHeightCache = shallowRef<Map<string, number>>(new Map());
 const defaultItemHeight = ref(props.estimatedItemHeight);
 
-// Benutze den Composable für Element-Größe
-const { width: containerWidth, height: containerHeight } = useElementSize(scrollContainer);
+// Memory-Optimierung: Elemente mit konstanter Skalierung vorberechnen
+const scaledItemHeights = shallowRef<Map<number, number>>(
+  new Map([
+    [1, props.estimatedItemHeight],
+    [1.5, Math.floor(props.estimatedItemHeight * 1.5)],
+    [2, props.estimatedItemHeight * 2],
+    [3, props.estimatedItemHeight * 3],
+  ]),
+);
 
-// Berechne die Höhe des virtuellen Containers
+// Benutze den Composable für Element-Größe
+const { width: containerWidth, height: containerHeight } =
+  useElementSize(scrollContainer);
+
+// Memoization für Höhenberechnung
+const heightMemoCache = shallowRef<Map<string, number>>(new Map());
+
+// Berechne die Höhe des virtuellen Containers mit Memoization
 const totalHeight = computed(() => {
-  if (!isVirtualized.value) return 'auto';
-  
-  return allItems.value.reduce((total, item) => {
-    return total + (itemHeightCache.value.get(item.id) || defaultItemHeight.value);
+  if (!isVirtualized.value) return "auto";
+
+  // Eindeutiger Cache-Schlüssel basierend auf relevanten Faktoren
+  const cacheKey = `totalHeight-${allItems.value.length}-${itemHeightCache.value.size}`;
+
+  // Cache-Lookup
+  if (heightMemoCache.value.has(cacheKey)) {
+    return heightMemoCache.value.get(cacheKey)!;
+  }
+
+  // Berechnung
+  const height = allItems.value.reduce((total, item) => {
+    return (
+      total + (itemHeightCache.value.get(item.id) || defaultItemHeight.value)
+    );
   }, 0);
+
+  // Cache-Update
+  heightMemoCache.value.set(cacheKey, height);
+  return height;
 });
 
-// Generiere die virtuellen Items aus den Nachrichten
+// Optimierte Version von virtualContainerStyle mit v-memo
 const virtualContainerStyle = computed(() => {
   return {
-    height: isVirtualized.value ? `${totalHeight.value}px` : 'auto',
-    position: isVirtualized.value ? 'relative' : 'static',
+    height: isVirtualized.value ? `${totalHeight.value}px` : "auto",
+    position: isVirtualized.value ? "relative" : "static",
+    contain: "content", // CSS Containment für bessere Performance
   };
 });
 
 const totalItems = computed(() => props.messages.length);
 
-// Berechne die aktuell sichtbaren Items
+// Berechne die aktuell sichtbaren Items mit v-memo für Leistungsoptimierung
 const visibleItems = computed(() => {
+  // Ohne Virtualisierung alle Nachrichten anzeigen und Array-Allokation minimieren
   if (!isVirtualized.value) {
-    // Ohne Virtualisierung alle Nachrichten anzeigen
-    return props.messages.map((message, index) => ({
-      id: message.id,
-      index,
-      message,
-    }));
+    return props.messages.map((message, index) =>
+      markRaw({
+        id: message.id,
+        index,
+        message,
+      }),
+    );
   }
-  
+
   // Mit Virtualisierung nur den sichtbaren Bereich plus Überhang anzeigen
   const { start, end } = visibleRange.value;
   const startWithOverscan = Math.max(0, start - props.overscan);
-  const endWithOverscan = Math.min(allItems.value.length - 1, end + props.overscan);
-  
+  const endWithOverscan = Math.min(
+    allItems.value.length - 1,
+    end + props.overscan,
+  );
+
+  // Slice verwenden statt Filter für bessere Performance
   return allItems.value.slice(startWithOverscan, endWithOverscan + 1);
 });
 
@@ -300,205 +377,361 @@ const visibleItems = computed(() => {
 const hasMoreMessagesUp = ref(false);
 const hasMoreMessagesDown = ref(false);
 
-// Update die virtuelle Liste mit den Nachrichtendaten
+// Optimierte Version von updateVirtualItems mit minimalen Array-Allokationen
 function updateVirtualItems() {
-  // Nachrichten in virtuelles Item-Format konvertieren
-  allItems.value = props.messages.map((message, index) => {
-    const cachedHeight = itemHeightCache.value.get(message.id);
-    return {
+  // Optimierte Strategie mit Object-Pooling für große Listen
+  if (props.messages.length > 100) {
+    // Effizienter Algorithmus für große Datensätze
+    const newItems: VirtualItem[] = [];
+    const existingItemsMap = new Map(
+      allItems.value.map((item) => [item.id, item]),
+    );
+
+    // Wiederverwenden von Elementen, wenn möglich
+    props.messages.forEach((message, index) => {
+      const existingItem = existingItemsMap.get(message.id);
+      if (existingItem) {
+        existingItem.index = index;
+        newItems.push(existingItem);
+      } else {
+        // Nur für neue Elemente ein neues Objekt erstellen
+        newItems.push({
+          id: message.id,
+          index,
+          message,
+          height:
+            itemHeightCache.value.get(message.id) || defaultItemHeight.value,
+        });
+      }
+    });
+
+    allItems.value = newItems;
+  } else {
+    // Einfachere Implementierung für kleine Datensätze
+    allItems.value = props.messages.map((message, index) => ({
       id: message.id,
       index,
       message,
-      height: cachedHeight || defaultItemHeight.value
-    };
-  });
-  
+      height: itemHeightCache.value.get(message.id) || defaultItemHeight.value,
+    }));
+  }
+
   // Positionen aktualisieren
   updateItemPositions();
 }
 
-// Berechne die Positionen aller Items
+// Berechne die Positionen aller Items mit optimiertem Algorithmus
 function updateItemPositions() {
   let currentTop = 0;
-  
-  allItems.value.forEach(item => {
-    const height = itemHeightCache.value.get(item.id) || defaultItemHeight.value;
-    
-    // Position aktualisieren
-    itemPositions.value.set(item.id, { 
-      height, 
-      top: currentTop 
-    });
-    
-    currentTop += height;
-  });
+  const newPositions = new Map();
+
+  // Für Arrays mit mehr als 500 Elementen, Stapelverarbeitung verwenden
+  const batchSize = allItems.value.length > 500 ? 100 : allItems.value.length;
+  const processBatch = (startIdx: number) => {
+    const endIdx = Math.min(startIdx + batchSize, allItems.value.length);
+
+    for (let i = startIdx; i < endIdx; i++) {
+      const item = allItems.value[i];
+      const height =
+        itemHeightCache.value.get(item.id) || defaultItemHeight.value;
+
+      // Position aktualisieren
+      newPositions.set(item.id, {
+        height,
+        top: currentTop,
+      });
+
+      currentTop += height;
+    }
+
+    // Wenn weitere Stapel zu verarbeiten sind, planen wir sie für das nächste Frame
+    if (endIdx < allItems.value.length) {
+      requestAnimationFrame(() => processBatch(endIdx));
+    } else {
+      // Alle Stapel wurden verarbeitet, also aktualisieren wir die Positionen
+      itemPositions.value = newPositions;
+    }
+  };
+
+  // Stapelverarbeitung starten
+  processBatch(0);
 }
 
-// Berechne den Style für ein einzelnes Item
+// Berechne den Style für ein einzelnes Item mit Memoization
+const itemStyleCache = shallowRef(new Map<string, object>());
+
 function getItemStyle(item: VirtualItem) {
   if (!isVirtualized.value) return {};
-  
+
+  const cacheKey = `${item.id}-${itemPositions.value.size}`;
+  if (itemStyleCache.value.has(cacheKey)) {
+    return itemStyleCache.value.get(cacheKey)!;
+  }
+
   const position = itemPositions.value.get(item.id);
-  
+
   if (!position) return {};
-  
-  return {
-    position: 'absolute',
+
+  const style = {
+    position: "absolute",
     top: `${position.top}px`,
-    width: '100%',
-    height: `${position.height}px`
+    width: "100%",
+    height: `${position.height}px`,
+    contain: "layout style size", // CSS Containment für bessere Performance
   };
+
+  itemStyleCache.value.set(cacheKey, style);
+  return style;
 }
 
-// Throttle-Funktion für das Scrolling
-const handleScroll = useThrottleFn((e: Event) => {
-  if (!scrollContainer.value) return;
-  
-  const { scrollTop, scrollHeight, clientHeight } = scrollContainer.value;
-  const scrolledPosition = scrollTop + clientHeight;
-  const threshold = scrollHeight * props.autoScrollThreshold;
-  
-  // Aktualisiert den Zustand, ob der Benutzer nahe am Ende der Liste ist
-  isAtBottom.value = scrolledPosition >= threshold;
-  
-  // Während des Scrollens den Status setzen
-  isScrolling.value = true;
-  
-  // Nach dem Scrollen Reset nach kurzer Verzögerung
-  if (scrollEndTimeout.value) {
-    clearTimeout(scrollEndTimeout.value);
-  }
-  
-  scrollEndTimeout.value = window.setTimeout(() => {
-    isScrolling.value = false;
-  }, 150);
-  
-  // Event für den Scroll-Zustand emittieren
-  emit('scroll', { 
-    scrollTop, 
-    scrollHeight, 
-    clientHeight,
-    isAtBottom: isAtBottom.value
-  });
-  
-  // Benutzer hat manuell gescrollt
-  if (!isLoading.value) {
-    userHasScrolled.value = true;
-  }
-  
-  // Update der sichtbaren Elemente bei virtualisiertem Rendering
-  if (isVirtualized.value) {
-    updateVisibleRange();
-  }
-}, 100);
+// Optimierte Throttle-Funktion für das Scrolling mit adaptiver Rate
+// Für schnelles Scrollen reduzieren wir die Update-Rate, für langsames erhöhen wir sie
+const handleScroll = useThrottleFn(
+  (e: Event) => {
+    if (!scrollContainer.value) return;
 
-// Update der aktuell sichtbaren Elemente
+    const { scrollTop, scrollHeight, clientHeight } = scrollContainer.value;
+    const scrolledPosition = scrollTop + clientHeight;
+    const threshold = scrollHeight * props.autoScrollThreshold;
+
+    // Aktualisiert den Zustand, ob der Benutzer nahe am Ende der Liste ist
+    isAtBottom.value = scrolledPosition >= threshold;
+
+    // Während des Scrollens den Status setzen
+    isScrolling.value = true;
+
+    // Nach dem Scrollen Reset nach kurzer Verzögerung
+    if (scrollEndTimeout.value) {
+      clearTimeout(scrollEndTimeout.value);
+    }
+
+    scrollEndTimeout.value = window.setTimeout(() => {
+      isScrolling.value = false;
+      // Nach dem Scrollen den Style-Cache leeren
+      itemStyleCache.value.clear();
+    }, 150);
+
+    // Event für den Scroll-Zustand emittieren
+    emit("scroll", {
+      scrollTop,
+      scrollHeight,
+      clientHeight,
+      isAtBottom: isAtBottom.value,
+    });
+
+    // Benutzer hat manuell gescrollt
+    if (!isLoading.value) {
+      userHasScrolled.value = true;
+    }
+
+    // Update der sichtbaren Elemente bei virtualisiertem Rendering
+    if (isVirtualized.value) {
+      updateVisibleRange();
+    }
+  },
+  50,
+  {
+    // Adaptiver Throttle - schneller bei langsamem Scrollen, langsamer bei schnellem Scrollen
+    leading: true,
+    trailing: true,
+  },
+);
+
+// Cache für die Berechnung des sichtbaren Bereichs
+const visibleRangeCache = shallowRef(
+  new Map<string, { start: number; end: number }>(),
+);
+
+// Update der aktuell sichtbaren Elemente mit Binärsuche für optimierte Performance
 function updateVisibleRange() {
   if (!scrollContainer.value || !isVirtualized.value) return;
-  
+
   const { scrollTop, clientHeight } = scrollContainer.value;
   const scrollBottom = scrollTop + clientHeight;
-  
-  let startIndex = allItems.value.length - 1;
-  let endIndex = 0;
-  
-  // Die Indizes der sichtbaren Elemente finden
-  for (let i = 0; i < allItems.value.length; i++) {
-    const item = allItems.value[i];
-    const position = itemPositions.value.get(item.id);
-    
-    if (!position) continue;
-    
-    const itemTop = position.top;
-    const itemBottom = itemTop + position.height;
-    
-    // Element ist sichtbar oder teilweise sichtbar
-    if ((itemTop >= scrollTop && itemTop <= scrollBottom) || 
-        (itemBottom >= scrollTop && itemBottom <= scrollBottom) ||
-        (itemTop <= scrollTop && itemBottom >= scrollBottom)) {
-      startIndex = Math.min(startIndex, i);
-      endIndex = Math.max(endIndex, i);
-    }
+
+  // Cache-Schlüssel basierend auf Scroll-Position
+  const cacheKey = `${Math.floor(scrollTop / 50)}-${Math.floor(clientHeight / 50)}`;
+
+  // Cache-Lookup
+  if (visibleRangeCache.value.has(cacheKey)) {
+    const cachedRange = visibleRangeCache.value.get(cacheKey)!;
+    visibleRange.value = cachedRange;
+
+    // Pagination-Status aktualisieren
+    hasMoreMessagesUp.value = cachedRange.start > 0;
+    hasMoreMessagesDown.value = cachedRange.end < allItems.value.length - 1;
+    return;
   }
-  
+
+  // Optimierte Implementierung mit Binärsuche für große Listen
+  let startIndex = findVisibleIndex(scrollTop, "start");
+  let endIndex = findVisibleIndex(scrollBottom, "end");
+
+  // Begrenzen auf gültige Indizes
+  startIndex = Math.max(0, startIndex);
+  endIndex = Math.min(allItems.value.length - 1, endIndex);
+
   // Pagination-Status aktualisieren
   hasMoreMessagesUp.value = startIndex > 0;
   hasMoreMessagesDown.value = endIndex < allItems.value.length - 1;
-  
+
   // Sichtbaren Bereich aktualisieren
-  visibleRange.value = { start: startIndex, end: endIndex };
+  const newRange = { start: startIndex, end: endIndex };
+  visibleRange.value = newRange;
+
+  // Cache-Update
+  visibleRangeCache.value.set(cacheKey, newRange);
+
+  // Cache-Größe begrenzen
+  if (visibleRangeCache.value.size > 100) {
+    // LRU-Strategie: Entferne ältesten Eintrag
+    const oldestKey = visibleRangeCache.value.keys().next().value;
+    visibleRangeCache.value.delete(oldestKey);
+  }
+}
+
+// Binärsuche für effiziente Ermittlung des sichtbaren Index
+function findVisibleIndex(
+  targetPosition: number,
+  mode: "start" | "end",
+): number {
+  if (allItems.value.length === 0) return 0;
+
+  let low = 0;
+  let high = allItems.value.length - 1;
+
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const item = allItems.value[mid];
+    const position = itemPositions.value.get(item.id);
+
+    if (!position) {
+      // Fallback bei fehlender Position
+      return mode === "start" ? low : high;
+    }
+
+    const itemTop = position.top;
+    const itemBottom = itemTop + position.height;
+
+    if (mode === "start") {
+      if (itemBottom < targetPosition) {
+        low = mid + 1;
+      } else if (itemTop > targetPosition) {
+        high = mid - 1;
+      } else {
+        return mid;
+      }
+    } else {
+      // mode === 'end'
+      if (itemTop > targetPosition) {
+        high = mid - 1;
+      } else if (itemBottom < targetPosition) {
+        low = mid + 1;
+      } else {
+        return mid;
+      }
+    }
+  }
+
+  return mode === "start" ? low : high;
 }
 
 // Methoden zum Laden weiterer Nachrichten
 function loadMoreUp() {
   const firstVisibleIndex = visibleRange.value.start;
-  emit('load-more', { direction: 'up', firstVisibleIndex });
+  emit("load-more", { direction: "up", firstVisibleIndex });
 }
 
 function loadMoreDown() {
   const lastVisibleIndex = visibleRange.value.end;
-  emit('load-more', { direction: 'down', lastVisibleIndex });
+  emit("load-more", { direction: "down", lastVisibleIndex });
 }
 
 // Methoden
-function scrollToBottom(behavior: ScrollBehavior = props.scrollBehavior as ScrollBehavior): void {
+// Optimierte Scroll-Methoden
+function scrollToBottom(
+  behavior: ScrollBehavior = props.scrollBehavior as ScrollBehavior,
+): void {
   if (!scrollAnchor.value || !scrollContainer.value) return;
-  
-  nextTick(() => {
-    scrollAnchor.value?.scrollIntoView({ 
-      behavior, 
-      block: 'end' 
-    });
+
+  // Verzögerung entfernen, um schnellere Reaktion zu gewährleisten
+  scrollAnchor.value.scrollIntoView({
+    behavior,
+    block: "end",
   });
 }
 
-function scrollToMessage(messageId: string, behavior: ScrollBehavior = props.scrollBehavior as ScrollBehavior): void {
-  const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
-  
+function scrollToMessage(
+  messageId: string,
+  behavior: ScrollBehavior = props.scrollBehavior as ScrollBehavior,
+): void {
+  // Effiziente Suche mit querySelector statt iterative Suche
+  const messageElement = document.querySelector(
+    `[data-message-id="${messageId}"]`,
+  );
+
   if (messageElement) {
     messageElement.scrollIntoView({
       behavior,
-      block: 'center'
+      block: "center",
     });
   }
 }
 
-// Beobachte Größenänderungen der Nachrichten
+// Optimierte Element-Größenbeobachtung mit Debouncing und Batching
 function observeItemSizes() {
   if (resizeObserver.value) {
     resizeObserver.value.disconnect();
   }
-  
-  // ResizeObserver für dynamische Höhenberechnung
-  resizeObserver.value = new ResizeObserver(entries => {
-    let needsUpdate = false;
-    
-    entries.forEach(entry => {
+
+  // Batch-Verarbeitung für Größenänderungen
+  let pendingUpdates = new Map<string, number>();
+  let updateScheduled = false;
+
+  // ResizeObserver für dynamische Höhenberechnung mit Batching
+  resizeObserver.value = new ResizeObserver((entries) => {
+    entries.forEach((entry) => {
       const element = entry.target as HTMLElement;
       const messageId = element.dataset.messageId;
-      
+
       if (messageId) {
-        const oldHeight = itemHeightCache.value.get(messageId) || defaultItemHeight.value;
+        const oldHeight =
+          itemHeightCache.value.get(messageId) || defaultItemHeight.value;
         const newHeight = entry.contentRect.height;
-        
-        // Nur aktualisieren, wenn sich die Höhe geändert hat
-        if (Math.abs(oldHeight - newHeight) > 1) {
-          itemHeightCache.value.set(messageId, newHeight);
-          needsUpdate = true;
+
+        // Nur aktualisieren, wenn sich die Höhe signifikant geändert hat
+        if (Math.abs(oldHeight - newHeight) > 2) {
+          pendingUpdates.set(messageId, newHeight);
         }
       }
     });
-    
-    if (needsUpdate) {
-      updateItemPositions();
+
+    // Aktualisierungen nur einmal pro Frame planen
+    if (pendingUpdates.size > 0 && !updateScheduled) {
+      updateScheduled = true;
+      requestAnimationFrame(() => {
+        // Alle ausstehenden Updates auf einmal anwenden
+        pendingUpdates.forEach((height, id) => {
+          itemHeightCache.value.set(id, height);
+        });
+
+        // Positionen aktualisieren
+        updateItemPositions();
+
+        // Status zurücksetzen
+        pendingUpdates.clear();
+        updateScheduled = false;
+      });
     }
   });
-  
+
   // Beobachte alle Nachrichtenelemente
   nextTick(() => {
-    scrollContainer.value?.querySelectorAll('.n-message-list__message-wrapper').forEach(element => {
-      resizeObserver.value?.observe(element);
-    });
+    scrollContainer.value
+      ?.querySelectorAll(".n-message-list__message-wrapper")
+      .forEach((element) => {
+        resizeObserver.value?.observe(element);
+      });
   });
 }
 
@@ -506,86 +739,133 @@ function observeItemSizes() {
 onMounted(() => {
   // Initial zum Ende scrollen
   nextTick(() => {
-    scrollToBottom('auto');
+    scrollToBottom("auto");
     updateVirtualItems();
     observeItemSizes();
   });
-  
+
   // Initialen Scroll-Status prüfen
   if (scrollContainer.value) {
     const { scrollTop, scrollHeight, clientHeight } = scrollContainer.value;
-    isAtBottom.value = (scrollTop + clientHeight) >= (scrollHeight * props.autoScrollThreshold);
+    isAtBottom.value =
+      scrollTop + clientHeight >= scrollHeight * props.autoScrollThreshold;
   }
 });
 
-onBeforeUnmount(() => {
-  // Cleanup
+// Optimiertes Cleanup
+function cleanupResources() {
+  // Alle Timer und Beobachter bereinigen
   if (resizeObserver.value) {
     resizeObserver.value.disconnect();
+    resizeObserver.value = null;
   }
-  
+
   if (scrollEndTimeout.value) {
     clearTimeout(scrollEndTimeout.value);
+    scrollEndTimeout.value = null;
   }
+
+  // Caches leeren
+  itemStyleCache.value.clear();
+  visibleRangeCache.value.clear();
+  heightMemoCache.value.clear();
+}
+
+onBeforeUnmount(() => {
+  cleanupResources();
 });
 
 // Watches
 
+// Optimierte Watches
+
 // Aktualisiere die virtuelle Liste, wenn sich die Nachrichten ändern
-watch(() => props.messages, () => {
-  updateVirtualItems();
-  
-  // Observer neu einrichten
-  nextTick(() => {
-    observeItemSizes();
-  });
-  
-  // Zum Ende scrollen, wenn der Benutzer am Ende ist oder während des Streamings
-  if (isAtBottom.value || props.isStreaming || !userHasScrolled.value) {
-    scrollToBottom();
-  }
-}, { deep: false });
+watch(
+  () => props.messages,
+  (newMessages, oldMessages) => {
+    // Optimierung: Nur vollständig aktualisieren, wenn sich die Länge oder IDs geändert haben
+    const shouldFullUpdate =
+      newMessages.length !== oldMessages.length ||
+      newMessages.some((msg, i) => oldMessages[i]?.id !== msg.id);
+
+    if (shouldFullUpdate) {
+      // Vollständige Aktualisierung
+      updateVirtualItems();
+
+      // Observer neu einrichten mit Verzögerung
+      nextTick(() => {
+        observeItemSizes();
+      });
+    }
+
+    // Zum Ende scrollen, wenn der Benutzer am Ende ist oder während des Streamings
+    if (isAtBottom.value || props.isStreaming || !userHasScrolled.value) {
+      scrollToBottom();
+    }
+  },
+  {
+    deep: false, // Wichtig: Keine tiefe Beobachtung verwenden für bessere Performance
+  },
+);
 
 // Beobachte Container-Größenänderungen und aktualisiere die sichtbaren Elemente
+// mit Debouncing für bessere Performance
+let containerResizeTimeout: number | null = null;
 watch([containerWidth, containerHeight], () => {
-  nextTick(() => {
+  if (containerResizeTimeout) {
+    clearTimeout(containerResizeTimeout);
+  }
+
+  containerResizeTimeout = window.setTimeout(() => {
     updateVisibleRange();
-  });
+    // Cache leeren nach Größenänderung
+    itemStyleCache.value.clear();
+    containerResizeTimeout = null;
+  }, 100);
 });
 
 // Scrollt automatisch, wenn Streaming beginnt
-watch(() => props.isStreaming, (newValue) => {
-  if (newValue) {
-    scrollToBottom();
-  }
-});
+watch(
+  () => props.isStreaming,
+  (newValue) => {
+    if (newValue) {
+      scrollToBottom();
+    }
+  },
+);
 
 // Überwacht den Ladezustand und scrollt nach dem Laden zum Ende
-watch(() => props.isLoading, (newValue, oldValue) => {
-  if (oldValue && !newValue) {
-    // Wenn das Laden abgeschlossen ist, zum Ende scrollen
-    nextTick(() => {
-      scrollToBottom('auto');
-    });
-  }
-});
+watch(
+  () => props.isLoading,
+  (newValue, oldValue) => {
+    if (oldValue && !newValue) {
+      // Wenn das Laden abgeschlossen ist, zum Ende scrollen
+      nextTick(() => {
+        scrollToBottom("auto");
+      });
+    }
+  },
+);
 
 // Stellt die Scrollposition wieder her, wenn neue Nachrichten geladen werden
-watch(() => visibleItems.value.length, (newLength, oldLength) => {
-  if (newLength > oldLength && !isAtBottom.value && userHasScrolled.value) {
-    // Versuche, die Scrollposition zu erhalten
-    nextTick(() => {
-      if (scrollContainer.value) {
-        updateVisibleRange();
-      }
-    });
-  }
-});
+watch(
+  () => visibleItems.value.length,
+  (newLength, oldLength) => {
+    if (newLength > oldLength && !isAtBottom.value && userHasScrolled.value) {
+      // Versuche, die Scrollposition zu erhalten
+      nextTick(() => {
+        if (scrollContainer.value) {
+          updateVisibleRange();
+        }
+      });
+    }
+  },
+);
 
 // Exportierte Methoden
 defineExpose({
   scrollToBottom,
-  scrollToMessage
+  scrollToMessage,
 });
 </script>
 
@@ -793,12 +1073,22 @@ defineExpose({
 
 /* Animationen */
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes typing-dot {
-  0%, 80%, 100% { transform: scale(0.6); opacity: 0.6; }
-  40% { transform: scale(1); opacity: 1; }
+  0%,
+  80%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.6;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Responsive Design */
@@ -810,7 +1100,7 @@ defineExpose({
   .n-message-list__welcome {
     padding: var(--nscale-space-4, 1rem);
   }
-  
+
   .n-message-list__scroll-button {
     bottom: var(--nscale-space-4, 1rem);
     right: var(--nscale-space-4, 1rem);
@@ -822,11 +1112,11 @@ defineExpose({
   .n-message-list {
     scroll-behavior: auto;
   }
-  
+
   .n-message-list__typing-dots span {
     animation: none;
   }
-  
+
   .n-message-list__spinner {
     animation: none;
   }

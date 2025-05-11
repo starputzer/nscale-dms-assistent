@@ -1,7 +1,10 @@
 <template>
   <div class="safe-component">
     <h3>Sichere Komponente</h3>
-    <p>Diese Komponente enthält keine Fehler und sollte immer korrekt funktionieren.</p>
+    <p>
+      Diese Komponente enthält keine Fehler und sollte immer korrekt
+      funktionieren.
+    </p>
     <div class="content">
       <p>Status: <span class="status success">Fehlerfrei</span></p>
       <button @click="updateCounter">Zähler erhöhen: {{ counter }}</button>
@@ -10,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from "vue";
 
 // Ein einfacher Zähler
 const counter = ref(0);

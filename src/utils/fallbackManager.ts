@@ -1,25 +1,34 @@
-import { useFeatureTogglesStore } from '@/stores/featureToggles';
-import { reactive, ref, computed, watch } from 'vue';
+import { useFeatureTogglesStore } from "@/stores/featureToggles";
+import { reactive, ref, computed, watch } from "vue";
 
 /**
  * Verschiedene Strategien für Fallbacks
  */
-export type FallbackStrategy = 'immediate' | 'threshold' | 'progressive' | 'manual';
+export type FallbackStrategy =
+  | "immediate"
+  | "threshold"
+  | "progressive"
+  | "manual";
 
 /**
  * Schweregrade für Fehler
  */
-export type FallbackErrorSeverity = 'low' | 'medium' | 'high' | 'critical';
+export type FallbackErrorSeverity = "low" | "medium" | "high" | "critical";
 
 /**
  * Status eines Fallbacks
  */
-export type FallbackStatus = 'active' | 'pending' | 'disabled' | 'recovering';
+export type FallbackStatus = "active" | "pending" | "disabled" | "recovering";
 
 /**
  * Phasen im Lifecycle eines Fallbacks
  */
-export type FallbackPhase = 'detection' | 'activation' | 'active' | 'recovery' | 'disabled';
+export type FallbackPhase =
+  | "detection"
+  | "activation"
+  | "active"
+  | "recovery"
+  | "disabled";
 
 /**
  * Konfiguration für Fallback-Verhalten eines Features
@@ -96,9 +105,15 @@ export interface FeatureFallbackState {
 /**
  * Event-Arten für das Fallback-System
  */
-export type FallbackEventType = 
-  'error' | 'activation' | 'deactivation' | 'recoveryAttempt' | 
-  'recoverySuccess' | 'recoveryFailure' | 'levelChange' | 'configChange';
+export type FallbackEventType =
+  | "error"
+  | "activation"
+  | "deactivation"
+  | "recoveryAttempt"
+  | "recoverySuccess"
+  | "recoveryFailure"
+  | "levelChange"
+  | "configChange";
 
 /**
  * Event für das Fallback-System
@@ -137,38 +152,41 @@ export interface FallbackManagerOptions {
 /**
  * Standard-Konfigurationen für bekannte Features
  */
-const DEFAULT_FEATURE_CONFIGS: Record<string, Partial<FeatureFallbackConfig>> = {
-  'useSfcDocConverter': {
-    strategy: 'threshold',
+const DEFAULT_FEATURE_CONFIGS: Record<
+  string,
+  Partial<FeatureFallbackConfig>
+> = {
+  useSfcDocConverter: {
+    strategy: "threshold",
     errorThreshold: 3,
     autoRecovery: true,
     recoveryTimeout: 3600000, // 1 Stunde
     maxRecoveryAttempts: 3,
-    priority: 100
+    priority: 100,
   },
-  'useSfcAdmin': {
-    strategy: 'threshold',
+  useSfcAdmin: {
+    strategy: "threshold",
     errorThreshold: 2,
     autoRecovery: true,
     recoveryTimeout: 7200000, // 2 Stunden
     maxRecoveryAttempts: 2,
-    priority: 90
+    priority: 90,
   },
-  'useSfcChat': {
-    strategy: 'immediate',
+  useSfcChat: {
+    strategy: "immediate",
     autoRecovery: true,
     recoveryTimeout: 1800000, // 30 Minuten
     maxRecoveryAttempts: 5,
-    priority: 110
+    priority: 110,
   },
-  'useSfcSettings': {
-    strategy: 'progressive',
+  useSfcSettings: {
+    strategy: "progressive",
     errorThreshold: 3,
     autoRecovery: true,
     recoveryTimeout: 3600000, // 1 Stunde
     maxRecoveryAttempts: 3,
-    priority: 80
-  }
+    priority: 80,
+  },
 };
 
 // Singleton-Instanz
@@ -181,7 +199,9 @@ export class FallbackManager {
   /** Feature-Konfigurationen */
   private featureConfigs: Map<string, FeatureFallbackConfig> = new Map();
   /** Feature-Zustände */
-  private featureStates: Map<string, FeatureFallbackState> = reactive(new Map());
+  private featureStates: Map<string, FeatureFallbackState> = reactive(
+    new Map(),
+  );
   /** Event-Historie */
   private eventHistory: FallbackEvent[] = reactive([]);
   /** Konfigurationsoptionen */
@@ -192,7 +212,7 @@ export class FallbackManager {
   private statusCheckTimerId: number | null = null;
   /** Feature-Toggles-Store */
   private store = useFeatureTogglesStore();
-  
+
   /**
    * Konstruktor
    * @param options Optionen für den Manager
@@ -200,25 +220,25 @@ export class FallbackManager {
   constructor(options: FallbackManagerOptions = {}) {
     // Standard-Optionen setzen
     this.options = {
-      defaultStrategy: options.defaultStrategy || 'threshold',
+      defaultStrategy: options.defaultStrategy || "threshold",
       defaultThreshold: options.defaultThreshold || 3,
       defaultRecoveryTimeout: options.defaultRecoveryTimeout || 3600000, // 1 Stunde
       maxErrorsPerFeature: options.maxErrorsPerFeature || 20,
       errorWindowTime: options.errorWindowTime || 300000, // 5 Minuten
       statusCheckInterval: options.statusCheckInterval || 60000, // 1 Minute
-      onEvent: options.onEvent || (() => {})
+      onEvent: options.onEvent || (() => {}),
     };
-    
+
     // Standard-Konfigurationen initialisieren
     this.initializeDefaultConfigs();
-    
+
     // Status-Check-Timer starten
     this.startStatusCheck();
-    
+
     // Store beobachten für Änderungen an Fallback-Status
     this.monitorStoreChanges();
   }
-  
+
   /**
    * Initialisiert Standard-Konfigurationen für bekannte Features
    */
@@ -227,7 +247,7 @@ export class FallbackManager {
       this.configureFeature(feature, config);
     });
   }
-  
+
   /**
    * Startet den periodischen Status-Check
    */
@@ -235,12 +255,12 @@ export class FallbackManager {
     if (this.statusCheckTimerId !== null) {
       window.clearInterval(this.statusCheckTimerId);
     }
-    
+
     this.statusCheckTimerId = window.setInterval(() => {
       this.checkAllFeatureStatus();
     }, this.options.statusCheckInterval);
   }
-  
+
   /**
    * Überwacht Änderungen im Feature-Toggle-Store
    */
@@ -248,7 +268,7 @@ export class FallbackManager {
     // Da wir nicht direkt auf den Store-Zustand lauschen können,
     // verwenden wir einen Polling-Ansatz im Status-Check
   }
-  
+
   /**
    * Fügt ein Event zur Event-Historie hinzu
    * @param type Event-Typ
@@ -260,27 +280,27 @@ export class FallbackManager {
       type,
       feature,
       timestamp: new Date(),
-      data
+      data,
     };
-    
+
     // Event zur Historie hinzufügen (am Anfang)
     this.eventHistory.unshift(event);
-    
+
     // Auf maximale Größe begrenzen
     if (this.eventHistory.length > 100) {
       this.eventHistory.pop();
     }
-    
+
     // Event-Handler aufrufen, wenn vorhanden
     if (this.options.onEvent) {
       try {
         this.options.onEvent(event);
       } catch (error) {
-        console.error('Error in fallback event handler:', error);
+        console.error("Error in fallback event handler:", error);
       }
     }
   }
-  
+
   /**
    * Prüft den Status aller Features
    */
@@ -288,27 +308,30 @@ export class FallbackManager {
     // Alle konfigurierten Features durchgehen
     for (const [feature, config] of this.featureConfigs.entries()) {
       const state = this.getFeatureState(feature);
-      
+
       // Prüfen, ob Wiederherstellung fällig ist
-      if (state.status === 'active' && 
-          config.autoRecovery && 
-          state.recoveryAttempts < config.maxRecoveryAttempts) {
-        
+      if (
+        state.status === "active" &&
+        config.autoRecovery &&
+        state.recoveryAttempts < config.maxRecoveryAttempts
+      ) {
         // Wenn nächster Versuch geplant ist und Zeit abgelaufen ist
-        if (state.nextRecoveryAttempt && 
-            state.nextRecoveryAttempt.getTime() <= Date.now()) {
+        if (
+          state.nextRecoveryAttempt &&
+          state.nextRecoveryAttempt.getTime() <= Date.now()
+        ) {
           this.attemptRecovery(feature);
         }
       }
-      
+
       // Alte Fehler aus dem Zeitfenster löschen
       this.pruneOldErrors(feature);
     }
-    
+
     // Synchronisieren mit Store
     this.syncWithStore();
   }
-  
+
   /**
    * Entfernt alte Fehler außerhalb des Zeitfensters
    * @param feature Feature-Name
@@ -317,16 +340,16 @@ export class FallbackManager {
     const state = this.getFeatureState(feature);
     const now = Date.now();
     const windowStart = now - this.options.errorWindowTime;
-    
+
     // Alte Fehler filtern
-    state.errors = state.errors.filter(error => 
-      error.timestamp.getTime() >= windowStart
+    state.errors = state.errors.filter(
+      (error) => error.timestamp.getTime() >= windowStart,
     );
-    
+
     // Fehleranzahl neu berechnen
     state.errorCount = state.errors.length;
   }
-  
+
   /**
    * Synchronisiert den Status mit dem Feature-Toggles-Store
    */
@@ -334,41 +357,45 @@ export class FallbackManager {
     // Store-Fallbacks mit unseren synchronisieren
     for (const [feature, state] of this.featureStates.entries()) {
       const storeFallbackActive = this.store.isFallbackActive(feature);
-      
+
       // Wenn Diskrepanz besteht
-      if ((state.status === 'active' && !storeFallbackActive) || 
-          (state.status !== 'active' && storeFallbackActive)) {
-        
+      if (
+        (state.status === "active" && !storeFallbackActive) ||
+        (state.status !== "active" && storeFallbackActive)
+      ) {
         // Store aktualisieren
-        if (state.status === 'active') {
+        if (state.status === "active") {
           this.store.setFallbackMode(feature, true);
         } else {
           this.store.setFallbackMode(feature, false);
         }
       }
     }
-    
+
     // Umgekehrt prüfen: Features im Store, die wir nicht kennen
     for (const feature in this.store.activeFallbacks) {
-      if (this.store.activeFallbacks[feature] && !this.featureStates.has(feature)) {
+      if (
+        this.store.activeFallbacks[feature] &&
+        !this.featureStates.has(feature)
+      ) {
         // Feature dem Manager hinzufügen
         this.configureFeature(feature);
-        
+
         // Status setzen
         const state = this.getFeatureState(feature);
-        state.status = 'active';
-        state.phase = 'active';
+        state.status = "active";
+        state.phase = "active";
         state.activatedAt = new Date();
-        
+
         // Event hinzufügen
-        this.addEvent('activation', feature, {
-          source: 'external',
-          automatic: false
+        this.addEvent("activation", feature, {
+          source: "external",
+          automatic: false,
         });
       }
     }
   }
-  
+
   /**
    * Versucht, ein Feature wiederherzustellen
    * @param feature Feature-Name
@@ -376,35 +403,33 @@ export class FallbackManager {
   private attemptRecovery(feature: string): void {
     const state = this.getFeatureState(feature);
     const config = this.getFeatureConfig(feature);
-    
+
     // Event auslösen
-    this.addEvent('recoveryAttempt', feature, {
+    this.addEvent("recoveryAttempt", feature, {
       attempt: state.recoveryAttempts + 1,
-      maxAttempts: config.maxRecoveryAttempts
+      maxAttempts: config.maxRecoveryAttempts,
     });
-    
+
     // Status aktualisieren
-    state.status = 'recovering';
-    state.phase = 'recovery';
+    state.status = "recovering";
+    state.phase = "recovery";
     state.lastRecoveryAttempt = new Date();
     state.recoveryAttempts++;
-    
+
     // Timer für nächsten Versuch planen
     if (state.recoveryAttempts < config.maxRecoveryAttempts) {
-      state.nextRecoveryAttempt = new Date(
-        Date.now() + config.recoveryTimeout
-      );
+      state.nextRecoveryAttempt = new Date(Date.now() + config.recoveryTimeout);
     } else {
       state.nextRecoveryAttempt = undefined;
     }
-    
+
     // Fallback im Store deaktivieren
     this.store.setFallbackMode(feature, false);
-    
+
     // Wenn Fehler auftreten, wird der Fallback automatisch wieder aktiviert
     // durch den Fehlerbehandlungsmechanismus
   }
-  
+
   /**
    * Holt oder erstellt die Konfiguration für ein Feature
    * @param feature Feature-Name
@@ -420,17 +445,17 @@ export class FallbackManager {
         autoRecovery: true,
         recoveryTimeout: this.options.defaultRecoveryTimeout,
         maxRecoveryAttempts: 3,
-        minSeverity: 'medium',
+        minSeverity: "medium",
         useProgressiveFallback: false,
-        priority: 50
+        priority: 50,
       };
-      
+
       this.featureConfigs.set(feature, config);
     }
-    
+
     return this.featureConfigs.get(feature)!;
   }
-  
+
   /**
    * Holt oder erstellt den Status für ein Feature
    * @param feature Feature-Name
@@ -440,35 +465,38 @@ export class FallbackManager {
     if (!this.featureStates.has(feature)) {
       // Prüfen, ob Fallback bereits im Store aktiv ist
       const isActive = this.store.isFallbackActive(feature);
-      
+
       // Standardstatus erstellen
       const state: FeatureFallbackState = {
         feature,
-        status: isActive ? 'active' : 'disabled',
-        phase: isActive ? 'active' : 'disabled',
+        status: isActive ? "active" : "disabled",
+        phase: isActive ? "active" : "disabled",
         errors: [],
         errorCount: 0,
         recoveryAttempts: 0,
         level: isActive ? 1 : 0,
-        maxLevel: 1
+        maxLevel: 1,
       };
-      
+
       if (isActive) {
         state.activatedAt = new Date();
       }
-      
+
       this.featureStates.set(feature, state);
     }
-    
+
     return this.featureStates.get(feature)!;
   }
-  
+
   /**
    * Konfiguriert ein Feature
    * @param feature Feature-Name
    * @param config Teilweise oder vollständige Konfiguration
    */
-  configureFeature(feature: string, config: Partial<FeatureFallbackConfig> = {}): void {
+  configureFeature(
+    feature: string,
+    config: Partial<FeatureFallbackConfig> = {},
+  ): void {
     // Bestehende oder Standard-Konfiguration holen
     const existingConfig = this.featureConfigs.has(feature)
       ? this.featureConfigs.get(feature)!
@@ -479,118 +507,127 @@ export class FallbackManager {
           autoRecovery: true,
           recoveryTimeout: this.options.defaultRecoveryTimeout,
           maxRecoveryAttempts: 3,
-          minSeverity: 'medium' as FallbackErrorSeverity,
+          minSeverity: "medium" as FallbackErrorSeverity,
           useProgressiveFallback: false,
-          priority: 50
+          priority: 50,
         };
-    
+
     // Mit neuen Werten mergen
     const newConfig: FeatureFallbackConfig = {
       ...existingConfig,
       ...config,
-      feature // Feature-Name kann nicht überschrieben werden
+      feature, // Feature-Name kann nicht überschrieben werden
     };
-    
+
     // Konfiguration speichern
     this.featureConfigs.set(feature, newConfig);
-    
+
     // Zugehörigen Zustand initialisieren, falls noch nicht vorhanden
     this.getFeatureState(feature);
-    
+
     // Event auslösen
-    this.addEvent('configChange', feature, { config: newConfig });
+    this.addEvent("configChange", feature, { config: newConfig });
   }
-  
+
   /**
    * Meldet einen Fehler für ein Feature
    * @param feature Feature-Name
    * @param errorInfo Fehler-Informationen
    * @returns Ob der Fehler zu einer Fallback-Aktivierung geführt hat
    */
-  reportError(feature: string, errorInfo: Omit<FallbackError, 'feature' | 'timestamp'>): boolean {
+  reportError(
+    feature: string,
+    errorInfo: Omit<FallbackError, "feature" | "timestamp">,
+  ): boolean {
     // Konfiguration und Status holen
     const config = this.getFeatureConfig(feature);
     const state = this.getFeatureState(feature);
-    
+
     // Vollständigen Fehler erstellen
     const error: FallbackError = {
       ...errorInfo,
       feature,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
-    
+
     // Zu Fehler-Historie hinzufügen (am Anfang)
     state.errors.unshift(error);
-    
+
     // Auf maximale Größe begrenzen
     if (state.errors.length > this.options.maxErrorsPerFeature) {
       state.errors.pop();
     }
-    
+
     // Fehlerzähler erhöhen
     state.errorCount++;
-    
+
     // Event auslösen
-    this.addEvent('error', feature, { error });
-    
+    this.addEvent("error", feature, { error });
+
     // Prüfen, ob Fallback aktiviert werden soll
     const shouldActivate = this.shouldActivateFallback(feature, error);
-    
+
     if (shouldActivate) {
       this.activateFallback(feature, error);
       return true;
     }
-    
+
     return false;
   }
-  
+
   /**
    * Prüft, ob ein Fallback aktiviert werden soll
    * @param feature Feature-Name
    * @param error Fehler-Information
    * @returns Ob Fallback aktiviert werden soll
    */
-  private shouldActivateFallback(feature: string, error: FallbackError): boolean {
+  private shouldActivateFallback(
+    feature: string,
+    error: FallbackError,
+  ): boolean {
     const config = this.getFeatureConfig(feature);
     const state = this.getFeatureState(feature);
-    
+
     // Wenn Fallback bereits aktiv ist, nicht erneut aktivieren
-    if (state.status === 'active' || state.status === 'recovering') {
+    if (state.status === "active" || state.status === "recovering") {
       return false;
     }
-    
+
     // Wenn Schweregrad unter Minimum liegt, nicht aktivieren
-    const severityLevel = { 'low': 1, 'medium': 2, 'high': 3, 'critical': 4 };
+    const severityLevel = { low: 1, medium: 2, high: 3, critical: 4 };
     if (severityLevel[error.severity] < severityLevel[config.minSeverity]) {
       return false;
     }
-    
+
     // Je nach Strategie entscheiden
     switch (config.strategy) {
-      case 'immediate':
+      case "immediate":
         return true;
-        
-      case 'threshold':
+
+      case "threshold":
         return state.errorCount >= config.errorThreshold;
-        
-      case 'progressive':
+
+      case "progressive":
         // Fallbacks basierend auf Schweregrad und Fehlerzahl
-        if (error.severity === 'critical') {
+        if (error.severity === "critical") {
           return true;
         }
-        if (error.severity === 'high' && state.errorCount >= Math.ceil(config.errorThreshold / 2)) {
+        if (
+          error.severity === "high" &&
+          state.errorCount >= Math.ceil(config.errorThreshold / 2)
+        ) {
           return true;
         }
         return state.errorCount >= config.errorThreshold;
-        
-      case 'manual':
+
+      case "manual":
         return false;
-        
+
       default:
         return false;
     }
   }
-  
+
   /**
    * Aktiviert den Fallback für ein Feature
    * @param feature Feature-Name
@@ -598,36 +635,34 @@ export class FallbackManager {
    */
   activateFallback(feature: string, error?: FallbackError): void {
     const state = this.getFeatureState(feature);
-    
+
     // Wenn bereits aktiv, nichts tun
-    if (state.status === 'active') {
+    if (state.status === "active") {
       return;
     }
-    
+
     // Status aktualisieren
-    state.status = 'active';
-    state.phase = 'active';
+    state.status = "active";
+    state.phase = "active";
     state.activatedAt = new Date();
     state.level = 1;
-    
+
     // Im Store aktivieren
     this.store.setFallbackMode(feature, true);
-    
+
     // Bei auto-recovery: nächsten Wiederherstellungsversuch planen
     const config = this.getFeatureConfig(feature);
     if (config.autoRecovery) {
-      state.nextRecoveryAttempt = new Date(
-        Date.now() + config.recoveryTimeout
-      );
+      state.nextRecoveryAttempt = new Date(Date.now() + config.recoveryTimeout);
     }
-    
+
     // Event auslösen
-    this.addEvent('activation', feature, {
+    this.addEvent("activation", feature, {
       error,
-      automatic: !!error
+      automatic: !!error,
     });
   }
-  
+
   /**
    * Deaktiviert den Fallback für ein Feature
    * @param feature Feature-Name
@@ -635,16 +670,16 @@ export class FallbackManager {
    */
   deactivateFallback(feature: string, resetState: boolean = false): void {
     const state = this.getFeatureState(feature);
-    
+
     // Wenn bereits deaktiviert und kein Reset gewünscht, nichts tun
-    if (state.status === 'disabled' && !resetState) {
+    if (state.status === "disabled" && !resetState) {
       return;
     }
-    
+
     // Status aktualisieren
-    state.status = 'disabled';
-    state.phase = 'disabled';
-    
+    state.status = "disabled";
+    state.phase = "disabled";
+
     // State zurücksetzen, wenn gewünscht
     if (resetState) {
       state.errors = [];
@@ -655,14 +690,14 @@ export class FallbackManager {
       state.lastRecoveryAttempt = undefined;
       state.nextRecoveryAttempt = undefined;
     }
-    
+
     // Im Store deaktivieren
     this.store.setFallbackMode(feature, false);
-    
+
     // Event auslösen
-    this.addEvent('deactivation', feature, { resetState });
+    this.addEvent("deactivation", feature, { resetState });
   }
-  
+
   /**
    * Setzt die Ebene eines Fallbacks
    * @param feature Feature-Name
@@ -670,51 +705,51 @@ export class FallbackManager {
    */
   setFallbackLevel(feature: string, level: number): void {
     const state = this.getFeatureState(feature);
-    
+
     // Auf gültigen Bereich begrenzen
     level = Math.max(0, Math.min(level, state.maxLevel));
-    
+
     // Wenn Level 0, Fallback deaktivieren
     if (level === 0) {
       this.deactivateFallback(feature);
       return;
     }
-    
+
     // Level setzen
     const oldLevel = state.level;
     state.level = level;
-    
+
     // Wenn vorher inaktiv, jetzt aktivieren
-    if (state.status !== 'active') {
-      state.status = 'active';
-      state.phase = 'active';
+    if (state.status !== "active") {
+      state.status = "active";
+      state.phase = "active";
       state.activatedAt = new Date();
-      
+
       // Im Store aktivieren
       this.store.setFallbackMode(feature, true);
     }
-    
+
     // Event auslösen
-    this.addEvent('levelChange', feature, {
+    this.addEvent("levelChange", feature, {
       oldLevel,
-      newLevel: level
+      newLevel: level,
     });
   }
-  
+
   /**
    * Löscht alle Fehler für ein Feature
    * @param feature Feature-Name
    */
   clearErrors(feature: string): void {
     const state = this.getFeatureState(feature);
-    
+
     state.errors = [];
     state.errorCount = 0;
-    
+
     // Im Store löschen
     this.store.clearFeatureErrors(feature);
   }
-  
+
   /**
    * Gibt den Status eines Features zurück
    * @param feature Feature-Name
@@ -724,10 +759,10 @@ export class FallbackManager {
     if (!this.featureStates.has(feature)) {
       return undefined;
     }
-    
+
     return this.featureStates.get(feature);
   }
-  
+
   /**
    * Gibt alle aktuellen Feature-Zustände zurück
    * @returns Map mit allen Feature-Zuständen
@@ -735,7 +770,7 @@ export class FallbackManager {
   getAllStatus(): Map<string, FeatureFallbackState> {
     return this.featureStates;
   }
-  
+
   /**
    * Gibt die Event-Historie zurück
    * @param limit Maximale Anzahl zurückzugebender Events
@@ -747,7 +782,7 @@ export class FallbackManager {
     }
     return this.eventHistory;
   }
-  
+
   /**
    * Bereinigt Ressourcen beim Beenden
    */
@@ -757,14 +792,14 @@ export class FallbackManager {
       window.clearInterval(this.statusCheckTimerId);
       this.statusCheckTimerId = null;
     }
-    
+
     // Recovery-Timer stoppen
     for (const timerId of this.recoveryTimers.values()) {
       window.clearTimeout(timerId);
     }
     this.recoveryTimers.clear();
   }
-  
+
   /**
    * Factory-Methode für Singleton-Instanz
    * @param options Optionen für den Manager

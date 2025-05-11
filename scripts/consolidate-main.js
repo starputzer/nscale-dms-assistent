@@ -1,39 +1,39 @@
 #!/usr/bin/env node
 /**
  * consolidate-main.js
- * 
+ *
  * Ein Skript zur Bereinigung und Konsolidierung der verschiedenen main.js-Dateien
  * im nscale DMS Assistent Projekt.
- * 
+ *
  * Datum: 08.05.2025
  */
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+const fs = require("fs");
+const path = require("path");
+const { execSync } = require("child_process");
 
 // Basispfad zum Projekt
-const BASE_PATH = path.resolve(__dirname, '..');
+const BASE_PATH = path.resolve(__dirname, "..");
 
 // Pfade zu den verschiedenen main.js-Dateien
 const MAIN_JS_PATHS = {
-  legacy: path.join(BASE_PATH, 'frontend', 'js', 'main.js'),
-  vue: path.join(BASE_PATH, 'frontend', 'js', 'vue', 'main.js'),
-  root: path.join(BASE_PATH, 'frontend', 'main.js')
+  legacy: path.join(BASE_PATH, "frontend", "js", "main.js"),
+  vue: path.join(BASE_PATH, "frontend", "js", "vue", "main.js"),
+  root: path.join(BASE_PATH, "frontend", "main.js"),
 };
 
 // Pfade zu den HTML-Dateien, die aktualisiert werden müssen
 const HTML_PATHS = {
-  index: path.join(BASE_PATH, 'frontend', 'index.html'),
-  vueApp: path.join(BASE_PATH, 'frontend', 'vue-dms-assistant.html'),
-  vueTest: path.join(BASE_PATH, 'frontend', 'vue-test.html')
+  index: path.join(BASE_PATH, "frontend", "index.html"),
+  vueApp: path.join(BASE_PATH, "frontend", "vue-dms-assistant.html"),
+  vueTest: path.join(BASE_PATH, "frontend", "vue-test.html"),
 };
 
 // Pfad zur neuen konsolidierten main.js
-const CONSOLIDATED_MAIN_JS = path.join(BASE_PATH, 'frontend', 'js', 'main.js');
+const CONSOLIDATED_MAIN_JS = path.join(BASE_PATH, "frontend", "js", "main.js");
 
 // Pfad zur .htaccess-Datei
-const HTACCESS_PATH = path.join(BASE_PATH, 'frontend', '.htaccess');
+const HTACCESS_PATH = path.join(BASE_PATH, "frontend", ".htaccess");
 
 /**
  * Hilfsfunktion zum Erstellen von Sicherheitskopien
@@ -63,17 +63,17 @@ function ensureDirectoryExists(dirPath) {
  */
 function readMainJsFiles() {
   const content = {};
-  
+
   for (const [key, filePath] of Object.entries(MAIN_JS_PATHS)) {
     if (fs.existsSync(filePath)) {
-      content[key] = fs.readFileSync(filePath, 'utf-8');
+      content[key] = fs.readFileSync(filePath, "utf-8");
       console.log(`Gelesen: ${filePath} (${content[key].length} Bytes)`);
     } else {
       console.log(`Warnung: Datei ${filePath} existiert nicht.`);
-      content[key] = '';
+      content[key] = "";
     }
   }
-  
+
   return content;
 }
 
@@ -86,54 +86,56 @@ function analyzeMainFiles(content) {
     cssImports: new Set(),
     jsImports: new Set(),
     vueImports: new Set(),
-    initFunctions: new Set()
+    initFunctions: new Set(),
   };
-  
+
   // Regex-Patterns für die Analyse
   const patterns = {
     cssImport: /import\s+['"](.+\.css)['"]/g,
     jsImport: /import\s+['"](.+\.js)['"]/g,
     vueImport: /import\s+\{\s*(.+)\s*\}\s+from\s+['"]vue['"]/g,
-    initFunction: /function\s+(\w+)\s*\(/g
+    initFunction: /function\s+(\w+)\s*\(/g,
   };
-  
+
   // Durch alle Dateien gehen und Matches sammeln
   for (const [key, fileContent] of Object.entries(content)) {
     if (!fileContent) continue;
-    
+
     // CSS-Importe
     let matches;
     while ((matches = patterns.cssImport.exec(fileContent)) !== null) {
       analysis.cssImports.add(matches[1]);
     }
-    
+
     // JS-Importe
     patterns.jsImport.lastIndex = 0;
     while ((matches = patterns.jsImport.exec(fileContent)) !== null) {
       analysis.jsImports.add(matches[1]);
     }
-    
+
     // Vue-Importe
     patterns.vueImport.lastIndex = 0;
     while ((matches = patterns.vueImport.exec(fileContent)) !== null) {
-      matches[1].split(',').forEach(imp => {
+      matches[1].split(",").forEach((imp) => {
         analysis.vueImports.add(imp.trim());
       });
     }
-    
+
     // Initialisierungsfunktionen
     patterns.initFunction.lastIndex = 0;
     while ((matches = patterns.initFunction.exec(fileContent)) !== null) {
       analysis.initFunctions.add(matches[1]);
     }
   }
-  
-  console.log('Analyse abgeschlossen:');
-  console.log(`- CSS-Importe: ${Array.from(analysis.cssImports).join(', ')}`);
-  console.log(`- JS-Importe: ${Array.from(analysis.jsImports).join(', ')}`);
-  console.log(`- Vue-Importe: ${Array.from(analysis.vueImports).join(', ')}`);
-  console.log(`- Initialisierungsfunktionen: ${Array.from(analysis.initFunctions).join(', ')}`);
-  
+
+  console.log("Analyse abgeschlossen:");
+  console.log(`- CSS-Importe: ${Array.from(analysis.cssImports).join(", ")}`);
+  console.log(`- JS-Importe: ${Array.from(analysis.jsImports).join(", ")}`);
+  console.log(`- Vue-Importe: ${Array.from(analysis.vueImports).join(", ")}`);
+  console.log(
+    `- Initialisierungsfunktionen: ${Array.from(analysis.initFunctions).join(", ")}`,
+  );
+
   return analysis;
 }
 
@@ -148,26 +150,26 @@ function createConsolidatedMainJs(content, analysis) {
  * Diese Datei wurde automatisch aus den verschiedenen main.js-Dateien
  * konsolidiert und vereinheitlicht.
  * 
- * Datum: ${new Date().toLocaleDateString('de-DE')}
+ * Datum: ${new Date().toLocaleDateString("de-DE")}
  */
 
 // =========================================================================
 // CSS-IMPORTE
 // =========================================================================
 ${Array.from(analysis.cssImports)
-  .map(cssImport => {
+  .map((cssImport) => {
     // Normalisierte Pfade verwenden
     const normalizedPath = cssImport
-      .replace('../css/', './css/')
-      .replace('../../../src/', '../src/');
+      .replace("../css/", "./css/")
+      .replace("../../../src/", "../src/");
     return `import '${normalizedPath}';`;
   })
-  .join('\n')}
+  .join("\n")}
 
 // =========================================================================
 // FRAMEWORK-IMPORTE
 // =========================================================================
-import { ${Array.from(analysis.vueImports).join(', ')} } from 'vue';
+import { ${Array.from(analysis.vueImports).join(", ")} } from 'vue';
 import { createPinia } from 'pinia';
 
 // Importiere Legacy-Code
@@ -353,7 +355,7 @@ console.log('Konsolidiertes Bundle erfolgreich geladen!');`;
   // Speichern des konsolidierten Inhalts
   fs.writeFileSync(CONSOLIDATED_MAIN_JS, consolidatedContent);
   console.log(`Konsolidierte main.js erstellt: ${CONSOLIDATED_MAIN_JS}`);
-  
+
   return consolidatedContent;
 }
 
@@ -365,17 +367,17 @@ function updateIndexHtml() {
     console.log(`Warnung: ${HTML_PATHS.index} existiert nicht.`);
     return;
   }
-  
+
   createBackup(HTML_PATHS.index);
-  
-  let content = fs.readFileSync(HTML_PATHS.index, 'utf-8');
-  
+
+  let content = fs.readFileSync(HTML_PATHS.index, "utf-8");
+
   // Aktualisiere die Referenz auf main.js
   content = content.replace(
     /loadScript\(['"]\/static\/js\/main\.js['"]\)/g,
-    `loadScript('/js/main.js')`
+    `loadScript('/js/main.js')`,
   );
-  
+
   // Füge Fehlerbehandlung hinzu
   content = content.replace(
     /loadScript\(['"].+['"]\)\.catch\((error|e)\s*=>\s*\{/g,
@@ -392,9 +394,9 @@ function updateIndexHtml() {
           '<h2>Fehler beim Laden der Anwendung</h2>' +
           '<p>Die Hauptskriptdatei konnte nicht geladen werden. Bitte aktualisieren Sie die Seite oder kontaktieren Sie den Administrator.</p>' +
           '</div>';
-      });`
+      });`,
   );
-  
+
   // Füge Ladeskript für CSS hinzu
   const cssLoadingCode = `
     // CSS-Dateien mit korrekten MIME-Types laden
@@ -458,13 +460,13 @@ function updateIndexHtml() {
       
       return loaded;
     }`;
-  
+
   // Füge das CSS-Ladeskript hinzu
   content = content.replace(
     /document\.addEventListener\('DOMContentLoaded', async \(\) => \{[\s\S]+?}\);/g,
-    cssLoadingCode
+    cssLoadingCode,
   );
-  
+
   fs.writeFileSync(HTML_PATHS.index, content);
   console.log(`Index HTML aktualisiert: ${HTML_PATHS.index}`);
 }
@@ -476,9 +478,9 @@ function updateVueHtmlFiles() {
   // vue-dms-assistant.html aktualisieren
   if (fs.existsSync(HTML_PATHS.vueApp)) {
     createBackup(HTML_PATHS.vueApp);
-    
-    let content = fs.readFileSync(HTML_PATHS.vueApp, 'utf-8');
-    
+
+    let content = fs.readFileSync(HTML_PATHS.vueApp, "utf-8");
+
     // Aktualisiere die Referenz auf main.js mit Fehlerbehandlung
     content = content.replace(
       /<script type="module" src="\/frontend\/js\/vue\/main\.js"><\/script>/g,
@@ -524,17 +526,17 @@ function updateVueHtmlFiles() {
         </div>
       \`;
     });
-</script>`
+</script>`,
     );
-    
+
     fs.writeFileSync(HTML_PATHS.vueApp, content);
     console.log(`Vue App HTML aktualisiert: ${HTML_PATHS.vueApp}`);
   }
-  
+
   // vue-test.html aktualisieren
   if (fs.existsSync(HTML_PATHS.vueTest)) {
     createBackup(HTML_PATHS.vueTest);
-    
+
     // Den Rest der Datei lassen wir wie sie ist, da sie direkt über CDN lädt
     console.log(`Vue Test HTML bleibt unverändert: ${HTML_PATHS.vueTest}`);
   }
@@ -546,7 +548,7 @@ function updateVueHtmlFiles() {
 function createHtaccess() {
   const htaccessContent = `# nscale DMS Assistent .htaccess Konfiguration
 # Konfiguration für korrekte MIME-Types und Pfadauflösung
-# Erstellt: ${new Date().toLocaleDateString('de-DE')}
+# Erstellt: ${new Date().toLocaleDateString("de-DE")}
 
 # Aktiviere den Rewrite-Engine
 <IfModule mod_rewrite.c>
@@ -643,15 +645,15 @@ function createHtaccess() {
  * Erstellt eine simple server.js als Alternative zur .htaccess
  */
 function createServerJs() {
-  const serverJsPath = path.join(BASE_PATH, 'server.js');
-  
+  const serverJsPath = path.join(BASE_PATH, "server.js");
+
   const serverJsContent = `/**
  * server.js - Einfacher Express-Server für den nscale DMS Assistenten
  * 
  * Diese Datei dient als Alternative zur .htaccess-Konfiguration und kann
  * mit Node.js ausgeführt werden.
  * 
- * Datum: ${new Date().toLocaleDateString('de-DE')}
+ * Datum: ${new Date().toLocaleDateString("de-DE")}
  */
 
 const express = require('express');
@@ -757,10 +759,16 @@ app.listen(PORT, () => {
  */
 function updateDocumentation() {
   // Pfad zur Dokumentation
-  const docPath = path.join(BASE_PATH, 'docs', '06_SYSTEME', '11_FRONTEND_STRUKTUR_BEREINIGUNG.md');
+  const docPath = path.join(
+    BASE_PATH,
+    "docs",
+    "06_SYSTEME",
+    "11_FRONTEND_STRUKTUR_BEREINIGUNG.md",
+  );
   ensureDirectoryExists(path.dirname(docPath));
-  
-  const docContent = `# Frontend-Struktur-Bereinigung
+
+  const docContent =
+    `# Frontend-Struktur-Bereinigung
 
 **Datum: 08.05.2025**
 
@@ -795,7 +803,10 @@ Die drei Versionen der main.js wurden analysiert und zu einer einzigen konsolidi
 - Verbesserte Fehlerbehandlung mit Fallback-Mechanismen
 - Konsistente Exportschnittstelle für globale Funktionen
 
-Die konsolidierte Datei wurde unter `/frontend/js/main.js` platziert und dient als einziger Einstiegspunkt für die Anwendung.
+Die konsolidierte Datei wurde unter ` /
+    frontend /
+    js /
+    main.js` platziert und dient als einziger Einstiegspunkt für die Anwendung.
 
 ### 2. Aktualisierung der HTML-Dateien
 
@@ -885,23 +896,30 @@ Die Bereinigung der Frontend-Struktur und die Konsolidierung der main.js-Dateien
 
   fs.writeFileSync(docPath, docContent);
   console.log(`Dokumentation aktualisiert: ${docPath}`);
-  
+
   // Aktualisiere die Übersichtsdokumentation, um die neue Dokumentation einzubeziehen
-  const overviewDocPath = path.join(BASE_PATH, 'docs', '00_DOKUMENTATION_UEBERSICHT.md');
+  const overviewDocPath = path.join(
+    BASE_PATH,
+    "docs",
+    "00_DOKUMENTATION_UEBERSICHT.md",
+  );
   if (fs.existsSync(overviewDocPath)) {
     createBackup(overviewDocPath);
-    let content = fs.readFileSync(overviewDocPath, 'utf-8');
-    
+    let content = fs.readFileSync(overviewDocPath, "utf-8");
+
     // Füge den neuen Eintrag in der "Technische Dokumentation"-Sektion hinzu
-    const techDocsSection = content.match(/## Technische Dokumentation\s+([^#]*)/);
+    const techDocsSection = content.match(
+      /## Technische Dokumentation\s+([^#]*)/,
+    );
     if (techDocsSection) {
-      const newEntry = '12. **[06_SYSTEME/11_FRONTEND_STRUKTUR_BEREINIGUNG.md](./06_SYSTEME/11_FRONTEND_STRUKTUR_BEREINIGUNG.md)** - Bereinigung und Konsolidierung der Frontend-Struktur';
-      
+      const newEntry =
+        "12. **[06_SYSTEME/11_FRONTEND_STRUKTUR_BEREINIGUNG.md](./06_SYSTEME/11_FRONTEND_STRUKTUR_BEREINIGUNG.md)** - Bereinigung und Konsolidierung der Frontend-Struktur";
+
       const updatedSection = techDocsSection[0].replace(
         /(\d+\. \*\*\[.+?\]\(.+?\)\*\* - .+?\n)(?=\s*$|\s*\d+\. \*\*\[|\s*##)/,
-        `$1${newEntry}\n`
+        `$1${newEntry}\n`,
       );
-      
+
       content = content.replace(techDocsSection[0], updatedSection);
       fs.writeFileSync(overviewDocPath, content);
       console.log(`Übersichtsdokumentation aktualisiert: ${overviewDocPath}`);
@@ -913,34 +931,37 @@ Die Bereinigung der Frontend-Struktur und die Konsolidierung der main.js-Dateien
  * Installiert die benötigten Abhängigkeiten für server.js
  */
 function installDependencies() {
-  console.log('Überprüfe und installiere benötigte Node.js-Abhängigkeiten...');
-  
-  const packageJsonPath = path.join(BASE_PATH, 'package.json');
+  console.log("Überprüfe und installiere benötigte Node.js-Abhängigkeiten...");
+
+  const packageJsonPath = path.join(BASE_PATH, "package.json");
   let packageJson = {};
-  
+
   if (fs.existsSync(packageJsonPath)) {
     try {
-      packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+      packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
     } catch (error) {
-      console.error('Fehler beim Lesen der package.json:', error);
+      console.error("Fehler beim Lesen der package.json:", error);
       packageJson = { dependencies: {} };
     }
   } else {
     packageJson = { dependencies: {} };
   }
-  
+
   // Prüfe, ob Express bereits installiert ist
   if (!packageJson.dependencies.express) {
     try {
-      console.log('Installiere Express...');
-      execSync('npm install --save express', { cwd: BASE_PATH, stdio: 'inherit' });
-      console.log('Express erfolgreich installiert.');
+      console.log("Installiere Express...");
+      execSync("npm install --save express", {
+        cwd: BASE_PATH,
+        stdio: "inherit",
+      });
+      console.log("Express erfolgreich installiert.");
     } catch (error) {
-      console.error('Fehler bei der Installation von Express:', error);
+      console.error("Fehler bei der Installation von Express:", error);
       console.log('Bitte führen Sie manuell "npm install --save express" aus.');
     }
   } else {
-    console.log('Express ist bereits installiert.');
+    console.log("Express ist bereits installiert.");
   }
 }
 
@@ -948,42 +969,50 @@ function installDependencies() {
  * Hauptfunktion, die alles ausführt
  */
 function main() {
-  console.log('=== nscale DMS Assistent: Konsolidierung der main.js-Dateien ===');
-  console.log(`Datum: ${new Date().toLocaleDateString('de-DE')}\n`);
-  
+  console.log(
+    "=== nscale DMS Assistent: Konsolidierung der main.js-Dateien ===",
+  );
+  console.log(`Datum: ${new Date().toLocaleDateString("de-DE")}\n`);
+
   // Erstelle Verzeichnisse, falls sie nicht existieren
   ensureDirectoryExists(path.dirname(CONSOLIDATED_MAIN_JS));
-  
+
   // Lese die verschiedenen main.js-Dateien
   const mainJsContents = readMainJsFiles();
-  
+
   // Analysiere die Dateien
   const analysis = analyzeMainFiles(mainJsContents);
-  
+
   // Erstelle die konsolidierte main.js
   createConsolidatedMainJs(mainJsContents, analysis);
-  
+
   // Aktualisiere die HTML-Dateien
   updateIndexHtml();
   updateVueHtmlFiles();
-  
+
   // Erstelle Server-Konfigurationen
   createHtaccess();
   createServerJs();
-  
+
   // Installiere Abhängigkeiten
   installDependencies();
-  
+
   // Aktualisiere die Dokumentation
   updateDocumentation();
-  
-  console.log('\n=== Konsolidierung abgeschlossen ===');
-  console.log('Die main.js-Dateien wurden erfolgreich konsolidiert und die Projektstruktur bereinigt.');
-  console.log('\nNächste Schritte:');
-  console.log('1. Überprüfen Sie die konsolidierte main.js und passen Sie sie bei Bedarf an.');
-  console.log('2. Testen Sie die Anwendung mit der neuen Struktur.');
-  console.log('3. Verwenden Sie entweder die .htaccess (für Apache) oder server.js (für Node.js).');
-  console.log('4. Führen Sie für die Node.js-Option `node server.js` aus.');
+
+  console.log("\n=== Konsolidierung abgeschlossen ===");
+  console.log(
+    "Die main.js-Dateien wurden erfolgreich konsolidiert und die Projektstruktur bereinigt.",
+  );
+  console.log("\nNächste Schritte:");
+  console.log(
+    "1. Überprüfen Sie die konsolidierte main.js und passen Sie sie bei Bedarf an.",
+  );
+  console.log("2. Testen Sie die Anwendung mit der neuen Struktur.");
+  console.log(
+    "3. Verwenden Sie entweder die .htaccess (für Apache) oder server.js (für Node.js).",
+  );
+  console.log("4. Führen Sie für die Node.js-Option `node server.js` aus.");
 }
 
 // Führe das Skript aus

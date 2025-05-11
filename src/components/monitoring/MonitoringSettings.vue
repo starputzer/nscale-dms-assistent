@@ -1,13 +1,17 @@
 <template>
   <div class="monitoring-settings">
     <div class="settings-header">
-      <h3>{{ t('monitoring.settings.title', 'Monitoring-Einstellungen') }}</h3>
+      <h3>{{ t("monitoring.settings.title", "Monitoring-Einstellungen") }}</h3>
       <div class="settings-actions">
         <button @click="resetToDefaults" class="settings-button reset-button">
-          {{ t('monitoring.settings.resetDefaults', 'Standardwerte') }}
+          {{ t("monitoring.settings.resetDefaults", "Standardwerte") }}
         </button>
-        <button @click="saveSettings" class="settings-button save-button" :disabled="!hasChanges">
-          {{ t('monitoring.settings.save', 'Änderungen speichern') }}
+        <button
+          @click="saveSettings"
+          class="settings-button save-button"
+          :disabled="!hasChanges"
+        >
+          {{ t("monitoring.settings.save", "Änderungen speichern") }}
         </button>
       </div>
     </div>
@@ -15,70 +19,131 @@
     <form class="settings-form" @submit.prevent="saveSettings">
       <!-- Allgemeine Einstellungen -->
       <div class="settings-section">
-        <h4>{{ t('monitoring.settings.general', 'Allgemeine Einstellungen') }}</h4>
-        
+        <h4>
+          {{ t("monitoring.settings.general", "Allgemeine Einstellungen") }}
+        </h4>
+
         <div class="form-group">
           <div class="form-group-header">
             <label for="enableMonitoring">
-              {{ t('monitoring.settings.enableMonitoring', 'Monitoring aktivieren') }}
+              {{
+                t(
+                  "monitoring.settings.enableMonitoring",
+                  "Monitoring aktivieren",
+                )
+              }}
             </label>
             <div class="toggle-switch">
-              <input 
-                type="checkbox" 
-                id="enableMonitoring" 
+              <input
+                type="checkbox"
+                id="enableMonitoring"
                 v-model="formData.enableMonitoring"
               />
               <label for="enableMonitoring"></label>
             </div>
           </div>
           <div class="form-help">
-            {{ t('monitoring.settings.enableMonitoringHelp', 'Aktiviert oder deaktiviert das gesamte Monitoring-System. Bei Deaktivierung werden keine Daten gesammelt.') }}
+            {{
+              t(
+                "monitoring.settings.enableMonitoringHelp",
+                "Aktiviert oder deaktiviert das gesamte Monitoring-System. Bei Deaktivierung werden keine Daten gesammelt.",
+              )
+            }}
           </div>
         </div>
-        
+
         <div class="form-group">
           <label for="dataPersistence">
-            {{ t('monitoring.settings.dataPersistence', 'Daten-Persistenz') }}
+            {{ t("monitoring.settings.dataPersistence", "Daten-Persistenz") }}
           </label>
-          <select id="dataPersistence" v-model="formData.dataPersistence" class="form-select">
-            <option value="session">{{ t('monitoring.settings.persistenceOptions.session', 'Nur Sitzung (SessionStorage)') }}</option>
-            <option value="local">{{ t('monitoring.settings.persistenceOptions.local', 'Lokal (localStorage)') }}</option>
-            <option value="indexeddb">{{ t('monitoring.settings.persistenceOptions.indexeddb', 'IndexedDB') }}</option>
+          <select
+            id="dataPersistence"
+            v-model="formData.dataPersistence"
+            class="form-select"
+          >
+            <option value="session">
+              {{
+                t(
+                  "monitoring.settings.persistenceOptions.session",
+                  "Nur Sitzung (SessionStorage)",
+                )
+              }}
+            </option>
+            <option value="local">
+              {{
+                t(
+                  "monitoring.settings.persistenceOptions.local",
+                  "Lokal (localStorage)",
+                )
+              }}
+            </option>
+            <option value="indexeddb">
+              {{
+                t(
+                  "monitoring.settings.persistenceOptions.indexeddb",
+                  "IndexedDB",
+                )
+              }}
+            </option>
           </select>
           <div class="form-help">
-            {{ t('monitoring.settings.dataPersistenceHelp', 'Legt fest, wo und wie lange Monitoring-Daten gespeichert werden sollen.') }}
+            {{
+              t(
+                "monitoring.settings.dataPersistenceHelp",
+                "Legt fest, wo und wie lange Monitoring-Daten gespeichert werden sollen.",
+              )
+            }}
           </div>
         </div>
-        
+
         <div class="form-group">
           <label for="dataRetention">
-            {{ t('monitoring.settings.dataRetention', 'Daten-Aufbewahrung') }}
+            {{ t("monitoring.settings.dataRetention", "Daten-Aufbewahrung") }}
           </label>
-          <select id="dataRetention" v-model="formData.dataRetention" class="form-select">
-            <option value="1">{{ t('monitoring.settings.retentionOptions.day', '1 Tag') }}</option>
-            <option value="7">{{ t('monitoring.settings.retentionOptions.week', '1 Woche') }}</option>
-            <option value="30">{{ t('monitoring.settings.retentionOptions.month', '1 Monat') }}</option>
-            <option value="90">{{ t('monitoring.settings.retentionOptions.quarter', '3 Monate') }}</option>
+          <select
+            id="dataRetention"
+            v-model="formData.dataRetention"
+            class="form-select"
+          >
+            <option value="1">
+              {{ t("monitoring.settings.retentionOptions.day", "1 Tag") }}
+            </option>
+            <option value="7">
+              {{ t("monitoring.settings.retentionOptions.week", "1 Woche") }}
+            </option>
+            <option value="30">
+              {{ t("monitoring.settings.retentionOptions.month", "1 Monat") }}
+            </option>
+            <option value="90">
+              {{
+                t("monitoring.settings.retentionOptions.quarter", "3 Monate")
+              }}
+            </option>
           </select>
           <div class="form-help">
-            {{ t('monitoring.settings.dataRetentionHelp', 'Bestimmt, wie lange Monitoring-Daten aufbewahrt werden, bevor sie automatisch gelöscht werden.') }}
+            {{
+              t(
+                "monitoring.settings.dataRetentionHelp",
+                "Bestimmt, wie lange Monitoring-Daten aufbewahrt werden, bevor sie automatisch gelöscht werden.",
+              )
+            }}
           </div>
         </div>
       </div>
 
       <!-- Datenerfassung -->
       <div class="settings-section">
-        <h4>{{ t('monitoring.settings.dataCollection', 'Datenerfassung') }}</h4>
-        
+        <h4>{{ t("monitoring.settings.dataCollection", "Datenerfassung") }}</h4>
+
         <div class="form-group">
           <div class="form-group-header">
             <label for="collectErrors">
-              {{ t('monitoring.settings.collectErrors', 'Fehler erfassen') }}
+              {{ t("monitoring.settings.collectErrors", "Fehler erfassen") }}
             </label>
             <div class="toggle-switch">
-              <input 
-                type="checkbox" 
-                id="collectErrors" 
+              <input
+                type="checkbox"
+                id="collectErrors"
                 v-model="formData.collectErrors"
                 :disabled="!formData.enableMonitoring"
               />
@@ -86,19 +151,29 @@
             </div>
           </div>
           <div class="form-help">
-            {{ t('monitoring.settings.collectErrorsHelp', 'Erfasst Fehler mit Kontext, Stack-Traces und Fehler-Deduplizierung.') }}
+            {{
+              t(
+                "monitoring.settings.collectErrorsHelp",
+                "Erfasst Fehler mit Kontext, Stack-Traces und Fehler-Deduplizierung.",
+              )
+            }}
           </div>
         </div>
-        
+
         <div class="form-group">
           <div class="form-group-header">
             <label for="collectPerformance">
-              {{ t('monitoring.settings.collectPerformance', 'Performance-Metriken erfassen') }}
+              {{
+                t(
+                  "monitoring.settings.collectPerformance",
+                  "Performance-Metriken erfassen",
+                )
+              }}
             </label>
             <div class="toggle-switch">
-              <input 
-                type="checkbox" 
-                id="collectPerformance" 
+              <input
+                type="checkbox"
+                id="collectPerformance"
                 v-model="formData.collectPerformance"
                 :disabled="!formData.enableMonitoring"
               />
@@ -106,19 +181,26 @@
             </div>
           </div>
           <div class="form-help">
-            {{ t('monitoring.settings.collectPerformanceHelp', 'Misst und erfasst Ladezeiten, Renderzeiten und Speicherverbrauch von Features.') }}
+            {{
+              t(
+                "monitoring.settings.collectPerformanceHelp",
+                "Misst und erfasst Ladezeiten, Renderzeiten und Speicherverbrauch von Features.",
+              )
+            }}
           </div>
         </div>
-        
+
         <div class="form-group">
           <div class="form-group-header">
             <label for="collectUsage">
-              {{ t('monitoring.settings.collectUsage', 'Nutzungsdaten erfassen') }}
+              {{
+                t("monitoring.settings.collectUsage", "Nutzungsdaten erfassen")
+              }}
             </label>
             <div class="toggle-switch">
-              <input 
-                type="checkbox" 
-                id="collectUsage" 
+              <input
+                type="checkbox"
+                id="collectUsage"
                 v-model="formData.collectUsage"
                 :disabled="!formData.enableMonitoring"
               />
@@ -126,19 +208,29 @@
             </div>
           </div>
           <div class="form-help">
-            {{ t('monitoring.settings.collectUsageHelp', 'Erfasst Daten zu Aktivierung, Nutzungsdauer und Interaktionen mit Features.') }}
+            {{
+              t(
+                "monitoring.settings.collectUsageHelp",
+                "Erfasst Daten zu Aktivierung, Nutzungsdauer und Interaktionen mit Features.",
+              )
+            }}
           </div>
         </div>
-        
+
         <div class="form-group">
           <div class="form-group-header">
             <label for="collectFeedback">
-              {{ t('monitoring.settings.collectFeedback', 'Benutzer-Feedback erfassen') }}
+              {{
+                t(
+                  "monitoring.settings.collectFeedback",
+                  "Benutzer-Feedback erfassen",
+                )
+              }}
             </label>
             <div class="toggle-switch">
-              <input 
-                type="checkbox" 
-                id="collectFeedback" 
+              <input
+                type="checkbox"
+                id="collectFeedback"
                 v-model="formData.collectFeedback"
                 :disabled="!formData.enableMonitoring"
               />
@@ -146,45 +238,61 @@
             </div>
           </div>
           <div class="form-help">
-            {{ t('monitoring.settings.collectFeedbackHelp', 'Sammelt und analysiert Benutzerbewertungen und Kommentare zu Features.') }}
+            {{
+              t(
+                "monitoring.settings.collectFeedbackHelp",
+                "Sammelt und analysiert Benutzerbewertungen und Kommentare zu Features.",
+              )
+            }}
           </div>
         </div>
-        
+
         <div class="form-group">
           <label for="samplingRate">
-            {{ t('monitoring.settings.samplingRate', 'Sampling-Rate') }}
+            {{ t("monitoring.settings.samplingRate", "Sampling-Rate") }}
           </label>
           <div class="range-control">
-            <input 
-              type="range" 
-              id="samplingRate" 
-              v-model.number="formData.samplingRate" 
-              min="1" 
-              max="100" 
+            <input
+              type="range"
+              id="samplingRate"
+              v-model.number="formData.samplingRate"
+              min="1"
+              max="100"
               step="1"
               :disabled="!formData.enableMonitoring"
             />
             <span class="range-value">{{ formData.samplingRate }}%</span>
           </div>
           <div class="form-help">
-            {{ t('monitoring.settings.samplingRateHelp', 'Prozentsatz der Sitzungen, für die Daten gesammelt werden. Reduzieren Sie den Wert, um die Leistung zu verbessern.') }}
+            {{
+              t(
+                "monitoring.settings.samplingRateHelp",
+                "Prozentsatz der Sitzungen, für die Daten gesammelt werden. Reduzieren Sie den Wert, um die Leistung zu verbessern.",
+              )
+            }}
           </div>
         </div>
       </div>
 
       <!-- Warnungen und Benachrichtigungen -->
       <div class="settings-section">
-        <h4>{{ t('monitoring.settings.alerts', 'Warnungen & Benachrichtigungen') }}</h4>
-        
+        <h4>
+          {{
+            t("monitoring.settings.alerts", "Warnungen & Benachrichtigungen")
+          }}
+        </h4>
+
         <div class="form-group">
           <div class="form-group-header">
             <label for="enableAlerts">
-              {{ t('monitoring.settings.enableAlerts', 'Warnungen aktivieren') }}
+              {{
+                t("monitoring.settings.enableAlerts", "Warnungen aktivieren")
+              }}
             </label>
             <div class="toggle-switch">
-              <input 
-                type="checkbox" 
-                id="enableAlerts" 
+              <input
+                type="checkbox"
+                id="enableAlerts"
                 v-model="formData.enableAlerts"
                 :disabled="!formData.enableMonitoring"
               />
@@ -192,41 +300,60 @@
             </div>
           </div>
           <div class="form-help">
-            {{ t('monitoring.settings.enableAlertsHelp', 'Aktiviert Warnungen und Benachrichtigungen bei Überschreitung von Schwellenwerten.') }}
+            {{
+              t(
+                "monitoring.settings.enableAlertsHelp",
+                "Aktiviert Warnungen und Benachrichtigungen bei Überschreitung von Schwellenwerten.",
+              )
+            }}
           </div>
         </div>
-        
+
         <div class="form-group">
           <label for="errorThreshold">
-            {{ t('monitoring.settings.errorThreshold', 'Fehler-Schwellenwert') }}
+            {{
+              t("monitoring.settings.errorThreshold", "Fehler-Schwellenwert")
+            }}
           </label>
           <div class="input-group">
-            <input 
-              type="number" 
-              id="errorThreshold" 
-              v-model.number="formData.errorThreshold" 
-              min="1" 
+            <input
+              type="number"
+              id="errorThreshold"
+              v-model.number="formData.errorThreshold"
+              min="1"
               max="100"
               :disabled="!formData.enableMonitoring || !formData.enableAlerts"
               class="form-input"
             />
-            <span class="input-group-text">{{ t('monitoring.settings.errors', 'Fehler') }}</span>
+            <span class="input-group-text">{{
+              t("monitoring.settings.errors", "Fehler")
+            }}</span>
           </div>
           <div class="form-help">
-            {{ t('monitoring.settings.errorThresholdHelp', 'Anzahl der Fehler innerhalb von 5 Minuten, ab der eine Warnung ausgelöst wird.') }}
+            {{
+              t(
+                "monitoring.settings.errorThresholdHelp",
+                "Anzahl der Fehler innerhalb von 5 Minuten, ab der eine Warnung ausgelöst wird.",
+              )
+            }}
           </div>
         </div>
-        
+
         <div class="form-group">
           <label for="performanceThreshold">
-            {{ t('monitoring.settings.performanceThreshold', 'Performance-Schwellenwert') }}
+            {{
+              t(
+                "monitoring.settings.performanceThreshold",
+                "Performance-Schwellenwert",
+              )
+            }}
           </label>
           <div class="input-group">
-            <input 
-              type="number" 
-              id="performanceThreshold" 
-              v-model.number="formData.performanceThreshold" 
-              min="0" 
+            <input
+              type="number"
+              id="performanceThreshold"
+              v-model.number="formData.performanceThreshold"
+              min="0"
               max="10000"
               :disabled="!formData.enableMonitoring || !formData.enableAlerts"
               class="form-input"
@@ -234,19 +361,29 @@
             <span class="input-group-text">ms</span>
           </div>
           <div class="form-help">
-            {{ t('monitoring.settings.performanceThresholdHelp', 'Ladezeit in Millisekunden, ab der eine Performance-Warnung ausgelöst wird.') }}
+            {{
+              t(
+                "monitoring.settings.performanceThresholdHelp",
+                "Ladezeit in Millisekunden, ab der eine Performance-Warnung ausgelöst wird.",
+              )
+            }}
           </div>
         </div>
-        
+
         <div class="form-group">
           <div class="form-group-header">
             <label for="autoDisableFeatures">
-              {{ t('monitoring.settings.autoDisableFeatures', 'Features automatisch deaktivieren') }}
+              {{
+                t(
+                  "monitoring.settings.autoDisableFeatures",
+                  "Features automatisch deaktivieren",
+                )
+              }}
             </label>
             <div class="toggle-switch">
-              <input 
-                type="checkbox" 
-                id="autoDisableFeatures" 
+              <input
+                type="checkbox"
+                id="autoDisableFeatures"
                 v-model="formData.autoDisableFeatures"
                 :disabled="!formData.enableMonitoring || !formData.enableAlerts"
               />
@@ -254,24 +391,34 @@
             </div>
           </div>
           <div class="form-help">
-            {{ t('monitoring.settings.autoDisableFeaturesHelp', 'Deaktiviert problematische Features automatisch, wenn kritische Schwellenwerte überschritten werden.') }}
+            {{
+              t(
+                "monitoring.settings.autoDisableFeaturesHelp",
+                "Deaktiviert problematische Features automatisch, wenn kritische Schwellenwerte überschritten werden.",
+              )
+            }}
           </div>
         </div>
       </div>
 
       <!-- Datenschutz -->
       <div class="settings-section">
-        <h4>{{ t('monitoring.settings.privacy', 'Datenschutz') }}</h4>
-        
+        <h4>{{ t("monitoring.settings.privacy", "Datenschutz") }}</h4>
+
         <div class="form-group">
           <div class="form-group-header">
             <label for="anonymizeUserData">
-              {{ t('monitoring.settings.anonymizeUserData', 'Benutzerdaten anonymisieren') }}
+              {{
+                t(
+                  "monitoring.settings.anonymizeUserData",
+                  "Benutzerdaten anonymisieren",
+                )
+              }}
             </label>
             <div class="toggle-switch">
-              <input 
-                type="checkbox" 
-                id="anonymizeUserData" 
+              <input
+                type="checkbox"
+                id="anonymizeUserData"
                 v-model="formData.anonymizeUserData"
                 :disabled="!formData.enableMonitoring"
               />
@@ -279,19 +426,29 @@
             </div>
           </div>
           <div class="form-help">
-            {{ t('monitoring.settings.anonymizeUserDataHelp', 'Anonymisiert Benutzer-IDs und personenbezogene Daten in allen Berichten.') }}
+            {{
+              t(
+                "monitoring.settings.anonymizeUserDataHelp",
+                "Anonymisiert Benutzer-IDs und personenbezogene Daten in allen Berichten.",
+              )
+            }}
           </div>
         </div>
-        
+
         <div class="form-group">
           <div class="form-group-header">
             <label for="allowOptOut">
-              {{ t('monitoring.settings.allowOptOut', 'Opt-Out-Option für Benutzer') }}
+              {{
+                t(
+                  "monitoring.settings.allowOptOut",
+                  "Opt-Out-Option für Benutzer",
+                )
+              }}
             </label>
             <div class="toggle-switch">
-              <input 
-                type="checkbox" 
-                id="allowOptOut" 
+              <input
+                type="checkbox"
+                id="allowOptOut"
                 v-model="formData.allowOptOut"
                 :disabled="!formData.enableMonitoring"
               />
@@ -299,20 +456,44 @@
             </div>
           </div>
           <div class="form-help">
-            {{ t('monitoring.settings.allowOptOutHelp', 'Ermöglicht Benutzern, die Datensammlung zu deaktivieren.') }}
+            {{
+              t(
+                "monitoring.settings.allowOptOutHelp",
+                "Ermöglicht Benutzern, die Datensammlung zu deaktivieren.",
+              )
+            }}
           </div>
         </div>
-        
+
         <div class="form-group privacy-notice">
           <div class="privacy-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
             </svg>
           </div>
           <div class="privacy-content">
-            <h5>{{ t('monitoring.settings.dataPrivacyNotice', 'Datenschutzhinweis') }}</h5>
+            <h5>
+              {{
+                t("monitoring.settings.dataPrivacyNotice", "Datenschutzhinweis")
+              }}
+            </h5>
             <p>
-              {{ t('monitoring.settings.dataPrivacyText', 'Alle gesammelten Daten werden nur lokal auf diesem Gerät gespeichert und nicht an externe Server übertragen. Ihre Privatsphäre wird geschützt.') }}
+              {{
+                t(
+                  "monitoring.settings.dataPrivacyText",
+                  "Alle gesammelten Daten werden nur lokal auf diesem Gerät gespeichert und nicht an externe Server übertragen. Ihre Privatsphäre wird geschützt.",
+                )
+              }}
             </p>
           </div>
         </div>
@@ -322,53 +503,64 @@
     <div class="settings-footer">
       <div class="settings-info">
         <div class="info-item">
-          <div class="info-label">{{ t('monitoring.settings.monitoringStatus', 'Monitoring-Status:') }}</div>
+          <div class="info-label">
+            {{
+              t("monitoring.settings.monitoringStatus", "Monitoring-Status:")
+            }}
+          </div>
           <div class="info-value">
-            <span :class="formData.enableMonitoring ? 'status-active' : 'status-inactive'">
-              {{ formData.enableMonitoring 
-                ? t('monitoring.settings.status.enabled', 'Aktiviert') 
-                : t('monitoring.settings.status.disabled', 'Deaktiviert') 
+            <span
+              :class="
+                formData.enableMonitoring ? 'status-active' : 'status-inactive'
+              "
+            >
+              {{
+                formData.enableMonitoring
+                  ? t("monitoring.settings.status.enabled", "Aktiviert")
+                  : t("monitoring.settings.status.disabled", "Deaktiviert")
               }}
             </span>
           </div>
         </div>
         <div class="info-item">
-          <div class="info-label">{{ t('monitoring.settings.dataSize', 'Gespeicherte Daten:') }}</div>
+          <div class="info-label">
+            {{ t("monitoring.settings.dataSize", "Gespeicherte Daten:") }}
+          </div>
           <div class="info-value">{{ formatDataSize(dataSize) }}</div>
         </div>
       </div>
       <button @click="clearAllData" class="settings-button clear-button">
-        {{ t('monitoring.settings.clearAllData', 'Alle Daten löschen') }}
+        {{ t("monitoring.settings.clearAllData", "Alle Daten löschen") }}
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, onMounted } from 'vue';
-import { useI18n } from '@/composables/useI18n';
-import { useGlobalDialog } from '@/composables/useDialog';
+import { ref, reactive, computed, watch, onMounted } from "vue";
+import { useI18n } from "@/composables/useI18n";
+import { useGlobalDialog } from "@/composables/useDialog";
 
 // Typen
 interface MonitoringSettingsData {
   // Allgemeine Einstellungen
   enableMonitoring: boolean;
-  dataPersistence: 'session' | 'local' | 'indexeddb';
+  dataPersistence: "session" | "local" | "indexeddb";
   dataRetention: number;
-  
+
   // Datenerfassung
   collectErrors: boolean;
   collectPerformance: boolean;
   collectUsage: boolean;
   collectFeedback: boolean;
   samplingRate: number;
-  
+
   // Warnungen & Benachrichtigungen
   enableAlerts: boolean;
   errorThreshold: number;
   performanceThreshold: number;
   autoDisableFeatures: boolean;
-  
+
   // Datenschutz
   anonymizeUserData: boolean;
   allowOptOut: boolean;
@@ -380,7 +572,7 @@ interface MonitoringSettingsProps {
 
 // Event-Definition
 interface Emits {
-  (e: 'update:settings', settings: MonitoringSettingsData): void;
+  (e: "update:settings", settings: MonitoringSettingsData): void;
 }
 
 // Props und Emits
@@ -393,12 +585,12 @@ const dialog = useGlobalDialog();
 
 // Formular-Daten
 const formData = reactive<MonitoringSettingsData>({
-  ...props.settings
+  ...props.settings,
 });
 
 // Ursprüngliche Einstellungen speichern
 const originalSettings = ref<MonitoringSettingsData>({
-  ...props.settings
+  ...props.settings,
 });
 
 // Datengröße (Mock-Wert)
@@ -412,7 +604,7 @@ const hasChanges = computed(() => {
 // Standard-Einstellungen
 const defaultSettings: MonitoringSettingsData = {
   enableMonitoring: true,
-  dataPersistence: 'local',
+  dataPersistence: "local",
   dataRetention: 30,
   collectErrors: true,
   collectPerformance: true,
@@ -424,83 +616,106 @@ const defaultSettings: MonitoringSettingsData = {
   performanceThreshold: 2000,
   autoDisableFeatures: false,
   anonymizeUserData: true,
-  allowOptOut: true
+  allowOptOut: true,
 };
 
 // Methoden
 function saveSettings(): void {
   // Einstellungen speichern und Event emittieren
-  emit('update:settings', { ...formData });
-  
+  emit("update:settings", { ...formData });
+
   // Aktualisierte Einstellungen als neue Original-Einstellungen setzen
   originalSettings.value = { ...formData };
-  
+
   // Bestätigungsmeldung anzeigen
   dialog.alert({
-    title: t('monitoring.settings.saveSuccess', 'Einstellungen gespeichert'),
-    message: t('monitoring.settings.saveSuccessMessage', 'Ihre Monitoring-Einstellungen wurden erfolgreich gespeichert.'),
-    type: 'success'
+    title: t("monitoring.settings.saveSuccess", "Einstellungen gespeichert"),
+    message: t(
+      "monitoring.settings.saveSuccessMessage",
+      "Ihre Monitoring-Einstellungen wurden erfolgreich gespeichert.",
+    ),
+    type: "success",
   });
 }
 
 function resetToDefaults(): void {
   // Bestätigung anfordern
-  dialog.confirm({
-    title: t('monitoring.settings.resetConfirm', 'Standardwerte wiederherstellen?'),
-    message: t('monitoring.settings.resetConfirmMessage', 'Möchten Sie wirklich alle Einstellungen auf die Standardwerte zurücksetzen? Diese Aktion kann nicht rückgängig gemacht werden.'),
-    confirmButtonText: t('common.yes', 'Ja'),
-    cancelButtonText: t('common.no', 'Nein'),
-    type: 'warning'
-  }).then(confirmed => {
-    if (confirmed) {
-      // Auf Standardwerte zurücksetzen
-      Object.assign(formData, defaultSettings);
-      
-      // Änderungen speichern
-      saveSettings();
-    }
-  });
+  dialog
+    .confirm({
+      title: t(
+        "monitoring.settings.resetConfirm",
+        "Standardwerte wiederherstellen?",
+      ),
+      message: t(
+        "monitoring.settings.resetConfirmMessage",
+        "Möchten Sie wirklich alle Einstellungen auf die Standardwerte zurücksetzen? Diese Aktion kann nicht rückgängig gemacht werden.",
+      ),
+      confirmButtonText: t("common.yes", "Ja"),
+      cancelButtonText: t("common.no", "Nein"),
+      type: "warning",
+    })
+    .then((confirmed) => {
+      if (confirmed) {
+        // Auf Standardwerte zurücksetzen
+        Object.assign(formData, defaultSettings);
+
+        // Änderungen speichern
+        saveSettings();
+      }
+    });
 }
 
 function clearAllData(): void {
   // Bestätigung anfordern
-  dialog.confirm({
-    title: t('monitoring.settings.clearDataConfirm', 'Alle Daten löschen?'),
-    message: t('monitoring.settings.clearDataConfirmMessage', 'Möchten Sie wirklich alle gesammelten Monitoring-Daten löschen? Diese Aktion kann nicht rückgängig gemacht werden.'),
-    confirmButtonText: t('common.yes', 'Ja'),
-    cancelButtonText: t('common.no', 'Nein'),
-    type: 'danger'
-  }).then(confirmed => {
-    if (confirmed) {
-      // Mock-Implementierung: Datengröße zurücksetzen
-      dataSize.value = 0;
-      
-      // Bestätigungsmeldung anzeigen
-      dialog.alert({
-        title: t('monitoring.settings.dataCleared', 'Daten gelöscht'),
-        message: t('monitoring.settings.dataClearedMessage', 'Alle Monitoring-Daten wurden erfolgreich gelöscht.'),
-        type: 'success'
-      });
-    }
-  });
+  dialog
+    .confirm({
+      title: t("monitoring.settings.clearDataConfirm", "Alle Daten löschen?"),
+      message: t(
+        "monitoring.settings.clearDataConfirmMessage",
+        "Möchten Sie wirklich alle gesammelten Monitoring-Daten löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+      ),
+      confirmButtonText: t("common.yes", "Ja"),
+      cancelButtonText: t("common.no", "Nein"),
+      type: "danger",
+    })
+    .then((confirmed) => {
+      if (confirmed) {
+        // Mock-Implementierung: Datengröße zurücksetzen
+        dataSize.value = 0;
+
+        // Bestätigungsmeldung anzeigen
+        dialog.alert({
+          title: t("monitoring.settings.dataCleared", "Daten gelöscht"),
+          message: t(
+            "monitoring.settings.dataClearedMessage",
+            "Alle Monitoring-Daten wurden erfolgreich gelöscht.",
+          ),
+          type: "success",
+        });
+      }
+    });
 }
 
 function formatDataSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
-  
+  if (bytes === 0) return "0 Bytes";
+
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
 // Watches
-watch(() => props.settings, (newSettings) => {
-  // Aktualisieren der Form-Daten, wenn sich die Props ändern
-  Object.assign(formData, newSettings);
-  originalSettings.value = { ...newSettings };
-}, { deep: true });
+watch(
+  () => props.settings,
+  (newSettings) => {
+    // Aktualisieren der Form-Daten, wenn sich die Props ändern
+    Object.assign(formData, newSettings);
+    originalSettings.value = { ...newSettings };
+  },
+  { deep: true },
+);
 
 // Lifecycle hooks
 onMounted(() => {
@@ -511,7 +726,7 @@ onMounted(() => {
 
 <style scoped>
 .monitoring-settings {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .settings-header {
@@ -538,7 +753,9 @@ onMounted(() => {
   border-radius: 4px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
 }
 
 .settings-button:disabled {
@@ -699,7 +916,7 @@ label {
   right: 0;
   bottom: 0;
   background-color: #ccc;
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 24px;
   margin: 0;
 }
@@ -712,7 +929,7 @@ label {
   left: 3px;
   bottom: 3px;
   background-color: white;
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 50%;
 }
 
@@ -802,26 +1019,27 @@ label {
 }
 
 @media (max-width: 768px) {
-  .settings-header, .settings-footer {
+  .settings-header,
+  .settings-footer {
     flex-direction: column;
     gap: 15px;
     align-items: flex-start;
   }
-  
+
   .settings-footer {
     padding: 15px;
   }
-  
+
   .form-group-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
   }
-  
+
   .toggle-switch {
     align-self: flex-start;
   }
-  
+
   .privacy-notice {
     flex-direction: column;
   }

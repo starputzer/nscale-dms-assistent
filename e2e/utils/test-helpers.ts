@@ -1,14 +1,14 @@
 /**
  * Hilfsfunktionen für Tests.
  */
-import { Page, expect } from '@playwright/test';
+import { Page, expect } from "@playwright/test";
 
 /**
  * Wartet auf das Ende eines Netzwerk-Idle-Zustands.
  * Hilfreich, wenn auf Aktualisierungen nach API-Anfragen gewartet werden soll.
  */
 export async function waitForNetworkIdle(page: Page, timeout = 5000) {
-  await page.waitForLoadState('networkidle', { timeout });
+  await page.waitForLoadState("networkidle", { timeout });
 }
 
 /**
@@ -24,8 +24,8 @@ export async function expectAndClick(page: Page, selector: string) {
 /**
  * Zufälligen String für Testdaten generieren.
  */
-export function generateRandomString(prefix = '', length = 6) {
-  const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+export function generateRandomString(prefix = "", length = 6) {
+  const characters = "abcdefghijklmnopqrstuvwxyz0123456789";
   let result = prefix;
   for (let i = 0; i < length; i++) {
     result += characters.charAt(Math.floor(Math.random() * characters.length));
@@ -38,8 +38,8 @@ export function generateRandomString(prefix = '', length = 6) {
  * Nützlich, um langsame Netzwerkverbindungen zu testen.
  */
 export async function simulateNetworkDelay(page: Page, delay = 500) {
-  await page.route('**/*', async (route) => {
-    await new Promise(resolve => setTimeout(resolve, delay));
+  await page.route("**/*", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, delay));
     await route.continue();
   });
 }
@@ -50,10 +50,14 @@ export async function simulateNetworkDelay(page: Page, delay = 500) {
  * @param urlPattern URL-Muster, für das Fehler simuliert werden sollen
  * @param errorRate Anteil der Anfragen, die fehlschlagen sollen (0-1)
  */
-export async function simulateNetworkErrors(page: Page, urlPattern: string, errorRate = 0.5) {
+export async function simulateNetworkErrors(
+  page: Page,
+  urlPattern: string,
+  errorRate = 0.5,
+) {
   await page.route(urlPattern, async (route) => {
     if (Math.random() < errorRate) {
-      await route.abort('failed');
+      await route.abort("failed");
     } else {
       await route.continue();
     }
@@ -76,11 +80,11 @@ export async function findElement(page: Page, selector: string) {
  * Testet, ob ein Element nach einer bestimmten Aktion erscheint oder verschwindet.
  */
 export async function expectElementAfterAction(
-  page: Page, 
-  selector: string, 
-  action: () => Promise<void>, 
+  page: Page,
+  selector: string,
+  action: () => Promise<void>,
   shouldAppear = true,
-  timeout = 5000
+  timeout = 5000,
 ) {
   await action();
   if (shouldAppear) {
@@ -93,7 +97,11 @@ export async function expectElementAfterAction(
 /**
  * Füllt ein Formular aus und sendet es ab.
  */
-export async function fillAndSubmitForm(page: Page, formFields: Record<string, string>, submitSelector: string) {
+export async function fillAndSubmitForm(
+  page: Page,
+  formFields: Record<string, string>,
+  submitSelector: string,
+) {
   for (const [selector, value] of Object.entries(formFields)) {
     await page.fill(selector, value);
   }

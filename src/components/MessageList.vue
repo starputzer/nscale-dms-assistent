@@ -4,32 +4,36 @@
       <div class="loading-spinner"></div>
       <span>Lade Unterhaltung...</span>
     </div>
-    
+
     <div v-else-if="messages.length === 0" class="no-messages">
       <div class="welcome-message">
-        <img src="@/assets/images/senmvku-logo.png" alt="nscale DMS Assistent" class="welcome-logo">
+        <img
+          src="@/assets/images/senmvku-logo.png"
+          alt="nscale DMS Assistent"
+          class="welcome-logo"
+        />
         <h2>Willkommen beim nscale DMS Assistenten</h2>
         <p>Wie kann ich Ihnen heute mit nscale helfen?</p>
       </div>
     </div>
-    
+
     <div v-else class="messages-list">
-      <div 
+      <div
         v-for="(message, index) in messages"
         :key="index"
         class="message-wrapper"
         :class="{
           'user-message': message.role === 'user',
           'assistant-message': message.role === 'assistant',
-          'system-message': message.role === 'system'
+          'system-message': message.role === 'system',
         }"
       >
-        <div 
+        <div
           class="message-bubble"
           :class="{
             'nscale-message-user': message.role === 'user',
             'nscale-message-assistant': message.role === 'assistant',
-            'nscale-message-system': message.role === 'system'
+            'nscale-message-system': message.role === 'system',
           }"
         >
           <div class="message-header">
@@ -40,25 +44,47 @@
               {{ formatTime(message.timestamp) }}
             </div>
           </div>
-          
-          <div class="message-content" v-html="formatMessageContent(message.content)"></div>
-          
+
+          <div
+            class="message-content"
+            v-html="formatMessageContent(message.content)"
+          ></div>
+
           <div v-if="message.role === 'assistant'" class="message-actions">
             <div class="feedback-buttons">
-              <button class="feedback-button" @click="sendFeedback(message.id, 'positive')" title="Positives Feedback">
+              <button
+                class="feedback-button"
+                @click="sendFeedback(message.id, 'positive')"
+                title="Positives Feedback"
+              >
                 <i class="fas fa-thumbs-up"></i>
               </button>
-              <button class="feedback-button" @click="sendFeedback(message.id, 'negative')" title="Negatives Feedback">
+              <button
+                class="feedback-button"
+                @click="sendFeedback(message.id, 'negative')"
+                title="Negatives Feedback"
+              >
                 <i class="fas fa-thumbs-down"></i>
               </button>
             </div>
-            
-            <div v-if="hasSourceReferences(message.content)" class="source-buttons">
-              <button class="source-btn" @click="showExplanation(message.id)" title="Antwort erklären">
+
+            <div
+              v-if="hasSourceReferences(message.content)"
+              class="source-buttons"
+            >
+              <button
+                class="source-btn"
+                @click="showExplanation(message.id)"
+                title="Antwort erklären"
+              >
                 <i class="fas fa-info-circle"></i>
                 <span>Antwort erklären</span>
               </button>
-              <button class="source-btn" @click="showSources(message.id)" title="Quellen anzeigen">
+              <button
+                class="source-btn"
+                @click="showSources(message.id)"
+                title="Quellen anzeigen"
+              >
                 <i class="fas fa-bookmark"></i>
                 <span>Quellen anzeigen</span>
               </button>
@@ -66,7 +92,7 @@
           </div>
         </div>
       </div>
-      
+
       <div v-if="isTyping" class="message-wrapper assistant-message">
         <div class="message-bubble nscale-message-assistant typing-indicator">
           <div class="typing-dots">
@@ -81,14 +107,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick } from 'vue';
-import { useStore } from 'vuex';
-import DOMPurify from 'dompurify';
-import marked from 'marked';
+import { ref, computed, watch, onMounted, nextTick } from "vue";
+import { useStore } from "vuex";
+import DOMPurify from "dompurify";
+import marked from "marked";
 
 interface Message {
   id: string;
-  role: 'user' | 'assistant' | 'system';
+  role: "user" | "assistant" | "system";
   content: string;
   timestamp?: Date;
 }
@@ -100,17 +126,24 @@ const props = defineProps<{
 
 const store = useStore();
 const scrollContainer = ref<HTMLElement | null>(null);
-const isTyping = computed(() => store.getters['sessions/isTyping']);
+const isTyping = computed(() => store.getters["sessions/isTyping"]);
 
 // Watch for new messages to scroll to bottom
-watch(() => [...props.messages], () => {
-  scrollToBottom();
-}, { deep: true });
+watch(
+  () => [...props.messages],
+  () => {
+    scrollToBottom();
+  },
+  { deep: true },
+);
 
 // Watch for typing indicator
-watch(() => isTyping.value, () => {
-  scrollToBottom();
-});
+watch(
+  () => isTyping.value,
+  () => {
+    scrollToBottom();
+  },
+);
 
 onMounted(() => {
   scrollToBottom();
@@ -120,57 +153,60 @@ onMounted(() => {
 function formatMessageContent(content: string): string {
   // Use DOMPurify to sanitize HTML
   const sanitizedContent = DOMPurify.sanitize(marked(content));
-  
+
   // Replace source reference markers with clickable spans
-  return sanitizedContent.replace(/\[\[src:([^\]]+)\]\]/g, (match, sourceId) => {
-    return `<span class="source-reference" data-source-id="${sourceId}">[${sourceId}]</span>`;
-  });
+  return sanitizedContent.replace(
+    /\[\[src:([^\]]+)\]\]/g,
+    (match, sourceId) => {
+      return `<span class="source-reference" data-source-id="${sourceId}">[${sourceId}]</span>`;
+    },
+  );
 }
 
 function hasSourceReferences(content: string): boolean {
-  return content.includes('[[src:');
+  return content.includes("[[src:");
 }
 
 // Format time (e.g., "14:35")
 function formatTime(timestamp: Date): string {
   const date = new Date(timestamp);
-  return date.toLocaleTimeString('de-DE', { 
-    hour: '2-digit', 
-    minute: '2-digit' 
+  return date.toLocaleTimeString("de-DE", {
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
 // Get readable role label
 function messageRoleLabel(role: string): string {
   switch (role) {
-    case 'user':
-      return 'Sie';
-    case 'assistant':
-      return 'Assistent';
-    case 'system':
-      return 'System';
+    case "user":
+      return "Sie";
+    case "assistant":
+      return "Assistent";
+    case "system":
+      return "System";
     default:
-      return '';
+      return "";
   }
 }
 
 // Send feedback for a message
-function sendFeedback(messageId: string, type: 'positive' | 'negative'): void {
-  store.dispatch('feedback/sendFeedback', { 
-    messageId, 
+function sendFeedback(messageId: string, type: "positive" | "negative"): void {
+  store.dispatch("feedback/sendFeedback", {
+    messageId,
     type,
-    sessionId: store.getters['sessions/activeSessionId']
+    sessionId: store.getters["sessions/activeSessionId"],
   });
 }
 
 // Show explanation for a message
 function showExplanation(messageId: string): void {
-  store.dispatch('sources/showExplanation', { messageId });
+  store.dispatch("sources/showExplanation", { messageId });
 }
 
 // Show sources for a message
 function showSources(messageId: string): void {
-  store.dispatch('sources/showSources', { messageId });
+  store.dispatch("sources/showSources", { messageId });
 }
 
 // Scroll to bottom of the message container
@@ -193,7 +229,8 @@ function scrollToBottom(): void {
   background-color: var(--nscale-background);
 }
 
-.messages-loading, .no-messages {
+.messages-loading,
+.no-messages {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -316,7 +353,8 @@ function scrollToBottom(): void {
   font-size: 0.9em;
 }
 
-.message-content :deep(ul), .message-content :deep(ol) {
+.message-content :deep(ul),
+.message-content :deep(ol) {
   margin: 0.75rem 0;
   padding-left: 1.5rem;
 }
@@ -361,7 +399,9 @@ function scrollToBottom(): void {
   cursor: pointer;
   padding: 0.25rem;
   border-radius: 4px;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .feedback-button:hover {
@@ -429,23 +469,33 @@ function scrollToBottom(): void {
 }
 
 @keyframes typing-dot {
-  0%, 80%, 100% { transform: scale(0.6); opacity: 0.6; }
-  40% { transform: scale(1); opacity: 1; }
+  0%,
+  80%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.6;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 768px) {
   .message-container {
     padding: 1rem;
   }
-  
+
   .message-bubble {
     max-width: 90%;
   }
-  
+
   .source-buttons {
     flex-direction: column;
     align-items: flex-start;

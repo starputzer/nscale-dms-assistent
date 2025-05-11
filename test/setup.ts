@@ -1,8 +1,8 @@
 // Vitest setup file
-import { vi, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
-import { config } from '@vue/test-utils';
-import '@testing-library/jest-dom';
-import { cleanup } from '@testing-library/vue';
+import { vi, beforeAll, afterAll, beforeEach, afterEach } from "vitest";
+import { config } from "@vue/test-utils";
+import "@testing-library/jest-dom";
+import { cleanup } from "@testing-library/vue";
 
 // Vue Test Utils Globale Konfiguration
 config.global.mocks = {
@@ -17,23 +17,23 @@ config.global.mocks = {
   $route: {
     params: {},
     query: {},
-    path: '/',
-    name: 'home',
-  }
+    path: "/",
+    name: "home",
+  },
 };
 
 // Konfiguration für sämtliche Komponenten
 config.global.stubs = {
   // Stub für externe Komponenten, die nicht getestet werden müssen
-  'font-awesome-icon': true,
-  'router-link': true,
+  "font-awesome-icon": true,
+  "router-link": true,
   // Spezielle Komponenten, wenn nötig
 };
 
 // Mock für window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -49,14 +49,18 @@ Object.defineProperty(window, 'matchMedia', {
 class MockBlob {
   size: number;
   type: string;
-  
+
   constructor(parts: any[], options?: BlobPropertyBag) {
-    this.size = parts.reduce((acc, part) => acc + (typeof part === 'string' ? part.length : part.size || 0), 0);
-    this.type = options?.type || '';
+    this.size = parts.reduce(
+      (acc, part) =>
+        acc + (typeof part === "string" ? part.length : part.size || 0),
+      0,
+    );
+    this.type = options?.type || "";
   }
 
   text() {
-    return Promise.resolve('mock-blob-text');
+    return Promise.resolve("mock-blob-text");
   }
 
   arrayBuffer() {
@@ -72,7 +76,7 @@ global.Blob = MockBlob as any;
 global.File = class extends MockBlob {
   name: string;
   lastModified: number;
-  
+
   constructor(parts: any[], name: string, options?: FilePropertyBag) {
     super(parts, options);
     this.name = name;
@@ -81,7 +85,7 @@ global.File = class extends MockBlob {
 } as any;
 
 // Mock für URL.createObjectURL
-URL.createObjectURL = vi.fn().mockImplementation(() => 'mock-object-url');
+URL.createObjectURL = vi.fn().mockImplementation(() => "mock-object-url");
 URL.revokeObjectURL = vi.fn();
 
 // Mock für window.fetch
@@ -90,19 +94,19 @@ global.fetch = vi.fn();
 // Mock für FormData (wird für FileUpload gebraucht)
 global.FormData = class {
   private data: Record<string, any> = {};
-  
+
   append(key: string, value: any) {
     this.data[key] = value;
   }
-  
+
   get(key: string) {
     return this.data[key];
   }
-  
+
   has(key: string) {
     return key in this.data;
   }
-  
+
   delete(key: string) {
     delete this.data[key];
   }
@@ -143,15 +147,15 @@ const mockStorage = () => {
     length: 0,
     key(index: number) {
       return Object.keys(store)[index] || null;
-    }
+    },
   };
 };
 
-Object.defineProperty(window, 'localStorage', {
+Object.defineProperty(window, "localStorage", {
   value: mockStorage(),
 });
 
-Object.defineProperty(window, 'sessionStorage', {
+Object.defineProperty(window, "sessionStorage", {
   value: mockStorage(),
 });
 
@@ -166,66 +170,77 @@ class MockEventSource {
   CONNECTING: number = 0;
   OPEN: number = 1;
   CLOSED: number = 2;
-  
-  private eventListeners: Record<string, Array<(event: MessageEvent) => void>> = {};
-  
+
+  private eventListeners: Record<string, Array<(event: MessageEvent) => void>> =
+    {};
+
   constructor(url: string) {
     this.url = url;
     this.readyState = this.CONNECTING;
-    
+
     // Automatisch nach Erstellung "verbinden"
     setTimeout(() => {
       this.readyState = this.OPEN;
       if (this.onopen) {
-        this.onopen(new Event('open'));
+        this.onopen(new Event("open"));
       }
     }, 0);
   }
-  
-  addEventListener(type: string, listener: (event: MessageEvent) => void): void {
+
+  addEventListener(
+    type: string,
+    listener: (event: MessageEvent) => void,
+  ): void {
     if (!this.eventListeners[type]) {
       this.eventListeners[type] = [];
     }
     this.eventListeners[type].push(listener);
   }
-  
-  removeEventListener(type: string, listener: (event: MessageEvent) => void): void {
+
+  removeEventListener(
+    type: string,
+    listener: (event: MessageEvent) => void,
+  ): void {
     if (this.eventListeners[type]) {
-      this.eventListeners[type] = this.eventListeners[type].filter(l => l !== listener);
+      this.eventListeners[type] = this.eventListeners[type].filter(
+        (l) => l !== listener,
+      );
     }
   }
-  
+
   dispatchEvent(event: Event): boolean {
     return true;
   }
-  
+
   close(): void {
     this.readyState = this.CLOSED;
   }
-  
+
   // Test-Hilfsmethoden
   emit(type: string, data: any): void {
-    const event = new MessageEvent(type, { data: typeof data === 'string' ? data : JSON.stringify(data) });
-    
+    const event = new MessageEvent(type, {
+      data: typeof data === "string" ? data : JSON.stringify(data),
+    });
+
     // Spezifischen Event-Handler aufrufen
-    if (type === 'message' && this.onmessage) {
+    if (type === "message" && this.onmessage) {
       this.onmessage(event);
     }
-    
+
     // Alle Event-Listener für diesen Typ aufrufen
     if (this.eventListeners[type]) {
-      this.eventListeners[type].forEach(listener => listener(event));
+      this.eventListeners[type].forEach((listener) => listener(event));
     }
   }
-  
+
   emitError(error: Error): void {
     if (this.onerror) {
-      this.onerror(new Event('error'));
+      this.onerror(new Event("error"));
     }
   }
 }
 
-vi.stubGlobal('EventSource', MockEventSource);
+vi.stubGlobal("EventSource", MockEventSource);
 
 // Automatische Bereinigung von Testing Library
 afterEach(() => {
@@ -237,10 +252,10 @@ afterEach(() => {
 });
 
 // Testing Library: benutzerdefinierte Übereinstimmungen
-import { configure } from '@testing-library/dom';
+import { configure } from "@testing-library/dom";
 
 configure({
-  testIdAttribute: 'data-testid',
+  testIdAttribute: "data-testid",
   asyncUtilTimeout: 5000,
 });
 
@@ -257,24 +272,24 @@ window.ResizeObserver = ResizeObserverMock as any;
 class IntersectionObserverMock {
   callback: IntersectionObserverCallback;
   elements: Set<Element>;
-  
+
   constructor(callback: IntersectionObserverCallback) {
     this.callback = callback;
     this.elements = new Set();
   }
-  
+
   observe(element: Element) {
     this.elements.add(element);
   }
-  
+
   unobserve(element: Element) {
     this.elements.delete(element);
   }
-  
+
   disconnect() {
     this.elements.clear();
   }
-  
+
   // Hilfsmethode für Tests
   triggerEntries(entries: IntersectionObserverEntry[]) {
     this.callback(entries, this);
@@ -285,10 +300,14 @@ window.IntersectionObserver = IntersectionObserverMock as any;
 
 // Hilfsfunktionen für Tests
 export function flushPromises() {
-  return new Promise(resolve => setTimeout(resolve, 0));
+  return new Promise((resolve) => setTimeout(resolve, 0));
 }
 
-export function createMockAxiosResponse(data: any, status = 200, statusText = 'OK') {
+export function createMockAxiosResponse(
+  data: any,
+  status = 200,
+  statusText = "OK",
+) {
   return {
     data,
     status,
@@ -298,12 +317,12 @@ export function createMockAxiosResponse(data: any, status = 200, statusText = 'O
   };
 }
 
-export function createMockAxiosError(message = 'Network Error', status = 500) {
+export function createMockAxiosError(message = "Network Error", status = 500) {
   const error = new Error(message) as any;
   error.response = {
     status,
     data: { error: message },
-    statusText: 'Internal Server Error',
+    statusText: "Internal Server Error",
     headers: {},
     config: {},
   };
@@ -315,43 +334,43 @@ export function createMockAxiosError(message = 'Network Error', status = 500) {
 // Test-Daten-Generatoren
 export const mockUtils = {
   createUser: (overrides = {}) => ({
-    id: 'user-1',
-    email: 'test@example.com',
-    username: 'testuser',
-    role: 'user',
-    displayName: 'Test User',
+    id: "user-1",
+    email: "test@example.com",
+    username: "testuser",
+    role: "user",
+    displayName: "Test User",
     lastLogin: new Date().toISOString(),
-    ...overrides
+    ...overrides,
   }),
-  
+
   createSession: (overrides = {}) => ({
-    id: 'session-1',
-    title: 'Test Session',
-    userId: 'user-1',
+    id: "session-1",
+    title: "Test Session",
+    userId: "user-1",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     isPinned: false,
-    ...overrides
+    ...overrides,
   }),
-  
+
   createMessage: (overrides = {}) => ({
-    id: 'message-1',
-    sessionId: 'session-1',
-    content: 'Test message content',
-    role: 'user',
+    id: "message-1",
+    sessionId: "session-1",
+    content: "Test message content",
+    role: "user",
     timestamp: new Date().toISOString(),
-    status: 'sent',
-    ...overrides
+    status: "sent",
+    ...overrides,
   }),
-  
+
   createDocument: (overrides = {}) => ({
-    id: 'doc-1',
-    name: 'test-document.pdf',
+    id: "doc-1",
+    name: "test-document.pdf",
     size: 1024,
-    type: 'application/pdf',
-    status: 'converted',
-    userId: 'user-1',
+    type: "application/pdf",
+    status: "converted",
+    userId: "user-1",
     createdAt: new Date().toISOString(),
-    ...overrides
+    ...overrides,
   }),
 };

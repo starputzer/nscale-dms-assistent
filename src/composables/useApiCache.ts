@@ -1,7 +1,7 @@
-import { ref, reactive, computed, watch } from 'vue';
-import { useFeatureToggles } from './useFeatureToggles';
-import { useOfflineDetection } from './useOfflineDetection';
-import { useLogger } from './useLogger';
+import { ref, reactive, computed, watch } from "vue";
+import { useFeatureToggles } from "./useFeatureToggles";
+import { useOfflineDetection } from "./useOfflineDetection";
+import { useLogger } from "./useLogger";
 
 export interface ApiCacheOptions {
   /** Default TTL (time to live) for cache entries in milliseconds */
@@ -36,26 +36,26 @@ export interface ApiCacheStats {
 
 /**
  * Composable for caching API responses with TTL, LRU eviction, and offline support
- * 
+ *
  * @param options - Configuration options for the cache
  * @returns Object containing cache related methods and state
- * 
+ *
  * @example
  * const { getCache, setCache, invalidateCache } = useApiCache({
  *   defaultTtl: 60000, // 1 minute
  *   maxSize: 100,
  *   persistToStorage: true
  * });
- * 
+ *
  * // Get data with cache support
  * const fetchData = async (id: string) => {
  *   const cacheKey = `user-${id}`;
  *   const cached = getCache<User>(cacheKey);
- *   
+ *
  *   if (cached) {
  *     return cached;
  *   }
- *   
+ *
  *   const response = await api.getUser(id);
  *   setCache(cacheKey, response, 300000); // Cache for 5 minutes
  *   return response;
@@ -68,29 +68,27 @@ export function useApiCache(options: ApiCacheOptions = {}) {
     debug = false,
     ignoreWhenOnline = false,
     persistToStorage = false,
-    storageKeyPrefix = 'nscale_cache_'
+    storageKeyPrefix = "nscale_cache_",
   } = options;
 
   // Dependencies
-  const logger = useLogger('ApiCache');
+  const logger = useLogger("ApiCache");
   const { isFeatureEnabled } = useFeatureToggles();
   const { isOnline } = useOfflineDetection();
 
   // Enable cache only if feature toggle is on
-  const isCacheEnabled = computed(() => 
-    isFeatureEnabled('apiCache') !== false
-  );
+  const isCacheEnabled = computed(() => isFeatureEnabled("apiCache") !== false);
 
   // Cache storage
   const cache = reactive<Map<string, CacheEntry<any>>>(new Map());
-  
+
   // Cache stats
   const stats = reactive<ApiCacheStats>({
     size: 0,
     hits: 0,
     misses: 0,
     staleHits: 0,
-    maxSize
+    maxSize,
   });
 
   // Update stats
@@ -106,7 +104,7 @@ export function useApiCache(options: ApiCacheOptions = {}) {
    */
   const getCache = <T>(key: string, skipExpiration = false): T | null => {
     if (!isCacheEnabled.value) {
-      if (debug) logger.debug('Cache is disabled via feature toggle');
+      if (debug) logger.debug("Cache is disabled via feature toggle");
       return null;
     }
 
@@ -119,13 +117,13 @@ export function useApiCache(options: ApiCacheOptions = {}) {
 
     // Try to get from memory cache
     const entry = cache.get(key);
-    
+
     // If not found, try to get from localStorage if persistence is enabled
     if (!entry && persistToStorage) {
       try {
         const storageKey = `${storageKeyPrefix}${key}`;
         const storedData = localStorage.getItem(storageKey);
-        
+
         if (storedData) {
           const parsedEntry = JSON.parse(storedData) as CacheEntry<T>;
           cache.set(key, parsedEntry);
@@ -134,38 +132,41 @@ export function useApiCache(options: ApiCacheOptions = {}) {
           return handleCacheHit(parsedEntry, skipExpiration);
         }
       } catch (error) {
-        logger.error('Error loading cache from localStorage', error);
+        logger.error("Error loading cache from localStorage", error);
       }
     }
-    
+
     if (!entry) {
       if (debug) logger.debug(`Cache miss for ${key}`);
       stats.misses++;
       return null;
     }
-    
+
     return handleCacheHit(entry, skipExpiration);
   };
-  
+
   /**
    * Handle a cache hit
    * @param entry - Cache entry
    * @param skipExpiration - Whether to skip expiration check
    * @returns Cached data or null if expired
    */
-  const handleCacheHit = <T>(entry: CacheEntry<T>, skipExpiration: boolean): T | null => {
+  const handleCacheHit = <T>(
+    entry: CacheEntry<T>,
+    skipExpiration: boolean,
+  ): T | null => {
     const now = Date.now();
-    
+
     // Update last accessed time for LRU
     entry.lastAccessed = now;
-    
+
     // Check if expired
     if (!skipExpiration && entry.expires < now) {
       if (debug) logger.debug(`Cache entry expired for ${entry.key}`);
       stats.staleHits++;
       return null;
     }
-    
+
     if (debug) logger.debug(`Cache hit for ${entry.key}`);
     stats.hits++;
     return entry.data;
@@ -180,34 +181,34 @@ export function useApiCache(options: ApiCacheOptions = {}) {
    */
   const setCache = <T>(key: string, data: T, ttl = defaultTtl): boolean => {
     if (!isCacheEnabled.value) {
-      if (debug) logger.debug('Cache is disabled via feature toggle');
+      if (debug) logger.debug("Cache is disabled via feature toggle");
       return false;
     }
-    
+
     // Don't cache null or undefined
     if (data === null || data === undefined) {
       if (debug) logger.debug(`Not caching null/undefined data for ${key}`);
       return false;
     }
-    
+
     const now = Date.now();
     const entry: CacheEntry<T> = {
       data,
       timestamp: now,
       expires: now + ttl,
       key,
-      lastAccessed: now
+      lastAccessed: now,
     };
-    
+
     // Check if we need to evict entries before adding a new one
     if (cache.size >= maxSize && !cache.has(key)) {
       evictOldestEntry();
     }
-    
+
     // Add to cache
     cache.set(key, entry);
     updateStats();
-    
+
     // Store in localStorage if persistence is enabled
     if (persistToStorage) {
       try {
@@ -215,10 +216,10 @@ export function useApiCache(options: ApiCacheOptions = {}) {
         localStorage.setItem(storageKey, JSON.stringify(entry));
         if (debug) logger.debug(`Cached entry persisted to storage: ${key}`);
       } catch (error) {
-        logger.error('Error persisting cache to localStorage', error);
+        logger.error("Error persisting cache to localStorage", error);
       }
     }
-    
+
     if (debug) logger.debug(`Cached data for ${key}, expires in ${ttl}ms`);
     return true;
   };
@@ -230,23 +231,24 @@ export function useApiCache(options: ApiCacheOptions = {}) {
    */
   const invalidateCache = (key: string): boolean => {
     const deleted = cache.delete(key);
-    
+
     // Also remove from localStorage if persistence is enabled
     if (persistToStorage) {
       try {
         const storageKey = `${storageKeyPrefix}${key}`;
         localStorage.removeItem(storageKey);
-        if (debug && deleted) logger.debug(`Removed cached entry from storage: ${key}`);
+        if (debug && deleted)
+          logger.debug(`Removed cached entry from storage: ${key}`);
       } catch (error) {
-        logger.error('Error removing cache from localStorage', error);
+        logger.error("Error removing cache from localStorage", error);
       }
     }
-    
+
     if (deleted) {
       updateStats();
       if (debug) logger.debug(`Invalidated cache for ${key}`);
     }
-    
+
     return deleted;
   };
 
@@ -257,7 +259,7 @@ export function useApiCache(options: ApiCacheOptions = {}) {
    */
   const invalidateCacheByPrefix = (prefix: string): number => {
     let count = 0;
-    
+
     // Find all keys that start with the prefix
     for (const key of cache.keys()) {
       if (key.startsWith(prefix)) {
@@ -265,7 +267,7 @@ export function useApiCache(options: ApiCacheOptions = {}) {
         count++;
       }
     }
-    
+
     // Also remove from localStorage if persistence is enabled
     if (persistToStorage) {
       try {
@@ -273,19 +275,23 @@ export function useApiCache(options: ApiCacheOptions = {}) {
           const storageKey = localStorage.key(i);
           if (storageKey?.startsWith(`${storageKeyPrefix}${prefix}`)) {
             localStorage.removeItem(storageKey);
-            if (debug) logger.debug(`Removed cached entry from storage: ${storageKey}`);
+            if (debug)
+              logger.debug(`Removed cached entry from storage: ${storageKey}`);
           }
         }
       } catch (error) {
-        logger.error('Error removing cache from localStorage', error);
+        logger.error("Error removing cache from localStorage", error);
       }
     }
-    
+
     if (count > 0) {
       updateStats();
-      if (debug) logger.debug(`Invalidated ${count} cache entries with prefix ${prefix}`);
+      if (debug)
+        logger.debug(
+          `Invalidated ${count} cache entries with prefix ${prefix}`,
+        );
     }
-    
+
     return count;
   };
 
@@ -295,7 +301,7 @@ export function useApiCache(options: ApiCacheOptions = {}) {
    */
   const clearCache = (): boolean => {
     cache.clear();
-    
+
     // Also clear localStorage if persistence is enabled
     if (persistToStorage) {
       try {
@@ -305,14 +311,14 @@ export function useApiCache(options: ApiCacheOptions = {}) {
             localStorage.removeItem(key);
           }
         }
-        if (debug) logger.debug('Cleared all persisted cache entries');
+        if (debug) logger.debug("Cleared all persisted cache entries");
       } catch (error) {
-        logger.error('Error clearing persisted cache', error);
+        logger.error("Error clearing persisted cache", error);
       }
     }
-    
+
     updateStats();
-    if (debug) logger.debug('Cleared entire cache');
+    if (debug) logger.debug("Cleared entire cache");
     return true;
   };
 
@@ -329,10 +335,10 @@ export function useApiCache(options: ApiCacheOptions = {}) {
    * @param key - Cache key
    * @returns Entry info or null if not found
    */
-  const getCacheInfo = (key: string): Omit<CacheEntry<any>, 'data'> | null => {
+  const getCacheInfo = (key: string): Omit<CacheEntry<any>, "data"> | null => {
     const entry = cache.get(key);
     if (!entry) return null;
-    
+
     // Return everything except the data
     const { data, ...info } = entry;
     return info;
@@ -347,11 +353,11 @@ export function useApiCache(options: ApiCacheOptions = {}) {
   const refreshCache = (key: string, ttl = defaultTtl): boolean => {
     const entry = cache.get(key);
     if (!entry) return false;
-    
+
     const now = Date.now();
     entry.expires = now + ttl;
     entry.lastAccessed = now;
-    
+
     // Update in localStorage if persistence is enabled
     if (persistToStorage) {
       try {
@@ -359,11 +365,12 @@ export function useApiCache(options: ApiCacheOptions = {}) {
         localStorage.setItem(storageKey, JSON.stringify(entry));
         if (debug) logger.debug(`Refreshed cached entry in storage: ${key}`);
       } catch (error) {
-        logger.error('Error updating persisted cache', error);
+        logger.error("Error updating persisted cache", error);
       }
     }
-    
-    if (debug) logger.debug(`Refreshed cache for ${key}, new expiry in ${ttl}ms`);
+
+    if (debug)
+      logger.debug(`Refreshed cache for ${key}, new expiry in ${ttl}ms`);
     return true;
   };
 
@@ -373,38 +380,39 @@ export function useApiCache(options: ApiCacheOptions = {}) {
    */
   const evictOldestEntry = (): string | null => {
     if (cache.size === 0) return null;
-    
+
     // Find the least recently accessed entry
     let oldestKey: string | null = null;
     let oldestTime = Infinity;
-    
+
     for (const [key, entry] of cache.entries()) {
       if (entry.lastAccessed < oldestTime) {
         oldestTime = entry.lastAccessed;
         oldestKey = key;
       }
     }
-    
+
     if (oldestKey !== null) {
-      if (debug) logger.debug(`Evicting least recently used entry: ${oldestKey}`);
+      if (debug)
+        logger.debug(`Evicting least recently used entry: ${oldestKey}`);
       invalidateCache(oldestKey);
       return oldestKey;
     }
-    
+
     return null;
   };
 
   // Initialize cache from localStorage if persistence is enabled
   const initFromStorage = () => {
     if (!persistToStorage) return;
-    
+
     try {
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key?.startsWith(storageKeyPrefix)) {
           const cacheKey = key.substring(storageKeyPrefix.length);
           const storedData = localStorage.getItem(key);
-          
+
           if (storedData) {
             try {
               const entry = JSON.parse(storedData) as CacheEntry<any>;
@@ -416,11 +424,11 @@ export function useApiCache(options: ApiCacheOptions = {}) {
           }
         }
       }
-      
+
       updateStats();
       if (debug) logger.debug(`Loaded ${cache.size} entries from localStorage`);
     } catch (error) {
-      logger.error('Error initializing cache from localStorage', error);
+      logger.error("Error initializing cache from localStorage", error);
     }
   };
 
@@ -439,7 +447,7 @@ export function useApiCache(options: ApiCacheOptions = {}) {
     refreshCache,
     evictOldestEntry,
     stats: computed(() => stats),
-    isCacheEnabled
+    isCacheEnabled,
   };
 }
 

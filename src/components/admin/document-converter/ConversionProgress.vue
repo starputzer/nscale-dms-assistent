@@ -1,16 +1,16 @@
 <template>
-  <div 
-    class="conversion-progress" 
-    role="region" 
-    aria-live="polite" 
+  <div
+    class="conversion-progress"
+    role="region"
+    aria-live="polite"
     aria-label="Dokumentenkonvertierungsfortschritt"
   >
     <div class="conversion-progress__header">
       <h3 class="conversion-progress__title">{{ title }}</h3>
-      <button 
-        v-if="cancelable" 
-        class="conversion-progress__cancel-btn" 
-        @click="handleCancel" 
+      <button
+        v-if="cancelable"
+        class="conversion-progress__cancel-btn"
+        @click="handleCancel"
         aria-label="Konvertierung abbrechen"
       >
         <i class="fa fa-times"></i>
@@ -29,7 +29,7 @@
           class="conversion-progress__step"
           :class="{
             'conversion-progress__step--active': currentStepIndex === index,
-            'conversion-progress__step--completed': currentStepIndex > index
+            'conversion-progress__step--completed': currentStepIndex > index,
           }"
         >
           <div class="conversion-progress__step-icon">
@@ -60,7 +60,7 @@
           class="conversion-progress__step"
           :class="{
             'conversion-progress__step--active': currentStepIndex === index,
-            'conversion-progress__step--completed': currentStepIndex > index
+            'conversion-progress__step--completed': currentStepIndex > index,
           }"
         >
           <div class="conversion-progress__step-icon">
@@ -75,85 +75,125 @@
             ></i>
           </div>
           <div class="conversion-progress__step-label">
-            <span class="conversion-progress__step-number">{{ index + 1 }}.</span> {{ step.label }}
+            <span class="conversion-progress__step-number"
+              >{{ index + 1 }}.</span
+            >
+            {{ step.label }}
           </div>
         </div>
       </div>
 
       <div class="conversion-progress__bar-container">
-        <div 
-          class="conversion-progress__bar" 
-          :style="{ width: `${progress}%` }" 
-          role="progressbar" 
-          :aria-valuenow="progress" 
-          aria-valuemin="0" 
+        <div
+          class="conversion-progress__bar"
+          :style="{ width: `${progress}%` }"
+          role="progressbar"
+          :aria-valuenow="progress"
+          aria-valuemin="0"
           aria-valuemax="100"
         ></div>
         <div class="conversion-progress__progress-text">
           <span class="conversion-progress__percentage">{{ progress }}%</span>
-          <span v-if="showEstimatedTime && estimatedTime > 0" class="conversion-progress__estimated-time">
-            {{ $t('converter.estimatedTimeRemaining', 'Geschätzte Zeit verbleibend:') }} {{ formatTime(estimatedTime) }}
+          <span
+            v-if="showEstimatedTime && estimatedTime > 0"
+            class="conversion-progress__estimated-time"
+          >
+            {{
+              $t(
+                "converter.estimatedTimeRemaining",
+                "Geschätzte Zeit verbleibend:",
+              )
+            }}
+            {{ formatTime(estimatedTime) }}
           </span>
         </div>
       </div>
     </div>
-    
+
     <div class="conversion-progress__details">
       <div class="conversion-progress__current-operation">
-        <span class="conversion-progress__operation-label">{{ $t('converter.currentOperation', 'Aktuelle Operation:') }}</span>
-        <span class="conversion-progress__operation-text">{{ currentStep }}</span>
+        <span class="conversion-progress__operation-label">{{
+          $t("converter.currentOperation", "Aktuelle Operation:")
+        }}</span>
+        <span class="conversion-progress__operation-text">{{
+          currentStep
+        }}</span>
       </div>
-      
+
       <div v-if="details" class="conversion-progress__additional-info">
         <div class="conversion-progress__info-header">
-          <span>{{ $t('converter.processingDetails', 'Verarbeitungsdetails') }}</span>
-          <button 
-            @click="toggleDetails" 
+          <span>{{
+            $t("converter.processingDetails", "Verarbeitungsdetails")
+          }}</span>
+          <button
+            @click="toggleDetails"
             class="conversion-progress__toggle-details"
             :aria-expanded="showDetailsExpanded"
             aria-controls="conversion-details-section"
           >
-            <i :class="showDetailsExpanded ? 'fa fa-chevron-up' : 'fa fa-chevron-down'"></i>
+            <i
+              :class="
+                showDetailsExpanded ? 'fa fa-chevron-up' : 'fa fa-chevron-down'
+              "
+            ></i>
           </button>
         </div>
-        
-        <pre 
-          v-if="showDetailsExpanded" 
-          id="conversion-details-section" 
+
+        <pre
+          v-if="showDetailsExpanded"
+          id="conversion-details-section"
           class="conversion-progress__details-content"
-        >{{ details }}</pre>
+          >{{ details }}</pre
+        >
       </div>
     </div>
-    
+
     <div class="conversion-progress__actions">
-      <button 
-        class="conversion-progress__action-btn conversion-progress__cancel-action" 
-        @click="handleCancel" 
+      <button
+        class="conversion-progress__action-btn conversion-progress__cancel-action"
+        @click="handleCancel"
         :disabled="progress >= 100 || !cancelable"
       >
-        {{ $t('converter.cancelConversion', 'Konvertierung abbrechen') }}
+        {{ $t("converter.cancelConversion", "Konvertierung abbrechen") }}
       </button>
-      
-      <button 
+
+      <button
         v-if="hasWarnings"
-        class="conversion-progress__action-btn conversion-progress__warning-action" 
+        class="conversion-progress__action-btn conversion-progress__warning-action"
         @click="toggleWarnings"
       >
         <i class="fa fa-exclamation-triangle"></i>
-        {{ showWarnings ? $t('converter.hideWarnings', 'Warnungen ausblenden') : $t('converter.showWarnings', 'Warnungen anzeigen') + ` (${warnings.length})` }}
+        {{
+          showWarnings
+            ? $t("converter.hideWarnings", "Warnungen ausblenden")
+            : $t("converter.showWarnings", "Warnungen anzeigen") +
+              ` (${warnings.length})`
+        }}
       </button>
     </div>
-    
-    <div v-if="showWarnings && hasWarnings" class="conversion-progress__warnings">
-      <div 
-        v-for="(warning, index) in warnings" 
-        :key="index" 
+
+    <div
+      v-if="showWarnings && hasWarnings"
+      class="conversion-progress__warnings"
+    >
+      <div
+        v-for="(warning, index) in warnings"
+        :key="index"
         class="conversion-progress__warning-item"
       >
-        <i class="fa fa-exclamation-triangle conversion-progress__warning-icon"></i>
+        <i
+          class="fa fa-exclamation-triangle conversion-progress__warning-icon"
+        ></i>
         <div class="conversion-progress__warning-content">
-          <div class="conversion-progress__warning-message">{{ warning.message }}</div>
-          <div v-if="warning.details" class="conversion-progress__warning-details">{{ warning.details }}</div>
+          <div class="conversion-progress__warning-message">
+            {{ warning.message }}
+          </div>
+          <div
+            v-if="warning.details"
+            class="conversion-progress__warning-details"
+          >
+            {{ warning.details }}
+          </div>
         </div>
       </div>
     </div>
@@ -161,7 +201,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from "vue";
 
 /**
  * Schnittstelle für Konvertierungsschritte
@@ -177,32 +217,32 @@ interface ConversionStep {
 interface ConversionWarning {
   message: string;
   details?: string;
-  level: 'low' | 'medium' | 'high';
+  level: "low" | "medium" | "high";
   timestamp: Date;
 }
 
 interface Props {
   // Aktueller Fortschritt in Prozent (0-100)
   progress: number;
-  
+
   // Aktueller Konvertierungsschritt als Textbeschreibung
   currentStep: string;
-  
+
   // Geschätzte verbleibende Zeit in Sekunden
   estimatedTime?: number;
-  
+
   // Zusätzliche Details zum Konvertierungsprozess
   details?: string;
-  
+
   // Ob der Konvertierungsprozess abgebrochen werden kann
   cancelable?: boolean;
-  
+
   // Titel der Komponente
   title?: string;
-  
+
   // Warnungen während des Konvertierungsprozesses
   warnings?: ConversionWarning[];
-  
+
   // Ob die geschätzte Zeit angezeigt werden soll
   showEstimatedTime?: boolean;
 }
@@ -210,19 +250,19 @@ interface Props {
 // Props mit Standardwerten
 const props = withDefaults(defineProps<Props>(), {
   progress: 0,
-  currentStep: 'Dokument wird konvertiert...',
+  currentStep: "Dokument wird konvertiert...",
   estimatedTime: 0,
-  details: '',
+  details: "",
   cancelable: true,
-  title: 'Dokument wird konvertiert',
+  title: "Dokument wird konvertiert",
   warnings: () => [],
-  showEstimatedTime: true
+  showEstimatedTime: true,
 });
 
 // Emits für Events
 const emit = defineEmits<{
-  (e: 'cancel'): void;
-  (e: 'warning-acknowledged', warning: ConversionWarning): void;
+  (e: "cancel"): void;
+  (e: "warning-acknowledged", warning: ConversionWarning): void;
 }>();
 
 // Lokaler Zustand
@@ -231,31 +271,31 @@ const showWarnings = ref(false);
 
 // Konvertierungsschritte
 const conversionSteps = ref<ConversionStep[]>([
-  { label: 'Initialisierung', value: 'init' },
-  { label: 'Dokument analysieren', value: 'analyze' },
-  { label: 'Inhaltsextraktion', value: 'extract' },
-  { label: 'Formatierung', value: 'format' },
-  { label: 'Metadaten', value: 'metadata' },
-  { label: 'Fertigstellung', value: 'finalize' }
+  { label: "Initialisierung", value: "init" },
+  { label: "Dokument analysieren", value: "analyze" },
+  { label: "Inhaltsextraktion", value: "extract" },
+  { label: "Formatierung", value: "format" },
+  { label: "Metadaten", value: "metadata" },
+  { label: "Fertigstellung", value: "finalize" },
 ]);
 
 // Berechne den aktuellen Schritt basierend auf dem Fortschritt
 const currentStepIndex = computed(() => {
   if (props.progress >= 100) return conversionSteps.value.length - 1;
-  
+
   // Nutze den Text des aktuellen Schritts, um den Index zu ermitteln
   const stepText = props.currentStep.toLowerCase();
-  
+
   for (let i = 0; i < conversionSteps.value.length; i++) {
     if (stepText.includes(conversionSteps.value[i].value)) {
       return i;
     }
   }
-  
+
   // Fallback: Schritt basierend auf Fortschritt schätzen
   return Math.min(
     Math.floor((props.progress / 100) * conversionSteps.value.length),
-    conversionSteps.value.length - 1
+    conversionSteps.value.length - 1,
   );
 });
 
@@ -268,18 +308,18 @@ const hasWarnings = computed(() => props.warnings.length > 0);
  * @returns Formatierte Zeit als String (z.B. "2 Minuten" oder "30 Sekunden")
  */
 const formatTime = (seconds: number): string => {
-  if (!seconds || seconds <= 0) return '';
-  
+  if (!seconds || seconds <= 0) return "";
+
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = Math.floor(seconds % 60);
-  
+
   if (minutes > 0) {
     if (remainingSeconds > 0) {
-      return `${minutes} ${minutes === 1 ? 'Minute' : 'Minuten'} ${remainingSeconds} ${remainingSeconds === 1 ? 'Sekunde' : 'Sekunden'}`;
+      return `${minutes} ${minutes === 1 ? "Minute" : "Minuten"} ${remainingSeconds} ${remainingSeconds === 1 ? "Sekunde" : "Sekunden"}`;
     }
-    return `${minutes} ${minutes === 1 ? 'Minute' : 'Minuten'}`;
+    return `${minutes} ${minutes === 1 ? "Minute" : "Minuten"}`;
   } else {
-    return `${remainingSeconds} ${remainingSeconds === 1 ? 'Sekunde' : 'Sekunden'}`;
+    return `${remainingSeconds} ${remainingSeconds === 1 ? "Sekunde" : "Sekunden"}`;
   }
 };
 
@@ -287,7 +327,7 @@ const formatTime = (seconds: number): string => {
  * Handler für den Abbrechen-Button
  */
 const handleCancel = (): void => {
-  emit('cancel');
+  emit("cancel");
 };
 
 /**
@@ -308,7 +348,7 @@ const toggleWarnings = (): void => {
  * Warnung als gelesen markieren
  */
 const acknowledgeWarning = (warning: ConversionWarning): void => {
-  emit('warning-acknowledged', warning);
+  emit("warning-acknowledged", warning);
 };
 
 // i18n-Hilfsfunktion (als Polyfill, falls keine i18n-Bibliothek verwendet wird)
@@ -317,21 +357,24 @@ const $t = (key: string, fallback: string): string => {
 };
 
 // UI-Verbesserungen bei Fortschrittsänderungen
-watch(() => props.progress, (newProgress, oldProgress) => {
-  if (newProgress > oldProgress) {
-    // Optionale Animationen oder UI-Feedback hier
-  }
-  
-  // Automatisches Anzeigen der Details bei bestimmten Meilensteinen
-  if (newProgress >= 25 && newProgress < 30 && oldProgress < 25) {
-    showDetailsExpanded.value = true;
-  }
-  
-  // Automatisches Anzeigen der Warnungen, wenn neue hinzukommen
-  if (props.warnings.length > 0 && !showWarnings.value) {
-    showWarnings.value = true;
-  }
-});
+watch(
+  () => props.progress,
+  (newProgress, oldProgress) => {
+    if (newProgress > oldProgress) {
+      // Optionale Animationen oder UI-Feedback hier
+    }
+
+    // Automatisches Anzeigen der Details bei bestimmten Meilensteinen
+    if (newProgress >= 25 && newProgress < 30 && oldProgress < 25) {
+      showDetailsExpanded.value = true;
+    }
+
+    // Automatisches Anzeigen der Warnungen, wenn neue hinzukommen
+    if (props.warnings.length > 0 && !showWarnings.value) {
+      showWarnings.value = true;
+    }
+  },
+);
 
 // Initialisierung der Komponente
 onMounted(() => {
@@ -400,7 +443,7 @@ onMounted(() => {
 }
 
 .conversion-progress__steps--desktop::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 14px;
   left: 0;

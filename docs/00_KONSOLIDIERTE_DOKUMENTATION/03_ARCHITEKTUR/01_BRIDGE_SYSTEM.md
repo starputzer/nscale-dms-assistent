@@ -2,7 +2,7 @@
 title: "Bridge-System für Legacy-Integration"
 version: "1.0.0"
 date: "09.05.2025"
-lastUpdate: "09.05.2025"
+lastUpdate: "11.05.2025"
 author: "Martin Heinrich"
 status: "Aktiv"
 priority: "Hoch"
@@ -1238,4 +1238,4 @@ Durch die kontinuierliche Verbesserung des Bridge-Systems wird die Migration wei
 
 ---
 
-Zuletzt aktualisiert: 09.05.2025
+Zuletzt aktualisiert: 11.05.2025

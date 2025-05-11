@@ -1,15 +1,15 @@
 <template>
-  <div 
+  <div
     class="n-tag"
     :class="[
       `n-tag--${variant}`,
       `n-tag--${size}`,
-      { 
+      {
         'n-tag--closable': closable,
         'n-tag--clickable': clickable && !disabled,
         'n-tag--disabled': disabled,
-        'n-tag--rounded': rounded
-      }
+        'n-tag--rounded': rounded,
+      },
     ]"
     :style="customStyle"
     :tabindex="clickable && !disabled ? 0 : undefined"
@@ -24,11 +24,11 @@
         <component :is="icon" v-if="icon" />
       </slot>
     </span>
-    
+
     <span class="n-tag-content">
       <slot>{{ content }}</slot>
     </span>
-    
+
     <button
       v-if="closable && !disabled"
       class="n-tag-close-btn"
@@ -37,15 +37,18 @@
       type="button"
     >
       <svg viewBox="0 0 24 24" width="1em" height="1em">
-        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor" />
+        <path
+          d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+          fill="currentColor"
+        />
       </svg>
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { Component } from 'vue';
+import { computed } from "vue";
+import type { Component } from "vue";
 
 /**
  * Tag component for displaying tag labels
@@ -56,9 +59,9 @@ import type { Component } from 'vue';
  */
 export interface TagProps {
   /** Tag variant */
-  variant?: 'default' | 'primary' | 'success' | 'info' | 'warning' | 'error';
+  variant?: "default" | "primary" | "success" | "info" | "warning" | "error";
   /** Size of the tag */
-  size?: 'small' | 'medium' | 'large';
+  size?: "small" | "medium" | "large";
   /** Whether the tag can be closed/removed */
   closable?: boolean;
   /** Whether the tag is clickable */
@@ -78,38 +81,38 @@ export interface TagProps {
 }
 
 const props = withDefaults(defineProps<TagProps>(), {
-  variant: 'default',
-  size: 'medium',
+  variant: "default",
+  size: "medium",
   closable: false,
   clickable: false,
   disabled: false,
-  rounded: false
+  rounded: false,
 });
 
 const emit = defineEmits<{
-  (e: 'click', event: MouseEvent | KeyboardEvent): void;
-  (e: 'close', event: MouseEvent): void;
+  (e: "click", event: MouseEvent | KeyboardEvent): void;
+  (e: "close", event: MouseEvent): void;
 }>();
 
 // Computed properties
 const customStyle = computed(() => {
   const style: Record<string, string> = {};
-  
+
   if (props.color) {
     style.backgroundColor = props.color;
-    
+
     // Auto-generate a contrasting text color if textColor is not specified
     if (!props.textColor) {
       // Simple contrast determination based on background brightness
       const isLight = isLightColor(props.color);
-      style.color = isLight ? '#000000' : '#ffffff';
+      style.color = isLight ? "#000000" : "#ffffff";
     }
   }
-  
+
   if (props.textColor) {
     style.color = props.textColor;
   }
-  
+
   return style;
 });
 
@@ -119,22 +122,26 @@ const customStyle = computed(() => {
  */
 function isLightColor(color: string): boolean {
   let r, g, b;
-  
+
   // Handle hex colors
-  if (color.startsWith('#')) {
+  if (color.startsWith("#")) {
     const hex = color.substring(1);
-    
+
     // Convert 3-char hex to 6-char
-    const expandedHex = hex.length === 3 
-      ? hex.split('').map(c => c + c).join('')
-      : hex;
-    
+    const expandedHex =
+      hex.length === 3
+        ? hex
+            .split("")
+            .map((c) => c + c)
+            .join("")
+        : hex;
+
     r = parseInt(expandedHex.substring(0, 2), 16);
     g = parseInt(expandedHex.substring(2, 4), 16);
     b = parseInt(expandedHex.substring(4, 6), 16);
-  } 
+  }
   // Handle rgb/rgba colors
-  else if (color.startsWith('rgb')) {
+  else if (color.startsWith("rgb")) {
     const rgbValues = color.match(/\d+/g);
     if (rgbValues && rgbValues.length >= 3) {
       r = parseInt(rgbValues[0]);
@@ -149,11 +156,11 @@ function isLightColor(color: string): boolean {
   else {
     return true;
   }
-  
+
   // Calculate perceived brightness using the formula
   // (299*R + 587*G + 114*B) / 1000
   const brightness = (299 * r + 587 * g + 114 * b) / 1000;
-  
+
   // If brightness is greater than 128, color is considered light
   return brightness > 128;
 }
@@ -163,9 +170,9 @@ function isLightColor(color: string): boolean {
  */
 function handleClick(event: MouseEvent | KeyboardEvent): void {
   if (props.disabled) return;
-  
+
   if (props.clickable) {
-    emit('click', event);
+    emit("click", event);
   }
 }
 
@@ -174,8 +181,8 @@ function handleClick(event: MouseEvent | KeyboardEvent): void {
  */
 function handleClose(event: MouseEvent): void {
   if (props.disabled) return;
-  
-  emit('close', event);
+
+  emit("close", event);
 }
 </script>
 

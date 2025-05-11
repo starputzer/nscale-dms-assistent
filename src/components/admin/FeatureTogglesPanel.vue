@@ -1,43 +1,67 @@
 <template>
   <div class="feature-toggles-panel">
     <div class="feature-toggles-header">
-      <h2>{{ t('admin.featureToggles.title', 'Feature-Toggles') }}</h2>
+      <h2>{{ t("admin.featureToggles.title", "Feature-Toggles") }}</h2>
       <p class="feature-toggles-description">
-        {{ t('admin.featureToggles.description', 'Aktivieren oder deaktivieren Sie Features für die Anwendung. Experimentelle Features könnten instabil sein.') }}
+        {{
+          t(
+            "admin.featureToggles.description",
+            "Aktivieren oder deaktivieren Sie Features für die Anwendung. Experimentelle Features könnten instabil sein.",
+          )
+        }}
       </p>
     </div>
-    
+
     <div class="feature-toggles-actions">
       <button class="feature-btn" @click="enableAllFeatures">
-        {{ t('admin.featureToggles.enableAll', 'Alle aktivieren') }}
+        {{ t("admin.featureToggles.enableAll", "Alle aktivieren") }}
       </button>
       <button class="feature-btn" @click="disableAllSfcFeatures">
-        {{ t('admin.featureToggles.disableSfc', 'SFC-Features deaktivieren') }}
+        {{ t("admin.featureToggles.disableSfc", "SFC-Features deaktivieren") }}
       </button>
       <button class="feature-btn feature-btn-secondary" @click="enableCoreOnly">
-        {{ t('admin.featureToggles.enableCoreOnly', 'Nur Core-Features') }}
+        {{ t("admin.featureToggles.enableCoreOnly", "Nur Core-Features") }}
       </button>
-      <button class="feature-btn feature-btn-danger" @click="confirmEnableLegacyMode">
-        {{ t('admin.featureToggles.legacyMode', 'Legacy-Modus') }}
+      <button
+        class="feature-btn feature-btn-danger"
+        @click="confirmEnableLegacyMode"
+      >
+        {{ t("admin.featureToggles.legacyMode", "Legacy-Modus") }}
       </button>
     </div>
-    
+
     <div class="feature-toggles-user-role">
-      <label for="user-role">{{ t('admin.featureToggles.userRole', 'Benutzerrolle:') }}</label>
-      <select id="user-role" v-model="currentUserRole" @change="onUserRoleChange">
-        <option value="guest">{{ t('admin.featureToggles.roles.guest', 'Gast') }}</option>
-        <option value="user">{{ t('admin.featureToggles.roles.user', 'Benutzer') }}</option>
-        <option value="developer">{{ t('admin.featureToggles.roles.developer', 'Entwickler') }}</option>
-        <option value="admin">{{ t('admin.featureToggles.roles.admin', 'Administrator') }}</option>
+      <label for="user-role">{{
+        t("admin.featureToggles.userRole", "Benutzerrolle:")
+      }}</label>
+      <select
+        id="user-role"
+        v-model="currentUserRole"
+        @change="onUserRoleChange"
+      >
+        <option value="guest">
+          {{ t("admin.featureToggles.roles.guest", "Gast") }}
+        </option>
+        <option value="user">
+          {{ t("admin.featureToggles.roles.user", "Benutzer") }}
+        </option>
+        <option value="developer">
+          {{ t("admin.featureToggles.roles.developer", "Entwickler") }}
+        </option>
+        <option value="admin">
+          {{ t("admin.featureToggles.roles.admin", "Administrator") }}
+        </option>
       </select>
     </div>
-    
+
     <!-- SFC-Migration Features -->
     <div class="feature-toggles-group">
-      <h3>{{ t('admin.featureToggles.sfcMigration', 'Vue 3 SFC-Migration') }}</h3>
-      
+      <h3>
+        {{ t("admin.featureToggles.sfcMigration", "Vue 3 SFC-Migration") }}
+      </h3>
+
       <div class="feature-toggle-items">
-        <div 
+        <div
           v-for="feature in sfcFeatures"
           :key="feature.key"
           class="feature-toggle-item"
@@ -45,23 +69,32 @@
             'feature-toggle-item--disabled': !canUserAccessFeature(feature.key),
             'feature-toggle-item--experimental': !feature.stable,
             'feature-toggle-item--error': hasErrors(feature.key),
-            'feature-toggle-item--fallback': isFallbackActive(feature.key)
+            'feature-toggle-item--fallback': isFallbackActive(feature.key),
           }"
         >
           <div class="feature-toggle-item-header">
             <div class="feature-toggle-item-title">
               <h4>{{ feature.name }}</h4>
-              <span v-if="!feature.stable" class="feature-badge feature-badge-experimental">
-                {{ t('admin.featureToggles.experimental', 'Experimentell') }}
+              <span
+                v-if="!feature.stable"
+                class="feature-badge feature-badge-experimental"
+              >
+                {{ t("admin.featureToggles.experimental", "Experimentell") }}
               </span>
-              <span v-if="hasErrors(feature.key)" class="feature-badge feature-badge-error">
-                {{ t('admin.featureToggles.error', 'Fehler') }}
+              <span
+                v-if="hasErrors(feature.key)"
+                class="feature-badge feature-badge-error"
+              >
+                {{ t("admin.featureToggles.error", "Fehler") }}
               </span>
-              <span v-if="isFallbackActive(feature.key)" class="feature-badge feature-badge-fallback">
-                {{ t('admin.featureToggles.fallback', 'Fallback aktiv') }}
+              <span
+                v-if="isFallbackActive(feature.key)"
+                class="feature-badge feature-badge-fallback"
+              >
+                {{ t("admin.featureToggles.fallback", "Fallback aktiv") }}
               </span>
             </div>
-            
+
             <div class="feature-toggle-switch" :title="toggleTitle(feature)">
               <input
                 :id="`toggle-${feature.key}`"
@@ -69,42 +102,54 @@
                 :disabled="!canUserAccessFeature(feature.key)"
                 v-model="featureValues[feature.key]"
                 @change="onFeatureToggle(feature.key)"
-              >
+              />
               <label :for="`toggle-${feature.key}`"></label>
             </div>
           </div>
-          
-          <p class="feature-toggle-item-description">{{ feature.description }}</p>
-          
+
+          <p class="feature-toggle-item-description">
+            {{ feature.description }}
+          </p>
+
           <div v-if="hasErrors(feature.key)" class="feature-error-details">
             <p class="feature-error-message">
-              {{ getLatestError(feature.key)?.message || t('admin.featureToggles.unknownError', 'Unbekannter Fehler') }}
+              {{
+                getLatestError(feature.key)?.message ||
+                t("admin.featureToggles.unknownError", "Unbekannter Fehler")
+              }}
             </p>
             <div class="feature-error-actions">
-              <button 
-                @click="clearErrors(feature.key)" 
+              <button
+                @click="clearErrors(feature.key)"
                 class="feature-btn feature-btn-small"
               >
-                {{ t('admin.featureToggles.clearErrors', 'Fehler löschen') }}
+                {{ t("admin.featureToggles.clearErrors", "Fehler löschen") }}
               </button>
-              <button 
-                v-if="isFallbackActive(feature.key)" 
-                @click="deactivateFallback(feature.key)" 
+              <button
+                v-if="isFallbackActive(feature.key)"
+                @click="deactivateFallback(feature.key)"
                 class="feature-btn feature-btn-small feature-btn-secondary"
               >
-                {{ t('admin.featureToggles.tryAgain', 'Erneut versuchen') }}
+                {{ t("admin.featureToggles.tryAgain", "Erneut versuchen") }}
               </button>
             </div>
           </div>
-          
+
           <div class="feature-toggle-item-meta">
-            <div class="feature-toggle-item-dependencies" v-if="feature.dependencies && feature.dependencies.length > 0">
-              <span class="feature-meta-label">{{ t('admin.featureToggles.dependencies', 'Abhängigkeiten:') }}</span>
-              <span 
-                v-for="dep in feature.dependencies" 
+            <div
+              class="feature-toggle-item-dependencies"
+              v-if="feature.dependencies && feature.dependencies.length > 0"
+            >
+              <span class="feature-meta-label">{{
+                t("admin.featureToggles.dependencies", "Abhängigkeiten:")
+              }}</span>
+              <span
+                v-for="dep in feature.dependencies"
                 :key="dep"
                 class="feature-dependency"
-                :class="{ 'feature-dependency--disabled': !isFeatureEnabled(dep) }"
+                :class="{
+                  'feature-dependency--disabled': !isFeatureEnabled(dep),
+                }"
               >
                 {{ dep }}
               </span>
@@ -113,13 +158,13 @@
         </div>
       </div>
     </div>
-    
+
     <!-- UI-Features -->
     <div class="feature-toggles-group" v-if="uiFeatures.length > 0">
-      <h3>{{ t('admin.featureToggles.uiFeatures', 'UI-Features') }}</h3>
-      
+      <h3>{{ t("admin.featureToggles.uiFeatures", "UI-Features") }}</h3>
+
       <div class="feature-toggle-items feature-toggle-items--compact">
-        <div 
+        <div
           v-for="feature in uiFeatures"
           :key="feature.key"
           class="feature-toggle-item feature-toggle-item--compact"
@@ -130,7 +175,7 @@
               type="checkbox"
               v-model="featureValues[feature.key]"
               @change="onFeatureToggle(feature.key)"
-            >
+            />
             <label :for="`toggle-${feature.key}`"></label>
           </div>
           <div class="feature-toggle-item-title">
@@ -139,31 +184,31 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Reset-Bereich -->
     <div class="feature-toggles-reset">
-      <button 
-        @click="confirmResetAllFeatures" 
+      <button
+        @click="confirmResetAllFeatures"
         class="feature-btn feature-btn-danger"
       >
-        {{ t('admin.featureToggles.reset', 'Auf Standardwerte zurücksetzen') }}
+        {{ t("admin.featureToggles.reset", "Auf Standardwerte zurücksetzen") }}
       </button>
-      <button 
-        @click="clearAllErrors" 
-        class="feature-btn feature-btn-secondary"
-      >
-        {{ t('admin.featureToggles.clearAllErrors', 'Alle Fehler löschen') }}
+      <button @click="clearAllErrors" class="feature-btn feature-btn-secondary">
+        {{ t("admin.featureToggles.clearAllErrors", "Alle Fehler löschen") }}
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted, watch } from 'vue';
-import { useFeatureToggles, FeatureToggleOptions } from '@/composables/useFeatureToggles';
-import { FeatureToggleRole, FeatureToggleError } from '@/stores/featureToggles';
-import { useI18n } from '@/composables/useI18n';
-import { useGlobalDialog } from '@/composables/useDialog';
+import { ref, computed, reactive, onMounted, watch } from "vue";
+import {
+  useFeatureToggles,
+  FeatureToggleOptions,
+} from "@/composables/useFeatureToggles";
+import { FeatureToggleRole, FeatureToggleError } from "@/stores/featureToggles";
+import { useI18n } from "@/composables/useI18n";
+import { useGlobalDialog } from "@/composables/useDialog";
 
 // Props-Definition
 interface FeatureTogglesPanelProps {
@@ -176,14 +221,14 @@ interface FeatureTogglesPanelProps {
 }
 
 const props = withDefaults(defineProps<FeatureTogglesPanelProps>(), {
-  initialUserRole: 'admin'
+  initialUserRole: "admin",
 });
 
 // Emits-Definition
 const emit = defineEmits<{
-  (e: 'role-change', role: FeatureToggleRole): void;
-  (e: 'feature-change', featureName: string, enabled: boolean): void;
-  (e: 'error-clear', featureName: string): void;
+  (e: "role-change", role: FeatureToggleRole): void;
+  (e: "feature-change", featureName: string, enabled: boolean): void;
+  (e: "error-clear", featureName: string): void;
 }>();
 
 // Komposables
@@ -196,7 +241,7 @@ const currentUserRole = ref<FeatureToggleRole>(props.initialUserRole);
 // Feature-Toggles mit der aktuellen Benutzerrolle initialisieren
 const featureToggleOptions = computed<FeatureToggleOptions>(() => ({
   userRole: currentUserRole.value,
-  debug: true
+  debug: true,
 }));
 
 const featureToggles = useFeatureToggles(featureToggleOptions.value);
@@ -205,10 +250,18 @@ const featureToggles = useFeatureToggles(featureToggleOptions.value);
 const featureValues = reactive<Record<string, boolean>>({});
 
 // Gruppierte Features
-const sfcFeatures = computed(() => featureToggles.groupedFeatures.sfcMigration || []);
-const uiFeatures = computed(() => featureToggles.groupedFeatures.uiFeatures || []);
-const coreFeatures = computed(() => featureToggles.groupedFeatures.coreFeatures || []);
-const experimentalFeatures = computed(() => featureToggles.groupedFeatures.experimentalFeatures || []);
+const sfcFeatures = computed(
+  () => featureToggles.groupedFeatures.sfcMigration || [],
+);
+const uiFeatures = computed(
+  () => featureToggles.groupedFeatures.uiFeatures || [],
+);
+const coreFeatures = computed(
+  () => featureToggles.groupedFeatures.coreFeatures || [],
+);
+const experimentalFeatures = computed(
+  () => featureToggles.groupedFeatures.experimentalFeatures || [],
+);
 
 // Beim Mounten Feature-Werte initialisieren
 onMounted(() => {
@@ -217,7 +270,7 @@ onMounted(() => {
 
 // Bei Änderung der Benutzerrolle featureToggles aktualisieren
 watch(currentUserRole, (newRole) => {
-  emit('role-change', newRole);
+  emit("role-change", newRole);
 });
 
 // Event beim Ändern der Benutzerrolle
@@ -229,13 +282,13 @@ function onUserRoleChange() {
 // Feature-Werte aus dem Store initialisieren
 function initializeFeatureValues() {
   // SFC-Features
-  featureValues['useSfcDocConverter'] = featureToggles.sfcDocConverter.value;
-  featureValues['useSfcAdmin'] = featureToggles.sfcAdmin.value;
-  featureValues['useSfcChat'] = featureToggles.sfcChat.value;
-  featureValues['useSfcSettings'] = featureToggles.sfcSettings.value;
-  
+  featureValues["useSfcDocConverter"] = featureToggles.sfcDocConverter.value;
+  featureValues["useSfcAdmin"] = featureToggles.sfcAdmin.value;
+  featureValues["useSfcChat"] = featureToggles.sfcChat.value;
+  featureValues["useSfcSettings"] = featureToggles.sfcSettings.value;
+
   // Andere Features aus der Konfiguration
-  Object.keys(featureToggles.featureConfigs).forEach(key => {
+  Object.keys(featureToggles.featureConfigs).forEach((key) => {
     featureValues[key] = featureToggles.isEnabled(key);
   });
 }
@@ -243,21 +296,21 @@ function initializeFeatureValues() {
 // Event beim Ändern eines Features
 function onFeatureToggle(featureName: string) {
   const isEnabled = featureValues[featureName];
-  
+
   // Feature im Store aktualisieren
   if (isEnabled) {
     featureToggles.enableFeature(featureName);
   } else {
     featureToggles.disableFeature(featureName);
   }
-  
+
   // Fallback deaktivieren, wenn Feature aktiviert wird
   if (isEnabled && featureToggles.isFallbackActive(featureName)) {
     featureToggles.deactivateFallback(featureName);
   }
-  
+
   // Event emittieren
-  emit('feature-change', featureName, isEnabled);
+  emit("feature-change", featureName, isEnabled);
 }
 
 // Prüft, ob ein Feature aktiviert ist
@@ -293,13 +346,13 @@ function isFallbackActive(featureName: string): boolean {
 // Fehler für ein Feature löschen
 function clearErrors(featureName: string): void {
   featureToggles.clearErrors(featureName);
-  emit('error-clear', featureName);
+  emit("error-clear", featureName);
 }
 
 // Fallback für ein Feature deaktivieren
 function deactivateFallback(featureName: string): void {
   featureToggles.deactivateFallback(featureName);
-  
+
   // Feature aktivieren, wenn es deaktiviert wurde
   if (!featureToggles.isEnabled(featureName)) {
     featureToggles.enableFeature(featureName);
@@ -309,7 +362,7 @@ function deactivateFallback(featureName: string): void {
 
 // Alle Fehler löschen
 function clearAllErrors(): void {
-  Object.keys(featureToggles.storeErrors.value).forEach(key => {
+  Object.keys(featureToggles.storeErrors.value).forEach((key) => {
     featureToggles.clearErrors(key);
   });
 }
@@ -317,25 +370,34 @@ function clearAllErrors(): void {
 // Titel für den Feature-Toggle anzeigen
 function toggleTitle(feature: any): string {
   if (!canUserAccessFeature(feature.key)) {
-    return t('admin.featureToggles.noPermission', 'Keine Berechtigung für dieses Feature');
+    return t(
+      "admin.featureToggles.noPermission",
+      "Keine Berechtigung für dieses Feature",
+    );
   }
-  
+
   if (hasErrors(feature.key)) {
-    return t('admin.featureToggles.hasErrors', 'Feature hat Fehler');
+    return t("admin.featureToggles.hasErrors", "Feature hat Fehler");
   }
-  
-  if (feature.dependencies && !feature.dependencies.every(dep => isFeatureEnabled(dep))) {
-    return t('admin.featureToggles.dependenciesNotMet', 'Abhängigkeiten nicht erfüllt');
+
+  if (
+    feature.dependencies &&
+    !feature.dependencies.every((dep) => isFeatureEnabled(dep))
+  ) {
+    return t(
+      "admin.featureToggles.dependenciesNotMet",
+      "Abhängigkeiten nicht erfüllt",
+    );
   }
-  
+
   return feature.description;
 }
 
 // Feature-Namen formatieren
 function formatFeatureName(key: string): string {
   return key
-    .replace(/^use/, '')
-    .replace(/([A-Z])/g, ' $1')
+    .replace(/^use/, "")
+    .replace(/([A-Z])/g, " $1")
     .trim();
 }
 
@@ -360,13 +422,19 @@ function disableAllSfcFeatures(): void {
 // Legacy-Modus mit Bestätigung aktivieren
 async function confirmEnableLegacyMode(): Promise<void> {
   const confirmed = await dialog.confirm({
-    title: t('admin.featureToggles.confirmLegacyMode', 'Legacy-Modus aktivieren?'),
-    message: t('admin.featureToggles.legacyModeWarning', 'Dies deaktiviert alle modernen Features und könnte zu eingeschränkter Funktionalität führen. Fortfahren?'),
-    confirmButtonText: t('common.yes', 'Ja'),
-    cancelButtonText: t('common.no', 'Nein'),
-    type: 'warning'
+    title: t(
+      "admin.featureToggles.confirmLegacyMode",
+      "Legacy-Modus aktivieren?",
+    ),
+    message: t(
+      "admin.featureToggles.legacyModeWarning",
+      "Dies deaktiviert alle modernen Features und könnte zu eingeschränkter Funktionalität führen. Fortfahren?",
+    ),
+    confirmButtonText: t("common.yes", "Ja"),
+    cancelButtonText: t("common.no", "Nein"),
+    type: "warning",
   });
-  
+
   if (confirmed) {
     featureToggles.enableLegacyMode();
     initializeFeatureValues();
@@ -376,13 +444,16 @@ async function confirmEnableLegacyMode(): Promise<void> {
 // Alle Features zurücksetzen mit Bestätigung
 async function confirmResetAllFeatures(): Promise<void> {
   const confirmed = await dialog.confirm({
-    title: t('admin.featureToggles.confirmReset', 'Features zurücksetzen?'),
-    message: t('admin.featureToggles.resetWarning', 'Dies setzt alle Feature-Einstellungen auf die Standardwerte zurück. Fortfahren?'),
-    confirmButtonText: t('common.yes', 'Ja'),
-    cancelButtonText: t('common.no', 'Nein'),
-    type: 'warning'
+    title: t("admin.featureToggles.confirmReset", "Features zurücksetzen?"),
+    message: t(
+      "admin.featureToggles.resetWarning",
+      "Dies setzt alle Feature-Einstellungen auf die Standardwerte zurück. Fortfahren?",
+    ),
+    confirmButtonText: t("common.yes", "Ja"),
+    cancelButtonText: t("common.no", "Nein"),
+    type: "warning",
   });
-  
+
   if (confirmed) {
     featureToggles.enableCoreOnly();
     initializeFeatureValues();
@@ -392,7 +463,7 @@ async function confirmResetAllFeatures(): Promise<void> {
 
 <style scoped>
 .feature-toggles-panel {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   max-width: 1000px;
   margin: 0 auto;
   padding: 2rem;
@@ -476,7 +547,7 @@ async function confirmResetAllFeatures(): Promise<void> {
   .feature-toggle-items {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .feature-toggle-items--compact {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -651,7 +722,7 @@ async function confirmResetAllFeatures(): Promise<void> {
   right: 0;
   bottom: 0;
   background-color: #ccc;
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 24px;
 }
 
@@ -663,7 +734,7 @@ async function confirmResetAllFeatures(): Promise<void> {
   left: 3px;
   bottom: 3px;
   background-color: white;
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 50%;
 }
 
@@ -695,7 +766,9 @@ async function confirmResetAllFeatures(): Promise<void> {
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
   border: none;
   color: white;
   background-color: #0d7a40; /* nscale Grün */
@@ -736,17 +809,17 @@ async function confirmResetAllFeatures(): Promise<void> {
   .feature-toggles-panel {
     padding: 1.5rem;
   }
-  
+
   .feature-toggle-items,
   .feature-toggle-items--compact {
     grid-template-columns: 1fr;
   }
-  
+
   .feature-toggle-item-header {
     flex-direction: column;
     gap: 0.75rem;
   }
-  
+
   .feature-toggle-switch {
     align-self: flex-start;
   }

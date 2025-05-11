@@ -1,6 +1,6 @@
 /**
  * Typdefinitionen für die verbesserte Bridge-Implementierung
- * 
+ *
  * Diese Datei enthält alle Typdefinitionen, die von den verschiedenen
  * Komponenten der Bridge verwendet werden.
  */
@@ -12,18 +12,18 @@ export enum LogLevel {
   DEBUG,
   INFO,
   WARN,
-  ERROR
+  ERROR,
 }
 
 /**
  * Fehlerzustände der Bridge
  */
 export enum BridgeErrorState {
-  HEALTHY,            // Bridge funktioniert normal
+  HEALTHY, // Bridge funktioniert normal
   DEGRADED_PERFORMANCE, // Bridge funktioniert, aber mit eingeschränkter Performance
-  SYNC_ERROR,         // Fehler bei der Zustandssynchronisation
+  SYNC_ERROR, // Fehler bei der Zustandssynchronisation
   COMMUNICATION_ERROR, // Fehler bei der Event-Kommunikation
-  CRITICAL_FAILURE    // Schwerwiegender Fehler, Bridge ist nicht funktionsfähig
+  CRITICAL_FAILURE, // Schwerwiegender Fehler, Bridge ist nicht funktionsfähig
 }
 
 /**
@@ -58,7 +58,7 @@ export const DEFAULT_BRIDGE_CONFIG: BridgeConfiguration = {
   batchInterval: 50,
   deepWatchEnabled: true,
   healthCheckInterval: 30000,
-  autoRecovery: true
+  autoRecovery: true,
 };
 
 /**
@@ -68,7 +68,7 @@ export interface UpdateOperation {
   path: string;
   value: any;
   timestamp: number;
-  source: 'legacy' | 'vue';
+  source: "legacy" | "vue";
 }
 
 /**
@@ -91,11 +91,17 @@ export interface EventSubscription {
  * StateManager-Interface
  */
 export interface StateManager {
-  connect(vueStores: Record<string, any>, legacyState: Record<string, any>): void;
+  connect(
+    vueStores: Record<string, any>,
+    legacyState: Record<string, any>,
+  ): void;
   disconnect(): void;
   getState(path: string): any;
-  setState(path: string, value: any, source?: 'legacy' | 'vue'): boolean;
-  subscribe(path: string, callback: (value: any, oldValue: any) => void): () => void;
+  setState(path: string, value: any, source?: "legacy" | "vue"): boolean;
+  subscribe(
+    path: string,
+    callback: (value: any, oldValue: any) => void,
+  ): () => void;
   isHealthy(): boolean;
   reset(): void;
   getDiagnostics(): any;
@@ -106,10 +112,23 @@ export interface StateManager {
  */
 export interface EventBus {
   emit(eventName: string, data: any): void;
-  on(eventName: string, callback: Function, options?: EventOptions): EventSubscription;
+  on(
+    eventName: string,
+    callback: Function,
+    options?: EventOptions,
+  ): EventSubscription;
   off(eventName: string, subscriptionOrId: EventSubscription | string): void;
-  once(eventName: string, callback: Function, options?: Omit<EventOptions, 'once'>): EventSubscription;
-  priority(eventName: string, priority: number, callback: Function, options?: Omit<EventOptions, 'priority'>): EventSubscription;
+  once(
+    eventName: string,
+    callback: Function,
+    options?: Omit<EventOptions, "once">,
+  ): EventSubscription;
+  priority(
+    eventName: string,
+    priority: number,
+    callback: Function,
+    options?: Omit<EventOptions, "priority">,
+  ): EventSubscription;
   clear(): void;
   isOperational(): boolean;
   reset(): void;
@@ -196,8 +215,15 @@ export interface BridgeAPI {
   setState(path: string, value: any): boolean;
   subscribe(path: string, callback: Function): () => void;
   emit(event: string, data: any): void;
-  on(event: string, callback: Function, options?: EventOptions): EventSubscription;
-  off(event: string, callbackOrSubscription: Function | EventSubscription): void;
+  on(
+    event: string,
+    callback: Function,
+    options?: EventOptions,
+  ): EventSubscription;
+  off(
+    event: string,
+    callbackOrSubscription: Function | EventSubscription,
+  ): void;
   getStatus(): BridgeStatusInfo;
   getLogs(): any[];
   clearLogs(): void;

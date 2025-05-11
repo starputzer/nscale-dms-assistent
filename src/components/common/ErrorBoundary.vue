@@ -12,7 +12,11 @@
           <button @click="resetError" class="error-boundary__button">
             Erneut versuchen
           </button>
-          <button v-if="fallbackComponent" @click="useFallback" class="error-boundary__button error-boundary__button--secondary">
+          <button
+            v-if="fallbackComponent"
+            @click="useFallback"
+            class="error-boundary__button error-boundary__button--secondary"
+          >
             Fallback-Version laden
           </button>
         </div>
@@ -22,97 +26,103 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onErrorCaptured, provide } from 'vue';
+import { ref, computed, watch, onErrorCaptured, provide } from "vue";
 
 const props = defineProps({
   fallbackComponent: {
     type: Object,
-    default: null
+    default: null,
   },
   maxRetries: {
     type: Number,
-    default: 3
+    default: 3,
   },
   resetOnPropsChange: {
     type: Boolean,
-    default: false
+    default: false,
   },
   onError: {
     type: Function,
-    default: null
-  }
+    default: null,
+  },
 });
 
-const emit = defineEmits(['error', 'reset', 'fallback']);
+const emit = defineEmits(["error", "reset", "fallback"]);
 
 const error = ref(null);
 const retryCount = ref(0);
 const useFallbackVersion = ref(false);
 
 const errorMessage = computed(() => {
-  if (!error.value) return '';
-  
-  if (typeof error.value === 'string') {
+  if (!error.value) return "";
+
+  if (typeof error.value === "string") {
     return error.value;
   }
-  
+
   if (error.value instanceof Error) {
-    return error.value.message || 'Ein unbekannter Fehler ist aufgetreten';
+    return error.value.message || "Ein unbekannter Fehler ist aufgetreten";
   }
-  
-  return 'Ein unbekannter Fehler ist aufgetreten';
+
+  return "Ein unbekannter Fehler ist aufgetreten";
 });
 
 // Fehler zurücksetzen und erneut versuchen
 function resetError() {
   if (retryCount.value >= props.maxRetries) {
-    console.warn(`Maximale Anzahl von Wiederholungen erreicht (${props.maxRetries})`);
+    console.warn(
+      `Maximale Anzahl von Wiederholungen erreicht (${props.maxRetries})`,
+    );
     return;
   }
-  
+
   retryCount.value++;
   error.value = null;
   useFallbackVersion.value = false;
-  emit('reset', retryCount.value);
+  emit("reset", retryCount.value);
 }
 
 // Fallback-Komponente verwenden
 function useFallback() {
   useFallbackVersion.value = true;
-  emit('fallback');
+  emit("fallback");
 }
 
 // Fehlerbehandlung für Kind-Komponenten
 onErrorCaptured((err, instance, info) => {
-  console.error('Fehler in Kind-Komponente gefangen:', err);
-  
+  console.error("Fehler in Kind-Komponente gefangen:", err);
+
   // Fehler speichern
   error.value = err;
-  
+
   // Optional Callback aufrufen
   if (props.onError) {
     props.onError(err, instance, info);
   }
-  
+
   // Event emittieren
-  emit('error', { error: err, instance, info, retryCount: retryCount.value });
-  
+  emit("error", { error: err, instance, info, retryCount: retryCount.value });
+
   // Verhindern, dass der Fehler weiter hochgereicht wird
   return false;
 });
 
 // In übergeordneten Props-Änderungen zurücksetzen
-watch(() => props, () => {
-  if (props.resetOnPropsChange && error.value) {
-    resetError();
-  }
-}, { deep: true });
+watch(
+  () => props,
+  () => {
+    if (props.resetOnPropsChange && error.value) {
+      resetError();
+    }
+  },
+  { deep: true },
+);
 
 // Fehlerstatus für Kinder bereitstellen
-provide('errorBoundary', {
+provide("errorBoundary", {
   hasError: computed(() => !!error.value),
   error,
-  resetError
+  resetError,
 });
 </script>
 

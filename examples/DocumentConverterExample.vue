@@ -1,51 +1,55 @@
 <template>
   <div class="document-converter-example">
     <h2>Dokumentenkonverter-Beispiel mit Pinia Store</h2>
-    
+
     <!-- Status-Anzeige -->
     <div class="converter-status">
       <p>Status: {{ statusText }}</p>
       <p v-if="store.documentCounts.total > 0">
-        Dokumente: {{ store.documentCounts.total }} 
-        ({{ store.documentCounts.success }} erfolgreich, 
-        {{ store.documentCounts.error }} fehlgeschlagen)
+        Dokumente: {{ store.documentCounts.total }} ({{
+          store.documentCounts.success
+        }}
+        erfolgreich, {{ store.documentCounts.error }} fehlgeschlagen)
       </p>
     </div>
-    
+
     <!-- Fehleranzeige -->
     <div v-if="store.error" class="error-display">
       <h3>Fehler aufgetreten</h3>
       <p>{{ store.error.message }}</p>
       <button @click="store.clearError">Schließen</button>
     </div>
-    
+
     <!-- Upload-Bereich -->
     <div v-if="store.currentView === 'upload'" class="upload-section">
       <h3>Dokument hochladen</h3>
-      <input 
-        type="file" 
-        @change="handleFileSelected" 
-        :accept="store.supportedFormats.map(f => '.' + f).join(',')"
+      <input
+        type="file"
+        @change="handleFileSelected"
+        :accept="store.supportedFormats.map((f) => '.' + f).join(',')"
         :disabled="store.isUploading"
-      >
-      <button 
-        @click="startConversion" 
+      />
+      <button
+        @click="startConversion"
         :disabled="!selectedFile || store.isUploading"
       >
         Dokument konvertieren
       </button>
-      
+
       <div v-if="store.isUploading" class="progress-bar">
         <div class="progress" :style="{ width: `${uploadProgress}%` }"></div>
         <span>{{ uploadProgress }}%</span>
       </div>
     </div>
-    
+
     <!-- Konvertierungs-Bereich -->
     <div v-if="store.currentView === 'conversion'" class="conversion-section">
       <h3>Konvertierung läuft...</h3>
       <div class="progress-bar">
-        <div class="progress" :style="{ width: `${store.conversionProgress}%` }"></div>
+        <div
+          class="progress"
+          :style="{ width: `${store.conversionProgress}%` }"
+        ></div>
         <span>{{ store.conversionProgress }}%</span>
       </div>
       <p>{{ store.conversionStep }}</p>
@@ -56,35 +60,56 @@
         Abbrechen
       </button>
     </div>
-    
+
     <!-- Ergebnis-Bereich -->
-    <div v-if="store.currentView === 'results' && store.selectedDocument" class="results-section">
+    <div
+      v-if="store.currentView === 'results' && store.selectedDocument"
+      class="results-section"
+    >
       <h3>Konvertierungsergebnis</h3>
       <div class="document-info">
         <p><strong>Name:</strong> {{ store.selectedDocument.originalName }}</p>
-        <p><strong>Format:</strong> {{ store.selectedDocument.originalFormat.toUpperCase() }}</p>
-        <p><strong>Größe:</strong> {{ formatFileSize(store.selectedDocument.size) }}</p>
-        <p><strong>Hochgeladen:</strong> {{ formatDate(store.selectedDocument.uploadedAt) }}</p>
-        <p><strong>Konvertiert:</strong> {{ formatDate(store.selectedDocument.convertedAt) }}</p>
+        <p>
+          <strong>Format:</strong>
+          {{ store.selectedDocument.originalFormat.toUpperCase() }}
+        </p>
+        <p>
+          <strong>Größe:</strong>
+          {{ formatFileSize(store.selectedDocument.size) }}
+        </p>
+        <p>
+          <strong>Hochgeladen:</strong>
+          {{ formatDate(store.selectedDocument.uploadedAt) }}
+        </p>
+        <p>
+          <strong>Konvertiert:</strong>
+          {{ formatDate(store.selectedDocument.convertedAt) }}
+        </p>
       </div>
-      
+
       <div class="document-actions">
         <button @click="viewDocumentContent">Inhalt anzeigen</button>
         <button @click="downloadDocument">Herunterladen</button>
-        <button @click="deleteSelectedDocument" class="delete-button">Löschen</button>
+        <button @click="deleteSelectedDocument" class="delete-button">
+          Löschen
+        </button>
         <button @click="resetConverter">Neue Konvertierung</button>
       </div>
     </div>
-    
+
     <!-- Dokument-Liste -->
     <div v-if="store.hasDocuments" class="document-list">
       <h3>Konvertierte Dokumente</h3>
-      
+
       <!-- Filter-Optionen -->
       <div class="document-filters">
         <select v-model="currentFilter" @change="applyFilter">
           <option value="">Alle Dokumente</option>
-          <option v-for="format in store.supportedFormats" :key="format" :value="format">
+          <option
+            v-for="format in store.supportedFormats"
+            :key="format"
+            :value="format"
+          >
             {{ format.toUpperCase() }}
           </option>
           <option value="pending">Ausstehend</option>
@@ -93,7 +118,7 @@
           <option value="error">Fehlgeschlagen</option>
         </select>
       </div>
-      
+
       <!-- Dokument-Tabelle -->
       <table>
         <thead>
@@ -106,8 +131,11 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="doc in filteredDocuments" :key="doc.id" 
-              :class="{ 'selected': doc.id === store.selectedDocumentId }">
+          <tr
+            v-for="doc in filteredDocuments"
+            :key="doc.id"
+            :class="{ selected: doc.id === store.selectedDocumentId }"
+          >
             <td>{{ doc.originalName }}</td>
             <td>{{ doc.originalFormat.toUpperCase() }}</td>
             <td>{{ formatFileSize(doc.size) }}</td>
@@ -117,10 +145,11 @@
               </span>
             </td>
             <td>
-              <button @click="store.selectDocument(doc.id)">
-                Auswählen
-              </button>
-              <button @click="promptDeleteDocument(doc.id)" class="delete-button">
+              <button @click="store.selectDocument(doc.id)">Auswählen</button>
+              <button
+                @click="promptDeleteDocument(doc.id)"
+                class="delete-button"
+              >
                 Löschen
               </button>
             </td>
@@ -132,8 +161,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { useDocumentConverterStore } from '@/stores/documentConverter';
+import { ref, computed, onMounted } from "vue";
+import { useDocumentConverterStore } from "@/stores/documentConverter";
 
 // Store initialisieren
 const store = useDocumentConverterStore();
@@ -141,18 +170,24 @@ const store = useDocumentConverterStore();
 // Komponenten-Zustand
 const selectedFile = ref<File | null>(null);
 const uploadProgress = ref(0);
-const currentFilter = ref('');
+const currentFilter = ref("");
 const filteredDocuments = ref(store.convertedDocuments);
 
 // Status-Text
 const statusText = computed(() => {
   switch (store.conversionStatus) {
-    case 'idle': return 'Bereit';
-    case 'uploading': return 'Dokument wird hochgeladen...';
-    case 'converting': return 'Dokument wird konvertiert...';
-    case 'completed': return 'Konvertierung abgeschlossen';
-    case 'error': return 'Fehler aufgetreten';
-    default: return 'Unbekannter Status';
+    case "idle":
+      return "Bereit";
+    case "uploading":
+      return "Dokument wird hochgeladen...";
+    case "converting":
+      return "Dokument wird konvertiert...";
+    case "completed":
+      return "Konvertierung abgeschlossen";
+    case "error":
+      return "Fehler aufgetreten";
+    default:
+      return "Unbekannter Status";
   }
 });
 
@@ -172,20 +207,20 @@ function handleFileSelected(event: Event) {
  */
 async function startConversion() {
   if (!selectedFile.value) return;
-  
+
   try {
     // Datei hochladen
     const documentId = await store.uploadDocument(selectedFile.value);
-    
+
     if (documentId) {
       // Konvertierung starten
       await store.convertDocument(documentId);
     }
-    
+
     // Auswahl zurücksetzen
     selectedFile.value = null;
   } catch (error) {
-    console.error('Fehler bei der Konvertierung:', error);
+    console.error("Fehler bei der Konvertierung:", error);
   }
 }
 
@@ -203,13 +238,13 @@ async function cancelCurrentConversion() {
  */
 async function viewDocumentContent() {
   if (!store.selectedDocument) return;
-  
+
   try {
     // Hier würde man typischerweise das Dokument anzeigen
     // z.B. in einem Modal-Dialog oder einer separaten Ansicht
-    console.log('Dokument anzeigen:', store.selectedDocument.id);
+    console.log("Dokument anzeigen:", store.selectedDocument.id);
   } catch (error) {
-    console.error('Fehler beim Anzeigen des Dokuments:', error);
+    console.error("Fehler beim Anzeigen des Dokuments:", error);
   }
 }
 
@@ -218,11 +253,11 @@ async function viewDocumentContent() {
  */
 async function downloadDocument() {
   if (!store.selectedDocument) return;
-  
+
   try {
     await DocumentConverterService.downloadDocument(store.selectedDocument.id);
   } catch (error) {
-    console.error('Fehler beim Herunterladen des Dokuments:', error);
+    console.error("Fehler beim Herunterladen des Dokuments:", error);
   }
 }
 
@@ -231,8 +266,8 @@ async function downloadDocument() {
  */
 async function deleteSelectedDocument() {
   if (!store.selectedDocument) return;
-  
-  if (confirm('Sind Sie sicher, dass Sie dieses Dokument löschen möchten?')) {
+
+  if (confirm("Sind Sie sicher, dass Sie dieses Dokument löschen möchten?")) {
     await store.deleteDocument(store.selectedDocument.id);
   }
 }
@@ -241,7 +276,7 @@ async function deleteSelectedDocument() {
  * Fordert Bestätigung an und löscht ein bestimmtes Dokument
  */
 async function promptDeleteDocument(documentId: string) {
-  if (confirm('Sind Sie sicher, dass Sie dieses Dokument löschen möchten?')) {
+  if (confirm("Sind Sie sicher, dass Sie dieses Dokument löschen möchten?")) {
     await store.deleteDocument(documentId);
   }
 }
@@ -250,7 +285,7 @@ async function promptDeleteDocument(documentId: string) {
  * Setzt die Konverteransicht zurück
  */
 function resetConverter() {
-  store.setView('upload');
+  store.setView("upload");
   store.selectDocument(null);
 }
 
@@ -265,21 +300,21 @@ function applyFilter() {
  * Formatiert eine Dateigröße in lesbarer Form
  */
 function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
-  
+  if (bytes === 0) return "0 Bytes";
+
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
 /**
  * Formatiert ein Datum in lesbarer Form
  */
 function formatDate(date?: Date): string {
-  if (!date) return '-';
-  return new Date(date).toLocaleString('de-DE');
+  if (!date) return "-";
+  return new Date(date).toLocaleString("de-DE");
 }
 
 /**
@@ -288,7 +323,7 @@ function formatDate(date?: Date): string {
 function formatTime(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = Math.floor(seconds % 60);
-  return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  return `${minutes.toString().padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
 }
 
 /**
@@ -296,11 +331,16 @@ function formatTime(seconds: number): string {
  */
 function getStatusText(status: string): string {
   switch (status) {
-    case 'pending': return 'Ausstehend';
-    case 'processing': return 'In Bearbeitung';
-    case 'success': return 'Erfolgreich';
-    case 'error': return 'Fehlgeschlagen';
-    default: return status;
+    case "pending":
+      return "Ausstehend";
+    case "processing":
+      return "In Bearbeitung";
+    case "success":
+      return "Erfolgreich";
+    case "error":
+      return "Fehlgeschlagen";
+    default:
+      return status;
   }
 }
 
@@ -310,18 +350,19 @@ onMounted(async () => {
   applyFilter();
 });
 
-import DocumentConverterService from '@/services/api/DocumentConverterService';
+import DocumentConverterService from "@/services/api/DocumentConverterService";
 </script>
 
 <style scoped>
 .document-converter-example {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   max-width: 900px;
   margin: 0 auto;
   padding: 1.5rem;
 }
 
-h2, h3 {
+h2,
+h3 {
   color: #0d7a40;
 }
 
@@ -400,7 +441,8 @@ table {
   margin: 1rem 0;
 }
 
-th, td {
+th,
+td {
   padding: 0.75rem;
   text-align: left;
   border-bottom: 1px solid #e2e8f0;
@@ -435,7 +477,8 @@ tr:hover {
   color: #e53e3e;
 }
 
-.document-actions, .document-filters {
+.document-actions,
+.document-filters {
   margin: 1rem 0;
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <div class="file-upload-example">
     <h1>Dokumentenkonverter</h1>
-    
+
     <div class="settings-panel">
       <h2>Upload-Einstellungen</h2>
       <div class="settings-grid">
@@ -14,34 +14,30 @@
             <option value="100">100 MB</option>
           </select>
         </div>
-        
+
         <div class="setting">
           <label for="max-files">Maximale Anzahl Dateien:</label>
-          <input 
-            type="number" 
-            id="max-files" 
-            v-model.number="maxFiles" 
-            min="1" 
+          <input
+            type="number"
+            id="max-files"
+            v-model.number="maxFiles"
+            min="1"
             max="20"
-          >
+          />
         </div>
       </div>
-      
+
       <div class="setting file-types">
         <label>Erlaubte Dateitypen:</label>
         <div class="checkbox-group">
           <label v-for="ext in availableExtensions" :key="ext">
-            <input 
-              type="checkbox" 
-              :value="ext" 
-              v-model="allowedExtensions"
-            >
+            <input type="checkbox" :value="ext" v-model="allowedExtensions" />
             {{ ext.toUpperCase() }}
           </label>
         </div>
       </div>
     </div>
-    
+
     <!-- Neue FileUpload Komponente -->
     <FileUpload
       :is-uploading="isUploading"
@@ -55,15 +51,21 @@
       @file-removed="handleFileRemoved"
       @validation-error="handleValidationError"
     />
-    
+
     <!-- Upload-Status -->
     <div v-if="isUploading" class="upload-status">
       <h3>Upload läuft...</h3>
-      <p>{{ currentFile ? `Verarbeite: ${currentFile.name}` : 'Initialisiere...' }}</p>
+      <p>
+        {{
+          currentFile ? `Verarbeite: ${currentFile.name}` : "Initialisiere..."
+        }}
+      </p>
       <p>{{ uploadProgress }}% abgeschlossen</p>
-      <button @click="cancelUpload" class="cancel-button">Upload abbrechen</button>
+      <button @click="cancelUpload" class="cancel-button">
+        Upload abbrechen
+      </button>
     </div>
-    
+
     <!-- Ergebnis-Anzeige für hochgeladene Dateien -->
     <div v-if="uploadedFiles.length > 0" class="upload-results">
       <h3>Hochgeladene Dateien</h3>
@@ -74,8 +76,8 @@
             <div class="file-details">
               <strong>{{ file.file.name }}</strong>
               <span class="file-meta">
-                {{ formatFileSize(file.file.size) }} | 
-                Hochgeladen am {{ formatDate(file.uploadedAt) }}
+                {{ formatFileSize(file.file.size) }} | Hochgeladen am
+                {{ formatDate(file.uploadedAt) }}
               </span>
             </div>
           </div>
@@ -84,15 +86,20 @@
           </div>
         </li>
       </ul>
-      
+
       <button @click="clearResults" class="clear-button">Liste leeren</button>
     </div>
-    
+
     <!-- Event-Log -->
     <div class="event-log">
       <h3>Event-Log</h3>
       <div class="log-container">
-        <div v-for="(log, index) in eventLogs" :key="index" class="log-entry" :class="log.type">
+        <div
+          v-for="(log, index) in eventLogs"
+          :key="index"
+          class="log-entry"
+          :class="log.type"
+        >
           <span class="log-time">{{ formatTime(log.time) }}</span>
           <span class="log-message">{{ log.message }}</span>
         </div>
@@ -103,8 +110,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import FileUpload from '@/components/admin/document-converter/FileUploadV2.vue';
+import { ref, computed } from "vue";
+import FileUpload from "@/components/admin/document-converter/FileUploadV2.vue";
 
 // Zustand
 const isUploading = ref(false);
@@ -112,26 +119,40 @@ const uploadProgress = ref(0);
 const maxFileSizeMB = ref(20);
 const maxFiles = ref(5);
 const currentFile = ref<File | null>(null);
-const uploadedFiles = ref<Array<{
-  id: string;
-  file: File;
-  uploadedAt: Date;
-  status: 'pending' | 'processing' | 'success' | 'error';
-  error?: string;
-}>>([]);
-const eventLogs = ref<Array<{
-  time: Date;
-  message: string;
-  type: 'info' | 'success' | 'error' | 'warning';
-}>>([]);
+const uploadedFiles = ref<
+  Array<{
+    id: string;
+    file: File;
+    uploadedAt: Date;
+    status: "pending" | "processing" | "success" | "error";
+    error?: string;
+  }>
+>([]);
+const eventLogs = ref<
+  Array<{
+    time: Date;
+    message: string;
+    type: "info" | "success" | "error" | "warning";
+  }>
+>([]);
 
 // Verfügbare Dateitypen
 const availableExtensions = [
-  'pdf', 'docx', 'doc', 'xlsx', 'xls', 'pptx', 'ppt', 'txt', 'html', 'htm', 'csv'
+  "pdf",
+  "docx",
+  "doc",
+  "xlsx",
+  "xls",
+  "pptx",
+  "ppt",
+  "txt",
+  "html",
+  "htm",
+  "csv",
 ];
 
 // Ausgewählte Dateitypen
-const allowedExtensions = ref(['pdf', 'docx', 'xlsx', 'pptx', 'html', 'txt']);
+const allowedExtensions = ref(["pdf", "docx", "xlsx", "pptx", "html", "txt"]);
 
 // Berechnete Eigenschaften
 const maxFileSizeBytes = computed(() => maxFileSizeMB.value * 1024 * 1024);
@@ -143,80 +164,93 @@ let uploadTimer: number | null = null;
 async function handleUpload(files: File[]) {
   isUploading.value = true;
   uploadProgress.value = 0;
-  
+
   // Log-Eintrag
-  addLogEntry(`Upload von ${files.length} Dateien gestartet`, 'info');
-  
+  addLogEntry(`Upload von ${files.length} Dateien gestartet`, "info");
+
   // Wir simulieren den Upload-Prozess für jede Datei
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     currentFile.value = file;
-    
+
     // Neue hochgeladene Datei zur Liste hinzufügen
     const fileId = `upload-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     uploadedFiles.value.push({
       id: fileId,
       file,
       uploadedAt: new Date(),
-      status: 'processing'
+      status: "processing",
     });
-    
+
     // Log-Eintrag
-    addLogEntry(`Verarbeite Datei ${i+1}/${files.length}: ${file.name}`, 'info');
-    
+    addLogEntry(
+      `Verarbeite Datei ${i + 1}/${files.length}: ${file.name}`,
+      "info",
+    );
+
     // Simuliere den Upload-Prozess mit einer Verzögerung basierend auf der Dateigröße
     const uploadDuration = Math.min(5000, 1000 + file.size / 100000);
     const fileIndex = uploadedFiles.value.length - 1;
-    
+
     await simulateFileUpload(uploadDuration, fileIndex);
-    
+
     // Upload dieser Datei abgeschlossen
-    addLogEntry(`Datei ${file.name} erfolgreich verarbeitet`, 'success');
+    addLogEntry(`Datei ${file.name} erfolgreich verarbeitet`, "success");
   }
-  
+
   // Gesamten Upload-Prozess abschließen
   uploadProgress.value = 100;
   isUploading.value = false;
   currentFile.value = null;
-  
+
   // Log-Eintrag
-  addLogEntry(`Upload abgeschlossen: ${files.length} Dateien verarbeitet`, 'success');
+  addLogEntry(
+    `Upload abgeschlossen: ${files.length} Dateien verarbeitet`,
+    "success",
+  );
 }
 
 // Simuliere den Upload-Prozess für eine einzelne Datei
-function simulateFileUpload(duration: number, fileIndex: number): Promise<void> {
-  return new Promise(resolve => {
+function simulateFileUpload(
+  duration: number,
+  fileIndex: number,
+): Promise<void> {
+  return new Promise((resolve) => {
     let startTime = Date.now();
     let progress = 0;
-    
+
     // Zufällig bestimmen, ob der Upload erfolgreich sein wird (90% Erfolgsrate)
     const willSucceed = Math.random() < 0.9;
-    
+
     const updateProgress = () => {
       const elapsed = Date.now() - startTime;
       progress = Math.min(100, Math.round((elapsed / duration) * 100));
       uploadProgress.value = progress;
-      
+
       if (progress < 100) {
         uploadTimer = window.setTimeout(updateProgress, 100);
       } else {
         if (willSucceed) {
           // Erfolgreicher Upload
           if (fileIndex < uploadedFiles.value.length) {
-            uploadedFiles.value[fileIndex].status = 'success';
+            uploadedFiles.value[fileIndex].status = "success";
           }
         } else {
           // Fehlgeschlagener Upload
           if (fileIndex < uploadedFiles.value.length) {
-            uploadedFiles.value[fileIndex].status = 'error';
-            uploadedFiles.value[fileIndex].error = 'Fehler bei der Verarbeitung';
-            addLogEntry(`Fehler beim Verarbeiten von ${uploadedFiles.value[fileIndex].file.name}`, 'error');
+            uploadedFiles.value[fileIndex].status = "error";
+            uploadedFiles.value[fileIndex].error =
+              "Fehler bei der Verarbeitung";
+            addLogEntry(
+              `Fehler beim Verarbeiten von ${uploadedFiles.value[fileIndex].file.name}`,
+              "error",
+            );
           }
         }
         resolve();
       }
     };
-    
+
     // Starte den simulierten Upload
     updateProgress();
   });
@@ -224,7 +258,7 @@ function simulateFileUpload(duration: number, fileIndex: number): Promise<void> 
 
 // Upload abbrechen
 function handleCancel() {
-  addLogEntry('Upload-Vorgang abgebrochen', 'warning');
+  addLogEntry("Upload-Vorgang abgebrochen", "warning");
 }
 
 // Laufenden Upload abbrechen
@@ -233,51 +267,57 @@ function cancelUpload() {
     clearTimeout(uploadTimer);
     uploadTimer = null;
   }
-  
+
   isUploading.value = false;
   uploadProgress.value = 0;
   currentFile.value = null;
-  
+
   // Setze alle "processing" Dateien auf "error"
-  uploadedFiles.value.forEach(file => {
-    if (file.status === 'processing') {
-      file.status = 'error';
-      file.error = 'Upload abgebrochen';
+  uploadedFiles.value.forEach((file) => {
+    if (file.status === "processing") {
+      file.status = "error";
+      file.error = "Upload abgebrochen";
     }
   });
-  
-  addLogEntry('Upload abgebrochen', 'warning');
+
+  addLogEntry("Upload abgebrochen", "warning");
 }
 
 // Datei hinzugefügt
 function handleFileAdded(file: File) {
-  addLogEntry(`Datei hinzugefügt: ${file.name} (${formatFileSize(file.size)})`, 'info');
+  addLogEntry(
+    `Datei hinzugefügt: ${file.name} (${formatFileSize(file.size)})`,
+    "info",
+  );
 }
 
 // Datei entfernt
 function handleFileRemoved(file: File) {
-  addLogEntry(`Datei entfernt: ${file.name}`, 'info');
+  addLogEntry(`Datei entfernt: ${file.name}`, "info");
 }
 
 // Validierungsfehler
 function handleValidationError(error: string, file: File) {
-  addLogEntry(`Validierungsfehler für ${file.name}: ${error}`, 'error');
+  addLogEntry(`Validierungsfehler für ${file.name}: ${error}`, "error");
 }
 
 // Ergebnisliste leeren
 function clearResults() {
   uploadedFiles.value = [];
-  addLogEntry('Ergebnisliste geleert', 'info');
+  addLogEntry("Ergebnisliste geleert", "info");
 }
 
 // Log-Einträge hinzufügen
-function addLogEntry(message: string, type: 'info' | 'success' | 'error' | 'warning' = 'info') {
+function addLogEntry(
+  message: string,
+  type: "info" | "success" | "error" | "warning" = "info",
+) {
   eventLogs.value.unshift({
     time: new Date(),
     message,
-    type
+    type,
   });
-  
+
   // Begrenze die Anzahl der Log-Einträge
   if (eventLogs.value.length > 100) {
     eventLogs.value = eventLogs.value.slice(0, 100);
@@ -291,73 +331,80 @@ function clearLog() {
 
 // Hilfsfunktionen
 function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
-  
+  if (bytes === 0) return "0 Bytes";
+
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
 function formatDate(date: Date): string {
-  return date.toLocaleString('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  return date.toLocaleString("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
 function formatTime(date: Date): string {
-  return date.toLocaleTimeString('de-DE', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
+  return date.toLocaleTimeString("de-DE", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
   });
 }
 
 function getStatusText(status: string): string {
   switch (status) {
-    case 'pending': return 'Ausstehend';
-    case 'processing': return 'Wird verarbeitet...';
-    case 'success': return 'Erfolgreich';
-    case 'error': return 'Fehler';
-    default: return status;
+    case "pending":
+      return "Ausstehend";
+    case "processing":
+      return "Wird verarbeitet...";
+    case "success":
+      return "Erfolgreich";
+    case "error":
+      return "Fehler";
+    default:
+      return status;
   }
 }
 
 // Icon für Dateityp ermitteln
 function getFileIcon(file: File): string {
-  const extension = file.name.split('.').pop()?.toLowerCase() || '';
-  
+  const extension = file.name.split(".").pop()?.toLowerCase() || "";
+
   const fileIcons: Record<string, string> = {
-    'pdf': 'fa fa-file-pdf',
-    'docx': 'fa fa-file-word',
-    'doc': 'fa fa-file-word',
-    'xlsx': 'fa fa-file-excel',
-    'xls': 'fa fa-file-excel',
-    'pptx': 'fa fa-file-powerpoint',
-    'ppt': 'fa fa-file-powerpoint',
-    'html': 'fa fa-file-code',
-    'htm': 'fa fa-file-code',
-    'txt': 'fa fa-file-alt'
+    pdf: "fa fa-file-pdf",
+    docx: "fa fa-file-word",
+    doc: "fa fa-file-word",
+    xlsx: "fa fa-file-excel",
+    xls: "fa fa-file-excel",
+    pptx: "fa fa-file-powerpoint",
+    ppt: "fa fa-file-powerpoint",
+    html: "fa fa-file-code",
+    htm: "fa fa-file-code",
+    txt: "fa fa-file-alt",
   };
-  
-  return fileIcons[extension] || 'fa fa-file';
+
+  return fileIcons[extension] || "fa fa-file";
 }
 </script>
 
 <style scoped>
 .file-upload-example {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   max-width: 900px;
   margin: 0 auto;
   padding: 2rem;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   color: #0d7a40;
 }
 
@@ -528,7 +575,7 @@ h1 {
   padding: 1rem;
   height: 200px;
   overflow-y: auto;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   margin: 1rem 0;
 }
 
@@ -566,16 +613,16 @@ h1 {
   .file-upload-example {
     padding: 1rem;
   }
-  
+
   .settings-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .file-item {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .file-status {
     margin-top: 0.5rem;
     align-self: flex-start;

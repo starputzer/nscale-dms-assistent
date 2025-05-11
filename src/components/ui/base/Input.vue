@@ -1,21 +1,21 @@
 <template>
-  <div 
+  <div
     class="n-input-wrapper"
-    :class="{ 
-      'n-input-wrapper--disabled': disabled, 
+    :class="{
+      'n-input-wrapper--disabled': disabled,
       'n-input-wrapper--error': !!error,
-      'n-input-wrapper--focused': isFocused
+      'n-input-wrapper--focused': isFocused,
     }"
   >
-    <label 
-      v-if="label" 
-      :for="inputId" 
+    <label
+      v-if="label"
+      :for="inputId"
       class="n-input-label"
       :class="{ 'n-input-label--required': required }"
     >
       {{ label }}
     </label>
-    
+
     <div class="n-input-container">
       <div class="n-input-field-wrapper">
         <div v-if="prefixIcon || $slots.prefix" class="n-input-prefix">
@@ -45,8 +45,11 @@
           @keydown="handleKeydown"
         />
 
-        <div v-if="suffixIcon || $slots.suffix || isPasswordToggle" class="n-input-suffix">
-          <button 
+        <div
+          v-if="suffixIcon || $slots.suffix || isPasswordToggle"
+          class="n-input-suffix"
+        >
+          <button
             v-if="isPasswordToggle"
             type="button"
             class="n-input-password-toggle"
@@ -54,11 +57,25 @@
             aria-label="Toggle password visibility"
             @click.prevent="togglePasswordVisibility"
           >
-            <svg v-if="showPassword" class="n-input-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+            <svg
+              v-if="showPassword"
+              class="n-input-icon"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+              />
             </svg>
-            <svg v-else class="n-input-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" />
+            <svg
+              v-else
+              class="n-input-icon"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"
+              />
             </svg>
           </button>
           <component v-else-if="suffixIcon" :is="suffixIcon" />
@@ -66,14 +83,21 @@
         </div>
       </div>
 
-      <div v-if="helperText || error || $slots.helper" class="n-input-helper-text" :id="helperId">
+      <div
+        v-if="helperText || error || $slots.helper"
+        class="n-input-helper-text"
+        :id="helperId"
+      >
         <slot name="helper">
           <span v-if="error" class="n-input-error-text">{{ error }}</span>
           <span v-else-if="helperText">{{ helperText }}</span>
         </slot>
       </div>
 
-      <div v-if="maxlength && showCharacterCount" class="n-input-character-count">
+      <div
+        v-if="maxlength && showCharacterCount"
+        class="n-input-character-count"
+      >
         {{ characterCount }} / {{ maxlength }}
       </div>
     </div>
@@ -81,8 +105,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue';
-import { uniqueId } from 'lodash';
+import { ref, computed, onMounted, nextTick } from "vue";
+import { uniqueId } from "lodash";
 
 /**
  * Input component that supports various types, states, and decorations
@@ -130,68 +154,70 @@ export interface InputProps {
 }
 
 const props = withDefaults(defineProps<InputProps>(), {
-  type: 'text',
-  placeholder: '',
+  type: "text",
+  placeholder: "",
   disabled: false,
   required: false,
-  autocomplete: 'off',
+  autocomplete: "off",
   showCharacterCount: false,
-  autofocus: false
+  autofocus: false,
 });
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string | number): void;
-  (e: 'focus', event: FocusEvent): void;
-  (e: 'blur', event: FocusEvent): void;
-  (e: 'input', event: Event): void;
-  (e: 'keydown', event: KeyboardEvent): void;
+  (e: "update:modelValue", value: string | number): void;
+  (e: "focus", event: FocusEvent): void;
+  (e: "blur", event: FocusEvent): void;
+  (e: "input", event: Event): void;
+  (e: "keydown", event: KeyboardEvent): void;
 }>();
 
 // Internal state
-const inputId = computed(() => props.id || uniqueId('n-input-'));
+const inputId = computed(() => props.id || uniqueId("n-input-"));
 const helperId = computed(() => `${inputId.value}-helper`);
-const ariaDescribedby = computed(() => props.helperText || props.error ? helperId.value : undefined);
+const ariaDescribedby = computed(() =>
+  props.helperText || props.error ? helperId.value : undefined,
+);
 const inputRef = ref<HTMLInputElement | null>(null);
 const isFocused = ref(false);
 const showPassword = ref(false);
 
 // Calculate character count for text inputs
 const characterCount = computed(() => {
-  if (typeof props.modelValue === 'string') {
+  if (typeof props.modelValue === "string") {
     return props.modelValue.length;
   }
-  return String(props.modelValue || '').length;
+  return String(props.modelValue || "").length;
 });
 
 // Determine if this is a password input that can toggle visibility
-const isPasswordToggle = computed(() => props.type === 'password');
+const isPasswordToggle = computed(() => props.type === "password");
 
 // Event handlers
 function handleInput(event: Event) {
   const target = event.target as HTMLInputElement;
   let value: string | number = target.value;
-  
+
   // Convert to number for number inputs
-  if (props.type === 'number' && value !== '') {
+  if (props.type === "number" && value !== "") {
     value = Number(value);
   }
-  
-  emit('update:modelValue', value);
-  emit('input', event);
+
+  emit("update:modelValue", value);
+  emit("input", event);
 }
 
 function handleFocus(event: FocusEvent) {
   isFocused.value = true;
-  emit('focus', event);
+  emit("focus", event);
 }
 
 function handleBlur(event: FocusEvent) {
   isFocused.value = false;
-  emit('blur', event);
+  emit("blur", event);
 }
 
 function handleKeydown(event: KeyboardEvent) {
-  emit('keydown', event);
+  emit("keydown", event);
 }
 
 function togglePasswordVisibility() {
@@ -214,7 +240,15 @@ onMounted(() => {
   flex-direction: column;
   width: 100%;
   margin-bottom: 1rem;
-  font-family: var(--n-font-family, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-family: var(
+    --n-font-family,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif
+  );
 }
 
 .n-input-label {
@@ -248,7 +282,8 @@ onMounted(() => {
 /* Focus state */
 .n-input-wrapper--focused .n-input-field-wrapper {
   border-color: var(--n-color-primary, #0066cc);
-  box-shadow: 0 0 0 3px var(--n-color-primary-transparent, rgba(0, 102, 204, 0.2));
+  box-shadow: 0 0 0 3px
+    var(--n-color-primary-transparent, rgba(0, 102, 204, 0.2));
 }
 
 /* Error state */
@@ -257,7 +292,8 @@ onMounted(() => {
 }
 
 .n-input-wrapper--error.n-input-wrapper--focused .n-input-field-wrapper {
-  box-shadow: 0 0 0 3px var(--n-color-danger-transparent, rgba(229, 62, 62, 0.2));
+  box-shadow: 0 0 0 3px
+    var(--n-color-danger-transparent, rgba(229, 62, 62, 0.2));
 }
 
 /* Disabled state */

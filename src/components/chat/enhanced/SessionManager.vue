@@ -1,50 +1,55 @@
 <template>
-  <div 
+  <div
     class="n-session-manager"
-    :class="{ 
-      'n-session-manager--loading': loading, 
-      'n-session-manager--collapsed': collapsed
+    :class="{
+      'n-session-manager--loading': loading,
+      'n-session-manager--collapsed': collapsed,
     }"
     role="navigation"
     aria-label="Chat-Sitzungen"
   >
     <!-- Header mit Titel und Aktionen -->
     <div class="n-session-manager__header">
-      <h2 
-        class="n-session-manager__title"
-        :id="headerId"
-      >
+      <h2 class="n-session-manager__title" :id="headerId">
         {{ title }}
       </h2>
-      
+
       <div class="n-session-manager__header-actions">
         <!-- Suchfeld-Toggle -->
-        <button 
-          v-if="searchEnabled" 
+        <button
+          v-if="searchEnabled"
           class="n-session-manager__action-btn"
           :class="{ 'n-session-manager__action-btn--active': isSearchVisible }"
           @click="toggleSearch"
           :aria-label="isSearchVisible ? 'Suche ausblenden' : 'Suche anzeigen'"
           :aria-expanded="isSearchVisible"
         >
-          <span class="n-session-manager__icon n-session-manager__icon--search"></span>
+          <span
+            class="n-session-manager__icon n-session-manager__icon--search"
+          ></span>
         </button>
-        
+
         <!-- Collapse-Button -->
-        <button 
+        <button
           class="n-session-manager__action-btn"
           @click="$emit('toggle-collapse')"
-          :aria-label="collapsed ? 'Seitenleiste erweitern' : 'Seitenleiste einklappen'"
+          :aria-label="
+            collapsed ? 'Seitenleiste erweitern' : 'Seitenleiste einklappen'
+          "
           :aria-expanded="!collapsed"
         >
-          <span 
+          <span
             class="n-session-manager__icon"
-            :class="collapsed ? 'n-session-manager__icon--expand' : 'n-session-manager__icon--collapse'"
+            :class="
+              collapsed
+                ? 'n-session-manager__icon--expand'
+                : 'n-session-manager__icon--collapse'
+            "
           ></span>
         </button>
       </div>
     </div>
-    
+
     <!-- Suchfeld (wenn sichtbar) -->
     <div
       v-if="searchEnabled && isSearchVisible"
@@ -65,23 +70,35 @@
           @click="clearSearch"
           aria-label="Suche zurücksetzen"
         >
-          <span class="n-session-manager__icon n-session-manager__icon--clear"></span>
+          <span
+            class="n-session-manager__icon n-session-manager__icon--clear"
+          ></span>
         </button>
       </div>
     </div>
 
     <!-- Filter-Bereich -->
-    <div class="n-session-manager__filters" v-if="categoriesEnabled || tagsEnabled">
+    <div
+      class="n-session-manager__filters"
+      v-if="categoriesEnabled || tagsEnabled"
+    >
       <div class="n-session-manager__filter-group">
         <!-- Aktiver Filter -->
-        <div class="n-session-manager__active-filter" v-if="activeFilter !== 'all'">
-          <span class="n-session-manager__filter-label">{{ getFilterLabel() }}</span>
+        <div
+          class="n-session-manager__active-filter"
+          v-if="activeFilter !== 'all'"
+        >
+          <span class="n-session-manager__filter-label">{{
+            getFilterLabel()
+          }}</span>
           <button
             class="n-session-manager__filter-clear"
             @click="clearFilter"
             aria-label="Filter zurücksetzen"
           >
-            <span class="n-session-manager__icon n-session-manager__icon--clear"></span>
+            <span
+              class="n-session-manager__icon n-session-manager__icon--clear"
+            ></span>
           </button>
         </div>
 
@@ -93,7 +110,9 @@
           aria-label="Sitzungen filtern"
           :aria-expanded="filterMenuOpen"
         >
-          <span class="n-session-manager__icon n-session-manager__icon--filter"></span>
+          <span
+            class="n-session-manager__icon n-session-manager__icon--filter"
+          ></span>
           <span class="n-session-manager__btn-text">Filtern</span>
         </button>
 
@@ -106,7 +125,9 @@
           <button
             class="n-session-manager__filter-item"
             @click="applyFilter('all')"
-            :class="{ 'n-session-manager__filter-item--active': activeFilter === 'all' }"
+            :class="{
+              'n-session-manager__filter-item--active': activeFilter === 'all',
+            }"
             role="menuitem"
           >
             <span>Alle Sitzungen</span>
@@ -115,32 +136,50 @@
           <button
             class="n-session-manager__filter-item"
             @click="applyFilter('pinned')"
-            :class="{ 'n-session-manager__filter-item--active': activeFilter === 'pinned' }"
+            :class="{
+              'n-session-manager__filter-item--active':
+                activeFilter === 'pinned',
+            }"
             role="menuitem"
           >
-            <span class="n-session-manager__icon n-session-manager__icon--pin"></span>
+            <span
+              class="n-session-manager__icon n-session-manager__icon--pin"
+            ></span>
             <span>Angeheftete</span>
           </button>
 
           <button
             class="n-session-manager__filter-item"
             @click="applyFilter('archived')"
-            :class="{ 'n-session-manager__filter-item--active': activeFilter === 'archived' }"
+            :class="{
+              'n-session-manager__filter-item--active':
+                activeFilter === 'archived',
+            }"
             role="menuitem"
           >
-            <span class="n-session-manager__icon n-session-manager__icon--archive"></span>
+            <span
+              class="n-session-manager__icon n-session-manager__icon--archive"
+            ></span>
             <span>Archivierte</span>
           </button>
 
           <!-- Kategoriefilter-Abschnitt -->
-          <div v-if="categoriesEnabled && props.availableCategories.length > 0" class="n-session-manager__filter-section">
-            <div class="n-session-manager__filter-section-title">Nach Kategorie</div>
+          <div
+            v-if="categoriesEnabled && props.availableCategories.length > 0"
+            class="n-session-manager__filter-section"
+          >
+            <div class="n-session-manager__filter-section-title">
+              Nach Kategorie
+            </div>
             <button
               v-for="category in props.availableCategories"
               :key="category.id"
               class="n-session-manager__filter-item"
               @click="applyFilter(`category:${category.id}`)"
-              :class="{ 'n-session-manager__filter-item--active': activeFilter === `category:${category.id}` }"
+              :class="{
+                'n-session-manager__filter-item--active':
+                  activeFilter === `category:${category.id}`,
+              }"
               role="menuitem"
             >
               <span
@@ -152,14 +191,20 @@
           </div>
 
           <!-- Tagfilter-Abschnitt -->
-          <div v-if="tagsEnabled && props.availableTags.length > 0" class="n-session-manager__filter-section">
+          <div
+            v-if="tagsEnabled && props.availableTags.length > 0"
+            class="n-session-manager__filter-section"
+          >
             <div class="n-session-manager__filter-section-title">Nach Tag</div>
             <button
               v-for="tag in props.availableTags"
               :key="tag.id"
               class="n-session-manager__filter-item"
               @click="applyFilter(`tag:${tag.id}`)"
-              :class="{ 'n-session-manager__filter-item--active': activeFilter === `tag:${tag.id}` }"
+              :class="{
+                'n-session-manager__filter-item--active':
+                  activeFilter === `tag:${tag.id}`,
+              }"
               role="menuitem"
             >
               <span
@@ -173,27 +218,40 @@
       </div>
 
       <!-- Multi-Select-Button -->
-      <div class="n-session-manager__multi-select-group" v-if="multiSelectEnabled">
+      <div
+        class="n-session-manager__multi-select-group"
+        v-if="multiSelectEnabled"
+      >
         <button
           class="n-session-manager__multi-select-btn"
           @click="toggleMultiSelectMode"
-          :class="{ 'n-session-manager__multi-select-btn--active': isMultiSelectModeActive }"
+          :class="{
+            'n-session-manager__multi-select-btn--active':
+              isMultiSelectModeActive,
+          }"
           aria-label="Mehrfachauswahl aktivieren"
           :aria-pressed="isMultiSelectModeActive"
         >
-          <span class="n-session-manager__icon n-session-manager__icon--checkbox"></span>
+          <span
+            class="n-session-manager__icon n-session-manager__icon--checkbox"
+          ></span>
           <span class="n-session-manager__btn-text">Multi-Select</span>
         </button>
 
         <!-- Multi-Select-Aktionsmenü (wenn aktiv und Auswahl vorhanden) -->
-        <div v-if="isMultiSelectModeActive && selectedCount > 0" class="n-session-manager__selection-info">
+        <div
+          v-if="isMultiSelectModeActive && selectedCount > 0"
+          class="n-session-manager__selection-info"
+        >
           <button
             class="n-session-manager__multi-actions-btn"
             @click="toggleMultiSelectMenu"
             :aria-expanded="multiSelectMenuOpen"
           >
             <span>{{ selectedCount }} ausgewählt</span>
-            <span class="n-session-manager__icon n-session-manager__icon--chevron-down"></span>
+            <span
+              class="n-session-manager__icon n-session-manager__icon--chevron-down"
+            ></span>
           </button>
 
           <!-- Multi-Select-Aktionsmenü -->
@@ -207,7 +265,9 @@
               @click="showMultiSelectActionDialog('archive')"
               role="menuitem"
             >
-              <span class="n-session-manager__icon n-session-manager__icon--archive"></span>
+              <span
+                class="n-session-manager__icon n-session-manager__icon--archive"
+              ></span>
               <span>Archivieren</span>
             </button>
 
@@ -216,7 +276,9 @@
               @click="showMultiSelectActionDialog('tag')"
               role="menuitem"
             >
-              <span class="n-session-manager__icon n-session-manager__icon--tag"></span>
+              <span
+                class="n-session-manager__icon n-session-manager__icon--tag"
+              ></span>
               <span>Tag zuweisen</span>
             </button>
 
@@ -225,7 +287,9 @@
               @click="showMultiSelectActionDialog('category')"
               role="menuitem"
             >
-              <span class="n-session-manager__icon n-session-manager__icon--category"></span>
+              <span
+                class="n-session-manager__icon n-session-manager__icon--category"
+              ></span>
               <span>Kategorisieren</span>
             </button>
 
@@ -234,7 +298,9 @@
               @click="showMultiSelectActionDialog('delete')"
               role="menuitem"
             >
-              <span class="n-session-manager__icon n-session-manager__icon--delete"></span>
+              <span
+                class="n-session-manager__icon n-session-manager__icon--delete"
+              ></span>
               <span>Löschen</span>
             </button>
           </div>
@@ -250,21 +316,19 @@
         :disabled="loading || maxSessionsReached"
         aria-label="Neue Unterhaltung starten"
       >
-        <span class="n-session-manager__icon n-session-manager__icon--plus"></span>
+        <span
+          class="n-session-manager__icon n-session-manager__icon--plus"
+        ></span>
         <span class="n-session-manager__btn-text">Neue Unterhaltung</span>
       </button>
     </div>
-    
+
     <!-- Sitzungsliste mit Virtualisierung und Drag & Drop -->
-    <div
-      v-if="loading"
-      class="n-session-manager__loading"
-      aria-live="polite"
-    >
+    <div v-if="loading" class="n-session-manager__loading" aria-live="polite">
       <div class="n-session-manager__spinner" aria-hidden="true"></div>
       <span>Lade Sitzungen...</span>
     </div>
-    
+
     <div
       v-else
       ref="sessionListContainer"
@@ -276,20 +340,25 @@
         tag="ul"
         class="n-session-manager__list"
         role="listbox"
-        :aria-activedescendant="currentSessionId ? `session-${currentSessionId}` : undefined"
+        :aria-activedescendant="
+          currentSessionId ? `session-${currentSessionId}` : undefined
+        "
       >
         <!-- Meldung, wenn keine Sitzungen gefunden wurden -->
-        <li 
-          v-if="filteredSessions.length === 0" 
+        <li
+          v-if="filteredSessions.length === 0"
           key="empty"
           class="n-session-manager__empty"
           role="option"
           aria-selected="false"
         >
-          <p v-if="searchQuery">Keine Sitzungen gefunden für "<strong>{{ searchQuery }}</strong>"</p>
+          <p v-if="searchQuery">
+            Keine Sitzungen gefunden für "<strong>{{ searchQuery }}</strong
+            >"
+          </p>
           <p v-else>Keine Sitzungen vorhanden</p>
         </li>
-        
+
         <!-- Sortierbare Sitzungsliste -->
         <VueDraggable
           v-else
@@ -301,20 +370,29 @@
           :disabled="!sortable || !!searchQuery"
           @end="onDragEnd"
         >
-          <template #item="{element}">
+          <template #item="{ element }">
             <li
               :key="element.id"
               :id="`session-${element.id}`"
               class="n-session-manager__session"
               :class="{
-                'n-session-manager__session--active': element.id === currentSessionId,
+                'n-session-manager__session--active':
+                  element.id === currentSessionId,
                 'n-session-manager__session--pinned': element.isPinned,
                 'n-session-manager__session--archived': element.isArchived,
-                'n-session-manager__session--selected': isMultiSelectModeActive && isSelected(element.id)
+                'n-session-manager__session--selected':
+                  isMultiSelectModeActive && isSelected(element.id),
               }"
-              :aria-selected="element.id === currentSessionId || (isMultiSelectModeActive && isSelected(element.id))"
+              :aria-selected="
+                element.id === currentSessionId ||
+                (isMultiSelectModeActive && isSelected(element.id))
+              "
               role="option"
-              @click="isMultiSelectModeActive ? toggleSessionSelection(element.id) : selectSession(element.id)"
+              @click="
+                isMultiSelectModeActive
+                  ? toggleSessionSelection(element.id)
+                  : selectSession(element.id)
+              "
               @keydown="handleSessionKeydown($event, element.id)"
               tabindex="0"
             >
@@ -322,13 +400,21 @@
               <div
                 v-if="isMultiSelectModeActive && multiSelectEnabled"
                 class="n-session-manager__checkbox"
-                :class="{ 'n-session-manager__checkbox--checked': isSelected(element.id) }"
+                :class="{
+                  'n-session-manager__checkbox--checked': isSelected(
+                    element.id,
+                  ),
+                }"
                 aria-hidden="true"
                 @click.stop="toggleSessionSelection(element.id)"
               >
                 <span
                   class="n-session-manager__icon"
-                  :class="isSelected(element.id) ? 'n-session-manager__icon--check' : ''"
+                  :class="
+                    isSelected(element.id)
+                      ? 'n-session-manager__icon--check'
+                      : ''
+                  "
                 ></span>
               </div>
 
@@ -338,7 +424,9 @@
                 class="n-session-manager__drag-handle"
                 aria-hidden="true"
               >
-                <span class="n-session-manager__icon n-session-manager__icon--drag"></span>
+                <span
+                  class="n-session-manager__icon n-session-manager__icon--drag"
+                ></span>
               </div>
 
               <!-- Pin-Icon (wenn angeheftet) -->
@@ -347,7 +435,9 @@
                 class="n-session-manager__pin-indicator"
                 aria-hidden="true"
               >
-                <span class="n-session-manager__icon n-session-manager__icon--pin"></span>
+                <span
+                  class="n-session-manager__icon n-session-manager__icon--pin"
+                ></span>
               </div>
 
               <!-- Archiv-Icon (wenn archiviert) -->
@@ -356,7 +446,9 @@
                 class="n-session-manager__archive-indicator"
                 aria-hidden="true"
               >
-                <span class="n-session-manager__icon n-session-manager__icon--archive"></span>
+                <span
+                  class="n-session-manager__icon n-session-manager__icon--archive"
+                ></span>
               </div>
 
               <!-- Sitzungsinhalt -->
@@ -375,7 +467,9 @@
                     class="n-session-manager__category-indicator"
                     :style="{ backgroundColor: element.category.color }"
                   ></span>
-                  <span class="n-session-manager__category-name">{{ element.category.name }}</span>
+                  <span class="n-session-manager__category-name">{{
+                    element.category.name
+                  }}</span>
                 </div>
 
                 <!-- Tags (falls vorhanden) -->
@@ -400,10 +494,7 @@
                 </div>
 
                 <!-- Preview (falls vorhanden) -->
-                <div
-                  v-if="element.preview"
-                  class="n-session-manager__preview"
-                >
+                <div v-if="element.preview" class="n-session-manager__preview">
                   {{ element.preview }}
                 </div>
               </div>
@@ -414,15 +505,22 @@
               </div>
 
               <!-- Aktionsmenü -->
-              <div class="n-session-manager__session-actions" v-if="!isMultiSelectModeActive">
+              <div
+                class="n-session-manager__session-actions"
+                v-if="!isMultiSelectModeActive"
+              >
                 <button
                   class="n-session-manager__session-action-btn"
                   @click.stop="toggleSessionMenu(element.id)"
                   aria-label="Sitzungsaktionen"
                   :aria-expanded="openMenuId === element.id"
-                  :aria-controls="openMenuId === element.id ? `menu-${element.id}` : undefined"
+                  :aria-controls="
+                    openMenuId === element.id ? `menu-${element.id}` : undefined
+                  "
                 >
-                  <span class="n-session-manager__icon n-session-manager__icon--menu"></span>
+                  <span
+                    class="n-session-manager__icon n-session-manager__icon--menu"
+                  ></span>
                 </button>
 
                 <!-- Dropdown-Menü -->
@@ -437,20 +535,30 @@
                     @click.stop="renameSession(element.id, element.title)"
                     role="menuitem"
                   >
-                    <span class="n-session-manager__icon n-session-manager__icon--edit"></span>
+                    <span
+                      class="n-session-manager__icon n-session-manager__icon--edit"
+                    ></span>
                     <span>Umbenennen</span>
                   </button>
 
                   <button
                     class="n-session-manager__menu-item"
-                    @click.stop="togglePinSession(element.id, !element.isPinned)"
+                    @click.stop="
+                      togglePinSession(element.id, !element.isPinned)
+                    "
                     role="menuitem"
                   >
                     <span
                       class="n-session-manager__icon"
-                      :class="element.isPinned ? 'n-session-manager__icon--unpin' : 'n-session-manager__icon--pin'"
+                      :class="
+                        element.isPinned
+                          ? 'n-session-manager__icon--unpin'
+                          : 'n-session-manager__icon--pin'
+                      "
                     ></span>
-                    <span>{{ element.isPinned ? 'Loslösen' : 'Anheften' }}</span>
+                    <span>{{
+                      element.isPinned ? "Loslösen" : "Anheften"
+                    }}</span>
                   </button>
 
                   <!-- Kategorie-Menüpunkt -->
@@ -460,7 +568,9 @@
                     @click.stop="showCategoryDialog(element.id)"
                     role="menuitem"
                   >
-                    <span class="n-session-manager__icon n-session-manager__icon--category"></span>
+                    <span
+                      class="n-session-manager__icon n-session-manager__icon--category"
+                    ></span>
                     <span>Kategorisieren</span>
                   </button>
 
@@ -471,21 +581,31 @@
                     @click.stop="showTagDialog(element.id)"
                     role="menuitem"
                   >
-                    <span class="n-session-manager__icon n-session-manager__icon--tag"></span>
+                    <span
+                      class="n-session-manager__icon n-session-manager__icon--tag"
+                    ></span>
                     <span>Tags verwalten</span>
                   </button>
 
                   <!-- Archivieren-Menüpunkt -->
                   <button
                     class="n-session-manager__menu-item"
-                    @click.stop="toggleArchiveSession(element.id, !element.isArchived)"
+                    @click.stop="
+                      toggleArchiveSession(element.id, !element.isArchived)
+                    "
                     role="menuitem"
                   >
                     <span
                       class="n-session-manager__icon"
-                      :class="element.isArchived ? 'n-session-manager__icon--unarchive' : 'n-session-manager__icon--archive'"
+                      :class="
+                        element.isArchived
+                          ? 'n-session-manager__icon--unarchive'
+                          : 'n-session-manager__icon--archive'
+                      "
                     ></span>
-                    <span>{{ element.isArchived ? 'Wiederherstellen' : 'Archivieren' }}</span>
+                    <span>{{
+                      element.isArchived ? "Wiederherstellen" : "Archivieren"
+                    }}</span>
                   </button>
 
                   <button
@@ -493,7 +613,9 @@
                     @click.stop="confirmDeleteSession(element.id)"
                     role="menuitem"
                   >
-                    <span class="n-session-manager__icon n-session-manager__icon--delete"></span>
+                    <span
+                      class="n-session-manager__icon n-session-manager__icon--delete"
+                    ></span>
                     <span>Löschen</span>
                   </button>
                 </div>
@@ -503,16 +625,16 @@
         </VueDraggable>
       </transition-group>
     </div>
-    
+
     <!-- Rename Dialog -->
-    <div 
+    <div
       v-if="renameDialogVisible"
       class="n-session-manager__dialog-backdrop"
       @click="cancelRename"
       aria-hidden="true"
     ></div>
-    
-    <div 
+
+    <div
       v-if="renameDialogVisible"
       class="n-session-manager__dialog"
       role="dialog"
@@ -522,14 +644,17 @@
       <h3 id="rename-dialog-title" class="n-session-manager__dialog-title">
         Sitzung umbenennen
       </h3>
-      <p id="rename-dialog-description" class="n-session-manager__dialog-description">
+      <p
+        id="rename-dialog-description"
+        class="n-session-manager__dialog-description"
+      >
         Geben Sie einen neuen Namen für die Sitzung ein.
       </p>
-      
+
       <div class="n-session-manager__dialog-content">
-        <input 
+        <input
           ref="renameInput"
-          v-model="newSessionTitle" 
+          v-model="newSessionTitle"
           class="n-session-manager__dialog-input"
           type="text"
           @keydown.enter="confirmRename"
@@ -537,15 +662,15 @@
           aria-label="Neuer Sitzungsname"
         />
       </div>
-      
+
       <div class="n-session-manager__dialog-actions">
-        <button 
+        <button
           class="n-session-manager__dialog-btn n-session-manager__dialog-btn--secondary"
           @click="cancelRename"
         >
           Abbrechen
         </button>
-        <button 
+        <button
           class="n-session-manager__dialog-btn n-session-manager__dialog-btn--primary"
           @click="confirmRename"
           :disabled="!newSessionTitle.trim()"
@@ -554,7 +679,7 @@
         </button>
       </div>
     </div>
-    
+
     <!-- Delete Confirmation Dialog -->
     <div
       v-if="deleteDialogVisible"
@@ -573,8 +698,12 @@
       <h3 id="delete-dialog-title" class="n-session-manager__dialog-title">
         Sitzung löschen
       </h3>
-      <p id="delete-dialog-description" class="n-session-manager__dialog-description">
-        Möchten Sie diese Sitzung wirklich löschen? Dieser Vorgang kann nicht rückgängig gemacht werden.
+      <p
+        id="delete-dialog-description"
+        class="n-session-manager__dialog-description"
+      >
+        Möchten Sie diese Sitzung wirklich löschen? Dieser Vorgang kann nicht
+        rückgängig gemacht werden.
       </p>
 
       <div class="n-session-manager__dialog-actions">
@@ -609,10 +738,21 @@
       aria-describedby="category-dialog-description"
     >
       <h3 id="category-dialog-title" class="n-session-manager__dialog-title">
-        {{ multiSelectDialogVisible ? 'Sitzungen kategorisieren' : 'Sitzung kategorisieren' }}
+        {{
+          multiSelectDialogVisible
+            ? "Sitzungen kategorisieren"
+            : "Sitzung kategorisieren"
+        }}
       </h3>
-      <p id="category-dialog-description" class="n-session-manager__dialog-description">
-        {{ multiSelectDialogVisible ? 'Wählen Sie eine Kategorie für die ausgewählten Sitzungen.' : 'Wählen Sie eine Kategorie für diese Sitzung.' }}
+      <p
+        id="category-dialog-description"
+        class="n-session-manager__dialog-description"
+      >
+        {{
+          multiSelectDialogVisible
+            ? "Wählen Sie eine Kategorie für die ausgewählten Sitzungen."
+            : "Wählen Sie eine Kategorie für diese Sitzung."
+        }}
       </p>
 
       <div class="n-session-manager__dialog-content">
@@ -621,14 +761,19 @@
             v-for="category in props.availableCategories"
             :key="category.id"
             class="n-session-manager__category-option"
-            :class="{ 'n-session-manager__category-option--selected': selectedCategoryId === category.id }"
+            :class="{
+              'n-session-manager__category-option--selected':
+                selectedCategoryId === category.id,
+            }"
             @click="selectedCategoryId = category.id"
           >
             <span
               class="n-session-manager__category-color"
               :style="{ backgroundColor: category.color || '#e2e8f0' }"
             ></span>
-            <span class="n-session-manager__category-label">{{ category.name }}</span>
+            <span class="n-session-manager__category-label">{{
+              category.name
+            }}</span>
           </button>
         </div>
       </div>
@@ -642,7 +787,11 @@
         </button>
         <button
           class="n-session-manager__dialog-btn n-session-manager__dialog-btn--primary"
-          @click="multiSelectDialogVisible ? confirmMultiSelectAction('category') : applyCategoryToSession()"
+          @click="
+            multiSelectDialogVisible
+              ? confirmMultiSelectAction('category')
+              : applyCategoryToSession()
+          "
           :disabled="!selectedCategoryId"
         >
           Anwenden
@@ -666,10 +815,21 @@
       aria-describedby="tag-dialog-description"
     >
       <h3 id="tag-dialog-title" class="n-session-manager__dialog-title">
-        {{ multiSelectDialogVisible ? 'Tag zu Sitzungen hinzufügen' : 'Tags verwalten' }}
+        {{
+          multiSelectDialogVisible
+            ? "Tag zu Sitzungen hinzufügen"
+            : "Tags verwalten"
+        }}
       </h3>
-      <p id="tag-dialog-description" class="n-session-manager__dialog-description">
-        {{ multiSelectDialogVisible ? 'Wählen Sie einen Tag für die ausgewählten Sitzungen.' : 'Wählen Sie Tags für diese Sitzung.' }}
+      <p
+        id="tag-dialog-description"
+        class="n-session-manager__dialog-description"
+      >
+        {{
+          multiSelectDialogVisible
+            ? "Wählen Sie einen Tag für die ausgewählten Sitzungen."
+            : "Wählen Sie Tags für diese Sitzung."
+        }}
       </p>
 
       <div class="n-session-manager__dialog-content">
@@ -678,7 +838,10 @@
             v-for="tag in props.availableTags"
             :key="tag.id"
             class="n-session-manager__tag-option"
-            :class="{ 'n-session-manager__tag-option--selected': selectedTagId === tag.id }"
+            :class="{
+              'n-session-manager__tag-option--selected':
+                selectedTagId === tag.id,
+            }"
             @click="selectedTagId = tag.id"
           >
             <span
@@ -699,7 +862,11 @@
         </button>
         <button
           class="n-session-manager__dialog-btn n-session-manager__dialog-btn--primary"
-          @click="multiSelectDialogVisible ? confirmMultiSelectAction('tag') : applyTagToSession()"
+          @click="
+            multiSelectDialogVisible
+              ? confirmMultiSelectAction('tag')
+              : applyTagToSession()
+          "
           :disabled="!selectedTagId"
         >
           Anwenden
@@ -722,11 +889,20 @@
       aria-labelledby="multi-delete-dialog-title"
       aria-describedby="multi-delete-dialog-description"
     >
-      <h3 id="multi-delete-dialog-title" class="n-session-manager__dialog-title">
+      <h3
+        id="multi-delete-dialog-title"
+        class="n-session-manager__dialog-title"
+      >
         Mehrere Sitzungen löschen
       </h3>
-      <p id="multi-delete-dialog-description" class="n-session-manager__dialog-description">
-        Möchten Sie {{ selectedCount }} Sitzung{{ selectedCount !== 1 ? 'en' : '' }} wirklich löschen? Dieser Vorgang kann nicht rückgängig gemacht werden.
+      <p
+        id="multi-delete-dialog-description"
+        class="n-session-manager__dialog-description"
+      >
+        Möchten Sie {{ selectedCount }} Sitzung{{
+          selectedCount !== 1 ? "en" : ""
+        }}
+        wirklich löschen? Dieser Vorgang kann nicht rückgängig gemacht werden.
       </p>
 
       <div class="n-session-manager__dialog-actions">
@@ -748,12 +924,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick, onBeforeUnmount } from 'vue';
-import { format, isToday, isYesterday, isThisWeek, isThisYear } from 'date-fns';
-import { de } from 'date-fns/locale';
-import { v4 as uuidv4 } from 'uuid';
-import VueDraggable from 'vuedraggable';
-import type { ChatSession } from '@/types/session';
+import {
+  ref,
+  computed,
+  watch,
+  onMounted,
+  nextTick,
+  onBeforeUnmount,
+} from "vue";
+import { format, isToday, isYesterday, isThisWeek, isThisYear } from "date-fns";
+import { de } from "date-fns/locale";
+import { v4 as uuidv4 } from "uuid";
+import VueDraggable from "vuedraggable";
+import type { ChatSession } from "@/types/session";
 
 // Eindeutige ID für ARIA-Zwecke
 const headerId = `session-manager-heading-${uuidv4().slice(0, 8)}`;
@@ -834,7 +1017,7 @@ interface Props {
 // Default-Werte für Props
 const props = withDefaults(defineProps<Props>(), {
   currentSessionId: null,
-  title: 'Unterhaltungen',
+  title: "Unterhaltungen",
   loading: false,
   searchEnabled: true,
   sortable: true,
@@ -845,7 +1028,7 @@ const props = withDefaults(defineProps<Props>(), {
   categoriesEnabled: true,
   tagsEnabled: true,
   multiSelectEnabled: true,
-  selectedSessionIds: () => []
+  selectedSessionIds: () => [],
 });
 
 // Emit Definition
@@ -853,95 +1036,98 @@ const emit = defineEmits<{
   /**
    * Wird ausgelöst, wenn eine Sitzung ausgewählt wird
    */
-  (e: 'session-selected', sessionId: string): void;
+  (e: "session-selected", sessionId: string): void;
 
   /**
    * Wird ausgelöst, wenn eine neue Sitzung erstellt werden soll
    */
-  (e: 'session-created', title?: string): void;
+  (e: "session-created", title?: string): void;
 
   /**
    * Wird ausgelöst, wenn eine Sitzung gelöscht werden soll
    */
-  (e: 'session-deleted', sessionId: string): void;
+  (e: "session-deleted", sessionId: string): void;
 
   /**
    * Wird ausgelöst, wenn eine Sitzung umbenannt werden soll
    */
-  (e: 'session-updated', payload: { id: string, title: string }): void;
+  (e: "session-updated", payload: { id: string; title: string }): void;
 
   /**
    * Wird ausgelöst, wenn der Pin-Status einer Sitzung geändert werden soll
    */
-  (e: 'session-pinned', payload: { id: string, isPinned: boolean }): void;
+  (e: "session-pinned", payload: { id: string; isPinned: boolean }): void;
 
   /**
    * Wird ausgelöst, wenn die Reihenfolge der Sitzungen geändert wird
    */
-  (e: 'sessions-reordered', sessionIds: string[]): void;
+  (e: "sessions-reordered", sessionIds: string[]): void;
 
   /**
    * Wird ausgelöst, wenn die Seitenleiste ein-/ausgeklappt werden soll
    */
-  (e: 'toggle-collapse'): void;
+  (e: "toggle-collapse"): void;
 
   /**
    * Wird ausgelöst, wenn eine Kategorie zu einer Sitzung hinzugefügt werden soll
    */
-  (e: 'session-categorized', payload: { id: string, categoryId: string }): void;
+  (e: "session-categorized", payload: { id: string; categoryId: string }): void;
 
   /**
    * Wird ausgelöst, wenn die Kategorie einer Sitzung entfernt werden soll
    */
-  (e: 'session-uncategorized', sessionId: string): void;
+  (e: "session-uncategorized", sessionId: string): void;
 
   /**
    * Wird ausgelöst, wenn ein Tag zu einer Sitzung hinzugefügt werden soll
    */
-  (e: 'session-tagged', payload: { id: string, tagId: string }): void;
+  (e: "session-tagged", payload: { id: string; tagId: string }): void;
 
   /**
    * Wird ausgelöst, wenn ein Tag von einer Sitzung entfernt werden soll
    */
-  (e: 'session-untagged', payload: { id: string, tagId: string }): void;
+  (e: "session-untagged", payload: { id: string; tagId: string }): void;
 
   /**
    * Wird ausgelöst, wenn eine Sitzung zur Mehrfachauswahl hinzugefügt wird
    */
-  (e: 'session-selected-multi', sessionId: string): void;
+  (e: "session-selected-multi", sessionId: string): void;
 
   /**
    * Wird ausgelöst, wenn der Mehrfachauswahlstatus einer Sitzung umgeschaltet wird
    */
-  (e: 'session-toggle-select', sessionId: string): void;
+  (e: "session-toggle-select", sessionId: string): void;
 
   /**
    * Wird ausgelöst, wenn mehrere Sitzungen archiviert werden sollen
    */
-  (e: 'sessions-archive-multi', sessionIds: string[]): void;
+  (e: "sessions-archive-multi", sessionIds: string[]): void;
 
   /**
    * Wird ausgelöst, wenn mehrere Sitzungen gelöscht werden sollen
    */
-  (e: 'sessions-delete-multi', sessionIds: string[]): void;
+  (e: "sessions-delete-multi", sessionIds: string[]): void;
 
   /**
    * Wird ausgelöst, wenn mehreren Sitzungen ein Tag hinzugefügt werden soll
    */
-  (e: 'sessions-tag-multi', payload: { ids: string[], tagId: string }): void;
+  (e: "sessions-tag-multi", payload: { ids: string[]; tagId: string }): void;
 
   /**
    * Wird ausgelöst, wenn mehreren Sitzungen eine Kategorie zugewiesen werden soll
    */
-  (e: 'sessions-categorize-multi', payload: { ids: string[], categoryId: string }): void;
+  (
+    e: "sessions-categorize-multi",
+    payload: { ids: string[]; categoryId: string },
+  ): void;
 }>();
 
 // Lokale Zustände
-const searchQuery = ref('');
+const searchQuery = ref("");
 const isSearchVisible = ref(false);
 const openMenuId = ref<string | null>(null);
 const draggedSessions = ref<ChatSession[]>([...props.sessions]);
-const activeFilter = ref<string>('all'); // Filter: 'all', 'pinned', 'archived', 'category:id', 'tag:id'
+const activeFilter = ref<string>("all"); // Filter: 'all', 'pinned', 'archived', 'category:id', 'tag:id'
 const showCategoryMenu = ref(false);
 const showTagMenu = ref(false);
 const isMultiSelectActive = ref(false);
@@ -961,7 +1147,7 @@ const sessionToCategoryId = ref<string | null>(null);
 const sessionToTagId = ref<string | null>(null);
 const selectedCategoryId = ref<string | null>(null);
 const selectedTagId = ref<string | null>(null);
-const newSessionTitle = ref('');
+const newSessionTitle = ref("");
 
 // Element-Referenzen
 const sessionListContainer = ref<HTMLElement | null>(null);
@@ -974,18 +1160,20 @@ const filteredSessions = computed(() => {
   let filtered = [...draggedSessions.value];
 
   // Apply active filter
-  if (activeFilter.value !== 'all') {
-    if (activeFilter.value === 'pinned') {
-      filtered = filtered.filter(session => session.isPinned);
-    } else if (activeFilter.value === 'archived') {
-      filtered = filtered.filter(session => session.isArchived);
-    } else if (activeFilter.value.startsWith('category:')) {
-      const categoryId = activeFilter.value.replace('category:', '');
-      filtered = filtered.filter(session => session.category?.id === categoryId);
-    } else if (activeFilter.value.startsWith('tag:')) {
-      const tagId = activeFilter.value.replace('tag:', '');
-      filtered = filtered.filter(session =>
-        session.tags?.some(tag => tag.id === tagId)
+  if (activeFilter.value !== "all") {
+    if (activeFilter.value === "pinned") {
+      filtered = filtered.filter((session) => session.isPinned);
+    } else if (activeFilter.value === "archived") {
+      filtered = filtered.filter((session) => session.isArchived);
+    } else if (activeFilter.value.startsWith("category:")) {
+      const categoryId = activeFilter.value.replace("category:", "");
+      filtered = filtered.filter(
+        (session) => session.category?.id === categoryId,
+      );
+    } else if (activeFilter.value.startsWith("tag:")) {
+      const tagId = activeFilter.value.replace("tag:", "");
+      filtered = filtered.filter((session) =>
+        session.tags?.some((tag) => tag.id === tagId),
       );
     }
   }
@@ -993,8 +1181,8 @@ const filteredSessions = computed(() => {
   // Apply text search
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
-    filtered = filtered.filter(session =>
-      session.title.toLowerCase().includes(query)
+    filtered = filtered.filter((session) =>
+      session.title.toLowerCase().includes(query),
     );
   }
 
@@ -1025,7 +1213,7 @@ const groupedCategories = computed(() => {
   // Group by first letter
   const groups: Record<string, SessionCategory[]> = {};
 
-  props.availableCategories.forEach(category => {
+  props.availableCategories.forEach((category) => {
     const firstLetter = category.name.charAt(0).toUpperCase();
     if (!groups[firstLetter]) {
       groups[firstLetter] = [];
@@ -1034,14 +1222,14 @@ const groupedCategories = computed(() => {
   });
 
   // Sort each group alphabetically
-  Object.keys(groups).forEach(key => {
+  Object.keys(groups).forEach((key) => {
     groups[key].sort((a, b) => a.name.localeCompare(b.name));
   });
 
   // Return sorted keys and groups
   return {
     keys: Object.keys(groups).sort(),
-    groups
+    groups,
   };
 });
 
@@ -1050,7 +1238,7 @@ const groupedTags = computed(() => {
   // Group by first letter
   const groups: Record<string, SessionTag[]> = {};
 
-  props.availableTags.forEach(tag => {
+  props.availableTags.forEach((tag) => {
     const firstLetter = tag.name.charAt(0).toUpperCase();
     if (!groups[firstLetter]) {
       groups[firstLetter] = [];
@@ -1059,38 +1247,38 @@ const groupedTags = computed(() => {
   });
 
   // Sort each group alphabetically
-  Object.keys(groups).forEach(key => {
+  Object.keys(groups).forEach((key) => {
     groups[key].sort((a, b) => a.name.localeCompare(b.name));
   });
 
   // Return sorted keys and groups
   return {
     keys: Object.keys(groups).sort(),
-    groups
+    groups,
   };
 });
 
 // Drag & Drop Konfiguration
 const dragOptions = computed(() => ({
   animation: 150,
-  ghostClass: 'n-session-manager__session--ghost',
-  chosenClass: 'n-session-manager__session--chosen',
-  dragClass: 'n-session-manager__session--drag',
-  group: 'sessions',
-  disabled: !props.sortable || !!searchQuery.value
+  ghostClass: "n-session-manager__session--ghost",
+  chosenClass: "n-session-manager__session--chosen",
+  dragClass: "n-session-manager__session--drag",
+  group: "sessions",
+  disabled: !props.sortable || !!searchQuery.value,
 }));
 
 // Methoden
 function selectSession(sessionId: string): void {
   if (sessionId !== props.currentSessionId) {
-    emit('session-selected', sessionId);
+    emit("session-selected", sessionId);
   }
 }
 
 function createNewSession(): void {
   if (props.loading || maxSessionsReached.value) return;
-  
-  emit('session-created', 'Neue Unterhaltung');
+
+  emit("session-created", "Neue Unterhaltung");
 }
 
 function renameSession(sessionId: string, currentTitle: string): void {
@@ -1098,7 +1286,7 @@ function renameSession(sessionId: string, currentTitle: string): void {
   newSessionTitle.value = currentTitle;
   renameDialogVisible.value = true;
   openMenuId.value = null;
-  
+
   // Fokus auf Eingabefeld setzen
   nextTick(() => {
     if (renameInput.value) {
@@ -1110,21 +1298,21 @@ function renameSession(sessionId: string, currentTitle: string): void {
 
 function confirmRename(): void {
   if (sessionToRenameId.value && newSessionTitle.value.trim()) {
-    emit('session-updated', {
+    emit("session-updated", {
       id: sessionToRenameId.value,
-      title: newSessionTitle.value.trim()
+      title: newSessionTitle.value.trim(),
     });
-    
+
     renameDialogVisible.value = false;
     sessionToRenameId.value = null;
-    newSessionTitle.value = '';
+    newSessionTitle.value = "";
   }
 }
 
 function cancelRename(): void {
   renameDialogVisible.value = false;
   sessionToRenameId.value = null;
-  newSessionTitle.value = '';
+  newSessionTitle.value = "";
 }
 
 function confirmDeleteSession(sessionId: string): void {
@@ -1135,7 +1323,7 @@ function confirmDeleteSession(sessionId: string): void {
 
 function confirmDelete(): void {
   if (sessionToDeleteId.value) {
-    emit('session-deleted', sessionToDeleteId.value);
+    emit("session-deleted", sessionToDeleteId.value);
     deleteDialogVisible.value = false;
     sessionToDeleteId.value = null;
   }
@@ -1147,7 +1335,7 @@ function cancelDelete(): void {
 }
 
 function togglePinSession(sessionId: string, isPinned: boolean): void {
-  emit('session-pinned', { id: sessionId, isPinned });
+  emit("session-pinned", { id: sessionId, isPinned });
   openMenuId.value = null;
 }
 
@@ -1171,7 +1359,7 @@ function toggleSearch(): void {
 }
 
 function clearSearch(): void {
-  searchQuery.value = '';
+  searchQuery.value = "";
 }
 
 // Filter-Funktionen
@@ -1192,29 +1380,31 @@ function applyFilter(filter: string): void {
 }
 
 function clearFilter(): void {
-  activeFilter.value = 'all';
+  activeFilter.value = "all";
 }
 
 function getFilterLabel(): string {
   switch (activeFilter.value) {
-    case 'all':
-      return 'Alle Sitzungen';
-    case 'pinned':
-      return 'Angeheftete';
-    case 'archived':
-      return 'Archivierte';
+    case "all":
+      return "Alle Sitzungen";
+    case "pinned":
+      return "Angeheftete";
+    case "archived":
+      return "Archivierte";
     default:
-      if (activeFilter.value.startsWith('category:')) {
-        const categoryId = activeFilter.value.replace('category:', '');
-        const category = props.availableCategories.find(c => c.id === categoryId);
-        return category ? `Kategorie: ${category.name}` : 'Filtern';
+      if (activeFilter.value.startsWith("category:")) {
+        const categoryId = activeFilter.value.replace("category:", "");
+        const category = props.availableCategories.find(
+          (c) => c.id === categoryId,
+        );
+        return category ? `Kategorie: ${category.name}` : "Filtern";
       }
-      if (activeFilter.value.startsWith('tag:')) {
-        const tagId = activeFilter.value.replace('tag:', '');
-        const tag = props.availableTags.find(t => t.id === tagId);
-        return tag ? `Tag: ${tag.name}` : 'Filtern';
+      if (activeFilter.value.startsWith("tag:")) {
+        const tagId = activeFilter.value.replace("tag:", "");
+        const tag = props.availableTags.find((t) => t.id === tagId);
+        return tag ? `Tag: ${tag.name}` : "Filtern";
       }
-      return 'Filtern';
+      return "Filtern";
   }
 }
 
@@ -1237,9 +1427,9 @@ function showCategoryDialog(sessionId: string): void {
 
 function applyCategoryToSession(): void {
   if (sessionToCategoryId.value && selectedCategoryId.value) {
-    emit('session-categorized', {
+    emit("session-categorized", {
       id: sessionToCategoryId.value,
-      categoryId: selectedCategoryId.value
+      categoryId: selectedCategoryId.value,
     });
 
     categoryDialogVisible.value = false;
@@ -1249,7 +1439,7 @@ function applyCategoryToSession(): void {
 }
 
 function removeCategoryFromSession(sessionId: string): void {
-  emit('session-uncategorized', sessionId);
+  emit("session-uncategorized", sessionId);
   openMenuId.value = null;
 }
 
@@ -1278,9 +1468,9 @@ function showTagDialog(sessionId: string): void {
 
 function applyTagToSession(): void {
   if (sessionToTagId.value && selectedTagId.value) {
-    emit('session-tagged', {
+    emit("session-tagged", {
       id: sessionToTagId.value,
-      tagId: selectedTagId.value
+      tagId: selectedTagId.value,
     });
 
     tagDialogVisible.value = false;
@@ -1290,9 +1480,9 @@ function applyTagToSession(): void {
 }
 
 function removeTagFromSession(sessionId: string, tagId: string): void {
-  emit('session-untagged', {
+  emit("session-untagged", {
     id: sessionId,
-    tagId
+    tagId,
   });
 }
 
@@ -1335,30 +1525,32 @@ function toggleSessionSelection(sessionId: string): void {
     selectedIds.value.splice(index, 1);
   }
 
-  emit('session-toggle-select', sessionId);
+  emit("session-toggle-select", sessionId);
 }
 
 function clearSessionSelection(): void {
   selectedIds.value = [];
 }
 
-function showMultiSelectActionDialog(action: 'delete' | 'archive' | 'tag' | 'category'): void {
+function showMultiSelectActionDialog(
+  action: "delete" | "archive" | "tag" | "category",
+): void {
   if (selectedIds.value.length === 0) return;
 
   // Entsprechendes Dialog anzeigen
   switch (action) {
-    case 'delete':
+    case "delete":
       multiSelectDialogVisible.value = true;
       break;
-    case 'tag':
+    case "tag":
       tagDialogVisible.value = true;
       break;
-    case 'category':
+    case "category":
       categoryDialogVisible.value = true;
       break;
-    case 'archive':
+    case "archive":
       // Direkt archivieren ohne Bestätigung
-      emit('sessions-archive-multi', selectedIds.value);
+      emit("sessions-archive-multi", selectedIds.value);
       clearSessionSelection();
       isMultiSelectActive.value = false;
       break;
@@ -1367,29 +1559,29 @@ function showMultiSelectActionDialog(action: 'delete' | 'archive' | 'tag' | 'cat
   multiSelectMenuOpen.value = false;
 }
 
-function confirmMultiSelectAction(action: 'delete' | 'tag' | 'category'): void {
+function confirmMultiSelectAction(action: "delete" | "tag" | "category"): void {
   if (selectedIds.value.length === 0) return;
 
   switch (action) {
-    case 'delete':
-      emit('sessions-delete-multi', selectedIds.value);
+    case "delete":
+      emit("sessions-delete-multi", selectedIds.value);
       multiSelectDialogVisible.value = false;
       break;
-    case 'tag':
+    case "tag":
       if (selectedTagId.value) {
-        emit('sessions-tag-multi', {
+        emit("sessions-tag-multi", {
           ids: selectedIds.value,
-          tagId: selectedTagId.value
+          tagId: selectedTagId.value,
         });
         tagDialogVisible.value = false;
         selectedTagId.value = null;
       }
       break;
-    case 'category':
+    case "category":
       if (selectedCategoryId.value) {
-        emit('sessions-categorize-multi', {
+        emit("sessions-categorize-multi", {
           ids: selectedIds.value,
-          categoryId: selectedCategoryId.value
+          categoryId: selectedCategoryId.value,
         });
         categoryDialogVisible.value = false;
         selectedCategoryId.value = null;
@@ -1407,37 +1599,37 @@ function cancelMultiSelectDialog(): void {
 
 function onDragEnd(): void {
   if (searchQuery.value) return;
-  
-  const sessionIds = draggedSessions.value.map(session => session.id);
-  emit('sessions-reordered', sessionIds);
+
+  const sessionIds = draggedSessions.value.map((session) => session.id);
+  emit("sessions-reordered", sessionIds);
 }
 
 function handleSessionKeydown(event: KeyboardEvent, sessionId: string): void {
-  if (event.key === 'Enter' || event.key === ' ') {
+  if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
     selectSession(sessionId);
   }
-  
+
   // Tastaturnavigation durch die Sitzungsliste
-  if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
     event.preventDefault();
-    
+
     const sessions = filteredSessions.value;
-    const currentIndex = sessions.findIndex(s => s.id === sessionId);
-    
+    const currentIndex = sessions.findIndex((s) => s.id === sessionId);
+
     if (currentIndex === -1) return;
-    
+
     let nextIndex;
-    if (event.key === 'ArrowDown') {
+    if (event.key === "ArrowDown") {
       nextIndex = (currentIndex + 1) % sessions.length;
     } else {
       nextIndex = (currentIndex - 1 + sessions.length) % sessions.length;
     }
-    
+
     // Nächste Sitzung finden und fokussieren
     const nextSessionId = sessions[nextIndex].id;
     const nextElement = document.getElementById(`session-${nextSessionId}`);
-    
+
     if (nextElement) {
       nextElement.focus();
     }
@@ -1447,21 +1639,21 @@ function handleSessionKeydown(event: KeyboardEvent, sessionId: string): void {
 function formatDate(dateString: string): string {
   try {
     const date = new Date(dateString);
-    
+
     if (isToday(date)) {
-      return format(date, 'HH:mm', { locale: de });
+      return format(date, "HH:mm", { locale: de });
     } else if (isYesterday(date)) {
-      return 'Gestern';
+      return "Gestern";
     } else if (isThisWeek(date)) {
-      return format(date, 'EEEE', { locale: de });
+      return format(date, "EEEE", { locale: de });
     } else if (isThisYear(date)) {
-      return format(date, 'd. MMM', { locale: de });
+      return format(date, "d. MMM", { locale: de });
     } else {
-      return format(date, 'd. MMM yyyy', { locale: de });
+      return format(date, "d. MMM yyyy", { locale: de });
     }
   } catch (error) {
-    console.error('Error formatting date:', error);
-    return '';
+    console.error("Error formatting date:", error);
+    return "";
   }
 }
 
@@ -1470,12 +1662,14 @@ function handleOutsideClick(event: MouseEvent): void {
   if (openMenuId.value) {
     const clickedElement = event.target as HTMLElement;
     const menuElement = document.getElementById(`menu-${openMenuId.value}`);
-    
+
     if (menuElement && !menuElement.contains(clickedElement)) {
       // Prüfen, ob auf einen Menü-Button geklickt wurde
-      const isMenuButton = clickedElement.classList.contains('n-session-manager__session-action-btn') ||
-                           clickedElement.closest('.n-session-manager__session-action-btn');
-      
+      const isMenuButton =
+        clickedElement.classList.contains(
+          "n-session-manager__session-action-btn",
+        ) || clickedElement.closest(".n-session-manager__session-action-btn");
+
       if (!isMenuButton) {
         openMenuId.value = null;
       }
@@ -1485,7 +1679,7 @@ function handleOutsideClick(event: MouseEvent): void {
 
 // Zuhörer für Escape-Taste zum Schließen von Dialogen
 function handleKeydown(event: KeyboardEvent): void {
-  if (event.key === 'Escape') {
+  if (event.key === "Escape") {
     if (renameDialogVisible.value) {
       cancelRename();
     } else if (deleteDialogVisible.value) {
@@ -1517,13 +1711,13 @@ function handleKeydown(event: KeyboardEvent): void {
 
 // Archivierung einer Session
 function toggleArchiveSession(sessionId: string, archive: boolean): void {
-  const sessionIndex = props.sessions.findIndex(s => s.id === sessionId);
+  const sessionIndex = props.sessions.findIndex((s) => s.id === sessionId);
   if (sessionIndex === -1) return;
 
   // Event auslösen
-  emit('session-archived', {
+  emit("session-archived", {
     id: sessionId,
-    isArchived: archive
+    isArchived: archive,
   });
 
   openMenuId.value = null;
@@ -1532,45 +1726,62 @@ function toggleArchiveSession(sessionId: string, archive: boolean): void {
 // Lifecycle Hooks
 onMounted(() => {
   // Event-Listener hinzufügen
-  document.addEventListener('click', handleOutsideClick);
-  document.addEventListener('keydown', handleKeydown);
+  document.addEventListener("click", handleOutsideClick);
+  document.addEventListener("keydown", handleKeydown);
 });
 
 onBeforeUnmount(() => {
   // Event-Listener entfernen
-  document.removeEventListener('click', handleOutsideClick);
-  document.removeEventListener('keydown', handleKeydown);
+  document.removeEventListener("click", handleOutsideClick);
+  document.removeEventListener("keydown", handleKeydown);
 });
 
 // Watches
-watch(() => props.sessions, (newSessions) => {
-  // Nur aktualisieren, wenn nicht im Drag-Modus
-  if (!openMenuId.value) {
-    draggedSessions.value = [...newSessions];
-  }
-}, { deep: true });
+watch(
+  () => props.sessions,
+  (newSessions) => {
+    // Nur aktualisieren, wenn nicht im Drag-Modus
+    if (!openMenuId.value) {
+      draggedSessions.value = [...newSessions];
+    }
+  },
+  { deep: true },
+);
 
 // Stellt sicher, dass die aktuelle Sitzung im sichtbaren Bereich ist
-watch(() => props.currentSessionId, (newId) => {
-  if (newId) {
-    nextTick(() => {
-      const currentElement = document.getElementById(`session-${newId}`);
-      if (currentElement && sessionListContainer.value) {
-        currentElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
-    });
-  }
-});
+watch(
+  () => props.currentSessionId,
+  (newId) => {
+    if (newId) {
+      nextTick(() => {
+        const currentElement = document.getElementById(`session-${newId}`);
+        if (currentElement && sessionListContainer.value) {
+          currentElement.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+          });
+        }
+      });
+    }
+  },
+);
 
 // Synchronisiert die ausgewählten IDs mit den props
-watch(() => props.selectedSessionIds, (newIds) => {
-  selectedIds.value = [...newIds];
-}, { deep: true });
+watch(
+  () => props.selectedSessionIds,
+  (newIds) => {
+    selectedIds.value = [...newIds];
+  },
+  { deep: true },
+);
 
 // Reset filter menu wenn sich der aktive Filter ändert
-watch(() => activeFilter.value, () => {
-  filterMenuOpen.value = false;
-});
+watch(
+  () => activeFilter.value,
+  () => {
+    filterMenuOpen.value = false;
+  },
+);
 </script>
 
 <style scoped>
@@ -2034,7 +2245,7 @@ watch(() => activeFilter.value, () => {
 
 .n-session-manager__icon--plus::before,
 .n-session-manager__icon--plus::after {
-  content: '';
+  content: "";
   position: absolute;
   background-color: currentColor;
 }
@@ -2056,7 +2267,7 @@ watch(() => activeFilter.value, () => {
 }
 
 .n-session-manager__icon--search::before {
-  content: '';
+  content: "";
   position: absolute;
   width: 10px;
   height: 10px;
@@ -2067,7 +2278,7 @@ watch(() => activeFilter.value, () => {
 }
 
 .n-session-manager__icon--search::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 2px;
   height: 6px;
@@ -2079,7 +2290,7 @@ watch(() => activeFilter.value, () => {
 
 .n-session-manager__icon--clear::before,
 .n-session-manager__icon--clear::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 2px;
   height: 12px;
@@ -2097,7 +2308,7 @@ watch(() => activeFilter.value, () => {
 }
 
 .n-session-manager__icon--collapse::before {
-  content: '';
+  content: "";
   position: absolute;
   width: 10px;
   height: 10px;
@@ -2107,7 +2318,7 @@ watch(() => activeFilter.value, () => {
 }
 
 .n-session-manager__icon--expand::before {
-  content: '';
+  content: "";
   position: absolute;
   width: 10px;
   height: 10px;
@@ -2117,19 +2328,21 @@ watch(() => activeFilter.value, () => {
 }
 
 .n-session-manager__icon--drag::before {
-  content: '';
+  content: "";
   position: absolute;
   width: 10px;
   height: 2px;
   background-color: currentColor;
-  box-shadow: 0 4px 0 currentColor, 0 8px 0 currentColor;
+  box-shadow:
+    0 4px 0 currentColor,
+    0 8px 0 currentColor;
   top: 6px;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .n-session-manager__icon--pin::before {
-  content: '';
+  content: "";
   position: absolute;
   width: 5px;
   height: 5px;
@@ -2141,7 +2354,7 @@ watch(() => activeFilter.value, () => {
 }
 
 .n-session-manager__icon--pin::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 2px;
   height: 10px;
@@ -2152,7 +2365,7 @@ watch(() => activeFilter.value, () => {
 }
 
 .n-session-manager__icon--unpin::before {
-  content: '';
+  content: "";
   position: absolute;
   width: 5px;
   height: 5px;
@@ -2164,7 +2377,7 @@ watch(() => activeFilter.value, () => {
 }
 
 .n-session-manager__icon--unpin::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 2px;
   height: 10px;
@@ -2175,19 +2388,21 @@ watch(() => activeFilter.value, () => {
 }
 
 .n-session-manager__icon--menu::before {
-  content: '';
+  content: "";
   position: absolute;
   width: 12px;
   height: 2px;
   background-color: currentColor;
-  box-shadow: 0 4px 0 currentColor, 0 8px 0 currentColor;
+  box-shadow:
+    0 4px 0 currentColor,
+    0 8px 0 currentColor;
   top: 6px;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .n-session-manager__icon--edit::before {
-  content: '';
+  content: "";
   position: absolute;
   width: 12px;
   height: 2px;
@@ -2198,7 +2413,7 @@ watch(() => activeFilter.value, () => {
 }
 
 .n-session-manager__icon--delete::before {
-  content: '';
+  content: "";
   position: absolute;
   width: 12px;
   height: 14px;
@@ -2210,14 +2425,16 @@ watch(() => activeFilter.value, () => {
 }
 
 .n-session-manager__icon--delete::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 8px;
   height: 2px;
   background-color: currentColor;
   top: 4px;
   left: 6px;
-  box-shadow: -3px 0 0 currentColor, 3px 0 0 currentColor;
+  box-shadow:
+    -3px 0 0 currentColor,
+    3px 0 0 currentColor;
 }
 
 /* Transition-Animationen */
@@ -2234,7 +2451,9 @@ watch(() => activeFilter.value, () => {
 
 /* Animationen */
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Eingeklappte Ansicht */
@@ -2269,7 +2488,7 @@ watch(() => activeFilter.value, () => {
     border-right: none;
     border-bottom: 1px solid var(--nscale-border-color, #e2e8f0);
   }
-  
+
   .n-session-manager--collapsed {
     width: var(--nscale-sidebar-collapsed-width, 60px);
   }
@@ -2280,7 +2499,7 @@ watch(() => activeFilter.value, () => {
   .n-session-manager__spinner {
     animation: none;
   }
-  
+
   .session-list-enter-active,
   .session-list-leave-active {
     transition: none;

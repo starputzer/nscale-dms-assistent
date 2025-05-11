@@ -1,13 +1,10 @@
 <template>
   <div class="component-demo">
     <h2>Toggle Component</h2>
-    
+
     <div class="demo-section">
       <h3>Basic Toggle</h3>
-      <Toggle
-        v-model="basicToggle"
-        label="Basic Toggle"
-      />
+      <Toggle v-model="basicToggle" label="Basic Toggle" />
       <div class="value-display">Value: {{ basicToggle }}</div>
     </div>
 
@@ -24,21 +21,13 @@
     <div class="demo-section">
       <h3>Different Sizes</h3>
       <div class="size-examples">
-        <Toggle
-          v-model="smallToggle"
-          label="Small Toggle"
-          size="sm"
-        />
+        <Toggle v-model="smallToggle" label="Small Toggle" size="sm" />
         <Toggle
           v-model="mediumToggle"
           label="Medium Toggle (default)"
           size="md"
         />
-        <Toggle
-          v-model="largeToggle"
-          label="Large Toggle"
-          size="lg"
-        />
+        <Toggle v-model="largeToggle" label="Large Toggle" size="lg" />
       </div>
     </div>
 
@@ -50,26 +39,10 @@
           label="Primary Color (default)"
           color="primary"
         />
-        <Toggle
-          v-model="successToggle"
-          label="Success Color"
-          color="success"
-        />
-        <Toggle
-          v-model="warningToggle"
-          label="Warning Color"
-          color="warning"
-        />
-        <Toggle
-          v-model="errorToggle"
-          label="Error Color"
-          color="error"
-        />
-        <Toggle
-          v-model="infoToggle"
-          label="Info Color"
-          color="info"
-        />
+        <Toggle v-model="successToggle" label="Success Color" color="success" />
+        <Toggle v-model="warningToggle" label="Warning Color" color="warning" />
+        <Toggle v-model="errorToggle" label="Error Color" color="error" />
+        <Toggle v-model="infoToggle" label="Info Color" color="info" />
       </div>
     </div>
 
@@ -109,8 +82,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { Toggle } from '../base';
+import { ref, watch } from "vue";
+import { Toggle } from "../base";
 
 const basicToggle = ref(false);
 const labeledToggle = ref(true);
@@ -126,13 +99,13 @@ const validationToggle = ref(false);
 const customLabelToggle = ref(true);
 const disabledToggle = ref(true);
 
-const validationError = ref('');
+const validationError = ref("");
 
 const validateToggle = () => {
   if (!validationToggle.value) {
-    validationError.value = 'This toggle must be enabled';
+    validationError.value = "This toggle must be enabled";
   } else {
-    validationError.value = '';
+    validationError.value = "";
   }
 };
 

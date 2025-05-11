@@ -1,29 +1,45 @@
 <template>
   <div class="error-log">
     <div class="error-log-header">
-      <h3>{{ t('monitoring.errorLog.title', 'Fehlerprotokolle') }}</h3>
+      <h3>{{ t("monitoring.errorLog.title", "Fehlerprotokolle") }}</h3>
       <div class="error-log-controls">
         <div class="search-container">
-          <input 
-            v-model="searchQuery" 
-            type="text" 
+          <input
+            v-model="searchQuery"
+            type="text"
             :placeholder="t('monitoring.errorLog.search', 'Fehler suchen...')"
             class="search-input"
           />
         </div>
         <div class="filter-container">
           <select v-model="selectedFeature" class="filter-select">
-            <option value="">{{ t('monitoring.errorLog.allFeatures', 'Alle Features') }}</option>
-            <option v-for="feature in availableFeatures" :key="feature" :value="feature">
+            <option value="">
+              {{ t("monitoring.errorLog.allFeatures", "Alle Features") }}
+            </option>
+            <option
+              v-for="feature in availableFeatures"
+              :key="feature"
+              :value="feature"
+            >
               {{ formatFeatureName(feature) }}
             </option>
           </select>
           <select v-model="selectedSeverity" class="filter-select">
-            <option value="">{{ t('monitoring.errorLog.allSeverities', 'Alle Schweregrade') }}</option>
-            <option value="critical">{{ t('monitoring.errorLog.severity.critical', 'Kritisch') }}</option>
-            <option value="high">{{ t('monitoring.errorLog.severity.high', 'Hoch') }}</option>
-            <option value="medium">{{ t('monitoring.errorLog.severity.medium', 'Mittel') }}</option>
-            <option value="low">{{ t('monitoring.errorLog.severity.low', 'Niedrig') }}</option>
+            <option value="">
+              {{ t("monitoring.errorLog.allSeverities", "Alle Schweregrade") }}
+            </option>
+            <option value="critical">
+              {{ t("monitoring.errorLog.severity.critical", "Kritisch") }}
+            </option>
+            <option value="high">
+              {{ t("monitoring.errorLog.severity.high", "Hoch") }}
+            </option>
+            <option value="medium">
+              {{ t("monitoring.errorLog.severity.medium", "Mittel") }}
+            </option>
+            <option value="low">
+              {{ t("monitoring.errorLog.severity.low", "Niedrig") }}
+            </option>
           </select>
         </div>
       </div>
@@ -31,65 +47,120 @@
 
     <div class="error-log-content">
       <div v-if="filteredErrors.length === 0" class="no-errors">
-        {{ t('monitoring.errorLog.noErrors', 'Keine Fehler gefunden') }}
+        {{ t("monitoring.errorLog.noErrors", "Keine Fehler gefunden") }}
       </div>
       <div v-else class="error-table-container">
         <table class="error-table">
           <thead>
             <tr>
-              <th @click="sortBy('timestamp')" :class="{ sorted: sortField === 'timestamp' }">
-                {{ t('monitoring.errorLog.columns.timestamp', 'Zeitpunkt') }}
-                <span v-if="sortField === 'timestamp'" class="sort-icon">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+              <th
+                @click="sortBy('timestamp')"
+                :class="{ sorted: sortField === 'timestamp' }"
+              >
+                {{ t("monitoring.errorLog.columns.timestamp", "Zeitpunkt") }}
+                <span v-if="sortField === 'timestamp'" class="sort-icon">{{
+                  sortDirection === "asc" ? "▲" : "▼"
+                }}</span>
               </th>
-              <th @click="sortBy('feature')" :class="{ sorted: sortField === 'feature' }">
-                {{ t('monitoring.errorLog.columns.feature', 'Feature') }}
-                <span v-if="sortField === 'feature'" class="sort-icon">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+              <th
+                @click="sortBy('feature')"
+                :class="{ sorted: sortField === 'feature' }"
+              >
+                {{ t("monitoring.errorLog.columns.feature", "Feature") }}
+                <span v-if="sortField === 'feature'" class="sort-icon">{{
+                  sortDirection === "asc" ? "▲" : "▼"
+                }}</span>
               </th>
-              <th @click="sortBy('component')" :class="{ sorted: sortField === 'component' }">
-                {{ t('monitoring.errorLog.columns.component', 'Komponente') }}
-                <span v-if="sortField === 'component'" class="sort-icon">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+              <th
+                @click="sortBy('component')"
+                :class="{ sorted: sortField === 'component' }"
+              >
+                {{ t("monitoring.errorLog.columns.component", "Komponente") }}
+                <span v-if="sortField === 'component'" class="sort-icon">{{
+                  sortDirection === "asc" ? "▲" : "▼"
+                }}</span>
               </th>
-              <th @click="sortBy('severity')" :class="{ sorted: sortField === 'severity' }">
-                {{ t('monitoring.errorLog.columns.severity', 'Schweregrad') }}
-                <span v-if="sortField === 'severity'" class="sort-icon">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+              <th
+                @click="sortBy('severity')"
+                :class="{ sorted: sortField === 'severity' }"
+              >
+                {{ t("monitoring.errorLog.columns.severity", "Schweregrad") }}
+                <span v-if="sortField === 'severity'" class="sort-icon">{{
+                  sortDirection === "asc" ? "▲" : "▼"
+                }}</span>
               </th>
-              <th>{{ t('monitoring.errorLog.columns.message', 'Nachricht') }}</th>
-              <th>{{ t('monitoring.errorLog.columns.actions', 'Aktionen') }}</th>
+              <th>
+                {{ t("monitoring.errorLog.columns.message", "Nachricht") }}
+              </th>
+              <th>
+                {{ t("monitoring.errorLog.columns.actions", "Aktionen") }}
+              </th>
             </tr>
           </thead>
           <tbody>
-            <tr 
-              v-for="error in paginatedErrors" 
-              :key="error.id" 
-              :class="{ 'error-critical': error.severity === 'critical', 'error-high': error.severity === 'high', 'error-medium': error.severity === 'medium', 'error-low': error.severity === 'low' }"
+            <tr
+              v-for="error in paginatedErrors"
+              :key="error.id"
+              :class="{
+                'error-critical': error.severity === 'critical',
+                'error-high': error.severity === 'high',
+                'error-medium': error.severity === 'medium',
+                'error-low': error.severity === 'low',
+              }"
             >
               <td class="error-timestamp">{{ formatDate(error.timestamp) }}</td>
-              <td class="error-feature">{{ formatFeatureName(error.feature) }}</td>
-              <td class="error-component">{{ error.component || '-' }}</td>
+              <td class="error-feature">
+                {{ formatFeatureName(error.feature) }}
+              </td>
+              <td class="error-component">{{ error.component || "-" }}</td>
               <td class="error-severity">
-                <span class="severity-badge" :class="`severity-${error.severity}`">
-                  {{ t(`monitoring.errorLog.severity.${error.severity}`, error.severity) }}
+                <span
+                  class="severity-badge"
+                  :class="`severity-${error.severity}`"
+                >
+                  {{
+                    t(
+                      `monitoring.errorLog.severity.${error.severity}`,
+                      error.severity,
+                    )
+                  }}
                 </span>
               </td>
               <td class="error-message">
                 <div class="message-content">{{ error.message }}</div>
-                <button 
-                  v-if="error.stack" 
-                  @click="toggleDetails(error.id)" 
+                <button
+                  v-if="error.stack"
+                  @click="toggleDetails(error.id)"
                   class="view-details-button"
                 >
-                  {{ detailsVisible[error.id] ? t('monitoring.errorLog.hideDetails', 'Details ausblenden') : t('monitoring.errorLog.viewDetails', 'Details anzeigen') }}
+                  {{
+                    detailsVisible[error.id]
+                      ? t(
+                          "monitoring.errorLog.hideDetails",
+                          "Details ausblenden",
+                        )
+                      : t("monitoring.errorLog.viewDetails", "Details anzeigen")
+                  }}
                 </button>
-                <div v-if="detailsVisible[error.id] && error.stack" class="error-details">
+                <div
+                  v-if="detailsVisible[error.id] && error.stack"
+                  class="error-details"
+                >
                   <pre>{{ error.stack }}</pre>
                 </div>
               </td>
               <td class="error-actions">
-                <button @click="markAsResolved(error.id)" class="action-button action-resolve">
-                  {{ t('monitoring.errorLog.resolve', 'Erledigt') }}
+                <button
+                  @click="markAsResolved(error.id)"
+                  class="action-button action-resolve"
+                >
+                  {{ t("monitoring.errorLog.resolve", "Erledigt") }}
                 </button>
-                <button @click="createAlert(error)" class="action-button action-alert">
-                  {{ t('monitoring.errorLog.alert', 'Warnung') }}
+                <button
+                  @click="createAlert(error)"
+                  class="action-button action-alert"
+                >
+                  {{ t("monitoring.errorLog.alert", "Warnung") }}
                 </button>
               </td>
             </tr>
@@ -98,22 +169,23 @@
       </div>
 
       <div v-if="filteredErrors.length > itemsPerPage" class="pagination">
-        <button 
-          @click="currentPage = Math.max(1, currentPage - 1)" 
+        <button
+          @click="currentPage = Math.max(1, currentPage - 1)"
           :disabled="currentPage === 1"
           class="pagination-button"
         >
-          &laquo; {{ t('monitoring.errorLog.previous', 'Zurück') }}
+          &laquo; {{ t("monitoring.errorLog.previous", "Zurück") }}
         </button>
         <span class="pagination-info">
-          {{ t('monitoring.errorLog.page', 'Seite') }} {{ currentPage }} / {{ totalPages }}
+          {{ t("monitoring.errorLog.page", "Seite") }} {{ currentPage }} /
+          {{ totalPages }}
         </span>
-        <button 
-          @click="currentPage = Math.min(totalPages, currentPage + 1)" 
+        <button
+          @click="currentPage = Math.min(totalPages, currentPage + 1)"
           :disabled="currentPage === totalPages"
           class="pagination-button"
         >
-          {{ t('monitoring.errorLog.next', 'Weiter') }} &raquo;
+          {{ t("monitoring.errorLog.next", "Weiter") }} &raquo;
         </button>
       </div>
     </div>
@@ -121,9 +193,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
-import { useI18n } from '@/composables/useI18n';
-import { useMonitoringStore } from '@/stores/monitoringStore';
+import { ref, computed, watch } from "vue";
+import { useI18n } from "@/composables/useI18n";
+import { useMonitoringStore } from "@/stores/monitoringStore";
 
 // Props
 interface Error {
@@ -131,7 +203,7 @@ interface Error {
   timestamp: Date;
   feature: string;
   component?: string;
-  severity: 'critical' | 'high' | 'medium' | 'low';
+  severity: "critical" | "high" | "medium" | "low";
   message: string;
   stack?: string;
   userAgent?: string;
@@ -151,68 +223,72 @@ const { t } = useI18n();
 const monitoringStore = useMonitoringStore();
 
 // State
-const searchQuery = ref<string>('');
-const selectedFeature = ref<string>('');
-const selectedSeverity = ref<string>('');
-const sortField = ref<string>('timestamp');
-const sortDirection = ref<'asc' | 'desc'>('desc');
+const searchQuery = ref<string>("");
+const selectedFeature = ref<string>("");
+const selectedSeverity = ref<string>("");
+const sortField = ref<string>("timestamp");
+const sortDirection = ref<"asc" | "desc">("desc");
 const currentPage = ref<number>(1);
 const itemsPerPage = ref<number>(15);
 const detailsVisible = ref<Record<string, boolean>>({});
 
 // Computed
 const availableFeatures = computed(() => {
-  return [...new Set(props.errors.map(error => error.feature))];
+  return [...new Set(props.errors.map((error) => error.feature))];
 });
 
 const filteredErrors = computed(() => {
   let result = [...props.errors];
-  
+
   // Nach Suchbegriff filtern
   if (searchQuery.value) {
     const lowerQuery = searchQuery.value.toLowerCase();
-    result = result.filter(error => {
-      return error.message.toLowerCase().includes(lowerQuery) ||
+    result = result.filter((error) => {
+      return (
+        error.message.toLowerCase().includes(lowerQuery) ||
         error.feature.toLowerCase().includes(lowerQuery) ||
-        (error.component && error.component.toLowerCase().includes(lowerQuery));
+        (error.component && error.component.toLowerCase().includes(lowerQuery))
+      );
     });
   }
-  
+
   // Nach Feature filtern
   if (selectedFeature.value) {
-    result = result.filter(error => error.feature === selectedFeature.value);
+    result = result.filter((error) => error.feature === selectedFeature.value);
   }
-  
+
   // Nach Schweregrad filtern
   if (selectedSeverity.value) {
-    result = result.filter(error => error.severity === selectedSeverity.value);
+    result = result.filter(
+      (error) => error.severity === selectedSeverity.value,
+    );
   }
-  
+
   // Sortieren
   result.sort((a, b) => {
     let comparison = 0;
-    
+
     switch (sortField.value) {
-      case 'timestamp':
+      case "timestamp":
         comparison = a.timestamp.getTime() - b.timestamp.getTime();
         break;
-      case 'feature':
+      case "feature":
         comparison = a.feature.localeCompare(b.feature);
         break;
-      case 'component':
-        comparison = (a.component || '').localeCompare(b.component || '');
+      case "component":
+        comparison = (a.component || "").localeCompare(b.component || "");
         break;
-      case 'severity':
+      case "severity":
         const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
         comparison = severityOrder[a.severity] - severityOrder[b.severity];
         break;
       default:
         comparison = 0;
     }
-    
-    return sortDirection.value === 'asc' ? comparison : -comparison;
+
+    return sortDirection.value === "asc" ? comparison : -comparison;
   });
-  
+
   return result;
 });
 
@@ -229,35 +305,35 @@ const paginatedErrors = computed(() => {
 // Methoden
 function sortBy(field: string) {
   if (sortField.value === field) {
-    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+    sortDirection.value = sortDirection.value === "asc" ? "desc" : "asc";
   } else {
     sortField.value = field;
-    sortDirection.value = 'asc';
+    sortDirection.value = "asc";
   }
 }
 
 function toggleDetails(errorId: string) {
   detailsVisible.value = {
     ...detailsVisible.value,
-    [errorId]: !detailsVisible.value[errorId]
+    [errorId]: !detailsVisible.value[errorId],
   };
 }
 
 function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
+  return new Intl.DateTimeFormat("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
   }).format(date);
 }
 
 function formatFeatureName(feature: string): string {
   return feature
-    .replace(/^use/, '')
-    .replace(/([A-Z])/g, ' $1')
+    .replace(/^use/, "")
+    .replace(/([A-Z])/g, " $1")
     .trim();
 }
 
@@ -277,7 +353,7 @@ watch([searchQuery, selectedFeature, selectedSeverity], () => {
 
 <style scoped>
 .error-log {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .error-log-header {
@@ -517,21 +593,22 @@ watch([searchQuery, selectedFeature, selectedSeverity], () => {
   .error-log-controls {
     flex-direction: column;
   }
-  
+
   .filter-container {
     flex-direction: column;
   }
-  
-  .error-table th, .error-table td {
+
+  .error-table th,
+  .error-table td {
     padding: 8px 10px;
   }
-  
+
   .error-actions {
     display: flex;
     flex-direction: column;
     gap: 5px;
   }
-  
+
   .action-button {
     margin-right: 0;
   }

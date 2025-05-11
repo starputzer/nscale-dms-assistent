@@ -1,5 +1,5 @@
 <template>
-  <div 
+  <div
     ref="tooltipContainer"
     class="n-tooltip-container"
     @mouseenter="handleMouseEnter"
@@ -8,8 +8,8 @@
     @focusout="handleFocusOut"
   >
     <slot></slot>
-    
-    <Transition 
+
+    <Transition
       :name="transition ? 'n-tooltip-fade' : ''"
       @before-enter="updatePosition"
     >
@@ -19,11 +19,11 @@
         class="n-tooltip"
         :class="[
           `n-tooltip--${position}`,
-          { 
+          {
             'n-tooltip--has-arrow': arrow,
             'n-tooltip--interactive': interactive,
-            [`n-tooltip--${variant}`]: variant
-          }
+            [`n-tooltip--${variant}`]: variant,
+          },
         ]"
         :style="tooltipStyle"
         role="tooltip"
@@ -40,7 +40,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import {
+  ref,
+  computed,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+} from "vue";
 
 /**
  * Tooltip component for displaying hints and help text
@@ -56,11 +63,23 @@ export interface TooltipProps {
   /** Tooltip content as HTML (overrides content prop) */
   html?: string;
   /** Tooltip position */
-  position?: 'top' | 'right' | 'bottom' | 'left' | 'top-start' | 'top-end' | 'right-start' | 'right-end' | 'bottom-start' | 'bottom-end' | 'left-start' | 'left-end';
+  position?:
+    | "top"
+    | "right"
+    | "bottom"
+    | "left"
+    | "top-start"
+    | "top-end"
+    | "right-start"
+    | "right-end"
+    | "bottom-start"
+    | "bottom-end"
+    | "left-start"
+    | "left-end";
   /** Show arrow */
   arrow?: boolean;
   /** Tooltip trigger method */
-  trigger?: 'hover' | 'focus' | 'click' | 'manual';
+  trigger?: "hover" | "focus" | "click" | "manual";
   /** Initial visibility state (for manual trigger) */
   modelValue?: boolean;
   /** Delay before showing tooltip (in ms) */
@@ -78,14 +97,21 @@ export interface TooltipProps {
   /** Z-index of the tooltip */
   zIndex?: number;
   /** Visual variant */
-  variant?: 'default' | 'light' | 'dark' | 'info' | 'success' | 'warning' | 'error';
+  variant?:
+    | "default"
+    | "light"
+    | "dark"
+    | "info"
+    | "success"
+    | "warning"
+    | "error";
 }
 
 const props = withDefaults(defineProps<TooltipProps>(), {
-  content: '',
-  position: 'top',
+  content: "",
+  position: "top",
   arrow: true,
-  trigger: 'hover',
+  trigger: "hover",
   modelValue: false,
   delay: 200,
   hideDelay: 100,
@@ -94,13 +120,13 @@ const props = withDefaults(defineProps<TooltipProps>(), {
   offset: 8,
   transition: true,
   zIndex: 1000,
-  variant: 'default'
+  variant: "default",
 });
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: boolean): void;
-  (e: 'show'): void;
-  (e: 'hide'): void;
+  (e: "update:modelValue", value: boolean): void;
+  (e: "show"): void;
+  (e: "hide"): void;
 }>();
 
 // Internal state
@@ -115,7 +141,7 @@ const isHoveringTooltip = ref(false);
 const tooltipStyle = computed(() => {
   return {
     maxWidth: `${props.maxWidth}px`,
-    zIndex: props.zIndex
+    zIndex: props.zIndex,
   };
 });
 
@@ -127,64 +153,64 @@ const arrowStyle = computed(() => {
 // Visibility control functions
 function showTooltip() {
   clearTimeout(hideTimeoutId.value!);
-  
+
   if (isVisible.value) return;
-  
+
   if (props.delay > 0) {
     showTimeoutId.value = window.setTimeout(() => {
       isVisible.value = true;
-      emit('update:modelValue', true);
-      emit('show');
+      emit("update:modelValue", true);
+      emit("show");
     }, props.delay);
   } else {
     isVisible.value = true;
-    emit('update:modelValue', true);
-    emit('show');
+    emit("update:modelValue", true);
+    emit("show");
   }
 }
 
 function hideTooltip() {
   clearTimeout(showTimeoutId.value!);
-  
+
   if (!isVisible.value) return;
-  
+
   // If interactive and hovering the tooltip, don't hide
   if (props.interactive && isHoveringTooltip.value) return;
-  
+
   if (props.hideDelay > 0) {
     hideTimeoutId.value = window.setTimeout(() => {
       isVisible.value = false;
-      emit('update:modelValue', false);
-      emit('hide');
+      emit("update:modelValue", false);
+      emit("hide");
     }, props.hideDelay);
   } else {
     isVisible.value = false;
-    emit('update:modelValue', false);
-    emit('hide');
+    emit("update:modelValue", false);
+    emit("hide");
   }
 }
 
 // Event handlers
 function handleMouseEnter() {
-  if (props.trigger === 'hover' || props.trigger === 'click') {
+  if (props.trigger === "hover" || props.trigger === "click") {
     showTooltip();
   }
 }
 
 function handleMouseLeave() {
-  if (props.trigger === 'hover' || props.trigger === 'click') {
+  if (props.trigger === "hover" || props.trigger === "click") {
     hideTooltip();
   }
 }
 
 function handleFocusIn() {
-  if (props.trigger === 'focus') {
+  if (props.trigger === "focus") {
     showTooltip();
   }
 }
 
 function handleFocusOut() {
-  if (props.trigger === 'focus') {
+  if (props.trigger === "focus") {
     hideTooltip();
   }
 }
@@ -203,7 +229,7 @@ function handleTooltipMouseLeave() {
 }
 
 function handleClick(event: MouseEvent) {
-  if (props.trigger === 'click') {
+  if (props.trigger === "click") {
     const target = event.target as HTMLElement;
     if (tooltipContainer.value?.contains(target)) {
       isVisible.value ? hideTooltip() : showTooltip();
@@ -216,74 +242,74 @@ function handleClick(event: MouseEvent) {
 // Position the tooltip
 function updatePosition() {
   if (!tooltipContainer.value || !tooltipElement.value) return;
-  
+
   nextTick(() => {
     const container = tooltipContainer.value!;
     const tooltip = tooltipElement.value!;
     const containerRect = container.getBoundingClientRect();
-    
+
     // Reset tooltip position to measure its size
-    tooltip.style.top = '0px';
-    tooltip.style.left = '0px';
-    
+    tooltip.style.top = "0px";
+    tooltip.style.left = "0px";
+
     const tooltipRect = tooltip.getBoundingClientRect();
-    
+
     // Calculate positions for each placement
     let top = 0;
     let left = 0;
-    
+
     // Position tooltip based on the selected position
     switch (props.position) {
-      case 'top':
+      case "top":
         top = -tooltipRect.height - props.offset;
         left = (containerRect.width - tooltipRect.width) / 2;
         break;
-      case 'top-start':
+      case "top-start":
         top = -tooltipRect.height - props.offset;
         left = 0;
         break;
-      case 'top-end':
+      case "top-end":
         top = -tooltipRect.height - props.offset;
         left = containerRect.width - tooltipRect.width;
         break;
-      case 'bottom':
+      case "bottom":
         top = containerRect.height + props.offset;
         left = (containerRect.width - tooltipRect.width) / 2;
         break;
-      case 'bottom-start':
+      case "bottom-start":
         top = containerRect.height + props.offset;
         left = 0;
         break;
-      case 'bottom-end':
+      case "bottom-end":
         top = containerRect.height + props.offset;
         left = containerRect.width - tooltipRect.width;
         break;
-      case 'left':
+      case "left":
         top = (containerRect.height - tooltipRect.height) / 2;
         left = -tooltipRect.width - props.offset;
         break;
-      case 'left-start':
+      case "left-start":
         top = 0;
         left = -tooltipRect.width - props.offset;
         break;
-      case 'left-end':
+      case "left-end":
         top = containerRect.height - tooltipRect.height;
         left = -tooltipRect.width - props.offset;
         break;
-      case 'right':
+      case "right":
         top = (containerRect.height - tooltipRect.height) / 2;
         left = containerRect.width + props.offset;
         break;
-      case 'right-start':
+      case "right-start":
         top = 0;
         left = containerRect.width + props.offset;
         break;
-      case 'right-end':
+      case "right-end":
         top = containerRect.height - tooltipRect.height;
         left = containerRect.width + props.offset;
         break;
     }
-    
+
     // Set the final position
     tooltip.style.top = `${top}px`;
     tooltip.style.left = `${left}px`;
@@ -291,18 +317,21 @@ function updatePosition() {
 }
 
 // Watch for changes in modelValue prop
-watch(() => props.modelValue, (value) => {
-  if (props.trigger === 'manual') {
-    isVisible.value = value;
-    
-    if (value) {
-      nextTick(() => updatePosition());
-      emit('show');
-    } else {
-      emit('hide');
+watch(
+  () => props.modelValue,
+  (value) => {
+    if (props.trigger === "manual") {
+      isVisible.value = value;
+
+      if (value) {
+        nextTick(() => updatePosition());
+        emit("show");
+      } else {
+        emit("hide");
+      }
     }
-  }
-});
+  },
+);
 
 // Watch for changes in content or position
 watch([() => props.content, () => props.html, () => props.position], () => {
@@ -313,10 +342,10 @@ watch([() => props.content, () => props.html, () => props.position], () => {
 
 // Lifecycle hooks
 onMounted(() => {
-  if (props.trigger === 'click') {
-    document.addEventListener('click', handleClick);
+  if (props.trigger === "click") {
+    document.addEventListener("click", handleClick);
   }
-  
+
   // Initially position tooltip if visible by default
   if (isVisible.value) {
     nextTick(() => updatePosition());
@@ -324,15 +353,15 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  if (props.trigger === 'click') {
-    document.removeEventListener('click', handleClick);
+  if (props.trigger === "click") {
+    document.removeEventListener("click", handleClick);
   }
-  
+
   // Clear any pending timeouts
   if (showTimeoutId.value) {
     clearTimeout(showTimeoutId.value);
   }
-  
+
   if (hideTimeoutId.value) {
     clearTimeout(hideTimeoutId.value);
   }
@@ -355,7 +384,9 @@ onBeforeUnmount(() => {
   font-size: var(--n-font-size-xs, 0.75rem);
   line-height: 1.4;
   pointer-events: none;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
   word-break: break-word;
   white-space: pre-line;
 }
@@ -498,7 +529,9 @@ onBeforeUnmount(() => {
 /* Transition effect */
 .n-tooltip-fade-enter-active,
 .n-tooltip-fade-leave-active {
-  transition: opacity 0.2s, transform 0.2s;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
 }
 
 .n-tooltip-fade-enter-from,
@@ -514,7 +547,7 @@ onBeforeUnmount(() => {
     color: var(--n-color-text-primary, #f1f5f9);
     border-color: var(--n-color-border, #334155);
   }
-  
+
   .n-tooltip--light .n-tooltip-arrow {
     background-color: var(--n-color-background-alt, #1e293b);
   }

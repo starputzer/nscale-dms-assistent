@@ -5,7 +5,8 @@
       'n-enhanced-message-input--focused': isFocused,
       'n-enhanced-message-input--disabled': disabled,
       'n-enhanced-message-input--loading': isLoading,
-      'n-enhanced-message-input--has-preview': showMarkdownPreview && markdownPreview
+      'n-enhanced-message-input--has-preview':
+        showMarkdownPreview && markdownPreview,
     }"
   >
     <div class="n-enhanced-message-input__container">
@@ -19,7 +20,9 @@
           :maxlength="maxLength"
           :disabled="disabled || isLoading"
           :aria-label="ariaLabel || placeholder"
-          :aria-describedby="error ? 'input-error' : hint ? 'input-hint' : undefined"
+          :aria-describedby="
+            error ? 'input-error' : hint ? 'input-hint' : undefined
+          "
           :aria-invalid="!!error"
           @input="resizeTextarea"
           @keydown="handleKeydown"
@@ -28,9 +31,12 @@
           @paste="handlePaste"
           @drop="handleDrop"
         ></textarea>
-        
+
         <!-- Formatierungswerkzeuge -->
-        <div v-if="showFormatButtons" class="n-enhanced-message-input__format-buttons">
+        <div
+          v-if="showFormatButtons"
+          class="n-enhanced-message-input__format-buttons"
+        >
           <button
             v-for="(btn, index) in formatButtons"
             :key="index"
@@ -40,13 +46,15 @@
             @click="formatText(btn.format)"
             :aria-label="btn.title"
           >
-            <span class="n-enhanced-message-input__format-icon">{{ btn.icon }}</span>
+            <span class="n-enhanced-message-input__format-icon">{{
+              btn.icon
+            }}</span>
           </button>
         </div>
-        
+
         <!-- Datei-Upload-Bereich -->
-        <div 
-          v-if="allowFileUpload && isDragging" 
+        <div
+          v-if="allowFileUpload && isDragging"
           class="n-enhanced-message-input__drop-zone"
           aria-hidden="true"
         >
@@ -56,37 +64,42 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Markdown-Vorschau (wenn aktiviert) -->
-      <div 
-        v-if="showMarkdownPreview && markdownPreview" 
+      <div
+        v-if="showMarkdownPreview && markdownPreview"
         class="n-enhanced-message-input__preview"
         aria-live="polite"
         aria-atomic="true"
       >
         <div class="n-enhanced-message-input__preview-header">
           <span>Vorschau</span>
-          <button 
-            type="button" 
-            class="n-enhanced-message-input__preview-close" 
+          <button
+            type="button"
+            class="n-enhanced-message-input__preview-close"
             @click="markdownPreview = false"
             aria-label="Vorschau schließen"
-          >×</button>
+          >
+            ×
+          </button>
         </div>
-        <div 
-          class="n-enhanced-message-input__preview-content" 
+        <div
+          class="n-enhanced-message-input__preview-content"
           v-html="formattedPreview"
         ></div>
       </div>
     </div>
-    
+
     <!-- Input-Aktionen -->
     <div class="n-enhanced-message-input__actions">
       <!-- Zeichenzähler -->
-      <div v-if="maxLength && showCharacterCount" class="n-enhanced-message-input__char-count">
+      <div
+        v-if="maxLength && showCharacterCount"
+        class="n-enhanced-message-input__char-count"
+      >
         {{ inputValue.length }}/{{ maxLength }}
       </div>
-      
+
       <!-- Zusätzliche Aktionsbuttons -->
       <div class="n-enhanced-message-input__action-buttons">
         <!-- Vorschau-Toggle -->
@@ -94,15 +107,19 @@
           v-if="showMarkdownPreview && inputValue.trim().length > 0"
           type="button"
           class="n-enhanced-message-input__action-btn"
-          :class="{ 'n-enhanced-message-input__action-btn--active': markdownPreview }"
+          :class="{
+            'n-enhanced-message-input__action-btn--active': markdownPreview,
+          }"
           @click="togglePreview"
           :title="markdownPreview ? 'Vorschau ausblenden' : 'Vorschau anzeigen'"
-          :aria-label="markdownPreview ? 'Vorschau ausblenden' : 'Vorschau anzeigen'"
+          :aria-label="
+            markdownPreview ? 'Vorschau ausblenden' : 'Vorschau anzeigen'
+          "
           :aria-pressed="markdownPreview"
         >
           <span class="n-enhanced-message-input__btn-icon">👁️</span>
         </button>
-        
+
         <!-- Emoji-Picker-Button -->
         <button
           v-if="showEmojiPicker"
@@ -115,7 +132,7 @@
         >
           <span class="n-enhanced-message-input__btn-icon">😊</span>
         </button>
-        
+
         <!-- Datei-Upload-Button -->
         <button
           v-if="allowFileUpload"
@@ -126,7 +143,7 @@
           aria-label="Datei hochladen"
         >
           <span class="n-enhanced-message-input__btn-icon">📎</span>
-          <input 
+          <input
             ref="fileInput"
             type="file"
             class="n-enhanced-message-input__file-input"
@@ -138,7 +155,7 @@
           />
         </button>
       </div>
-      
+
       <!-- Absenden-Button -->
       <button
         type="button"
@@ -148,7 +165,10 @@
         :title="sendButtonTitle"
         :aria-label="sendButtonTitle"
       >
-        <span v-if="isLoading" class="n-enhanced-message-input__loading-indicator">
+        <span
+          v-if="isLoading"
+          class="n-enhanced-message-input__loading-indicator"
+        >
           <span></span>
           <span></span>
           <span></span>
@@ -156,21 +176,23 @@
         <span v-else class="n-enhanced-message-input__send-icon"></span>
       </button>
     </div>
-    
+
     <!-- Emoji-Picker-Dropdown -->
-    <div 
-      v-if="showEmojiPicker && isEmojiPickerOpen" 
+    <div
+      v-if="showEmojiPicker && isEmojiPickerOpen"
       class="n-enhanced-message-input__emoji-picker"
       ref="emojiPicker"
     >
       <div class="n-enhanced-message-input__emoji-picker-header">
         <span>Emoji auswählen</span>
-        <button 
-          type="button" 
-          class="n-enhanced-message-input__emoji-picker-close" 
+        <button
+          type="button"
+          class="n-enhanced-message-input__emoji-picker-close"
           @click="isEmojiPickerOpen = false"
           aria-label="Emoji-Picker schließen"
-        >×</button>
+        >
+          ×
+        </button>
       </div>
       <div class="n-enhanced-message-input__emoji-grid">
         <button
@@ -185,40 +207,52 @@
         </button>
       </div>
     </div>
-    
+
     <!-- Fehlermeldung -->
-    <div 
-      v-if="error" 
-      id="input-error" 
+    <div
+      v-if="error"
+      id="input-error"
       class="n-enhanced-message-input__error"
       role="alert"
     >
       {{ error }}
     </div>
-    
+
     <!-- Hinweis -->
-    <div 
-      v-if="hint && !error" 
-      id="input-hint" 
+    <div
+      v-if="hint && !error"
+      id="input-hint"
       class="n-enhanced-message-input__hint"
     >
       {{ hint }}
     </div>
-    
+
     <!-- Keyboard-Shortcuts-Info -->
-    <div v-if="showKeyboardShortcuts" class="n-enhanced-message-input__shortcuts">
+    <div
+      v-if="showKeyboardShortcuts"
+      class="n-enhanced-message-input__shortcuts"
+    >
       <span><kbd>Enter</kbd> zum Senden</span>
       <span><kbd>Shift</kbd> + <kbd>Enter</kbd> für neue Zeile</span>
-      <span v-if="showMarkdownPreview"><kbd>Ctrl</kbd> + <kbd>P</kbd> für Vorschau</span>
+      <span v-if="showMarkdownPreview"
+        ><kbd>Ctrl</kbd> + <kbd>P</kbd> für Vorschau</span
+      >
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick, onBeforeUnmount } from 'vue';
-import { marked } from 'marked';
-import DOMPurify from 'dompurify';
-import { highlightCode } from '@/utils/messageFormatter';
+import {
+  ref,
+  computed,
+  watch,
+  onMounted,
+  nextTick,
+  onBeforeUnmount,
+} from "vue";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
+import { highlightCode } from "@/utils/messageFormatter";
 
 // Typendefinitionen für einen Formatierungsbutton
 interface FormatButton {
@@ -229,91 +263,109 @@ interface FormatButton {
 
 // Liste der häufig verwendeten Emojis
 const commonEmojis = [
-  '😊', '👍', '👎', '🙂', '😀', '👋', '✅', 
-  '⚠️', '❓', '💡', '🔍', '📝', '📚', '💻', 
-  '📁', '📊', '📈', '🔄', '⏱️', '📅', '🔒'
+  "😊",
+  "👍",
+  "👎",
+  "🙂",
+  "😀",
+  "👋",
+  "✅",
+  "⚠️",
+  "❓",
+  "💡",
+  "🔍",
+  "📝",
+  "📚",
+  "💻",
+  "📁",
+  "📊",
+  "📈",
+  "🔄",
+  "⏱️",
+  "📅",
+  "🔒",
 ];
 
 // Liste der Format-Buttons
 const formatButtons: FormatButton[] = [
-  { icon: 'B', title: 'Fett', format: '**$selection$**' },
-  { icon: 'I', title: 'Kursiv', format: '*$selection$*' },
-  { icon: 'C', title: 'Code', format: '`$selection$`' },
-  { icon: '≡', title: 'Liste', format: '- $selection$' },
-  { icon: '#', title: 'Überschrift', format: '### $selection$' },
-  { icon: '```', title: 'Codeblock', format: '```\n$selection$\n```' }
+  { icon: "B", title: "Fett", format: "**$selection$**" },
+  { icon: "I", title: "Kursiv", format: "*$selection$*" },
+  { icon: "C", title: "Code", format: "`$selection$`" },
+  { icon: "≡", title: "Liste", format: "- $selection$" },
+  { icon: "#", title: "Überschrift", format: "### $selection$" },
+  { icon: "```", title: "Codeblock", format: "```\n$selection$\n```" },
 ];
 
 // Props Definition
 interface Props {
   /** Aktueller Eingabewert (v-model) */
   modelValue?: string;
-  
+
   /** Platzhaltertext */
   placeholder?: string;
-  
+
   /** Aria-Label für Barrierefreiheit */
   ariaLabel?: string;
-  
+
   /** Ob die Eingabe deaktiviert ist */
   disabled?: boolean;
-  
+
   /** Ob die Komponente gerade lädt */
   isLoading?: boolean;
-  
+
   /** Maximale Anzahl an Zeichen */
   maxLength?: number;
-  
+
   /** Minimale Höhe des Textfelds in Pixeln */
   minHeight?: number;
-  
+
   /** Maximale Höhe des Textfelds in Pixeln */
   maxHeight?: number;
-  
+
   /** Anfangshöhe des Textfelds in Pixeln */
   initialHeight?: number;
-  
+
   /** Zeigt die Zeichenanzahl an */
   showCharacterCount?: boolean;
-  
+
   /** Fehlermeldung */
   error?: string;
-  
+
   /** Hinweistext */
   hint?: string;
-  
+
   /** Titel für den Senden-Button */
   sendButtonTitle?: string;
-  
+
   /** Autofokus */
   autofocus?: boolean;
-  
+
   /** Ob Markdown-Vorschau angezeigt werden soll */
   showMarkdownPreview?: boolean;
-  
+
   /** Ob der Emoji-Picker angezeigt werden soll */
   showEmojiPicker?: boolean;
-  
+
   /** Ob die Formatierungsbuttons angezeigt werden sollen */
   showFormatButtons?: boolean;
-  
+
   /** Ob Tastenkürzel angezeigt werden sollen */
   showKeyboardShortcuts?: boolean;
-  
+
   /** Ob Datei-Upload erlaubt ist */
   allowFileUpload?: boolean;
-  
+
   /** Ob mehrere Dateien hochgeladen werden können */
   allowMultipleFiles?: boolean;
-  
+
   /** Erlaubte Dateitypen für Upload */
   allowedFileTypes?: string[];
 }
 
 // Default-Werte für Props
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: '',
-  placeholder: 'Geben Sie Ihre Nachricht ein...',
+  modelValue: "",
+  placeholder: "Geben Sie Ihre Nachricht ein...",
   disabled: false,
   isLoading: false,
   maxLength: 4000,
@@ -321,7 +373,7 @@ const props = withDefaults(defineProps<Props>(), {
   maxHeight: 200,
   initialHeight: 56,
   showCharacterCount: true,
-  sendButtonTitle: 'Nachricht senden (Enter)',
+  sendButtonTitle: "Nachricht senden (Enter)",
   autofocus: true,
   showMarkdownPreview: true,
   showEmojiPicker: true,
@@ -329,28 +381,39 @@ const props = withDefaults(defineProps<Props>(), {
   showKeyboardShortcuts: true,
   allowFileUpload: true,
   allowMultipleFiles: true,
-  allowedFileTypes: ['.jpg', '.jpeg', '.png', '.gif', '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.txt']
+  allowedFileTypes: [
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".gif",
+    ".pdf",
+    ".doc",
+    ".docx",
+    ".xls",
+    ".xlsx",
+    ".txt",
+  ],
 });
 
 // Emit Definition
 const emit = defineEmits<{
   /** Event beim Ändern des Eingabewerts */
-  (e: 'update:modelValue', value: string): void;
-  
+  (e: "update:modelValue", value: string): void;
+
   /** Event beim Absenden des Formulars */
-  (e: 'submit', value: string): void;
-  
+  (e: "submit", value: string): void;
+
   /** Event beim Hochladen von Dateien */
-  (e: 'file-upload', files: File[]): void;
-  
+  (e: "file-upload", files: File[]): void;
+
   /** Event beim Fokussieren des Eingabefelds */
-  (e: 'focus'): void;
-  
+  (e: "focus"): void;
+
   /** Event beim Verlassen des Eingabefelds */
-  (e: 'blur'): void;
-  
+  (e: "blur"): void;
+
   /** Event beim Drücken einer Taste */
-  (e: 'keydown', event: KeyboardEvent): void;
+  (e: "keydown", event: KeyboardEvent): void;
 }>();
 
 // Lokale Zustände
@@ -367,20 +430,22 @@ const selectionEnd = ref(0);
 
 // Computed Properties
 const canSubmit = computed(() => {
-  return inputValue.value.trim().length > 0 && 
-         (!props.maxLength || inputValue.value.length <= props.maxLength);
+  return (
+    inputValue.value.trim().length > 0 &&
+    (!props.maxLength || inputValue.value.length <= props.maxLength)
+  );
 });
 
 const formattedPreview = computed(() => {
-  if (!inputValue.value) return '';
-  
+  if (!inputValue.value) return "";
+
   try {
     let htmlContent = marked(inputValue.value);
     htmlContent = DOMPurify.sanitize(htmlContent);
     return htmlContent;
   } catch (error) {
-    console.error('Error formatting preview:', error);
-    return '<p>Fehler bei der Formatierung der Vorschau.</p>';
+    console.error("Error formatting preview:", error);
+    return "<p>Fehler bei der Formatierung der Vorschau.</p>";
   }
 });
 
@@ -390,18 +455,18 @@ function handleSubmit(): void {
   if (!canSubmit.value || props.disabled || props.isLoading) {
     return;
   }
-  
+
   const trimmedValue = inputValue.value.trim();
-  emit('submit', trimmedValue);
-  inputValue.value = '';
-  
+  emit("submit", trimmedValue);
+  inputValue.value = "";
+
   // Vorschau zurücksetzen
   markdownPreview.value = false;
-  
+
   // Textarea zurücksetzen und Größe anpassen
   nextTick(() => {
     resizeTextarea();
-    
+
     // Fokus auf Textarea setzen
     if (inputElement.value) {
       inputElement.value.focus();
@@ -417,51 +482,66 @@ function handleKeydown(event: KeyboardEvent): void {
   }
 
   // Event an die übergeordnete Komponente weiterleiten
-  emit('keydown', event);
-  
+  emit("keydown", event);
+
   // Enter zum Senden (ohne Shift)
-  if (event.key === 'Enter' && !event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey) {
+  if (
+    event.key === "Enter" &&
+    !event.shiftKey &&
+    !event.ctrlKey &&
+    !event.altKey &&
+    !event.metaKey
+  ) {
     event.preventDefault();
     handleSubmit();
     return;
   }
-  
+
   // Markdown-Vorschau mit Strg+P
-  if (event.key === 'p' && (event.ctrlKey || event.metaKey) && props.showMarkdownPreview) {
+  if (
+    event.key === "p" &&
+    (event.ctrlKey || event.metaKey) &&
+    props.showMarkdownPreview
+  ) {
     event.preventDefault();
     togglePreview();
     return;
   }
-  
+
   // Emojis mit : einleiten
-  if (event.key === ':' && props.showEmojiPicker) {
+  if (event.key === ":" && props.showEmojiPicker) {
     // Hier könnte man einen Emoji-Autocomplete starten
   }
-  
+
   // Auto-Vervollständigung für Markdown-Syntax
   if (inputElement.value) {
     const { selectionStart, selectionEnd } = inputElement.value;
-    
+
     // Automatisches Schließen von Klammern und Anführungszeichen
-    if (event.key === '(' || event.key === '[' || event.key === '{' || 
-        event.key === '"' || event.key === "'") {
+    if (
+      event.key === "(" ||
+      event.key === "[" ||
+      event.key === "{" ||
+      event.key === '"' ||
+      event.key === "'"
+    ) {
       const closingChar = {
-        '(': ')',
-        '[': ']',
-        '{': '}',
+        "(": ")",
+        "[": "]",
+        "{": "}",
         '"': '"',
-        "'": "'"
+        "'": "'",
       }[event.key];
-      
+
       // Nur automatisch schließen, wenn kein Text markiert ist
       if (selectionStart === selectionEnd && closingChar) {
         event.preventDefault();
-        
+
         const beforeCursor = inputValue.value.substring(0, selectionStart);
         const afterCursor = inputValue.value.substring(selectionEnd);
-        
+
         inputValue.value = `${beforeCursor}${event.key}${closingChar}${afterCursor}`;
-        
+
         nextTick(() => {
           if (inputElement.value) {
             inputElement.value.selectionStart = selectionStart + 1;
@@ -470,28 +550,28 @@ function handleKeydown(event: KeyboardEvent): void {
         });
       }
     }
-    
+
     // Automatisches Einrücken für Listen
-    if (event.key === 'Enter' && event.shiftKey) {
+    if (event.key === "Enter" && event.shiftKey) {
       const currentLine = getCurrentLine();
-      
+
       // Liste fortsetzen, wenn aktuelle Zeile mit "- " oder "* " beginnt
       if (/^(\s*[-*]\s+)(.*)$/.test(currentLine)) {
         const match = currentLine.match(/^(\s*[-*]\s+)(.*)$/);
-        
+
         if (match) {
           const [, listPrefix, content] = match;
-          
+
           // Wenn der Inhalt leer ist, Ende der Liste
           if (!content.trim()) {
             // Letzte Listenzeile entfernen und regulären Zeilenumbruch einfügen
             event.preventDefault();
             removeCurrentListItem();
-            insertText('\n');
+            insertText("\n");
           } else {
             // Liste fortsetzen
             event.preventDefault();
-            insertText('\n' + listPrefix);
+            insertText("\n" + listPrefix);
           }
         }
       }
@@ -501,25 +581,25 @@ function handleKeydown(event: KeyboardEvent): void {
 
 function handleFocus(): void {
   isFocused.value = true;
-  emit('focus');
+  emit("focus");
 }
 
 function handleBlur(): void {
   isFocused.value = false;
-  emit('blur');
+  emit("blur");
 }
 
 function handlePaste(event: ClipboardEvent): void {
   // Bilder aus der Zwischenablage verarbeiten
   if (props.allowFileUpload && event.clipboardData) {
     const items = event.clipboardData.items;
-    
+
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      
-      if (item.kind === 'file') {
+
+      if (item.kind === "file") {
         const file = item.getAsFile();
-        
+
         if (file) {
           // Datei-Typ prüfen
           if (isAllowedFileType(file.type)) {
@@ -534,14 +614,18 @@ function handlePaste(event: ClipboardEvent): void {
 
 function handleDrop(event: DragEvent): void {
   if (!props.allowFileUpload) return;
-  
+
   event.preventDefault();
   isDragging.value = false;
-  
-  if (event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+
+  if (
+    event.dataTransfer &&
+    event.dataTransfer.files &&
+    event.dataTransfer.files.length > 0
+  ) {
     const files: File[] = Array.from(event.dataTransfer.files);
-    const allowedFiles = files.filter(file => isAllowedFileType(file.type));
-    
+    const allowedFiles = files.filter((file) => isAllowedFileType(file.type));
+
     if (allowedFiles.length > 0) {
       handleFileUpload(allowedFiles);
     }
@@ -552,16 +636,16 @@ function handleDrop(event: DragEvent): void {
 onMounted(() => {
   const handleDragOver = (event: DragEvent) => {
     if (!props.allowFileUpload) return;
-    
+
     event.preventDefault();
     isDragging.value = true;
   };
-  
+
   const handleDragLeave = (event: DragEvent) => {
     if (!props.allowFileUpload) return;
-    
+
     event.preventDefault();
-    
+
     // Nur als falsch markieren, wenn der Drag wirklich das Element verlässt
     const rect = inputElement.value?.getBoundingClientRect();
     if (rect) {
@@ -575,39 +659,41 @@ onMounted(() => {
       }
     }
   };
-  
+
   const handleClickOutside = (event: MouseEvent) => {
     // Emoji-Picker schließen, wenn außerhalb geklickt wird
-    if (isEmojiPickerOpen.value && 
-        emojiPicker.value && 
-        !emojiPicker.value.contains(event.target as Node)) {
+    if (
+      isEmojiPickerOpen.value &&
+      emojiPicker.value &&
+      !emojiPicker.value.contains(event.target as Node)
+    ) {
       isEmojiPickerOpen.value = false;
     }
   };
-  
+
   // Event-Listener hinzufügen
   if (inputElement.value) {
-    inputElement.value.addEventListener('dragover', handleDragOver);
-    inputElement.value.addEventListener('dragleave', handleDragLeave);
+    inputElement.value.addEventListener("dragover", handleDragOver);
+    inputElement.value.addEventListener("dragleave", handleDragLeave);
   }
-  
-  document.addEventListener('click', handleClickOutside);
-  
+
+  document.addEventListener("click", handleClickOutside);
+
   // Event-Listener bei Komponenten-Zerstörung entfernen
   onBeforeUnmount(() => {
     if (inputElement.value) {
-      inputElement.value.removeEventListener('dragover', handleDragOver);
-      inputElement.value.removeEventListener('dragleave', handleDragLeave);
+      inputElement.value.removeEventListener("dragover", handleDragOver);
+      inputElement.value.removeEventListener("dragleave", handleDragLeave);
     }
-    
-    document.removeEventListener('click', handleClickOutside);
+
+    document.removeEventListener("click", handleClickOutside);
   });
-  
+
   // Initial die Textarea-Größe anpassen
   nextTick(() => {
     resizeTextarea();
   });
-  
+
   // Autofokus
   if (props.autofocus && inputElement.value) {
     inputElement.value.focus();
@@ -617,31 +703,33 @@ onMounted(() => {
 // Methoden
 function resizeTextarea(): void {
   if (!inputElement.value) return;
-  
+
   const textarea = inputElement.value;
-  
+
   // Höhe zurücksetzen
   textarea.style.height = `${props.initialHeight}px`;
-  
+
   // Neue Höhe berechnen (scrollHeight = Höhe des Inhalts)
   const newHeight = Math.min(
     Math.max(textarea.scrollHeight, props.minHeight),
-    props.maxHeight
+    props.maxHeight,
   );
-  
+
   textarea.style.height = `${newHeight}px`;
-  
+
   // Modellwert aktualisieren
-  emit('update:modelValue', inputValue.value);
+  emit("update:modelValue", inputValue.value);
 }
 
 function togglePreview(): void {
   markdownPreview.value = !markdownPreview.value;
-  
+
   if (markdownPreview.value) {
     nextTick(() => {
       // Code-Highlighting für die Vorschau
-      const previewElement = document.querySelector('.n-enhanced-message-input__preview-content');
+      const previewElement = document.querySelector(
+        ".n-enhanced-message-input__preview-content",
+      );
       if (previewElement) {
         highlightCode(previewElement as HTMLElement);
       }
@@ -655,14 +743,14 @@ function toggleEmojiPicker(): void {
 
 function insertEmoji(emoji: string): void {
   if (!inputElement.value) return;
-  
+
   const { selectionStart, selectionEnd } = inputElement.value;
-  
+
   const beforeCursor = inputValue.value.substring(0, selectionStart);
   const afterCursor = inputValue.value.substring(selectionEnd);
-  
+
   inputValue.value = `${beforeCursor}${emoji}${afterCursor}`;
-  
+
   nextTick(() => {
     if (inputElement.value) {
       const newCursorPos = selectionStart + emoji.length;
@@ -672,59 +760,60 @@ function insertEmoji(emoji: string): void {
       resizeTextarea();
     }
   });
-  
+
   isEmojiPickerOpen.value = false;
 }
 
 function formatText(format: string): void {
   if (!inputElement.value) return;
-  
+
   // Aktuelle Selektion oder Cursor-Position erhalten
   const { selectionStart, selectionEnd } = inputElement.value;
-  
+
   // Aktuell ausgewählten Text erhalten
   const selectedText = inputValue.value.substring(selectionStart, selectionEnd);
-  
+
   // Text vor und nach der Selektion
   const beforeSelection = inputValue.value.substring(0, selectionStart);
   const afterSelection = inputValue.value.substring(selectionEnd);
-  
+
   // Formatierung anwenden
   let formattedText;
-  
+
   if (selectedText) {
     // Wenn Text ausgewählt ist, diesen formatieren
-    formattedText = format.replace('$selection$', selectedText);
+    formattedText = format.replace("$selection$", selectedText);
   } else {
     // Wenn kein Text ausgewählt ist, Platzhalter einfügen
-    formattedText = format.replace('$selection$', 'Text');
+    formattedText = format.replace("$selection$", "Text");
   }
-  
+
   // Neuen Text zusammensetzen
   inputValue.value = beforeSelection + formattedText + afterSelection;
-  
+
   // Textarea aktualisieren und Selektion anpassen
   nextTick(() => {
     if (inputElement.value) {
       inputElement.value.focus();
-      
+
       if (selectedText) {
         // Selektion auf den formatierten Text setzen
         const newSelectionStart = beforeSelection.length;
         const newSelectionEnd = newSelectionStart + formattedText.length;
-        
+
         inputElement.value.selectionStart = newSelectionStart;
         inputElement.value.selectionEnd = newSelectionEnd;
       } else {
         // Cursor in die Mitte des Platzhalters setzen
-        const placeholderPos = format.indexOf('$selection$');
+        const placeholderPos = format.indexOf("$selection$");
         if (placeholderPos !== -1) {
-          const textPos = beforeSelection.length + placeholderPos + 'Text'.length / 2;
+          const textPos =
+            beforeSelection.length + placeholderPos + "Text".length / 2;
           inputElement.value.selectionStart = textPos;
           inputElement.value.selectionEnd = textPos;
         }
       }
-      
+
       resizeTextarea();
     }
   });
@@ -738,37 +827,39 @@ function triggerFileUpload(): void {
 
 function handleFileInputChange(event: Event): void {
   const input = event.target as HTMLInputElement;
-  
+
   if (input.files && input.files.length > 0) {
     const files = Array.from(input.files);
     handleFileUpload(files);
-    
+
     // Input zurücksetzen, damit dasselbe File erneut ausgewählt werden kann
-    input.value = '';
+    input.value = "";
   }
 }
 
 function handleFileUpload(files: File[]): void {
   // Überprüfen, ob alle Dateien erlaubt sind
-  const allowedFiles = files.filter(file => isAllowedFileType(file.type || file.name));
-  
+  const allowedFiles = files.filter((file) =>
+    isAllowedFileType(file.type || file.name),
+  );
+
   if (allowedFiles.length > 0) {
-    emit('file-upload', allowedFiles);
+    emit("file-upload", allowedFiles);
   }
 }
 
 function isAllowedFileType(fileType: string): boolean {
   if (props.allowedFileTypes.length === 0) return true;
-  
+
   // Dateityp aus MIME-Type oder Dateiname ermitteln
-  const extension = fileType.startsWith('.')
+  const extension = fileType.startsWith(".")
     ? fileType.toLowerCase()
-    : '.' + fileType.split('/').pop()?.toLowerCase();
-  
-  return props.allowedFileTypes.some(type => {
-    if (type.includes('/')) {
+    : "." + fileType.split("/").pop()?.toLowerCase();
+
+  return props.allowedFileTypes.some((type) => {
+    if (type.includes("/")) {
       // MIME-Type-Vergleich
-      return fileType === type || fileType.startsWith(type.split('/')[0] + '/');
+      return fileType === type || fileType.startsWith(type.split("/")[0] + "/");
     } else {
       // Dateiendungs-Vergleich
       return type.toLowerCase() === extension;
@@ -778,47 +869,47 @@ function isAllowedFileType(fileType: string): boolean {
 
 // Hilfsfunktionen für die Markdown-Bearbeitung
 function getCurrentLine(): string {
-  if (!inputElement.value) return '';
-  
+  if (!inputElement.value) return "";
+
   const { selectionStart } = inputElement.value;
   const text = inputValue.value;
-  
+
   // Anfang der aktuellen Zeile finden
   let lineStart = selectionStart;
-  while (lineStart > 0 && text[lineStart - 1] !== '\n') {
+  while (lineStart > 0 && text[lineStart - 1] !== "\n") {
     lineStart--;
   }
-  
+
   // Ende der aktuellen Zeile finden
   let lineEnd = selectionStart;
-  while (lineEnd < text.length && text[lineEnd] !== '\n') {
+  while (lineEnd < text.length && text[lineEnd] !== "\n") {
     lineEnd++;
   }
-  
+
   return text.substring(lineStart, lineEnd);
 }
 
 function removeCurrentListItem(): void {
   if (!inputElement.value) return;
-  
+
   const { selectionStart } = inputElement.value;
   const text = inputValue.value;
-  
+
   // Anfang der aktuellen Zeile finden
   let lineStart = selectionStart;
-  while (lineStart > 0 && text[lineStart - 1] !== '\n') {
+  while (lineStart > 0 && text[lineStart - 1] !== "\n") {
     lineStart--;
   }
-  
+
   // Ende der aktuellen Zeile finden
   let lineEnd = selectionStart;
-  while (lineEnd < text.length && text[lineEnd] !== '\n') {
+  while (lineEnd < text.length && text[lineEnd] !== "\n") {
     lineEnd++;
   }
-  
+
   // Zeile entfernen
   inputValue.value = text.substring(0, lineStart) + text.substring(lineEnd);
-  
+
   // Cursor an den Anfang der Zeile setzen
   nextTick(() => {
     if (inputElement.value) {
@@ -830,14 +921,14 @@ function removeCurrentListItem(): void {
 
 function insertText(text: string): void {
   if (!inputElement.value) return;
-  
+
   const { selectionStart, selectionEnd } = inputElement.value;
-  
+
   const beforeCursor = inputValue.value.substring(0, selectionStart);
   const afterCursor = inputValue.value.substring(selectionEnd);
-  
+
   inputValue.value = beforeCursor + text + afterCursor;
-  
+
   nextTick(() => {
     if (inputElement.value) {
       const newCursorPos = selectionStart + text.length;
@@ -849,21 +940,27 @@ function insertText(text: string): void {
 }
 
 // Watches
-watch(() => props.modelValue, (newValue) => {
-  if (newValue !== inputValue.value) {
-    inputValue.value = newValue;
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    if (newValue !== inputValue.value) {
+      inputValue.value = newValue;
+      nextTick(() => {
+        resizeTextarea();
+      });
+    }
+  },
+);
+
+// Stellt sicher, dass die Größe angepasst wird, wenn sich der Wert ändert
+watch(
+  () => inputValue.value,
+  () => {
     nextTick(() => {
       resizeTextarea();
     });
-  }
-});
-
-// Stellt sicher, dass die Größe angepasst wird, wenn sich der Wert ändert
-watch(() => inputValue.value, () => {
-  nextTick(() => {
-    resizeTextarea();
-  });
-});
+  },
+);
 </script>
 
 <style scoped>
@@ -912,7 +1009,7 @@ watch(() => inputValue.value, () => {
   width: 100%;
   border: none;
   background: transparent;
-  font-family: var(--nscale-font-family-base, 'Segoe UI', sans-serif);
+  font-family: var(--nscale-font-family-base, "Segoe UI", sans-serif);
   font-size: var(--nscale-font-size-base, 1rem);
   color: var(--nscale-text, #1a202c);
   padding: var(--nscale-space-3, 0.75rem) var(--nscale-space-4, 1rem);
@@ -1030,7 +1127,8 @@ watch(() => inputValue.value, () => {
   align-items: center;
   justify-content: space-between;
   padding: var(--nscale-space-2, 0.5rem) var(--nscale-space-3, 0.75rem);
-  border-top: 1px solid var(--nscale-border-color-light, rgba(226, 232, 240, 0.6));
+  border-top: 1px solid
+    var(--nscale-border-color-light, rgba(226, 232, 240, 0.6));
 }
 
 /* Zeichenzähler */
@@ -1110,7 +1208,7 @@ watch(() => inputValue.value, () => {
 }
 
 .n-enhanced-message-input__send-icon::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -1159,7 +1257,11 @@ watch(() => inputValue.value, () => {
   background-color: white;
   border: 1px solid var(--nscale-border-color, #e2e8f0);
   border-radius: var(--nscale-border-radius-md, 0.5rem);
-  box-shadow: var(--nscale-shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06));
+  box-shadow: var(
+    --nscale-shadow-md,
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06)
+  );
   z-index: 10;
   overflow-y: auto;
 }
@@ -1285,13 +1387,15 @@ watch(() => inputValue.value, () => {
 
 /* Animationen */
 @keyframes dot-pulse {
-  0%, 80%, 100% { 
+  0%,
+  80%,
+  100% {
     transform: scale(0.8);
-    opacity: 0.6; 
+    opacity: 0.6;
   }
-  40% { 
+  40% {
     transform: scale(1);
-    opacity: 1; 
+    opacity: 1;
   }
 }
 
@@ -1300,25 +1404,25 @@ watch(() => inputValue.value, () => {
   .n-enhanced-message-input {
     border-radius: var(--nscale-border-radius-sm, 0.25rem);
   }
-  
+
   .n-enhanced-message-input__textarea {
     padding: var(--nscale-space-2, 0.5rem) var(--nscale-space-3, 0.75rem);
     font-size: var(--nscale-font-size-sm, 0.875rem);
   }
-  
+
   .n-enhanced-message-input__actions {
     padding: var(--nscale-space-2, 0.5rem);
   }
-  
+
   .n-enhanced-message-input__send-btn {
     width: 30px;
     height: 30px;
   }
-  
+
   .n-enhanced-message-input__format-buttons {
     display: none;
   }
-  
+
   .n-enhanced-message-input__shortcuts {
     display: none;
   }
@@ -1329,7 +1433,7 @@ watch(() => inputValue.value, () => {
   .n-enhanced-message-input__loading-indicator span {
     animation: none;
   }
-  
+
   .n-enhanced-message-input__send-btn:hover:not(:disabled) {
     transform: none;
   }

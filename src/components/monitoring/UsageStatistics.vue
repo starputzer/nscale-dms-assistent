@@ -1,12 +1,18 @@
 <template>
   <div class="usage-statistics">
     <div class="usage-header">
-      <h3>{{ t('monitoring.usage.title', 'Nutzungsstatistiken') }}</h3>
+      <h3>{{ t("monitoring.usage.title", "Nutzungsstatistiken") }}</h3>
       <div class="usage-controls">
         <select v-model="viewMode" class="control-select">
-          <option value="time">{{ t('monitoring.usage.viewMode.time', 'Zeitbezogen') }}</option>
-          <option value="user">{{ t('monitoring.usage.viewMode.user', 'Benutzerbezogen') }}</option>
-          <option value="feedback">{{ t('monitoring.usage.viewMode.feedback', 'Feedback') }}</option>
+          <option value="time">
+            {{ t("monitoring.usage.viewMode.time", "Zeitbezogen") }}
+          </option>
+          <option value="user">
+            {{ t("monitoring.usage.viewMode.user", "Benutzerbezogen") }}
+          </option>
+          <option value="feedback">
+            {{ t("monitoring.usage.viewMode.feedback", "Feedback") }}
+          </option>
         </select>
       </div>
     </div>
@@ -15,42 +21,66 @@
     <div v-if="viewMode === 'time'" class="usage-time-view">
       <div class="usage-cards">
         <div class="usage-card">
-          <div class="usage-card-title">{{ t('monitoring.usage.avgActivationTime', 'Durchschn. Aktivierungszeit') }}</div>
-          <div class="usage-card-value">{{ formatDuration(avgActivationTime) }}</div>
+          <div class="usage-card-title">
+            {{
+              t(
+                "monitoring.usage.avgActivationTime",
+                "Durchschn. Aktivierungszeit",
+              )
+            }}
+          </div>
+          <div class="usage-card-value">
+            {{ formatDuration(avgActivationTime) }}
+          </div>
           <div class="usage-card-chart">
             <div class="mini-chart">
-              <div 
-                v-for="(value, index) in activationTrend" 
+              <div
+                v-for="(value, index) in activationTrend"
                 :key="index"
                 class="mini-chart-bar"
-                :style="{ height: `${calculateBarHeight(value, maxActivationTime)}%` }"
+                :style="{
+                  height: `${calculateBarHeight(value, maxActivationTime)}%`,
+                }"
               ></div>
             </div>
           </div>
         </div>
-        
+
         <div class="usage-card">
-          <div class="usage-card-title">{{ t('monitoring.usage.avgSessionDuration', 'Durchschn. Sitzungsdauer') }}</div>
-          <div class="usage-card-value">{{ formatDuration(avgSessionDuration) }}</div>
+          <div class="usage-card-title">
+            {{
+              t(
+                "monitoring.usage.avgSessionDuration",
+                "Durchschn. Sitzungsdauer",
+              )
+            }}
+          </div>
+          <div class="usage-card-value">
+            {{ formatDuration(avgSessionDuration) }}
+          </div>
           <div class="usage-card-chart">
             <div class="mini-chart">
-              <div 
-                v-for="(value, index) in sessionTrend" 
+              <div
+                v-for="(value, index) in sessionTrend"
                 :key="index"
                 class="mini-chart-bar"
-                :style="{ height: `${calculateBarHeight(value, maxSessionDuration)}%` }"
+                :style="{
+                  height: `${calculateBarHeight(value, maxSessionDuration)}%`,
+                }"
               ></div>
             </div>
           </div>
         </div>
-        
+
         <div class="usage-card">
-          <div class="usage-card-title">{{ t('monitoring.usage.toggleOperations', 'Toggle-Operationen') }}</div>
+          <div class="usage-card-title">
+            {{ t("monitoring.usage.toggleOperations", "Toggle-Operationen") }}
+          </div>
           <div class="usage-card-value">{{ totalToggles }}</div>
           <div class="usage-card-chart">
             <div class="mini-chart">
-              <div 
-                v-for="(value, index) in toggleTrend" 
+              <div
+                v-for="(value, index) in toggleTrend"
                 :key="index"
                 class="mini-chart-bar"
                 :style="{ height: `${calculateBarHeight(value, maxToggles)}%` }"
@@ -58,14 +88,16 @@
             </div>
           </div>
         </div>
-        
+
         <div class="usage-card">
-          <div class="usage-card-title">{{ t('monitoring.usage.uniqueUsers', 'Eindeutige Benutzer') }}</div>
+          <div class="usage-card-title">
+            {{ t("monitoring.usage.uniqueUsers", "Eindeutige Benutzer") }}
+          </div>
           <div class="usage-card-value">{{ uniqueUsers }}</div>
           <div class="usage-card-chart">
             <div class="mini-chart">
-              <div 
-                v-for="(value, index) in userTrend" 
+              <div
+                v-for="(value, index) in userTrend"
                 :key="index"
                 class="mini-chart-bar"
                 :style="{ height: `${calculateBarHeight(value, maxUsers)}%` }"
@@ -76,31 +108,65 @@
       </div>
 
       <div class="usage-feature-stats">
-        <h4>{{ t('monitoring.usage.featureUsageStats', 'Feature-Nutzungsstatistiken') }}</h4>
+        <h4>
+          {{
+            t(
+              "monitoring.usage.featureUsageStats",
+              "Feature-Nutzungsstatistiken",
+            )
+          }}
+        </h4>
         <table class="usage-table">
           <thead>
             <tr>
-              <th @click="sortFeatures('name')" :class="{ sorted: sortField === 'name' }">
-                {{ t('monitoring.usage.columns.feature', 'Feature') }}
-                <span v-if="sortField === 'name'" class="sort-icon">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+              <th
+                @click="sortFeatures('name')"
+                :class="{ sorted: sortField === 'name' }"
+              >
+                {{ t("monitoring.usage.columns.feature", "Feature") }}
+                <span v-if="sortField === 'name'" class="sort-icon">{{
+                  sortDirection === "asc" ? "▲" : "▼"
+                }}</span>
               </th>
-              <th @click="sortFeatures('activations')" :class="{ sorted: sortField === 'activations' }">
-                {{ t('monitoring.usage.columns.activations', 'Aktivierungen') }}
-                <span v-if="sortField === 'activations'" class="sort-icon">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+              <th
+                @click="sortFeatures('activations')"
+                :class="{ sorted: sortField === 'activations' }"
+              >
+                {{ t("monitoring.usage.columns.activations", "Aktivierungen") }}
+                <span v-if="sortField === 'activations'" class="sort-icon">{{
+                  sortDirection === "asc" ? "▲" : "▼"
+                }}</span>
               </th>
-              <th @click="sortFeatures('avgDuration')" :class="{ sorted: sortField === 'avgDuration' }">
-                {{ t('monitoring.usage.columns.avgDuration', 'Durchschn. Dauer') }}
-                <span v-if="sortField === 'avgDuration'" class="sort-icon">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+              <th
+                @click="sortFeatures('avgDuration')"
+                :class="{ sorted: sortField === 'avgDuration' }"
+              >
+                {{
+                  t("monitoring.usage.columns.avgDuration", "Durchschn. Dauer")
+                }}
+                <span v-if="sortField === 'avgDuration'" class="sort-icon">{{
+                  sortDirection === "asc" ? "▲" : "▼"
+                }}</span>
               </th>
-              <th @click="sortFeatures('toggles')" :class="{ sorted: sortField === 'toggles' }">
-                {{ t('monitoring.usage.columns.toggles', 'Umschaltungen') }}
-                <span v-if="sortField === 'toggles'" class="sort-icon">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+              <th
+                @click="sortFeatures('toggles')"
+                :class="{ sorted: sortField === 'toggles' }"
+              >
+                {{ t("monitoring.usage.columns.toggles", "Umschaltungen") }}
+                <span v-if="sortField === 'toggles'" class="sort-icon">{{
+                  sortDirection === "asc" ? "▲" : "▼"
+                }}</span>
               </th>
-              <th @click="sortFeatures('errors')" :class="{ sorted: sortField === 'errors' }">
-                {{ t('monitoring.usage.columns.errors', 'Fehler') }}
-                <span v-if="sortField === 'errors'" class="sort-icon">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+              <th
+                @click="sortFeatures('errors')"
+                :class="{ sorted: sortField === 'errors' }"
+              >
+                {{ t("monitoring.usage.columns.errors", "Fehler") }}
+                <span v-if="sortField === 'errors'" class="sort-icon">{{
+                  sortDirection === "asc" ? "▲" : "▼"
+                }}</span>
               </th>
-              <th>{{ t('monitoring.usage.columns.status', 'Status') }}</th>
+              <th>{{ t("monitoring.usage.columns.status", "Status") }}</th>
             </tr>
           </thead>
           <tbody>
@@ -110,20 +176,25 @@
               <td>{{ formatDuration(feature.avgDuration) }}</td>
               <td>{{ feature.toggles }}</td>
               <td>
-                <span 
-                  :class="feature.errors > 0 ? 'error-count has-errors' : 'error-count'"
+                <span
+                  :class="
+                    feature.errors > 0
+                      ? 'error-count has-errors'
+                      : 'error-count'
+                  "
                 >
                   {{ feature.errors }}
                 </span>
               </td>
               <td>
-                <span 
+                <span
                   class="feature-status"
                   :class="feature.active ? 'status-active' : 'status-inactive'"
                 >
-                  {{ feature.active 
-                    ? t('monitoring.usage.status.active', 'Aktiv') 
-                    : t('monitoring.usage.status.inactive', 'Inaktiv') 
+                  {{
+                    feature.active
+                      ? t("monitoring.usage.status.active", "Aktiv")
+                      : t("monitoring.usage.status.inactive", "Inaktiv")
                   }}
                 </span>
               </td>
@@ -136,31 +207,52 @@
     <!-- Benutzerbezogene Ansicht -->
     <div v-if="viewMode === 'user'" class="usage-user-view">
       <div class="user-segmentation">
-        <h4>{{ t('monitoring.usage.userSegmentation', 'Benutzersegmentierung') }}</h4>
+        <h4>
+          {{ t("monitoring.usage.userSegmentation", "Benutzersegmentierung") }}
+        </h4>
         <div class="segmentation-chart">
-          <div class="segmentation-item" v-for="(segment, index) in userSegments" :key="index">
+          <div
+            class="segmentation-item"
+            v-for="(segment, index) in userSegments"
+            :key="index"
+          >
             <div class="segment-label">{{ segment.label }}</div>
             <div class="segment-bar-container">
-              <div 
+              <div
                 class="segment-bar"
-                :style="{ width: `${segment.percentage}%`, backgroundColor: segment.color }"
+                :style="{
+                  width: `${segment.percentage}%`,
+                  backgroundColor: segment.color,
+                }"
               ></div>
-              <span class="segment-value">{{ segment.count }} ({{ segment.percentage }}%)</span>
+              <span class="segment-value"
+                >{{ segment.count }} ({{ segment.percentage }}%)</span
+              >
             </div>
           </div>
         </div>
       </div>
 
       <div class="user-sessions">
-        <h4>{{ t('monitoring.usage.recentSessions', 'Neueste Sitzungen') }}</h4>
+        <h4>{{ t("monitoring.usage.recentSessions", "Neueste Sitzungen") }}</h4>
         <table class="sessions-table">
           <thead>
             <tr>
-              <th>{{ t('monitoring.usage.columns.user', 'Benutzer') }}</th>
-              <th>{{ t('monitoring.usage.columns.startTime', 'Startzeit') }}</th>
-              <th>{{ t('monitoring.usage.columns.duration', 'Dauer') }}</th>
-              <th>{{ t('monitoring.usage.columns.features', 'Genutzte Features') }}</th>
-              <th>{{ t('monitoring.usage.columns.interactions', 'Interaktionen') }}</th>
+              <th>{{ t("monitoring.usage.columns.user", "Benutzer") }}</th>
+              <th>
+                {{ t("monitoring.usage.columns.startTime", "Startzeit") }}
+              </th>
+              <th>{{ t("monitoring.usage.columns.duration", "Dauer") }}</th>
+              <th>
+                {{
+                  t("monitoring.usage.columns.features", "Genutzte Features")
+                }}
+              </th>
+              <th>
+                {{
+                  t("monitoring.usage.columns.interactions", "Interaktionen")
+                }}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -170,15 +262,19 @@
               <td>{{ formatDuration(session.duration) }}</td>
               <td>
                 <div class="feature-tags">
-                  <span 
-                    v-for="(feature, i) in session.features.slice(0, 3)" 
-                    :key="i" 
+                  <span
+                    v-for="(feature, i) in session.features.slice(0, 3)"
+                    :key="i"
                     class="feature-tag"
                   >
                     {{ formatFeatureName(feature) }}
                   </span>
-                  <span v-if="session.features.length > 3" class="feature-tag more-tag">
-                    +{{ session.features.length - 3 }} {{ t('monitoring.usage.more', 'mehr') }}
+                  <span
+                    v-if="session.features.length > 3"
+                    class="feature-tag more-tag"
+                  >
+                    +{{ session.features.length - 3 }}
+                    {{ t("monitoring.usage.more", "mehr") }}
                   </span>
                 </div>
               </td>
@@ -193,31 +289,36 @@
     <div v-if="viewMode === 'feedback'" class="usage-feedback-view">
       <div class="feedback-summary">
         <div class="feedback-card">
-          <div class="feedback-card-title">{{ t('monitoring.usage.avgRating', 'Durchschn. Bewertung') }}</div>
-          <div class="feedback-card-value">{{ averageRating.toFixed(1) }}/5.0</div>
+          <div class="feedback-card-title">
+            {{ t("monitoring.usage.avgRating", "Durchschn. Bewertung") }}
+          </div>
+          <div class="feedback-card-value">
+            {{ averageRating.toFixed(1) }}/5.0
+          </div>
           <div class="rating-stars">
             <div class="stars-container">
-              <div class="stars-filled" :style="{ width: `${averageRating * 20}%` }"></div>
+              <div
+                class="stars-filled"
+                :style="{ width: `${averageRating * 20}%` }"
+              ></div>
             </div>
           </div>
         </div>
-        
+
         <div class="feedback-card">
-          <div class="feedback-card-title">{{ t('monitoring.usage.totalFeedback', 'Gesamtanzahl Feedback') }}</div>
+          <div class="feedback-card-title">
+            {{ t("monitoring.usage.totalFeedback", "Gesamtanzahl Feedback") }}
+          </div>
           <div class="feedback-card-value">{{ totalFeedback }}</div>
           <div class="feedback-distribution">
-            <div 
-              v-for="i in 5" 
-              :key="i" 
-              class="rating-bar-container"
-            >
+            <div v-for="i in 5" :key="i" class="rating-bar-container">
               <div class="rating-label">{{ i }}</div>
               <div class="rating-bar-wrapper">
-                <div 
-                  class="rating-bar" 
-                  :style="{ 
+                <div
+                  class="rating-bar"
+                  :style="{
                     width: `${calculateRatingPercentage(i)}%`,
-                    backgroundColor: getRatingColor(i)
+                    backgroundColor: getRatingColor(i),
                   }"
                 ></div>
                 <span class="rating-count">{{ getRatingCount(i) }}</span>
@@ -228,15 +329,30 @@
       </div>
 
       <div class="feature-feedback">
-        <h4>{{ t('monitoring.usage.featureFeedback', 'Feature-spezifisches Feedback') }}</h4>
+        <h4>
+          {{
+            t(
+              "monitoring.usage.featureFeedback",
+              "Feature-spezifisches Feedback",
+            )
+          }}
+        </h4>
         <table class="feedback-table">
           <thead>
             <tr>
-              <th>{{ t('monitoring.usage.columns.feature', 'Feature') }}</th>
-              <th>{{ t('monitoring.usage.columns.avgRating', 'Bewertung') }}</th>
-              <th>{{ t('monitoring.usage.columns.feedbackCount', 'Anzahl') }}</th>
-              <th>{{ t('monitoring.usage.columns.sentiment', 'Sentiment') }}</th>
-              <th>{{ t('monitoring.usage.columns.comments', 'Kommentare') }}</th>
+              <th>{{ t("monitoring.usage.columns.feature", "Feature") }}</th>
+              <th>
+                {{ t("monitoring.usage.columns.avgRating", "Bewertung") }}
+              </th>
+              <th>
+                {{ t("monitoring.usage.columns.feedbackCount", "Anzahl") }}
+              </th>
+              <th>
+                {{ t("monitoring.usage.columns.sentiment", "Sentiment") }}
+              </th>
+              <th>
+                {{ t("monitoring.usage.columns.comments", "Kommentare") }}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -246,7 +362,10 @@
                 <div class="table-rating">
                   <div class="table-stars">
                     <div class="stars-container small">
-                      <div class="stars-filled" :style="{ width: `${feedback.rating * 20}%` }"></div>
+                      <div
+                        class="stars-filled"
+                        :style="{ width: `${feedback.rating * 20}%` }"
+                      ></div>
                     </div>
                   </div>
                   <span>{{ feedback.rating.toFixed(1) }}</span>
@@ -254,13 +373,21 @@
               </td>
               <td>{{ feedback.count }}</td>
               <td>
-                <div class="sentiment-indicator" :class="getSentimentClass(feedback.sentiment)">
+                <div
+                  class="sentiment-indicator"
+                  :class="getSentimentClass(feedback.sentiment)"
+                >
                   {{ getSentimentLabel(feedback.sentiment) }}
                 </div>
               </td>
               <td>
-                <button @click="showFeedbackComments(feedback.feature)" class="comments-button">
-                  {{ t('monitoring.usage.viewComments', 'Kommentare anzeigen') }}
+                <button
+                  @click="showFeedbackComments(feedback.feature)"
+                  class="comments-button"
+                >
+                  {{
+                    t("monitoring.usage.viewComments", "Kommentare anzeigen")
+                  }}
                 </button>
               </td>
             </tr>
@@ -272,30 +399,45 @@
         <div class="feedback-comments-content">
           <div class="feedback-comments-header">
             <h4>
-              {{ t('monitoring.usage.commentsFor', 'Kommentare für') }}:
+              {{ t("monitoring.usage.commentsFor", "Kommentare für") }}:
               {{ formatFeatureName(selectedFeatureFeedback) }}
             </h4>
             <button @click="closeComments" class="close-button">&times;</button>
           </div>
           <div class="feedback-comments-list">
-            <div 
-              v-for="(comment, index) in getFeatureComments(selectedFeatureFeedback)" 
+            <div
+              v-for="(comment, index) in getFeatureComments(
+                selectedFeatureFeedback,
+              )"
               :key="index"
               class="feedback-comment"
             >
               <div class="comment-header">
                 <div class="comment-rating">
                   <div class="stars-container small">
-                    <div class="stars-filled" :style="{ width: `${comment.rating * 20}%` }"></div>
+                    <div
+                      class="stars-filled"
+                      :style="{ width: `${comment.rating * 20}%` }"
+                    ></div>
                   </div>
                 </div>
                 <div class="comment-date">{{ formatDate(comment.date) }}</div>
               </div>
               <div class="comment-text">{{ comment.text }}</div>
-              <div v-if="comment.userId" class="comment-user">{{ comment.userId }}</div>
+              <div v-if="comment.userId" class="comment-user">
+                {{ comment.userId }}
+              </div>
             </div>
-            <div v-if="getFeatureComments(selectedFeatureFeedback).length === 0" class="no-comments">
-              {{ t('monitoring.usage.noComments', 'Keine Kommentare für dieses Feature vorhanden') }}
+            <div
+              v-if="getFeatureComments(selectedFeatureFeedback).length === 0"
+              class="no-comments"
+            >
+              {{
+                t(
+                  "monitoring.usage.noComments",
+                  "Keine Kommentare für dieses Feature vorhanden",
+                )
+              }}
             </div>
           </div>
         </div>
@@ -305,8 +447,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useI18n } from '@/composables/useI18n';
+import { ref, computed } from "vue";
+import { useI18n } from "@/composables/useI18n";
 
 // Typen
 interface FeatureStats {
@@ -387,14 +529,18 @@ const props = defineProps<UsageStatisticsProps>();
 const { t } = useI18n();
 
 // State
-const viewMode = ref<'time' | 'user' | 'feedback'>('time');
-const sortField = ref<string>('activations');
-const sortDirection = ref<'asc' | 'desc'>('desc');
+const viewMode = ref<"time" | "user" | "feedback">("time");
+const sortField = ref<string>("activations");
+const sortDirection = ref<"asc" | "desc">("desc");
 const selectedFeatureFeedback = ref<string | null>(null);
 
 // Berechnete Eigenschaften - Zeitbezogene Ansicht
-const avgActivationTime = computed(() => props.statistics.activationTime.average);
-const avgSessionDuration = computed(() => props.statistics.sessionDuration.average);
+const avgActivationTime = computed(
+  () => props.statistics.activationTime.average,
+);
+const avgSessionDuration = computed(
+  () => props.statistics.sessionDuration.average,
+);
 const totalToggles = computed(() => props.statistics.toggleOperations.total);
 const uniqueUsers = computed(() => props.statistics.uniqueUsers.total);
 
@@ -411,33 +557,33 @@ const maxUsers = computed(() => Math.max(...userTrend.value));
 // Sortierte Features
 const sortedFeatures = computed(() => {
   const features = [...props.statistics.featureStats];
-  
+
   features.sort((a, b) => {
     let comparison = 0;
-    
+
     switch (sortField.value) {
-      case 'name':
+      case "name":
         comparison = a.name.localeCompare(b.name);
         break;
-      case 'activations':
+      case "activations":
         comparison = a.activations - b.activations;
         break;
-      case 'avgDuration':
+      case "avgDuration":
         comparison = a.avgDuration - b.avgDuration;
         break;
-      case 'toggles':
+      case "toggles":
         comparison = a.toggles - b.toggles;
         break;
-      case 'errors':
+      case "errors":
         comparison = a.errors - b.errors;
         break;
       default:
         comparison = 0;
     }
-    
-    return sortDirection.value === 'asc' ? comparison : -comparison;
+
+    return sortDirection.value === "asc" ? comparison : -comparison;
   });
-  
+
   return features;
 });
 
@@ -448,47 +594,49 @@ const recentSessions = computed(() => props.statistics.recentSessions);
 // Berechnete Eigenschaften - Feedback-Ansicht
 const averageRating = computed(() => props.statistics.feedback.average);
 const totalFeedback = computed(() => props.statistics.feedback.total);
-const featureFeedback = computed(() => props.statistics.feedback.featureFeedback);
+const featureFeedback = computed(
+  () => props.statistics.feedback.featureFeedback,
+);
 
 // Methoden
 function formatDuration(milliseconds: number): string {
   if (milliseconds < 1000) {
     return `${milliseconds}ms`;
   }
-  
+
   const seconds = Math.floor(milliseconds / 1000);
-  
+
   if (seconds < 60) {
     return `${seconds}s`;
   }
-  
+
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
-  
+
   if (minutes < 60) {
     return `${minutes}m ${remainingSeconds}s`;
   }
-  
+
   const hours = Math.floor(minutes / 60);
   const remainingMinutes = minutes % 60;
-  
+
   return `${hours}h ${remainingMinutes}m`;
 }
 
 function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  return new Intl.DateTimeFormat("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   }).format(date);
 }
 
 function formatFeatureName(feature: string): string {
   return feature
-    .replace(/^use/, '')
-    .replace(/([A-Z])/g, ' $1')
+    .replace(/^use/, "")
+    .replace(/([A-Z])/g, " $1")
     .trim();
 }
 
@@ -499,10 +647,10 @@ function calculateBarHeight(value: number, max: number): number {
 
 function sortFeatures(field: string): void {
   if (sortField.value === field) {
-    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+    sortDirection.value = sortDirection.value === "asc" ? "desc" : "asc";
   } else {
     sortField.value = field;
-    sortDirection.value = 'desc';
+    sortDirection.value = "desc";
   }
 }
 
@@ -518,26 +666,28 @@ function getRatingCount(rating: number): number {
 
 function getRatingColor(rating: number): string {
   const colors = [
-    '#ef4444', // 1 - rot
-    '#f97316', // 2 - orange
-    '#f59e0b', // 3 - bernstein
-    '#84cc16', // 4 - hellgrün
-    '#10b981'  // 5 - grün
+    "#ef4444", // 1 - rot
+    "#f97316", // 2 - orange
+    "#f59e0b", // 3 - bernstein
+    "#84cc16", // 4 - hellgrün
+    "#10b981", // 5 - grün
   ];
-  
+
   return colors[rating - 1];
 }
 
 function getSentimentClass(sentiment: number): string {
-  if (sentiment >= 0.7) return 'sentiment-positive';
-  if (sentiment >= 0.4) return 'sentiment-neutral';
-  return 'sentiment-negative';
+  if (sentiment >= 0.7) return "sentiment-positive";
+  if (sentiment >= 0.4) return "sentiment-neutral";
+  return "sentiment-negative";
 }
 
 function getSentimentLabel(sentiment: number): string {
-  if (sentiment >= 0.7) return t('monitoring.usage.sentiment.positive', 'Positiv');
-  if (sentiment >= 0.4) return t('monitoring.usage.sentiment.neutral', 'Neutral');
-  return t('monitoring.usage.sentiment.negative', 'Negativ');
+  if (sentiment >= 0.7)
+    return t("monitoring.usage.sentiment.positive", "Positiv");
+  if (sentiment >= 0.4)
+    return t("monitoring.usage.sentiment.neutral", "Neutral");
+  return t("monitoring.usage.sentiment.negative", "Negativ");
 }
 
 function showFeedbackComments(feature: string): void {
@@ -555,7 +705,7 @@ function getFeatureComments(feature: string): FeedbackComment[] {
 
 <style scoped>
 .usage-statistics {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .usage-header {
@@ -727,7 +877,8 @@ function getFeatureComments(feature: string): FeedbackComment[] {
   gap: 20px;
 }
 
-.user-segmentation, .user-sessions {
+.user-segmentation,
+.user-sessions {
   background-color: white;
   border-radius: 6px;
   padding: 20px;
@@ -735,7 +886,8 @@ function getFeatureComments(feature: string): FeedbackComment[] {
   border: 1px solid #eee;
 }
 
-.user-segmentation h4, .user-sessions h4 {
+.user-segmentation h4,
+.user-sessions h4 {
   margin-top: 0;
   margin-bottom: 15px;
   font-size: 1.1rem;
@@ -1103,14 +1255,15 @@ function getFeatureComments(feature: string): FeedbackComment[] {
 }
 
 @media (max-width: 768px) {
-  .usage-header, .feedback-summary {
+  .usage-header,
+  .feedback-summary {
     flex-direction: column;
   }
-  
+
   .feedback-summary {
     grid-template-columns: 1fr;
   }
-  
+
   .feedback-comments-content {
     width: 95%;
     max-height: 90vh;

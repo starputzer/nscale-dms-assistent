@@ -1,12 +1,12 @@
-import { watch, onMounted, onBeforeUnmount } from 'vue';
-import { useAuthStore } from '../stores/auth';
-import { useSessionsStore } from '../stores/sessions';
-import { useUIStore } from '../stores/ui';
-import { useSettingsStore } from '../stores/settings';
+import { watch, onMounted, onBeforeUnmount } from "vue";
+import { useAuthStore } from "../stores/auth";
+import { useSessionsStore } from "../stores/sessions";
+import { useUIStore } from "../stores/ui";
+import { useSettingsStore } from "../stores/settings";
 
 /**
  * Bridge um Legacy-Code mit den Pinia Stores zu verbinden
- * 
+ *
  * Diese Bridge stellt globale Funktionen zur Verfügung, die vom Legacy-Code verwendet werden können,
  * und leitet Ereignisse zwischen Legacy-Code und Vue-Komponenten weiter.
  */
@@ -35,7 +35,7 @@ class EventBus {
 
   emit(event: string, data?: any): void {
     if (this.listeners.has(event)) {
-      this.listeners.get(event)!.forEach(callback => callback(data));
+      this.listeners.get(event)!.forEach((callback) => callback(data));
     }
   }
 
@@ -86,13 +86,13 @@ export function setupBridge() {
       },
       getUser: () => {
         return authStore.user;
-      }
+      },
     };
 
     // Session-Funktionen
     window.nscaleChat = {
       createSession: async (title?: string) => {
-        return await sessionsStore.createSession(title || 'Neue Unterhaltung');
+        return await sessionsStore.createSession(title || "Neue Unterhaltung");
       },
       sendMessage: async (sessionId: string, content: string) => {
         return await sessionsStore.sendMessage({ sessionId, content });
@@ -111,7 +111,7 @@ export function setupBridge() {
       },
       cancelStreaming: () => {
         sessionsStore.cancelStreaming();
-      }
+      },
     };
 
     // UI-Funktionen
@@ -128,12 +128,12 @@ export function setupBridge() {
       closeSidebar: () => {
         uiStore.closeSidebar();
       },
-      showToast: (message: string, type: string = 'info') => {
-        if (type === 'success') {
+      showToast: (message: string, type: string = "info") => {
+        if (type === "success") {
           uiStore.showSuccess(message);
-        } else if (type === 'error') {
+        } else if (type === "error") {
           uiStore.showError(message);
-        } else if (type === 'warning') {
+        } else if (type === "warning") {
           uiStore.showWarning(message);
         } else {
           uiStore.showInfo(message);
@@ -141,14 +141,14 @@ export function setupBridge() {
       },
       openModal: (title: string, content: string, options: any = {}) => {
         return uiStore.openModal({
-          title, 
+          title,
           content,
-          ...options
+          ...options,
         });
       },
       closeModal: (modalId: string) => {
         uiStore.closeModal(modalId);
-      }
+      },
     };
 
     // Settings-Funktionen
@@ -170,7 +170,7 @@ export function setupBridge() {
       },
       setSetting: (key: string, value: any) => {
         settingsStore.setSetting(key, value);
-      }
+      },
     };
 
     // Event-Bridge für Legacy-Event-Kommunikation
@@ -182,10 +182,10 @@ export function setupBridge() {
         const unsubscribe = bus.on(event, callback);
         cleanupFunctions.push(unsubscribe);
         return unsubscribe;
-      }
+      },
     };
 
-    console.log('nscale Bridge: Global API initialisiert');
+    console.log("nscale Bridge: Global API initialisiert");
   }
 
   /**
@@ -193,35 +193,44 @@ export function setupBridge() {
    */
   function setupStoreWatchers() {
     // Auth-Store-Änderungen beobachten
-    const unwatchAuth = watch(() => authStore.isAuthenticated, (isAuthenticated) => {
-      bus.emit('auth:changed', { isAuthenticated });
-      
-      if (isAuthenticated) {
-        bus.emit('auth:login', { user: authStore.user });
-      } else {
-        bus.emit('auth:logout');
-      }
-    });
+    const unwatchAuth = watch(
+      () => authStore.isAuthenticated,
+      (isAuthenticated) => {
+        bus.emit("auth:changed", { isAuthenticated });
+
+        if (isAuthenticated) {
+          bus.emit("auth:login", { user: authStore.user });
+        } else {
+          bus.emit("auth:logout");
+        }
+      },
+    );
     cleanupFunctions.push(unwatchAuth);
 
     // Sessions-Store-Änderungen beobachten
-    const unwatchSessions = watch(() => sessionsStore.currentSessionId, (sessionId) => {
-      if (sessionId) {
-        bus.emit('session:changed', { 
-          sessionId,
-          session: sessionsStore.currentSession
-        });
-      }
-    });
+    const unwatchSessions = watch(
+      () => sessionsStore.currentSessionId,
+      (sessionId) => {
+        if (sessionId) {
+          bus.emit("session:changed", {
+            sessionId,
+            session: sessionsStore.currentSession,
+          });
+        }
+      },
+    );
     cleanupFunctions.push(unwatchSessions);
 
     // UI-Store-Änderungen beobachten
-    const unwatchDarkMode = watch(() => uiStore.darkMode, (isDark) => {
-      bus.emit('ui:darkModeChanged', { isDark });
-    });
+    const unwatchDarkMode = watch(
+      () => uiStore.darkMode,
+      (isDark) => {
+        bus.emit("ui:darkModeChanged", { isDark });
+      },
+    );
     cleanupFunctions.push(unwatchDarkMode);
 
-    console.log('nscale Bridge: Store-Watcher initialisiert');
+    console.log("nscale Bridge: Store-Watcher initialisiert");
   }
 
   /**
@@ -233,72 +242,72 @@ export function setupBridge() {
       const { type, detail } = event;
 
       // Auth-Events
-      if (type === 'nscale:login') {
+      if (type === "nscale:login") {
         authStore.login(detail);
-      } else if (type === 'nscale:logout') {
+      } else if (type === "nscale:logout") {
         authStore.logout();
       }
-      
+
       // Session-Events
-      else if (type === 'nscale:createSession') {
+      else if (type === "nscale:createSession") {
         sessionsStore.createSession(detail?.title);
-      } else if (type === 'nscale:sendMessage') {
+      } else if (type === "nscale:sendMessage") {
         sessionsStore.sendMessage({
           sessionId: detail.sessionId,
-          content: detail.content
+          content: detail.content,
         });
-      } else if (type === 'nscale:setCurrentSession') {
+      } else if (type === "nscale:setCurrentSession") {
         sessionsStore.setCurrentSession(detail.sessionId);
       }
-      
+
       // UI-Events
-      else if (type === 'nscale:toggleDarkMode') {
+      else if (type === "nscale:toggleDarkMode") {
         uiStore.toggleDarkMode();
-      } else if (type === 'nscale:showToast') {
+      } else if (type === "nscale:showToast") {
         const { message, type: toastType } = detail;
-        if (toastType === 'success') {
+        if (toastType === "success") {
           uiStore.showSuccess(message);
-        } else if (toastType === 'error') {
+        } else if (toastType === "error") {
           uiStore.showError(message);
-        } else if (toastType === 'warning') {
+        } else if (toastType === "warning") {
           uiStore.showWarning(message);
         } else {
           uiStore.showInfo(message);
         }
       }
-      
+
       // Settings-Events
-      else if (type === 'nscale:setTheme') {
+      else if (type === "nscale:setTheme") {
         settingsStore.setTheme(detail.themeId);
-      } else if (type === 'nscale:setSetting') {
+      } else if (type === "nscale:setSetting") {
         settingsStore.setSetting(detail.key, detail.value);
       }
     };
 
-    window.addEventListener('nscale', handleLegacyEvent as EventListener);
+    window.addEventListener("nscale", handleLegacyEvent as EventListener);
     cleanupFunctions.push(() => {
-      window.removeEventListener('nscale', handleLegacyEvent as EventListener);
+      window.removeEventListener("nscale", handleLegacyEvent as EventListener);
     });
 
-    console.log('nscale Bridge: Legacy-Event-Listener initialisiert');
+    console.log("nscale Bridge: Legacy-Event-Listener initialisiert");
   }
 
   /**
    * Bereinigt alle Event-Listener
    */
   function cleanup() {
-    cleanupFunctions.forEach(fn => fn());
+    cleanupFunctions.forEach((fn) => fn());
     cleanupFunctions.length = 0;
     bus.clear();
-    
+
     // Globale API zurücksetzen
     delete window.nscaleAuth;
     delete window.nscaleChat;
     delete window.nscaleUI;
     delete window.nscaleSettings;
     delete window.nscaleEvents;
-    
-    console.log('nscale Bridge: Cleanup durchgeführt');
+
+    console.log("nscale Bridge: Cleanup durchgeführt");
   }
 
   // Bridge nur initialisieren, wenn aktiviert
@@ -311,7 +320,7 @@ export function setupBridge() {
   // Initialisierungsstatus zurückgeben
   return {
     enabled: bridgeEnabled,
-    cleanup
+    cleanup,
   };
 }
 
@@ -362,17 +371,17 @@ declare global {
 // Komposable für Vue-Komponenten
 export function useBridge() {
   const bridge = setupBridge();
-  
+
   // Automatisch aufräumen, wenn die Komponente zerstört wird
   onBeforeUnmount(() => {
     if (bridge.enabled) {
       bridge.cleanup();
     }
   });
-  
+
   return {
     bus,
-    isEnabled: bridge.enabled
+    isEnabled: bridge.enabled,
   };
 }
 
@@ -382,13 +391,13 @@ export function useBridge() {
 export default {
   install(app: any) {
     const bridge = setupBridge();
-    
+
     // Die Bridge-Instanz für Komponenten verfügbar machen
-    app.provide('bridge', {
+    app.provide("bridge", {
       bus,
-      isEnabled: bridge.enabled
+      isEnabled: bridge.enabled,
     });
-    
-    console.log('nscale Bridge Plugin installiert');
-  }
+
+    console.log("nscale Bridge Plugin installiert");
+  },
 };

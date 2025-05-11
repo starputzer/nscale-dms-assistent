@@ -1,13 +1,13 @@
-import { computed } from 'vue';
-import { useAuthStore } from '../stores/auth';
+import { computed } from "vue";
+import { useAuthStore } from "../stores/auth";
 import type {
   LoginCredentials,
   RegisterCredentials,
   User,
   Role,
   TokenStatus,
-  PermissionCheck
-} from '../types/auth';
+  PermissionCheck,
+} from "../types/auth";
 
 /**
  * Hook für Authentifizierungsfunktionen in Komponenten
@@ -41,7 +41,9 @@ export function useAuth() {
    * @param credentials Registrierungsinformationen
    * @returns True, wenn die Registrierung erfolgreich war
    */
-  const register = async (credentials: RegisterCredentials): Promise<boolean> => {
+  const register = async (
+    credentials: RegisterCredentials,
+  ): Promise<boolean> => {
     return await authStore.register(credentials);
   };
 
@@ -118,7 +120,9 @@ export function useAuth() {
    * @param preferences Zu aktualisierende Präferenzen
    * @returns True, wenn die Aktualisierung erfolgreich war
    */
-  const updateUserPreferences = async (preferences: Record<string, any>): Promise<boolean> => {
+  const updateUserPreferences = async (
+    preferences: Record<string, any>,
+  ): Promise<boolean> => {
     return await authStore.updateUserPreferences(preferences);
   };
 
@@ -159,6 +163,6 @@ export function useAuth() {
     updateUserPreferences,
 
     // Hilfsmethoden
-    createAuthHeaders
+    createAuthHeaders,
   };
 }

@@ -1,4 +1,4 @@
-import { ref, reactive, computed, watch, toRefs, onMounted } from 'vue';
+import { ref, reactive, computed, watch, toRefs, onMounted } from "vue";
 
 interface FormValidationRule {
   validate: (value: any, formValues?: Record<string, any>) => boolean;
@@ -27,10 +27,10 @@ export interface FormOptions {
 
 /**
  * Form validation and state management composable
- * 
+ *
  * @param options - Form configuration options
  * @returns Form state and methods
- * 
+ *
  * @example
  * const { values, errors, touched, isValid, handleSubmit, handleChange, handleBlur, resetForm } = useForm({
  *   initialValues: {
@@ -42,13 +42,13 @@ export interface FormOptions {
  *     console.log('Form submitted:', values);
  *   }
  * });
- * 
+ *
  * // Add validation rules dynamically
  * addValidationRule('email', {
  *   validate: (value) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value),
  *   message: 'Please enter a valid email address'
  * });
- * 
+ *
  * // Required field validation
  * setFieldRequired('name', true, 'Name is required');
  */
@@ -122,7 +122,10 @@ export function useForm(options: FormOptions) {
         validateOnSubmit,
       };
     }
-    fields[fieldName].validationRules = [...(fields[fieldName].validationRules || []), rule];
+    fields[fieldName].validationRules = [
+      ...(fields[fieldName].validationRules || []),
+      rule,
+    ];
   };
 
   /**
@@ -131,7 +134,11 @@ export function useForm(options: FormOptions) {
    * @param isRequired - Whether the field is required
    * @param message - Custom required message
    */
-  const setFieldRequired = (fieldName: string, isRequired = true, message = 'This field is required') => {
+  const setFieldRequired = (
+    fieldName: string,
+    isRequired = true,
+    message = "This field is required",
+  ) => {
     if (!fields[fieldName]) {
       fields[fieldName] = {
         initialValue: values[fieldName] || null,
@@ -141,7 +148,7 @@ export function useForm(options: FormOptions) {
         validateOnSubmit,
       };
     }
-    
+
     fields[fieldName].required = isRequired;
     fields[fieldName].requiredMessage = message;
   };
@@ -153,22 +160,27 @@ export function useForm(options: FormOptions) {
    */
   const validateField = (fieldName: string): boolean => {
     if (!fields[fieldName]) return true;
-    
+
     const field = fields[fieldName];
     const value = values[fieldName];
-    
+
     errors[fieldName] = [];
-    
+
     // Required validation
     if (field.required) {
-      const isEmpty = value === undefined || value === null || value === '' || 
+      const isEmpty =
+        value === undefined ||
+        value === null ||
+        value === "" ||
         (Array.isArray(value) && value.length === 0);
-      
+
       if (isEmpty) {
-        errors[fieldName].push(field.requiredMessage || 'This field is required');
+        errors[fieldName].push(
+          field.requiredMessage || "This field is required",
+        );
       }
     }
-    
+
     // Custom validation rules
     if (field.validationRules) {
       for (const rule of field.validationRules) {
@@ -177,7 +189,7 @@ export function useForm(options: FormOptions) {
         }
       }
     }
-    
+
     return errors[fieldName].length === 0;
   };
 
@@ -188,12 +200,12 @@ export function useForm(options: FormOptions) {
   const validateForm = (): boolean => {
     isValidating.value = true;
     let isValid = true;
-    
+
     for (const fieldName of Object.keys(fields)) {
       const fieldValid = validateField(fieldName);
       isValid = isValid && fieldValid;
     }
-    
+
     isValidating.value = false;
     return isValid;
   };
@@ -206,22 +218,22 @@ export function useForm(options: FormOptions) {
     if (e) {
       e.preventDefault();
     }
-    
+
     isSubmitted.value = true;
     submitCount.value += 1;
-    
+
     let isValid = true;
-    
+
     if (validateOnSubmit) {
       isValid = validateForm();
     }
-    
+
     if (!isValid) {
       return;
     }
-    
+
     isSubmitting.value = true;
-    
+
     try {
       // Transform values if needed
       const transformedValues = { ...values };
@@ -230,7 +242,7 @@ export function useForm(options: FormOptions) {
           transformedValues[fieldName] = field.transform(values[fieldName]);
         }
       }
-      
+
       if (onSubmit) {
         await onSubmit(transformedValues);
       }
@@ -247,9 +259,9 @@ export function useForm(options: FormOptions) {
   const handleChange = (fieldName: string, value: any) => {
     values[fieldName] = value;
     dirty[fieldName] = true;
-    
+
     const field = fields[fieldName];
-    
+
     if (field && field.validateOnChange) {
       validateField(fieldName);
     }
@@ -261,9 +273,9 @@ export function useForm(options: FormOptions) {
    */
   const handleBlur = (fieldName: string) => {
     touched[fieldName] = true;
-    
+
     const field = fields[fieldName];
-    
+
     if (field && field.validateOnBlur) {
       validateField(fieldName);
     }
@@ -277,16 +289,16 @@ export function useForm(options: FormOptions) {
     for (const [key, field] of Object.entries(fields)) {
       values[key] = field.initialValue;
     }
-    
+
     // Reset errors, touched, and dirty states
     for (const key of Object.keys(errors)) {
       errors[key] = [];
       touched[key] = false;
       dirty[key] = false;
     }
-    
+
     isSubmitted.value = false;
-    
+
     if (onReset) {
       onReset();
     }
@@ -298,10 +310,14 @@ export function useForm(options: FormOptions) {
    * @param value - New field value
    * @param shouldValidate - Whether to validate the field after setting the value
    */
-  const setFieldValue = (fieldName: string, value: any, shouldValidate = true) => {
+  const setFieldValue = (
+    fieldName: string,
+    value: any,
+    shouldValidate = true,
+  ) => {
     values[fieldName] = value;
     dirty[fieldName] = true;
-    
+
     if (shouldValidate) {
       validateField(fieldName);
     }
@@ -317,7 +333,7 @@ export function useForm(options: FormOptions) {
       values[key] = value;
       dirty[key] = true;
     }
-    
+
     if (shouldValidate) {
       validateForm();
     }
@@ -390,7 +406,7 @@ export function useForm(options: FormOptions) {
     allTouched,
     submitCount,
     isSubmitted,
-    
+
     // Methods
     handleSubmit,
     handleChange,

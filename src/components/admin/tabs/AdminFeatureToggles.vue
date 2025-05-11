@@ -1,38 +1,58 @@
 <template>
   <div class="admin-feature-toggles">
-    <h2 class="admin-feature-toggles__title">{{ t('admin.featureToggles.title', 'Feature-Toggles') }}</h2>
+    <h2 class="admin-feature-toggles__title">
+      {{ t("admin.featureToggles.title", "Feature-Toggles") }}
+    </h2>
     <p class="admin-feature-toggles__description">
-      {{ t('admin.featureToggles.description', 'Verwalten Sie hier die Feature-Flags, um neue Funktionalitäten zu aktivieren oder zu deaktivieren.') }}
+      {{
+        t(
+          "admin.featureToggles.description",
+          "Verwalten Sie hier die Feature-Flags, um neue Funktionalitäten zu aktivieren oder zu deaktivieren.",
+        )
+      }}
     </p>
-    
+
     <!-- Info-Box für Administratoren -->
     <div class="admin-feature-toggles__info-box">
       <div class="admin-feature-toggles__info-icon">
         <i class="fas fa-info-circle" aria-hidden="true"></i>
       </div>
       <div class="admin-feature-toggles__info-content">
-        <h3>{{ t('admin.featureToggles.info.title', 'Wichtige Hinweise') }}</h3>
-        <p>{{ t('admin.featureToggles.info.content', 'Das Ändern von Feature-Toggles kann sich auf die Stabilität und Funktionalität der Anwendung auswirken. Bitte aktivieren Sie neue Features mit Vorsicht und testen Sie gründlich nach jeder Änderung.') }}</p>
+        <h3>{{ t("admin.featureToggles.info.title", "Wichtige Hinweise") }}</h3>
+        <p>
+          {{
+            t(
+              "admin.featureToggles.info.content",
+              "Das Ändern von Feature-Toggles kann sich auf die Stabilität und Funktionalität der Anwendung auswirken. Bitte aktivieren Sie neue Features mit Vorsicht und testen Sie gründlich nach jeder Änderung.",
+            )
+          }}
+        </p>
       </div>
     </div>
 
     <!-- Toggle zwischen Verwaltung und Monitoring -->
     <div class="admin-feature-toggles__mode-switch">
-      <button 
+      <button
         @click="activeMode = 'management'"
         class="admin-feature-toggles__mode-button"
-        :class="{ 'admin-feature-toggles__mode-button--active': activeMode === 'management' }"
+        :class="{
+          'admin-feature-toggles__mode-button--active':
+            activeMode === 'management',
+        }"
       >
         <i class="fas fa-toggle-on" aria-hidden="true"></i>
-        {{ t('admin.featureToggles.modes.management', 'Verwaltung') }}
+        {{ t("admin.featureToggles.modes.management", "Verwaltung") }}
       </button>
-      <button 
+      <button
         @click="activeMode = 'monitoring'"
         class="admin-feature-toggles__mode-button"
-        :class="{ 'admin-feature-toggles__mode-button--active': activeMode === 'monitoring' }"
+        :class="{
+          'admin-feature-toggles__mode-button--active':
+            activeMode === 'monitoring',
+        }"
       >
         <i class="fas fa-chart-line" aria-hidden="true"></i>
-        {{ t('admin.featureToggles.modes.monitoring', 'Monitoring') }}
+        {{ t("admin.featureToggles.modes.monitoring", "Monitoring") }}
       </button>
     </div>
 
@@ -40,35 +60,59 @@
     <div v-if="activeMode === 'management'">
       <!-- Kategoriefilter für Feature-Toggles -->
       <div class="admin-feature-toggles__filter">
-        <label for="category-filter" class="admin-feature-toggles__filter-label">
-          {{ t('admin.featureToggles.filter.label', 'Nach Kategorie filtern:') }}
+        <label
+          for="category-filter"
+          class="admin-feature-toggles__filter-label"
+        >
+          {{
+            t("admin.featureToggles.filter.label", "Nach Kategorie filtern:")
+          }}
         </label>
         <select
           id="category-filter"
           v-model="selectedCategory"
           class="admin-feature-toggles__filter-select"
         >
-          <option value="all">{{ t('admin.featureToggles.filter.all', 'Alle Kategorien') }}</option>
-          <option v-for="(_, category) in categorizedToggles" :key="category" :value="category">
+          <option value="all">
+            {{ t("admin.featureToggles.filter.all", "Alle Kategorien") }}
+          </option>
+          <option
+            v-for="(_, category) in categorizedToggles"
+            :key="category"
+            :value="category"
+          >
             {{ translateCategory(category) }}
           </option>
         </select>
-        
+
         <!-- Suchfeld für Feature-Toggles -->
         <div class="admin-feature-toggles__search">
-          <label for="toggle-search" class="admin-feature-toggles__search-label">
-            {{ t('admin.featureToggles.search.label', 'Features durchsuchen:') }}
+          <label
+            for="toggle-search"
+            class="admin-feature-toggles__search-label"
+          >
+            {{
+              t("admin.featureToggles.search.label", "Features durchsuchen:")
+            }}
           </label>
           <div class="admin-feature-toggles__search-input-container">
-            <i class="fas fa-search admin-feature-toggles__search-icon" aria-hidden="true"></i>
+            <i
+              class="fas fa-search admin-feature-toggles__search-icon"
+              aria-hidden="true"
+            ></i>
             <input
               id="toggle-search"
               v-model="searchQuery"
               type="text"
               class="admin-feature-toggles__search-input"
-              :placeholder="t('admin.featureToggles.search.placeholder', 'Suche nach Feature-Namen oder Beschreibung...')"
+              :placeholder="
+                t(
+                  'admin.featureToggles.search.placeholder',
+                  'Suche nach Feature-Namen oder Beschreibung...',
+                )
+              "
             />
-            <button 
+            <button
               v-if="searchQuery"
               @click="searchQuery = ''"
               class="admin-feature-toggles__search-clear"
@@ -79,7 +123,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Quick Actions -->
       <div class="admin-feature-toggles__quick-actions">
         <button
@@ -88,7 +132,12 @@
           :disabled="isLoading"
         >
           <i class="fas fa-check-circle" aria-hidden="true"></i>
-          {{ t('admin.featureToggles.actions.enableAll', 'Alle Features aktivieren') }}
+          {{
+            t(
+              "admin.featureToggles.actions.enableAll",
+              "Alle Features aktivieren",
+            )
+          }}
         </button>
         <button
           @click="disableAllFeatures"
@@ -96,7 +145,12 @@
           :disabled="isLoading"
         >
           <i class="fas fa-times-circle" aria-hidden="true"></i>
-          {{ t('admin.featureToggles.actions.disableAll', 'Alle Features deaktivieren') }}
+          {{
+            t(
+              "admin.featureToggles.actions.disableAll",
+              "Alle Features deaktivieren",
+            )
+          }}
         </button>
         <button
           @click="resetToDefaults"
@@ -104,14 +158,19 @@
           :disabled="isLoading"
         >
           <i class="fas fa-undo" aria-hidden="true"></i>
-          {{ t('admin.featureToggles.actions.reset', 'Auf Standard zurücksetzen') }}
+          {{
+            t("admin.featureToggles.actions.reset", "Auf Standard zurücksetzen")
+          }}
         </button>
       </div>
-      
+
       <!-- Feature-Toggle-Listen nach Kategorie -->
-      <div v-if="filteredTogglesByCategory.length > 0" class="admin-feature-toggles__categories">
-        <div 
-          v-for="category in filteredTogglesByCategory" 
+      <div
+        v-if="filteredTogglesByCategory.length > 0"
+        class="admin-feature-toggles__categories"
+      >
+        <div
+          v-for="category in filteredTogglesByCategory"
           :key="category.name"
           class="admin-feature-toggles__category"
         >
@@ -121,45 +180,54 @@
               ({{ category.toggles.length }})
             </span>
           </h3>
-          
+
           <div class="admin-feature-toggles__toggle-list">
-            <div 
-              v-for="toggle in category.toggles" 
+            <div
+              v-for="toggle in category.toggles"
               :key="toggle.id"
               class="admin-feature-toggles__toggle-item"
               :class="{
                 'admin-feature-toggles__toggle-item--enabled': toggle.enabled,
                 'admin-feature-toggles__toggle-item--disabled': !toggle.enabled,
                 'admin-feature-toggles__toggle-item--dev-only': toggle.dev,
-                'admin-feature-toggles__toggle-item--has-errors': hasErrors(toggle.id)
+                'admin-feature-toggles__toggle-item--has-errors': hasErrors(
+                  toggle.id,
+                ),
               }"
             >
               <div class="admin-feature-toggles__toggle-header">
                 <div class="admin-feature-toggles__toggle-name-container">
-                  <span 
+                  <span
                     v-if="toggle.dev"
                     class="admin-feature-toggles__toggle-badge admin-feature-toggles__toggle-badge--dev"
                   >
-                    {{ t('admin.featureToggles.badges.dev', 'Entwicklung') }}
+                    {{ t("admin.featureToggles.badges.dev", "Entwicklung") }}
                   </span>
-                  <span 
+                  <span
                     v-if="hasErrors(toggle.id)"
                     class="admin-feature-toggles__toggle-badge admin-feature-toggles__toggle-badge--error"
                   >
-                    {{ t('admin.featureToggles.badges.error', 'Fehler') }}
+                    {{ t("admin.featureToggles.badges.error", "Fehler") }}
                   </span>
-                  <span 
+                  <span
                     v-if="isFallbackActive(toggle.id)"
                     class="admin-feature-toggles__toggle-badge admin-feature-toggles__toggle-badge--fallback"
                   >
-                    {{ t('admin.featureToggles.badges.fallback', 'Fallback aktiv') }}
+                    {{
+                      t(
+                        "admin.featureToggles.badges.fallback",
+                        "Fallback aktiv",
+                      )
+                    }}
                   </span>
-                  <h4 class="admin-feature-toggles__toggle-name">{{ toggle.name }}</h4>
+                  <h4 class="admin-feature-toggles__toggle-name">
+                    {{ toggle.name }}
+                  </h4>
                 </div>
-                
+
                 <label class="admin-feature-toggles__toggle-switch">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     :checked="toggle.enabled"
                     @change="toggleFeature(toggle.id)"
                     :disabled="isLoading"
@@ -168,27 +236,31 @@
                   <span class="admin-feature-toggles__toggle-slider"></span>
                 </label>
               </div>
-              
+
               <p class="admin-feature-toggles__toggle-description">
                 {{ toggle.description }}
               </p>
 
               <!-- Dependencies -->
-              <div 
-                v-if="toggle.dependencies && toggle.dependencies.length > 0" 
+              <div
+                v-if="toggle.dependencies && toggle.dependencies.length > 0"
                 class="admin-feature-toggles__toggle-dependencies"
               >
                 <span class="admin-feature-toggles__toggle-dependencies-label">
-                  {{ t('admin.featureToggles.dependencies', 'Abhängigkeiten:') }}
+                  {{
+                    t("admin.featureToggles.dependencies", "Abhängigkeiten:")
+                  }}
                 </span>
                 <div class="admin-feature-toggles__toggle-dependency-list">
-                  <span 
-                    v-for="dep in toggle.dependencies" 
+                  <span
+                    v-for="dep in toggle.dependencies"
                     :key="dep"
                     class="admin-feature-toggles__toggle-dependency"
-                    :class="{ 
-                      'admin-feature-toggles__toggle-dependency--active': isFeatureEnabled(dep),
-                      'admin-feature-toggles__toggle-dependency--inactive': !isFeatureEnabled(dep)
+                    :class="{
+                      'admin-feature-toggles__toggle-dependency--active':
+                        isFeatureEnabled(dep),
+                      'admin-feature-toggles__toggle-dependency--inactive':
+                        !isFeatureEnabled(dep),
                     }"
                   >
                     {{ dep }}
@@ -197,23 +269,27 @@
               </div>
 
               <!-- Error display -->
-              <div 
+              <div
                 v-if="hasErrors(toggle.id)"
                 class="admin-feature-toggles__toggle-errors"
               >
                 <div class="admin-feature-toggles__toggle-errors-header">
-                  <span>{{ t('admin.featureToggles.errors.title', 'Fehler:') }}</span>
-                  <button 
+                  <span>{{
+                    t("admin.featureToggles.errors.title", "Fehler:")
+                  }}</span>
+                  <button
                     @click="clearErrors(toggle.id)"
                     class="admin-feature-toggles__clear-errors-button"
-                    :title="t('admin.featureToggles.errors.clear', 'Fehler löschen')"
+                    :title="
+                      t('admin.featureToggles.errors.clear', 'Fehler löschen')
+                    "
                   >
                     <i class="fas fa-times" aria-hidden="true"></i>
                   </button>
                 </div>
                 <ul class="admin-feature-toggles__toggle-error-list">
-                  <li 
-                    v-for="(error, index) in getFeatureErrors(toggle.id)" 
+                  <li
+                    v-for="(error, index) in getFeatureErrors(toggle.id)"
                     :key="index"
                     class="admin-feature-toggles__toggle-error"
                   >
@@ -228,45 +304,63 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Keine Ergebnisse -->
       <div v-else class="admin-feature-toggles__no-results">
         <i class="fas fa-search" aria-hidden="true"></i>
-        <p>{{ t('admin.featureToggles.noResults', 'Keine Feature-Toggles gefunden, die Ihren Filterkriterien entsprechen.') }}</p>
-        <button 
+        <p>
+          {{
+            t(
+              "admin.featureToggles.noResults",
+              "Keine Feature-Toggles gefunden, die Ihren Filterkriterien entsprechen.",
+            )
+          }}
+        </p>
+        <button
           @click="clearFilters"
           class="admin-feature-toggles__clear-filters"
         >
-          {{ t('admin.featureToggles.clearFilters', 'Filter zurücksetzen') }}
+          {{ t("admin.featureToggles.clearFilters", "Filter zurücksetzen") }}
         </button>
       </div>
     </div>
 
     <!-- Monitoring Mode -->
-    <div v-else-if="activeMode === 'monitoring'" class="admin-feature-toggles__monitoring">
+    <div
+      v-else-if="activeMode === 'monitoring'"
+      class="admin-feature-toggles__monitoring"
+    >
       <!-- System Health Summary -->
-      <div 
+      <div
         class="admin-feature-toggles__health-summary"
         :class="{
-          'admin-feature-toggles__health-summary--good': featureHealthStatus === 'good',
-          'admin-feature-toggles__health-summary--warning': featureHealthStatus === 'warning',
-          'admin-feature-toggles__health-summary--critical': featureHealthStatus === 'critical'
+          'admin-feature-toggles__health-summary--good':
+            featureHealthStatus === 'good',
+          'admin-feature-toggles__health-summary--warning':
+            featureHealthStatus === 'warning',
+          'admin-feature-toggles__health-summary--critical':
+            featureHealthStatus === 'critical',
         }"
       >
         <div class="admin-feature-toggles__health-icon">
-          <i 
-            class="fas" 
+          <i
+            class="fas"
             :class="{
               'fa-check-circle': featureHealthStatus === 'good',
               'fa-exclamation-circle': featureHealthStatus === 'warning',
-              'fa-exclamation-triangle': featureHealthStatus === 'critical'
-            }" 
+              'fa-exclamation-triangle': featureHealthStatus === 'critical',
+            }"
             aria-hidden="true"
           ></i>
         </div>
         <div class="admin-feature-toggles__health-content">
           <h3 class="admin-feature-toggles__health-title">
-            {{ t('admin.featureToggles.monitoring.healthStatus', 'Feature Status') }}
+            {{
+              t(
+                "admin.featureToggles.monitoring.healthStatus",
+                "Feature Status",
+              )
+            }}
           </h3>
           <p class="admin-feature-toggles__health-text">
             {{ featureHealthStatusText }}
@@ -282,54 +376,91 @@
           </div>
           <div class="admin-feature-toggles__stat-content">
             <h4 class="admin-feature-toggles__stat-title">
-              {{ t('admin.featureToggles.monitoring.activeFeatures', 'Aktive Features') }}
+              {{
+                t(
+                  "admin.featureToggles.monitoring.activeFeatures",
+                  "Aktive Features",
+                )
+              }}
             </h4>
-            <p class="admin-feature-toggles__stat-value">{{ activeFeatureCount }}</p>
+            <p class="admin-feature-toggles__stat-value">
+              {{ activeFeatureCount }}
+            </p>
             <p class="admin-feature-toggles__stat-detail">
-              {{ t('admin.featureToggles.monitoring.outOfTotal', 'von {{total}} Features', { total: totalFeatureCount }) }}
+              {{ t('admin.featureToggles.monitoring.outOfTotal', 'von {{total}}
+              Features', { total: totalFeatureCount }) }}
             </p>
           </div>
         </div>
 
         <div class="admin-feature-toggles__stat-card">
-          <div class="admin-feature-toggles__stat-icon admin-feature-toggles__stat-icon--warning">
+          <div
+            class="admin-feature-toggles__stat-icon admin-feature-toggles__stat-icon--warning"
+          >
             <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
           </div>
           <div class="admin-feature-toggles__stat-content">
             <h4 class="admin-feature-toggles__stat-title">
-              {{ t('admin.featureToggles.monitoring.featuresWithErrors', 'Features mit Fehlern') }}
+              {{
+                t(
+                  "admin.featureToggles.monitoring.featuresWithErrors",
+                  "Features mit Fehlern",
+                )
+              }}
             </h4>
-            <p class="admin-feature-toggles__stat-value">{{ featuresWithErrorsCount }}</p>
+            <p class="admin-feature-toggles__stat-value">
+              {{ featuresWithErrorsCount }}
+            </p>
             <p class="admin-feature-toggles__stat-detail">
-              {{ t('admin.featureToggles.monitoring.totalErrors', 'Insgesamt {{count}} Fehler', { count: totalErrorsCount }) }}
+              {{ t('admin.featureToggles.monitoring.totalErrors', 'Insgesamt {{count}}
+              Fehler', { count: totalErrorsCount }) }}
             </p>
           </div>
         </div>
 
         <div class="admin-feature-toggles__stat-card">
-          <div class="admin-feature-toggles__stat-icon admin-feature-toggles__stat-icon--info">
+          <div
+            class="admin-feature-toggles__stat-icon admin-feature-toggles__stat-icon--info"
+          >
             <i class="fas fa-life-ring" aria-hidden="true"></i>
           </div>
           <div class="admin-feature-toggles__stat-content">
             <h4 class="admin-feature-toggles__stat-title">
-              {{ t('admin.featureToggles.monitoring.activeFallbacks', 'Aktive Fallbacks') }}
+              {{
+                t(
+                  "admin.featureToggles.monitoring.activeFallbacks",
+                  "Aktive Fallbacks",
+                )
+              }}
             </h4>
-            <p class="admin-feature-toggles__stat-value">{{ activeFallbacksCount }}</p>
+            <p class="admin-feature-toggles__stat-value">
+              {{ activeFallbacksCount }}
+            </p>
             <p class="admin-feature-toggles__stat-detail">
-              {{ t('admin.featureToggles.monitoring.fallbacksAvailable', '{{count}} Features mit Fallback', { count: featuresWithFallbackCount }) }}
+              {{ t('admin.featureToggles.monitoring.fallbacksAvailable', '{{count}}
+              Features mit Fallback', { count: featuresWithFallbackCount }) }}
             </p>
           </div>
         </div>
 
         <div class="admin-feature-toggles__stat-card">
-          <div class="admin-feature-toggles__stat-icon admin-feature-toggles__stat-icon--success">
+          <div
+            class="admin-feature-toggles__stat-icon admin-feature-toggles__stat-icon--success"
+          >
             <i class="fas fa-code-branch" aria-hidden="true"></i>
           </div>
           <div class="admin-feature-toggles__stat-content">
             <h4 class="admin-feature-toggles__stat-title">
-              {{ t('admin.featureToggles.monitoring.migratedFeatures', 'Migrierte Features') }}
+              {{
+                t(
+                  "admin.featureToggles.monitoring.migratedFeatures",
+                  "Migrierte Features",
+                )
+              }}
             </h4>
-            <p class="admin-feature-toggles__stat-value">{{ migratedFeaturesCount }}</p>
+            <p class="admin-feature-toggles__stat-value">
+              {{ migratedFeaturesCount }}
+            </p>
             <p class="admin-feature-toggles__stat-detail">
               {{ t('admin.featureToggles.monitoring.migrationProgress', '{{percent}}% abgeschlossen', { percent: migrationProgressPercent }) }}
             </p>
@@ -340,19 +471,31 @@
       <!-- Error Timeline Chart -->
       <div class="admin-feature-toggles__error-chart">
         <h3 class="admin-feature-toggles__section-title">
-          {{ t('admin.featureToggles.monitoring.errorTimeline', 'Fehler-Zeitverlauf') }}
+          {{
+            t(
+              "admin.featureToggles.monitoring.errorTimeline",
+              "Fehler-Zeitverlauf",
+            )
+          }}
         </h3>
         <div class="admin-feature-toggles__chart-container">
-          <div 
-            v-if="errorTimelineEntries.length === 0" 
+          <div
+            v-if="errorTimelineEntries.length === 0"
             class="admin-feature-toggles__chart-empty"
           >
             <i class="fas fa-chart-line" aria-hidden="true"></i>
-            <p>{{ t('admin.featureToggles.monitoring.noErrorsRecorded', 'Keine Fehler aufgezeichnet') }}</p>
+            <p>
+              {{
+                t(
+                  "admin.featureToggles.monitoring.noErrorsRecorded",
+                  "Keine Fehler aufgezeichnet",
+                )
+              }}
+            </p>
           </div>
           <div v-else class="admin-feature-toggles__timeline">
-            <div 
-              v-for="(entry, index) in errorTimelineEntries" 
+            <div
+              v-for="(entry, index) in errorTimelineEntries"
               :key="index"
               class="admin-feature-toggles__timeline-entry"
             >
@@ -368,9 +511,17 @@
                   {{ entry.message }}
                 </p>
                 <div class="admin-feature-toggles__timeline-actions">
-                  <span class="admin-feature-toggles__timeline-fallback" v-if="entry.fallbackActive">
+                  <span
+                    class="admin-feature-toggles__timeline-fallback"
+                    v-if="entry.fallbackActive"
+                  >
                     <i class="fas fa-exchange-alt" aria-hidden="true"></i>
-                    {{ t('admin.featureToggles.monitoring.fallbackActivated', 'Fallback aktiviert') }}
+                    {{
+                      t(
+                        "admin.featureToggles.monitoring.fallbackActivated",
+                        "Fallback aktiviert",
+                      )
+                    }}
                   </span>
                 </div>
               </div>
@@ -382,46 +533,60 @@
       <!-- Feature Usage -->
       <div class="admin-feature-toggles__usage-section">
         <h3 class="admin-feature-toggles__section-title">
-          {{ t('admin.featureToggles.monitoring.featureUsage', 'Feature-Nutzung') }}
+          {{
+            t("admin.featureToggles.monitoring.featureUsage", "Feature-Nutzung")
+          }}
         </h3>
         <div class="admin-feature-toggles__usage-container">
           <div class="admin-feature-toggles__usage-header">
             <span class="admin-feature-toggles__usage-header-name">
-              {{ t('admin.featureToggles.monitoring.featureName', 'Feature') }}
+              {{ t("admin.featureToggles.monitoring.featureName", "Feature") }}
             </span>
             <span class="admin-feature-toggles__usage-header-status">
-              {{ t('admin.featureToggles.monitoring.status', 'Status') }}
+              {{ t("admin.featureToggles.monitoring.status", "Status") }}
             </span>
             <span class="admin-feature-toggles__usage-header-usage">
-              {{ t('admin.featureToggles.monitoring.usage', 'Nutzung') }}
+              {{ t("admin.featureToggles.monitoring.usage", "Nutzung") }}
             </span>
           </div>
-          
+
           <div class="admin-feature-toggles__usage-body">
-            <div 
-              v-for="feature in topUsedFeatures" 
+            <div
+              v-for="feature in topUsedFeatures"
               :key="feature.id"
               class="admin-feature-toggles__usage-item"
             >
-              <span class="admin-feature-toggles__usage-name">{{ feature.name }}</span>
+              <span class="admin-feature-toggles__usage-name">{{
+                feature.name
+              }}</span>
               <span class="admin-feature-toggles__usage-status">
-                <span 
+                <span
                   class="admin-feature-toggles__usage-status-indicator"
                   :class="{
-                    'admin-feature-toggles__usage-status-indicator--on': feature.enabled,
-                    'admin-feature-toggles__usage-status-indicator--off': !feature.enabled,
-                    'admin-feature-toggles__usage-status-indicator--error': hasErrors(feature.id)
+                    'admin-feature-toggles__usage-status-indicator--on':
+                      feature.enabled,
+                    'admin-feature-toggles__usage-status-indicator--off':
+                      !feature.enabled,
+                    'admin-feature-toggles__usage-status-indicator--error':
+                      hasErrors(feature.id),
                   }"
                 ></span>
-                {{ feature.enabled ? t('admin.featureToggles.monitoring.enabled', 'Aktiv') : t('admin.featureToggles.monitoring.disabled', 'Inaktiv') }}
+                {{
+                  feature.enabled
+                    ? t("admin.featureToggles.monitoring.enabled", "Aktiv")
+                    : t("admin.featureToggles.monitoring.disabled", "Inaktiv")
+                }}
               </span>
               <div class="admin-feature-toggles__usage-meter">
-                <div 
+                <div
                   class="admin-feature-toggles__usage-meter-fill"
-                  :style="{ width: `${(feature.usageCount / maxUsageCount) * 100}%` }"
+                  :style="{
+                    width: `${(feature.usageCount / maxUsageCount) * 100}%`,
+                  }"
                 ></div>
                 <span class="admin-feature-toggles__usage-meter-value">
-                  {{ feature.usageCount }} {{ t('admin.featureToggles.monitoring.calls', 'Aufrufe') }}
+                  {{ feature.usageCount }}
+                  {{ t("admin.featureToggles.monitoring.calls", "Aufrufe") }}
                 </span>
               </div>
             </div>
@@ -432,77 +597,113 @@
       <!-- Logging Controls -->
       <div class="admin-feature-toggles__logging-controls">
         <h3 class="admin-feature-toggles__section-title">
-          {{ t('admin.featureToggles.monitoring.loggingControls', 'Logging-Steuerung') }}
+          {{
+            t(
+              "admin.featureToggles.monitoring.loggingControls",
+              "Logging-Steuerung",
+            )
+          }}
         </h3>
         <div class="admin-feature-toggles__logging-options">
           <div class="admin-feature-toggles__logging-option">
             <label class="admin-feature-toggles__toggle-switch">
-              <input 
-                type="checkbox" 
-                v-model="logSettings.detailedLogging"
-              />
+              <input type="checkbox" v-model="logSettings.detailedLogging" />
               <span class="admin-feature-toggles__toggle-slider"></span>
             </label>
             <div class="admin-feature-toggles__logging-option-text">
               <span class="admin-feature-toggles__logging-option-label">
-                {{ t('admin.featureToggles.monitoring.detailedLogging', 'Detailliertes Logging') }}
+                {{
+                  t(
+                    "admin.featureToggles.monitoring.detailedLogging",
+                    "Detailliertes Logging",
+                  )
+                }}
               </span>
               <span class="admin-feature-toggles__logging-option-description">
-                {{ t('admin.featureToggles.monitoring.detailedLoggingDesc', 'Erfasst zusätzliche Informationen zu Feature-Toggle-Nutzung') }}
+                {{
+                  t(
+                    "admin.featureToggles.monitoring.detailedLoggingDesc",
+                    "Erfasst zusätzliche Informationen zu Feature-Toggle-Nutzung",
+                  )
+                }}
               </span>
             </div>
           </div>
-          
+
           <div class="admin-feature-toggles__logging-option">
             <label class="admin-feature-toggles__toggle-switch">
-              <input 
-                type="checkbox" 
-                v-model="logSettings.consoleErrors"
-              />
+              <input type="checkbox" v-model="logSettings.consoleErrors" />
               <span class="admin-feature-toggles__toggle-slider"></span>
             </label>
             <div class="admin-feature-toggles__logging-option-text">
               <span class="admin-feature-toggles__logging-option-label">
-                {{ t('admin.featureToggles.monitoring.consoleErrors', 'Fehler in Konsole ausgeben') }}
+                {{
+                  t(
+                    "admin.featureToggles.monitoring.consoleErrors",
+                    "Fehler in Konsole ausgeben",
+                  )
+                }}
               </span>
               <span class="admin-feature-toggles__logging-option-description">
-                {{ t('admin.featureToggles.monitoring.consoleErrorsDesc', 'Gibt Feature-Toggle-Fehler in der Browser-Konsole aus') }}
+                {{
+                  t(
+                    "admin.featureToggles.monitoring.consoleErrorsDesc",
+                    "Gibt Feature-Toggle-Fehler in der Browser-Konsole aus",
+                  )
+                }}
               </span>
             </div>
           </div>
-          
+
           <div class="admin-feature-toggles__logging-option">
             <label class="admin-feature-toggles__toggle-switch">
-              <input 
-                type="checkbox" 
-                v-model="logSettings.sessionLogging"
-              />
+              <input type="checkbox" v-model="logSettings.sessionLogging" />
               <span class="admin-feature-toggles__toggle-slider"></span>
             </label>
             <div class="admin-feature-toggles__logging-option-text">
               <span class="admin-feature-toggles__logging-option-label">
-                {{ t('admin.featureToggles.monitoring.sessionLogging', 'Session-Logging') }}
+                {{
+                  t(
+                    "admin.featureToggles.monitoring.sessionLogging",
+                    "Session-Logging",
+                  )
+                }}
               </span>
               <span class="admin-feature-toggles__logging-option-description">
-                {{ t('admin.featureToggles.monitoring.sessionLoggingDesc', 'Speichert Feature-Toggle-Status für jede Benutzersitzung') }}
+                {{
+                  t(
+                    "admin.featureToggles.monitoring.sessionLoggingDesc",
+                    "Speichert Feature-Toggle-Status für jede Benutzersitzung",
+                  )
+                }}
               </span>
             </div>
           </div>
-          
+
           <div class="admin-feature-toggles__logging-actions">
-            <button 
+            <button
               @click="clearAllErrors"
               class="admin-feature-toggles__action-button admin-feature-toggles__action-button--secondary"
             >
               <i class="fas fa-trash-alt" aria-hidden="true"></i>
-              {{ t('admin.featureToggles.monitoring.clearAllErrors', 'Alle Fehler löschen') }}
+              {{
+                t(
+                  "admin.featureToggles.monitoring.clearAllErrors",
+                  "Alle Fehler löschen",
+                )
+              }}
             </button>
-            <button 
+            <button
               @click="exportErrorLog"
               class="admin-feature-toggles__action-button admin-feature-toggles__action-button--primary"
             >
               <i class="fas fa-file-export" aria-hidden="true"></i>
-              {{ t('admin.featureToggles.monitoring.exportErrorLog', 'Fehlerprotokoll exportieren') }}
+              {{
+                t(
+                  "admin.featureToggles.monitoring.exportErrorLog",
+                  "Fehlerprotokoll exportieren",
+                )
+              }}
             </button>
           </div>
         </div>
@@ -512,13 +713,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { useFeatureTogglesStore } from '@/stores/featureToggles';
-import { storeToRefs } from 'pinia';
-import { format } from 'date-fns';
-import { de } from 'date-fns/locale';
-import type { FeatureToggleError } from '@/stores/featureToggles';
+import { ref, computed, onMounted, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import { useFeatureTogglesStore } from "@/stores/featureToggles";
+import { storeToRefs } from "pinia";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
+import type { FeatureToggleError } from "@/stores/featureToggles";
 
 // i18n
 const { t } = useI18n();
@@ -529,35 +730,35 @@ const { errors, activeFallbacks } = storeToRefs(featureTogglesStore);
 
 // Local state
 const isLoading = ref(false);
-const selectedCategory = ref('all');
-const searchQuery = ref('');
-const activeMode = ref<'management' | 'monitoring'>('management');
+const selectedCategory = ref("all");
+const searchQuery = ref("");
+const activeMode = ref<"management" | "monitoring">("management");
 
 // Logging settings
 const logSettings = ref({
   detailedLogging: true,
   consoleErrors: true,
-  sessionLogging: false
+  sessionLogging: false,
 });
 
 // Simulated feature usage data
 const featureUsageData = ref(
   Object.fromEntries(
-    Object.keys(featureTogglesStore.featureConfigs).map(key => [
-      key, 
-      Math.floor(Math.random() * 1000)
-    ])
-  )
+    Object.keys(featureTogglesStore.featureConfigs).map((key) => [
+      key,
+      Math.floor(Math.random() * 1000),
+    ]),
+  ),
 );
 
 // Load all toggles from store
 onMounted(async () => {
   isLoading.value = true;
-  
+
   try {
     await featureTogglesStore.loadFeatureToggles();
   } catch (error) {
-    console.error('Error loading feature toggles:', error);
+    console.error("Error loading feature toggles:", error);
   } finally {
     isLoading.value = false;
   }
@@ -571,33 +772,36 @@ const categorizedToggles = computed(() => {
 // Filter toggles by category and search query
 const filteredTogglesByCategory = computed(() => {
   const result = [];
-  const categories = selectedCategory.value === 'all' 
-    ? Object.keys(categorizedToggles.value) 
-    : [selectedCategory.value];
-  
+  const categories =
+    selectedCategory.value === "all"
+      ? Object.keys(categorizedToggles.value)
+      : [selectedCategory.value];
+
   for (const category of categories) {
     // Skip if category doesn't exist
     if (!categorizedToggles.value[category]) continue;
-    
+
     // Filter toggles by search query
-    const toggles = categorizedToggles.value[category].filter(toggle => {
+    const toggles = categorizedToggles.value[category].filter((toggle) => {
       if (!searchQuery.value) return true;
-      
+
       const query = searchQuery.value.toLowerCase();
-      return toggle.name.toLowerCase().includes(query) || 
-             toggle.description.toLowerCase().includes(query) ||
-             toggle.id.toLowerCase().includes(query);
+      return (
+        toggle.name.toLowerCase().includes(query) ||
+        toggle.description.toLowerCase().includes(query) ||
+        toggle.id.toLowerCase().includes(query)
+      );
     });
-    
+
     // Add category to result if it has toggles
     if (toggles.length > 0) {
       result.push({
         name: category,
-        toggles
+        toggles,
       });
     }
   }
-  
+
   return result;
 });
 
@@ -605,20 +809,29 @@ const filteredTogglesByCategory = computed(() => {
 const featureHealthStatus = computed(() => {
   const errorCount = totalErrorsCount.value;
   const fallbackCount = activeFallbacksCount.value;
-  
-  if (errorCount > 5 || fallbackCount > 3) return 'critical';
-  if (errorCount > 0 || fallbackCount > 0) return 'warning';
-  return 'good';
+
+  if (errorCount > 5 || fallbackCount > 3) return "critical";
+  if (errorCount > 0 || fallbackCount > 0) return "warning";
+  return "good";
 });
 
 const featureHealthStatusText = computed(() => {
   switch (featureHealthStatus.value) {
-    case 'critical':
-      return t('admin.featureToggles.monitoring.healthCritical', 'Kritisch: Mehrere Fehler oder Fallbacks aktiv');
-    case 'warning':
-      return t('admin.featureToggles.monitoring.healthWarning', 'Warnung: Fehler oder Fallbacks aktiv');
+    case "critical":
+      return t(
+        "admin.featureToggles.monitoring.healthCritical",
+        "Kritisch: Mehrere Fehler oder Fallbacks aktiv",
+      );
+    case "warning":
+      return t(
+        "admin.featureToggles.monitoring.healthWarning",
+        "Warnung: Fehler oder Fallbacks aktiv",
+      );
     default:
-      return t('admin.featureToggles.monitoring.healthGood', 'Alle Features funktionieren normal');
+      return t(
+        "admin.featureToggles.monitoring.healthGood",
+        "Alle Features funktionieren normal",
+      );
   }
 });
 
@@ -628,8 +841,8 @@ const totalFeatureCount = computed(() => {
 });
 
 const activeFeatureCount = computed(() => {
-  return Object.keys(featureTogglesStore.featureConfigs).filter(id => 
-    featureTogglesStore.isEnabled(id)
+  return Object.keys(featureTogglesStore.featureConfigs).filter((id) =>
+    featureTogglesStore.isEnabled(id),
   ).length;
 });
 
@@ -638,7 +851,10 @@ const featuresWithErrorsCount = computed(() => {
 });
 
 const totalErrorsCount = computed(() => {
-  return Object.values(errors.value).reduce((sum, errArray) => sum + errArray.length, 0);
+  return Object.values(errors.value).reduce(
+    (sum, errArray) => sum + errArray.length,
+    0,
+  );
 });
 
 const activeFallbacksCount = computed(() => {
@@ -646,24 +862,25 @@ const activeFallbacksCount = computed(() => {
 });
 
 const featuresWithFallbackCount = computed(() => {
-  return Object.values(featureTogglesStore.featureConfigs).filter(config => 
-    config.hasFallback
+  return Object.values(featureTogglesStore.featureConfigs).filter(
+    (config) => config.hasFallback,
   ).length;
 });
 
 const migratedFeaturesCount = computed(() => {
   // Count SFC migration features that are enabled
-  return Object.entries(featureTogglesStore.featureConfigs)
-    .filter(([id, config]) => 
-      config.group === 'sfcMigration' && featureTogglesStore.isEnabled(id)
-    ).length;
+  return Object.entries(featureTogglesStore.featureConfigs).filter(
+    ([id, config]) =>
+      config.group === "sfcMigration" && featureTogglesStore.isEnabled(id),
+  ).length;
 });
 
 const migrationProgressPercent = computed(() => {
   // Calculate migration progress percentage
-  const total = Object.values(featureTogglesStore.featureConfigs)
-    .filter(config => config.group === 'sfcMigration').length;
-  
+  const total = Object.values(featureTogglesStore.featureConfigs).filter(
+    (config) => config.group === "sfcMigration",
+  ).length;
+
   if (total === 0) return 0;
   return Math.round((migratedFeaturesCount.value / total) * 100);
 });
@@ -671,42 +888,42 @@ const migrationProgressPercent = computed(() => {
 // Error timeline entries
 const errorTimelineEntries = computed(() => {
   const allErrors: Array<FeatureToggleError & { feature: string }> = [];
-  
+
   Object.entries(errors.value).forEach(([feature, errArray]) => {
-    errArray.forEach(err => {
+    errArray.forEach((err) => {
       allErrors.push({
         ...err,
-        feature
+        feature,
       });
     });
   });
-  
+
   // Sort by timestamp, most recent first
-  return allErrors.sort((a, b) => 
-    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  return allErrors.sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
   );
 });
 
 // Top used features
 const topUsedFeatures = computed(() => {
-  const allFeatures = Object.entries(featureTogglesStore.featureConfigs).map(([id, config]) => {
-    const isEnabled = featureTogglesStore.isEnabled(id);
-    return {
-      id,
-      name: config.name,
-      enabled: isEnabled,
-      usageCount: featureUsageData.value[id] || 0
-    };
-  });
-  
+  const allFeatures = Object.entries(featureTogglesStore.featureConfigs).map(
+    ([id, config]) => {
+      const isEnabled = featureTogglesStore.isEnabled(id);
+      return {
+        id,
+        name: config.name,
+        enabled: isEnabled,
+        usageCount: featureUsageData.value[id] || 0,
+      };
+    },
+  );
+
   // Sort by usage count, highest first
-  return allFeatures
-    .sort((a, b) => b.usageCount - a.usageCount)
-    .slice(0, 5); // Take top 5
+  return allFeatures.sort((a, b) => b.usageCount - a.usageCount).slice(0, 5); // Take top 5
 });
 
 const maxUsageCount = computed(() => {
-  const counts = topUsedFeatures.value.map(f => f.usageCount);
+  const counts = topUsedFeatures.value.map((f) => f.usageCount);
   return Math.max(...counts, 1); // Avoid division by zero
 });
 
@@ -732,17 +949,17 @@ function clearErrors(featureId: string) {
 }
 
 function clearAllErrors() {
-  Object.keys(errors.value).forEach(featureId => {
+  Object.keys(errors.value).forEach((featureId) => {
     featureTogglesStore.clearFeatureErrors(featureId);
   });
 }
 
 function formatErrorTime(timestamp: Date): string {
   try {
-    return format(new Date(timestamp), 'dd.MM.yyyy HH:mm:ss', { locale: de });
+    return format(new Date(timestamp), "dd.MM.yyyy HH:mm:ss", { locale: de });
   } catch (error) {
-    console.error('Error formatting date:', error);
-    return '';
+    console.error("Error formatting date:", error);
+    return "";
   }
 }
 
@@ -751,16 +968,25 @@ function isFeatureEnabled(featureId: string): boolean {
 }
 
 function enableAllFeatures() {
-  if (confirm(t('admin.featureToggles.confirmations.enableAll', 'Sind Sie sicher, dass Sie alle Features aktivieren möchten? Dies kann die Anwendungsstabilität beeinflussen.'))) {
+  if (
+    confirm(
+      t(
+        "admin.featureToggles.confirmations.enableAll",
+        "Sind Sie sicher, dass Sie alle Features aktivieren möchten? Dies kann die Anwendungsstabilität beeinflussen.",
+      ),
+    )
+  ) {
     isLoading.value = true;
     setTimeout(() => {
       try {
-        if (selectedCategory.value === 'all') {
-          Object.values(categorizedToggles.value).flat().forEach(toggle => {
-            featureTogglesStore.enableFeature(toggle.id);
-          });
+        if (selectedCategory.value === "all") {
+          Object.values(categorizedToggles.value)
+            .flat()
+            .forEach((toggle) => {
+              featureTogglesStore.enableFeature(toggle.id);
+            });
         } else {
-          categorizedToggles.value[selectedCategory.value].forEach(toggle => {
+          categorizedToggles.value[selectedCategory.value].forEach((toggle) => {
             featureTogglesStore.enableFeature(toggle.id);
           });
         }
@@ -772,16 +998,25 @@ function enableAllFeatures() {
 }
 
 function disableAllFeatures() {
-  if (confirm(t('admin.featureToggles.confirmations.disableAll', 'Sind Sie sicher, dass Sie alle Features deaktivieren möchten? Dies kann dazu führen, dass Teile der Anwendung nicht mehr funktionieren.'))) {
+  if (
+    confirm(
+      t(
+        "admin.featureToggles.confirmations.disableAll",
+        "Sind Sie sicher, dass Sie alle Features deaktivieren möchten? Dies kann dazu führen, dass Teile der Anwendung nicht mehr funktionieren.",
+      ),
+    )
+  ) {
     isLoading.value = true;
     setTimeout(() => {
       try {
-        if (selectedCategory.value === 'all') {
-          Object.values(categorizedToggles.value).flat().forEach(toggle => {
-            featureTogglesStore.disableFeature(toggle.id);
-          });
+        if (selectedCategory.value === "all") {
+          Object.values(categorizedToggles.value)
+            .flat()
+            .forEach((toggle) => {
+              featureTogglesStore.disableFeature(toggle.id);
+            });
         } else {
-          categorizedToggles.value[selectedCategory.value].forEach(toggle => {
+          categorizedToggles.value[selectedCategory.value].forEach((toggle) => {
             featureTogglesStore.disableFeature(toggle.id);
           });
         }
@@ -793,7 +1028,14 @@ function disableAllFeatures() {
 }
 
 function resetToDefaults() {
-  if (confirm(t('admin.featureToggles.confirmations.reset', 'Sind Sie sicher, dass Sie alle Feature-Toggles auf die Standardwerte zurücksetzen möchten?'))) {
+  if (
+    confirm(
+      t(
+        "admin.featureToggles.confirmations.reset",
+        "Sind Sie sicher, dass Sie alle Feature-Toggles auf die Standardwerte zurücksetzen möchten?",
+      ),
+    )
+  ) {
     isLoading.value = true;
     setTimeout(() => {
       try {
@@ -806,9 +1048,9 @@ function resetToDefaults() {
           enableSfcSettings: false,
           enableDarkMode: false,
           enableAdvancedSearch: false,
-          enableDebugMode: false
+          enableDebugMode: false,
         };
-        
+
         // Reset toggles
         Object.entries(defaults).forEach(([id, value]) => {
           if (value) {
@@ -825,27 +1067,30 @@ function resetToDefaults() {
 }
 
 function clearFilters() {
-  selectedCategory.value = 'all';
-  searchQuery.value = '';
+  selectedCategory.value = "all";
+  searchQuery.value = "";
 }
 
 function translateCategory(category: string): string {
   const translations: Record<string, string> = {
-    'migration': t('admin.featureToggles.categories.migration', 'Migration'),
-    'ui': t('admin.featureToggles.categories.ui', 'Benutzeroberfläche'),
-    'feature': t('admin.featureToggles.categories.feature', 'Funktionen'),
-    'development': t('admin.featureToggles.categories.development', 'Entwicklung'),
-    'admin': t('admin.featureToggles.categories.admin', 'Administration')
+    migration: t("admin.featureToggles.categories.migration", "Migration"),
+    ui: t("admin.featureToggles.categories.ui", "Benutzeroberfläche"),
+    feature: t("admin.featureToggles.categories.feature", "Funktionen"),
+    development: t(
+      "admin.featureToggles.categories.development",
+      "Entwicklung",
+    ),
+    admin: t("admin.featureToggles.categories.admin", "Administration"),
   };
-  
+
   return translations[category] || category;
 }
 
 function exportErrorLog() {
   const errorLog = JSON.stringify(errorTimelineEntries.value, null, 2);
-  const blob = new Blob([errorLog], { type: 'application/json' });
+  const blob = new Blob([errorLog], { type: "application/json" });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
   a.download = `feature-toggle-errors-${new Date().toISOString().slice(0, 10)}.json`;
   document.body.appendChild(a);
@@ -855,10 +1100,14 @@ function exportErrorLog() {
 }
 
 // Watch for changes to logging settings
-watch(logSettings, (newSettings) => {
-  console.log('Logging settings updated:', newSettings);
-  // In a real app, would save these settings to the backend or localStorage
-}, { deep: true });
+watch(
+  logSettings,
+  (newSettings) => {
+    console.log("Logging settings updated:", newSettings);
+    // In a real app, would save these settings to the backend or localStorage
+  },
+  { deep: true },
+);
 </script>
 
 <style scoped>
@@ -1283,7 +1532,7 @@ watch(logSettings, (newSettings) => {
   right: 0;
   bottom: 0;
   background-color: var(--n-color-border);
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 1.5rem;
 }
 
@@ -1295,7 +1544,7 @@ watch(logSettings, (newSettings) => {
   left: 0.1875rem;
   bottom: 0.1875rem;
   background-color: white;
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 50%;
 }
 
@@ -1382,15 +1631,18 @@ input:disabled + .admin-feature-toggles__toggle-slider {
   margin-right: 1.5rem;
 }
 
-.admin-feature-toggles__health-summary--good .admin-feature-toggles__health-icon {
+.admin-feature-toggles__health-summary--good
+  .admin-feature-toggles__health-icon {
   color: var(--n-color-success);
 }
 
-.admin-feature-toggles__health-summary--warning .admin-feature-toggles__health-icon {
+.admin-feature-toggles__health-summary--warning
+  .admin-feature-toggles__health-icon {
   color: var(--n-color-warning);
 }
 
-.admin-feature-toggles__health-summary--critical .admin-feature-toggles__health-icon {
+.admin-feature-toggles__health-summary--critical
+  .admin-feature-toggles__health-icon {
   color: var(--n-color-error);
 }
 
@@ -1547,7 +1799,8 @@ input:disabled + .admin-feature-toggles__toggle-slider {
   background-color: var(--n-color-border);
 }
 
-.admin-feature-toggles__timeline-entry:last-child .admin-feature-toggles__timeline-marker::after {
+.admin-feature-toggles__timeline-entry:last-child
+  .admin-feature-toggles__timeline-marker::after {
   display: none;
 }
 
@@ -1732,41 +1985,41 @@ input:disabled + .admin-feature-toggles__toggle-slider {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .admin-feature-toggles__toggle-list {
     grid-template-columns: 1fr;
   }
-  
+
   .admin-feature-toggles__stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .admin-feature-toggles__health-summary {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .admin-feature-toggles__health-icon {
     margin-right: 0;
     margin-bottom: 1rem;
   }
-  
+
   .admin-feature-toggles__usage-header,
   .admin-feature-toggles__usage-item {
     grid-template-columns: 1fr;
     gap: 0.5rem;
   }
-  
+
   .admin-feature-toggles__usage-meter {
     margin-top: 1rem;
   }
-  
+
   .admin-feature-toggles__logging-option {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
-  
+
   .admin-feature-toggles__logging-actions {
     flex-direction: column;
   }

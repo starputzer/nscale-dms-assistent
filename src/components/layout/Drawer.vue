@@ -4,9 +4,9 @@
     <div
       v-if="modelValue && hasBackdrop"
       class="n-drawer-backdrop"
-      :class="{ 
+      :class="{
         'n-drawer-backdrop--active': modelValue,
-        'n-drawer-backdrop--transparent': backdropTransparent
+        'n-drawer-backdrop--transparent': backdropTransparent,
       }"
       @click="handleBackdropClick"
       aria-hidden="true"
@@ -17,14 +17,14 @@
       ref="drawerRef"
       v-show="modelValue"
       class="n-drawer"
-      :class="{ 
+      :class="{
         'n-drawer--active': modelValue,
         [`n-drawer--position-${position}`]: true,
         [`n-drawer--size-${size}`]: true,
         'n-drawer--elevated': elevated,
         'n-drawer--borderless': !bordered,
         'n-drawer--fullscreen': fullScreen,
-        'n-drawer--nested': nested
+        'n-drawer--nested': nested,
       }"
       :style="drawerStyles"
       :aria-hidden="!modelValue"
@@ -34,8 +34,8 @@
       @keydown.esc="handleEscPress"
     >
       <!-- Header (optional) -->
-      <div 
-        v-if="$slots.header || title || showCloseButton" 
+      <div
+        v-if="$slots.header || title || showCloseButton"
         class="n-drawer__header"
         :class="{ 'n-drawer__header--with-border': headerBordered }"
       >
@@ -48,7 +48,14 @@
             @click="close"
             type="button"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
@@ -62,8 +69,8 @@
       </div>
 
       <!-- Footer (optional) -->
-      <div 
-        v-if="$slots.footer" 
+      <div
+        v-if="$slots.footer"
         class="n-drawer__footer"
         :class="{ 'n-drawer__footer--with-border': footerBordered }"
       >
@@ -83,9 +90,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
-import { useUIStore } from '../../stores/ui';
-import { useFocusTrap } from '../../composables/useFocusTrap';
+import {
+  ref,
+  computed,
+  watch,
+  nextTick,
+  onMounted,
+  onBeforeUnmount,
+} from "vue";
+import { useUIStore } from "../../stores/ui";
+import { useFocusTrap } from "../../composables/useFocusTrap";
 
 /**
  * Drawer-Komponente für den nscale DMS Assistenten
@@ -96,9 +110,9 @@ export interface DrawerProps {
   /** Steuert die Sichtbarkeit des Drawers (v-model) */
   modelValue: boolean;
   /** Position des Drawers */
-  position?: 'left' | 'right' | 'top' | 'bottom';
+  position?: "left" | "right" | "top" | "bottom";
   /** Größe des Drawers */
-  size?: 'small' | 'medium' | 'large' | 'xlarge' | 'auto';
+  size?: "small" | "medium" | "large" | "xlarge" | "auto";
   /** Benutzerdefinierte Weite (bei left/right) oder Höhe (bei top/bottom) in px oder % */
   customSize?: string;
   /** Ob der Drawer einen sichtbaren Rahmen hat */
@@ -138,8 +152,8 @@ export interface DrawerProps {
 }
 
 const props = withDefaults(defineProps<DrawerProps>(), {
-  position: 'right',
-  size: 'medium',
+  position: "right",
+  size: "medium",
   bordered: true,
   elevated: true,
   closeOnEscape: true,
@@ -155,18 +169,18 @@ const props = withDefaults(defineProps<DrawerProps>(), {
   footerBordered: true,
   zIndex: 1000,
   backdropTransparent: false,
-  manageFocus: true
+  manageFocus: true,
 });
 
 const emit = defineEmits<{
   /** Wird ausgelöst, wenn sich der Sichtbarkeitszustand ändert */
-  (e: 'update:modelValue', value: boolean): void;
+  (e: "update:modelValue", value: boolean): void;
   /** Wird ausgelöst, wenn der Drawer geöffnet wird */
-  (e: 'open'): void;
+  (e: "open"): void;
   /** Wird ausgelöst, wenn der Drawer geschlossen wird */
-  (e: 'close'): void;
+  (e: "close"): void;
   /** Wird ausgelöst, wenn die Größe des Drawers geändert wird */
-  (e: 'resize', size: number): void;
+  (e: "resize", size: number): void;
 }>();
 
 // UI Store für globale UI-Zustände
@@ -182,39 +196,43 @@ const startSize = ref<number>(0);
 // Berechneter Drawer-Stil
 const drawerStyles = computed(() => {
   const styles: Record<string, string> = {};
-  
+
   // Z-Index
-  styles['z-index'] = props.zIndex.toString();
-  
+  styles["z-index"] = props.zIndex.toString();
+
   // Größe basierend auf Position
   if (props.customSize) {
-    if (props.position === 'left' || props.position === 'right') {
-      styles['width'] = props.customSize;
-    } else if (props.position === 'top' || props.position === 'bottom') {
-      styles['height'] = props.customSize;
+    if (props.position === "left" || props.position === "right") {
+      styles["width"] = props.customSize;
+    } else if (props.position === "top" || props.position === "bottom") {
+      styles["height"] = props.customSize;
     }
   } else if (isResizing.value && currentSize.value > 0) {
-    if (props.position === 'left' || props.position === 'right') {
-      styles['width'] = `${currentSize.value}px`;
-    } else if (props.position === 'top' || props.position === 'bottom') {
-      styles['height'] = `${currentSize.value}px`;
+    if (props.position === "left" || props.position === "right") {
+      styles["width"] = `${currentSize.value}px`;
+    } else if (props.position === "top" || props.position === "bottom") {
+      styles["height"] = `${currentSize.value}px`;
     }
   }
-  
+
   return styles;
 });
 
 // Fokus-Verwaltung für Barrierefreiheit
-const { activate: activateFocusTrap, deactivate: deactivateFocusTrap } = useFocusTrap(drawerRef);
+const { activate: activateFocusTrap, deactivate: deactivateFocusTrap } =
+  useFocusTrap(drawerRef);
 
 // Überwache Änderungen am modelValue
-watch(() => props.modelValue, (newValue) => {
-  if (newValue) {
-    open();
-  } else {
-    handleDrawerClose();
-  }
-});
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    if (newValue) {
+      open();
+    } else {
+      handleDrawerClose();
+    }
+  },
+);
 
 /**
  * Öffnet den Drawer
@@ -223,9 +241,11 @@ function open(): void {
   nextTick(() => {
     if (props.manageFocus && drawerRef.value) {
       activateFocusTrap();
-      
+
       // Fokus auf den ersten fokussierbaren Element im Drawer setzen
-      const focusableElement = drawerRef.value.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])') as HTMLElement;
+      const focusableElement = drawerRef.value.querySelector(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      ) as HTMLElement;
       if (focusableElement) {
         focusableElement.focus();
       } else {
@@ -233,13 +253,13 @@ function open(): void {
         drawerRef.value.focus();
       }
     }
-    
+
     // Scrolle verhindern, wenn der Drawer geöffnet ist und einen Backdrop hat
     if (props.hasBackdrop && !props.nested) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     }
-    
-    emit('open');
+
+    emit("open");
   });
 }
 
@@ -247,7 +267,7 @@ function open(): void {
  * Schließt den Drawer
  */
 function close(): void {
-  emit('update:modelValue', false);
+  emit("update:modelValue", false);
 }
 
 /**
@@ -257,13 +277,13 @@ function handleDrawerClose(): void {
   if (props.manageFocus) {
     deactivateFocusTrap();
   }
-  
+
   // Scrolle wieder aktivieren
   if (props.hasBackdrop && !props.nested) {
-    document.body.style.overflow = '';
+    document.body.style.overflow = "";
   }
-  
-  emit('close');
+
+  emit("close");
 }
 
 /**
@@ -289,43 +309,46 @@ function handleEscPress(event: KeyboardEvent): void {
  */
 function startResize(event: MouseEvent | TouchEvent): void {
   if (!props.resizable) return;
-  
+
   isResizing.value = true;
-  
+
   // Initialen Zustand speichern
   if (event instanceof MouseEvent) {
-    startPos.value = props.position === 'left' || props.position === 'right' 
-      ? event.clientX 
-      : event.clientY;
+    startPos.value =
+      props.position === "left" || props.position === "right"
+        ? event.clientX
+        : event.clientY;
   } else {
-    startPos.value = props.position === 'left' || props.position === 'right' 
-      ? event.touches[0].clientX 
-      : event.touches[0].clientY;
+    startPos.value =
+      props.position === "left" || props.position === "right"
+        ? event.touches[0].clientX
+        : event.touches[0].clientY;
   }
-  
+
   // Aktuelle Größe als Ausgangsbasis
   if (drawerRef.value) {
-    startSize.value = props.position === 'left' || props.position === 'right' 
-      ? drawerRef.value.offsetWidth 
-      : drawerRef.value.offsetHeight;
+    startSize.value =
+      props.position === "left" || props.position === "right"
+        ? drawerRef.value.offsetWidth
+        : drawerRef.value.offsetHeight;
     currentSize.value = startSize.value;
   }
-  
+
   // Event-Listener für Resize-Vorgang
-  document.addEventListener('mousemove', handleResize);
-  document.addEventListener('touchmove', handleResize);
-  document.addEventListener('mouseup', endResize);
-  document.addEventListener('touchend', endResize);
-  
+  document.addEventListener("mousemove", handleResize);
+  document.addEventListener("touchmove", handleResize);
+  document.addEventListener("mouseup", endResize);
+  document.addEventListener("touchend", endResize);
+
   // Cursor ändern
-  if (props.position === 'left' || props.position === 'right') {
-    document.body.style.cursor = 'ew-resize';
+  if (props.position === "left" || props.position === "right") {
+    document.body.style.cursor = "ew-resize";
   } else {
-    document.body.style.cursor = 'ns-resize';
+    document.body.style.cursor = "ns-resize";
   }
-  
+
   // Verhindern, dass der Text ausgewählt wird während des Resizens
-  document.body.style.userSelect = 'none';
+  document.body.style.userSelect = "none";
 }
 
 /**
@@ -333,31 +356,36 @@ function startResize(event: MouseEvent | TouchEvent): void {
  */
 function handleResize(event: MouseEvent | TouchEvent): void {
   if (!isResizing.value) return;
-  
+
   let currentPosition: number;
-  
+
   if (event instanceof MouseEvent) {
-    currentPosition = props.position === 'left' || props.position === 'right' 
-      ? event.clientX 
-      : event.clientY;
+    currentPosition =
+      props.position === "left" || props.position === "right"
+        ? event.clientX
+        : event.clientY;
   } else {
-    currentPosition = props.position === 'left' || props.position === 'right' 
-      ? event.touches[0].clientX 
-      : event.touches[0].clientY;
+    currentPosition =
+      props.position === "left" || props.position === "right"
+        ? event.touches[0].clientX
+        : event.touches[0].clientY;
   }
-  
+
   let delta = currentPosition - startPos.value;
-  
+
   // Anpassen basierend auf der Position des Drawers
-  if (props.position === 'right' || props.position === 'bottom') {
+  if (props.position === "right" || props.position === "bottom") {
     delta = -delta;
   }
-  
+
   // Neue Größe berechnen und auf Min/Max begrenzen
-  const newSize = Math.max(props.minSize, Math.min(props.maxSize, startSize.value + delta));
+  const newSize = Math.max(
+    props.minSize,
+    Math.min(props.maxSize, startSize.value + delta),
+  );
   currentSize.value = newSize;
-  
-  emit('resize', newSize);
+
+  emit("resize", newSize);
 }
 
 /**
@@ -365,16 +393,16 @@ function handleResize(event: MouseEvent | TouchEvent): void {
  */
 function endResize(): void {
   isResizing.value = false;
-  
+
   // Event-Listener entfernen
-  document.removeEventListener('mousemove', handleResize);
-  document.removeEventListener('touchmove', handleResize);
-  document.removeEventListener('mouseup', endResize);
-  document.removeEventListener('touchend', endResize);
-  
+  document.removeEventListener("mousemove", handleResize);
+  document.removeEventListener("touchmove", handleResize);
+  document.removeEventListener("mouseup", endResize);
+  document.removeEventListener("touchend", endResize);
+
   // Cursor zurücksetzen
-  document.body.style.cursor = '';
-  document.body.style.userSelect = '';
+  document.body.style.cursor = "";
+  document.body.style.userSelect = "";
 }
 
 // Bereinigung
@@ -382,10 +410,10 @@ onBeforeUnmount(() => {
   if (isResizing.value) {
     endResize();
   }
-  
+
   // Scrolle wieder aktivieren
   if (props.hasBackdrop && !props.nested && props.modelValue) {
-    document.body.style.overflow = '';
+    document.body.style.overflow = "";
   }
 });
 
@@ -399,7 +427,7 @@ onMounted(() => {
 // Expose functions for programmatic use
 defineExpose({
   open,
-  close
+  close,
 });
 </script>
 
@@ -414,7 +442,9 @@ defineExpose({
   z-index: calc(var(--n-drawer-z-index, 1000) - 1);
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
 }
 
 .n-drawer-backdrop--active {
@@ -428,13 +458,19 @@ defineExpose({
 
 .n-drawer {
   position: fixed;
-  background-color: var(--n-drawer-background-color, var(--n-background-color, #ffffff));
+  background-color: var(
+    --n-drawer-background-color,
+    var(--n-background-color, #ffffff)
+  );
   color: var(--n-drawer-text-color, var(--n-text-color, #2d3748));
   overflow: hidden;
   display: flex;
   flex-direction: column;
   z-index: var(--n-drawer-z-index, 1000);
-  transition: transform 0.3s ease, width 0.2s ease, height 0.2s ease;
+  transition:
+    transform 0.3s ease,
+    width 0.2s ease,
+    height 0.2s ease;
 }
 
 /* Position Varianten */
@@ -594,7 +630,9 @@ defineExpose({
   align-items: center;
   justify-content: center;
   color: var(--n-drawer-icon-color, var(--n-text-secondary-color, #718096));
-  transition: color 0.2s ease, background-color 0.2s ease;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
   border-radius: var(--n-border-radius, 4px);
 }
 
@@ -671,7 +709,7 @@ defineExpose({
 
 /* Eingebettete Transitions für Maus-Hover auf dem Resize-Handle */
 .n-drawer__resize-handle:hover::before {
-  content: '';
+  content: "";
   position: absolute;
   background-color: var(--n-primary-color, #3182ce);
   opacity: 0.2;
@@ -702,20 +740,20 @@ defineExpose({
     width: 90% !important;
     max-width: 360px;
   }
-  
+
   .n-drawer--position-top,
   .n-drawer--position-bottom {
     height: 50% !important;
   }
-  
+
   .n-drawer__header {
     padding: 12px 16px;
   }
-  
+
   .n-drawer__content {
     padding: 16px;
   }
-  
+
   .n-drawer__footer {
     padding: 12px 16px;
   }

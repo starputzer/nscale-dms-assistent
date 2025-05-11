@@ -1,53 +1,60 @@
 <template>
-  <div class="doc-converter-container" v-if="featureToggles.isDocConverterEnabled">
+  <div
+    class="doc-converter-container"
+    v-if="featureToggles.isDocConverterEnabled"
+  >
     <div class="doc-converter-header">
-      <h2>{{ t('documentConverter.title', 'Dokumentenkonverter') }}</h2>
+      <h2>{{ t("documentConverter.title", "Dokumentenkonverter") }}</h2>
       <p class="doc-converter-description">
-        {{ t('documentConverter.description', 'Konvertieren Sie Ihre Dokumente in ein nscale-kompatibles Format. Unterstützte Formate: PDF, DOCX, XLSX, PPTX, TXT.') }}
+        {{
+          t(
+            "documentConverter.description",
+            "Konvertieren Sie Ihre Dokumente in ein nscale-kompatibles Format. Unterstützte Formate: PDF, DOCX, XLSX, PPTX, TXT.",
+          )
+        }}
       </p>
       <div class="doc-converter-tabs">
         <button
           class="doc-converter-tab-btn"
-          :class="{ 'active': !showStats }"
+          :class="{ active: !showStats }"
           @click="showStats = false"
         >
-          {{ t('documentConverter.tabs.converter', 'Konverter') }}
+          {{ t("documentConverter.tabs.converter", "Konverter") }}
         </button>
         <button
           class="doc-converter-tab-btn"
-          :class="{ 'active': showStats }"
+          :class="{ active: showStats }"
           @click="showStats = true"
         >
-          {{ t('documentConverter.tabs.statistics', 'Statistik') }}
+          {{ t("documentConverter.tabs.statistics", "Statistik") }}
         </button>
       </div>
     </div>
 
     <!-- Fehleranzeige bei Initialisierungsproblemen -->
-    <ErrorDisplay 
-      v-if="error" 
-      :error="error" 
-      @retry="initialize" 
-    />
+    <ErrorDisplay v-if="error" :error="error" @retry="initialize" />
 
     <div v-else class="doc-converter-content">
       <!-- Konvertierungsansicht -->
       <div v-if="!showStats" class="doc-converter-view">
         <!-- Tabs für normale und Batch-Upload-Modi -->
-        <div class="doc-converter-upload-tabs" v-if="!isConverting && !conversionResult">
+        <div
+          class="doc-converter-upload-tabs"
+          v-if="!isConverting && !conversionResult"
+        >
           <button
             class="doc-converter-upload-tab"
-            :class="{ 'active': uploadMode === 'single' }"
+            :class="{ active: uploadMode === 'single' }"
             @click="uploadMode = 'single'"
           >
-            {{ t('documentConverter.uploadModes.single', 'Einzelupload') }}
+            {{ t("documentConverter.uploadModes.single", "Einzelupload") }}
           </button>
           <button
             class="doc-converter-upload-tab"
-            :class="{ 'active': uploadMode === 'batch' }"
+            :class="{ active: uploadMode === 'batch' }"
             @click="uploadMode = 'batch'"
           >
-            {{ t('documentConverter.uploadModes.batch', 'Batch-Upload') }}
+            {{ t("documentConverter.uploadModes.batch", "Batch-Upload") }}
           </button>
         </div>
 
@@ -104,10 +111,7 @@
         />
 
         <!-- Fallback-Konverter, falls etwas schief geht -->
-        <FallbackConverter
-          v-if="useFallback"
-          @retry="initialize"
-        />
+        <FallbackConverter v-if="useFallback" @retry="initialize" />
 
         <!-- Steuerelemente am unteren Rand -->
         <div class="doc-converter-controls" v-if="conversionResult">
@@ -115,7 +119,7 @@
             class="doc-converter-btn doc-converter-btn-primary"
             @click="clearConversionResult"
           >
-            {{ t('documentConverter.newConversion', 'Neue Konvertierung') }}
+            {{ t("documentConverter.newConversion", "Neue Konvertierung") }}
           </button>
         </div>
       </div>
@@ -127,22 +131,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
-import { useDocumentConverter } from '@/composables/useDocumentConverter';
-import { useFeatureToggles } from '@/composables/useFeatureToggles';
-import { useGlobalDialog } from '@/composables/useDialog';
-import { useI18n } from '@/composables/useI18n';
-import { ConversionResult } from '@/types/documentConverter';
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { useDocumentConverter } from "@/composables/useDocumentConverter";
+import { useFeatureToggles } from "@/composables/useFeatureToggles";
+import { useGlobalDialog } from "@/composables/useDialog";
+import { useI18n } from "@/composables/useI18n";
+import { ConversionResult } from "@/types/documentConverter";
 
 // Komponenten importieren
-import FileUpload from './FileUpload.vue';
-import BatchUpload from './BatchUpload.vue';
-import ConversionProgress from './ConversionProgress.vue';
-import ConversionResult from './ConversionResult.vue';
-import DocumentList from './DocumentList.vue';
-import ErrorDisplay from './ErrorDisplay.vue';
-import FallbackConverter from './FallbackConverter.vue';
-import ConversionStats from './ConversionStats.vue';
+import FileUpload from "./FileUpload.vue";
+import BatchUpload from "./BatchUpload.vue";
+import ConversionProgress from "./ConversionProgress.vue";
+import ConversionResult from "./ConversionResult.vue";
+import DocumentList from "./DocumentList.vue";
+import ErrorDisplay from "./ErrorDisplay.vue";
+import FallbackConverter from "./FallbackConverter.vue";
+import ConversionStats from "./ConversionStats.vue";
 
 // Feature-Toggle für bedingte Anzeige
 const featureToggles = useFeatureToggles();
@@ -168,23 +172,31 @@ const {
   selectDocument,
   cancelConversion,
   clearSelection,
-  deleteDocument
+  deleteDocument,
 } = useDocumentConverter();
 
 // Lokaler Zustand für UI-Steuerung
 const conversionProgress = ref<number>(0);
-const conversionStep = ref<string>('');
+const conversionStep = ref<string>("");
 const estimatedTimeRemaining = ref<number>(0);
 const conversionResult = ref<ConversionResult | null>(null);
 const activeConversion = ref<string | null>(null);
 const useFallback = ref<boolean>(false);
 const showStats = ref<boolean>(false);
-const uploadMode = ref<'single' | 'batch'>('single');
+const uploadMode = ref<"single" | "batch">("single");
 
 // Konfigurationswerte für Upload
 const allowedExtensions = [
-  'pdf', 'docx', 'doc', 'xlsx', 'xls', 
-  'pptx', 'ppt', 'txt', 'csv', 'rtf'
+  "pdf",
+  "docx",
+  "doc",
+  "xlsx",
+  "xls",
+  "pptx",
+  "ppt",
+  "txt",
+  "csv",
+  "rtf",
 ];
 const maxFileSize = 20 * 1024 * 1024; // 20 MB in Bytes
 
@@ -197,52 +209,64 @@ async function startConversion(file: File) {
     // Zustand zurücksetzen
     conversionResult.value = null;
     useFallback.value = false;
-    
+
     // Dokument hochladen
     const documentId = await uploadDocument(file);
-    
+
     if (!documentId) {
       return;
     }
-    
+
     // Konvertierungsfortschritt zurücksetzen
     conversionProgress.value = 0;
-    conversionStep.value = t('documentConverter.steps.initializing', 'Initialisiere Konvertierung...');
+    conversionStep.value = t(
+      "documentConverter.steps.initializing",
+      "Initialisiere Konvertierung...",
+    );
     estimatedTimeRemaining.value = 0;
     activeConversion.value = documentId;
-    
+
     // Fortschritts-Callback für Echtzeitaktualisierungen
-    const updateProgress = (progress: number, step: string, timeRemaining: number | null) => {
+    const updateProgress = (
+      progress: number,
+      step: string,
+      timeRemaining: number | null,
+    ) => {
       conversionProgress.value = progress;
       conversionStep.value = step;
       estimatedTimeRemaining.value = timeRemaining || 0;
     };
-    
+
     // Konvertierung starten
     const success = await convertDocument(documentId, updateProgress);
-    
+
     if (success) {
       // Konvertierungsergebnis anzeigen
       viewDocument(documentId);
     }
   } catch (err) {
-    console.error('Fehler bei der Konvertierung:', err);
-    
+    console.error("Fehler bei der Konvertierung:", err);
+
     // Überprüfen ob Fallback verwendet werden soll
-    if (err instanceof Error && (
-      err.message.includes('SERVER_UNREACHABLE') || 
-      err.message.includes('TIMEOUT') ||
-      err.message.includes('CONVERSION_FAILED')
-    )) {
+    if (
+      err instanceof Error &&
+      (err.message.includes("SERVER_UNREACHABLE") ||
+        err.message.includes("TIMEOUT") ||
+        err.message.includes("CONVERSION_FAILED"))
+    ) {
       useFallback.value = true;
     }
-    
+
     // Fehlermeldung anzeigen
     await dialog.error({
-      title: t('documentConverter.error', 'Fehler'),
-      message: err instanceof Error 
-        ? err.message 
-        : t('documentConverter.errors.unknown', 'Ein unbekannter Fehler ist aufgetreten')
+      title: t("documentConverter.error", "Fehler"),
+      message:
+        err instanceof Error
+          ? err.message
+          : t(
+              "documentConverter.errors.unknown",
+              "Ein unbekannter Fehler ist aufgetreten",
+            ),
     });
   } finally {
     activeConversion.value = null;
@@ -255,29 +279,38 @@ async function startConversion(file: File) {
 async function handleCancelConversion() {
   // Bestätigung vom Benutzer einholen
   const confirmed = await dialog.confirm({
-    title: t('documentConverter.cancelTitle', 'Konvertierung abbrechen'),
-    message: t('documentConverter.cancelConfirm', 'Möchten Sie die laufende Konvertierung wirklich abbrechen?'),
-    confirmButtonText: t('common.yes', 'Ja'),
-    cancelButtonText: t('common.no', 'Nein'),
-    type: 'warning'
+    title: t("documentConverter.cancelTitle", "Konvertierung abbrechen"),
+    message: t(
+      "documentConverter.cancelConfirm",
+      "Möchten Sie die laufende Konvertierung wirklich abbrechen?",
+    ),
+    confirmButtonText: t("common.yes", "Ja"),
+    cancelButtonText: t("common.no", "Nein"),
+    type: "warning",
   });
-  
+
   if (confirmed && activeConversion.value) {
     try {
       // Konvertierung abbrechen
       await cancelConversion(activeConversion.value);
-      
+
       // Status zurücksetzen
       activeConversion.value = null;
       conversionProgress.value = 0;
-      conversionStep.value = t('documentConverter.cancelled', 'Konvertierung abgebrochen');
+      conversionStep.value = t(
+        "documentConverter.cancelled",
+        "Konvertierung abgebrochen",
+      );
     } catch (err) {
-      console.error('Fehler beim Abbrechen der Konvertierung:', err);
-      
+      console.error("Fehler beim Abbrechen der Konvertierung:", err);
+
       // Fehlermeldung anzeigen
       dialog.error({
-        title: t('documentConverter.error', 'Fehler'),
-        message: t('documentConverter.cancelError', 'Die Konvertierung konnte nicht abgebrochen werden.')
+        title: t("documentConverter.error", "Fehler"),
+        message: t(
+          "documentConverter.cancelError",
+          "Die Konvertierung konnte nicht abgebrochen werden.",
+        ),
       });
     }
   }
@@ -289,10 +322,10 @@ async function handleCancelConversion() {
  */
 function viewDocument(documentId: string) {
   selectDocument(documentId);
-  
-  const document = documents.value.find(doc => doc.id === documentId);
-  
-  if (document && document.status === 'success') {
+
+  const document = documents.value.find((doc) => doc.id === documentId);
+
+  if (document && document.status === "success") {
     conversionResult.value = document;
   }
 }
@@ -302,7 +335,7 @@ function viewDocument(documentId: string) {
  * @param documentId Die ID des herunterzuladenden Dokuments
  */
 function downloadDocument(documentId: string) {
-  const baseUrl = import.meta.env.VITE_API_URL || '';
+  const baseUrl = import.meta.env.VITE_API_URL || "";
   window.location.href = `${baseUrl}/api/documents/${documentId}/download`;
 }
 
@@ -313,16 +346,19 @@ function downloadDocument(documentId: string) {
 async function promptDeleteDocument(documentId: string) {
   // Dialog anzeigen statt window.confirm
   const confirmed = await dialog.confirm({
-    title: t('documentConverter.deleteTitle', 'Dokument löschen'),
-    message: t('documentConverter.deleteConfirm', 'Sind Sie sicher, dass Sie dieses Dokument löschen möchten?'),
-    confirmButtonText: t('common.delete', 'Löschen'),
-    cancelButtonText: t('common.cancel', 'Abbrechen'),
-    type: 'warning'
+    title: t("documentConverter.deleteTitle", "Dokument löschen"),
+    message: t(
+      "documentConverter.deleteConfirm",
+      "Sind Sie sicher, dass Sie dieses Dokument löschen möchten?",
+    ),
+    confirmButtonText: t("common.delete", "Löschen"),
+    cancelButtonText: t("common.cancel", "Abbrechen"),
+    type: "warning",
   });
-  
+
   if (confirmed) {
     await deleteDocument(documentId);
-    
+
     // Wenn das gelöschte Dokument das aktuell angezeigte ist, Anzeige löschen
     if (conversionResult.value && conversionResult.value.id === documentId) {
       clearConversionResult();
@@ -343,16 +379,22 @@ function clearConversionResult() {
  * @param files Array von Dateien für den Batch-Upload
  * @param priorities Zuordnung von File-IDs zu Prioritäten
  */
-async function handleBatchStart(files: File[], priorities: Record<string, string>) {
+async function handleBatchStart(
+  files: File[],
+  priorities: Record<string, string>,
+) {
   console.log(`Starting batch upload of ${files.length} files`);
   // Prioritäten basierte Sortierung
-  const priorityOrder: Record<string, number> = { 'high': 0, 'normal': 1, 'low': 2 };
+  const priorityOrder: Record<string, number> = { high: 0, normal: 1, low: 2 };
 
   // Sortiere Dateien nach Priorität
   const sortedFiles = [...files].sort((a, b) => {
     const fileIdA = `batch-${a.name}-${a.size}`;
     const fileIdB = `batch-${b.name}-${b.size}`;
-    return priorityOrder[priorities[fileIdA] || 'normal'] - priorityOrder[priorities[fileIdB] || 'normal'];
+    return (
+      priorityOrder[priorities[fileIdA] || "normal"] -
+      priorityOrder[priorities[fileIdB] || "normal"]
+    );
   });
 
   // Verarbeite jede Datei in der sortierten Reihenfolge
@@ -374,7 +416,7 @@ function handleBatchComplete(results: any[]) {
  * Behandelt Abbruch eines Batch-Uploads
  */
 function handleBatchCancel() {
-  console.log('Batch upload was canceled');
+  console.log("Batch upload was canceled");
   // Bei Bedarf zusätzliche Logik für abgebrochene Batches
 }
 
@@ -389,13 +431,19 @@ onBeforeUnmount(() => {
   if (isConverting.value && activeConversion.value) {
     // Laufende Konvertierung abbrechen ohne Benutzerbenachrichtigung
     try {
-      cancelConversion(activeConversion.value).catch(err => {
-        console.error('Fehler beim Abbrechen der Konvertierung während Unmount:', err);
+      cancelConversion(activeConversion.value).catch((err) => {
+        console.error(
+          "Fehler beim Abbrechen der Konvertierung während Unmount:",
+          err,
+        );
       });
     } catch (err) {
-      console.error('Exception beim Abbrechen der Konvertierung während Unmount:', err);
+      console.error(
+        "Exception beim Abbrechen der Konvertierung während Unmount:",
+        err,
+      );
     }
-    
+
     // Status zurücksetzen
     activeConversion.value = null;
     conversionProgress.value = 0;
@@ -406,13 +454,13 @@ onBeforeUnmount(() => {
 <style scoped>
 /* Grundlegende Containerstile */
 .doc-converter-container {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   max-width: 900px;
   margin: 0 auto;
   padding: 1.5rem;
   background-color: #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Header-Bereich mit Titel und Beschreibung */
@@ -492,7 +540,9 @@ onBeforeUnmount(() => {
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
   border: none;
   outline: none;
 }
@@ -567,7 +617,9 @@ onBeforeUnmount(() => {
 
 /* Animation für Übergänge */
 .doc-converter-content > * {
-  transition: opacity 0.3s, transform 0.3s;
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
 }
 
 /* Responsive Design */

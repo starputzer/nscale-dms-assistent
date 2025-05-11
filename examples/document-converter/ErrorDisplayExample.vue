@@ -1,7 +1,7 @@
 <template>
   <div class="error-example">
     <h2>Fehlermeldungen für Dokumentenkonverter</h2>
-    
+
     <div class="controls">
       <div class="control-group">
         <label for="error-type">Fehlertyp:</label>
@@ -13,46 +13,34 @@
           <option value="unknown">Unbekannter Fehler</option>
         </select>
       </div>
-      
+
       <div class="control-group">
         <label>Details anzeigen:</label>
         <div class="toggle-wrapper">
-          <input 
-            type="checkbox" 
-            id="show-details" 
-            v-model="showDetails"
-          >
+          <input type="checkbox" id="show-details" v-model="showDetails" />
           <label for="show-details" class="toggle-label"></label>
         </div>
       </div>
-      
+
       <div class="control-group">
         <label>Support-Button anzeigen:</label>
         <div class="toggle-wrapper">
-          <input 
-            type="checkbox" 
-            id="show-support" 
-            v-model="showSupport"
-          >
+          <input type="checkbox" id="show-support" v-model="showSupport" />
           <label for="show-support" class="toggle-label"></label>
         </div>
       </div>
-      
+
       <div class="control-group">
         <label>Fallback-Button anzeigen:</label>
         <div class="toggle-wrapper">
-          <input 
-            type="checkbox" 
-            id="show-fallback" 
-            v-model="showFallback"
-          >
+          <input type="checkbox" id="show-fallback" v-model="showFallback" />
           <label for="show-fallback" class="toggle-label"></label>
         </div>
       </div>
     </div>
-    
+
     <div class="error-container">
-      <ErrorDisplay 
+      <ErrorDisplay
         :error="currentError"
         :error-type="selectedErrorType"
         :show-details="showDetails"
@@ -64,12 +52,12 @@
         @fallback="handleFallback"
       />
     </div>
-    
+
     <div v-if="lastAction" class="action-log">
       <h3>Letzte Aktion:</h3>
       <p>{{ lastAction }}</p>
     </div>
-    
+
     <div class="extra-controls">
       <h3>Benutzerdefinierte Fehler</h3>
       <button @click="setSimpleError" class="action-btn">
@@ -89,11 +77,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import ErrorDisplay, { ErrorType, ErrorObject } from '@/components/admin/document-converter/ErrorDisplay.vue';
+import { ref, computed } from "vue";
+import ErrorDisplay, {
+  ErrorType,
+  ErrorObject,
+} from "@/components/admin/document-converter/ErrorDisplay.vue";
 
 // Zustandsvariablen
-const selectedErrorType = ref<ErrorType>('network');
+const selectedErrorType = ref<ErrorType>("network");
 const showDetails = ref(false);
 const showSupport = ref(false);
 const showFallback = ref(false);
@@ -102,11 +93,15 @@ const customError = ref<Error | ErrorObject | string | null>(null);
 
 // Vordefinierte Fehlermeldungen basierend auf dem Fehlertyp
 const errorMessages = {
-  network: 'Verbindung zum Konvertierungsserver fehlgeschlagen. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.',
-  format: 'Das Format der Datei "Präsentation.pptx" wird nicht unterstützt oder die Datei ist beschädigt.',
-  server: 'Der Dokumentenkonverter-Service ist derzeit nicht verfügbar. Unsere Techniker wurden benachrichtigt.',
-  permission: 'Sie haben keine Berechtigung, um Dokumente dieses Typs zu konvertieren. Bitte kontaktieren Sie Ihren Administrator.',
-  unknown: 'Bei der Konvertierung ist ein unerwarteter Fehler aufgetreten.'
+  network:
+    "Verbindung zum Konvertierungsserver fehlgeschlagen. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+  format:
+    'Das Format der Datei "Präsentation.pptx" wird nicht unterstützt oder die Datei ist beschädigt.',
+  server:
+    "Der Dokumentenkonverter-Service ist derzeit nicht verfügbar. Unsere Techniker wurden benachrichtigt.",
+  permission:
+    "Sie haben keine Berechtigung, um Dokumente dieses Typs zu konvertieren. Bitte kontaktieren Sie Ihren Administrator.",
+  unknown: "Bei der Konvertierung ist ein unerwarteter Fehler aufgetreten.",
 };
 
 // Stack-Trace für technische Details
@@ -122,60 +117,67 @@ const currentError = computed(() => {
   if (customError.value) {
     return customError.value;
   }
-  
+
   // Ansonsten einen Fehler basierend auf dem ausgewählten Typ zurückgeben
-  return errorMessages[selectedErrorType.value] || 'Unbekannter Fehler';
+  return errorMessages[selectedErrorType.value] || "Unbekannter Fehler";
 });
 
 // Event-Handler für Retry-Button
 function handleRetry(): void {
-  lastAction.value = 'Benutzer hat "Erneut versuchen" angeklickt. Die Konvertierung würde neu gestartet werden.';
+  lastAction.value =
+    'Benutzer hat "Erneut versuchen" angeklickt. Die Konvertierung würde neu gestartet werden.';
   // In einer echten Anwendung würde hier die Konvertierung neu gestartet
 }
 
 // Event-Handler für Support-Button
 function handleContactSupport(): void {
-  lastAction.value = 'Benutzer hat "Support kontaktieren" angeklickt. Ein Support-Ticket würde erstellt werden.';
+  lastAction.value =
+    'Benutzer hat "Support kontaktieren" angeklickt. Ein Support-Ticket würde erstellt werden.';
   // In einer echten Anwendung würde hier ein Supportformular angezeigt
 }
 
 // Event-Handler für Fallback-Button
 function handleFallback(): void {
-  lastAction.value = 'Benutzer hat "Einfache Version verwenden" angeklickt. Die vereinfachte Konvertierung würde gestartet.';
+  lastAction.value =
+    'Benutzer hat "Einfache Version verwenden" angeklickt. Die vereinfachte Konvertierung würde gestartet.';
   // In einer echten Anwendung würde hier eine alternative Konvertierungsmethode verwendet
 }
 
 // Setzt eine einfache Fehlermeldung als String
 function setSimpleError(): void {
-  customError.value = 'Die Konvertierung der Datei ist fehlgeschlagen.';
-  lastAction.value = 'Einfache Fehlermeldung wurde gesetzt';
+  customError.value = "Die Konvertierung der Datei ist fehlgeschlagen.";
+  lastAction.value = "Einfache Fehlermeldung wurde gesetzt";
 }
 
 // Setzt einen Fehler mit technischen Details
 function setErrorWithDetails(): void {
-  const error = new Error('PDF-Konvertierung fehlgeschlagen: Dokument enthält nicht unterstütztes Inhaltsformat');
+  const error = new Error(
+    "PDF-Konvertierung fehlgeschlagen: Dokument enthält nicht unterstütztes Inhaltsformat",
+  );
   error.stack = sampleStackTrace;
   customError.value = error;
-  lastAction.value = 'Fehler mit technischen Details wurde gesetzt';
+  lastAction.value = "Fehler mit technischen Details wurde gesetzt";
 }
 
 // Setzt ein komplexes ErrorObject mit einem Lösungsvorschlag
 function setErrorWithResolution(): void {
   customError.value = {
-    message: 'Die Konvertierung konnte nicht abgeschlossen werden, da die maximale Größe überschritten wurde.',
-    code: 'SIZE_LIMIT_EXCEEDED',
-    type: 'format',
-    resolution: 'Versuchen Sie die Datei in kleinere Teile aufzuteilen oder verwenden Sie die Komprimierungsoption vor dem Hochladen.'
+    message:
+      "Die Konvertierung konnte nicht abgeschlossen werden, da die maximale Größe überschritten wurde.",
+    code: "SIZE_LIMIT_EXCEEDED",
+    type: "format",
+    resolution:
+      "Versuchen Sie die Datei in kleinere Teile aufzuteilen oder verwenden Sie die Komprimierungsoption vor dem Hochladen.",
   };
-  lastAction.value = 'Fehler mit Lösungsvorschlag wurde gesetzt';
+  lastAction.value = "Fehler mit Lösungsvorschlag wurde gesetzt";
 }
 
 // Setzt ein komplexes Fehlerobjekt mit allen möglichen Details
 function setComplexError(): void {
   customError.value = {
-    message: 'Kritischer Fehler bei der Konvertierung des Dokumentes',
-    code: 'CONVERSION_CRITICAL_ERROR',
-    type: 'server',
+    message: "Kritischer Fehler bei der Konvertierung des Dokumentes",
+    code: "CONVERSION_CRITICAL_ERROR",
+    type: "server",
     details: `{
   "requestId": "conv-2023-05-08-15:42:31-123",
   "httpStatus": 500,
@@ -191,9 +193,10 @@ function setComplexError(): void {
   }
 }`,
     stack: sampleStackTrace,
-    resolution: 'Der Konvertierungsserver hat einen kritischen Fehler gemeldet. Bitte versuchen Sie es später erneut oder kontaktieren Sie unseren technischen Support mit der Fehlernummer conv-2023-05-08-15:42:31-123.'
+    resolution:
+      "Der Konvertierungsserver hat einen kritischen Fehler gemeldet. Bitte versuchen Sie es später erneut oder kontaktieren Sie unseren technischen Support mit der Fehlernummer conv-2023-05-08-15:42:31-123.",
   };
-  lastAction.value = 'Komplexes Fehlerobjekt wurde gesetzt';
+  lastAction.value = "Komplexes Fehlerobjekt wurde gesetzt";
 }
 </script>
 
@@ -319,7 +322,7 @@ input[type="checkbox"] {
 }
 
 .toggle-label:after {
-  content: '';
+  content: "";
   position: absolute;
   top: 2px;
   left: 2px;
@@ -347,7 +350,7 @@ input:focus + .toggle-label {
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .control-group {
     flex-direction: row;
     justify-content: space-between;

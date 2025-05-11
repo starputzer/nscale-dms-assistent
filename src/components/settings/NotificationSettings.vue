@@ -1,11 +1,15 @@
 <template>
   <div class="notification-settings">
-    <h3 class="notification-settings__title">{{ t('settings.notifications.title', 'Benachrichtigungseinstellungen') }}</h3>
-    
+    <h3 class="notification-settings__title">
+      {{ t("settings.notifications.title", "Benachrichtigungseinstellungen") }}
+    </h3>
+
     <div class="notification-settings__section">
       <div class="notification-settings__toggle-container">
         <label class="notification-settings__toggle-label">
-          {{ t('settings.notifications.enabled', 'Benachrichtigungen aktivieren') }}
+          {{
+            t("settings.notifications.enabled", "Benachrichtigungen aktivieren")
+          }}
         </label>
         <div class="notification-settings__toggle">
           <input
@@ -19,20 +23,28 @@
           </label>
         </div>
       </div>
-      
+
       <p class="notification-settings__description">
-        {{ t('settings.notifications.enabledDescription', 'Aktivieren oder deaktivieren Sie alle Benachrichtigungen im System.') }}
+        {{
+          t(
+            "settings.notifications.enabledDescription",
+            "Aktivieren oder deaktivieren Sie alle Benachrichtigungen im System.",
+          )
+        }}
       </p>
     </div>
 
-    <div class="notification-settings__section" v-if="notificationSettings.enabled">
+    <div
+      class="notification-settings__section"
+      v-if="notificationSettings.enabled"
+    >
       <h4 class="notification-settings__subtitle">
-        {{ t('settings.notifications.channels', 'Benachrichtigungskanäle') }}
+        {{ t("settings.notifications.channels", "Benachrichtigungskanäle") }}
       </h4>
-      
+
       <div class="notification-settings__toggle-container">
         <label class="notification-settings__toggle-label">
-          {{ t('settings.notifications.sound', 'Ton-Benachrichtigungen') }}
+          {{ t("settings.notifications.sound", "Ton-Benachrichtigungen") }}
         </label>
         <div class="notification-settings__toggle">
           <input
@@ -46,16 +58,23 @@
           </label>
         </div>
       </div>
-      
+
       <div class="notification-settings__toggle-container">
         <label class="notification-settings__toggle-label">
-          {{ t('settings.notifications.desktop', 'Desktop-Benachrichtigungen') }}
-          <span 
-            v-if="notificationSettings.desktop && !desktopPermissionGranted" 
+          {{
+            t("settings.notifications.desktop", "Desktop-Benachrichtigungen")
+          }}
+          <span
+            v-if="notificationSettings.desktop && !desktopPermissionGranted"
             class="notification-settings__warning"
           >
             <i class="fas fa-exclamation-triangle"></i>
-            {{ t('settings.notifications.permissionRequired', 'Berechtigung erforderlich') }}
+            {{
+              t(
+                "settings.notifications.permissionRequired",
+                "Berechtigung erforderlich",
+              )
+            }}
           </span>
         </label>
         <div class="notification-settings__toggle">
@@ -70,28 +89,46 @@
           </label>
         </div>
       </div>
-      
-      <button 
-        v-if="notificationSettings.desktop && !desktopPermissionGranted" 
+
+      <button
+        v-if="notificationSettings.desktop && !desktopPermissionGranted"
         class="notification-settings__permission-button"
         @click="requestPermission"
       >
-        {{ t('settings.notifications.requestPermission', 'Berechtigung anfordern') }}
+        {{
+          t(
+            "settings.notifications.requestPermission",
+            "Berechtigung anfordern",
+          )
+        }}
       </button>
-      
-      <p v-if="notificationSettings.desktop" class="notification-settings__description">
-        {{ t('settings.notifications.desktopDescription', 'Desktop-Benachrichtigungen erscheinen auch, wenn die Anwendung minimiert oder in einem anderen Tab geöffnet ist.') }}
+
+      <p
+        v-if="notificationSettings.desktop"
+        class="notification-settings__description"
+      >
+        {{
+          t(
+            "settings.notifications.desktopDescription",
+            "Desktop-Benachrichtigungen erscheinen auch, wenn die Anwendung minimiert oder in einem anderen Tab geöffnet ist.",
+          )
+        }}
       </p>
     </div>
-    
-    <div class="notification-settings__section" v-if="notificationSettings.enabled">
+
+    <div
+      class="notification-settings__section"
+      v-if="notificationSettings.enabled"
+    >
       <h4 class="notification-settings__subtitle">
-        {{ t('settings.notifications.events', 'Benachrichtigungsereignisse') }}
+        {{ t("settings.notifications.events", "Benachrichtigungsereignisse") }}
       </h4>
-      
+
       <div class="notification-settings__toggle-container">
         <label class="notification-settings__toggle-label">
-          {{ t('settings.notifications.sessionCompletion', 'Session-Abschluss') }}
+          {{
+            t("settings.notifications.sessionCompletion", "Session-Abschluss")
+          }}
         </label>
         <div class="notification-settings__toggle">
           <input
@@ -105,14 +142,19 @@
           </label>
         </div>
       </div>
-      
+
       <p class="notification-settings__description">
-        {{ t('settings.notifications.sessionCompletionDescription', 'Benachrichtigung, wenn eine laufende Session abgeschlossen wurde.') }}
+        {{
+          t(
+            "settings.notifications.sessionCompletionDescription",
+            "Benachrichtigung, wenn eine laufende Session abgeschlossen wurde.",
+          )
+        }}
       </p>
-      
+
       <div class="notification-settings__toggle-container">
         <label class="notification-settings__toggle-label">
-          {{ t('settings.notifications.mentions', 'Erwähnungen') }}
+          {{ t("settings.notifications.mentions", "Erwähnungen") }}
         </label>
         <div class="notification-settings__toggle">
           <input
@@ -126,38 +168,52 @@
           </label>
         </div>
       </div>
-      
+
       <p class="notification-settings__description">
-        {{ t('settings.notifications.mentionsDescription', 'Benachrichtigung, wenn Sie in einer Nachricht erwähnt werden.') }}
+        {{
+          t(
+            "settings.notifications.mentionsDescription",
+            "Benachrichtigung, wenn Sie in einer Nachricht erwähnt werden.",
+          )
+        }}
       </p>
     </div>
-    
-    <div class="notification-settings__test-section" v-if="notificationSettings.enabled">
+
+    <div
+      class="notification-settings__test-section"
+      v-if="notificationSettings.enabled"
+    >
       <h4 class="notification-settings__subtitle">
-        {{ t('settings.notifications.test', 'Benachrichtigungen testen') }}
+        {{ t("settings.notifications.test", "Benachrichtigungen testen") }}
       </h4>
-      
-      <button 
+
+      <button
         class="notification-settings__test-button"
         @click="sendTestNotification"
       >
         <i class="fas fa-bell"></i>
-        {{ t('settings.notifications.sendTest', 'Test-Benachrichtigung senden') }}
+        {{
+          t("settings.notifications.sendTest", "Test-Benachrichtigung senden")
+        }}
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { useSettingsStore } from '@/stores/settings';
-import type { NotificationSettings } from '@/types/settings';
+import { ref, reactive, onMounted, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import { useSettingsStore } from "@/stores/settings";
+import type { NotificationSettings } from "@/types/settings";
 
 // Emits
 const emit = defineEmits<{
-  (e: 'apply-settings', category: string, settings: Partial<NotificationSettings>): void;
-  (e: 'reset'): void;
+  (
+    e: "apply-settings",
+    category: string,
+    settings: Partial<NotificationSettings>,
+  ): void;
+  (e: "reset"): void;
 }>();
 
 // Services
@@ -165,12 +221,14 @@ const { t } = useI18n();
 const settingsStore = useSettingsStore();
 
 // State
-const notificationSettings = reactive<NotificationSettings>({ ...settingsStore.notifications });
+const notificationSettings = reactive<NotificationSettings>({
+  ...settingsStore.notifications,
+});
 const desktopPermissionGranted = ref(false);
 
 // Methods
 function updateSettings() {
-  emit('apply-settings', 'notifications', { ...notificationSettings });
+  emit("apply-settings", "notifications", { ...notificationSettings });
 }
 
 async function handleDesktopToggle() {
@@ -180,28 +238,31 @@ async function handleDesktopToggle() {
       notificationSettings.desktop = false;
     }
   }
-  
+
   updateSettings();
 }
 
 async function requestPermission(): Promise<boolean> {
-  if (!('Notification' in window)) {
-    console.warn('Dieser Browser unterstützt keine Benachrichtigungen');
+  if (!("Notification" in window)) {
+    console.warn("Dieser Browser unterstützt keine Benachrichtigungen");
     desktopPermissionGranted.value = false;
     return false;
   }
-  
+
   try {
-    if (Notification.permission === 'granted') {
+    if (Notification.permission === "granted") {
       desktopPermissionGranted.value = true;
       return true;
-    } 
-    
+    }
+
     const permission = await Notification.requestPermission();
-    desktopPermissionGranted.value = permission === 'granted';
+    desktopPermissionGranted.value = permission === "granted";
     return desktopPermissionGranted.value;
   } catch (error) {
-    console.error('Fehler beim Anfordern der Benachrichtigungsberechtigung:', error);
+    console.error(
+      "Fehler beim Anfordern der Benachrichtigungsberechtigung:",
+      error,
+    );
     desktopPermissionGranted.value = false;
     return false;
   }
@@ -210,36 +271,46 @@ async function requestPermission(): Promise<boolean> {
 function sendTestNotification() {
   // Sound-Benachrichtigung
   if (notificationSettings.sound) {
-    const audio = new Audio('/assets/sounds/notification.mp3');
-    audio.play().catch(err => console.error('Fehler beim Abspielen des Sounds:', err));
+    const audio = new Audio("/assets/sounds/notification.mp3");
+    audio
+      .play()
+      .catch((err) => console.error("Fehler beim Abspielen des Sounds:", err));
   }
-  
+
   // Desktop-Benachrichtigung
   if (notificationSettings.desktop && desktopPermissionGranted.value) {
     try {
       const notification = new Notification(
-        t('settings.notifications.testTitle', 'Test-Benachrichtigung'),
+        t("settings.notifications.testTitle", "Test-Benachrichtigung"),
         {
-          body: t('settings.notifications.testBody', 'Dies ist eine Test-Benachrichtigung aus den Einstellungen.'),
-          icon: '/assets/images/notification-icon.png',
-        }
+          body: t(
+            "settings.notifications.testBody",
+            "Dies ist eine Test-Benachrichtigung aus den Einstellungen.",
+          ),
+          icon: "/assets/images/notification-icon.png",
+        },
       );
-      
-      notification.onclick = function() {
+
+      notification.onclick = function () {
         window.focus();
         notification.close();
       };
-      
+
       // Automatisch nach 5 Sekunden schließen
       setTimeout(() => notification.close(), 5000);
     } catch (error) {
-      console.error('Fehler beim Senden der Testbenachrichtigung:', error);
+      console.error("Fehler beim Senden der Testbenachrichtigung:", error);
     }
   }
-  
+
   // In-App-Benachrichtigung (Fallback, wenn keine anderen aktiviert)
   if (!notificationSettings.desktop && !notificationSettings.sound) {
-    alert(t('settings.notifications.testFallback', 'Dies ist eine Test-Benachrichtigung. Aktivieren Sie Desktop- oder Tonbenachrichtigungen für eine bessere Erfahrung.'));
+    alert(
+      t(
+        "settings.notifications.testFallback",
+        "Dies ist eine Test-Benachrichtigung. Aktivieren Sie Desktop- oder Tonbenachrichtigungen für eine bessere Erfahrung.",
+      ),
+    );
   }
 }
 
@@ -251,15 +322,19 @@ function resetState() {
 // Lifecycle Hooks
 onMounted(async () => {
   // Prüfen, ob Desktop-Benachrichtigungen bereits genehmigt wurden
-  if ('Notification' in window) {
-    desktopPermissionGranted.value = Notification.permission === 'granted';
+  if ("Notification" in window) {
+    desktopPermissionGranted.value = Notification.permission === "granted";
   }
 });
 
 // Watch für externe Änderungen am Store
-watch(() => settingsStore.notifications, (newSettings) => {
-  resetState();
-}, { deep: true });
+watch(
+  () => settingsStore.notifications,
+  (newSettings) => {
+    resetState();
+  },
+  { deep: true },
+);
 </script>
 
 <style scoped>
@@ -429,7 +504,7 @@ input:checked + .toggle-switch .toggle-switch__slider::before {
     align-items: flex-start;
     gap: 0.5rem;
   }
-  
+
   .notification-settings__toggle {
     align-self: flex-start;
   }

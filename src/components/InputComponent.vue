@@ -13,21 +13,21 @@
           @focus="isInputFocused = true"
           @blur="isInputFocused = false"
         ></textarea>
-        
+
         <div class="input-buttons">
-          <button 
-            type="button" 
-            class="attachment-button" 
-            :disabled="disabled" 
+          <button
+            type="button"
+            class="attachment-button"
+            :disabled="disabled"
             @click="triggerFileSelect"
             title="Datei anhängen"
           >
             <i class="fas fa-paperclip"></i>
           </button>
-          
-          <button 
-            type="submit" 
-            class="send-button" 
+
+          <button
+            type="submit"
+            class="send-button"
             :disabled="!canSubmit"
             :class="{ 'send-button-active': canSubmit }"
             title="Nachricht senden"
@@ -35,33 +35,47 @@
             <i class="fas fa-paper-plane"></i>
           </button>
         </div>
-        
-        <input 
-          type="file" 
-          ref="fileInput" 
-          class="file-input" 
-          @change="handleFileSelected" 
+
+        <input
+          type="file"
+          ref="fileInput"
+          class="file-input"
+          @change="handleFileSelected"
           accept=".pdf,.txt,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
-        >
+        />
       </form>
     </div>
-    
+
     <div class="input-footer">
-      <div class="character-count" :class="{ 'character-limit-warning': isNearCharacterLimit }">
+      <div
+        class="character-count"
+        :class="{ 'character-limit-warning': isNearCharacterLimit }"
+      >
         {{ inputText.length }}/4000
       </div>
-      
+
       <div class="footer-hints">
-        <span class="hint">Drücken Sie <kbd>Enter</kbd> zum Senden, <kbd>Shift</kbd>+<kbd>Enter</kbd> für neue Zeile</span>
+        <span class="hint"
+          >Drücken Sie <kbd>Enter</kbd> zum Senden, <kbd>Shift</kbd>+<kbd
+            >Enter</kbd
+          >
+          für neue Zeile</span
+        >
       </div>
-      
+
       <div v-if="selectedFile" class="file-preview">
         <div class="file-preview-info">
           <i class="fas fa-file-alt file-icon"></i>
           <span class="file-name">{{ selectedFile.name }}</span>
-          <span class="file-size">({{ formatFileSize(selectedFile.size) }})</span>
+          <span class="file-size"
+            >({{ formatFileSize(selectedFile.size) }})</span
+          >
         </div>
-        <button type="button" class="remove-file-button" @click="removeSelectedFile">
+        <button
+          type="button"
+          class="remove-file-button"
+          @click="removeSelectedFile"
+        >
           <i class="fas fa-times"></i>
         </button>
       </div>
@@ -70,18 +84,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch } from "vue";
 
 const props = defineProps<{
   disabled?: boolean;
 }>();
 
 const emit = defineEmits<{
-  (e: 'send-message', message: string): void;
-  (e: 'upload-file', file: File): void;
+  (e: "send-message", message: string): void;
+  (e: "upload-file", file: File): void;
 }>();
 
-const inputText = ref('');
+const inputText = ref("");
 const textareaRef = ref<HTMLTextAreaElement | null>(null);
 const fileInput = ref<HTMLInputElement | null>(null);
 const selectedFile = ref<File | null>(null);
@@ -91,9 +105,12 @@ const MAX_CHARACTERS = 4000;
 const NEAR_LIMIT_THRESHOLD = 3800;
 
 const canSubmit = computed(() => {
-  return !props.disabled && 
-    ((inputText.value.trim().length > 0 && inputText.value.length <= MAX_CHARACTERS) || 
-    selectedFile.value !== null);
+  return (
+    !props.disabled &&
+    ((inputText.value.trim().length > 0 &&
+      inputText.value.length <= MAX_CHARACTERS) ||
+      selectedFile.value !== null)
+  );
 });
 
 const isNearCharacterLimit = computed(() => {
@@ -101,16 +118,19 @@ const isNearCharacterLimit = computed(() => {
 });
 
 // Reset textarea height when input is cleared
-watch(() => inputText.value, (newValue) => {
-  if (newValue === '' && textareaRef.value) {
-    textareaRef.value.style.height = 'auto';
-  }
-});
+watch(
+  () => inputText.value,
+  (newValue) => {
+    if (newValue === "" && textareaRef.value) {
+      textareaRef.value.style.height = "auto";
+    }
+  },
+);
 
 // Adjust textarea height on init
 onMounted(() => {
   adjustTextareaHeight();
-  
+
   // Focus input on mount
   if (textareaRef.value) {
     textareaRef.value.focus();
@@ -119,10 +139,10 @@ onMounted(() => {
 
 function adjustTextareaHeight() {
   if (!textareaRef.value) return;
-  
+
   // Reset height to get the scrollHeight value for actual content
-  textareaRef.value.style.height = 'auto';
-  
+  textareaRef.value.style.height = "auto";
+
   // Set the height based on scrollHeight with a max height
   const maxHeight = 150; // max height in pixels
   const newHeight = Math.min(textareaRef.value.scrollHeight, maxHeight);
@@ -131,24 +151,24 @@ function adjustTextareaHeight() {
 
 function handleSubmit() {
   if (!canSubmit.value) return;
-  
+
   // If we have a file, emit upload event
   if (selectedFile.value) {
-    emit('upload-file', selectedFile.value);
+    emit("upload-file", selectedFile.value);
     removeSelectedFile();
   }
-  
+
   // If we have text, emit message event
   if (inputText.value.trim()) {
-    emit('send-message', inputText.value);
-    inputText.value = '';
-    
+    emit("send-message", inputText.value);
+    inputText.value = "";
+
     // Reset textarea height
     if (textareaRef.value) {
-      textareaRef.value.style.height = 'auto';
+      textareaRef.value.style.height = "auto";
     }
   }
-  
+
   // Focus back on the textarea
   if (textareaRef.value) {
     textareaRef.value.focus();
@@ -171,18 +191,18 @@ function handleFileSelected(event: Event) {
 function removeSelectedFile() {
   selectedFile.value = null;
   if (fileInput.value) {
-    fileInput.value.value = '';
+    fileInput.value.value = "";
   }
 }
 
 function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
-  
+  if (bytes === 0) return "0 Bytes";
+
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 </script>
 
@@ -213,7 +233,9 @@ function formatFileSize(bytes: number): string {
   overflow-y: auto;
   line-height: 1.5;
   padding-right: 3rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .input-buttons {
@@ -224,7 +246,8 @@ function formatFileSize(bytes: number): string {
   gap: 0.5rem;
 }
 
-.send-button, .attachment-button {
+.send-button,
+.attachment-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -235,15 +258,19 @@ function formatFileSize(bytes: number): string {
   border: none;
   color: var(--nscale-text-light);
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
-.send-button:hover:not(:disabled), .attachment-button:hover:not(:disabled) {
+.send-button:hover:not(:disabled),
+.attachment-button:hover:not(:disabled) {
   background-color: var(--nscale-gray);
   color: var(--nscale-text);
 }
 
-.send-button:disabled, .attachment-button:disabled {
+.send-button:disabled,
+.attachment-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -331,7 +358,9 @@ function formatFileSize(bytes: number): string {
   cursor: pointer;
   padding: 0.25rem;
   border-radius: 50%;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .remove-file-button:hover {
@@ -343,11 +372,11 @@ function formatFileSize(bytes: number): string {
   .input-container {
     padding: 0.75rem 1rem;
   }
-  
+
   .footer-hints {
     display: none;
   }
-  
+
   .file-preview {
     margin-top: 0.75rem;
   }

@@ -3,18 +3,31 @@
     <main-layout>
       <template #header>
         <div class="settings-view__header">
-          <h1 class="settings-view__title">{{ t('settings.title', 'Einstellungen') }}</h1>
-          <button 
+          <h1 class="settings-view__title">
+            {{ t("settings.title", "Einstellungen") }}
+          </h1>
+          <button
             class="settings-view__toggle-button"
             @click="toggleSettings"
-            :aria-label="isSettingsPanelVisible ? 'Einstellungen schließen' : 'Einstellungen öffnen'"
+            :aria-label="
+              isSettingsPanelVisible
+                ? 'Einstellungen schließen'
+                : 'Einstellungen öffnen'
+            "
           >
-            <i :class="['fas', isSettingsPanelVisible ? 'fa-times' : 'fa-cog']" aria-hidden="true"></i>
-            {{ isSettingsPanelVisible ? t('settings.close', 'Schließen') : t('settings.open', 'Einstellungen öffnen') }}
+            <i
+              :class="['fas', isSettingsPanelVisible ? 'fa-times' : 'fa-cog']"
+              aria-hidden="true"
+            ></i>
+            {{
+              isSettingsPanelVisible
+                ? t("settings.close", "Schließen")
+                : t("settings.open", "Einstellungen öffnen")
+            }}
           </button>
         </div>
       </template>
-      
+
       <template #default>
         <div class="settings-view__content">
           <div class="settings-view__info-panel">
@@ -23,100 +36,142 @@
                 <i class="fas fa-palette" aria-hidden="true"></i>
               </div>
               <div class="settings-view__info-details">
-                <h2 class="settings-view__info-title">{{ t('settings.appearance.title', 'Erscheinungsbild') }}</h2>
+                <h2 class="settings-view__info-title">
+                  {{ t("settings.appearance.title", "Erscheinungsbild") }}
+                </h2>
                 <p class="settings-view__info-description">
-                  {{ t('settings.appearance.description', 'Passen Sie das Erscheinungsbild der Anwendung an, einschließlich Theme, Schriftart und -größe.') }}
+                  {{
+                    t(
+                      "settings.appearance.description",
+                      "Passen Sie das Erscheinungsbild der Anwendung an, einschließlich Theme, Schriftart und -größe.",
+                    )
+                  }}
                 </p>
-                <button 
+                <button
                   class="settings-view__info-button"
                   @click="openSettingsCategory('appearance')"
                 >
-                  {{ t('settings.customize', 'Anpassen') }}
+                  {{ t("settings.customize", "Anpassen") }}
                 </button>
               </div>
             </div>
-            
+
             <div class="settings-view__info-card">
               <div class="settings-view__info-icon">
                 <i class="fas fa-bell" aria-hidden="true"></i>
               </div>
               <div class="settings-view__info-details">
-                <h2 class="settings-view__info-title">{{ t('settings.notifications.title', 'Benachrichtigungen') }}</h2>
+                <h2 class="settings-view__info-title">
+                  {{ t("settings.notifications.title", "Benachrichtigungen") }}
+                </h2>
                 <p class="settings-view__info-description">
-                  {{ t('settings.notifications.description', 'Konfigurieren Sie, wie und wann Sie Benachrichtigungen erhalten möchten.') }}
+                  {{
+                    t(
+                      "settings.notifications.description",
+                      "Konfigurieren Sie, wie und wann Sie Benachrichtigungen erhalten möchten.",
+                    )
+                  }}
                 </p>
-                <button 
+                <button
                   class="settings-view__info-button"
                   @click="openSettingsCategory('notifications')"
                 >
-                  {{ t('settings.customize', 'Anpassen') }}
+                  {{ t("settings.customize", "Anpassen") }}
                 </button>
               </div>
             </div>
-            
+
             <div class="settings-view__info-card">
               <div class="settings-view__info-icon">
                 <i class="fas fa-shield-alt" aria-hidden="true"></i>
               </div>
               <div class="settings-view__info-details">
-                <h2 class="settings-view__info-title">{{ t('settings.privacy.title', 'Datenschutz') }}</h2>
+                <h2 class="settings-view__info-title">
+                  {{ t("settings.privacy.title", "Datenschutz") }}
+                </h2>
                 <p class="settings-view__info-description">
-                  {{ t('settings.privacy.description', 'Verwalten Sie Ihre Datenschutzeinstellungen und kontrollieren Sie, welche Daten gespeichert werden.') }}
+                  {{
+                    t(
+                      "settings.privacy.description",
+                      "Verwalten Sie Ihre Datenschutzeinstellungen und kontrollieren Sie, welche Daten gespeichert werden.",
+                    )
+                  }}
                 </p>
-                <button 
+                <button
                   class="settings-view__info-button"
                   @click="openSettingsCategory('privacy')"
                 >
-                  {{ t('settings.customize', 'Anpassen') }}
+                  {{ t("settings.customize", "Anpassen") }}
                 </button>
               </div>
             </div>
-            
+
             <div class="settings-view__info-card">
               <div class="settings-view__info-icon">
                 <i class="fas fa-universal-access" aria-hidden="true"></i>
               </div>
               <div class="settings-view__info-details">
-                <h2 class="settings-view__info-title">{{ t('settings.accessibility.title', 'Barrierefreiheit') }}</h2>
+                <h2 class="settings-view__info-title">
+                  {{ t("settings.accessibility.title", "Barrierefreiheit") }}
+                </h2>
                 <p class="settings-view__info-description">
-                  {{ t('settings.accessibility.description', 'Optimieren Sie die Anwendung für bessere Zugänglichkeit und verbesserte Benutzererfahrung.') }}
+                  {{
+                    t(
+                      "settings.accessibility.description",
+                      "Optimieren Sie die Anwendung für bessere Zugänglichkeit und verbesserte Benutzererfahrung.",
+                    )
+                  }}
                 </p>
-                <button 
+                <button
                   class="settings-view__info-button"
                   @click="openSettingsCategory('accessibility')"
                 >
-                  {{ t('settings.customize', 'Anpassen') }}
+                  {{ t("settings.customize", "Anpassen") }}
                 </button>
               </div>
             </div>
           </div>
-          
+
           <div class="settings-view__system-info">
-            <h2 class="settings-view__system-title">{{ t('settings.systemInfo', 'Systeminformationen') }}</h2>
-            
+            <h2 class="settings-view__system-title">
+              {{ t("settings.systemInfo", "Systeminformationen") }}
+            </h2>
+
             <div class="settings-view__system-details">
               <div class="settings-view__system-item">
-                <span class="settings-view__system-label">{{ t('settings.version', 'Version') }}:</span>
-                <span class="settings-view__system-value">{{ appVersion }}</span>
+                <span class="settings-view__system-label"
+                  >{{ t("settings.version", "Version") }}:</span
+                >
+                <span class="settings-view__system-value">{{
+                  appVersion
+                }}</span>
               </div>
-              
+
               <div class="settings-view__system-item">
-                <span class="settings-view__system-label">{{ t('settings.lastUpdate', 'Letztes Update') }}:</span>
-                <span class="settings-view__system-value">{{ formatDate(lastUpdate) }}</span>
+                <span class="settings-view__system-label"
+                  >{{ t("settings.lastUpdate", "Letztes Update") }}:</span
+                >
+                <span class="settings-view__system-value">{{
+                  formatDate(lastUpdate)
+                }}</span>
               </div>
-              
+
               <div class="settings-view__system-item">
-                <span class="settings-view__system-label">{{ t('settings.browser', 'Browser') }}:</span>
-                <span class="settings-view__system-value">{{ browserInfo }}</span>
+                <span class="settings-view__system-label"
+                  >{{ t("settings.browser", "Browser") }}:</span
+                >
+                <span class="settings-view__system-value">{{
+                  browserInfo
+                }}</span>
               </div>
             </div>
           </div>
         </div>
       </template>
     </main-layout>
-    
-    <settings-panel 
-      :is-visible="isSettingsPanelVisible" 
+
+    <settings-panel
+      :is-visible="isSettingsPanelVisible"
       @close="closeSettings"
       @save="handleSettingsSaved"
     />
@@ -124,11 +179,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
-import { useI18n } from 'vue-i18n';
-import MainLayout from '@/layouts/MainLayout.vue';
-import SettingsPanel from '@/components/settings/SettingsPanel.vue';
-import { useToast } from '@/composables/useToast';
+import { ref, onMounted, computed } from "vue";
+import { useI18n } from "vue-i18n";
+import MainLayout from "@/layouts/MainLayout.vue";
+import SettingsPanel from "@/components/settings/SettingsPanel.vue";
+import { useToast } from "@/composables/useToast";
 
 // Services
 const { t } = useI18n();
@@ -136,33 +191,39 @@ const { showToast } = useToast();
 
 // State
 const isSettingsPanelVisible = ref(false);
-const settingsCategory = ref('appearance');
-const appVersion = ref('1.0.0');
+const settingsCategory = ref("appearance");
+const appVersion = ref("1.0.0");
 const lastUpdate = ref(Date.now() - 7 * 24 * 60 * 60 * 1000); // 1 Woche zurück als Beispiel
 
 // Browserinformationen ermitteln
 const browserInfo = computed(() => {
-  if (typeof window === 'undefined') return 'Unknown';
-  
+  if (typeof window === "undefined") return "Unknown";
+
   const userAgent = navigator.userAgent;
-  let browserName = 'Unknown';
-  let browserVersion = '';
-  
+  let browserName = "Unknown";
+  let browserVersion = "";
+
   // Browser-Erkennung
-  if (userAgent.indexOf('Firefox') > -1) {
-    browserName = 'Mozilla Firefox';
-    browserVersion = userAgent.match(/Firefox\/([0-9.]+)/)?.[1] || '';
-  } else if (userAgent.indexOf('Chrome') > -1 && userAgent.indexOf('Edg') === -1) {
-    browserName = 'Google Chrome';
-    browserVersion = userAgent.match(/Chrome\/([0-9.]+)/)?.[1] || '';
-  } else if (userAgent.indexOf('Safari') > -1 && userAgent.indexOf('Chrome') === -1) {
-    browserName = 'Safari';
-    browserVersion = userAgent.match(/Version\/([0-9.]+)/)?.[1] || '';
-  } else if (userAgent.indexOf('Edg') > -1) {
-    browserName = 'Microsoft Edge';
-    browserVersion = userAgent.match(/Edg\/([0-9.]+)/)?.[1] || '';
+  if (userAgent.indexOf("Firefox") > -1) {
+    browserName = "Mozilla Firefox";
+    browserVersion = userAgent.match(/Firefox\/([0-9.]+)/)?.[1] || "";
+  } else if (
+    userAgent.indexOf("Chrome") > -1 &&
+    userAgent.indexOf("Edg") === -1
+  ) {
+    browserName = "Google Chrome";
+    browserVersion = userAgent.match(/Chrome\/([0-9.]+)/)?.[1] || "";
+  } else if (
+    userAgent.indexOf("Safari") > -1 &&
+    userAgent.indexOf("Chrome") === -1
+  ) {
+    browserName = "Safari";
+    browserVersion = userAgent.match(/Version\/([0-9.]+)/)?.[1] || "";
+  } else if (userAgent.indexOf("Edg") > -1) {
+    browserName = "Microsoft Edge";
+    browserVersion = userAgent.match(/Edg\/([0-9.]+)/)?.[1] || "";
   }
-  
+
   return browserVersion ? `${browserName} ${browserVersion}` : browserName;
 });
 
@@ -178,7 +239,7 @@ function closeSettings() {
 function openSettingsCategory(category: string) {
   settingsCategory.value = category;
   isSettingsPanelVisible.value = true;
-  
+
   // Weitergabe der aktiven Kategorie an die SettingsPanel-Komponente
   // Dies erfordert eine Erweiterung der SettingsPanel-Komponente
   // Um die initiale Kategorie zu setzen
@@ -187,17 +248,20 @@ function openSettingsCategory(category: string) {
 
 function handleSettingsSaved() {
   showToast({
-    type: 'success',
-    title: t('settings.saveSuccess', 'Gespeichert'),
-    message: t('settings.saveSuccessMessage', 'Ihre Einstellungen wurden erfolgreich gespeichert.')
+    type: "success",
+    title: t("settings.saveSuccess", "Gespeichert"),
+    message: t(
+      "settings.saveSuccessMessage",
+      "Ihre Einstellungen wurden erfolgreich gespeichert.",
+    ),
   });
 }
 
 function formatDate(timestamp: number): string {
-  return new Intl.DateTimeFormat('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
+  return new Intl.DateTimeFormat("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
   }).format(new Date(timestamp));
 }
 
@@ -205,14 +269,14 @@ function formatDate(timestamp: number): string {
 onMounted(async () => {
   try {
     // Version aus der Umgebung oder API laden
-    const response = await fetch('/api/system/info');
+    const response = await fetch("/api/system/info");
     if (response.ok) {
       const data = await response.json();
-      appVersion.value = data.version || '1.0.0';
+      appVersion.value = data.version || "1.0.0";
       lastUpdate.value = new Date(data.lastUpdate).getTime() || Date.now();
     }
   } catch (error) {
-    console.error('Fehler beim Laden der Systeminformationen:', error);
+    console.error("Fehler beim Laden der Systeminformationen:", error);
   }
 });
 </script>
@@ -276,7 +340,9 @@ onMounted(async () => {
   border-radius: var(--n-border-radius);
   padding: 1.5rem;
   box-shadow: var(--n-shadow-sm);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .settings-view__info-card:hover {
@@ -379,7 +445,7 @@ onMounted(async () => {
   .settings-view__info-panel {
     grid-template-columns: 1fr;
   }
-  
+
   .settings-view__system-details {
     grid-template-columns: 1fr;
   }
@@ -392,16 +458,16 @@ onMounted(async () => {
     gap: 1rem;
     padding-bottom: 1rem;
   }
-  
+
   .settings-view__toggle-button {
     width: 100%;
     justify-content: center;
   }
-  
+
   .settings-view__info-card {
     flex-direction: column;
   }
-  
+
   .settings-view__info-icon {
     margin: 0 0 1rem 0;
     align-self: center;

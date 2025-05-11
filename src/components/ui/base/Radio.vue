@@ -1,10 +1,10 @@
 <template>
-  <div 
+  <div
     class="n-radio-wrapper"
-    :class="{ 
+    :class="{
       'n-radio-wrapper--disabled': disabled,
       'n-radio-wrapper--error': !!error,
-      'n-radio-wrapper--checked': isChecked
+      'n-radio-wrapper--checked': isChecked,
     }"
   >
     <label class="n-radio-label">
@@ -27,17 +27,19 @@
         <slot></slot>
       </span>
     </label>
-    
+
     <div v-if="error || helperText" class="n-radio-helper" :id="helperId">
       <span v-if="error" class="n-radio-error">{{ error }}</span>
-      <span v-else-if="helperText" class="n-radio-helper-text">{{ helperText }}</span>
+      <span v-else-if="helperText" class="n-radio-helper-text">{{
+        helperText
+      }}</span>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { uniqueId } from 'lodash';
+import { computed } from "vue";
+import { uniqueId } from "lodash";
 
 /**
  * Radio button component for option selection within a group
@@ -67,23 +69,23 @@ export interface RadioProps {
 
 const props = withDefaults(defineProps<RadioProps>(), {
   disabled: false,
-  required: false
+  required: false,
 });
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: any): void;
-  (e: 'change', event: Event): void;
+  (e: "update:modelValue", value: any): void;
+  (e: "change", event: Event): void;
 }>();
 
-const radioId = computed(() => props.id || uniqueId('n-radio-'));
+const radioId = computed(() => props.id || uniqueId("n-radio-"));
 const helperId = computed(() => `${radioId.value}-helper`);
 const isChecked = computed(() => props.modelValue === props.value);
 
 // Handle radio value changes
 function updateValue(event: Event) {
   if (props.disabled) return;
-  emit('update:modelValue', props.value);
-  emit('change', event);
+  emit("update:modelValue", props.value);
+  emit("change", event);
 }
 </script>
 
@@ -92,7 +94,15 @@ function updateValue(event: Event) {
   display: inline-flex;
   flex-direction: column;
   margin-bottom: 0.75rem;
-  font-family: var(--nscale-font-family-base, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-family: var(
+    --nscale-font-family-base,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif
+  );
   position: relative;
 }
 
@@ -199,16 +209,16 @@ function updateValue(event: Event) {
     background-color: var(--nscale-gray-800, #1f2937);
     border-color: var(--nscale-gray-600, #4b5563);
   }
-  
+
   .n-radio-text {
     color: var(--nscale-gray-200, #e2e8f0);
   }
-  
+
   .n-radio-wrapper--disabled .n-radio-circle {
     background-color: var(--nscale-gray-700, #374151);
     border-color: var(--nscale-gray-600, #4b5563);
   }
-  
+
   .n-radio-wrapper--disabled .n-radio-text {
     color: var(--nscale-gray-500, #6b7280);
   }

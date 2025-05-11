@@ -1,8 +1,8 @@
 ---
 title: "Pinia Store Architektur"
-version: "1.0.0"
+version: "1.1.0"
 date: "10.05.2025"
-lastUpdate: "10.05.2025"
+lastUpdate: "11.05.2025"
 author: "Martin Heinrich"
 status: "Aktiv"
 priority: "Hoch"
@@ -12,7 +12,7 @@ tags: ["Pinia", "State Management", "Vue3", "Store", "Testing", "Komposition"]
 
 # Pinia Store Architektur
 
-> **Letzte Aktualisierung:** 10.05.2025 | **Version:** 1.0.0 | **Status:** Aktiv
+> **Letzte Aktualisierung:** 10.05.2025 | **Version:** 1.1.0 | **Status:** Aktiv
 
 ## Übersicht
 
@@ -46,16 +46,22 @@ src/
 │   ├── index.ts                 # Store-Haupteinstiegspunkt mit Pinia-Setup
 │   ├── auth.ts                  # Authentifizierungs-Store
 │   ├── sessions.ts              # Session- und Nachrichtenmanagement
+│   ├── sessions.optimized.ts    # Optimierte Version des Session-Stores
 │   ├── ui.ts                    # UI-Zustände und -Interaktionen
 │   ├── featureToggles.ts        # Feature-Flag-Management
 │   ├── settings.ts              # Benutzereinstellungen
 │   ├── documentConverter.ts     # Dokumentenkonverter-Funktionalität
 │   ├── monitoringStore.ts       # System-Monitoring und Telemetrie
+│   ├── statistics.ts            # System- und Nutzungsstatistiken
+│   ├── storeInitializer.ts      # Zentrale Store-Initialisierung
 │   ├── admin/
+│   │   ├── index.ts             # Admin-Store-Einstiegspunkt
 │   │   ├── users.ts             # Benutzerverwaltung
 │   │   ├── feedback.ts          # Feedback-Management
 │   │   ├── motd.ts              # Message-of-the-Day
-│   │   └── system.ts            # Systemeinstellungen und -informationen
+│   │   ├── system.ts            # Systemeinstellungen und -informationen
+│   │   ├── logs.ts              # Log-Management und -Analyse
+│   │   └── settings.optimized.ts # Optimierte Settings-Verwaltung
 │   └── composables/             # Gemeinsame Store-Funktionen
 │       ├── useOptimisticUpdates.ts
 │       ├── useAsyncActions.ts
@@ -1080,6 +1086,37 @@ function migrateFromLegacyStorage() {
 }
 ```
 
+## Fehlende Stores und Implementierungsstatus
+
+Alle ursprünglich geplanten Pinia Stores wurden erfolgreich implementiert. Folgende Stores wurden seit der letzten Dokumentationsaktualisierung hinzugefügt:
+
+1. **Admin/Logs-Store (`admin/logs.ts`)**
+   - Vollständige Implementierung der Log-Verwaltung für Administratoren
+   - Integrierte Such- und Filterfunktionen für Protokolleinträge
+   - Exportfunktionen für Protokolldaten
+   - Performance-optimierte Datenverwaltung mit Pagination
+
+2. **Admin/Settings-Optimized-Store (`admin/settings.optimized.ts`)**
+   - Leistungsoptimierte Version des Admin-Settings-Stores
+   - Implementierung von shallowRef für bessere Performance bei komplexen Einstellungsobjekten
+   - Intelligente Caching-Strategien für häufig abgerufene Einstellungen
+   - Erweiterte Error-Recovery-Strategien
+
+3. **Statistics-Store (`statistics.ts`)**
+   - Umfassende Implementierung für System- und Nutzungsstatistiken
+   - Automatisierte Metrik-Sammlung und -Aggregation
+   - Performance-Tracking mit zeitbasierter Datenaggregation
+   - Integrierte Visualisierungs-Unterstützung für Diagramme und Grafiken
+
+Alle Stores wurden vollständig in den zentralen Store-Index (`index.ts`) integriert und in den Store-Initialisierer (`storeInitializer.ts`) eingebunden, mit besonderem Fokus auf:
+
+- Optimierte Ladeabfolge für kritische vs. nicht-kritische Stores
+- Konditionale Initialisierung basierend auf Feature-Flags
+- Parallele Initialisierung von unabhängigen Stores für bessere Performance
+- Fehlertoleranz bei der Initialisierung
+
+Damit ist die Pinia Stores Migration vollständig (100%) abgeschlossen.
+
 ## Zusammenfassung
 
 Die Pinia Store Architektur des nscale DMS Assistenten bietet eine robuste, typensichere und performante Grundlage für die Vue 3-Migration. Sie verbindet modernste State-Management-Praktiken mit pragmatischen Lösungen für Legacy-Integration und umfassender Testbarkeit.
@@ -1090,4 +1127,4 @@ Durch konsequente Anwendung der Best Practices und die umfassende Teststrategie 
 
 ---
 
-Zuletzt aktualisiert: 10.05.2025
+Zuletzt aktualisiert: 11.05.2025

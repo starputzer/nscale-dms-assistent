@@ -1,21 +1,17 @@
 <template>
-  <div 
+  <div
     class="n-split-pane"
-    :class="{ 
+    :class="{
       'n-split-pane--vertical': orientation === 'vertical',
       'n-split-pane--dragging': isDragging,
-      'n-split-pane--bordered': bordered
+      'n-split-pane--bordered': bordered,
     }"
   >
-    <div 
-      ref="firstPaneRef"
-      class="n-split-pane__first"
-      :style="firstPaneStyle"
-    >
+    <div ref="firstPaneRef" class="n-split-pane__first" :style="firstPaneStyle">
       <slot name="first"></slot>
     </div>
-    
-    <div 
+
+    <div
       ref="separatorRef"
       class="n-split-pane__separator"
       :aria-orientation="orientation"
@@ -38,8 +34,8 @@
         </slot>
       </div>
     </div>
-    
-    <div 
+
+    <div
       ref="secondPaneRef"
       class="n-split-pane__second"
       :style="secondPaneStyle"
@@ -50,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 
 /**
  * SplitPane-Komponente für den nscale DMS Assistenten
@@ -59,7 +55,7 @@ import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
  */
 export interface SplitPaneProps {
   /** Die Ausrichtung der Teilung */
-  orientation?: 'horizontal' | 'vertical';
+  orientation?: "horizontal" | "vertical";
   /** Der initiale Split-Wert in Prozent (0-100) */
   initialSplit?: number;
   /** Minimale Größe der ersten Seite in Prozent */
@@ -81,7 +77,7 @@ export interface SplitPaneProps {
 }
 
 const props = withDefaults(defineProps<SplitPaneProps>(), {
-  orientation: 'horizontal',
+  orientation: "horizontal",
   initialSplit: 50,
   minFirst: 10,
   maxFirst: 90,
@@ -89,17 +85,17 @@ const props = withDefaults(defineProps<SplitPaneProps>(), {
   maxSecond: 90,
   resizable: true,
   separatorWidth: 4,
-  storageKey: '',
-  bordered: false
+  storageKey: "",
+  bordered: false,
 });
 
 const emit = defineEmits<{
   /** Wird ausgelöst, wenn sich der Split-Wert ändert */
-  (e: 'update:split', value: number): void;
+  (e: "update:split", value: number): void;
   /** Wird ausgelöst, wenn das Ziehen beginnt */
-  (e: 'drag-start'): void;
+  (e: "drag-start"): void;
   /** Wird ausgelöst, wenn das Ziehen endet */
-  (e: 'drag-end', value: number): void;
+  (e: "drag-end", value: number): void;
 }>();
 
 // Refs für DOM-Elemente
@@ -115,45 +111,47 @@ const containerSize = ref(0);
 
 // Berechne die Stile für die Teilbereiche
 const firstPaneStyle = computed(() => {
-  const sizeProperty = props.orientation === 'horizontal' ? 'width' : 'height';
-  const flexProperty = props.orientation === 'horizontal' ? 'flex-basis' : 'flex-basis';
-  
+  const sizeProperty = props.orientation === "horizontal" ? "width" : "height";
+  const flexProperty =
+    props.orientation === "horizontal" ? "flex-basis" : "flex-basis";
+
   return {
     [sizeProperty]: `calc(${splitValue.value}% - ${props.separatorWidth / 2}px)`,
-    [flexProperty]: `calc(${splitValue.value}% - ${props.separatorWidth / 2}px)`
+    [flexProperty]: `calc(${splitValue.value}% - ${props.separatorWidth / 2}px)`,
   };
 });
 
 const secondPaneStyle = computed(() => {
-  const sizeProperty = props.orientation === 'horizontal' ? 'width' : 'height';
-  const flexProperty = props.orientation === 'horizontal' ? 'flex-basis' : 'flex-basis';
+  const sizeProperty = props.orientation === "horizontal" ? "width" : "height";
+  const flexProperty =
+    props.orientation === "horizontal" ? "flex-basis" : "flex-basis";
   const secondSplit = 100 - splitValue.value;
-  
+
   return {
     [sizeProperty]: `calc(${secondSplit}% - ${props.separatorWidth / 2}px)`,
-    [flexProperty]: `calc(${secondSplit}% - ${props.separatorWidth / 2}px)`
+    [flexProperty]: `calc(${secondSplit}% - ${props.separatorWidth / 2}px)`,
   };
 });
 
 // Initialisierung
 onMounted(() => {
-  window.addEventListener('resize', updateContainerSize);
+  window.addEventListener("resize", updateContainerSize);
   updateContainerSize();
 });
 
 // Aufräumen
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', updateContainerSize);
-  document.removeEventListener('mousemove', handleDrag);
-  document.removeEventListener('touchmove', handleDrag);
-  document.removeEventListener('mouseup', endDrag);
-  document.removeEventListener('touchend', endDrag);
+  window.removeEventListener("resize", updateContainerSize);
+  document.removeEventListener("mousemove", handleDrag);
+  document.removeEventListener("touchmove", handleDrag);
+  document.removeEventListener("mouseup", endDrag);
+  document.removeEventListener("touchend", endDrag);
 });
 
 // Überwache Änderungen am Split-Wert
 watch(splitValue, (newValue) => {
-  emit('update:split', newValue);
-  
+  emit("update:split", newValue);
+
   // Speichere den Wert, wenn ein Speicherschlüssel definiert ist
   if (props.storageKey) {
     localStorage.setItem(props.storageKey, String(newValue));
@@ -173,7 +171,7 @@ function getSavedSplitValue(): number {
       }
     }
   }
-  
+
   return props.initialSplit;
 }
 
@@ -182,11 +180,11 @@ function getSavedSplitValue(): number {
  */
 function updateContainerSize() {
   if (!firstPaneRef.value || !secondPaneRef.value) return;
-  
+
   const container = firstPaneRef.value.parentElement;
   if (!container) return;
-  
-  if (props.orientation === 'horizontal') {
+
+  if (props.orientation === "horizontal") {
     containerSize.value = container.clientWidth;
   } else {
     containerSize.value = container.clientHeight;
@@ -200,16 +198,16 @@ function updateContainerSize() {
 function startDrag(event: MouseEvent | TouchEvent) {
   event.preventDefault();
   isDragging.value = true;
-  
+
   const clientPosition = getClientPosition(event);
   dragStartPosition.value = clientPosition;
-  
-  document.addEventListener('mousemove', handleDrag);
-  document.addEventListener('touchmove', handleDrag);
-  document.addEventListener('mouseup', endDrag);
-  document.addEventListener('touchend', endDrag);
-  
-  emit('drag-start');
+
+  document.addEventListener("mousemove", handleDrag);
+  document.addEventListener("touchmove", handleDrag);
+  document.addEventListener("mouseup", endDrag);
+  document.addEventListener("touchend", endDrag);
+
+  emit("drag-start");
 }
 
 /**
@@ -219,16 +217,17 @@ function startDrag(event: MouseEvent | TouchEvent) {
 function handleDrag(event: MouseEvent | TouchEvent) {
   if (!isDragging.value) return;
   event.preventDefault();
-  
+
   const clientPosition = getClientPosition(event);
   const delta = clientPosition - dragStartPosition.value;
-  
+
   // Berechne den neuen Split-Wert basierend auf der Bewegung
   const deltaPercent = (delta / containerSize.value) * 100;
-  const newSplit = props.orientation === 'horizontal'
-    ? splitValue.value + deltaPercent
-    : splitValue.value - deltaPercent;
-  
+  const newSplit =
+    props.orientation === "horizontal"
+      ? splitValue.value + deltaPercent
+      : splitValue.value - deltaPercent;
+
   setSplitValue(newSplit);
   dragStartPosition.value = clientPosition;
 }
@@ -238,13 +237,13 @@ function handleDrag(event: MouseEvent | TouchEvent) {
  */
 function endDrag() {
   isDragging.value = false;
-  
-  document.removeEventListener('mousemove', handleDrag);
-  document.removeEventListener('touchmove', handleDrag);
-  document.removeEventListener('mouseup', endDrag);
-  document.removeEventListener('touchend', endDrag);
-  
-  emit('drag-end', splitValue.value);
+
+  document.removeEventListener("mousemove", handleDrag);
+  document.removeEventListener("touchmove", handleDrag);
+  document.removeEventListener("mouseup", endDrag);
+  document.removeEventListener("touchend", endDrag);
+
+  emit("drag-end", splitValue.value);
 }
 
 /**
@@ -254,7 +253,7 @@ function endDrag() {
 function setSplitValue(value: number) {
   const minValue = Math.max(props.minFirst, 100 - props.maxSecond);
   const maxValue = Math.min(props.maxFirst, 100 - props.minSecond);
-  
+
   splitValue.value = Math.max(minValue, Math.min(maxValue, value));
 }
 
@@ -263,12 +262,12 @@ function setSplitValue(value: number) {
  * @param event Das Event
  */
 function getClientPosition(event: MouseEvent | TouchEvent): number {
-  if (props.orientation === 'horizontal') {
-    return 'touches' in event
+  if (props.orientation === "horizontal") {
+    return "touches" in event
       ? event.touches[0].clientX
       : (event as MouseEvent).clientX;
   } else {
-    return 'touches' in event
+    return "touches" in event
       ? event.touches[0].clientY
       : (event as MouseEvent).clientY;
   }
@@ -278,16 +277,18 @@ function getClientPosition(event: MouseEvent | TouchEvent): number {
  * Behandelt die Tastaturnavigation
  * @param direction Die Richtung der Tastatureingabe
  */
-function handleKeyboard(direction: 'left' | 'right' | 'up' | 'down') {
+function handleKeyboard(direction: "left" | "right" | "up" | "down") {
   const step = 1; // 1% pro Tastendruck
-  
+
   if (
-    (props.orientation === 'horizontal' && (direction === 'left' || direction === 'right')) ||
-    (props.orientation === 'vertical' && (direction === 'up' || direction === 'down'))
+    (props.orientation === "horizontal" &&
+      (direction === "left" || direction === "right")) ||
+    (props.orientation === "vertical" &&
+      (direction === "up" || direction === "down"))
   ) {
-    const delta = (direction === 'right' || direction === 'down') ? step : -step;
+    const delta = direction === "right" || direction === "down" ? step : -step;
     const newSplit = splitValue.value + delta;
-    
+
     setSplitValue(newSplit);
   }
 }
@@ -327,7 +328,10 @@ function handleKeyboard(direction: 'left' | 'right' | 'up' | 'down') {
 
 .n-split-pane__separator {
   flex: 0 0 v-bind('props.separatorWidth + "px"');
-  background-color: var(--n-split-pane-separator-color, var(--n-border-color, #e2e8f0));
+  background-color: var(
+    --n-split-pane-separator-color,
+    var(--n-border-color, #e2e8f0)
+  );
   position: relative;
   display: flex;
   align-items: center;
@@ -343,7 +347,10 @@ function handleKeyboard(direction: 'left' | 'right' | 'up' | 'down') {
 
 .n-split-pane__separator:hover,
 .n-split-pane__separator:focus-visible {
-  background-color: var(--n-split-pane-separator-hover-color, var(--n-primary-color, #3182ce));
+  background-color: var(
+    --n-split-pane-separator-hover-color,
+    var(--n-primary-color, #3182ce)
+  );
 }
 
 .n-split-pane__separator:focus-visible {
@@ -377,7 +384,7 @@ function handleKeyboard(direction: 'left' | 'right' | 'up' | 'down') {
 
 .n-split-pane__separator-dots::before,
 .n-split-pane__separator-dots::after {
-  content: '';
+  content: "";
   display: block;
   width: 2px;
   height: 2px;
@@ -395,7 +402,7 @@ function handleKeyboard(direction: 'left' | 'right' | 'up' | 'down') {
 /* Für Touch-Devices einen breiteren Drag-Bereich bieten */
 @media (pointer: coarse) {
   .n-split-pane__separator {
-    flex: 0 0 calc(v-bind('props.separatorWidth') * 2.5 + "px");
+    flex: 0 0 calc(v-bind("props.separatorWidth") * 2.5 + "px");
   }
 }
 </style>

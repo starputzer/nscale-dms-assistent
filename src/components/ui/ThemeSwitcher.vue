@@ -12,7 +12,7 @@
         <span class="theme-name">Hell</span>
       </span>
     </label>
-    
+
     <label class="theme-option">
       <input
         type="radio"
@@ -25,7 +25,7 @@
         <span class="theme-name">Dunkel</span>
       </span>
     </label>
-    
+
     <label class="theme-option">
       <input
         type="radio"
@@ -38,7 +38,7 @@
         <span class="theme-name">Kontrast</span>
       </span>
     </label>
-    
+
     <label class="system-theme-option">
       <input
         type="checkbox"
@@ -51,15 +51,10 @@
 </template>
 
 <script setup lang="ts">
-import { useTheme } from '@/composables/useTheme';
+import { useTheme } from "@/composables/useTheme";
 
-const { 
-  currentTheme, 
-  useSystemTheme,
-  setTheme, 
-  setUseSystemTheme,
-  THEMES 
-} = useTheme();
+const { currentTheme, useSystemTheme, setTheme, setUseSystemTheme, THEMES } =
+  useTheme();
 </script>
 
 <style scoped>
@@ -109,7 +104,7 @@ const {
 }
 
 .theme-preview.light::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 10px;
   left: 10px;
@@ -126,7 +121,7 @@ const {
 }
 
 .theme-preview.dark::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 10px;
   left: 10px;
@@ -143,7 +138,7 @@ const {
 }
 
 .theme-preview.contrast::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 10px;
   left: 10px;

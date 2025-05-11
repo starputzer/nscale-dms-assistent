@@ -10,19 +10,26 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
-import { useFeatureTogglesStore } from '@/stores/featureToggles';
-import { UIComponentsDemo, TextAreaExample, ToggleExample, TooltipExample } from '@/components/ui/examples';
-import { toastService } from '@/services/ui/ToastService';
-import DemoSidebar from '@/components/ui/examples/components/DemoSidebar.vue';
+import { onMounted, ref, computed } from "vue";
+import { useFeatureTogglesStore } from "@/stores/featureToggles";
+import {
+  UIComponentsDemo,
+  TextAreaExample,
+  ToggleExample,
+  TooltipExample,
+} from "@/components/ui/examples";
+import { toastService } from "@/services/ui/ToastService";
+import DemoSidebar from "@/components/ui/examples/components/DemoSidebar.vue";
 
 const featureStore = useFeatureTogglesStore();
-const selectedComponent = ref('');
+const selectedComponent = ref("");
 
 onMounted(() => {
   // Check if the feature is enabled
-  if (!featureStore.isEnabled('uiComponentsDemo')) {
-    toastService.warning('UI Components Demo ist deaktiviert. Bitte aktivieren Sie es in den Feature-Toggles.');
+  if (!featureStore.isEnabled("uiComponentsDemo")) {
+    toastService.warning(
+      "UI Components Demo ist deaktiviert. Bitte aktivieren Sie es in den Feature-Toggles.",
+    );
   }
 });
 
@@ -32,11 +39,11 @@ const selectComponent = (component: string) => {
 
 const activeComponent = computed(() => {
   switch (selectedComponent.value) {
-    case 'textarea':
+    case "textarea":
       return TextAreaExample;
-    case 'toggle':
+    case "toggle":
       return ToggleExample;
-    case 'tooltip':
+    case "tooltip":
       return TooltipExample;
     default:
       return UIComponentsDemo;

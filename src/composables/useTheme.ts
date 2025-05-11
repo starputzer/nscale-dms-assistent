@@ -7,18 +7,18 @@
  * Letzte Aktualisierung: 09.05.2025
  */
 
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from "vue";
 
 /**
  * Theme-Optionen für das nscale DMS Assistenten Design-System
  */
 export const THEMES = {
-  LIGHT: 'light',
-  DARK: 'dark',
-  CONTRAST: 'contrast'
+  LIGHT: "light",
+  DARK: "dark",
+  CONTRAST: "contrast",
 } as const;
 
-type Theme = typeof THEMES[keyof typeof THEMES];
+type Theme = (typeof THEMES)[keyof typeof THEMES];
 
 /**
  * Hook für die Theme-Verwaltung in Vue-Komponenten
@@ -27,8 +27,12 @@ type Theme = typeof THEMES[keyof typeof THEMES];
 export function useTheme() {
   // Reaktiver Zustand für aktuelles Theme und User-Einstellungen
   const currentTheme = ref<Theme>(getInitialTheme());
-  const useSystemTheme = ref<boolean>(localStorage.getItem('nscale-system-theme') === 'true');
-  const systemIsDark = ref(window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const useSystemTheme = ref<boolean>(
+    localStorage.getItem("nscale-system-theme") === "true",
+  );
+  const systemIsDark = ref(
+    window.matchMedia("(prefers-color-scheme: dark)").matches,
+  );
   const isChangingTheme = ref<boolean>(false);
 
   /**
@@ -36,7 +40,7 @@ export function useTheme() {
    */
   function getInitialTheme(): Theme {
     // Gespeichertes Theme prüfen
-    const savedTheme = localStorage.getItem('nscale-theme') as Theme | null;
+    const savedTheme = localStorage.getItem("nscale-theme") as Theme | null;
 
     // Wenn ein Theme gespeichert ist und gültig ist, dieses verwenden
     if (savedTheme && Object.values(THEMES).includes(savedTheme as any)) {
@@ -44,7 +48,9 @@ export function useTheme() {
     }
 
     // Wenn System-Theme-Preference aktiviert oder nichts gespeichert ist
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)",
+    ).matches;
     return prefersDark ? THEMES.DARK : THEMES.LIGHT;
   }
 
@@ -60,18 +66,20 @@ export function useTheme() {
     isChangingTheme.value = true;
 
     // Theme am HTML-Element anwenden
-    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.setAttribute("data-theme", theme);
 
     // Theme in localStorage speichern
-    localStorage.setItem('nscale-theme', theme);
+    localStorage.setItem("nscale-theme", theme);
 
     // Reaktiven Zustand aktualisieren
     currentTheme.value = theme;
 
     // Event für andere Komponenten auslösen
-    document.dispatchEvent(new CustomEvent('nscale-theme-change', {
-      detail: { theme, useSystemTheme: useSystemTheme.value }
-    }));
+    document.dispatchEvent(
+      new CustomEvent("nscale-theme-change", {
+        detail: { theme, useSystemTheme: useSystemTheme.value },
+      }),
+    );
 
     // Transitions ermöglichen
     setTimeout(() => {
@@ -88,13 +96,15 @@ export function useTheme() {
       setUseSystemTheme(false);
       // Mit aktuellem Theme beginnen
       const startTheme = systemIsDark.value ? THEMES.DARK : THEMES.LIGHT;
-      const nextTheme = startTheme === THEMES.LIGHT ? THEMES.DARK : THEMES.LIGHT;
+      const nextTheme =
+        startTheme === THEMES.LIGHT ? THEMES.DARK : THEMES.LIGHT;
       setTheme(nextTheme);
       return;
     }
 
     // Zwischen hell und dunkel wechseln
-    const newTheme = currentTheme.value === THEMES.LIGHT ? THEMES.DARK : THEMES.LIGHT;
+    const newTheme =
+      currentTheme.value === THEMES.LIGHT ? THEMES.DARK : THEMES.LIGHT;
     setTheme(newTheme);
   }
 
@@ -116,7 +126,7 @@ export function useTheme() {
    */
   function setUseSystemTheme(value: boolean): void {
     useSystemTheme.value = value;
-    localStorage.setItem('nscale-system-theme', value.toString());
+    localStorage.setItem("nscale-system-theme", value.toString());
 
     if (value) {
       // Bei Aktivierung System-Theme anwenden
@@ -125,9 +135,11 @@ export function useTheme() {
     }
 
     // Event für andere Komponenten auslösen
-    document.dispatchEvent(new CustomEvent('nscale-theme-change', {
-      detail: { theme: currentTheme.value, useSystemTheme: value }
-    }));
+    document.dispatchEvent(
+      new CustomEvent("nscale-theme-change", {
+        detail: { theme: currentTheme.value, useSystemTheme: value },
+      }),
+    );
   }
 
   // Überwachen von Änderungen an der Systemeinstellung
@@ -146,38 +158,50 @@ export function useTheme() {
     setTheme(currentTheme.value);
 
     // MediaQuery für Systemeinstellung überwachen
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleSystemThemeChange);
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", handleSystemThemeChange);
 
     // Event-Listener für Tastenkombinationen
     const keydownHandler = (event: KeyboardEvent) => {
       // Alt+Shift+D für Dark Mode Toggle
-      if (event.altKey && event.shiftKey && event.key === 'D') {
+      if (event.altKey && event.shiftKey && event.key === "D") {
         toggleTheme();
         event.preventDefault();
       }
 
       // Alt+Shift+C für Kontrast-Modus Toggle
-      if (event.altKey && event.shiftKey && event.key === 'C') {
+      if (event.altKey && event.shiftKey && event.key === "C") {
         toggleContrastMode();
         event.preventDefault();
       }
     };
 
-    document.addEventListener('keydown', keydownHandler);
+    document.addEventListener("keydown", keydownHandler);
 
     // Aufräumen wenn die Komponente zerstört wird
     onUnmounted(() => {
-      window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', handleSystemThemeChange);
-      document.removeEventListener('keydown', keydownHandler);
+      window
+        .matchMedia("(prefers-color-scheme: dark)")
+        .removeEventListener("change", handleSystemThemeChange);
+      document.removeEventListener("keydown", keydownHandler);
     });
   });
 
   // Computed Properties
-  const isDarkTheme = computed(() => currentTheme.value === THEMES.DARK ||
-    (useSystemTheme.value && systemIsDark.value));
-  const isContrastTheme = computed(() => currentTheme.value === THEMES.CONTRAST);
-  const isLightTheme = computed(() => currentTheme.value === THEMES.LIGHT &&
-    !(useSystemTheme.value && systemIsDark.value));
+  const isDarkTheme = computed(
+    () =>
+      currentTheme.value === THEMES.DARK ||
+      (useSystemTheme.value && systemIsDark.value),
+  );
+  const isContrastTheme = computed(
+    () => currentTheme.value === THEMES.CONTRAST,
+  );
+  const isLightTheme = computed(
+    () =>
+      currentTheme.value === THEMES.LIGHT &&
+      !(useSystemTheme.value && systemIsDark.value),
+  );
 
   // API des Composables
   return {
@@ -199,7 +223,7 @@ export function useTheme() {
     setUseSystemTheme,
 
     // Constants
-    THEMES
+    THEMES,
   };
 }
 

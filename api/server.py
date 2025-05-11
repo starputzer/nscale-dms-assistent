@@ -32,6 +32,7 @@ from modules.rag.engine import RAGEngine
 from modules.session.chat_history import ChatHistoryManager
 from modules.feedback.feedback_manager import FeedbackManager
 from modules.core.motd_manager import MOTDManager
+from api.telemetry_handler import handle_telemetry_request
 
 try:
     from dotenv import load_dotenv
@@ -950,7 +951,7 @@ async def clear_embedding_cache(user_data: Dict[str, Any] = Depends(get_admin_us
         if embedding_cache_path.exists():
             embedding_cache_path.unlink()
             logger.info(f"Embedding-Cache-Datei gelöscht: {embedding_cache_path}")
-            
+
             # Setze den RAG-Engine-Zustand zurück, um Neuinitialisierung zu erzwingen
             rag_engine.initialized = False
             if hasattr(rag_engine, 'embedding_manager'):
@@ -1007,6 +1008,20 @@ async def startup_event():
     """Initialisiert das System beim Start"""
     Config.init_directories()
     await rag_engine.initialize()
+
+# Telemetrie-Endpunkt für A/B-Tests und andere Analysedaten
+@app.post("/api/telemetry")
+async def telemetry_endpoint(request: Request):
+    """Verarbeitet Telemetriedaten für A/B-Tests und Nutzungsanalysen"""
+    try:
+        # Keine Authentifizierung erforderlich, aber Daten validieren
+        return await run_in_threadpool(lambda: handle_telemetry_request(request))
+    except Exception as e:
+        logger.error(f"Fehler im Telemetrie-Endpunkt: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": f"Interner Serverfehler: {str(e)}"}
+        )
 
 if __name__ == "__main__":
     import uvicorn

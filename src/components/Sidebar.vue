@@ -1,84 +1,129 @@
 <template>
-  <aside class="n-sidebar" :class="{ 'n-sidebar--collapsed': isSidebarCollapsed }">
+  <aside
+    class="n-sidebar"
+    :class="{ 'n-sidebar--collapsed': isSidebarCollapsed }"
+  >
     <div class="n-sidebar__header">
       <h2 class="n-sidebar__title">{{ title }}</h2>
-      <button 
-        class="n-sidebar__toggle-btn" 
-        @click="toggleSidebar" 
-        :title="isSidebarCollapsed ? 'Seitenleiste einblenden' : 'Seitenleiste ausblenden'"
+      <button
+        class="n-sidebar__toggle-btn"
+        @click="toggleSidebar"
+        :title="
+          isSidebarCollapsed
+            ? 'Seitenleiste einblenden'
+            : 'Seitenleiste ausblenden'
+        "
         type="button"
       >
-        <svg 
-          class="n-sidebar__toggle-icon" 
+        <svg
+          class="n-sidebar__toggle-icon"
           :class="{ 'n-sidebar__toggle-icon--collapsed': isSidebarCollapsed }"
-          viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="currentColor" 
-          stroke-width="2" 
-          stroke-linecap="round" 
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
           stroke-linejoin="round"
         >
           <polyline points="15 18 9 12 15 6"></polyline>
         </svg>
       </button>
     </div>
-    
+
     <div class="n-sidebar__content">
       <div v-if="isLoading" class="n-sidebar__loading">
         <div class="n-sidebar__loading-spinner"></div>
         <span class="n-sidebar__loading-text">Lade {{ itemsName }}...</span>
       </div>
-      
+
       <div v-else-if="items.length === 0" class="n-sidebar__empty">
         <div class="n-sidebar__empty-icon">
           <slot name="empty-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <circle cx="12" cy="12" r="10"></circle>
               <line x1="8" y1="12" x2="16" y2="12"></line>
             </svg>
           </slot>
         </div>
         <p class="n-sidebar__empty-message">{{ emptyMessage }}</p>
-        <button v-if="showCreateButton" class="n-sidebar__create-btn" @click="$emit('create')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <button
+          v-if="showCreateButton"
+          class="n-sidebar__create-btn"
+          @click="$emit('create')"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
           <span class="n-sidebar__create-text">{{ createButtonText }}</span>
         </button>
       </div>
-      
+
       <ul v-else class="n-sidebar__list">
-        <li 
-          v-for="item in items" 
+        <li
+          v-for="item in items"
           :key="item.id"
-          class="n-sidebar__item" 
+          class="n-sidebar__item"
           :class="{ 'n-sidebar__item--active': activeItemId === item.id }"
           @click="selectItem(item.id)"
         >
           <div class="n-sidebar__item-content">
             <div class="n-sidebar__item-icon">
               <slot name="item-icon" :item="item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                  ></path>
                 </svg>
               </slot>
             </div>
-            <span class="n-sidebar__item-label">{{ item.title || item.name }}</span>
+            <span class="n-sidebar__item-label">{{
+              item.title || item.name
+            }}</span>
           </div>
-          
+
           <div class="n-sidebar__item-actions">
             <slot name="item-actions" :item="item">
-              <button 
+              <button
                 v-if="enableDelete"
-                class="n-sidebar__item-delete" 
+                class="n-sidebar__item-delete"
                 @click.stop="confirmDeleteItem(item.id)"
                 type="button"
                 :title="`${deleteItemLabel} löschen`"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
                   <polyline points="3 6 5 6 21 6"></polyline>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  <path
+                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                  ></path>
                   <line x1="10" y1="11" x2="10" y2="17"></line>
                   <line x1="14" y1="11" x2="14" y2="17"></line>
                 </svg>
@@ -88,25 +133,27 @@
         </li>
       </ul>
     </div>
-    
+
     <div class="n-sidebar__footer">
       <slot name="footer"></slot>
     </div>
-    
+
     <!-- Delete Confirmation Dialog -->
     <div v-if="showDeleteConfirm" class="n-sidebar__delete-dialog">
       <div class="n-sidebar__delete-dialog-content">
-        <p class="n-sidebar__delete-dialog-message">{{ deleteConfirmMessage }}</p>
+        <p class="n-sidebar__delete-dialog-message">
+          {{ deleteConfirmMessage }}
+        </p>
         <div class="n-sidebar__delete-dialog-actions">
-          <button 
-            class="n-sidebar__delete-dialog-button n-sidebar__delete-dialog-button--cancel" 
+          <button
+            class="n-sidebar__delete-dialog-button n-sidebar__delete-dialog-button--cancel"
             @click="cancelDelete"
             type="button"
           >
             Abbrechen
           </button>
-          <button 
-            class="n-sidebar__delete-dialog-button n-sidebar__delete-dialog-button--confirm" 
+          <button
+            class="n-sidebar__delete-dialog-button n-sidebar__delete-dialog-button--confirm"
             @click="deleteItem"
             type="button"
           >
@@ -119,8 +166,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useUIStore } from '../stores/ui';
+import { ref, computed } from "vue";
+import { useUIStore } from "../stores/ui";
 
 export interface SidebarItem {
   id: string;
@@ -155,27 +202,27 @@ export interface SidebarProps {
 }
 
 const props = withDefaults(defineProps<SidebarProps>(), {
-  title: 'Unterhaltungen',
+  title: "Unterhaltungen",
   items: () => [],
-  emptyMessage: 'Keine Elemente vorhanden',
-  itemsName: 'Elemente',
+  emptyMessage: "Keine Elemente vorhanden",
+  itemsName: "Elemente",
   enableDelete: true,
-  deleteItemLabel: 'Element',
+  deleteItemLabel: "Element",
   showCreateButton: true,
-  createButtonText: 'Neu erstellen',
-  deleteConfirmMessage: 'Element wirklich löschen?',
-  isLoading: false
+  createButtonText: "Neu erstellen",
+  deleteConfirmMessage: "Element wirklich löschen?",
+  isLoading: false,
 });
 
 const emit = defineEmits<{
   /** Wird ausgelöst, wenn ein Element ausgewählt wird */
-  (e: 'select', id: string): void;
+  (e: "select", id: string): void;
   /** Wird ausgelöst, wenn ein Element gelöscht wird */
-  (e: 'delete', id: string): void;
+  (e: "delete", id: string): void;
   /** Wird ausgelöst, wenn ein neues Element erstellt werden soll */
-  (e: 'create'): void;
+  (e: "create"): void;
   /** Wird ausgelöst, wenn die Sidebar ein-/ausgeklappt wird */
-  (e: 'toggle-collapse', collapsed: boolean): void;
+  (e: "toggle-collapse", collapsed: boolean): void;
 }>();
 
 // UI Store für globalen Status
@@ -191,8 +238,8 @@ const itemToDelete = ref<string | null>(null);
  */
 function toggleSidebar() {
   isSidebarCollapsed.value = !isSidebarCollapsed.value;
-  emit('toggle-collapse', isSidebarCollapsed.value);
-  
+  emit("toggle-collapse", isSidebarCollapsed.value);
+
   // UI-Store aktualisieren für app-weite Konsistenz
   uiStore.toggleSidebar();
 }
@@ -202,7 +249,7 @@ function toggleSidebar() {
  * @param id ID des Elements
  */
 function selectItem(id: string) {
-  emit('select', id);
+  emit("select", id);
 }
 
 /**
@@ -227,9 +274,9 @@ function cancelDelete() {
  */
 function deleteItem() {
   if (itemToDelete.value) {
-    emit('delete', itemToDelete.value);
+    emit("delete", itemToDelete.value);
   }
-  
+
   // Dialog schließen
   cancelDelete();
 }
@@ -287,7 +334,9 @@ function deleteItem() {
   color: var(--n-sidebar-icon-color, var(--n-text-color-secondary, #718096));
   cursor: pointer;
   border-radius: var(--n-border-radius-md, 4px);
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .n-sidebar__toggle-btn:hover {
@@ -432,7 +481,7 @@ function deleteItem() {
 }
 
 .n-sidebar__item--active::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 0;
@@ -498,7 +547,10 @@ function deleteItem() {
   opacity: 0;
   cursor: pointer;
   border-radius: var(--n-border-radius-md, 4px);
-  transition: background-color 0.2s ease, opacity 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease,
+    color 0.2s ease;
 }
 
 .n-sidebar__item:hover .n-sidebar__item-delete {
@@ -549,7 +601,11 @@ function deleteItem() {
   max-width: 320px;
   background-color: var(--n-surface-color, #ffffff);
   border-radius: var(--n-border-radius-lg, 8px);
-  box-shadow: var(--n-shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05));
+  box-shadow: var(
+    --n-shadow-lg,
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05)
+  );
   overflow: hidden;
 }
 
@@ -598,7 +654,9 @@ function deleteItem() {
 
 /* Animation für den Spinner */
 @keyframes n-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Responsive Styles */
@@ -611,9 +669,11 @@ function deleteItem() {
     z-index: var(--n-z-index-sidebar, 90);
     box-shadow: var(--n-shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.1));
     transform: translateX(0);
-    transition: transform 0.3s ease, width 0.3s ease;
+    transition:
+      transform 0.3s ease,
+      width 0.3s ease;
   }
-  
+
   .n-sidebar--collapsed {
     transform: translateX(calc(-1 * var(--n-sidebar-width, 280px)));
   }

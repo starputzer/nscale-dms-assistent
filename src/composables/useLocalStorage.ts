@@ -1,5 +1,5 @@
-import { ref, watch, Ref } from 'vue';
-import { useLogger } from './useLogger';
+import { ref, watch, Ref } from "vue";
+import { useLogger } from "./useLogger";
 
 /**
  * Options for the useLocalStorage composable
@@ -25,22 +25,22 @@ export interface LocalStorageOptions<T> {
 
 /**
  * Composable for reactive localStorage values with automatic serialization
- * 
+ *
  * @param key - Storage key
  * @param initialValue - Initial value (can be a function)
  * @param options - Configuration options
  * @returns Reactive ref and utility methods
- * 
+ *
  * @example
  * // Simple string
  * const name = useLocalStorage('user-name', 'Guest');
- * 
+ *
  * // Complex object
- * const userSettings = useLocalStorage('user-settings', { 
+ * const userSettings = useLocalStorage('user-settings', {
  *   theme: 'light',
  *   notifications: true
  * });
- * 
+ *
  * // With custom options
  * const token = useLocalStorage('auth-token', null, {
  *   prefix: 'myapp_',
@@ -51,59 +51,67 @@ export interface LocalStorageOptions<T> {
 export function useLocalStorage<T>(
   key: string,
   initialValue?: T | (() => T),
-  options: LocalStorageOptions<T> = {}
+  options: LocalStorageOptions<T> = {},
 ) {
   const {
     useJSON = true,
     defaultValue = null as unknown as T,
-    prefix = '',
+    prefix = "",
     storage = localStorage,
     watchValue = true,
     serializer,
     deserializer,
-    deleteIfNull = false
+    deleteIfNull = false,
   } = options;
 
-  const logger = useLogger('useLocalStorage');
+  const logger = useLogger("useLocalStorage");
   const storageKey = `${prefix}${key}`;
-  
+
   // Create serializer functions
-  const serialize = serializer || (useJSON
-    ? (value: T) => JSON.stringify(value)
-    : (value: T) => String(value)
-  );
-  
-  const deserialize = deserializer || (useJSON
-    ? (value: string): T => {
-        try {
-          return JSON.parse(value) as T;
-        } catch (error) {
-          logger.error(`Error deserializing value for key ${storageKey}`, error);
-          return defaultValue;
+  const serialize =
+    serializer ||
+    (useJSON
+      ? (value: T) => JSON.stringify(value)
+      : (value: T) => String(value));
+
+  const deserialize =
+    deserializer ||
+    (useJSON
+      ? (value: string): T => {
+          try {
+            return JSON.parse(value) as T;
+          } catch (error) {
+            logger.error(
+              `Error deserializing value for key ${storageKey}`,
+              error,
+            );
+            return defaultValue;
+          }
         }
-      }
-    : (value: string): T => value as unknown as T
-  );
+      : (value: string): T => value as unknown as T);
 
   // Get initial value
   const getInitialValue = (): T => {
     try {
       const storageValue = storage.getItem(storageKey);
-      
+
       // If the value exists in storage, use it
       if (storageValue !== null) {
         return deserialize(storageValue);
       }
-      
+
       // Otherwise, use the provided initial value or default
-      return typeof initialValue === 'function'
+      return typeof initialValue === "function"
         ? (initialValue as () => T)()
         : initialValue !== undefined
           ? initialValue
           : defaultValue;
     } catch (error) {
-      logger.error(`Error reading from localStorage for key ${storageKey}`, error);
-      return typeof initialValue === 'function'
+      logger.error(
+        `Error reading from localStorage for key ${storageKey}`,
+        error,
+      );
+      return typeof initialValue === "function"
         ? (initialValue as () => T)()
         : initialValue !== undefined
           ? initialValue
@@ -116,9 +124,13 @@ export function useLocalStorage<T>(
 
   // Update storage when value changes
   if (watchValue) {
-    watch(storedValue, (newValue) => {
-      updateStorage(newValue);
-    }, { deep: true });
+    watch(
+      storedValue,
+      (newValue) => {
+        updateStorage(newValue);
+      },
+      { deep: true },
+    );
   }
 
   /**
@@ -137,7 +149,10 @@ export function useLocalStorage<T>(
         storage.setItem(storageKey, serialize(value));
       }
     } catch (error) {
-      logger.error(`Error writing to localStorage for key ${storageKey}`, error);
+      logger.error(
+        `Error writing to localStorage for key ${storageKey}`,
+        error,
+      );
     }
   };
 
@@ -148,13 +163,14 @@ export function useLocalStorage<T>(
   const setValue = (value: T | ((prev: T) => T)) => {
     try {
       // Handle functional updates
-      const newValue = value instanceof Function
-        ? (value as ((prev: T) => T))(storedValue.value)
-        : value;
-      
+      const newValue =
+        value instanceof Function
+          ? (value as (prev: T) => T)(storedValue.value)
+          : value;
+
       // Update the ref
       storedValue.value = newValue;
-      
+
       // If watching is disabled, manually update storage
       if (!watchValue) {
         updateStorage(newValue);
@@ -184,7 +200,10 @@ export function useLocalStorage<T>(
     try {
       return storage.getItem(storageKey) !== null;
     } catch (error) {
-      logger.error(`Error checking item existence for key ${storageKey}`, error);
+      logger.error(
+        `Error checking item existence for key ${storageKey}`,
+        error,
+      );
       return false;
     }
   };
@@ -195,7 +214,7 @@ export function useLocalStorage<T>(
     setValue,
     removeItem,
     hasItem,
-    key: storageKey
+    key: storageKey,
   };
 }
 

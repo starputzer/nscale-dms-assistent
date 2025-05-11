@@ -1,43 +1,70 @@
 <template>
   <div class="admin-system-settings">
-    <h2 class="admin-system-settings__title">{{ t('admin.systemSettings.title', 'Systemeinstellungen') }}</h2>
+    <h2 class="admin-system-settings__title">
+      {{ t("admin.systemSettings.title", "Systemeinstellungen") }}
+    </h2>
     <p class="admin-system-settings__description">
-      {{ t('admin.systemSettings.description', 'Verwalten und konfigurieren Sie die Systemeinstellungen.') }}
+      {{
+        t(
+          "admin.systemSettings.description",
+          "Verwalten und konfigurieren Sie die Systemeinstellungen.",
+        )
+      }}
     </p>
 
     <div v-if="isLoading" class="admin-system-settings__loading">
-      <i class="fas fa-spinner fa-spin admin-system-settings__loading-icon" aria-hidden="true"></i>
-      <p>{{ t('admin.systemSettings.loading', 'Einstellungen werden geladen...') }}</p>
+      <i
+        class="fas fa-spinner fa-spin admin-system-settings__loading-icon"
+        aria-hidden="true"
+      ></i>
+      <p>
+        {{
+          t("admin.systemSettings.loading", "Einstellungen werden geladen...")
+        }}
+      </p>
     </div>
 
     <template v-else>
       <!-- Warnung bei ungespeicherten Änderungen -->
-      <div v-if="hasUnsavedChanges" class="admin-system-settings__unsaved-warning">
+      <div
+        v-if="hasUnsavedChanges"
+        class="admin-system-settings__unsaved-warning"
+      >
         <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
-        <p>{{ t('admin.systemSettings.unsavedChanges', 'Es gibt ungespeicherte Änderungen.') }}</p>
+        <p>
+          {{
+            t(
+              "admin.systemSettings.unsavedChanges",
+              "Es gibt ungespeicherte Änderungen.",
+            )
+          }}
+        </p>
         <div class="admin-system-settings__unsaved-actions">
-          <button 
-            @click="resetChanges" 
+          <button
+            @click="resetChanges"
             class="admin-system-settings__unsaved-button admin-system-settings__unsaved-button--cancel"
           >
-            {{ t('admin.systemSettings.resetChanges', 'Änderungen verwerfen') }}
+            {{ t("admin.systemSettings.resetChanges", "Änderungen verwerfen") }}
           </button>
-          <button 
-            @click="saveSettings" 
+          <button
+            @click="saveSettings"
             class="admin-system-settings__unsaved-button admin-system-settings__unsaved-button--save"
           >
-            {{ t('admin.systemSettings.saveChanges', 'Änderungen speichern') }}
+            {{ t("admin.systemSettings.saveChanges", "Änderungen speichern") }}
           </button>
         </div>
       </div>
 
       <!-- Kategorien zur Auswahl -->
       <div class="admin-system-settings__categories">
-        <button 
-          v-for="category in settingsStore.systemSettingsCategories" 
+        <button
+          v-for="category in settingsStore.systemSettingsCategories"
           :key="category.id"
           class="admin-system-settings__category-button"
-          :class="{ 'admin-system-settings__category-button--active': activeCategory === category.id }"
+          :class="{
+            'admin-system-settings__category-button--active':
+              activeCategory === category.id,
+          }"
           @click="activeCategory = category.id"
         >
           <i :class="['fas', category.icon]" aria-hidden="true"></i>
@@ -55,371 +82,566 @@
         </p>
 
         <!-- Allgemeine Einstellungen -->
-        <div v-if="activeCategory === 'general'" class="admin-system-settings__section">
+        <div
+          v-if="activeCategory === 'general'"
+          class="admin-system-settings__section"
+        >
           <div class="admin-system-settings__form-group">
-            <label for="app-name" class="admin-system-settings__label">{{ t('admin.systemSettings.general.appName', 'Anwendungsname') }}</label>
-            <input 
-              id="app-name" 
-              v-model="settings.appName" 
-              type="text" 
+            <label for="app-name" class="admin-system-settings__label">{{
+              t("admin.systemSettings.general.appName", "Anwendungsname")
+            }}</label>
+            <input
+              id="app-name"
+              v-model="settings.appName"
+              type="text"
               class="admin-system-settings__input"
             />
           </div>
-          
+
           <div class="admin-system-settings__form-group">
-            <label for="app-version" class="admin-system-settings__label">{{ t('admin.systemSettings.general.appVersion', 'Version') }}</label>
-            <input 
-              id="app-version" 
-              v-model="settings.appVersion" 
-              type="text" 
+            <label for="app-version" class="admin-system-settings__label">{{
+              t("admin.systemSettings.general.appVersion", "Version")
+            }}</label>
+            <input
+              id="app-version"
+              v-model="settings.appVersion"
+              type="text"
               class="admin-system-settings__input"
               disabled
             />
-            <small class="admin-system-settings__help-text">{{ t('admin.systemSettings.general.versionHelp', 'Die Version kann nicht bearbeitet werden.') }}</small>
+            <small class="admin-system-settings__help-text">{{
+              t(
+                "admin.systemSettings.general.versionHelp",
+                "Die Version kann nicht bearbeitet werden.",
+              )
+            }}</small>
           </div>
         </div>
 
         <!-- KI-Modelle -->
-        <div v-if="activeCategory === 'models'" class="admin-system-settings__section">
+        <div
+          v-if="activeCategory === 'models'"
+          class="admin-system-settings__section"
+        >
           <div class="admin-system-settings__form-group">
-            <label for="default-model" class="admin-system-settings__label">{{ t('admin.systemSettings.models.defaultModel', 'Standardmodell') }}</label>
-            <select 
-              id="default-model" 
-              v-model="settings.defaultModel" 
+            <label for="default-model" class="admin-system-settings__label">{{
+              t("admin.systemSettings.models.defaultModel", "Standardmodell")
+            }}</label>
+            <select
+              id="default-model"
+              v-model="settings.defaultModel"
               class="admin-system-settings__select"
             >
-              <option 
-                v-for="model in settings.availableModels" 
-                :key="model" 
+              <option
+                v-for="model in settings.availableModels"
+                :key="model"
                 :value="model"
               >
                 {{ model }}
               </option>
             </select>
           </div>
-          
+
           <div class="admin-system-settings__form-group">
-            <label for="max-tokens" class="admin-system-settings__label">{{ t('admin.systemSettings.models.maxTokens', 'Max. Tokens pro Anfrage') }}</label>
-            <input 
-              id="max-tokens" 
-              v-model.number="settings.maxTokensPerRequest" 
-              type="number" 
-              min="1" 
-              max="32768" 
+            <label for="max-tokens" class="admin-system-settings__label">{{
+              t(
+                "admin.systemSettings.models.maxTokens",
+                "Max. Tokens pro Anfrage",
+              )
+            }}</label>
+            <input
+              id="max-tokens"
+              v-model.number="settings.maxTokensPerRequest"
+              type="number"
+              min="1"
+              max="32768"
               class="admin-system-settings__input"
             />
           </div>
-          
+
           <div class="admin-system-settings__form-group">
-            <label for="temperature" class="admin-system-settings__label">{{ t('admin.systemSettings.models.temperature', 'Temperatur') }}</label>
+            <label for="temperature" class="admin-system-settings__label">{{
+              t("admin.systemSettings.models.temperature", "Temperatur")
+            }}</label>
             <div class="admin-system-settings__range-container">
-              <input 
-                id="temperature" 
-                v-model.number="settings.modelTemperature" 
-                type="range" 
-                min="0" 
-                max="1" 
-                step="0.1" 
+              <input
+                id="temperature"
+                v-model.number="settings.modelTemperature"
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
                 class="admin-system-settings__range"
               />
-              <span class="admin-system-settings__range-value">{{ settings.modelTemperature.toFixed(1) }}</span>
+              <span class="admin-system-settings__range-value">{{
+                settings.modelTemperature.toFixed(1)
+              }}</span>
             </div>
-            <small class="admin-system-settings__help-text">{{ t('admin.systemSettings.models.temperatureHelp', 'Höhere Werte führen zu zufälligeren Antworten.') }}</small>
+            <small class="admin-system-settings__help-text">{{
+              t(
+                "admin.systemSettings.models.temperatureHelp",
+                "Höhere Werte führen zu zufälligeren Antworten.",
+              )
+            }}</small>
           </div>
         </div>
-        
+
         <!-- Performance -->
-        <div v-if="activeCategory === 'performance'" class="admin-system-settings__section">
+        <div
+          v-if="activeCategory === 'performance'"
+          class="admin-system-settings__section"
+        >
           <div class="admin-system-settings__form-group">
-            <label for="max-concurrent" class="admin-system-settings__label">{{ t('admin.systemSettings.performance.maxConcurrent', 'Max. gleichzeitige Anfragen') }}</label>
-            <input 
-              id="max-concurrent" 
-              v-model.number="settings.maxConcurrentRequests" 
-              type="number" 
-              min="1" 
-              max="20" 
+            <label for="max-concurrent" class="admin-system-settings__label">{{
+              t(
+                "admin.systemSettings.performance.maxConcurrent",
+                "Max. gleichzeitige Anfragen",
+              )
+            }}</label>
+            <input
+              id="max-concurrent"
+              v-model.number="settings.maxConcurrentRequests"
+              type="number"
+              min="1"
+              max="20"
               class="admin-system-settings__input"
             />
           </div>
-          
+
           <div class="admin-system-settings__form-group">
-            <label for="max-queue" class="admin-system-settings__label">{{ t('admin.systemSettings.performance.maxQueue', 'Max. Warteschlangengröße') }}</label>
-            <input 
-              id="max-queue" 
-              v-model.number="settings.maxQueueSize" 
-              type="number" 
-              min="1" 
-              max="100" 
+            <label for="max-queue" class="admin-system-settings__label">{{
+              t(
+                "admin.systemSettings.performance.maxQueue",
+                "Max. Warteschlangengröße",
+              )
+            }}</label>
+            <input
+              id="max-queue"
+              v-model.number="settings.maxQueueSize"
+              type="number"
+              min="1"
+              max="100"
               class="admin-system-settings__input"
             />
           </div>
-          
+
           <div class="admin-system-settings__form-group">
-            <label for="req-timeout" class="admin-system-settings__label">{{ t('admin.systemSettings.performance.requestTimeout', 'Anfrage-Timeout (ms)') }}</label>
-            <input 
-              id="req-timeout" 
-              v-model.number="settings.requestTimeout" 
-              type="number" 
-              min="1000" 
-              max="300000" 
-              step="1000" 
+            <label for="req-timeout" class="admin-system-settings__label">{{
+              t(
+                "admin.systemSettings.performance.requestTimeout",
+                "Anfrage-Timeout (ms)",
+              )
+            }}</label>
+            <input
+              id="req-timeout"
+              v-model.number="settings.requestTimeout"
+              type="number"
+              min="1000"
+              max="300000"
+              step="1000"
               class="admin-system-settings__input"
             />
           </div>
-          
+
           <div class="admin-system-settings__form-group">
             <div class="admin-system-settings__switch-container">
-              <label for="req-retry" class="admin-system-settings__label">{{ t('admin.systemSettings.performance.enableRetry', 'Wiederholungsversuche aktivieren') }}</label>
+              <label for="req-retry" class="admin-system-settings__label">{{
+                t(
+                  "admin.systemSettings.performance.enableRetry",
+                  "Wiederholungsversuche aktivieren",
+                )
+              }}</label>
               <label class="admin-system-settings__switch">
-                <input 
-                  id="req-retry" 
-                  v-model="settings.enableRequestRetry" 
-                  type="checkbox" 
+                <input
+                  id="req-retry"
+                  v-model="settings.enableRequestRetry"
+                  type="checkbox"
                 />
                 <span class="admin-system-settings__switch-slider"></span>
               </label>
             </div>
           </div>
-          
-          <div v-if="settings.enableRequestRetry" class="admin-system-settings__form-group admin-system-settings__form-group--indent">
-            <label for="max-retries" class="admin-system-settings__label">{{ t('admin.systemSettings.performance.maxRetries', 'Max. Wiederholungen') }}</label>
-            <input 
-              id="max-retries" 
-              v-model.number="settings.maxRetries" 
-              type="number" 
-              min="1" 
-              max="10" 
+
+          <div
+            v-if="settings.enableRequestRetry"
+            class="admin-system-settings__form-group admin-system-settings__form-group--indent"
+          >
+            <label for="max-retries" class="admin-system-settings__label">{{
+              t(
+                "admin.systemSettings.performance.maxRetries",
+                "Max. Wiederholungen",
+              )
+            }}</label>
+            <input
+              id="max-retries"
+              v-model.number="settings.maxRetries"
+              type="number"
+              min="1"
+              max="10"
               class="admin-system-settings__input"
             />
           </div>
         </div>
-        
+
         <!-- Sicherheitseinstellungen -->
-        <div v-if="activeCategory === 'security'" class="admin-system-settings__section">
+        <div
+          v-if="activeCategory === 'security'"
+          class="admin-system-settings__section"
+        >
           <div class="admin-system-settings__form-group">
-            <label for="session-timeout" class="admin-system-settings__label">{{ t('admin.systemSettings.security.sessionTimeout', 'Sitzungs-Timeout (Minuten)') }}</label>
-            <input 
-              id="session-timeout" 
-              v-model.number="settings.sessionTimeout" 
-              type="number" 
-              min="5" 
-              max="1440" 
+            <label for="session-timeout" class="admin-system-settings__label">{{
+              t(
+                "admin.systemSettings.security.sessionTimeout",
+                "Sitzungs-Timeout (Minuten)",
+              )
+            }}</label>
+            <input
+              id="session-timeout"
+              v-model.number="settings.sessionTimeout"
+              type="number"
+              min="5"
+              max="1440"
               class="admin-system-settings__input"
             />
           </div>
-          
+
           <div class="admin-system-settings__form-group">
-            <label for="max-login" class="admin-system-settings__label">{{ t('admin.systemSettings.security.maxLoginAttempts', 'Max. Anmeldeversuche') }}</label>
-            <input 
-              id="max-login" 
-              v-model.number="settings.maxLoginAttempts" 
-              type="number" 
-              min="1" 
-              max="10" 
+            <label for="max-login" class="admin-system-settings__label">{{
+              t(
+                "admin.systemSettings.security.maxLoginAttempts",
+                "Max. Anmeldeversuche",
+              )
+            }}</label>
+            <input
+              id="max-login"
+              v-model.number="settings.maxLoginAttempts"
+              type="number"
+              min="1"
+              max="10"
               class="admin-system-settings__input"
             />
           </div>
-          
+
           <div class="admin-system-settings__form-group">
-            <label for="pwd-change" class="admin-system-settings__label">{{ t('admin.systemSettings.security.passwordChange', 'Passwortänderung erzwingen (Tage)') }}</label>
-            <input 
-              id="pwd-change" 
-              v-model.number="settings.requirePasswordChange" 
-              type="number" 
-              min="0" 
-              max="365" 
+            <label for="pwd-change" class="admin-system-settings__label">{{
+              t(
+                "admin.systemSettings.security.passwordChange",
+                "Passwortänderung erzwingen (Tage)",
+              )
+            }}</label>
+            <input
+              id="pwd-change"
+              v-model.number="settings.requirePasswordChange"
+              type="number"
+              min="0"
+              max="365"
               class="admin-system-settings__input"
             />
-            <small class="admin-system-settings__help-text">{{ t('admin.systemSettings.security.passwordChangeHelp', '0 = nie erzwingen') }}</small>
+            <small class="admin-system-settings__help-text">{{
+              t(
+                "admin.systemSettings.security.passwordChangeHelp",
+                "0 = nie erzwingen",
+              )
+            }}</small>
           </div>
-          
+
           <div class="admin-system-settings__form-group">
-            <label for="pwd-length" class="admin-system-settings__label">{{ t('admin.systemSettings.security.passwordLength', 'Mindestlänge für Passwörter') }}</label>
-            <input 
-              id="pwd-length" 
-              v-model.number="settings.passwordMinLength" 
-              type="number" 
-              min="6" 
-              max="32" 
+            <label for="pwd-length" class="admin-system-settings__label">{{
+              t(
+                "admin.systemSettings.security.passwordLength",
+                "Mindestlänge für Passwörter",
+              )
+            }}</label>
+            <input
+              id="pwd-length"
+              v-model.number="settings.passwordMinLength"
+              type="number"
+              min="6"
+              max="32"
               class="admin-system-settings__input"
             />
           </div>
-          
+
           <div class="admin-system-settings__form-group">
             <div class="admin-system-settings__switch-container">
-              <label for="pwd-special" class="admin-system-settings__label">{{ t('admin.systemSettings.security.passwordSpecial', 'Sonderzeichen im Passwort erforderlich') }}</label>
+              <label for="pwd-special" class="admin-system-settings__label">{{
+                t(
+                  "admin.systemSettings.security.passwordSpecial",
+                  "Sonderzeichen im Passwort erforderlich",
+                )
+              }}</label>
               <label class="admin-system-settings__switch">
-                <input 
-                  id="pwd-special" 
-                  v-model="settings.passwordRequireSpecialChars" 
-                  type="checkbox" 
+                <input
+                  id="pwd-special"
+                  v-model="settings.passwordRequireSpecialChars"
+                  type="checkbox"
                 />
                 <span class="admin-system-settings__switch-slider"></span>
               </label>
             </div>
           </div>
         </div>
-        
+
         <!-- Metriken -->
-        <div v-if="activeCategory === 'metrics'" class="admin-system-settings__section">
+        <div
+          v-if="activeCategory === 'metrics'"
+          class="admin-system-settings__section"
+        >
           <div class="admin-system-settings__form-group">
             <div class="admin-system-settings__switch-container">
-              <label for="collect-metrics" class="admin-system-settings__label">{{ t('admin.systemSettings.metrics.collectMetrics', 'Nutzungsmetriken erfassen') }}</label>
+              <label
+                for="collect-metrics"
+                class="admin-system-settings__label"
+                >{{
+                  t(
+                    "admin.systemSettings.metrics.collectMetrics",
+                    "Nutzungsmetriken erfassen",
+                  )
+                }}</label
+              >
               <label class="admin-system-settings__switch">
-                <input 
-                  id="collect-metrics" 
-                  v-model="settings.collectUsageMetrics" 
-                  type="checkbox" 
+                <input
+                  id="collect-metrics"
+                  v-model="settings.collectUsageMetrics"
+                  type="checkbox"
                 />
                 <span class="admin-system-settings__switch-slider"></span>
               </label>
             </div>
           </div>
-          
+
           <div class="admin-system-settings__form-group">
             <div class="admin-system-settings__switch-container">
-              <label for="collect-errors" class="admin-system-settings__label">{{ t('admin.systemSettings.metrics.collectErrors', 'Fehlerberichte erfassen') }}</label>
+              <label
+                for="collect-errors"
+                class="admin-system-settings__label"
+                >{{
+                  t(
+                    "admin.systemSettings.metrics.collectErrors",
+                    "Fehlerberichte erfassen",
+                  )
+                }}</label
+              >
               <label class="admin-system-settings__switch">
-                <input 
-                  id="collect-errors" 
-                  v-model="settings.collectErrorReports" 
-                  type="checkbox" 
+                <input
+                  id="collect-errors"
+                  v-model="settings.collectErrorReports"
+                  type="checkbox"
                 />
                 <span class="admin-system-settings__switch-slider"></span>
               </label>
             </div>
           </div>
-          
+
           <div class="admin-system-settings__form-group">
-            <label for="metrics-retention" class="admin-system-settings__label">{{ t('admin.systemSettings.metrics.retention', 'Aufbewahrungsdauer (Tage)') }}</label>
-            <input 
-              id="metrics-retention" 
-              v-model.number="settings.metricsRetentionDays" 
-              type="number" 
-              min="1" 
-              max="365" 
+            <label
+              for="metrics-retention"
+              class="admin-system-settings__label"
+              >{{
+                t(
+                  "admin.systemSettings.metrics.retention",
+                  "Aufbewahrungsdauer (Tage)",
+                )
+              }}</label
+            >
+            <input
+              id="metrics-retention"
+              v-model.number="settings.metricsRetentionDays"
+              type="number"
+              min="1"
+              max="365"
               class="admin-system-settings__input"
             />
           </div>
         </div>
-        
+
         <!-- Wartung -->
-        <div v-if="activeCategory === 'maintenance'" class="admin-system-settings__section">
+        <div
+          v-if="activeCategory === 'maintenance'"
+          class="admin-system-settings__section"
+        >
           <div class="admin-system-settings__form-group">
             <div class="admin-system-settings__switch-container">
-              <label for="maintenance-mode" class="admin-system-settings__label">{{ t('admin.systemSettings.maintenance.maintenanceMode', 'Wartungsmodus') }}</label>
+              <label
+                for="maintenance-mode"
+                class="admin-system-settings__label"
+                >{{
+                  t(
+                    "admin.systemSettings.maintenance.maintenanceMode",
+                    "Wartungsmodus",
+                  )
+                }}</label
+              >
               <label class="admin-system-settings__switch">
-                <input 
-                  id="maintenance-mode" 
-                  v-model="settings.maintenanceMode" 
-                  type="checkbox" 
+                <input
+                  id="maintenance-mode"
+                  v-model="settings.maintenanceMode"
+                  type="checkbox"
                 />
                 <span class="admin-system-settings__switch-slider"></span>
               </label>
             </div>
-            <small class="admin-system-settings__help-text admin-system-settings__help-text--warning" v-if="settings.maintenanceMode">
-              {{ t('admin.systemSettings.maintenance.modeWarning', 'Das System ist im Wartungsmodus. Nur Administratoren haben Zugriff.') }}
+            <small
+              class="admin-system-settings__help-text admin-system-settings__help-text--warning"
+              v-if="settings.maintenanceMode"
+            >
+              {{
+                t(
+                  "admin.systemSettings.maintenance.modeWarning",
+                  "Das System ist im Wartungsmodus. Nur Administratoren haben Zugriff.",
+                )
+              }}
             </small>
           </div>
-          
-          <div v-if="settings.maintenanceMode" class="admin-system-settings__form-group admin-system-settings__form-group--indent">
-            <label for="maintenance-message" class="admin-system-settings__label">{{ t('admin.systemSettings.maintenance.message', 'Wartungsmeldung') }}</label>
-            <textarea 
-              id="maintenance-message" 
-              v-model="settings.maintenanceMessage" 
-              class="admin-system-settings__textarea" 
+
+          <div
+            v-if="settings.maintenanceMode"
+            class="admin-system-settings__form-group admin-system-settings__form-group--indent"
+          >
+            <label
+              for="maintenance-message"
+              class="admin-system-settings__label"
+              >{{
+                t("admin.systemSettings.maintenance.message", "Wartungsmeldung")
+              }}</label
+            >
+            <textarea
+              id="maintenance-message"
+              v-model="settings.maintenanceMessage"
+              class="admin-system-settings__textarea"
               rows="3"
             ></textarea>
           </div>
         </div>
-        
+
         <!-- Cache -->
-        <div v-if="activeCategory === 'cache'" class="admin-system-settings__section">
+        <div
+          v-if="activeCategory === 'cache'"
+          class="admin-system-settings__section"
+        >
           <div class="admin-system-settings__form-group">
             <div class="admin-system-settings__switch-container">
-              <label for="enable-cache" class="admin-system-settings__label">{{ t('admin.systemSettings.cache.enableCache', 'Cache aktivieren') }}</label>
+              <label for="enable-cache" class="admin-system-settings__label">{{
+                t("admin.systemSettings.cache.enableCache", "Cache aktivieren")
+              }}</label>
               <label class="admin-system-settings__switch">
-                <input 
-                  id="enable-cache" 
-                  v-model="settings.enableCache" 
-                  type="checkbox" 
+                <input
+                  id="enable-cache"
+                  v-model="settings.enableCache"
+                  type="checkbox"
                 />
                 <span class="admin-system-settings__switch-slider"></span>
               </label>
             </div>
           </div>
-          
-          <div v-if="settings.enableCache" class="admin-system-settings__form-group admin-system-settings__form-group--indent">
-            <label for="cache-ttl" class="admin-system-settings__label">{{ t('admin.systemSettings.cache.cacheTtl', 'Cache-Lebensdauer (Sekunden)') }}</label>
-            <input 
-              id="cache-ttl" 
-              v-model.number="settings.cacheTtl" 
-              type="number" 
-              min="60" 
-              max="2592000" 
+
+          <div
+            v-if="settings.enableCache"
+            class="admin-system-settings__form-group admin-system-settings__form-group--indent"
+          >
+            <label for="cache-ttl" class="admin-system-settings__label">{{
+              t(
+                "admin.systemSettings.cache.cacheTtl",
+                "Cache-Lebensdauer (Sekunden)",
+              )
+            }}</label>
+            <input
+              id="cache-ttl"
+              v-model.number="settings.cacheTtl"
+              type="number"
+              min="60"
+              max="2592000"
               class="admin-system-settings__input"
             />
           </div>
-          
-          <div v-if="settings.enableCache" class="admin-system-settings__form-group admin-system-settings__form-group--indent">
-            <label for="cache-size" class="admin-system-settings__label">{{ t('admin.systemSettings.cache.maxCacheSize', 'Max. Cache-Größe (MB)') }}</label>
-            <input 
-              id="cache-size" 
-              v-model.number="settings.maxCacheSize" 
-              type="number" 
-              min="10" 
-              max="10000" 
+
+          <div
+            v-if="settings.enableCache"
+            class="admin-system-settings__form-group admin-system-settings__form-group--indent"
+          >
+            <label for="cache-size" class="admin-system-settings__label">{{
+              t(
+                "admin.systemSettings.cache.maxCacheSize",
+                "Max. Cache-Größe (MB)",
+              )
+            }}</label>
+            <input
+              id="cache-size"
+              v-model.number="settings.maxCacheSize"
+              type="number"
+              min="10"
+              max="10000"
               class="admin-system-settings__input"
             />
           </div>
-          
+
           <div class="admin-system-settings__form-group">
-            <button 
-              @click="showClearCacheConfirm = true" 
+            <button
+              @click="showClearCacheConfirm = true"
               class="admin-system-settings__button admin-system-settings__button--secondary"
             >
               <i class="fas fa-trash-alt" aria-hidden="true"></i>
-              {{ t('admin.systemSettings.cache.clearCache', 'Cache leeren') }}
+              {{ t("admin.systemSettings.cache.clearCache", "Cache leeren") }}
             </button>
           </div>
         </div>
-        
+
         <!-- Logging -->
-        <div v-if="activeCategory === 'logging'" class="admin-system-settings__section">
+        <div
+          v-if="activeCategory === 'logging'"
+          class="admin-system-settings__section"
+        >
           <div class="admin-system-settings__form-group">
-            <label for="log-level" class="admin-system-settings__label">{{ t('admin.systemSettings.logging.logLevel', 'Log-Level') }}</label>
-            <select 
-              id="log-level" 
-              v-model="settings.logLevel" 
+            <label for="log-level" class="admin-system-settings__label">{{
+              t("admin.systemSettings.logging.logLevel", "Log-Level")
+            }}</label>
+            <select
+              id="log-level"
+              v-model="settings.logLevel"
               class="admin-system-settings__select"
             >
-              <option value="debug">{{ t('admin.systemSettings.logging.levels.debug', 'Debug') }}</option>
-              <option value="info">{{ t('admin.systemSettings.logging.levels.info', 'Info') }}</option>
-              <option value="warn">{{ t('admin.systemSettings.logging.levels.warn', 'Warnung') }}</option>
-              <option value="error">{{ t('admin.systemSettings.logging.levels.error', 'Fehler') }}</option>
+              <option value="debug">
+                {{ t("admin.systemSettings.logging.levels.debug", "Debug") }}
+              </option>
+              <option value="info">
+                {{ t("admin.systemSettings.logging.levels.info", "Info") }}
+              </option>
+              <option value="warn">
+                {{ t("admin.systemSettings.logging.levels.warn", "Warnung") }}
+              </option>
+              <option value="error">
+                {{ t("admin.systemSettings.logging.levels.error", "Fehler") }}
+              </option>
             </select>
           </div>
-          
+
           <div class="admin-system-settings__form-group">
-            <label for="log-rotation" class="admin-system-settings__label">{{ t('admin.systemSettings.logging.rotation', 'Log-Rotation (Tage)') }}</label>
-            <input 
-              id="log-rotation" 
-              v-model.number="settings.logRotation" 
-              type="number" 
-              min="1" 
-              max="365" 
+            <label for="log-rotation" class="admin-system-settings__label">{{
+              t("admin.systemSettings.logging.rotation", "Log-Rotation (Tage)")
+            }}</label>
+            <input
+              id="log-rotation"
+              v-model.number="settings.logRotation"
+              type="number"
+              min="1"
+              max="365"
               class="admin-system-settings__input"
             />
           </div>
-          
+
           <div class="admin-system-settings__form-group">
-            <label for="log-size" class="admin-system-settings__label">{{ t('admin.systemSettings.logging.maxSize', 'Max. Protokollgröße (MB)') }}</label>
-            <input 
-              id="log-size" 
-              v-model.number="settings.maxLogSize" 
-              type="number" 
-              min="1" 
-              max="1000" 
+            <label for="log-size" class="admin-system-settings__label">{{
+              t(
+                "admin.systemSettings.logging.maxSize",
+                "Max. Protokollgröße (MB)",
+              )
+            }}</label>
+            <input
+              id="log-size"
+              v-model.number="settings.maxLogSize"
+              type="number"
+              min="1"
+              max="1000"
               class="admin-system-settings__input"
             />
           </div>
@@ -429,96 +651,143 @@
       <!-- Aktionsbereich unten -->
       <div class="admin-system-settings__actions">
         <div class="admin-system-settings__actions-buttons">
-          <button 
-            @click="showResetDefaultsConfirm = true" 
+          <button
+            @click="showResetDefaultsConfirm = true"
             class="admin-system-settings__button admin-system-settings__button--danger"
             :disabled="isSubmitting"
           >
             <i class="fas fa-undo" aria-hidden="true"></i>
-            {{ t('admin.systemSettings.actions.resetDefaults', 'Standardeinstellungen') }}
+            {{
+              t(
+                "admin.systemSettings.actions.resetDefaults",
+                "Standardeinstellungen",
+              )
+            }}
           </button>
-          
+
           <div class="admin-system-settings__actions-right">
-            <button 
-              @click="resetChanges" 
+            <button
+              @click="resetChanges"
               class="admin-system-settings__button admin-system-settings__button--cancel"
               :disabled="!hasUnsavedChanges || isSubmitting"
             >
-              {{ t('admin.systemSettings.actions.cancel', 'Abbrechen') }}
+              {{ t("admin.systemSettings.actions.cancel", "Abbrechen") }}
             </button>
-            
-            <button 
-              @click="saveSettings" 
+
+            <button
+              @click="saveSettings"
               class="admin-system-settings__button admin-system-settings__button--primary"
               :disabled="!hasUnsavedChanges || isSubmitting"
             >
-              <i v-if="isSubmitting" class="fas fa-spinner fa-spin" aria-hidden="true"></i>
-              {{ t('admin.systemSettings.actions.save', 'Speichern') }}
+              <i
+                v-if="isSubmitting"
+                class="fas fa-spinner fa-spin"
+                aria-hidden="true"
+              ></i>
+              {{ t("admin.systemSettings.actions.save", "Speichern") }}
             </button>
           </div>
         </div>
-        
-        <div v-if="settingsStore.lastUpdated" class="admin-system-settings__last-updated">
-          {{ t('admin.systemSettings.lastUpdated', 'Zuletzt aktualisiert') }}: {{ formatDate(settingsStore.lastUpdated) }}
+
+        <div
+          v-if="settingsStore.lastUpdated"
+          class="admin-system-settings__last-updated"
+        >
+          {{ t("admin.systemSettings.lastUpdated", "Zuletzt aktualisiert") }}:
+          {{ formatDate(settingsStore.lastUpdated) }}
         </div>
       </div>
     </template>
-    
+
     <!-- Dialog: Cache leeren -->
-    <dialog 
-      v-if="showClearCacheConfirm" 
+    <dialog
+      v-if="showClearCacheConfirm"
       class="admin-system-settings__dialog"
       open
     >
       <div class="admin-system-settings__dialog-content">
         <h3 class="admin-system-settings__dialog-title">
-          {{ t('admin.systemSettings.dialogs.clearCache.title', 'Cache leeren') }}
+          {{
+            t("admin.systemSettings.dialogs.clearCache.title", "Cache leeren")
+          }}
         </h3>
         <p class="admin-system-settings__dialog-message">
-          {{ t('admin.systemSettings.dialogs.clearCache.message', 'Sind Sie sicher, dass Sie den gesamten Cache leeren möchten? Dies kann die Systemleistung vorübergehend beeinträchtigen.') }}
+          {{
+            t(
+              "admin.systemSettings.dialogs.clearCache.message",
+              "Sind Sie sicher, dass Sie den gesamten Cache leeren möchten? Dies kann die Systemleistung vorübergehend beeinträchtigen.",
+            )
+          }}
         </p>
         <div class="admin-system-settings__dialog-actions">
-          <button 
-            @click="showClearCacheConfirm = false" 
+          <button
+            @click="showClearCacheConfirm = false"
             class="admin-system-settings__button admin-system-settings__button--cancel"
           >
-            {{ t('admin.systemSettings.dialogs.clearCache.cancel', 'Abbrechen') }}
+            {{
+              t("admin.systemSettings.dialogs.clearCache.cancel", "Abbrechen")
+            }}
           </button>
-          <button 
-            @click="clearCache" 
+          <button
+            @click="clearCache"
             class="admin-system-settings__button admin-system-settings__button--danger"
           >
-            {{ t('admin.systemSettings.dialogs.clearCache.confirm', 'Cache leeren') }}
+            {{
+              t(
+                "admin.systemSettings.dialogs.clearCache.confirm",
+                "Cache leeren",
+              )
+            }}
           </button>
         </div>
       </div>
     </dialog>
-    
+
     <!-- Dialog: Auf Standardeinstellungen zurücksetzen -->
-    <dialog 
-      v-if="showResetDefaultsConfirm" 
+    <dialog
+      v-if="showResetDefaultsConfirm"
       class="admin-system-settings__dialog"
       open
     >
       <div class="admin-system-settings__dialog-content">
         <h3 class="admin-system-settings__dialog-title">
-          {{ t('admin.systemSettings.dialogs.resetDefaults.title', 'Standardeinstellungen wiederherstellen') }}
+          {{
+            t(
+              "admin.systemSettings.dialogs.resetDefaults.title",
+              "Standardeinstellungen wiederherstellen",
+            )
+          }}
         </h3>
         <p class="admin-system-settings__dialog-message">
-          {{ t('admin.systemSettings.dialogs.resetDefaults.message', 'Sind Sie sicher, dass Sie alle Einstellungen auf die Standardwerte zurücksetzen möchten? Diese Aktion kann nicht rückgängig gemacht werden.') }}
+          {{
+            t(
+              "admin.systemSettings.dialogs.resetDefaults.message",
+              "Sind Sie sicher, dass Sie alle Einstellungen auf die Standardwerte zurücksetzen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+            )
+          }}
         </p>
         <div class="admin-system-settings__dialog-actions">
-          <button 
-            @click="showResetDefaultsConfirm = false" 
+          <button
+            @click="showResetDefaultsConfirm = false"
             class="admin-system-settings__button admin-system-settings__button--cancel"
           >
-            {{ t('admin.systemSettings.dialogs.resetDefaults.cancel', 'Abbrechen') }}
+            {{
+              t(
+                "admin.systemSettings.dialogs.resetDefaults.cancel",
+                "Abbrechen",
+              )
+            }}
           </button>
-          <button 
-            @click="resetToDefaults" 
+          <button
+            @click="resetToDefaults"
             class="admin-system-settings__button admin-system-settings__button--danger"
           >
-            {{ t('admin.systemSettings.dialogs.resetDefaults.confirm', 'Zurücksetzen') }}
+            {{
+              t(
+                "admin.systemSettings.dialogs.resetDefaults.confirm",
+                "Zurücksetzen",
+              )
+            }}
           </button>
         </div>
       </div>
@@ -527,12 +796,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { useToast } from '@/composables/useToast';
-import { useAdminSettingsStore } from '@/stores/admin/settings';
-import { useAdminSystemStore } from '@/stores/admin/system';
-import type { SystemSettings } from '@/stores/admin/settings';
+import { ref, computed, reactive, onMounted, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import { useToast } from "@/composables/useToast";
+import { useAdminSettingsStore } from "@/stores/admin/settings";
+import { useAdminSystemStore } from "@/stores/admin/system";
+import type { SystemSettings } from "@/stores/admin/settings";
 
 // i18n
 const { t } = useI18n();
@@ -547,7 +816,7 @@ const { showToast } = useToast();
 // Lokaler Zustand
 const isLoading = ref(false);
 const isSubmitting = ref(false);
-const activeCategory = ref('general');
+const activeCategory = ref("general");
 const settings = reactive<SystemSettings>(settingsStore.settings);
 const showClearCacheConfirm = ref(false);
 const showResetDefaultsConfirm = ref(false);
@@ -556,29 +825,36 @@ const showResetDefaultsConfirm = ref(false);
 const hasUnsavedChanges = computed(() => settingsStore.hasUnsavedChanges);
 
 const activeCategoryLabel = computed(() => {
-  const category = settingsStore.systemSettingsCategories.find(cat => cat.id === activeCategory.value);
-  return category ? category.label : '';
+  const category = settingsStore.systemSettingsCategories.find(
+    (cat) => cat.id === activeCategory.value,
+  );
+  return category ? category.label : "";
 });
 
 const activeCategoryDescription = computed(() => {
-  const category = settingsStore.systemSettingsCategories.find(cat => cat.id === activeCategory.value);
-  return category ? category.description : '';
+  const category = settingsStore.systemSettingsCategories.find(
+    (cat) => cat.id === activeCategory.value,
+  );
+  return category ? category.description : "";
 });
 
 // Methoden
 // Einstellungen laden
 async function loadSettings() {
   isLoading.value = true;
-  
+
   try {
     await settingsStore.fetchSettings();
     Object.assign(settings, settingsStore.settings);
   } catch (error) {
-    console.error('Error loading settings:', error);
+    console.error("Error loading settings:", error);
     showToast({
-      type: 'error',
-      title: t('admin.systemSettings.toast.loadError', 'Fehler'),
-      message: t('admin.systemSettings.toast.loadErrorMessage', 'Die Einstellungen konnten nicht geladen werden.')
+      type: "error",
+      title: t("admin.systemSettings.toast.loadError", "Fehler"),
+      message: t(
+        "admin.systemSettings.toast.loadErrorMessage",
+        "Die Einstellungen konnten nicht geladen werden.",
+      ),
     });
   } finally {
     isLoading.value = false;
@@ -589,11 +865,17 @@ async function loadSettings() {
 function resetChanges() {
   settingsStore.resetChanges();
   Object.assign(settings, settingsStore.settings);
-  
+
   showToast({
-    type: 'info',
-    title: t('admin.systemSettings.toast.resetChanges', 'Änderungen zurückgesetzt'),
-    message: t('admin.systemSettings.toast.resetChangesMessage', 'Die Änderungen wurden zurückgesetzt.')
+    type: "info",
+    title: t(
+      "admin.systemSettings.toast.resetChanges",
+      "Änderungen zurückgesetzt",
+    ),
+    message: t(
+      "admin.systemSettings.toast.resetChangesMessage",
+      "Die Änderungen wurden zurückgesetzt.",
+    ),
   });
 }
 
@@ -601,23 +883,29 @@ function resetChanges() {
 async function resetToDefaults() {
   showResetDefaultsConfirm.value = false;
   isSubmitting.value = true;
-  
+
   try {
     settingsStore.resetToDefaults();
     await settingsStore.saveSettings();
     Object.assign(settings, settingsStore.settings);
-    
+
     showToast({
-      type: 'success',
-      title: t('admin.systemSettings.toast.resetDefaults', 'Zurückgesetzt'),
-      message: t('admin.systemSettings.toast.resetDefaultsMessage', 'Die Einstellungen wurden auf die Standardwerte zurückgesetzt.')
+      type: "success",
+      title: t("admin.systemSettings.toast.resetDefaults", "Zurückgesetzt"),
+      message: t(
+        "admin.systemSettings.toast.resetDefaultsMessage",
+        "Die Einstellungen wurden auf die Standardwerte zurückgesetzt.",
+      ),
     });
   } catch (error) {
-    console.error('Error resetting settings to defaults:', error);
+    console.error("Error resetting settings to defaults:", error);
     showToast({
-      type: 'error',
-      title: t('admin.systemSettings.toast.resetDefaultsError', 'Fehler'),
-      message: t('admin.systemSettings.toast.resetDefaultsErrorMessage', 'Die Einstellungen konnten nicht zurückgesetzt werden.')
+      type: "error",
+      title: t("admin.systemSettings.toast.resetDefaultsError", "Fehler"),
+      message: t(
+        "admin.systemSettings.toast.resetDefaultsErrorMessage",
+        "Die Einstellungen konnten nicht zurückgesetzt werden.",
+      ),
     });
   } finally {
     isSubmitting.value = false;
@@ -627,25 +915,31 @@ async function resetToDefaults() {
 // Einstellungen speichern
 async function saveSettings() {
   isSubmitting.value = true;
-  
+
   try {
     // Aktualisiere den Store mit den lokalen Einstellungen
     settingsStore.updateSettings(settings);
-    
+
     // Speichere die Einstellungen
     await settingsStore.saveSettings();
-    
+
     showToast({
-      type: 'success',
-      title: t('admin.systemSettings.toast.saveSuccess', 'Gespeichert'),
-      message: t('admin.systemSettings.toast.saveSuccessMessage', 'Die Einstellungen wurden erfolgreich gespeichert.')
+      type: "success",
+      title: t("admin.systemSettings.toast.saveSuccess", "Gespeichert"),
+      message: t(
+        "admin.systemSettings.toast.saveSuccessMessage",
+        "Die Einstellungen wurden erfolgreich gespeichert.",
+      ),
     });
   } catch (error) {
-    console.error('Error saving settings:', error);
+    console.error("Error saving settings:", error);
     showToast({
-      type: 'error',
-      title: t('admin.systemSettings.toast.saveError', 'Fehler'),
-      message: t('admin.systemSettings.toast.saveErrorMessage', 'Die Einstellungen konnten nicht gespeichert werden.')
+      type: "error",
+      title: t("admin.systemSettings.toast.saveError", "Fehler"),
+      message: t(
+        "admin.systemSettings.toast.saveErrorMessage",
+        "Die Einstellungen konnten nicht gespeichert werden.",
+      ),
     });
   } finally {
     isSubmitting.value = false;
@@ -656,21 +950,27 @@ async function saveSettings() {
 async function clearCache() {
   showClearCacheConfirm.value = false;
   isSubmitting.value = true;
-  
+
   try {
     await systemStore.clearCache();
-    
+
     showToast({
-      type: 'success',
-      title: t('admin.systemSettings.toast.clearCacheSuccess', 'Cache geleert'),
-      message: t('admin.systemSettings.toast.clearCacheSuccessMessage', 'Der Cache wurde erfolgreich geleert.')
+      type: "success",
+      title: t("admin.systemSettings.toast.clearCacheSuccess", "Cache geleert"),
+      message: t(
+        "admin.systemSettings.toast.clearCacheSuccessMessage",
+        "Der Cache wurde erfolgreich geleert.",
+      ),
     });
   } catch (error) {
-    console.error('Error clearing cache:', error);
+    console.error("Error clearing cache:", error);
     showToast({
-      type: 'error',
-      title: t('admin.systemSettings.toast.clearCacheError', 'Fehler'),
-      message: t('admin.systemSettings.toast.clearCacheErrorMessage', 'Der Cache konnte nicht geleert werden.')
+      type: "error",
+      title: t("admin.systemSettings.toast.clearCacheError", "Fehler"),
+      message: t(
+        "admin.systemSettings.toast.clearCacheErrorMessage",
+        "Der Cache konnte nicht geleert werden.",
+      ),
     });
   } finally {
     isSubmitting.value = false;
@@ -679,14 +979,14 @@ async function clearCache() {
 
 // Formatierungshilfen
 function formatDate(timestamp: number | null): string {
-  if (!timestamp) return '';
-  
-  return new Intl.DateTimeFormat('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  if (!timestamp) return "";
+
+  return new Intl.DateTimeFormat("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   }).format(new Date(timestamp));
 }
 
@@ -696,10 +996,14 @@ onMounted(async () => {
 });
 
 // Watch für Änderungen an den Einstellungen im Store
-watch(() => settingsStore.settings, (newSettings) => {
-  // Wenn sich die Store-Einstellungen ändern (z.B. durch Reset), aktualisieren wir die lokalen Einstellungen
-  Object.assign(settings, newSettings);
-}, { deep: true });
+watch(
+  () => settingsStore.settings,
+  (newSettings) => {
+    // Wenn sich die Store-Einstellungen ändern (z.B. durch Reset), aktualisieren wir die lokalen Einstellungen
+    Object.assign(settings, newSettings);
+  },
+  { deep: true },
+);
 </script>
 
 <style scoped>
@@ -965,7 +1269,7 @@ watch(() => settingsStore.settings, (newSettings) => {
   right: 0;
   bottom: 0;
   background-color: var(--n-color-border);
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 1.5rem;
 }
 
@@ -977,7 +1281,7 @@ watch(() => settingsStore.settings, (newSettings) => {
   left: 0.1875rem;
   bottom: 0.1875rem;
   background-color: white;
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 50%;
 }
 
@@ -1116,47 +1420,47 @@ input:checked + .admin-system-settings__switch-slider:before {
   .admin-system-settings__categories {
     flex-direction: column;
   }
-  
+
   .admin-system-settings__actions-buttons {
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .admin-system-settings__actions-right {
     width: 100%;
   }
-  
+
   .admin-system-settings__button {
     flex: 1;
     justify-content: center;
   }
-  
+
   .admin-system-settings__last-updated {
     text-align: center;
   }
-  
+
   .admin-system-settings__unsaved-warning {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .admin-system-settings__unsaved-warning i {
     margin-right: 0;
     margin-bottom: 0.5rem;
   }
-  
+
   .admin-system-settings__unsaved-warning p {
     margin-bottom: 0.5rem;
   }
-  
+
   .admin-system-settings__unsaved-actions {
     width: 100%;
   }
-  
+
   .admin-system-settings__unsaved-button {
     flex: 1;
   }
-  
+
   .admin-system-settings__switch-container {
     flex-direction: column;
     align-items: flex-start;

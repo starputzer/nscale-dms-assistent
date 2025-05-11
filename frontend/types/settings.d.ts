@@ -3,9 +3,8 @@
  * Automatisch generiert mit migrate-to-vite.js
  */
 
-declare module './settings' {
+declare module "./settings" {
   // TODO: Füge hier Typendefinitionen hinzu
-  
   // Beispiel:
   // export function setup(options: any): any;
 }

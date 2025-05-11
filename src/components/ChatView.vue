@@ -6,32 +6,39 @@
         <div class="loading-spinner"></div>
         <span>Lade Unterhaltung...</span>
       </div>
-      
-      <div v-else-if="!currentMessages || currentMessages.length === 0" class="no-messages">
+
+      <div
+        v-else-if="!currentMessages || currentMessages.length === 0"
+        class="no-messages"
+      >
         <div class="welcome-message">
-          <img src="/images/senmvku-logo.png" alt="nscale DMS Assistent" class="welcome-logo">
+          <img
+            src="/images/senmvku-logo.png"
+            alt="nscale DMS Assistent"
+            class="welcome-logo"
+          />
           <h2>Willkommen beim nscale DMS Assistenten</h2>
           <p>Wie kann ich Ihnen heute mit nscale helfen?</p>
         </div>
       </div>
-      
+
       <div v-else class="messages-list">
-        <div 
+        <div
           v-for="(message, index) in currentMessages"
           :key="message.id || index"
           class="message-wrapper"
           :class="{
             'user-message': message.role === 'user',
             'assistant-message': message.role === 'assistant',
-            'system-message': message.role === 'system'
+            'system-message': message.role === 'system',
           }"
         >
-          <div 
+          <div
             class="message-bubble"
             :class="{
               'nscale-message-user': message.role === 'user',
               'nscale-message-assistant': message.role === 'assistant',
-              'nscale-message-system': message.role === 'system'
+              'nscale-message-system': message.role === 'system',
             }"
           >
             <div class="message-header">
@@ -42,25 +49,47 @@
                 {{ formatTime(message.timestamp) }}
               </div>
             </div>
-            
-            <div class="message-content" v-html="formatMessageContent(message.content)"></div>
-            
+
+            <div
+              class="message-content"
+              v-html="formatMessageContent(message.content)"
+            ></div>
+
             <div v-if="message.role === 'assistant'" class="message-actions">
               <div class="feedback-buttons">
-                <button class="feedback-button" @click="sendFeedback(message.id, 'positive')" title="Positives Feedback">
+                <button
+                  class="feedback-button"
+                  @click="sendFeedback(message.id, 'positive')"
+                  title="Positives Feedback"
+                >
                   <i class="fas fa-thumbs-up"></i>
                 </button>
-                <button class="feedback-button" @click="sendFeedback(message.id, 'negative')" title="Negatives Feedback">
+                <button
+                  class="feedback-button"
+                  @click="sendFeedback(message.id, 'negative')"
+                  title="Negatives Feedback"
+                >
                   <i class="fas fa-thumbs-down"></i>
                 </button>
               </div>
-              
-              <div v-if="hasSourceReferences(message.content)" class="source-buttons">
-                <button class="source-btn" @click="showExplanation(message.id)" title="Antwort erklären">
+
+              <div
+                v-if="hasSourceReferences(message.content)"
+                class="source-buttons"
+              >
+                <button
+                  class="source-btn"
+                  @click="showExplanation(message.id)"
+                  title="Antwort erklären"
+                >
                   <i class="fas fa-info-circle"></i>
                   <span>Antwort erklären</span>
                 </button>
-                <button class="source-btn" @click="showSources(message.id)" title="Quellen anzeigen">
+                <button
+                  class="source-btn"
+                  @click="showSources(message.id)"
+                  title="Quellen anzeigen"
+                >
                   <i class="fas fa-bookmark"></i>
                   <span>Quellen anzeigen</span>
                 </button>
@@ -68,7 +97,7 @@
             </div>
           </div>
         </div>
-        
+
         <div v-if="isStreaming" class="message-wrapper assistant-message">
           <div class="message-bubble nscale-message-assistant typing-indicator">
             <div class="typing-dots">
@@ -96,21 +125,21 @@
             @focus="isInputFocused = true"
             @blur="isInputFocused = false"
           ></textarea>
-          
+
           <div class="input-buttons">
-            <button 
-              type="button" 
-              class="attachment-button" 
-              :disabled="isInputDisabled" 
+            <button
+              type="button"
+              class="attachment-button"
+              :disabled="isInputDisabled"
               @click="triggerFileSelect"
               title="Datei anhängen"
             >
               <i class="fas fa-paperclip"></i>
             </button>
-            
-            <button 
-              type="submit" 
-              class="send-button" 
+
+            <button
+              type="submit"
+              class="send-button"
               :disabled="!canSubmit"
               :class="{ 'send-button-active': canSubmit }"
               title="Nachricht senden"
@@ -118,33 +147,47 @@
               <i class="fas fa-paper-plane"></i>
             </button>
           </div>
-          
-          <input 
-            type="file" 
-            ref="fileInput" 
-            class="file-input" 
-            @change="handleFileSelected" 
+
+          <input
+            type="file"
+            ref="fileInput"
+            class="file-input"
+            @change="handleFileSelected"
             accept=".pdf,.txt,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
-          >
+          />
         </form>
       </div>
-      
+
       <div class="input-footer">
-        <div class="character-count" :class="{ 'character-limit-warning': isNearCharacterLimit }">
+        <div
+          class="character-count"
+          :class="{ 'character-limit-warning': isNearCharacterLimit }"
+        >
           {{ inputText.length }}/4000
         </div>
-        
+
         <div class="footer-hints">
-          <span class="hint">Drücken Sie <kbd>Enter</kbd> zum Senden, <kbd>Shift</kbd>+<kbd>Enter</kbd> für neue Zeile</span>
+          <span class="hint"
+            >Drücken Sie <kbd>Enter</kbd> zum Senden, <kbd>Shift</kbd>+<kbd
+              >Enter</kbd
+            >
+            für neue Zeile</span
+          >
         </div>
-        
+
         <div v-if="selectedFile" class="file-preview">
           <div class="file-preview-info">
             <i class="fas fa-file-alt file-icon"></i>
             <span class="file-name">{{ selectedFile.name }}</span>
-            <span class="file-size">({{ formatFileSize(selectedFile.size) }})</span>
+            <span class="file-size"
+              >({{ formatFileSize(selectedFile.size) }})</span
+            >
           </div>
-          <button type="button" class="remove-file-button" @click="removeSelectedFile">
+          <button
+            type="button"
+            class="remove-file-button"
+            @click="removeSelectedFile"
+          >
             <i class="fas fa-times"></i>
           </button>
         </div>
@@ -154,12 +197,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick } from 'vue';
-import { useSessionsStore } from '../stores/sessions';
-import { useSettingsStore } from '../stores/settings';
-import { useUIStore } from '../stores/ui';
-import DOMPurify from 'dompurify';
-import marked from 'marked';
+import { ref, computed, watch, onMounted, nextTick } from "vue";
+import { useSessionsStore } from "../stores/sessions";
+import { useSettingsStore } from "../stores/settings";
+import { useUIStore } from "../stores/ui";
+import DOMPurify from "dompurify";
+import marked from "marked";
 
 // Stores
 const sessionsStore = useSessionsStore();
@@ -170,7 +213,7 @@ const uiStore = useUIStore();
 const scrollContainer = ref<HTMLElement | null>(null);
 const textareaRef = ref<HTMLTextAreaElement | null>(null);
 const fileInput = ref<HTMLInputElement | null>(null);
-const inputText = ref('');
+const inputText = ref("");
 const selectedFile = ref<File | null>(null);
 const isInputFocused = ref(false);
 
@@ -189,9 +232,12 @@ const isInputDisabled = computed(() => {
 });
 
 const canSubmit = computed(() => {
-  return !isInputDisabled.value && 
-    ((inputText.value.trim().length > 0 && inputText.value.length <= MAX_CHARACTERS) || 
-    selectedFile.value !== null);
+  return (
+    !isInputDisabled.value &&
+    ((inputText.value.trim().length > 0 &&
+      inputText.value.length <= MAX_CHARACTERS) ||
+      selectedFile.value !== null)
+  );
 });
 
 const isNearCharacterLimit = computed(() => {
@@ -199,27 +245,37 @@ const isNearCharacterLimit = computed(() => {
 });
 
 // Watch for changes in messages to scroll to bottom
-watch(() => [...currentMessages.value], () => {
-  scrollToBottom();
-}, { deep: true });
+watch(
+  () => [...currentMessages.value],
+  () => {
+    scrollToBottom();
+  },
+  { deep: true },
+);
 
 // Watch for typing indicator to scroll to bottom
-watch(() => isStreaming.value, () => {
-  scrollToBottom();
-});
+watch(
+  () => isStreaming.value,
+  () => {
+    scrollToBottom();
+  },
+);
 
 // Reset textarea height when input is cleared
-watch(() => inputText.value, (newValue) => {
-  if (newValue === '' && textareaRef.value) {
-    textareaRef.value.style.height = 'auto';
-  }
-});
+watch(
+  () => inputText.value,
+  (newValue) => {
+    if (newValue === "" && textareaRef.value) {
+      textareaRef.value.style.height = "auto";
+    }
+  },
+);
 
 // Lifecycle hooks
 onMounted(() => {
   adjustTextareaHeight();
   scrollToBottom();
-  
+
   // Focus input on mount if there's a session
   if (textareaRef.value && currentSessionId.value) {
     textareaRef.value.focus();
@@ -237,10 +293,10 @@ function scrollToBottom(): void {
 
 function adjustTextareaHeight() {
   if (!textareaRef.value) return;
-  
+
   // Reset height to get the scrollHeight value for actual content
-  textareaRef.value.style.height = 'auto';
-  
+  textareaRef.value.style.height = "auto";
+
   // Set the height based on scrollHeight with a max height
   const maxHeight = 150; // max height in pixels
   const newHeight = Math.min(textareaRef.value.scrollHeight, maxHeight);
@@ -248,102 +304,105 @@ function adjustTextareaHeight() {
 }
 
 function formatMessageContent(content: string): string {
-  if (!content) return '';
+  if (!content) return "";
 
   // Use marked to render Markdown (if enabled in settings)
-  let renderedContent = settingsStore.messages.renderMarkdown 
-    ? marked(content) 
-    : content.replace(/\n/g, '<br>');
-  
+  let renderedContent = settingsStore.messages.renderMarkdown
+    ? marked(content)
+    : content.replace(/\n/g, "<br>");
+
   // Use DOMPurify to sanitize HTML
   const sanitizedContent = DOMPurify.sanitize(renderedContent);
-  
+
   // Replace source reference markers with clickable spans
-  return sanitizedContent.replace(/\[\[src:([^\]]+)\]\]/g, (match, sourceId) => {
-    return `<span class="source-reference" data-source-id="${sourceId}">[${sourceId}]</span>`;
-  });
+  return sanitizedContent.replace(
+    /\[\[src:([^\]]+)\]\]/g,
+    (match, sourceId) => {
+      return `<span class="source-reference" data-source-id="${sourceId}">[${sourceId}]</span>`;
+    },
+  );
 }
 
 function hasSourceReferences(content: string): boolean {
-  return content && content.includes('[[src:');
+  return content && content.includes("[[src:");
 }
 
 function formatTime(timestamp: string): string {
-  if (!timestamp) return '';
-  
+  if (!timestamp) return "";
+
   const date = new Date(timestamp);
-  return date.toLocaleTimeString('de-DE', { 
-    hour: '2-digit', 
-    minute: '2-digit' 
+  return date.toLocaleTimeString("de-DE", {
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
 function messageRoleLabel(role: string): string {
   switch (role) {
-    case 'user':
-      return 'Sie';
-    case 'assistant':
-      return 'Assistent';
-    case 'system':
-      return 'System';
+    case "user":
+      return "Sie";
+    case "assistant":
+      return "Assistent";
+    case "system":
+      return "System";
     default:
-      return '';
+      return "";
   }
 }
 
-function sendFeedback(messageId: string, type: 'positive' | 'negative'): void {
+function sendFeedback(messageId: string, type: "positive" | "negative"): void {
   // Implement feedback functionality when the store is available
   uiStore.showToast({
-    type: 'info',
-    message: `Feedback (${type}) für Nachricht ${messageId} gesendet.`
+    type: "info",
+    message: `Feedback (${type}) für Nachricht ${messageId} gesendet.`,
   });
 }
 
 function showExplanation(messageId: string): void {
   // Implement explanation functionality when the store is available
   uiStore.showToast({
-    type: 'info',
-    message: `Erklärung für Nachricht ${messageId} angefordert.`
+    type: "info",
+    message: `Erklärung für Nachricht ${messageId} angefordert.`,
   });
 }
 
 function showSources(messageId: string): void {
   // Implement sources functionality when the store is available
   uiStore.showToast({
-    type: 'info',
-    message: `Quellen für Nachricht ${messageId} angefordert.`
+    type: "info",
+    message: `Quellen für Nachricht ${messageId} angefordert.`,
   });
 }
 
 function handleSubmit() {
   if (!canSubmit.value || !currentSessionId.value) return;
-  
+
   // If we have a file, emit upload event
   if (selectedFile.value) {
     // TODO: Implement file upload when API is available
     uiStore.showToast({
-      type: 'info',
-      message: `Datei '${selectedFile.value.name}' wird hochgeladen.`
+      type: "info",
+      message: `Datei '${selectedFile.value.name}' wird hochgeladen.`,
     });
     removeSelectedFile();
   }
-  
+
   // If we have text, send the message
   if (inputText.value.trim()) {
     sessionsStore.sendMessage({
       sessionId: currentSessionId.value,
       content: inputText.value,
-      role: 'user'
+      role: "user",
     });
-    
-    inputText.value = '';
-    
+
+    inputText.value = "";
+
     // Reset textarea height
     if (textareaRef.value) {
-      textareaRef.value.style.height = 'auto';
+      textareaRef.value.style.height = "auto";
     }
   }
-  
+
   // Focus back on the textarea
   if (textareaRef.value) {
     textareaRef.value.focus();
@@ -366,18 +425,18 @@ function handleFileSelected(event: Event) {
 function removeSelectedFile() {
   selectedFile.value = null;
   if (fileInput.value) {
-    fileInput.value.value = '';
+    fileInput.value.value = "";
   }
 }
 
 function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
-  
+  if (bytes === 0) return "0 Bytes";
+
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 </script>
 
@@ -398,7 +457,8 @@ function formatFileSize(bytes: number): string {
   background-color: var(--nscale-background, #f9fafb);
 }
 
-.messages-loading, .no-messages {
+.messages-loading,
+.no-messages {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -523,7 +583,8 @@ function formatFileSize(bytes: number): string {
   font-size: 0.9em;
 }
 
-.message-content :deep(ul), .message-content :deep(ol) {
+.message-content :deep(ul),
+.message-content :deep(ol) {
   margin: 0.75rem 0;
   padding-left: 1.5rem;
 }
@@ -568,7 +629,9 @@ function formatFileSize(bytes: number): string {
   cursor: pointer;
   padding: 0.25rem;
   border-radius: 4px;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .feedback-button:hover {
@@ -663,7 +726,9 @@ function formatFileSize(bytes: number): string {
   overflow-y: auto;
   line-height: 1.5;
   padding-right: 5rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
   width: 100%;
 }
 
@@ -675,7 +740,8 @@ function formatFileSize(bytes: number): string {
   gap: 0.5rem;
 }
 
-.send-button, .attachment-button {
+.send-button,
+.attachment-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -686,15 +752,19 @@ function formatFileSize(bytes: number): string {
   border: none;
   color: var(--nscale-text-light, #666);
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
-.send-button:hover:not(:disabled), .attachment-button:hover:not(:disabled) {
+.send-button:hover:not(:disabled),
+.attachment-button:hover:not(:disabled) {
   background-color: var(--nscale-gray, #f7f7f7);
   color: var(--nscale-text, #333333);
 }
 
-.send-button:disabled, .attachment-button:disabled {
+.send-button:disabled,
+.attachment-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -782,7 +852,9 @@ function formatFileSize(bytes: number): string {
   cursor: pointer;
   padding: 0.25rem;
   border-radius: 50%;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .remove-file-button:hover {
@@ -791,36 +863,46 @@ function formatFileSize(bytes: number): string {
 }
 
 @keyframes typing-dot {
-  0%, 80%, 100% { transform: scale(0.6); opacity: 0.6; }
-  40% { transform: scale(1); opacity: 1; }
+  0%,
+  80%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.6;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 768px) {
   .message-container {
     padding: 1rem;
   }
-  
+
   .message-bubble {
     max-width: 90%;
   }
-  
+
   .source-buttons {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .input-container {
     padding: 0.75rem 1rem;
   }
-  
+
   .footer-hints {
     display: none;
   }
-  
+
   .file-preview {
     margin-top: 0.75rem;
   }

@@ -7,11 +7,14 @@
       'n-footer--fixed': fixed,
       'n-footer--bordered': bordered,
       [`n-footer--size-${size}`]: true,
-      [`n-footer--variant-${variant}`]: true
+      [`n-footer--variant-${variant}`]: true,
     }"
     :style="computedStyles"
   >
-    <div class="n-footer__container" :class="{ 'n-footer__container--full-width': fullWidth }">
+    <div
+      class="n-footer__container"
+      :class="{ 'n-footer__container--full-width': fullWidth }"
+    >
       <!-- Left Section -->
       <div class="n-footer__section n-footer__section--left">
         <slot name="left">
@@ -42,8 +45,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { useUIStore } from '../../stores/ui';
+import { computed, ref } from "vue";
+import { useUIStore } from "../../stores/ui";
 
 /**
  * Footer-Komponente für den nscale DMS Assistenten
@@ -68,9 +71,9 @@ export interface FooterProps {
   /** Ob der Footer eine Umrandung haben soll */
   bordered?: boolean;
   /** Größe des Footers */
-  size?: 'small' | 'medium' | 'large';
+  size?: "small" | "medium" | "large";
   /** Variante des Footers */
-  variant?: 'default' | 'minimal' | 'compact' | 'dark' | 'primary';
+  variant?: "default" | "minimal" | "compact" | "dark" | "primary";
   /** Ob der Footer die volle Breite einnehmen soll */
   fullWidth?: boolean;
   /** Benutzerdefinierte Höhe des Footers */
@@ -82,16 +85,16 @@ export interface FooterProps {
 }
 
 const props = withDefaults(defineProps<FooterProps>(), {
-  versionPrefix: 'Version',
+  versionPrefix: "Version",
   showVersion: true,
   sticky: false,
   elevated: false,
   fixed: false,
   bordered: true,
-  size: 'medium',
-  variant: 'default',
+  size: "medium",
+  variant: "default",
   fullWidth: false,
-  stackOnMobile: true
+  stackOnMobile: true,
 });
 
 // UI Store für globale UI-Zustände
@@ -103,19 +106,19 @@ const currentYear = ref(new Date().getFullYear());
 // Berechnete Styles für den Footer
 const computedStyles = computed(() => {
   const styles: Record<string, string> = {};
-  
+
   // Benutzerdefinierte Höhe
   if (props.height) {
-    styles['--n-footer-height'] = props.height;
+    styles["--n-footer-height"] = props.height;
   }
-  
+
   // Benutzerdefinierte CSS-Variablen
   if (props.customCssVars) {
     Object.entries(props.customCssVars).forEach(([key, value]) => {
       styles[key] = value;
     });
   }
-  
+
   return styles;
 });
 
@@ -127,11 +130,16 @@ defineExpose({
 
 <style scoped>
 .n-footer {
-  background-color: var(--n-footer-background-color, var(--n-background-color, #f5f7fa));
+  background-color: var(
+    --n-footer-background-color,
+    var(--n-background-color, #f5f7fa)
+  );
   color: var(--n-footer-text-color, var(--n-text-color, #2d3748));
   position: relative;
   width: 100%;
-  transition: box-shadow 0.3s ease, background-color 0.3s ease;
+  transition:
+    box-shadow 0.3s ease,
+    background-color 0.3s ease;
 }
 
 /* Container für den Inhalt */
@@ -186,7 +194,10 @@ defineExpose({
 }
 
 .n-footer--variant-dark {
-  background-color: var(--n-footer-dark-background-color, var(--n-dark-background-color, #1a202c));
+  background-color: var(
+    --n-footer-dark-background-color,
+    var(--n-dark-background-color, #1a202c)
+  );
   color: var(--n-footer-dark-text-color, var(--n-dark-text-color, #f7fafc));
 }
 
@@ -277,32 +288,32 @@ defineExpose({
     gap: 8px;
     height: auto;
   }
-  
+
   .n-footer__container[data-stack-on-mobile="true"] .n-footer__section {
     width: 100%;
     justify-content: center;
     margin: 0;
   }
-  
+
   .n-footer__container[data-stack-on-mobile="true"] .n-footer__section--left {
     order: 1;
   }
-  
+
   .n-footer__container[data-stack-on-mobile="true"] .n-footer__section--middle {
     order: 2;
   }
-  
+
   .n-footer__container[data-stack-on-mobile="true"] .n-footer__section--right {
     order: 3;
   }
-  
+
   .n-footer__links {
     flex-wrap: wrap;
     justify-content: center;
     margin-left: 0;
     gap: 12px;
   }
-  
+
   .n-footer--size-small,
   .n-footer--size-medium,
   .n-footer--size-large {

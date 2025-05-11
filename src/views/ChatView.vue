@@ -1,14 +1,14 @@
 <template>
-  <div 
+  <div
     class="n-chat-view"
-    :class="{ 
+    :class="{
       'n-chat-view--mobile-sidebar': isMobileSidebarOpen,
-      'n-chat-view--sidebar-collapsed': isSidebarCollapsed 
+      'n-chat-view--sidebar-collapsed': isSidebarCollapsed,
     }"
   >
     <!-- Sidebar mit Sitzungsverwaltung -->
-    <div 
-      class="n-chat-sidebar" 
+    <div
+      class="n-chat-sidebar"
       ref="sidebar"
       :class="{ 'n-chat-sidebar--collapsed': isSidebarCollapsed }"
       :data-collapsed="isSidebarCollapsed"
@@ -23,7 +23,14 @@
             aria-label="Neue Unterhaltung erstellen"
             title="Neue Unterhaltung"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
@@ -35,11 +42,27 @@
             aria-label="Sidebar umschalten"
             title="Sidebar umschalten"
           >
-            <svg v-if="isSidebarCollapsed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              v-if="isSidebarCollapsed"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <polyline points="13 17 18 12 13 7"></polyline>
               <polyline points="6 17 11 12 6 7"></polyline>
             </svg>
-            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              v-else
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <polyline points="11 17 6 12 11 7"></polyline>
               <polyline points="18 17 13 12 18 7"></polyline>
             </svg>
@@ -80,13 +103,19 @@
       <div class="n-chat-sidebar__footer">
         <div class="n-chat-sidebar__user-info">
           <div class="n-chat-sidebar__user-avatar">
-            <img v-if="user?.avatarUrl" :src="user.avatarUrl" alt="Benutzeravatar" />
+            <img
+              v-if="user?.avatarUrl"
+              :src="user.avatarUrl"
+              alt="Benutzeravatar"
+            />
             <div v-else class="n-chat-sidebar__user-initials">
               {{ userInitials }}
             </div>
           </div>
           <div class="n-chat-sidebar__user-details">
-            <div class="n-chat-sidebar__user-name">{{ user?.displayName || user?.username || 'Benutzer' }}</div>
+            <div class="n-chat-sidebar__user-name">
+              {{ user?.displayName || user?.username || "Benutzer" }}
+            </div>
             <div class="n-chat-sidebar__user-role">{{ userRoleLabel }}</div>
           </div>
         </div>
@@ -96,18 +125,27 @@
           aria-label="Einstellungen öffnen"
           @click="openSettings"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+            ></path>
           </svg>
         </button>
       </div>
     </div>
 
     <!-- Mobile Overlay -->
-    <div 
-      v-if="isMobileSidebarOpen" 
-      class="n-chat-mobile-overlay" 
+    <div
+      v-if="isMobileSidebarOpen"
+      class="n-chat-mobile-overlay"
       @click="closeMobileSidebar"
       aria-hidden="true"
     ></div>
@@ -119,7 +157,14 @@
       @click="openMobileSidebar"
       aria-label="Sitzungen anzeigen"
     >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
         <line x1="3" y1="12" x2="21" y2="12"></line>
         <line x1="3" y1="6" x2="21" y2="6"></line>
         <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -131,13 +176,17 @@
       <!-- Chat-Header mit Sitzungsinformationen und Aktionen -->
       <div class="n-chat-header">
         <div class="n-chat-header__info">
-          <h2 class="n-chat-header__title">{{ currentSession?.title || 'Neue Unterhaltung' }}</h2>
+          <h2 class="n-chat-header__title">
+            {{ currentSession?.title || "Neue Unterhaltung" }}
+          </h2>
           <div v-if="currentSession?.tags?.length" class="n-chat-header__tags">
             <div
               v-for="tag in currentSession.tags"
               :key="tag.id"
               class="n-chat-header__tag"
-              :style="{ backgroundColor: tag.color ? tag.color + '20' : '#71809620' }"
+              :style="{
+                backgroundColor: tag.color ? tag.color + '20' : '#71809620',
+              }"
             >
               {{ tag.name }}
             </div>
@@ -152,7 +201,14 @@
             aria-label="Sitzungsinformationen anzeigen"
             title="Sitzungsinfo"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <circle cx="12" cy="12" r="10"></circle>
               <line x1="12" y1="16" x2="12" y2="12"></line>
               <line x1="12" y1="8" x2="12.01" y2="8"></line>
@@ -166,7 +222,14 @@
             aria-label="Antwort abbrechen"
             title="Antwort abbrechen"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
             </svg>
           </button>
@@ -219,13 +282,22 @@
       role="dialog"
     >
       <div class="n-chat-session-info__header">
-        <h3 id="session-info-title" class="n-chat-session-info__title">Sitzungsinformationen</h3>
+        <h3 id="session-info-title" class="n-chat-session-info__title">
+          Sitzungsinformationen
+        </h3>
         <button
           class="n-chat-session-info__close"
           @click="toggleSessionInfo"
           aria-label="Sitzungsinformationen schließen"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
@@ -238,26 +310,42 @@
 
           <div class="n-chat-session-info__detail">
             <div class="n-chat-session-info__detail-label">Erstellt</div>
-            <div class="n-chat-session-info__detail-value">{{ formatDate(currentSession.createdAt) }}</div>
+            <div class="n-chat-session-info__detail-value">
+              {{ formatDate(currentSession.createdAt) }}
+            </div>
           </div>
 
           <div class="n-chat-session-info__detail">
-            <div class="n-chat-session-info__detail-label">Letzte Aktualisierung</div>
-            <div class="n-chat-session-info__detail-value">{{ formatDate(currentSession.updatedAt) }}</div>
+            <div class="n-chat-session-info__detail-label">
+              Letzte Aktualisierung
+            </div>
+            <div class="n-chat-session-info__detail-value">
+              {{ formatDate(currentSession.updatedAt) }}
+            </div>
           </div>
 
           <div class="n-chat-session-info__detail">
             <div class="n-chat-session-info__detail-label">Nachrichten</div>
-            <div class="n-chat-session-info__detail-value">{{ currentMessageCount }}</div>
+            <div class="n-chat-session-info__detail-value">
+              {{ currentMessageCount }}
+            </div>
           </div>
 
-          <div class="n-chat-session-info__detail" v-if="currentSession.category">
+          <div
+            class="n-chat-session-info__detail"
+            v-if="currentSession.category"
+          >
             <div class="n-chat-session-info__detail-label">Kategorie</div>
-            <div class="n-chat-session-info__detail-value">{{ currentSession.category.name }}</div>
+            <div class="n-chat-session-info__detail-value">
+              {{ currentSession.category.name }}
+            </div>
           </div>
         </div>
 
-        <div class="n-chat-session-info__section" v-if="currentSession.tags && currentSession.tags.length > 0">
+        <div
+          class="n-chat-session-info__section"
+          v-if="currentSession.tags && currentSession.tags.length > 0"
+        >
           <h4 class="n-chat-session-info__section-title">Tags</h4>
 
           <div class="n-chat-session-info__tags">
@@ -265,7 +353,10 @@
               v-for="tag in currentSession.tags"
               :key="tag.id"
               class="n-chat-session-info__tag"
-              :style="{ backgroundColor: tag.color ? tag.color + '20' : '#71809620', color: tag.color }"
+              :style="{
+                backgroundColor: tag.color ? tag.color + '20' : '#71809620',
+                color: tag.color,
+              }"
             >
               {{ tag.name }}
             </div>
@@ -277,42 +368,94 @@
             class="n-chat-session-info__action n-chat-session-info__action--rename"
             @click="handleRenameSession(currentSession.id)"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+              ></path>
+              <path
+                d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+              ></path>
             </svg>
             <span>Umbenennen</span>
           </button>
 
           <button
             class="n-chat-session-info__action"
-            @click="handlePinSession(currentSession.id, !currentSession.isPinned)"
+            @click="
+              handlePinSession(currentSession.id, !currentSession.isPinned)
+            "
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
               <circle cx="12" cy="10" r="3"></circle>
             </svg>
-            <span>{{ currentSession.isPinned ? 'Anheften aufheben' : 'Anheften' }}</span>
+            <span>{{
+              currentSession.isPinned ? "Anheften aufheben" : "Anheften"
+            }}</span>
           </button>
 
           <button
             class="n-chat-session-info__action"
-            @click="handleArchiveSession(currentSession.id, !currentSession.isArchived)"
+            @click="
+              handleArchiveSession(
+                currentSession.id,
+                !currentSession.isArchived,
+              )
+            "
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect
+                x="2"
+                y="2"
+                width="20"
+                height="20"
+                rx="2.18"
+                ry="2.18"
+              ></rect>
               <line x1="16" y1="2" x2="16" y2="22"></line>
               <line x1="8" y1="2" x2="8" y2="22"></line>
               <line x1="2" y1="12" x2="22" y2="12"></line>
             </svg>
-            <span>{{ currentSession.isArchived ? 'Aus Archiv wiederherstellen' : 'Archivieren' }}</span>
+            <span>{{
+              currentSession.isArchived
+                ? "Aus Archiv wiederherstellen"
+                : "Archivieren"
+            }}</span>
           </button>
 
           <button
             class="n-chat-session-info__action n-chat-session-info__action--export"
             @click="exportSession(currentSession.id)"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
               <polyline points="7 10 12 15 17 10"></polyline>
               <line x1="12" y1="15" x2="12" y2="3"></line>
@@ -324,9 +467,18 @@
             class="n-chat-session-info__action n-chat-session-info__action--danger"
             @click="handleDeleteSession(currentSession.id)"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <path
+                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+              ></path>
               <line x1="10" y1="11" x2="10" y2="17"></line>
               <line x1="14" y1="11" x2="14" y2="17"></line>
             </svg>
@@ -353,7 +505,14 @@
             @click="closeSourcesModal"
             aria-label="Quellen schließen"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
@@ -361,7 +520,12 @@
         </div>
 
         <div class="n-chat-modal__body">
-          <div v-if="!currentSourceReferences || currentSourceReferences.length === 0" class="n-chat-modal__empty">
+          <div
+            v-if="
+              !currentSourceReferences || currentSourceReferences.length === 0
+            "
+            class="n-chat-modal__empty"
+          >
             Keine Quellen für diese Nachricht verfügbar.
           </div>
 
@@ -372,7 +536,9 @@
               class="n-chat-source-item"
             >
               <div class="n-chat-source-item__header">
-                <h4 class="n-chat-source-item__title">{{ source.title || `Quelle ${index + 1}` }}</h4>
+                <h4 class="n-chat-source-item__title">
+                  {{ source.title || `Quelle ${index + 1}` }}
+                </h4>
                 <div v-if="source.source" class="n-chat-source-item__origin">
                   {{ source.source }}
                 </div>
@@ -382,7 +548,10 @@
                 {{ source.content }}
               </div>
 
-              <div class="n-chat-source-item__footer" v-if="source.url || source.pageNumber">
+              <div
+                class="n-chat-source-item__footer"
+                v-if="source.url || source.pageNumber"
+              >
                 <a
                   v-if="source.url"
                   :href="source.url"
@@ -391,8 +560,17 @@
                   class="n-chat-source-item__link"
                 >
                   Quelle öffnen
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
+                    ></path>
                     <polyline points="15 3 21 3 21 9"></polyline>
                     <line x1="10" y1="14" x2="21" y2="3"></line>
                   </svg>
@@ -402,7 +580,10 @@
                   Seite {{ source.pageNumber }}
                 </div>
 
-                <div v-if="source.relevanceScore" class="n-chat-source-item__relevance">
+                <div
+                  v-if="source.relevanceScore"
+                  class="n-chat-source-item__relevance"
+                >
                   Relevanz: {{ (source.relevanceScore * 100).toFixed(0) }}%
                 </div>
               </div>
@@ -415,15 +596,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick, onBeforeUnmount } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useSessionsStore } from '@/stores/sessions';
-import { useAuthStore } from '@/stores/auth';
-import { useUIStore } from '@/stores/ui';
-import type { ChatSession, ChatMessage, SourceReference, SessionTag, SessionCategory } from '@/types/session';
-import MessageList from '@/components/chat/MessageList.vue';
-import MessageInput from '@/components/chat/MessageInput.vue';
-import SessionList from '@/components/session/SessionList.vue';
+import {
+  ref,
+  computed,
+  onMounted,
+  watch,
+  nextTick,
+  onBeforeUnmount,
+} from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useSessionsStore } from "@/stores/sessions";
+import { useAuthStore } from "@/stores/auth";
+import { useUIStore } from "@/stores/ui";
+import type {
+  ChatSession,
+  ChatMessage,
+  SourceReference,
+  SessionTag,
+  SessionCategory,
+} from "@/types/session";
+import MessageList from "@/components/chat/MessageList.vue";
+import MessageInput from "@/components/chat/MessageInput.vue";
+import SessionList from "@/components/session/SessionList.vue";
 
 // Router und Stores
 const route = useRoute();
@@ -433,10 +627,12 @@ const authStore = useAuthStore();
 const uiStore = useUIStore();
 
 // Reaktive Zustandsvariablen
-const messageInput = ref('');
+const messageInput = ref("");
 const messageListRef = ref<InstanceType<typeof MessageList> | null>(null);
 const sidebar = ref<HTMLElement | null>(null);
-const isSidebarCollapsed = ref(localStorage.getItem('sidebarCollapsed') === 'true');
+const isSidebarCollapsed = ref(
+  localStorage.getItem("sidebarCollapsed") === "true",
+);
 const isMobile = ref(window.innerWidth < 768);
 const isMobileSidebarOpen = ref(false);
 const showSessionInfo = ref(false);
@@ -448,13 +644,13 @@ const currentSourceMessageId = ref<string | null>(null);
 const user = computed(() => authStore.user);
 
 const userInitials = computed(() => {
-  if (!user.value) return '?';
+  if (!user.value) return "?";
 
   if (user.value.displayName) {
     return user.value.displayName
-      .split(' ')
-      .map(name => name.charAt(0))
-      .join('')
+      .split(" ")
+      .map((name) => name.charAt(0))
+      .join("")
       .substr(0, 2)
       .toUpperCase();
   }
@@ -463,13 +659,13 @@ const userInitials = computed(() => {
 });
 
 const userRoleLabel = computed(() => {
-  if (!user.value) return '';
+  if (!user.value) return "";
 
-  if (user.value.roles.includes('admin')) return 'Administrator';
-  if (user.value.roles.includes('support')) return 'Support';
-  if (user.value.roles.includes('user')) return 'Benutzer';
+  if (user.value.roles.includes("admin")) return "Administrator";
+  if (user.value.roles.includes("support")) return "Support";
+  if (user.value.roles.includes("user")) return "Benutzer";
 
-  return user.value.roles[0] || '';
+  return user.value.roles[0] || "";
 });
 
 // Sessions store state
@@ -497,14 +693,16 @@ const currentMessageCount = computed(() => {
 
 // Platzhaltertext für das Eingabefeld
 const inputPlaceholder = computed(() => {
-  if (isStreaming.value) return 'Warte auf Antwort...';
-  if (!currentSessionId.value) return 'Starten Sie eine neue Unterhaltung...';
-  return 'Nachricht eingeben...';
+  if (isStreaming.value) return "Warte auf Antwort...";
+  if (!currentSessionId.value) return "Starten Sie eine neue Unterhaltung...";
+  return "Nachricht eingeben...";
 });
 
 // Prüfen, ob das Eingabefeld deaktiviert werden sollte
 const isInputDisabled = computed(() => {
-  return isStreaming.value || isLoadingMessages.value || !currentSessionId.value;
+  return (
+    isStreaming.value || isLoadingMessages.value || !currentSessionId.value
+  );
 });
 
 // Event-Handler
@@ -527,7 +725,7 @@ async function handleSessionSelect(sessionId: string) {
 async function handleCreateSession() {
   try {
     // Neue Session erstellen
-    const newSessionId = await sessionsStore.createSession('Neue Unterhaltung');
+    const newSessionId = await sessionsStore.createSession("Neue Unterhaltung");
 
     // Zur neuen Session navigieren
     router.push(`/chat/${newSessionId}`);
@@ -539,38 +737,45 @@ async function handleCreateSession() {
 
     // Fokus auf Eingabefeld setzen
     nextTick(() => {
-      const inputElement = document.querySelector('.n-message-input__textarea');
+      const inputElement = document.querySelector(".n-message-input__textarea");
       if (inputElement instanceof HTMLTextAreaElement) {
         inputElement.focus();
       }
     });
   } catch (error) {
-    console.error('Fehler beim Erstellen einer neuen Session:', error);
-    uiStore.showError('Fehler beim Erstellen einer neuen Unterhaltung');
+    console.error("Fehler beim Erstellen einer neuen Session:", error);
+    uiStore.showError("Fehler beim Erstellen einer neuen Unterhaltung");
   }
 }
 
 function handleRenameSession(sessionId: string, newTitle?: string) {
   if (!newTitle) {
     // Dialog öffnen für Eingabe des neuen Namens
-    newTitle = prompt('Neuer Name für die Unterhaltung:', currentSession.value?.title);
+    newTitle = prompt(
+      "Neuer Name für die Unterhaltung:",
+      currentSession.value?.title,
+    );
     if (!newTitle) return; // Abgebrochen
   }
 
-  sessionsStore.updateSessionTitle(sessionId, newTitle)
-    .catch(error => {
-      console.error('Fehler beim Umbenennen der Session:', error);
-      uiStore.showError('Fehler beim Umbenennen der Unterhaltung');
-    });
+  sessionsStore.updateSessionTitle(sessionId, newTitle).catch((error) => {
+    console.error("Fehler beim Umbenennen der Session:", error);
+    uiStore.showError("Fehler beim Umbenennen der Unterhaltung");
+  });
 }
 
 function handleDeleteSession(sessionId: string) {
   // Bestätigung anfordern
-  if (!confirm('Möchten Sie diese Unterhaltung wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) {
+  if (
+    !confirm(
+      "Möchten Sie diese Unterhaltung wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    )
+  ) {
     return;
   }
 
-  sessionsStore.archiveSession(sessionId)
+  sessionsStore
+    .archiveSession(sessionId)
     .then(() => {
       // Wenn die gelöschte Session die aktuelle ist, zur ersten verfügbaren wechseln
       if (sessionId === currentSessionId.value) {
@@ -584,104 +789,106 @@ function handleDeleteSession(sessionId: string) {
         }
       }
     })
-    .catch(error => {
-      console.error('Fehler beim Löschen der Session:', error);
-      uiStore.showError('Fehler beim Löschen der Unterhaltung');
+    .catch((error) => {
+      console.error("Fehler beim Löschen der Session:", error);
+      uiStore.showError("Fehler beim Löschen der Unterhaltung");
     });
 }
 
 function handlePinSession(sessionId: string, pinned: boolean) {
-  sessionsStore.togglePinSession(sessionId)
-    .catch(error => {
-      console.error('Fehler beim Anheften/Lösen der Session:', error);
-      uiStore.showError(`Fehler beim ${pinned ? 'Anheften' : 'Lösen'} der Unterhaltung`);
-    });
+  sessionsStore.togglePinSession(sessionId).catch((error) => {
+    console.error("Fehler beim Anheften/Lösen der Session:", error);
+    uiStore.showError(
+      `Fehler beim ${pinned ? "Anheften" : "Lösen"} der Unterhaltung`,
+    );
+  });
 }
 
 function handleArchiveSession(sessionId: string, archived: boolean) {
-  sessionsStore.toggleArchiveSession(sessionId, archived)
-    .catch(error => {
-      console.error('Fehler beim Archivieren/Wiederherstellen der Session:', error);
-      uiStore.showError(`Fehler beim ${archived ? 'Archivieren' : 'Wiederherstellen'} der Unterhaltung`);
-    });
+  sessionsStore.toggleArchiveSession(sessionId, archived).catch((error) => {
+    console.error(
+      "Fehler beim Archivieren/Wiederherstellen der Session:",
+      error,
+    );
+    uiStore.showError(
+      `Fehler beim ${archived ? "Archivieren" : "Wiederherstellen"} der Unterhaltung`,
+    );
+  });
 }
 
 function handleTagSession(sessionId: string, tagId: string) {
-  sessionsStore.addTagToSession(sessionId, tagId)
-    .catch(error => {
-      console.error('Fehler beim Hinzufügen des Tags:', error);
-      uiStore.showError('Fehler beim Hinzufügen des Tags');
-    });
+  sessionsStore.addTagToSession(sessionId, tagId).catch((error) => {
+    console.error("Fehler beim Hinzufügen des Tags:", error);
+    uiStore.showError("Fehler beim Hinzufügen des Tags");
+  });
 }
 
 function handleUntagSession(sessionId: string, tagId: string) {
-  sessionsStore.removeTagFromSession(sessionId, tagId)
-    .catch(error => {
-      console.error('Fehler beim Entfernen des Tags:', error);
-      uiStore.showError('Fehler beim Entfernen des Tags');
-    });
+  sessionsStore.removeTagFromSession(sessionId, tagId).catch((error) => {
+    console.error("Fehler beim Entfernen des Tags:", error);
+    uiStore.showError("Fehler beim Entfernen des Tags");
+  });
 }
 
 function handleCategorizeSession(sessionId: string, categoryId: string) {
-  sessionsStore.setCategoryForSession(sessionId, categoryId)
-    .catch(error => {
-      console.error('Fehler beim Setzen der Kategorie:', error);
-      uiStore.showError('Fehler beim Setzen der Kategorie');
-    });
+  sessionsStore.setCategoryForSession(sessionId, categoryId).catch((error) => {
+    console.error("Fehler beim Setzen der Kategorie:", error);
+    uiStore.showError("Fehler beim Setzen der Kategorie");
+  });
 }
 
 function handleReorderSessions(reorderedSessions: ChatSession[]) {
   // In einer vollständigen Implementierung würde hier die Reihenfolge der Sessions gespeichert werden
   // Für dieses Beispiel wird die Aktion nur geloggt
-  console.log('Sessions neu angeordnet:', reorderedSessions);
+  console.log("Sessions neu angeordnet:", reorderedSessions);
 }
 
 function handleBulkAction(action: string, sessionIds: string[], data?: any) {
   switch (action) {
-    case 'delete':
+    case "delete":
       // Bestätigung anfordern
-      if (!confirm(`Möchten Sie ${sessionIds.length} Unterhaltungen wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`)) {
+      if (
+        !confirm(
+          `Möchten Sie ${sessionIds.length} Unterhaltungen wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`,
+        )
+      ) {
         return;
       }
 
-      sessionIds.forEach(id => {
-        sessionsStore.archiveSession(id)
-          .catch(error => {
-            console.error(`Fehler beim Löschen der Session ${id}:`, error);
-          });
+      sessionIds.forEach((id) => {
+        sessionsStore.archiveSession(id).catch((error) => {
+          console.error(`Fehler beim Löschen der Session ${id}:`, error);
+        });
       });
       break;
 
-    case 'archive':
-      sessionIds.forEach(id => {
-        sessionsStore.toggleArchiveSession(id, true)
-          .catch(error => {
-            console.error(`Fehler beim Archivieren der Session ${id}:`, error);
-          });
+    case "archive":
+      sessionIds.forEach((id) => {
+        sessionsStore.toggleArchiveSession(id, true).catch((error) => {
+          console.error(`Fehler beim Archivieren der Session ${id}:`, error);
+        });
       });
       break;
 
-    case 'tag':
-      const tagId = data || prompt('Welchen Tag möchten Sie hinzufügen?');
+    case "tag":
+      const tagId = data || prompt("Welchen Tag möchten Sie hinzufügen?");
       if (!tagId) return;
-      
-      sessionIds.forEach(id => {
-        sessionsStore.addTagToSession(id, tagId)
-          .catch(error => {
-            console.error(`Fehler beim Taggen der Session ${id}:`, error);
-          });
+
+      sessionIds.forEach((id) => {
+        sessionsStore.addTagToSession(id, tagId).catch((error) => {
+          console.error(`Fehler beim Taggen der Session ${id}:`, error);
+        });
       });
       break;
 
-    case 'categorize':
-      const categoryId = data || prompt('Welche Kategorie möchten Sie setzen?');
+    case "categorize":
+      const categoryId = data || prompt("Welche Kategorie möchten Sie setzen?");
       if (!categoryId) return;
-      
-      sessionIds.forEach(id => {
-        sessionsStore.setCategoryForSession(id, categoryId)
-          .catch(error => {
-            console.error(`Fehler beim Kategorisieren der Session ${id}:`, error);
-          });
+
+      sessionIds.forEach((id) => {
+        sessionsStore.setCategoryForSession(id, categoryId).catch((error) => {
+          console.error(`Fehler beim Kategorisieren der Session ${id}:`, error);
+        });
       });
       break;
   }
@@ -690,23 +897,26 @@ function handleBulkAction(action: string, sessionIds: string[], data?: any) {
 function handleDeleteMessage(payload: { messageId: string }) {
   if (!currentSessionId.value) return;
 
-  sessionsStore.deleteMessage(currentSessionId.value, payload.messageId)
-    .catch(error => {
-      console.error('Fehler beim Löschen der Nachricht:', error);
-      uiStore.showError('Fehler beim Löschen der Nachricht');
+  sessionsStore
+    .deleteMessage(currentSessionId.value, payload.messageId)
+    .catch((error) => {
+      console.error("Fehler beim Löschen der Nachricht:", error);
+      uiStore.showError("Fehler beim Löschen der Nachricht");
     });
 }
 
 function handleRetryMessage(payload: { messageId: string }) {
   if (!currentSessionId.value) return;
 
-  const message = currentMessages.value.find(m => m.id === payload.messageId);
+  const message = currentMessages.value.find((m) => m.id === payload.messageId);
   if (!message) return;
 
   // Wenn es sich um eine Assistenten-Nachricht handelt, die vorherige Benutzernachricht finden
-  if (message.role === 'assistant') {
-    const index = currentMessages.value.findIndex(m => m.id === payload.messageId);
-    if (index > 0 && currentMessages.value[index - 1].role === 'user') {
+  if (message.role === "assistant") {
+    const index = currentMessages.value.findIndex(
+      (m) => m.id === payload.messageId,
+    );
+    if (index > 0 && currentMessages.value[index - 1].role === "user") {
       const userMessage = currentMessages.value[index - 1];
       messageInput.value = userMessage.content;
     }
@@ -717,26 +927,30 @@ function handleRetryMessage(payload: { messageId: string }) {
 
   // Fokus auf das Eingabefeld setzen
   nextTick(() => {
-    const inputElement = document.querySelector('.n-message-input__textarea');
+    const inputElement = document.querySelector(".n-message-input__textarea");
     if (inputElement instanceof HTMLTextAreaElement) {
       inputElement.focus();
     }
   });
 }
 
-function handleMessageFeedback(payload: { messageId: string, type: 'positive' | 'negative', feedback?: string }) {
+function handleMessageFeedback(payload: {
+  messageId: string;
+  type: "positive" | "negative";
+  feedback?: string;
+}) {
   // In einer vollständigen Implementierung würde hier das Feedback an den Server gesendet werden
-  console.log('Feedback für Nachricht:', payload);
+  console.log("Feedback für Nachricht:", payload);
 
   // Erfolgsmeldung anzeigen
-  uiStore.showSuccess('Vielen Dank für Ihr Feedback!');
+  uiStore.showSuccess("Vielen Dank für Ihr Feedback!");
 }
 
 function handleViewSources(payload: { messageId: string }) {
   if (!currentSessionId.value) return;
 
   // Nachricht finden
-  const message = currentMessages.value.find(m => m.id === payload.messageId);
+  const message = currentMessages.value.find((m) => m.id === payload.messageId);
   if (!message) return;
 
   // Quellen aus den Metadaten extrahieren
@@ -756,16 +970,20 @@ function closeSourcesModal() {
 
 function handleViewExplanation(payload: { messageId: string }) {
   // In einer vollständigen Implementierung würde hier eine Erklärung angefordert werden
-  console.log('Erklärung für Nachricht angefordert:', payload);
+  console.log("Erklärung für Nachricht angefordert:", payload);
 
   // Informationsmeldung anzeigen
-  uiStore.showInfo('Diese Funktion ist noch nicht implementiert.');
+  uiStore.showInfo("Diese Funktion ist noch nicht implementiert.");
 }
 
-function handleLoadMoreMessages(payload: { direction: 'up' | 'down', firstVisibleIndex?: number, lastVisibleIndex?: number }) {
+function handleLoadMoreMessages(payload: {
+  direction: "up" | "down";
+  firstVisibleIndex?: number;
+  lastVisibleIndex?: number;
+}) {
   if (!currentSessionId.value) return;
 
-  if (payload.direction === 'up') {
+  if (payload.direction === "up") {
     // Ältere Nachrichten laden
     sessionsStore.loadOlderMessages(currentSessionId.value);
   }
@@ -781,10 +999,10 @@ function handleInputFocus() {
 
 function handleAttachFile(event: Event) {
   // In einer vollständigen Implementierung würde hier das Datei-Upload-Feature implementiert werden
-  console.log('Datei anhängen angefordert:', event);
+  console.log("Datei anhängen angefordert:", event);
 
   // Informationsmeldung anzeigen
-  uiStore.showInfo('Die Datei-Upload-Funktion ist noch nicht implementiert.');
+  uiStore.showInfo("Die Datei-Upload-Funktion ist noch nicht implementiert.");
 }
 
 async function sendMessage() {
@@ -793,12 +1011,12 @@ async function sendMessage() {
 
   try {
     // Eingabefeld zurücksetzen
-    messageInput.value = '';
+    messageInput.value = "";
 
     // Nachricht senden
     await sessionsStore.sendMessage({
       sessionId: currentSessionId.value,
-      content
+      content,
     });
 
     // Zum Ende der Nachrichtenliste scrollen
@@ -806,8 +1024,8 @@ async function sendMessage() {
       messageListRef.value?.scrollToBottom();
     });
   } catch (error) {
-    console.error('Fehler beim Senden der Nachricht:', error);
-    uiStore.showError('Fehler beim Senden der Nachricht');
+    console.error("Fehler beim Senden der Nachricht:", error);
+    uiStore.showError("Fehler beim Senden der Nachricht");
   }
 }
 
@@ -822,21 +1040,21 @@ function toggleSidebar() {
   isSidebarCollapsed.value = !isSidebarCollapsed.value;
 
   // Präferenz speichern
-  localStorage.setItem('sidebarCollapsed', isSidebarCollapsed.value.toString());
+  localStorage.setItem("sidebarCollapsed", isSidebarCollapsed.value.toString());
 }
 
 function openMobileSidebar() {
   isMobileSidebarOpen.value = true;
 
   // Body-Scrolling verhindern
-  document.body.style.overflow = 'hidden';
+  document.body.style.overflow = "hidden";
 }
 
 function closeMobileSidebar() {
   isMobileSidebarOpen.value = false;
 
   // Body-Scrolling wiederherstellen
-  document.body.style.overflow = '';
+  document.body.style.overflow = "";
 }
 
 function toggleSessionInfo() {
@@ -845,23 +1063,23 @@ function toggleSessionInfo() {
 
 function openSettings() {
   // In einer vollständigen Implementierung würde hier das Einstellungsmenü geöffnet werden
-  console.log('Einstellungen öffnen angefordert');
+  console.log("Einstellungen öffnen angefordert");
 
   // Informationsmeldung anzeigen
-  uiStore.showInfo('Die Einstellungen sind noch nicht implementiert.');
+  uiStore.showInfo("Die Einstellungen sind noch nicht implementiert.");
 }
 
 function exportSession(sessionId: string) {
   // In einer vollständigen Implementierung würde hier die Session exportiert werden
-  console.log('Session exportieren angefordert:', sessionId);
+  console.log("Session exportieren angefordert:", sessionId);
 
   try {
     const exportedData = sessionsStore.exportData();
-    
+
     // Datei zum Download anbieten
-    const blob = new Blob([exportedData], { type: 'application/json' });
+    const blob = new Blob([exportedData], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `chat-session-${sessionId}-${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(a);
@@ -870,10 +1088,10 @@ function exportSession(sessionId: string) {
     URL.revokeObjectURL(url);
 
     // Erfolgsmeldung anzeigen
-    uiStore.showSuccess('Die Unterhaltung wurde erfolgreich exportiert!');
+    uiStore.showSuccess("Die Unterhaltung wurde erfolgreich exportiert!");
   } catch (error) {
-    console.error('Fehler beim Exportieren der Session:', error);
-    uiStore.showError('Fehler beim Exportieren der Unterhaltung');
+    console.error("Fehler beim Exportieren der Session:", error);
+    uiStore.showError("Fehler beim Exportieren der Unterhaltung");
   }
 }
 
@@ -881,12 +1099,12 @@ function exportSession(sessionId: string) {
 function formatDate(dateString: string) {
   try {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('de-DE', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Intl.DateTimeFormat("de-DE", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(date);
   } catch (error) {
     return dateString;
@@ -906,7 +1124,7 @@ function checkScreenSize() {
 // Lifecycle-Hooks
 onMounted(async () => {
   // Event-Listener für Bildschirmgrößenänderungen hinzufügen
-  window.addEventListener('resize', checkScreenSize);
+  window.addEventListener("resize", checkScreenSize);
 
   // Sessions laden
   await sessionsStore.synchronizeSessions();
@@ -931,7 +1149,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   // Event-Listener entfernen
-  window.removeEventListener('resize', checkScreenSize);
+  window.removeEventListener("resize", checkScreenSize);
 
   // Cleanup-Aktionen
   if (isStreaming.value) {
@@ -940,12 +1158,16 @@ onBeforeUnmount(() => {
 });
 
 // URL-Änderungen überwachen
-watch(() => route.params.id, async (newId) => {
-  if (newId && newId !== currentSessionId.value) {
-    // Zur neuen Session wechseln
-    await sessionsStore.setCurrentSession(newId as string);
-  }
-}, { immediate: true });
+watch(
+  () => route.params.id,
+  async (newId) => {
+    if (newId && newId !== currentSessionId.value) {
+      // Zur neuen Session wechseln
+      await sessionsStore.setCurrentSession(newId as string);
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <style scoped>
@@ -1316,7 +1538,8 @@ watch(() => route.params.id, async (newId) => {
   color: var(--nscale-text-color, #1a202c);
   margin: 0;
   padding-bottom: 0.25rem;
-  border-bottom: 1px solid var(--nscale-border-color-light, rgba(226, 232, 240, 0.5));
+  border-bottom: 1px solid
+    var(--nscale-border-color-light, rgba(226, 232, 240, 0.5));
 }
 
 .n-chat-session-info__detail {
@@ -1678,7 +1901,10 @@ watch(() => route.params.id, async (newId) => {
 
   .n-chat-session-info__section-title {
     color: var(--nscale-dark-text-color, #e2e8f0);
-    border-bottom-color: var(--nscale-dark-border-color-light, rgba(51, 51, 51, 0.5));
+    border-bottom-color: var(
+      --nscale-dark-border-color-light,
+      rgba(51, 51, 51, 0.5)
+    );
   }
 
   .n-chat-session-info__detail-label {
@@ -1704,7 +1930,10 @@ watch(() => route.params.id, async (newId) => {
   }
 
   .n-chat-session-info__action--rename:hover {
-    background-color: var(--nscale-dark-primary-ultra-light, rgba(0, 165, 80, 0.1));
+    background-color: var(
+      --nscale-dark-primary-ultra-light,
+      rgba(0, 165, 80, 0.1)
+    );
   }
 
   .n-chat-session-info__action--danger:hover {

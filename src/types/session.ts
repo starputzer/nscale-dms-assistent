@@ -35,10 +35,10 @@ export interface ChatMessage {
   id: string;
   sessionId: string;
   content: string;
-  role: 'user' | 'assistant' | 'system';
+  role: "user" | "assistant" | "system";
   timestamp: string;
   isStreaming?: boolean;
-  status?: 'pending' | 'sent' | 'error';
+  status?: "pending" | "sent" | "error";
   metadata?: {
     sourceReferences?: SourceReference[];
     processingTime?: number;
@@ -79,5 +79,5 @@ export interface SessionsState {
 export interface SendMessageParams {
   sessionId: string;
   content: string;
-  role?: 'user' | 'system';
+  role?: "user" | "system";
 }

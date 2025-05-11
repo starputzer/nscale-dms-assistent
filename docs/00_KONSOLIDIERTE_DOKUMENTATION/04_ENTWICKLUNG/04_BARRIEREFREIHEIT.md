@@ -1,18 +1,18 @@
 ---
 title: "Barrierefreiheit (Accessibility)"
-version: "1.0.0"
+version: "1.1.0"
 date: "10.05.2025"
-lastUpdate: "10.05.2025"
+lastUpdate: "11.05.2025"
 author: "Martin Heinrich"
 status: "Aktiv"
 priority: "Hoch"
 category: "Entwicklung"
-tags: ["Barrierefreiheit", "Accessibility", "a11y", "WCAG", "ARIA", "Screenreader", "Tastaturnavigation", "Vue3"]
+tags: ["Barrierefreiheit", "Accessibility", "a11y", "WCAG", "ARIA", "Screenreader", "Tastaturnavigation", "Vue3", "Keyboard Shortcuts"]
 ---
 
 # Barrierefreiheit (Accessibility)
 
-> **Letzte Aktualisierung:** 10.05.2025 | **Version:** 1.0.0 | **Status:** Aktiv
+> **Letzte Aktualisierung:** 11.05.2025 | **Version:** 1.1.0 | **Status:** Aktiv
 
 ## Übersicht
 
@@ -257,6 +257,12 @@ Die gesamte Anwendung ist vollständig mit der Tastatur bedienbar. Folgende glob
 - **Shift+Tab**: Rückwärts-Navigation zwischen Elementen
 - **Enter/Space**: Aktivieren von Buttons und auswählbaren Elementen
 - **Escape**: Schließen von Dialogen, Dropdowns und Menüs
+- **?**: Öffnet die Tastaturkürzel-Hilfe
+- **Alt+H**: Navigiert zur Startseite
+- **Alt+D**: Navigiert zur Dokumentenseite
+- **Alt+S**: Navigiert zu den Einstellungen
+- **Alt+A**: Navigiert zum Admin-Bereich (nur für Administratoren)
+- **Alt+Shift+T**: Wechselt zwischen hellem und dunklem Farbschema
 
 #### Spezifische Komponenten
 
@@ -278,7 +284,33 @@ Die gesamte Anwendung ist vollständig mit der Tastatur bedienbar. Folgende glob
 - **Alt+1-5**: Zwischen den Admin-Tabs wechseln
 - **Ctrl+S**: Änderungen speichern
 
-#### Implementierungsbeispiel: Keyboard-Shortcuts in App.vue
+#### Skip-Links für Tastaturbenutzer
+
+Für Tastaturbenutzer wurden "Skip-Links" implementiert, die es ermöglichen, direkt zum Hauptinhalt oder zur Navigation zu springen, ohne durch alle Elemente navigieren zu müssen. Diese Links sind normalerweise nicht sichtbar, werden aber angezeigt, wenn sie den Tastaturfokus erhalten.
+
+- **Skip zum Hauptinhalt**: Setzt den Fokus direkt auf den Hauptinhaltsbereich
+- **Skip zur Navigation**: Setzt den Fokus direkt auf die Hauptnavigation
+
+#### Zentrale Tastaturkürzel-Verwaltung
+
+Die Anwendung verwendet ein zentrales System für die Verwaltung von Tastaturkürzeln:
+
+```typescript
+// Beispiel für die Registrierung eines Tastaturkürzels
+registerShortcut({
+  id: 'global-help',
+  name: 'Keyboard Shortcuts Help',
+  context: SHORTCUT_CONTEXTS.GLOBAL,
+  key: '?',
+  description: 'Zeigt Hilfe zu Tastaturkürzeln an',
+  handler: () => { showKeyboardShortcuts.value = !showKeyboardShortcuts.value; },
+  global: true,
+});
+```
+
+#### Tastaturkürzel-Hilfe Overlay
+
+Ein spezielles Overlay wurde implementiert, das alle verfügbaren Tastaturkürzel anzeigt und mit der Taste `?` aufgerufen werden kann. Dies hilft Benutzern, die verfügbaren Tastaturkürzel zu entdecken und zu lernen.
 
 ```js
 // In App.vue
@@ -374,23 +406,75 @@ Die Anwendung wurde entwickelt, um WCAG 2.1 AA-Konformität zu erreichen:
 
 #### Fokus-Styles für verbesserte Sichtbarkeit
 
+Die Anwendung verwendet verbesserte Fokus-Indikatoren, die speziell für die Tastaturnavigation optimiert sind. Diese Indikatoren werden nur angezeigt, wenn der Benutzer die Tastatur verwendet, und nicht bei Mausklicks oder Touch-Eingaben.
+
 ```scss
-// Globale Fokus-Styles
-:focus-visible {
-  outline: var(--n-focus-ring-width) solid var(--n-focus-ring-color);
-  outline-offset: var(--n-focus-ring-offset);
+/* Nur anwenden, wenn Tastatur für die Navigation verwendet wird */
+.using-keyboard :focus-visible {
+  outline: 3px solid var(--nscale-focus-ring, rgba(0, 165, 80, 0.6)) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1) !important;
+  transition: outline-color 0.15s ease !important;
+  z-index: 1;
+  position: relative;
 }
 
-// Spezifische Fokus-Styles für verschiedene Komponenten
-.n-button:focus-visible {
-  box-shadow: 0 0 0 var(--n-focus-ring-width) var(--n-focus-ring-color);
+/* Verbesserte Fokus-Indikatoren für Buttons */
+.using-keyboard button:focus-visible,
+.using-keyboard .n-button:focus-visible,
+.using-keyboard [role="button"]:focus-visible {
+  outline-offset: 3px !important;
+}
+
+/* Verbesserte Link-Fokus-Styles */
+.using-keyboard a:focus-visible {
+  outline-width: 2px !important;
+  text-decoration: underline !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 3px !important;
+}
+
+/* Formular-Element-Fokus-Styles */
+.using-keyboard input:focus-visible,
+.using-keyboard textarea:focus-visible,
+.using-keyboard select:focus-visible {
+  border-color: var(--nscale-primary, #00a550) !important;
+  outline-offset: 0 !important;
+  box-shadow: 0 0 0 3px rgba(0, 165, 80, 0.3) !important;
+}
+
+/* Skip-Navigation-Links, die nur bei Fokus sichtbar werden */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  padding: 8px 12px;
+  background-color: var(--nscale-primary, #00a550);
+  color: white;
+  font-weight: 500;
+  z-index: 9999;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 0;
   outline: none;
 }
+```
 
-.n-link:focus-visible {
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 3px;
+#### Tastatur-Erkennungsmechanismus
+
+Die Anwendung erkennt automatisch, ob der Benutzer die Tastatur oder die Maus verwendet, und passt die Fokus-Stile entsprechend an:
+
+```typescript
+function handleKeyboard(event: KeyboardEvent) {
+  // Nur Tab-Taste als Tastaturnavigation betrachten
+  if (event.key === "Tab") {
+    usingTouch.value = false;
+    usingKeyboard.value = true;
+    document.body.classList.add("using-keyboard");
+    document.body.classList.remove("using-touch");
+  }
 }
 ```
 

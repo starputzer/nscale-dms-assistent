@@ -1,12 +1,12 @@
 <template>
   <div class="error-reporting-example">
     <h2>Fehlerbehandlung mit automatischem Fallback</h2>
-    
+
     <div class="component-selector">
       <h3>Komponente anzeigen:</h3>
       <div class="buttons">
-        <button 
-          v-for="(_, key) in components" 
+        <button
+          v-for="(_, key) in components"
           :key="key"
           @click="currentComponent = key"
           :class="{ active: currentComponent === key }"
@@ -15,7 +15,7 @@
         </button>
       </div>
     </div>
-    
+
     <div class="component-container">
       <template v-if="hasError && !isFallbackActive">
         <div class="error-display">
@@ -30,7 +30,7 @@
           </div>
         </div>
       </template>
-      
+
       <template v-else-if="isFallbackActive">
         <div class="fallback-display">
           <h3>Fallback-Modus ist aktiv</h3>
@@ -38,15 +38,15 @@
           <button @click="deactivateFallback">Zurücksetzen</button>
         </div>
       </template>
-      
+
       <template v-else>
-        <component 
-          :is="components[currentComponent]" 
-          @trigger-error="handleComponentError" 
+        <component
+          :is="components[currentComponent]"
+          @trigger-error="handleComponentError"
         />
       </template>
     </div>
-    
+
     <div class="error-history">
       <h3>Fehlerprotokoll ({{ errorCount }})</h3>
       <div v-if="errorCount === 0" class="no-errors">
@@ -55,8 +55,12 @@
       <ul v-else>
         <li v-for="error in recentErrors" :key="error.id" class="error-item">
           <div class="error-header">
-            <span class="error-severity" :class="error.severity">{{ error.severity }}</span>
-            <span class="error-source">{{ error.source.type }}: {{ error.source.name }}</span>
+            <span class="error-severity" :class="error.severity">{{
+              error.severity
+            }}</span>
+            <span class="error-source"
+              >{{ error.source.type }}: {{ error.source.name }}</span
+            >
             <span class="error-time">{{ formatTime(error.timestamp) }}</span>
           </div>
           <div class="error-message">{{ error.message }}</div>
@@ -69,7 +73,7 @@
         Alle Fehler löschen
       </button>
     </div>
-    
+
     <div class="test-actions">
       <h3>Fehler simulieren</h3>
       <button @click="triggerRenderError">Render-Fehler</button>
@@ -81,22 +85,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineAsyncComponent } from 'vue';
-import { useErrorReporting } from '@/composables/useErrorReporting';
+import { ref, computed, defineAsyncComponent } from "vue";
+import { useErrorReporting } from "@/composables/useErrorReporting";
 
-const currentComponent = ref('SafeComponent');
+const currentComponent = ref("SafeComponent");
 
 // Komponenten mit unterschiedlichem Fehlerverhalten
 const components = {
-  'SafeComponent': defineAsyncComponent(() => 
-    import('./components/SafeComponent.vue')
+  SafeComponent: defineAsyncComponent(
+    () => import("./components/SafeComponent.vue"),
   ),
-  'ErrorComponent': defineAsyncComponent(() => 
-    import('./components/ErrorComponent.vue')
+  ErrorComponent: defineAsyncComponent(
+    () => import("./components/ErrorComponent.vue"),
   ),
-  'AsyncErrorComponent': defineAsyncComponent(() => 
-    import('./components/AsyncErrorComponent.vue')
-  )
+  AsyncErrorComponent: defineAsyncComponent(
+    () => import("./components/AsyncErrorComponent.vue"),
+  ),
 };
 
 // Error-Reporting-Hook einbinden
@@ -114,12 +118,12 @@ const {
   ignoreError,
   clearAllErrors,
   getErrors,
-  errorCount
+  errorCount,
 } = useErrorReporting({
-  featureFlag: 'errorReportingExample',
+  featureFlag: "errorReportingExample",
   captureComponentErrors: true,
   automaticFallback: true,
-  defaultSeverity: 'medium'
+  defaultSeverity: "medium",
 });
 
 // Aktuelle Fehler für die Anzeige abrufen
@@ -135,59 +139,63 @@ function formatTime(date: Date): string {
 // Fehler von Kind-Komponenten behandeln
 function handleComponentError(error: Error): void {
   reportComponentError(error, {
-    severity: 'medium',
+    severity: "medium",
     context: {
-      source: 'child-component-event',
-      componentName: currentComponent.value
-    }
+      source: "child-component-event",
+      componentName: currentComponent.value,
+    },
   });
 }
 
 // Verschiedene Fehlertypen simulieren
 function triggerRenderError(): void {
-  reportComponentError(new Error('Fehler beim Rendern der Komponente'), {
-    severity: 'high',
+  reportComponentError(new Error("Fehler beim Rendern der Komponente"), {
+    severity: "high",
     context: {
-      renderFunction: 'render()',
-      component: 'ExampleComponent'
-    }
+      renderFunction: "render()",
+      component: "ExampleComponent",
+    },
   });
 }
 
 function triggerApiError(): void {
-  reportApiError('/api/example', new Error('API-Anfrage fehlgeschlagen'), {
-    severity: 'high',
+  reportApiError("/api/example", new Error("API-Anfrage fehlgeschlagen"), {
+    severity: "high",
     context: {
       statusCode: 500,
-      endpoint: '/api/example',
-      requestData: { id: 123 }
-    }
+      endpoint: "/api/example",
+      requestData: { id: 123 },
+    },
   });
 }
 
 function triggerStoreError(): void {
-  reportStoreError('exampleStore', new Error('Zustandsaktualisierung fehlgeschlagen'), {
-    severity: 'medium',
-    context: {
-      action: 'updateData',
-      payload: { newValue: 'test' }
-    }
-  });
+  reportStoreError(
+    "exampleStore",
+    new Error("Zustandsaktualisierung fehlgeschlagen"),
+    {
+      severity: "medium",
+      context: {
+        action: "updateData",
+        payload: { newValue: "test" },
+      },
+    },
+  );
 }
 
 function triggerAsyncError(): void {
   // Asynchronen Fehler simulieren
   setTimeout(() => {
-    reportError(new Error('Asynchroner Fehler aufgetreten'), {
+    reportError(new Error("Asynchroner Fehler aufgetreten"), {
       source: {
-        type: 'lifecycle',
-        name: 'asyncOperation'
+        type: "lifecycle",
+        name: "asyncOperation",
       },
-      severity: 'medium',
+      severity: "medium",
       context: {
-        operation: 'fetchData',
-        async: true
-      }
+        operation: "fetchData",
+        async: true,
+      },
     });
   }, 500);
 }
@@ -246,7 +254,8 @@ button.active {
   background-color: #f3f4f6;
 }
 
-.error-display, .fallback-display {
+.error-display,
+.fallback-display {
   background-color: rgba(239, 68, 68, 0.1);
   padding: 15px;
   border-radius: 6px;
@@ -317,7 +326,8 @@ button.active {
   color: rgb(217, 119, 6);
 }
 
-.error-severity.high, .error-severity.critical {
+.error-severity.high,
+.error-severity.critical {
   background-color: rgba(239, 68, 68, 0.2);
   color: rgb(220, 38, 38);
 }
@@ -368,11 +378,11 @@ button.active {
     align-items: flex-start;
     gap: 5px;
   }
-  
+
   .error-actions {
     flex-direction: column;
   }
-  
+
   .buttons {
     flex-wrap: wrap;
   }

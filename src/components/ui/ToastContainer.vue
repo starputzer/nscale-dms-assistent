@@ -1,8 +1,8 @@
 <template>
   <div class="toast-container" :class="containerPosition">
     <transition-group name="toast">
-      <div 
-        v-for="toast in toasts" 
+      <div
+        v-for="toast in toasts"
         :key="toast.id"
         class="toast"
         :class="['toast--' + toast.type, { 'toast--with-icon': showIcons }]"
@@ -13,8 +13,8 @@
         <div class="toast-content">
           <div class="toast-message">{{ toast.message }}</div>
         </div>
-        <button 
-          class="toast-close" 
+        <button
+          class="toast-close"
           @click="dismiss(toast.id)"
           aria-label="Benachrichtigung schließen"
         >
@@ -26,8 +26,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useToast } from '@/composables/useToast';
+import { computed } from "vue";
+import { useToast } from "@/composables/useToast";
 
 /**
  * Toast-Container Props
@@ -36,13 +36,19 @@ interface ToastContainerProps {
   /**
    * Position des Toast-Containers
    */
-  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'top-center' | 'bottom-center';
-  
+  position?:
+    | "top-right"
+    | "top-left"
+    | "bottom-right"
+    | "bottom-left"
+    | "top-center"
+    | "bottom-center";
+
   /**
    * Gibt an, ob Icons angezeigt werden sollen
    */
   showIcons?: boolean;
-  
+
   /**
    * Maximale Anzahl gleichzeitiger Toasts
    */
@@ -50,9 +56,9 @@ interface ToastContainerProps {
 }
 
 const props = withDefaults(defineProps<ToastContainerProps>(), {
-  position: 'bottom-right',
+  position: "bottom-right",
   showIcons: true,
-  maxToasts: 5
+  maxToasts: 5,
 });
 
 // Toast-Service verwenden
@@ -61,9 +67,9 @@ const { toasts, dismiss } = useToast();
 // Nur die Toasts anzeigen, die zur ausgewählten Position gehören
 // oder alle, wenn keine Position im Toast spezifiziert ist
 const filteredToasts = computed(() => {
-  return toasts.filter(toast => 
-    !toast.position || toast.position === props.position
-  ).slice(0, props.maxToasts);
+  return toasts
+    .filter((toast) => !toast.position || toast.position === props.position)
+    .slice(0, props.maxToasts);
 });
 
 // CSS-Klasse für die Container-Position
@@ -76,15 +82,15 @@ const containerPosition = computed(() => {
  */
 function getIconClass(type: string): string {
   switch (type) {
-    case 'success':
-      return 'fas fa-check-circle';
-    case 'error':
-      return 'fas fa-exclamation-circle';
-    case 'warning':
-      return 'fas fa-exclamation-triangle';
-    case 'info':
+    case "success":
+      return "fas fa-check-circle";
+    case "error":
+      return "fas fa-exclamation-circle";
+    case "warning":
+      return "fas fa-exclamation-triangle";
+    case "info":
     default:
-      return 'fas fa-info-circle';
+      return "fas fa-info-circle";
   }
 }
 </script>
@@ -262,12 +268,12 @@ function getIconClass(type: string): string {
     max-width: calc(100% - 32px);
     width: calc(100% - 32px);
   }
-  
+
   .toast-container--top-center,
   .toast-container--bottom-center {
     transform: none;
   }
-  
+
   .toast {
     min-width: 0;
     width: 100%;

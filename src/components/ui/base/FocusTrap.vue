@@ -1,28 +1,28 @@
 <template>
   <div class="n-focus-trap">
     <!-- Initial focus sentinel -->
-    <span 
-      ref="initialSentinel" 
-      tabindex="0" 
-      @focus="focusLastElement" 
+    <span
+      ref="initialSentinel"
+      tabindex="0"
+      @focus="focusLastElement"
       aria-hidden="true"
     ></span>
-    
+
     <!-- Content slot -->
     <slot></slot>
-    
+
     <!-- Final focus sentinel -->
-    <span 
-      ref="finalSentinel" 
-      tabindex="0" 
-      @focus="focusFirstElement" 
+    <span
+      ref="finalSentinel"
+      tabindex="0"
+      @focus="focusFirstElement"
       aria-hidden="true"
     ></span>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUpdated, watch, nextTick } from 'vue';
+import { ref, onMounted, onUpdated, watch, nextTick } from "vue";
 
 /**
  * Focus trap component for accessibility in modals and dialogs
@@ -48,7 +48,8 @@ export interface FocusTrapProps {
 const props = withDefaults(defineProps<FocusTrapProps>(), {
   autoFocus: true,
   restoreFocus: true,
-  focusableSelector: 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  focusableSelector:
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
 });
 
 // References
@@ -60,9 +61,13 @@ const previouslyFocusedElement = ref<HTMLElement | null>(null);
 // Get all focusable elements in the container
 function getFocusableElements(): HTMLElement[] {
   if (!container.value) return [];
-  
-  const elements = container.value.querySelectorAll<HTMLElement>(props.focusableSelector);
-  return Array.from(elements).filter(el => !el.hasAttribute('disabled') && el.tabIndex !== -1);
+
+  const elements = container.value.querySelectorAll<HTMLElement>(
+    props.focusableSelector,
+  );
+  return Array.from(elements).filter(
+    (el) => !el.hasAttribute("disabled") && el.tabIndex !== -1,
+  );
 }
 
 // Focus the first focusable element in the container
@@ -91,11 +96,11 @@ function focusLastElement() {
 onMounted(() => {
   // Store reference to the container (parent element of the slot content)
   container.value = initialSentinel.value?.parentElement || null;
-  
+
   // If active, store currently focused element and focus first element
   if (props.active) {
     previouslyFocusedElement.value = document.activeElement as HTMLElement;
-    
+
     if (props.autoFocus) {
       nextTick(() => {
         focusFirstElement();
@@ -110,25 +115,28 @@ onUpdated(() => {
 });
 
 // Watch for changes to the active prop
-watch(() => props.active, (newValue, oldValue) => {
-  if (newValue && !oldValue) {
-    // Activate: store currently focused element and focus first element
-    previouslyFocusedElement.value = document.activeElement as HTMLElement;
-    
-    if (props.autoFocus) {
-      nextTick(() => {
-        focusFirstElement();
-      });
+watch(
+  () => props.active,
+  (newValue, oldValue) => {
+    if (newValue && !oldValue) {
+      // Activate: store currently focused element and focus first element
+      previouslyFocusedElement.value = document.activeElement as HTMLElement;
+
+      if (props.autoFocus) {
+        nextTick(() => {
+          focusFirstElement();
+        });
+      }
+    } else if (!newValue && oldValue) {
+      // Deactivate: restore focus to previously focused element
+      if (props.restoreFocus && previouslyFocusedElement.value) {
+        nextTick(() => {
+          previouslyFocusedElement.value?.focus();
+        });
+      }
     }
-  } else if (!newValue && oldValue) {
-    // Deactivate: restore focus to previously focused element
-    if (props.restoreFocus && previouslyFocusedElement.value) {
-      nextTick(() => {
-        previouslyFocusedElement.value?.focus();
-      });
-    }
-  }
-});
+  },
+);
 </script>
 
 <style scoped>

@@ -1,25 +1,28 @@
 <template>
   <div class="async-error-component">
     <h3>Asynchrone Fehlerkomponente</h3>
-    <p>Diese Komponente enthält asynchrone Operationen, die Fehler verursachen können.</p>
-    
+    <p>
+      Diese Komponente enthält asynchrone Operationen, die Fehler verursachen
+      können.
+    </p>
+
     <div class="content">
       <div v-if="loading" class="loading">
         <div class="spinner"></div>
         <span>Lädt Daten...</span>
       </div>
-      
+
       <div v-else-if="error" class="error-message">
         <p>Fehler beim Laden der Daten:</p>
         <pre>{{ error.message }}</pre>
         <button @click="retryFetch">Erneut versuchen</button>
       </div>
-      
+
       <div v-else-if="data" class="data-display">
         <h4>Geladene Daten:</h4>
         <pre>{{ JSON.stringify(data, null, 2) }}</pre>
       </div>
-      
+
       <div class="actions">
         <button @click="fetchValidData" :disabled="loading">
           Gültige Daten laden
@@ -36,10 +39,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineEmits } from 'vue';
+import { ref, defineEmits } from "vue";
 
 const emit = defineEmits<{
-  (e: 'trigger-error', error: Error): void
+  (e: "trigger-error", error: Error): void;
 }>();
 
 const loading = ref(false);
@@ -51,11 +54,11 @@ async function fetchValidData() {
   loading.value = true;
   error.value = null;
   data.value = null;
-  
+
   try {
     // Simulierte API-Anfrage
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
     data.value = {
       id: 123,
       name: "Beispieldaten",
@@ -64,13 +67,13 @@ async function fetchValidData() {
       items: [
         { id: 1, value: "Item 1" },
         { id: 2, value: "Item 2" },
-        { id: 3, value: "Item 3" }
-      ]
+        { id: 3, value: "Item 3" },
+      ],
     };
   } catch (err) {
     const thrownError = err as Error;
     error.value = thrownError;
-    emit('trigger-error', thrownError);
+    emit("trigger-error", thrownError);
   } finally {
     loading.value = false;
   }
@@ -81,24 +84,26 @@ async function fetchInvalidData() {
   loading.value = true;
   error.value = null;
   data.value = null;
-  
+
   try {
     // Simulierte API-Anfrage
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
     // Ungültige Antwort simulieren
     const invalidResponse = "This is not valid JSON";
-    
+
     // Versuchen, die Antwort zu verarbeiten
     try {
       data.value = JSON.parse(invalidResponse);
     } catch (parseError) {
-      throw new Error(`Fehler beim Parsen der Antwort: ${(parseError as Error).message}`);
+      throw new Error(
+        `Fehler beim Parsen der Antwort: ${(parseError as Error).message}`,
+      );
     }
   } catch (err) {
     const thrownError = err as Error;
     error.value = thrownError;
-    emit('trigger-error', thrownError);
+    emit("trigger-error", thrownError);
   } finally {
     loading.value = false;
   }
@@ -109,17 +114,19 @@ async function triggerAsyncError() {
   loading.value = true;
   error.value = null;
   data.value = null;
-  
+
   try {
     // Simulierte API-Anfrage mit Timeout
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
     // Netzwerkfehler simulieren
-    throw new Error("Netzwerkfehler: Server nicht erreichbar (Timeout nach 30 Sekunden)");
+    throw new Error(
+      "Netzwerkfehler: Server nicht erreichbar (Timeout nach 30 Sekunden)",
+    );
   } catch (err) {
     const thrownError = err as Error;
     error.value = thrownError;
-    emit('trigger-error', thrownError);
+    emit("trigger-error", thrownError);
   } finally {
     loading.value = false;
   }
@@ -193,7 +200,9 @@ button:disabled {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .error-message {

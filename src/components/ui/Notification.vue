@@ -8,7 +8,7 @@
       aria-live="polite"
       :aria-relevant="'additions text'"
     >
-      <TransitionGroup 
+      <TransitionGroup
         name="n-notification"
         tag="div"
         class="n-notification-list"
@@ -23,7 +23,7 @@
             { 'n-notification--has-actions': hasActions(notification) },
             { 'n-notification--persistent': notification.persistent },
             { 'n-notification--closable': notification.closable },
-            notification.customClass
+            notification.customClass,
           ]"
           :aria-labelledby="`notification-${notification.id}-title`"
           :aria-describedby="`notification-${notification.id}-content`"
@@ -39,9 +39,9 @@
               :aria-hidden="true"
             />
           </div>
-          
+
           <div class="n-notification__content">
-            <div 
+            <div
               v-if="notification.title"
               class="n-notification__title"
               :id="`notification-${notification.id}-title`"
@@ -53,11 +53,8 @@
               :id="`notification-${notification.id}-content`"
               v-html="notification.message"
             ></div>
-            
-            <div 
-              v-if="notification.details"
-              class="n-notification__details"
-            >
+
+            <div v-if="notification.details" class="n-notification__details">
               <button
                 type="button"
                 class="n-notification__details-toggle"
@@ -65,7 +62,11 @@
                 :aria-expanded="notification.showDetails ? 'true' : 'false'"
                 :aria-controls="`notification-${notification.id}-details`"
               >
-                {{ notification.showDetails ? $t('notification.hideDetails') : $t('notification.showDetails') }}
+                {{
+                  notification.showDetails
+                    ? $t("notification.hideDetails")
+                    : $t("notification.showDetails")
+                }}
               </button>
               <div
                 v-show="notification.showDetails"
@@ -75,9 +76,9 @@
                 {{ notification.details }}
               </div>
             </div>
-            
-            <div 
-              v-if="hasActions(notification)" 
+
+            <div
+              v-if="hasActions(notification)"
               class="n-notification__actions"
             >
               <button
@@ -92,12 +93,15 @@
                 {{ action.label }}
               </button>
             </div>
-            
-            <div v-if="notification.timestamp" class="n-notification__timestamp">
+
+            <div
+              v-if="notification.timestamp"
+              class="n-notification__timestamp"
+            >
               {{ formatTimestamp(notification.timestamp) }}
             </div>
           </div>
-          
+
           <button
             v-if="notification.closable"
             class="n-notification__close"
@@ -109,8 +113,8 @@
           </button>
         </div>
       </TransitionGroup>
-      
-      <div 
+
+      <div
         v-if="hasMoreNotifications && showMoreButton"
         class="n-notification-more"
       >
@@ -119,12 +123,16 @@
           class="n-notification-more__button"
           @click="viewAllNotifications"
         >
-          {{ $t('notification.viewAll', { count: totalNotifications - visibleNotifications.length }) }}
+          {{
+            $t("notification.viewAll", {
+              count: totalNotifications - visibleNotifications.length,
+            })
+          }}
         </button>
       </div>
     </div>
   </Teleport>
-  
+
   <!-- Notification center modal -->
   <Dialog
     v-model="showNotificationCenter"
@@ -132,7 +140,7 @@
       title: $t('notification.center'),
       size: 'large',
       closable: true,
-      classes: 'n-notification-center-dialog'
+      classes: 'n-notification-center-dialog',
     }"
   >
     <template #default>
@@ -143,69 +151,73 @@
               v-for="(tab, index) in tabs"
               :key="index"
               class="n-notification-center__tab"
-              :class="{ 'n-notification-center__tab--active': activeTab === tab.id }"
+              :class="{
+                'n-notification-center__tab--active': activeTab === tab.id,
+              }"
               @click="activeTab = tab.id"
             >
               {{ tab.label }}
-              <span 
-                v-if="tab.count > 0" 
+              <span
+                v-if="tab.count > 0"
                 class="n-notification-center__tab-count"
               >
                 {{ tab.count }}
               </span>
             </button>
           </div>
-          
+
           <div class="n-notification-center__actions">
             <button
               v-if="hasUnreadNotifications"
               class="n-notification-center__action"
               @click="markAllAsRead"
             >
-              {{ $t('notification.markAllAsRead') }}
+              {{ $t("notification.markAllAsRead") }}
             </button>
             <button
               v-if="filteredNotifications.length > 0"
               class="n-notification-center__action n-notification-center__action--clear"
               @click="clearAllNotifications"
             >
-              {{ $t('notification.clearAll') }}
+              {{ $t("notification.clearAll") }}
             </button>
           </div>
         </div>
-        
+
         <div class="n-notification-center__filters" v-if="showFilters">
-          <select 
-            v-model="priorityFilter" 
+          <select
+            v-model="priorityFilter"
             class="n-notification-center__filter"
           >
-            <option value="all">{{ $t('notification.priorityAll') }}</option>
-            <option value="high">{{ $t('notification.priorityHigh') }}</option>
-            <option value="medium">{{ $t('notification.priorityMedium') }}</option>
-            <option value="low">{{ $t('notification.priorityLow') }}</option>
+            <option value="all">{{ $t("notification.priorityAll") }}</option>
+            <option value="high">{{ $t("notification.priorityHigh") }}</option>
+            <option value="medium">
+              {{ $t("notification.priorityMedium") }}
+            </option>
+            <option value="low">{{ $t("notification.priorityLow") }}</option>
           </select>
-          
-          <select 
+
+          <select
             v-if="groups.length > 0"
-            v-model="groupFilter" 
+            v-model="groupFilter"
             class="n-notification-center__filter"
           >
-            <option value="all">{{ $t('notification.groupAll') }}</option>
+            <option value="all">{{ $t("notification.groupAll") }}</option>
             <option v-for="group in groups" :key="group" :value="group">
               {{ group }}
             </option>
           </select>
         </div>
-        
+
         <div class="n-notification-center__content">
-          <div v-if="filteredNotifications.length === 0" class="n-notification-center__empty">
-            {{ $t('notification.noNotifications') }}
-          </div>
-          
           <div
-            v-else
-            class="n-notification-center__list"
+            v-if="filteredNotifications.length === 0"
+            class="n-notification-center__empty"
           >
+            {{ $t("notification.noNotifications") }}
+          </div>
+
+          <div v-else class="n-notification-center__list">
             <div
               v-for="notification in filteredNotifications"
               :key="notification.id"
@@ -213,7 +225,9 @@
               :class="[
                 `n-notification-item--${notification.type}`,
                 { 'n-notification-item--read': notification.read },
-                { 'n-notification-item--has-actions': hasActions(notification) }
+                {
+                  'n-notification-item--has-actions': hasActions(notification),
+                },
               ]"
             >
               <div class="n-notification-item__icon" v-if="showIcon">
@@ -223,23 +237,26 @@
                   :aria-hidden="true"
                 />
               </div>
-              
+
               <div class="n-notification-item__content">
-                <div 
+                <div
                   v-if="notification.title"
                   class="n-notification-item__title"
                 >
                   {{ notification.title }}
-                  <span 
-                    v-if="!notification.read" 
+                  <span
+                    v-if="!notification.read"
                     class="n-notification-item__badge"
                     :aria-label="$t('notification.unread')"
                   ></span>
                 </div>
-                
-                <div class="n-notification-item__message" v-html="notification.message"></div>
-                
-                <div 
+
+                <div
+                  class="n-notification-item__message"
+                  v-html="notification.message"
+                ></div>
+
+                <div
                   v-if="notification.details"
                   class="n-notification-item__details"
                 >
@@ -249,7 +266,11 @@
                     @click="toggleDetails(notification)"
                     :aria-expanded="notification.showDetails ? 'true' : 'false'"
                   >
-                    {{ notification.showDetails ? $t('notification.hideDetails') : $t('notification.showDetails') }}
+                    {{
+                      notification.showDetails
+                        ? $t("notification.hideDetails")
+                        : $t("notification.showDetails")
+                    }}
                   </button>
                   <div
                     v-show="notification.showDetails"
@@ -258,16 +279,18 @@
                     {{ notification.details }}
                   </div>
                 </div>
-                
-                <div 
-                  v-if="hasActions(notification)" 
+
+                <div
+                  v-if="hasActions(notification)"
                   class="n-notification-item__actions"
                 >
                   <button
                     v-for="(action, index) in notification.actions"
                     :key="index"
                     class="n-notification-item__action"
-                    :class="[`n-notification-item__action--${action.type || 'default'}`]"
+                    :class="[
+                      `n-notification-item__action--${action.type || 'default'}`,
+                    ]"
                     type="button"
                     @click="handleAction(notification, action)"
                     :disabled="action.disabled"
@@ -275,17 +298,23 @@
                     {{ action.label }}
                   </button>
                 </div>
-                
+
                 <div class="n-notification-item__meta">
-                  <span v-if="notification.group" class="n-notification-item__group">
+                  <span
+                    v-if="notification.group"
+                    class="n-notification-item__group"
+                  >
                     {{ notification.group }}
                   </span>
-                  <span v-if="notification.timestamp" class="n-notification-item__timestamp">
+                  <span
+                    v-if="notification.timestamp"
+                    class="n-notification-item__timestamp"
+                  >
                     {{ formatTimestamp(notification.timestamp) }}
                   </span>
                 </div>
               </div>
-              
+
               <div class="n-notification-item__actions-secondary">
                 <button
                   v-if="!notification.read"
@@ -293,7 +322,7 @@
                   @click="markAsRead(notification)"
                   :aria-label="$t('notification.markAsRead')"
                 >
-                  {{ $t('notification.markAsRead') }}
+                  {{ $t("notification.markAsRead") }}
                 </button>
                 <button
                   class="n-notification-item__dismiss"
@@ -312,71 +341,84 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { useI18n } from 'vue-i18n';
-import Dialog from './Dialog.vue';
-import CloseIcon from '../icons/CloseIcon.vue';
-import SuccessIcon from '../icons/SuccessIcon.vue';
-import ErrorIcon from '../icons/ErrorIcon.vue';
-import WarningIcon from '../icons/WarningIcon.vue';
-import InfoIcon from '../icons/InfoIcon.vue';
-import { notificationService, type Notification, type NotificationAction } from '../../services/ui/NotificationService';
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { useI18n } from "vue-i18n";
+import Dialog from "./Dialog.vue";
+import CloseIcon from "../icons/CloseIcon.vue";
+import SuccessIcon from "../icons/SuccessIcon.vue";
+import ErrorIcon from "../icons/ErrorIcon.vue";
+import WarningIcon from "../icons/WarningIcon.vue";
+import InfoIcon from "../icons/InfoIcon.vue";
+import {
+  notificationService,
+  type Notification,
+  type NotificationAction,
+} from "../../services/ui/NotificationService";
 
 const { t: $t } = useI18n();
 
-const props = withDefaults(defineProps<{
-  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'top-center' | 'bottom-center';
-  maxVisible?: number;
-  groupSimilar?: boolean;
-  showIcon?: boolean;
-  showMoreButton?: boolean;
-  showFilters?: boolean;
-}>(), {
-  position: 'top-right',
-  maxVisible: 5,
-  groupSimilar: true,
-  showIcon: true,
-  showMoreButton: true,
-  showFilters: true
-});
+const props = withDefaults(
+  defineProps<{
+    position?:
+      | "top-right"
+      | "top-left"
+      | "bottom-right"
+      | "bottom-left"
+      | "top-center"
+      | "bottom-center";
+    maxVisible?: number;
+    groupSimilar?: boolean;
+    showIcon?: boolean;
+    showMoreButton?: boolean;
+    showFilters?: boolean;
+  }>(),
+  {
+    position: "top-right",
+    maxVisible: 5,
+    groupSimilar: true,
+    showIcon: true,
+    showMoreButton: true,
+    showFilters: true,
+  },
+);
 
 // Notification center state
 const showNotificationCenter = ref(false);
-const activeTab = ref('all');
-const priorityFilter = ref('all');
-const groupFilter = ref('all');
+const activeTab = ref("all");
+const priorityFilter = ref("all");
+const groupFilter = ref("all");
 
 // Tabs for notification center
 const tabs = computed(() => [
-  { 
-    id: 'all', 
-    label: $t('notification.tabAll'), 
-    count: notificationService.notifications.length 
+  {
+    id: "all",
+    label: $t("notification.tabAll"),
+    count: notificationService.notifications.length,
   },
-  { 
-    id: 'unread', 
-    label: $t('notification.tabUnread'), 
-    count: notificationService.notifications.filter(n => !n.read).length 
-  }
+  {
+    id: "unread",
+    label: $t("notification.tabUnread"),
+    count: notificationService.notifications.filter((n) => !n.read).length,
+  },
 ]);
 
 // Computed properties for notification display
 const visibleNotifications = computed(() => {
   let notifications = [...notificationService.notifications];
-  
+
   // Apply grouping if enabled
   if (props.groupSimilar) {
     // Group similar notifications by groupId or message content
     const groups = new Map<string, Notification[]>();
-    
-    notifications.forEach(notification => {
+
+    notifications.forEach((notification) => {
       const groupKey = notification.group || notification.message;
       if (!groups.has(groupKey)) {
         groups.set(groupKey, []);
       }
       groups.get(groupKey)!.push(notification);
     });
-    
+
     // For groups with more than one notification, create summary notifications
     notifications = [];
     groups.forEach((groupNotifications, groupKey) => {
@@ -384,63 +426,77 @@ const visibleNotifications = computed(() => {
         notifications.push(groupNotifications[0]);
       } else {
         // Get the most recent notification from the group
-        const primary = groupNotifications.reduce((prev, current) => 
-          (current.timestamp && prev.timestamp && current.timestamp > prev.timestamp) ? current : prev
+        const primary = groupNotifications.reduce((prev, current) =>
+          current.timestamp &&
+          prev.timestamp &&
+          current.timestamp > prev.timestamp
+            ? current
+            : prev,
         );
-        
+
         // Create a group summary notification
         const groupNotification: Notification = {
           ...primary,
           id: `group-${groupNotifications[0].id}`,
-          title: primary.title || $t('notification.groupedNotification', { count: groupNotifications.length }),
+          title:
+            primary.title ||
+            $t("notification.groupedNotification", {
+              count: groupNotifications.length,
+            }),
           message: primary.message,
           groupedCount: groupNotifications.length,
-          details: groupNotifications.map(n => n.message).join('\n'),
+          details: groupNotifications.map((n) => n.message).join("\n"),
           actions: primary.actions,
-          customClass: 'n-notification--grouped'
+          customClass: "n-notification--grouped",
         };
-        
+
         notifications.push(groupNotification);
       }
     });
   }
-  
+
   // Sort by priority and timestamp
   notifications.sort((a, b) => {
     const priorityOrder = { high: 0, medium: 1, low: 2 };
-    const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
-    const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
-    
+    const aPriority =
+      priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
+    const bPriority =
+      priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
+
     if (aPriority !== bPriority) {
       return aPriority - bPriority;
     }
-    
+
     // Sort by timestamp (most recent first)
     if (a.timestamp && b.timestamp) {
       return b.timestamp - a.timestamp;
     }
-    
+
     return 0;
   });
-  
+
   // Limit to maxVisible
   return notifications.slice(0, props.maxVisible);
 });
 
 // Computed properties for notification center
-const totalNotifications = computed(() => notificationService.notifications.length);
-
-const hasMoreNotifications = computed(() => 
-  notificationService.notifications.length > visibleNotifications.value.length
+const totalNotifications = computed(
+  () => notificationService.notifications.length,
 );
 
-const hasUnreadNotifications = computed(() => 
-  notificationService.notifications.some(n => !n.read)
+const hasMoreNotifications = computed(
+  () =>
+    notificationService.notifications.length >
+    visibleNotifications.value.length,
+);
+
+const hasUnreadNotifications = computed(() =>
+  notificationService.notifications.some((n) => !n.read),
 );
 
 const groups = computed(() => {
   const uniqueGroups = new Set<string>();
-  notificationService.notifications.forEach(n => {
+  notificationService.notifications.forEach((n) => {
     if (n.group) uniqueGroups.add(n.group);
   });
   return Array.from(uniqueGroups);
@@ -448,52 +504,58 @@ const groups = computed(() => {
 
 const filteredNotifications = computed(() => {
   let filtered = [...notificationService.notifications];
-  
+
   // Filter by tab
-  if (activeTab.value === 'unread') {
-    filtered = filtered.filter(n => !n.read);
+  if (activeTab.value === "unread") {
+    filtered = filtered.filter((n) => !n.read);
   }
-  
+
   // Filter by priority
-  if (priorityFilter.value !== 'all') {
-    filtered = filtered.filter(n => n.priority === priorityFilter.value);
+  if (priorityFilter.value !== "all") {
+    filtered = filtered.filter((n) => n.priority === priorityFilter.value);
   }
-  
+
   // Filter by group
-  if (groupFilter.value !== 'all') {
-    filtered = filtered.filter(n => n.group === groupFilter.value);
+  if (groupFilter.value !== "all") {
+    filtered = filtered.filter((n) => n.group === groupFilter.value);
   }
-  
+
   // Sort by priority and timestamp
   filtered.sort((a, b) => {
     const priorityOrder = { high: 0, medium: 1, low: 2 };
-    const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
-    const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
-    
+    const aPriority =
+      priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
+    const bPriority =
+      priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
+
     if (aPriority !== bPriority) {
       return aPriority - bPriority;
     }
-    
+
     // Sort by timestamp (most recent first)
     if (a.timestamp && b.timestamp) {
       return b.timestamp - a.timestamp;
     }
-    
+
     return 0;
   });
-  
+
   return filtered;
 });
 
 // Methods
 function getIconComponent(type: string) {
   switch (type) {
-    case 'success': return SuccessIcon;
-    case 'error': return ErrorIcon;
-    case 'warning': return WarningIcon;
-    case 'info': 
-    case 'system':
-    default: return InfoIcon;
+    case "success":
+      return SuccessIcon;
+    case "error":
+      return ErrorIcon;
+    case "warning":
+      return WarningIcon;
+    case "info":
+    case "system":
+    default:
+      return InfoIcon;
   }
 }
 
@@ -505,11 +567,11 @@ function handleAction(notification: Notification, action: NotificationAction) {
   if (action.handler) {
     action.handler(notification);
   }
-  
+
   if (action.closeOnClick) {
     dismiss(notification);
   }
-  
+
   if (action.markAsRead) {
     markAsRead(notification);
   }
@@ -541,8 +603,8 @@ function viewAllNotifications() {
 }
 
 function formatTimestamp(timestamp: number): string {
-  if (!timestamp) return '';
-  
+  if (!timestamp) return "";
+
   const date = new Date(timestamp);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -550,15 +612,15 @@ function formatTimestamp(timestamp: number): string {
   const diffMin = Math.floor(diffSec / 60);
   const diffHours = Math.floor(diffMin / 60);
   const diffDays = Math.floor(diffHours / 24);
-  
+
   if (diffSec < 60) {
-    return $t('notification.timeJustNow');
+    return $t("notification.timeJustNow");
   } else if (diffMin < 60) {
-    return $t('notification.timeMinutesAgo', { count: diffMin });
+    return $t("notification.timeMinutesAgo", { count: diffMin });
   } else if (diffHours < 24) {
-    return $t('notification.timeHoursAgo', { count: diffHours });
+    return $t("notification.timeHoursAgo", { count: diffHours });
   } else if (diffDays < 7) {
-    return $t('notification.timeDaysAgo', { count: diffDays });
+    return $t("notification.timeDaysAgo", { count: diffDays });
   } else {
     return new Intl.DateTimeFormat().format(date);
   }
@@ -566,12 +628,12 @@ function formatTimestamp(timestamp: number): string {
 
 // Keyboard navigation
 function setupKeyboardNavigation() {
-  window.addEventListener('keydown', handleKeyDown);
+  window.addEventListener("keydown", handleKeyDown);
 }
 
 function handleKeyDown(event: KeyboardEvent) {
   // Ctrl+N to open notification center
-  if (event.ctrlKey && event.key === 'n') {
+  if (event.ctrlKey && event.key === "n") {
     event.preventDefault();
     showNotificationCenter.value = !showNotificationCenter.value;
   }
@@ -583,7 +645,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeyDown);
+  window.removeEventListener("keydown", handleKeyDown);
 });
 </script>
 
@@ -755,7 +817,9 @@ onUnmounted(() => {
   color: var(--n-color-text-primary, #333333);
   font-size: 0.75rem;
   cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
 }
 
 .n-notification__action--primary {
@@ -859,7 +923,7 @@ onUnmounted(() => {
 }
 
 .n-notification-center__tab--active::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
@@ -1050,7 +1114,9 @@ onUnmounted(() => {
   color: var(--n-color-text-primary, #333333);
   font-size: 0.75rem;
   cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
 }
 
 .n-notification-item__action--primary {
@@ -1135,7 +1201,7 @@ onUnmounted(() => {
     transition: opacity 0.1s ease-in-out;
     animation: none !important;
   }
-  
+
   .n-notification-enter-from,
   .n-notification-leave-to {
     transform: none;
@@ -1150,23 +1216,23 @@ onUnmounted(() => {
     align-items: center;
     padding: 0.5rem;
   }
-  
+
   .n-notification-container--top-left,
   .n-notification-container--top-right,
   .n-notification-container--top-center {
     top: 0;
   }
-  
+
   .n-notification-container--bottom-left,
   .n-notification-container--bottom-right,
   .n-notification-container--bottom-center {
     bottom: 0;
   }
-  
+
   .n-notification {
     max-width: 100%;
   }
-  
+
   .n-notification-center-dialog {
     max-width: 100% !important;
   }

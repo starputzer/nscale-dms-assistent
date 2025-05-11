@@ -29,7 +29,11 @@
           {{ formatTimestamp(currentSession.updatedAt) }}
         </span>
       </div>
-      <div class="n-chat-container__actions" role="toolbar" aria-label="Sitzungsaktionen">
+      <div
+        class="n-chat-container__actions"
+        role="toolbar"
+        aria-label="Sitzungsaktionen"
+      >
         <button
           v-if="canRenameSession"
           type="button"
@@ -38,7 +42,11 @@
           aria-label="Sitzung umbenennen"
           @click="handleRenameSession"
         >
-          <span class="n-chat-container__action-icon n-chat-container__action-icon--edit" aria-hidden="true">✏️</span>
+          <span
+            class="n-chat-container__action-icon n-chat-container__action-icon--edit"
+            aria-hidden="true"
+            >✏️</span
+          >
         </button>
         <button
           v-if="canExportSession"
@@ -48,22 +56,38 @@
           aria-label="Sitzung als Textdatei exportieren"
           @click="handleExportSession"
         >
-          <span class="n-chat-container__action-icon n-chat-container__action-icon--export" aria-hidden="true">📤</span>
+          <span
+            class="n-chat-container__action-icon n-chat-container__action-icon--export"
+            aria-hidden="true"
+            >📤</span
+          >
         </button>
         <button
           v-if="canArchiveSession"
           type="button"
           class="n-chat-container__action-btn"
-          :title="currentSession?.isArchived ? 'Sitzung aus Archiv wiederherstellen' : 'Sitzung archivieren'"
-          :aria-label="currentSession?.isArchived ? 'Sitzung aus Archiv wiederherstellen' : 'Sitzung archivieren'"
+          :title="
+            currentSession?.isArchived
+              ? 'Sitzung aus Archiv wiederherstellen'
+              : 'Sitzung archivieren'
+          "
+          :aria-label="
+            currentSession?.isArchived
+              ? 'Sitzung aus Archiv wiederherstellen'
+              : 'Sitzung archivieren'
+          "
           @click="handleToggleArchiveSession"
         >
           <span
             class="n-chat-container__action-icon"
-            :class="currentSession?.isArchived ? 'n-chat-container__action-icon--unarchive' : 'n-chat-container__action-icon--archive'"
+            :class="
+              currentSession?.isArchived
+                ? 'n-chat-container__action-icon--unarchive'
+                : 'n-chat-container__action-icon--archive'
+            "
             aria-hidden="true"
           >
-            {{ currentSession?.isArchived ? '📂' : '🗄️' }}
+            {{ currentSession?.isArchived ? "📂" : "🗄️" }}
           </span>
         </button>
         <button
@@ -74,11 +98,15 @@
           aria-label="Sitzung leeren"
           @click="handleClearSession"
         >
-          <span class="n-chat-container__action-icon n-chat-container__action-icon--clear" aria-hidden="true">🗑️</span>
+          <span
+            class="n-chat-container__action-icon n-chat-container__action-icon--clear"
+            aria-hidden="true"
+            >🗑️</span
+          >
         </button>
       </div>
     </div>
-    
+
     <!-- Container für die Nachrichtenliste mit Touch-Support -->
     <div
       class="n-chat-container__messages"
@@ -87,7 +115,7 @@
       aria-live="polite"
       v-touch="{
         left: handleSwipeLeft,
-        right: handleSwipeRight
+        right: handleSwipeRight,
       }"
     >
       <MessageList
@@ -132,7 +160,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Container für die Nachrichteneingabe -->
     <div
       class="n-chat-container__input"
@@ -156,7 +184,7 @@
         @cancel-edit="handleCancelEdit"
       />
     </div>
-    
+
     <!-- Modaler Dialog für Quellen, falls geöffnet -->
     <div
       v-if="showSourcesDialog"
@@ -166,14 +194,15 @@
       aria-modal="true"
       aria-labelledby="sources-dialog-title"
     >
-      <div
-        class="n-chat-container__dialog"
-        @click.stop
-      >
+      <div class="n-chat-container__dialog" @click.stop>
         <div class="n-chat-container__dialog-header">
-          <h3 id="sources-dialog-title" class="n-chat-container__dialog-title">Quellenangaben</h3>
+          <h3 id="sources-dialog-title" class="n-chat-container__dialog-title">
+            Quellenangaben
+          </h3>
           <div class="n-chat-container__dialog-controls">
-            <span class="n-chat-container__sources-count">{{ selectedMessageSources.length }} Quellen</span>
+            <span class="n-chat-container__sources-count"
+              >{{ selectedMessageSources.length }} Quellen</span
+            >
             <button
               type="button"
               class="n-chat-container__dialog-close"
@@ -187,7 +216,9 @@
 
         <div class="n-chat-container__dialog-toolbar">
           <div class="n-chat-container__toolbar-group">
-            <label for="sources-sort" class="n-chat-container__toolbar-label">Sortieren nach:</label>
+            <label for="sources-sort" class="n-chat-container__toolbar-label"
+              >Sortieren nach:</label
+            >
             <select
               id="sources-sort"
               v-model="sourcesSort"
@@ -201,7 +232,9 @@
           </div>
 
           <div class="n-chat-container__toolbar-group">
-            <label for="sources-filter" class="n-chat-container__toolbar-label">Filtern:</label>
+            <label for="sources-filter" class="n-chat-container__toolbar-label"
+              >Filtern:</label
+            >
             <input
               id="sources-filter"
               v-model="sourcesFilter"
@@ -213,7 +246,11 @@
           </div>
 
           <div class="n-chat-container__toolbar-group">
-            <label for="sources-relevance" class="n-chat-container__toolbar-label">Min. Relevanz:</label>
+            <label
+              for="sources-relevance"
+              class="n-chat-container__toolbar-label"
+              >Min. Relevanz:</label
+            >
             <input
               id="sources-relevance"
               v-model="minRelevance"
@@ -224,20 +261,30 @@
               class="n-chat-container__toolbar-range"
               aria-label="Minimale Relevanz"
             />
-            <span class="n-chat-container__toolbar-value">{{ formatRelevance(minRelevance) }}</span>
+            <span class="n-chat-container__toolbar-value">{{
+              formatRelevance(minRelevance)
+            }}</span>
           </div>
         </div>
 
         <div class="n-chat-container__dialog-content">
-          <ul v-if="filteredSources.length" class="n-chat-container__sources-list">
+          <ul
+            v-if="filteredSources.length"
+            class="n-chat-container__sources-list"
+          >
             <li
               v-for="source in filteredSources"
               :key="source.id"
               class="n-chat-container__source-item"
             >
               <div class="n-chat-container__source-header">
-                <h4 class="n-chat-container__source-title">{{ source.title }}</h4>
-                <span v-if="source.pageNumber" class="n-chat-container__source-page">
+                <h4 class="n-chat-container__source-title">
+                  {{ source.title }}
+                </h4>
+                <span
+                  v-if="source.pageNumber"
+                  class="n-chat-container__source-page"
+                >
                   Seite {{ source.pageNumber }}
                 </span>
               </div>
@@ -259,7 +306,10 @@
               </div>
             </li>
           </ul>
-          <p v-else-if="selectedMessageSources.length === 0" class="n-chat-container__sources-empty">
+          <p
+            v-else-if="selectedMessageSources.length === 0"
+            class="n-chat-container__sources-empty"
+          >
             Keine Quellenangaben für diese Nachricht verfügbar.
           </p>
           <p v-else class="n-chat-container__sources-empty">
@@ -274,15 +324,19 @@
 <script setup lang="ts">
 // Touch-Direktive registrieren
 const vt = vTouch;
-import { ref, computed, watch, onMounted, nextTick } from 'vue';
-import { useSessionsStore } from '@/stores/sessions';
-import { useUIStore } from '@/stores/ui';
-import { useChat } from '@/composables/useChat';
-import { useWindowSize } from '@/composables/useWindowSize';
-import type { ChatMessage, ChatSession, SourceReference } from '@/types/session';
-import { vTouch } from '@/directives/touch-directives';
-import MessageList from './MessageList.vue';
-import MessageInput from './MessageInput.vue';
+import { ref, computed, watch, onMounted, nextTick } from "vue";
+import { useSessionsStore } from "@/stores/sessions";
+import { useUIStore } from "@/stores/ui";
+import { useChat } from "@/composables/useChat";
+import { useWindowSize } from "@/composables/useWindowSize";
+import type {
+  ChatMessage,
+  ChatSession,
+  SourceReference,
+} from "@/types/session";
+import { vTouch } from "@/directives/touch-directives";
+import MessageList from "./MessageList.vue";
+import MessageInput from "./MessageInput.vue";
 
 // Interface für vorgefertigte Nachrichtenvorlagen
 interface MessageTemplate {
@@ -360,18 +414,18 @@ interface Props {
 
 // Default-Werte für Props
 const props = withDefaults(defineProps<Props>(), {
-  sessionId: '',
+  sessionId: "",
   virtualizedList: true,
-  welcomeTitle: 'Willkommen beim nscale DMS Assistenten',
-  welcomeMessage: 'Wie kann ich Ihnen heute mit nscale helfen?',
+  welcomeTitle: "Willkommen beim nscale DMS Assistenten",
+  welcomeMessage: "Wie kann ich Ihnen heute mit nscale helfen?",
   showMessageActions: true,
   showMessageTemplates: false,
   messageTemplates: () => [],
-  inputPlaceholder: 'Geben Sie Ihre Nachricht ein...',
+  inputPlaceholder: "Geben Sie Ihre Nachricht ein...",
   canRenameSession: true,
   canExportSession: true,
   canArchiveSession: true,
-  canClearSession: true
+  canClearSession: true,
 });
 
 // Emit Definition
@@ -379,57 +433,66 @@ const emit = defineEmits<{
   /**
    * Event beim Senden einer Nachricht
    */
-  (e: 'message-sent', payload: { content: string, sessionId: string }): void;
+  (e: "message-sent", payload: { content: string; sessionId: string }): void;
 
   /**
    * Event beim Empfangen einer Nachricht
    */
-  (e: 'message-received', payload: { message: ChatMessage, sessionId: string }): void;
+  (
+    e: "message-received",
+    payload: { message: ChatMessage; sessionId: string },
+  ): void;
 
   /**
    * Event, wenn es einen Fehler gibt
    */
-  (e: 'error', payload: { error: string, context?: string }): void;
+  (e: "error", payload: { error: string; context?: string }): void;
 
   /**
    * Event, wenn die Sitzung umbenannt wurde
    */
-  (e: 'session-renamed', payload: { sessionId: string, title: string }): void;
+  (e: "session-renamed", payload: { sessionId: string; title: string }): void;
 
   /**
    * Event, wenn die Sitzung archiviert wurde
    */
-  (e: 'session-archived', payload: { sessionId: string, isArchived: boolean }): void;
+  (
+    e: "session-archived",
+    payload: { sessionId: string; isArchived: boolean },
+  ): void;
 
   /**
    * Event, wenn die Sitzung geleert wurde
    */
-  (e: 'session-cleared', payload: { sessionId: string }): void;
+  (e: "session-cleared", payload: { sessionId: string }): void;
 
   /**
    * Event, wenn mehr Nachrichten geladen wurden
    */
-  (e: 'messages-loaded', payload: { count: number, direction: 'up' | 'down' }): void;
+  (
+    e: "messages-loaded",
+    payload: { count: number; direction: "up" | "down" },
+  ): void;
 
   /**
    * Event, wenn das Scrollen sich verändert hat
    */
-  (e: 'scroll', payload: { isAtBottom: boolean, scrollTop: number }): void;
+  (e: "scroll", payload: { isAtBottom: boolean; scrollTop: number }): void;
 }>();
 
 // Refs
 const messageListRef = ref<InstanceType<typeof MessageList> | null>(null);
-const inputText = ref('');
-const messageDraft = ref('');
-const inputError = ref('');
+const inputText = ref("");
+const messageDraft = ref("");
+const inputError = ref("");
 const isEditing = ref(false);
-const editingMessageId = ref('');
+const editingMessageId = ref("");
 const showSourcesDialog = ref(false);
-const selectedMessageId = ref('');
+const selectedMessageId = ref("");
 
 // Quellen-Dialog Refs
-const sourcesSort = ref<'relevance' | 'title' | 'page'>('relevance');
-const sourcesFilter = ref('');
+const sourcesSort = ref<"relevance" | "title" | "page">("relevance");
+const sourcesFilter = ref("");
 const minRelevance = ref(0);
 
 // Mobile Touch Support
@@ -451,7 +514,7 @@ const {
   cancelStream,
   deleteMessage,
   loadOlderMessages,
-  retryMessage
+  retryMessage,
 } = useChat();
 
 // Computed Properties
@@ -467,15 +530,16 @@ const inputDisabled = computed(() => {
 const selectedMessageSources = computed(() => {
   if (!selectedMessageId.value) return [];
 
-  const message = messages.value.find(m => m.id === selectedMessageId.value);
+  const message = messages.value.find((m) => m.id === selectedMessageId.value);
   return message?.metadata?.sourceReferences || [];
 });
 
 // Gefilterte und sortierte Quellen für die Anzeige
 const filteredSources = computed(() => {
   // Filtern nach Suchtext und Mindest-Relevanz
-  let filteredData = selectedMessageSources.value.filter(source => {
-    const matchesFilter = sourcesFilter.value === '' ||
+  let filteredData = selectedMessageSources.value.filter((source) => {
+    const matchesFilter =
+      sourcesFilter.value === "" ||
       source.title?.toLowerCase().includes(sourcesFilter.value.toLowerCase()) ||
       source.content?.toLowerCase().includes(sourcesFilter.value.toLowerCase());
 
@@ -486,13 +550,11 @@ const filteredSources = computed(() => {
 
   // Sortieren nach ausgewähltem Kriterium
   return filteredData.sort((a, b) => {
-    if (sourcesSort.value === 'relevance') {
+    if (sourcesSort.value === "relevance") {
       return (b.relevanceScore || 0) - (a.relevanceScore || 0);
-    }
-    else if (sourcesSort.value === 'title') {
-      return (a.title || '').localeCompare(b.title || '');
-    }
-    else if (sourcesSort.value === 'page') {
+    } else if (sourcesSort.value === "title") {
+      return (a.title || "").localeCompare(b.title || "");
+    } else if (sourcesSort.value === "page") {
       return (a.pageNumber || 0) - (b.pageNumber || 0);
     }
     return 0;
@@ -503,51 +565,51 @@ const filteredSources = computed(() => {
 function formatTimestamp(timestamp: string): string {
   try {
     const date = new Date(timestamp);
-    return date.toLocaleString('de-DE', { 
-      day: '2-digit', 
-      month: '2-digit', 
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleString("de-DE", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   } catch (error) {
-    console.error('Error formatting timestamp:', error);
-    return '';
+    console.error("Error formatting timestamp:", error);
+    return "";
   }
 }
 
 function formatRelevance(score: number): string {
-  if (score >= 0.8) return 'Sehr hoch';
-  if (score >= 0.6) return 'Hoch';
-  if (score >= 0.4) return 'Mittel';
-  if (score >= 0.2) return 'Niedrig';
-  return 'Sehr niedrig';
+  if (score >= 0.8) return "Sehr hoch";
+  if (score >= 0.6) return "Hoch";
+  if (score >= 0.4) return "Mittel";
+  if (score >= 0.2) return "Niedrig";
+  return "Sehr niedrig";
 }
 
 // Sendet eine Nachricht
 async function handleSendMessage(content: string): Promise<void> {
   if (!content.trim() || !props.sessionId) return;
-  
+
   try {
     // Wenn eine Nachricht bearbeitet wird
     if (isEditing.value && editingMessageId.value) {
       // TODO: Implementieren der Bearbeitungsfunktion
       isEditing.value = false;
-      editingMessageId.value = '';
+      editingMessageId.value = "";
     } else {
       // Neue Nachricht senden
       await sendMessage(content);
-      emit('message-sent', { content, sessionId: props.sessionId });
+      emit("message-sent", { content, sessionId: props.sessionId });
     }
-    
+
     // Eingabe zurücksetzen
-    inputText.value = '';
-    messageDraft.value = '';
-    inputError.value = '';
+    inputText.value = "";
+    messageDraft.value = "";
+    inputError.value = "";
   } catch (err: any) {
-    console.error('Error sending message:', err);
-    inputError.value = err.message || 'Fehler beim Senden der Nachricht.';
-    emit('error', { error: inputError.value, context: 'send-message' });
+    console.error("Error sending message:", err);
+    inputError.value = err.message || "Fehler beim Senden der Nachricht.";
+    emit("error", { error: inputError.value, context: "send-message" });
   }
 }
 
@@ -557,7 +619,11 @@ function handleStopGeneration(): void {
 }
 
 // Behandelt Feedback zu einer Nachricht
-function handleFeedback(payload: { messageId: string, type: 'positive' | 'negative', feedback?: string }): void {
+function handleFeedback(payload: {
+  messageId: string;
+  type: "positive" | "negative";
+  feedback?: string;
+}): void {
   // TODO: Implementieren der Feedback-Funktion
   uiStore.showSuccess(`Vielen Dank für Ihr Feedback!`);
 }
@@ -571,18 +637,22 @@ function handleViewSources(payload: { messageId: string }): void {
 // Öffnet einen Dialog mit Erklärungen
 function handleViewExplanation(payload: { messageId: string }): void {
   // TODO: Implementieren der Erklärungs-Anzeige
-  uiStore.showInfo(`Erklärung wird angezeigt für Nachricht ${payload.messageId}`);
+  uiStore.showInfo(
+    `Erklärung wird angezeigt für Nachricht ${payload.messageId}`,
+  );
 }
 
 // Löscht eine Nachricht
-async function handleDeleteMessage(payload: { messageId: string }): Promise<void> {
+async function handleDeleteMessage(payload: {
+  messageId: string;
+}): Promise<void> {
   try {
     await deleteMessage(payload.messageId);
-    uiStore.showSuccess('Nachricht wurde gelöscht.');
+    uiStore.showSuccess("Nachricht wurde gelöscht.");
   } catch (err: any) {
-    console.error('Error deleting message:', err);
-    uiStore.showError('Fehler beim Löschen der Nachricht.');
-    emit('error', { error: err.message, context: 'delete-message' });
+    console.error("Error deleting message:", err);
+    uiStore.showError("Fehler beim Löschen der Nachricht.");
+    emit("error", { error: err.message, context: "delete-message" });
   }
 }
 
@@ -591,23 +661,35 @@ async function handleRetry(payload: { messageId: string }): Promise<void> {
   try {
     await retryMessage(payload.messageId);
   } catch (err: any) {
-    console.error('Error retrying message:', err);
-    uiStore.showError('Fehler beim erneuten Senden der Nachricht.');
-    emit('error', { error: err.message, context: 'retry-message' });
+    console.error("Error retrying message:", err);
+    uiStore.showError("Fehler beim erneuten Senden der Nachricht.");
+    emit("error", { error: err.message, context: "retry-message" });
   }
 }
 
 // Behandelt Scroll-Events in der Nachrichtenliste
-function handleScroll(payload: { scrollTop: number, scrollHeight: number, clientHeight: number, isAtBottom: boolean }): void {
-  emit('scroll', { isAtBottom: payload.isAtBottom, scrollTop: payload.scrollTop });
+function handleScroll(payload: {
+  scrollTop: number;
+  scrollHeight: number;
+  clientHeight: number;
+  isAtBottom: boolean;
+}): void {
+  emit("scroll", {
+    isAtBottom: payload.isAtBottom,
+    scrollTop: payload.scrollTop,
+  });
 }
 
 // Lädt weitere Nachrichten
-function handleLoadMore(payload: { direction: 'up' | 'down', firstVisibleIndex?: number, lastVisibleIndex?: number }): void {
+function handleLoadMore(payload: {
+  direction: "up" | "down";
+  firstVisibleIndex?: number;
+  lastVisibleIndex?: number;
+}): void {
   // In einer echten Implementierung würden ältere Nachrichten geladen werden
-  if (payload.direction === 'up') {
+  if (payload.direction === "up") {
     const olderMessages = loadOlderMessages(props.sessionId);
-    emit('messages-loaded', { count: olderMessages.length, direction: 'up' });
+    emit("messages-loaded", { count: olderMessages.length, direction: "up" });
   }
 }
 
@@ -619,48 +701,48 @@ function handleDraftChange(value: string): void {
 // Abbrechen der Bearbeitung
 function handleCancelEdit(): void {
   isEditing.value = false;
-  editingMessageId.value = '';
-  inputText.value = '';
-  messageDraft.value = '';
+  editingMessageId.value = "";
+  inputText.value = "";
+  messageDraft.value = "";
 }
 
 // Schließt den Quellen-Dialog
 function closeSourcesDialog(): void {
   showSourcesDialog.value = false;
-  selectedMessageId.value = '';
+  selectedMessageId.value = "";
   // Zurücksetzen der Filter und Sortierung
-  sourcesFilter.value = '';
-  sourcesSort.value = 'relevance';
+  sourcesFilter.value = "";
+  sourcesSort.value = "relevance";
   minRelevance.value = 0;
 }
 
 // Kopiert den Inhalt einer Quelle in die Zwischenablage
 async function copySourceToClipboard(source: SourceReference): Promise<void> {
   try {
-    const text = `${source.title}${source.pageNumber ? ` (Seite ${source.pageNumber})` : ''}\n\n${source.content}`;
+    const text = `${source.title}${source.pageNumber ? ` (Seite ${source.pageNumber})` : ""}\n\n${source.content}`;
     await navigator.clipboard.writeText(text);
-    uiStore.showSuccess('Quelle wurde in die Zwischenablage kopiert.');
+    uiStore.showSuccess("Quelle wurde in die Zwischenablage kopiert.");
   } catch (err) {
-    console.error('Error copying to clipboard:', err);
-    uiStore.showError('Fehler beim Kopieren in die Zwischenablage.');
+    console.error("Error copying to clipboard:", err);
+    uiStore.showError("Fehler beim Kopieren in die Zwischenablage.");
   }
 }
 
 // Umbenennen der Sitzung
 function handleRenameSession(): void {
   if (!props.sessionId) return;
-  
-  const newTitle = prompt('Neuer Titel für die Sitzung:', sessionTitle.value);
-  
-  if (newTitle && newTitle.trim() !== '') {
+
+  const newTitle = prompt("Neuer Titel für die Sitzung:", sessionTitle.value);
+
+  if (newTitle && newTitle.trim() !== "") {
     try {
       sessionsStore.updateSessionTitle(props.sessionId, newTitle);
-      emit('session-renamed', { sessionId: props.sessionId, title: newTitle });
-      uiStore.showSuccess('Sitzung wurde umbenannt.');
+      emit("session-renamed", { sessionId: props.sessionId, title: newTitle });
+      uiStore.showSuccess("Sitzung wurde umbenannt.");
     } catch (err: any) {
-      console.error('Error renaming session:', err);
-      uiStore.showError('Fehler beim Umbenennen der Sitzung.');
-      emit('error', { error: err.message, context: 'rename-session' });
+      console.error("Error renaming session:", err);
+      uiStore.showError("Fehler beim Umbenennen der Sitzung.");
+      emit("error", { error: err.message, context: "rename-session" });
     }
   }
 }
@@ -668,37 +750,41 @@ function handleRenameSession(): void {
 // Exportieren der Sitzung
 function handleExportSession(): void {
   if (!props.sessionId || !messages.value.length) return;
-  
+
   try {
     // Formatiere die Nachrichten als Text
-    const formattedMessages = messages.value.map(msg => {
-      return `${msg.role === 'user' ? 'Sie' : 'Assistent'} (${new Date(msg.timestamp).toLocaleString()}):\n${msg.content}\n\n`;
-    }).join('---\n\n');
-    
+    const formattedMessages = messages.value
+      .map((msg) => {
+        return `${msg.role === "user" ? "Sie" : "Assistent"} (${new Date(msg.timestamp).toLocaleString()}):\n${msg.content}\n\n`;
+      })
+      .join("---\n\n");
+
     // Erstelle einen Blob mit dem Text
-    const blob = new Blob([formattedMessages], { type: 'text/plain;charset=utf-8' });
-    
+    const blob = new Blob([formattedMessages], {
+      type: "text/plain;charset=utf-8",
+    });
+
     // Erstelle einen Download-Link
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     const filename = `nscale-chat-${props.sessionId.slice(0, 8)}-${new Date().toISOString().slice(0, 10)}.txt`;
-    
+
     a.href = url;
     a.download = filename;
     document.body.appendChild(a);
     a.click();
-    
+
     // Cleanup
     setTimeout(() => {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }, 100);
-    
-    uiStore.showSuccess('Sitzung wurde exportiert.');
+
+    uiStore.showSuccess("Sitzung wurde exportiert.");
   } catch (err: any) {
-    console.error('Error exporting session:', err);
-    uiStore.showError('Fehler beim Exportieren der Sitzung.');
-    emit('error', { error: err.message, context: 'export-session' });
+    console.error("Error exporting session:", err);
+    uiStore.showError("Fehler beim Exportieren der Sitzung.");
+    emit("error", { error: err.message, context: "export-session" });
   }
 }
 
@@ -706,7 +792,9 @@ function handleExportSession(): void {
 async function handleClearSession(): Promise<void> {
   if (!props.sessionId) return;
 
-  if (confirm('Möchten Sie wirklich alle Nachrichten in dieser Sitzung löschen?')) {
+  if (
+    confirm("Möchten Sie wirklich alle Nachrichten in dieser Sitzung löschen?")
+  ) {
     try {
       // Alle Nachrichten löschen
       const sessionMessages = messages.value;
@@ -717,15 +805,15 @@ async function handleClearSession(): Promise<void> {
         }
       }
 
-      emit('session-cleared', { sessionId: props.sessionId });
-      uiStore.showSuccess('Alle Nachrichten wurden gelöscht.');
+      emit("session-cleared", { sessionId: props.sessionId });
+      uiStore.showSuccess("Alle Nachrichten wurden gelöscht.");
 
       // Session aktualisieren, um die gelöschten Nachrichten zu reflektieren
       await sessionsStore.refreshSession(props.sessionId);
     } catch (err: any) {
-      console.error('Error clearing session:', err);
-      uiStore.showError('Fehler beim Löschen der Nachrichten.');
-      emit('error', { error: err.message, context: 'clear-session' });
+      console.error("Error clearing session:", err);
+      uiStore.showError("Fehler beim Löschen der Nachrichten.");
+      emit("error", { error: err.message, context: "clear-session" });
     }
   }
 }
@@ -735,31 +823,39 @@ async function handleToggleArchiveSession(): Promise<void> {
   if (!props.sessionId) return;
 
   const isCurrentlyArchived = currentSession.value?.isArchived || false;
-  const actionText = isCurrentlyArchived ? 'aus dem Archiv wiederherstellen' : 'archivieren';
+  const actionText = isCurrentlyArchived
+    ? "aus dem Archiv wiederherstellen"
+    : "archivieren";
 
   if (confirm(`Möchten Sie diese Sitzung wirklich ${actionText}?`)) {
     try {
-      await sessionsStore.toggleArchiveSession(props.sessionId, !isCurrentlyArchived);
+      await sessionsStore.toggleArchiveSession(
+        props.sessionId,
+        !isCurrentlyArchived,
+      );
 
       const successMessage = isCurrentlyArchived
-        ? 'Sitzung wurde aus dem Archiv wiederhergestellt.'
-        : 'Sitzung wurde archiviert.';
+        ? "Sitzung wurde aus dem Archiv wiederhergestellt."
+        : "Sitzung wurde archiviert.";
 
       uiStore.showSuccess(successMessage);
-      emit('session-archived', {
+      emit("session-archived", {
         sessionId: props.sessionId,
-        isArchived: !isCurrentlyArchived
+        isArchived: !isCurrentlyArchived,
       });
     } catch (err: any) {
-      console.error(`Error ${isCurrentlyArchived ? 'unarchiving' : 'archiving'} session:`, err);
+      console.error(
+        `Error ${isCurrentlyArchived ? "unarchiving" : "archiving"} session:`,
+        err,
+      );
       uiStore.showError(`Fehler beim ${actionText} der Sitzung.`);
-      emit('error', { error: err.message, context: 'toggle-archive-session' });
+      emit("error", { error: err.message, context: "toggle-archive-session" });
     }
   }
 }
 
 // Scrollt zum Ende der Nachrichtenliste
-function scrollToBottom(behavior: ScrollBehavior = 'smooth'): void {
+function scrollToBottom(behavior: ScrollBehavior = "smooth"): void {
   nextTick(() => {
     messageListRef.value?.scrollToBottom(behavior);
   });
@@ -770,7 +866,11 @@ function handleSwipeLeft(): void {
   // Aktion für Swipe nach links, z.B. Quellen anzeigen
   if (isMobile.value && messages.value.length > 0) {
     const lastMessage = messages.value[messages.value.length - 1];
-    if (lastMessage && lastMessage.role === 'assistant' && lastMessage.metadata?.sourceReferences?.length) {
+    if (
+      lastMessage &&
+      lastMessage.role === "assistant" &&
+      lastMessage.metadata?.sourceReferences?.length
+    ) {
       handleViewSources({ messageId: lastMessage.id });
     }
   }
@@ -786,11 +886,14 @@ function handleSwipeRight(): void {
 function handleLongPress(messageId: string): void {
   // Aktion für langes Drücken, z.B. Kontextmenü öffnen
   if (isMobile.value) {
-    const message = messages.value.find(m => m.id === messageId);
+    const message = messages.value.find((m) => m.id === messageId);
     if (message) {
-      if (message.role === 'assistant' && message.metadata?.sourceReferences?.length) {
+      if (
+        message.role === "assistant" &&
+        message.metadata?.sourceReferences?.length
+      ) {
         handleViewSources({ messageId });
-      } else if (message.role === 'user') {
+      } else if (message.role === "user") {
         // Benutzer-Nachricht zum Bearbeiten markieren
         isEditing.value = true;
         editingMessageId.value = messageId;
@@ -812,9 +915,9 @@ function showTouchGestureHints(): void {
 
     // Speichern, dass Hinweise bereits angezeigt wurden
     try {
-      localStorage.setItem('n-chat-touch-hints-shown', 'true');
+      localStorage.setItem("n-chat-touch-hints-shown", "true");
     } catch (e) {
-      console.error('Error saving touch hints state to localStorage:', e);
+      console.error("Error saving touch hints state to localStorage:", e);
     }
   }
 }
@@ -824,7 +927,7 @@ defineExpose({
   scrollToBottom,
   handleSendMessage,
   handleStopGeneration,
-  handleToggleArchiveSession
+  handleToggleArchiveSession,
 });
 
 // Lifecycle Hooks
@@ -837,60 +940,72 @@ onMounted(async () => {
       // Aktive Session im Store setzen
       sessionsStore.setCurrentSession(props.sessionId);
     } catch (err: any) {
-      console.error('Error loading session:', err);
-      emit('error', { error: err.message, context: 'load-session' });
+      console.error("Error loading session:", err);
+      emit("error", { error: err.message, context: "load-session" });
     }
   }
 
   // Prüfen, ob wir auf einem mobilen Gerät sind und Touch-Gesten-Hinweise anzeigen sollten
   if (isMobile.value) {
     try {
-      const hintsShown = localStorage.getItem('n-chat-touch-hints-shown');
+      const hintsShown = localStorage.getItem("n-chat-touch-hints-shown");
       if (!hintsShown) {
         // Hinweise anzeigen, aber nur einmal
         setTimeout(showTouchGestureHints, 1000);
       }
     } catch (e) {
-      console.error('Error reading from localStorage:', e);
+      console.error("Error reading from localStorage:", e);
     }
   }
 });
 
 // Watches
-watch(() => props.sessionId, async (newSessionId) => {
-  if (newSessionId) {
-    try {
-      await sessionsStore.refreshSession(newSessionId);
+watch(
+  () => props.sessionId,
+  async (newSessionId) => {
+    if (newSessionId) {
+      try {
+        await sessionsStore.refreshSession(newSessionId);
 
-      // Aktive Session im Store setzen
-      sessionsStore.setCurrentSession(newSessionId);
-    } catch (err: any) {
-      console.error('Error loading session:', err);
-      emit('error', { error: err.message, context: 'load-session' });
+        // Aktive Session im Store setzen
+        sessionsStore.setCurrentSession(newSessionId);
+      } catch (err: any) {
+        console.error("Error loading session:", err);
+        emit("error", { error: err.message, context: "load-session" });
+      }
     }
-  }
-});
+  },
+);
 
 // Überwacht Fehler im Store
-watch(() => error.value, (newError) => {
-  if (newError) {
-    inputError.value = newError;
-    emit('error', { error: newError, context: 'store-error' });
-  } else {
-    inputError.value = '';
-  }
-});
+watch(
+  () => error.value,
+  (newError) => {
+    if (newError) {
+      inputError.value = newError;
+      emit("error", { error: newError, context: "store-error" });
+    } else {
+      inputError.value = "";
+    }
+  },
+);
 
 // Überwacht eingehende Nachrichten
-watch(() => messages.value, (newMessages, oldMessages) => {
-  if (props.sessionId && newMessages.length > oldMessages.length) {
-    // Eine neue Nachricht wurde empfangen
-    const newMessage = newMessages[newMessages.length - 1];
-    if (newMessage.role === 'assistant') {
-      emit('message-received', { message: newMessage, sessionId: props.sessionId });
+watch(
+  () => messages.value,
+  (newMessages, oldMessages) => {
+    if (props.sessionId && newMessages.length > oldMessages.length) {
+      // Eine neue Nachricht wurde empfangen
+      const newMessage = newMessages[newMessages.length - 1];
+      if (newMessage.role === "assistant") {
+        emit("message-received", {
+          message: newMessage,
+          sessionId: props.sessionId,
+        });
+      }
     }
-  }
-});
+  },
+);
 </script>
 
 <style scoped>
@@ -1007,7 +1122,11 @@ watch(() => messages.value, (newMessages, oldMessages) => {
   max-height: 80vh;
   background-color: var(--nscale-body-bg, #ffffff);
   border-radius: var(--nscale-border-radius-lg, 0.75rem);
-  box-shadow: var(--nscale-shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05));
+  box-shadow: var(
+    --nscale-shadow-lg,
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05)
+  );
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1125,7 +1244,9 @@ watch(() => messages.value, (newMessages, oldMessages) => {
   border: 1px solid var(--nscale-border-color, #e2e8f0);
   border-radius: var(--nscale-border-radius-md, 0.5rem);
   padding: var(--nscale-space-3, 0.75rem);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   margin-bottom: var(--nscale-space-3, 0.75rem);
 }
 
@@ -1192,7 +1313,9 @@ watch(() => messages.value, (newMessages, oldMessages) => {
   cursor: pointer;
   padding: 0.25rem 0.5rem;
   border-radius: var(--nscale-border-radius-sm, 0.25rem);
-  transition: color 0.2s ease, background-color 0.2s ease;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .n-chat-container__source-button:hover {
@@ -1224,7 +1347,11 @@ watch(() => messages.value, (newMessages, oldMessages) => {
 .n-chat-container__touch-hints-content {
   background-color: var(--nscale-body-bg, #ffffff);
   border-radius: var(--nscale-border-radius-lg, 0.75rem);
-  box-shadow: var(--nscale-shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05));
+  box-shadow: var(
+    --nscale-shadow-lg,
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05)
+  );
   padding: var(--nscale-space-4, 1rem);
   max-width: 90%;
   width: 300px;
@@ -1275,8 +1402,12 @@ watch(() => messages.value, (newMessages, oldMessages) => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Responsive Anpassungen */
@@ -1317,12 +1448,12 @@ watch(() => messages.value, (newMessages, oldMessages) => {
   .n-chat-container {
     background-color: var(--nscale-dark-body-bg, #121212);
   }
-  
+
   .n-chat-container__header {
     background-color: var(--nscale-dark-surface-color, #1a1a1a);
     border-color: var(--nscale-dark-border-color, #333);
   }
-  
+
   .n-chat-container__title {
     color: var(--nscale-dark-text, #e2e8f0);
   }
@@ -1330,28 +1461,28 @@ watch(() => messages.value, (newMessages, oldMessages) => {
   .n-chat-container__archive-badge {
     color: var(--nscale-dark-text-tertiary, #94a3b8);
   }
-  
+
   .n-chat-container__input {
     background-color: var(--nscale-dark-surface-color, #1a1a1a);
     border-color: var(--nscale-dark-border-color, #333);
   }
-  
+
   .n-chat-container__action-btn {
     border-color: var(--nscale-dark-border-color, #444);
   }
-  
+
   .n-chat-container__dialog {
     background-color: var(--nscale-dark-body-bg, #121212);
   }
-  
+
   .n-chat-container__dialog-header {
     border-color: var(--nscale-dark-border-color, #333);
   }
-  
+
   .n-chat-container__dialog-title {
     color: var(--nscale-dark-text, #e2e8f0);
   }
-  
+
   .n-chat-container__dialog-toolbar {
     background-color: var(--nscale-dark-surface-color-light, #222);
     border-color: var(--nscale-dark-border-color, #333);

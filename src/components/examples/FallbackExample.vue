@@ -1,7 +1,7 @@
 <template>
   <div class="fallback-example">
     <h2>Fallback-Mechanismus Demo</h2>
-    
+
     <!-- Basis-Beispiel mit EnhancedFeatureWrapper -->
     <section class="example-section">
       <h3>Einfaches Fallback-Beispiel</h3>
@@ -18,7 +18,7 @@
         @component-mounted="handleMount"
       />
     </section>
-    
+
     <!-- Erweitertes Beispiel mit mehrstufigem Fallback -->
     <section class="example-section">
       <h3>Mehrstufiger Fallback</h3>
@@ -32,7 +32,7 @@
         @feature-error="handleAdvancedError"
       />
     </section>
-    
+
     <!-- Beispiel mit ErrorBoundary direkt -->
     <section class="example-section">
       <h3>Low-Level Error-Boundary</h3>
@@ -42,7 +42,7 @@
         @error="handleBoundaryError"
       >
         <CustomErrorComponent :simulate-error="simulateError" />
-        
+
         <template #error="{ error, retry }">
           <div class="custom-error-display">
             <h4>Fehler in der Komponente</h4>
@@ -50,7 +50,7 @@
             <button @click="retry">Erneut versuchen</button>
           </div>
         </template>
-        
+
         <template #fallback="{ resetFallback }">
           <div class="custom-fallback">
             <h4>Fallback-Komponente</h4>
@@ -59,14 +59,14 @@
           </div>
         </template>
       </ErrorBoundary>
-      
+
       <div class="error-controls">
         <button @click="simulateError = !simulateError">
-          {{ simulateError ? 'Fehler beheben' : 'Fehler simulieren' }}
+          {{ simulateError ? "Fehler beheben" : "Fehler simulieren" }}
         </button>
       </div>
     </section>
-    
+
     <!-- Steuerung und Status -->
     <section class="example-section">
       <h3>Fallback-Status</h3>
@@ -89,41 +89,48 @@
             <td>{{ status.level }}/{{ status.maxLevel }}</td>
             <td>{{ status.recoveryAttempts }}</td>
             <td class="status-actions">
-              <button 
+              <button
                 v-if="status.status === 'active'"
                 @click="deactivateFallback(feature)"
                 class="action-button"
-              >Deaktivieren</button>
-              <button 
+              >
+                Deaktivieren
+              </button>
+              <button
                 v-else
                 @click="activateFallback(feature)"
                 class="action-button"
-              >Aktivieren</button>
-              <button 
-                @click="clearErrors(feature)"
-                class="action-button"
-              >Fehler löschen</button>
+              >
+                Aktivieren
+              </button>
+              <button @click="clearErrors(feature)" class="action-button">
+                Fehler löschen
+              </button>
             </td>
           </tr>
         </tbody>
       </table>
     </section>
-    
+
     <!-- Event-Historie -->
     <section class="example-section">
       <h3>Event-Historie</h3>
       <div class="event-history">
-        <div 
-          v-for="(event, index) in eventHistory" 
+        <div
+          v-for="(event, index) in eventHistory"
           :key="`event-${index}`"
           class="event-item"
           :class="`event-${event.type}`"
         >
           <div class="event-time">{{ formatTime(event.timestamp) }}</div>
           <div class="event-type">{{ event.type }}</div>
-          <div class="event-feature">{{ formatFeatureName(event.feature) }}</div>
+          <div class="event-feature">
+            {{ formatFeatureName(event.feature) }}
+          </div>
           <div class="event-data">
-            <pre v-if="event.data">{{ JSON.stringify(event.data, null, 2) }}</pre>
+            <pre v-if="event.data">{{
+              JSON.stringify(event.data, null, 2)
+            }}</pre>
           </div>
         </div>
       </div>
@@ -132,11 +139,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive } from 'vue';
-import EnhancedFeatureWrapper from '@/components/shared/EnhancedFeatureWrapper.vue';
-import ErrorBoundary, { type BoundaryError } from '@/components/shared/ErrorBoundary.vue';
-import { useLogger } from '@/composables/useLogger';
-import { useFallbackManager, type FeatureFallbackState, type FallbackEvent } from '@/utils/fallbackManager';
+import { ref, computed, onMounted, reactive } from "vue";
+import EnhancedFeatureWrapper from "@/components/shared/EnhancedFeatureWrapper.vue";
+import ErrorBoundary, {
+  type BoundaryError,
+} from "@/components/shared/ErrorBoundary.vue";
+import { useLogger } from "@/composables/useLogger";
+import {
+  useFallbackManager,
+  type FeatureFallbackState,
+  type FallbackEvent,
+} from "@/utils/fallbackManager";
 
 // Logger für die Komponente
 const logger = useLogger();
@@ -146,20 +159,23 @@ const fallbackManager = useFallbackManager({
   onEvent: (event) => {
     // Events in Event-Historie speichern
     eventHistory.value.unshift(event);
-    
+
     // Historie auf 20 Einträge begrenzen
     if (eventHistory.value.length > 20) {
       eventHistory.value.pop();
     }
-    
+
     // In Konsole loggen
-    logger.info(`[FallbackManager] Event: ${event.type} für ${event.feature}`, event.data);
-  }
+    logger.info(
+      `[FallbackManager] Event: ${event.type} für ${event.feature}`,
+      event.data,
+    );
+  },
 });
 
 // Komponenten für den Demo-Bereich
 const NewComponent = {
-  name: 'NewDocConverter',
+  name: "NewDocConverter",
   template: `
     <div class="new-component">
       <h4>Neue Vue 3 SFC-Komponente</h4>
@@ -172,11 +188,11 @@ const NewComponent = {
   setup() {
     const countdown = ref(10);
     const intervalId = ref<number | null>(null);
-    
+
     function triggerError() {
-      throw new Error('Manuell ausgelöster Fehler in neuer Komponente');
+      throw new Error("Manuell ausgelöster Fehler in neuer Komponente");
     }
-    
+
     function reset() {
       countdown.value = 10;
       if (intervalId.value !== null) {
@@ -184,7 +200,7 @@ const NewComponent = {
         intervalId.value = null;
       }
     }
-    
+
     onMounted(() => {
       // Countdown starten, der nach Ablauf einen Fehler auslöst
       intervalId.value = window.setInterval(() => {
@@ -194,17 +210,17 @@ const NewComponent = {
         }
       }, 1000);
     });
-    
+
     return {
       countdown,
       triggerError,
-      reset
+      reset,
     };
-  }
+  },
 };
 
 const IntermediateComponent = {
-  name: 'IntermediateComponent',
+  name: "IntermediateComponent",
   template: `
     <div class="intermediate-component">
       <h4>Intermediäre Komponente</h4>
@@ -212,21 +228,21 @@ const IntermediateComponent = {
       <p>Diese Komponente wird verwendet, wenn die neue Komponente Fehler verursacht, 
          aber noch nicht auf die Legacy-Version zurückgefallen werden soll.</p>
     </div>
-  `
+  `,
 };
 
 const LegacyComponent = {
-  name: 'LegacyDocConverter',
+  name: "LegacyDocConverter",
   template: `
     <div class="legacy-component">
       <h4>Legacy-Komponente</h4>
       <p>Dies ist die ursprüngliche Implementierung als Fallback.</p>
     </div>
-  `
+  `,
 };
 
 const NewAdvancedComponent = {
-  name: 'NewAdvancedComponent',
+  name: "NewAdvancedComponent",
   template: `
     <div class="new-advanced-component">
       <h4>Erweiterte neue Komponente</h4>
@@ -240,30 +256,30 @@ const NewAdvancedComponent = {
   `,
   setup() {
     const errorRate = ref(0);
-    
+
     function performAction() {
       // Mit konfigurierter Wahrscheinlichkeit Fehler auslösen
       if (Math.random() * 100 < errorRate.value) {
-        throw new Error('Zufälliger Fehler basierend auf Fehlerrate');
+        throw new Error("Zufälliger Fehler basierend auf Fehlerrate");
       } else {
-        console.log('Aktion erfolgreich ausgeführt');
+        console.log("Aktion erfolgreich ausgeführt");
       }
     }
-    
+
     return {
       errorRate,
-      performAction
+      performAction,
     };
-  }
+  },
 };
 
 const CustomErrorComponent = {
-  name: 'CustomErrorComponent',
+  name: "CustomErrorComponent",
   props: {
     simulateError: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   template: `
     <div class="custom-error-component">
@@ -274,9 +290,11 @@ const CustomErrorComponent = {
   `,
   setup(props) {
     if (props.simulateError) {
-      throw new Error('Simulierter Fehler in der benutzerdefinierten Komponente');
+      throw new Error(
+        "Simulierter Fehler in der benutzerdefinierten Komponente",
+      );
     }
-  }
+  },
 };
 
 // Zustandsvariablen für das Beispiel
@@ -284,12 +302,12 @@ const simulateError = ref(false);
 const eventHistory = ref<FallbackEvent[]>([]);
 const featureStatus = computed(() => {
   const result: Record<string, FeatureFallbackState> = {};
-  
+
   // Zustand aller Features sammeln
   for (const [feature, state] of fallbackManager.getAllStatus()) {
     result[feature] = state;
   }
-  
+
   return result;
 });
 
@@ -298,7 +316,7 @@ function handleError(error: BoundaryError, feature: string) {
   logger.error(`Fehler in Feature ${feature}: ${error.message}`, {
     component: error.component,
     severity: error.severity,
-    category: error.category
+    category: error.category,
   });
 }
 
@@ -310,23 +328,26 @@ function handleRetry(error: BoundaryError, feature: string, attempt: number) {
   logger.info(`Wiederholungsversuch ${attempt} für Feature ${feature}`);
 }
 
-function handleMount(feature: string, stage: 'new' | 'intermediate' | 'legacy') {
+function handleMount(
+  feature: string,
+  stage: "new" | "intermediate" | "legacy",
+) {
   logger.info(`Komponente für ${feature} gemountet im Stadium: ${stage}`);
 }
 
 // Handler für das erweiterte Beispiel
 function handleAdvancedError(error: BoundaryError) {
-  logger.error('Fehler in erweiterter Komponente', {
+  logger.error("Fehler in erweiterter Komponente", {
     message: error.message,
-    severity: error.severity
+    severity: error.severity,
   });
 }
 
 // Handler für ErrorBoundary direkt
 function handleBoundaryError(error: BoundaryError) {
-  logger.error('Error-Boundary-Fehler', {
+  logger.error("Error-Boundary-Fehler", {
     message: error.message,
-    component: error.component
+    component: error.component,
   });
 }
 
@@ -346,43 +367,43 @@ function clearErrors(feature: string) {
 // Hilfsfunktionen
 function formatFeatureName(feature: string): string {
   return feature
-    .replace(/^use/, '')
-    .replace(/([A-Z])/g, ' $1')
+    .replace(/^use/, "")
+    .replace(/([A-Z])/g, " $1")
     .trim();
 }
 
 function formatTime(date: Date): string {
   return date.toLocaleTimeString(undefined, {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
   });
 }
 
 // Bei Komponenten-Mountierung automatisch alle Features konfigurieren
 onMounted(() => {
   // Features konfigurieren, falls nicht bereits vorhanden
-  fallbackManager.configureFeature('useSfcDocConverter', {
-    strategy: 'threshold',
+  fallbackManager.configureFeature("useSfcDocConverter", {
+    strategy: "threshold",
     errorThreshold: 3,
     autoRecovery: true,
     recoveryTimeout: 10000, // 10 Sekunden (für Demo-Zwecke)
-    useProgressiveFallback: false
+    useProgressiveFallback: false,
   });
-  
-  fallbackManager.configureFeature('useSfcSettings', {
-    strategy: 'progressive',
+
+  fallbackManager.configureFeature("useSfcSettings", {
+    strategy: "progressive",
     errorThreshold: 2,
     autoRecovery: true,
     recoveryTimeout: 5000, // 5 Sekunden (für Demo-Zwecke)
-    useProgressiveFallback: true
+    useProgressiveFallback: true,
   });
 });
 </script>
 
 <style scoped>
 .fallback-example {
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-family: "Segoe UI", system-ui, sans-serif;
   max-width: 900px;
   margin: 0 auto;
   padding: 20px;
@@ -399,7 +420,7 @@ h2 {
   border-radius: 6px;
   padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 h3 {
@@ -443,7 +464,7 @@ button:hover {
   margin-top: 10px;
 }
 
-.fallback-status-table th, 
+.fallback-status-table th,
 .fallback-status-table td {
   padding: 8px;
   text-align: left;
@@ -589,15 +610,15 @@ button:hover {
   .fallback-example {
     padding: 10px;
   }
-  
+
   .example-section {
     padding: 15px;
   }
-  
+
   .event-item {
     flex-direction: column;
   }
-  
+
   .event-time,
   .event-type,
   .event-feature {

@@ -1,17 +1,28 @@
 <template>
-  <aside class="nscale-sidebar" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+  <aside
+    class="nscale-sidebar"
+    :class="{ 'sidebar-collapsed': isSidebarCollapsed }"
+  >
     <div class="sidebar-header">
       <h2 class="sidebar-title">Unterhaltungen</h2>
-      <button class="collapse-button" @click="toggleSidebar" title="Seitenleiste ausblenden">
-        <i :class="isSidebarCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left'"></i>
+      <button
+        class="collapse-button"
+        @click="toggleSidebar"
+        title="Seitenleiste ausblenden"
+      >
+        <i
+          :class="
+            isSidebarCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left'
+          "
+        ></i>
       </button>
     </div>
-    
+
     <div v-if="isLoading" class="sidebar-loading">
       <div class="loading-spinner"></div>
       <span>Lade Unterhaltungen...</span>
     </div>
-    
+
     <div v-else-if="sessions.length === 0" class="no-sessions">
       <i class="fas fa-comment-slash"></i>
       <p>Keine Unterhaltungen vorhanden</p>
@@ -20,12 +31,12 @@
         Neue Unterhaltung starten
       </button>
     </div>
-    
+
     <ul v-else class="session-list">
-      <li 
-        v-for="session in sessions" 
+      <li
+        v-for="session in sessions"
         :key="session.id"
-        class="nscale-session-item" 
+        class="nscale-session-item"
         :class="{ 'active-session': activeSessionId === session.id }"
         @click="selectSession(session.id)"
       >
@@ -33,8 +44,8 @@
           <i class="fas fa-comment"></i>
           <span class="session-title">{{ session.title }}</span>
         </div>
-        <button 
-          class="session-delete-button" 
+        <button
+          class="session-delete-button"
           @click.stop="confirmDeleteSession(session.id)"
           title="Unterhaltung löschen"
         >
@@ -42,18 +53,18 @@
         </button>
       </li>
     </ul>
-    
+
     <div v-if="showDeleteConfirm" class="delete-confirmation">
       <p>Unterhaltung wirklich löschen?</p>
       <div class="delete-actions">
-        <button 
-          class="nscale-btn-secondary confirm-cancel-btn" 
+        <button
+          class="nscale-btn-secondary confirm-cancel-btn"
           @click="cancelDelete"
         >
           Abbrechen
         </button>
-        <button 
-          class="nscale-btn-primary confirm-delete-btn" 
+        <button
+          class="nscale-btn-primary confirm-delete-btn"
           @click="deleteSession"
         >
           Löschen
@@ -64,9 +75,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useStore } from 'vuex';
-import { useRouter } from 'vue-router';
+import { ref, computed } from "vue";
+import { useStore } from "vuex";
+import { useRouter } from "vue-router";
 
 const store = useStore();
 const router = useRouter();
@@ -75,19 +86,20 @@ const isSidebarCollapsed = ref(false);
 const showDeleteConfirm = ref(false);
 const sessionToDelete = ref<string | null>(null);
 
-const sessions = computed(() => store.getters['sessions/allSessions']);
-const isLoading = computed(() => store.getters['sessions/isLoading']);
-const activeSessionId = computed(() => store.getters['sessions/activeSessionId']);
+const sessions = computed(() => store.getters["sessions/allSessions"]);
+const isLoading = computed(() => store.getters["sessions/isLoading"]);
+const activeSessionId = computed(
+  () => store.getters["sessions/activeSessionId"],
+);
 
 function toggleSidebar() {
   isSidebarCollapsed.value = !isSidebarCollapsed.value;
 }
 
 function createNewSession() {
-  store.dispatch('sessions/createSession')
-    .then((sessionId: string) => {
-      router.push(`/session/${sessionId}`);
-    });
+  store.dispatch("sessions/createSession").then((sessionId: string) => {
+    router.push(`/session/${sessionId}`);
+  });
 }
 
 function selectSession(sessionId: string) {
@@ -106,20 +118,19 @@ function cancelDelete() {
 
 function deleteSession() {
   if (sessionToDelete.value) {
-    store.dispatch('sessions/deleteSession', sessionToDelete.value)
-      .then(() => {
-        if (activeSessionId.value === sessionToDelete.value) {
-          // If we're deleting the active session, navigate to the first available session
-          // or to the home page if no sessions remain
-          if (sessions.value.length > 0) {
-            router.push(`/session/${sessions.value[0].id}`);
-          } else {
-            router.push('/');
-          }
+    store.dispatch("sessions/deleteSession", sessionToDelete.value).then(() => {
+      if (activeSessionId.value === sessionToDelete.value) {
+        // If we're deleting the active session, navigate to the first available session
+        // or to the home page if no sessions remain
+        if (sessions.value.length > 0) {
+          router.push(`/session/${sessions.value[0].id}`);
+        } else {
+          router.push("/");
         }
-      });
+      }
+    });
   }
-  
+
   showDeleteConfirm.value = false;
   sessionToDelete.value = null;
 }
@@ -225,7 +236,10 @@ function deleteSession() {
   opacity: 0;
   padding: 4px;
   border-radius: 4px;
-  transition: opacity 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .nscale-session-item:hover .session-delete-button {
@@ -313,7 +327,9 @@ function deleteSession() {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 768px) {
@@ -324,7 +340,7 @@ function deleteSession() {
     border-right: none;
     border-bottom: 1px solid var(--nscale-border);
   }
-  
+
   .sidebar-collapsed {
     height: 50px;
     width: 100%;

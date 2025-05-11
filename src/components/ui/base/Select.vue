@@ -1,24 +1,24 @@
 <template>
-  <div 
+  <div
     class="n-select-wrapper"
-    :class="{ 
-      'n-select-wrapper--disabled': disabled, 
+    :class="{
+      'n-select-wrapper--disabled': disabled,
       'n-select-wrapper--error': !!error,
       'n-select-wrapper--focused': isFocused,
-      'n-select-wrapper--open': isOpen
+      'n-select-wrapper--open': isOpen,
     }"
   >
-    <label 
-      v-if="label" 
-      :for="selectId" 
+    <label
+      v-if="label"
+      :for="selectId"
       class="n-select-label"
       :class="{ 'n-select-label--required': required }"
     >
       {{ label }}
     </label>
-    
+
     <div class="n-select-container">
-      <div 
+      <div
         ref="selectRef"
         class="n-select-field-wrapper"
         @click="toggleDropdown"
@@ -40,7 +40,12 @@
         </div>
 
         <div class="n-select-suffix">
-          <svg class="n-select-arrow" :class="{ 'n-select-arrow--open': isOpen }" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <svg
+            class="n-select-arrow"
+            :class="{ 'n-select-arrow--open': isOpen }"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <path d="M7 10l5 5 5-5z" />
           </svg>
         </div>
@@ -61,11 +66,13 @@
         @focus="handleFocus"
         @blur="handleBlur"
       >
-        <option v-if="placeholder" value="" disabled selected>{{ placeholder }}</option>
-        <option 
-          v-for="option in normalizedOptions" 
-          :key="option.value" 
-          :value="option.value" 
+        <option v-if="placeholder" value="" disabled selected>
+          {{ placeholder }}
+        </option>
+        <option
+          v-for="option in normalizedOptions"
+          :key="option.value"
+          :value="option.value"
           :disabled="option.disabled"
         >
           {{ option.label }}
@@ -74,8 +81,8 @@
 
       <!-- Custom dropdown -->
       <Transition name="n-select-dropdown">
-        <div 
-          v-show="isOpen" 
+        <div
+          v-show="isOpen"
           ref="dropdownRef"
           class="n-select-dropdown"
           :style="dropdownStyle"
@@ -84,14 +91,14 @@
           :aria-labelledby="label ? selectId : undefined"
         >
           <div class="n-select-options-list" ref="optionsListRef">
-            <div 
-              v-for="(option, index) in normalizedOptions" 
+            <div
+              v-for="(option, index) in normalizedOptions"
               :key="option.value"
               class="n-select-option"
               :class="{
                 'n-select-option--selected': isOptionSelected(option.value),
                 'n-select-option--highlighted': highlightedIndex === index,
-                'n-select-option--disabled': option.disabled
+                'n-select-option--disabled': option.disabled,
               }"
               role="option"
               :id="`${selectId}-option-${index}`"
@@ -101,19 +108,30 @@
               @mouseenter="() => !option.disabled && (highlightedIndex = index)"
               tabindex="-1"
             >
-              <slot name="option" :option="option" :selected="isOptionSelected(option.value)">
+              <slot
+                name="option"
+                :option="option"
+                :selected="isOptionSelected(option.value)"
+              >
                 {{ option.label }}
               </slot>
             </div>
-            
-            <div v-if="normalizedOptions.length === 0" class="n-select-no-options">
+
+            <div
+              v-if="normalizedOptions.length === 0"
+              class="n-select-no-options"
+            >
               {{ noOptionsText }}
             </div>
           </div>
         </div>
       </Transition>
 
-      <div v-if="helperText || error" class="n-select-helper-text" :id="helperId">
+      <div
+        v-if="helperText || error"
+        class="n-select-helper-text"
+        :id="helperId"
+      >
         <span v-if="error" class="n-select-error-text">{{ error }}</span>
         <span v-else>{{ helperText }}</span>
       </div>
@@ -122,8 +140,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
-import { uniqueId } from 'lodash';
+import {
+  ref,
+  computed,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+} from "vue";
+import { uniqueId } from "lodash";
 
 type SelectOptionValue = string | number | boolean | null;
 
@@ -171,25 +196,25 @@ export interface SelectProps {
 }
 
 const props = withDefaults(defineProps<SelectProps>(), {
-  placeholder: 'Select an option',
+  placeholder: "Select an option",
   disabled: false,
   required: false,
-  noOptionsText: 'No options available',
+  noOptionsText: "No options available",
   closeOnSelect: true,
-  dropdownMaxHeight: '300px'
+  dropdownMaxHeight: "300px",
 });
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: SelectOptionValue): void;
-  (e: 'change', value: SelectOptionValue): void;
-  (e: 'focus', event: FocusEvent): void;
-  (e: 'blur', event: FocusEvent): void;
-  (e: 'open'): void;
-  (e: 'close'): void;
+  (e: "update:modelValue", value: SelectOptionValue): void;
+  (e: "change", value: SelectOptionValue): void;
+  (e: "focus", event: FocusEvent): void;
+  (e: "blur", event: FocusEvent): void;
+  (e: "open"): void;
+  (e: "close"): void;
 }>();
 
 // Internal state
-const selectId = computed(() => props.id || uniqueId('n-select-'));
+const selectId = computed(() => props.id || uniqueId("n-select-"));
 const helperId = computed(() => `${selectId.value}-helper`);
 const selectRef = ref<HTMLElement | null>(null);
 const nativeSelectRef = ref<HTMLSelectElement | null>(null);
@@ -198,17 +223,17 @@ const optionsListRef = ref<HTMLElement | null>(null);
 const isFocused = ref(false);
 const isOpen = ref(false);
 const highlightedIndex = ref(-1);
-const dropdownStyle = ref<{[key: string]: string}>({});
+const dropdownStyle = ref<{ [key: string]: string }>({});
 
 // Normalize options to support both object and primitive option formats
 const normalizedOptions = computed(() => {
-  return props.options.map(option => {
-    if (typeof option === 'object' && option !== null) {
+  return props.options.map((option) => {
+    if (typeof option === "object" && option !== null) {
       return option as SelectOption;
     } else {
       return {
         label: String(option),
-        value: option as SelectOptionValue
+        value: option as SelectOptionValue,
       };
     }
   });
@@ -216,10 +241,10 @@ const normalizedOptions = computed(() => {
 
 // Get display text for the selected option
 const selectedDisplay = computed(() => {
-  const selected = normalizedOptions.value.find(option => 
-    option.value === props.modelValue
+  const selected = normalizedOptions.value.find(
+    (option) => option.value === props.modelValue,
   );
-  return selected ? selected.label : '';
+  return selected ? selected.label : "";
 });
 
 // Check if an option is currently selected
@@ -230,14 +255,14 @@ function isOptionSelected(value: SelectOptionValue): boolean {
 // Position the dropdown relative to the select field
 function positionDropdown() {
   if (!selectRef.value || !dropdownRef.value) return;
-  
+
   const selectRect = selectRef.value.getBoundingClientRect();
   const viewportHeight = window.innerHeight;
   const spaceBelow = viewportHeight - selectRect.bottom;
-  
+
   // Set the width to match the select field
   dropdownStyle.value.width = `${selectRect.width}px`;
-  
+
   // Decide whether to position the dropdown below or above the select
   if (spaceBelow < 200 && selectRect.top > spaceBelow) {
     // Position above
@@ -254,7 +279,7 @@ function positionDropdown() {
 // Toggle the dropdown
 function toggleDropdown() {
   if (props.disabled) return;
-  
+
   if (isOpen.value) {
     closeDropdown();
   } else {
@@ -265,58 +290,60 @@ function toggleDropdown() {
 // Open the dropdown
 function openDropdown() {
   if (props.disabled || isOpen.value) return;
-  
+
   isOpen.value = true;
   positionDropdown();
   highlightSelectedOption();
-  emit('open');
-  
+  emit("open");
+
   nextTick(() => {
     if (optionsListRef.value && highlightedIndex.value !== -1) {
-      const highlightedOption = optionsListRef.value.children[highlightedIndex.value] as HTMLElement;
+      const highlightedOption = optionsListRef.value.children[
+        highlightedIndex.value
+      ] as HTMLElement;
       if (highlightedOption) {
-        highlightedOption.scrollIntoView({ block: 'nearest' });
+        highlightedOption.scrollIntoView({ block: "nearest" });
       }
     }
   });
-  
+
   // Add click outside handler
-  document.addEventListener('mousedown', handleClickOutside);
-  window.addEventListener('resize', handleResize);
+  document.addEventListener("mousedown", handleClickOutside);
+  window.addEventListener("resize", handleResize);
 }
 
 // Close the dropdown
 function closeDropdown() {
   if (!isOpen.value) return;
-  
+
   isOpen.value = false;
-  emit('close');
-  
+  emit("close");
+
   // Remove event listeners
-  document.removeEventListener('mousedown', handleClickOutside);
-  window.removeEventListener('resize', handleResize);
+  document.removeEventListener("mousedown", handleClickOutside);
+  window.removeEventListener("resize", handleResize);
 }
 
 // Highlight the currently selected option
 function highlightSelectedOption() {
-  const selectedIndex = normalizedOptions.value.findIndex(option => 
-    option.value === props.modelValue
+  const selectedIndex = normalizedOptions.value.findIndex(
+    (option) => option.value === props.modelValue,
   );
-  
+
   highlightedIndex.value = selectedIndex !== -1 ? selectedIndex : 0;
 }
 
 // Handle option selection
 function selectOption(option: SelectOption) {
   if (props.disabled || option.disabled) return;
-  
-  emit('update:modelValue', option.value);
-  emit('change', option.value);
-  
+
+  emit("update:modelValue", option.value);
+  emit("change", option.value);
+
   if (props.closeOnSelect) {
     closeDropdown();
   }
-  
+
   // Focus the select element
   nativeSelectRef.value?.focus();
 }
@@ -324,43 +351,46 @@ function selectOption(option: SelectOption) {
 // Handle focus events
 function handleFocus(event: FocusEvent) {
   isFocused.value = true;
-  emit('focus', event);
+  emit("focus", event);
 }
 
 // Handle blur events
 function handleBlur(event: FocusEvent) {
   isFocused.value = false;
-  emit('blur', event);
+  emit("blur", event);
 }
 
 // Handle changes to the native select (for accessibility)
 function handleNativeChange(event: Event) {
   const target = event.target as HTMLSelectElement;
   let value: SelectOptionValue = target.value;
-  
+
   // Handle type conversion to match the expected value type
-  const selectedOption = normalizedOptions.value.find(option => 
-    String(option.value) === String(value)
+  const selectedOption = normalizedOptions.value.find(
+    (option) => String(option.value) === String(value),
   );
-  
+
   if (selectedOption) {
     value = selectedOption.value;
   }
-  
-  emit('update:modelValue', value);
-  emit('change', value);
+
+  emit("update:modelValue", value);
+  emit("change", value);
 }
 
 // Handle keyboard navigation
 function handleKeydown(event: KeyboardEvent) {
   if (props.disabled) return;
-  
+
   switch (event.key) {
-    case 'Enter':
-    case ' ':
+    case "Enter":
+    case " ":
       event.preventDefault();
       if (isOpen.value) {
-        if (highlightedIndex.value >= 0 && highlightedIndex.value < normalizedOptions.value.length) {
+        if (
+          highlightedIndex.value >= 0 &&
+          highlightedIndex.value < normalizedOptions.value.length
+        ) {
           const option = normalizedOptions.value[highlightedIndex.value];
           if (!option.disabled) {
             selectOption(option);
@@ -370,18 +400,18 @@ function handleKeydown(event: KeyboardEvent) {
         openDropdown();
       }
       break;
-      
-    case 'ArrowDown':
+
+    case "ArrowDown":
       event.preventDefault();
       if (isOpen.value) {
         let nextIndex = highlightedIndex.value + 1;
         while (
-          nextIndex < normalizedOptions.value.length && 
+          nextIndex < normalizedOptions.value.length &&
           normalizedOptions.value[nextIndex].disabled
         ) {
           nextIndex++;
         }
-        
+
         if (nextIndex < normalizedOptions.value.length) {
           highlightedIndex.value = nextIndex;
           scrollOptionIntoView(nextIndex);
@@ -390,18 +420,15 @@ function handleKeydown(event: KeyboardEvent) {
         openDropdown();
       }
       break;
-      
-    case 'ArrowUp':
+
+    case "ArrowUp":
       event.preventDefault();
       if (isOpen.value) {
         let prevIndex = highlightedIndex.value - 1;
-        while (
-          prevIndex >= 0 && 
-          normalizedOptions.value[prevIndex].disabled
-        ) {
+        while (prevIndex >= 0 && normalizedOptions.value[prevIndex].disabled) {
           prevIndex--;
         }
-        
+
         if (prevIndex >= 0) {
           highlightedIndex.value = prevIndex;
           scrollOptionIntoView(prevIndex);
@@ -410,13 +437,13 @@ function handleKeydown(event: KeyboardEvent) {
         openDropdown();
       }
       break;
-      
-    case 'Escape':
+
+    case "Escape":
       event.preventDefault();
       closeDropdown();
       break;
-      
-    case 'Tab':
+
+    case "Tab":
       closeDropdown();
       break;
   }
@@ -448,30 +475,36 @@ function scrollOptionIntoView(index: number) {
     if (optionsListRef.value) {
       const option = optionsListRef.value.children[index] as HTMLElement;
       if (option) {
-        option.scrollIntoView({ block: 'nearest' });
+        option.scrollIntoView({ block: "nearest" });
       }
     }
   });
 }
 
 // Watch for model value changes to update the dropdown
-watch(() => props.modelValue, () => {
-  if (isOpen.value) {
-    highlightSelectedOption();
-  }
-});
+watch(
+  () => props.modelValue,
+  () => {
+    if (isOpen.value) {
+      highlightSelectedOption();
+    }
+  },
+);
 
 // Watch for options changes to reposition the dropdown
-watch(() => props.options, () => {
-  if (isOpen.value) {
-    nextTick(() => positionDropdown());
-  }
-});
+watch(
+  () => props.options,
+  () => {
+    if (isOpen.value) {
+      nextTick(() => positionDropdown());
+    }
+  },
+);
 
 // Clean up event listeners
 onBeforeUnmount(() => {
-  document.removeEventListener('mousedown', handleClickOutside);
-  window.removeEventListener('resize', handleResize);
+  document.removeEventListener("mousedown", handleClickOutside);
+  window.removeEventListener("resize", handleResize);
 });
 </script>
 
@@ -481,7 +514,15 @@ onBeforeUnmount(() => {
   flex-direction: column;
   width: 100%;
   margin-bottom: 1rem;
-  font-family: var(--nscale-font-family-base, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-family: var(
+    --nscale-font-family-base,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif
+  );
   position: relative;
 }
 
@@ -592,7 +633,11 @@ onBeforeUnmount(() => {
   background-color: var(--nscale-white, #ffffff);
   border: 1px solid var(--nscale-gray-200, #e2e8f0);
   border-radius: var(--nscale-border-radius-md, 0.375rem);
-  box-shadow: var(--nscale-shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05));
+  box-shadow: var(
+    --nscale-shadow-lg,
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05)
+  );
   overflow: hidden;
 }
 
@@ -646,7 +691,9 @@ onBeforeUnmount(() => {
 /* Animation for dropdown */
 .n-select-dropdown-enter-active,
 .n-select-dropdown-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 
 .n-select-dropdown-enter-from,
@@ -660,32 +707,32 @@ onBeforeUnmount(() => {
   .n-select-label {
     color: var(--nscale-gray-300, #d1d5db);
   }
-  
+
   .n-select-field-wrapper {
     background-color: var(--nscale-gray-800, #1f2937);
     border-color: var(--nscale-gray-600, #4b5563);
     color: var(--nscale-gray-200, #e2e8f0);
   }
-  
+
   .n-select-placeholder {
     color: var(--nscale-gray-500, #6b7280);
   }
-  
+
   .n-select-wrapper--disabled .n-select-field-wrapper {
     background-color: var(--nscale-gray-700, #374151);
     border-color: var(--nscale-gray-600, #4b5563);
     color: var(--nscale-gray-500, #6b7280);
   }
-  
+
   .n-select-dropdown {
     background-color: var(--nscale-gray-800, #1f2937);
     border-color: var(--nscale-gray-700, #374151);
   }
-  
+
   .n-select-option:hover:not(.n-select-option--disabled) {
     background-color: var(--nscale-gray-700, #374151);
   }
-  
+
   .n-select-option--highlighted {
     background-color: var(--nscale-gray-700, #374151);
   }

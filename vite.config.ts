@@ -1,25 +1,45 @@
-import { defineConfig, loadEnv } from 'vite';
-import vue from '@vitejs/plugin-vue';
-import { fileURLToPath, URL } from 'node:url';
-import { resolve } from 'node:path';
-import { visualizer } from 'rollup-plugin-visualizer';
-import viteCompression from 'vite-plugin-compression';
-import { splitVendorChunkPlugin } from 'vite';
-import autoprefixer from 'autoprefixer';
+import { defineConfig, loadEnv } from "vite";
+import vue from "@vitejs/plugin-vue";
+import { fileURLToPath, URL } from "node:url";
+import { resolve } from "node:path";
+import { visualizer } from "rollup-plugin-visualizer";
+import viteCompression from "vite-plugin-compression";
+import { splitVendorChunkPlugin } from "vite";
+import autoprefixer from "autoprefixer";
+
+// Import-Anweisungen für neue Optimierungs-Plugins (nur wenn sie installiert sind)
+let imageminPlugin;
+try {
+  imageminPlugin = require('vite-plugin-imagemin').default;
+} catch (e) {
+  console.warn('vite-plugin-imagemin ist nicht installiert. Bildoptimierung wird übersprungen.');
+}
+let vitePluginPurgeCSS;
+try {
+  vitePluginPurgeCSS = require('@fullhuman/postcss-purgecss');
+} catch (e) {
+  console.warn('@fullhuman/postcss-purgecss ist nicht installiert. CSS-Purging wird übersprungen.');
+}
+let cssnanoPlugin;
+try {
+  cssnanoPlugin = require('cssnano');
+} catch (e) {
+  console.warn('cssnano ist nicht installiert. CSS-Minifizierung wird eingeschränkt sein.');
+}
 
 // Pfade für Projektstruktur
 const projectRoot = resolve(__dirname);
-const srcDir = resolve(projectRoot, 'src');
-const distDir = resolve(projectRoot, 'dist');
+const srcDir = resolve(projectRoot, "src");
+const distDir = resolve(projectRoot, "dist");
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   // Lade Umgebungsvariablen basierend auf dem Modus (development, production, staging)
-  const env = loadEnv(mode, process.cwd(), '');
-  
+  const env = loadEnv(mode, process.cwd(), "");
+
   // Bestimme, ob wir uns in der Produktion befinden
-  const isProduction = mode === 'production';
-  
+  const isProduction = mode === "production";
+
   return {
     // Plugins für Vite
     plugins: [
@@ -27,325 +47,627 @@ export default defineConfig(({ mode }) => {
       splitVendorChunkPlugin(),
       viteCompression({
         // GZIP-Kompression für statische Assets
-        algorithm: 'gzip',
-        ext: '.gz',
+        algorithm: "gzip",
+        ext: ".gz",
         threshold: 10240, // 10KB Minimalgröße für Kompression
         disable: !isProduction,
-        deleteOriginFile: false
+        deleteOriginFile: false,
       }),
       viteCompression({
         // Brotli-Kompression für noch bessere Kompression
-        algorithm: 'brotliCompress',
-        ext: '.br',
+        algorithm: "brotliCompress",
+        ext: ".br",
         threshold: 10240,
         disable: !isProduction,
-        deleteOriginFile: false
+        deleteOriginFile: false,
+      }),
+      // Image Optimization Plugin - nur für Produktionsbuilds
+      isProduction && imageminPlugin && imageminPlugin({
+        gifsicle: {
+          optimizationLevel: 7,
+          interlaced: false,
+        },
+        optipng: {
+          optimizationLevel: 7,
+        },
+        mozjpeg: {
+          quality: 80,
+        },
+        pngquant: {
+          quality: [0.8, 0.9],
+          speed: 4,
+        },
+        svgo: {
+          plugins: [
+            {
+              name: 'removeViewBox',
+              active: false,
+            },
+            {
+              name: 'removeEmptyAttrs',
+              active: false,
+            },
+          ],
+        },
       }),
       // Bundle-Analyseplugin (nur im Produktionsmodus aktiviert)
-      isProduction && visualizer({
-        filename: resolve(distDir, 'stats.html'),
-        open: false,
-        gzipSize: true,
-        brotliSize: true
-      })
-    ],
-    
+      isProduction &&
+        visualizer({
+          filename: resolve(distDir, "stats.html"),
+          open: false,
+          gzipSize: true,
+          brotliSize: true,
+          template: 'treemap', // Verwende treemap für detailliertere Visualisierung
+        }),
+    ],,
+
     // Definition von Umgebungsvariablen
     define: {
       // Zusätzliche Umgebungsvariablen für die Client-Seite
       __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
       __BUILD_DATE__: JSON.stringify(new Date().toISOString()),
-      __ENV__: JSON.stringify(mode)
+      __ENV__: JSON.stringify(mode),
     },
-    
+
     // Konfiguration für die öffentlichen Verzeichnisse
-    publicDir: 'public',
-    
+    publicDir: "public",
+
     // CSS-spezifische Konfiguration
+    
+    // Verbesserte CSS-Konfiguration
     css: {
       preprocessorOptions: {
         scss: {
-          additionalData: `@import "@/assets/styles/variables.scss";`
-        }
+          additionalData: `@import "@/assets/styles/variables.scss";`,
+        },
+      },
+      // Erweiterte PostCSS-Plugins für CSS-Optimierung
+      postcss: {
+        plugins: [
+          autoprefixer({
+            overrideBrowserslist: ["last 2 versions", "not dead", "> 0.5%"],
+          }),
+          // Nur CSS-Optimierung für Produktion hinzufügen
+          ...(isProduction ? [
+            require('cssnano')({
+              preset: ['default', {
+                discardComments: {
+                  removeAll: true,
+                },
+                minifyFontValues: true,
+                normalizeWhitespace: true,
+                calc: true,
+                colormin: true,
+                convertValues: true,
+                discardDuplicates: true,
+                discardEmpty: true,
+                mergeIdents: false,
+                reduceIdents: false,
+                zindex: false
+              }]
+            })
+          ] : [])
+        ],
+      },
+      // CSS-Modul-Konfiguration
+      modules: {
+        generateScopedName: isProduction
+          ? "[hash:base64:8]"
+          : "[local]_[hash:base64:5]",
+      },
+      // CSS-Codeaufspaltung und Sourcemaps
+      devSourcemap: !isProduction,
+    },,
       },
       // PostCSS-Plugins für CSS-Optimierung
       postcss: {
         plugins: [
           autoprefixer({
-            overrideBrowserslist: ['last 2 versions', 'not dead', '> 0.5%']
-          })
-        ]
+            overrideBrowserslist: ["last 2 versions", "not dead", "> 0.5%"],
+          }),
+        ],
       },
       // CSS-Modul-Konfiguration
       modules: {
-        generateScopedName: isProduction 
-          ? '[hash:base64:8]' 
-          : '[local]_[hash:base64:5]'
+        generateScopedName: isProduction
+          ? "[hash:base64:8]"
+          : "[local]_[hash:base64:5]",
       },
       // CSS-Codeaufspaltung
-      devSourcemap: !isProduction
+      devSourcemap: !isProduction,
     },
-    
+
     // Verbesserte Alias-Konfiguration
     resolve: {
       alias: {
-        '@': fileURLToPath(new URL('./src', import.meta.url)),
-        '@components': fileURLToPath(new URL('./src/components', import.meta.url)),
-        '@composables': fileURLToPath(new URL('./src/composables', import.meta.url)),
-        '@stores': fileURLToPath(new URL('./src/stores', import.meta.url)),
-        '@services': fileURLToPath(new URL('./src/services', import.meta.url)),
-        '@assets': fileURLToPath(new URL('./src/assets', import.meta.url)),
-        '@utils': fileURLToPath(new URL('./src/utils', import.meta.url)),
-        '@types': fileURLToPath(new URL('./src/types', import.meta.url))
+        "@": fileURLToPath(new URL("./src", import.meta.url)),
+        "@components": fileURLToPath(
+          new URL("./src/components", import.meta.url),
+        ),
+        "@composables": fileURLToPath(
+          new URL("./src/composables", import.meta.url),
+        ),
+        "@stores": fileURLToPath(new URL("./src/stores", import.meta.url)),
+        "@services": fileURLToPath(new URL("./src/services", import.meta.url)),
+        "@assets": fileURLToPath(new URL("./src/assets", import.meta.url)),
+        "@utils": fileURLToPath(new URL("./src/utils", import.meta.url)),
+        "@types": fileURLToPath(new URL("./src/types", import.meta.url)),
       },
-      extensions: ['.js', '.ts', '.vue', '.json', '.mjs']
+      extensions: [".js", ".ts", ".vue", ".json", ".mjs"],
     },
-    
+
     // Server-Konfiguration für die Entwicklung
     server: {
-      port: parseInt(env.VITE_PORT || '3000'),
+      port: parseInt(env.VITE_PORT || "3000"),
       strictPort: true,
       cors: true,
       hmr: true,
       // Verbesserte Proxy-Konfiguration für API-Anfragen
       proxy: {
-        '/api': {
-          target: env.VITE_API_URL || 'http://localhost:5000',
+        "/api": {
+          target: env.VITE_API_URL || "http://localhost:5000",
           changeOrigin: true,
           secure: false,
           ws: true,
-          rewrite: (path) => path
-        }
-      }
+          rewrite: (path) => path,
+        },
+      },
     },
-    
+
     // Optimierter Preview-Server
     preview: {
-      port: parseInt(env.VITE_PREVIEW_PORT || '4173'),
+      port: parseInt(env.VITE_PREVIEW_PORT || "4173"),
       strictPort: true,
-      cors: true
+      cors: true,
     },
-    
+
     // Optimierungen für Build
     build: {
       outDir: distDir,
-      assetsDir: 'assets',
+      assetsDir: "assets",
+      emptyOutDir: true,
+      sourcemap: !isProduction,
+
+      // Speichergrenze erhöhen für große Projekte
+      chunkSizeWarningLimit: 1600,
+
+      // Worker-Threads für schnellere Builds
+      minify: isProduction ? "terser" : false,
+      terserOptions: isProduction
+        ? {
+            compress: {
+              drop_console: true,
+              drop_debugger: true,
+              pure_funcs: ["console.log", "console.debug"],
+            },
+            format: {
+              comments: false,
+            },
+          }
+        : undefined,
+
+      // Cache-Strategie mit inkrementellen Builds
+      cssCodeSplit: true,
+      reportCompressedSize: true,
+
+      // Erweiterte Funktionen für Chunk-Analyse und -Optimierung
+      function isVendorModule(id: string): boolean {
+        return id.includes('node_modules');
+      }
+
+      function getVendorChunkName(id: string): string {
+        // Extrahiere Paketname aus Node-Modulen-Pfad
+        const vendorMatch = id.match(/node_modules\/((?:@[^/]+\/)?[^/]+)/);
+        if (!vendorMatch) return 'vendor-misc';
+
+        const vendorName = vendorMatch[1];
+
+        // Gruppiere wichtige Framework-Pakete
+        const vuePackages = ['vue', '@vue', 'vue-router', '@vue/runtime', '@vue/reactivity'];
+        if (vuePackages.some(pkg => vendorName.startsWith(pkg))) {
+          return 'vendor-vue';
+        }
+
+        // State Management
+        if (['pinia', 'vuex'].includes(vendorName)) {
+          return 'vendor-state';
+        }
+
+        // HTTP-Client
+        if (['axios', 'fetch'].includes(vendorName)) {
+          return 'vendor-http';
+        }
+
+        // Utility-Bibliotheken
+        const utilPackages = ['lodash', 'uuid', 'date-fns', 'dayjs', 'moment', '@vueuse'];
+        if (utilPackages.some(pkg => vendorName.startsWith(pkg))) {
+          return 'vendor-utils';
+        }
+
+        // UI-Bibliotheken
+        const uiPackages = ['@popperjs', 'marked', 'highlight.js'];
+        if (uiPackages.some(pkg => vendorName.startsWith(pkg))) {
+          return 'vendor-ui-libs';
+        }
+
+        // Andere Vendor-Pakete in einen gemeinsamen Chunk
+        return 'vendor-misc';
+      }
+
+      function getFeatureChunkName(id: string): string | undefined {
+        // Spezifische Verzeichnisse auf bestimmte Feature-Chunks abbilden
+        if (id.includes('/components/chat/')) {
+          // Unterscheide zwischen Basis- und erweiterten Chat-Komponenten
+          return id.includes('/enhanced/') ? 'feature-chat-enhanced' : 'feature-chat-base';
+        }
+
+        if (id.includes('/components/admin/')) {
+          // Admin-Feature-Unterteilung
+          if (id.includes('/document-converter/')) {
+            return 'feature-doc-converter';
+          }
+          if (id.includes('/tabs/')) {
+            return 'feature-admin-tabs';
+          }
+          return 'feature-admin-core';
+        }
+
+        if (id.includes('/components/ui/')) {
+          // UI-Komponenten-Kategorisierung
+          if (id.includes('/base/')) return 'ui-base';
+          if (id.includes('/data/')) return 'ui-data';
+          if (id.includes('/layout/')) return 'ui-layout';
+          return 'ui-common';
+        }
+
+        if (id.includes('/components/layout/')) {
+          return 'feature-layouts';
+        }
+
+        if (id.includes('/views/')) {
+          // View-spezifische Chunks
+          const viewName = id.split('/views/')[1].split('.')[0];
+
+          // Gruppiere verwandte Views
+          if (['ChatView', 'EnhancedChatView'].includes(viewName)) {
+            return 'view-chat';
+          }
+          if (['AdminView', 'SettingsView'].includes(viewName)) {
+            return 'view-admin';
+          }
+          if (['DocumentsView'].includes(viewName)) {
+            return 'view-docs';
+          }
+          if (['LoginView', 'ErrorView'].includes(viewName)) {
+            return 'view-system';
+          }
+
+          // Falls keine spezifische Gruppierung, fallback auf generischen View-Chunk
+          return 'views-other';
+        }
+
+        if (id.includes('/stores/')) {
+          // Store-Kategorisierung
+          if (id.includes('/admin/')) return 'stores-admin';
+          if (id.includes('/auth')) return 'stores-auth';
+          if (id.includes('/sessions')) return 'stores-sessions';
+          if (id.includes('/documentConverter')) return 'stores-documents';
+          if (id.includes('/ui') || id.includes('/monitoring')) return 'stores-ui';
+          return 'stores-other';
+        }
+
+        if (id.includes('/services/')) {
+          // Service-Kategorisierung
+          if (id.includes('/api/')) return 'services-api';
+          if (id.includes('/ui/')) return 'services-ui';
+          if (id.includes('/storage/')) return 'services-storage';
+          if (id.includes('/log/')) return 'services-logs';
+          return 'services-other';
+        }
+
+        if (id.includes('/utils/')) {
+          return 'utils';
+        }
+
+        if (id.includes('/composables/')) {
+          return 'composables';
+        }
+
+        if (id.includes('/assets/')) {
+          return 'assets';
+        }
+
+        return undefined; // Falls keine Übereinstimmung, überlasse Entscheidung dem Standard-Algorithmus
+      }
+
+      // Optimierter Build für Produktion mit granularem Chunk-Splitting
+      rollupOptions: {
+        output: {
+          // Erweiterte dynamische Chunk-Strategie mit feingranulareren Splitting
+          manualChunks: isProduction
+            ? (id) => {
+                // Vendors in separate Chunks
+                if (isVendorModule(id)) {
+                  return getVendorChunkName(id);
+                }
+
+                // App-Komponenten und Features in funktionale Chunks aufteilen
+                const featureChunk = getFeatureChunkName(id);
+                if (featureChunk) {
+                  return featureChunk;
+                }
+
+                // Für nicht kategorisierte Module: Standard-Chunking-Algorithmus
+                return undefined;
+              }
+            : undefined,
+
+          // Optimierte Dateinamenmuster für besseres Caching
+          entryFileNames: isProduction ? "js/[name].[hash].js" : "js/[name].js",
+          chunkFileNames: isProduction
+            ? "js/chunks/[name].[hash].js"
+            : "js/chunks/[name].js",
+          assetFileNames: (assetInfo) => {
+            const extType = assetInfo.name?.split(".").pop();
+            if (extType && /png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
+              return "assets/images/[name].[hash][extname]";
+            }
+            if (extType && /css/i.test(extType)) {
+              return "assets/css/[name].[hash][extname]";
+            }
+            if (extType && /woff2?|ttf|eot/i.test(extType)) {
+              return "assets/fonts/[name].[hash][extname]";
+            }
+            return "assets/other/[name].[hash][extname]";
+          },
+        },
+        // Externe Pakete, die nicht gebündelt werden sollen
+        external: [],
+      },
+
+      // Optimierungen
+      target: ["es2020", "edge88", "firefox78", "chrome87", "safari14"],
+      // Worker-Threads konfiguration (bessere Performance für große Builds)
+      workers: {
+        format: "es",
+        plugins: [],
+      },
+    },
+
+    // Optimierungen für Tests und Entwicklung
+    optimizeDeps: {
+      include: [
+        "vue",
+        "vue-router",
+        "pinia",
+        "@vueuse/core",
+        "axios",
+        "uuid",
+        "marked",
+      ],
+      exclude: ["vue-demi"],
+    },
+
+    // Verbesserte Abhängigkeitenscannung
+    
+    // Verbesserte ESBuild-Konfiguration
+    es
+    // Optimierte Build-Konfiguration
+    build: {
+      outDir: distDir,
+      assetsDir: "assets",
       emptyOutDir: true,
       sourcemap: !isProduction,
       
+      // Optimierungen für Assets und Ressourcen
+      assetsInlineLimit: 4096, // 4kb - kleinere Dateien werden inline eingebettet
+      cssCodeSplit: true,
+      cssTarget: ["es2020", "edge88", "firefox78", "chrome87", "safari14"],
+      
       // Speichergrenze erhöhen für große Projekte
-      chunkSizeWarningLimit: 1600,
+      chunkSizeWarningLimit: 2000,
       
       // Worker-Threads für schnellere Builds
-      minify: isProduction ? 'terser' : false,
-      terserOptions: isProduction ? {
-        compress: {
-          drop_console: true,
-          drop_debugger: true,
-          pure_funcs: ['console.log', 'console.debug']
-        },
-        format: {
-          comments: false
-        }
-      } : undefined,
+      minify: isProduction ? "terser" : false,
+      terserOptions: isProduction
+        ? {
+            compress: {
+              drop_console: true,
+              drop_debugger: true,
+              pure_funcs: ["console.log", "console.debug", "console.info"],
+              passes: 2, // Mehrere Optimierungsdurchläufe
+              unsafe_math: true, // Schnellere aber potenziell weniger präzise Matheoperationen
+              unsafe_arrows: true,
+              unsafe_methods: true
+            },
+            format: {
+              comments: false,
+              ascii_only: true,
+              wrap_iife: true
+            },
+            safari10: false, // Nicht für ältere Safari-Versionen optimieren
+          }
+        : undefined,
       
       // Cache-Strategie mit inkrementellen Builds
       cssCodeSplit: true,
       reportCompressedSize: true,
       
-      // Optimierter Build für Produktion
+      // Erweiterte Funktionen für Chunk-Analyse und -Optimierung
+      function isVendorModule(id) {
+        return id.includes('node_modules');
+      }
+
+      function getVendorChunkName(id) {
+        // Extrahiere Paketname aus Node-Modulen-Pfad
+        const vendorMatch = id.match(/node_modules\/((?:@[^/]+\/)?[^/]+)/);
+        if (!vendorMatch) return 'vendor-misc';
+
+        const vendorName = vendorMatch[1];
+
+        // Gruppiere wichtige Framework-Pakete
+        const vuePackages = ['vue', '@vue', 'vue-router', '@vue/runtime', '@vue/reactivity'];
+        if (vuePackages.some(pkg => vendorName.startsWith(pkg))) {
+          return 'vendor-vue';
+        }
+
+        // State Management
+        if (['pinia', 'vuex'].includes(vendorName)) {
+          return 'vendor-state';
+        }
+
+        // HTTP-Client
+        if (['axios', 'fetch'].includes(vendorName)) {
+          return 'vendor-http';
+        }
+
+        // Utility-Bibliotheken
+        const utilPackages = ['lodash', 'uuid', 'date-fns', 'dayjs', 'moment', '@vueuse'];
+        if (utilPackages.some(pkg => vendorName.startsWith(pkg))) {
+          return 'vendor-utils';
+        }
+
+        // UI-Bibliotheken
+        const uiPackages = ['@popperjs', 'marked', 'highlight.js'];
+        if (uiPackages.some(pkg => vendorName.startsWith(pkg))) {
+          return 'vendor-ui-libs';
+        }
+
+        // Andere Vendor-Pakete in einen gemeinsamen Chunk
+        return 'vendor-misc';
+      }
+
+      function getFeatureChunkName(id) {
+        // Spezifische Verzeichnisse auf bestimmte Feature-Chunks abbilden
+        if (id.includes('/components/chat/')) {
+          // Unterscheide zwischen Basis- und erweiterten Chat-Komponenten
+          return id.includes('/enhanced/') ? 'feature-chat-enhanced' : 'feature-chat-base';
+        }
+
+        if (id.includes('/components/admin/')) {
+          // Admin-Feature-Unterteilung
+          if (id.includes('/document-converter/')) {
+            return 'feature-doc-converter';
+          }
+          if (id.includes('/tabs/')) {
+            return 'feature-admin-tabs';
+          }
+          return 'feature-admin-core';
+        }
+
+        if (id.includes('/components/ui/')) {
+          // UI-Komponenten-Kategorisierung
+          if (id.includes('/base/')) return 'ui-base';
+          if (id.includes('/data/')) return 'ui-data';
+          if (id.includes('/layout/')) return 'ui-layout';
+          return 'ui-common';
+        }
+
+        if (id.includes('/components/layout/')) {
+          return 'feature-layouts';
+        }
+
+        if (id.includes('/views/')) {
+          // View-spezifische Chunks
+          const viewName = id.split('/views/')[1].split('.')[0];
+
+          // Gruppiere verwandte Views
+          if (['ChatView', 'EnhancedChatView'].includes(viewName)) {
+            return 'view-chat';
+          }
+          if (['AdminView', 'SettingsView'].includes(viewName)) {
+            return 'view-admin';
+          }
+          if (['DocumentsView'].includes(viewName)) {
+            return 'view-docs';
+          }
+          if (['LoginView', 'ErrorView'].includes(viewName)) {
+            return 'view-system';
+          }
+
+          // Falls keine spezifische Gruppierung, fallback auf generischen View-Chunk
+          return 'views-other';
+        }
+
+        if (id.includes('/stores/')) {
+          // Store-Kategorisierung
+          if (id.includes('/admin/')) return 'stores-admin';
+          if (id.includes('/auth')) return 'stores-auth';
+          if (id.includes('/sessions')) return 'stores-sessions';
+          if (id.includes('/documentConverter')) return 'stores-documents';
+          if (id.includes('/ui') || id.includes('/monitoring')) return 'stores-ui';
+          return 'stores-other';
+        }
+
+        if (id.includes('/services/')) {
+          // Service-Kategorisierung
+          if (id.includes('/api/')) return 'services-api';
+          if (id.includes('/ui/')) return 'services-ui';
+          if (id.includes('/storage/')) return 'services-storage';
+          if (id.includes('/log/')) return 'services-logs';
+          return 'services-other';
+        }
+
+        if (id.includes('/utils/')) {
+          return 'utils';
+        }
+
+        if (id.includes('/composables/')) {
+          return 'composables';
+        }
+
+        if (id.includes('/assets/')) {
+          return 'assets';
+        }
+
+        return undefined; // Falls keine Übereinstimmung, überlasse Entscheidung dem Standard-Algorithmus
+      }
+      
+      // Optimierter Build für Produktion mit granularem Chunk-Splitting
       rollupOptions: {
         output: {
-          // Optimierte Chunk-Strategie mit feingranularem Code-Splitting
-          manualChunks: isProduction ? {
-            // Framework-Kern-Bibliotheken
-            'vendor-core': ['vue', 'vue-router', 'pinia'],
-            
-            // Externe Hilfsbibliotheken
-            'vendor-utils': ['@vueuse/core', 'axios', 'uuid', 'marked'],
-            
-            // UI-Komponenten nach Kategorien aufgeteilt
-            'ui-base': [
-              './src/components/ui/base/Alert.vue',
-              './src/components/ui/base/Button.vue',
-              './src/components/ui/base/Card.vue',
-              './src/components/ui/base/Checkbox.vue',
-              './src/components/ui/base/Input.vue',
-              './src/components/ui/base/Modal.vue',
-              './src/components/ui/base/Radio.vue',
-              './src/components/ui/base/Select.vue'
-            ],
-            
-            // Layout-Komponenten
-            'ui-layout': [
-              './src/components/layout/Header.vue',
-              './src/components/layout/MainLayout.vue',
-              './src/components/layout/Sidebar.vue',
-              './src/components/layout/SplitPane.vue',
-              './src/components/layout/TabPanel.vue'
-            ],
-            
-            // Chat-Komponenten
-            'feature-chat': [
-              './src/components/chat/ChatContainer.vue',
-              './src/components/chat/ChatInput.vue',
-              './src/components/chat/MessageInput.vue',
-              './src/components/chat/MessageItem.vue',
-              './src/components/chat/MessageList.vue'
-            ],
-            
-            // Erweiterte Chat-Komponenten (werden nur bei Bedarf geladen)
-            'feature-chat-enhanced': [
-              './src/components/chat/enhanced/EnhancedMessageInput.vue',
-              './src/components/chat/enhanced/SessionManager.vue',
-              './src/components/chat/enhanced/VirtualMessageList.vue'
-            ],
-            
-            // Admin-Komponenten
-            'feature-admin': [
-              './src/components/admin/AdminPanel.vue',
-              './src/components/admin/FeatureTogglesPanel.vue',
-              './src/components/admin/tabs/AdminDashboard.vue',
-              './src/components/admin/tabs/AdminFeatureToggles.vue',
-              './src/components/admin/tabs/AdminSystem.vue',
-              './src/components/admin/tabs/AdminUsers.vue'
-            ],
-            
-            // Dokumentenkonverter-Komponenten
-            'feature-docconverter': [
-              './src/components/admin/document-converter/ConversionProgress.vue',
-              './src/components/admin/document-converter/ConversionProgressV2.vue',
-              './src/components/admin/document-converter/DocConverterContainer.vue',
-              './src/components/admin/document-converter/DocumentList.vue',
-              './src/components/admin/document-converter/ErrorDisplay.vue',
-              './src/components/admin/document-converter/FileUpload.vue'
-            ],
-            
-            // Design-System-Komponenten
-            'ui-feedback': [
-              './src/components/ui/Dialog.vue',
-              './src/components/ui/LoadingOverlay.vue',
-              './src/components/ui/Notification.vue',
-              './src/components/ui/ProgressIndicator.vue',
-              './src/components/ui/Toast.vue',
-              './src/components/ui/ToastContainer.vue'
-            ],
-            
-            // Daten-Komponenten
-            'ui-data': [
-              './src/components/ui/data/Calendar.vue',
-              './src/components/ui/data/List.vue',
-              './src/components/ui/data/Pagination.vue',
-              './src/components/ui/data/Table.vue',
-              './src/components/ui/data/Tag.vue',
-              './src/components/ui/data/Tree.vue'
-            ],
-            
-            // Stores nach Funktionsgruppen
-            'stores-auth': [
-              './src/stores/auth.ts',
-              './src/stores/settings.ts'
-            ],
-            
-            'stores-admin': [
-              './src/stores/admin/feedback.ts',
-              './src/stores/admin/motd.ts',
-              './src/stores/admin/system.ts',
-              './src/stores/admin/users.ts',
-              './src/stores/featureToggles.ts'
-            ],
-            
-            'stores-documents': [
-              './src/stores/documentConverter.ts'
-            ],
-            
-            'stores-ui': [
-              './src/stores/ui.ts',
-              './src/stores/monitoringStore.ts'
-            ],
-            
-            'stores-sessions': [
-              './src/stores/sessions.ts'
-            ],
-            
-            // Services nach Funktionsgruppen
-            'services-api': [
-              './src/services/api/ApiService.ts',
-              './src/services/api/ChatService.ts',
-              './src/services/api/DocumentConverterApi.ts',
-              './src/services/api/DocumentConverterService.ts'
-            ],
-            
-            'services-utils': [
-              './src/services/api/RateLimitHandler.ts',
-              './src/services/api/RequestQueue.ts',
-              './src/services/api/RetryHandler.ts',
-              './src/services/storage/StorageService.ts',
-              './src/services/log/LogService.ts'
-            ],
-            
-            'services-ui': [
-              './src/services/ui/DialogService.ts',
-              './src/services/ui/NotificationService.ts',
-              './src/services/ui/ToastService.ts'
-            ]
-          } : undefined,
-          
+          preserveModules: false, // Besser für Produktion
+          // Erweiterte dynamische Chunk-Strategie mit feingranulareren Splitting
+          manualChunks: isProduction
+            ? (id) => {
+                // Vendors in separate Chunks
+                if (isVendorModule(id)) {
+                  return getVendorChunkName(id);
+                }
+
+                // App-Komponenten und Features in funktionale Chunks aufteilen
+                const featureChunk = getFeatureChunkName(id);
+                if (featureChunk) {
+                  return featureChunk;
+                }
+
+                // Für nicht kategorisierte Module: Standard-Chunking-Algorithmus
+                return undefined;
+              }
+            : undefined,
+
           // Optimierte Dateinamenmuster für besseres Caching
-          entryFileNames: isProduction 
-            ? 'js/[name].[hash].js' 
-            : 'js/[name].js',
-          chunkFileNames: isProduction 
-            ? 'js/chunks/[name].[hash].js' 
-            : 'js/chunks/[name].js',
+          entryFileNames: isProduction ? "js/[name].[hash].js" : "js/[name].js",
+          chunkFileNames: isProduction
+            ? "js/chunks/[name].[hash].js"
+            : "js/chunks/[name].js",
           assetFileNames: (assetInfo) => {
-            const extType = assetInfo.name?.split('.').pop();
+            const extType = assetInfo.name?.split(".").pop();
             if (extType && /png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
-              return 'assets/images/[name].[hash][extname]';
+              return "assets/images/[name].[hash][extname]";
             }
             if (extType && /css/i.test(extType)) {
-              return 'assets/css/[name].[hash][extname]';
+              return "assets/css/[name].[hash][extname]";
             }
             if (extType && /woff2?|ttf|eot/i.test(extType)) {
-              return 'assets/fonts/[name].[hash][extname]';
+              return "assets/fonts/[name].[hash][extname]";
             }
-            return 'assets/other/[name].[hash][extname]';
-          }
+            return "assets/other/[name].[hash][extname]";
+          },
         },
         // Externe Pakete, die nicht gebündelt werden sollen
-        external: []
+        external: [],
       },
-      
-      // Optimierungen
-      target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
-      // Worker-Threads konfiguration (bessere Performance für große Builds)
-      workers: {
-        format: 'es',
-        plugins: []
-      }
-    },
-    
-    // Optimierungen für Tests und Entwicklung
-    optimizeDeps: {
-      include: [
-        'vue',
-        'vue-router',
-        'pinia',
-        '@vueuse/core',
-        'axios',
-        'uuid',
-        'marked'
-      ],
-      exclude: ['vue-demi']
-    },
-    
-    // Verbesserte Abhängigkeitenscannung
-    esbuild: {
-      drop: isProduction ? ['console', 'debugger'] : [],
-      legalComments: 'none',
-      minifyIdentifiers: isProduction,
-      minifySyntax: isProduction,
-      minifyWhitespace: isProduction
-    }
+    },,,
   };
 });

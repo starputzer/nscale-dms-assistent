@@ -1,10 +1,10 @@
 <template>
-  <div 
+  <div
     class="n-calendar"
     :class="{
       'n-calendar--bordered': bordered,
       [`n-calendar--${size}`]: true,
-      'n-calendar--fullscreen': fullscreen
+      'n-calendar--fullscreen': fullscreen,
     }"
   >
     <!-- Header with navigation controls -->
@@ -17,7 +17,13 @@
           aria-label="Previous year"
         >
           <svg viewBox="0 0 24 24" width="16" height="16">
-            <path d="M18 9l-6-6-6 6M18 15l-6 6-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path
+              d="M18 9l-6-6-6 6M18 15l-6 6-6-6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
           </svg>
         </button>
         <button
@@ -27,11 +33,17 @@
           aria-label="Previous month"
         >
           <svg viewBox="0 0 24 24" width="16" height="16">
-            <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path
+              d="M15 18l-6-6 6-6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
           </svg>
         </button>
       </div>
-      
+
       <div class="n-calendar-header-center">
         <div class="n-calendar-header-view">
           <span
@@ -54,7 +66,7 @@
           </span>
         </div>
       </div>
-      
+
       <div class="n-calendar-header-right">
         <button
           type="button"
@@ -63,7 +75,13 @@
           aria-label="Next month"
         >
           <svg viewBox="0 0 24 24" width="16" height="16">
-            <path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path
+              d="M9 18l6-6-6-6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
           </svg>
         </button>
         <button
@@ -73,7 +91,13 @@
           aria-label="Next year"
         >
           <svg viewBox="0 0 24 24" width="16" height="16">
-            <path d="M18 15l-6 6-6-6M18 9l-6-6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path
+              d="M18 15l-6 6-6-6M18 9l-6-6-6 6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
           </svg>
         </button>
         <button
@@ -86,10 +110,10 @@
         </button>
       </div>
     </div>
-    
+
     <!-- Year selector panel -->
-    <div 
-      v-if="showYearPanel" 
+    <div
+      v-if="showYearPanel"
       class="n-calendar-panel n-calendar-year-panel"
       @click.stop
     >
@@ -101,7 +125,13 @@
           aria-label="Previous decade"
         >
           <svg viewBox="0 0 24 24" width="16" height="16">
-            <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path
+              d="M15 18l-6-6 6-6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
           </svg>
         </button>
         <div class="n-calendar-panel-title">
@@ -114,18 +144,24 @@
           aria-label="Next decade"
         >
           <svg viewBox="0 0 24 24" width="16" height="16">
-            <path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path
+              d="M9 18l6-6-6-6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
           </svg>
         </button>
       </div>
       <div class="n-calendar-panel-body">
-        <div 
-          v-for="year in yearList" 
-          :key="year" 
+        <div
+          v-for="year in yearList"
+          :key="year"
           class="n-calendar-year-cell"
           :class="{
             'n-calendar-year-cell--selected': isSelectedYear(year),
-            'n-calendar-year-cell--current': isCurrentYear(year)
+            'n-calendar-year-cell--current': isCurrentYear(year),
           }"
           @click="selectYear(year)"
         >
@@ -133,10 +169,10 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Month selector panel -->
-    <div 
-      v-if="showMonthPanel" 
+    <div
+      v-if="showMonthPanel"
       class="n-calendar-panel n-calendar-month-panel"
       @click.stop
     >
@@ -148,12 +184,21 @@
           aria-label="Previous year"
         >
           <svg viewBox="0 0 24 24" width="16" height="16">
-            <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path
+              d="M15 18l-6-6 6-6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
           </svg>
         </button>
-        <div 
+        <div
           class="n-calendar-panel-title"
-          @click="showYearPanel = true; showMonthPanel = false"
+          @click="
+            showYearPanel = true;
+            showMonthPanel = false;
+          "
         >
           {{ displayYear }}
         </div>
@@ -164,18 +209,24 @@
           aria-label="Next year"
         >
           <svg viewBox="0 0 24 24" width="16" height="16">
-            <path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path
+              d="M9 18l6-6-6-6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
           </svg>
         </button>
       </div>
       <div class="n-calendar-panel-body">
-        <div 
-          v-for="(month, index) in monthList" 
-          :key="month" 
+        <div
+          v-for="(month, index) in monthList"
+          :key="month"
           class="n-calendar-month-cell"
           :class="{
             'n-calendar-month-cell--selected': isSelectedMonth(index),
-            'n-calendar-month-cell--current': isCurrentMonth(index)
+            'n-calendar-month-cell--current': isCurrentMonth(index),
           }"
           @click="selectMonth(index)"
         >
@@ -183,28 +234,24 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Weekday header -->
     <div class="n-calendar-weekdays">
-      <div 
-        v-for="day in weekDaysLocal" 
-        :key="day" 
-        class="n-calendar-weekday"
-      >
+      <div v-for="day in weekDaysLocal" :key="day" class="n-calendar-weekday">
         {{ day }}
       </div>
     </div>
-    
+
     <!-- Calendar body -->
     <div class="n-calendar-body">
-      <div 
-        v-for="(week, weekIndex) in calendarDays" 
-        :key="`week-${weekIndex}`" 
+      <div
+        v-for="(week, weekIndex) in calendarDays"
+        :key="`week-${weekIndex}`"
         class="n-calendar-week"
       >
-        <div 
-          v-for="(day, dayIndex) in week" 
-          :key="`day-${weekIndex}-${dayIndex}`" 
+        <div
+          v-for="(day, dayIndex) in week"
+          :key="`day-${weekIndex}-${dayIndex}`"
           class="n-calendar-day"
           :class="getDayClass(day)"
           @click="selectDate(day)"
@@ -212,15 +259,23 @@
           <div class="n-calendar-day-inner">
             <div class="n-calendar-day-number">{{ day.day }}</div>
             <div v-if="hasDayContent(day)" class="n-calendar-day-content">
-              <slot name="day-content" :date="day.date" :day="day.day" :isCurrentMonth="!day.isPrevMonth && !day.isNextMonth">
-                <div v-if="day.events && day.events.length > 0" class="n-calendar-day-events">
-                  <div 
-                    v-for="(event, index) in day.events" 
+              <slot
+                name="day-content"
+                :date="day.date"
+                :day="day.day"
+                :isCurrentMonth="!day.isPrevMonth && !day.isNextMonth"
+              >
+                <div
+                  v-if="day.events && day.events.length > 0"
+                  class="n-calendar-day-events"
+                >
+                  <div
+                    v-for="(event, index) in day.events"
                     :key="`event-${index}`"
                     class="n-calendar-day-event"
-                    :style="{ 
-                      backgroundColor: event.color || 'var(--nscale-primary)', 
-                      color: event.textColor || 'white'
+                    :style="{
+                      backgroundColor: event.color || 'var(--nscale-primary)',
+                      color: event.textColor || 'white',
                     }"
                     :title="event.content"
                   >
@@ -237,7 +292,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 
 export interface CalendarEvent {
   date: Date;
@@ -261,13 +316,13 @@ export interface CalendarProps {
   /** Selected date (v-model) */
   modelValue?: Date;
   /** Calendar mode */
-  mode?: 'month' | 'year';
+  mode?: "month" | "year";
   /** First day of week (0: Sunday, 1: Monday, etc.) */
   firstDayOfWeek?: number;
   /** Whether the calendar has a border */
   bordered?: boolean;
   /** Size variant for the calendar */
-  size?: 'small' | 'medium' | 'large';
+  size?: "small" | "medium" | "large";
   /** Whether to show today button */
   showToday?: boolean;
   /** Text for the today button */
@@ -287,28 +342,43 @@ export interface CalendarProps {
 }
 
 const props = withDefaults(defineProps<CalendarProps>(), {
-  mode: 'month',
+  mode: "month",
   firstDayOfWeek: 1, // Monday
   bordered: true,
-  size: 'medium',
+  size: "medium",
   showToday: true,
-  todayText: 'Today',
-  monthNames: () => ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-  weekDayNames: () => ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
+  todayText: "Today",
+  monthNames: () => [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ],
+  weekDayNames: () => ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
   events: () => [],
   disableOutsideDates: false,
   fullscreen: false,
 });
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', date: Date): void;
-  (e: 'select', date: Date): void;
-  (e: 'panel-change', date: Date, mode: string): void;
-  (e: 'event-click', event: CalendarEvent): void;
+  (e: "update:modelValue", date: Date): void;
+  (e: "select", date: Date): void;
+  (e: "panel-change", date: Date, mode: string): void;
+  (e: "event-click", event: CalendarEvent): void;
 }>();
 
 // State
-const currentDate = ref(props.modelValue ? new Date(props.modelValue) : new Date());
+const currentDate = ref(
+  props.modelValue ? new Date(props.modelValue) : new Date(),
+);
 const selectedDate = ref(props.modelValue ? new Date(props.modelValue) : null);
 const showYearPanel = ref(false);
 const showMonthPanel = ref(false);
@@ -322,12 +392,16 @@ const weekDaysLocal = computed(() => {
 
 // Current view properties
 const displayYear = computed(() => currentDate.value.getFullYear());
-const displayMonth = computed(() => props.monthNames[currentDate.value.getMonth()]);
+const displayMonth = computed(
+  () => props.monthNames[currentDate.value.getMonth()],
+);
 
 // Year range for year panel
 const yearRangeStart = computed(() => Math.floor(displayYear.value / 10) * 10);
 const yearRangeEnd = computed(() => yearRangeStart.value + 9);
-const yearRangeText = computed(() => `${yearRangeStart.value} - ${yearRangeEnd.value}`);
+const yearRangeText = computed(
+  () => `${yearRangeStart.value} - ${yearRangeEnd.value}`,
+);
 
 // List of years for year panel
 const yearList = computed(() => {
@@ -346,7 +420,7 @@ const calendarDays = computed(() => {
   const year = currentDate.value.getFullYear();
   const month = currentDate.value.getMonth();
   const today = new Date();
-  
+
   // First day of month
   const firstDay = new Date(year, month, 1);
   // Adjusted day of week based on firstDayOfWeek prop
@@ -354,81 +428,91 @@ const calendarDays = computed(() => {
   // Last day of month
   const lastDay = new Date(year, month + 1, 0);
   const totalDays = lastDay.getDate();
-  
+
   // Previous month days needed
   const prevMonthDays = firstDayOfWeek;
   // Last day of previous month
   const prevMonthLastDay = new Date(year, month, 0).getDate();
-  
+
   // Calculate total cells needed (max 6 weeks)
   const totalCells = Math.ceil((prevMonthDays + totalDays) / 7) * 7;
-  
+
   // Calendar grid as weeks array
   const weeks = [];
   let days = [];
-  
+
   // Add previous month days
   for (let i = 1; i <= prevMonthDays; i++) {
     const day = prevMonthLastDay - prevMonthDays + i;
     const date = new Date(year, month - 1, day);
-    
+
     days.push({
       date,
       day,
       isPrevMonth: true,
       isNextMonth: false,
       isToday: isSameDate(date, today),
-      isSelected: selectedDate.value ? isSameDate(date, selectedDate.value) : false,
-      isDisabled: props.disableOutsideDates || (props.disabledDate ? props.disabledDate(date) : false),
-      events: getEventsForDate(date)
+      isSelected: selectedDate.value
+        ? isSameDate(date, selectedDate.value)
+        : false,
+      isDisabled:
+        props.disableOutsideDates ||
+        (props.disabledDate ? props.disabledDate(date) : false),
+      events: getEventsForDate(date),
     });
   }
-  
+
   // Add current month days
   for (let i = 1; i <= totalDays; i++) {
     const date = new Date(year, month, i);
-    
+
     days.push({
       date,
       day: i,
       isPrevMonth: false,
       isNextMonth: false,
       isToday: isSameDate(date, today),
-      isSelected: selectedDate.value ? isSameDate(date, selectedDate.value) : false,
+      isSelected: selectedDate.value
+        ? isSameDate(date, selectedDate.value)
+        : false,
       isDisabled: props.disabledDate ? props.disabledDate(date) : false,
-      events: getEventsForDate(date)
+      events: getEventsForDate(date),
     });
-    
+
     // Start new week
     if (days.length === 7) {
       weeks.push([...days]);
       days = [];
     }
   }
-  
+
   // Add next month days
   const nextMonthDays = totalCells - (prevMonthDays + totalDays);
   for (let i = 1; i <= nextMonthDays; i++) {
     const date = new Date(year, month + 1, i);
-    
+
     days.push({
       date,
       day: i,
       isPrevMonth: false,
       isNextMonth: true,
       isToday: isSameDate(date, today),
-      isSelected: selectedDate.value ? isSameDate(date, selectedDate.value) : false,
-      isDisabled: props.disableOutsideDates || (props.disabledDate ? props.disabledDate(date) : false),
-      events: getEventsForDate(date)
+      isSelected: selectedDate.value
+        ? isSameDate(date, selectedDate.value)
+        : false,
+      isDisabled:
+        props.disableOutsideDates ||
+        (props.disabledDate ? props.disabledDate(date) : false),
+      events: getEventsForDate(date),
     });
-    
+
     // Start new week
     if (days.length === 7) {
       weeks.push([...days]);
       days = [];
     }
   }
-  
+
   return weeks;
 });
 
@@ -437,14 +521,14 @@ function navigateMonth(step: number): void {
   const newDate = new Date(currentDate.value);
   newDate.setMonth(newDate.getMonth() + step);
   currentDate.value = newDate;
-  emit('panel-change', new Date(newDate), 'month');
+  emit("panel-change", new Date(newDate), "month");
 }
 
 function navigateYear(step: number): void {
   const newDate = new Date(currentDate.value);
   newDate.setFullYear(newDate.getFullYear() + step);
   currentDate.value = newDate;
-  emit('panel-change', new Date(newDate), 'year');
+  emit("panel-change", new Date(newDate), "year");
 }
 
 function navigateYearRange(step: number): void {
@@ -459,7 +543,7 @@ function selectYear(year: number): void {
   currentDate.value = newDate;
   showYearPanel.value = false;
   showMonthPanel.value = true;
-  emit('panel-change', new Date(newDate), 'year');
+  emit("panel-change", new Date(newDate), "year");
 }
 
 function selectMonth(month: number): void {
@@ -467,31 +551,31 @@ function selectMonth(month: number): void {
   newDate.setMonth(month);
   currentDate.value = newDate;
   showMonthPanel.value = false;
-  emit('panel-change', new Date(newDate), 'month');
+  emit("panel-change", new Date(newDate), "month");
 }
 
 function selectDate(day: CalendarDayInfo): void {
   if (day.isDisabled) return;
-  
+
   selectedDate.value = new Date(day.date);
-  
+
   // If it's a prev/next month, update current view
   if (day.isPrevMonth) {
     navigateMonth(-1);
   } else if (day.isNextMonth) {
     navigateMonth(1);
   }
-  
-  emit('update:modelValue', new Date(day.date));
-  emit('select', new Date(day.date));
+
+  emit("update:modelValue", new Date(day.date));
+  emit("select", new Date(day.date));
 }
 
 function goToToday(): void {
   const today = new Date();
   currentDate.value = new Date(today);
   selectedDate.value = new Date(today);
-  emit('update:modelValue', new Date(today));
-  emit('select', new Date(today));
+  emit("update:modelValue", new Date(today));
+  emit("select", new Date(today));
 }
 
 function isSelectedYear(year: number): boolean {
@@ -506,24 +590,28 @@ function isCurrentYear(year: number): boolean {
 
 function isSelectedMonth(month: number): boolean {
   if (!selectedDate.value) return false;
-  return selectedDate.value.getMonth() === month && 
-         selectedDate.value.getFullYear() === currentDate.value.getFullYear();
+  return (
+    selectedDate.value.getMonth() === month &&
+    selectedDate.value.getFullYear() === currentDate.value.getFullYear()
+  );
 }
 
 function isCurrentMonth(month: number): boolean {
   const today = new Date();
-  return today.getMonth() === month && 
-         today.getFullYear() === currentDate.value.getFullYear();
+  return (
+    today.getMonth() === month &&
+    today.getFullYear() === currentDate.value.getFullYear()
+  );
 }
 
 function getDayClass(day: CalendarDayInfo): { [key: string]: boolean } {
   return {
-    'n-calendar-day--prev-month': day.isPrevMonth,
-    'n-calendar-day--next-month': day.isNextMonth,
-    'n-calendar-day--today': day.isToday,
-    'n-calendar-day--selected': day.isSelected,
-    'n-calendar-day--disabled': day.isDisabled,
-    'n-calendar-day--with-events': day.events && day.events.length > 0
+    "n-calendar-day--prev-month": day.isPrevMonth,
+    "n-calendar-day--next-month": day.isNextMonth,
+    "n-calendar-day--today": day.isToday,
+    "n-calendar-day--selected": day.isSelected,
+    "n-calendar-day--disabled": day.isDisabled,
+    "n-calendar-day--with-events": day.events && day.events.length > 0,
   };
 }
 
@@ -536,13 +624,15 @@ function hasDayContent(day: CalendarDayInfo): boolean {
 }
 
 function getEventsForDate(date: Date): CalendarEvent[] {
-  return props.events.filter(event => isSameDate(event.date, date));
+  return props.events.filter((event) => isSameDate(event.date, date));
 }
 
 function isSameDate(date1: Date, date2: Date): boolean {
-  return date1.getFullYear() === date2.getFullYear() && 
-         date1.getMonth() === date2.getMonth() && 
-         date1.getDate() === date2.getDate();
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
 }
 
 // Handle outside clicks to close panels
@@ -554,28 +644,31 @@ function handleOutsideClick(event: MouseEvent): void {
 }
 
 // Watchers
-watch(() => props.modelValue, (newValue) => {
-  if (newValue) {
-    selectedDate.value = new Date(newValue);
-    // Only update current view if the month/year are different
-    if (
-      currentDate.value.getMonth() !== newValue.getMonth() ||
-      currentDate.value.getFullYear() !== newValue.getFullYear()
-    ) {
-      currentDate.value = new Date(newValue);
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    if (newValue) {
+      selectedDate.value = new Date(newValue);
+      // Only update current view if the month/year are different
+      if (
+        currentDate.value.getMonth() !== newValue.getMonth() ||
+        currentDate.value.getFullYear() !== newValue.getFullYear()
+      ) {
+        currentDate.value = new Date(newValue);
+      }
+    } else {
+      selectedDate.value = null;
     }
-  } else {
-    selectedDate.value = null;
-  }
-});
+  },
+);
 
 // Lifecycle
 onMounted(() => {
-  document.addEventListener('click', handleOutsideClick);
+  document.addEventListener("click", handleOutsideClick);
 });
 
 onUnmounted(() => {
-  document.removeEventListener('click', handleOutsideClick);
+  document.removeEventListener("click", handleOutsideClick);
 });
 </script>
 
@@ -593,7 +686,7 @@ onUnmounted(() => {
   --n-calendar-day-disabled-text: var(--nscale-gray-400);
   --n-calendar-weekend-text: var(--nscale-gray-700);
   --n-calendar-outside-month-text: var(--nscale-gray-400);
-  
+
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -902,7 +995,9 @@ onUnmounted(() => {
 /* Animation */
 .n-calendar-panel-enter-active,
 .n-calendar-panel-leave-active {
-  transition: opacity 0.2s, transform 0.2s;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
 }
 
 .n-calendar-panel-enter-from,

@@ -1,0 +1,3 @@
+{
+  "rollback": "bash scripts/rollback.sh"
+}

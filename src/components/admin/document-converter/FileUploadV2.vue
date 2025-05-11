@@ -1,9 +1,9 @@
 <template>
-  <div 
+  <div
     class="file-upload"
-    :class="{ 
-      'file-upload--dragging': isDragging, 
-      'file-upload--disabled': isUploading 
+    :class="{
+      'file-upload--dragging': isDragging,
+      'file-upload--disabled': isUploading,
     }"
     @dragover.prevent="onDragOver"
     @dragleave.prevent="onDragLeave"
@@ -20,64 +20,91 @@
       <div class="file-upload__icon" aria-hidden="true">
         <i class="fa fa-cloud-upload-alt"></i>
       </div>
-      
+
       <div class="file-upload__text">
         <p v-if="!isUploading">
-          {{ t('documentConverter.dropFiles', 'Dateien hier ablegen oder') }} 
+          {{ t("documentConverter.dropFiles", "Dateien hier ablegen oder") }}
           <span class="file-upload__browse">
-            {{ t('documentConverter.browse', 'auswählen') }}
+            {{ t("documentConverter.browse", "auswählen") }}
           </span>
         </p>
         <p v-else>
-          {{ t('documentConverter.uploading', 'Dateien werden hochgeladen...') }}
+          {{
+            t("documentConverter.uploading", "Dateien werden hochgeladen...")
+          }}
         </p>
         <p class="file-upload__hint">
-          {{ t('documentConverter.supportedFormats', 'Unterstützte Formate:') }} 
-          {{ allowedExtensions.map(ext => ext.toUpperCase()).join(', ') }}
+          {{ t("documentConverter.supportedFormats", "Unterstützte Formate:") }}
+          {{ allowedExtensions.map((ext) => ext.toUpperCase()).join(", ") }}
         </p>
       </div>
-      
-      <input 
+
+      <input
         type="file"
         ref="fileInput"
         @change="onFileSelected"
-        :accept="allowedExtensions.map(ext => '.' + ext).join(',')"
+        :accept="allowedExtensions.map((ext) => '.' + ext).join(',')"
         class="file-upload__input"
         :disabled="isUploading"
         multiple
         :aria-label="t('documentConverter.selectFiles', 'Dateien auswählen')"
-      >
+      />
     </div>
 
     <!-- Fortschrittsanzeige -->
     <div v-if="isUploading" class="file-upload__progress-container">
       <!-- Stapelverarbeitungs-Fortschritt -->
       <div v-if="totalFiles > 0" class="file-upload__batch-progress">
-        <span v-if="currentFileIndex > 0">{{ t('documentConverter.processing', 'Verarbeite') }} {{ batchProgress }}</span>
+        <span v-if="currentFileIndex > 0"
+          >{{ t("documentConverter.processing", "Verarbeite") }}
+          {{ batchProgress }}</span
+        >
       </div>
 
       <!-- Einzelne Datei Fortschrittsanzeige -->
-      <div class="file-upload__progress" role="progressbar"
-        :aria-valuenow="uploadProgress" aria-valuemin="0" aria-valuemax="100"
-        :aria-label="t('documentConverter.uploadProgress', 'Upload-Fortschritt')">
-        <div class="file-upload__progress-bar" :style="{ width: `${uploadProgress}%` }"></div>
+      <div
+        class="file-upload__progress"
+        role="progressbar"
+        :aria-valuenow="uploadProgress"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        :aria-label="
+          t('documentConverter.uploadProgress', 'Upload-Fortschritt')
+        "
+      >
+        <div
+          class="file-upload__progress-bar"
+          :style="{ width: `${uploadProgress}%` }"
+        ></div>
         <div class="file-upload__progress-text">
-          {{ uploadProgress }}% {{ t('documentConverter.complete', 'abgeschlossen') }}
+          {{ uploadProgress }}%
+          {{ t("documentConverter.complete", "abgeschlossen") }}
         </div>
       </div>
     </div>
 
     <!-- Ausgewählte Dateien -->
-    <transition-group name="file-list" tag="div" class="file-upload__selected-files">
-      <div v-for="(file, index) in selectedFiles" :key="file.id" class="file-upload__selected">
+    <transition-group
+      name="file-list"
+      tag="div"
+      class="file-upload__selected-files"
+    >
+      <div
+        v-for="(file, index) in selectedFiles"
+        :key="file.id"
+        class="file-upload__selected"
+      >
         <div class="file-upload__selected-file">
           <div class="file-upload__file-icon" aria-hidden="true">
             <i :class="getFileIcon(file.file)"></i>
           </div>
           <div class="file-upload__file-info">
-            <span class="file-upload__selected-name" :title="file.file.name">{{ file.file.name }}</span>
+            <span class="file-upload__selected-name" :title="file.file.name">{{
+              file.file.name
+            }}</span>
             <span class="file-upload__selected-size">
-              ({{ formatFileSize(file.file.size) }} - {{ getFileType(file.file) }})
+              ({{ formatFileSize(file.file.size) }} -
+              {{ getFileType(file.file) }})
             </span>
             <div v-if="file.error" class="file-upload__file-error">
               {{ file.error }}
@@ -88,82 +115,154 @@
               v-if="file.validationStatus === 'valid' && !isUploading"
               class="file-upload__action-btn file-upload__upload-single-btn"
               @click.stop="uploadSingleFile(index)"
-              :aria-label="t('documentConverter.uploadSingleFile', `Datei '${file.file.name}' hochladen`)"
-              :title="t('documentConverter.uploadSingleFile', `Nur diese Datei hochladen`)"
+              :aria-label="
+                t(
+                  'documentConverter.uploadSingleFile',
+                  `Datei '${file.file.name}' hochladen`,
+                )
+              "
+              :title="
+                t(
+                  'documentConverter.uploadSingleFile',
+                  `Nur diese Datei hochladen`,
+                )
+              "
             >
               <i class="fa fa-upload" aria-hidden="true"></i>
             </button>
             <button
               class="file-upload__remove-btn"
               @click.stop="removeFile(index)"
-              :aria-label="t('documentConverter.removeFile', `Datei '${file.file.name}' entfernen`)"
+              :aria-label="
+                t(
+                  'documentConverter.removeFile',
+                  `Datei '${file.file.name}' entfernen`,
+                )
+              "
               :disabled="isUploading"
-              :title="t('documentConverter.removeFileTitle', 'Aus Liste entfernen')"
+              :title="
+                t('documentConverter.removeFileTitle', 'Aus Liste entfernen')
+              "
             >
               <i class="fa fa-times" aria-hidden="true"></i>
             </button>
           </div>
         </div>
-        <div v-if="file.validationStatus === 'validating'" class="file-upload__validating">
+        <div
+          v-if="file.validationStatus === 'validating'"
+          class="file-upload__validating"
+        >
           <i class="fa fa-spinner fa-spin" aria-hidden="true"></i>
-          {{ t('documentConverter.validating', 'Datei wird überprüft...') }}
+          {{ t("documentConverter.validating", "Datei wird überprüft...") }}
         </div>
-        <div v-else-if="file.validationStatus === 'invalid'" class="file-upload__invalid">
+        <div
+          v-else-if="file.validationStatus === 'invalid'"
+          class="file-upload__invalid"
+        >
           <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
           {{ file.validationMessage }}
         </div>
-        <div v-else-if="file.validationStatus === 'valid'" class="file-upload__valid">
+        <div
+          v-else-if="file.validationStatus === 'valid'"
+          class="file-upload__valid"
+        >
           <i class="fa fa-check-circle" aria-hidden="true"></i>
-          {{ t('documentConverter.fileIsValid', 'Datei ist bereit zum Hochladen') }}
+          {{
+            t("documentConverter.fileIsValid", "Datei ist bereit zum Hochladen")
+          }}
         </div>
       </div>
     </transition-group>
 
     <!-- Status-Zusammenfassung -->
-    <div v-if="selectedFiles.length > 0 && !isUploading" class="file-upload__summary">
+    <div
+      v-if="selectedFiles.length > 0 && !isUploading"
+      class="file-upload__summary"
+    >
       <div class="file-upload__stats">
         <div class="file-upload__stat-item">
-          <span class="file-upload__stat-label">{{ t('documentConverter.totalFiles', 'Dateien gesamt:') }}</span>
-          <span class="file-upload__stat-value">{{ selectedFiles.length }}</span>
+          <span class="file-upload__stat-label">{{
+            t("documentConverter.totalFiles", "Dateien gesamt:")
+          }}</span>
+          <span class="file-upload__stat-value">{{
+            selectedFiles.length
+          }}</span>
         </div>
         <div class="file-upload__stat-item">
-          <span class="file-upload__stat-label">{{ t('documentConverter.validFiles', 'Gültige Dateien:') }}</span>
-          <span class="file-upload__stat-value" :class="{'file-upload__stat-value--success': validFilesCount > 0, 'file-upload__stat-value--error': validFilesCount === 0 && selectedFiles.length > 0}">
+          <span class="file-upload__stat-label">{{
+            t("documentConverter.validFiles", "Gültige Dateien:")
+          }}</span>
+          <span
+            class="file-upload__stat-value"
+            :class="{
+              'file-upload__stat-value--success': validFilesCount > 0,
+              'file-upload__stat-value--error':
+                validFilesCount === 0 && selectedFiles.length > 0,
+            }"
+          >
             {{ validFilesCount }}
           </span>
         </div>
         <div v-if="invalidFilesCount > 0" class="file-upload__stat-item">
-          <span class="file-upload__stat-label">{{ t('documentConverter.invalidFiles', 'Ungültige Dateien:') }}</span>
-          <span class="file-upload__stat-value file-upload__stat-value--error">{{ invalidFilesCount }}</span>
+          <span class="file-upload__stat-label">{{
+            t("documentConverter.invalidFiles", "Ungültige Dateien:")
+          }}</span>
+          <span
+            class="file-upload__stat-value file-upload__stat-value--error"
+            >{{ invalidFilesCount }}</span
+          >
         </div>
         <div class="file-upload__stat-item">
-          <span class="file-upload__stat-label">{{ t('documentConverter.totalSize', 'Gesamtgröße:') }}</span>
-          <span class="file-upload__stat-value" :class="{'file-upload__stat-value--error': isTotalSizeExceeded}">
+          <span class="file-upload__stat-label">{{
+            t("documentConverter.totalSize", "Gesamtgröße:")
+          }}</span>
+          <span
+            class="file-upload__stat-value"
+            :class="{ 'file-upload__stat-value--error': isTotalSizeExceeded }"
+          >
             {{ totalSizeFormatted }}
-            <span v-if="isTotalSizeExceeded" class="file-upload__error-icon" aria-hidden="true">⚠️</span>
+            <span
+              v-if="isTotalSizeExceeded"
+              class="file-upload__error-icon"
+              aria-hidden="true"
+              >⚠️</span
+            >
           </span>
         </div>
       </div>
 
       <div v-if="isValidating" class="file-upload__validating-all">
-        {{ t('documentConverter.validatingFiles', 'Dateien werden überprüft...') }}
+        {{
+          t("documentConverter.validatingFiles", "Dateien werden überprüft...")
+        }}
       </div>
     </div>
 
     <!-- Aktions-Buttons -->
-    <div v-if="selectedFiles.length > 0 && !isUploading" class="file-upload__actions">
+    <div
+      v-if="selectedFiles.length > 0 && !isUploading"
+      class="file-upload__actions"
+    >
       <!-- Alle konvertieren Button -->
       <button
         @click.stop="uploadSelectedFiles"
         class="file-upload__upload-btn"
         :disabled="!hasValidFiles || isUploading || isTotalSizeExceeded"
-        :aria-label="isBatchUpload
-          ? t('documentConverter.convertAllFiles', 'Alle Dateien konvertieren')
-          : t('documentConverter.convertFile', 'Datei konvertieren')"
+        :aria-label="
+          isBatchUpload
+            ? t(
+                'documentConverter.convertAllFiles',
+                'Alle Dateien konvertieren',
+              )
+            : t('documentConverter.convertFile', 'Datei konvertieren')
+        "
         aria-live="polite"
       >
-        {{ t('documentConverter.convert', 'Konvertieren') }}
-        <span v-if="validFilesCount > 0">({{ validFilesCount }} {{ validFilesCount === 1 ? 'Datei' : 'Dateien' }})</span>
+        {{ t("documentConverter.convert", "Konvertieren") }}
+        <span v-if="validFilesCount > 0"
+          >({{ validFilesCount }}
+          {{ validFilesCount === 1 ? "Datei" : "Dateien" }})</span
+        >
       </button>
 
       <!-- Abbrechen Button -->
@@ -171,15 +270,26 @@
         @click.stop="clearAllFiles"
         class="file-upload__clear-btn"
         :disabled="isUploading"
-        :aria-label="t('documentConverter.clearAllFiles', 'Auswahl zurücksetzen')"
+        :aria-label="
+          t('documentConverter.clearAllFiles', 'Auswahl zurücksetzen')
+        "
       >
-        {{ t('common.cancel', 'Abbrechen') }}
+        {{ t("common.cancel", "Abbrechen") }}
       </button>
     </div>
 
     <!-- Fehlermeldung für Gesamtgrößenüberschreitung -->
-    <div v-if="isTotalSizeExceeded && !isUploading" class="file-upload__total-size-error" role="alert">
-      {{ t('documentConverter.totalSizeExceeded', `Die Gesamtgröße der ausgewählten Dateien (${totalSizeFormatted}) überschreitet das Maximum von ${maxTotalSizeFormatted}.`) }}
+    <div
+      v-if="isTotalSizeExceeded && !isUploading"
+      class="file-upload__total-size-error"
+      role="alert"
+    >
+      {{
+        t(
+          "documentConverter.totalSizeExceeded",
+          `Die Gesamtgröße der ausgewählten Dateien (${totalSizeFormatted}) überschreitet das Maximum von ${maxTotalSizeFormatted}.`,
+        )
+      }}
     </div>
 
     <!-- Fehlermeldungen für Screenreader -->
@@ -190,9 +300,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue';
-import { useGlobalDialog } from '@/composables/useDialog';
-import { useI18n } from '@/composables/useI18n';
+import { ref, computed, watch, nextTick } from "vue";
+import { useGlobalDialog } from "@/composables/useDialog";
+import { useI18n } from "@/composables/useI18n";
 
 // Dialog-Service für Fehlermeldungen
 const dialog = useGlobalDialog();
@@ -231,16 +341,16 @@ interface FileUploadProps {
 interface SelectedFile {
   /** Eindeutige ID für die Datei */
   id: string;
-  
+
   /** Die eigentliche File-Instanz */
   file: File;
-  
+
   /** Validierungsstatus (pending, validating, valid, invalid) */
-  validationStatus: 'pending' | 'validating' | 'valid' | 'invalid';
-  
+  validationStatus: "pending" | "validating" | "valid" | "invalid";
+
   /** Validierungsnachricht bei Fehler */
   validationMessage?: string;
-  
+
   /** Allgemeiner Fehler */
   error?: string;
 }
@@ -248,25 +358,29 @@ interface SelectedFile {
 // Interface-Definition für emittierte Events
 interface FileUploadEmits {
   /** Wird ausgelöst, wenn mehrere Dateien hochgeladen werden sollen */
-  (e: 'upload', files: File[]): void;
+  (e: "upload", files: File[]): void;
 
   /** Wird ausgelöst, wenn eine einzelne Datei hochgeladen werden soll */
-  (e: 'upload-single', file: File): void;
+  (e: "upload-single", file: File): void;
 
   /** Wird ausgelöst, wenn der Upload abgebrochen wird */
-  (e: 'cancel'): void;
+  (e: "cancel"): void;
 
   /** Wird ausgelöst, wenn eine Datei zur Auswahl hinzugefügt wird */
-  (e: 'fileAdded', file: File): void;
+  (e: "fileAdded", file: File): void;
 
   /** Wird ausgelöst, wenn eine Datei aus der Auswahl entfernt wird */
-  (e: 'fileRemoved', file: File): void;
+  (e: "fileRemoved", file: File): void;
 
   /** Wird ausgelöst, wenn ein Validierungsfehler auftritt */
-  (e: 'validationError', error: string, file: File): void;
+  (e: "validationError", error: string, file: File): void;
 
   /** Wird ausgelöst, wenn die Validierung aller Dateien abgeschlossen ist */
-  (e: 'validationComplete', validFilesCount: number, totalFilesCount: number): void;
+  (
+    e: "validationComplete",
+    validFilesCount: number,
+    totalFilesCount: number,
+  ): void;
 }
 
 // Props-Definition mit Standardwerten
@@ -275,11 +389,19 @@ const props = withDefaults(defineProps<FileUploadProps>(), {
   uploadProgress: 0,
   maxFileSize: 50 * 1024 * 1024, // 50 MB
   maxTotalSize: 200 * 1024 * 1024, // 200 MB
-  allowedExtensions: () => ['pdf', 'docx', 'xlsx', 'pptx', 'html', 'htm', 'txt'],
+  allowedExtensions: () => [
+    "pdf",
+    "docx",
+    "xlsx",
+    "pptx",
+    "html",
+    "htm",
+    "txt",
+  ],
   maxFiles: 10,
   currentFileIndex: 0,
   totalFiles: 0,
-  enhancedValidation: false
+  enhancedValidation: false,
 });
 
 // Event-Emitter definieren
@@ -289,29 +411,34 @@ const emit = defineEmits<FileUploadEmits>();
 const fileInput = ref<HTMLInputElement | null>(null);
 const selectedFiles = ref<SelectedFile[]>([]);
 const isDragging = ref<boolean>(false);
-const screenReaderMessage = ref<string>('');
+const screenReaderMessage = ref<string>("");
 
 // MIME-Typen zu Dateiendungen zuordnen
 const mimeTypesMap = {
-  'application/pdf': ['pdf'],
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['docx'],
-  'application/msword': ['doc'],
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['xlsx'],
-  'application/vnd.ms-excel': ['xls'],
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['pptx'],
-  'application/vnd.ms-powerpoint': ['ppt'],
-  'text/plain': ['txt'],
-  'text/html': ['html', 'htm'],
-  'text/csv': ['csv']
+  "application/pdf": ["pdf"],
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [
+    "docx",
+  ],
+  "application/msword": ["doc"],
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ["xlsx"],
+  "application/vnd.ms-excel": ["xls"],
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation": [
+    "pptx",
+  ],
+  "application/vnd.ms-powerpoint": ["ppt"],
+  "text/plain": ["txt"],
+  "text/html": ["html", "htm"],
+  "text/csv": ["csv"],
 };
 
 // Berechnete Eigenschaften
 const hasValidFiles = computed<boolean>(() => {
-  return selectedFiles.value.some(file => file.validationStatus === 'valid');
+  return selectedFiles.value.some((file) => file.validationStatus === "valid");
 });
 
 const validFilesCount = computed<number>(() => {
-  return selectedFiles.value.filter(file => file.validationStatus === 'valid').length;
+  return selectedFiles.value.filter((file) => file.validationStatus === "valid")
+    .length;
 });
 
 const totalFilesSize = computed<number>(() => {
@@ -335,32 +462,36 @@ const isBatchUpload = computed<boolean>(() => {
 });
 
 const batchProgress = computed<string>(() => {
-  if (props.totalFiles <= 0) return '';
+  if (props.totalFiles <= 0) return "";
   return `${props.currentFileIndex} / ${props.totalFiles}`;
 });
 
 const isValidating = computed<boolean>(() => {
-  return selectedFiles.value.some(file => file.validationStatus === 'validating');
+  return selectedFiles.value.some(
+    (file) => file.validationStatus === "validating",
+  );
 });
 
 const invalidFilesCount = computed<number>(() => {
-  return selectedFiles.value.filter(file => file.validationStatus === 'invalid').length;
+  return selectedFiles.value.filter(
+    (file) => file.validationStatus === "invalid",
+  ).length;
 });
 
 // Datei-Auswahl Dialog öffnen
 function triggerFileInput(event: Event): void {
   // Stoppe Ereignispropagierung, wenn auf bestimmte Elemente geklickt wurde
   if (
-    event.target instanceof HTMLButtonElement || 
+    event.target instanceof HTMLButtonElement ||
     event.target instanceof HTMLInputElement ||
-    (event.target as HTMLElement).closest('.file-upload__selected') ||
-    (event.target as HTMLElement).closest('.file-upload__actions')
+    (event.target as HTMLElement).closest(".file-upload__selected") ||
+    (event.target as HTMLElement).closest(".file-upload__actions")
   ) {
     return;
   }
-  
+
   if (props.isUploading) return;
-  
+
   if (fileInput.value) {
     fileInput.value.click();
   }
@@ -369,14 +500,14 @@ function triggerFileInput(event: Event): void {
 // Drag & Drop Handlers
 function onDragOver(event: DragEvent): void {
   if (props.isUploading) return;
-  
+
   // Überprüfen, ob Dateien gezogen werden
-  if (event.dataTransfer?.types.includes('Files')) {
+  if (event.dataTransfer?.types.includes("Files")) {
     isDragging.value = true;
-    
+
     // Accept-Drop-Effekt setzen
     if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = 'copy';
+      event.dataTransfer.dropEffect = "copy";
     }
   }
 }
@@ -384,7 +515,7 @@ function onDragOver(event: DragEvent): void {
 function onDragLeave(event: DragEvent): void {
   // Nur bei tatsächlichem Verlassen des Elements
   if (
-    event.relatedTarget === null || 
+    event.relatedTarget === null ||
     !(event.currentTarget as Node).contains(event.relatedTarget as Node)
   ) {
     isDragging.value = false;
@@ -394,9 +525,9 @@ function onDragLeave(event: DragEvent): void {
 function onDrop(event: DragEvent): void {
   if (props.isUploading) return;
   isDragging.value = false;
-  
+
   if (!event.dataTransfer?.files.length) return;
-  
+
   // Mehrere Dateien verarbeiten
   const files = Array.from(event.dataTransfer.files);
   processFiles(files);
@@ -406,13 +537,13 @@ function onDrop(event: DragEvent): void {
 function onFileSelected(event: Event): void {
   const input = event.target as HTMLInputElement;
   if (!input.files || input.files.length === 0) return;
-  
+
   // Mehrere Dateien verarbeiten
   const files = Array.from(input.files);
   processFiles(files);
-  
+
   // Input zurücksetzen für erneute Auswahl der gleichen Datei
-  input.value = '';
+  input.value = "";
 }
 
 // Verarbeite mehrere Dateien
@@ -420,23 +551,32 @@ function processFiles(files: File[]): void {
   // Überprüfe, ob maximale Anzahl überschritten wird
   const remainingSlots = props.maxFiles - selectedFiles.value.length;
   if (remainingSlots <= 0) {
-    showError(t('documentConverter.tooManyFiles', `Maximale Anzahl von ${props.maxFiles} Dateien erreicht.`));
+    showError(
+      t(
+        "documentConverter.tooManyFiles",
+        `Maximale Anzahl von ${props.maxFiles} Dateien erreicht.`,
+      ),
+    );
     return;
   }
-  
+
   // Anzahl der zu verarbeitenden Dateien beschränken
   const filesToProcess = files.slice(0, remainingSlots);
-  
+
   // Jede Datei verarbeiten
-  filesToProcess.forEach(file => {
+  filesToProcess.forEach((file) => {
     addFile(file);
   });
-  
+
   // Meldung, wenn Dateien ignoriert wurden
   if (files.length > remainingSlots) {
     const ignoredCount = files.length - remainingSlots;
-    showError(t('documentConverter.filesIgnored', 
-      `${ignoredCount} ${ignoredCount === 1 ? 'Datei wurde' : 'Dateien wurden'} ignoriert, da das Maximum erreicht ist.`));
+    showError(
+      t(
+        "documentConverter.filesIgnored",
+        `${ignoredCount} ${ignoredCount === 1 ? "Datei wurde" : "Dateien wurden"} ignoriert, da das Maximum erreicht ist.`,
+      ),
+    );
   }
 }
 
@@ -444,20 +584,22 @@ function processFiles(files: File[]): void {
 function addFile(file: File): void {
   // Temporäre ID erzeugen
   const fileId = `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  
+
   // Datei zur Liste hinzufügen mit initialem pending-Status
   selectedFiles.value.push({
     id: fileId,
     file,
-    validationStatus: 'pending'
+    validationStatus: "pending",
   });
-  
+
   // Event auslösen
-  emit('fileAdded', file);
-  
+  emit("fileAdded", file);
+
   // Screen Reader Meldung
-  setScreenReaderMessage(t('documentConverter.fileAdded', `Datei ${file.name} hinzugefügt.`));
-  
+  setScreenReaderMessage(
+    t("documentConverter.fileAdded", `Datei ${file.name} hinzugefügt.`),
+  );
+
   // Datei asynchron validieren
   validateFile(fileId, file);
 }
@@ -465,13 +607,19 @@ function addFile(file: File): void {
 // Prüft, ob alle Dateien validiert wurden
 function checkValidationComplete(): void {
   // Prüfen, ob noch Dateien in Validierung sind
-  const stillValidating = selectedFiles.value.some(file => file.validationStatus === 'validating' || file.validationStatus === 'pending');
+  const stillValidating = selectedFiles.value.some(
+    (file) =>
+      file.validationStatus === "validating" ||
+      file.validationStatus === "pending",
+  );
 
   if (!stillValidating) {
     // Wenn alle Dateien validiert wurden, überprüfe Gesamtgröße
     if (isTotalSizeExceeded.value) {
-      const errorMessage = t('documentConverter.totalSizeExceeded',
-        `Die Gesamtgröße der ausgewählten Dateien (${totalSizeFormatted.value}) überschreitet das Maximum von ${maxTotalSizeFormatted.value}.`);
+      const errorMessage = t(
+        "documentConverter.totalSizeExceeded",
+        `Die Gesamtgröße der ausgewählten Dateien (${totalSizeFormatted.value}) überschreitet das Maximum von ${maxTotalSizeFormatted.value}.`,
+      );
 
       showError(errorMessage);
 
@@ -479,56 +627,66 @@ function checkValidationComplete(): void {
       const remainingSpace = props.maxTotalSize;
       let usedSpace = 0;
 
-      selectedFiles.value.forEach(file => {
-        if (file.validationStatus === 'valid') {
+      selectedFiles.value.forEach((file) => {
+        if (file.validationStatus === "valid") {
           usedSpace += file.file.size;
           if (usedSpace > remainingSpace) {
-            file.validationStatus = 'invalid';
-            file.validationMessage = t('documentConverter.contributeToSizeLimit',
-              'Datei überschreitet das Gesamtgrößenlimit');
+            file.validationStatus = "invalid";
+            file.validationMessage = t(
+              "documentConverter.contributeToSizeLimit",
+              "Datei überschreitet das Gesamtgrößenlimit",
+            );
           }
         }
       });
     }
 
     // Benachrichtige über abgeschlossene Validierung
-    emit('validationComplete', validFilesCount.value, selectedFiles.value.length);
+    emit(
+      "validationComplete",
+      validFilesCount.value,
+      selectedFiles.value.length,
+    );
   }
 }
 
 // Datei validieren
 async function validateFile(fileId: string, file: File): Promise<void> {
   // Status auf "wird validiert" setzen
-  const fileIndex = selectedFiles.value.findIndex(f => f.id === fileId);
+  const fileIndex = selectedFiles.value.findIndex((f) => f.id === fileId);
   if (fileIndex === -1) return;
 
-  selectedFiles.value[fileIndex].validationStatus = 'validating';
+  selectedFiles.value[fileIndex].validationStatus = "validating";
 
   // Kleine Verzögerung für UI-Feedback
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await new Promise((resolve) => setTimeout(resolve, 100));
 
   try {
     // Dateityp überprüfen
-    const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
+    const fileExtension = file.name.split(".").pop()?.toLowerCase() || "";
     const isValidType = isFileTypeSupported(file);
 
     if (!isValidType) {
-      const errorMessage = t('documentConverter.unsupportedFormat',
-        `Nicht unterstütztes Dateiformat "${fileExtension}". Erlaubte Formate: ${props.allowedExtensions.join(', ')}`);
+      const errorMessage = t(
+        "documentConverter.unsupportedFormat",
+        `Nicht unterstütztes Dateiformat "${fileExtension}". Erlaubte Formate: ${props.allowedExtensions.join(", ")}`,
+      );
 
-      setFileError(fileId, 'invalid', errorMessage);
-      emit('validationError', errorMessage, file);
+      setFileError(fileId, "invalid", errorMessage);
+      emit("validationError", errorMessage, file);
       checkValidationComplete();
       return;
     }
 
     // Dateigröße überprüfen
     if (file.size > props.maxFileSize) {
-      const errorMessage = t('documentConverter.fileTooLarge',
-        `Die Datei ist zu groß (${formatFileSize(file.size)}). Maximale Dateigröße: ${formatFileSize(props.maxFileSize)}`);
+      const errorMessage = t(
+        "documentConverter.fileTooLarge",
+        `Die Datei ist zu groß (${formatFileSize(file.size)}). Maximale Dateigröße: ${formatFileSize(props.maxFileSize)}`,
+      );
 
-      setFileError(fileId, 'invalid', errorMessage);
-      emit('validationError', errorMessage, file);
+      setFileError(fileId, "invalid", errorMessage);
+      emit("validationError", errorMessage, file);
       checkValidationComplete();
       return;
     }
@@ -537,45 +695,52 @@ async function validateFile(fileId: string, file: File): Promise<void> {
     if (props.enhancedValidation) {
       // Prüfe auf leere Dateien
       if (file.size === 0) {
-        const errorMessage = t('documentConverter.emptyFile', 'Die Datei ist leer und kann nicht konvertiert werden.');
-        setFileError(fileId, 'invalid', errorMessage);
-        emit('validationError', errorMessage, file);
+        const errorMessage = t(
+          "documentConverter.emptyFile",
+          "Die Datei ist leer und kann nicht konvertiert werden.",
+        );
+        setFileError(fileId, "invalid", errorMessage);
+        emit("validationError", errorMessage, file);
         checkValidationComplete();
         return;
       }
 
       // Zusätzliche Dateiformatvalidierung für bekannte Dateitypen
       if (file.type && !validateMimeTypeConsistency(file)) {
-        const errorMessage = t('documentConverter.mimeTypeMismatch',
-          'Die Dateiendung passt nicht zum Dateityp. Bitte überprüfen Sie die Datei.');
-        setFileError(fileId, 'invalid', errorMessage);
-        emit('validationError', errorMessage, file);
+        const errorMessage = t(
+          "documentConverter.mimeTypeMismatch",
+          "Die Dateiendung passt nicht zum Dateityp. Bitte überprüfen Sie die Datei.",
+        );
+        setFileError(fileId, "invalid", errorMessage);
+        emit("validationError", errorMessage, file);
         checkValidationComplete();
         return;
       }
     }
 
     // Datei ist gültig
-    const idx = selectedFiles.value.findIndex(f => f.id === fileId);
+    const idx = selectedFiles.value.findIndex((f) => f.id === fileId);
     if (idx !== -1) {
-      selectedFiles.value[idx].validationStatus = 'valid';
+      selectedFiles.value[idx].validationStatus = "valid";
     }
 
     // Prüfen, ob die Gesamtgröße der Dateien das Limit überschreitet
     checkValidationComplete();
-
   } catch (error) {
     // Allgemeiner Fehler
-    const errorMessage = t('documentConverter.validationError', 'Fehler bei der Validierung');
-    setFileError(fileId, 'invalid', errorMessage);
-    emit('validationError', errorMessage, file);
+    const errorMessage = t(
+      "documentConverter.validationError",
+      "Fehler bei der Validierung",
+    );
+    setFileError(fileId, "invalid", errorMessage);
+    emit("validationError", errorMessage, file);
     checkValidationComplete();
   }
 }
 
 // Prüft, ob der MIME-Typ mit der Dateiendung konsistent ist
 function validateMimeTypeConsistency(file: File): boolean {
-  const extension = file.name.split('.').pop()?.toLowerCase() || '';
+  const extension = file.name.split(".").pop()?.toLowerCase() || "";
 
   // Wenn kein MIME-Typ gesetzt ist, nicht weiter prüfen
   if (!file.type) return true;
@@ -592,10 +757,14 @@ function validateMimeTypeConsistency(file: File): boolean {
 }
 
 // Fehler für eine Datei setzen
-function setFileError(fileId: string, status: 'invalid', message: string): void {
-  const fileIndex = selectedFiles.value.findIndex(f => f.id === fileId);
+function setFileError(
+  fileId: string,
+  status: "invalid",
+  message: string,
+): void {
+  const fileIndex = selectedFiles.value.findIndex((f) => f.id === fileId);
   if (fileIndex === -1) return;
-  
+
   selectedFiles.value[fileIndex].validationStatus = status;
   selectedFiles.value[fileIndex].validationMessage = message;
 }
@@ -603,74 +772,87 @@ function setFileError(fileId: string, status: 'invalid', message: string): void 
 // Datei aus der Liste entfernen
 function removeFile(index: number): void {
   if (props.isUploading) return;
-  
+
   if (index >= 0 && index < selectedFiles.value.length) {
     const removedFile = selectedFiles.value[index].file;
     selectedFiles.value.splice(index, 1);
-    emit('fileRemoved', removedFile);
-    
+    emit("fileRemoved", removedFile);
+
     // Screen Reader Meldung
-    setScreenReaderMessage(t('documentConverter.fileRemoved', `Datei ${removedFile.name} entfernt.`));
+    setScreenReaderMessage(
+      t("documentConverter.fileRemoved", `Datei ${removedFile.name} entfernt.`),
+    );
   }
 }
 
 // Alle Dateien entfernen
 function clearAllFiles(): void {
   if (props.isUploading) return;
-  
+
   selectedFiles.value = [];
-  emit('cancel');
-  
+  emit("cancel");
+
   // Screen Reader Meldung
-  setScreenReaderMessage(t('documentConverter.filesCleared', 'Alle Dateien entfernt.'));
+  setScreenReaderMessage(
+    t("documentConverter.filesCleared", "Alle Dateien entfernt."),
+  );
 }
 
 // Hochladen einer einzelnen Datei
 function uploadSingleFile(fileIndex: number): void {
   const file = selectedFiles.value[fileIndex];
-  if (!file || file.validationStatus !== 'valid') {
+  if (!file || file.validationStatus !== "valid") {
     return;
   }
 
-  emit('upload-single', file.file);
+  emit("upload-single", file.file);
 }
 
 // Ausgewählte Dateien hochladen
 function uploadSelectedFiles(): void {
   // Nur gültige Dateien hochladen
   const validFiles = selectedFiles.value
-    .filter(item => item.validationStatus === 'valid')
-    .map(item => item.file);
+    .filter((item) => item.validationStatus === "valid")
+    .map((item) => item.file);
 
   if (validFiles.length === 0) {
-    showError(t('documentConverter.noValidFiles', 'Keine gültigen Dateien zum Hochladen vorhanden.'));
+    showError(
+      t(
+        "documentConverter.noValidFiles",
+        "Keine gültigen Dateien zum Hochladen vorhanden.",
+      ),
+    );
     return;
   }
 
   // Gesamtgröße nochmal prüfen
   if (isTotalSizeExceeded.value) {
-    showError(t('documentConverter.totalSizeExceeded',
-      `Die Gesamtgröße der ausgewählten Dateien (${totalSizeFormatted.value}) überschreitet das Maximum von ${maxTotalSizeFormatted.value}.`));
+    showError(
+      t(
+        "documentConverter.totalSizeExceeded",
+        `Die Gesamtgröße der ausgewählten Dateien (${totalSizeFormatted.value}) überschreitet das Maximum von ${maxTotalSizeFormatted.value}.`,
+      ),
+    );
     return;
   }
 
   // Bei einer Datei das Einzeldatei-Event auslösen
   if (validFiles.length === 1) {
-    emit('upload-single', validFiles[0]);
+    emit("upload-single", validFiles[0]);
     return;
   }
 
   // Bei mehreren Dateien das Batch-Event auslösen
-  emit('upload', validFiles);
+  emit("upload", validFiles);
 }
 
 // Fehlermeldung anzeigen
 function showError(message: string): void {
   dialog.error({
-    title: t('documentConverter.error', 'Fehler'),
-    message: message
+    title: t("documentConverter.error", "Fehler"),
+    message: message,
   });
-  
+
   // Screen Reader Meldung
   setScreenReaderMessage(message);
 }
@@ -680,7 +862,7 @@ function setScreenReaderMessage(message: string): void {
   screenReaderMessage.value = message;
   // Nach kurzer Zeit zurücksetzen
   setTimeout(() => {
-    screenReaderMessage.value = '';
+    screenReaderMessage.value = "";
   }, 5000);
 }
 
@@ -690,66 +872,66 @@ function isFileTypeSupported(file: File): boolean {
   for (const [mimeType, extensions] of Object.entries(mimeTypesMap)) {
     if (file.type === mimeType) {
       // Prüfen, ob eine der zugehörigen Erweiterungen erlaubt ist
-      if (extensions.some(ext => props.allowedExtensions.includes(ext))) {
+      if (extensions.some((ext) => props.allowedExtensions.includes(ext))) {
         return true;
       }
     }
   }
-  
+
   // Dateierweiterung prüfen als Fallback
-  const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
+  const fileExtension = file.name.split(".").pop()?.toLowerCase() || "";
   return props.allowedExtensions.includes(fileExtension);
 }
 
 // Dateigröße formatieren
 function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
-  
+  if (bytes === 0) return "0 Bytes";
+
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
 // Dateitypbezeichnung ermitteln
 function getFileType(file: File): string {
-  const extension = file.name.split('.').pop()?.toLowerCase() || '';
-  
+  const extension = file.name.split(".").pop()?.toLowerCase() || "";
+
   const fileTypes: Record<string, string> = {
-    'pdf': 'PDF-Dokument',
-    'docx': 'Word-Dokument',
-    'doc': 'Word-Dokument',
-    'xlsx': 'Excel-Tabelle',
-    'xls': 'Excel-Tabelle',
-    'pptx': 'PowerPoint-Präsentation',
-    'ppt': 'PowerPoint-Präsentation',
-    'html': 'HTML-Dokument',
-    'htm': 'HTML-Dokument',
-    'txt': 'Textdatei'
+    pdf: "PDF-Dokument",
+    docx: "Word-Dokument",
+    doc: "Word-Dokument",
+    xlsx: "Excel-Tabelle",
+    xls: "Excel-Tabelle",
+    pptx: "PowerPoint-Präsentation",
+    ppt: "PowerPoint-Präsentation",
+    html: "HTML-Dokument",
+    htm: "HTML-Dokument",
+    txt: "Textdatei",
   };
-  
+
   return fileTypes[extension] || extension.toUpperCase();
 }
 
 // Icon für Dateityp ermitteln
 function getFileIcon(file: File): string {
-  const extension = file.name.split('.').pop()?.toLowerCase() || '';
-  
+  const extension = file.name.split(".").pop()?.toLowerCase() || "";
+
   const fileIcons: Record<string, string> = {
-    'pdf': 'fa fa-file-pdf',
-    'docx': 'fa fa-file-word',
-    'doc': 'fa fa-file-word',
-    'xlsx': 'fa fa-file-excel',
-    'xls': 'fa fa-file-excel',
-    'pptx': 'fa fa-file-powerpoint',
-    'ppt': 'fa fa-file-powerpoint',
-    'html': 'fa fa-file-code',
-    'htm': 'fa fa-file-code',
-    'txt': 'fa fa-file-alt'
+    pdf: "fa fa-file-pdf",
+    docx: "fa fa-file-word",
+    doc: "fa fa-file-word",
+    xlsx: "fa fa-file-excel",
+    xls: "fa fa-file-excel",
+    pptx: "fa fa-file-powerpoint",
+    ppt: "fa fa-file-powerpoint",
+    html: "fa fa-file-code",
+    htm: "fa fa-file-code",
+    txt: "fa fa-file-alt",
   };
-  
-  return fileIcons[extension] || 'fa fa-file';
+
+  return fileIcons[extension] || "fa fa-file";
 }
 </script>
 

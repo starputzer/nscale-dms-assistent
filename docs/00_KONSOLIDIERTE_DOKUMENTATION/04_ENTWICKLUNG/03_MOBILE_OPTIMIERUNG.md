@@ -1,13 +1,13 @@
 ---
 title: "Mobile Optimierung"
-version: "1.0.0"
+version: "1.1.0"
 date: "10.05.2025"
-lastUpdate: "10.05.2025"
+lastUpdate: "11.05.2025"
 author: "Martin Heinrich"
 status: "Aktiv"
 priority: "Hoch"
 category: "Entwicklung"
-tags: ["Responsive", "Mobile", "Touch", "Optimierung", "Vue 3", "CSS"]
+tags: ["Responsive", "Mobile", "Touch", "Optimierung", "Vue 3", "CSS", "Performance"]
 ---
 
 # Mobile Optimierung
@@ -35,11 +35,14 @@ tags: ["Responsive", "Mobile", "Touch", "Optimierung", "Vue 3", "CSS"]
     - [Touch-Target-Größen](#touch-target-größen)
     - [Touch-Gesten](#touch-gesten)
     - [Feedback-Mechanismen](#feedback-mechanismen)
+    - [Erweiterte Touch-Direktiven](#erweiterte-touch-direktiven)
 6. [Performance-Optimierung](#performance-optimierung)
     - [Lazy-Loading](#lazy-loading)
     - [Virtuelle Listen](#virtuelle-listen)
     - [Image-Optimierung](#image-optimierung)
     - [Caching-Strategien](#caching-strategien)
+    - [Adaptive Leistungsoptimierung](#adaptive-leistungsoptimierung)
+    - [Speichermanagement](#speichermanagement)
 7. [Barrierefreiheit für Mobile](#barrierefreiheit-für-mobile)
     - [Touch-Fokus-Management](#touch-fokus-management)
     - [Vergrößerte Schriftgrößen](#vergrößerte-schriftgrößen)
@@ -82,10 +85,10 @@ Die Mobile Optimierung des nscale DMS Assistenten stellt sicher, dass die Anwend
 
 #### Verbesserungspotenzial
 
-- Teilweise inkonsistente Touch-Target-Größen
-- Ausbaufähige Touch-Gesten-Implementierung
-- Komplexe Komponenten benötigen weitere Optimierung (Admin-Panel, Tabellen)
-- Performance-Optimierung für ressourcenschwache Geräte
+- Teilweise inkonsistente Touch-Target-Größen ✓ *gelöst mit touch-focus.scss*
+- Ausbaufähige Touch-Gesten-Implementierung ✓ *gelöst mit enhanced-touch-directives.ts*
+- Komplexe Komponenten benötigen weitere Optimierung (Admin-Panel, Tabellen) ✓ *verbessert mit touch-focus.scss*
+- Performance-Optimierung für ressourcenschwache Geräte ✓ *gelöst mit mobilePerformanceOptimizer.ts*
 
 ## Mobile-First-Strategie
 
@@ -563,12 +566,12 @@ Um die Offline-Nutzung zu verbessern, implementieren wir Caching-Strategien:
 export const useCache = () => {
   const cache = new Map<string, { data: any, timestamp: number }>();
   const CACHE_DURATION = 60 * 60 * 1000; // 1 Stunde
-  
+
   const storeCache = (key: string, data: any) => {
     cache.set(key, { data, timestamp: Date.now() });
     localStorage.setItem(`cache_${key}`, JSON.stringify({ data, timestamp: Date.now() }));
   };
-  
+
   const getCache = (key: string) => {
     // Erst im Memory-Cache suchen
     if (cache.has(key)) {
@@ -577,7 +580,7 @@ export const useCache = () => {
         return cached.data;
       }
     }
-    
+
     // Dann in localStorage
     const stored = localStorage.getItem(`cache_${key}`);
     if (stored) {
@@ -587,12 +590,71 @@ export const useCache = () => {
         return parsed.data;
       }
     }
-    
+
     return null;
   };
-  
+
   return { storeCache, getCache };
 };
+```
+
+### Adaptive Leistungsoptimierung
+
+Für eine optimale Performance auf verschiedenen Geräten wurde ein adaptiver Performance-Optimierer implementiert, der automatisch die Verarbeitungsstrategien an die Gerätefähigkeiten anpasst:
+
+```typescript
+// Erkennung von Gerätefähigkeiten
+const deviceInfo = detectDeviceCapabilities();
+
+// Adaptive Drosselung basierend auf Gerätefähigkeiten
+const handleScroll = adaptiveThrottle(
+  (e: Event) => {
+    // Scroll-Verarbeitung...
+  },
+  deviceInfo.isLowEndDevice ? 100 : 50, // Längere Verzögerung auf leistungsschwachen Geräten
+  { leading: true, trailing: true }
+);
+
+// Planung von Aufgaben mit Prioritäten
+const scheduler = new AdaptiveTaskScheduler();
+
+// Hintergrundverarbeitung mit niedriger Priorität
+scheduler.scheduleTask(
+  () => performExpensiveCalculation(),
+  { priority: 'background' }
+);
+
+// UI-Aktualisierung mit hoher Priorität
+scheduler.scheduleTask(
+  () => updateUserInterface(),
+  { priority: 'high' }
+);
+```
+
+### Speichermanagement
+
+Die mobile Speicherverwaltung hilft, Speicherlecks zu vermeiden und die Anwendungsleistung auf Geräten mit begrenztem Speicher aufrechtzuerhalten:
+
+```typescript
+// Initialisierung des Memory Managers
+const memoryManager = new MobileMemoryManager({
+  onMemoryWarning: () => {
+    // Cache leeren, nicht benötigte Daten entfernen
+    clearImageCache();
+    reduceListLength();
+  }
+});
+
+// Aktives Speichermanagement für langlebige Sitzungen
+setInterval(() => {
+  const stats = memoryManager.getMemoryStats();
+
+  if (stats.isLow) {
+    console.warn('Speichernutzung kritisch:', stats.usage.toFixed(2) + '%');
+    memoryManager.forceFreeMemory();
+  }
+}, 60000); // Alle 60 Sekunden prüfen
+```
 ```
 
 ## Barrierefreiheit für Mobile
@@ -797,21 +859,52 @@ Beispiel für die touch-optimierte BatchUpload-Komponente:
 function handleSwipeLeft(fileId: string, index: number): void {
   // Links wischen, um Upload-Aktion anzuzeigen (falls gültig)
   const file = batchFiles.value[index];
-  
+
   // Vorherigen Wisch-Status zurücksetzen
   fileSwiping.value = null;
   touchActionButtons.value.clear();
-  
+
   if (file.validationStatus === 'valid' && !isProcessing.value && !file.status) {
     fileSwiping.value = fileId;
     touchActionButtons.value.set(fileId, true);
-    
+
     // Upload-Aktionsbutton hinzufügen
-    setScreenReaderMessage(t('documentConverter.batchUpload.swipeLeftForUpload', 
+    setScreenReaderMessage(t('documentConverter.batchUpload.swipeLeftForUpload',
       'Nach links gewischt für Upload-Option von Datei: ' + file.file.name));
   }
 }
 ```
+
+### Erweiterte Touch-Direktiven
+
+Zur Verbesserung der Touch-Unterstützung wurde eine erweiterte Touch-Direktive (`v-enhanced-touch`) implementiert, die komplexere Gesten und eine bessere Rückmeldung bietet:
+
+```typescript
+// Verwendung der erweiterten Touch-Direktive
+<div
+  v-enhanced-touch="{
+    tap: handleTap,
+    doubleTap: handleDoubleTap,
+    longPress: handleLongPress,
+    left: handleSwipeLeft,
+    right: handleSwipeRight,
+    pinchIn: handlePinchIn,
+    pinchOut: handlePinchOut,
+    rotate: handleRotate
+  }"
+  class="touch-target touch-feedback"
+>
+  Interaktives Element mit erweiterter Touch-Unterstützung
+</div>
+```
+
+Die erweiterte Touch-Direktive bietet folgende Vorteile:
+
+- Unterstützung für komplexere Gesten (Pinch, Rotate, Double-Tap)
+- Bessere Performance durch optimierte Erkennung
+- Anpassbare Schwellenwerte für verschiedene Geräte
+- Verbesserte Barrierefreiheit durch ARIA-Attribute
+- Integrierte visuelle Rückmeldung
 
 #### Responsive Layouts
 
@@ -1124,6 +1217,9 @@ test.describe('Mobile Chat Interface', () => {
    - Verwende `defineAsyncComponent` für Lazy-Loading
    - Implementiere `<keepalive>` für häufig verwendete, aber temporär versteckte Komponenten
    - Verwende `watchEffect` anstelle von `watch` für reaktive Berechnungen, wenn möglich
+   - Nutze den adaptiven Performance-Optimierer für gerätespezifische Anpassungen
+   - Implementiere proaktives Speichermanagement auf mobilen Geräten
+   - Verwende die erweiterte Touch-Direktive für optimierte Interaktion
 
 ---
 
@@ -1131,3 +1227,25 @@ test.describe('Mobile Chat Interface', () => {
 - [02_UI_BASISKOMPONENTEN.md](/opt/nscale-assist/app/docs/00_KONSOLIDIERTE_DOKUMENTATION/02_KOMPONENTEN/02_UI_BASISKOMPONENTEN.md)
 - [03_CHAT_INTERFACE.md](/opt/nscale-assist/app/docs/00_KONSOLIDIERTE_DOKUMENTATION/02_KOMPONENTEN/03_CHAT_INTERFACE.md)
 - [02_TESTSTRATEGIE.md](/opt/nscale-assist/app/docs/00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/02_TESTSTRATEGIE.md)
+- [08_PERFORMANCE_OPTIMIERUNGEN.md](/opt/nscale-assist/app/docs/00_KONSOLIDIERTE_DOKUMENTATION/03_ARCHITEKTUR/08_PERFORMANCE_OPTIMIERUNGEN.md)
+
+## Aktuelle Verbesserungen (11.05.2025)
+
+In der neuesten Version wurden erhebliche Verbesserungen der mobilen Optimierung implementiert:
+
+1. **Enhanced Touch Framework**
+   - Neue CSS-Bibliothek `touch-focus.scss` mit standardisierten Touch-Stilen
+   - Verbesserte `v-enhanced-touch`-Direktive mit umfassender Gestenunterstützung
+   - Konsistente Touch-Target-Größen gemäß WCAG-Richtlinien (min. 44×44px)
+
+2. **Mobile Performance Framework**
+   - Implementierung des `mobilePerformanceOptimizer.ts` für adaptive Leistungsoptimierung
+   - Intelligente Aufgabenplanung basierend auf Gerätefähigkeiten
+   - Proaktives Speichermanagement für langlebige mobile Sitzungen
+
+3. **Responsive Layoutverbesserungen**
+   - Mobile-optimierte Tabellendarstellung als Karten
+   - Konsistente Breakpoints über alle Komponenten
+   - Verbesserte Scrolling-Performance auf mobilen Geräten
+
+Diese Verbesserungen wurden bereits in Schlüsselkomponenten wie dem Chat-Interface und dem Dokumentenkonverter implementiert und werden schrittweise auf weitere Komponenten ausgeweitet.

@@ -1,19 +1,34 @@
 <template>
   <Teleport to="body">
     <Transition name="fade">
-      <div v-if="isVisible" class="dialog-overlay" @click.self="handleOverlayClick">
+      <div
+        v-if="isVisible"
+        class="dialog-overlay"
+        @click.self="handleOverlayClick"
+      >
         <Transition name="slide-fade">
-          <div v-if="isVisible" class="dialog-container" role="dialog" aria-modal="true">
+          <div
+            v-if="isVisible"
+            class="dialog-container"
+            role="dialog"
+            aria-modal="true"
+          >
             <div class="dialog-header">
               <h2 class="dialog-title">{{ title }}</h2>
-              <button class="dialog-close" @click="cancel" aria-label="Schließen">
+              <button
+                class="dialog-close"
+                @click="cancel"
+                aria-label="Schließen"
+              >
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
             <div class="dialog-content">
               <p v-if="message" class="dialog-message">{{ message }}</p>
               <div class="dialog-input-container">
-                <label :for="inputId" class="dialog-label">{{ inputLabel }}</label>
+                <label :for="inputId" class="dialog-label">{{
+                  inputLabel
+                }}</label>
                 <input
                   :id="inputId"
                   ref="inputRef"
@@ -32,16 +47,18 @@
               </div>
             </div>
             <div class="dialog-footer">
-              <button 
-                v-if="showCancelButton" 
-                class="dialog-btn dialog-btn-cancel" 
-                @click="cancel">
+              <button
+                v-if="showCancelButton"
+                class="dialog-btn dialog-btn-cancel"
+                @click="cancel"
+              >
                 {{ cancelButtonText }}
               </button>
-              <button 
-                class="dialog-btn dialog-btn-confirm" 
+              <button
+                class="dialog-btn dialog-btn-confirm"
                 @click="confirm"
-                :disabled="!isValid">
+                :disabled="!isValid"
+              >
                 {{ confirmButtonText }}
               </button>
             </div>
@@ -53,8 +70,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue';
-import { v4 as uuidv4 } from '@/utils/uuidUtil'; // Verwenden des internen UUID-Generators
+import {
+  ref,
+  onMounted,
+  onBeforeUnmount,
+  computed,
+  watch,
+  nextTick,
+} from "vue";
+import { v4 as uuidv4 } from "@/utils/uuidUtil"; // Verwenden des internen UUID-Generators
 
 interface InputDialogProps {
   // Dialog-Grundlegende Texte
@@ -62,7 +86,7 @@ interface InputDialogProps {
   message?: string;
   confirmButtonText?: string;
   cancelButtonText?: string;
-  
+
   // Input-spezifische Props
   inputLabel?: string;
   inputType?: string;
@@ -73,33 +97,33 @@ interface InputDialogProps {
   required?: boolean;
   validator?: (value: string) => boolean | string;
   validationMessage?: string;
-  
+
   // Dialog-Optionen
   isVisible?: boolean;
   showCancelButton?: boolean;
 }
 
 const props = withDefaults(defineProps<InputDialogProps>(), {
-  title: 'Eingabe',
-  message: '',
-  confirmButtonText: 'Bestätigen',
-  cancelButtonText: 'Abbrechen',
-  inputLabel: 'Eingabe',
-  inputType: 'text',
-  placeholder: '',
-  defaultValue: '',
+  title: "Eingabe",
+  message: "",
+  confirmButtonText: "Bestätigen",
+  cancelButtonText: "Abbrechen",
+  inputLabel: "Eingabe",
+  inputType: "text",
+  placeholder: "",
+  defaultValue: "",
   minLength: 0,
   maxLength: 256,
   required: true,
   isVisible: false,
   showCancelButton: true,
-  validationMessage: 'Bitte geben Sie einen gültigen Wert ein.'
+  validationMessage: "Bitte geben Sie einen gültigen Wert ein.",
 });
 
 const emit = defineEmits<{
-  (e: 'confirm', value: string): void;
-  (e: 'cancel'): void;
-  (e: 'update:isVisible', value: boolean): void;
+  (e: "confirm", value: string): void;
+  (e: "cancel"): void;
+  (e: "update:isVisible", value: boolean): void;
 }>();
 
 // Refs
@@ -107,7 +131,7 @@ const inputRef = ref<HTMLInputElement | null>(null);
 const inputValue = ref(props.defaultValue);
 const inputId = ref(`input-${uuidv4().substring(0, 8)}`);
 const showValidationMessage = ref(false);
-const customValidationMessage = ref('');
+const customValidationMessage = ref("");
 
 // Computed
 const isValid = computed(() => {
@@ -115,21 +139,21 @@ const isValid = computed(() => {
   if (props.required && !inputValue.value.trim()) {
     return false;
   }
-  
+
   if (inputValue.value.length < props.minLength) {
     return false;
   }
-  
+
   // Benutzerdefinierte Validierung, falls vorhanden
   if (props.validator) {
     const result = props.validator(inputValue.value);
-    if (typeof result === 'string') {
+    if (typeof result === "string") {
       customValidationMessage.value = result;
       return false;
     }
     return result;
   }
-  
+
   return true;
 });
 
@@ -137,15 +161,15 @@ const validationMessage = computed(() => {
   if (customValidationMessage.value) {
     return customValidationMessage.value;
   }
-  
+
   if (props.required && !inputValue.value.trim()) {
-    return 'Dieses Feld ist erforderlich.';
+    return "Dieses Feld ist erforderlich.";
   }
-  
+
   if (inputValue.value.length < props.minLength) {
     return `Mindestens ${props.minLength} Zeichen erforderlich.`;
   }
-  
+
   return props.validationMessage;
 });
 
@@ -159,21 +183,21 @@ const confirm = () => {
     showValidationMessage.value = true;
     return;
   }
-  
-  emit('confirm', inputValue.value);
-  emit('update:isVisible', false);
+
+  emit("confirm", inputValue.value);
+  emit("update:isVisible", false);
   resetDialog();
 };
 
 const cancel = () => {
-  emit('cancel');
-  emit('update:isVisible', false);
+  emit("cancel");
+  emit("update:isVisible", false);
   resetDialog();
 };
 
 const resetDialog = () => {
   showValidationMessage.value = false;
-  customValidationMessage.value = '';
+  customValidationMessage.value = "";
   // Wert zurücksetzen, aber mit verzögerung nachdem der Dialog geschlossen wurde
   setTimeout(() => {
     inputValue.value = props.defaultValue;
@@ -183,29 +207,32 @@ const resetDialog = () => {
 // Tastatur-Events
 const handleKeyDown = (event: KeyboardEvent) => {
   if (!props.isVisible) return;
-  
-  if (event.key === 'Escape') {
+
+  if (event.key === "Escape") {
     event.preventDefault();
     cancel();
   }
 };
 
 // Fokusmanagement
-watch(() => props.isVisible, async (newValue) => {
-  if (newValue) {
-    // Warten bis nach DOM-Update und dann Fokus setzen
-    await nextTick();
-    inputRef.value?.focus();
-  }
-});
+watch(
+  () => props.isVisible,
+  async (newValue) => {
+    if (newValue) {
+      // Warten bis nach DOM-Update und dann Fokus setzen
+      await nextTick();
+      inputRef.value?.focus();
+    }
+  },
+);
 
 // Event Listener Installation/Deinstallation
 onMounted(() => {
-  document.addEventListener('keydown', handleKeyDown);
+  document.addEventListener("keydown", handleKeyDown);
 });
 
 onBeforeUnmount(() => {
-  document.removeEventListener('keydown', handleKeyDown);
+  document.removeEventListener("keydown", handleKeyDown);
 });
 </script>
 
@@ -295,7 +322,9 @@ onBeforeUnmount(() => {
   font-weight: 500;
   cursor: pointer;
   border: none;
-  transition: background-color 0.2s, box-shadow 0.2s;
+  transition:
+    background-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .dialog-btn:focus {
@@ -345,7 +374,9 @@ onBeforeUnmount(() => {
   border-radius: 4px;
   font-size: 16px;
   color: #333;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .dialog-input:focus {
@@ -390,11 +421,11 @@ onBeforeUnmount(() => {
   .dialog-container {
     width: 95%;
   }
-  
+
   .dialog-footer {
     flex-direction: column;
   }
-  
+
   .dialog-btn {
     width: 100%;
   }

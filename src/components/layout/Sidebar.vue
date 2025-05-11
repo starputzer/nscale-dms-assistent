@@ -1,9 +1,9 @@
 <template>
-  <div 
+  <div
     class="n-sidebar"
-    :class="{ 
+    :class="{
       'n-sidebar--collapsed': collapsed,
-      'n-sidebar--mini': mini && collapsed
+      'n-sidebar--mini': mini && collapsed,
     }"
     :aria-expanded="!collapsed"
   >
@@ -11,20 +11,17 @@
       <!-- Sidebar Header -->
       <div class="n-sidebar__header">
         <slot name="header">
-          <div 
-            v-if="!collapsed || !mini" 
-            class="n-sidebar__title"
-          >
+          <div v-if="!collapsed || !mini" class="n-sidebar__title">
             {{ title }}
           </div>
-          <button 
+          <button
             class="n-sidebar__toggle-btn"
             @click="toggleCollapse"
             aria-label="Toggle sidebar"
             tabindex="0"
           >
-            <svg 
-              class="n-sidebar__toggle-icon" 
+            <svg
+              class="n-sidebar__toggle-icon"
               :class="{ 'n-sidebar__toggle-icon--collapsed': collapsed }"
               viewBox="0 0 24 24"
               fill="none"
@@ -38,7 +35,7 @@
           </button>
         </slot>
       </div>
-      
+
       <!-- Sidebar Content -->
       <div class="n-sidebar__content">
         <slot>
@@ -57,8 +54,10 @@
                 :class="{
                   'n-sidebar__nav-item--active': item.active,
                   'n-sidebar__nav-item--has-children': item.children?.length,
-                  'n-sidebar__nav-item--expanded': expandedItems.includes(item.id),
-                  'n-sidebar__nav-item--favorite': true
+                  'n-sidebar__nav-item--expanded': expandedItems.includes(
+                    item.id,
+                  ),
+                  'n-sidebar__nav-item--favorite': true,
                 }"
                 class="n-sidebar__nav-item"
                 :draggable="props.favoritesDraggable"
@@ -87,21 +86,37 @@
                     @click.prevent="navigateTo(item)"
                   >
                     <span v-if="item.icon" class="n-sidebar__nav-icon">
-                      <component :is="getIconComponent(item.icon)" v-if="isComponent(item.icon)" />
+                      <component
+                        :is="getIconComponent(item.icon)"
+                        v-if="isComponent(item.icon)"
+                      />
                       <i v-else :class="item.icon"></i>
                     </span>
-                    <span v-if="!collapsed || !mini" class="n-sidebar__nav-label">{{ item.label }}</span>
+                    <span
+                      v-if="!collapsed || !mini"
+                      class="n-sidebar__nav-label"
+                      >{{ item.label }}</span
+                    >
 
                     <!-- Remove from favorites button -->
                     <button
-                      v-if="(!collapsed || !mini)"
+                      v-if="!collapsed || !mini"
                       class="n-sidebar__action-button n-sidebar__action-button--remove-favorite"
                       @click.stop="removeFromFavorites(item.id)"
                       aria-label="Remove from favorites"
                       title="Remove from favorites"
                     >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 17.75l-6.172 3.245 1.179-6.873-4.993-4.867 6.9-1.002L12 2l3.086 6.253 6.9 1.002-4.993 4.867 1.179 6.873z"></path>
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          d="M12 17.75l-6.172 3.245 1.179-6.873-4.993-4.867 6.9-1.002L12 2l3.086 6.253 6.9 1.002-4.993 4.867 1.179 6.873z"
+                        ></path>
                       </svg>
                     </button>
                   </a>
@@ -111,25 +126,41 @@
                     class="n-sidebar__nav-link"
                     :class="{
                       'n-sidebar__nav-link--active': item.active,
-                      'n-sidebar__nav-link--disabled': item.disabled
+                      'n-sidebar__nav-link--disabled': item.disabled,
                     }"
                   >
                     <span v-if="item.icon" class="n-sidebar__nav-icon">
-                      <component :is="getIconComponent(item.icon)" v-if="isComponent(item.icon)" />
+                      <component
+                        :is="getIconComponent(item.icon)"
+                        v-if="isComponent(item.icon)"
+                      />
                       <i v-else :class="item.icon"></i>
                     </span>
-                    <span v-if="!collapsed || !mini" class="n-sidebar__nav-label">{{ item.label }}</span>
+                    <span
+                      v-if="!collapsed || !mini"
+                      class="n-sidebar__nav-label"
+                      >{{ item.label }}</span
+                    >
 
                     <!-- Remove from favorites button -->
                     <button
-                      v-if="(!collapsed || !mini)"
+                      v-if="!collapsed || !mini"
                       class="n-sidebar__action-button n-sidebar__action-button--remove-favorite"
                       @click.stop="removeFromFavorites(item.id)"
                       aria-label="Remove from favorites"
                       title="Remove from favorites"
                     >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 17.75l-6.172 3.245 1.179-6.873-4.993-4.867 6.9-1.002L12 2l3.086 6.253 6.9 1.002-4.993 4.867 1.179 6.873z"></path>
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          d="M12 17.75l-6.172 3.245 1.179-6.873-4.993-4.867 6.9-1.002L12 2l3.086 6.253 6.9 1.002-4.993 4.867 1.179 6.873z"
+                        ></path>
                       </svg>
                     </button>
                   </div>
@@ -148,7 +179,9 @@
                 :class="{
                   'n-sidebar__nav-item--active': item.active,
                   'n-sidebar__nav-item--has-children': item.children?.length,
-                  'n-sidebar__nav-item--expanded': expandedItems.includes(item.id)
+                  'n-sidebar__nav-item--expanded': expandedItems.includes(
+                    item.id,
+                  ),
                 }"
                 class="n-sidebar__nav-item"
                 :draggable="props.draggable"
@@ -159,7 +192,7 @@
                 @drop="handleDrop($event, item.id)"
                 @contextmenu="openContextMenu($event, item)"
               >
-                <div 
+                <div
                   class="n-sidebar__nav-link-wrapper"
                   @click="handleItemClick(item)"
                   @keydown.enter="handleItemClick(item)"
@@ -169,7 +202,7 @@
                   :aria-current="item.active ? 'page' : undefined"
                   role="menuitem"
                 >
-                  <a 
+                  <a
                     v-if="item.route && !item.disabled"
                     :href="item.route"
                     class="n-sidebar__nav-link"
@@ -177,29 +210,46 @@
                     @click.prevent="navigateTo(item)"
                   >
                     <span v-if="item.icon" class="n-sidebar__nav-icon">
-                      <component :is="getIconComponent(item.icon)" v-if="isComponent(item.icon)" />
+                      <component
+                        :is="getIconComponent(item.icon)"
+                        v-if="isComponent(item.icon)"
+                      />
                       <i v-else :class="item.icon"></i>
                     </span>
-                    <span v-if="!collapsed || !mini" class="n-sidebar__nav-label">{{ item.label }}</span>
+                    <span
+                      v-if="!collapsed || !mini"
+                      class="n-sidebar__nav-label"
+                      >{{ item.label }}</span
+                    >
                   </a>
-                  <div 
+                  <div
                     v-else
                     class="n-sidebar__nav-link"
-                    :class="{ 
+                    :class="{
                       'n-sidebar__nav-link--active': item.active,
-                      'n-sidebar__nav-link--disabled': item.disabled
+                      'n-sidebar__nav-link--disabled': item.disabled,
                     }"
                   >
                     <span v-if="item.icon" class="n-sidebar__nav-icon">
-                      <component :is="getIconComponent(item.icon)" v-if="isComponent(item.icon)" />
+                      <component
+                        :is="getIconComponent(item.icon)"
+                        v-if="isComponent(item.icon)"
+                      />
                       <i v-else :class="item.icon"></i>
                     </span>
-                    <span v-if="!collapsed || !mini" class="n-sidebar__nav-label">{{ item.label }}</span>
-                    
+                    <span
+                      v-if="!collapsed || !mini"
+                      class="n-sidebar__nav-label"
+                      >{{ item.label }}</span
+                    >
+
                     <span
                       v-if="item.children?.length && (!collapsed || !mini)"
                       class="n-sidebar__nav-arrow"
-                      :class="{ 'n-sidebar__nav-arrow--expanded': expandedItems.includes(item.id) }"
+                      :class="{
+                        'n-sidebar__nav-arrow--expanded':
+                          expandedItems.includes(item.id),
+                      }"
                     >
                       <svg
                         viewBox="0 0 24 24"
@@ -215,43 +265,64 @@
 
                     <!-- Add to favorites button -->
                     <button
-                      v-if="props.showFavorites && (!collapsed || !mini) && !favoriteItems.includes(item.id)"
+                      v-if="
+                        props.showFavorites &&
+                        (!collapsed || !mini) &&
+                        !favoriteItems.includes(item.id)
+                      "
                       class="n-sidebar__action-button n-sidebar__action-button--add-favorite"
                       @click.stop="addToFavorites(item.id)"
                       aria-label="Add to favorites"
                       title="Add to favorites"
                     >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 17.75l-6.172 3.245 1.179-6.873-4.993-4.867 6.9-1.002L12 2l3.086 6.253 6.9 1.002-4.993 4.867 1.179 6.873z"></path>
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          d="M12 17.75l-6.172 3.245 1.179-6.873-4.993-4.867 6.9-1.002L12 2l3.086 6.253 6.9 1.002-4.993 4.867 1.179 6.873z"
+                        ></path>
                       </svg>
                     </button>
                   </div>
                 </div>
-                
+
                 <!-- Nested menu items -->
-                <transition 
+                <transition
                   name="n-sidebar-submenu"
                   @enter="startSubmenuTransition"
                   @after-enter="endSubmenuTransition"
                   @before-leave="startSubmenuTransition"
                   @after-leave="endSubmenuTransition"
                 >
-                  <ul 
-                    v-if="item.children?.length && expandedItems.includes(item.id) && (!collapsed || !mini)" 
+                  <ul
+                    v-if="
+                      item.children?.length &&
+                      expandedItems.includes(item.id) &&
+                      (!collapsed || !mini)
+                    "
                     class="n-sidebar__nav-submenu"
                     role="menu"
                   >
-                    <li 
-                      v-for="child in item.children" 
+                    <li
+                      v-for="child in item.children"
                       :key="child.id"
                       class="n-sidebar__nav-subitem"
-                      :class="{ 'n-sidebar__nav-subitem--active': child.active }"
+                      :class="{
+                        'n-sidebar__nav-subitem--active': child.active,
+                      }"
                     >
-                      <a 
+                      <a
                         v-if="child.route && !child.disabled"
                         :href="child.route"
                         class="n-sidebar__nav-sublink"
-                        :class="{ 'n-sidebar__nav-sublink--active': child.active }"
+                        :class="{
+                          'n-sidebar__nav-sublink--active': child.active,
+                        }"
                         @click.prevent="navigateTo(child)"
                         role="menuitem"
                         :tabindex="child.disabled ? -1 : 0"
@@ -259,27 +330,37 @@
                         :aria-current="child.active ? 'page' : undefined"
                       >
                         <span v-if="child.icon" class="n-sidebar__nav-subicon">
-                          <component :is="getIconComponent(child.icon)" v-if="isComponent(child.icon)" />
+                          <component
+                            :is="getIconComponent(child.icon)"
+                            v-if="isComponent(child.icon)"
+                          />
                           <i v-else :class="child.icon"></i>
                         </span>
-                        <span class="n-sidebar__nav-sublabel">{{ child.label }}</span>
+                        <span class="n-sidebar__nav-sublabel">{{
+                          child.label
+                        }}</span>
                       </a>
-                      <div 
+                      <div
                         v-else
                         class="n-sidebar__nav-sublink"
-                        :class="{ 
+                        :class="{
                           'n-sidebar__nav-sublink--active': child.active,
-                          'n-sidebar__nav-sublink--disabled': child.disabled
+                          'n-sidebar__nav-sublink--disabled': child.disabled,
                         }"
                         role="menuitem"
                         :tabindex="child.disabled ? -1 : 0"
                         :aria-disabled="child.disabled"
                       >
                         <span v-if="child.icon" class="n-sidebar__nav-subicon">
-                          <component :is="getIconComponent(child.icon)" v-if="isComponent(child.icon)" />
+                          <component
+                            :is="getIconComponent(child.icon)"
+                            v-if="isComponent(child.icon)"
+                          />
                           <i v-else :class="child.icon"></i>
                         </span>
-                        <span class="n-sidebar__nav-sublabel">{{ child.label }}</span>
+                        <span class="n-sidebar__nav-sublabel">{{
+                          child.label
+                        }}</span>
                       </div>
                     </li>
                   </ul>
@@ -294,17 +375,31 @@
       <div
         v-if="contextMenuVisible"
         class="n-sidebar-context-menu"
-        :style="{ left: contextMenuPosition.x + 'px', top: contextMenuPosition.y + 'px' }"
+        :style="{
+          left: contextMenuPosition.x + 'px',
+          top: contextMenuPosition.y + 'px',
+        }"
       >
         <div
           v-if="contextMenuItem"
           class="n-sidebar-context-menu__item"
           @click="addToFavorites(contextMenuItem.id)"
-          v-show="props.showFavorites && !favoriteItems.includes(contextMenuItem.id)"
+          v-show="
+            props.showFavorites && !favoriteItems.includes(contextMenuItem.id)
+          "
         >
           <span class="n-sidebar-context-menu__icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 17.75l-6.172 3.245 1.179-6.873-4.993-4.867 6.9-1.002L12 2l3.086 6.253 6.9 1.002-4.993 4.867 1.179 6.873z"></path>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M12 17.75l-6.172 3.245 1.179-6.873-4.993-4.867 6.9-1.002L12 2l3.086 6.253 6.9 1.002-4.993 4.867 1.179 6.873z"
+              ></path>
             </svg>
           </span>
           Add to favorites
@@ -313,11 +408,22 @@
           v-if="contextMenuItem"
           class="n-sidebar-context-menu__item"
           @click="removeFromFavorites(contextMenuItem.id)"
-          v-show="props.showFavorites && favoriteItems.includes(contextMenuItem.id)"
+          v-show="
+            props.showFavorites && favoriteItems.includes(contextMenuItem.id)
+          "
         >
           <span class="n-sidebar-context-menu__icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 17.75l-6.172 3.245 1.179-6.873-4.993-4.867 6.9-1.002L12 2l3.086 6.253 6.9 1.002-4.993 4.867 1.179 6.873z"></path>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M12 17.75l-6.172 3.245 1.179-6.873-4.993-4.867 6.9-1.002L12 2l3.086 6.253 6.9 1.002-4.993 4.867 1.179 6.873z"
+              ></path>
             </svg>
           </span>
           Remove from favorites
@@ -328,11 +434,22 @@
           v-show="contextMenuItem && contextMenuItem.children?.length"
         >
           <span class="n-sidebar-context-menu__icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </span>
-          {{expandedItems.includes(contextMenuItem?.id || '') ? 'Collapse' : 'Expand'}}
+          {{
+            expandedItems.includes(contextMenuItem?.id || "")
+              ? "Collapse"
+              : "Expand"
+          }}
         </div>
       </div>
 
@@ -345,8 +462,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, watch } from 'vue';
-import type { SidebarItem } from './MainLayout.vue';
+import { ref, computed, inject, watch } from "vue";
+import type { SidebarItem } from "./MainLayout.vue";
 
 /**
  * Sidebar-Komponente für den nscale DMS Assistenten
@@ -373,7 +490,7 @@ export interface SidebarProps {
   /** Favorisierte Menüpunkte (IDs) */
   favorites?: string[];
   /** Modus der Sidebar-Navigation */
-  mode?: 'default' | 'tree' | 'accordion';
+  mode?: "default" | "tree" | "accordion";
   /** Auto-Collapse bei kleinen Bildschirmen */
   autoCollapseOnMobile?: boolean;
   /** Ob Drag & Drop für Favoritenmenüpunkte aktiviert sein soll */
@@ -381,7 +498,7 @@ export interface SidebarProps {
 }
 
 const props = withDefaults(defineProps<SidebarProps>(), {
-  title: 'Navigation',
+  title: "Navigation",
   collapsed: false,
   items: () => [],
   mini: true,
@@ -390,47 +507,47 @@ const props = withDefaults(defineProps<SidebarProps>(), {
   draggable: false,
   showFavorites: false,
   favorites: () => [],
-  mode: 'default',
+  mode: "default",
   autoCollapseOnMobile: true,
-  favoritesDraggable: true
+  favoritesDraggable: true,
 });
 
 const emit = defineEmits<{
   /** Wird ausgelöst, wenn sich der eingeklappte Zustand der Sidebar ändert */
-  (e: 'collapse', value: boolean): void;
+  (e: "collapse", value: boolean): void;
   /** Wird ausgelöst, wenn auf ein Element geklickt wird */
-  (e: 'item-click', item: SidebarItem): void;
+  (e: "item-click", item: SidebarItem): void;
   /** Wird ausgelöst, wenn sich der ausgefahrene Zustand eines Elements ändert */
-  (e: 'item-expand', itemId: string, expanded: boolean): void;
+  (e: "item-expand", itemId: string, expanded: boolean): void;
   /** Wird ausgelöst, wenn die Reihenfolge der Elemente geändert wird */
-  (e: 'reorder', items: SidebarItem[]): void;
+  (e: "reorder", items: SidebarItem[]): void;
   /** Wird ausgelöst, wenn ein Element zu den Favoriten hinzugefügt wird */
-  (e: 'add-favorite', itemId: string): void;
+  (e: "add-favorite", itemId: string): void;
   /** Wird ausgelöst, wenn ein Element aus den Favoriten entfernt wird */
-  (e: 'remove-favorite', itemId: string): void;
+  (e: "remove-favorite", itemId: string): void;
   /** Wird ausgelöst, wenn die Reihenfolge der Favoriten geändert wird */
-  (e: 'reorder-favorites', favoriteIds: string[]): void;
+  (e: "reorder-favorites", favoriteIds: string[]): void;
   /** Wird ausgelöst, wenn das Kontextmenü für ein Element geöffnet wird */
-  (e: 'context-menu', item: SidebarItem, event: MouseEvent): void;
+  (e: "context-menu", item: SidebarItem, event: MouseEvent): void;
 }>();
 
 // Layout-Kontext von der übergeordneten Komponente (falls vorhanden)
-const layoutContext = inject('layout', null);
+const layoutContext = inject("layout", null);
 
 // Berechnete Eigenschaften
 const favoriteMenuItems = computed(() => {
   if (!props.showFavorites) return [];
 
   return favoriteItems.value
-    .map(id => props.items.find(item => item.id === id))
-    .filter(item => item) as SidebarItem[];
+    .map((id) => props.items.find((item) => item.id === id))
+    .filter((item) => item) as SidebarItem[];
 });
 
 const regularMenuItems = computed(() => {
   if (!props.showFavorites) return props.items;
 
   // Wenn Favoriten angezeigt werden, zeige nur die Elemente, die nicht in den Favoriten sind
-  return props.items.filter(item => !favoriteItems.value.includes(item.id));
+  return props.items.filter((item) => !favoriteItems.value.includes(item.id));
 });
 
 // Reaktive Zustände
@@ -446,50 +563,65 @@ const contextMenuPosition = ref({ x: 0, y: 0 });
 const contextMenuItem = ref<SidebarItem | null>(null);
 
 // Überwache Änderungen an der collapsed-Prop
-watch(() => props.collapsed, (newValue) => {
-  // Wenn die Sidebar eingeklappt wird und im Mini-Modus ist, werden alle ausgefahrenen Elemente geschlossen
-  if (newValue && props.mini) {
-    expandedItems.value = [];
-  }
-});
+watch(
+  () => props.collapsed,
+  (newValue) => {
+    // Wenn die Sidebar eingeklappt wird und im Mini-Modus ist, werden alle ausgefahrenen Elemente geschlossen
+    if (newValue && props.mini) {
+      expandedItems.value = [];
+    }
+  },
+);
 
 // Überwache Änderungen an den Favoriten
-watch(() => props.favorites, (newValue) => {
-  if (newValue) {
-    favoriteItems.value = [...newValue];
-  }
-}, { deep: true });
+watch(
+  () => props.favorites,
+  (newValue) => {
+    if (newValue) {
+      favoriteItems.value = [...newValue];
+    }
+  },
+  { deep: true },
+);
 
 // Überwache den Mobile-Status des Layout-Kontext
-watch(() => layoutContext?.isMobile?.value, (newValue) => {
-  if (newValue !== undefined) {
-    isMobile.value = newValue;
+watch(
+  () => layoutContext?.isMobile?.value,
+  (newValue) => {
+    if (newValue !== undefined) {
+      isMobile.value = newValue;
 
-    // Auto-Collapse auf Mobile-Geräten, wenn aktiviert
-    if (props.autoCollapseOnMobile && newValue && !props.collapsed) {
-      toggleCollapse();
+      // Auto-Collapse auf Mobile-Geräten, wenn aktiviert
+      if (props.autoCollapseOnMobile && newValue && !props.collapsed) {
+        toggleCollapse();
+      }
     }
-  }
-}, { immediate: true });
+  },
+  { immediate: true },
+);
 
 // Überwache Änderungen am Mode, um Akkordeon-Verhalten zu implementieren
-watch(() => props.mode, () => {
-  // Akkordeon-Modus: Nur ein Element kann gleichzeitig expandiert sein
-  if (props.mode === 'accordion' && expandedItems.value.length > 1) {
-    // Behalte nur das zuletzt expandierte Element
-    const lastExpandedItem = expandedItems.value[expandedItems.value.length - 1];
-    expandedItems.value = [lastExpandedItem];
-  }
-});
+watch(
+  () => props.mode,
+  () => {
+    // Akkordeon-Modus: Nur ein Element kann gleichzeitig expandiert sein
+    if (props.mode === "accordion" && expandedItems.value.length > 1) {
+      // Behalte nur das zuletzt expandierte Element
+      const lastExpandedItem =
+        expandedItems.value[expandedItems.value.length - 1];
+      expandedItems.value = [lastExpandedItem];
+    }
+  },
+);
 
 /**
  * Schaltet den eingeklappten Zustand der Sidebar um
  */
 function toggleCollapse() {
-  emit('collapse', !props.collapsed);
-  
+  emit("collapse", !props.collapsed);
+
   // Falls layoutContext vorhanden ist, aktualisiere den Zustand dort
-  if (layoutContext && typeof layoutContext.toggleSidebar === 'function') {
+  if (layoutContext && typeof layoutContext.toggleSidebar === "function") {
     layoutContext.toggleSidebar();
   }
 }
@@ -501,16 +633,16 @@ function toggleCollapse() {
 function handleItemClick(item: SidebarItem) {
   // Deaktivierte Elemente ignorieren
   if (item.disabled) return;
-  
-  emit('item-click', item);
-  
+
+  emit("item-click", item);
+
   // Wenn das Element Kinder hat, schalte den ausgefahrenen Zustand um
   if (item.children?.length) {
     toggleItemExpand(item.id);
   } else if (item.route) {
     // Wenn das Element eine Route hat, navigiere dorthin
     navigateTo(item);
-    
+
     // Wenn collapseOnItemClick aktiviert ist, klappe die Sidebar ein
     if (props.collapseOnItemClick && !props.collapsed) {
       toggleCollapse();
@@ -525,14 +657,14 @@ function handleItemClick(item: SidebarItem) {
 function toggleItemExpand(itemId: string) {
   const index = expandedItems.value.indexOf(itemId);
   const expanded = index === -1;
-  
+
   if (expanded) {
     expandedItems.value.push(itemId);
   } else {
     expandedItems.value.splice(index, 1);
   }
-  
-  emit('item-expand', itemId, expanded);
+
+  emit("item-expand", itemId, expanded);
 }
 
 /**
@@ -544,10 +676,10 @@ function navigateTo(item: SidebarItem) {
 
   // Hier würde die eigentliche Navigation erfolgen (z.B. mit Vue Router)
   // Für diese Komponente wird nur das Event ausgelöst
-  emit('item-click', item);
+  emit("item-click", item);
 
   // Wenn Vue Router verfügbar ist, nutze es für die Navigation
-  if (window.hasOwnProperty('$router')) {
+  if (window.hasOwnProperty("$router")) {
     // @ts-ignore - $router ist nicht im globalen Scope definiert
     window.$router.push(item.route);
   } else {
@@ -563,7 +695,7 @@ function navigateTo(item: SidebarItem) {
 function addToFavorites(itemId: string) {
   if (!favoriteItems.value.includes(itemId)) {
     favoriteItems.value.push(itemId);
-    emit('add-favorite', itemId);
+    emit("add-favorite", itemId);
   }
 }
 
@@ -575,7 +707,7 @@ function removeFromFavorites(itemId: string) {
   const index = favoriteItems.value.indexOf(itemId);
   if (index !== -1) {
     favoriteItems.value.splice(index, 1);
-    emit('remove-favorite', itemId);
+    emit("remove-favorite", itemId);
   }
 }
 
@@ -585,7 +717,11 @@ function removeFromFavorites(itemId: string) {
  * @param itemId Die ID des Elements
  * @param isFavorite Ob das Element ein Favorit ist
  */
-function handleDragStart(event: DragEvent, itemId: string, isFavorite: boolean = false) {
+function handleDragStart(
+  event: DragEvent,
+  itemId: string,
+  isFavorite: boolean = false,
+) {
   if (!event.dataTransfer) return;
 
   if (isFavorite && !props.favoritesDraggable) return;
@@ -601,13 +737,16 @@ function handleDragStart(event: DragEvent, itemId: string, isFavorite: boolean =
   }
 
   // Setze die Drag-Daten
-  event.dataTransfer.effectAllowed = 'move';
-  event.dataTransfer.setData('text/plain', itemId);
-  event.dataTransfer.setData('application/x-item-type', isFavorite ? 'favorite' : 'regular');
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("text/plain", itemId);
+  event.dataTransfer.setData(
+    "application/x-item-type",
+    isFavorite ? "favorite" : "regular",
+  );
 
   // Füge eine Klasse zum Element hinzu, um das Styling anzupassen
   const target = event.target as HTMLElement;
-  target.classList.add('n-sidebar__nav-item--dragging');
+  target.classList.add("n-sidebar__nav-item--dragging");
 }
 
 /**
@@ -616,25 +755,32 @@ function handleDragStart(event: DragEvent, itemId: string, isFavorite: boolean =
  * @param itemId Die ID des Elements
  * @param isFavorite Ob das Element ein Favorit ist
  */
-function handleDragOver(event: DragEvent, itemId: string, isFavorite: boolean = false) {
+function handleDragOver(
+  event: DragEvent,
+  itemId: string,
+  isFavorite: boolean = false,
+) {
   // Prüfe, ob das Item vom gleichen Typ ist (Favorit zu Favorit, Regular zu Regular)
   if (isDraggingFavorite.value !== isFavorite) return;
 
   // Ignoriere, wenn über das gezogene Element selbst
-  if ((isFavorite && draggedFavoriteId.value === itemId) ||
-      (!isFavorite && draggedItemId.value === itemId)) return;
+  if (
+    (isFavorite && draggedFavoriteId.value === itemId) ||
+    (!isFavorite && draggedItemId.value === itemId)
+  )
+    return;
 
   event.preventDefault();
   event.stopPropagation();
 
   // Setze den Drop-Effekt
   if (event.dataTransfer) {
-    event.dataTransfer.dropEffect = 'move';
+    event.dataTransfer.dropEffect = "move";
   }
 
   // Füge eine Klasse zum Element hinzu, um das Styling anzupassen
   const target = event.currentTarget as HTMLElement;
-  target.classList.add('n-sidebar__nav-item--drop-target');
+  target.classList.add("n-sidebar__nav-item--drop-target");
 }
 
 /**
@@ -644,7 +790,7 @@ function handleDragOver(event: DragEvent, itemId: string, isFavorite: boolean = 
 function handleDragLeave(event: DragEvent) {
   // Entferne die Klasse vom Element
   const target = event.currentTarget as HTMLElement;
-  target.classList.remove('n-sidebar__nav-item--drop-target');
+  target.classList.remove("n-sidebar__nav-item--drop-target");
 }
 
 /**
@@ -659,12 +805,14 @@ function handleDragEnd(event: DragEvent) {
 
   // Entferne die Klasse vom Element
   const target = event.target as HTMLElement;
-  target.classList.remove('n-sidebar__nav-item--dragging');
+  target.classList.remove("n-sidebar__nav-item--dragging");
 
   // Entferne die Drop-Target-Klasse von allen Elementen
-  document.querySelectorAll('.n-sidebar__nav-item--drop-target').forEach(element => {
-    element.classList.remove('n-sidebar__nav-item--drop-target');
-  });
+  document
+    .querySelectorAll(".n-sidebar__nav-item--drop-target")
+    .forEach((element) => {
+      element.classList.remove("n-sidebar__nav-item--drop-target");
+    });
 }
 
 /**
@@ -673,13 +821,17 @@ function handleDragEnd(event: DragEvent) {
  * @param dropItemId Die ID des Elements, auf dem das Drop stattfindet
  * @param isFavorite Ob das Element ein Favorit ist
  */
-function handleDrop(event: DragEvent, dropItemId: string, isFavorite: boolean = false) {
+function handleDrop(
+  event: DragEvent,
+  dropItemId: string,
+  isFavorite: boolean = false,
+) {
   event.preventDefault();
   event.stopPropagation();
 
   // Entferne die Drop-Target-Klasse
   const target = event.currentTarget as HTMLElement;
-  target.classList.remove('n-sidebar__nav-item--drop-target');
+  target.classList.remove("n-sidebar__nav-item--drop-target");
 
   // Prüfe, ob das Item vom gleichen Typ ist (Favorit zu Favorit, Regular zu Regular)
   if (isDraggingFavorite.value !== isFavorite) return;
@@ -708,14 +860,16 @@ function handleDrop(event: DragEvent, dropItemId: string, isFavorite: boolean = 
     favoriteItems.value = newFavorites;
 
     // Emittiere das Reorder-Favorites-Event
-    emit('reorder-favorites', newFavorites);
+    emit("reorder-favorites", newFavorites);
   } else {
     // Reguläre Items neu anordnen
     if (!draggedItemId.value) return;
 
     // Finde die Indizes der Items anhand der IDs
-    const draggedItem = props.items.find(item => item.id === draggedItemId.value);
-    const dropItem = props.items.find(item => item.id === dropItemId);
+    const draggedItem = props.items.find(
+      (item) => item.id === draggedItemId.value,
+    );
+    const dropItem = props.items.find((item) => item.id === dropItemId);
 
     if (!draggedItem || !dropItem) return;
 
@@ -734,7 +888,7 @@ function handleDrop(event: DragEvent, dropItemId: string, isFavorite: boolean = 
     newItems.splice(dropIndex, 0, draggedItem);
 
     // Emittiere das Reorder-Event
-    emit('reorder', newItems);
+    emit("reorder", newItems);
   }
 }
 
@@ -752,10 +906,10 @@ function openContextMenu(event: MouseEvent, item: SidebarItem) {
   contextMenuVisible.value = true;
 
   // Emittiere das Context-Menu-Event
-  emit('context-menu', item, event);
+  emit("context-menu", item, event);
 
   // Füge einen Event-Listener hinzu, um das Kontextmenü zu schließen, wenn außerhalb geklickt wird
-  document.addEventListener('click', closeContextMenu);
+  document.addEventListener("click", closeContextMenu);
 }
 
 /**
@@ -766,7 +920,7 @@ function closeContextMenu() {
   contextMenuItem.value = null;
 
   // Entferne den Event-Listener
-  document.removeEventListener('click', closeContextMenu);
+  document.removeEventListener("click", closeContextMenu);
 }
 
 /**
@@ -778,7 +932,7 @@ function contextMenuItemClick(action: string, item: SidebarItem | null) {
   if (!item) return;
 
   switch (action) {
-    case 'expand':
+    case "expand":
       toggleItemExpand(item.id);
       break;
   }
@@ -791,7 +945,7 @@ function contextMenuItemClick(action: string, item: SidebarItem | null) {
  * @param icon Das zu prüfende Icon
  */
 function isComponent(icon: any): boolean {
-  return typeof icon === 'object';
+  return typeof icon === "object";
 }
 
 /**
@@ -807,9 +961,9 @@ function getIconComponent(icon: any): any {
  * @param el Das DOM-Element
  */
 function startSubmenuTransition(el: HTMLElement) {
-  el.style.height = 'auto';
+  el.style.height = "auto";
   const height = el.scrollHeight;
-  el.style.height = '0px';
+  el.style.height = "0px";
   // Force repaint
   el.offsetHeight;
   el.style.height = `${height}px`;
@@ -820,7 +974,7 @@ function startSubmenuTransition(el: HTMLElement) {
  * @param el Das DOM-Element
  */
 function endSubmenuTransition(el: HTMLElement) {
-  el.style.height = '';
+  el.style.height = "";
 }
 </script>
 
@@ -864,7 +1018,7 @@ function endSubmenuTransition(el: HTMLElement) {
 }
 
 .n-sidebar__nav-item--drop-target::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   right: 0;
@@ -938,7 +1092,10 @@ function endSubmenuTransition(el: HTMLElement) {
   flex-direction: column;
   height: 100%;
   width: 100%;
-  background-color: var(--n-sidebar-background-color, var(--n-background-color, #f5f7fa));
+  background-color: var(
+    --n-sidebar-background-color,
+    var(--n-background-color, #f5f7fa)
+  );
   color: var(--n-sidebar-text-color, var(--n-text-color, #2d3748));
   transition: width 0.3s ease;
   overflow: hidden;
@@ -983,7 +1140,9 @@ function endSubmenuTransition(el: HTMLElement) {
   border: none;
   border-radius: var(--n-border-radius, 4px);
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.3s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.3s ease;
   color: var(--n-sidebar-text-color, var(--n-text-color, #2d3748));
 }
 
@@ -1041,7 +1200,9 @@ function endSubmenuTransition(el: HTMLElement) {
   align-items: center;
   padding: 12px 16px;
   color: var(--n-sidebar-link-color, var(--n-text-color, #2d3748));
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
   text-decoration: none;
   position: relative;
   width: 100%;
@@ -1060,7 +1221,7 @@ function endSubmenuTransition(el: HTMLElement) {
 }
 
 .n-sidebar__nav-link--active::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 0;
@@ -1070,7 +1231,10 @@ function endSubmenuTransition(el: HTMLElement) {
 }
 
 .n-sidebar__nav-link--disabled {
-  color: var(--n-sidebar-disabled-color, var(--n-text-secondary-color, #a0aec0));
+  color: var(
+    --n-sidebar-disabled-color,
+    var(--n-text-secondary-color, #a0aec0)
+  );
   cursor: not-allowed;
   pointer-events: none;
 }
@@ -1135,7 +1299,9 @@ function endSubmenuTransition(el: HTMLElement) {
   align-items: center;
   padding: 10px 16px 10px 48px;
   color: var(--n-sidebar-sublink-color, var(--n-text-color, #2d3748));
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
   text-decoration: none;
   position: relative;
   width: 100%;
@@ -1154,7 +1320,7 @@ function endSubmenuTransition(el: HTMLElement) {
 }
 
 .n-sidebar__nav-sublink--active::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 0;
@@ -1164,7 +1330,10 @@ function endSubmenuTransition(el: HTMLElement) {
 }
 
 .n-sidebar__nav-sublink--disabled {
-  color: var(--n-sidebar-disabled-color, var(--n-text-secondary-color, #a0aec0));
+  color: var(
+    --n-sidebar-disabled-color,
+    var(--n-text-secondary-color, #a0aec0)
+  );
   cursor: not-allowed;
   pointer-events: none;
 }
@@ -1246,7 +1415,7 @@ function endSubmenuTransition(el: HTMLElement) {
   .n-sidebar__nav-link {
     padding: 14px 16px;
   }
-  
+
   .n-sidebar__nav-sublink {
     padding: 12px 16px 12px 48px;
   }

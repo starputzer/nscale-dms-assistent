@@ -2,7 +2,7 @@
 title: "Admin-Komponenten"
 version: "1.0.0"
 date: "10.05.2025"
-lastUpdate: "10.05.2025"
+lastUpdate: "11.05.2025"
 author: "Martin Heinrich"
 status: "Aktiv"
 priority: "Hoch"

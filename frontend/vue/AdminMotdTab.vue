@@ -7,13 +7,13 @@
 
 <script lang="ts">
 export default {
-  name: 'AdminTabPlaceholder',
+  name: "AdminTabPlaceholder",
   props: {
     tabTitle: {
       type: String,
-      default: 'Admin'
-    }
-  }
+      default: "Admin",
+    },
+  },
 };
 </script>
 

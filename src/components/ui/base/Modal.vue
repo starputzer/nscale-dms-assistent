@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <Transition name="n-modal">
-      <div 
+      <div
         v-if="isOpen"
         class="n-modal-backdrop"
         :class="{ 'n-modal-backdrop--closable': closeOnBackdrop }"
@@ -10,15 +10,12 @@
         tabindex="-1"
         aria-hidden="true"
       >
-        <div 
+        <div
           class="n-modal-container"
-          :class="[
-            `n-modal--${size}`,
-            { 'n-modal--scrollable': scrollable }
-          ]"
+          :class="[`n-modal--${size}`, { 'n-modal--scrollable': scrollable }]"
         >
           <FocusTrap :active="isOpen">
-            <div 
+            <div
               ref="modalRef"
               role="dialog"
               aria-modal="true"
@@ -31,20 +28,29 @@
                 <h2 :id="titleId" class="n-modal-title">
                   <slot name="title">{{ title }}</slot>
                 </h2>
-                <button 
+                <button
                   v-if="showCloseButton"
                   class="n-modal-close"
                   type="button"
                   aria-label="Close dialog"
                   @click="closeModal"
                 >
-                  <svg class="n-modal-close-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                  <svg
+                    class="n-modal-close-icon"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+                    />
                   </svg>
                 </button>
               </div>
-              
-              <div class="n-modal-body" :class="{ 'n-modal-body--scrollable': scrollableContent }">
+
+              <div
+                class="n-modal-body"
+                :class="{ 'n-modal-body--scrollable': scrollableContent }"
+              >
                 <slot></slot>
               </div>
 
@@ -60,9 +66,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
-import { uniqueId } from 'lodash';
-import FocusTrap from './FocusTrap.vue';
+import {
+  ref,
+  computed,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+} from "vue";
+import { uniqueId } from "lodash";
+import FocusTrap from "./FocusTrap.vue";
 
 /**
  * Modal component for dialogs, forms, and other interactive content
@@ -82,7 +95,7 @@ export interface ModalProps {
   /** The title of the modal */
   title?: string;
   /** Size of the modal */
-  size?: 'small' | 'medium' | 'large' | 'full';
+  size?: "small" | "medium" | "large" | "full";
   /** Whether to show the close button in the header */
   showCloseButton?: boolean;
   /** Whether to close the modal when clicking outside */
@@ -98,58 +111,61 @@ export interface ModalProps {
 }
 
 const props = withDefaults(defineProps<ModalProps>(), {
-  title: '',
-  size: 'medium',
+  title: "",
+  size: "medium",
   showCloseButton: true,
   closeOnBackdrop: true,
   closeOnEscape: true,
   scrollableContent: false,
   scrollable: true,
-  preventBodyScrolling: true
+  preventBodyScrolling: true,
 });
 
 const emit = defineEmits<{
-  (e: 'close'): void;
-  (e: 'update:open', value: boolean): void;
-  (e: 'afterOpen'): void;
-  (e: 'afterClose'): void;
+  (e: "close"): void;
+  (e: "update:open", value: boolean): void;
+  (e: "afterOpen"): void;
+  (e: "afterClose"): void;
 }>();
 
 // Internal state
 const isOpen = ref(props.open);
 const modalRef = ref<HTMLElement | null>(null);
-const titleId = computed(() => props.title ? uniqueId('n-modal-title-') : '');
+const titleId = computed(() => (props.title ? uniqueId("n-modal-title-") : ""));
 const previouslyFocusedElement = ref<HTMLElement | null>(null);
 
 // Watch for changes to the open prop
-watch(() => props.open, (newValue) => {
-  isOpen.value = newValue;
-  
-  if (newValue) {
-    if (props.preventBodyScrolling) {
-      document.body.style.overflow = 'hidden';
+watch(
+  () => props.open,
+  (newValue) => {
+    isOpen.value = newValue;
+
+    if (newValue) {
+      if (props.preventBodyScrolling) {
+        document.body.style.overflow = "hidden";
+      }
+
+      // Store previously focused element to restore focus later
+      previouslyFocusedElement.value = document.activeElement as HTMLElement;
+
+      nextTick(() => {
+        // Focus the modal when it opens
+        modalRef.value?.focus();
+        emit("afterOpen");
+      });
+    } else {
+      if (props.preventBodyScrolling) {
+        document.body.style.overflow = "";
+      }
+
+      // Restore focus to the previously focused element
+      nextTick(() => {
+        previouslyFocusedElement.value?.focus();
+        emit("afterClose");
+      });
     }
-    
-    // Store previously focused element to restore focus later
-    previouslyFocusedElement.value = document.activeElement as HTMLElement;
-    
-    nextTick(() => {
-      // Focus the modal when it opens
-      modalRef.value?.focus();
-      emit('afterOpen');
-    });
-  } else {
-    if (props.preventBodyScrolling) {
-      document.body.style.overflow = '';
-    }
-    
-    // Restore focus to the previously focused element
-    nextTick(() => {
-      previouslyFocusedElement.value?.focus();
-      emit('afterClose');
-    });
-  }
-});
+  },
+);
 
 // Handle clicks on the backdrop
 function handleBackdropClick(event: MouseEvent) {
@@ -161,7 +177,7 @@ function handleBackdropClick(event: MouseEvent) {
 
 // Handle escape key press
 function handleEscapeKey(event: KeyboardEvent) {
-  if (props.closeOnEscape && event.key === 'Escape') {
+  if (props.closeOnEscape && event.key === "Escape") {
     closeModal();
   }
 }
@@ -169,37 +185,37 @@ function handleEscapeKey(event: KeyboardEvent) {
 // Close the modal
 function closeModal() {
   isOpen.value = false;
-  emit('close');
-  emit('update:open', false);
+  emit("close");
+  emit("update:open", false);
 }
 
 // Add event listener for escape key
 onMounted(() => {
   if (props.closeOnEscape) {
-    document.addEventListener('keydown', handleEscapeKeyDown);
+    document.addEventListener("keydown", handleEscapeKeyDown);
   }
-  
+
   // Set initial body overflow state
   if (isOpen.value && props.preventBodyScrolling) {
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
   }
 });
 
 // Clean up event listeners and restore body overflow
 onBeforeUnmount(() => {
   if (props.closeOnEscape) {
-    document.removeEventListener('keydown', handleEscapeKeyDown);
+    document.removeEventListener("keydown", handleEscapeKeyDown);
   }
-  
+
   // Restore body overflow when component is unmounted
   if (props.preventBodyScrolling && isOpen.value) {
-    document.body.style.overflow = '';
+    document.body.style.overflow = "";
   }
 });
 
 // Global escape key handler (needed for cases where focus is lost)
 function handleEscapeKeyDown(event: KeyboardEvent) {
-  if (isOpen.value && event.key === 'Escape') {
+  if (isOpen.value && event.key === "Escape") {
     closeModal();
   }
 }
@@ -237,7 +253,9 @@ function handleEscapeKeyDown(event: KeyboardEvent) {
 .n-modal {
   background-color: var(--n-color-white, #ffffff);
   border-radius: var(--n-border-radius, 4px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
   max-height: 100%;
@@ -292,7 +310,9 @@ function handleEscapeKeyDown(event: KeyboardEvent) {
   padding: 0.5rem;
   margin: -0.5rem;
   border-radius: var(--n-border-radius-sm, 2px);
-  transition: color 0.2s ease, background-color 0.2s ease;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .n-modal-close:hover,
@@ -359,22 +379,22 @@ function handleEscapeKeyDown(event: KeyboardEvent) {
   .n-modal-backdrop {
     padding: 0.5rem;
   }
-  
+
   .n-modal--small,
   .n-modal--medium,
   .n-modal--large {
     max-width: 100%;
   }
-  
+
   .n-modal-body--scrollable {
     max-height: 70vh;
   }
-  
+
   .n-modal-header,
   .n-modal-footer {
     padding: 0.75rem 1rem;
   }
-  
+
   .n-modal-body {
     padding: 1rem;
   }
@@ -385,29 +405,29 @@ function handleEscapeKeyDown(event: KeyboardEvent) {
   .n-modal {
     background-color: var(--n-color-gray-800, #2d3748);
   }
-  
+
   .n-modal-header {
     border-bottom-color: var(--n-color-gray-700, #4a5568);
   }
-  
+
   .n-modal-title {
     color: var(--n-color-gray-100, #f7fafc);
   }
-  
+
   .n-modal-close {
     color: var(--n-color-gray-400, #cbd5e0);
   }
-  
+
   .n-modal-close:hover,
   .n-modal-close:focus {
     color: var(--n-color-gray-200, #edf2f7);
     background-color: var(--n-color-gray-700, #4a5568);
   }
-  
+
   .n-modal-body {
     color: var(--n-color-gray-300, #e2e8f0);
   }
-  
+
   .n-modal-footer {
     border-top-color: var(--n-color-gray-700, #4a5568);
     background-color: var(--n-color-gray-900, #1a202c);

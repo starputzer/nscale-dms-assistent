@@ -1,25 +1,25 @@
 <template>
   <div class="component-demo">
     <h2>Stepper Component</h2>
-    
+
     <div class="demo-section">
       <h3>Basic Stepper</h3>
-      <Stepper 
-        :steps="basicSteps" 
-        v-model="activeBasicStep"
-      />
-      
+      <Stepper :steps="basicSteps" v-model="activeBasicStep" />
+
       <div class="stepper-content">
         <template v-if="activeBasicStep === 0">
           <h4>Step 1 Content</h4>
-          <p>This is the content for Step 1. Steppers are great for multi-step processes.</p>
+          <p>
+            This is the content for Step 1. Steppers are great for multi-step
+            processes.
+          </p>
         </template>
-        
+
         <template v-else-if="activeBasicStep === 1">
           <h4>Step 2 Content</h4>
           <p>This is the content for Step 2. Now you're making progress!</p>
         </template>
-        
+
         <template v-else-if="activeBasicStep === 2">
           <h4>Step 3 Content</h4>
           <p>This is the content for Step 3. You're almost done!</p>
@@ -29,17 +29,17 @@
 
     <div class="demo-section">
       <h3>Stepper Variants</h3>
-      
+
       <div class="stepper-group">
         <h4>Filled Variant (Default)</h4>
         <Stepper :steps="variantSteps" variant="filled" />
       </div>
-      
+
       <div class="stepper-group">
         <h4>Outlined Variant</h4>
         <Stepper :steps="variantSteps" variant="outlined" />
       </div>
-      
+
       <div class="stepper-group">
         <h4>Minimal Variant</h4>
         <Stepper :steps="variantSteps" variant="minimal" />
@@ -48,17 +48,17 @@
 
     <div class="demo-section">
       <h3>Stepper Sizes</h3>
-      
+
       <div class="stepper-group">
         <h4>Small</h4>
         <Stepper :steps="sizeSteps" size="small" />
       </div>
-      
+
       <div class="stepper-group">
         <h4>Medium (Default)</h4>
         <Stepper :steps="sizeSteps" size="medium" />
       </div>
-      
+
       <div class="stepper-group">
         <h4>Large</h4>
         <Stepper :steps="sizeSteps" size="large" />
@@ -67,11 +67,7 @@
 
     <div class="demo-section">
       <h3>Vertical Stepper</h3>
-      <Stepper 
-        :steps="verticalSteps" 
-        vertical 
-        v-model="activeVerticalStep"
-      >
+      <Stepper :steps="verticalSteps" vertical v-model="activeVerticalStep">
         <template #step-0>
           <div class="step-content">
             <p>Enter your personal information to get started.</p>
@@ -85,7 +81,7 @@
             </div>
           </div>
         </template>
-        
+
         <template #step-1>
           <div class="step-content">
             <p>Create your account credentials.</p>
@@ -103,20 +99,16 @@
             </div>
           </div>
         </template>
-        
+
         <template #step-2>
           <div class="step-content">
             <p>Review your information before submitting.</p>
             <div class="review-info">
-              <div class="review-row">
-                <strong>Name:</strong> John Doe
-              </div>
+              <div class="review-row"><strong>Name:</strong> John Doe</div>
               <div class="review-row">
                 <strong>Email:</strong> john@example.com
               </div>
-              <div class="review-row">
-                <strong>Username:</strong> johndoe
-              </div>
+              <div class="review-row"><strong>Username:</strong> johndoe</div>
             </div>
           </div>
         </template>
@@ -125,49 +117,65 @@
 
     <div class="demo-section">
       <h3>Stepper with Navigation</h3>
-      <Stepper 
-        :steps="wizardSteps" 
+      <Stepper
+        :steps="wizardSteps"
         v-model="activeWizardStep"
         showNavigation
         prevButtonText="Previous Step"
         nextButtonText="Continue"
       >
-        <template v-for="(step, index) in wizardSteps" :key="index" :slot="`step-${index}`">
+        <template
+          v-for="(step, index) in wizardSteps"
+          :key="index"
+          :slot="`step-${index}`"
+        >
           <div class="step-content">
             <p>{{ step.description }}</p>
-            
+
             <div v-if="index === 0" class="form-group">
               <label>Project Name</label>
-              <input type="text" v-model="projectName" placeholder="My Awesome Project" />
+              <input
+                type="text"
+                v-model="projectName"
+                placeholder="My Awesome Project"
+              />
             </div>
-            
+
             <div v-if="index === 1" class="form-options">
-              <div 
-                v-for="option in projectTypes" 
+              <div
+                v-for="option in projectTypes"
                 :key="option.id"
-                :class="['option-card', { selected: selectedProjectType === option.id }]"
+                :class="[
+                  'option-card',
+                  { selected: selectedProjectType === option.id },
+                ]"
                 @click="selectedProjectType = option.id"
               >
                 <h5>{{ option.name }}</h5>
                 <p>{{ option.description }}</p>
               </div>
             </div>
-            
+
             <div v-if="index === 2" class="form-options checkbox-group">
-              <label v-for="feature in projectFeatures" :key="feature.id" class="checkbox-label">
-                <input 
-                  type="checkbox" 
-                  :value="feature.id" 
+              <label
+                v-for="feature in projectFeatures"
+                :key="feature.id"
+                class="checkbox-label"
+              >
+                <input
+                  type="checkbox"
+                  :value="feature.id"
                   v-model="selectedFeatures"
                 />
                 <span>{{ feature.name }}</span>
               </label>
             </div>
-            
+
             <div v-if="index === 3" class="summary-container">
               <h4>Project Summary</h4>
               <div class="summary-item">
-                <strong>Project Name:</strong> {{ projectName || 'Not specified' }}
+                <strong>Project Name:</strong>
+                {{ projectName || "Not specified" }}
               </div>
               <div class="summary-item">
                 <strong>Project Type:</strong> {{ getProjectTypeName() }}
@@ -189,20 +197,20 @@
 
     <div class="demo-section">
       <h3>Linear vs. Non-Linear Steppers</h3>
-      
+
       <div class="stepper-group">
         <h4>Linear Stepper (can't skip steps)</h4>
-        <Stepper 
-          :steps="linearSteps" 
+        <Stepper
+          :steps="linearSteps"
           v-model="activeLinearStep"
           :interactive="false"
         />
       </div>
-      
+
       <div class="stepper-group">
         <h4>Non-Linear Stepper (can skip to any step)</h4>
-        <Stepper 
-          :steps="linearSteps" 
+        <Stepper
+          :steps="linearSteps"
           v-model="activeNonLinearStep"
           :interactive="true"
         />
@@ -212,87 +220,93 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Stepper } from '../base';
+import { ref } from "vue";
+import { Stepper } from "../base";
 
 // Basic stepper example
 const basicSteps = [
-  { title: 'Step 1', description: 'First step description' },
-  { title: 'Step 2', description: 'Second step description' },
-  { title: 'Step 3', description: 'Third step description' }
+  { title: "Step 1", description: "First step description" },
+  { title: "Step 2", description: "Second step description" },
+  { title: "Step 3", description: "Third step description" },
 ];
 const activeBasicStep = ref(0);
 
 // Variants example
 const variantSteps = [
-  { title: 'Information', description: 'Personal details' },
-  { title: 'Payment', description: 'Payment method' },
-  { title: 'Confirmation', description: 'Review order' },
-  { title: 'Complete', description: 'Order placed' }
+  { title: "Information", description: "Personal details" },
+  { title: "Payment", description: "Payment method" },
+  { title: "Confirmation", description: "Review order" },
+  { title: "Complete", description: "Order placed" },
 ];
 
 // Size example
-const sizeSteps = [
-  { title: 'First' },
-  { title: 'Second' },
-  { title: 'Third' }
-];
+const sizeSteps = [{ title: "First" }, { title: "Second" }, { title: "Third" }];
 
 // Vertical stepper
 const verticalSteps = [
-  { title: 'Personal Information', description: 'Your details' },
-  { title: 'Account Setup', description: 'Create credentials' },
-  { title: 'Confirmation', description: 'Review information' }
+  { title: "Personal Information", description: "Your details" },
+  { title: "Account Setup", description: "Create credentials" },
+  { title: "Confirmation", description: "Review information" },
 ];
 const activeVerticalStep = ref(0);
 
 // Wizard example
 const wizardSteps = [
-  { title: 'Project Info', description: 'Enter basic project details' },
-  { title: 'Project Type', description: 'Select the type of project' },
-  { title: 'Features', description: 'Choose project features' },
-  { title: 'Summary', description: 'Review project configuration' }
+  { title: "Project Info", description: "Enter basic project details" },
+  { title: "Project Type", description: "Select the type of project" },
+  { title: "Features", description: "Choose project features" },
+  { title: "Summary", description: "Review project configuration" },
 ];
 const activeWizardStep = ref(0);
 
 // Wizard form data
-const projectName = ref('');
-const selectedProjectType = ref('web');
-const selectedFeatures = ref(['responsive', 'analytics']);
+const projectName = ref("");
+const selectedProjectType = ref("web");
+const selectedFeatures = ref(["responsive", "analytics"]);
 
 // Project types for wizard
 const projectTypes = [
-  { id: 'web', name: 'Web Application', description: 'Full-featured web application with UI' },
-  { id: 'mobile', name: 'Mobile App', description: 'Native mobile application' },
-  { id: 'api', name: 'API Service', description: 'Backend API without UI' }
+  {
+    id: "web",
+    name: "Web Application",
+    description: "Full-featured web application with UI",
+  },
+  {
+    id: "mobile",
+    name: "Mobile App",
+    description: "Native mobile application",
+  },
+  { id: "api", name: "API Service", description: "Backend API without UI" },
 ];
 
 // Features for wizard
 const projectFeatures = [
-  { id: 'responsive', name: 'Responsive Design' },
-  { id: 'analytics', name: 'Analytics Integration' },
-  { id: 'auth', name: 'Authentication & Authorization' },
-  { id: 'payments', name: 'Payment Processing' },
-  { id: 'notifications', name: 'Notification System' }
+  { id: "responsive", name: "Responsive Design" },
+  { id: "analytics", name: "Analytics Integration" },
+  { id: "auth", name: "Authentication & Authorization" },
+  { id: "payments", name: "Payment Processing" },
+  { id: "notifications", name: "Notification System" },
 ];
 
 // Helper functions
 function getProjectTypeName() {
-  const projectType = projectTypes.find(type => type.id === selectedProjectType.value);
-  return projectType ? projectType.name : 'Not selected';
+  const projectType = projectTypes.find(
+    (type) => type.id === selectedProjectType.value,
+  );
+  return projectType ? projectType.name : "Not selected";
 }
 
 function getFeatureName(featureId: string) {
-  const feature = projectFeatures.find(feature => feature.id === featureId);
+  const feature = projectFeatures.find((feature) => feature.id === featureId);
   return feature ? feature.name : featureId;
 }
 
 // Linear vs non-linear stepper
 const linearSteps = [
-  { title: 'First Step' },
-  { title: 'Second Step' },
-  { title: 'Third Step' },
-  { title: 'Fourth Step' }
+  { title: "First Step" },
+  { title: "Second Step" },
+  { title: "Third Step" },
+  { title: "Fourth Step" },
 ];
 const activeLinearStep = ref(0);
 const activeNonLinearStep = ref(0);
@@ -445,37 +459,37 @@ h5 {
   .demo-section {
     background-color: var(--color-background-dark);
   }
-  
+
   .stepper-content,
   .step-content {
     background-color: var(--color-gray-800);
   }
-  
+
   .form-group input {
     background-color: var(--color-gray-700);
     color: var(--color-text-primary-dark);
     border-color: var(--color-gray-600);
   }
-  
+
   .review-info,
   .summary-container {
     background-color: var(--color-gray-700);
     border-color: var(--color-gray-600);
   }
-  
+
   .review-row {
     border-color: var(--color-gray-600);
   }
-  
+
   .option-card {
     border-color: var(--color-gray-600);
   }
-  
+
   .option-card:hover {
     background-color: rgba(0, 100, 176, 0.2);
     border-color: var(--color-primary-light);
   }
-  
+
   .option-card.selected {
     background-color: rgba(0, 100, 176, 0.3);
     border-color: var(--color-primary-light);

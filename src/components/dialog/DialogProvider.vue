@@ -12,7 +12,7 @@
     @confirm="dialog.handleConfirm"
     @cancel="dialog.handleCancel"
   />
-  
+
   <!-- Input-Dialog für Benutzereingaben -->
   <InputDialog
     v-else
@@ -37,19 +37,19 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed } from 'vue';
-import ConfirmDialog from './ConfirmDialog.vue';
-import InputDialog from './InputDialog.vue';
-import { useGlobalDialog } from '@/composables/useDialog';
+import { onMounted, computed } from "vue";
+import ConfirmDialog from "./ConfirmDialog.vue";
+import InputDialog from "./InputDialog.vue";
+import { useGlobalDialog } from "@/composables/useDialog";
 
 // Globalen Dialog-Service verwenden
 const dialog = useGlobalDialog();
 
 // Überschreiben der globalen window.confirm-Funktion
 onMounted(() => {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     const originalConfirm = window.confirm;
-    
+
     // window.confirm überschreiben
     window.confirm = (message: string) => {
       // Neues Promise erstellen
@@ -58,14 +58,14 @@ onMounted(() => {
         dialog.confirm({
           message,
           onConfirm: () => resolve(true),
-          onCancel: () => resolve(false)
+          onCancel: () => resolve(false),
         });
-      }).then(result => {
+      }).then((result) => {
         // Kompatibilität mit dem ursprünglichen window.confirm
         return result;
       });
     };
-    
+
     // Für Debugging-Zwecke
     (window as any).__originalConfirm = originalConfirm;
   }

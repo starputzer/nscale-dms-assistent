@@ -5,11 +5,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed } from "vue";
 
-type Alignment = 'start' | 'center' | 'end' | 'baseline' | 'stretch';
-type Distribution = 'start' | 'center' | 'end' | 'between' | 'around' | 'evenly';
-type Gap = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+type Alignment = "start" | "center" | "end" | "baseline" | "stretch";
+type Distribution =
+  | "start"
+  | "center"
+  | "end"
+  | "between"
+  | "around"
+  | "evenly";
+type Gap = "none" | "xs" | "sm" | "md" | "lg" | "xl";
 
 /**
  * Row component for flexbox grid layout
@@ -38,23 +44,23 @@ export interface RowProps {
 }
 
 const props = withDefaults(defineProps<RowProps>(), {
-  align: 'start',
-  justify: 'start',
-  gap: 'md',
+  align: "start",
+  justify: "start",
+  gap: "md",
   wrap: true,
   reverse: false,
   cols: 12,
-  grid: false
+  grid: false,
 });
 
 // Convert alignment values to CSS class names
 const getAlignClass = (align: Alignment) => {
   const map: Record<Alignment, string> = {
-    start: 'flex-start',
-    center: 'center',
-    end: 'flex-end',
-    baseline: 'baseline',
-    stretch: 'stretch'
+    start: "flex-start",
+    center: "center",
+    end: "flex-end",
+    baseline: "baseline",
+    stretch: "stretch",
   };
   return map[align];
 };
@@ -62,12 +68,12 @@ const getAlignClass = (align: Alignment) => {
 // Convert distribution values to CSS class names
 const getJustifyClass = (justify: Distribution) => {
   const map: Record<Distribution, string> = {
-    start: 'flex-start',
-    center: 'center',
-    end: 'flex-end',
-    between: 'space-between',
-    around: 'space-around',
-    evenly: 'space-evenly'
+    start: "flex-start",
+    center: "center",
+    end: "flex-end",
+    between: "space-between",
+    around: "space-around",
+    evenly: "space-evenly",
   };
   return map[justify];
 };
@@ -75,12 +81,12 @@ const getJustifyClass = (justify: Distribution) => {
 // Generate gap CSS variable value
 const getGapValue = (gap: Gap) => {
   const map: Record<Gap, string> = {
-    none: '0',
-    xs: 'var(--nscale-space-1, 0.25rem)',
-    sm: 'var(--nscale-space-2, 0.5rem)',
-    md: 'var(--nscale-space-4, 1rem)',
-    lg: 'var(--nscale-space-6, 1.5rem)',
-    xl: 'var(--nscale-space-8, 2rem)'
+    none: "0",
+    xs: "var(--nscale-space-1, 0.25rem)",
+    sm: "var(--nscale-space-2, 0.5rem)",
+    md: "var(--nscale-space-4, 1rem)",
+    lg: "var(--nscale-space-6, 1.5rem)",
+    xl: "var(--nscale-space-8, 2rem)",
   };
   return map[gap];
 };
@@ -88,9 +94,9 @@ const getGapValue = (gap: Gap) => {
 // Compute classes for the row
 const classes = computed(() => {
   return [
-    props.grid ? 'n-row--grid' : 'n-row--flex',
-    !props.wrap && 'n-row--nowrap',
-    props.reverse && 'n-row--reverse'
+    props.grid ? "n-row--grid" : "n-row--flex",
+    !props.wrap && "n-row--nowrap",
+    props.reverse && "n-row--reverse",
   ];
 });
 
@@ -98,9 +104,9 @@ const classes = computed(() => {
 const styles = computed(() => {
   const alignItems = getAlignClass(props.align);
   const justifyContent = getJustifyClass(props.justify);
-  
+
   let rowGap: string, columnGap: string;
-  
+
   if (Array.isArray(props.gap) && props.gap.length === 2) {
     // [horizontal, vertical] format
     columnGap = getGapValue(props.gap[0]);
@@ -110,19 +116,19 @@ const styles = computed(() => {
     const gapValue = getGapValue(props.gap as Gap);
     columnGap = rowGap = gapValue;
   }
-  
+
   const styles: Record<string, string> = {
-    '--n-row-gap': rowGap,
-    '--n-column-gap': columnGap
+    "--n-row-gap": rowGap,
+    "--n-column-gap": columnGap,
   };
-  
+
   if (props.grid) {
-    styles['--n-grid-cols'] = String(props.cols);
+    styles["--n-grid-cols"] = String(props.cols);
   } else {
-    styles['align-items'] = alignItems;
-    styles['justify-content'] = justifyContent;
+    styles["align-items"] = alignItems;
+    styles["justify-content"] = justifyContent;
   }
-  
+
   return styles;
 });
 </script>

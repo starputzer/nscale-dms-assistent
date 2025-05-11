@@ -1,11 +1,11 @@
 <template>
-  <li 
+  <li
     class="n-tree-node"
     :class="{
       'n-tree-node--expanded': isExpanded,
       'n-tree-node--selected': isSelected,
       'n-tree-node--disabled': isDisabled,
-      'n-tree-node--leaf': isLeaf
+      'n-tree-node--leaf': isLeaf,
     }"
     :style="{ paddingLeft: indentStyle }"
     role="treeitem"
@@ -14,14 +14,14 @@
     :aria-disabled="isDisabled ? 'true' : undefined"
     :aria-level="level"
   >
-    <div 
+    <div
       class="n-tree-node-content"
       :class="{ 'n-tree-node-content--selectable': selectable && !isDisabled }"
       @click="handleClick"
     >
       <!-- Expand/collapse icon -->
-      <div 
-        v-if="!isLeaf" 
+      <div
+        v-if="!isLeaf"
         class="n-tree-node-expand-icon"
         @click.stop="handleToggle"
         :aria-label="isExpanded ? 'Collapse' : 'Expand'"
@@ -31,28 +31,35 @@
         @keydown.space.prevent="handleToggle"
       >
         <slot name="expand-icon" :expanded="isExpanded">
-          <component 
-            :is="renderExpandIcon" 
+          <component
+            :is="renderExpandIcon"
             v-if="renderExpandIcon"
             class="n-tree-node-icon"
           />
-          <span v-else class="n-tree-node-arrow" :class="{ 'n-tree-node-arrow--expanded': isExpanded }">
+          <span
+            v-else
+            class="n-tree-node-arrow"
+            :class="{ 'n-tree-node-arrow--expanded': isExpanded }"
+          >
             <svg viewBox="0 0 24 24" width="16" height="16">
-              <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor" />
+              <path
+                d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
+                fill="currentColor"
+              />
             </svg>
           </span>
         </slot>
       </div>
       <span v-else class="n-tree-node-expand-placeholder"></span>
-      
+
       <!-- Checkbox (if checkable) -->
-      <div 
-        v-if="checkable" 
+      <div
+        v-if="checkable"
         class="n-tree-node-checkbox"
         :class="{
           'n-tree-node-checkbox--checked': isChecked,
           'n-tree-node-checkbox--indeterminate': isIndeterminate,
-          'n-tree-node-checkbox--disabled': isDisabled
+          'n-tree-node-checkbox--disabled': isDisabled,
         }"
         @click.stop="handleCheck"
         :aria-checked="isIndeterminate ? 'mixed' : isChecked ? 'true' : 'false'"
@@ -63,61 +70,106 @@
       >
         <span class="n-tree-node-checkbox-inner"></span>
       </div>
-      
+
       <!-- Node icon -->
       <div v-if="hasIcon" class="n-tree-node-icon-wrapper">
-        <slot name="icon" :item="item" :level="level" :expanded="isExpanded" :leaf="isLeaf">
-          <component 
-            :is="nodeIcon" 
-            v-if="nodeIcon"
-            class="n-tree-node-icon"
-          />
-          <span v-else-if="isLeaf" class="n-tree-node-icon n-tree-node-icon--leaf">
+        <slot
+          name="icon"
+          :item="item"
+          :level="level"
+          :expanded="isExpanded"
+          :leaf="isLeaf"
+        >
+          <component :is="nodeIcon" v-if="nodeIcon" class="n-tree-node-icon" />
+          <span
+            v-else-if="isLeaf"
+            class="n-tree-node-icon n-tree-node-icon--leaf"
+          >
             <svg viewBox="0 0 24 24" width="16" height="16">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" fill="currentColor" />
+              <path
+                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"
+                fill="currentColor"
+              />
               <path d="M14 3v5h5" fill="currentColor" />
-              <path d="M16 13H8" stroke="white" stroke-width="1.5" stroke-linecap="round" />
-              <path d="M16 17H8" stroke="white" stroke-width="1.5" stroke-linecap="round" />
-              <path d="M10 9H8" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+              <path
+                d="M16 13H8"
+                stroke="white"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
+              <path
+                d="M16 17H8"
+                stroke="white"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
+              <path
+                d="M10 9H8"
+                stroke="white"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
             </svg>
           </span>
           <span v-else class="n-tree-node-icon n-tree-node-icon--branch">
             <svg viewBox="0 0 24 24" width="16" height="16">
-              <path d="M22 11V3h-7v3H9V3H2v8h7V8h2v10a3 3 0 0 0 3 3h1v-3h-1a1 1 0 0 1-1-1v-2h6v-4h-6V8h2v3h7z" fill="currentColor" />
+              <path
+                d="M22 11V3h-7v3H9V3H2v8h7V8h2v10a3 3 0 0 0 3 3h1v-3h-1a1 1 0 0 1-1-1v-2h6v-4h-6V8h2v3h7z"
+                fill="currentColor"
+              />
             </svg>
           </span>
         </slot>
       </div>
-      
+
       <!-- Node label -->
       <div class="n-tree-node-label">
-        <slot name="label" :item="item" :level="level" :expanded="isExpanded" :selected="isSelected">
+        <slot
+          name="label"
+          :item="item"
+          :level="level"
+          :expanded="isExpanded"
+          :selected="isSelected"
+        >
           {{ getLabel }}
         </slot>
       </div>
-      
+
       <!-- Extra content (actions, badges, etc.) -->
       <div v-if="$slots.extra" class="n-tree-node-extra">
-        <slot name="extra" :item="item" :level="level" :expanded="isExpanded" :selected="isSelected"></slot>
+        <slot
+          name="extra"
+          :item="item"
+          :level="level"
+          :expanded="isExpanded"
+          :selected="isSelected"
+        ></slot>
       </div>
-      
+
       <!-- Loading indicator for async nodes -->
       <div v-if="loading" class="n-tree-node-loading">
         <svg viewBox="0 0 24 24" width="16" height="16">
-          <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" />
+          <circle
+            cx="12"
+            cy="12"
+            r="10"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+          />
         </svg>
       </div>
     </div>
-    
+
     <!-- Child nodes -->
     <transition
       name="n-tree-node-children"
       @enter="setMaxHeight"
       @before-leave="setMaxHeight"
     >
-      <ul 
-        v-if="!isLeaf && isExpanded && hasChildren" 
-        class="n-tree-node-children" 
+      <ul
+        v-if="!isLeaf && isExpanded && hasChildren"
+        class="n-tree-node-children"
         role="group"
       >
         <TreeNode
@@ -162,8 +214,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, inject, nextTick } from 'vue';
-import type { Component } from 'vue';
+import { computed, ref, inject, nextTick } from "vue";
+import type { Component } from "vue";
 
 export interface TreeNodeProps {
   /** The node data */
@@ -211,13 +263,13 @@ export interface TreeNodeProps {
 const props = defineProps<TreeNodeProps>();
 
 const emit = defineEmits<{
-  (e: 'toggle', item: any, expanded: boolean): void;
-  (e: 'select', item: any, selected: boolean): void;
-  (e: 'check', item: any, checked: boolean): void;
+  (e: "toggle", item: any, expanded: boolean): void;
+  (e: "select", item: any, selected: boolean): void;
+  (e: "check", item: any, checked: boolean): void;
 }>();
 
 // Get treeContext from provide/inject
-const treeContext = inject('treeContext', {
+const treeContext = inject("treeContext", {
   labelProp: props.labelProp,
   childrenProp: props.childrenProp,
   iconProp: props.iconProp,
@@ -235,18 +287,18 @@ const localChildNodes = ref<any[]>([]);
 
 // Computed properties
 const nodeKey = computed(() => {
-  if (typeof treeContext.nodeKey === 'function') {
+  if (typeof treeContext.nodeKey === "function") {
     return treeContext.nodeKey(props.item);
   }
-  
+
   if (treeContext.nodeKey && props.item[treeContext.nodeKey] !== undefined) {
     return props.item[treeContext.nodeKey];
   }
-  
+
   // Fallback
   if (props.item.id !== undefined) return props.item.id;
   if (props.item.key !== undefined) return props.item.key;
-  
+
   return props.item[props.labelProp];
 });
 
@@ -271,15 +323,16 @@ const isLeaf = computed(() => {
   if (props.isLeafProp && props.item[props.isLeafProp] !== undefined) {
     return Boolean(props.item[props.isLeafProp]);
   }
-  
+
   // Otherwise, infer from children
   return !hasChildren.value;
 });
 
 const hasChildren = computed(() => {
   return Boolean(
-    (props.item[props.childrenProp] && props.item[props.childrenProp].length > 0) || 
-    localChildNodes.value.length > 0
+    (props.item[props.childrenProp] &&
+      props.item[props.childrenProp].length > 0) ||
+      localChildNodes.value.length > 0,
   );
 });
 
@@ -288,7 +341,7 @@ const childNodes = computed(() => {
   if (localChildNodes.value.length > 0) {
     return localChildNodes.value;
   }
-  
+
   return props.item[props.childrenProp] || [];
 });
 
@@ -300,11 +353,15 @@ const isChecked = computed(() => {
 const isIndeterminate = computed(() => {
   // Check if any children are checked
   if (!hasChildren.value) return false;
-  
+
   const allChildKeys = getAllChildKeys(props.item);
-  const someChecked = allChildKeys.some(key => props.checkedKeys.includes(key));
-  const allChecked = allChildKeys.every(key => props.checkedKeys.includes(key));
-  
+  const someChecked = allChildKeys.some((key) =>
+    props.checkedKeys.includes(key),
+  );
+  const allChecked = allChildKeys.every((key) =>
+    props.checkedKeys.includes(key),
+  );
+
   return someChecked && !allChecked && !isChecked.value;
 });
 
@@ -314,9 +371,7 @@ const getLabel = computed(() => {
 
 const hasIcon = computed(() => {
   return Boolean(
-    props.item[props.iconProp] ||
-    props.leafIcon ||
-    props.branchIcon
+    props.item[props.iconProp] || props.leafIcon || props.branchIcon,
   );
 });
 
@@ -325,16 +380,16 @@ const nodeIcon = computed(() => {
   if (props.item[props.iconProp]) {
     return props.item[props.iconProp];
   }
-  
+
   // Return appropriate predefined icon based on node type
   if (isLeaf.value && props.leafIcon) {
     return props.leafIcon;
   }
-  
+
   if (!isLeaf.value && props.branchIcon) {
     return props.branchIcon;
   }
-  
+
   return null;
 });
 
@@ -342,11 +397,11 @@ const renderExpandIcon = computed(() => {
   if (isExpanded.value && props.expandIcon) {
     return props.expandIcon;
   }
-  
+
   if (!isExpanded.value && props.collapseIcon) {
     return props.collapseIcon;
   }
-  
+
   return null;
 });
 
@@ -357,83 +412,84 @@ function getChildKey(item: any, index: number): string | number {
 
 function getAllChildKeys(item: any): (string | number)[] {
   const keys: (string | number)[] = [];
-  
+
   function collectKeys(node: any): void {
     if (!node[props.childrenProp] || !node[props.childrenProp].length) return;
-    
+
     for (const child of node[props.childrenProp]) {
       const childKey = getChildKey(child, 0);
       keys.push(childKey);
       collectKeys(child);
     }
   }
-  
+
   collectKeys(item);
   return keys;
 }
 
 function handleToggle(e?: Event): void {
   if (isDisabled.value || isLeaf.value) return;
-  
+
   // Toggle node expansion
   const willExpand = !isExpanded.value;
-  
+
   if (willExpand && props.loadData && !hasChildren.value) {
     // Async load children if needed
     loading.value = true;
-    props.loadData(props.item)
-      .then(children => {
+    props
+      .loadData(props.item)
+      .then((children) => {
         localChildNodes.value = children;
         loading.value = false;
-        emit('toggle', props.item, true);
+        emit("toggle", props.item, true);
       })
       .catch(() => {
         loading.value = false;
       });
   } else {
-    emit('toggle', props.item, willExpand);
+    emit("toggle", props.item, willExpand);
   }
 }
 
 function handleClick(e: MouseEvent): void {
   if (isDisabled.value) return;
-  
+
   if (props.selectable) {
-    emit('select', props.item, !isSelected.value);
+    emit("select", props.item, !isSelected.value);
   }
 }
 
 function handleCheck(e?: Event): void {
   if (isDisabled.value) return;
-  
-  emit('check', props.item, !isChecked.value);
+
+  emit("check", props.item, !isChecked.value);
 }
 
 function handleChildToggle(childItem: any, expanded: boolean): void {
-  emit('toggle', childItem, expanded);
+  emit("toggle", childItem, expanded);
 }
 
 function handleChildSelect(childItem: any, selected: boolean): void {
-  emit('select', childItem, selected);
+  emit("select", childItem, selected);
 }
 
 function handleChildCheck(childItem: any, checked: boolean): void {
-  emit('check', childItem, checked);
+  emit("check", childItem, checked);
 }
 
 // Animation helpers
 function setMaxHeight(el: HTMLElement): void {
   // Set initial max-height for enter/leave animations
   el.style.maxHeight = `${el.scrollHeight}px`;
-  
+
   // Reset max-height to auto after animation completes
   // (for when children change after expansion)
   const onEnd = (): void => {
-    el.style.maxHeight = 'none';
-    el.removeEventListener('transitionend', onEnd);
+    el.style.maxHeight = "none";
+    el.removeEventListener("transitionend", onEnd);
   };
-  
-  el.addEventListener('transitionend', onEnd);
+
+  el.addEventListener("transitionend", onEnd);
 }
 </script>
 
@@ -542,7 +598,7 @@ function setMaxHeight(el: HTMLElement): void {
 
 .n-tree-node-checkbox--checked .n-tree-node-checkbox-inner::after {
   position: absolute;
-  content: '';
+  content: "";
   top: 2px;
   left: 5px;
   width: 3px;
@@ -560,7 +616,7 @@ function setMaxHeight(el: HTMLElement): void {
 
 .n-tree-node-checkbox--indeterminate .n-tree-node-checkbox-inner::after {
   position: absolute;
-  content: '';
+  content: "";
   top: 7px;
   left: 3px;
   width: 8px;
@@ -577,8 +633,10 @@ function setMaxHeight(el: HTMLElement): void {
   background-color: var(--nscale-gray-100);
 }
 
-.n-tree-node-checkbox--disabled.n-tree-node-checkbox--checked .n-tree-node-checkbox-inner,
-.n-tree-node-checkbox--disabled.n-tree-node-checkbox--indeterminate .n-tree-node-checkbox-inner {
+.n-tree-node-checkbox--disabled.n-tree-node-checkbox--checked
+  .n-tree-node-checkbox-inner,
+.n-tree-node-checkbox--disabled.n-tree-node-checkbox--indeterminate
+  .n-tree-node-checkbox-inner {
   background-color: var(--nscale-gray-300);
 }
 
@@ -689,7 +747,9 @@ function setMaxHeight(el: HTMLElement): void {
   background-color: var(--nscale-primary);
 }
 
-.theme-contrast .n-tree-node-checkbox--checked .n-tree-node-checkbox-inner::after {
+.theme-contrast
+  .n-tree-node-checkbox--checked
+  .n-tree-node-checkbox-inner::after {
   border-color: var(--nscale-black);
 }
 

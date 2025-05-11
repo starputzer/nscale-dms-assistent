@@ -6,7 +6,7 @@
       'n-session-item--pinned': isPinned,
       'n-session-item--archived': session.isArchived,
       'n-session-item--selected': isSelected,
-      'n-session-item--with-preview': showPreview
+      'n-session-item--with-preview': showPreview,
     }"
     role="option"
     :aria-selected="isActive"
@@ -28,7 +28,7 @@
         :checked="isSelected"
         @click.stop
         aria-label="Session auswählen"
-      >
+      />
     </div>
 
     <!-- Drag Handle -->
@@ -39,7 +39,14 @@
       aria-label="Eintrag verschieben"
       tabindex="0"
     >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
         <line x1="8" y1="6" x2="16" y2="6"></line>
         <line x1="8" y1="12" x2="16" y2="12"></line>
         <line x1="8" y1="18" x2="16" y2="18"></line>
@@ -52,7 +59,14 @@
       class="n-session-item__pin-indicator"
       aria-hidden="true"
     >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
         <circle cx="12" cy="10" r="3"></circle>
       </svg>
@@ -64,7 +78,14 @@
       class="n-session-item__archive-indicator"
       aria-hidden="true"
     >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
         <polyline points="21 8 21 21 3 21 3 8"></polyline>
         <rect x="1" y="3" width="22" height="5"></rect>
         <line x1="10" y1="12" x2="14" y2="12"></line>
@@ -74,8 +95,17 @@
     <!-- Icon (Optional) -->
     <div class="n-session-item__icon">
       <slot name="icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+          ></path>
         </svg>
       </slot>
     </div>
@@ -112,7 +142,8 @@
       <div class="n-session-item__meta" v-if="showMetadata">
         <span class="n-session-item__date">{{ formattedDate }}</span>
         <span v-if="messageCount" class="n-session-item__message-count">
-          {{ messageCount }} {{ messageCount === 1 ? 'Nachricht' : 'Nachrichten' }}
+          {{ messageCount }}
+          {{ messageCount === 1 ? "Nachricht" : "Nachrichten" }}
         </span>
       </div>
 
@@ -130,7 +161,14 @@
         aria-label="Unterhaltung anheften"
         :title="isPinned ? 'Anheften aufheben' : 'Anheften'"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
           <circle cx="12" cy="10" r="3"></circle>
         </svg>
@@ -144,8 +182,17 @@
         aria-label="Session taggen"
         title="Tags hinzufügen"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"
+          ></path>
           <line x1="7" y1="7" x2="7.01" y2="7"></line>
         </svg>
       </button>
@@ -158,8 +205,17 @@
         aria-label="Session kategorisieren"
         title="Kategorie zuweisen"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"
+          ></path>
         </svg>
       </button>
 
@@ -169,14 +225,32 @@
         class="n-session-item__action-btn"
         @click.stop="$emit('archive', session.id, !session.isArchived)"
         aria-label="Session archivieren"
-        :title="session.isArchived ? 'Aus Archiv wiederherstellen' : 'Archivieren'"
+        :title="
+          session.isArchived ? 'Aus Archiv wiederherstellen' : 'Archivieren'
+        "
       >
-        <svg v-if="!session.isArchived" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          v-if="!session.isArchived"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <polyline points="21 8 21 21 3 21 3 8"></polyline>
           <rect x="1" y="3" width="22" height="5"></rect>
           <line x1="10" y1="12" x2="14" y2="12"></line>
         </svg>
-        <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          v-else
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <path d="M21 8v13H3V8"></path>
           <path d="M1 3h22v5H1z"></path>
           <path d="M10 12l4 4"></path>
@@ -190,9 +264,20 @@
         aria-label="Unterhaltung umbenennen"
         title="Umbenennen"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+          ></path>
+          <path
+            d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+          ></path>
         </svg>
       </button>
 
@@ -202,9 +287,18 @@
         aria-label="Unterhaltung löschen"
         title="Löschen"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <polyline points="3 6 5 6 21 6"></polyline>
-          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          <path
+            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+          ></path>
           <line x1="10" y1="11" x2="10" y2="17"></line>
           <line x1="14" y1="11" x2="14" y2="17"></line>
         </svg>
@@ -214,8 +308,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { ChatSession } from '@/types/session';
+import { computed } from "vue";
+import type { ChatSession } from "@/types/session";
 
 // Definition für Tag und Category
 export interface Tag {
@@ -270,7 +364,7 @@ interface Props {
   /** Index innerhalb der Liste */
   index?: number;
   /** Das zu verwendende Datumsformat */
-  dateFormat?: 'relative' | 'short' | 'long';
+  dateFormat?: "relative" | "short" | "long";
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -286,47 +380,47 @@ const props = withDefaults(defineProps<Props>(), {
   showArchiveButton: false,
   showPreview: false,
   showCheckbox: false,
-  preview: '',
+  preview: "",
   messageCount: 0,
   tags: () => [],
-  category: '',
-  categoryColor: '#e2e8f0',
+  category: "",
+  categoryColor: "#e2e8f0",
   index: -1,
-  dateFormat: 'relative'
+  dateFormat: "relative",
 });
 
 const emit = defineEmits<{
   /** Wird ausgelöst, wenn die Session ausgewählt wird */
-  (e: 'select', sessionId: string): void;
+  (e: "select", sessionId: string): void;
   /** Wird ausgelöst, wenn die Session angeheftet/abgeheftet wird */
-  (e: 'pin', sessionId: string, pinned: boolean): void;
+  (e: "pin", sessionId: string, pinned: boolean): void;
   /** Wird ausgelöst, wenn die Session umbenannt werden soll */
-  (e: 'rename', sessionId: string): void;
+  (e: "rename", sessionId: string): void;
   /** Wird ausgelöst, wenn die Session gelöscht werden soll */
-  (e: 'delete', sessionId: string): void;
+  (e: "delete", sessionId: string): void;
   /** Wird ausgelöst, wenn das Kontextmenü geöffnet werden soll */
-  (e: 'contextmenu', event: MouseEvent, session: ChatSession): void;
+  (e: "contextmenu", event: MouseEvent, session: ChatSession): void;
   /** Wird ausgelöst, wenn die Session getaggt werden soll */
-  (e: 'tag', sessionId: string): void;
+  (e: "tag", sessionId: string): void;
   /** Wird ausgelöst, wenn ein Tag angeklickt wurde */
-  (e: 'tag-click', tagId: string): void;
+  (e: "tag-click", tagId: string): void;
   /** Wird ausgelöst, wenn eine Kategorie zugewiesen werden soll */
-  (e: 'categorize', sessionId: string): void;
+  (e: "categorize", sessionId: string): void;
   /** Wird ausgelöst, wenn eine Session archiviert/wiederhergestellt werden soll */
-  (e: 'archive', sessionId: string, archive: boolean): void;
+  (e: "archive", sessionId: string, archive: boolean): void;
   /** Wird ausgelöst, wenn der Auswahlstatus umgeschaltet werden soll (multi-select) */
-  (e: 'toggle-select', sessionId: string): void;
+  (e: "toggle-select", sessionId: string): void;
 }>();
 
 // Formatierung des Datums
 const formattedDate = computed(() => {
-  if (!props.session.updatedAt) return '';
+  if (!props.session.updatedAt) return "";
 
   const date = new Date(props.session.updatedAt);
   const now = new Date();
 
   // Relative Zeitformatierung (z.B. "vor 2 Stunden")
-  if (props.dateFormat === 'relative') {
+  if (props.dateFormat === "relative") {
     const diff = now.getTime() - date.getTime();
     const diffInSeconds = diff / 1000;
     const diffInMinutes = diffInSeconds / 60;
@@ -334,55 +428,63 @@ const formattedDate = computed(() => {
     const diffInDays = diffInHours / 24;
 
     if (diffInSeconds < 60) {
-      return 'gerade eben';
+      return "gerade eben";
     } else if (diffInMinutes < 60) {
       const minutes = Math.floor(diffInMinutes);
-      return `vor ${minutes} ${minutes === 1 ? 'Minute' : 'Minuten'}`;
+      return `vor ${minutes} ${minutes === 1 ? "Minute" : "Minuten"}`;
     } else if (diffInHours < 24) {
       const hours = Math.floor(diffInHours);
-      return `vor ${hours} ${hours === 1 ? 'Stunde' : 'Stunden'}`;
+      return `vor ${hours} ${hours === 1 ? "Stunde" : "Stunden"}`;
     } else if (diffInDays < 7) {
       const days = Math.floor(diffInDays);
-      return `vor ${days} ${days === 1 ? 'Tag' : 'Tagen'}`;
+      return `vor ${days} ${days === 1 ? "Tag" : "Tagen"}`;
     } else {
-      return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' });
+      return date.toLocaleDateString("de-DE", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "2-digit",
+      });
     }
-  } else if (props.dateFormat === 'short') {
+  } else if (props.dateFormat === "short") {
     // Kurzes Datumsformat (z.B. "13.04.2023")
-    return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' });
+    return date.toLocaleDateString("de-DE", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+    });
   } else {
     // Langes Datumsformat (z.B. "13. April 2023, 14:23")
-    return date.toLocaleString('de-DE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleString("de-DE", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   }
 });
 
 // Verkürzter Preview-Text
 const truncatedPreview = computed(() => {
-  if (!props.preview) return '';
+  if (!props.preview) return "";
   return props.preview.length > 100
-    ? props.preview.substring(0, 100) + '...'
+    ? props.preview.substring(0, 100) + "..."
     : props.preview;
 });
 
 // Event-Handler
 function handleContextMenu(event: MouseEvent) {
   if (props.enableContextMenu) {
-    emit('contextmenu', event, props.session);
+    emit("contextmenu", event, props.session);
   }
 }
 
 // Click-Handler mit Multi-Select-Unterstützung
 function handleItemClick() {
   if (props.showCheckbox) {
-    emit('toggle-select', props.session.id);
+    emit("toggle-select", props.session.id);
   } else {
-    emit('select', props.session.id);
+    emit("select", props.session.id);
   }
 }
 </script>
@@ -395,7 +497,10 @@ function handleItemClick() {
   border-radius: var(--n-border-radius-md, 0.5rem);
   background-color: var(--n-surface-color, #ffffff);
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
   border: 1px solid transparent;
   margin-bottom: var(--n-space-2, 0.5rem);
   position: relative;
@@ -463,7 +568,9 @@ function handleItemClick() {
   color: var(--n-text-color-tertiary, #a0aec0);
   cursor: grab;
   opacity: 0;
-  transition: opacity 0.2s ease, color 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    color 0.2s ease;
 }
 
 .n-session-item:hover .n-session-item__drag-handle,
@@ -636,7 +743,9 @@ function handleItemClick() {
   border-radius: var(--n-border-radius-sm, 0.25rem);
   color: var(--n-text-color-tertiary, #a0aec0);
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .n-session-item__action-btn:hover {
@@ -660,30 +769,33 @@ function handleItemClick() {
 }
 
 /* Dark Mode */
-:root[data-theme='dark'] .n-session-item,
+:root[data-theme="dark"] .n-session-item,
 .dark-mode .n-session-item {
   background-color: var(--n-surface-color-dark, #2d3748);
   color: var(--n-text-color-dark, #f7fafc);
 }
 
-:root[data-theme='dark'] .n-session-item:hover,
+:root[data-theme="dark"] .n-session-item:hover,
 .dark-mode .n-session-item:hover {
   background-color: var(--n-hover-color-dark, rgba(255, 255, 255, 0.05));
 }
 
-:root[data-theme='dark'] .n-session-item--active,
+:root[data-theme="dark"] .n-session-item--active,
 .dark-mode .n-session-item--active {
   background-color: var(--n-active-color-dark, rgba(66, 153, 225, 0.2));
 }
 
-:root[data-theme='dark'] .n-session-item--archived,
+:root[data-theme="dark"] .n-session-item--archived,
 .dark-mode .n-session-item--archived {
   background-color: var(--n-surface-color-secondary-dark, #1a202c);
 }
 
-:root[data-theme='dark'] .n-session-item__preview,
+:root[data-theme="dark"] .n-session-item__preview,
 .dark-mode .n-session-item__preview {
-  background-color: var(--n-surface-color-secondary-dark, rgba(255, 255, 255, 0.05));
+  background-color: var(
+    --n-surface-color-secondary-dark,
+    rgba(255, 255, 255, 0.05)
+  );
   border-left-color: var(--n-border-color-dark, #4a5568);
 }
 

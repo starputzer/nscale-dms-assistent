@@ -4,11 +4,11 @@
       'n-button',
       `n-button--${variant}`,
       `n-button--${size}`,
-      { 
-        'n-button--loading': loading, 
+      {
+        'n-button--loading': loading,
         'n-button--full-width': fullWidth,
-        'n-button--icon-only': isIconOnly
-      }
+        'n-button--icon-only': isIconOnly,
+      },
     ]"
     :disabled="disabled || loading"
     :type="type"
@@ -20,24 +20,46 @@
     @keydown.space="handleClick"
   >
     <span v-if="loading" class="n-button__loader" aria-hidden="true">
-      <svg class="n-button__spinner" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <circle class="n-button__spinner-path" cx="12" cy="12" r="10" fill="none" stroke-width="3" />
+      <svg
+        class="n-button__spinner"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle
+          class="n-button__spinner-path"
+          cx="12"
+          cy="12"
+          r="10"
+          fill="none"
+          stroke-width="3"
+        />
       </svg>
     </span>
-    <span v-if="iconLeft && !loading" class="n-button__icon n-button__icon--left" aria-hidden="true">
+    <span
+      v-if="iconLeft && !loading"
+      class="n-button__icon n-button__icon--left"
+      aria-hidden="true"
+    >
       <component :is="iconLeft" />
     </span>
-    <span class="n-button__content" :class="{ 'n-button__content--hidden': loading }">
+    <span
+      class="n-button__content"
+      :class="{ 'n-button__content--hidden': loading }"
+    >
       <slot></slot>
     </span>
-    <span v-if="iconRight && !loading" class="n-button__icon n-button__icon--right" aria-hidden="true">
+    <span
+      v-if="iconRight && !loading"
+      class="n-button__icon n-button__icon--right"
+      aria-hidden="true"
+    >
       <component :is="iconRight" />
     </span>
   </button>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed } from "vue";
 
 /**
  * Button component that supports various styles, sizes, and states
@@ -47,11 +69,11 @@ import { computed } from 'vue';
  */
 export interface ButtonProps {
   /** Button style variant */
-  variant?: 'primary' | 'secondary' | 'tertiary' | 'danger' | 'ghost';
+  variant?: "primary" | "secondary" | "tertiary" | "danger" | "ghost";
   /** Button size */
-  size?: 'small' | 'medium' | 'large';
+  size?: "small" | "medium" | "large";
   /** Button HTML type attribute */
-  type?: 'button' | 'submit' | 'reset';
+  type?: "button" | "submit" | "reset";
   /** Whether the button is disabled */
   disabled?: boolean;
   /** Whether the button is in loading state */
@@ -67,28 +89,30 @@ export interface ButtonProps {
 }
 
 const props = withDefaults(defineProps<ButtonProps>(), {
-  variant: 'primary',
-  size: 'medium',
-  type: 'button',
+  variant: "primary",
+  size: "medium",
+  type: "button",
   disabled: false,
   loading: false,
   fullWidth: false,
-  iconOnly: false
+  iconOnly: false,
 });
 
 const emit = defineEmits<{
-  (e: 'click', event: MouseEvent | KeyboardEvent): void;
+  (e: "click", event: MouseEvent | KeyboardEvent): void;
 }>();
 
-/** 
- * Computed property to determine if the button has only an icon 
+/**
+ * Computed property to determine if the button has only an icon
  */
 const isIconOnly = computed(() => {
-  return props.iconOnly || (!slots.default && (props.iconLeft || props.iconRight));
+  return (
+    props.iconOnly || (!slots.default && (props.iconLeft || props.iconRight))
+  );
 });
 
-/** 
- * Get the component slots to check if there is default content 
+/**
+ * Get the component slots to check if there is default content
  */
 const slots = defineSlots();
 
@@ -97,14 +121,14 @@ const slots = defineSlots();
  */
 function handleClick(event: MouseEvent | KeyboardEvent) {
   if (props.disabled || props.loading) return;
-  
+
   // For keyboard events, only proceed if it's Enter or Space
   if (event instanceof KeyboardEvent) {
-    if (event.key !== 'Enter' && event.key !== ' ') return;
+    if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
   }
-  
-  emit('click', event);
+
+  emit("click", event);
 }
 </script>
 
@@ -114,7 +138,15 @@ function handleClick(event: MouseEvent | KeyboardEvent) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--n-font-family, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-family: var(
+    --n-font-family,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif
+  );
   font-weight: 500;
   border-radius: var(--n-border-radius, 4px);
   transition: all 0.2s ease;

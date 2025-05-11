@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted } from "vue";
 
 /**
  * Interface for useOfflineDetection options
@@ -18,10 +18,10 @@ export interface OfflineDetectionOptions {
 
 /**
  * Composable to detect network status and provide online/offline indicators
- * 
+ *
  * @param options - Configuration options
  * @returns Object containing online status and utility methods
- * 
+ *
  * @example
  * const { isOnline, checkConnection } = useOfflineDetection({
  *   enableActiveChecking: true,
@@ -31,7 +31,7 @@ export interface OfflineDetectionOptions {
  *     }
  *   }
  * });
- * 
+ *
  * // Watch for online status changes
  * watch(isOnline, (online) => {
  *   if (online) {
@@ -42,12 +42,12 @@ export interface OfflineDetectionOptions {
 export function useOfflineDetection(options: OfflineDetectionOptions = {}) {
   const {
     enableActiveChecking = false,
-    pingUrl = '/api/health',
+    pingUrl = "/api/health",
     pingInterval = 30000,
     pingTimeout = 5000,
-    onStatusChange
+    onStatusChange,
   } = options;
-  
+
   // State
   const isOnline = ref(navigator.onLine);
   const isCheckingConnection = ref(false);
@@ -59,22 +59,22 @@ export function useOfflineDetection(options: OfflineDetectionOptions = {}) {
     if (isCheckingConnection.value) return;
 
     isCheckingConnection.value = true;
-    
+
     try {
       // Use a controller to support timeout
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), pingTimeout);
-      
+
       const response = await fetch(pingUrl, {
-        method: 'HEAD',
-        cache: 'no-store',
-        signal: controller.signal
+        method: "HEAD",
+        cache: "no-store",
+        signal: controller.signal,
       });
-      
+
       clearTimeout(timeoutId);
-      
+
       const newStatus = response.ok;
-      
+
       // Only update if the status has changed to avoid unnecessary reactions
       if (newStatus !== isOnline.value) {
         isOnline.value = newStatus;
@@ -82,7 +82,7 @@ export function useOfflineDetection(options: OfflineDetectionOptions = {}) {
           onStatusChange(newStatus);
         }
       }
-      
+
       lastPingTime.value = Date.now();
     } catch (error) {
       // If there's a network error, we're likely offline
@@ -133,17 +133,17 @@ export function useOfflineDetection(options: OfflineDetectionOptions = {}) {
 
   // Lifecycle hooks
   onMounted(() => {
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
     if (enableActiveChecking) {
       startPingInterval();
     }
   });
 
   onUnmounted(() => {
-    window.removeEventListener('online', handleOnline);
-    window.removeEventListener('offline', handleOffline);
+    window.removeEventListener("online", handleOnline);
+    window.removeEventListener("offline", handleOffline);
     stopPingInterval();
   });
 
@@ -153,7 +153,7 @@ export function useOfflineDetection(options: OfflineDetectionOptions = {}) {
     lastPingTime,
     checkConnection,
     startPingInterval,
-    stopPingInterval
+    stopPingInterval,
   };
 }
 

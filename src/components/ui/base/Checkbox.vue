@@ -1,10 +1,10 @@
 <template>
-  <div 
+  <div
     class="n-checkbox-wrapper"
-    :class="{ 
+    :class="{
       'n-checkbox-wrapper--disabled': disabled,
       'n-checkbox-wrapper--error': !!error,
-      'n-checkbox-wrapper--checked': modelValue
+      'n-checkbox-wrapper--checked': modelValue,
     }"
   >
     <label class="n-checkbox-label">
@@ -32,17 +32,19 @@
         <slot></slot>
       </span>
     </label>
-    
+
     <div v-if="error || helperText" class="n-checkbox-helper" :id="helperId">
       <span v-if="error" class="n-checkbox-error">{{ error }}</span>
-      <span v-else-if="helperText" class="n-checkbox-helper-text">{{ helperText }}</span>
+      <span v-else-if="helperText" class="n-checkbox-helper-text">{{
+        helperText
+      }}</span>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { uniqueId } from 'lodash';
+import { computed } from "vue";
+import { uniqueId } from "lodash";
 
 /**
  * Checkbox component for boolean input selection
@@ -74,22 +76,22 @@ export interface CheckboxProps {
 const props = withDefaults(defineProps<CheckboxProps>(), {
   disabled: false,
   required: false,
-  indeterminate: false
+  indeterminate: false,
 });
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: boolean): void;
-  (e: 'change', event: Event): void;
+  (e: "update:modelValue", value: boolean): void;
+  (e: "change", event: Event): void;
 }>();
 
-const checkboxId = computed(() => props.id || uniqueId('n-checkbox-'));
+const checkboxId = computed(() => props.id || uniqueId("n-checkbox-"));
 const helperId = computed(() => `${checkboxId.value}-helper`);
 
 // Handle checkbox value changes
 function updateValue(event: Event) {
   const target = event.target as HTMLInputElement;
-  emit('update:modelValue', target.checked);
-  emit('change', event);
+  emit("update:modelValue", target.checked);
+  emit("change", event);
 }
 </script>
 
@@ -98,7 +100,15 @@ function updateValue(event: Event) {
   display: inline-flex;
   flex-direction: column;
   margin-bottom: 0.75rem;
-  font-family: var(--nscale-font-family-base, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-family: var(
+    --nscale-font-family-base,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif
+  );
   position: relative;
 }
 
@@ -207,16 +217,16 @@ function updateValue(event: Event) {
     background-color: var(--nscale-gray-800, #1f2937);
     border-color: var(--nscale-gray-600, #4b5563);
   }
-  
+
   .n-checkbox-text {
     color: var(--nscale-gray-200, #e2e8f0);
   }
-  
+
   .n-checkbox-wrapper--disabled .n-checkbox-box {
     background-color: var(--nscale-gray-700, #374151);
     border-color: var(--nscale-gray-600, #4b5563);
   }
-  
+
   .n-checkbox-wrapper--disabled .n-checkbox-text {
     color: var(--nscale-gray-500, #6b7280);
   }

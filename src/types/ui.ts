@@ -13,13 +13,13 @@ export interface Modal {
     fullscreen?: boolean;
     closeOnOverlayClick?: boolean;
     hideCloseButton?: boolean;
-    position?: 'center' | 'top' | 'right' | 'bottom' | 'left';
+    position?: "center" | "top" | "right" | "bottom" | "left";
   };
 }
 
 export interface Toast {
   id: string;
-  type: 'info' | 'success' | 'warning' | 'error';
+  type: "info" | "success" | "warning" | "error";
   message: string;
   duration?: number;
   closable?: boolean;
@@ -45,7 +45,7 @@ export interface SidebarState {
   collapsed?: boolean;
 }
 
-export type ViewMode = 'default' | 'focus' | 'compact' | 'presentation';
+export type ViewMode = "default" | "focus" | "compact" | "presentation";
 
 export interface LayoutConfig {
   contentMaxWidth: string;
@@ -57,7 +57,7 @@ export interface LayoutConfig {
   splitPaneRatio: number;
   sidebarBreakpoint: number;
   textScale: number;
-  density: 'compact' | 'comfortable' | 'spacious';
+  density: "compact" | "comfortable" | "spacious";
 }
 
 export interface UIState {
@@ -91,7 +91,7 @@ export interface DialogOptions {
   message: string;
   confirmText?: string;
   cancelText?: string;
-  variant?: 'info' | 'warning' | 'danger';
+  variant?: "info" | "warning" | "danger";
 }
 
 export interface PromptOptions<T = string> {
@@ -137,7 +137,7 @@ export interface DragDropOptions {
 
 export interface AnimationSettings {
   enabled: boolean;
-  speed: 'slow' | 'normal' | 'fast';
+  speed: "slow" | "normal" | "fast";
   reduceMotion: boolean;
 }
 
@@ -154,11 +154,11 @@ export interface UIStoreActions {
   toggleDarkMode(): void;
   enableDarkMode(): void;
   disableDarkMode(): void;
-  
+
   // Layout
   setViewMode(mode: ViewMode): void;
   toggleFullscreen(): void;
-  
+
   // Sidebar
   openSidebar(): void;
   closeSidebar(): void;
@@ -166,26 +166,29 @@ export interface UIStoreActions {
   toggleSidebarCollapse(): void;
   setSidebarWidth(width: number): void;
   setSidebarTab(tabId: string): void;
-  
+
   // Modals
-  openModal(modalData: Omit<Modal, 'id'>): string;
+  openModal(modalData: Omit<Modal, "id">): string;
   closeModal(modalId: string): void;
   closeAllModals(): void;
   confirm(message: string, options?: DialogOptions): Promise<boolean>;
-  prompt<T = string>(message: string, options?: PromptOptions<T>): Promise<T | null>;
-  
+  prompt<T = string>(
+    message: string,
+    options?: PromptOptions<T>,
+  ): Promise<T | null>;
+
   // Toasts
-  showToast(toast: Omit<Toast, 'id'>): string;
+  showToast(toast: Omit<Toast, "id">): string;
   dismissToast(toastId: string): void;
   showSuccess(message: string, options?: Partial<NotificationOptions>): string;
   showError(message: string, options?: Partial<NotificationOptions>): string;
   showWarning(message: string, options?: Partial<NotificationOptions>): string;
   showInfo(message: string, options?: Partial<NotificationOptions>): string;
-  
+
   // Layout
-  setUIDensity(density: 'compact' | 'comfortable' | 'spacious'): void;
+  setUIDensity(density: "compact" | "comfortable" | "spacious"): void;
   setTextScale(scale: number): void;
-  
+
   // System
   initialize(): void;
   checkViewport(): void;

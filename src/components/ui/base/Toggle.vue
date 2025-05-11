@@ -1,15 +1,15 @@
 <template>
-  <div 
+  <div
     class="n-toggle-wrapper"
-    :class="{ 
+    :class="{
       'n-toggle-wrapper--disabled': disabled,
       'n-toggle-wrapper--error': !!error,
-      'n-toggle-wrapper--checked': modelValue
+      'n-toggle-wrapper--checked': modelValue,
     }"
   >
     <div v-if="label || $slots.default" class="n-toggle-label-wrapper">
-      <label 
-        :for="toggleId" 
+      <label
+        :for="toggleId"
         class="n-toggle-label"
         :class="{ 'n-toggle-label--required': required }"
       >
@@ -28,20 +28,17 @@
           :aria-describedby="helperId"
           @change="updateValue"
         />
-        <div 
+        <div
           class="n-toggle-switch"
           :style="toggleSwitchStyle"
           :data-label-on="showLabels ? labelOn : undefined"
           :data-label-off="showLabels ? labelOff : undefined"
         >
-          <div 
-            class="n-toggle-thumb"
-            :style="toggleThumbStyle"
-          ></div>
+          <div class="n-toggle-thumb" :style="toggleThumbStyle"></div>
         </div>
       </div>
     </div>
-    
+
     <div v-else class="n-toggle-standalone">
       <input
         :id="toggleId"
@@ -54,29 +51,28 @@
         :aria-describedby="helperId"
         @change="updateValue"
       />
-      <div 
+      <div
         class="n-toggle-switch"
         :style="toggleSwitchStyle"
         :data-label-on="showLabels ? labelOn : undefined"
         :data-label-off="showLabels ? labelOff : undefined"
       >
-        <div 
-          class="n-toggle-thumb"
-          :style="toggleThumbStyle"
-        ></div>
+        <div class="n-toggle-thumb" :style="toggleThumbStyle"></div>
       </div>
     </div>
 
     <div v-if="error || helperText" class="n-toggle-helper" :id="helperId">
       <span v-if="error" class="n-toggle-error">{{ error }}</span>
-      <span v-else-if="helperText" class="n-toggle-helper-text">{{ helperText }}</span>
+      <span v-else-if="helperText" class="n-toggle-helper-text">{{
+        helperText
+      }}</span>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { uniqueId } from 'lodash';
+import { computed } from "vue";
+import { uniqueId } from "lodash";
 
 /**
  * Toggle switch component for boolean input selection
@@ -100,7 +96,7 @@ export interface ToggleProps {
   /** Unique ID for the toggle (auto-generated if not provided) */
   id?: string;
   /** Size of the toggle (small, medium, large) */
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   /** Color of the toggle when active */
   color?: string;
   /** Show On/Off labels */
@@ -114,48 +110,48 @@ export interface ToggleProps {
 const props = withDefaults(defineProps<ToggleProps>(), {
   disabled: false,
   required: false,
-  size: 'md',
+  size: "md",
   showLabels: false,
-  labelOn: 'ON',
-  labelOff: 'OFF'
+  labelOn: "ON",
+  labelOff: "OFF",
 });
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: boolean): void;
-  (e: 'change', event: Event): void;
+  (e: "update:modelValue", value: boolean): void;
+  (e: "change", event: Event): void;
 }>();
 
 // Generate unique ID for the toggle
-const toggleId = computed(() => props.id || uniqueId('n-toggle-'));
+const toggleId = computed(() => props.id || uniqueId("n-toggle-"));
 const helperId = computed(() => `${toggleId.value}-helper`);
 
 // Size-based styling
 const sizeConfig = computed(() => {
   switch (props.size) {
-    case 'sm':
+    case "sm":
       return {
-        width: '36px',
-        height: '20px',
-        thumbSize: '16px',
-        thumbOffset: '2px',
-        fontSize: '10px'
+        width: "36px",
+        height: "20px",
+        thumbSize: "16px",
+        thumbOffset: "2px",
+        fontSize: "10px",
       };
-    case 'lg':
+    case "lg":
       return {
-        width: '56px',
-        height: '30px',
-        thumbSize: '26px',
-        thumbOffset: '2px',
-        fontSize: '12px'
+        width: "56px",
+        height: "30px",
+        thumbSize: "26px",
+        thumbOffset: "2px",
+        fontSize: "12px",
       };
-    case 'md':
+    case "md":
     default:
       return {
-        width: '46px',
-        height: '24px',
-        thumbSize: '20px',
-        thumbOffset: '2px',
-        fontSize: '11px'
+        width: "46px",
+        height: "24px",
+        thumbSize: "20px",
+        thumbOffset: "2px",
+        fontSize: "11px",
       };
   }
 });
@@ -163,26 +159,26 @@ const sizeConfig = computed(() => {
 // Computed styles for the toggle switch
 const toggleSwitchStyle = computed(() => {
   return {
-    '--toggle-width': sizeConfig.value.width,
-    '--toggle-height': sizeConfig.value.height,
-    '--toggle-font-size': sizeConfig.value.fontSize,
-    '--toggle-color': props.color || 'var(--n-color-primary, #3b82f6)'
+    "--toggle-width": sizeConfig.value.width,
+    "--toggle-height": sizeConfig.value.height,
+    "--toggle-font-size": sizeConfig.value.fontSize,
+    "--toggle-color": props.color || "var(--n-color-primary, #3b82f6)",
   };
 });
 
 // Computed styles for the toggle thumb
 const toggleThumbStyle = computed(() => {
   return {
-    '--toggle-thumb-size': sizeConfig.value.thumbSize,
-    '--toggle-thumb-offset': sizeConfig.value.thumbOffset
+    "--toggle-thumb-size": sizeConfig.value.thumbSize,
+    "--toggle-thumb-offset": sizeConfig.value.thumbOffset,
   };
 });
 
 // Handle toggle value changes
 function updateValue(event: Event) {
   const target = event.target as HTMLInputElement;
-  emit('update:modelValue', target.checked);
-  emit('change', event);
+  emit("update:modelValue", target.checked);
+  emit("change", event);
 }
 </script>
 
@@ -191,7 +187,15 @@ function updateValue(event: Event) {
   display: inline-flex;
   flex-direction: column;
   margin-bottom: 0.5rem;
-  font-family: var(--n-font-family, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-family: var(
+    --n-font-family,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif
+  );
 }
 
 .n-toggle-label-wrapper {
@@ -266,7 +270,12 @@ function updateValue(event: Event) {
 }
 
 .n-toggle-wrapper--checked .n-toggle-thumb {
-  transform: translateX(calc(var(--toggle-width) - var(--toggle-thumb-size) - (var(--toggle-thumb-offset) * 2)));
+  transform: translateX(
+    calc(
+      var(--toggle-width) - var(--toggle-thumb-size) -
+        (var(--toggle-thumb-offset) * 2)
+    )
+  );
 }
 
 .n-toggle-wrapper--disabled {
@@ -336,23 +345,23 @@ function updateValue(event: Event) {
   .n-toggle-label {
     color: var(--n-color-text-primary, #f1f5f9);
   }
-  
+
   .n-toggle-switch {
     background-color: var(--n-color-border, #334155);
   }
-  
+
   .n-toggle-thumb {
     background-color: var(--n-color-background-base, #e2e8f0);
   }
-  
+
   .n-toggle-switch[data-label-on]::before {
     color: var(--n-color-background-base, #f1f5f9);
   }
-  
+
   .n-toggle-switch[data-label-off]::after {
     color: var(--n-color-text-secondary, #94a3b8);
   }
-  
+
   .n-toggle-helper-text {
     color: var(--n-color-text-secondary, #94a3b8);
   }

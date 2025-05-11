@@ -1,127 +1,227 @@
 <template>
   <div class="design-system-demo">
     <h1 class="demo-title">nscale DMS Assistent Design System</h1>
-    
+
     <section class="demo-section">
       <h2 class="section-title">Theme Switcher</h2>
       <div class="component-demo">
         <ThemeSwitcher />
       </div>
     </section>
-    
+
     <section class="demo-section">
       <h2 class="section-title">Farben</h2>
       <div class="component-demo">
         <h3>Primärfarben</h3>
         <div class="color-grid">
-          <div class="color-box" style="background-color: var(--nscale-primary)">
+          <div
+            class="color-box"
+            style="background-color: var(--nscale-primary)"
+          >
             <span>Primary</span>
           </div>
-          <div class="color-box" style="background-color: var(--nscale-primary-dark)">
+          <div
+            class="color-box"
+            style="background-color: var(--nscale-primary-dark)"
+          >
             <span>Primary Dark</span>
           </div>
-          <div class="color-box" style="background-color: var(--nscale-primary-light)">
+          <div
+            class="color-box"
+            style="background-color: var(--nscale-primary-light)"
+          >
             <span>Primary Light</span>
           </div>
-          <div class="color-box" style="background-color: var(--nscale-primary-ultra-light)">
+          <div
+            class="color-box"
+            style="background-color: var(--nscale-primary-ultra-light)"
+          >
             <span>Primary Ultra Light</span>
           </div>
         </div>
-        
+
         <h3>Interface-Farben</h3>
         <div class="color-grid">
-          <div class="color-box" style="background-color: var(--nscale-background);">
+          <div
+            class="color-box"
+            style="background-color: var(--nscale-background)"
+          >
             <span>Background</span>
           </div>
-          <div class="color-box" style="background-color: var(--nscale-foreground); color: white;">
+          <div
+            class="color-box"
+            style="background-color: var(--nscale-foreground); color: white"
+          >
             <span>Foreground</span>
           </div>
-          <div class="color-box" style="background-color: var(--nscale-muted); color: white;">
+          <div
+            class="color-box"
+            style="background-color: var(--nscale-muted); color: white"
+          >
             <span>Muted</span>
           </div>
           <div class="color-box" style="background-color: var(--nscale-border)">
             <span>Border</span>
           </div>
         </div>
-        
+
         <h3>Feedback-Farben</h3>
         <div class="color-grid">
-          <div class="color-box" style="background-color: var(--nscale-success); color: white;">
+          <div
+            class="color-box"
+            style="background-color: var(--nscale-success); color: white"
+          >
             <span>Success</span>
           </div>
-          <div class="color-box" style="background-color: var(--nscale-info); color: white;">
+          <div
+            class="color-box"
+            style="background-color: var(--nscale-info); color: white"
+          >
             <span>Info</span>
           </div>
-          <div class="color-box" style="background-color: var(--nscale-warning);">
+          <div
+            class="color-box"
+            style="background-color: var(--nscale-warning)"
+          >
             <span>Warning</span>
           </div>
-          <div class="color-box" style="background-color: var(--nscale-error); color: white;">
+          <div
+            class="color-box"
+            style="background-color: var(--nscale-error); color: white"
+          >
             <span>Error</span>
           </div>
         </div>
       </div>
     </section>
-    
+
     <section class="demo-section">
       <h2 class="section-title">Typografie</h2>
       <div class="component-demo">
-        <p style="font-size: var(--nscale-font-size-4xl); font-weight: var(--nscale-font-weight-bold);">
+        <p
+          style="
+            font-size: var(--nscale-font-size-4xl);
+            font-weight: var(--nscale-font-weight-bold);
+          "
+        >
           Headline 1 (4xl - Bold)
         </p>
-        <p style="font-size: var(--nscale-font-size-3xl); font-weight: var(--nscale-font-weight-bold);">
+        <p
+          style="
+            font-size: var(--nscale-font-size-3xl);
+            font-weight: var(--nscale-font-weight-bold);
+          "
+        >
           Headline 2 (3xl - Bold)
         </p>
-        <p style="font-size: var(--nscale-font-size-2xl); font-weight: var(--nscale-font-weight-semibold);">
+        <p
+          style="
+            font-size: var(--nscale-font-size-2xl);
+            font-weight: var(--nscale-font-weight-semibold);
+          "
+        >
           Headline 3 (2xl - Semibold)
         </p>
-        <p style="font-size: var(--nscale-font-size-xl); font-weight: var(--nscale-font-weight-semibold);">
+        <p
+          style="
+            font-size: var(--nscale-font-size-xl);
+            font-weight: var(--nscale-font-weight-semibold);
+          "
+        >
           Headline 4 (xl - Semibold)
         </p>
-        <p style="font-size: var(--nscale-font-size-lg); font-weight: var(--nscale-font-weight-medium);">
+        <p
+          style="
+            font-size: var(--nscale-font-size-lg);
+            font-weight: var(--nscale-font-weight-medium);
+          "
+        >
           Headline 5 (lg - Medium)
         </p>
-        <p style="font-size: var(--nscale-font-size-base); font-weight: var(--nscale-font-weight-normal);">
-          Standardtext (base - Normal) - Dies ist ein Beispiel für normalen Text im nscale DMS Assistenten.
-          Der Text nutzt die Standard-Schriftgröße und -gewicht für optimale Lesbarkeit.
+        <p
+          style="
+            font-size: var(--nscale-font-size-base);
+            font-weight: var(--nscale-font-weight-normal);
+          "
+        >
+          Standardtext (base - Normal) - Dies ist ein Beispiel für normalen Text
+          im nscale DMS Assistenten. Der Text nutzt die Standard-Schriftgröße
+          und -gewicht für optimale Lesbarkeit.
         </p>
-        <p style="font-size: var(--nscale-font-size-sm); font-weight: var(--nscale-font-weight-normal);">
-          Kleinerer Text (sm - Normal) - Dies ist ein Beispiel für kleineren Text, der für weniger wichtige Informationen verwendet wird.
+        <p
+          style="
+            font-size: var(--nscale-font-size-sm);
+            font-weight: var(--nscale-font-weight-normal);
+          "
+        >
+          Kleinerer Text (sm - Normal) - Dies ist ein Beispiel für kleineren
+          Text, der für weniger wichtige Informationen verwendet wird.
         </p>
-        <p style="font-size: var(--nscale-font-size-xs); font-weight: var(--nscale-font-weight-normal);">
-          Extrakleiner Text (xs - Normal) - Dieser Text wird für Fußnoten, Bildunterschriften und ähnliche Elemente verwendet.
+        <p
+          style="
+            font-size: var(--nscale-font-size-xs);
+            font-weight: var(--nscale-font-weight-normal);
+          "
+        >
+          Extrakleiner Text (xs - Normal) - Dieser Text wird für Fußnoten,
+          Bildunterschriften und ähnliche Elemente verwendet.
         </p>
       </div>
     </section>
-    
+
     <section class="demo-section">
       <h2 class="section-title">Abstandssystem</h2>
       <div class="component-demo">
         <div class="spacing-grid">
-          <div class="spacing-box" style="width: var(--nscale-space-1); height: var(--nscale-space-10);">
+          <div
+            class="spacing-box"
+            style="width: var(--nscale-space-1); height: var(--nscale-space-10)"
+          >
             <span>1</span>
           </div>
-          <div class="spacing-box" style="width: var(--nscale-space-2); height: var(--nscale-space-10);">
+          <div
+            class="spacing-box"
+            style="width: var(--nscale-space-2); height: var(--nscale-space-10)"
+          >
             <span>2</span>
           </div>
-          <div class="spacing-box" style="width: var(--nscale-space-3); height: var(--nscale-space-10);">
+          <div
+            class="spacing-box"
+            style="width: var(--nscale-space-3); height: var(--nscale-space-10)"
+          >
             <span>3</span>
           </div>
-          <div class="spacing-box" style="width: var(--nscale-space-4); height: var(--nscale-space-10);">
+          <div
+            class="spacing-box"
+            style="width: var(--nscale-space-4); height: var(--nscale-space-10)"
+          >
             <span>4</span>
           </div>
-          <div class="spacing-box" style="width: var(--nscale-space-6); height: var(--nscale-space-10);">
+          <div
+            class="spacing-box"
+            style="width: var(--nscale-space-6); height: var(--nscale-space-10)"
+          >
             <span>6</span>
           </div>
-          <div class="spacing-box" style="width: var(--nscale-space-8); height: var(--nscale-space-10);">
+          <div
+            class="spacing-box"
+            style="width: var(--nscale-space-8); height: var(--nscale-space-10)"
+          >
             <span>8</span>
           </div>
-          <div class="spacing-box" style="width: var(--nscale-space-10); height: var(--nscale-space-10);">
+          <div
+            class="spacing-box"
+            style="
+              width: var(--nscale-space-10);
+              height: var(--nscale-space-10);
+            "
+          >
             <span>10</span>
           </div>
         </div>
       </div>
     </section>
-    
+
     <section class="demo-section">
       <h2 class="section-title">UI-Komponenten</h2>
       <div class="component-demo">
@@ -131,46 +231,47 @@
           <button class="nscale-btn-secondary">Sekundär Button</button>
           <button disabled class="nscale-btn-primary">Deaktiviert</button>
         </div>
-        
+
         <h3>Formular-Elemente</h3>
         <div class="form-demo">
           <label for="demo-input">Text Input</label>
-          <input id="demo-input" class="nscale-input" placeholder="Bitte Text eingeben..." />
-          
+          <input
+            id="demo-input"
+            class="nscale-input"
+            placeholder="Bitte Text eingeben..."
+          />
+
           <label for="demo-select">Select</label>
           <select id="demo-select" class="nscale-input">
             <option>Option 1</option>
             <option>Option 2</option>
             <option>Option 3</option>
           </select>
-          
+
           <div class="checkbox-demo">
             <input type="checkbox" id="demo-checkbox" />
             <label for="demo-checkbox">Checkbox Option</label>
           </div>
         </div>
-        
+
         <h3>Card</h3>
         <div class="nscale-card card-demo">
           <h4>Card Beispiel</h4>
-          <p>Dies ist ein Beispiel für eine Card-Komponente, die das Design-System verwendet.</p>
+          <p>
+            Dies ist ein Beispiel für eine Card-Komponente, die das
+            Design-System verwendet.
+          </p>
           <button class="nscale-btn-primary">Aktion</button>
         </div>
-        
+
         <h3>Alerts</h3>
         <div class="alert-demo">
-          <div class="nscale-alert-info">
-            Dies ist eine Info-Meldung.
-          </div>
-          <div class="nscale-alert-success">
-            Dies ist eine Erfolgs-Meldung.
-          </div>
+          <div class="nscale-alert-info">Dies ist eine Info-Meldung.</div>
+          <div class="nscale-alert-success">Dies ist eine Erfolgs-Meldung.</div>
           <div class="nscale-alert-warning">
             Dies ist eine Warnungs-Meldung.
           </div>
-          <div class="nscale-alert-error">
-            Dies ist eine Fehler-Meldung.
-          </div>
+          <div class="nscale-alert-error">Dies ist eine Fehler-Meldung.</div>
         </div>
       </div>
     </section>
@@ -179,8 +280,8 @@
       <h2 class="section-title">Responsive Design</h2>
       <div class="component-demo">
         <div class="responsive-box">
-          Dieses Element passt sich an verschiedene Bildschirmgrößen an.
-          Ändern Sie die Fenstergröße, um die Anpassungen zu sehen.
+          Dieses Element passt sich an verschiedene Bildschirmgrößen an. Ändern
+          Sie die Fenstergröße, um die Anpassungen zu sehen.
         </div>
       </div>
     </section>
@@ -188,7 +289,7 @@
 </template>
 
 <script setup lang="ts">
-import ThemeSwitcher from '@/components/ui/ThemeSwitcher.vue';
+import ThemeSwitcher from "@/components/ui/ThemeSwitcher.vue";
 </script>
 
 <style scoped>
@@ -339,9 +440,9 @@ import ThemeSwitcher from '@/components/ui/ThemeSwitcher.vue';
   gap: var(--nscale-space-3);
 }
 
-.nscale-alert-info, 
-.nscale-alert-success, 
-.nscale-alert-warning, 
+.nscale-alert-info,
+.nscale-alert-success,
+.nscale-alert-warning,
 .nscale-alert-error {
   padding: var(--nscale-space-3) var(--nscale-space-4);
   border-radius: var(--nscale-border-radius-md);
@@ -386,12 +487,12 @@ import ThemeSwitcher from '@/components/ui/ThemeSwitcher.vue';
   .design-system-demo {
     padding: var(--nscale-space-4);
   }
-  
+
   .responsive-box {
     background-color: var(--nscale-warning-light);
     font-size: var(--nscale-font-size-sm);
   }
-  
+
   .color-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -402,7 +503,7 @@ import ThemeSwitcher from '@/components/ui/ThemeSwitcher.vue';
     background-color: var(--nscale-error-light);
     font-size: var(--nscale-font-size-xs);
   }
-  
+
   .color-grid {
     grid-template-columns: 1fr;
   }

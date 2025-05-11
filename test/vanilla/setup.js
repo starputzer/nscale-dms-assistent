@@ -1,11 +1,11 @@
 // Vitest setup file for vanilla JS tests
-import { vi } from 'vitest';
-import axios from 'axios';
+import { vi } from "vitest";
+import axios from "axios";
 
 // Mock global objects
 global.window = {
   location: {
-    origin: 'http://localhost:8000',
+    origin: "http://localhost:8000",
   },
   addEventListener: vi.fn(),
   removeEventListener: vi.fn(),
@@ -29,17 +29,17 @@ global.Vue = {
 };
 
 // Mock axios
-vi.mock('axios', () => ({
+vi.mock("axios", () => ({
   default: {
     get: vi.fn(),
     post: vi.fn(),
     delete: vi.fn(),
     defaults: {
       headers: {
-        common: {}
-      }
+        common: {},
+      },
     },
-  }
+  },
 }));
 
 // Mock EventSource
@@ -50,11 +50,11 @@ class MockEventSource {
     this.onmessage = null;
     this.onerror = null;
     this.eventListeners = {};
-    
+
     // Auto connect in testing
     setTimeout(() => {
       this.readyState = 1;
-      this.dispatchEvent({ type: 'open' });
+      this.dispatchEvent({ type: "open" });
     }, 0);
   }
 
@@ -67,19 +67,21 @@ class MockEventSource {
 
   removeEventListener(type, callback) {
     if (this.eventListeners[type]) {
-      this.eventListeners[type] = this.eventListeners[type].filter(cb => cb !== callback);
+      this.eventListeners[type] = this.eventListeners[type].filter(
+        (cb) => cb !== callback,
+      );
     }
   }
 
   dispatchEvent(event) {
-    if (event.type === 'message' && this.onmessage) {
+    if (event.type === "message" && this.onmessage) {
       this.onmessage(event);
-    } else if (event.type === 'error' && this.onerror) {
+    } else if (event.type === "error" && this.onerror) {
       this.onerror(event);
     }
-    
+
     if (this.eventListeners[event.type]) {
-      this.eventListeners[event.type].forEach(callback => callback(event));
+      this.eventListeners[event.type].forEach((callback) => callback(event));
     }
   }
 

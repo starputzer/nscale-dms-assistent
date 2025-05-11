@@ -29,32 +29,18 @@
     <link rel="stylesheet" href="/css/message-actions.css?v=20250508214949">
     <link rel="stylesheet" href="/css/settings.css?v=20250508214949">
     <link rel="stylesheet" href="/css/source-references.css?v=20250508214949">
-    <link rel="stylesheet" href="/frontend/css/interaction-fix.css?v=20250508214949">
-    
-    <!-- Verbesserte CSS-Preloader mit Verifikation und inline-Fallbacks -->
-    <script src="/frontend/css-preloader.js?v=20250508214949"></script>
-    
-    <!-- CSS-Pfad-Fixer für korrekte Stylesheet-Pfade -->
-    <script src="/frontend/css-path-fix.js?v=20250508214949"></script>
-
+    <link rel="stylesheet" href="/frontend/css/ab-tests.css?v=20250511">
     <!-- Haupt-JavaScript-Datei direkt einbinden - definitiv als Modul, aber ohne CSS-Importe -->
     <script type="module" src="/js/main.js?v=20250508214949"></script>
-    
-    <!-- Bridge-Fix für Event-Handling und Feature-Toggles -->
-    <script defer src="/frontend/bridge-fix.js?v=20250508214949"></script>
-    
-    <!-- Reparatur für interaktive Elemente -->
-    <script defer src="/frontend/repair-interaction.js?v=20250508214949"></script>
-    
-    <!-- Erweiterte Reparatur für die Hauptanwendung -->
-    <script defer src="/frontend/advanced-repair.js?v=20250508214949"></script>
-    
-    <!-- Direkter Event-Handler für kritische Aktionen -->
-    <script defer src="/frontend/direct-event-handler.js?v=20250508214949"></script>
-    
-    <!-- Interaktivitäts-Testskript - für Fehlersuche bei Problemen -->
-    <script defer src="/frontend/interactivity-test.js?v=20250508214949"></script>
-    
+
+    <!-- Formular-Fix für korrekte Einreichung ohne Seitenneuladen -->
+    <script type="module" src="/frontend/js/form-fix.js?v=20250511"></script>
+
+    <!-- A/B Testing System -->
+    <script type="module" src="/frontend/js/utils/uuid-util.js?v=20250511"></script>
+    <script type="module" src="/frontend/js/telemetry.js?v=20250511"></script>
+    <script type="module" src="/frontend/js/ab-testing.js?v=20250511"></script>
+
     <!-- Fallback für ältere Browser oder fehlende ES-Module-Unterstützung -->
     <script nomodule>
         console.warn('Browser unterstützt keine ES-Module. Verwende Fallback.');
@@ -94,11 +80,12 @@
                             <label for="email" class="block text-sm font-medium text-gray-700">E-Mail</label>
                             <input type="email" id="email" v-model="email" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                         </div>
-                        
+
                         <div>
                             <label for="password" class="block text-sm font-medium text-gray-700">Passwort</label>
                             <input type="password" id="password" v-model="password" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                         </div>
+
                         
                         <div class="flex justify-between">
                             <div class="flex items-center">
@@ -329,12 +316,12 @@
                                     <!-- Feedback für Assistentennachrichten -->
                                     <div v-if="!message.is_user" class="message-actions">
                                         <div class="message-feedback">
-                                            <button @click="showFeedbackDialog = true; feedbackMessage = message" 
-                                                    class="feedback-button" 
-                                                    :class="{ 'feedback-given': window.feedbackHelpers ? window.feedbackHelpers.isFeedbackGiven(message) : isFeedbackGiven ? isFeedbackGiven(message) : false }">
-                                                <i class="fas fa-thumbs-up" v-if="window.feedbackHelpers ? window.feedbackHelpers.getFeedbackType(message) === 'positive' : getFeedbackType ? getFeedbackType(message) === 'positive' : false"></i>
-                                                <i class="fas fa-thumbs-down" v-if="window.feedbackHelpers ? window.feedbackHelpers.getFeedbackType(message) === 'negative' : getFeedbackType ? getFeedbackType(message) === 'negative' : false"></i>
-                                                <i class="far fa-thumbs-up" v-if="!(window.feedbackHelpers ? window.feedbackHelpers.getFeedbackType(message) : getFeedbackType ? getFeedbackType(message) : null)"></i>
+                                            <button @click="showFeedbackDialog = true; feedbackMessage = message"
+                                                    class="feedback-button"
+                                                    :class="{ 'feedback-given': isFeedbackGiven && isFeedbackGiven(message) }">
+                                                <i class="fas fa-thumbs-up" v-if="getFeedbackType && getFeedbackType(message) === 'positive'"></i>
+                                                <i class="fas fa-thumbs-down" v-if="getFeedbackType && getFeedbackType(message) === 'negative'"></i>
+                                                <i class="far fa-thumbs-up" v-if="!(getFeedbackType && getFeedbackType(message))"></i>
                                                 Feedback
                                             </button>
                                             <button @click="toggleSourceReferences(message)" class="source-button">
@@ -390,14 +377,14 @@
                         
                         <!-- Input -->
                         <div class="p-4 border-t border-gray-200">
-                            <form @submit.prevent="sendMessage" class="flex space-x-2">
-                                <input type="text" 
-                                       v-model="question" 
-                                       :disabled="isLoading || isStreaming" 
+                            <form @submit.prevent="sendQuestionStream" class="flex space-x-2">
+                                <input type="text"
+                                       v-model="question"
+                                       :disabled="isLoading || isStreaming"
                                        class="flex-1 rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                        placeholder="Stellen Sie eine Frage zu nscale...">
-                                <button type="submit" 
-                                        :disabled="isLoading || isStreaming || !question.trim()" 
+                                <button type="submit"
+                                        :disabled="isLoading || isStreaming || !question.trim()"
                                         class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md px-4 py-2 flex items-center justify-center">
                                     <i class="fas fa-paper-plane" v-if="!isLoading && !isStreaming"></i>
                                     <i class="fas fa-spinner fa-spin" v-else></i>
@@ -436,6 +423,10 @@
                                 <button @click="adminTab = 'doc-converter'" class="admin-tab-button w-full" :class="{ active: adminTab === 'doc-converter' }">
                                     <i class="fas fa-file-alt"></i>
                                     <span>Dokumente</span>
+                                </button>
+                                <button @click="adminTab = 'abtests'" class="admin-tab-button w-full" :class="{ active: adminTab === 'abtests' }">
+                                    <i class="fas fa-flask"></i>
+                                    <span>A/B-Tests</span>
                                 </button>
                             </div>
                         </div>
@@ -698,6 +689,58 @@
                             <div v-else-if="adminTab === 'doc-converter'">
                                 <AdminDocConverterTab />
                             </div>
+
+                            <!-- A/B-Tests -->
+                            <div v-else-if="adminTab === 'abtests'">
+                                <div class="admin-panels">
+                                    <div class="admin-panel">
+                                        <h3 class="panel-title">Aktive A/B-Tests</h3>
+                                        <div v-if="abTests && abTests.length > 0" class="grid grid-cols-1 gap-4 mt-4">
+                                            <div v-for="test in abTests" :key="test.id" class="border rounded-md p-4 hover:bg-gray-50">
+                                                <div class="flex justify-between items-start">
+                                                    <div>
+                                                        <h4 class="font-medium text-lg">{{ test.id }}</h4>
+                                                        <p class="text-sm text-gray-600 mt-1">{{ test.description }}</p>
+                                                    </div>
+                                                    <div class="bg-gray-100 rounded-md px-2 py-1 text-xs">
+                                                        Variante: {{ test.currentVariant }}
+                                                    </div>
+                                                </div>
+                                                <div class="mt-3">
+                                                    <div class="text-sm"><strong>Metriken:</strong> {{ test.metrics.join(', ') }}</div>
+                                                    <div class="text-sm mt-1"><strong>Varianten:</strong> {{ test.variants.join(', ') }}</div>
+                                                </div>
+                                                <div class="flex space-x-2 mt-4">
+                                                    <button
+                                                        class="px-3 py-1 text-sm rounded"
+                                                        :class="test.currentVariant === 'control' ? 'bg-green-500 text-white' : 'bg-gray-200 hover:bg-gray-300'"
+                                                        @click="window.abTesting?.assignUserToTest(test.id); window.location.reload();"
+                                                    >
+                                                        Control
+                                                    </button>
+                                                    <button
+                                                        class="px-3 py-1 text-sm rounded"
+                                                        :class="test.currentVariant === 'variant' ? 'bg-green-500 text-white' : 'bg-gray-200 hover:bg-gray-300'"
+                                                        @click="window.abTesting?.assignUserToTest(test.id); window.location.reload();"
+                                                    >
+                                                        Variant
+                                                    </button>
+                                                    <button
+                                                        class="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white rounded"
+                                                        @click="window.abTesting?.exitTest(test.id); loadABTests();"
+                                                    >
+                                                        Zurücksetzen
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div v-else class="text-center p-8 text-gray-500">
+                                            <i class="fas fa-flask text-4xl mb-3"></i>
+                                            <p>Keine aktiven A/B-Tests verfügbar</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -853,19 +896,5 @@
         </div>
     </div>
     
-    <!-- Debug-Infos für Entwicklung -->
-    <script>
-        // Nur im Entwicklungsmodus ausführen
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            // Protokolliere geladene Stylesheets
-            document.addEventListener('DOMContentLoaded', () => {
-                console.group('Geladene Stylesheets:');
-                Array.from(document.styleSheets).forEach((sheet, index) => {
-                    console.log(`[${index}] ${sheet.href || 'Inline-Stylesheet'}`);
-                });
-                console.groupEnd();
-            });
-        }
-    </script>
 </body>
 </html>

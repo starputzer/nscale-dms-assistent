@@ -14,7 +14,7 @@ export interface User {
   role?: UserRole;
 }
 
-export type UserRole = 'admin' | 'user' | 'guest' | 'support';
+export type UserRole = "admin" | "user" | "guest" | "support";
 export type Role = UserRole | string;
 
 export interface UserPreferences {
@@ -69,4 +69,9 @@ export interface PermissionCheck {
   user?: User | null;
 }
 
-export type TokenStatus = 'valid' | 'expiring' | 'expired' | 'invalid' | 'missing';
+export type TokenStatus =
+  | "valid"
+  | "expiring"
+  | "expired"
+  | "invalid"
+  | "missing";

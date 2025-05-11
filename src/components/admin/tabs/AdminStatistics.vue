@@ -1,21 +1,31 @@
 <template>
   <div class="admin-statistics">
-    <h2 class="admin-statistics__title">{{ t('admin.statistics.title', 'Statistiken') }}</h2>
+    <h2 class="admin-statistics__title">
+      {{ t("admin.statistics.title", "Statistiken") }}
+    </h2>
     <p class="admin-statistics__description">
-      {{ t('admin.statistics.description', 'Detaillierte Nutzungs- und Leistungsstatistiken des Systems.') }}
+      {{
+        t(
+          "admin.statistics.description",
+          "Detaillierte Nutzungs- und Leistungsstatistiken des Systems.",
+        )
+      }}
     </p>
 
     <!-- Time Range Selector -->
     <div class="admin-statistics__controls">
       <div class="admin-statistics__time-range">
-        <span>{{ t('admin.statistics.timeRange', 'Zeitraum:') }}</span>
+        <span>{{ t("admin.statistics.timeRange", "Zeitraum:") }}</span>
         <div class="admin-statistics__button-group">
-          <button 
-            v-for="range in timeRanges" 
+          <button
+            v-for="range in timeRanges"
             :key="range.value"
             :class="[
-              'admin-statistics__range-button', 
-              { 'admin-statistics__range-button--active': selectedTimeRange === range.value }
+              'admin-statistics__range-button',
+              {
+                'admin-statistics__range-button--active':
+                  selectedTimeRange === range.value,
+              },
             ]"
             @click="selectedTimeRange = range.value"
           >
@@ -25,13 +35,23 @@
       </div>
 
       <div class="admin-statistics__view-selector">
-        <span>{{ t('admin.statistics.view', 'Ansicht:') }}</span>
+        <span>{{ t("admin.statistics.view", "Ansicht:") }}</span>
         <select v-model="selectedView" class="admin-statistics__view-select">
-          <option value="overview">{{ t('admin.statistics.views.overview', 'Übersicht') }}</option>
-          <option value="users">{{ t('admin.statistics.views.users', 'Benutzeraktivität') }}</option>
-          <option value="sessions">{{ t('admin.statistics.views.sessions', 'Sitzungen') }}</option>
-          <option value="feedback">{{ t('admin.statistics.views.feedback', 'Feedback') }}</option>
-          <option value="performance">{{ t('admin.statistics.views.performance', 'Leistung') }}</option>
+          <option value="overview">
+            {{ t("admin.statistics.views.overview", "Übersicht") }}
+          </option>
+          <option value="users">
+            {{ t("admin.statistics.views.users", "Benutzeraktivität") }}
+          </option>
+          <option value="sessions">
+            {{ t("admin.statistics.views.sessions", "Sitzungen") }}
+          </option>
+          <option value="feedback">
+            {{ t("admin.statistics.views.feedback", "Feedback") }}
+          </option>
+          <option value="performance">
+            {{ t("admin.statistics.views.performance", "Leistung") }}
+          </option>
         </select>
       </div>
     </div>
@@ -44,11 +64,17 @@
             <i class="fas fa-users" aria-hidden="true"></i>
           </div>
           <div class="admin-statistics__card-content">
-            <h3 class="admin-statistics__card-title">{{ t('admin.statistics.cards.users', 'Benutzer') }}</h3>
-            <div class="admin-statistics__card-value">{{ stats.total_users || 0 }}</div>
+            <h3 class="admin-statistics__card-title">
+              {{ t("admin.statistics.cards.users", "Benutzer") }}
+            </h3>
+            <div class="admin-statistics__card-value">
+              {{ stats.total_users || 0 }}
+            </div>
             <div class="admin-statistics__card-details">
               <div class="admin-statistics__card-detail">
-                <span>{{ t('admin.statistics.details.activeToday', 'Heute aktiv:') }}</span>
+                <span>{{
+                  t("admin.statistics.details.activeToday", "Heute aktiv:")
+                }}</span>
                 <strong>{{ stats.active_users_today || 0 }}</strong>
               </div>
             </div>
@@ -60,12 +86,23 @@
             <i class="fas fa-comments" aria-hidden="true"></i>
           </div>
           <div class="admin-statistics__card-content">
-            <h3 class="admin-statistics__card-title">{{ t('admin.statistics.cards.sessions', 'Sitzungen') }}</h3>
-            <div class="admin-statistics__card-value">{{ stats.total_sessions || 0 }}</div>
+            <h3 class="admin-statistics__card-title">
+              {{ t("admin.statistics.cards.sessions", "Sitzungen") }}
+            </h3>
+            <div class="admin-statistics__card-value">
+              {{ stats.total_sessions || 0 }}
+            </div>
             <div class="admin-statistics__card-details">
               <div class="admin-statistics__card-detail">
-                <span>{{ t('admin.statistics.details.avgMessagesPerSession', 'Ø Nachr./Sitzung:') }}</span>
-                <strong>{{ stats.avg_messages_per_session?.toFixed(1) || '0.0' }}</strong>
+                <span>{{
+                  t(
+                    "admin.statistics.details.avgMessagesPerSession",
+                    "Ø Nachr./Sitzung:",
+                  )
+                }}</span>
+                <strong>{{
+                  stats.avg_messages_per_session?.toFixed(1) || "0.0"
+                }}</strong>
               </div>
             </div>
           </div>
@@ -76,11 +113,20 @@
             <i class="fas fa-envelope" aria-hidden="true"></i>
           </div>
           <div class="admin-statistics__card-content">
-            <h3 class="admin-statistics__card-title">{{ t('admin.statistics.cards.messages', 'Nachrichten') }}</h3>
-            <div class="admin-statistics__card-value">{{ stats.total_messages || 0 }}</div>
+            <h3 class="admin-statistics__card-title">
+              {{ t("admin.statistics.cards.messages", "Nachrichten") }}
+            </h3>
+            <div class="admin-statistics__card-value">
+              {{ stats.total_messages || 0 }}
+            </div>
             <div class="admin-statistics__card-details">
               <div class="admin-statistics__card-detail">
-                <span>{{ t('admin.statistics.details.avgResponseTime', 'Ø Antwortzeit:') }}</span>
+                <span>{{
+                  t(
+                    "admin.statistics.details.avgResponseTime",
+                    "Ø Antwortzeit:",
+                  )
+                }}</span>
                 <strong>{{ stats.avg_response_time_ms || 0 }} ms</strong>
               </div>
             </div>
@@ -92,11 +138,17 @@
             <i class="fas fa-thumbs-up" aria-hidden="true"></i>
           </div>
           <div class="admin-statistics__card-content">
-            <h3 class="admin-statistics__card-title">{{ t('admin.statistics.cards.feedback', 'Feedback') }}</h3>
-            <div class="admin-statistics__card-value">{{ stats.total_feedback || 0 }}</div>
+            <h3 class="admin-statistics__card-title">
+              {{ t("admin.statistics.cards.feedback", "Feedback") }}
+            </h3>
+            <div class="admin-statistics__card-value">
+              {{ stats.total_feedback || 0 }}
+            </div>
             <div class="admin-statistics__card-details">
               <div class="admin-statistics__card-detail">
-                <span>{{ t('admin.statistics.details.positiveFeedback', 'Positiv:') }}</span>
+                <span>{{
+                  t("admin.statistics.details.positiveFeedback", "Positiv:")
+                }}</span>
                 <strong>{{ stats.positive_feedback_percent || 0 }}%</strong>
               </div>
             </div>
@@ -107,14 +159,18 @@
       <!-- Overview Charts -->
       <div class="admin-statistics__charts">
         <div class="admin-statistics__chart-container">
-          <h3 class="admin-statistics__chart-title">{{ t('admin.statistics.charts.usage', 'Nutzung im Zeitverlauf') }}</h3>
+          <h3 class="admin-statistics__chart-title">
+            {{ t("admin.statistics.charts.usage", "Nutzung im Zeitverlauf") }}
+          </h3>
           <div class="admin-statistics__chart">
             <canvas ref="usageChart"></canvas>
           </div>
         </div>
 
         <div class="admin-statistics__chart-container">
-          <h3 class="admin-statistics__chart-title">{{ t('admin.statistics.charts.performance', 'Systemleistung') }}</h3>
+          <h3 class="admin-statistics__chart-title">
+            {{ t("admin.statistics.charts.performance", "Systemleistung") }}
+          </h3>
           <div class="admin-statistics__chart">
             <canvas ref="performanceChart"></canvas>
           </div>
@@ -123,31 +179,37 @@
 
       <!-- System Resource Usage -->
       <div class="admin-statistics__resources">
-        <h3 class="admin-statistics__section-title">{{ t('admin.statistics.sections.resources', 'Ressourcennutzung') }}</h3>
+        <h3 class="admin-statistics__section-title">
+          {{ t("admin.statistics.sections.resources", "Ressourcennutzung") }}
+        </h3>
         <div class="admin-statistics__resource-grid">
           <!-- CPU Usage -->
           <div class="admin-statistics__resource-card">
             <div class="admin-statistics__resource-header">
               <div class="admin-statistics__resource-title">
                 <i class="fas fa-microchip" aria-hidden="true"></i>
-                <span>{{ t('admin.system.metrics.cpu', 'CPU-Auslastung') }}</span>
+                <span>{{
+                  t("admin.system.metrics.cpu", "CPU-Auslastung")
+                }}</span>
               </div>
-              <div 
-                class="admin-statistics__resource-status" 
-                :class="`admin-statistics__resource-status--${cpuStatus}`" 
+              <div
+                class="admin-statistics__resource-status"
+                :class="`admin-statistics__resource-status--${cpuStatus}`"
                 :title="getStatusText(cpuStatus)"
               ></div>
             </div>
-            
+
             <div class="admin-statistics__meter-container">
               <div class="admin-statistics__meter">
-                <div 
-                  class="admin-statistics__meter-fill" 
+                <div
+                  class="admin-statistics__meter-fill"
                   :class="`admin-statistics__meter-fill--${cpuStatus}`"
                   :style="{ width: `${stats.cpu_usage_percent || 0}%` }"
                 ></div>
               </div>
-              <div class="admin-statistics__meter-value">{{ stats.cpu_usage_percent || 0 }}%</div>
+              <div class="admin-statistics__meter-value">
+                {{ stats.cpu_usage_percent || 0 }}%
+              </div>
             </div>
           </div>
 
@@ -156,24 +218,28 @@
             <div class="admin-statistics__resource-header">
               <div class="admin-statistics__resource-title">
                 <i class="fas fa-memory" aria-hidden="true"></i>
-                <span>{{ t('admin.system.metrics.memory', 'Speicherauslastung') }}</span>
+                <span>{{
+                  t("admin.system.metrics.memory", "Speicherauslastung")
+                }}</span>
               </div>
-              <div 
-                class="admin-statistics__resource-status" 
-                :class="`admin-statistics__resource-status--${memoryStatus}`" 
+              <div
+                class="admin-statistics__resource-status"
+                :class="`admin-statistics__resource-status--${memoryStatus}`"
                 :title="getStatusText(memoryStatus)"
               ></div>
             </div>
-            
+
             <div class="admin-statistics__meter-container">
               <div class="admin-statistics__meter">
-                <div 
-                  class="admin-statistics__meter-fill" 
+                <div
+                  class="admin-statistics__meter-fill"
                   :class="`admin-statistics__meter-fill--${memoryStatus}`"
                   :style="{ width: `${stats.memory_usage_percent || 0}%` }"
                 ></div>
               </div>
-              <div class="admin-statistics__meter-value">{{ stats.memory_usage_percent || 0 }}%</div>
+              <div class="admin-statistics__meter-value">
+                {{ stats.memory_usage_percent || 0 }}%
+              </div>
             </div>
           </div>
 
@@ -182,17 +248,19 @@
             <div class="admin-statistics__resource-header">
               <div class="admin-statistics__resource-title">
                 <i class="fas fa-bolt" aria-hidden="true"></i>
-                <span>{{ t('admin.system.metrics.cache', 'Cache') }}</span>
+                <span>{{ t("admin.system.metrics.cache", "Cache") }}</span>
               </div>
             </div>
-            
+
             <div class="admin-statistics__resource-values">
               <div class="admin-statistics__resource-value-item">
-                <span>{{ t('admin.system.metrics.cacheSize', 'Größe:') }}</span>
+                <span>{{ t("admin.system.metrics.cacheSize", "Größe:") }}</span>
                 <strong>{{ stats.cache_size_mb || 0 }} MB</strong>
               </div>
               <div class="admin-statistics__resource-value-item">
-                <span>{{ t('admin.system.metrics.cacheHitRate', 'Trefferrate:') }}</span>
+                <span>{{
+                  t("admin.system.metrics.cacheHitRate", "Trefferrate:")
+                }}</span>
                 <strong>{{ stats.cache_hit_rate || 0 }}%</strong>
               </div>
             </div>
@@ -203,10 +271,12 @@
             <div class="admin-statistics__resource-header">
               <div class="admin-statistics__resource-title">
                 <i class="fas fa-database" aria-hidden="true"></i>
-                <span>{{ t('admin.system.metrics.database', 'Datenbankgröße') }}</span>
+                <span>{{
+                  t("admin.system.metrics.database", "Datenbankgröße")
+                }}</span>
               </div>
             </div>
-            
+
             <div class="admin-statistics__resource-value-large">
               {{ stats.database_size_mb || 0 }} MB
             </div>
@@ -218,8 +288,10 @@
     <!-- User Activity View -->
     <div v-if="selectedView === 'users'" class="admin-statistics__users">
       <div class="admin-statistics__section">
-        <h3 class="admin-statistics__section-title">{{ t('admin.statistics.sections.userActivity', 'Benutzeraktivität') }}</h3>
-        
+        <h3 class="admin-statistics__section-title">
+          {{ t("admin.statistics.sections.userActivity", "Benutzeraktivität") }}
+        </h3>
+
         <!-- User Activity Chart -->
         <div class="admin-statistics__chart-container">
           <div class="admin-statistics__chart">
@@ -229,17 +301,35 @@
 
         <!-- User Segmentation -->
         <div class="admin-statistics__user-segmentation">
-          <h4 class="admin-statistics__subsection-title">{{ t('admin.statistics.sections.userSegmentation', 'Benutzersegmentierung') }}</h4>
-          
+          <h4 class="admin-statistics__subsection-title">
+            {{
+              t(
+                "admin.statistics.sections.userSegmentation",
+                "Benutzersegmentierung",
+              )
+            }}
+          </h4>
+
           <div class="admin-statistics__segmentation-chart">
-            <div class="admin-statistics__segment-item" v-for="(segment, index) in userSegments" :key="index">
-              <div class="admin-statistics__segment-label">{{ segment.label }}</div>
+            <div
+              class="admin-statistics__segment-item"
+              v-for="(segment, index) in userSegments"
+              :key="index"
+            >
+              <div class="admin-statistics__segment-label">
+                {{ segment.label }}
+              </div>
               <div class="admin-statistics__segment-bar-container">
-                <div 
+                <div
                   class="admin-statistics__segment-bar"
-                  :style="{ width: `${segment.percentage}%`, backgroundColor: segment.color }"
+                  :style="{
+                    width: `${segment.percentage}%`,
+                    backgroundColor: segment.color,
+                  }"
                 ></div>
-                <span class="admin-statistics__segment-value">{{ segment.count }} ({{ segment.percentage }}%)</span>
+                <span class="admin-statistics__segment-value"
+                  >{{ segment.count }} ({{ segment.percentage }}%)</span
+                >
               </div>
             </div>
           </div>
@@ -248,10 +338,17 @@
     </div>
 
     <!-- Sessions View -->
-    <div v-if="selectedView === 'sessions'" class="admin-statistics__sessions-view">
+    <div
+      v-if="selectedView === 'sessions'"
+      class="admin-statistics__sessions-view"
+    >
       <div class="admin-statistics__section">
-        <h3 class="admin-statistics__section-title">{{ t('admin.statistics.sections.sessionStats', 'Sitzungsstatistiken') }}</h3>
-        
+        <h3 class="admin-statistics__section-title">
+          {{
+            t("admin.statistics.sections.sessionStats", "Sitzungsstatistiken")
+          }}
+        </h3>
+
         <!-- Sessions Chart -->
         <div class="admin-statistics__chart-container">
           <div class="admin-statistics__chart">
@@ -261,32 +358,56 @@
 
         <!-- Session Distribution -->
         <div class="admin-statistics__session-distribution">
-          <h4 class="admin-statistics__subsection-title">{{ t('admin.statistics.sections.sessionDistribution', 'Sitzungsverteilung') }}</h4>
-          
+          <h4 class="admin-statistics__subsection-title">
+            {{
+              t(
+                "admin.statistics.sections.sessionDistribution",
+                "Sitzungsverteilung",
+              )
+            }}
+          </h4>
+
           <div class="admin-statistics__distribution-grid">
             <div class="admin-statistics__distribution-card">
-              <h5 class="admin-statistics__distribution-title">{{ t('admin.statistics.distribution.byTime', 'Nach Tageszeit') }}</h5>
+              <h5 class="admin-statistics__distribution-title">
+                {{
+                  t("admin.statistics.distribution.byTime", "Nach Tageszeit")
+                }}
+              </h5>
               <div class="admin-statistics__distribution-chart">
                 <canvas ref="sessionTimeDistChart"></canvas>
               </div>
             </div>
-            
+
             <div class="admin-statistics__distribution-card">
-              <h5 class="admin-statistics__distribution-title">{{ t('admin.statistics.distribution.byDuration', 'Nach Dauer') }}</h5>
+              <h5 class="admin-statistics__distribution-title">
+                {{
+                  t("admin.statistics.distribution.byDuration", "Nach Dauer")
+                }}
+              </h5>
               <div class="admin-statistics__distribution-chart">
                 <canvas ref="sessionDurationChart"></canvas>
               </div>
             </div>
 
             <div class="admin-statistics__distribution-card">
-              <h5 class="admin-statistics__distribution-title">{{ t('admin.statistics.distribution.byMessages', 'Nach Nachrichtenanzahl') }}</h5>
+              <h5 class="admin-statistics__distribution-title">
+                {{
+                  t(
+                    "admin.statistics.distribution.byMessages",
+                    "Nach Nachrichtenanzahl",
+                  )
+                }}
+              </h5>
               <div class="admin-statistics__distribution-chart">
                 <canvas ref="sessionMessagesChart"></canvas>
               </div>
             </div>
-            
+
             <div class="admin-statistics__distribution-card">
-              <h5 class="admin-statistics__distribution-title">{{ t('admin.statistics.distribution.byDevice', 'Nach Gerät') }}</h5>
+              <h5 class="admin-statistics__distribution-title">
+                {{ t("admin.statistics.distribution.byDevice", "Nach Gerät") }}
+              </h5>
               <div class="admin-statistics__distribution-chart">
                 <canvas ref="sessionDeviceChart"></canvas>
               </div>
@@ -297,39 +418,70 @@
     </div>
 
     <!-- Feedback View -->
-    <div v-if="selectedView === 'feedback'" class="admin-statistics__feedback-view">
+    <div
+      v-if="selectedView === 'feedback'"
+      class="admin-statistics__feedback-view"
+    >
       <div class="admin-statistics__section">
-        <h3 class="admin-statistics__section-title">{{ t('admin.statistics.sections.feedbackStats', 'Feedback-Statistiken') }}</h3>
-        
+        <h3 class="admin-statistics__section-title">
+          {{
+            t("admin.statistics.sections.feedbackStats", "Feedback-Statistiken")
+          }}
+        </h3>
+
         <div class="admin-statistics__feedback-summary">
           <div class="admin-statistics__feedback-card">
-            <div class="admin-statistics__feedback-title">{{ t('admin.statistics.feedback.avgRating', 'Durchschnittliche Bewertung') }}</div>
+            <div class="admin-statistics__feedback-title">
+              {{
+                t(
+                  "admin.statistics.feedback.avgRating",
+                  "Durchschnittliche Bewertung",
+                )
+              }}
+            </div>
             <div class="admin-statistics__feedback-rating">
-              <div class="admin-statistics__feedback-rating-value">{{ feedbackAverage.toFixed(1) }}/5.0</div>
+              <div class="admin-statistics__feedback-rating-value">
+                {{ feedbackAverage.toFixed(1) }}/5.0
+              </div>
               <div class="admin-statistics__rating-stars">
                 <div class="admin-statistics__stars-container">
-                  <div class="admin-statistics__stars-filled" :style="{ width: `${feedbackAverage * 20}%` }"></div>
+                  <div
+                    class="admin-statistics__stars-filled"
+                    :style="{ width: `${feedbackAverage * 20}%` }"
+                  ></div>
                 </div>
               </div>
             </div>
           </div>
-          
+
           <div class="admin-statistics__feedback-card">
-            <div class="admin-statistics__feedback-title">{{ t('admin.statistics.feedback.distribution', 'Bewertungsverteilung') }}</div>
+            <div class="admin-statistics__feedback-title">
+              {{
+                t(
+                  "admin.statistics.feedback.distribution",
+                  "Bewertungsverteilung",
+                )
+              }}
+            </div>
             <div class="admin-statistics__feedback-distribution">
               <div class="admin-statistics__rating-bars">
-                <div 
-                  v-for="i in 5" 
-                  :key="i" 
+                <div
+                  v-for="i in 5"
+                  :key="i"
                   class="admin-statistics__rating-bar-container"
                 >
                   <div class="admin-statistics__rating-label">{{ i }}</div>
                   <div class="admin-statistics__rating-bar-wrapper">
-                    <div 
-                      class="admin-statistics__rating-bar" 
-                      :style="{ width: `${getRatingPercentage(i)}%`, backgroundColor: getRatingColor(i) }"
+                    <div
+                      class="admin-statistics__rating-bar"
+                      :style="{
+                        width: `${getRatingPercentage(i)}%`,
+                        backgroundColor: getRatingColor(i),
+                      }"
                     ></div>
-                    <span class="admin-statistics__rating-count">{{ getRatingCount(i) }}</span>
+                    <span class="admin-statistics__rating-count">{{
+                      getRatingCount(i)
+                    }}</span>
                   </div>
                 </div>
               </div>
@@ -347,35 +499,62 @@
     </div>
 
     <!-- Performance View -->
-    <div v-if="selectedView === 'performance'" class="admin-statistics__performance-view">
+    <div
+      v-if="selectedView === 'performance'"
+      class="admin-statistics__performance-view"
+    >
       <div class="admin-statistics__section">
-        <h3 class="admin-statistics__section-title">{{ t('admin.statistics.sections.performanceStats', 'Leistungsstatistiken') }}</h3>
-        
+        <h3 class="admin-statistics__section-title">
+          {{
+            t(
+              "admin.statistics.sections.performanceStats",
+              "Leistungsstatistiken",
+            )
+          }}
+        </h3>
+
         <!-- Performance Grid -->
         <div class="admin-statistics__performance-grid">
           <div class="admin-statistics__performance-card">
-            <h4 class="admin-statistics__performance-title">{{ t('admin.statistics.performance.responseTime', 'Antwortzeit') }}</h4>
+            <h4 class="admin-statistics__performance-title">
+              {{
+                t("admin.statistics.performance.responseTime", "Antwortzeit")
+              }}
+            </h4>
             <div class="admin-statistics__performance-chart">
               <canvas ref="responseTimeChart"></canvas>
             </div>
           </div>
-          
+
           <div class="admin-statistics__performance-card">
-            <h4 class="admin-statistics__performance-title">{{ t('admin.statistics.performance.resourceUsage', 'Ressourcenverbrauch') }}</h4>
+            <h4 class="admin-statistics__performance-title">
+              {{
+                t(
+                  "admin.statistics.performance.resourceUsage",
+                  "Ressourcenverbrauch",
+                )
+              }}
+            </h4>
             <div class="admin-statistics__performance-chart">
               <canvas ref="resourceUsageChart"></canvas>
             </div>
           </div>
-          
+
           <div class="admin-statistics__performance-card">
-            <h4 class="admin-statistics__performance-title">{{ t('admin.statistics.performance.errorRate', 'Fehlerraten') }}</h4>
+            <h4 class="admin-statistics__performance-title">
+              {{ t("admin.statistics.performance.errorRate", "Fehlerraten") }}
+            </h4>
             <div class="admin-statistics__performance-chart">
               <canvas ref="errorRateChart"></canvas>
             </div>
           </div>
-          
+
           <div class="admin-statistics__performance-card">
-            <h4 class="admin-statistics__performance-title">{{ t('admin.statistics.performance.cacheMetrics', 'Cache-Metriken') }}</h4>
+            <h4 class="admin-statistics__performance-title">
+              {{
+                t("admin.statistics.performance.cacheMetrics", "Cache-Metriken")
+              }}
+            </h4>
             <div class="admin-statistics__performance-chart">
               <canvas ref="cacheMetricsChart"></canvas>
             </div>
@@ -388,24 +567,23 @@
     <div class="admin-statistics__actions">
       <button class="admin-statistics__action-button" @click="exportData">
         <i class="fas fa-download" aria-hidden="true"></i>
-        {{ t('admin.statistics.actions.export', 'Daten exportieren') }}
+        {{ t("admin.statistics.actions.export", "Daten exportieren") }}
       </button>
-      
+
       <button class="admin-statistics__action-button" @click="refreshData">
         <i class="fas fa-sync" aria-hidden="true"></i>
-        {{ t('admin.statistics.actions.refresh', 'Daten aktualisieren') }}
+        {{ t("admin.statistics.actions.refresh", "Daten aktualisieren") }}
       </button>
     </div>
-
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch, onUnmounted } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { storeToRefs } from 'pinia';
-import { useAdminSystemStore } from '@/stores/admin/system';
-import { useToast } from '@/composables/useToast';
+import { ref, onMounted, computed, watch, onUnmounted } from "vue";
+import { useI18n } from "vue-i18n";
+import { storeToRefs } from "pinia";
+import { useAdminSystemStore } from "@/stores/admin/system";
+import { useToast } from "@/composables/useToast";
 
 // i18n
 const { t } = useI18n();
@@ -421,8 +599,8 @@ const { showToast } = useToast();
 
 // Local state
 const isLoading = ref(false);
-const selectedTimeRange = ref('week');
-const selectedView = ref('overview');
+const selectedTimeRange = ref("week");
+const selectedView = ref("overview");
 
 // Chart references
 const usageChart = ref<HTMLCanvasElement | null>(null);
@@ -444,38 +622,61 @@ const chartInstances = ref<Record<string, any>>({});
 
 // Time range options
 const timeRanges = [
-  { value: 'day', label: t('admin.statistics.ranges.day', 'Tag') },
-  { value: 'week', label: t('admin.statistics.ranges.week', 'Woche') },
-  { value: 'month', label: t('admin.statistics.ranges.month', 'Monat') },
-  { value: 'year', label: t('admin.statistics.ranges.year', 'Jahr') }
+  { value: "day", label: t("admin.statistics.ranges.day", "Tag") },
+  { value: "week", label: t("admin.statistics.ranges.week", "Woche") },
+  { value: "month", label: t("admin.statistics.ranges.month", "Monat") },
+  { value: "year", label: t("admin.statistics.ranges.year", "Jahr") },
 ];
 
 // User segmentation data (mock)
 const userSegments = ref([
-  { label: t('admin.statistics.segments.regular', 'Regelmäßige Nutzer'), count: 64, percentage: 52, color: '#3b82f6' },
-  { label: t('admin.statistics.segments.occasional', 'Gelegentliche Nutzer'), count: 36, percentage: 29, color: '#10b981' },
-  { label: t('admin.statistics.segments.new', 'Neue Nutzer'), count: 18, percentage: 15, color: '#f59e0b' },
-  { label: t('admin.statistics.segments.inactive', 'Inaktive Nutzer'), count: 5, percentage: 4, color: '#ef4444' }
+  {
+    label: t("admin.statistics.segments.regular", "Regelmäßige Nutzer"),
+    count: 64,
+    percentage: 52,
+    color: "#3b82f6",
+  },
+  {
+    label: t("admin.statistics.segments.occasional", "Gelegentliche Nutzer"),
+    count: 36,
+    percentage: 29,
+    color: "#10b981",
+  },
+  {
+    label: t("admin.statistics.segments.new", "Neue Nutzer"),
+    count: 18,
+    percentage: 15,
+    color: "#f59e0b",
+  },
+  {
+    label: t("admin.statistics.segments.inactive", "Inaktive Nutzer"),
+    count: 5,
+    percentage: 4,
+    color: "#ef4444",
+  },
 ]);
 
 // Feedback data (mock)
 const feedbackRatings = ref({
-  '1': 12,
-  '2': 18,
-  '3': 45,
-  '4': 78,
-  '5': 109
+  "1": 12,
+  "2": 18,
+  "3": 45,
+  "4": 78,
+  "5": 109,
 });
 
 const feedbackAverage = computed(() => {
-  const total = Object.values(feedbackRatings.value).reduce((sum, count) => sum + count, 0);
+  const total = Object.values(feedbackRatings.value).reduce(
+    (sum, count) => sum + count,
+    0,
+  );
   if (total === 0) return 0;
-  
+
   let weightedSum = 0;
   for (let i = 1; i <= 5; i++) {
     weightedSum += i * (feedbackRatings.value[i] || 0);
   }
-  
+
   return weightedSum / total;
 });
 
@@ -485,12 +686,12 @@ let Chart: any = null;
 // Methods
 function getStatusText(status: string): string {
   switch (status) {
-    case 'critical':
-      return t('admin.system.statusCritical', 'Kritisch');
-    case 'warning':
-      return t('admin.system.statusWarning', 'Warnung');
+    case "critical":
+      return t("admin.system.statusCritical", "Kritisch");
+    case "warning":
+      return t("admin.system.statusWarning", "Warnung");
     default:
-      return t('admin.system.statusNormal', 'Normal');
+      return t("admin.system.statusNormal", "Normal");
   }
 }
 
@@ -499,33 +700,36 @@ function getRatingCount(rating: number): number {
 }
 
 function getRatingPercentage(rating: number): number {
-  const total = Object.values(feedbackRatings.value).reduce((sum, count) => sum + count, 0);
+  const total = Object.values(feedbackRatings.value).reduce(
+    (sum, count) => sum + count,
+    0,
+  );
   if (total === 0) return 0;
   return (getRatingCount(rating) / total) * 100;
 }
 
 function getRatingColor(rating: number): string {
   const colors = [
-    '#ef4444', // 1 - rot
-    '#f97316', // 2 - orange
-    '#f59e0b', // 3 - bernstein
-    '#84cc16', // 4 - hellgrün
-    '#10b981'  // 5 - grün
+    "#ef4444", // 1 - rot
+    "#f97316", // 2 - orange
+    "#f59e0b", // 3 - bernstein
+    "#84cc16", // 4 - hellgrün
+    "#10b981", // 5 - grün
   ];
-  
+
   return colors[rating - 1];
 }
 
 async function loadChartLibrary() {
   if (Chart) return;
-  
+
   try {
     // In a real implementation, you would dynamically import Chart.js:
     // Chart = await import('chart.js');
-    
+
     // For this example, we'll create a mock Chart class
-    console.log('Loading Chart.js dynamically');
-    Chart = { 
+    console.log("Loading Chart.js dynamically");
+    Chart = {
       Chart: class MockChart {
         constructor(ctx, config) {
           this.ctx = ctx;
@@ -533,14 +737,17 @@ async function loadChartLibrary() {
         }
         update() {}
         destroy() {}
-      }
+      },
     };
   } catch (error) {
-    console.error('Failed to load Chart.js:', error);
+    console.error("Failed to load Chart.js:", error);
     showToast({
-      type: 'error',
-      title: t('admin.statistics.toast.chartLoadError', 'Fehler'),
-      message: t('admin.statistics.toast.chartLoadErrorMessage', 'Fehler beim Laden der Diagrammbibliothek')
+      type: "error",
+      title: t("admin.statistics.toast.chartLoadError", "Fehler"),
+      message: t(
+        "admin.statistics.toast.chartLoadErrorMessage",
+        "Fehler beim Laden der Diagrammbibliothek",
+      ),
     });
   }
 }
@@ -548,70 +755,70 @@ async function loadChartLibrary() {
 async function initCharts() {
   await loadChartLibrary();
   if (!Chart) return;
-  
+
   try {
     // Initialize overview charts if they're visible
-    if (selectedView.value === 'overview') {
+    if (selectedView.value === "overview") {
       initUsageChart();
       initPerformanceChart();
-    } else if (selectedView.value === 'users') {
+    } else if (selectedView.value === "users") {
       initUserActivityChart();
-    } else if (selectedView.value === 'sessions') {
+    } else if (selectedView.value === "sessions") {
       initSessionsCharts();
-    } else if (selectedView.value === 'feedback') {
+    } else if (selectedView.value === "feedback") {
       initFeedbackCharts();
-    } else if (selectedView.value === 'performance') {
+    } else if (selectedView.value === "performance") {
       initPerformanceCharts();
     }
   } catch (error) {
-    console.error('Error initializing charts:', error);
+    console.error("Error initializing charts:", error);
   }
 }
 
 function initUsageChart() {
   if (!usageChart.value || !Chart) return;
-  
+
   // Mock data for usage chart
-  const labels = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+  const labels = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
   const data = {
     labels,
     datasets: [
       {
-        label: t('admin.statistics.metrics.sessions', 'Sitzungen'),
+        label: t("admin.statistics.metrics.sessions", "Sitzungen"),
         data: [65, 78, 86, 74, 92, 51, 44],
-        borderColor: 'rgba(54, 162, 235, 1)',
-        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        borderColor: "rgba(54, 162, 235, 1)",
+        backgroundColor: "rgba(54, 162, 235, 0.2)",
         borderWidth: 2,
-        fill: true
+        fill: true,
       },
       {
-        label: t('admin.statistics.metrics.messages', 'Nachrichten'),
+        label: t("admin.statistics.metrics.messages", "Nachrichten"),
         data: [325, 420, 390, 410, 450, 240, 210],
-        borderColor: 'rgba(75, 192, 192, 1)',
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        borderColor: "rgba(75, 192, 192, 1)",
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
         borderWidth: 2,
-        fill: true
-      }
-    ]
+        fill: true,
+      },
+    ],
   };
 
   const config = {
-    type: 'line',
+    type: "line",
     data: data,
     options: {
       responsive: true,
       maintainAspectRatio: false,
       scales: {
         y: {
-          beginAtZero: true
-        }
+          beginAtZero: true,
+        },
       },
       plugins: {
         legend: {
-          position: 'top',
-        }
-      }
-    }
+          position: "top",
+        },
+      },
+    },
   };
 
   // Destroy existing chart if it exists
@@ -620,7 +827,7 @@ function initUsageChart() {
   }
 
   // Create new chart
-  const ctx = usageChart.value.getContext('2d');
+  const ctx = usageChart.value.getContext("2d");
   if (ctx) {
     chartInstances.value.usageChart = new Chart.Chart(ctx, config);
   }
@@ -628,33 +835,33 @@ function initUsageChart() {
 
 function initPerformanceChart() {
   if (!performanceChart.value || !Chart) return;
-  
+
   // Mock data for performance chart
-  const labels = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+  const labels = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
   const data = {
     labels,
     datasets: [
       {
-        label: t('admin.statistics.metrics.responseTime', 'Antwortzeit (ms)'),
+        label: t("admin.statistics.metrics.responseTime", "Antwortzeit (ms)"),
         data: [520, 490, 475, 510, 530, 450, 440],
-        borderColor: 'rgba(255, 99, 132, 1)',
-        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+        borderColor: "rgba(255, 99, 132, 1)",
+        backgroundColor: "rgba(255, 99, 132, 0.2)",
         borderWidth: 2,
-        yAxisID: 'y'
+        yAxisID: "y",
       },
       {
-        label: t('admin.statistics.metrics.cpuUsage', 'CPU (%)'),
+        label: t("admin.statistics.metrics.cpuUsage", "CPU (%)"),
         data: [45, 52, 58, 60, 65, 40, 38],
-        borderColor: 'rgba(153, 102, 255, 1)',
-        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+        borderColor: "rgba(153, 102, 255, 1)",
+        backgroundColor: "rgba(153, 102, 255, 0.2)",
         borderWidth: 2,
-        yAxisID: 'y1'
-      }
-    ]
+        yAxisID: "y1",
+      },
+    ],
   };
 
   const config = {
-    type: 'line',
+    type: "line",
     data: data,
     options: {
       responsive: true,
@@ -662,30 +869,33 @@ function initPerformanceChart() {
       scales: {
         y: {
           beginAtZero: true,
-          position: 'left',
+          position: "left",
           title: {
             display: true,
-            text: t('admin.statistics.metrics.responseTime', 'Antwortzeit (ms)')
-          }
+            text: t(
+              "admin.statistics.metrics.responseTime",
+              "Antwortzeit (ms)",
+            ),
+          },
         },
         y1: {
           beginAtZero: true,
-          position: 'right',
+          position: "right",
           title: {
             display: true,
-            text: t('admin.statistics.metrics.cpuUsage', 'CPU (%)')
+            text: t("admin.statistics.metrics.cpuUsage", "CPU (%)"),
           },
           grid: {
-            drawOnChartArea: false
-          }
-        }
+            drawOnChartArea: false,
+          },
+        },
       },
       plugins: {
         legend: {
-          position: 'top',
-        }
-      }
-    }
+          position: "top",
+        },
+      },
+    },
   };
 
   // Destroy existing chart if it exists
@@ -694,7 +904,7 @@ function initPerformanceChart() {
   }
 
   // Create new chart
-  const ctx = performanceChart.value.getContext('2d');
+  const ctx = performanceChart.value.getContext("2d");
   if (ctx) {
     chartInstances.value.performanceChart = new Chart.Chart(ctx, config);
   }
@@ -722,31 +932,40 @@ function initPerformanceCharts() {
 
 function exportData() {
   showToast({
-    type: 'info',
-    title: t('admin.statistics.toast.exported', 'Export'),
-    message: t('admin.statistics.toast.exportedMessage', 'Statistikdaten wurden exportiert')
+    type: "info",
+    title: t("admin.statistics.toast.exported", "Export"),
+    message: t(
+      "admin.statistics.toast.exportedMessage",
+      "Statistikdaten wurden exportiert",
+    ),
   });
 }
 
 async function refreshData() {
   isLoading.value = true;
-  
+
   try {
     await adminSystemStore.fetchStats();
-    
+
     // Reload charts after data refresh
     initCharts();
-    
+
     showToast({
-      type: 'success',
-      title: t('admin.statistics.toast.refreshed', 'Aktualisiert'),
-      message: t('admin.statistics.toast.refreshedMessage', 'Statistikdaten wurden aktualisiert')
+      type: "success",
+      title: t("admin.statistics.toast.refreshed", "Aktualisiert"),
+      message: t(
+        "admin.statistics.toast.refreshedMessage",
+        "Statistikdaten wurden aktualisiert",
+      ),
     });
   } catch (error) {
     showToast({
-      type: 'error',
-      title: t('admin.statistics.toast.refreshError', 'Fehler'),
-      message: t('admin.statistics.toast.refreshErrorMessage', 'Fehler beim Aktualisieren der Daten')
+      type: "error",
+      title: t("admin.statistics.toast.refreshError", "Fehler"),
+      message: t(
+        "admin.statistics.toast.refreshErrorMessage",
+        "Fehler beim Aktualisieren der Daten",
+      ),
     });
   } finally {
     isLoading.value = false;
@@ -766,18 +985,18 @@ function handleResize() {
 onMounted(async () => {
   // Load system stats
   isLoading.value = true;
-  
+
   try {
     await adminSystemStore.fetchStats();
     await initCharts();
   } catch (error) {
-    console.error('Error fetching system stats:', error);
+    console.error("Error fetching system stats:", error);
   } finally {
     isLoading.value = false;
   }
-  
+
   // Add resize listener
-  window.addEventListener('resize', handleResize);
+  window.addEventListener("resize", handleResize);
 });
 
 onUnmounted(() => {
@@ -787,9 +1006,9 @@ onUnmounted(() => {
       chartInstances.value[chart].destroy();
     }
   }
-  
+
   // Remove resize listener
-  window.removeEventListener('resize', handleResize);
+  window.removeEventListener("resize", handleResize);
 });
 
 // Watch for view changes
@@ -1354,21 +1573,21 @@ watch(selectedTimeRange, () => {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .admin-statistics__charts,
   .admin-statistics__performance-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .admin-statistics__actions {
     flex-direction: column;
   }
-  
+
   .admin-statistics__action-button {
     width: 100%;
     justify-content: center;
   }
-  
+
   .admin-statistics__feedback-summary {
     grid-template-columns: 1fr;
   }

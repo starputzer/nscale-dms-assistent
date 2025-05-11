@@ -1,7 +1,7 @@
 <template>
   <div class="component-demo">
     <h2>Tooltip Component</h2>
-    
+
     <div class="demo-section">
       <h3>Basic Tooltip (Hover)</h3>
       <div class="tooltip-demo">
@@ -30,7 +30,7 @@
           <Button>Left</Button>
         </Tooltip>
       </div>
-      
+
       <div class="position-examples margin-top">
         <Tooltip content="Top start aligned" position="top-start">
           <Button>Top Start</Button>
@@ -65,13 +65,13 @@
           <Button>Focus Trigger</Button>
         </Tooltip>
 
-        <Tooltip 
-          content="Manual control" 
+        <Tooltip
+          content="Manual control"
           trigger="manual"
           :visible="manualVisible"
         >
           <Button @click="manualVisible = !manualVisible">
-            Toggle Manually ({{ manualVisible ? 'Hide' : 'Show' }})
+            Toggle Manually ({{ manualVisible ? "Hide" : "Show" }})
           </Button>
         </Tooltip>
       </div>
@@ -126,11 +126,7 @@
     <div class="demo-section">
       <h3>HTML Content</h3>
       <div class="html-example">
-        <Tooltip 
-          :html="tooltipHtml"
-          :maxWidth="300"
-          interactive
-        >
+        <Tooltip :html="tooltipHtml" :maxWidth="300" interactive>
           <Button>Rich Content</Button>
         </Tooltip>
       </div>
@@ -139,16 +135,16 @@
     <div class="demo-section">
       <h3>With Delay</h3>
       <div class="delay-examples">
-        <Tooltip 
-          content="Shows after 1 second, hides instantly" 
+        <Tooltip
+          content="Shows after 1 second, hides instantly"
           :showDelay="1000"
           :hideDelay="0"
         >
           <Button>Show Delay</Button>
         </Tooltip>
 
-        <Tooltip 
-          content="Shows instantly, hides after 1 second" 
+        <Tooltip
+          content="Shows instantly, hides after 1 second"
           :showDelay="0"
           :hideDelay="1000"
         >
@@ -160,8 +156,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Tooltip, Button } from '../base';
+import { ref } from "vue";
+import { Tooltip, Button } from "../base";
 
 const manualVisible = ref(false);
 

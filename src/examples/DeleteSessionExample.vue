@@ -4,15 +4,25 @@
       <h3 class="session-title">{{ session.title }}</h3>
       <span class="session-date">{{ formatDate(session.timestamp) }}</span>
     </div>
-    
+
     <div class="session-actions">
-      <button 
-        class="session-delete-btn" 
+      <button
+        class="session-delete-btn"
         title="Unterhaltung löschen"
         @click="confirmDeleteSession(session.id)"
       >
         <span class="sr-only">Löschen</span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <path d="M3 6h18"></path>
           <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
           <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
@@ -23,9 +33,9 @@
 </template>
 
 <script setup lang="ts">
-import { useGlobalDialog } from '@/composables/useDialog';
-import { format } from 'date-fns';
-import { de } from 'date-fns/locale';
+import { useGlobalDialog } from "@/composables/useDialog";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
 
 // Eigenschaften definieren
 interface Session {
@@ -41,8 +51,8 @@ interface Props {
 
 // Emits definieren
 const emit = defineEmits<{
-  (e: 'delete', id: string): void;
-  (e: 'setActive', id: string): void;
+  (e: "delete", id: string): void;
+  (e: "setActive", id: string): void;
 }>();
 
 const props = defineProps<Props>();
@@ -53,26 +63,27 @@ const dialog = useGlobalDialog();
 // Datum formatieren
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
-  return format(date, 'dd. MMMM yyyy, HH:mm', { locale: de });
+  return format(date, "dd. MMMM yyyy, HH:mm", { locale: de });
 };
 
 // Aktive Session setzen
 const setActiveSession = (id: string) => {
-  emit('setActive', id);
+  emit("setActive", id);
 };
 
 // Löschen mit dem neuen Dialog-System bestätigen
 const confirmDeleteSession = async (id: string) => {
   const confirmed = await dialog.confirm({
-    title: 'Unterhaltung löschen',
-    message: 'Möchten Sie diese Unterhaltung wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
-    confirmButtonText: 'Löschen',
-    cancelButtonText: 'Abbrechen',
-    type: 'warning'
+    title: "Unterhaltung löschen",
+    message:
+      "Möchten Sie diese Unterhaltung wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    confirmButtonText: "Löschen",
+    cancelButtonText: "Abbrechen",
+    type: "warning",
   });
-  
+
   if (confirmed) {
-    emit('delete', id);
+    emit("delete", id);
   }
 };
 </script>
@@ -134,7 +145,9 @@ const confirmDeleteSession = async (id: string) => {
   background-color: transparent;
   color: #6b7280;
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 .session-delete-btn:hover {

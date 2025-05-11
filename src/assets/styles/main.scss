@@ -9,6 +9,7 @@
 @use 'typography';
 @use 'layout';
 @use 'forms';
+@use 'touch-focus';
 
 // Reset and base styles
 *, *::before, *::after {

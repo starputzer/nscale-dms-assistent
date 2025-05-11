@@ -1,19 +1,27 @@
 <template>
   <div class="feature-monitor">
     <div class="feature-monitor-header">
-      <h2>{{ t('monitoring.title', 'Feature-Toggle-Monitoring') }}</h2>
+      <h2>{{ t("monitoring.title", "Feature-Toggle-Monitoring") }}</h2>
       <div class="feature-monitor-controls">
         <select v-model="timeRange" class="time-range-selector">
-          <option value="hour">{{ t('monitoring.timeRange.hour', 'Letzte Stunde') }}</option>
-          <option value="day">{{ t('monitoring.timeRange.day', 'Letzter Tag') }}</option>
-          <option value="week">{{ t('monitoring.timeRange.week', 'Letzte Woche') }}</option>
-          <option value="month">{{ t('monitoring.timeRange.month', 'Letzter Monat') }}</option>
+          <option value="hour">
+            {{ t("monitoring.timeRange.hour", "Letzte Stunde") }}
+          </option>
+          <option value="day">
+            {{ t("monitoring.timeRange.day", "Letzter Tag") }}
+          </option>
+          <option value="week">
+            {{ t("monitoring.timeRange.week", "Letzte Woche") }}
+          </option>
+          <option value="month">
+            {{ t("monitoring.timeRange.month", "Letzter Monat") }}
+          </option>
         </select>
         <button @click="refreshData" class="refresh-button">
-          {{ t('monitoring.refresh', 'Aktualisieren') }}
+          {{ t("monitoring.refresh", "Aktualisieren") }}
         </button>
         <button @click="exportData" class="export-button">
-          {{ t('monitoring.export', 'Daten exportieren') }}
+          {{ t("monitoring.export", "Daten exportieren") }}
         </button>
       </div>
     </div>
@@ -21,50 +29,66 @@
     <div class="feature-monitor-summary">
       <div class="summary-card feature-count">
         <div class="summary-value">{{ activeFeatureCount }}</div>
-        <div class="summary-label">{{ t('monitoring.summary.activeFeatures', 'Aktive Features') }}</div>
+        <div class="summary-label">
+          {{ t("monitoring.summary.activeFeatures", "Aktive Features") }}
+        </div>
       </div>
       <div class="summary-card error-count">
         <div class="summary-value">{{ totalErrorCount }}</div>
-        <div class="summary-label">{{ t('monitoring.summary.errors', 'Fehler (Gesamt)') }}</div>
+        <div class="summary-label">
+          {{ t("monitoring.summary.errors", "Fehler (Gesamt)") }}
+        </div>
       </div>
       <div class="summary-card fallback-count">
         <div class="summary-value">{{ activeFallbackCount }}</div>
-        <div class="summary-label">{{ t('monitoring.summary.fallbacks', 'Aktive Fallbacks') }}</div>
+        <div class="summary-label">
+          {{ t("monitoring.summary.fallbacks", "Aktive Fallbacks") }}
+        </div>
       </div>
       <div class="summary-card user-count">
         <div class="summary-value">{{ uniqueUserCount }}</div>
-        <div class="summary-label">{{ t('monitoring.summary.users', 'Aktive Benutzer') }}</div>
+        <div class="summary-label">
+          {{ t("monitoring.summary.users", "Aktive Benutzer") }}
+        </div>
       </div>
     </div>
 
     <div class="feature-monitor-charts">
       <div class="chart-container">
-        <h3>{{ t('monitoring.charts.errorRate', 'Fehlerrate nach Feature') }}</h3>
+        <h3>
+          {{ t("monitoring.charts.errorRate", "Fehlerrate nach Feature") }}
+        </h3>
         <ErrorRateChart :data="errorRateData" :height="300" />
       </div>
       <div class="chart-container">
-        <h3>{{ t('monitoring.charts.featureUsage', 'Feature-Nutzung') }}</h3>
+        <h3>{{ t("monitoring.charts.featureUsage", "Feature-Nutzung") }}</h3>
         <FeatureUsageChart :data="usageData" :height="300" />
       </div>
     </div>
 
     <div class="feature-monitor-charts">
       <div class="chart-container">
-        <h3>{{ t('monitoring.charts.performance', 'Performance-Metriken') }}</h3>
+        <h3>
+          {{ t("monitoring.charts.performance", "Performance-Metriken") }}
+        </h3>
         <PerformanceChart :data="performanceData" :height="300" />
       </div>
       <div class="chart-container">
-        <h3>{{ t('monitoring.charts.userInteraction', 'Benutzerinteraktionen') }}</h3>
+        <h3>
+          {{ t("monitoring.charts.userInteraction", "Benutzerinteraktionen") }}
+        </h3>
         <HeatmapChart :data="interactionData" :height="300" />
       </div>
     </div>
 
     <div class="feature-monitor-alerts">
-      <h3>{{ t('monitoring.alerts.title', 'Warnungen & Benachrichtigungen') }}</h3>
+      <h3>
+        {{ t("monitoring.alerts.title", "Warnungen & Benachrichtigungen") }}
+      </h3>
       <div class="alert-list">
-        <div 
-          v-for="(alert, index) in activeAlerts" 
-          :key="index" 
+        <div
+          v-for="(alert, index) in activeAlerts"
+          :key="index"
           class="alert-item"
           :class="`alert-${alert.severity}`"
         >
@@ -78,24 +102,28 @@
           </div>
           <div class="alert-actions">
             <button @click="acknowledgeAlert(alert.id)" class="alert-action">
-              {{ t('monitoring.alerts.acknowledge', 'Bestätigen') }}
+              {{ t("monitoring.alerts.acknowledge", "Bestätigen") }}
             </button>
-            <button v-if="alert.feature" @click="disableFeature(alert.feature)" class="alert-action alert-action-disable">
-              {{ t('monitoring.alerts.disable', 'Feature deaktivieren') }}
+            <button
+              v-if="alert.feature"
+              @click="disableFeature(alert.feature)"
+              class="alert-action alert-action-disable"
+            >
+              {{ t("monitoring.alerts.disable", "Feature deaktivieren") }}
             </button>
           </div>
         </div>
         <div v-if="activeAlerts.length === 0" class="no-alerts">
-          {{ t('monitoring.alerts.noAlerts', 'Keine aktiven Warnungen') }}
+          {{ t("monitoring.alerts.noAlerts", "Keine aktiven Warnungen") }}
         </div>
       </div>
     </div>
 
     <div class="feature-monitor-tabs">
       <div class="tab-header">
-        <button 
-          v-for="tab in tabs" 
-          :key="tab.id" 
+        <button
+          v-for="tab in tabs"
+          :key="tab.id"
           @click="currentTab = tab.id"
           class="tab-button"
           :class="{ active: currentTab === tab.id }"
@@ -103,28 +131,28 @@
           {{ tab.label }}
         </button>
       </div>
-      
+
       <div class="tab-content">
         <!-- Fehlerprotokolle Tab -->
         <div v-if="currentTab === 'errors'" class="tab-pane">
           <ErrorLog :errors="filteredErrors" />
         </div>
-        
+
         <!-- Performance-Metriken Tab -->
         <div v-if="currentTab === 'performance'" class="tab-pane">
           <PerformanceMetrics :metrics="performanceMetrics" />
         </div>
-        
+
         <!-- Nutzungsstatistiken Tab -->
         <div v-if="currentTab === 'usage'" class="tab-pane">
           <UsageStatistics :statistics="usageStatistics" />
         </div>
-        
+
         <!-- Einstellungen Tab -->
         <div v-if="currentTab === 'settings'" class="tab-pane">
-          <MonitoringSettings 
+          <MonitoringSettings
             :settings="monitoringSettings"
-            @update:settings="updateSettings" 
+            @update:settings="updateSettings"
           />
         </div>
       </div>
@@ -133,18 +161,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
-import { useI18n } from '@/composables/useI18n';
-import { useFeatureToggles } from '@/composables/useFeatureToggles';
-import { useMonitoringStore } from '@/stores/monitoringStore';
-import ErrorLog from './ErrorLog.vue';
-import PerformanceMetrics from './PerformanceMetrics.vue';
-import UsageStatistics from './UsageStatistics.vue';
-import MonitoringSettings from './MonitoringSettings.vue';
-import ErrorRateChart from './charts/ErrorRateChart.vue';
-import FeatureUsageChart from './charts/FeatureUsageChart.vue';
-import PerformanceChart from './charts/PerformanceChart.vue';
-import HeatmapChart from './charts/HeatmapChart.vue';
+import { ref, computed, onMounted, watch } from "vue";
+import { useI18n } from "@/composables/useI18n";
+import { useFeatureToggles } from "@/composables/useFeatureToggles";
+import { useMonitoringStore } from "@/stores/monitoringStore";
+import ErrorLog from "./ErrorLog.vue";
+import PerformanceMetrics from "./PerformanceMetrics.vue";
+import UsageStatistics from "./UsageStatistics.vue";
+import MonitoringSettings from "./MonitoringSettings.vue";
+import ErrorRateChart from "./charts/ErrorRateChart.vue";
+import FeatureUsageChart from "./charts/FeatureUsageChart.vue";
+import PerformanceChart from "./charts/PerformanceChart.vue";
+import HeatmapChart from "./charts/HeatmapChart.vue";
 
 // Composables
 const { t } = useI18n();
@@ -152,16 +180,19 @@ const featureToggles = useFeatureToggles();
 const monitoringStore = useMonitoringStore();
 
 // State
-const timeRange = ref<'hour' | 'day' | 'week' | 'month'>('day');
-const currentTab = ref<string>('errors');
+const timeRange = ref<"hour" | "day" | "week" | "month">("day");
+const currentTab = ref<string>("errors");
 const isLoading = ref<boolean>(false);
 
 // Tabs Definition
 const tabs = [
-  { id: 'errors', label: t('monitoring.tabs.errors', 'Fehlerprotokolle') },
-  { id: 'performance', label: t('monitoring.tabs.performance', 'Performance-Metriken') },
-  { id: 'usage', label: t('monitoring.tabs.usage', 'Nutzungsstatistiken') },
-  { id: 'settings', label: t('monitoring.tabs.settings', 'Einstellungen') }
+  { id: "errors", label: t("monitoring.tabs.errors", "Fehlerprotokolle") },
+  {
+    id: "performance",
+    label: t("monitoring.tabs.performance", "Performance-Metriken"),
+  },
+  { id: "usage", label: t("monitoring.tabs.usage", "Nutzungsstatistiken") },
+  { id: "settings", label: t("monitoring.tabs.settings", "Einstellungen") },
 ];
 
 // Computed properties für Übersichtskarten
@@ -227,18 +258,19 @@ const monitoringSettings = computed(() => {
 // Methoden
 function refreshData() {
   isLoading.value = true;
-  monitoringStore.refreshData()
-    .finally(() => {
-      isLoading.value = false;
-    });
+  monitoringStore.refreshData().finally(() => {
+    isLoading.value = false;
+  });
 }
 
 function exportData() {
   const data = monitoringStore.exportData();
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: "application/json",
+  });
   const url = URL.createObjectURL(blob);
-  
-  const a = document.createElement('a');
+
+  const a = document.createElement("a");
   a.href = url;
   a.download = `feature-monitoring-export-${new Date().toISOString().slice(0, 10)}.json`;
   document.body.appendChild(a);
@@ -248,27 +280,27 @@ function exportData() {
 }
 
 function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  return new Intl.DateTimeFormat("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   }).format(date);
 }
 
 function getAlertIcon(severity: string): string {
   switch (severity) {
-    case 'critical':
-      return 'icon-error-critical';
-    case 'high':
-      return 'icon-error-high';
-    case 'medium':
-      return 'icon-error-medium';
-    case 'low':
-      return 'icon-error-low';
+    case "critical":
+      return "icon-error-critical";
+    case "high":
+      return "icon-error-high";
+    case "medium":
+      return "icon-error-medium";
+    case "low":
+      return "icon-error-low";
     default:
-      return 'icon-info';
+      return "icon-info";
   }
 }
 
@@ -297,7 +329,7 @@ watch(timeRange, () => {
 
 <style scoped>
 .feature-monitor {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
@@ -336,7 +368,9 @@ button {
   border-radius: 4px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
 }
 
 .refresh-button {
@@ -586,17 +620,17 @@ button {
   .feature-monitor-charts {
     grid-template-columns: 1fr;
   }
-  
+
   .feature-monitor-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
   }
-  
+
   .feature-monitor-controls {
     width: 100%;
   }
-  
+
   .tab-header {
     overflow-x: auto;
     white-space: nowrap;
@@ -607,12 +641,12 @@ button {
   .feature-monitor-summary {
     grid-template-columns: 1fr;
   }
-  
+
   .alert-item {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .alert-actions {
     width: 100%;
     margin-top: 10px;

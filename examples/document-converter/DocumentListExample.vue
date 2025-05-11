@@ -1,7 +1,7 @@
 <template>
   <div class="document-list-example">
     <h2>Dokumenten-Liste</h2>
-    
+
     <div class="actions-bar">
       <button @click="addSampleDocument" class="action-button">
         <i class="fa fa-plus"></i> Beispieldokument hinzufügen
@@ -9,11 +9,14 @@
       <button @click="toggleLoading" class="action-button">
         <i class="fa fa-spinner"></i> Ladezustand umschalten
       </button>
-      <button @click="clearDocuments" class="action-button action-button--danger">
+      <button
+        @click="clearDocuments"
+        class="action-button action-button--danger"
+      >
         <i class="fa fa-trash"></i> Alle Dokumente löschen
       </button>
     </div>
-    
+
     <DocumentList
       :documents="documents"
       :selected-document="selectedDocument"
@@ -24,12 +27,12 @@
       @download="handleDownloadDocument"
       @delete="handleDeleteDocument"
     />
-    
+
     <div v-if="selectedDocument" class="document-details">
       <h3>Ausgewähltes Dokument</h3>
       <pre>{{ JSON.stringify(selectedDocument, null, 2) }}</pre>
     </div>
-    
+
     <div v-if="lastAction" class="action-log">
       <h3>Letzte Aktion</h3>
       <div class="action-message">{{ lastAction }}</div>
@@ -38,10 +41,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue';
-import DocumentList from '@/components/admin/document-converter/DocumentList.vue';
-import { ConversionResult, SupportedFormat } from '@/types/documentConverter';
-import { useDialog } from '@/composables/useDialog';
+import { ref, reactive, computed } from "vue";
+import DocumentList from "@/components/admin/document-converter/DocumentList.vue";
+import { ConversionResult, SupportedFormat } from "@/types/documentConverter";
+import { useDialog } from "@/composables/useDialog";
 
 // Dialog-Service für Benachrichtigungen
 const dialog = useDialog();
@@ -51,56 +54,70 @@ const documents = ref<ConversionResult[]>([]);
 const selectedDocumentId = ref<string | null>(null);
 const isLoading = ref(false);
 const lastAction = ref<string | null>(null);
-const supportedFormats = ref<SupportedFormat[]>(['pdf', 'docx', 'xlsx', 'pptx', 'html', 'txt']);
+const supportedFormats = ref<SupportedFormat[]>([
+  "pdf",
+  "docx",
+  "xlsx",
+  "pptx",
+  "html",
+  "txt",
+]);
 
 // Aktuelle Auswahl als abgeleiteter Wert
 const selectedDocument = computed(() => {
   if (!selectedDocumentId.value) return null;
-  return documents.value.find(doc => doc.id === selectedDocumentId.value) || null;
+  return (
+    documents.value.find((doc) => doc.id === selectedDocumentId.value) || null
+  );
 });
 
 // Beispiel-Dokumenttypen mit realistischen Eigenschaften
 const sampleDocumentTypes = [
-  { 
-    format: 'pdf', 
-    name: 'Technische_Dokumentation', 
-    size: 2540000, 
-    icon: 'fa-file-pdf'
+  {
+    format: "pdf",
+    name: "Technische_Dokumentation",
+    size: 2540000,
+    icon: "fa-file-pdf",
   },
-  { 
-    format: 'docx', 
-    name: 'Projektbericht', 
-    size: 1230000, 
-    icon: 'fa-file-word'
+  {
+    format: "docx",
+    name: "Projektbericht",
+    size: 1230000,
+    icon: "fa-file-word",
   },
-  { 
-    format: 'xlsx', 
-    name: 'Finanzdaten', 
-    size: 980000, 
-    icon: 'fa-file-excel'
+  {
+    format: "xlsx",
+    name: "Finanzdaten",
+    size: 980000,
+    icon: "fa-file-excel",
   },
-  { 
-    format: 'pptx', 
-    name: 'Präsentation', 
-    size: 3450000, 
-    icon: 'fa-file-powerpoint'
+  {
+    format: "pptx",
+    name: "Präsentation",
+    size: 3450000,
+    icon: "fa-file-powerpoint",
   },
-  { 
-    format: 'html', 
-    name: 'Webseite', 
-    size: 45000, 
-    icon: 'fa-file-code'
+  {
+    format: "html",
+    name: "Webseite",
+    size: 45000,
+    icon: "fa-file-code",
   },
-  { 
-    format: 'txt', 
-    name: 'Notizen', 
-    size: 15000, 
-    icon: 'fa-file-alt'
+  {
+    format: "txt",
+    name: "Notizen",
+    size: 15000,
+    icon: "fa-file-alt",
   },
 ];
 
 // Mögliche Status für Dokumente
-const statuses: Array<'pending' | 'processing' | 'success' | 'error'> = ['pending', 'processing', 'success', 'error'];
+const statuses: Array<"pending" | "processing" | "success" | "error"> = [
+  "pending",
+  "processing",
+  "success",
+  "error",
+];
 
 /**
  * Generiert eine zufällige ID
@@ -116,19 +133,19 @@ function addSampleDocument() {
   // Wählt einen zufälligen Dokumenttyp
   const typeIndex = Math.floor(Math.random() * sampleDocumentTypes.length);
   const type = sampleDocumentTypes[typeIndex];
-  
+
   // Wählt einen zufälligen Status (mit höherer Wahrscheinlichkeit für 'success')
   const statusIndex = Math.floor(Math.random() * (statuses.length + 3));
-  const status = statuses[statusIndex < statuses.length ? statusIndex : 2];  // Höhere Wahrscheinlichkeit für 'success'
-  
+  const status = statuses[statusIndex < statuses.length ? statusIndex : 2]; // Höhere Wahrscheinlichkeit für 'success'
+
   // Erstellt ein zufälliges Datum in den letzten 30 Tagen
   const daysAgo = Math.floor(Math.random() * 30);
   const date = new Date();
   date.setDate(date.getDate() - daysAgo);
-  
+
   // Erstellt eine Versionsnummer für den Dateinamen
   const version = Math.floor(Math.random() * 5) + 1;
-  
+
   // Erstellt ein neues Beispieldokument
   const newDocument: ConversionResult = {
     id: generateId(),
@@ -136,21 +153,28 @@ function addSampleDocument() {
     originalFormat: type.format as SupportedFormat,
     size: type.size + Math.floor(Math.random() * 100000),
     uploadedAt: date,
-    convertedAt: status !== 'pending' ? new Date(date.getTime() + 120000) : undefined, // 2 Minuten später konvertiert
+    convertedAt:
+      status !== "pending" ? new Date(date.getTime() + 120000) : undefined, // 2 Minuten später konvertiert
     status: status,
-    error: status === 'error' ? 'Fehler bei der Konvertierung: Format nicht unterstützt' : undefined,
-    metadata: status === 'success' ? {
-      title: type.name.replace('_', ' '),
-      author: 'Max Mustermann',
-      created: new Date(date.getTime() - 86400000 * 10), // 10 Tage vor dem Upload erstellt
-      modified: date,
-      pageCount: Math.floor(Math.random() * 30) + 1,
-    } : undefined
+    error:
+      status === "error"
+        ? "Fehler bei der Konvertierung: Format nicht unterstützt"
+        : undefined,
+    metadata:
+      status === "success"
+        ? {
+            title: type.name.replace("_", " "),
+            author: "Max Mustermann",
+            created: new Date(date.getTime() - 86400000 * 10), // 10 Tage vor dem Upload erstellt
+            modified: date,
+            pageCount: Math.floor(Math.random() * 30) + 1,
+          }
+        : undefined,
   };
-  
+
   // Fügt das neue Dokument zur Liste hinzu
   documents.value.unshift(newDocument);
-  
+
   // Zeigt eine Benachrichtigung an
   lastAction.value = `Dokument "${newDocument.originalName}" wurde hinzugefügt`;
 }
@@ -160,7 +184,9 @@ function addSampleDocument() {
  */
 function toggleLoading() {
   isLoading.value = !isLoading.value;
-  lastAction.value = isLoading.value ? 'Ladezustand aktiviert' : 'Ladezustand deaktiviert';
+  lastAction.value = isLoading.value
+    ? "Ladezustand aktiviert"
+    : "Ladezustand deaktiviert";
 }
 
 /**
@@ -169,7 +195,7 @@ function toggleLoading() {
 function clearDocuments() {
   documents.value = [];
   selectedDocumentId.value = null;
-  lastAction.value = 'Alle Dokumente wurden gelöscht';
+  lastAction.value = "Alle Dokumente wurden gelöscht";
 }
 
 /**
@@ -184,14 +210,14 @@ function handleSelectDocument(documentId: string) {
  * Event-Handler für die Dokumentenanzeige
  */
 function handleViewDocument(documentId: string) {
-  const document = documents.value.find(doc => doc.id === documentId);
+  const document = documents.value.find((doc) => doc.id === documentId);
   if (document) {
     dialog.info({
-      title: 'Dokument anzeigen',
+      title: "Dokument anzeigen",
       message: `Dokument "${document.originalName}" wird angezeigt.`,
-      confirmButtonText: 'Schließen'
+      confirmButtonText: "Schließen",
     });
-    
+
     lastAction.value = `Dokument angezeigt: ${document.originalName}`;
   }
 }
@@ -200,14 +226,14 @@ function handleViewDocument(documentId: string) {
  * Event-Handler für den Dokumentdownload
  */
 function handleDownloadDocument(documentId: string) {
-  const document = documents.value.find(doc => doc.id === documentId);
+  const document = documents.value.find((doc) => doc.id === documentId);
   if (document) {
     dialog.success({
-      title: 'Download gestartet',
+      title: "Download gestartet",
       message: `Dokument "${document.originalName}" wird heruntergeladen.`,
-      confirmButtonText: 'OK'
+      confirmButtonText: "OK",
     });
-    
+
     lastAction.value = `Dokument heruntergeladen: ${document.originalName}`;
   }
 }
@@ -216,17 +242,17 @@ function handleDownloadDocument(documentId: string) {
  * Event-Handler für das Löschen eines Dokuments
  */
 function handleDeleteDocument(documentId: string) {
-  const document = documents.value.find(doc => doc.id === documentId);
-  
+  const document = documents.value.find((doc) => doc.id === documentId);
+
   if (document) {
     // Entfernt das Dokument aus der Liste
-    documents.value = documents.value.filter(doc => doc.id !== documentId);
-    
+    documents.value = documents.value.filter((doc) => doc.id !== documentId);
+
     // Setzt die Auswahl zurück, wenn das gelöschte Dokument ausgewählt war
     if (selectedDocumentId.value === documentId) {
       selectedDocumentId.value = null;
     }
-    
+
     lastAction.value = `Dokument gelöscht: ${document.originalName}`;
   }
 }

@@ -1,93 +1,157 @@
 <template>
   <div class="performance-metrics">
     <div class="metrics-header">
-      <h3>{{ t('monitoring.performance.title', 'Performance-Metriken') }}</h3>
+      <h3>{{ t("monitoring.performance.title", "Performance-Metriken") }}</h3>
       <div class="metrics-controls">
         <select v-model="groupBy" class="control-select">
-          <option value="feature">{{ t('monitoring.performance.groupBy.feature', 'Nach Feature gruppieren') }}</option>
-          <option value="component">{{ t('monitoring.performance.groupBy.component', 'Nach Komponente gruppieren') }}</option>
-          <option value="device">{{ t('monitoring.performance.groupBy.device', 'Nach Gerät gruppieren') }}</option>
+          <option value="feature">
+            {{
+              t(
+                "monitoring.performance.groupBy.feature",
+                "Nach Feature gruppieren",
+              )
+            }}
+          </option>
+          <option value="component">
+            {{
+              t(
+                "monitoring.performance.groupBy.component",
+                "Nach Komponente gruppieren",
+              )
+            }}
+          </option>
+          <option value="device">
+            {{
+              t(
+                "monitoring.performance.groupBy.device",
+                "Nach Gerät gruppieren",
+              )
+            }}
+          </option>
         </select>
         <select v-model="metricType" class="control-select">
-          <option value="render">{{ t('monitoring.performance.metricType.render', 'Renderzeiten') }}</option>
-          <option value="load">{{ t('monitoring.performance.metricType.load', 'Ladezeiten') }}</option>
-          <option value="memory">{{ t('monitoring.performance.metricType.memory', 'Speichernutzung') }}</option>
-          <option value="interaction">{{ t('monitoring.performance.metricType.interaction', 'Interaktionslatenz') }}</option>
+          <option value="render">
+            {{ t("monitoring.performance.metricType.render", "Renderzeiten") }}
+          </option>
+          <option value="load">
+            {{ t("monitoring.performance.metricType.load", "Ladezeiten") }}
+          </option>
+          <option value="memory">
+            {{
+              t("monitoring.performance.metricType.memory", "Speichernutzung")
+            }}
+          </option>
+          <option value="interaction">
+            {{
+              t(
+                "monitoring.performance.metricType.interaction",
+                "Interaktionslatenz",
+              )
+            }}
+          </option>
         </select>
       </div>
     </div>
 
     <div class="metrics-grid">
-      <div 
-        v-for="(group, groupName) in groupedMetrics" 
-        :key="groupName" 
+      <div
+        v-for="(group, groupName) in groupedMetrics"
+        :key="groupName"
         class="metric-card"
       >
         <div class="metric-card-header">
           <h4>{{ formatGroupName(groupName) }}</h4>
-          <div class="metric-card-badge" :class="getPerformanceClass(calculateAverageScore(group))">
+          <div
+            class="metric-card-badge"
+            :class="getPerformanceClass(calculateAverageScore(group))"
+          >
             {{ formatScore(calculateAverageScore(group)) }}
           </div>
         </div>
-        
+
         <div class="metric-card-content">
           <div class="metric-visualization">
             <div class="bar-chart">
-              <div 
-                v-for="(metric, index) in group" 
-                :key="index" 
+              <div
+                v-for="(metric, index) in group"
+                :key="index"
                 class="bar-container"
               >
                 <div class="bar-label">{{ getMetricLabel(metric) }}</div>
                 <div class="bar-wrapper">
-                  <div 
-                    class="bar" 
-                    :style="{ width: calculateBarWidth(metric), backgroundColor: getBarColor(metric) }"
+                  <div
+                    class="bar"
+                    :style="{
+                      width: calculateBarWidth(metric),
+                      backgroundColor: getBarColor(metric),
+                    }"
                   ></div>
                   <span class="bar-value">{{ formatMetricValue(metric) }}</span>
                 </div>
               </div>
             </div>
           </div>
-          
+
           <div class="metric-details">
             <div class="metric-summary">
               <div class="summary-item">
-                <span class="summary-label">{{ t('monitoring.performance.p50', 'P50') }}</span>
-                <span class="summary-value">{{ formatMetricValue(calculatePercentile(group, 50)) }}</span>
+                <span class="summary-label">{{
+                  t("monitoring.performance.p50", "P50")
+                }}</span>
+                <span class="summary-value">{{
+                  formatMetricValue(calculatePercentile(group, 50))
+                }}</span>
               </div>
               <div class="summary-item">
-                <span class="summary-label">{{ t('monitoring.performance.p90', 'P90') }}</span>
-                <span class="summary-value">{{ formatMetricValue(calculatePercentile(group, 90)) }}</span>
+                <span class="summary-label">{{
+                  t("monitoring.performance.p90", "P90")
+                }}</span>
+                <span class="summary-value">{{
+                  formatMetricValue(calculatePercentile(group, 90))
+                }}</span>
               </div>
               <div class="summary-item">
-                <span class="summary-label">{{ t('monitoring.performance.p95', 'P95') }}</span>
-                <span class="summary-value">{{ formatMetricValue(calculatePercentile(group, 95)) }}</span>
+                <span class="summary-label">{{
+                  t("monitoring.performance.p95", "P95")
+                }}</span>
+                <span class="summary-value">{{
+                  formatMetricValue(calculatePercentile(group, 95))
+                }}</span>
               </div>
               <div class="summary-item">
-                <span class="summary-label">{{ t('monitoring.performance.max', 'Max') }}</span>
-                <span class="summary-value">{{ formatMetricValue(calculateMax(group)) }}</span>
+                <span class="summary-label">{{
+                  t("monitoring.performance.max", "Max")
+                }}</span>
+                <span class="summary-value">{{
+                  formatMetricValue(calculateMax(group))
+                }}</span>
               </div>
             </div>
-            <button 
-              @click="toggleDetails(groupName)" 
-              class="details-button"
-            >
-              {{ detailsVisible[groupName] 
-                ? t('monitoring.performance.hideDetails', 'Details ausblenden') 
-                : t('monitoring.performance.showDetails', 'Details anzeigen') 
+            <button @click="toggleDetails(groupName)" class="details-button">
+              {{
+                detailsVisible[groupName]
+                  ? t(
+                      "monitoring.performance.hideDetails",
+                      "Details ausblenden",
+                    )
+                  : t("monitoring.performance.showDetails", "Details anzeigen")
               }}
             </button>
           </div>
-          
-          <div v-if="detailsVisible[groupName]" class="metrics-details-expanded">
+
+          <div
+            v-if="detailsVisible[groupName]"
+            class="metrics-details-expanded"
+          >
             <table class="metrics-table">
               <thead>
                 <tr>
-                  <th>{{ t('monitoring.performance.timestamp', 'Zeitpunkt') }}</th>
+                  <th>
+                    {{ t("monitoring.performance.timestamp", "Zeitpunkt") }}
+                  </th>
                   <th>{{ getColumnHeader() }}</th>
-                  <th>{{ t('monitoring.performance.value', 'Wert') }}</th>
-                  <th>{{ t('monitoring.performance.status', 'Status') }}</th>
+                  <th>{{ t("monitoring.performance.value", "Wert") }}</th>
+                  <th>{{ t("monitoring.performance.status", "Status") }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -96,11 +160,19 @@
                   <td>{{ getDetailValue(metric) }}</td>
                   <td>{{ formatMetricValue(metric) }}</td>
                   <td>
-                    <span 
-                      class="status-indicator" 
-                      :class="getPerformanceClass(metric.score || calculateScore(metric))"
+                    <span
+                      class="status-indicator"
+                      :class="
+                        getPerformanceClass(
+                          metric.score || calculateScore(metric),
+                        )
+                      "
                     ></span>
-                    {{ getPerformanceLabel(metric.score || calculateScore(metric)) }}
+                    {{
+                      getPerformanceLabel(
+                        metric.score || calculateScore(metric),
+                      )
+                    }}
                   </td>
                 </tr>
               </tbody>
@@ -111,14 +183,19 @@
     </div>
 
     <div v-if="Object.keys(groupedMetrics).length === 0" class="no-metrics">
-      {{ t('monitoring.performance.noMetrics', 'Keine Performance-Metriken verfügbar') }}
+      {{
+        t(
+          "monitoring.performance.noMetrics",
+          "Keine Performance-Metriken verfügbar",
+        )
+      }}
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useI18n } from '@/composables/useI18n';
+import { ref, computed } from "vue";
+import { useI18n } from "@/composables/useI18n";
 
 // Typen
 interface Metric {
@@ -128,7 +205,7 @@ interface Metric {
   component?: string;
   device?: string;
   browser?: string;
-  type: 'render' | 'load' | 'memory' | 'interaction';
+  type: "render" | "load" | "memory" | "interaction";
   value: number;
   unit: string;
   score?: number;
@@ -146,111 +223,113 @@ const props = defineProps<PerformanceMetricsProps>();
 const { t } = useI18n();
 
 // State
-const groupBy = ref<'feature' | 'component' | 'device'>('feature');
-const metricType = ref<'render' | 'load' | 'memory' | 'interaction'>('render');
+const groupBy = ref<"feature" | "component" | "device">("feature");
+const metricType = ref<"render" | "load" | "memory" | "interaction">("render");
 const detailsVisible = ref<Record<string, boolean>>({});
 
 // Berechnete Eigenschaften
 const filteredMetrics = computed(() => {
-  return props.metrics.filter(metric => metric.type === metricType.value);
+  return props.metrics.filter((metric) => metric.type === metricType.value);
 });
 
 const groupedMetrics = computed(() => {
   const result: Record<string, Metric[]> = {};
-  
-  filteredMetrics.value.forEach(metric => {
+
+  filteredMetrics.value.forEach((metric) => {
     let key: string;
-    
+
     switch (groupBy.value) {
-      case 'component':
-        key = metric.component || 'unknown';
+      case "component":
+        key = metric.component || "unknown";
         break;
-      case 'device':
-        key = metric.device || 'unknown';
+      case "device":
+        key = metric.device || "unknown";
         break;
-      case 'feature':
+      case "feature":
       default:
         key = metric.feature;
         break;
     }
-    
+
     if (!result[key]) {
       result[key] = [];
     }
-    
+
     result[key].push(metric);
   });
-  
+
   return result;
 });
 
 // Methoden
 function formatGroupName(name: string): string {
-  if (name === 'unknown') {
-    return t('monitoring.performance.unknown', 'Unbekannt');
+  if (name === "unknown") {
+    return t("monitoring.performance.unknown", "Unbekannt");
   }
-  
-  if (groupBy.value === 'feature') {
+
+  if (groupBy.value === "feature") {
     return name
-      .replace(/^use/, '')
-      .replace(/([A-Z])/g, ' $1')
+      .replace(/^use/, "")
+      .replace(/([A-Z])/g, " $1")
       .trim();
   }
-  
+
   return name;
 }
 
 function calculateAverageScore(metrics: Metric[]): number {
   if (metrics.length === 0) return 0;
-  
+
   const sum = metrics.reduce((total, metric) => {
     return total + (metric.score || calculateScore(metric));
   }, 0);
-  
+
   return sum / metrics.length;
 }
 
 function calculateScore(metric: Metric): number {
   // Basierend auf dem Metriktyp und Wert einen Score zwischen 0 und 100 berechnen
   // Höher ist besser
-  
+
   const value = metric.value;
   let score = 0;
-  
+
   switch (metric.type) {
-    case 'render':
+    case "render":
       // Renderzeit: < 50ms ist ideal, > 500ms ist schlecht
-      score = Math.max(0, 100 - (value / 5));
+      score = Math.max(0, 100 - value / 5);
       break;
-    case 'load':
+    case "load":
       // Ladezeit: < 200ms ist ideal, > 2000ms ist schlecht
-      score = Math.max(0, 100 - (value / 20));
+      score = Math.max(0, 100 - value / 20);
       break;
-    case 'memory':
+    case "memory":
       // Speichernutzung: < 1MB ist ideal, > 10MB ist schlecht
-      score = Math.max(0, 100 - (value / 100000));
+      score = Math.max(0, 100 - value / 100000);
       break;
-    case 'interaction':
+    case "interaction":
       // Interaktionslatenz: < 100ms ist ideal, > 1000ms ist schlecht
-      score = Math.max(0, 100 - (value / 10));
+      score = Math.max(0, 100 - value / 10);
       break;
   }
-  
+
   return Math.min(100, Math.max(0, score));
 }
 
 function getPerformanceClass(score: number): string {
-  if (score >= 90) return 'performance-excellent';
-  if (score >= 70) return 'performance-good';
-  if (score >= 40) return 'performance-average';
-  return 'performance-poor';
+  if (score >= 90) return "performance-excellent";
+  if (score >= 70) return "performance-good";
+  if (score >= 40) return "performance-average";
+  return "performance-poor";
 }
 
 function getPerformanceLabel(score: number): string {
-  if (score >= 90) return t('monitoring.performance.status.excellent', 'Ausgezeichnet');
-  if (score >= 70) return t('monitoring.performance.status.good', 'Gut');
-  if (score >= 40) return t('monitoring.performance.status.average', 'Durchschnittlich');
-  return t('monitoring.performance.status.poor', 'Schlecht');
+  if (score >= 90)
+    return t("monitoring.performance.status.excellent", "Ausgezeichnet");
+  if (score >= 70) return t("monitoring.performance.status.good", "Gut");
+  if (score >= 40)
+    return t("monitoring.performance.status.average", "Durchschnittlich");
+  return t("monitoring.performance.status.poor", "Schlecht");
 }
 
 function formatScore(score: number): string {
@@ -259,14 +338,14 @@ function formatScore(score: number): string {
 
 function getMetricLabel(metric: Metric): string {
   switch (groupBy.value) {
-    case 'feature':
-      return metric.component || t('monitoring.performance.overall', 'Gesamt');
-    case 'component':
+    case "feature":
+      return metric.component || t("monitoring.performance.overall", "Gesamt");
+    case "component":
       return formatGroupName(metric.feature);
-    case 'device':
-      return metric.browser || t('monitoring.performance.unknown', 'Unbekannt');
+    case "device":
+      return metric.browser || t("monitoring.performance.unknown", "Unbekannt");
     default:
-      return '';
+      return "";
   }
 }
 
@@ -277,22 +356,22 @@ function calculateBarWidth(metric: Metric): string {
 
 function getBarColor(metric: Metric): string {
   const score = metric.score || calculateScore(metric);
-  
-  if (score >= 90) return '#10b981'; // grün
-  if (score >= 70) return '#22c55e'; // hellgrün
-  if (score >= 40) return '#f59e0b'; // orange
-  return '#ef4444'; // rot
+
+  if (score >= 90) return "#10b981"; // grün
+  if (score >= 70) return "#22c55e"; // hellgrün
+  if (score >= 40) return "#f59e0b"; // orange
+  return "#ef4444"; // rot
 }
 
 function formatMetricValue(metric: Metric | number): string {
-  if (typeof metric === 'number') {
+  if (typeof metric === "number") {
     // Wenn ein einzelner Wert übergeben wird
     switch (metricType.value) {
-      case 'render':
-      case 'load':
-      case 'interaction':
+      case "render":
+      case "load":
+      case "interaction":
         return `${metric.toFixed(2)} ms`;
-      case 'memory':
+      case "memory":
         return formatMemory(metric);
       default:
         return metric.toString();
@@ -300,11 +379,11 @@ function formatMetricValue(metric: Metric | number): string {
   } else {
     // Wenn ein vollständiges Metrikobjekt übergeben wird
     switch (metric.type) {
-      case 'render':
-      case 'load':
-      case 'interaction':
+      case "render":
+      case "load":
+      case "interaction":
         return `${metric.value.toFixed(2)} ms`;
-      case 'memory':
+      case "memory":
         return formatMemory(metric.value);
       default:
         return metric.value.toString();
@@ -319,64 +398,64 @@ function formatMemory(bytes: number): string {
 }
 
 function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
+  return new Intl.DateTimeFormat("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   }).format(date);
 }
 
 function calculatePercentile(metrics: Metric[], percentile: number): number {
   if (metrics.length === 0) return 0;
-  
-  const values = metrics.map(m => m.value).sort((a, b) => a - b);
+
+  const values = metrics.map((m) => m.value).sort((a, b) => a - b);
   const index = Math.ceil((percentile / 100) * values.length) - 1;
   return values[Math.max(0, Math.min(values.length - 1, index))];
 }
 
 function calculateMax(metrics: Metric[]): number {
   if (metrics.length === 0) return 0;
-  return Math.max(...metrics.map(m => m.value));
+  return Math.max(...metrics.map((m) => m.value));
 }
 
 function getColumnHeader(): string {
   switch (groupBy.value) {
-    case 'feature':
-      return t('monitoring.performance.component', 'Komponente');
-    case 'component':
-      return t('monitoring.performance.feature', 'Feature');
-    case 'device':
-      return t('monitoring.performance.browser', 'Browser');
+    case "feature":
+      return t("monitoring.performance.component", "Komponente");
+    case "component":
+      return t("monitoring.performance.feature", "Feature");
+    case "device":
+      return t("monitoring.performance.browser", "Browser");
     default:
-      return '';
+      return "";
   }
 }
 
 function getDetailValue(metric: Metric): string {
   switch (groupBy.value) {
-    case 'feature':
-      return metric.component || t('monitoring.performance.overall', 'Gesamt');
-    case 'component':
+    case "feature":
+      return metric.component || t("monitoring.performance.overall", "Gesamt");
+    case "component":
       return formatGroupName(metric.feature);
-    case 'device':
-      return metric.browser || t('monitoring.performance.unknown', 'Unbekannt');
+    case "device":
+      return metric.browser || t("monitoring.performance.unknown", "Unbekannt");
     default:
-      return '';
+      return "";
   }
 }
 
 function toggleDetails(groupName: string): void {
   detailsVisible.value = {
     ...detailsVisible.value,
-    [groupName]: !detailsVisible.value[groupName]
+    [groupName]: !detailsVisible.value[groupName],
   };
 }
 </script>
 
 <style scoped>
 .performance-metrics {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .metrics-header {
@@ -503,7 +582,9 @@ function toggleDetails(groupName: string): void {
 .bar {
   height: 8px;
   border-radius: 4px;
-  transition: width 0.3s, background-color 0.3s;
+  transition:
+    width 0.3s,
+    background-color 0.3s;
 }
 
 .bar-value {
@@ -606,31 +687,31 @@ function toggleDetails(groupName: string): void {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .metrics-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .bar-container {
     flex-direction: column;
     align-items: flex-start;
     gap: 5px;
   }
-  
+
   .bar-label {
     width: 100%;
   }
-  
+
   .metric-summary {
     flex-wrap: wrap;
   }
-  
+
   .metric-details {
     flex-direction: column;
     gap: 10px;
     align-items: flex-start;
   }
-  
+
   .details-button {
     align-self: flex-end;
   }

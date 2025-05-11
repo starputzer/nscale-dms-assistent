@@ -6,7 +6,7 @@
         <i class="fa fa-times"></i>
       </button>
     </div>
-    
+
     <div class="result-info">
       <div class="result-info-item">
         <span class="result-label">Originaldatei:</span>
@@ -29,32 +29,32 @@
         <span>{{ result.metadata.pageCount }}</span>
       </div>
     </div>
-    
+
     <div class="result-tabs">
-      <button 
-        class="tab-btn" 
+      <button
+        class="tab-btn"
         :class="{ active: activeTab === 'text' }"
         @click="activeTab = 'text'"
       >
         Text
       </button>
-      <button 
-        v-if="result.metadata?.tables?.length" 
-        class="tab-btn" 
+      <button
+        v-if="result.metadata?.tables?.length"
+        class="tab-btn"
         :class="{ active: activeTab === 'tables' }"
         @click="activeTab = 'tables'"
       >
         Tabellen ({{ result.metadata.tables.length }})
       </button>
-      <button 
-        class="tab-btn" 
+      <button
+        class="tab-btn"
         :class="{ active: activeTab === 'metadata' }"
         @click="activeTab = 'metadata'"
       >
         Metadaten
       </button>
     </div>
-    
+
     <div class="result-content">
       <!-- Text-Inhalt -->
       <div v-if="activeTab === 'text'" class="text-content">
@@ -68,24 +68,38 @@
           </button>
         </div>
       </div>
-      
+
       <!-- Tabellen-Inhalt -->
       <div v-else-if="activeTab === 'tables'" class="tables-content">
         <div v-if="result.metadata?.tables?.length" class="tables-list">
-          <div v-for="(table, index) in result.metadata.tables" :key="index" class="table-item">
+          <div
+            v-for="(table, index) in result.metadata.tables"
+            :key="index"
+            class="table-item"
+          >
             <h4>Tabelle {{ index + 1 }} (Seite {{ table.pageNumber }})</h4>
             <div class="table-info">
-              <span>{{ table.rowCount }} Zeilen × {{ table.columnCount }} Spalten</span>
+              <span
+                >{{ table.rowCount }} Zeilen ×
+                {{ table.columnCount }} Spalten</span
+              >
             </div>
             <table v-if="table.data" class="table-preview">
               <thead v-if="table.headers">
                 <tr>
-                  <th v-for="(header, i) in table.headers" :key="i">{{ header }}</th>
+                  <th v-for="(header, i) in table.headers" :key="i">
+                    {{ header }}
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(row, rowIndex) in table.data.slice(0, 5)" :key="rowIndex">
-                  <td v-for="(cell, cellIndex) in row" :key="cellIndex">{{ cell }}</td>
+                <tr
+                  v-for="(row, rowIndex) in table.data.slice(0, 5)"
+                  :key="rowIndex"
+                >
+                  <td v-for="(cell, cellIndex) in row" :key="cellIndex">
+                    {{ cell }}
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -94,27 +108,27 @@
             </div>
           </div>
         </div>
-        <div v-else class="no-tables">
-          Keine Tabellen im Dokument gefunden
-        </div>
+        <div v-else class="no-tables">Keine Tabellen im Dokument gefunden</div>
       </div>
-      
+
       <!-- Metadaten-Inhalt -->
       <div v-else-if="activeTab === 'metadata'" class="metadata-content">
         <dl class="metadata-list">
           <template v-if="result.metadata">
-            <div v-for="(value, key) in filteredMetadata" :key="key" class="metadata-item">
+            <div
+              v-for="(value, key) in filteredMetadata"
+              :key="key"
+              class="metadata-item"
+            >
               <dt>{{ formatMetadataKey(key) }}</dt>
               <dd>{{ formatMetadataValue(key, value) }}</dd>
             </div>
           </template>
-          <div v-else class="no-metadata">
-            Keine Metadaten verfügbar
-          </div>
+          <div v-else class="no-metadata">Keine Metadaten verfügbar</div>
         </dl>
       </div>
     </div>
-    
+
     <div class="result-actions">
       <button @click="downloadContent" class="action-btn">
         <i class="fa fa-file-download"></i> Vollständigen Text herunterladen
@@ -124,39 +138,39 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed } from "vue";
 
 const props = defineProps({
   result: {
     type: Object,
-    required: true
-  }
+    required: true,
+  },
 });
 
-const emit = defineEmits(['close', 'download']);
+const emit = defineEmits(["close", "download"]);
 
 // Aktiver Tab
-const activeTab = ref('text');
+const activeTab = ref("text");
 
 // Gekürzter Inhalt für die Vorschau
 const truncatedContent = computed(() => {
-  if (!props.result.content) return 'Kein Inhalt verfügbar';
-  
+  if (!props.result.content) return "Kein Inhalt verfügbar";
+
   const maxChars = 1000;
   const content = props.result.content;
-  
+
   if (content.length <= maxChars) return content;
-  
-  return content.substring(0, maxChars) + '...';
+
+  return content.substring(0, maxChars) + "...";
 });
 
 // Gefilterte Metadaten ohne interne Attribute
 const filteredMetadata = computed(() => {
   if (!props.result.metadata) return {};
-  
+
   // Ignoriere spezifische Felder oder Felder mit Unterstrichen
   return Object.entries(props.result.metadata)
-    .filter(([key]) => !key.startsWith('_') && key !== 'tables')
+    .filter(([key]) => !key.startsWith("_") && key !== "tables")
     .reduce((obj, [key, value]) => {
       obj[key] = value;
       return obj;
@@ -165,82 +179,88 @@ const filteredMetadata = computed(() => {
 
 // Text herunterladen
 function downloadText() {
-  const blob = new Blob([props.result.content || ''], { type: 'text/plain' });
+  const blob = new Blob([props.result.content || ""], { type: "text/plain" });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  
+  const a = document.createElement("a");
+
   a.href = url;
-  a.download = `${props.result.originalName.split('.')[0]}.txt`;
+  a.download = `${props.result.originalName.split(".")[0]}.txt`;
   a.click();
-  
+
   URL.revokeObjectURL(url);
 }
 
 // Text in die Zwischenablage kopieren
 function copyText() {
   if (!props.result.content) return;
-  
-  navigator.clipboard.writeText(props.result.content)
+
+  navigator.clipboard
+    .writeText(props.result.content)
     .then(() => {
-      alert('Text wurde in die Zwischenablage kopiert');
+      alert("Text wurde in die Zwischenablage kopiert");
     })
-    .catch(err => {
-      console.error('Fehler beim Kopieren:', err);
-      alert('Fehler beim Kopieren des Textes');
+    .catch((err) => {
+      console.error("Fehler beim Kopieren:", err);
+      alert("Fehler beim Kopieren des Textes");
     });
 }
 
 // Vollständigen Inhalt herunterladen
 function downloadContent() {
-  emit('download', props.result.id);
+  emit("download", props.result.id);
 }
 
 // Hilfsfunktionen für die Formatierung
 function formatFileSize(bytes) {
-  if (!bytes) return '0 Bytes';
-  
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  if (!bytes) return "0 Bytes";
+
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return Math.round(bytes / Math.pow(1024, i)) + ' ' + sizes[i];
+  return Math.round(bytes / Math.pow(1024, i)) + " " + sizes[i];
 }
 
 function formatDate(timestamp) {
-  if (!timestamp) return '';
-  
+  if (!timestamp) return "";
+
   const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
-  return date.toLocaleDateString('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  return date.toLocaleDateString("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
 function formatMetadataKey(key) {
   // Konvertiere camelCase zu lesbaren Bezeichnungen
   return key
-    .replace(/([A-Z])/g, ' $1')
-    .replace(/^./, str => str.toUpperCase())
+    .replace(/([A-Z])/g, " $1")
+    .replace(/^./, (str) => str.toUpperCase())
     .trim();
 }
 
 function formatMetadataValue(key, value) {
-  if (value === null || value === undefined) return '–';
-  
-  if (key.includes('date') || key.includes('Date') || key.includes('time') || key.includes('Time')) {
+  if (value === null || value === undefined) return "–";
+
+  if (
+    key.includes("date") ||
+    key.includes("Date") ||
+    key.includes("time") ||
+    key.includes("Time")
+  ) {
     // Datum formatieren
     return formatDate(value);
   }
-  
+
   if (Array.isArray(value)) {
-    return value.join(', ');
+    return value.join(", ");
   }
-  
-  if (typeof value === 'object') {
+
+  if (typeof value === "object") {
     return JSON.stringify(value);
   }
-  
+
   return value.toString();
 }
 </script>
@@ -352,7 +372,8 @@ function formatMetadataValue(key, value) {
   gap: 0.75rem;
 }
 
-.download-btn, .copy-btn {
+.download-btn,
+.copy-btn {
   padding: 0.5rem 1rem;
   background-color: #f8f9fa;
   border: 1px solid #ced4da;
@@ -363,7 +384,8 @@ function formatMetadataValue(key, value) {
   gap: 0.5rem;
 }
 
-.download-btn:hover, .copy-btn:hover {
+.download-btn:hover,
+.copy-btn:hover {
   background-color: #e9ecef;
 }
 
@@ -400,7 +422,8 @@ function formatMetadataValue(key, value) {
   border-collapse: collapse;
 }
 
-.table-preview th, .table-preview td {
+.table-preview th,
+.table-preview td {
   padding: 0.5rem;
   border: 1px solid #e9ecef;
   text-align: left;

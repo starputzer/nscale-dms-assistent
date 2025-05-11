@@ -1,47 +1,64 @@
 <template>
-  <div :class="['message-wrapper', message.is_user ? 'user-message' : 'assistant-message']">
-    <div :class="[message.is_user ? 'nscale-message-user' : 'nscale-message-assistant']">
+  <div
+    :class="[
+      'message-wrapper',
+      message.is_user ? 'user-message' : 'assistant-message',
+    ]"
+  >
+    <div
+      :class="[
+        message.is_user ? 'nscale-message-user' : 'nscale-message-assistant',
+      ]"
+    >
       <!-- Nachrichteninhalt -->
       <div v-if="message.is_user" v-html="formattedMessage" class="prose"></div>
       <div v-else v-html="formattedMessageWithSources" class="prose"></div>
-      
+
       <!-- Feedback-Buttons und Quellenbuttons nur für Assistenten-Nachrichten
            und nur wenn die Antwort bereits vollständig ist (kein Streaming läuft) -->
-      <div 
-        v-if="!message.is_user && !isStreaming" 
+      <div
+        v-if="!message.is_user && !isStreaming"
         class="message-actions"
         :style="{
           opacity: isStreaming ? '0' : '1',
-          transition: 'opacity 0.5s ease'
+          transition: 'opacity 0.5s ease',
         }"
       >
         <!-- Feedback-Buttons -->
         <div class="feedback-buttons">
-          <span v-if="message.feedback_comment" class="feedback-comment">{{ message.feedback_comment }}</span>
-          <button 
-            @click="submitFeedback(true)" 
-            :class="['feedback-button', { 'selected': message.feedback_positive === true }]"
+          <span v-if="message.feedback_comment" class="feedback-comment">{{
+            message.feedback_comment
+          }}</span>
+          <button
+            @click="submitFeedback(true)"
+            :class="[
+              'feedback-button',
+              { selected: message.feedback_positive === true },
+            ]"
             title="Hilfreich"
           >
             <i class="fas fa-thumbs-up"></i>
           </button>
-          <button 
-            @click="submitFeedback(false)" 
-            :class="['feedback-button', { 'selected negative': message.feedback_positive === false }]"
+          <button
+            @click="submitFeedback(false)"
+            :class="[
+              'feedback-button',
+              { 'selected negative': message.feedback_positive === false },
+            ]"
             title="Nicht hilfreich"
           >
             <i class="fas fa-thumbs-down"></i>
           </button>
-          <button 
-            v-if="message.feedback_positive === false" 
-            @click="showFeedbackCommentDialog" 
+          <button
+            v-if="message.feedback_positive === false"
+            @click="showFeedbackCommentDialog"
             class="feedback-button"
             title="Kommentar hinzufügen"
           >
             <i class="fas fa-comment"></i>
           </button>
         </div>
-        
+
         <!-- Quellbuttons nur anzeigen, wenn Quellenreferenzen gefunden wurden -->
         <div v-if="hasSourceReferences" class="source-buttons mt-2">
           <button class="source-btn" @click="loadExplanation">
@@ -59,22 +76,22 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { useSessionStore } from '@/stores/session';
-import { useFeedbackStore } from '@/stores/feedback';
-import { useSourceStore } from '@/stores/source';
-import { useFormatter } from '@/composables/useFormatter';
+import { computed } from "vue";
+import { useSessionStore } from "@/stores/session";
+import { useFeedbackStore } from "@/stores/feedback";
+import { useSourceStore } from "@/stores/source";
+import { useFormatter } from "@/composables/useFormatter";
 
 // Props
 const props = defineProps({
   message: {
     type: Object,
-    required: true
+    required: true,
   },
   isStreaming: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
 // Store-Referenzen
@@ -103,7 +120,7 @@ const submitFeedback = (isPositive) => {
   feedbackStore.submitFeedback({
     messageId: props.message.id,
     sessionId: sessionStore.currentSessionId,
-    isPositive
+    isPositive,
   });
 };
 
@@ -135,7 +152,8 @@ const showSourcesDialog = () => {
   justify-content: flex-start;
 }
 
-.nscale-message-user, .nscale-message-assistant {
+.nscale-message-user,
+.nscale-message-assistant {
   max-width: 85%;
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;

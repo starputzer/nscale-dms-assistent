@@ -8,15 +8,9 @@
       <h2 class="error-title">{{ errorTitle }}</h2>
       <p class="error-message">{{ errorMessage }}</p>
       <div class="error-actions">
-        <Button type="primary" @click="goBack">
-          Zurück
-        </Button>
-        <Button @click="goHome">
-          Zur Startseite
-        </Button>
-        <Button v-if="canRetry" @click="retry">
-          Erneut versuchen
-        </Button>
+        <Button type="primary" @click="goBack"> Zurück </Button>
+        <Button @click="goHome"> Zur Startseite </Button>
+        <Button v-if="canRetry" @click="retry"> Erneut versuchen </Button>
       </div>
       <div v-if="showDetails && errorDetails" class="error-details">
         <h3>Details</h3>
@@ -24,7 +18,7 @@
       </div>
       <div class="error-toggle-details">
         <a href="#" @click.prevent="toggleDetails">
-          {{ showDetails ? 'Details ausblenden' : 'Details anzeigen' }}
+          {{ showDetails ? "Details ausblenden" : "Details anzeigen" }}
         </a>
       </div>
     </div>
@@ -32,29 +26,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import ErrorIcon from '@/components/icons/ErrorIcon.vue';
-import Button from '@/components/ui/base/Button.vue';
-import { useErrorReporting } from '@/composables/useErrorReporting';
+import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
+import ErrorIcon from "@/components/icons/ErrorIcon.vue";
+import Button from "@/components/ui/base/Button.vue";
+import { useErrorReporting } from "@/composables/useErrorReporting";
 
 const props = defineProps({
   errorCode: {
     type: String,
-    default: '500'
+    default: "500",
   },
   errorMessage: {
     type: String,
-    default: 'Ein unbekannter Fehler ist aufgetreten.'
+    default: "Ein unbekannter Fehler ist aufgetreten.",
   },
   errorDetails: {
     type: String,
-    default: ''
+    default: "",
   },
   canRetry: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
 const router = useRouter();
@@ -67,18 +61,18 @@ const formattedErrorCode = computed(() => {
 
 const errorTitle = computed(() => {
   const titles: Record<string, string> = {
-    '400': 'Ungültige Anfrage',
-    '401': 'Nicht autorisiert',
-    '403': 'Zugriff verweigert',
-    '404': 'Seite nicht gefunden',
-    '500': 'Serverfehler',
-    '503': 'Dienst nicht verfügbar',
-    'offline': 'Keine Verbindung',
-    'feature-disabled': 'Funktion deaktiviert',
-    'timeout': 'Zeitüberschreitung',
-    'unknown': 'Unbekannter Fehler'
+    "400": "Ungültige Anfrage",
+    "401": "Nicht autorisiert",
+    "403": "Zugriff verweigert",
+    "404": "Seite nicht gefunden",
+    "500": "Serverfehler",
+    "503": "Dienst nicht verfügbar",
+    offline: "Keine Verbindung",
+    "feature-disabled": "Funktion deaktiviert",
+    timeout: "Zeitüberschreitung",
+    unknown: "Unbekannter Fehler",
   };
-  return titles[props.errorCode] || 'Fehler';
+  return titles[props.errorCode] || "Fehler";
 });
 
 const goBack = () => {
@@ -86,7 +80,7 @@ const goBack = () => {
 };
 
 const goHome = () => {
-  router.push({ name: 'Home' });
+  router.push({ name: "Home" });
 };
 
 const retry = () => {
@@ -191,11 +185,11 @@ const toggleDetails = () => {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .error-code {
     font-size: 2.5rem;
   }
-  
+
   .error-title {
     font-size: 1.25rem;
   }

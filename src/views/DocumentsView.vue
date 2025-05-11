@@ -3,62 +3,65 @@
     <div class="documents-view__header">
       <h1 class="documents-view__title">Dokumentenkonverter</h1>
       <p class="documents-view__description">
-        Konvertieren Sie Ihre Dokumente in ein nscale-kompatibles Format. Unterstützte Formate: PDF, DOCX, XLSX, PPTX, HTML, TXT.
+        Konvertieren Sie Ihre Dokumente in ein nscale-kompatibles Format.
+        Unterstützte Formate: PDF, DOCX, XLSX, PPTX, HTML, TXT.
       </p>
     </div>
 
     <!-- Fehleranzeige bei Initialisierungsproblemen -->
-    <ErrorDisplay 
-      v-if="error" 
-      :error="error" 
-      @retry="initialize" 
-    />
+    <ErrorDisplay v-if="error" :error="error" @retry="initialize" />
 
     <div v-else class="documents-view__content">
       <!-- Upload-Bereich mit Drag & Drop Unterstützung -->
-      <FileUpload 
-        v-if="currentView === 'upload' && !isConverting" 
-        @upload="startConversion" 
+      <FileUpload
+        v-if="currentView === 'upload' && !isConverting"
+        @upload="startConversion"
         :is-uploading="isUploading"
         :allowed-extensions="supportedFormats"
         :max-file-size="maxFileSize"
       />
 
       <!-- Fortschrittsanzeige während der Konvertierung -->
-      <ConversionProgress 
-        v-if="isConverting" 
-        :progress="conversionProgress" 
+      <ConversionProgress
+        v-if="isConverting"
+        :progress="conversionProgress"
         :current-step="conversionStep"
         :estimated-time="estimatedTimeRemaining"
         @cancel="handleCancelConversion"
       />
 
       <!-- Ergebnis der Konvertierung -->
-      <div v-if="currentView === 'results' && selectedDocument" class="documents-view__results">
+      <div
+        v-if="currentView === 'results' && selectedDocument"
+        class="documents-view__results"
+      >
         <div class="documents-view__result-header">
           <h2 class="documents-view__result-title">
             {{ selectedDocument.originalName }}
           </h2>
-          
+
           <div class="documents-view__result-actions">
-            <button 
-              class="documents-view__action-btn" 
+            <button
+              class="documents-view__action-btn"
               @click="downloadSelectedDocument"
               v-if="selectedDocument.status === 'success'"
             >
               <i class="fa fa-download"></i> Herunterladen
             </button>
-            <button 
-              class="documents-view__action-btn" 
+            <button
+              class="documents-view__action-btn"
               @click="clearSelectedDocument"
             >
               <i class="fa fa-times"></i> Schließen
             </button>
           </div>
         </div>
-        
+
         <div class="documents-view__result-content">
-          <div v-if="selectedDocument.status === 'success'" class="documents-view__document-preview">
+          <div
+            v-if="selectedDocument.status === 'success'"
+            class="documents-view__document-preview"
+          >
             <!-- Document preview content -->
             <div v-if="documentContent" class="documents-view__preview-content">
               <pre>{{ documentContent }}</pre>
@@ -68,63 +71,111 @@
               <p>Lade Dokumenteninhalt...</p>
             </div>
           </div>
-          
-          <div v-if="selectedDocument.metadata" class="documents-view__document-metadata">
+
+          <div
+            v-if="selectedDocument.metadata"
+            class="documents-view__document-metadata"
+          >
             <h3>Dokumentinformationen</h3>
             <div class="documents-view__metadata-item">
               <span class="documents-view__metadata-label">Format:</span>
-              <span class="documents-view__metadata-value">{{ selectedDocument.originalFormat.toUpperCase() }}</span>
+              <span class="documents-view__metadata-value">{{
+                selectedDocument.originalFormat.toUpperCase()
+              }}</span>
             </div>
             <div class="documents-view__metadata-item">
               <span class="documents-view__metadata-label">Größe:</span>
-              <span class="documents-view__metadata-value">{{ formatFileSize(selectedDocument.size) }}</span>
+              <span class="documents-view__metadata-value">{{
+                formatFileSize(selectedDocument.size)
+              }}</span>
             </div>
             <div class="documents-view__metadata-item">
-              <span class="documents-view__metadata-label">Konvertiert am:</span>
-              <span class="documents-view__metadata-value">{{ formatDate(selectedDocument.convertedAt) }}</span>
+              <span class="documents-view__metadata-label"
+                >Konvertiert am:</span
+              >
+              <span class="documents-view__metadata-value">{{
+                formatDate(selectedDocument.convertedAt)
+              }}</span>
             </div>
-            <div v-if="selectedDocument.metadata.title" class="documents-view__metadata-item">
+            <div
+              v-if="selectedDocument.metadata.title"
+              class="documents-view__metadata-item"
+            >
               <span class="documents-view__metadata-label">Titel:</span>
-              <span class="documents-view__metadata-value">{{ selectedDocument.metadata.title }}</span>
+              <span class="documents-view__metadata-value">{{
+                selectedDocument.metadata.title
+              }}</span>
             </div>
-            <div v-if="selectedDocument.metadata.author" class="documents-view__metadata-item">
+            <div
+              v-if="selectedDocument.metadata.author"
+              class="documents-view__metadata-item"
+            >
               <span class="documents-view__metadata-label">Autor:</span>
-              <span class="documents-view__metadata-value">{{ selectedDocument.metadata.author }}</span>
+              <span class="documents-view__metadata-value">{{
+                selectedDocument.metadata.author
+              }}</span>
             </div>
-            <div v-if="selectedDocument.metadata.created" class="documents-view__metadata-item">
+            <div
+              v-if="selectedDocument.metadata.created"
+              class="documents-view__metadata-item"
+            >
               <span class="documents-view__metadata-label">Erstellt am:</span>
-              <span class="documents-view__metadata-value">{{ formatDate(selectedDocument.metadata.created) }}</span>
+              <span class="documents-view__metadata-value">{{
+                formatDate(selectedDocument.metadata.created)
+              }}</span>
             </div>
-            <div v-if="selectedDocument.metadata.pageCount" class="documents-view__metadata-item">
+            <div
+              v-if="selectedDocument.metadata.pageCount"
+              class="documents-view__metadata-item"
+            >
               <span class="documents-view__metadata-label">Seitenanzahl:</span>
-              <span class="documents-view__metadata-value">{{ selectedDocument.metadata.pageCount }}</span>
+              <span class="documents-view__metadata-value">{{
+                selectedDocument.metadata.pageCount
+              }}</span>
             </div>
-            <div v-if="selectedDocument.metadata.keywords && selectedDocument.metadata.keywords.length > 0" class="documents-view__metadata-item">
-              <span class="documents-view__metadata-label">Schlüsselwörter:</span>
+            <div
+              v-if="
+                selectedDocument.metadata.keywords &&
+                selectedDocument.metadata.keywords.length > 0
+              "
+              class="documents-view__metadata-item"
+            >
+              <span class="documents-view__metadata-label"
+                >Schlüsselwörter:</span
+              >
               <div class="documents-view__metadata-tags">
-                <span 
-                  v-for="(keyword, index) in selectedDocument.metadata.keywords" 
-                  :key="index" 
+                <span
+                  v-for="(keyword, index) in selectedDocument.metadata.keywords"
+                  :key="index"
                   class="documents-view__metadata-tag"
                 >
                   {{ keyword }}
                 </span>
               </div>
             </div>
-            
+
             <!-- Tabellen anzeigen, falls vorhanden -->
-            <div v-if="selectedDocument.metadata.tables && selectedDocument.metadata.tables.length > 0" class="documents-view__tables">
+            <div
+              v-if="
+                selectedDocument.metadata.tables &&
+                selectedDocument.metadata.tables.length > 0
+              "
+              class="documents-view__tables"
+            >
               <h3>Erkannte Tabellen</h3>
-              <div 
-                v-for="(table, tableIndex) in selectedDocument.metadata.tables" 
-                :key="tableIndex" 
+              <div
+                v-for="(table, tableIndex) in selectedDocument.metadata.tables"
+                :key="tableIndex"
                 class="documents-view__table-container"
               >
                 <h4>Tabelle auf Seite {{ table.pageNumber }}</h4>
                 <table class="documents-view__table">
                   <thead v-if="table.headers && table.headers.length > 0">
                     <tr>
-                      <th v-for="(header, headerIndex) in table.headers" :key="headerIndex">
+                      <th
+                        v-for="(header, headerIndex) in table.headers"
+                        :key="headerIndex"
+                      >
                         {{ header }}
                       </th>
                     </tr>
@@ -169,7 +220,10 @@
       <!-- Fallback-Konverter, falls etwas schief geht -->
       <div v-if="useFallback" class="documents-view__fallback">
         <h3>Alternative Konvertierungsmethode</h3>
-        <p>Die Standardkonvertierung ist aufgrund eines Fehlers nicht verfügbar. Es wird eine vereinfachte Version verwendet.</p>
+        <p>
+          Die Standardkonvertierung ist aufgrund eines Fehlers nicht verfügbar.
+          Es wird eine vereinfachte Version verwendet.
+        </p>
         <div class="documents-view__fallback-actions">
           <button
             @click="retryStandardConversion"
@@ -182,8 +236,8 @@
 
       <!-- Steuerelemente am unteren Rand -->
       <div class="documents-view__controls" v-if="currentView === 'results'">
-        <button 
-          class="documents-view__btn documents-view__btn-primary" 
+        <button
+          class="documents-view__btn documents-view__btn-primary"
           @click="clearSelectedDocument"
         >
           Neue Konvertierung
@@ -194,18 +248,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
-import { useDocumentConverterStore } from '@/stores/documentConverter';
-import { useDialogStore } from '@/stores/dialog';
-import { storeToRefs } from 'pinia';
-import DocumentConverterServiceWrapper from '@/services/api/DocumentConverterServiceWrapper';
-import { ConversionResult, DocumentMetadata, TableMetadata } from '@/types/documentConverter';
+import { ref, computed, watch, onMounted } from "vue";
+import { useDocumentConverterStore } from "@/stores/documentConverter";
+import { useDialogStore } from "@/stores/dialog";
+import { storeToRefs } from "pinia";
+import DocumentConverterServiceWrapper from "@/services/api/DocumentConverterServiceWrapper";
+import {
+  ConversionResult,
+  DocumentMetadata,
+  TableMetadata,
+} from "@/types/documentConverter";
 
 // Komponenten importieren
-import FileUpload from '@/components/admin/document-converter/FileUpload.vue';
-import ConversionProgress from '@/components/admin/document-converter/ConversionProgress.vue';
-import DocumentList from '@/components/admin/document-converter/DocumentList.vue';
-import ErrorDisplay from '@/components/admin/document-converter/ErrorDisplay.vue';
+import FileUpload from "@/components/admin/document-converter/FileUpload.vue";
+import ConversionProgress from "@/components/admin/document-converter/ConversionProgress.vue";
+import DocumentList from "@/components/admin/document-converter/DocumentList.vue";
+import ErrorDisplay from "@/components/admin/document-converter/ErrorDisplay.vue";
 
 // Stores
 const documentConverterStore = useDocumentConverterStore();
@@ -223,11 +281,13 @@ const {
   estimatedTimeRemaining,
   currentView,
   useFallback,
-  selectedDocument
+  selectedDocument,
 } = storeToRefs(documentConverterStore);
 
 // Computed-Eigenschaften aus dem Store
-const supportedFormats = computed(() => documentConverterStore.supportedFormats);
+const supportedFormats = computed(
+  () => documentConverterStore.supportedFormats,
+);
 const maxFileSize = computed(() => documentConverterStore.maxFileSize);
 
 // Lokaler Zustand
@@ -240,13 +300,16 @@ onMounted(() => {
 });
 
 // Überwache das ausgewählte Dokument und lade dessen Inhalt
-watch(() => selectedDocument.value, async (newDoc) => {
-  documentContent.value = null;
-  
-  if (newDoc && newDoc.status === 'success') {
-    await loadSelectedDocumentContent();
-  }
-});
+watch(
+  () => selectedDocument.value,
+  async (newDoc) => {
+    documentContent.value = null;
+
+    if (newDoc && newDoc.status === "success") {
+      await loadSelectedDocumentContent();
+    }
+  },
+);
 
 /**
  * Initialisiere die Dokumentenkonverter-Komponente
@@ -256,8 +319,9 @@ async function initialize(): Promise<void> {
     await documentConverterStore.initialize();
   } catch (err) {
     dialogStore.showError({
-      title: 'Initialisierungsfehler',
-      message: 'Der Dokumentenkonverter konnte nicht initialisiert werden. Bitte versuchen Sie es später erneut.'
+      title: "Initialisierungsfehler",
+      message:
+        "Der Dokumentenkonverter konnte nicht initialisiert werden. Bitte versuchen Sie es später erneut.",
     });
   }
 }
@@ -284,7 +348,7 @@ async function startConversion(file: File): Promise<void> {
       documentId,
       (progress, step, timeRemaining) => {
         // Fortschritts-Callback (wird bereits im Store verarbeitet)
-      }
+      },
     );
 
     if (success) {
@@ -293,8 +357,11 @@ async function startConversion(file: File): Promise<void> {
     }
   } catch (err) {
     dialogStore.showError({
-      title: 'Fehler bei der Dokumentenkonvertierung',
-      message: err instanceof Error ? err.message : 'Unbekannter Fehler bei der Konvertierung'
+      title: "Fehler bei der Dokumentenkonvertierung",
+      message:
+        err instanceof Error
+          ? err.message
+          : "Unbekannter Fehler bei der Konvertierung",
     });
   }
 }
@@ -304,25 +371,25 @@ async function startConversion(file: File): Promise<void> {
  */
 function validateFile(file: File): boolean {
   // Dateityp prüfen
-  const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
-  
+  const fileExtension = file.name.split(".").pop()?.toLowerCase() || "";
+
   if (!supportedFormats.value.includes(fileExtension as any)) {
     dialogStore.showError({
-      title: 'Nicht unterstütztes Format',
-      message: `Die Datei hat ein nicht unterstütztes Format. Unterstützt werden: ${supportedFormats.value.join(', ').toUpperCase()}`
+      title: "Nicht unterstütztes Format",
+      message: `Die Datei hat ein nicht unterstütztes Format. Unterstützt werden: ${supportedFormats.value.join(", ").toUpperCase()}`,
     });
     return false;
   }
-  
+
   // Dateigröße prüfen
   if (file.size > maxFileSize.value) {
     dialogStore.showError({
-      title: 'Datei zu groß',
-      message: `Die Datei ist zu groß. Maximale Dateigröße: ${formatFileSize(maxFileSize.value)}`
+      title: "Datei zu groß",
+      message: `Die Datei ist zu groß. Maximale Dateigröße: ${formatFileSize(maxFileSize.value)}`,
     });
     return false;
   }
-  
+
   return true;
 }
 
@@ -338,7 +405,7 @@ function viewDocument(documentId: string): void {
  */
 function clearSelectedDocument(): void {
   documentConverterStore.selectDocument(null);
-  documentConverterStore.setView('upload');
+  documentConverterStore.setView("upload");
 }
 
 /**
@@ -352,7 +419,7 @@ function selectDocument(documentId: string): void {
  * Lädt den Inhalt des ausgewählten Dokuments
  */
 async function loadSelectedDocumentContent(): Promise<void> {
-  if (!selectedDocument.value || selectedDocument.value.status !== 'success') {
+  if (!selectedDocument.value || selectedDocument.value.status !== "success") {
     return;
   }
 
@@ -360,20 +427,26 @@ async function loadSelectedDocumentContent(): Promise<void> {
   documentContent.value = null;
 
   try {
-    const content = await DocumentConverterServiceWrapper.getDocumentContent(selectedDocument.value.id);
+    const content = await DocumentConverterServiceWrapper.getDocumentContent(
+      selectedDocument.value.id,
+    );
     documentContent.value = content;
   } catch (err) {
-    documentContent.value = 'Fehler beim Laden des Dokumentinhalts';
-    console.error('Fehler beim Laden des Dokumentinhalts:', err);
+    documentContent.value = "Fehler beim Laden des Dokumentinhalts";
+    console.error("Fehler beim Laden des Dokumentinhalts:", err);
 
     // Formatierter Fehler für besseres Nutzererlebnis
-    const errorMessage = err instanceof Error ? err.message : 'Unbekannter Fehler beim Laden des Dokumentinhalts';
-    const errorType = err && typeof err === 'object' && 'type' in err ? err.type : 'server';
+    const errorMessage =
+      err instanceof Error
+        ? err.message
+        : "Unbekannter Fehler beim Laden des Dokumentinhalts";
+    const errorType =
+      err && typeof err === "object" && "type" in err ? err.type : "server";
 
     dialogStore.showError({
-      title: 'Fehler beim Laden des Inhalts',
+      title: "Fehler beim Laden des Inhalts",
       message: errorMessage,
-      type: errorType
+      type: errorType,
     });
   } finally {
     isLoadingContent.value = false;
@@ -397,8 +470,11 @@ async function downloadDocument(documentId: string): Promise<void> {
     await documentConverterStore.downloadDocument(documentId);
   } catch (err) {
     dialogStore.showError({
-      title: 'Download fehlgeschlagen',
-      message: err instanceof Error ? err.message : 'Das Dokument konnte nicht heruntergeladen werden.'
+      title: "Download fehlgeschlagen",
+      message:
+        err instanceof Error
+          ? err.message
+          : "Das Dokument konnte nicht heruntergeladen werden.",
     });
   }
 }
@@ -407,15 +483,15 @@ async function downloadDocument(documentId: string): Promise<void> {
  * Bestätigt das Löschen eines Dokuments
  */
 async function promptDeleteDocument(documentId: string): Promise<void> {
-  const document = documents.value.find(doc => doc.id === documentId);
+  const document = documents.value.find((doc) => doc.id === documentId);
   if (!document) return;
 
   const confirmed = await dialogStore.showConfirm({
-    title: 'Dokument löschen',
+    title: "Dokument löschen",
     message: `Möchten Sie das Dokument "${document.originalName}" wirklich löschen?`,
-    confirmButtonText: 'Löschen',
-    cancelButtonText: 'Abbrechen',
-    type: 'warning'
+    confirmButtonText: "Löschen",
+    cancelButtonText: "Abbrechen",
+    type: "warning",
   });
 
   if (confirmed) {
@@ -428,13 +504,16 @@ async function promptDeleteDocument(documentId: string): Promise<void> {
       }
 
       dialogStore.showSuccess({
-        title: 'Dokument gelöscht',
-        message: `Das Dokument "${document.originalName}" wurde erfolgreich gelöscht.`
+        title: "Dokument gelöscht",
+        message: `Das Dokument "${document.originalName}" wurde erfolgreich gelöscht.`,
       });
     } catch (err) {
       dialogStore.showError({
-        title: 'Fehler beim Löschen',
-        message: err instanceof Error ? err.message : 'Das Dokument konnte nicht gelöscht werden.'
+        title: "Fehler beim Löschen",
+        message:
+          err instanceof Error
+            ? err.message
+            : "Das Dokument konnte nicht gelöscht werden.",
       });
     }
   }
@@ -445,21 +524,26 @@ async function promptDeleteDocument(documentId: string): Promise<void> {
  */
 async function handleCancelConversion(): Promise<void> {
   const confirmed = await dialogStore.showConfirm({
-    title: 'Konvertierung abbrechen',
-    message: 'Möchten Sie die laufende Konvertierung wirklich abbrechen?',
-    confirmButtonText: 'Ja',
-    cancelButtonText: 'Nein',
-    type: 'warning'
+    title: "Konvertierung abbrechen",
+    message: "Möchten Sie die laufende Konvertierung wirklich abbrechen?",
+    confirmButtonText: "Ja",
+    cancelButtonText: "Nein",
+    type: "warning",
   });
 
   if (confirmed && documentConverterStore.activeConversionId) {
     try {
-      await documentConverterStore.cancelConversion(documentConverterStore.activeConversionId);
-      documentConverterStore.setView('upload');
+      await documentConverterStore.cancelConversion(
+        documentConverterStore.activeConversionId,
+      );
+      documentConverterStore.setView("upload");
     } catch (err) {
       dialogStore.showError({
-        title: 'Fehler beim Abbrechen der Konvertierung',
-        message: err instanceof Error ? err.message : 'Die Konvertierung konnte nicht abgebrochen werden.'
+        title: "Fehler beim Abbrechen der Konvertierung",
+        message:
+          err instanceof Error
+            ? err.message
+            : "Die Konvertierung konnte nicht abgebrochen werden.",
       });
     }
   }
@@ -471,7 +555,7 @@ async function handleCancelConversion(): Promise<void> {
 function retryStandardConversion(): void {
   documentConverterStore.setUseFallback(false);
   documentConverterStore.clearError();
-  documentConverterStore.setView('upload');
+  documentConverterStore.setView("upload");
 }
 
 /**
@@ -482,8 +566,8 @@ async function refreshDocumentList(): Promise<void> {
     await documentConverterStore.refreshDocuments();
   } catch (err) {
     dialogStore.showError({
-      title: 'Aktualisierungsfehler',
-      message: 'Die Dokumentenliste konnte nicht aktualisiert werden.'
+      title: "Aktualisierungsfehler",
+      message: "Die Dokumentenliste konnte nicht aktualisiert werden.",
     });
   }
 }
@@ -492,40 +576,40 @@ async function refreshDocumentList(): Promise<void> {
  * Formatiert die Dateigröße benutzerfreundlich
  */
 function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
-  
+  if (bytes === 0) return "0 Bytes";
+
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
 /**
  * Formatiert ein Datum benutzerfreundlich
  */
 function formatDate(date?: Date | string | null): string {
-  if (!date) return '';
-  
+  if (!date) return "";
+
   const dateObj = date instanceof Date ? date : new Date(date);
-  
+
   if (isNaN(dateObj.getTime())) {
-    return '';
+    return "";
   }
-  
-  return dateObj.toLocaleDateString('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+
+  return dateObj.toLocaleDateString("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 </script>
 
 <style scoped>
 .documents-view {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
@@ -633,7 +717,7 @@ function formatDate(date?: Date | string | null): string {
 }
 
 .documents-view__preview-content {
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 0.9rem;
   white-space: pre-wrap;
   line-height: 1.4;
@@ -660,7 +744,9 @@ function formatDate(date?: Date | string | null): string {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .documents-view__document-metadata {
@@ -806,7 +892,9 @@ function formatDate(date?: Date | string | null): string {
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
   border: none;
   outline: none;
 }

@@ -2,7 +2,7 @@
 title: "State Management mit Pinia"
 version: "2.0.0"
 date: "10.05.2025"
-lastUpdate: "10.05.2025"
+lastUpdate: "11.05.2025"
 author: "Martin Heinrich"
 status: "Aktiv"
 priority: "Hoch"
@@ -1330,4 +1330,4 @@ Die vorhandenen Stores decken alle wichtigen Anwendungsbereiche ab und können e
 
 ---
 
-Zuletzt aktualisiert: 10.05.2025
+Zuletzt aktualisiert: 11.05.2025

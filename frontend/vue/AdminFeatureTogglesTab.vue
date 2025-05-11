@@ -3,10 +3,11 @@
     <div class="feature-toggles-tab-header">
       <h3>Feature-Toggles Verwaltung</h3>
       <p class="feature-toggles-tab-description">
-        Verwalten Sie alle Feature-Toggles und kontrollieren Sie den Migrations- und Entwicklungsstatus.
+        Verwalten Sie alle Feature-Toggles und kontrollieren Sie den Migrations-
+        und Entwicklungsstatus.
       </p>
     </div>
-    
+
     <!-- Filter und Rollen-Steuerung -->
     <div class="feature-toggles-controls">
       <div class="feature-filter">
@@ -19,10 +20,14 @@
           <option value="fallback">Fallback aktiv</option>
         </select>
       </div>
-      
+
       <div class="feature-role-selector">
         <label for="user-role">Rolle simulieren:</label>
-        <select id="user-role" v-model="currentUserRole" @change="onUserRoleChange">
+        <select
+          id="user-role"
+          v-model="currentUserRole"
+          @change="onUserRoleChange"
+        >
           <option value="guest">Gast</option>
           <option value="user">Benutzer</option>
           <option value="developer">Entwickler</option>
@@ -30,70 +35,87 @@
         </select>
       </div>
     </div>
-    
+
     <!-- FeatureTogglesPanel einbinden -->
-    <FeatureTogglesPanel 
+    <FeatureTogglesPanel
       :initial-user-role="currentUserRole"
       @role-change="handleRoleChange"
       @feature-change="handleFeatureChange"
       @error-clear="handleErrorClear"
     />
-    
+
     <!-- Änderungshistorie -->
     <div class="feature-history" v-if="changeHistory.length > 0">
       <h3>Änderungshistorie</h3>
       <div class="feature-history-list">
-        <div v-for="(change, index) in changeHistory" :key="index" class="feature-history-item">
+        <div
+          v-for="(change, index) in changeHistory"
+          :key="index"
+          class="feature-history-item"
+        >
           <div class="feature-history-time">
             {{ formatTimestamp(change.timestamp) }}
           </div>
           <div class="feature-history-content">
-            <strong>{{ formatFeatureName(change.feature) }}</strong>: 
-            {{ change.enabled ? 'aktiviert' : 'deaktiviert' }}
+            <strong>{{ formatFeatureName(change.feature) }}</strong
+            >:
+            {{ change.enabled ? "aktiviert" : "deaktiviert" }}
             <span v-if="change.role" class="feature-history-role">
               (als {{ formatRoleName(change.role) }})
             </span>
           </div>
         </div>
       </div>
-      <button @click="clearHistory" class="feature-btn feature-btn-secondary feature-btn-small">
+      <button
+        @click="clearHistory"
+        class="feature-btn feature-btn-secondary feature-btn-small"
+      >
         Verlauf löschen
       </button>
     </div>
-    
+
     <!-- Fehler-Simulationsbereich -->
     <div class="feature-simulation">
       <h3>Fehler-Simulation</h3>
-      <p>Simulieren Sie Fehler in Features, um den Fallback-Mechanismus zu testen.</p>
-      
+      <p>
+        Simulieren Sie Fehler in Features, um den Fallback-Mechanismus zu
+        testen.
+      </p>
+
       <div class="feature-simulation-controls">
         <div class="simulation-feature-select">
           <label for="simulation-feature">Feature:</label>
           <select id="simulation-feature" v-model="simulationFeature">
             <option value="">Bitte Feature auswählen</option>
-            <option 
-              v-for="feature in sfcFeatures" 
-              :key="feature.key" 
+            <option
+              v-for="feature in sfcFeatures"
+              :key="feature.key"
               :value="feature.key"
-              :disabled="!isFeatureEnabled(feature.key) || isFallbackActive(feature.key)"
+              :disabled="
+                !isFeatureEnabled(feature.key) || isFallbackActive(feature.key)
+              "
             >
               {{ feature.name }}
             </option>
           </select>
         </div>
-        
+
         <div class="simulation-error-type">
           <label for="error-type">Fehlertyp:</label>
-          <select id="error-type" v-model="simulationErrorType" :disabled="!simulationFeature">
+          <select
+            id="error-type"
+            v-model="simulationErrorType"
+            :disabled="!simulationFeature"
+          >
             <option value="render">Rendering-Fehler</option>
             <option value="data">Datenfehler</option>
             <option value="api">API-Fehler</option>
             <option value="timeout">Timeout</option>
           </select>
         </div>
-        
-        <button 
-          @click="simulateError" 
+
+        <button
+          @click="simulateError"
           class="feature-btn feature-btn-danger feature-btn-small"
           :disabled="!simulationFeature"
         >
@@ -101,27 +123,41 @@
         </button>
       </div>
     </div>
-    
+
     <!-- Hilfe und Dokumentation -->
     <div class="feature-documentation">
       <h3>Dokumentation</h3>
       <div class="feature-documentation-items">
         <div class="feature-documentation-item">
           <h4>Feature-Toggle System</h4>
-          <p>Das Feature-Toggle System ermöglicht die schrittweise Migration von Legacy-Komponenten zu Vue 3 SFCs.</p>
-          <p>Features können aktiviert, deaktiviert und auf verschiedene Fehler getestet werden.</p>
+          <p>
+            Das Feature-Toggle System ermöglicht die schrittweise Migration von
+            Legacy-Komponenten zu Vue 3 SFCs.
+          </p>
+          <p>
+            Features können aktiviert, deaktiviert und auf verschiedene Fehler
+            getestet werden.
+          </p>
         </div>
-        
+
         <div class="feature-documentation-item">
           <h4>Fallback-Mechanismus</h4>
-          <p>Bei Fehlern in neuen Komponenten wird automatisch auf die Legacy-Version zurückgefallen.</p>
+          <p>
+            Bei Fehlern in neuen Komponenten wird automatisch auf die
+            Legacy-Version zurückgefallen.
+          </p>
           <p>Fehlerlogs werden erfasst und können hier eingesehen werden.</p>
         </div>
-        
+
         <div class="feature-documentation-item">
           <h4>Rollenbasierte Features</h4>
-          <p>Features können je nach Benutzerrolle verfügbar sein oder nicht.</p>
-          <p>Mit der Rollensimulation können Sie das Verhalten für verschiedene Benutzergruppen testen.</p>
+          <p>
+            Features können je nach Benutzerrolle verfügbar sein oder nicht.
+          </p>
+          <p>
+            Mit der Rollensimulation können Sie das Verhalten für verschiedene
+            Benutzergruppen testen.
+          </p>
         </div>
       </div>
     </div>
@@ -129,11 +165,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted, watch } from 'vue';
-import FeatureTogglesPanel from '@/components/admin/FeatureTogglesPanel.vue';
-import { useFeatureToggles } from '@/composables/useFeatureToggles';
-import { FeatureToggleRole } from '@/stores/featureToggles';
-import { useToast } from '@/composables/useToast';
+import { defineComponent, ref, computed, onMounted, watch } from "vue";
+import FeatureTogglesPanel from "@/components/admin/FeatureTogglesPanel.vue";
+import { useFeatureToggles } from "@/composables/useFeatureToggles";
+import { FeatureToggleRole } from "@/stores/featureToggles";
+import { useToast } from "@/composables/useToast";
 
 interface ChangeHistoryItem {
   timestamp: Date;
@@ -143,256 +179,265 @@ interface ChangeHistoryItem {
 }
 
 export default defineComponent({
-  name: 'AdminFeatureTogglesTab',
+  name: "AdminFeatureTogglesTab",
   components: {
-    FeatureTogglesPanel
+    FeatureTogglesPanel,
   },
   setup() {
     // Feature-Toggles
     const featureToggles = useFeatureToggles();
     const toast = useToast();
-    
+
     // Filter und Auswahl
-    const statusFilter = ref('all');
-    const currentUserRole = ref<FeatureToggleRole>('admin');
-    
+    const statusFilter = ref("all");
+    const currentUserRole = ref<FeatureToggleRole>("admin");
+
     // Fehler-Simulation
-    const simulationFeature = ref('');
-    const simulationErrorType = ref('render');
-    
+    const simulationFeature = ref("");
+    const simulationErrorType = ref("render");
+
     // Änderungshistorie
     const changeHistory = ref<ChangeHistoryItem[]>(loadChangeHistory());
-    
+
     // SFC-Features aus Feature-Toggles
     const sfcFeatures = computed(() => {
       return featureToggles.groupedFeatures.sfcMigration || [];
     });
-    
+
     // Filtert die Features entsprechend dem ausgewählten Status
     const filteredFeatures = computed(() => {
       const filter = statusFilter.value;
-      
-      if (filter === 'all') {
+
+      if (filter === "all") {
         return featureToggles.featureConfigs;
       }
-      
-      return Object.entries(featureToggles.featureConfigs).reduce((acc, [key, config]) => {
-        const status = featureToggles.getFeatureStatus(key);
-        
-        if (
-          (filter === 'active' && status.isActive) ||
-          (filter === 'inactive' && !status.isActive) ||
-          (filter === 'errors' && status.errors.length > 0) ||
-          (filter === 'fallback' && status.isFallbackActive)
-        ) {
-          acc[key] = config;
-        }
-        
-        return acc;
-      }, {} as typeof featureToggles.featureConfigs);
+
+      return Object.entries(featureToggles.featureConfigs).reduce(
+        (acc, [key, config]) => {
+          const status = featureToggles.getFeatureStatus(key);
+
+          if (
+            (filter === "active" && status.isActive) ||
+            (filter === "inactive" && !status.isActive) ||
+            (filter === "errors" && status.errors.length > 0) ||
+            (filter === "fallback" && status.isFallbackActive)
+          ) {
+            acc[key] = config;
+          }
+
+          return acc;
+        },
+        {} as typeof featureToggles.featureConfigs,
+      );
     });
-    
+
     // Prüft, ob ein Feature aktiviert ist
     function isFeatureEnabled(featureName: string): boolean {
       return featureToggles.isEnabled(featureName);
     }
-    
+
     // Prüft, ob für ein Feature der Fallback aktiv ist
     function isFallbackActive(featureName: string): boolean {
       return featureToggles.isFallbackActive(featureName);
     }
-    
+
     // Formatiert den Feature-Namen für die Anzeige
     function formatFeatureName(key: string): string {
       const config = featureToggles.featureConfigs[key];
       if (config) {
         return config.name;
       }
-      
+
       return key
-        .replace(/^use/, '')
-        .replace(/([A-Z])/g, ' $1')
+        .replace(/^use/, "")
+        .replace(/([A-Z])/g, " $1")
         .trim();
     }
-    
+
     // Formatiert den Rollennamen für die Anzeige
     function formatRoleName(role: FeatureToggleRole): string {
       const roleNames: Record<FeatureToggleRole, string> = {
-        guest: 'Gast',
-        user: 'Benutzer',
-        developer: 'Entwickler',
-        admin: 'Administrator'
+        guest: "Gast",
+        user: "Benutzer",
+        developer: "Entwickler",
+        admin: "Administrator",
       };
-      
+
       return roleNames[role] || role;
     }
-    
+
     // Formatiert einen Zeitstempel für die Anzeige
     function formatTimestamp(date: Date): string {
-      return new Intl.DateTimeFormat('de-DE', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
+      return new Intl.DateTimeFormat("de-DE", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
       }).format(date);
     }
-    
+
     // Event-Handler für Rollenänderungen
     function handleRoleChange(role: FeatureToggleRole): void {
       currentUserRole.value = role;
     }
-    
+
     // Wenn die Benutzerrolle geändert wird
     function onUserRoleChange(): void {
       toast.show({
         message: `Rolle zu ${formatRoleName(currentUserRole.value)} geändert`,
-        type: 'info'
+        type: "info",
       });
     }
-    
+
     // Fügt einen Eintrag zur Änderungshistorie hinzu
     function addToChangeHistory(feature: string, enabled: boolean): void {
       changeHistory.value.unshift({
         timestamp: new Date(),
         feature,
         enabled,
-        role: currentUserRole.value
+        role: currentUserRole.value,
       });
-      
+
       // Begrenze die Historie auf 50 Einträge
       if (changeHistory.value.length > 50) {
         changeHistory.value = changeHistory.value.slice(0, 50);
       }
-      
+
       // In localStorage speichern
       saveChangeHistory();
     }
-    
+
     // Event-Handler für Feature-Änderungen
     function handleFeatureChange(featureName: string, enabled: boolean): void {
       addToChangeHistory(featureName, enabled);
-      
+
       toast.show({
-        message: `Feature "${formatFeatureName(featureName)}" ${enabled ? 'aktiviert' : 'deaktiviert'}`,
-        type: enabled ? 'success' : 'info'
+        message: `Feature "${formatFeatureName(featureName)}" ${enabled ? "aktiviert" : "deaktiviert"}`,
+        type: enabled ? "success" : "info",
       });
     }
-    
+
     // Event-Handler für Fehler-Löschung
     function handleErrorClear(featureName: string): void {
       toast.show({
         message: `Fehler für Feature "${formatFeatureName(featureName)}" gelöscht`,
-        type: 'success'
+        type: "success",
       });
     }
-    
+
     // Lädt die Änderungshistorie aus dem localStorage
     function loadChangeHistory(): ChangeHistoryItem[] {
       try {
-        const storedHistory = localStorage.getItem('featureToggleHistory');
+        const storedHistory = localStorage.getItem("featureToggleHistory");
         if (storedHistory) {
           const parsedHistory = JSON.parse(storedHistory);
-          
+
           // Konvertiere alle Zeitstempel zurück zu Datum-Objekten
           return parsedHistory.map((item: any) => ({
             ...item,
-            timestamp: new Date(item.timestamp)
+            timestamp: new Date(item.timestamp),
           }));
         }
       } catch (error) {
-        console.error('Fehler beim Laden der Feature-Toggle-Historie:', error);
+        console.error("Fehler beim Laden der Feature-Toggle-Historie:", error);
       }
-      
+
       return [];
     }
-    
+
     // Speichert die Änderungshistorie im localStorage
     function saveChangeHistory(): void {
       try {
-        localStorage.setItem('featureToggleHistory', JSON.stringify(changeHistory.value));
+        localStorage.setItem(
+          "featureToggleHistory",
+          JSON.stringify(changeHistory.value),
+        );
       } catch (error) {
-        console.error('Fehler beim Speichern der Feature-Toggle-Historie:', error);
+        console.error(
+          "Fehler beim Speichern der Feature-Toggle-Historie:",
+          error,
+        );
       }
     }
-    
+
     // Löscht die Änderungshistorie
     function clearHistory(): void {
       changeHistory.value = [];
-      localStorage.removeItem('featureToggleHistory');
-      
+      localStorage.removeItem("featureToggleHistory");
+
       toast.show({
-        message: 'Änderungshistorie gelöscht',
-        type: 'info'
+        message: "Änderungshistorie gelöscht",
+        type: "info",
       });
     }
-    
+
     // Simuliert einen Fehler in einem Feature
     function simulateError(): void {
       if (!simulationFeature.value) return;
-      
+
       // Fehlertypen und entsprechende Fehler
       const errorMessages: Record<string, string> = {
-        render: 'Fehler beim Rendern der Komponente',
-        data: 'Ungültige Daten im State',
-        api: 'API-Anfrage fehlgeschlagen',
-        timeout: 'Zeitüberschreitung bei Anfrage'
+        render: "Fehler beim Rendern der Komponente",
+        data: "Ungültige Daten im State",
+        api: "API-Anfrage fehlgeschlagen",
+        timeout: "Zeitüberschreitung bei Anfrage",
       };
-      
+
       // Fehler an den Store melden
       featureToggles.reportError(
         simulationFeature.value,
-        `[SIMULATION] ${errorMessages[simulationErrorType.value] || 'Simulierter Fehler'}`,
-        { simulationType: simulationErrorType.value, timestamp: new Date() }
+        `[SIMULATION] ${errorMessages[simulationErrorType.value] || "Simulierter Fehler"}`,
+        { simulationType: simulationErrorType.value, timestamp: new Date() },
       );
-      
+
       toast.show({
         message: `Fehler in "${formatFeatureName(simulationFeature.value)}" simuliert`,
-        type: 'warning'
+        type: "warning",
       });
-      
+
       // Feature und Fehlertyp zurücksetzen
-      simulationFeature.value = '';
-      simulationErrorType.value = 'render';
+      simulationFeature.value = "";
+      simulationErrorType.value = "render";
     }
-    
+
     return {
       // Filter und Steuerung
       statusFilter,
       currentUserRole,
       filteredFeatures,
       sfcFeatures,
-      
+
       // Fehler-Simulation
       simulationFeature,
       simulationErrorType,
       simulateError,
-      
+
       // Änderungshistorie
       changeHistory,
       clearHistory,
-      
+
       // Event-Handler
       handleRoleChange,
       onUserRoleChange,
       handleFeatureChange,
       handleErrorClear,
-      
+
       // Hilfsfunktionen
       isFeatureEnabled,
       isFallbackActive,
       formatFeatureName,
       formatRoleName,
-      formatTimestamp
+      formatTimestamp,
     };
-  }
+  },
 });
 </script>
 
 <style scoped>
 .feature-toggles-tab {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .feature-toggles-tab-header {
@@ -421,7 +466,7 @@ export default defineComponent({
   align-items: center;
 }
 
-.feature-filter, 
+.feature-filter,
 .feature-role-selector {
   display: flex;
   align-items: center;
@@ -585,7 +630,9 @@ export default defineComponent({
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
   border: none;
   color: white;
   background-color: #0d7a40; /* nscale Grün */
@@ -633,13 +680,13 @@ export default defineComponent({
     flex-direction: column;
     align-items: stretch;
   }
-  
-  .feature-filter, 
+
+  .feature-filter,
   .feature-role-selector {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .feature-filter select,
   .feature-role-selector select,
   .simulation-feature-select select,

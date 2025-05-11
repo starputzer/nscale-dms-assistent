@@ -2,7 +2,7 @@
 title: "Dialog-System"
 version: "1.0.0"
 date: "10.05.2025"
-lastUpdate: "10.05.2025"
+lastUpdate: "11.05.2025"
 author: "Martin Heinrich"
 status: "Aktiv"
 priority: "Mittel"
@@ -1457,4 +1457,4 @@ Durch die Verwendung von modernen Vue 3-Features wie Composition API, Teleport u
 
 ---
 
-Zuletzt aktualisiert: 13.05.2025
+Zuletzt aktualisiert: 11.05.2025

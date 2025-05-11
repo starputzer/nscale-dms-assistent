@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed } from "vue";
 
 /**
  * Container component for layout with optional maximum width constraints
@@ -17,29 +17,32 @@ import { computed } from 'vue';
  */
 export interface ContainerProps {
   /** Container size variant */
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  size?: "sm" | "md" | "lg" | "xl" | "full";
   /** Whether the container is fluid (full width) */
   fluid?: boolean;
   /** Additional padding control */
-  padding?: boolean | 'sm' | 'md' | 'lg' | 'none';
+  padding?: boolean | "sm" | "md" | "lg" | "none";
 }
 
 const props = withDefaults(defineProps<ContainerProps>(), {
-  size: 'lg',
+  size: "lg",
   fluid: false,
-  padding: true
+  padding: true,
 });
 
 // Compute container classes based on props
 const classes = computed(() => {
-  const paddingClass = typeof props.padding === 'boolean'
-    ? props.padding ? 'n-container--padded' : 'n-container--no-padding'
-    : `n-container--padding-${props.padding}`;
+  const paddingClass =
+    typeof props.padding === "boolean"
+      ? props.padding
+        ? "n-container--padded"
+        : "n-container--no-padding"
+      : `n-container--padding-${props.padding}`;
 
   return [
     `n-container--${props.size}`,
-    props.fluid && 'n-container--fluid',
-    paddingClass
+    props.fluid && "n-container--fluid",
+    paddingClass,
   ];
 });
 </script>
@@ -107,7 +110,7 @@ const classes = computed(() => {
     padding-left: var(--nscale-space-5, 1.25rem);
     padding-right: var(--nscale-space-5, 1.25rem);
   }
-  
+
   .n-container--padding-lg {
     padding-left: var(--nscale-space-8, 2rem);
     padding-right: var(--nscale-space-8, 2rem);
@@ -120,7 +123,7 @@ const classes = computed(() => {
     padding-left: var(--nscale-space-6, 1.5rem);
     padding-right: var(--nscale-space-6, 1.5rem);
   }
-  
+
   .n-container--padding-lg {
     padding-left: var(--nscale-space-10, 2.5rem);
     padding-right: var(--nscale-space-10, 2.5rem);

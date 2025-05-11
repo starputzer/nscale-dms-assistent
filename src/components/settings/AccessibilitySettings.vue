@@ -1,11 +1,15 @@
 <template>
   <div class="accessibility-settings">
-    <h3 class="accessibility-settings__title">{{ t('settings.accessibility.title', 'Barrierefreiheitseinstellungen') }}</h3>
-    
+    <h3 class="accessibility-settings__title">
+      {{ t("settings.accessibility.title", "Barrierefreiheitseinstellungen") }}
+    </h3>
+
     <div class="accessibility-settings__section">
       <div class="accessibility-settings__toggle-container">
         <label class="accessibility-settings__toggle-label">
-          {{ t('settings.accessibility.reduceMotion', 'Bewegungen reduzieren') }}
+          {{
+            t("settings.accessibility.reduceMotion", "Bewegungen reduzieren")
+          }}
         </label>
         <div class="accessibility-settings__toggle">
           <input
@@ -19,16 +23,21 @@
           </label>
         </div>
       </div>
-      
+
       <p class="accessibility-settings__description">
-        {{ t('settings.accessibility.reduceMotionDescription', 'Reduziert oder entfernt Animationen und Bewegungen in der Anwendung.') }}
+        {{
+          t(
+            "settings.accessibility.reduceMotionDescription",
+            "Reduziert oder entfernt Animationen und Bewegungen in der Anwendung.",
+          )
+        }}
       </p>
     </div>
-    
+
     <div class="accessibility-settings__section">
       <div class="accessibility-settings__toggle-container">
         <label class="accessibility-settings__toggle-label">
-          {{ t('settings.accessibility.highContrast', 'Hoher Kontrast') }}
+          {{ t("settings.accessibility.highContrast", "Hoher Kontrast") }}
         </label>
         <div class="accessibility-settings__toggle">
           <input
@@ -42,24 +51,43 @@
           </label>
         </div>
       </div>
-      
+
       <p class="accessibility-settings__description">
-        {{ t('settings.accessibility.highContrastDescription', 'Erhöht den Kontrast für bessere Lesbarkeit.') }}
+        {{
+          t(
+            "settings.accessibility.highContrastDescription",
+            "Erhöht den Kontrast für bessere Lesbarkeit.",
+          )
+        }}
       </p>
-      
-      <div class="accessibility-settings__preview" :class="{ 'high-contrast': a11ySettings.highContrast }">
-        <p class="accessibility-settings__preview-text">{{ t('settings.accessibility.contrastPreview', 'Beispieltext mit aktuellem Kontrast') }}</p>
+
+      <div
+        class="accessibility-settings__preview"
+        :class="{ 'high-contrast': a11ySettings.highContrast }"
+      >
+        <p class="accessibility-settings__preview-text">
+          {{
+            t(
+              "settings.accessibility.contrastPreview",
+              "Beispieltext mit aktuellem Kontrast",
+            )
+          }}
+        </p>
         <div class="accessibility-settings__preview-elements">
-          <button class="accessibility-settings__preview-button">{{ t('settings.accessibility.button', 'Schaltfläche') }}</button>
-          <div class="accessibility-settings__preview-link">{{ t('settings.accessibility.link', 'Textlink') }}</div>
+          <button class="accessibility-settings__preview-button">
+            {{ t("settings.accessibility.button", "Schaltfläche") }}
+          </button>
+          <div class="accessibility-settings__preview-link">
+            {{ t("settings.accessibility.link", "Textlink") }}
+          </div>
         </div>
       </div>
     </div>
-    
+
     <div class="accessibility-settings__section">
       <div class="accessibility-settings__toggle-container">
         <label class="accessibility-settings__toggle-label">
-          {{ t('settings.accessibility.largeText', 'Größere Texte') }}
+          {{ t("settings.accessibility.largeText", "Größere Texte") }}
         </label>
         <div class="accessibility-settings__toggle">
           <input
@@ -73,20 +101,40 @@
           </label>
         </div>
       </div>
-      
+
       <p class="accessibility-settings__description">
-        {{ t('settings.accessibility.largeTextDescription', 'Erhöht die Textgröße in der gesamten Anwendung.') }}
+        {{
+          t(
+            "settings.accessibility.largeTextDescription",
+            "Erhöht die Textgröße in der gesamten Anwendung.",
+          )
+        }}
       </p>
-      
-      <div class="accessibility-settings__preview" :class="{ 'large-text': a11ySettings.largeText }">
-        <p class="accessibility-settings__preview-text">{{ t('settings.accessibility.textSizePreview', 'Beispieltext mit aktueller Größe') }}</p>
+
+      <div
+        class="accessibility-settings__preview"
+        :class="{ 'large-text': a11ySettings.largeText }"
+      >
+        <p class="accessibility-settings__preview-text">
+          {{
+            t(
+              "settings.accessibility.textSizePreview",
+              "Beispieltext mit aktueller Größe",
+            )
+          }}
+        </p>
       </div>
     </div>
-    
+
     <div class="accessibility-settings__section">
       <div class="accessibility-settings__toggle-container">
         <label class="accessibility-settings__toggle-label">
-          {{ t('settings.accessibility.screenReader', 'Bildschirmleser-Unterstützung') }}
+          {{
+            t(
+              "settings.accessibility.screenReader",
+              "Bildschirmleser-Unterstützung",
+            )
+          }}
         </label>
         <div class="accessibility-settings__toggle">
           <input
@@ -100,20 +148,32 @@
           </label>
         </div>
       </div>
-      
+
       <p class="accessibility-settings__description">
-        {{ t('settings.accessibility.screenReaderDescription', 'Verbessert die Kompatibilität mit Bildschirmlesern und Assistenztechnologien.') }}
+        {{
+          t(
+            "settings.accessibility.screenReaderDescription",
+            "Verbessert die Kompatibilität mit Bildschirmlesern und Assistenztechnologien.",
+          )
+        }}
       </p>
     </div>
-    
+
     <div class="accessibility-settings__section">
       <h4 class="accessibility-settings__subtitle">
-        {{ t('settings.accessibility.keyboardNavigation', 'Tastaturnavigation') }}
+        {{
+          t("settings.accessibility.keyboardNavigation", "Tastaturnavigation")
+        }}
       </h4>
-      
+
       <div class="accessibility-settings__toggle-container">
         <label class="accessibility-settings__toggle-label">
-          {{ t('settings.accessibility.keyboardShortcuts', 'Tastenkürzel aktivieren') }}
+          {{
+            t(
+              "settings.accessibility.keyboardShortcuts",
+              "Tastenkürzel aktivieren",
+            )
+          }}
         </label>
         <div class="accessibility-settings__toggle">
           <input
@@ -127,26 +187,44 @@
           </label>
         </div>
       </div>
-      
+
       <p class="accessibility-settings__description">
-        {{ t('settings.accessibility.keyboardShortcutsDescription', 'Aktiviert Tastenkürzel für schnellere Navigation und Bedienung.') }}
+        {{
+          t(
+            "settings.accessibility.keyboardShortcutsDescription",
+            "Aktiviert Tastenkürzel für schnellere Navigation und Bedienung.",
+          )
+        }}
       </p>
-      
-      <div v-if="keyboardSettings.enableShortcuts" class="accessibility-settings__keyboard-shortcuts">
+
+      <div
+        v-if="keyboardSettings.enableShortcuts"
+        class="accessibility-settings__keyboard-shortcuts"
+      >
         <h5 class="accessibility-settings__shortcuts-title">
-          {{ t('settings.accessibility.availableShortcuts', 'Verfügbare Tastenkürzel') }}
+          {{
+            t(
+              "settings.accessibility.availableShortcuts",
+              "Verfügbare Tastenkürzel",
+            )
+          }}
         </h5>
-        
+
         <div class="accessibility-settings__shortcuts-list">
           <div class="accessibility-settings__shortcut-item">
             <div class="accessibility-settings__shortcut-keys">
               <span class="accessibility-settings__key">Esc</span>
             </div>
             <div class="accessibility-settings__shortcut-description">
-              {{ t('settings.accessibility.escDescription', 'Aktuelle Aktion abbrechen oder Dialog schließen') }}
+              {{
+                t(
+                  "settings.accessibility.escDescription",
+                  "Aktuelle Aktion abbrechen oder Dialog schließen",
+                )
+              }}
             </div>
           </div>
-          
+
           <div class="accessibility-settings__shortcut-item">
             <div class="accessibility-settings__shortcut-keys">
               <span class="accessibility-settings__key">Ctrl</span>
@@ -154,10 +232,15 @@
               <span class="accessibility-settings__key">S</span>
             </div>
             <div class="accessibility-settings__shortcut-description">
-              {{ t('settings.accessibility.saveDescription', 'Einstellungen speichern') }}
+              {{
+                t(
+                  "settings.accessibility.saveDescription",
+                  "Einstellungen speichern",
+                )
+              }}
             </div>
           </div>
-          
+
           <div class="accessibility-settings__shortcut-item">
             <div class="accessibility-settings__shortcut-keys">
               <span class="accessibility-settings__key">Alt</span>
@@ -165,30 +248,45 @@
               <span class="accessibility-settings__key">1-4</span>
             </div>
             <div class="accessibility-settings__shortcut-description">
-              {{ t('settings.accessibility.tabsDescription', 'Zwischen Einstellungskategorien wechseln') }}
+              {{
+                t(
+                  "settings.accessibility.tabsDescription",
+                  "Zwischen Einstellungskategorien wechseln",
+                )
+              }}
             </div>
           </div>
-          
+
           <div class="accessibility-settings__shortcut-item">
             <div class="accessibility-settings__shortcut-keys">
               <span class="accessibility-settings__key">Tab</span>
             </div>
             <div class="accessibility-settings__shortcut-description">
-              {{ t('settings.accessibility.tabDescription', 'Zum nächsten interaktiven Element navigieren') }}
+              {{
+                t(
+                  "settings.accessibility.tabDescription",
+                  "Zum nächsten interaktiven Element navigieren",
+                )
+              }}
             </div>
           </div>
         </div>
       </div>
     </div>
-    
+
     <div class="accessibility-settings__section">
       <h4 class="accessibility-settings__subtitle">
-        {{ t('settings.accessibility.focusIndicators', 'Fokusanzeigen') }}
+        {{ t("settings.accessibility.focusIndicators", "Fokusanzeigen") }}
       </h4>
-      
+
       <div class="accessibility-settings__toggle-container">
         <label class="accessibility-settings__toggle-label">
-          {{ t('settings.accessibility.enhancedFocus', 'Verbesserte Fokusanzeige') }}
+          {{
+            t(
+              "settings.accessibility.enhancedFocus",
+              "Verbesserte Fokusanzeige",
+            )
+          }}
         </label>
         <div class="accessibility-settings__toggle">
           <input
@@ -202,20 +300,32 @@
           </label>
         </div>
       </div>
-      
+
       <p class="accessibility-settings__description">
-        {{ t('settings.accessibility.enhancedFocusDescription', 'Zeigt einen deutlicheren Fokusrahmen um das aktive Element.') }}
+        {{
+          t(
+            "settings.accessibility.enhancedFocusDescription",
+            "Zeigt einen deutlicheren Fokusrahmen um das aktive Element.",
+          )
+        }}
       </p>
-      
+
       <div class="accessibility-settings__focus-preview">
-        <button 
-          class="accessibility-settings__focus-button" 
+        <button
+          class="accessibility-settings__focus-button"
           :class="{ 'enhanced-focus': a11ySettings.enhancedFocus }"
         >
-          {{ t('settings.accessibility.focusExample', 'Beispiel für Fokusrahmen') }}
+          {{
+            t("settings.accessibility.focusExample", "Beispiel für Fokusrahmen")
+          }}
         </button>
         <p class="accessibility-settings__focus-hint">
-          {{ t('settings.accessibility.focusHint', 'Klicken Sie die Schaltfläche an und drücken Sie Tab, um den Fokuseffekt zu sehen.') }}
+          {{
+            t(
+              "settings.accessibility.focusHint",
+              "Klicken Sie die Schaltfläche an und drücken Sie Tab, um den Fokuseffekt zu sehen.",
+            )
+          }}
         </p>
       </div>
     </div>
@@ -223,15 +333,19 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, onMounted, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { useSettingsStore } from '@/stores/settings';
-import type { A11ySettings } from '@/types/settings';
+import { reactive, onMounted, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import { useSettingsStore } from "@/stores/settings";
+import type { A11ySettings } from "@/types/settings";
 
 // Emits
 const emit = defineEmits<{
-  (e: 'apply-settings', category: string, settings: Partial<A11ySettings>): void;
-  (e: 'reset'): void;
+  (
+    e: "apply-settings",
+    category: string,
+    settings: Partial<A11ySettings>,
+  ): void;
+  (e: "reset"): void;
 }>();
 
 // Services
@@ -241,12 +355,12 @@ const settingsStore = useSettingsStore();
 // State
 const a11ySettings = reactive<A11ySettings & { enhancedFocus?: boolean }>({
   ...settingsStore.a11y,
-  enhancedFocus: false // Erweiterung der A11ySettings
+  enhancedFocus: false, // Erweiterung der A11ySettings
 });
 
 // Tastatureinstellungen (nicht im Store vorhanden, könnte später hinzugefügt werden)
 const keyboardSettings = reactive({
-  enableShortcuts: true
+  enableShortcuts: true,
 });
 
 // Methoden
@@ -256,36 +370,36 @@ function updateSettings() {
     reduceMotion: a11ySettings.reduceMotion,
     highContrast: a11ySettings.highContrast,
     largeText: a11ySettings.largeText,
-    screenReader: a11ySettings.screenReader
+    screenReader: a11ySettings.screenReader,
   };
-  
-  emit('apply-settings', 'accessibility', standardSettings);
-  
+
+  emit("apply-settings", "accessibility", standardSettings);
+
   // Zusätzlich die erweiterte Fokus-Einstellung anwenden
   applyEnhancedFocus();
 }
 
 function updateKeyboardSettings() {
   // Tastaturkürzel aktivieren/deaktivieren
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     if (keyboardSettings.enableShortcuts) {
-      document.documentElement.classList.add('keyboard-shortcuts-enabled');
+      document.documentElement.classList.add("keyboard-shortcuts-enabled");
     } else {
-      document.documentElement.classList.remove('keyboard-shortcuts-enabled');
+      document.documentElement.classList.remove("keyboard-shortcuts-enabled");
     }
-    
+
     // Tastatureinstellungen im localStorage speichern
-    localStorage.setItem('keyboard-settings', JSON.stringify(keyboardSettings));
+    localStorage.setItem("keyboard-settings", JSON.stringify(keyboardSettings));
   }
 }
 
 function applyEnhancedFocus() {
   // Verbesserte Fokusanzeige ein-/ausschalten
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     if (a11ySettings.enhancedFocus) {
-      document.documentElement.classList.add('enhanced-focus-enabled');
+      document.documentElement.classList.add("enhanced-focus-enabled");
     } else {
-      document.documentElement.classList.remove('enhanced-focus-enabled');
+      document.documentElement.classList.remove("enhanced-focus-enabled");
     }
   }
 }
@@ -297,19 +411,20 @@ function resetState() {
   a11ySettings.highContrast = settingsStore.a11y.highContrast;
   a11ySettings.largeText = settingsStore.a11y.largeText;
   a11ySettings.screenReader = settingsStore.a11y.screenReader;
-  
+
   // Zusätzliche Einstellungen aus dem localStorage laden
   try {
     // Enhanced Focus
-    a11ySettings.enhancedFocus = localStorage.getItem('enhanced-focus') === 'true';
-    
+    a11ySettings.enhancedFocus =
+      localStorage.getItem("enhanced-focus") === "true";
+
     // Keyboard settings
-    const savedKeyboardSettings = localStorage.getItem('keyboard-settings');
+    const savedKeyboardSettings = localStorage.getItem("keyboard-settings");
     if (savedKeyboardSettings) {
       Object.assign(keyboardSettings, JSON.parse(savedKeyboardSettings));
     }
   } catch (error) {
-    console.error('Fehler beim Laden der erweiterten Einstellungen:', error);
+    console.error("Fehler beim Laden der erweiterten Einstellungen:", error);
   }
 }
 
@@ -320,9 +435,13 @@ onMounted(() => {
 });
 
 // Watch für externe Änderungen am Store
-watch(() => settingsStore.a11y, () => {
-  resetState();
-}, { deep: true });
+watch(
+  () => settingsStore.a11y,
+  () => {
+    resetState();
+  },
+  { deep: true },
+);
 </script>
 
 <style scoped>
@@ -438,7 +557,7 @@ input:checked + .toggle-switch .toggle-switch__slider::before {
   --contrast-text: #000000;
   --contrast-background: #ffffff;
   --contrast-primary: #0000cc;
-  
+
   background-color: var(--contrast-background);
   color: var(--contrast-text);
   border-color: #000000;
@@ -587,17 +706,17 @@ input:checked + .toggle-switch .toggle-switch__slider::before {
     align-items: flex-start;
     gap: 0.5rem;
   }
-  
+
   .accessibility-settings__toggle {
     align-self: flex-start;
   }
-  
+
   .accessibility-settings__shortcut-item {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.25rem;
   }
-  
+
   .accessibility-settings__shortcut-keys {
     margin-bottom: 0.25rem;
   }

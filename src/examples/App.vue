@@ -5,9 +5,28 @@
         <img src="/images/nscale-logo.svg" alt="nscale DMS Assistent Logo" />
         <h1>nscale DMS Assistent</h1>
       </div>
-      <button @click="toggleDarkMode" class="theme-toggle" :title="isDarkMode ? 'Zum hellen Design wechseln' : 'Zum dunklen Design wechseln'">
-        <span class="sr-only">{{ isDarkMode ? 'Zum hellen Design wechseln' : 'Zum dunklen Design wechseln' }}</span>
-        <svg v-if="isDarkMode" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <button
+        @click="toggleDarkMode"
+        class="theme-toggle"
+        :title="
+          isDarkMode
+            ? 'Zum hellen Design wechseln'
+            : 'Zum dunklen Design wechseln'
+        "
+      >
+        <span class="sr-only">{{
+          isDarkMode
+            ? "Zum hellen Design wechseln"
+            : "Zum dunklen Design wechseln"
+        }}</span>
+        <svg
+          v-if="isDarkMode"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
           <circle cx="12" cy="12" r="5"></circle>
           <line x1="12" y1="1" x2="12" y2="3"></line>
           <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -18,29 +37,41 @@
           <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
           <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
         </svg>
-        <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg
+          v-else
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
         </svg>
       </button>
     </header>
-    
+
     <main class="app-main">
       <ErrorReportingExample />
     </main>
-    
+
     <footer class="app-footer">
-      <p>&copy; 2025 nscale DMS Assistent | <button @click="showAbout" class="text-button">Über diese Anwendung</button></p>
+      <p>
+        &copy; 2025 nscale DMS Assistent |
+        <button @click="showAbout" class="text-button">
+          Über diese Anwendung
+        </button>
+      </p>
     </footer>
-    
+
     <!-- DialogProvider für benutzerdefinierte Dialoge -->
     <DialogProvider />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useGlobalDialog } from '@/composables/useDialog';
-import ErrorReportingExample from './ErrorReportingExample.vue';
+import { ref } from "vue";
+import { useGlobalDialog } from "@/composables/useDialog";
+import ErrorReportingExample from "./ErrorReportingExample.vue";
 
 // Theme-Zustand
 const isDarkMode = ref(false);
@@ -51,38 +82,38 @@ const dialog = useGlobalDialog();
 // Theme umschalten
 const toggleDarkMode = () => {
   isDarkMode.value = !isDarkMode.value;
-  
+
   // Theme im localStorage speichern
-  localStorage.setItem('nscale-theme', isDarkMode.value ? 'dark' : 'light');
-  
+  localStorage.setItem("nscale-theme", isDarkMode.value ? "dark" : "light");
+
   // Theme auf dem HTML-Element setzen für CSS-Variablen
   if (isDarkMode.value) {
-    document.documentElement.classList.add('dark-mode');
+    document.documentElement.classList.add("dark-mode");
   } else {
-    document.documentElement.classList.remove('dark-mode');
+    document.documentElement.classList.remove("dark-mode");
   }
 };
 
 // Über-Dialog anzeigen
 const showAbout = () => {
   dialog.info({
-    title: 'Über nscale DMS Assistent',
+    title: "Über nscale DMS Assistent",
     message: `
       nscale DMS Assistent ist ein intelligenter Assistent für die nscale Dokumentenmanagement-Software.
       
       Version: 1.0.0
       Entwickelt mit Vue 3 und TypeScript.
     `,
-    confirmButtonText: 'Schließen'
+    confirmButtonText: "Schließen",
   });
 };
 
 // Theme aus localStorage laden
 const initTheme = () => {
-  const savedTheme = localStorage.getItem('nscale-theme');
-  if (savedTheme === 'dark') {
+  const savedTheme = localStorage.getItem("nscale-theme");
+  if (savedTheme === "dark") {
     isDarkMode.value = true;
-    document.documentElement.classList.add('dark-mode');
+    document.documentElement.classList.add("dark-mode");
   }
 };
 
@@ -118,10 +149,12 @@ initTheme();
 /* Grundlegende Stile */
 body {
   margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   color: var(--text-color);
   background-color: var(--bg-color);
-  transition: background-color 0.3s, color 0.3s;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
 }
 
 #app {

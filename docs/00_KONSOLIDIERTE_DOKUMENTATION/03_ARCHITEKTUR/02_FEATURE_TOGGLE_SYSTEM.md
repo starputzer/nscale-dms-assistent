@@ -1,8 +1,8 @@
 ---
 title: "Feature-Toggle-System"
-version: "1.0.0"
+version: "1.3.0"
 date: "09.05.2025"
-lastUpdate: "09.05.2025"
+lastUpdate: "11.05.2025"
 author: "Martin Heinrich"
 status: "Aktiv"
 priority: "Hoch"
@@ -12,7 +12,7 @@ tags: ["Feature-Toggle", "Migration", "Vue3", "Fehlerbehandlung", "A/B-Testing"]
 
 # Feature-Toggle-System
 
-> **Letzte Aktualisierung:** 09.05.2025 | **Version:** 1.0.0 | **Status:** Aktiv
+> **Letzte Aktualisierung:** 11.05.2025 | **Version:** 1.3.0 | **Status:** Aktiv
 
 ## Übersicht
 
@@ -153,7 +153,28 @@ export const useFeatureTogglesStore = defineStore('featureToggles', () => {
       requiredRole: 'developer',
       hasFallback: true,
       dependencies: ['usePiniaAuth', 'usePiniaUI']
+    },
+
+    // UI-Basiskomponenten
+    useSfcUIButton: {
+      name: 'SFC Button-Komponente',
+      description: 'Verwende die neue Vue 3 SFC-Implementierung der Button-Komponente',
+      group: 'sfcMigration',
+      stable: true, // Stabil und einfach
+      requiredRole: 'developer',
+      hasFallback: true,
+      dependencies: ['useNewUIComponents']
+    },
+    useSfcUIInput: {
+      name: 'SFC Input-Komponente',
+      description: 'Verwende die neue Vue 3 SFC-Implementierung der Input-Komponente',
+      group: 'sfcMigration',
+      stable: true, // Stabil und einfach
+      requiredRole: 'developer',
+      hasFallback: true,
+      dependencies: ['useNewUIComponents']
     }
+    // ... weitere UI-Komponenten-Konfigurationen
   });
   
   // Pinia Store Features
@@ -171,6 +192,14 @@ export const useFeatureTogglesStore = defineStore('featureToggles', () => {
   const useSfcAdmin = ref<boolean>(true); // Aktiviert für Admin-Bereich
   const useSfcChat = ref<boolean>(false);
   const useSfcSettings = ref<boolean>(false);
+
+  // UI-Basiskomponenten Features - Phase 1 Aktivierung
+  const useSfcUIButton = ref<boolean>(true);  // Einfache Komponente mit minimalen Abhängigkeiten
+  const useSfcUIInput = ref<boolean>(true);   // Einfaches Formular-Element
+  const useSfcUIBadge = ref<boolean>(true);   // Einfache Anzeigekomponente
+  const useSfcUITooltip = ref<boolean>(true); // Einfache Overlay-Komponente
+  const useSfcUICard = ref<boolean>(true);    // Container-Komponente
+  // ... weitere UI-Basiskomponenten
   
   // Legacy Integration
   const useLegacyBridge = ref<boolean>(true);
@@ -265,6 +294,61 @@ export const useFeatureTogglesStore = defineStore('featureToggles', () => {
   }
   
   /**
+   * Aktiviert alle UI-Basiskomponenten
+   */
+  function enableAllUIBaseComponents(): void {
+    useSfcUIButton.value = true;
+    useSfcUIInput.value = true;
+    useSfcUIBadge.value = true;
+    useSfcUITooltip.value = true;
+    useSfcUICard.value = true;
+    useSfcUIAlert.value = true;
+    useSfcUIToggle.value = true;
+    useSfcUITextArea.value = true;
+    useSfcUIProgressBar.value = true;
+    useSfcUICheckbox.value = true;
+    useSfcUIRadio.value = true;
+    useSfcUISelect.value = true;
+    useSfcUIModal.value = true;
+
+    // Übergeordnetes Feature aktivieren
+    useNewUIComponents.value = true;
+  }
+
+  /**
+   * Deaktiviert alle UI-Basiskomponenten
+   */
+  function disableAllUIBaseComponents(): void {
+    useSfcUIButton.value = false;
+    useSfcUIInput.value = false;
+    useSfcUIBadge.value = false;
+    useSfcUITooltip.value = false;
+    useSfcUICard.value = false;
+    useSfcUIAlert.value = false;
+    useSfcUIToggle.value = false;
+    useSfcUITextArea.value = false;
+    useSfcUIProgressBar.value = false;
+    useSfcUICheckbox.value = false;
+    useSfcUIRadio.value = false;
+    useSfcUISelect.value = false;
+    useSfcUIModal.value = false;
+
+    // Fallbacks für UI-Komponenten deaktivieren
+    Object.keys(activeFallbacks).forEach((feature) => {
+      if (feature.startsWith("useSfcUI")) {
+        activeFallbacks[feature] = false;
+      }
+    });
+
+    // Fehler löschen für UI-Komponenten
+    Object.keys(errors).forEach((feature) => {
+      if (feature.startsWith("useSfcUI")) {
+        errors[feature] = [];
+      }
+    });
+  }
+
+  /**
    * Deaktiviert alle SFC-Migrationsfeatures
    */
   function disableAllSfcFeatures(): void {
@@ -272,17 +356,20 @@ export const useFeatureTogglesStore = defineStore('featureToggles', () => {
     useSfcAdmin.value = false;
     useSfcChat.value = false;
     useSfcSettings.value = false;
-    
+
+    // UI-Basiskomponenten deaktivieren
+    disableAllUIBaseComponents();
+
     // Fallbacks deaktivieren
     Object.keys(activeFallbacks).forEach(feature => {
-      if (feature.startsWith('useSfc')) {
+      if (feature.startsWith('useSfc') && !feature.startsWith('useSfcUI')) {
         activeFallbacks[feature] = false;
       }
     });
-    
+
     // Fehler löschen
     Object.keys(errors).forEach(feature => {
-      if (feature.startsWith('useSfc')) {
+      if (feature.startsWith('useSfc') && !feature.startsWith('useSfcUI')) {
         errors[feature] = [];
       }
     });
@@ -1101,9 +1188,435 @@ Folgende Herausforderungen bestehen noch im Feature-Toggle-System:
 3. **Technische Schuld**: Temporäre Feature-Flags können zu technischer Schuld werden
 4. **Testing-Overhead**: Alle Kombinationen von Feature-Flags müssen getestet werden
 
+## Aktivierung der UI-Basiskomponenten (Phase 1)
+
+Als erster Schritt der Vue 3 SFC-Migration wurden die UI-Basiskomponenten für die Aktivierung vorbereitet. Diese Komponenten bilden die Grundlage aller anderen UI-Elemente und haben wenige externe Abhängigkeiten, weshalb sie sich ideal für den Einstieg in die Migration eignen.
+
+### Implementierte UI-Basiskomponenten
+
+Folgende UI-Basiskomponenten wurden für die Aktivierung vorbereitet:
+
+1. **Button.vue** - Standard-Button-Komponente
+2. **Input.vue** - Texteingabefeld mit verschiedenen Modi
+3. **Badge.vue** - Label- und Badge-Komponente
+4. **Tooltip.vue** - Tooltip mit Hover-Effekt
+5. **Card.vue** - Container-Komponente für Inhalte
+6. **Alert.vue** - Benachrichtigungskomponente
+7. **Toggle.vue** - An/Aus-Schalter
+8. **TextArea.vue** - Mehrzeiliges Texteingabefeld
+9. **ProgressBar.vue** - Fortschrittsanzeige
+10. **Checkbox.vue** - Auswahlbox
+11. **Radio.vue** - Radio-Button
+12. **Select.vue** - Dropdown-Auswahlfeld
+13. **Modal.vue** - Dialog-Komponente
+
+### Granulare Feature-Steuerung
+
+Für jede Komponente wurde ein eigenes Feature-Flag implementiert, sodass die Komponenten unabhängig voneinander aktiviert werden können:
+
+```typescript
+// UI-Basis-Feature-Flags
+const useSfcUIButton = ref<boolean>(true);
+const useSfcUIInput = ref<boolean>(true);
+const useSfcUIBadge = ref<boolean>(true);
+// ... weitere UI-Komponenten-Flags
+```
+
+Für die einfache Aktivierung aller UI-Basiskomponenten gleichzeitig wurde eine Helferfunktion implementiert:
+
+```typescript
+/**
+ * Aktiviert alle UI-Basiskomponenten gleichzeitig
+ */
+function enableAllUIBaseComponents(): void {
+  useSfcUIButton.value = true;
+  useSfcUIInput.value = true;
+  useSfcUIBadge.value = true;
+  // ... weitere UI-Komponenten aktivieren
+
+  // Übergeordnetes Feature aktivieren
+  useNewUIComponents.value = true;
+}
+```
+
+### Fehlerbehandlung für UI-Komponenten
+
+Die Fehlererfassung im Feature-Toggle-System wurde erweitert, um UI-Komponenten zu unterstützen:
+
+```typescript
+// Fehlerbehandlung für UI-Komponenten
+if (componentName.includes("Button")) {
+  featureName = "useSfcUIButton";
+} else if (componentName.includes("Input")) {
+  featureName = "useSfcUIInput";
+}
+// ... weitere UI-Komponenten
+```
+
+### Abhängigkeitsmanagement
+
+Für jede UI-Komponente wurden die Abhängigkeiten klar definiert:
+
+```typescript
+useSfcUIButton: {
+  name: 'SFC Button-Komponente',
+  description: 'Vue 3 SFC Button-Komponente',
+  group: 'sfcMigration',
+  stable: true,
+  requiredRole: 'developer',
+  hasFallback: true,
+  dependencies: ['useNewUIComponents']
+}
+```
+
+Die Abhängigkeit zu `useNewUIComponents` stellt sicher, dass alle UI-Komponenten nur aktiviert werden, wenn auch die UI-Komponenten-Bibliothek aktiviert ist.
+
+## Aktivierung der Chat-Komponenten (Phase 2)
+
+Als zweiter Schritt der Vue 3 SFC-Migration wurden die Chat-Komponenten für die Aktivierung vorbereitet. Diese Komponenten bauen auf den UI-Basiskomponenten auf und implementieren die Kernfunktionalität des Chat-Interfaces.
+
+### Implementierte Chat-Komponenten
+
+Folgende Chat-Komponenten wurden für die Aktivierung vorbereitet:
+
+1. **MessageItem.vue** - Anzeige individueller Chat-Nachrichten
+2. **MessageList.vue** - Liste von Chat-Nachrichten
+3. **ChatInput.vue** - Grundlegendes Eingabefeld für Chat
+4. **MessageInput.vue** - Erweiterte Nachrichteneingabe
+5. **SessionItem.vue** - Darstellung einzelner Chat-Sessions
+6. **SessionList.vue** - Liste aller Chat-Sessions
+7. **ChatContainer.vue** - Container für Chat-Funktionalität
+8. **EnhancedChatContainer.vue** - Erweiterter Container mit Bridge-Integration
+
+### Granulare Feature-Steuerung
+
+Für jede Komponente wurde ein eigenes Feature-Flag implementiert, sodass die Komponenten unabhängig voneinander aktiviert werden können, unter Berücksichtigung ihrer Abhängigkeiten:
+
+```typescript
+// Chat-Komponenten Feature-Flags
+const useSfcChatMessageItem = ref<boolean>(true);    // Einfache Anzeigekomponente
+const useSfcChatMessageList = ref<boolean>(false);   // Abhängig von MessageItem
+const useSfcChatInput = ref<boolean>(true);          // Einfache Eingabekomponente
+const useSfcChatMessageInput = ref<boolean>(false);  // Erweiterte Eingabe
+// ... weitere Chat-Komponenten-Flags
+```
+
+Für die einfache Aktivierung aller Chat-Komponenten gleichzeitig wurde eine Helferfunktion implementiert:
+
+```typescript
+/**
+ * Aktiviert alle Chat-Komponenten gleichzeitig
+ */
+function enableAllChatComponents(): void {
+  useSfcChatMessageItem.value = true;
+  useSfcChatMessageList.value = true;
+  useSfcChatInput.value = true;
+  useSfcChatMessageInput.value = true;
+  useSfcSessionItem.value = true;
+  useSfcSessionList.value = true;
+  useSfcChatContainer.value = true;
+  useSfcEnhancedChatContainer.value = true;
+
+  // Übergeordnetes Feature aktivieren
+  useSfcChat.value = true;
+
+  // Erforderliche Abhängigkeiten sicherstellen
+  enableAllUIBaseComponents();
+}
+```
+
+### Abhängigkeitsmanagement
+
+Die Abhängigkeiten zwischen Chat-Komponenten wurden sorgfältig modelliert:
+
+```typescript
+useSfcChatMessageItem: {
+  name: "SFC Chat-Nachricht",
+  description: "Vue 3 SFC Nachrichten-Anzeigekomponente",
+  group: "sfcMigration",
+  stable: true,
+  requiredRole: "developer",
+  hasFallback: true,
+  dependencies: ["useNewUIComponents", "useSfcUICard", "useSfcUIButton"]
+},
+useSfcChatMessageList: {
+  name: "SFC Chat-Nachrichtenliste",
+  description: "Vue 3 SFC Nachrichtenliste",
+  group: "sfcMigration",
+  stable: true,
+  requiredRole: "developer",
+  hasFallback: true,
+  dependencies: ["useSfcChatMessageItem"]
+}
+```
+
+### Aktivierungsstrategie
+
+Die Aktivierung der Chat-Komponenten erfolgt in folgender Reihenfolge:
+
+1. Basiskomponenten (MessageItem, ChatInput, SessionItem) - Einfache, unabhängige Komponenten
+2. Listen-Komponenten (MessageList, SessionList) - Abhängig von den Basiskomponenten
+3. Container-Komponenten (ChatContainer) - Integrieren Listen und Eingabekomponenten
+4. Erweiterte Container (EnhancedChatContainer) - Komplexe Integration mit Bridge-System
+
+Diese Strategie minimiert Risiken und erlaubt eine gezielte Fehlerbehebung bei Problemen.
+
+## Aktivierung der Admin-Komponenten (Phase 3)
+
+Als dritter Schritt der Vue 3 SFC-Migration wurden die Admin-Komponenten für die Aktivierung vorbereitet. Diese Komponenten bilden die Grundlage des Admin-Bereichs und ermöglichen die Verwaltung der Anwendung.
+
+### Implementierte Admin-Komponenten
+
+Folgende Admin-Komponenten wurden für die Aktivierung vorbereitet:
+
+1. **AdminPanel.vue** - Hauptcontainer des Admin-Bereichs
+2. **AdminUsers.vue** - Benutzerverwaltung
+3. **AdminFeedback.vue** - Feedback-Verwaltung
+4. **AdminMotd.vue** - Verwaltung von Nachrichten des Tages
+5. **AdminSystem.vue** - Systemverwaltung
+6. **AdminStatistics.vue** - Statistikanzeige (komplexer mit Grafiken)
+7. **AdminSystemSettings.vue** - Einstellungen des Systems
+8. **AdminFeatureToggles.vue** - Verwaltung der Feature-Toggles
+9. **AdminLogViewer.vue** - Anzeige und Analyse von Logs
+
+### Granulare Feature-Steuerung
+
+Für jede Komponente wurde ein eigenes Feature-Flag implementiert, sodass die Komponenten unabhängig voneinander aktiviert werden können:
+
+```typescript
+// Admin-Komponenten Feature-Flags
+const useSfcAdminPanel = ref<boolean>(true);          // Hauptcontainer des Admin-Bereichs
+const useSfcAdminUsers = ref<boolean>(true);          // Benutzer-Verwaltung
+const useSfcAdminFeedback = ref<boolean>(true);       // Feedback-Verwaltung
+const useSfcAdminMotd = ref<boolean>(true);           // Nachrichten-Verwaltung
+const useSfcAdminSystem = ref<boolean>(true);         // System-Tab
+const useSfcAdminStatistics = ref<boolean>(false);    // Statistik-Tab mit komplexen Grafiken
+const useSfcAdminSystemSettings = ref<boolean>(true); // Systemeinstellungen-Tab
+const useSfcAdminFeatureToggles = ref<boolean>(true); // Feature-Toggle-Verwaltung
+const useSfcAdminLogViewer = ref<boolean>(false);     // Log-Betrachter mit erweiterten Funktionen
+```
+
+Für die einfache Aktivierung aller Admin-Komponenten gleichzeitig wurde eine Helferfunktion implementiert:
+
+```typescript
+/**
+ * Aktiviert alle Admin-Komponenten gleichzeitig
+ */
+function enableAllAdminComponents(): void {
+  useSfcAdminPanel.value = true;
+  useSfcAdminUsers.value = true;
+  useSfcAdminFeedback.value = true;
+  useSfcAdminMotd.value = true;
+  useSfcAdminSystem.value = true;
+  useSfcAdminStatistics.value = true;
+  useSfcAdminSystemSettings.value = true;
+  useSfcAdminFeatureToggles.value = true;
+  useSfcAdminLogViewer.value = true;
+
+  // Übergeordnetes Feature aktivieren
+  useSfcAdmin.value = true;
+
+  // Erforderliche Abhängigkeiten sicherstellen
+  enableAllUIBaseComponents();
+}
+```
+
+### Abhängigkeitsmanagement
+
+Die Abhängigkeiten zwischen Admin-Komponenten wurden sorgfältig modelliert:
+
+```typescript
+useSfcAdminPanel: {
+  name: "SFC Admin-Panel",
+  description: "Verwende die neue Vue 3 SFC-Implementierung des Admin-Bereichs Hauptpanels",
+  group: "sfcMigration",
+  stable: true,
+  requiredRole: "developer",
+  hasFallback: true,
+  dependencies: ["useNewUIComponents", "useSfcAdmin", "useSfcUICard"]
+},
+useSfcAdminUsers: {
+  name: "SFC Admin-Benutzerverwaltung",
+  description: "Verwende die neue Vue 3 SFC-Implementierung der Benutzerverwaltung",
+  group: "sfcMigration",
+  stable: true,
+  requiredRole: "developer",
+  hasFallback: true,
+  dependencies: ["useSfcAdminPanel", "useSfcUIButton", "useSfcUITable"]
+}
+```
+
+### Aktivierungsstrategie
+
+Die Aktivierung der Admin-Komponenten erfolgt in folgender Reihenfolge:
+
+1. **Admin-Panel** - Grundlegendes Container-Element für alle Admin-Funktionen
+2. **Hauptfunktionen** - Benutzer, Feedback, Nachrichten, System, Einstellungen
+3. **Komplexe Funktionen** - Statistiken, Log-Viewer mit erweiterten Darstellungen
+
+Diese Strategie gewährleistet eine stabile Grundlage, bevor komplexere Komponenten aktiviert werden.
+
+### Fehlerbehandlung
+
+Die Fehlerbehandlung wurde für Admin-Komponenten verfeinert, um eine detaillierte Problemanalyse zu ermöglichen:
+
+```typescript
+if (componentName.includes("Admin")) {
+  // Spezifischere Admin-Komponenten prüfen
+  if (componentName.includes("Panel")) {
+    featureName = "useSfcAdminPanel";
+  } else if (componentName.includes("Users")) {
+    featureName = "useSfcAdminUsers";
+  } else if (componentName.includes("Feedback")) {
+    featureName = "useSfcAdminFeedback";
+  }
+  // ... weitere spezifische Komponenten
+  else {
+    // Fallback für allgemeine Admin-Komponenten
+    featureName = "useSfcAdmin";
+  }
+}
+```
+
+## Aktivierung der Document Converter Komponenten (Phase 4)
+
+Als vierter Schritt der Vue 3 SFC-Migration wurden die Document Converter Komponenten für die Aktivierung vorbereitet. Diese Komponenten sind wichtig für die Dokumentenkonvertierung und -verwaltung in der Anwendung.
+
+### Implementierte Document Converter Komponenten
+
+Folgende Document Converter Komponenten wurden für die Aktivierung vorbereitet:
+
+1. **DocConverterContainer.vue** - Hauptcontainer des Dokumentenkonverters
+2. **FileUpload.vue** - Upload-Komponente für einzelne Dateien
+3. **BatchUpload.vue** - Batch-Upload für mehrere Dateien (komplexer)
+4. **ConversionProgress.vue** - Fortschrittsanzeige für Konvertierungen
+5. **ConversionResult.vue** - Ergebnisanzeige für Konvertierungen
+6. **DocumentList.vue** - Liste der konvertierten Dokumente
+7. **DocumentPreview.vue** - Vorschau der konvertierten Dokumente (komplex)
+8. **ConversionStats.vue** - Konvertierungsstatistiken (komplex)
+9. **ErrorDisplay.vue** - Anzeige von Konvertierungsfehlern
+
+### Granulare Feature-Steuerung
+
+Für jede Komponente wurde ein eigenes Feature-Flag implementiert, sodass die Komponenten unabhängig voneinander aktiviert werden können:
+
+```typescript
+// Document Converter Features - Phase 4 Aktivierung
+const useSfcDocConverterContainer = ref<boolean>(true);     // Hauptcontainer des Dokumentenkonverters
+const useSfcDocConverterFileUpload = ref<boolean>(true);    // Upload-Komponente für einzelne Dateien
+const useSfcDocConverterBatchUpload = ref<boolean>(false);  // Batch-Upload für mehrere Dateien (komplex)
+const useSfcDocConverterProgress = ref<boolean>(true);      // Fortschrittsanzeige für Konvertierungen
+const useSfcDocConverterResult = ref<boolean>(true);        // Ergebnisanzeige für Konvertierungen
+const useSfcDocConverterList = ref<boolean>(true);          // Dokumentenliste
+const useSfcDocConverterPreview = ref<boolean>(false);      // Dokumentvorschau (komplex)
+const useSfcDocConverterStats = ref<boolean>(false);        // Konvertierungsstatistiken (komplex)
+const useSfcDocConverterErrorDisplay = ref<boolean>(true);  // Fehleranzeige für Konvertierungen
+```
+
+Für die einfache Aktivierung aller Document Converter Komponenten gleichzeitig wurde eine Helferfunktion implementiert:
+
+```typescript
+/**
+ * Aktiviert alle Document Converter Komponenten gleichzeitig
+ */
+function enableAllDocConverterComponents(): void {
+  useSfcDocConverterContainer.value = true;
+  useSfcDocConverterFileUpload.value = true;
+  useSfcDocConverterBatchUpload.value = true;
+  useSfcDocConverterProgress.value = true;
+  useSfcDocConverterResult.value = true;
+  useSfcDocConverterList.value = true;
+  useSfcDocConverterPreview.value = true;
+  useSfcDocConverterStats.value = true;
+  useSfcDocConverterErrorDisplay.value = true;
+
+  // Übergeordnetes Feature aktivieren
+  useSfcDocConverter.value = true;
+
+  // Erforderliche Abhängigkeiten sicherstellen
+  enableAllUIBaseComponents();
+}
+```
+
+### Abhängigkeitsmanagement
+
+Die Abhängigkeiten zwischen Document Converter Komponenten wurden sorgfältig modelliert:
+
+```typescript
+useSfcDocConverterContainer: {
+  name: "SFC Dokumentkonverter Container",
+  description: "Verwende die neue Vue 3 SFC-Implementierung des Dokumentkonverter Containers",
+  group: "sfcMigration",
+  stable: true,
+  requiredRole: "developer",
+  hasFallback: true,
+  dependencies: ["useSfcDocConverter", "useSfcUICard"]
+},
+useSfcDocConverterFileUpload: {
+  name: "SFC Datei-Upload",
+  description: "Verwende die neue Vue 3 SFC-Implementierung des Datei-Uploads",
+  group: "sfcMigration",
+  stable: true,
+  requiredRole: "developer",
+  hasFallback: true,
+  dependencies: ["useSfcDocConverterContainer", "useSfcUIButton"]
+}
+```
+
+### Aktivierungsstrategie
+
+Die Aktivierung der Document Converter Komponenten erfolgt in folgender Reihenfolge:
+
+1. **DocConverterContainer** - Grundlegendes Container-Element für alle Dokumentenkonverter-Funktionen
+2. **Basiskomponenten** - FileUpload, Progress, Result, List, ErrorDisplay - Einfachere Komponenten
+3. **Komplexe Komponenten** - BatchUpload, Preview, Stats - Komponenten mit komplexerer Funktionalität
+
+Diese Strategie minimiert Risiken und ermöglicht eine gezielte Fehlerbehebung bei auftretenden Problemen.
+
+### Standardaktivierung
+
+Basierend auf der Komplexität und Stabilität wurden die Document Converter Komponenten mit unterschiedlichen Standardwerten aktiviert:
+
+1. **Aktiviert standardmäßig (true):**
+   - useSfcDocConverterContainer
+   - useSfcDocConverterFileUpload
+   - useSfcDocConverterProgress
+   - useSfcDocConverterResult
+   - useSfcDocConverterList
+   - useSfcDocConverterErrorDisplay
+
+2. **Deaktiviert standardmäßig (false):**
+   - useSfcDocConverterBatchUpload
+   - useSfcDocConverterPreview
+   - useSfcDocConverterStats
+
+Diese Konfiguration stellt sicher, dass grundlegende Funktionen sofort verfügbar sind, während komplexere Komponenten erst nach weiteren Tests aktiviert werden.
+
+### Fehlerbehandlung
+
+Die Fehlerbehandlung wurde für Document Converter Komponenten verfeinert, um eine detaillierte Problemanalyse zu ermöglichen:
+
+```typescript
+if (componentName.includes("DocConverter")) {
+  // Spezifischere Document Converter Komponenten prüfen
+  if (componentName.includes("Container")) {
+    featureName = "useSfcDocConverterContainer";
+  } else if (componentName.includes("FileUpload")) {
+    featureName = "useSfcDocConverterFileUpload";
+  } else if (componentName.includes("BatchUpload")) {
+    featureName = "useSfcDocConverterBatchUpload";
+  }
+  // ... weitere spezifische Komponenten
+  else {
+    // Fallback für allgemeine Document Converter Komponenten
+    featureName = "useSfcDocConverter";
+  }
+}
+```
+
 ## Nächste Schritte
 
-Folgende Schritte sind für die Weiterentwicklung des Feature-Toggle-Systems geplant:
+Die folgenden Schritte sind für die Weiterentwicklung des Feature-Toggle-Systems geplant:
 
 1. **Performance-Optimierung**: Optimierung der Feature-Flag-Prüfungen
 2. **Erweiterte A/B-Test-Funktionen**: Verbesserung der A/B-Test-Integration
@@ -1115,6 +1628,8 @@ Folgende Schritte sind für die Weiterentwicklung des Feature-Toggle-Systems gep
 
 Das Feature-Toggle-System ist ein essenzieller Bestandteil der Migration zu Vue 3 SFCs. Es ermöglicht eine kontrollierte, schrittweise Migration mit minimalen Risiken und maximaler Flexibilität. Die vollständige Implementierung (100%) bietet eine robuste Grundlage für die weitere Migration und garantiert die Stabilität der Anwendung während des Migrationsprozesses.
 
+Mit dem Abschluss der Phase 4 (Dokumentenkonverter-Komponenten) ist der Kern der Migration der wichtigsten Anwendungskomponenten abgeschlossen. Die vier Phasen (UI-Basiskomponenten, Chat-Komponenten, Admin-Komponenten und Dokumentenkonverter-Komponenten) decken alle wesentlichen Bereiche der Anwendung ab und bieten eine solide Grundlage für die vollständige Migration zu Vue 3 SFCs.
+
 ---
 
-Zuletzt aktualisiert: 09.05.2025
+Zuletzt aktualisiert: 11.05.2025

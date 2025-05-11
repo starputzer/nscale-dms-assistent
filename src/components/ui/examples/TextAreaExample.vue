@@ -1,7 +1,7 @@
 <template>
   <div class="component-demo">
     <h2>TextArea Component</h2>
-    
+
     <div class="demo-section">
       <h3>Basic TextArea</h3>
       <TextArea
@@ -96,26 +96,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { TextArea } from '../base';
+import { ref } from "vue";
+import { TextArea } from "../base";
 
-const basicText = ref('');
-const limitedText = ref('');
-const autoResizeText = ref('');
-const validationText = ref('');
-const markdownText = ref('# Markdown Example\n\n- List item 1\n- List item 2\n\n**Bold text** and *italic text*\n\n```js\nconst code = "example";\n```');
-const smallText = ref('');
-const mediumText = ref('');
-const largeText = ref('');
-const disabledText = ref('This textarea is disabled and cannot be edited.');
+const basicText = ref("");
+const limitedText = ref("");
+const autoResizeText = ref("");
+const validationText = ref("");
+const markdownText = ref(
+  '# Markdown Example\n\n- List item 1\n- List item 2\n\n**Bold text** and *italic text*\n\n```js\nconst code = "example";\n```',
+);
+const smallText = ref("");
+const mediumText = ref("");
+const largeText = ref("");
+const disabledText = ref("This textarea is disabled and cannot be edited.");
 
-const validationError = ref('');
+const validationError = ref("");
 
 const validateText = () => {
   if (validationText.value.length < 10) {
-    validationError.value = 'Please enter at least 10 characters';
+    validationError.value = "Please enter at least 10 characters";
   } else {
-    validationError.value = '';
+    validationError.value = "";
   }
 };
 </script>

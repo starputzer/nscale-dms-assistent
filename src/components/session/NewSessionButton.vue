@@ -1,11 +1,11 @@
 <template>
-  <button 
+  <button
     class="n-new-session-button"
     :class="{
       'n-new-session-button--block': display === 'block',
       'n-new-session-button--floating': display === 'floating',
       'n-new-session-button--compact': compact,
-      'n-new-session-button--loading': isLoading
+      'n-new-session-button--loading': isLoading,
     }"
     @click="handleClick"
     :disabled="disabled || isLoading"
@@ -14,35 +14,56 @@
     :aria-busy="isLoading"
   >
     <!-- Loading Spinner -->
-    <div v-if="isLoading" class="n-new-session-button__spinner" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <div
+      v-if="isLoading"
+      class="n-new-session-button__spinner"
+      aria-hidden="true"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
         <circle cx="12" cy="12" r="10"></circle>
         <path d="M12 6v6l4 2"></path>
       </svg>
     </div>
-    
+
     <!-- Icon -->
     <div v-else class="n-new-session-button__icon" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
         <line x1="12" y1="5" x2="12" y2="19"></line>
         <line x1="5" y1="12" x2="19" y2="12"></line>
       </svg>
     </div>
 
     <!-- Text (only if not compact mode) -->
-    <span v-if="!compact || display === 'block'" class="n-new-session-button__text">
+    <span
+      v-if="!compact || display === 'block'"
+      class="n-new-session-button__text"
+    >
       {{ buttonText }}
     </span>
   </button>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { useSessionsStore } from '@/stores/sessions';
+import { computed, ref } from "vue";
+import { useSessionsStore } from "@/stores/sessions";
 
 /**
  * NewSessionButton
- * 
+ *
  * Eine flexible Schaltfläche zum Erstellen neuer Chat-Sessions. Kann in
  * verschiedenen Modi angezeigt werden und integriert sich direkt mit dem
  * Sessions-Store.
@@ -50,7 +71,7 @@ import { useSessionsStore } from '@/stores/sessions';
 
 interface Props {
   /** Anzeigemodus der Schaltfläche */
-  display?: 'inline' | 'block' | 'floating';
+  display?: "inline" | "block" | "floating";
   /** Text auf der Schaltfläche */
   buttonText?: string;
   /** Ob die Schaltfläche deaktiviert sein soll */
@@ -58,7 +79,7 @@ interface Props {
   /** Kompakter Modus (nur Icon) */
   compact?: boolean;
   /** Benutzerdefinierte Größe */
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   /** Ob die Schaltfläche direkt den Store nutzen soll */
   useStore?: boolean;
   /** Sessiontitel für neue Sessions */
@@ -69,21 +90,21 @@ interface Props {
 
 // Props mit Standardwerten
 const props = withDefaults(defineProps<Props>(), {
-  display: 'inline',
-  buttonText: 'Neue Unterhaltung',
+  display: "inline",
+  buttonText: "Neue Unterhaltung",
   disabled: false,
   compact: false,
-  size: 'md',
+  size: "md",
   useStore: true,
-  defaultSessionTitle: 'Neue Unterhaltung'
+  defaultSessionTitle: "Neue Unterhaltung",
 });
 
 // Emits
 const emit = defineEmits<{
   /** Wird ausgelöst, wenn eine neue Session erstellt werden soll */
-  (e: 'create'): void;
+  (e: "create"): void;
   /** Wird ausgelöst, nachdem eine neue Session erstellt wurde */
-  (e: 'created', sessionId: string): void;
+  (e: "created", sessionId: string): void;
 }>();
 
 // Store
@@ -98,29 +119,31 @@ const isLoading = ref(false);
  */
 async function handleClick(): Promise<void> {
   if (props.disabled || isLoading.value) return;
-  
+
   // Emit, falls der Eltern-Komponent die Erstellung kontrollieren soll
   if (!props.useStore) {
-    emit('create');
+    emit("create");
     return;
   }
-  
+
   // Direkt mit dem Store interagieren
   isLoading.value = true;
-  
+
   try {
     // Neue Session erstellen
-    const sessionId = await sessionsStore.createSession(props.defaultSessionTitle);
-    
+    const sessionId = await sessionsStore.createSession(
+      props.defaultSessionTitle,
+    );
+
     // Erstellungsevent auslösen
-    emit('created', sessionId);
-    
+    emit("created", sessionId);
+
     // Callback aufrufen, falls vorhanden
     if (props.afterCreate) {
       props.afterCreate(sessionId);
     }
   } catch (error) {
-    console.error('Fehler beim Erstellen einer neuen Session:', error);
+    console.error("Fehler beim Erstellen einer neuen Session:", error);
   } finally {
     isLoading.value = false;
   }
@@ -142,13 +165,20 @@ async function handleClick(): Promise<void> {
   font-size: var(--n-font-size-sm, 0.875rem);
   font-weight: var(--n-font-weight-medium, 500);
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease,
+    box-shadow 0.2s ease;
   box-shadow: var(--n-shadow-sm, 0 1px 2px 0 rgba(0, 0, 0, 0.05));
 }
 
 .n-new-session-button:hover:not(:disabled) {
   background-color: var(--n-primary-color-dark, #2c5282);
-  box-shadow: var(--n-shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06));
+  box-shadow: var(
+    --n-shadow-md,
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06)
+  );
 }
 
 .n-new-session-button:active:not(:disabled) {
@@ -182,13 +212,21 @@ async function handleClick(): Promise<void> {
   width: 56px;
   height: 56px;
   padding: 0;
-  box-shadow: var(--n-shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05));
+  box-shadow: var(
+    --n-shadow-lg,
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05)
+  );
   z-index: 100;
 }
 
 .n-new-session-button--floating:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: var(--n-shadow-xl, 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04));
+  box-shadow: var(
+    --n-shadow-xl,
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04)
+  );
 }
 
 .n-new-session-button--floating .n-new-session-button__text {

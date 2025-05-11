@@ -1,9 +1,5 @@
 <template>
-  <component 
-    :is="componentToRender" 
-    v-bind="$attrs"
-    v-on="$listeners"
-  >
+  <component :is="componentToRender" v-bind="$attrs" v-on="$listeners">
     <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
       <slot :name="slot" v-bind="slotProps" />
     </template>
@@ -11,8 +7,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onErrorCaptured, onMounted, getCurrentInstance } from 'vue';
-import { useFeatureToggles } from '@/composables/useFeatureToggles';
+import {
+  computed,
+  ref,
+  onErrorCaptured,
+  onMounted,
+  getCurrentInstance,
+} from "vue";
+import { useFeatureToggles } from "@/composables/useFeatureToggles";
 
 /**
  * Definiert die Props für den FeatureWrapper
@@ -33,19 +35,19 @@ interface FeatureWrapperProps {
 // Props-Definition
 const props = withDefaults(defineProps<FeatureWrapperProps>(), {
   captureErrors: true,
-  autoFallback: true
+  autoFallback: true,
 });
 
 // Definieren der Emits
 const emit = defineEmits<{
-  (e: 'feature-error', error: Error, feature: string): void;
-  (e: 'feature-fallback', feature: string): void;
-  (e: 'component-mounted', feature: string, isNew: boolean): void;
+  (e: "feature-error", error: Error, feature: string): void;
+  (e: "feature-fallback", feature: string): void;
+  (e: "component-mounted", feature: string, isNew: boolean): void;
 }>();
 
 // Feature-Toggles verwenden
 const featureToggles = useFeatureToggles({
-  autoFallback: props.autoFallback
+  autoFallback: props.autoFallback,
 });
 
 // Lokaler Fehlerstatus
@@ -59,14 +61,14 @@ const isLocalFallbackActive = ref(false);
 const componentToRender = computed(() => {
   // Fallback bei lokalen Fehlern oder wenn das Feature deaktiviert ist
   if (
-    hasError.value || 
-    isLocalFallbackActive.value || 
-    featureToggles.isFallbackActive(props.feature) || 
+    hasError.value ||
+    isLocalFallbackActive.value ||
+    featureToggles.isFallbackActive(props.feature) ||
     !featureToggles.shouldUseFeature(props.feature)
   ) {
     return props.legacyComponent;
   }
-  
+
   return props.newComponent;
 });
 
@@ -78,29 +80,30 @@ onErrorCaptured((error, instance, info) => {
   if (!props.captureErrors || !featureToggles.shouldUseFeature(props.feature)) {
     return false;
   }
-  
+
   console.error(`Fehler in Feature-Komponente ${props.feature}:`, error);
-  
+
   // Fehlerstatus setzen
   hasError.value = true;
-  errorDetails.value = error instanceof Error ? error : new Error(String(error));
-  
+  errorDetails.value =
+    error instanceof Error ? error : new Error(String(error));
+
   // Event auslösen
-  emit('feature-error', errorDetails.value, props.feature);
-  
+  emit("feature-error", errorDetails.value, props.feature);
+
   // Fehler im Feature-Toggle-System erfassen
   featureToggles.reportError(
     props.feature,
     `Fehler in Feature-Komponente: ${error instanceof Error ? error.message : String(error)}`,
-    { error, info, instance }
+    { error, info, instance },
   );
-  
+
   // Lokalen Fallback aktivieren, wenn gewünscht
   if (props.autoFallback) {
     isLocalFallbackActive.value = true;
-    emit('feature-fallback', props.feature);
+    emit("feature-fallback", props.feature);
   }
-  
+
   // Fehler abfangen, um Absturz zu vermeiden
   return true;
 });
@@ -110,14 +113,18 @@ onErrorCaptured((error, instance, info) => {
  */
 onMounted(() => {
   // Melden, welche Komponente verwendet wird
-  emit('component-mounted', props.feature, componentToRender.value === props.newComponent);
+  emit(
+    "component-mounted",
+    props.feature,
+    componentToRender.value === props.newComponent,
+  );
 });
 </script>
 
 <script lang="ts">
 // Optionale Options-API für Vue 2-Kompatibilität der Slots
 export default {
-  name: 'FeatureWrapper',
+  name: "FeatureWrapper",
   inheritAttrs: false,
-}
+};
 </script>

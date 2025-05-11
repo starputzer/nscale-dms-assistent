@@ -1,9 +1,6 @@
 <template>
-  <Transition 
-    :name="transitionName"
-    :duration="transitionDuration"
-  >
-    <div 
+  <Transition :name="transitionName" :duration="transitionDuration">
+    <div
       v-if="modelValue || isActive"
       ref="overlayRef"
       class="n-loading-overlay"
@@ -14,8 +11,8 @@
           'n-loading-overlay--fixed': fixed,
           'n-loading-overlay--blur': blur,
           'n-loading-overlay--fade-background': fadeBackground,
-          [`n-loading-overlay--${color}`]: !!color
-        }
+          [`n-loading-overlay--${color}`]: !!color,
+        },
       ]"
       :style="overlayStyle"
       :aria-busy="modelValue || isActive ? 'true' : 'false'"
@@ -24,17 +21,11 @@
       :aria-modal="fullscreen ? 'true' : undefined"
       :aria-label="ariaLabel || $t('loading.ariaLabel')"
     >
-      <div 
-        class="n-loading-overlay__content"
-        :class="contentClass"
-      >
+      <div class="n-loading-overlay__content" :class="contentClass">
         <!-- Spinner or custom loader -->
         <div class="n-loading-overlay__spinner">
           <slot name="spinner">
-            <component
-              :is="loaderComponent"
-              v-if="loaderComponent"
-            />
+            <component :is="loaderComponent" v-if="loaderComponent" />
             <ProgressIndicator
               v-else-if="progress !== undefined"
               :value="progress"
@@ -47,25 +38,19 @@
             <SpinnerIcon v-else />
           </slot>
         </div>
-        
+
         <!-- Loading text -->
-        <div 
-          v-if="text" 
-          class="n-loading-overlay__text"
-        >
+        <div v-if="text" class="n-loading-overlay__text">
           {{ text }}
         </div>
-        
+
         <!-- Additional content slot -->
-        <div 
-          v-if="$slots.default"
-          class="n-loading-overlay__additional"
-        >
+        <div v-if="$slots.default" class="n-loading-overlay__additional">
           <slot></slot>
         </div>
-        
+
         <!-- Action button (like cancel) -->
-        <div 
+        <div
           v-if="$slots.action || actionText"
           class="n-loading-overlay__action"
         >
@@ -86,10 +71,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted, onBeforeUnmount } from 'vue';
-import { useI18n } from 'vue-i18n';
-import SpinnerIcon from '@/components/icons/SpinnerIcon.vue';
-import ProgressIndicator from './ProgressIndicator.vue';
+import {
+  ref,
+  computed,
+  watch,
+  onMounted,
+  onUnmounted,
+  onBeforeUnmount,
+} from "vue";
+import { useI18n } from "vue-i18n";
+import SpinnerIcon from "@/components/icons/SpinnerIcon.vue";
+import ProgressIndicator from "./ProgressIndicator.vue";
 
 const { t } = useI18n();
 
@@ -101,118 +93,118 @@ export interface LoadingOverlayProps {
    * Ob die Overlay angezeigt werden soll
    */
   modelValue?: boolean;
-  
+
   /**
    * Verzögerung vor dem Anzeigen in Millisekunden
    */
   delay?: number;
-  
+
   /**
    * Minimale Anzeigedauer in Millisekunden
    */
   minDuration?: number;
-  
+
   /**
    * Text, der angezeigt werden soll
    */
   text?: string;
-  
+
   /**
    * Ob die Overlay den ganzen Bildschirm ausfüllen soll
    */
   fullscreen?: boolean;
-  
+
   /**
    * Ob die Overlay mit position: fixed positioniert werden soll
    */
   fixed?: boolean;
-  
+
   /**
    * Z-Index der Overlay
    */
   zIndex?: number;
-  
+
   /**
    * Ob der Hintergrund unscharf gemacht werden soll
    */
   blur?: boolean;
-  
+
   /**
    * Ob der Hintergrund eingeblendet werden soll
    */
   fadeBackground?: boolean;
-  
+
   /**
    * Farbe der Overlay (primary, secondary, info, success, warning, error)
    */
-  color?: 'primary' | 'secondary' | 'info' | 'success' | 'warning' | 'error';
-  
+  color?: "primary" | "secondary" | "info" | "success" | "warning" | "error";
+
   /**
    * Benutzerdefinierte CSS-Klasse für die Overlay
    */
   overlayClass?: string | object | Array<string | object>;
-  
+
   /**
    * Benutzerdefinierte CSS-Klasse für den Inhalt
    */
   contentClass?: string | object | Array<string | object>;
-  
+
   /**
    * Benutzerdefinierter Inline-Style für die Overlay
    */
   overlayStyle?: object;
-  
+
   /**
    * Name der Übergangsanimation
    */
   transition?: string;
-  
+
   /**
    * Dauer der Übergangsanimation in ms
    */
-  transitionDuration?: number | { enter: number, leave: number };
-  
+  transitionDuration?: number | { enter: number; leave: number };
+
   /**
    * Ob die Animation überhaupt angezeigt werden soll
    */
   disableTransition?: boolean;
-  
+
   /**
    * Fortschritt (0-100), wenn ein Fortschrittsbalken angezeigt werden soll
    * `null` für unbestimmt, `undefined` für keinen Fortschrittsbalken
    */
   progress?: number | null;
-  
+
   /**
    * Typ des Fortschrittsbalkens
    */
-  progressType?: 'linear' | 'circular';
-  
+  progressType?: "linear" | "circular";
+
   /**
    * Größe des Fortschrittsbalkens
    */
-  progressSize?: 'small' | 'medium' | 'large';
-  
+  progressSize?: "small" | "medium" | "large";
+
   /**
    * Ob das Label für den Fortschritt angezeigt werden soll
    */
   showProgressLabel?: boolean;
-  
+
   /**
    * Text für den Aktionsbutton
    */
   actionText?: string;
-  
+
   /**
    * ARIA-Label für die Overlay
    */
   ariaLabel?: string;
-  
+
   /**
    * Komponente für den Loader
    */
   loaderComponent?: any;
-  
+
   /**
    * Ob die Scrollbarkeit des Dokuments deaktiviert werden soll
    */
@@ -228,13 +220,13 @@ const props = withDefaults(defineProps<LoadingOverlayProps>(), {
   zIndex: 1050,
   blur: false,
   fadeBackground: true,
-  transition: 'n-fade',
+  transition: "n-fade",
   transitionDuration: 300,
   disableTransition: false,
-  progressType: 'circular',
-  progressSize: 'medium',
+  progressType: "circular",
+  progressSize: "medium",
   showProgressLabel: true,
-  lockScroll: true
+  lockScroll: true,
 });
 
 /**
@@ -244,22 +236,22 @@ const emit = defineEmits<{
   /**
    * Wird ausgelöst, wenn sich der Sichtbarkeitsstatus ändert
    */
-  (e: 'update:modelValue', value: boolean): void;
-  
+  (e: "update:modelValue", value: boolean): void;
+
   /**
    * Wird ausgelöst, wenn der Aktionsbutton geklickt wird
    */
-  (e: 'action'): void;
-  
+  (e: "action"): void;
+
   /**
    * Wird ausgelöst, wenn die Overlay angezeigt wird
    */
-  (e: 'show'): void;
-  
+  (e: "show"): void;
+
   /**
    * Wird ausgelöst, wenn die Overlay ausgeblendet wird
    */
-  (e: 'hide'): void;
+  (e: "hide"): void;
 }>();
 
 // Refs und interner Zustand
@@ -274,20 +266,24 @@ const hasBeenShown = ref<boolean>(false);
  * Berechnete Eigenschaften
  */
 const transitionName = computed(() => {
-  if (props.disableTransition) return '';
+  if (props.disableTransition) return "";
   return props.transition;
 });
 
 /**
  * Watcher für Änderungen am modelValue
  */
-watch(() => props.modelValue, (newVal) => {
-  if (newVal) {
-    show();
-  } else {
-    hide();
-  }
-}, { immediate: true });
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    if (newVal) {
+      show();
+    } else {
+      hide();
+    }
+  },
+  { immediate: true },
+);
 
 /**
  * Anzeigen der Overlay mit Verzögerung
@@ -298,10 +294,10 @@ function show(): void {
     window.clearTimeout(delayTimeout.value);
     delayTimeout.value = null;
   }
-  
+
   // Wenn bereits aktiv, nichts tun
   if (isActive.value) return;
-  
+
   // Verzögerung anwenden
   if (props.delay > 0) {
     delayTimeout.value = window.setTimeout(() => {
@@ -319,11 +315,11 @@ function activateOverlay(): void {
   startTime.value = Date.now();
   isActive.value = true;
   hasBeenShown.value = true;
-  emit('show');
-  
+  emit("show");
+
   // Body-Scroll sperren, wenn fullscreen
-  if (props.fullscreen && props.lockScroll && typeof document !== 'undefined') {
-    document.body.style.overflow = 'hidden';
+  if (props.fullscreen && props.lockScroll && typeof document !== "undefined") {
+    document.body.style.overflow = "hidden";
   }
 }
 
@@ -336,14 +332,14 @@ function hide(): void {
     window.clearTimeout(delayTimeout.value);
     delayTimeout.value = null;
   }
-  
+
   // Wenn nicht aktiv, nichts tun
   if (!isActive.value) return;
-  
+
   // Minimale Anzeigedauer beachten
   const elapsedTime = Date.now() - startTime.value;
   const remainingTime = Math.max(0, props.minDuration - elapsedTime);
-  
+
   if (remainingTime > 0 && hasBeenShown.value) {
     minDurationTimeout.value = window.setTimeout(() => {
       deactivateOverlay();
@@ -358,11 +354,11 @@ function hide(): void {
  */
 function deactivateOverlay(): void {
   isActive.value = false;
-  emit('hide');
-  
+  emit("hide");
+
   // Body-Scroll wiederherstellen
-  if (props.fullscreen && props.lockScroll && typeof document !== 'undefined') {
-    document.body.style.overflow = '';
+  if (props.fullscreen && props.lockScroll && typeof document !== "undefined") {
+    document.body.style.overflow = "";
   }
 }
 
@@ -403,21 +399,26 @@ onBeforeUnmount(() => {
   if (delayTimeout.value !== null) {
     window.clearTimeout(delayTimeout.value);
   }
-  
+
   if (minDurationTimeout.value !== null) {
     window.clearTimeout(minDurationTimeout.value);
   }
-  
+
   // Body-Scroll wiederherstellen
-  if (isActive.value && props.fullscreen && props.lockScroll && typeof document !== 'undefined') {
-    document.body.style.overflow = '';
+  if (
+    isActive.value &&
+    props.fullscreen &&
+    props.lockScroll &&
+    typeof document !== "undefined"
+  ) {
+    document.body.style.overflow = "";
   }
 });
 
 // Diese Methoden auch nach außen verfügbar machen
 defineExpose({
   forceShow,
-  forceHide
+  forceHide,
 });
 </script>
 
@@ -432,12 +433,12 @@ defineExpose({
   align-items: center;
   justify-content: center;
   background-color: var(--n-loading-overlay-bg, rgba(255, 255, 255, 0.8));
-  z-index: v-bind('props.zIndex');
+  z-index: v-bind("props.zIndex");
 }
 
 .n-loading-overlay--fullscreen {
   position: fixed;
-  z-index: v-bind('props.zIndex + 100');
+  z-index: v-bind("props.zIndex + 100");
 }
 
 .n-loading-overlay--fixed {
@@ -544,7 +545,11 @@ defineExpose({
 /* Animationen */
 .n-fade-enter-active,
 .n-fade-leave-active {
-  transition: opacity v-bind('typeof props.transitionDuration === "object" ? props.transitionDuration.enter : props.transitionDuration')ms ease;
+  transition: opacity
+    v-bind(
+      'typeof props.transitionDuration === "object" ? props.transitionDuration.enter : props.transitionDuration'
+    )
+    ms ease;
 }
 
 .n-fade-enter-from,
@@ -557,26 +562,32 @@ defineExpose({
   .n-loading-overlay {
     background-color: var(--n-loading-overlay-bg-dark, rgba(26, 32, 44, 0.8));
   }
-  
+
   .n-loading-overlay--fade-background {
-    background-color: var(--n-loading-overlay-bg-fade-dark, rgba(26, 32, 44, 0.9));
+    background-color: var(
+      --n-loading-overlay-bg-fade-dark,
+      rgba(26, 32, 44, 0.9)
+    );
   }
-  
+
   .n-loading-overlay__content {
     background-color: var(--n-loading-content-bg-dark, rgba(45, 55, 72, 0.95));
-    box-shadow: var(--n-loading-content-shadow-dark, 0 4px 12px rgba(0, 0, 0, 0.3));
+    box-shadow: var(
+      --n-loading-content-shadow-dark,
+      0 4px 12px rgba(0, 0, 0, 0.3)
+    );
   }
-  
+
   .n-loading-overlay__text {
     color: var(--n-loading-text-color-dark, #f7fafc);
   }
-  
+
   .n-loading-overlay__action-button {
     border-color: var(--n-border-color-dark, #4a5568);
     background-color: var(--n-button-bg-dark, #2d3748);
     color: var(--n-button-color-dark, #63b3ed);
   }
-  
+
   .n-loading-overlay__action-button:hover {
     background-color: var(--n-button-hover-bg-dark, #4a5568);
   }

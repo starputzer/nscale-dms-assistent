@@ -1,37 +1,63 @@
 <template>
   <div class="conversion-stats">
     <div class="conversion-stats__header">
-      <h2 class="conversion-stats__title">{{ t('documentConverter.stats.title', 'Konvertierungsstatistiken') }}</h2>
+      <h2 class="conversion-stats__title">
+        {{ t("documentConverter.stats.title", "Konvertierungsstatistiken") }}
+      </h2>
       <div class="conversion-stats__actions">
         <div class="conversion-stats__filters">
           <label class="conversion-stats__filter-label">
-            {{ t('documentConverter.stats.timeRange', 'Zeitraum') }}:
+            {{ t("documentConverter.stats.timeRange", "Zeitraum") }}:
             <select v-model="timeRange" class="conversion-stats__select">
-              <option value="day">{{ t('documentConverter.stats.day', 'Heute') }}</option>
-              <option value="week">{{ t('documentConverter.stats.week', 'Letzte Woche') }}</option>
-              <option value="month">{{ t('documentConverter.stats.month', 'Letzter Monat') }}</option>
-              <option value="year">{{ t('documentConverter.stats.year', 'Letztes Jahr') }}</option>
+              <option value="day">
+                {{ t("documentConverter.stats.day", "Heute") }}
+              </option>
+              <option value="week">
+                {{ t("documentConverter.stats.week", "Letzte Woche") }}
+              </option>
+              <option value="month">
+                {{ t("documentConverter.stats.month", "Letzter Monat") }}
+              </option>
+              <option value="year">
+                {{ t("documentConverter.stats.year", "Letztes Jahr") }}
+              </option>
             </select>
           </label>
           <label class="conversion-stats__filter-label">
-            {{ t('documentConverter.stats.groupBy', 'Gruppieren nach') }}:
+            {{ t("documentConverter.stats.groupBy", "Gruppieren nach") }}:
             <select v-model="groupBy" class="conversion-stats__select">
-              <option value="format">{{ t('documentConverter.stats.format', 'Dateiformat') }}</option>
-              <option value="status">{{ t('documentConverter.stats.status', 'Status') }}</option>
-              <option value="day">{{ t('documentConverter.stats.byDay', 'Tag') }}</option>
-              <option value="week">{{ t('documentConverter.stats.byWeek', 'Woche') }}</option>
-              <option value="month">{{ t('documentConverter.stats.byMonth', 'Monat') }}</option>
+              <option value="format">
+                {{ t("documentConverter.stats.format", "Dateiformat") }}
+              </option>
+              <option value="status">
+                {{ t("documentConverter.stats.status", "Status") }}
+              </option>
+              <option value="day">
+                {{ t("documentConverter.stats.byDay", "Tag") }}
+              </option>
+              <option value="week">
+                {{ t("documentConverter.stats.byWeek", "Woche") }}
+              </option>
+              <option value="month">
+                {{ t("documentConverter.stats.byMonth", "Monat") }}
+              </option>
             </select>
           </label>
         </div>
         <div class="conversion-stats__export">
-          <button @click="exportStats('csv')" class="conversion-stats__export-btn">
+          <button
+            @click="exportStats('csv')"
+            class="conversion-stats__export-btn"
+          >
             <i class="fa fa-file-csv"></i>
-            {{ t('documentConverter.stats.exportCSV', 'CSV') }}
+            {{ t("documentConverter.stats.exportCSV", "CSV") }}
           </button>
-          <button @click="exportStats('json')" class="conversion-stats__export-btn">
+          <button
+            @click="exportStats('json')"
+            class="conversion-stats__export-btn"
+          >
             <i class="fa fa-file-code"></i>
-            {{ t('documentConverter.stats.exportJSON', 'JSON') }}
+            {{ t("documentConverter.stats.exportJSON", "JSON") }}
           </button>
         </div>
       </div>
@@ -39,98 +65,156 @@
 
     <div class="conversion-stats__summary">
       <div class="conversion-stats__card">
-        <div class="conversion-stats__card-title">{{ t('documentConverter.stats.totalConversions', 'Gesamt') }}</div>
+        <div class="conversion-stats__card-title">
+          {{ t("documentConverter.stats.totalConversions", "Gesamt") }}
+        </div>
         <div class="conversion-stats__card-value">{{ totalCount }}</div>
       </div>
       <div class="conversion-stats__card conversion-stats__card--success">
-        <div class="conversion-stats__card-title">{{ t('documentConverter.stats.successful', 'Erfolgreich') }}</div>
-        <div class="conversion-stats__card-value">{{ successCount }} ({{ successRate }}%)</div>
+        <div class="conversion-stats__card-title">
+          {{ t("documentConverter.stats.successful", "Erfolgreich") }}
+        </div>
+        <div class="conversion-stats__card-value">
+          {{ successCount }} ({{ successRate }}%)
+        </div>
       </div>
       <div class="conversion-stats__card conversion-stats__card--error">
-        <div class="conversion-stats__card-title">{{ t('documentConverter.stats.failed', 'Fehlgeschlagen') }}</div>
-        <div class="conversion-stats__card-value">{{ errorCount }} ({{ errorRate }}%)</div>
+        <div class="conversion-stats__card-title">
+          {{ t("documentConverter.stats.failed", "Fehlgeschlagen") }}
+        </div>
+        <div class="conversion-stats__card-value">
+          {{ errorCount }} ({{ errorRate }}%)
+        </div>
       </div>
       <div class="conversion-stats__card conversion-stats__card--info">
-        <div class="conversion-stats__card-title">{{ t('documentConverter.stats.inProgress', 'In Bearbeitung') }}</div>
+        <div class="conversion-stats__card-title">
+          {{ t("documentConverter.stats.inProgress", "In Bearbeitung") }}
+        </div>
         <div class="conversion-stats__card-value">{{ pendingCount }}</div>
       </div>
       <div class="conversion-stats__card">
-        <div class="conversion-stats__card-title">{{ t('documentConverter.stats.avgSize', 'Ø Dateigröße') }}</div>
+        <div class="conversion-stats__card-title">
+          {{ t("documentConverter.stats.avgSize", "Ø Dateigröße") }}
+        </div>
         <div class="conversion-stats__card-value">{{ averageFileSize }}</div>
       </div>
       <div class="conversion-stats__card">
-        <div class="conversion-stats__card-title">{{ t('documentConverter.stats.avgTime', 'Ø Konvertierungszeit') }}</div>
-        <div class="conversion-stats__card-value">{{ averageConversionTime }}</div>
+        <div class="conversion-stats__card-title">
+          {{ t("documentConverter.stats.avgTime", "Ø Konvertierungszeit") }}
+        </div>
+        <div class="conversion-stats__card-value">
+          {{ averageConversionTime }}
+        </div>
       </div>
     </div>
 
     <div class="conversion-stats__charts">
       <div class="conversion-stats__chart">
-        <h3 class="conversion-stats__chart-title">{{ t('documentConverter.stats.conversionsByFormat', 'Konvertierungen nach Format') }}</h3>
-        <div class="conversion-stats__chart-container" ref="formatChartContainer">
+        <h3 class="conversion-stats__chart-title">
+          {{
+            t(
+              "documentConverter.stats.conversionsByFormat",
+              "Konvertierungen nach Format",
+            )
+          }}
+        </h3>
+        <div
+          class="conversion-stats__chart-container"
+          ref="formatChartContainer"
+        >
           <div v-if="isLoading" class="conversion-stats__loading">
             <div class="conversion-stats__spinner"></div>
-            <p>{{ t('documentConverter.stats.loading', 'Lädt...') }}</p>
+            <p>{{ t("documentConverter.stats.loading", "Lädt...") }}</p>
           </div>
           <canvas v-else ref="formatChart"></canvas>
         </div>
       </div>
-      
+
       <div class="conversion-stats__chart">
-        <h3 class="conversion-stats__chart-title">{{ t('documentConverter.stats.conversionStatus', 'Konvertierungsstatus') }}</h3>
-        <div class="conversion-stats__chart-container" ref="statusChartContainer">
+        <h3 class="conversion-stats__chart-title">
+          {{
+            t(
+              "documentConverter.stats.conversionStatus",
+              "Konvertierungsstatus",
+            )
+          }}
+        </h3>
+        <div
+          class="conversion-stats__chart-container"
+          ref="statusChartContainer"
+        >
           <div v-if="isLoading" class="conversion-stats__loading">
             <div class="conversion-stats__spinner"></div>
-            <p>{{ t('documentConverter.stats.loading', 'Lädt...') }}</p>
+            <p>{{ t("documentConverter.stats.loading", "Lädt...") }}</p>
           </div>
           <canvas v-else ref="statusChart"></canvas>
         </div>
       </div>
-      
+
       <div class="conversion-stats__chart conversion-stats__chart--full">
-        <h3 class="conversion-stats__chart-title">{{ t('documentConverter.stats.conversionTrend', 'Konvertierungstrend') }}</h3>
-        <div class="conversion-stats__chart-container" ref="trendChartContainer">
+        <h3 class="conversion-stats__chart-title">
+          {{
+            t("documentConverter.stats.conversionTrend", "Konvertierungstrend")
+          }}
+        </h3>
+        <div
+          class="conversion-stats__chart-container"
+          ref="trendChartContainer"
+        >
           <div v-if="isLoading" class="conversion-stats__loading">
             <div class="conversion-stats__spinner"></div>
-            <p>{{ t('documentConverter.stats.loading', 'Lädt...') }}</p>
+            <p>{{ t("documentConverter.stats.loading", "Lädt...") }}</p>
           </div>
           <canvas v-else ref="trendChart"></canvas>
         </div>
       </div>
-      
+
       <div class="conversion-stats__chart conversion-stats__chart--full">
-        <h3 class="conversion-stats__chart-title">{{ t('documentConverter.stats.fileSizes', 'Dateigrößenverteilung') }}</h3>
+        <h3 class="conversion-stats__chart-title">
+          {{ t("documentConverter.stats.fileSizes", "Dateigrößenverteilung") }}
+        </h3>
         <div class="conversion-stats__chart-container" ref="sizeChartContainer">
           <div v-if="isLoading" class="conversion-stats__loading">
             <div class="conversion-stats__spinner"></div>
-            <p>{{ t('documentConverter.stats.loading', 'Lädt...') }}</p>
+            <p>{{ t("documentConverter.stats.loading", "Lädt...") }}</p>
           </div>
           <canvas v-else ref="sizeChart"></canvas>
         </div>
       </div>
     </div>
-    
+
     <div class="conversion-stats__table-container">
-      <h3 class="conversion-stats__table-title">{{ t('documentConverter.stats.recentConversions', 'Letzte Konvertierungen') }}</h3>
+      <h3 class="conversion-stats__table-title">
+        {{
+          t(
+            "documentConverter.stats.recentConversions",
+            "Letzte Konvertierungen",
+          )
+        }}
+      </h3>
       <table class="conversion-stats__table">
         <thead>
           <tr>
-            <th>{{ t('documentConverter.stats.filename', 'Dateiname') }}</th>
-            <th>{{ t('documentConverter.stats.format', 'Format') }}</th>
-            <th>{{ t('documentConverter.stats.size', 'Größe') }}</th>
-            <th>{{ t('documentConverter.stats.status', 'Status') }}</th>
-            <th>{{ t('documentConverter.stats.date', 'Datum') }}</th>
-            <th>{{ t('documentConverter.stats.duration', 'Dauer') }}</th>
+            <th>{{ t("documentConverter.stats.filename", "Dateiname") }}</th>
+            <th>{{ t("documentConverter.stats.format", "Format") }}</th>
+            <th>{{ t("documentConverter.stats.size", "Größe") }}</th>
+            <th>{{ t("documentConverter.stats.status", "Status") }}</th>
+            <th>{{ t("documentConverter.stats.date", "Datum") }}</th>
+            <th>{{ t("documentConverter.stats.duration", "Dauer") }}</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="doc in recentDocuments" :key="doc.id" :class="{ 'conversion-stats__row--error': doc.status === 'error' }">
+          <tr
+            v-for="doc in recentDocuments"
+            :key="doc.id"
+            :class="{ 'conversion-stats__row--error': doc.status === 'error' }"
+          >
             <td>{{ doc.originalName }}</td>
             <td>{{ doc.originalFormat.toUpperCase() }}</td>
             <td>{{ formatFileSize(doc.size) }}</td>
             <td>
-              <span 
-                class="conversion-stats__status-pill" 
+              <span
+                class="conversion-stats__status-pill"
                 :class="`conversion-stats__status-pill--${getStatusClass(doc.status)}`"
               >
                 {{ getStatusLabel(doc.status) }}
@@ -141,7 +225,12 @@
           </tr>
           <tr v-if="recentDocuments.length === 0">
             <td colspan="6" class="conversion-stats__empty">
-              {{ t('documentConverter.stats.noConversions', 'Keine Konvertierungen gefunden') }}
+              {{
+                t(
+                  "documentConverter.stats.noConversions",
+                  "Keine Konvertierungen gefunden",
+                )
+              }}
             </td>
           </tr>
         </tbody>
@@ -151,12 +240,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch, onUnmounted } from 'vue';
-import { useDocumentConverterStore } from '@/stores/documentConverter';
-import { ConversionResult } from '@/types/documentConverter';
+import { ref, onMounted, computed, watch, onUnmounted } from "vue";
+import { useDocumentConverterStore } from "@/stores/documentConverter";
+import { ConversionResult } from "@/types/documentConverter";
 
 // i18n helper
-function t(key: string, fallback: string, params?: Record<string, any>): string {
+function t(
+  key: string,
+  fallback: string,
+  params?: Record<string, any>,
+): string {
   // For this implementation, we'll just return the fallback text
   // In a real implementation, you would use the i18n system
   if (params) {
@@ -190,48 +283,48 @@ let sizeChartInstance: any = null;
 
 // State variables
 const isLoading = ref(true);
-const timeRange = ref<'day' | 'week' | 'month' | 'year'>('month');
-const groupBy = ref<'format' | 'status' | 'day' | 'week' | 'month'>('format');
+const timeRange = ref<"day" | "week" | "month" | "year">("month");
+const groupBy = ref<"format" | "status" | "day" | "week" | "month">("format");
 const Chart = ref<any>(null);
 
 // Chart colors
 const chartColors = {
-  success: 'rgba(46, 204, 113, 0.6)',
-  error: 'rgba(231, 76, 60, 0.6)',
-  pending: 'rgba(52, 152, 219, 0.6)',
-  processing: 'rgba(241, 196, 15, 0.6)',
-  pdf: 'rgba(231, 76, 60, 0.6)',
-  docx: 'rgba(52, 152, 219, 0.6)',
-  xlsx: 'rgba(46, 204, 113, 0.6)',
-  pptx: 'rgba(155, 89, 182, 0.6)',
-  html: 'rgba(241, 196, 15, 0.6)',
-  txt: 'rgba(52, 73, 94, 0.6)',
-  other: 'rgba(149, 165, 166, 0.6)',
+  success: "rgba(46, 204, 113, 0.6)",
+  error: "rgba(231, 76, 60, 0.6)",
+  pending: "rgba(52, 152, 219, 0.6)",
+  processing: "rgba(241, 196, 15, 0.6)",
+  pdf: "rgba(231, 76, 60, 0.6)",
+  docx: "rgba(52, 152, 219, 0.6)",
+  xlsx: "rgba(46, 204, 113, 0.6)",
+  pptx: "rgba(155, 89, 182, 0.6)",
+  html: "rgba(241, 196, 15, 0.6)",
+  txt: "rgba(52, 73, 94, 0.6)",
+  other: "rgba(149, 165, 166, 0.6)",
 };
 
 // Computed statistics
 const filteredDocuments = computed(() => {
   const endDate = new Date();
   let startDate = new Date();
-  
+
   // Calculate start date based on time range
   switch (timeRange.value) {
-    case 'day':
+    case "day":
       startDate.setDate(startDate.getDate() - 1);
       break;
-    case 'week':
+    case "week":
       startDate.setDate(startDate.getDate() - 7);
       break;
-    case 'month':
+    case "month":
       startDate.setMonth(startDate.getMonth() - 1);
       break;
-    case 'year':
+    case "year":
       startDate.setFullYear(startDate.getFullYear() - 1);
       break;
   }
-  
+
   // Filter documents by date
-  return store.convertedDocuments.filter(doc => {
+  return store.convertedDocuments.filter((doc) => {
     const docDate = doc.uploadedAt ? new Date(doc.uploadedAt) : new Date();
     return docDate >= startDate && docDate <= endDate;
   });
@@ -239,43 +332,53 @@ const filteredDocuments = computed(() => {
 
 const totalCount = computed(() => filteredDocuments.value.length);
 
-const successCount = computed(() => 
-  filteredDocuments.value.filter(doc => doc.status === 'success').length
+const successCount = computed(
+  () =>
+    filteredDocuments.value.filter((doc) => doc.status === "success").length,
 );
 
-const errorCount = computed(() => 
-  filteredDocuments.value.filter(doc => doc.status === 'error').length
+const errorCount = computed(
+  () => filteredDocuments.value.filter((doc) => doc.status === "error").length,
 );
 
-const pendingCount = computed(() => 
-  filteredDocuments.value.filter(doc => 
-    doc.status === 'pending' || doc.status === 'processing'
-  ).length
+const pendingCount = computed(
+  () =>
+    filteredDocuments.value.filter(
+      (doc) => doc.status === "pending" || doc.status === "processing",
+    ).length,
 );
 
 const successRate = computed(() => {
-  if (totalCount.value === 0) return '0';
+  if (totalCount.value === 0) return "0";
   return ((successCount.value / totalCount.value) * 100).toFixed(1);
 });
 
 const errorRate = computed(() => {
-  if (totalCount.value === 0) return '0';
+  if (totalCount.value === 0) return "0";
   return ((errorCount.value / totalCount.value) * 100).toFixed(1);
 });
 
 const averageFileSize = computed(() => {
-  if (totalCount.value === 0) return '0 KB';
-  
-  const totalSize = filteredDocuments.value.reduce((sum, doc) => sum + (doc.size || 0), 0);
+  if (totalCount.value === 0) return "0 KB";
+
+  const totalSize = filteredDocuments.value.reduce(
+    (sum, doc) => sum + (doc.size || 0),
+    0,
+  );
   return formatFileSize(totalSize / totalCount.value);
 });
 
 const averageConversionTime = computed(() => {
-  const docsWithDuration = filteredDocuments.value.filter(doc => doc.duration);
-  
-  if (docsWithDuration.length === 0) return '0s';
-  
-  const totalDuration = docsWithDuration.reduce((sum, doc) => sum + (doc.duration || 0), 0);
+  const docsWithDuration = filteredDocuments.value.filter(
+    (doc) => doc.duration,
+  );
+
+  if (docsWithDuration.length === 0) return "0s";
+
+  const totalDuration = docsWithDuration.reduce(
+    (sum, doc) => sum + (doc.duration || 0),
+    0,
+  );
   return formatDuration(totalDuration / docsWithDuration.length);
 });
 
@@ -291,66 +394,66 @@ const recentDocuments = computed(() => {
 
 // Helper functions
 function formatFileSize(bytes: number): string {
-  if (!bytes || bytes === 0) return '0 Bytes';
-  
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  if (!bytes || bytes === 0) return "0 Bytes";
+
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  
-  return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + sizes[i];
+
+  return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + " " + sizes[i];
 }
 
 function formatDate(dateInput?: Date | string): string {
-  if (!dateInput) return '';
-  
-  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-  
-  return date.toLocaleDateString('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  if (!dateInput) return "";
+
+  const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+
+  return date.toLocaleDateString("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
 function formatDuration(ms?: number): string {
-  if (!ms) return '0s';
-  
+  if (!ms) return "0s";
+
   const seconds = Math.floor(ms / 1000);
   const minutes = Math.floor(seconds / 60);
-  
+
   if (minutes > 0) {
     return `${minutes}m ${seconds % 60}s`;
   }
-  
+
   return `${seconds}s`;
 }
 
 function getStatusClass(status: string): string {
   switch (status) {
-    case 'success':
-      return 'success';
-    case 'error':
-      return 'error';
-    case 'processing':
-      return 'processing';
-    case 'pending':
-      return 'pending';
+    case "success":
+      return "success";
+    case "error":
+      return "error";
+    case "processing":
+      return "processing";
+    case "pending":
+      return "pending";
     default:
-      return 'default';
+      return "default";
   }
 }
 
 function getStatusLabel(status: string): string {
   switch (status) {
-    case 'success':
-      return t('documentConverter.stats.statusSuccess', 'Erfolgreich');
-    case 'error':
-      return t('documentConverter.stats.statusError', 'Fehler');
-    case 'processing':
-      return t('documentConverter.stats.statusProcessing', 'In Bearbeitung');
-    case 'pending':
-      return t('documentConverter.stats.statusPending', 'Ausstehend');
+    case "success":
+      return t("documentConverter.stats.statusSuccess", "Erfolgreich");
+    case "error":
+      return t("documentConverter.stats.statusError", "Fehler");
+    case "processing":
+      return t("documentConverter.stats.statusProcessing", "In Bearbeitung");
+    case "pending":
+      return t("documentConverter.stats.statusPending", "Ausstehend");
     default:
       return status;
   }
@@ -364,308 +467,345 @@ async function loadChartLibrary() {
     // In real implementation, would use dynamic import:
     // const ChartModule = await import('chart.js');
     // Chart.value = ChartModule.Chart;
-    
+
     // For our implementation, mock Chart.js
     Chart.value = {
       Chart: class MockChart {
         constructor(ctx: any, config: any) {
           this.ctx = ctx;
           this.config = config;
-          console.log('Created chart with config:', config);
+          console.log("Created chart with config:", config);
         }
         update() {
-          console.log('Chart updated');
+          console.log("Chart updated");
         }
         destroy() {
-          console.log('Chart destroyed');
+          console.log("Chart destroyed");
         }
-      }
+      },
     };
   } catch (error) {
-    console.error('Failed to load Chart.js:', error);
+    console.error("Failed to load Chart.js:", error);
   }
 }
 
 function renderFormatChart() {
   if (!formatChart.value || !Chart.value) return;
-  
+
   // Destroy previous chart if it exists
   if (formatChartInstance) {
     formatChartInstance.destroy();
   }
-  
+
   // Group documents by format
   const formatCounts: Record<string, number> = {};
-  
-  filteredDocuments.value.forEach(doc => {
-    const format = doc.originalFormat?.toLowerCase() || 'unknown';
+
+  filteredDocuments.value.forEach((doc) => {
+    const format = doc.originalFormat?.toLowerCase() || "unknown";
     formatCounts[format] = (formatCounts[format] || 0) + 1;
   });
-  
+
   // Prepare chart data
   const labels = Object.keys(formatCounts);
-  const data = labels.map(format => formatCounts[format]);
-  const backgroundColors = labels.map(format => 
-    chartColors[format as keyof typeof chartColors] || chartColors.other
+  const data = labels.map((format) => formatCounts[format]);
+  const backgroundColors = labels.map(
+    (format) =>
+      chartColors[format as keyof typeof chartColors] || chartColors.other,
   );
-  
+
   // Create chart
-  const ctx = formatChart.value.getContext('2d');
+  const ctx = formatChart.value.getContext("2d");
   if (!ctx) return;
-  
+
   formatChartInstance = new Chart.value.Chart(ctx, {
-    type: 'pie',
+    type: "pie",
     data: {
       labels,
-      datasets: [{
-        data,
-        backgroundColor: backgroundColors,
-        borderWidth: 1
-      }]
+      datasets: [
+        {
+          data,
+          backgroundColor: backgroundColors,
+          borderWidth: 1,
+        },
+      ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          position: 'right',
+          position: "right",
           labels: {
             boxWidth: 12,
             font: {
-              size: 11
-            }
-          }
+              size: 11,
+            },
+          },
         },
         tooltip: {
           callbacks: {
-            label: function(context: any) {
-              const label = context.label || '';
+            label: function (context: any) {
+              const label = context.label || "";
               const value = context.raw || 0;
-              const percentage = Math.round((value / totalCount.value) * 100) || 0;
+              const percentage =
+                Math.round((value / totalCount.value) * 100) || 0;
               return `${label}: ${value} (${percentage}%)`;
-            }
-          }
-        }
-      }
-    }
+            },
+          },
+        },
+      },
+    },
   });
 }
 
 function renderStatusChart() {
   if (!statusChart.value || !Chart.value) return;
-  
+
   // Destroy previous chart if it exists
   if (statusChartInstance) {
     statusChartInstance.destroy();
   }
-  
+
   // Count documents by status
   const counts = {
     success: successCount.value,
     error: errorCount.value,
-    processing: filteredDocuments.value.filter(doc => doc.status === 'processing').length,
-    pending: filteredDocuments.value.filter(doc => doc.status === 'pending').length
+    processing: filteredDocuments.value.filter(
+      (doc) => doc.status === "processing",
+    ).length,
+    pending: filteredDocuments.value.filter((doc) => doc.status === "pending")
+      .length,
   };
-  
+
   // Prepare chart data
   const labels = [
-    t('documentConverter.stats.statusSuccess', 'Erfolgreich'),
-    t('documentConverter.stats.statusError', 'Fehler'),
-    t('documentConverter.stats.statusProcessing', 'In Bearbeitung'),
-    t('documentConverter.stats.statusPending', 'Ausstehend')
+    t("documentConverter.stats.statusSuccess", "Erfolgreich"),
+    t("documentConverter.stats.statusError", "Fehler"),
+    t("documentConverter.stats.statusProcessing", "In Bearbeitung"),
+    t("documentConverter.stats.statusPending", "Ausstehend"),
   ];
-  
-  const data = [counts.success, counts.error, counts.processing, counts.pending];
-  const colors = [chartColors.success, chartColors.error, chartColors.processing, chartColors.pending];
-  
+
+  const data = [
+    counts.success,
+    counts.error,
+    counts.processing,
+    counts.pending,
+  ];
+  const colors = [
+    chartColors.success,
+    chartColors.error,
+    chartColors.processing,
+    chartColors.pending,
+  ];
+
   // Create chart
-  const ctx = statusChart.value.getContext('2d');
+  const ctx = statusChart.value.getContext("2d");
   if (!ctx) return;
-  
+
   statusChartInstance = new Chart.value.Chart(ctx, {
-    type: 'doughnut',
+    type: "doughnut",
     data: {
       labels,
-      datasets: [{
-        data,
-        backgroundColor: colors,
-        borderWidth: 1
-      }]
+      datasets: [
+        {
+          data,
+          backgroundColor: colors,
+          borderWidth: 1,
+        },
+      ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      cutout: '60%',
+      cutout: "60%",
       plugins: {
         legend: {
-          position: 'bottom',
+          position: "bottom",
           labels: {
             boxWidth: 12,
             font: {
-              size: 11
-            }
-          }
+              size: 11,
+            },
+          },
         },
         tooltip: {
           callbacks: {
-            label: function(context: any) {
-              const label = context.label || '';
+            label: function (context: any) {
+              const label = context.label || "";
               const value = context.raw || 0;
-              const percentage = Math.round((value / totalCount.value) * 100) || 0;
+              const percentage =
+                Math.round((value / totalCount.value) * 100) || 0;
               return `${label}: ${value} (${percentage}%)`;
-            }
-          }
-        }
-      }
-    }
+            },
+          },
+        },
+      },
+    },
   });
 }
 
 function renderTrendChart() {
   if (!trendChart.value || !Chart.value) return;
-  
+
   // Destroy previous chart if it exists
   if (trendChartInstance) {
     trendChartInstance.destroy();
   }
-  
+
   // Prepare date intervals
   const intervals: { start: Date; end: Date; label: string }[] = [];
   const endDate = new Date();
   let startDate = new Date();
-  
+
   switch (timeRange.value) {
-    case 'day':
+    case "day":
       // Hourly intervals for the last day
       startDate.setDate(startDate.getDate() - 1);
       for (let i = 0; i < 24; i++) {
         const intervalEnd = new Date(endDate);
         intervalEnd.setHours(endDate.getHours() - i);
-        
+
         const intervalStart = new Date(intervalEnd);
         intervalStart.setHours(intervalEnd.getHours() - 1);
-        
+
         intervals.unshift({
           start: intervalStart,
           end: intervalEnd,
-          label: intervalStart.getHours() + ':00'
+          label: intervalStart.getHours() + ":00",
         });
       }
       break;
-      
-    case 'week':
+
+    case "week":
       // Daily intervals for the last week
       startDate.setDate(startDate.getDate() - 7);
       for (let i = 0; i < 7; i++) {
         const intervalEnd = new Date(endDate);
         intervalEnd.setDate(endDate.getDate() - i);
-        
+
         const intervalStart = new Date(intervalEnd);
         intervalStart.setDate(intervalEnd.getDate() - 1);
-        
-        const days = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+
+        const days = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
         intervals.unshift({
           start: intervalStart,
           end: intervalEnd,
-          label: days[intervalStart.getDay()]
+          label: days[intervalStart.getDay()],
         });
       }
       break;
-      
-    case 'month':
+
+    case "month":
       // Weekly intervals for the last month
       startDate.setMonth(startDate.getMonth() - 1);
       for (let i = 0; i < 4; i++) {
         const intervalEnd = new Date(endDate);
-        intervalEnd.setDate(endDate.getDate() - (i * 7));
-        
+        intervalEnd.setDate(endDate.getDate() - i * 7);
+
         const intervalStart = new Date(intervalEnd);
         intervalStart.setDate(intervalEnd.getDate() - 7);
-        
+
         intervals.unshift({
           start: intervalStart,
           end: intervalEnd,
-          label: `W${i + 1}`
+          label: `W${i + 1}`,
         });
       }
       break;
-      
-    case 'year':
+
+    case "year":
       // Monthly intervals for the last year
       startDate.setFullYear(startDate.getFullYear() - 1);
       for (let i = 0; i < 12; i++) {
         const intervalEnd = new Date(endDate);
         intervalEnd.setMonth(endDate.getMonth() - i);
-        
+
         const intervalStart = new Date(intervalEnd);
         intervalStart.setMonth(intervalEnd.getMonth() - 1);
-        
-        const months = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+
+        const months = [
+          "Jan",
+          "Feb",
+          "Mär",
+          "Apr",
+          "Mai",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Okt",
+          "Nov",
+          "Dez",
+        ];
         intervals.unshift({
           start: intervalStart,
           end: intervalEnd,
-          label: months[intervalStart.getMonth()]
+          label: months[intervalStart.getMonth()],
         });
       }
       break;
   }
-  
+
   // Count documents by interval and status
   const successData: number[] = [];
   const errorData: number[] = [];
   const processingData: number[] = [];
-  
-  intervals.forEach(interval => {
-    const intervalDocs = store.convertedDocuments.filter(doc => {
+
+  intervals.forEach((interval) => {
+    const intervalDocs = store.convertedDocuments.filter((doc) => {
       if (!doc.uploadedAt) return false;
       const docDate = new Date(doc.uploadedAt);
       return docDate >= interval.start && docDate <= interval.end;
     });
-    
-    successData.push(intervalDocs.filter(doc => doc.status === 'success').length);
-    errorData.push(intervalDocs.filter(doc => doc.status === 'error').length);
-    processingData.push(intervalDocs.filter(doc => 
-      doc.status === 'pending' || doc.status === 'processing'
-    ).length);
+
+    successData.push(
+      intervalDocs.filter((doc) => doc.status === "success").length,
+    );
+    errorData.push(intervalDocs.filter((doc) => doc.status === "error").length);
+    processingData.push(
+      intervalDocs.filter(
+        (doc) => doc.status === "pending" || doc.status === "processing",
+      ).length,
+    );
   });
-  
+
   // Create chart
-  const ctx = trendChart.value.getContext('2d');
+  const ctx = trendChart.value.getContext("2d");
   if (!ctx) return;
-  
+
   trendChartInstance = new Chart.value.Chart(ctx, {
-    type: 'line',
+    type: "line",
     data: {
-      labels: intervals.map(interval => interval.label),
+      labels: intervals.map((interval) => interval.label),
       datasets: [
         {
-          label: t('documentConverter.stats.statusSuccess', 'Erfolgreich'),
+          label: t("documentConverter.stats.statusSuccess", "Erfolgreich"),
           data: successData,
           backgroundColor: chartColors.success,
-          borderColor: chartColors.success.replace('0.6', '1'),
+          borderColor: chartColors.success.replace("0.6", "1"),
           borderWidth: 2,
           fill: false,
-          tension: 0.1
+          tension: 0.1,
         },
         {
-          label: t('documentConverter.stats.statusError', 'Fehler'),
+          label: t("documentConverter.stats.statusError", "Fehler"),
           data: errorData,
           backgroundColor: chartColors.error,
-          borderColor: chartColors.error.replace('0.6', '1'),
+          borderColor: chartColors.error.replace("0.6", "1"),
           borderWidth: 2,
           fill: false,
-          tension: 0.1
+          tension: 0.1,
         },
         {
-          label: t('documentConverter.stats.inProgress', 'In Bearbeitung'),
+          label: t("documentConverter.stats.inProgress", "In Bearbeitung"),
           data: processingData,
           backgroundColor: chartColors.processing,
-          borderColor: chartColors.processing.replace('0.6', '1'),
+          borderColor: chartColors.processing.replace("0.6", "1"),
           borderWidth: 2,
           fill: false,
-          tension: 0.1
-        }
-      ]
+          tension: 0.1,
+        },
+      ],
     },
     options: {
       responsive: true,
@@ -675,67 +815,72 @@ function renderTrendChart() {
           beginAtZero: true,
           title: {
             display: true,
-            text: t('documentConverter.stats.documentCount', 'Anzahl Dokumente')
-          }
+            text: t(
+              "documentConverter.stats.documentCount",
+              "Anzahl Dokumente",
+            ),
+          },
         },
         x: {
           title: {
             display: true,
-            text: t('documentConverter.stats.timePeriod', 'Zeitraum')
-          }
-        }
+            text: t("documentConverter.stats.timePeriod", "Zeitraum"),
+          },
+        },
       },
       plugins: {
         legend: {
-          position: 'bottom'
-        }
-      }
-    }
+          position: "bottom",
+        },
+      },
+    },
   });
 }
 
 function renderSizeChart() {
   if (!sizeChart.value || !Chart.value) return;
-  
+
   // Destroy previous chart if it exists
   if (sizeChartInstance) {
     sizeChartInstance.destroy();
   }
-  
+
   // Group documents by size ranges
   const sizeRanges = [
-    { max: 100 * 1024, label: '< 100 KB' },
-    { max: 500 * 1024, label: '100 KB - 500 KB' },
-    { max: 1 * 1024 * 1024, label: '500 KB - 1 MB' },
-    { max: 5 * 1024 * 1024, label: '1 MB - 5 MB' },
-    { max: 10 * 1024 * 1024, label: '5 MB - 10 MB' },
-    { max: Number.MAX_SAFE_INTEGER, label: '> 10 MB' }
+    { max: 100 * 1024, label: "< 100 KB" },
+    { max: 500 * 1024, label: "100 KB - 500 KB" },
+    { max: 1 * 1024 * 1024, label: "500 KB - 1 MB" },
+    { max: 5 * 1024 * 1024, label: "1 MB - 5 MB" },
+    { max: 10 * 1024 * 1024, label: "5 MB - 10 MB" },
+    { max: Number.MAX_SAFE_INTEGER, label: "> 10 MB" },
   ];
-  
+
   const sizeCounts = sizeRanges.map(() => 0);
-  
-  filteredDocuments.value.forEach(doc => {
+
+  filteredDocuments.value.forEach((doc) => {
     const size = doc.size || 0;
-    const rangeIndex = sizeRanges.findIndex(range => size < range.max);
+    const rangeIndex = sizeRanges.findIndex((range) => size < range.max);
     if (rangeIndex !== -1) {
       sizeCounts[rangeIndex]++;
     }
   });
-  
+
   // Create chart
-  const ctx = sizeChart.value.getContext('2d');
+  const ctx = sizeChart.value.getContext("2d");
   if (!ctx) return;
-  
+
   sizeChartInstance = new Chart.value.Chart(ctx, {
-    type: 'bar',
+    type: "bar",
     data: {
-      labels: sizeRanges.map(range => range.label),
-      datasets: [{
-        label: t('documentConverter.stats.fileCount', 'Anzahl Dateien'),
-        data: sizeCounts,
-        backgroundColor: chartColors.pdf,
-        borderWidth: 1
-      }]
+      labels: sizeRanges.map((range) => range.label),
+      datasets: [
+        {
+          label: t("documentConverter.stats.fileCount", "Anzahl Dateien"),
+          data: sizeCounts,
+          backgroundColor: chartColors.pdf,
+          borderWidth: 1,
+        },
+      ],
     },
     options: {
       responsive: true,
@@ -745,49 +890,63 @@ function renderSizeChart() {
           beginAtZero: true,
           title: {
             display: true,
-            text: t('documentConverter.stats.documentCount', 'Anzahl Dokumente')
-          }
+            text: t(
+              "documentConverter.stats.documentCount",
+              "Anzahl Dokumente",
+            ),
+          },
         },
         x: {
           title: {
             display: true,
-            text: t('documentConverter.stats.fileSize', 'Dateigröße')
-          }
-        }
+            text: t("documentConverter.stats.fileSize", "Dateigröße"),
+          },
+        },
       },
       plugins: {
         legend: {
-          display: false
-        }
-      }
-    }
+          display: false,
+        },
+      },
+    },
   });
 }
 
 // Data export functions
-function exportStats(format: 'csv' | 'json') {
+function exportStats(format: "csv" | "json") {
   // Prepare export data
-  const exportData = filteredDocuments.value.map(doc => ({
+  const exportData = filteredDocuments.value.map((doc) => ({
     id: doc.id,
     name: doc.originalName,
     format: doc.originalFormat,
     size: doc.size,
     uploadDate: doc.uploadedAt ? new Date(doc.uploadedAt).toISOString() : null,
-    conversionDate: doc.convertedAt ? new Date(doc.convertedAt).toISOString() : null,
+    conversionDate: doc.convertedAt
+      ? new Date(doc.convertedAt).toISOString()
+      : null,
     status: doc.status,
-    duration: doc.duration
+    duration: doc.duration,
   }));
-  
-  let content = '';
-  let mimeType = '';
-  let fileName = `conversion_stats_${new Date().toISOString().split('T')[0]}`;
-  
-  if (format === 'csv') {
+
+  let content = "";
+  let mimeType = "";
+  let fileName = `conversion_stats_${new Date().toISOString().split("T")[0]}`;
+
+  if (format === "csv") {
     // Generate CSV
-    const headers = ['ID', 'Name', 'Format', 'Size (bytes)', 'Upload Date', 'Conversion Date', 'Status', 'Duration (ms)'];
-    content = headers.join(',') + '\n';
-    
-    exportData.forEach(doc => {
+    const headers = [
+      "ID",
+      "Name",
+      "Format",
+      "Size (bytes)",
+      "Upload Date",
+      "Conversion Date",
+      "Status",
+      "Duration (ms)",
+    ];
+    content = headers.join(",") + "\n";
+
+    exportData.forEach((doc) => {
       const row = [
         doc.id,
         `"${doc.name.replace(/"/g, '""')}"`, // Escape quotes in CSV
@@ -796,28 +955,28 @@ function exportStats(format: 'csv' | 'json') {
         doc.uploadDate,
         doc.conversionDate,
         doc.status,
-        doc.duration
+        doc.duration,
       ];
-      content += row.join(',') + '\n';
+      content += row.join(",") + "\n";
     });
-    
-    mimeType = 'text/csv';
-    fileName += '.csv';
+
+    mimeType = "text/csv";
+    fileName += ".csv";
   } else {
     // Generate JSON
     content = JSON.stringify(exportData, null, 2);
-    mimeType = 'application/json';
-    fileName += '.json';
+    mimeType = "application/json";
+    fileName += ".json";
   }
-  
+
   // Create download link
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
   a.download = fileName;
   a.click();
-  
+
   // Clean up
   URL.revokeObjectURL(url);
 }
@@ -826,22 +985,22 @@ function exportStats(format: 'csv' | 'json') {
 onMounted(async () => {
   // Load chart library
   await loadChartLibrary();
-  
+
   // Initialize store if needed
   if (!store.initialized) {
     await store.initialize();
   }
-  
+
   // Render charts
   renderFormatChart();
   renderStatusChart();
   renderTrendChart();
   renderSizeChart();
-  
+
   isLoading.value = false;
-  
+
   // Add window resize listener
-  window.addEventListener('resize', handleResize);
+  window.addEventListener("resize", handleResize);
 });
 
 onUnmounted(() => {
@@ -850,9 +1009,9 @@ onUnmounted(() => {
   if (statusChartInstance) statusChartInstance.destroy();
   if (trendChartInstance) trendChartInstance.destroy();
   if (sizeChartInstance) sizeChartInstance.destroy();
-  
+
   // Remove resize listener
-  window.removeEventListener('resize', handleResize);
+  window.removeEventListener("resize", handleResize);
 });
 
 // Handle window resize
@@ -872,12 +1031,15 @@ watch([timeRange, groupBy], () => {
 });
 
 // Watch for store updates
-watch(() => store.convertedDocuments.length, () => {
-  renderFormatChart();
-  renderStatusChart();
-  renderTrendChart();
-  renderSizeChart();
-});
+watch(
+  () => store.convertedDocuments.length,
+  () => {
+    renderFormatChart();
+    renderStatusChart();
+    renderTrendChart();
+    renderSizeChart();
+  },
+);
 </script>
 
 <style scoped>
@@ -1052,8 +1214,12 @@ watch(() => store.convertedDocuments.length, () => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .conversion-stats__table-container {
@@ -1141,7 +1307,7 @@ watch(() => store.convertedDocuments.length, () => {
   .conversion-stats__charts {
     grid-template-columns: 1fr;
   }
-  
+
   .conversion-stats__chart {
     grid-column: auto;
   }
@@ -1152,21 +1318,21 @@ watch(() => store.convertedDocuments.length, () => {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .conversion-stats__actions {
     width: 100%;
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .conversion-stats__filters {
     width: 100%;
   }
-  
+
   .conversion-stats__export {
     margin-top: 0.5rem;
   }
-  
+
   .conversion-stats__summary {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   }

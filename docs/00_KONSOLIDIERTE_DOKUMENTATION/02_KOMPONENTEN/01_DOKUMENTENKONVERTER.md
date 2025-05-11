@@ -2,7 +2,7 @@
 title: "Dokumentenkonverter-Implementierung"
 version: "1.2.0"
 date: "09.05.2025"
-lastUpdate: "10.05.2025"
+lastUpdate: "11.05.2025"
 author: "Martin Heinrich"
 status: "Aktiv"
 priority: "Mittel"
@@ -799,4 +799,4 @@ Der Dokumentenkonverter ist eine zentrale Komponente des nscale DMS Assistenten 
 
 ---
 
-Zuletzt aktualisiert: 10.05.2025
+Zuletzt aktualisiert: 11.05.2025

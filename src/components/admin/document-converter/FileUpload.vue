@@ -1,10 +1,10 @@
 <template>
-  <div 
+  <div
     class="file-upload"
-    :class="{ 
-      'file-upload--dragging': isDragging, 
+    :class="{
+      'file-upload--dragging': isDragging,
       'file-upload--disabled': isUploading,
-      'file-upload--error': hasUploadError
+      'file-upload--error': hasUploadError,
     }"
     @dragover.prevent="onDragOver"
     @dragleave.prevent="onDragLeave"
@@ -18,9 +18,9 @@
       </div>
       <div class="file-upload__text">
         <p v-if="!isUploading">
-          {{ t('documentConverter.dropFiles', 'Datei hier ablegen oder') }} 
-          <span 
-            @click="triggerFileInput" 
+          {{ t("documentConverter.dropFiles", "Datei hier ablegen oder") }}
+          <span
+            @click="triggerFileInput"
             @keydown.enter="triggerFileInput"
             @keydown.space="triggerFileInput"
             tabindex="0"
@@ -28,35 +28,37 @@
             aria-label="Datei auswählen"
             class="file-upload__browse"
           >
-            {{ t('documentConverter.browse', 'auswählen') }}
+            {{ t("documentConverter.browse", "auswählen") }}
           </span>
         </p>
         <p v-else>
-          {{ t('documentConverter.uploading', 'Datei wird hochgeladen...') }}
+          {{ t("documentConverter.uploading", "Datei wird hochgeladen...") }}
         </p>
         <p class="file-upload__hint">
-          {{ t('documentConverter.supportedFormats', 'Unterstützte Formate:') }} 
-          {{ props.allowedExtensions.map(ext => ext.toUpperCase()).join(', ') }}
+          {{ t("documentConverter.supportedFormats", "Unterstützte Formate:") }}
+          {{
+            props.allowedExtensions.map((ext) => ext.toUpperCase()).join(", ")
+          }}
         </p>
         <p class="file-upload__size-hint">
-          {{ t('documentConverter.maxSize', 'Maximale Dateigröße:') }} 
+          {{ t("documentConverter.maxSize", "Maximale Dateigröße:") }}
           {{ formatFileSize(props.maxFileSize) }}
         </p>
       </div>
-      <input 
-        type="file" 
-        ref="fileInput" 
+      <input
+        type="file"
+        ref="fileInput"
         @change="onFileSelected"
-        :accept="props.allowedExtensions.map(ext => '.' + ext).join(',')"
+        :accept="props.allowedExtensions.map((ext) => '.' + ext).join(',')"
         class="file-upload__input"
         :disabled="isUploading"
         aria-label="Datei auswählen"
-      >
+      />
     </div>
 
     <div v-if="isUploading" class="file-upload__progress">
-      <div 
-        class="file-upload__progress-bar" 
+      <div
+        class="file-upload__progress-bar"
         :style="{ width: `${uploadProgress}%` }"
         role="progressbar"
         :aria-valuenow="uploadProgress"
@@ -73,48 +75,62 @@
 
     <div v-if="selectedFile && !isUploading" class="file-upload__selected">
       <div class="file-upload__selected-file">
-        <div class="file-upload__file-icon" :class="`file-upload__file-icon--${fileFormat}`">
+        <div
+          class="file-upload__file-icon"
+          :class="`file-upload__file-icon--${fileFormat}`"
+        >
           <i :class="getFormatIcon(fileFormat)" aria-hidden="true"></i>
         </div>
         <div class="file-upload__file-info">
-          <span class="file-upload__selected-name">{{ selectedFile.name }}</span>
-          <span class="file-upload__selected-size">({{ formatFileSize(selectedFile.size) }})</span>
+          <span class="file-upload__selected-name">{{
+            selectedFile.name
+          }}</span>
+          <span class="file-upload__selected-size"
+            >({{ formatFileSize(selectedFile.size) }})</span
+          >
         </div>
       </div>
       <div class="file-upload__actions">
-        <button 
-          @click="uploadSelectedFile" 
+        <button
+          @click="uploadSelectedFile"
           class="file-upload__upload-btn"
           aria-label="Datei konvertieren"
         >
-          {{ t('documentConverter.convert', 'Konvertieren') }}
+          {{ t("documentConverter.convert", "Konvertieren") }}
         </button>
-        <button 
-          @click="clearSelectedFile" 
+        <button
+          @click="clearSelectedFile"
           class="file-upload__clear-btn"
           aria-label="Auswahl abbrechen"
         >
-          {{ t('common.cancel', 'Abbrechen') }}
+          {{ t("common.cancel", "Abbrechen") }}
         </button>
       </div>
     </div>
 
     <div v-if="!selectedFile && !isUploading" class="file-upload__examples">
       <div class="file-upload__examples-header">
-        <span>{{ t('documentConverter.examplesTitle', 'Beispiele') }}</span>
-        <button 
-          @click="toggleExamples" 
+        <span>{{ t("documentConverter.examplesTitle", "Beispiele") }}</span>
+        <button
+          @click="toggleExamples"
           class="file-upload__examples-toggle"
           :aria-expanded="showExamples"
           aria-controls="file-examples-section"
         >
-          <i :class="showExamples ? 'fa fa-chevron-up' : 'fa fa-chevron-down'" aria-hidden="true"></i>
+          <i
+            :class="showExamples ? 'fa fa-chevron-up' : 'fa fa-chevron-down'"
+            aria-hidden="true"
+          ></i>
         </button>
       </div>
-      <div v-if="showExamples" id="file-examples-section" class="file-upload__examples-content">
-        <div 
-          v-for="example in exampleFiles" 
-          :key="example.name" 
+      <div
+        v-if="showExamples"
+        id="file-examples-section"
+        class="file-upload__examples-content"
+      >
+        <div
+          v-for="example in exampleFiles"
+          :key="example.name"
           class="file-upload__example-item"
           @click="useExampleFile(example)"
           @keydown.enter="useExampleFile(example)"
@@ -122,12 +138,17 @@
           role="button"
           :aria-label="`Beispieldatei ${example.name} verwenden`"
         >
-          <div class="file-upload__example-icon" :class="`file-upload__file-icon--${example.format}`">
+          <div
+            class="file-upload__example-icon"
+            :class="`file-upload__file-icon--${example.format}`"
+          >
             <i :class="getFormatIcon(example.format)" aria-hidden="true"></i>
           </div>
           <div class="file-upload__example-info">
             <span class="file-upload__example-name">{{ example.name }}</span>
-            <span class="file-upload__example-description">{{ example.description }}</span>
+            <span class="file-upload__example-description">{{
+              example.description
+            }}</span>
           </div>
         </div>
       </div>
@@ -136,8 +157,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useGlobalDialog } from '@/composables/useDialog';
+import { ref, computed } from "vue";
+import { useGlobalDialog } from "@/composables/useDialog";
 
 // Dialog-Service für Fehlermeldungen
 const dialog = useGlobalDialog();
@@ -152,29 +173,29 @@ interface ExampleFile {
 
 const exampleFiles: ExampleFile[] = [
   {
-    name: 'Beispiel-Dokument.pdf',
-    format: 'pdf',
-    description: 'Ein Beispiel-PDF mit Text und Tabellen',
-    url: '/examples/Beispiel-Dokument.pdf'
+    name: "Beispiel-Dokument.pdf",
+    format: "pdf",
+    description: "Ein Beispiel-PDF mit Text und Tabellen",
+    url: "/examples/Beispiel-Dokument.pdf",
   },
   {
-    name: 'Tabellen-Beispiel.xlsx',
-    format: 'xlsx',
-    description: 'Excel-Datei mit verschiedenen Tabellen',
-    url: '/examples/Tabellen-Beispiel.xlsx'
+    name: "Tabellen-Beispiel.xlsx",
+    format: "xlsx",
+    description: "Excel-Datei mit verschiedenen Tabellen",
+    url: "/examples/Tabellen-Beispiel.xlsx",
   },
   {
-    name: 'Präsentation.pptx',
-    format: 'pptx',
-    description: 'Eine kurze Beispiel-Präsentation',
-    url: '/examples/Präsentation.pptx'
+    name: "Präsentation.pptx",
+    format: "pptx",
+    description: "Eine kurze Beispiel-Präsentation",
+    url: "/examples/Präsentation.pptx",
   },
   {
-    name: 'Textdokument.docx',
-    format: 'docx',
-    description: 'Word-Dokument mit formatiertem Text',
-    url: '/examples/Textdokument.docx'
-  }
+    name: "Textdokument.docx",
+    format: "docx",
+    description: "Word-Dokument mit formatiertem Text",
+    url: "/examples/Textdokument.docx",
+  },
 ];
 
 interface FileUploadProps {
@@ -188,24 +209,32 @@ const props = withDefaults(defineProps<FileUploadProps>(), {
   isUploading: false,
   uploadProgress: 0,
   maxFileSize: 50 * 1024 * 1024, // 50 MB
-  allowedExtensions: () => ['pdf', 'docx', 'xlsx', 'pptx', 'html', 'htm', 'txt']
+  allowedExtensions: () => [
+    "pdf",
+    "docx",
+    "xlsx",
+    "pptx",
+    "html",
+    "htm",
+    "txt",
+  ],
 });
 
 const emit = defineEmits<{
-  (e: 'upload', file: File): void;
-  (e: 'cancel'): void;
+  (e: "upload", file: File): void;
+  (e: "cancel"): void;
 }>();
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const selectedFile = ref<File | null>(null);
 const isDragging = ref<boolean>(false);
-const uploadError = ref<string>('');
+const uploadError = ref<string>("");
 const showExamples = ref<boolean>(false);
 
 // Berechne das Dateiformat der ausgewählten Datei
 const fileFormat = computed(() => {
-  if (!selectedFile.value) return '';
-  return selectedFile.value.name.split('.').pop()?.toLowerCase() || '';
+  if (!selectedFile.value) return "";
+  return selectedFile.value.name.split(".").pop()?.toLowerCase() || "";
 });
 
 // Prüfe, ob ein Upload-Fehler vorliegt
@@ -232,7 +261,7 @@ function onDragLeave(event: DragEvent): void {
 function onDrop(event: DragEvent): void {
   if (props.isUploading) return;
   isDragging.value = false;
-  
+
   if (event.dataTransfer?.files.length > 0) {
     validateAndSelectFile(event.dataTransfer.files[0]);
   }
@@ -249,41 +278,45 @@ function onFileSelected(event: Event): void {
 // Datei validieren und auswählen
 function validateAndSelectFile(file: File): void {
   // Fehler zurücksetzen
-  uploadError.value = '';
-  
+  uploadError.value = "";
+
   // Dateityp überprüfen
-  const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
-  
+  const fileExtension = file.name.split(".").pop()?.toLowerCase() || "";
+
   if (!props.allowedExtensions.includes(fileExtension)) {
-    uploadError.value = t('documentConverter.unsupportedFormat', 
-      `Nicht unterstütztes Dateiformat. Bitte laden Sie eine Datei mit einer der folgenden Erweiterungen hoch: ${props.allowedExtensions.join(', ')}`);
+    uploadError.value = t(
+      "documentConverter.unsupportedFormat",
+      `Nicht unterstütztes Dateiformat. Bitte laden Sie eine Datei mit einer der folgenden Erweiterungen hoch: ${props.allowedExtensions.join(", ")}`,
+    );
     return;
   }
-  
+
   // Dateigröße überprüfen
   if (file.size > props.maxFileSize) {
-    uploadError.value = t('documentConverter.fileTooLarge', 
-      `Die Datei ist zu groß. Maximale Dateigröße: ${formatFileSize(props.maxFileSize)}`);
+    uploadError.value = t(
+      "documentConverter.fileTooLarge",
+      `Die Datei ist zu groß. Maximale Dateigröße: ${formatFileSize(props.maxFileSize)}`,
+    );
     return;
   }
-  
+
   selectedFile.value = file;
 }
 
 // Ausgewählte Datei zurücksetzen
 function clearSelectedFile(): void {
   selectedFile.value = null;
-  uploadError.value = '';
+  uploadError.value = "";
   if (fileInput.value) {
-    fileInput.value.value = '';
+    fileInput.value.value = "";
   }
-  emit('cancel');
+  emit("cancel");
 }
 
 // Ausgewählte Datei hochladen
 function uploadSelectedFile(): void {
   if (selectedFile.value) {
-    emit('upload', selectedFile.value);
+    emit("upload", selectedFile.value);
   }
 }
 
@@ -299,16 +332,21 @@ async function useExampleFile(example: ExampleFile): Promise<void> {
     if (!response.ok) {
       throw new Error(`HTTP-Fehler: ${response.status}`);
     }
-    
+
     const blob = await response.blob();
-    const file = new File([blob], example.name, { type: getMimeType(example.format) });
-    
+    const file = new File([blob], example.name, {
+      type: getMimeType(example.format),
+    });
+
     validateAndSelectFile(file);
   } catch (error) {
-    console.error('Fehler beim Laden der Beispieldatei:', error);
+    console.error("Fehler beim Laden der Beispieldatei:", error);
     dialog.error({
-      title: t('documentConverter.error', 'Fehler'),
-      message: t('documentConverter.exampleFileError', 'Die Beispieldatei konnte nicht geladen werden.')
+      title: t("documentConverter.error", "Fehler"),
+      message: t(
+        "documentConverter.exampleFileError",
+        "Die Beispieldatei konnte nicht geladen werden.",
+      ),
     });
   }
 }
@@ -316,45 +354,45 @@ async function useExampleFile(example: ExampleFile): Promise<void> {
 // Hilfsfunktion für MIME-Typen
 function getMimeType(format: string): string {
   const mimeTypes: Record<string, string> = {
-    pdf: 'application/pdf',
-    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    html: 'text/html',
-    htm: 'text/html',
-    txt: 'text/plain'
+    pdf: "application/pdf",
+    docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    html: "text/html",
+    htm: "text/html",
+    txt: "text/plain",
   };
-  
-  return mimeTypes[format] || 'application/octet-stream';
+
+  return mimeTypes[format] || "application/octet-stream";
 }
 
 // Dateigröße formatieren
 function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
-  
+  if (bytes === 0) return "0 Bytes";
+
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
 // Dateiformat-Icon ermitteln
 function getFormatIcon(format: string): string {
   const icons: Record<string, string> = {
-    pdf: 'fa fa-file-pdf',
-    docx: 'fa fa-file-word',
-    doc: 'fa fa-file-word',
-    xlsx: 'fa fa-file-excel',
-    xls: 'fa fa-file-excel',
-    pptx: 'fa fa-file-powerpoint',
-    ppt: 'fa fa-file-powerpoint',
-    html: 'fa fa-file-code',
-    htm: 'fa fa-file-code',
-    txt: 'fa fa-file-alt'
+    pdf: "fa fa-file-pdf",
+    docx: "fa fa-file-word",
+    doc: "fa fa-file-word",
+    xlsx: "fa fa-file-excel",
+    xls: "fa fa-file-excel",
+    pptx: "fa fa-file-powerpoint",
+    ppt: "fa fa-file-powerpoint",
+    html: "fa fa-file-code",
+    htm: "fa fa-file-code",
+    txt: "fa fa-file-alt",
   };
-  
-  return icons[format] || 'fa fa-file';
+
+  return icons[format] || "fa fa-file";
 }
 
 // i18n Hilfsfunktion
@@ -497,12 +535,28 @@ function t(key: string, fallback: string): string {
   font-size: 1.5rem;
 }
 
-.file-upload__file-icon--pdf { background-color: #e74c3c; }
-.file-upload__file-icon--docx, .file-upload__file-icon--doc { background-color: #3498db; }
-.file-upload__file-icon--xlsx, .file-upload__file-icon--xls { background-color: #2ecc71; }
-.file-upload__file-icon--pptx, .file-upload__file-icon--ppt { background-color: #e67e22; }
-.file-upload__file-icon--html, .file-upload__file-icon--htm { background-color: #9b59b6; }
-.file-upload__file-icon--txt { background-color: #95a5a6; }
+.file-upload__file-icon--pdf {
+  background-color: #e74c3c;
+}
+.file-upload__file-icon--docx,
+.file-upload__file-icon--doc {
+  background-color: #3498db;
+}
+.file-upload__file-icon--xlsx,
+.file-upload__file-icon--xls {
+  background-color: #2ecc71;
+}
+.file-upload__file-icon--pptx,
+.file-upload__file-icon--ppt {
+  background-color: #e67e22;
+}
+.file-upload__file-icon--html,
+.file-upload__file-icon--htm {
+  background-color: #9b59b6;
+}
+.file-upload__file-icon--txt {
+  background-color: #95a5a6;
+}
 
 .file-upload__file-info {
   display: flex;
@@ -651,8 +705,12 @@ function t(key: string, fallback: string): string {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Responsive Design */

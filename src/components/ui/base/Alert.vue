@@ -1,44 +1,64 @@
 <template>
   <Transition name="n-alert">
-    <div 
+    <div
       v-if="isVisible"
       class="n-alert"
-      :class="[
-        `n-alert--${type}`,
-        { 'n-alert--dismissible': dismissible }
-      ]"
+      :class="[`n-alert--${type}`, { 'n-alert--dismissible': dismissible }]"
       role="alert"
       aria-live="assertive"
     >
       <div class="n-alert-icon" aria-hidden="true">
         <component :is="alertIcon" v-if="alertIcon" />
-        <svg v-else class="n-alert-default-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path v-if="type === 'info'" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
-          <path v-else-if="type === 'success'" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-          <path v-else-if="type === 'warning'" d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
-          <path v-else-if="type === 'error'" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+        <svg
+          v-else
+          class="n-alert-default-icon"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            v-if="type === 'info'"
+            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"
+          />
+          <path
+            v-else-if="type === 'success'"
+            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+          />
+          <path
+            v-else-if="type === 'warning'"
+            d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"
+          />
+          <path
+            v-else-if="type === 'error'"
+            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+          />
         </svg>
       </div>
-      
+
       <div class="n-alert-content">
         <div v-if="title" class="n-alert-title">{{ title }}</div>
-        <div 
+        <div
           class="n-alert-message"
           :class="{ 'n-alert-message--has-title': !!title }"
         >
           <slot>{{ message }}</slot>
         </div>
       </div>
-      
-      <button 
+
+      <button
         v-if="dismissible"
         type="button"
         class="n-alert-close"
         aria-label="Close alert"
         @click="closeAlert"
       >
-        <svg class="n-alert-close-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+        <svg
+          class="n-alert-close-icon"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+          />
         </svg>
       </button>
     </div>
@@ -46,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 
 /**
  * Alert component for displaying messages, notifications, or feedback
@@ -56,7 +76,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
  */
 export interface AlertProps {
   /** Type of alert which affects styling */
-  type?: 'info' | 'success' | 'warning' | 'error';
+  type?: "info" | "success" | "warning" | "error";
   /** Title displayed at the top of the alert */
   title?: string;
   /** Main message content */
@@ -72,30 +92,33 @@ export interface AlertProps {
 }
 
 const props = withDefaults(defineProps<AlertProps>(), {
-  type: 'info',
+  type: "info",
   dismissible: false,
   timeout: 0,
-  visible: true
+  visible: true,
 });
 
 const emit = defineEmits<{
-  (e: 'close'): void;
-  (e: 'update:visible', value: boolean): void;
+  (e: "close"): void;
+  (e: "update:visible", value: boolean): void;
 }>();
 
 // Internal state for visibility
 const isVisible = ref(props.visible);
 
 // Watch for changes to the visible prop
-watch(() => props.visible, (newValue) => {
-  isVisible.value = newValue;
-});
+watch(
+  () => props.visible,
+  (newValue) => {
+    isVisible.value = newValue;
+  },
+);
 
 // Handle alert closing
 function closeAlert() {
   isVisible.value = false;
-  emit('close');
-  emit('update:visible', false);
+  emit("close");
+  emit("update:visible", false);
 }
 
 // Select the appropriate icon based on alert type or custom icon
@@ -125,7 +148,15 @@ onUnmounted(() => {
   display: flex;
   padding: 1rem;
   border-radius: var(--n-border-radius, 4px);
-  font-family: var(--n-font-family, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-family: var(
+    --n-font-family,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif
+  );
   align-items: flex-start;
   width: 100%;
   box-sizing: border-box;
@@ -224,7 +255,10 @@ onUnmounted(() => {
 /* Animation */
 .n-alert-enter-active,
 .n-alert-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease, max-height 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease,
+    max-height 0.3s ease;
   max-height: 500px;
   overflow: hidden;
 }

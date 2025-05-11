@@ -3,9 +3,8 @@
  * Automatisch generiert mit migrate-to-vite.js
  */
 
-declare module './chat' {
+declare module "./chat" {
   // TODO: Füge hier Typendefinitionen hinzu
-  
   // Beispiel:
   // export function setup(options: any): any;
 }

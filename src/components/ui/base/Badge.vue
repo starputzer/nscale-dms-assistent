@@ -1,6 +1,6 @@
 <template>
-  <span 
-    class="n-badge" 
+  <span
+    class="n-badge"
     :class="[
       `n-badge--${variant}`,
       `n-badge--${size}`,
@@ -10,8 +10,8 @@
         'n-badge--pill': pill,
         'n-badge--standalone': !$slots.default,
         'n-badge--animated': animated && value !== prevValue,
-        'n-badge--hidden': hidden
-      }
+        'n-badge--hidden': hidden,
+      },
     ]"
     :data-content="formattedValue"
     :data-max="max"
@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue';
+import { computed, ref, watch, onMounted } from "vue";
 
 /**
  * Badge component for displaying notifications, counts, or status indicators.
@@ -39,9 +39,9 @@ import { computed, ref, watch, onMounted } from 'vue';
  */
 export interface BadgeProps {
   /** Badge variant/color */
-  variant?: 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info';
+  variant?: "default" | "primary" | "success" | "warning" | "error" | "info";
   /** Badge size */
-  size?: 'small' | 'medium' | 'large';
+  size?: "small" | "medium" | "large";
   /** Value to display. If a number is provided it will be capped by max */
   value?: string | number;
   /** Maximum value to display, when value is a number that exceeds max, it will show '{max}+' */
@@ -55,7 +55,7 @@ export interface BadgeProps {
   /** Whether to animate when value changes */
   animated?: boolean;
   /** Position when used as an overlay on another element */
-  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+  position?: "top-right" | "top-left" | "bottom-right" | "bottom-left";
   /** Aria label for accessibility */
   ariaLabel?: string;
   /** Whether to show the value (not applicable for dot variant) */
@@ -63,32 +63,35 @@ export interface BadgeProps {
 }
 
 const props = withDefaults(defineProps<BadgeProps>(), {
-  variant: 'default',
-  size: 'medium',
-  value: '',
+  variant: "default",
+  size: "medium",
+  value: "",
   max: 99,
   dot: false,
   pill: false,
   hidden: false,
   animated: true,
-  position: 'top-right',
-  showValue: true
+  position: "top-right",
+  showValue: true,
 });
 
 // Store previous value for animation
 const prevValue = ref<string | number>(props.value);
 
 // Watch for value changes to update prevValue for animation
-watch(() => props.value, (newValue, oldValue) => {
-  // Only animate if values are different
-  if (newValue !== oldValue) {
-    prevValue.value = oldValue;
-    // After animation reset previous value
-    setTimeout(() => {
-      prevValue.value = newValue;
-    }, 300); // Animation duration
-  }
-});
+watch(
+  () => props.value,
+  (newValue, oldValue) => {
+    // Only animate if values are different
+    if (newValue !== oldValue) {
+      prevValue.value = oldValue;
+      // After animation reset previous value
+      setTimeout(() => {
+        prevValue.value = newValue;
+      }, 300); // Animation duration
+    }
+  },
+);
 
 onMounted(() => {
   prevValue.value = props.value;
@@ -96,7 +99,7 @@ onMounted(() => {
 
 // Format the value, respecting max limit
 const formattedValue = computed(() => {
-  if (typeof props.value === 'number') {
+  if (typeof props.value === "number") {
     if (props.value > props.max) {
       return `${props.max}+`;
     }
@@ -113,7 +116,15 @@ const formattedValue = computed(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--n-font-family, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-family: var(
+    --n-font-family,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif
+  );
   font-weight: 500;
   box-sizing: border-box;
   transition: all 0.2s ease;
@@ -127,7 +138,9 @@ const formattedValue = computed(() => {
 
 /* Badge content */
 .n-badge__content {
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
 }
 
 /* Animation when value changes */
@@ -188,7 +201,7 @@ const formattedValue = computed(() => {
 
 /* Dot variant */
 .n-badge--dot:not(.n-badge--standalone)::after {
-  content: '';
+  content: "";
   min-width: 8px;
   min-height: 8px;
   padding: 0;
@@ -345,7 +358,7 @@ const formattedValue = computed(() => {
   .n-badge:not(.n-badge--standalone)::after {
     box-shadow: 0 0 0 2px var(--n-color-background-dark, #1a202c);
   }
-  
+
   .n-badge--standalone.n-badge--default {
     background-color: var(--n-color-gray-600, #4a5568);
   }

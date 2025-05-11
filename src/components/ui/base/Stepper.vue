@@ -1,13 +1,13 @@
 <template>
-  <div 
-    class="n-stepper" 
+  <div
+    class="n-stepper"
     :class="[
       `n-stepper--${variant}`,
       `n-stepper--${size}`,
       {
         'n-stepper--vertical': vertical,
-        'n-stepper--interactive': interactive
-      }
+        'n-stepper--interactive': interactive,
+      },
     ]"
     role="navigation"
     aria-label="Progress Steps"
@@ -20,54 +20,59 @@
         :class="{
           'n-stepper__step--active': index === activeStep,
           'n-stepper__step--completed': isCompleted(index),
-          'n-stepper__step--disabled': isDisabled(index)
+          'n-stepper__step--disabled': isDisabled(index),
         }"
       >
         <!-- Step connector/line -->
-        <div 
-          v-if="index > 0" 
+        <div
+          v-if="index > 0"
           class="n-stepper__connector"
           :class="{
-            'n-stepper__connector--active': isCompleted(index - 1)
+            'n-stepper__connector--active': isCompleted(index - 1),
           }"
         ></div>
-        
+
         <!-- Step indicator -->
         <div class="n-stepper__indicator-wrapper">
-          <div 
+          <div
             class="n-stepper__indicator"
             :class="{
-              'n-stepper__indicator--clickable': interactive && !isDisabled(index)
+              'n-stepper__indicator--clickable':
+                interactive && !isDisabled(index),
             }"
             @click="handleStepClick(index)"
             :aria-current="index === activeStep ? 'step' : undefined"
             :tabindex="interactive && !isDisabled(index) ? 0 : -1"
-            @keydown.enter="interactive && !isDisabled(index) && handleStepClick(index)"
-            @keydown.space="interactive && !isDisabled(index) && handleStepClick(index)"
+            @keydown.enter="
+              interactive && !isDisabled(index) && handleStepClick(index)
+            "
+            @keydown.space="
+              interactive && !isDisabled(index) && handleStepClick(index)
+            "
           >
             <div class="n-stepper__indicator-content">
-              <component 
-                v-if="isCompleted(index) && checkIcon" 
-                :is="checkIcon" 
+              <component
+                v-if="isCompleted(index) && checkIcon"
+                :is="checkIcon"
                 class="n-stepper__icon"
               />
-              <component 
-                v-else-if="step.icon" 
-                :is="step.icon" 
+              <component
+                v-else-if="step.icon"
+                :is="step.icon"
                 class="n-stepper__icon"
               />
               <template v-else>{{ index + 1 }}</template>
             </div>
           </div>
         </div>
-        
+
         <!-- Step content -->
         <div class="n-stepper__content">
           <div class="n-stepper__title">{{ step.title }}</div>
           <div v-if="step.description" class="n-stepper__description">
             {{ step.description }}
           </div>
-          
+
           <!-- Optional step content through slot -->
           <div v-if="$slots[`step-${index}`]" class="n-stepper__slot">
             <slot :name="`step-${index}`" :step="step" :index="index"></slot>
@@ -75,19 +80,19 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Navigation buttons -->
     <div v-if="showNavigation" class="n-stepper__navigation">
-      <Button 
-        size="medium" 
-        variant="secondary" 
+      <Button
+        size="medium"
+        variant="secondary"
         :disabled="activeStep === 0 || isNavigationDisabled"
         @click="prevStep"
       >
         {{ prevButtonText }}
       </Button>
-      
-      <Button 
+
+      <Button
         size="medium"
         variant="primary"
         :disabled="activeStep === steps.length - 1 || isNavigationDisabled"
@@ -100,8 +105,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import Button from './Button.vue';
+import { computed } from "vue";
+import Button from "./Button.vue";
 
 /**
  * Step item interface
@@ -136,11 +141,11 @@ export interface StepperProps {
   /** Default active step index when not using v-model */
   activeIndex?: number;
   /** Completed steps (array of indices or 'auto') */
-  completed?: number[] | 'auto';
+  completed?: number[] | "auto";
   /** Visual variant */
-  variant?: 'filled' | 'outlined' | 'minimal';
+  variant?: "filled" | "outlined" | "minimal";
   /** Size variant */
-  size?: 'small' | 'medium' | 'large';
+  size?: "small" | "medium" | "large";
   /** Whether to show in vertical layout */
   vertical?: boolean;
   /** Whether steps are clickable to navigate */
@@ -160,34 +165,35 @@ export interface StepperProps {
 const props = withDefaults(defineProps<StepperProps>(), {
   modelValue: undefined,
   activeIndex: 0,
-  completed: 'auto',
-  variant: 'filled',
-  size: 'medium',
+  completed: "auto",
+  variant: "filled",
+  size: "medium",
   vertical: false,
   interactive: true,
   checkIcon: undefined,
   showNavigation: false,
-  prevButtonText: 'Previous',
-  nextButtonText: 'Next',
-  isNavigationDisabled: false
+  prevButtonText: "Previous",
+  nextButtonText: "Next",
+  isNavigationDisabled: false,
 });
 
 // Active step state
 const activeStep = computed({
-  get: () => props.modelValue !== undefined ? props.modelValue : props.activeIndex,
+  get: () =>
+    props.modelValue !== undefined ? props.modelValue : props.activeIndex,
   set: (value) => {
-    emit('update:modelValue', value);
-    emit('step-change', value, props.steps[value]);
-  }
+    emit("update:modelValue", value);
+    emit("step-change", value, props.steps[value]);
+  },
 });
 
 // Check if a step is completed
 function isCompleted(index: number): boolean {
   // If completed is 'auto', all steps before activeStep are completed
-  if (props.completed === 'auto') {
+  if (props.completed === "auto") {
     return index < activeStep.value;
   }
-  
+
   // Otherwise check if the index is in the completed array
   return Array.isArray(props.completed) && props.completed.includes(index);
 }
@@ -198,12 +204,12 @@ function isDisabled(index: number): boolean {
   if (props.steps[index]?.disabled) {
     return true;
   }
-  
+
   // For linear steppers, steps after activeStep + 1 are disabled
   if (!props.interactive) {
     return index > activeStep.value + 1;
   }
-  
+
   return false;
 }
 
@@ -216,25 +222,28 @@ function handleStepClick(index: number) {
 
 // Navigation methods
 function nextStep() {
-  if (activeStep.value < props.steps.length - 1 && !props.isNavigationDisabled) {
+  if (
+    activeStep.value < props.steps.length - 1 &&
+    !props.isNavigationDisabled
+  ) {
     activeStep.value++;
-    emit('next', activeStep.value, props.steps[activeStep.value]);
+    emit("next", activeStep.value, props.steps[activeStep.value]);
   }
 }
 
 function prevStep() {
   if (activeStep.value > 0 && !props.isNavigationDisabled) {
     activeStep.value--;
-    emit('prev', activeStep.value, props.steps[activeStep.value]);
+    emit("prev", activeStep.value, props.steps[activeStep.value]);
   }
 }
 
 // Emit events
 const emit = defineEmits<{
-  (e: 'update:modelValue', index: number): void;
-  (e: 'step-change', index: number, step: StepItem): void;
-  (e: 'next', index: number, step: StepItem): void;
-  (e: 'prev', index: number, step: StepItem): void;
+  (e: "update:modelValue", index: number): void;
+  (e: "step-change", index: number, step: StepItem): void;
+  (e: "next", index: number, step: StepItem): void;
+  (e: "prev", index: number, step: StepItem): void;
 }>();
 </script>
 
@@ -243,7 +252,15 @@ const emit = defineEmits<{
   /* Base styles */
   display: flex;
   flex-direction: column;
-  font-family: var(--n-font-family, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-family: var(
+    --n-font-family,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif
+  );
   width: 100%;
 }
 
@@ -455,36 +472,36 @@ const emit = defineEmits<{
   .n-stepper__connector {
     background-color: var(--n-color-gray-600, #4a5568);
   }
-  
+
   .n-stepper__indicator {
     background-color: var(--n-color-gray-700, #2d3748);
     color: var(--n-color-text-secondary-dark, #a0aec0);
   }
-  
+
   .n-stepper__title {
     color: var(--n-color-text-primary-dark, #f7fafc);
   }
-  
+
   .n-stepper__description {
     color: var(--n-color-text-secondary-dark, #a0aec0);
   }
-  
+
   /* Outlined variant in dark mode */
   .n-stepper--outlined .n-stepper__indicator {
     border-color: var(--n-color-gray-600, #4a5568);
   }
-  
+
   /* Minimal variant in dark mode */
   .n-stepper--minimal .n-stepper__indicator {
     color: var(--n-color-text-primary-dark, #f7fafc);
   }
-  
+
   /* Disabled state in dark mode */
   .n-stepper__step--disabled .n-stepper__indicator {
     background-color: var(--n-color-gray-800, #1a202c);
     color: var(--n-color-text-disabled-dark, #718096);
   }
-  
+
   .n-stepper__step--disabled .n-stepper__title,
   .n-stepper__step--disabled .n-stepper__description {
     color: var(--n-color-text-disabled-dark, #718096);

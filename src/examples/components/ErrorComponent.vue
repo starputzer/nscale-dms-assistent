@@ -1,10 +1,13 @@
 <template>
   <div class="error-component">
     <h3>Fehlerhafte Komponente</h3>
-    <p>Diese Komponente enthält einen Rendering-Fehler, der beim Aktivieren auftritt.</p>
+    <p>
+      Diese Komponente enthält einen Rendering-Fehler, der beim Aktivieren
+      auftritt.
+    </p>
     <div class="content">
       <button @click="triggerError">Fehler auslösen</button>
-      
+
       <!-- Dieser Code verursacht einen Fehler, wenn showError true ist -->
       <div v-if="showError" class="error-section">
         {{ nonExistentProperty.value }}
@@ -14,10 +17,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineEmits } from 'vue';
+import { ref, defineEmits } from "vue";
 
 const emit = defineEmits<{
-  (e: 'trigger-error', error: Error): void
+  (e: "trigger-error", error: Error): void;
 }>();
 
 const showError = ref(false);
@@ -27,7 +30,7 @@ function triggerError() {
     // Entweder direkt einen Fehler auslösen oder render-Fehler triggern
     if (Math.random() > 0.5) {
       // Direkter Fehler
-      throw new Error('Manuell ausgelöster Fehler in ErrorComponent');
+      throw new Error("Manuell ausgelöster Fehler in ErrorComponent");
     } else {
       // Render-Fehler
       showError.value = true;
@@ -35,7 +38,7 @@ function triggerError() {
   } catch (error) {
     // Nur wenn wir einen direkten Fehler haben, emittieren wir ihn
     // Der Render-Fehler wird vom ErrorBoundary gefangen
-    emit('trigger-error', error as Error);
+    emit("trigger-error", error as Error);
   }
 }
 </script>

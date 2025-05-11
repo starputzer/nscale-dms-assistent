@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted, Ref } from 'vue';
+import { ref, onMounted, onUnmounted, Ref } from "vue";
 
 export interface IntersectionObserverOptions {
   root?: Element | Document | null;
@@ -9,15 +9,15 @@ export interface IntersectionObserverOptions {
 
 /**
  * Composable to detect when an element intersects with the viewport using the Intersection Observer API
- * 
+ *
  * @param targetRef - Vue ref containing the target element to observe
  * @param options - Intersection Observer options
  * @returns Object containing isIntersecting state and utilities
- * 
+ *
  * @example
  * const elementRef = ref<HTMLElement | null>(null);
  * const { isIntersecting } = useIntersectionObserver(elementRef, { threshold: 0.5 });
- * 
+ *
  * watch(isIntersecting, (value) => {
  *   if (value) {
  *     console.log('Element is visible in viewport');
@@ -28,13 +28,13 @@ export interface IntersectionObserverOptions {
  */
 export function useIntersectionObserver(
   targetRef: Ref<Element | null>,
-  options: IntersectionObserverOptions = {}
+  options: IntersectionObserverOptions = {},
 ) {
   const {
     root = null,
-    rootMargin = '0px',
+    rootMargin = "0px",
     threshold = 0,
-    once = false
+    once = false,
   } = options;
 
   const isIntersecting = ref(false);
@@ -65,7 +65,7 @@ export function useIntersectionObserver(
           cleanup();
         }
       },
-      { root, rootMargin, threshold }
+      { root, rootMargin, threshold },
     );
 
     observer.observe(targetRef.value);
@@ -78,7 +78,7 @@ export function useIntersectionObserver(
     isIntersecting,
     entry,
     observe,
-    cleanup
+    cleanup,
   };
 }
 

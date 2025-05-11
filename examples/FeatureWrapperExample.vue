@@ -1,106 +1,114 @@
 <template>
   <div class="feature-wrapper-example">
     <h1>Feature-Toggle Beispiel</h1>
-    
+
     <div class="feature-status">
       <h2>Feature-Status</h2>
       <p>
-        <strong>DocConverter SFC:</strong> 
-        <span 
-          :class="{ 
-            'status-active': featureToggles.shouldUseFeature('useSfcDocConverter'),
-            'status-inactive': !featureToggles.shouldUseFeature('useSfcDocConverter'),
-            'status-error': featureToggles.isFallbackActive('useSfcDocConverter')
+        <strong>DocConverter SFC:</strong>
+        <span
+          :class="{
+            'status-active':
+              featureToggles.shouldUseFeature('useSfcDocConverter'),
+            'status-inactive':
+              !featureToggles.shouldUseFeature('useSfcDocConverter'),
+            'status-error':
+              featureToggles.isFallbackActive('useSfcDocConverter'),
           }"
         >
-          {{ getFeatureStatus('useSfcDocConverter') }}
+          {{ getFeatureStatus("useSfcDocConverter") }}
         </span>
       </p>
       <p>
-        <strong>Admin SFC:</strong> 
-        <span 
-          :class="{ 
+        <strong>Admin SFC:</strong>
+        <span
+          :class="{
             'status-active': featureToggles.shouldUseFeature('useSfcAdmin'),
             'status-inactive': !featureToggles.shouldUseFeature('useSfcAdmin'),
-            'status-error': featureToggles.isFallbackActive('useSfcAdmin')
+            'status-error': featureToggles.isFallbackActive('useSfcAdmin'),
           }"
         >
-          {{ getFeatureStatus('useSfcAdmin') }}
+          {{ getFeatureStatus("useSfcAdmin") }}
         </span>
       </p>
       <p>
-        <strong>Chat SFC:</strong> 
-        <span 
-          :class="{ 
+        <strong>Chat SFC:</strong>
+        <span
+          :class="{
             'status-active': featureToggles.shouldUseFeature('useSfcChat'),
             'status-inactive': !featureToggles.shouldUseFeature('useSfcChat'),
-            'status-error': featureToggles.isFallbackActive('useSfcChat')
+            'status-error': featureToggles.isFallbackActive('useSfcChat'),
           }"
         >
-          {{ getFeatureStatus('useSfcChat') }}
+          {{ getFeatureStatus("useSfcChat") }}
         </span>
       </p>
       <p>
-        <strong>Settings SFC:</strong> 
-        <span 
-          :class="{ 
+        <strong>Settings SFC:</strong>
+        <span
+          :class="{
             'status-active': featureToggles.shouldUseFeature('useSfcSettings'),
-            'status-inactive': !featureToggles.shouldUseFeature('useSfcSettings'),
-            'status-error': featureToggles.isFallbackActive('useSfcSettings')
+            'status-inactive':
+              !featureToggles.shouldUseFeature('useSfcSettings'),
+            'status-error': featureToggles.isFallbackActive('useSfcSettings'),
           }"
         >
-          {{ getFeatureStatus('useSfcSettings') }}
+          {{ getFeatureStatus("useSfcSettings") }}
         </span>
       </p>
     </div>
-    
+
     <div class="feature-controls">
       <h2>Feature-Steuerung</h2>
       <div class="feature-toggles">
         <div class="feature-toggle">
           <label for="toggle-doc-converter">DocConverter SFC</label>
-          <input 
-            id="toggle-doc-converter" 
-            type="checkbox" 
+          <input
+            id="toggle-doc-converter"
+            type="checkbox"
             v-model="featureToggles.sfcDocConverter"
-          >
+          />
         </div>
         <div class="feature-toggle">
           <label for="toggle-admin">Admin SFC</label>
-          <input 
-            id="toggle-admin" 
-            type="checkbox" 
+          <input
+            id="toggle-admin"
+            type="checkbox"
             v-model="featureToggles.sfcAdmin"
-          >
+          />
         </div>
         <div class="feature-toggle">
           <label for="toggle-chat">Chat SFC</label>
-          <input 
-            id="toggle-chat" 
-            type="checkbox" 
+          <input
+            id="toggle-chat"
+            type="checkbox"
             v-model="featureToggles.sfcChat"
-          >
+          />
         </div>
         <div class="feature-toggle">
           <label for="toggle-settings">Settings SFC</label>
-          <input 
-            id="toggle-settings" 
-            type="checkbox" 
+          <input
+            id="toggle-settings"
+            type="checkbox"
             v-model="featureToggles.sfcSettings"
-          >
+          />
         </div>
       </div>
-      
+
       <div class="feature-actions">
-        <button @click="featureToggles.enableAllSfcFeatures()">Alle SFC aktivieren</button>
-        <button @click="featureToggles.disableAllSfcFeatures()">Alle SFC deaktivieren</button>
+        <button @click="featureToggles.enableAllSfcFeatures()">
+          Alle SFC aktivieren
+        </button>
+        <button @click="featureToggles.disableAllSfcFeatures()">
+          Alle SFC deaktivieren
+        </button>
         <button @click="createTestError">Test-Fehler erzeugen</button>
       </div>
     </div>
-    
+
     <div class="feature-demo">
       <h2>Komponenten-Demo</h2>
-      
+
       <div class="feature-demo-item">
         <h3>DocConverter</h3>
         <FeatureWrapper
@@ -112,7 +120,7 @@
           @component-mounted="handleComponentMounted"
         />
       </div>
-      
+
       <div class="feature-demo-item">
         <h3>Admin-Panel</h3>
         <FeatureWrapper
@@ -125,7 +133,7 @@
         />
       </div>
     </div>
-    
+
     <div class="event-log">
       <h2>Event-Log</h2>
       <ul>
@@ -135,10 +143,10 @@
         </li>
       </ul>
     </div>
-    
+
     <div class="feature-admin-panel">
       <h2>Feature-Admin-Panel</h2>
-      <FeatureTogglesPanel 
+      <FeatureTogglesPanel
         initialUserRole="developer"
         @role-change="handleRoleChange"
         @feature-change="handleFeatureChange"
@@ -149,28 +157,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, defineAsyncComponent } from 'vue';
-import { useFeatureToggles } from '@/composables/useFeatureToggles';
-import FeatureWrapper from '@/components/shared/FeatureWrapper.vue';
-import FeatureTogglesPanel from '@/components/admin/FeatureTogglesPanel.vue';
-import { FeatureToggleRole } from '@/stores/featureToggles';
+import { ref, onMounted, defineAsyncComponent } from "vue";
+import { useFeatureToggles } from "@/composables/useFeatureToggles";
+import FeatureWrapper from "@/components/shared/FeatureWrapper.vue";
+import FeatureTogglesPanel from "@/components/admin/FeatureTogglesPanel.vue";
+import { FeatureToggleRole } from "@/stores/featureToggles";
 
 // Feature-Toggles verwenden
 const featureToggles = useFeatureToggles({
-  userRole: 'developer',
-  debug: true
+  userRole: "developer",
+  debug: true,
 });
 
 // Event-Log für Demonstrationszwecke
 const eventLog = ref<{ time: Date; message: string; type: string }[]>([]);
 
 // Komponenten asynchron laden für bessere Performance
-const SfcDocConverterComponent = defineAsyncComponent(() => 
-  import('@/components/admin/document-converter/DocConverterContainer.vue')
+const SfcDocConverterComponent = defineAsyncComponent(
+  () =>
+    import("@/components/admin/document-converter/DocConverterContainer.vue"),
 );
 
 const LegacyDocConverterComponent = {
-  name: 'LegacyDocConverterComponent',
+  name: "LegacyDocConverterComponent",
   template: `
     <div class="legacy-component">
       <h4>Legacy DocConverter</h4>
@@ -185,11 +194,11 @@ const LegacyDocConverterComponent = {
         </div>
       </div>
     </div>
-  `
+  `,
 };
 
 const SfcAdminComponent = {
-  name: 'SfcAdminComponent',
+  name: "SfcAdminComponent",
   template: `
     <div class="sfc-component">
       <h4>SFC Admin Panel</h4>
@@ -203,18 +212,18 @@ const SfcAdminComponent = {
   `,
   data() {
     return {
-      shouldThrowError: false
+      shouldThrowError: false,
     };
   },
   methods: {
     toggleErrorTrigger() {
       this.shouldThrowError = true;
-    }
-  }
+    },
+  },
 };
 
 const LegacyAdminComponent = {
-  name: 'LegacyAdminComponent',
+  name: "LegacyAdminComponent",
   template: `
     <div class="legacy-component">
       <h4>Legacy Admin Panel</h4>
@@ -230,74 +239,86 @@ const LegacyAdminComponent = {
         </div>
       </div>
     </div>
-  `
+  `,
 };
 
 // Bei Komponenten-Montierung
 onMounted(() => {
-  logEvent('Anwendung gestartet', 'info');
+  logEvent("Anwendung gestartet", "info");
 });
 
 // Feature-Status als Text zurückgeben
 function getFeatureStatus(featureName: string): string {
   if (featureToggles.isFallbackActive(featureName)) {
-    return 'Fallback aktiv (Fehler)';
+    return "Fallback aktiv (Fehler)";
   }
   if (featureToggles.shouldUseFeature(featureName)) {
-    return 'Aktiv';
+    return "Aktiv";
   }
-  return 'Inaktiv';
+  return "Inaktiv";
 }
 
 // Test-Fehler erzeugen
 function createTestError() {
   try {
-    throw new Error('Manuell ausgelöster Test-Fehler');
+    throw new Error("Manuell ausgelöster Test-Fehler");
   } catch (error) {
     featureToggles.reportError(
-      'useSfcDocConverter',
-      error instanceof Error ? error.message : 'Unbekannter Fehler',
-      { source: 'Test' }
+      "useSfcDocConverter",
+      error instanceof Error ? error.message : "Unbekannter Fehler",
+      { source: "Test" },
     );
-    
-    logEvent(`Test-Fehler für DocConverter erzeugt: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`, 'error');
+
+    logEvent(
+      `Test-Fehler für DocConverter erzeugt: ${error instanceof Error ? error.message : "Unbekannter Fehler"}`,
+      "error",
+    );
   }
 }
 
 // Event-Handler für FeatureWrapper-Ereignisse
 function handleFeatureError(error: Error, feature: string) {
-  logEvent(`Fehler in Feature "${feature}": ${error.message}`, 'error');
+  logEvent(`Fehler in Feature "${feature}": ${error.message}`, "error");
 }
 
 function handleFeatureFallback(feature: string) {
-  logEvent(`Fallback für Feature "${feature}" aktiviert`, 'warning');
+  logEvent(`Fallback für Feature "${feature}" aktiviert`, "warning");
 }
 
 function handleComponentMounted(feature: string, isNew: boolean) {
-  logEvent(`Komponente für "${feature}" gemountet: ${isNew ? 'SFC' : 'Legacy'}`, 'info');
+  logEvent(
+    `Komponente für "${feature}" gemountet: ${isNew ? "SFC" : "Legacy"}`,
+    "info",
+  );
 }
 
 // Event-Handler für FeatureTogglesPanel-Ereignisse
 function handleRoleChange(role: FeatureToggleRole) {
-  logEvent(`Benutzerrolle geändert: ${role}`, 'info');
+  logEvent(`Benutzerrolle geändert: ${role}`, "info");
 }
 
 function handleFeatureChange(featureName: string, enabled: boolean) {
-  logEvent(`Feature "${featureName}" ${enabled ? 'aktiviert' : 'deaktiviert'}`, 'info');
+  logEvent(
+    `Feature "${featureName}" ${enabled ? "aktiviert" : "deaktiviert"}`,
+    "info",
+  );
 }
 
 function handleErrorClear(featureName: string) {
-  logEvent(`Fehler für Feature "${featureName}" gelöscht`, 'info');
+  logEvent(`Fehler für Feature "${featureName}" gelöscht`, "info");
 }
 
 // Hilfsfunktion für Event-Logging
-function logEvent(message: string, type: 'info' | 'warning' | 'error' | 'success' = 'info') {
+function logEvent(
+  message: string,
+  type: "info" | "warning" | "error" | "success" = "info",
+) {
   eventLog.value.unshift({
     time: new Date(),
     message,
-    type
+    type,
   });
-  
+
   // Event-Log auf maximal 100 Einträge begrenzen
   if (eventLog.value.length > 100) {
     eventLog.value = eventLog.value.slice(0, 100);
@@ -306,19 +327,25 @@ function logEvent(message: string, type: 'info' | 'warning' | 'error' | 'success
 
 // Zeitstempel formatieren
 function formatTime(date: Date): string {
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  return date.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 }
 </script>
 
 <style scoped>
 .feature-wrapper-example {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   color: #0d7a40;
 }
 
@@ -420,7 +447,7 @@ h1 {
   list-style: none;
   padding: 0;
   margin: 0;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
 }
 
 .event-log li {
@@ -521,7 +548,7 @@ h1 {
   .feature-wrapper-example {
     padding: 1rem;
   }
-  
+
   .feature-toggles,
   .feature-actions {
     grid-template-columns: 1fr;

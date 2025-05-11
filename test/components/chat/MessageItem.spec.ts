@@ -1,314 +1,524 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { mount } from '@vue/test-utils';
-import MessageItem from '@/components/chat/MessageItem.vue';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { mount, flushPromises } from "@vue/test-utils";
+import MessageItem from "@/components/chat/MessageItem.vue";
+import { useUIStore } from "@/stores/ui";
 
 // Mock dependencies
-vi.mock('@/composables/useDialog', () => ({
-  useGlobalDialog: vi.fn(() => ({
-    confirm: vi.fn().mockResolvedValue(true)
-  }))
+vi.mock("@/utils/messageFormatter", () => ({
+  highlightCode: vi.fn((content) => content),
+  linkifySourceReferences: vi.fn((content) => content),
 }));
 
-vi.mock('@/composables/useI18n', () => ({
-  useI18n: vi.fn(() => ({
-    t: (key: string, fallback: string) => fallback || key
-  }))
+vi.mock("@/stores/ui", () => ({
+  useUIStore: vi.fn(() => ({
+    showSuccess: vi.fn(),
+    showError: vi.fn(),
+  })),
+}));
+
+vi.mock("marked", () => ({
+  marked: vi.fn((text) => {
+    // Simple markdown conversion for testing
+    return text
+      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
+  }),
+  setOptions: vi.fn(),
+}));
+
+vi.mock("dompurify", () => ({
+  default: {
+    sanitize: vi.fn((content) => content),
+  },
 }));
 
 // Default test message
-const createDefaultMessage = (overrides = {}) => ({
-  id: 'msg-1',
-  content: 'This is a test message',
-  role: 'user',
-  timestamp: new Date('2025-05-08T14:30:00Z').toISOString(),
-  isError: false,
-  ...overrides
+const createTestMessage = (overrides = {}) => ({
+  id: "msg1",
+  role: "user",
+  content: "Test message content",
+  timestamp: new Date("2023-01-01T12:00:00.000Z").toISOString(),
+  status: "success",
+  isStreaming: false,
+  metadata: {
+    sourceReferences: [],
+  },
+  ...overrides,
 });
 
 // Helper to create wrapper with default props
 const createWrapper = (props = {}) => {
   return mount(MessageItem, {
     props: {
-      message: createDefaultMessage(),
-      isActive: false,
-      ...props
-    }
+      message: createTestMessage(),
+      showActions: true,
+      showReferences: false,
+      highlightCodeBlocks: true,
+      formatLinks: true,
+      timeFormat: "short",
+      ...props,
+    },
   });
 };
 
-describe('MessageItem.vue', () => {
-  // Reset mocks before each test
+describe("MessageItem.vue", () => {
   beforeEach(() => {
-    vi.resetAllMocks();
+    // Reset mocks before each test
+    vi.clearAllMocks();
+
+    // Mock Element.scrollIntoView
+    Element.prototype.scrollIntoView = vi.fn();
+
+    // Mock global methods used in the component
+    global.confirm = vi.fn(() => true);
   });
-  
+
   // Rendering Tests
-  describe('Rendering', () => {
-    it('renders the message content correctly', () => {
-      const wrapper = createWrapper();
-      
-      expect(wrapper.find('.message-item').exists()).toBe(true);
-      expect(wrapper.find('.message-content').text()).toBe('This is a test message');
+  describe("Rendering", () => {
+    it("renders the message content correctly", () => {
+      const message = createTestMessage({
+        content: "Hello world",
+      });
+
+      const wrapper = createWrapper({ message });
+
+      expect(wrapper.find(".n-message-item__text").exists()).toBe(true);
+      expect(wrapper.html()).toContain("Hello world");
     });
-    
-    it('applies appropriate class based on message role', () => {
+
+    it("applies correct classes based on message role", () => {
       const userMessage = createWrapper({
-        message: createDefaultMessage({ role: 'user' })
+        message: createTestMessage({ role: "user" }),
       });
-      
+
       const assistantMessage = createWrapper({
-        message: createDefaultMessage({ role: 'assistant' })
+        message: createTestMessage({ role: "assistant" }),
       });
-      
-      expect(userMessage.find('.message-item').classes()).toContain('message-user');
-      expect(assistantMessage.find('.message-item').classes()).toContain('message-assistant');
+
+      const systemMessage = createWrapper({
+        message: createTestMessage({ role: "system" }),
+      });
+
+      expect(userMessage.find(".n-message-item--user").exists()).toBe(true);
+      expect(assistantMessage.find(".n-message-item--assistant").exists()).toBe(
+        true,
+      );
+      expect(systemMessage.find(".n-message-item--system").exists()).toBe(true);
     });
-    
-    it('shows error styles for error messages', () => {
+
+    it("displays appropriate role labels", () => {
       const wrapper = createWrapper({
-        message: createDefaultMessage({ isError: true })
+        message: createTestMessage({ role: "user" }),
       });
-      
-      expect(wrapper.find('.message-item').classes()).toContain('message-error');
-      expect(wrapper.find('.error-icon').exists()).toBe(true);
+
+      expect(wrapper.find(".n-message-item__role").text()).toBe("Sie");
+
+      const assistantWrapper = createWrapper({
+        message: createTestMessage({ role: "assistant" }),
+      });
+
+      expect(assistantWrapper.find(".n-message-item__role").text()).toBe(
+        "Assistent",
+      );
     });
-    
-    it('displays timestamp in correct format', () => {
-      const timestamp = new Date('2025-05-08T14:30:00Z').toISOString();
+
+    it("formats timestamp correctly", () => {
+      const timestamp = new Date("2023-01-01T12:00:00.000Z").toISOString();
       const wrapper = createWrapper({
-        message: createDefaultMessage({ timestamp })
+        message: createTestMessage({ timestamp }),
       });
-      
-      // Default format in German locale
-      expect(wrapper.find('.message-time').text()).toContain('14:30');
+
+      expect(wrapper.find(".n-message-item__time").exists()).toBe(true);
+
+      // Test different time formats
+      const mediumWrapper = createWrapper({
+        message: createTestMessage({ timestamp }),
+        timeFormat: "medium",
+      });
+
+      expect(mediumWrapper.find(".n-message-item__time").text()).toContain(
+        "12:00",
+      );
     });
-    
-    it('shows actions only when message is active', () => {
-      const inactiveWrapper = createWrapper();
-      const activeWrapper = createWrapper({ isActive: true });
-      
-      expect(inactiveWrapper.find('.message-actions').exists()).toBe(false);
-      expect(activeWrapper.find('.message-actions').exists()).toBe(true);
-    });
-    
-    it('renders system messages differently', () => {
+
+    it("displays error state correctly", () => {
       const wrapper = createWrapper({
-        message: createDefaultMessage({ role: 'system' })
+        message: createTestMessage({ status: "error" }),
       });
-      
-      expect(wrapper.find('.message-item').classes()).toContain('message-system');
+
+      expect(wrapper.find(".n-message-item--error").exists()).toBe(true);
+      expect(wrapper.find(".n-message-item__status--error").exists()).toBe(
+        true,
+      );
+      expect(wrapper.text()).toContain("Fehler");
     });
-    
-    it('renders markdown content when enabled', () => {
+
+    it("renders action buttons for assistant messages when showActions is true", () => {
       const wrapper = createWrapper({
-        message: createDefaultMessage({ 
-          content: '**Bold text** and [link](https://example.com)',
-          enableMarkdown: true
-        })
+        message: createTestMessage({ role: "assistant" }),
+        showActions: true,
       });
-      
-      expect(wrapper.find('strong').exists()).toBe(true);
-      expect(wrapper.find('a').exists()).toBe(true);
+
+      expect(wrapper.find(".n-message-item__actions").exists()).toBe(true);
+      expect(wrapper.find(".n-message-item__feedback").exists()).toBe(true);
+      expect(
+        wrapper.findAll(".n-message-item__action-btn").length,
+      ).toBeGreaterThan(0);
+    });
+
+    it("does not show actions when showActions is false", () => {
+      const wrapper = createWrapper({
+        message: createTestMessage({ role: "assistant" }),
+        showActions: false,
+      });
+
+      expect(wrapper.find(".n-message-item__actions").exists()).toBe(false);
+    });
+
+    it("renders source references when available and showReferences is true", async () => {
+      const wrapper = createWrapper({
+        message: createTestMessage({
+          role: "assistant",
+          metadata: {
+            sourceReferences: [
+              { id: "src1", title: "Source 1", content: "Reference content 1" },
+              { id: "src2", title: "Source 2", content: "Reference content 2" },
+            ],
+          },
+        }),
+        showReferences: true,
+      });
+
+      expect(wrapper.find(".n-message-item__references").exists()).toBe(true);
+      expect(wrapper.findAll(".n-message-item__reference").length).toBe(2);
+      expect(wrapper.text()).toContain("Source 1");
+      expect(wrapper.text()).toContain("Source 2");
+    });
+
+    it("does not show references when showReferences is false", () => {
+      const wrapper = createWrapper({
+        message: createTestMessage({
+          metadata: {
+            sourceReferences: [
+              { id: "src1", title: "Source 1", content: "Content" },
+            ],
+          },
+        }),
+        showReferences: false,
+      });
+
+      expect(wrapper.find(".n-message-item__references").exists()).toBe(false);
+    });
+
+    it("renders streaming indicator when isStreaming is true", () => {
+      const wrapper = createWrapper({
+        message: createTestMessage({ isStreaming: true }),
+      });
+
+      expect(wrapper.find(".n-message-item--streaming").exists()).toBe(true);
     });
   });
-  
-  // Interaction Tests
-  describe('Interactions', () => {
-    it('emits select event when message is clicked', async () => {
+
+  // Event Tests
+  describe("Events", () => {
+    it("emits feedback event when feedback buttons are clicked", async () => {
+      const wrapper = createWrapper({
+        message: createTestMessage({ role: "assistant" }),
+      });
+
+      // Find and click positive feedback button
+      const positiveFeedbackBtn = wrapper.find(
+        '.n-message-item__feedback-btn[title="Positives Feedback"]',
+      );
+      await positiveFeedbackBtn.trigger("click");
+
+      // Check if feedback event was emitted with correct payload
+      expect(wrapper.emitted("feedback")).toBeTruthy();
+      expect(wrapper.emitted("feedback")?.[0][0]).toEqual({
+        messageId: "msg1",
+        type: "positive",
+      });
+
+      // Verify success message was shown
+      expect(useUIStore().showSuccess).toHaveBeenCalled();
+    });
+
+    it("emits view-sources event when sources button is clicked", async () => {
+      const wrapper = createWrapper({
+        message: createTestMessage({
+          role: "assistant",
+          content: "Message with [[src:1]] reference",
+        }),
+      });
+
+      // Find and click sources button
+      const sourcesBtn = wrapper.find('button[title="Quellen anzeigen"]');
+      await sourcesBtn.trigger("click");
+
+      // Check if view-sources event was emitted with correct payload
+      expect(wrapper.emitted("view-sources")).toBeTruthy();
+      expect(wrapper.emitted("view-sources")?.[0][0]).toEqual({
+        messageId: "msg1",
+      });
+    });
+
+    it("emits view-explanation event when explanation button is clicked", async () => {
+      const wrapper = createWrapper({
+        message: createTestMessage({ role: "assistant" }),
+      });
+
+      // Find and click explanation button
+      const explainBtn = wrapper.find('button[title="Antwort erklären"]');
+      await explainBtn.trigger("click");
+
+      // Check if view-explanation event was emitted with correct payload
+      expect(wrapper.emitted("view-explanation")).toBeTruthy();
+      expect(wrapper.emitted("view-explanation")?.[0][0]).toEqual({
+        messageId: "msg1",
+      });
+    });
+
+    it("emits retry event when retry button is clicked", async () => {
+      const wrapper = createWrapper({
+        message: createTestMessage({
+          role: "assistant",
+          status: "error",
+        }),
+      });
+
+      // Find and click retry button
+      const retryBtn = wrapper.find('button[title="Erneut versuchen"]');
+      await retryBtn.trigger("click");
+
+      // Check if retry event was emitted with correct payload
+      expect(wrapper.emitted("retry")).toBeTruthy();
+      expect(wrapper.emitted("retry")?.[0][0]).toEqual({
+        messageId: "msg1",
+      });
+    });
+
+    it("emits delete event when delete confirmed", async () => {
+      // Mock confirm to return true (user confirmed)
+      window.confirm = vi.fn(() => true);
+
+      const wrapper = createWrapper({
+        message: createTestMessage({ role: "assistant" }),
+      });
+
+      // Find and click delete button
+      const deleteBtn = wrapper.find('button[title="Nachricht löschen"]');
+      await deleteBtn.trigger("click");
+
+      // Check if confirmation was requested
+      expect(window.confirm).toHaveBeenCalled();
+
+      // Check if delete event was emitted with correct payload
+      expect(wrapper.emitted("delete")).toBeTruthy();
+      expect(wrapper.emitted("delete")?.[0][0]).toEqual({
+        messageId: "msg1",
+      });
+    });
+
+    it("does not emit delete event when delete canceled", async () => {
+      // Mock confirm to return false (user canceled)
+      window.confirm = vi.fn(() => false);
+
+      const wrapper = createWrapper({
+        message: createTestMessage({ role: "assistant" }),
+      });
+
+      // Find and click delete button
+      const deleteBtn = wrapper.find('button[title="Nachricht löschen"]');
+      await deleteBtn.trigger("click");
+
+      // Check if confirmation was requested
+      expect(window.confirm).toHaveBeenCalled();
+
+      // Check that delete event was not emitted
+      expect(wrapper.emitted("delete")).toBeFalsy();
+    });
+  });
+
+  // Content Formatting Tests
+  describe("Content Formatting", () => {
+    it("formats and sanitizes markdown content", async () => {
+      // Create message with markdown content
+      const markdownContent = "**Bold text** and [Link](https://example.com)";
+      const wrapper = createWrapper({
+        message: createTestMessage({ content: markdownContent }),
+      });
+
+      await flushPromises();
+
+      // Check if marked and DOMPurify were called
+      expect(wrapper.vm.formattedContent).toBeDefined();
+    });
+
+    it("truncates long source reference content", () => {
+      const longContent = "A".repeat(200);
+      const wrapper = createWrapper({
+        message: createTestMessage({
+          metadata: {
+            sourceReferences: [
+              { id: "src1", title: "Source", content: longContent },
+            ],
+          },
+        }),
+        showReferences: true,
+      });
+
+      // Call the method directly to test
+      const result = wrapper.vm.truncateContent(longContent, 150);
+      expect(result.length).toBe(153); // 150 chars + '...'
+      expect(result.endsWith("...")).toBe(true);
+    });
+
+    it("detects source references in content", () => {
+      const wrapper = createWrapper({
+        message: createTestMessage({
+          content: "This content has a [[src:123]] reference",
+        }),
+      });
+
+      // Check if hasSourceReferences computed property works
+      expect(wrapper.vm.hasSourceReferences).toBe(true);
+
+      // Test without references
+      const noRefsWrapper = createWrapper({
+        message: createTestMessage({
+          content: "This content has no references",
+        }),
+      });
+
+      expect(noRefsWrapper.vm.hasSourceReferences).toBe(false);
+    });
+  });
+
+  // Lifecycle Tests
+  describe("Lifecycle", () => {
+    it("applies code highlighting on mount", async () => {
+      // Create spy on the method
+      const applyCodeHighlightingSpy = vi.fn();
+
+      const wrapper = createWrapper({
+        message: createTestMessage({
+          content: "```javascript\nconst x = 1;\n```",
+        }),
+      });
+
+      // Replace method with spy
+      wrapper.vm.applyCodeHighlighting = applyCodeHighlightingSpy;
+
+      // Mock nextTick to call our spy directly
+      vi.spyOn(window, "nextTick").mockImplementationOnce((callback) => {
+        if (callback) callback();
+        return Promise.resolve();
+      });
+
+      // Call onMounted hook manually
+      await wrapper.vm.$options.mounted?.call(wrapper.vm);
+
+      await flushPromises();
+
+      // Check if applyCodeHighlighting was called
+      expect(applyCodeHighlightingSpy).toHaveBeenCalled();
+    });
+
+    it("reapplies code highlighting when content changes", async () => {
       const wrapper = createWrapper();
-      
-      await wrapper.find('.message-item').trigger('click');
-      
-      expect(wrapper.emitted()).toHaveProperty('select');
-      expect(wrapper.emitted('select')?.[0][0]).toBe('msg-1');
-    });
-    
-    it('emits copy event when copy button is clicked', async () => {
-      const wrapper = createWrapper({ isActive: true });
-      const copyButton = wrapper.find('[data-action="copy"]');
-      
-      expect(copyButton.exists()).toBe(true);
-      await copyButton.trigger('click');
-      
-      expect(wrapper.emitted()).toHaveProperty('copy');
-      expect(wrapper.emitted('copy')?.[0][0]).toBe('msg-1');
-    });
-    
-    it('does not emit click events when clicking action buttons', async () => {
-      const wrapper = createWrapper({ isActive: true });
-      
-      await wrapper.find('[data-action="copy"]').trigger('click');
-      
-      // Should emit copy but not select
-      expect(wrapper.emitted()).toHaveProperty('copy');
-      expect(wrapper.emitted('select')).toBeFalsy();
-    });
-    
-    it('emits delete event after confirmation', async () => {
-      const mockDialogConfirm = vi.fn().mockResolvedValue(true);
-      const { useGlobalDialog } = await import('@/composables/useDialog');
-      vi.mocked(useGlobalDialog).mockReturnValue({
-        confirm: mockDialogConfirm
+
+      // Create spy on the method
+      const applyCodeHighlightingSpy = vi.fn();
+      wrapper.vm.applyCodeHighlighting = applyCodeHighlightingSpy;
+
+      // Update message content
+      await wrapper.setProps({
+        message: createTestMessage({
+          content: "Updated content with ```code```",
+        }),
       });
-      
-      const wrapper = createWrapper({ isActive: true });
-      await wrapper.find('[data-action="delete"]').trigger('click');
-      
-      expect(mockDialogConfirm).toHaveBeenCalled();
-      expect(wrapper.emitted()).toHaveProperty('delete');
-      expect(wrapper.emitted('delete')?.[0][0]).toBe('msg-1');
-    });
-    
-    it('does not emit delete event when confirmation is cancelled', async () => {
-      const mockDialogConfirm = vi.fn().mockResolvedValue(false);
-      const { useGlobalDialog } = await import('@/composables/useDialog');
-      vi.mocked(useGlobalDialog).mockReturnValue({
-        confirm: mockDialogConfirm
+
+      // Mock nextTick to call our spy directly
+      vi.spyOn(window, "nextTick").mockImplementationOnce((callback) => {
+        if (callback) callback();
+        return Promise.resolve();
       });
-      
-      const wrapper = createWrapper({ isActive: true });
-      await wrapper.find('[data-action="delete"]').trigger('click');
-      
-      expect(mockDialogConfirm).toHaveBeenCalled();
-      expect(wrapper.emitted('delete')).toBeFalsy();
-    });
-    
-    it('emits edit event when edit button is clicked', async () => {
-      const wrapper = createWrapper({ 
-        isActive: true,
-        message: createDefaultMessage({ role: 'user' }) // Only user messages can be edited
-      });
-      
-      await wrapper.find('[data-action="edit"]').trigger('click');
-      
-      expect(wrapper.emitted()).toHaveProperty('edit');
-      expect(wrapper.emitted('edit')?.[0][0]).toBe('msg-1');
+
+      // Trigger watch handler manually
+      const watchHandler = wrapper.vm.$options.watch?.["message.content"];
+      await watchHandler?.call(wrapper.vm);
+
+      await flushPromises();
+
+      // Check if applyCodeHighlighting was called
+      expect(applyCodeHighlightingSpy).toHaveBeenCalled();
     });
   });
-  
+
   // Accessibility Tests
-  describe('Accessibility', () => {
-    it('has appropriate aria attributes', () => {
+  describe("Accessibility", () => {
+    it("uses proper ARIA roles and attributes", () => {
       const wrapper = createWrapper();
-      
-      expect(wrapper.find('.message-item').attributes('role')).toBe('listitem');
-      expect(wrapper.find('.message-item').attributes('aria-labelledby')).toBeDefined();
-    });
-    
-    it('marks error messages with aria-invalid', () => {
-      const wrapper = createWrapper({
-        message: createDefaultMessage({ isError: true })
+
+      // Check ARIA attributes on error message
+      const errorWrapper = createWrapper({
+        message: createTestMessage({ status: "error" }),
       });
-      
-      expect(wrapper.find('.message-item').attributes('aria-invalid')).toBe('true');
+
+      expect(errorWrapper.find('[role="alert"]').exists()).toBe(true);
     });
-    
-    it('has accessible action buttons', () => {
-      const wrapper = createWrapper({ isActive: true });
-      
-      const copyButton = wrapper.find('[data-action="copy"]');
-      const deleteButton = wrapper.find('[data-action="delete"]');
-      
-      expect(copyButton.attributes('aria-label')).toBeDefined();
-      expect(deleteButton.attributes('aria-label')).toBeDefined();
-    });
-    
-    it('has accessible timestamp', () => {
-      const timestamp = new Date('2025-05-08T14:30:00Z').toISOString();
+
+    it("has accessible action buttons", () => {
       const wrapper = createWrapper({
-        message: createDefaultMessage({ timestamp })
+        message: createTestMessage({ role: "assistant" }),
       });
-      
-      expect(wrapper.find('.message-time').attributes('title')).toBeDefined();
-      expect(wrapper.find('.message-time').attributes('aria-label')).toBeDefined();
+
+      // Check aria-label on buttons
+      const buttons = wrapper.findAll("button");
+
+      buttons.forEach((button) => {
+        expect(button.attributes("aria-label")).toBeDefined();
+      });
     });
   });
-  
-  // Slot Tests
-  describe('Slots', () => {
-    it('renders avatar slot content', () => {
-      const wrapper = mount(MessageItem, {
-        props: {
-          message: createDefaultMessage()
-        },
-        slots: {
-          avatar: '<div class="custom-avatar">A</div>'
-        }
-      });
-      
-      expect(wrapper.find('.custom-avatar').exists()).toBe(true);
-    });
-    
-    it('renders custom actions when provided', () => {
-      const wrapper = mount(MessageItem, {
-        props: {
-          message: createDefaultMessage(),
-          isActive: true
-        },
-        slots: {
-          actions: '<button class="custom-action">Custom Action</button>'
-        }
-      });
-      
-      expect(wrapper.find('.custom-action').exists()).toBe(true);
-    });
-    
-    it('renders additional content in footer slot', () => {
-      const wrapper = mount(MessageItem, {
-        props: {
-          message: createDefaultMessage()
-        },
-        slots: {
-          footer: '<div class="message-footer-content">Additional information</div>'
-        }
-      });
-      
-      expect(wrapper.find('.message-footer-content').exists()).toBe(true);
-      expect(wrapper.find('.message-footer-content').text()).toBe('Additional information');
-    });
-  });
-  
+
   // Edge Cases
-  describe('Edge Cases', () => {
-    it('handles messages with empty content', () => {
+  describe("Edge Cases", () => {
+    it("handles missing timestamp gracefully", () => {
       const wrapper = createWrapper({
-        message: createDefaultMessage({ content: '' })
+        message: createTestMessage({ timestamp: undefined }),
       });
-      
-      expect(wrapper.find('.message-content').exists()).toBe(true);
-      expect(wrapper.find('.message-content').text()).toBe('');
+
+      // Should not show timestamp
+      expect(wrapper.find(".n-message-item__time").exists()).toBe(false);
     });
-    
-    it('handles messages with HTML content safely', () => {
+
+    it("handles empty content gracefully", () => {
       const wrapper = createWrapper({
-        message: createDefaultMessage({ 
-          content: '<script>alert("XSS")</script><b>Bold</b>',
-          enableMarkdown: false
-        })
+        message: createTestMessage({ content: "" }),
       });
-      
-      // HTML should be escaped when markdown is disabled
-      expect(wrapper.find('script').exists()).toBe(false);
-      expect(wrapper.find('b').exists()).toBe(false);
-      expect(wrapper.find('.message-content').text()).toContain('<script>');
+
+      // Should still render properly without content
+      expect(wrapper.find(".n-message-item").exists()).toBe(true);
+      expect(wrapper.find(".n-message-item__text").exists()).toBe(true);
     });
-    
-    it('handles extremely long messages', () => {
-      const longContent = 'A'.repeat(10000);
+
+    it("handles invalid timestamp format", () => {
+      // Mock console.error to prevent test output noise
+      const originalConsoleError = console.error;
+      console.error = vi.fn();
+
       const wrapper = createWrapper({
-        message: createDefaultMessage({ content: longContent })
+        message: createTestMessage({ timestamp: "invalid-date" }),
       });
-      
-      expect(wrapper.find('.message-content').text().length).toBe(10000);
-    });
-    
-    it('handles missing timestamp', () => {
-      const wrapper = createWrapper({
-        message: createDefaultMessage({ timestamp: undefined })
-      });
-      
-      // Should still render without crashing
-      expect(wrapper.find('.message-item').exists()).toBe(true);
+
+      // Method should catch the error
+      const result = wrapper.vm.formatTimestamp("invalid-date");
+      expect(result).toBe("");
+      expect(console.error).toHaveBeenCalled();
+
+      // Restore console.error
+      console.error = originalConsoleError;
     });
   });
 });

@@ -2,7 +2,7 @@
 title: "UI-Basiskomponenten"
 version: "1.4.0"
 date: "05.05.2025"
-lastUpdate: "10.05.2025"
+lastUpdate: "11.05.2025"
 author: "nscale Entwicklungsteam"
 status: "Aktiv"
 priority: "Hoch"

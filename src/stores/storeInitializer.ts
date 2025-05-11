@@ -1,18 +1,25 @@
-import { ref } from 'vue';
-import { useAuthStore } from './auth';
-import { useFeatureTogglesStore } from './featureToggles';
-import { useSessionsStore } from './sessions';
-import { useSettingsStore } from './settings';
-import { useUIStore } from './ui';
-import { useDocumentConverterStore } from './documentConverter';
-import { useMonitoringStore } from './monitoringStore';
-import { useErrorReporting } from '@/composables/useErrorReporting';
-import { useBridgeChat } from '@/composables/useBridgeChat';
+import { ref } from "vue";
+import { useAuthStore } from "./auth";
+import { useFeatureTogglesStore } from "./featureToggles";
+import { useSessionsStore } from "./sessions";
+import { useSettingsStore } from "./settings";
+import { useUIStore } from "./ui";
+import { useDocumentConverterStore } from "./documentConverter";
+import { useMonitoringStore } from "./monitoringStore";
+import { useStatisticsStore } from "./statistics";
+import { useAdminStore } from "./admin";
+import { useAdminLogsStore } from "./admin/logs";
+import { useErrorReporting } from "@/composables/useErrorReporting";
+import { useBridgeChat } from "@/composables/useBridgeChat";
+
+// Optimierte Store-Versionen
+import { useSessionsStore as useSessionsStoreOptimized } from "./sessions.optimized";
+import { useAdminSettingsStoreOptimized } from "./admin/settings.optimized";
 
 /**
  * Status-Type für Store-Initialisierung
  */
-export type InitializationStatus = 'idle' | 'loading' | 'success' | 'error';
+export type InitializationStatus = "idle" | "loading" | "success" | "error";
 
 /**
  * Globaler Initialisierungsstatus
@@ -23,37 +30,44 @@ export const isInitialized = ref(false);
  * Status der einzelnen Store-Initialisierungen
  */
 export const storeStatus = ref<Record<string, InitializationStatus>>({
-  auth: 'idle',
-  featureToggles: 'idle',
-  sessions: 'idle',
-  settings: 'idle',
-  ui: 'idle',
-  documentConverter: 'idle',
-  monitoring: 'idle'
+  auth: "idle",
+  featureToggles: "idle",
+  sessions: "idle",
+  settings: "idle",
+  ui: "idle",
+  documentConverter: "idle",
+  monitoring: "idle",
+  statistics: "idle",
+  admin: "idle",
+  adminLogs: "idle",
 });
 
 /**
  * Initialisiert einen einzelnen Store und aktualisiert den Status
- * 
+ *
  * @param storeName - Name des zu initialisierenden Stores
  * @param initFunction - Funktion zur Initialisierung des Stores
  * @returns Promise mit dem Initialisierungsergebnis
  */
 const initializeStore = async (
   storeName: string,
-  initFunction: () => Promise<any>
+  initFunction: () => Promise<any>,
 ): Promise<void> => {
   const { reportError } = useErrorReporting();
-  
+
   try {
-    storeStatus.value[storeName] = 'loading';
+    storeStatus.value[storeName] = "loading";
     await initFunction();
-    storeStatus.value[storeName] = 'success';
+    storeStatus.value[storeName] = "success";
   } catch (error) {
-    storeStatus.value[storeName] = 'error';
-    reportError('STORE_INITIALIZATION_ERROR', `Fehler bei der Initialisierung des ${storeName}-Stores`, error);
-    
-    if (storeName === 'auth' || storeName === 'featureToggles') {
+    storeStatus.value[storeName] = "error";
+    reportError(
+      "STORE_INITIALIZATION_ERROR",
+      `Fehler bei der Initialisierung des ${storeName}-Stores`,
+      error,
+    );
+
+    if (storeName === "auth" || storeName === "featureToggles") {
       // Kritische Stores - Initialisierung abbrechen
       throw error;
     }
@@ -66,7 +80,7 @@ const initializeStore = async (
 export const getStoreInitializationStatus = () => {
   return {
     isInitialized: isInitialized.value,
-    storeStatus: { ...storeStatus.value }
+    storeStatus: { ...storeStatus.value },
   };
 };
 
@@ -83,15 +97,18 @@ export const initializeStores = async (): Promise<void> => {
   const uiStore = useUIStore();
   const documentConverterStore = useDocumentConverterStore();
   const monitoringStore = useMonitoringStore();
+  const statisticsStore = useStatisticsStore();
+  const adminStore = useAdminStore();
+  const adminLogsStore = useAdminLogsStore();
   const { reportError } = useErrorReporting();
 
   try {
     // 1. Auth und FeatureToggles zuerst initialisieren (kritische Stores)
-    await initializeStore('auth', async () => {
+    await initializeStore("auth", async () => {
       await authStore.initialize();
     });
 
-    await initializeStore('featureToggles', async () => {
+    await initializeStore("featureToggles", async () => {
       await featureTogglesStore.loadFeatureToggles();
       // Hier Fallback-Feature-Flags setzen, wenn API-Aufruf fehlschlägt
       if (!featureTogglesStore.isLoaded) {
@@ -100,31 +117,79 @@ export const initializeStores = async (): Promise<void> => {
     });
 
     // 2. Einstellungen und UI initialisieren
-    await initializeStore('settings', async () => {
+    await initializeStore("settings", async () => {
       await settingsStore.loadSettings();
     });
 
-    await initializeStore('ui', async () => {
+    await initializeStore("ui", async () => {
       uiStore.initialize();
     });
 
-    // 3. Sessions, DocumentConverter und Monitoring initialisieren
+    // 3. Sessions, DocumentConverter, Monitoring, Statistics und Admin initialisieren
     const initPromises = [
-      initializeStore('sessions', async () => {
-        await sessionsStore.loadSessions();
+      initializeStore("sessions", async () => {
+        // Wenn das Feature-Flag für optimierte Stores aktiviert ist, verwende den optimierten Store
+        if (featureTogglesStore.isFeatureEnabled("optimizedStores")) {
+          const optimizedSessionsStore = useSessionsStoreOptimized();
+          await optimizedSessionsStore.loadSessions();
+        } else {
+          await sessionsStore.loadSessions();
+        }
       }),
-      
-      initializeStore('documentConverter', async () => {
-        if (featureTogglesStore.isFeatureEnabled('documentConverter')) {
+
+      initializeStore("documentConverter", async () => {
+        if (featureTogglesStore.isFeatureEnabled("documentConverter")) {
           await documentConverterStore.initialize();
         }
       }),
-      
-      initializeStore('monitoring', async () => {
-        if (featureTogglesStore.isFeatureEnabled('monitoring') && authStore.hasPermission('viewMonitoring')) {
+
+      initializeStore("monitoring", async () => {
+        if (
+          featureTogglesStore.isFeatureEnabled("monitoring") &&
+          authStore.hasPermission("viewMonitoring")
+        ) {
           await monitoringStore.initialize();
         }
-      })
+      }),
+
+      initializeStore("statistics", async () => {
+        if (
+          featureTogglesStore.isFeatureEnabled("statistics") &&
+          authStore.hasPermission("viewStatistics")
+        ) {
+          await statisticsStore.initialize();
+        }
+      }),
+
+      initializeStore("admin", async () => {
+        if (
+          authStore.hasPermission("admin") ||
+          authStore.hasPermission("adminView")
+        ) {
+          // Wenn Feature-Flag für optimierte Stores aktiviert ist, verwende optimierte Stores
+          if (
+            featureTogglesStore.isFeatureEnabled("optimizedStores") &&
+            featureTogglesStore.isFeatureEnabled("adminSettingsOptimized")
+          ) {
+            const optimizedAdminSettingsStore =
+              useAdminSettingsStoreOptimized();
+            await optimizedAdminSettingsStore.initialize();
+          } else {
+            // Standardmäßig nur das Admin-Dashboard laden, andere Tabs werden bei Bedarf geladen
+            await adminStore.loadDashboardData();
+          }
+        }
+      }),
+
+      initializeStore("adminLogs", async () => {
+        if (
+          authStore.hasPermission("admin") &&
+          authStore.hasPermission("viewLogs") &&
+          featureTogglesStore.isFeatureEnabled("adminLogs")
+        ) {
+          await adminLogsStore.initialize();
+        }
+      }),
     ];
 
     // Parallel initialisieren (nicht-kritische Stores)
@@ -135,7 +200,11 @@ export const initializeStores = async (): Promise<void> => {
 
     isInitialized.value = true;
   } catch (error) {
-    reportError('CRITICAL_STORE_INITIALIZATION_ERROR', 'Kritischer Fehler bei der Store-Initialisierung', error);
+    reportError(
+      "CRITICAL_STORE_INITIALIZATION_ERROR",
+      "Kritischer Fehler bei der Store-Initialisierung",
+      error,
+    );
     throw error;
   }
 };
@@ -156,47 +225,50 @@ function setupStoreInteractions(): void {
   // Auth-Store Interaktionen
   authStore.$onAction(({ name, after, onError }) => {
     // Nach erfolgreicher Anmeldung
-    if (name === 'login') {
+    if (name === "login") {
       after(() => {
         // Sessions nach Login laden
         sessionsStore.loadSessions();
-        
+
         // Feature-Toggles aktualisieren basierend auf Benutzerrolle
         featureTogglesStore.loadFeatureToggles();
-        
+
         // Chat-Bridge initialisieren
         setupChat();
-        
+
         // Monitoring starten für Benutzer mit entsprechender Berechtigung
-        if (featureTogglesStore.isFeatureEnabled('monitoring') && authStore.hasPermission('viewMonitoring')) {
+        if (
+          featureTogglesStore.isFeatureEnabled("monitoring") &&
+          authStore.hasPermission("viewMonitoring")
+        ) {
           monitoringStore.startMonitoring();
         }
       });
-      
+
       onError((error) => {
         uiStore.showToast({
-          type: 'error',
-          title: 'Anmeldefehler',
-          message: 'Bei der Anmeldung ist ein Fehler aufgetreten.',
-          autoClose: true
+          type: "error",
+          title: "Anmeldefehler",
+          message: "Bei der Anmeldung ist ein Fehler aufgetreten.",
+          autoClose: true,
         });
       });
     }
-    
+
     // Bei Abmeldung
-    if (name === 'logout') {
+    if (name === "logout") {
       after(() => {
         // Aktuelle Session beenden
         if (sessionsStore.currentSession) {
           sessionsStore.clearCurrentSession();
         }
-        
+
         // Zurücksetzen des Dokumentenkonverter-Stores
         documentConverterStore.reset();
-        
+
         // Monitoring stoppen
         monitoringStore.stopMonitoring();
-        
+
         // UI-Zustand zurücksetzen
         uiStore.resetUIState();
       });
@@ -205,17 +277,20 @@ function setupStoreInteractions(): void {
 
   // Feature-Toggles Interaktionen
   featureTogglesStore.$onAction(({ name, after }) => {
-    if (name === 'loadFeatureToggles' || name === 'setFeatureToggle') {
+    if (name === "loadFeatureToggles" || name === "setFeatureToggle") {
       after(() => {
         // DocumentConverter-Store aktualisieren basierend auf Feature-Flag
-        if (featureTogglesStore.isFeatureEnabled('documentConverter')) {
+        if (featureTogglesStore.isFeatureEnabled("documentConverter")) {
           documentConverterStore.checkStatus();
         } else {
           documentConverterStore.reset();
         }
-        
+
         // Monitoring basierend auf Feature-Flag aktivieren/deaktivieren
-        if (featureTogglesStore.isFeatureEnabled('monitoring') && authStore.hasPermission('viewMonitoring')) {
+        if (
+          featureTogglesStore.isFeatureEnabled("monitoring") &&
+          authStore.hasPermission("viewMonitoring")
+        ) {
           monitoringStore.startMonitoring();
         } else {
           monitoringStore.stopMonitoring();
@@ -226,14 +301,14 @@ function setupStoreInteractions(): void {
 
   // Sessions-Store Interaktionen
   sessionsStore.$onAction(({ name, after, args }) => {
-    if (name === 'setCurrentSession') {
+    if (name === "setCurrentSession") {
       after(() => {
         // UI-Store über Sessionwechsel informieren
         uiStore.setActiveSession(args[0]);
       });
     }
-    
-    if (name === 'createSession') {
+
+    if (name === "createSession") {
       after((result) => {
         // Nach Erstellung einer neuen Session diese automatisch aktivieren
         if (result) {
@@ -242,33 +317,33 @@ function setupStoreInteractions(): void {
       });
     }
   });
-  
+
   // Settings-Store Interaktionen
   settingsStore.$onAction(({ name, after, args }) => {
-    if (name === 'setSetting' && args[0] === 'theme') {
+    if (name === "setSetting" && args[0] === "theme") {
       after(() => {
         // Theme im UI-Store aktualisieren
         uiStore.setTheme(args[1]);
       });
     }
   });
-  
+
   // DocumentConverter-Store Interaktionen
   documentConverterStore.$onAction(({ name, after }) => {
-    if (name === 'uploadComplete' || name === 'conversionComplete') {
+    if (name === "uploadComplete" || name === "conversionComplete") {
       after(() => {
         // Monitoring über abgeschlossene Konversion informieren
-        if (featureTogglesStore.isFeatureEnabled('monitoring')) {
-          monitoringStore.trackEvent('document_conversion_completed');
+        if (featureTogglesStore.isFeatureEnabled("monitoring")) {
+          monitoringStore.trackEvent("document_conversion_completed");
         }
       });
     }
-    
-    if (name === 'conversionError') {
+
+    if (name === "conversionError") {
       after(() => {
         // Fehler im Monitoring erfassen
-        if (featureTogglesStore.isFeatureEnabled('monitoring')) {
-          monitoringStore.trackError('document_conversion_failed');
+        if (featureTogglesStore.isFeatureEnabled("monitoring")) {
+          monitoringStore.trackError("document_conversion_failed");
         }
       });
     }

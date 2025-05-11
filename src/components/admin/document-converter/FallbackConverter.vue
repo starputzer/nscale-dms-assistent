@@ -1,5 +1,5 @@
 <template>
-  <div 
+  <div
     class="fallback-converter"
     :class="`fallback-converter--${status}`"
     role="alert"
@@ -22,49 +22,49 @@
         <i class="fa fa-ban" aria-hidden="true"></i>
       </div>
     </div>
-    
+
     <div class="fallback-converter__content">
       <h3 class="fallback-converter__title">
         {{ getStatusTitle() }}
       </h3>
-      
+
       <p class="fallback-converter__message">
         {{ messages[status] || defaultMessage }}
       </p>
-      
+
       <div v-if="canRequestAccess" class="fallback-converter__actions">
-        <button 
-          @click="$emit('request-access')" 
-          class="request-access-btn"
-        >
+        <button @click="$emit('request-access')" class="request-access-btn">
           <i class="fa fa-unlock-alt" aria-hidden="true"></i>
           Zugriff anfordern
         </button>
       </div>
-      
+
       <!-- Fallback-Funktionalität bei bestimmten Status anzeigen -->
-      <div v-if="['beta', 'maintenance'].includes(status)" class="fallback-converter__simple-mode">
+      <div
+        v-if="['beta', 'maintenance'].includes(status)"
+        class="fallback-converter__simple-mode"
+      >
         <div class="fallback-header">
           <h4>Vereinfachter Dokumentenkonverter</h4>
           <div class="fallback-badge">Eingeschränkte Funktionalität</div>
         </div>
-        
+
         <div class="upload-section">
           <label class="file-input-label">
             <span class="file-input-text">Datei auswählen</span>
-            <input 
+            <input
               type="file"
               @change="handleFileSelect"
               accept=".pdf,.docx,.xlsx,.pptx,.html,.htm,.txt"
               class="file-input"
-            >
+            />
           </label>
           <span v-if="selectedFile" class="selected-file-name">
             {{ selectedFile.name }}
           </span>
         </div>
-        
-        <button 
+
+        <button
           v-if="selectedFile"
           @click="uploadFile"
           :disabled="isUploading"
@@ -76,10 +76,10 @@
           </span>
           <span v-else>Datei konvertieren</span>
         </button>
-        
+
         <div v-if="conversionResult" class="conversion-result">
           <h3>Konvertierungsergebnis</h3>
-          
+
           <div class="result-info">
             <div class="result-info-item">
               <span class="result-label">Originaldatei:</span>
@@ -94,17 +94,17 @@
               <span>{{ formatFileSize(conversionResult.size) }}</span>
             </div>
           </div>
-          
+
           <div class="result-content">
             <h4>Extrahierter Text:</h4>
             <div class="text-preview">{{ truncatedContent }}</div>
-            
+
             <button @click="downloadText" class="download-btn">
               Vollständigen Text herunterladen
             </button>
           </div>
         </div>
-        
+
         <div v-if="error" class="error-message">
           <p>Ein Fehler ist aufgetreten: {{ error }}</p>
           <button @click="clearError" class="clear-error-btn">Schließen</button>
@@ -115,39 +115,45 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed } from "vue";
 
-type FeatureStatus = 'disabled' | 'unauthorized' | 'maintenance' | 'comingSoon' | 'beta';
+type FeatureStatus =
+  | "disabled"
+  | "unauthorized"
+  | "maintenance"
+  | "comingSoon"
+  | "beta";
 
 interface Props {
   /** Der aktuelle Status des Features */
   status: FeatureStatus;
-  
+
   /** Nachrichten für verschiedene Status */
   messages?: Record<FeatureStatus, string>;
-  
+
   /** Gibt an, ob der Benutzer Zugriff anfordern kann */
   canRequestAccess?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  status: 'disabled',
+  status: "disabled",
   messages: () => ({
-    disabled: 'Diese Funktion ist derzeit deaktiviert.',
-    unauthorized: 'Sie haben keinen Zugriff auf diese Funktion.',
-    maintenance: 'Diese Funktion befindet sich momentan in Wartung. Eine eingeschränkte Version steht zur Verfügung.',
-    comingSoon: 'Diese Funktion wird bald verfügbar sein.',
-    beta: 'Diese Funktion befindet sich in der Beta-Phase. Einige Funktionen könnten noch nicht vollständig verfügbar sein.'
+    disabled: "Diese Funktion ist derzeit deaktiviert.",
+    unauthorized: "Sie haben keinen Zugriff auf diese Funktion.",
+    maintenance:
+      "Diese Funktion befindet sich momentan in Wartung. Eine eingeschränkte Version steht zur Verfügung.",
+    comingSoon: "Diese Funktion wird bald verfügbar sein.",
+    beta: "Diese Funktion befindet sich in der Beta-Phase. Einige Funktionen könnten noch nicht vollständig verfügbar sein.",
   }),
-  canRequestAccess: false
+  canRequestAccess: false,
 });
 
 const emit = defineEmits<{
-  (e: 'request-access'): void;
+  (e: "request-access"): void;
 }>();
 
 // Standardnachricht für unbekannte Status
-const defaultMessage = 'Diese Funktion ist derzeit nicht verfügbar.';
+const defaultMessage = "Diese Funktion ist derzeit nicht verfügbar.";
 
 // Lokaler Zustand für die Fallback-Funktionalität
 const selectedFile = ref<File | null>(null);
@@ -160,14 +166,14 @@ const error = ref<string | null>(null);
  */
 function getStatusTitle(): string {
   const titles: Record<FeatureStatus, string> = {
-    disabled: 'Funktion deaktiviert',
-    unauthorized: 'Zugriff nicht autorisiert',
-    maintenance: 'Wartungsmodus',
-    comingSoon: 'Demnächst verfügbar',
-    beta: 'Beta-Version'
+    disabled: "Funktion deaktiviert",
+    unauthorized: "Zugriff nicht autorisiert",
+    maintenance: "Wartungsmodus",
+    comingSoon: "Demnächst verfügbar",
+    beta: "Beta-Version",
   };
-  
-  return titles[props.status] || 'Funktion nicht verfügbar';
+
+  return titles[props.status] || "Funktion nicht verfügbar";
 }
 
 /**
@@ -176,7 +182,7 @@ function getStatusTitle(): string {
 function handleFileSelect(event: Event) {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
-  
+
   if (file) {
     selectedFile.value = file;
     error.value = null; // Fehler zurücksetzen
@@ -188,46 +194,48 @@ function handleFileSelect(event: Event) {
  */
 async function uploadFile() {
   if (!selectedFile.value) return;
-  
+
   isUploading.value = true;
   error.value = null;
-  
+
   try {
     // Einfache Implementierung ohne erweiterte Fehlerbehandlung
     const formData = new FormData();
-    formData.append('file', selectedFile.value);
-    
-    const response = await fetch('/api/documents/upload', {
-      method: 'POST',
-      body: formData
+    formData.append("file", selectedFile.value);
+
+    const response = await fetch("/api/documents/upload", {
+      method: "POST",
+      body: formData,
     });
-    
+
     if (!response.ok) {
-      throw new Error(`Server-Fehler: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Server-Fehler: ${response.status} ${response.statusText}`,
+      );
     }
-    
+
     const data = await response.json();
-    
+
     // Vereinfachtes Ergebnisobjekt
     conversionResult.value = {
       id: data.documentId,
       originalName: selectedFile.value.name,
       originalFormat: getFileExtension(selectedFile.value.name),
       size: selectedFile.value.size,
-      content: data.content || 'Kein Text extrahiert.',
-      convertedAt: new Date()
+      content: data.content || "Kein Text extrahiert.",
+      convertedAt: new Date(),
     };
-    
+
     // Zurücksetzen der Dateiauswahl
     selectedFile.value = null;
     // Element zurücksetzen
-    const fileInput = document.querySelector('.file-input') as HTMLInputElement;
-    if (fileInput) fileInput.value = '';
-    
+    const fileInput = document.querySelector(".file-input") as HTMLInputElement;
+    if (fileInput) fileInput.value = "";
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Fehler bei der Konvertierung';
+    const errorMessage =
+      err instanceof Error ? err.message : "Fehler bei der Konvertierung";
     error.value = errorMessage;
-    console.error('Konvertierungsfehler:', err);
+    console.error("Konvertierungsfehler:", err);
   } finally {
     isUploading.value = false;
   }
@@ -238,15 +246,17 @@ async function uploadFile() {
  */
 function downloadText() {
   if (!conversionResult.value || !conversionResult.value.content) return;
-  
-  const blob = new Blob([conversionResult.value.content], { type: 'text/plain' });
+
+  const blob = new Blob([conversionResult.value.content], {
+    type: "text/plain",
+  });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  
+  const a = document.createElement("a");
+
   a.href = url;
   a.download = `${conversionResult.value.originalName}.txt`;
   a.click();
-  
+
   URL.revokeObjectURL(url);
 }
 
@@ -254,7 +264,7 @@ function downloadText() {
  * Hilfsfunktionen
  */
 function getFileExtension(filename: string): string {
-  return filename.split('.').pop()?.toLowerCase() || '';
+  return filename.split(".").pop()?.toLowerCase() || "";
 }
 
 function clearError() {
@@ -262,25 +272,25 @@ function clearError() {
 }
 
 function formatFileSize(bytes?: number): string {
-  if (!bytes || bytes === 0) return '0 Bytes';
-  
+  if (!bytes || bytes === 0) return "0 Bytes";
+
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
 // Berechnete Eigenschaften
 const truncatedContent = computed(() => {
-  if (!conversionResult.value || !conversionResult.value.content) return '';
-  
+  if (!conversionResult.value || !conversionResult.value.content) return "";
+
   const content = conversionResult.value.content;
   const maxChars = 500;
-  
+
   if (content.length <= maxChars) return content;
-  
-  return content.substring(0, maxChars) + '...';
+
+  return content.substring(0, maxChars) + "...";
 });
 </script>
 
@@ -592,8 +602,12 @@ const truncatedContent = computed(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Responsive Anpassungen */
@@ -601,22 +615,22 @@ const truncatedContent = computed(() => {
   .fallback-converter__simple-mode {
     padding: 0.75rem;
   }
-  
+
   .upload-section {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .selected-file-name {
     margin-left: 0;
     margin-top: 0.5rem;
   }
-  
+
   .file-input-text {
     width: 100%;
     text-align: center;
   }
-  
+
   .upload-button {
     width: 100%;
   }

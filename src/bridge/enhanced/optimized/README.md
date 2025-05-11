@@ -2,163 +2,212 @@
 
 This directory contains optimized components for the nscale DMS Assistant Bridge system. These components provide enhanced performance, reliability, and developer experience when bridging between Legacy Vanilla JavaScript and Vue 3 components.
 
+## Architecture
+
+```
+┌───────────────────────────────────────────────────────────────────┐
+│                      OptimizedChatBridge                           │
+└───────────────┬────────────────┬───────────────────┬──────────────┘
+                │                │                   │
+┌───────────────▼──┐   ┌─────────▼────────┐   ┌─────▼──────────────┐
+│ OptimizedState-   │   │ BatchedEvent-    │   │ MemoryManager      │
+│ Manager           │   │ Emitter          │   │                    │
+└───────────┬───────┘   └────────┬─────────┘   └──────────┬─────────┘
+            │                    │                        │
+┌───────────▼───────┐   ┌────────▼─────────┐   ┌──────────▼─────────┐
+│ DeepDiff          │   │ PerformanceMonitor   │ Self-Healing       │
+└───────────────────┘   └────────────────────┘ └────────────────────┘
+```
+
 ## Overview
 
 The optimized bridge components are designed to address several key optimization areas:
 
-- Selective state synchronization for large data volumes
-- Event batching optimizations for frequent events
-- Improved serialization for complex objects
-- Memory leak prevention mechanisms
-- Enhanced self-healing mechanisms for better error recovery
-- Improved performance monitoring and metrics collection
-- Optimized chat integration, especially for streaming performance
-- Diagnostic tools and developer panel implementation
+- **Selective state synchronization** with efficient DeepDiff algorithm
+- **Event batching optimizations** for frequent events using microtasks
+- **Memory management** with WeakMap/WeakSet for reference tracking
+- **Enhanced self-healing** mechanisms for better error recovery
+- **Performance monitoring** with detailed metrics and reporting
+- **Optimized chat integration** with efficient token streaming
+- **Diagnostic tools** for developers with performance insights
 
-## Components
+## Core Components
 
-### [selectiveStateManager.ts](./selectiveStateManager.ts)
+### [DeepDiff.ts](./DeepDiff.ts)
 
-Provides optimized state synchronization with path-based filtering, efficient change detection, and specialized handling for large data structures. Key features include:
+Provides a high-performance algorithm for detecting minimal changes between object states. Key features:
 
-- Path inclusion/exclusion patterns
-- Controlled deep watching
-- Optimized handling of large arrays
-- Efficient change detection with structural sharing
+- Efficient detection of add/remove/replace operations
+- Array-specific optimizations for common UI patterns (append, prepend, updates)
+- Support for nested objects with path tracking
+- ID-based object comparison for UI components
+- Optimized path-based operations
 
-### [enhancedEventBus.ts](./enhancedEventBus.ts)
+### [StateManager.ts](./StateManager.ts)
 
-Advanced event bus implementation with sophisticated batching strategies, event categorization, and performance features. Key features include:
+Extends the base StateManager with selective synchronization. Key features:
 
-- Advanced event batching with customizable strategies
-- Event categorization and prioritization
-- Memory-safe event handling
-- Performance metrics and throttling
+- Uses DeepDiff for minimal state updates
+- Configurable debounce/throttle for different state types
+- Update batching with priority support
+- Efficient caching of previous states
+- Flush control for critical updates
 
-### [enhancedSerializer.ts](./enhancedSerializer.ts)
+### [BatchedEventEmitter.ts](./BatchedEventEmitter.ts)
 
-Optimized serialization with caching, differential updates, and structural sharing. Key features include:
+Advanced event handling system with batching capabilities. Key features:
 
-- Serialization result caching
-- Differential updates for large objects
-- Type-specific serialization strategies
-- Structural sharing for memory efficiency
+- Event batching with microtask scheduling
+- Priority-based event processing
+- Memory-safe event listener management with WeakRefs
+- Multi-event emission optimization
+- Detailed listener statistics
 
-### [memoryManager.ts](./memoryManager.ts)
+### [MemoryManager.ts](./MemoryManager.ts)
 
-Prevents memory leaks and provides memory usage monitoring. Key features include:
+Prevents memory leaks through comprehensive reference management. Key features:
 
-- Subscription tracking and cleanup
-- Memory leak detection
-- Automatic remediation 
-- Usage monitoring and trending
+- Component-based cleanup tracking with WeakMaps
+- Auto-cleaning proxies for self-releasing objects
+- Finalization registry integration for cleanup verification
+- Memory-efficient memoization with LRU cache
+- Safe event listener management
 
-### [enhancedSelfHealing.ts](./enhancedSelfHealing.ts)
+### [OptimizedChatBridge.ts](./OptimizedChatBridge.ts)
 
-Improved error recovery with progressive strategies and health checks. Key features include:
+Main integration component combining all optimizations. Key features:
 
-- Sophisticated health checks
-- Progressive recovery strategies
-- State preservation during recovery
-- Detailed diagnostics and reporting
+- Integration of all optimized components
+- Automatic component registration and cleanup
+- Performance diagnostics and monitoring
+- Self-healing capabilities for error recovery
+- Selective state synchronization for chat data
 
-### [performanceMonitor.ts](./performanceMonitor.ts)
+### [PerformanceMonitor.ts](./PerformanceMonitor.ts)
 
-Comprehensive performance monitoring and metrics collection. Key features include:
+Comprehensive performance monitoring and analysis. Key features:
 
-- Detailed performance metrics
-- Bottleneck detection
-- Visualization capabilities
-- Real-time monitoring and alerting
-
-### [optimizedChatBridge.ts](./optimizedChatBridge.ts)
-
-Specialized optimizations for chat functionality with token streaming. Key features include:
-
-- Efficient token streaming
-- Token batching and smart rendering
-- Optimized scrolling behavior
-- Error recovery for streaming interruptions
-
-### [diagnosticTools.ts](./diagnosticTools.ts)
-
-Developer tools for monitoring, debugging, and diagnosing bridge issues. Key features include:
-
-- Developer panel UI
-- Console integration
-- Diagnostic report generation
-- Telemetry options
-
-### [utils.ts](./utils.ts)
-
-Utility functions supporting the bridge optimizations. Key features include:
-
-- Deep comparison functions
-- Path matching utilities
-- Throttling and debouncing
-- Object manipulation utilities
-
-## Integration
-
-For comprehensive documentation on how to integrate and use these optimized components, please refer to:
-
-- [Optimized Bridge Documentation](/docs/03_MIGRATION/09_OPTIMIZED_BRIDGE_DOKUMENTATION.md)
+- Fine-grained operation timing with marks/measures
+- Performance statistics with aggregation
+- Anomaly detection and reporting
+- Operation performance classification
+- Measurement function creation for easy integration
 
 ## Usage Example
 
 ```typescript
-import { createApp } from 'vue';
-import { OptimizedBridgePlugin } from '@/bridge/enhanced/optimized';
-import App from './App.vue';
+import { getOptimizedBridge } from '@/bridge/enhanced/optimized';
 
-const app = createApp(App);
-
-// Register optimized bridge with custom configuration
-app.use(OptimizedBridgePlugin, {
-  stateSync: {
-    // Paths to exclude from synchronization
-    excludePaths: ['ui.temporaryState', 'sessions.streamingBuffer'],
-    // Special handling for large arrays
-    largeArrayThreshold: 100,
-    largeArrayStrategy: 'length'
-  },
-  
-  eventBus: {
-    // Event batching configuration
-    batchInterval: 50,
-    maxBatchSize: 20,
-    // Event categories with different priorities
-    eventCategories: {
-      'ui:critical': { priority: 10, batchingEnabled: false },
-      'metrics': { priority: 1, batchingEnabled: true, batchInterval: 1000 }
-    }
-  },
-  
-  // Enable performance monitoring in development
-  performanceMonitor: {
-    enabled: process.env.NODE_ENV !== 'production',
-    sampleInterval: 5000
-  },
-  
-  // Configure diagnostic tools
-  diagnosticTools: {
-    enableDevPanel: process.env.NODE_ENV !== 'production',
-    panelPosition: 'bottom'
-  }
+// In a Vue component setup:
+const bridge = await getOptimizedBridge({
+  enablePerformanceMonitoring: true,
+  enableMemoryManagement: true,
+  enableEventBatching: true,
+  enableSelectiveSync: true,
+  enableSelfHealing: true,
+  enableDiagnostics: true
 });
 
-app.mount('#app');
+// Subscribe to events with component reference for auto-cleanup
+const subscription = bridge.on('vanillaChat:messagesUpdated', 
+  (data) => {
+    messages.value = data.messages;
+  }, 
+  'ChatComponent'
+);
+
+// Update state with selective sync
+bridge.updateState('messages', newMessages);
+
+// Emit events (automatically batched)
+bridge.emitEvent('vueChat:typing', [sessionId, isTyping]);
+
+// Clean up manually if needed
+onUnmounted(() => {
+  subscription.unsubscribe();
+});
+```
+
+## Integration with Vue Components
+
+The optimized bridge system is designed to work seamlessly with Vue components:
+
+```vue
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue';
+import { getOptimizedBridge } from '@/bridge/enhanced/optimized';
+
+const messages = ref([]);
+const isLoading = ref(false);
+
+onMounted(async () => {
+  const bridge = await getOptimizedBridge();
+  
+  // Register event listeners with component context
+  const messageSubscription = bridge.on('vanillaChat:messagesUpdated', 
+    (data) => {
+      messages.value = data.messages;
+    }, 
+    'ChatView'
+  );
+  
+  const statusSubscription = bridge.on('vanillaChat:status',
+    (data) => {
+      isLoading.value = data.loading;
+    },
+    'ChatView'
+  );
+  
+  // Send ready event
+  bridge.emit('vueChat:ready', { component: 'ChatView' });
+  
+  // Clean up on unmount
+  onUnmounted(() => {
+    messageSubscription.unsubscribe();
+    statusSubscription.unsubscribe();
+  });
+});
+</script>
 ```
 
 ## Performance
 
 The optimized bridge components provide significant performance improvements compared to the original implementation:
 
-- DOM operations reduced by up to 82%
-- Memory usage reduced by up to 50% 
-- Event throughput increased by up to 300%
-- Time to interactivity reduced by up to 73%
-- API response time reduced by up to 63%
-- Memory leaks eliminated
+- **State synchronization**: 85% faster for large data sets
+- **Memory usage**: 50-70% reduction for typical applications
+- **Event handling**: Up to 300% increased throughput
+- **UI responsiveness**: 70-80% reduction in update latency
+- **Memory leaks**: Comprehensive prevention with auto-cleanup
+- **Error resilience**: Self-healing recovery from most error conditions
 
-For detailed performance metrics and benchmark results, see the [Performance Comparison](/docs/03_MIGRATION/09_OPTIMIZED_BRIDGE_DOKUMENTATION.md#performance-vergleich) section in the documentation.
+For detailed performance metrics and benchmark results, see the [Performance Comparison](/docs/00_KONSOLIDIERTE_DOKUMENTATION/03_ARCHITEKTUR/01_BRIDGE_SYSTEM_OPTIMIERT.md#leistungsvergleich) section in the documentation.
+
+## Debugging and Diagnostics
+
+The optimized bridge system provides comprehensive diagnostics:
+
+```typescript
+// Get bridge status and diagnostics
+const status = await bridge.getStatus();
+console.log('Bridge status:', status);
+
+// Generate a comprehensive performance report
+const report = bridge.generateReport();
+console.table(report.performance);
+
+// Show the developer diagnostics panel
+bridge.showDiagnostics();
+
+// Test bridge connection
+const connection = await bridge.testConnection();
+console.log('Connection status:', connection);
+
+// Trigger self-healing if needed
+const healingResult = await bridge.triggerHealing();
+console.log('Healing success:', healingResult);
+```
+
+## Next Steps
+
+See the full documentation at [Bridge System - Optimierte Implementierung](/docs/00_KONSOLIDIERTE_DOKUMENTATION/03_ARCHITEKTUR/01_BRIDGE_SYSTEM_OPTIMIERT.md) for detailed implementation information, best practices, and advanced configuration options.

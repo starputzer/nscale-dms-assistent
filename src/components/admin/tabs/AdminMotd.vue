@@ -1,40 +1,40 @@
 <template>
   <div class="admin-motd">
     <div class="admin-motd__header">
-      <h2 class="admin-motd__title">{{ t('admin.motd.title', 'Message of the Day Editor') }}</h2>
+      <h2 class="admin-motd__title">
+        {{ t("admin.motd.title", "Message of the Day Editor") }}
+      </h2>
       <div class="admin-motd__actions">
-        <BaseButton 
-          variant="primary" 
-          :disabled="!hasUnsavedChanges" 
+        <BaseButton
+          variant="primary"
+          :disabled="!hasUnsavedChanges"
           @click="saveMotd"
           :loading="loading"
         >
-          {{ t('admin.motd.save', 'Speichern') }}
+          {{ t("admin.motd.save", "Speichern") }}
         </BaseButton>
-        <BaseButton 
-          variant="secondary" 
-          :disabled="!hasUnsavedChanges" 
+        <BaseButton
+          variant="secondary"
+          :disabled="!hasUnsavedChanges"
           @click="resetMotd"
         >
-          {{ t('admin.motd.reset', 'Zurücksetzen') }}
+          {{ t("admin.motd.reset", "Zurücksetzen") }}
         </BaseButton>
-        <BaseButton 
-          variant="outline" 
-          @click="togglePreview"
-        >
-          {{ previewMode 
-            ? t('admin.motd.edit', 'Bearbeiten') 
-            : t('admin.motd.preview', 'Vorschau') 
+        <BaseButton variant="outline" @click="togglePreview">
+          {{
+            previewMode
+              ? t("admin.motd.edit", "Bearbeiten")
+              : t("admin.motd.preview", "Vorschau")
           }}
         </BaseButton>
       </div>
     </div>
-    
+
     <div v-if="error" class="admin-motd__error">
-      <Alert 
-        type="error" 
-        :message="error" 
-        dismissible 
+      <Alert
+        type="error"
+        :message="error"
+        dismissible
         @dismiss="error = null"
       />
     </div>
@@ -44,260 +44,331 @@
       <!-- Settings Panel -->
       <div class="admin-motd__settings-panel">
         <fieldset class="admin-motd__fieldset">
-          <legend class="admin-motd__legend">{{ t('admin.motd.generalSettings', 'Allgemeine Einstellungen') }}</legend>
-          
+          <legend class="admin-motd__legend">
+            {{ t("admin.motd.generalSettings", "Allgemeine Einstellungen") }}
+          </legend>
+
           <div class="admin-motd__field">
-            <BaseCheckbox 
-              v-model="motdConfig.enabled" 
+            <BaseCheckbox
+              v-model="motdConfig.enabled"
               :label="t('admin.motd.enabled', 'Aktiviert')"
             />
           </div>
-          
+
           <div class="admin-motd__field">
-            <label class="admin-motd__label">{{ t('admin.motd.format', 'Format') }}</label>
-            <BaseSelect 
-              v-model="motdConfig.format" 
-              :options="formatOptions"
-            />
+            <label class="admin-motd__label">{{
+              t("admin.motd.format", "Format")
+            }}</label>
+            <BaseSelect v-model="motdConfig.format" :options="formatOptions" />
           </div>
         </fieldset>
-        
+
         <fieldset class="admin-motd__fieldset">
-          <legend class="admin-motd__legend">{{ t('admin.motd.displaySettings', 'Anzeige-Einstellungen') }}</legend>
-          
+          <legend class="admin-motd__legend">
+            {{ t("admin.motd.displaySettings", "Anzeige-Einstellungen") }}
+          </legend>
+
           <div class="admin-motd__field">
-            <label class="admin-motd__label">{{ t('admin.motd.position', 'Position') }}</label>
-            <BaseSelect 
-              v-model="motdConfig.display.position" 
+            <label class="admin-motd__label">{{
+              t("admin.motd.position", "Position")
+            }}</label>
+            <BaseSelect
+              v-model="motdConfig.display.position"
               :options="positionOptions"
             />
           </div>
-          
+
           <div class="admin-motd__field">
-            <BaseCheckbox 
-              v-model="motdConfig.display.dismissible" 
+            <BaseCheckbox
+              v-model="motdConfig.display.dismissible"
               :label="t('admin.motd.dismissible', 'Schließbar')"
             />
           </div>
-          
+
           <div class="admin-motd__field">
-            <BaseCheckbox 
-              v-model="motdConfig.display.showOnStartup" 
+            <BaseCheckbox
+              v-model="motdConfig.display.showOnStartup"
               :label="t('admin.motd.showOnStartup', 'Beim Start anzeigen')"
             />
           </div>
-          
+
           <div class="admin-motd__field">
-            <BaseCheckbox 
-              v-model="motdConfig.display.showInChat" 
+            <BaseCheckbox
+              v-model="motdConfig.display.showInChat"
               :label="t('admin.motd.showInChat', 'Im Chat anzeigen')"
             />
           </div>
         </fieldset>
-        
+
         <fieldset class="admin-motd__fieldset">
-          <legend class="admin-motd__legend">{{ t('admin.motd.styleSettings', 'Stil-Einstellungen') }}</legend>
-          
+          <legend class="admin-motd__legend">
+            {{ t("admin.motd.styleSettings", "Stil-Einstellungen") }}
+          </legend>
+
           <div class="admin-motd__field">
-            <label class="admin-motd__label">{{ t('admin.motd.backgroundColor', 'Hintergrundfarbe') }}</label>
+            <label class="admin-motd__label">{{
+              t("admin.motd.backgroundColor", "Hintergrundfarbe")
+            }}</label>
             <div class="admin-motd__color-picker">
-              <input 
-                type="color" 
-                v-model="motdConfig.style.backgroundColor" 
+              <input
+                type="color"
+                v-model="motdConfig.style.backgroundColor"
                 class="admin-motd__color-input"
               />
-              <BaseInput 
-                v-model="motdConfig.style.backgroundColor" 
+              <BaseInput
+                v-model="motdConfig.style.backgroundColor"
                 class="admin-motd__color-value"
               />
             </div>
           </div>
-          
+
           <div class="admin-motd__field">
-            <label class="admin-motd__label">{{ t('admin.motd.borderColor', 'Rahmenfarbe') }}</label>
+            <label class="admin-motd__label">{{
+              t("admin.motd.borderColor", "Rahmenfarbe")
+            }}</label>
             <div class="admin-motd__color-picker">
-              <input 
-                type="color" 
-                v-model="motdConfig.style.borderColor" 
+              <input
+                type="color"
+                v-model="motdConfig.style.borderColor"
                 class="admin-motd__color-input"
               />
-              <BaseInput 
-                v-model="motdConfig.style.borderColor" 
+              <BaseInput
+                v-model="motdConfig.style.borderColor"
                 class="admin-motd__color-value"
               />
             </div>
           </div>
-          
+
           <div class="admin-motd__field">
-            <label class="admin-motd__label">{{ t('admin.motd.textColor', 'Textfarbe') }}</label>
+            <label class="admin-motd__label">{{
+              t("admin.motd.textColor", "Textfarbe")
+            }}</label>
             <div class="admin-motd__color-picker">
-              <input 
-                type="color" 
-                v-model="motdConfig.style.textColor" 
+              <input
+                type="color"
+                v-model="motdConfig.style.textColor"
                 class="admin-motd__color-input"
               />
-              <BaseInput 
-                v-model="motdConfig.style.textColor" 
+              <BaseInput
+                v-model="motdConfig.style.textColor"
                 class="admin-motd__color-value"
               />
             </div>
           </div>
-          
+
           <div class="admin-motd__field">
-            <label class="admin-motd__label">{{ t('admin.motd.icon', 'Icon') }}</label>
-            <BaseSelect 
-              v-model="motdConfig.style.iconClass" 
+            <label class="admin-motd__label">{{
+              t("admin.motd.icon", "Icon")
+            }}</label>
+            <BaseSelect
+              v-model="motdConfig.style.iconClass"
               :options="iconOptions"
             />
           </div>
         </fieldset>
-        
+
         <fieldset class="admin-motd__fieldset">
-          <legend class="admin-motd__legend">{{ t('admin.motd.scheduling', 'Zeitplanung') }}</legend>
-          
+          <legend class="admin-motd__legend">
+            {{ t("admin.motd.scheduling", "Zeitplanung") }}
+          </legend>
+
           <div class="admin-motd__field">
-            <BaseCheckbox 
-              v-model="scheduling.enabled" 
+            <BaseCheckbox
+              v-model="scheduling.enabled"
               :label="t('admin.motd.schedulingEnabled', 'Zeitplan aktivieren')"
             />
           </div>
-          
+
           <template v-if="scheduling.enabled">
             <div class="admin-motd__field">
-              <label class="admin-motd__label">{{ t('admin.motd.startDate', 'Startdatum') }}</label>
-              <BaseInput 
-                type="datetime-local" 
-                v-model="scheduling.startDate" 
-              />
+              <label class="admin-motd__label">{{
+                t("admin.motd.startDate", "Startdatum")
+              }}</label>
+              <BaseInput type="datetime-local" v-model="scheduling.startDate" />
             </div>
-            
+
             <div class="admin-motd__field">
-              <label class="admin-motd__label">{{ t('admin.motd.endDate', 'Enddatum') }}</label>
-              <BaseInput 
-                type="datetime-local" 
-                v-model="scheduling.endDate" 
-              />
+              <label class="admin-motd__label">{{
+                t("admin.motd.endDate", "Enddatum")
+              }}</label>
+              <BaseInput type="datetime-local" v-model="scheduling.endDate" />
             </div>
-            
+
             <div class="admin-motd__field">
-              <label class="admin-motd__label">{{ t('admin.motd.audience', 'Zielgruppe') }}</label>
-              <BaseSelect 
-                v-model="scheduling.audience" 
+              <label class="admin-motd__label">{{
+                t("admin.motd.audience", "Zielgruppe")
+              }}</label>
+              <BaseSelect
+                v-model="scheduling.audience"
                 :options="audienceOptions"
               />
             </div>
           </template>
         </fieldset>
-        
+
         <fieldset class="admin-motd__fieldset">
-          <legend class="admin-motd__legend">{{ t('admin.motd.versionHistory', 'Versionshistorie') }}</legend>
-          
-          <div v-if="versionHistory.length === 0" class="admin-motd__empty-history">
-            {{ t('admin.motd.noVersions', 'Keine früheren Versionen vorhanden') }}
+          <legend class="admin-motd__legend">
+            {{ t("admin.motd.versionHistory", "Versionshistorie") }}
+          </legend>
+
+          <div
+            v-if="versionHistory.length === 0"
+            class="admin-motd__empty-history"
+          >
+            {{
+              t("admin.motd.noVersions", "Keine früheren Versionen vorhanden")
+            }}
           </div>
-          
+
           <div v-else class="admin-motd__version-list">
-            <div 
-              v-for="(version, index) in versionHistory" 
+            <div
+              v-for="(version, index) in versionHistory"
               :key="index"
               class="admin-motd__version-item"
             >
               <div class="admin-motd__version-info">
-                <span class="admin-motd__version-date">{{ formatDate(version.timestamp) }}</span>
+                <span class="admin-motd__version-date">{{
+                  formatDate(version.timestamp)
+                }}</span>
                 <span class="admin-motd__version-user">{{ version.user }}</span>
               </div>
-              <BaseButton 
-                size="small" 
-                variant="outline" 
+              <BaseButton
+                size="small"
+                variant="outline"
                 @click="restoreVersion(version)"
               >
-                {{ t('admin.motd.restore', 'Wiederherstellen') }}
+                {{ t("admin.motd.restore", "Wiederherstellen") }}
               </BaseButton>
             </div>
           </div>
         </fieldset>
       </div>
-      
+
       <!-- Content Editor -->
       <div class="admin-motd__content-editor">
-        <label class="admin-motd__content-label">{{ t('admin.motd.content', 'Inhalt') }}</label>
-        
-        <div class="admin-motd__toolbar" v-if="motdConfig.format === 'markdown'">
-          <button 
-            v-for="tool in markdownTools" 
-            :key="tool.name" 
-            class="admin-motd__toolbar-button" 
+        <label class="admin-motd__content-label">{{
+          t("admin.motd.content", "Inhalt")
+        }}</label>
+
+        <div
+          class="admin-motd__toolbar"
+          v-if="motdConfig.format === 'markdown'"
+        >
+          <button
+            v-for="tool in markdownTools"
+            :key="tool.name"
+            class="admin-motd__toolbar-button"
             @click="applyMarkdownTool(tool)"
             :title="tool.title"
           >
             <i :class="['fas', tool.icon]"></i>
           </button>
         </div>
-        
+
         <textarea
           v-model="motdConfig.content"
           class="admin-motd__content-textarea"
-          :placeholder="t('admin.motd.contentPlaceholder', 'Geben Sie hier den Inhalt der Nachricht ein...')"
+          :placeholder="
+            t(
+              'admin.motd.contentPlaceholder',
+              'Geben Sie hier den Inhalt der Nachricht ein...',
+            )
+          "
           rows="15"
         ></textarea>
-        
-        <div class="admin-motd__content-help" v-if="motdConfig.format === 'markdown'">
-          <div class="admin-motd__help-title">{{ t('admin.motd.markdownHelp', 'Markdown-Hilfe') }}</div>
+
+        <div
+          class="admin-motd__content-help"
+          v-if="motdConfig.format === 'markdown'"
+        >
+          <div class="admin-motd__help-title">
+            {{ t("admin.motd.markdownHelp", "Markdown-Hilfe") }}
+          </div>
           <div class="admin-motd__help-content">
             <ul class="admin-motd__help-list">
-              <li><code>**Text**</code> - {{ t('admin.motd.boldText', 'Fettgedruckter Text') }}</li>
-              <li><code>*Text*</code> - {{ t('admin.motd.italicText', 'Kursiver Text') }}</li>
-              <li><code># Titel</code> - {{ t('admin.motd.heading', 'Überschrift') }}</li>
-              <li><code>- Element</code> - {{ t('admin.motd.listItem', 'Listenelement') }}</li>
-              <li><code>[Link](URL)</code> - {{ t('admin.motd.link', 'Link') }}</li>
+              <li>
+                <code>**Text**</code> -
+                {{ t("admin.motd.boldText", "Fettgedruckter Text") }}
+              </li>
+              <li>
+                <code>*Text*</code> -
+                {{ t("admin.motd.italicText", "Kursiver Text") }}
+              </li>
+              <li>
+                <code># Titel</code> -
+                {{ t("admin.motd.heading", "Überschrift") }}
+              </li>
+              <li>
+                <code>- Element</code> -
+                {{ t("admin.motd.listItem", "Listenelement") }}
+              </li>
+              <li>
+                <code>[Link](URL)</code> - {{ t("admin.motd.link", "Link") }}
+              </li>
             </ul>
           </div>
         </div>
       </div>
     </div>
-    
+
     <!-- Preview Mode -->
     <div v-else class="admin-motd__preview">
       <div class="admin-motd__preview-header">
-        <h3 class="admin-motd__preview-title">{{ t('admin.motd.previewTitle', 'Vorschau') }}</h3>
+        <h3 class="admin-motd__preview-title">
+          {{ t("admin.motd.previewTitle", "Vorschau") }}
+        </h3>
         <div class="admin-motd__preview-info">
-          {{ motdConfig.enabled
-            ? t('admin.motd.previewEnabled', 'Diese Nachricht ist aktiviert und wird angezeigt.')
-            : t('admin.motd.previewDisabled', 'Diese Nachricht ist deaktiviert und wird nicht angezeigt.')
+          {{
+            motdConfig.enabled
+              ? t(
+                  "admin.motd.previewEnabled",
+                  "Diese Nachricht ist aktiviert und wird angezeigt.",
+                )
+              : t(
+                  "admin.motd.previewDisabled",
+                  "Diese Nachricht ist deaktiviert und wird nicht angezeigt.",
+                )
           }}
         </div>
       </div>
-      
-      <div 
+
+      <div
         class="admin-motd__preview-content"
         :style="{
           backgroundColor: motdConfig.style.backgroundColor,
           borderColor: motdConfig.style.borderColor,
-          color: motdConfig.style.textColor
+          color: motdConfig.style.textColor,
         }"
       >
         <div class="admin-motd__preview-icon">
           <i :class="['fas', `fa-${motdConfig.style.iconClass}`]"></i>
         </div>
-        <div 
-          class="admin-motd__preview-text"
-          v-html="previewHtml"
-        ></div>
-        <div v-if="motdConfig.display.dismissible" class="admin-motd__preview-dismiss">
+        <div class="admin-motd__preview-text" v-html="previewHtml"></div>
+        <div
+          v-if="motdConfig.display.dismissible"
+          class="admin-motd__preview-dismiss"
+        >
           <i class="fas fa-times"></i>
         </div>
       </div>
-      
+
       <div class="admin-motd__preview-info" v-if="scheduling.enabled">
         <div class="admin-motd__preview-scheduling">
           <div class="admin-motd__preview-scheduling-item">
-            <strong>{{ t('admin.motd.scheduledStart', 'Geplanter Start') }}:</strong> {{ formatDate(scheduling.startDate) }}
+            <strong
+              >{{ t("admin.motd.scheduledStart", "Geplanter Start") }}:</strong
+            >
+            {{ formatDate(scheduling.startDate) }}
           </div>
           <div class="admin-motd__preview-scheduling-item">
-            <strong>{{ t('admin.motd.scheduledEnd', 'Geplantes Ende') }}:</strong> {{ formatDate(scheduling.endDate) }}
+            <strong
+              >{{ t("admin.motd.scheduledEnd", "Geplantes Ende") }}:</strong
+            >
+            {{ formatDate(scheduling.endDate) }}
           </div>
           <div class="admin-motd__preview-scheduling-item">
-            <strong>{{ t('admin.motd.targetAudience', 'Zielgruppe') }}:</strong> {{ getAudienceLabel(scheduling.audience) }}
+            <strong>{{ t("admin.motd.targetAudience", "Zielgruppe") }}:</strong>
+            {{ getAudienceLabel(scheduling.audience) }}
           </div>
         </div>
       </div>
@@ -306,89 +377,157 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { storeToRefs } from 'pinia';
-import { useAdminMotdStore } from '@/stores/admin/motd';
-import type { MotdConfig } from '@/types/admin';
+import { ref, computed, onMounted, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import { storeToRefs } from "pinia";
+import { useAdminMotdStore } from "@/stores/admin/motd";
+import type { MotdConfig } from "@/types/admin";
 
 // UI Components
-import { BaseButton, BaseInput, BaseSelect, BaseCheckbox, Alert } from '@/components/ui/base';
+import {
+  BaseButton,
+  BaseInput,
+  BaseSelect,
+  BaseCheckbox,
+  Alert,
+} from "@/components/ui/base";
 
 // i18n
 const { t } = useI18n();
 
 // Store
 const motdStore = useAdminMotdStore();
-const { config, loading, error, previewMode, hasUnsavedChanges, previewHtml } = storeToRefs(motdStore);
+const { config, loading, error, previewMode, hasUnsavedChanges, previewHtml } =
+  storeToRefs(motdStore);
 
 // Local state for the component
-const motdConfig = ref<MotdConfig>({...config.value});
+const motdConfig = ref<MotdConfig>({ ...config.value });
 const scheduling = ref({
   enabled: false,
   startDate: new Date().toISOString().slice(0, 16),
-  endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
-  audience: 'all'
+  endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 16),
+  audience: "all",
 });
-const versionHistory = ref<Array<{timestamp: number, user: string, config: MotdConfig}>>([]);
+const versionHistory = ref<
+  Array<{ timestamp: number; user: string; config: MotdConfig }>
+>([]);
 
 // Options for select fields
 const formatOptions = [
-  { value: 'markdown', label: t('admin.motd.formatMarkdown', 'Markdown') },
-  { value: 'html', label: t('admin.motd.formatHtml', 'HTML') },
-  { value: 'text', label: t('admin.motd.formatText', 'Text') }
+  { value: "markdown", label: t("admin.motd.formatMarkdown", "Markdown") },
+  { value: "html", label: t("admin.motd.formatHtml", "HTML") },
+  { value: "text", label: t("admin.motd.formatText", "Text") },
 ];
 
 const positionOptions = [
-  { value: 'top', label: t('admin.motd.positionTop', 'Oben') },
-  { value: 'bottom', label: t('admin.motd.positionBottom', 'Unten') }
+  { value: "top", label: t("admin.motd.positionTop", "Oben") },
+  { value: "bottom", label: t("admin.motd.positionBottom", "Unten") },
 ];
 
 const iconOptions = [
-  { value: 'info-circle', label: t('admin.motd.iconInfo', 'Information') },
-  { value: 'exclamation-triangle', label: t('admin.motd.iconWarning', 'Warnung') },
-  { value: 'check-circle', label: t('admin.motd.iconSuccess', 'Erfolg') },
-  { value: 'exclamation-circle', label: t('admin.motd.iconError', 'Fehler') },
-  { value: 'bell', label: t('admin.motd.iconNotification', 'Benachrichtigung') },
-  { value: 'lightbulb', label: t('admin.motd.iconTip', 'Tipp') },
-  { value: 'user-shield', label: t('admin.motd.iconSecurity', 'Sicherheit') },
-  { value: 'tools', label: t('admin.motd.iconMaintenance', 'Wartung') }
+  { value: "info-circle", label: t("admin.motd.iconInfo", "Information") },
+  {
+    value: "exclamation-triangle",
+    label: t("admin.motd.iconWarning", "Warnung"),
+  },
+  { value: "check-circle", label: t("admin.motd.iconSuccess", "Erfolg") },
+  { value: "exclamation-circle", label: t("admin.motd.iconError", "Fehler") },
+  {
+    value: "bell",
+    label: t("admin.motd.iconNotification", "Benachrichtigung"),
+  },
+  { value: "lightbulb", label: t("admin.motd.iconTip", "Tipp") },
+  { value: "user-shield", label: t("admin.motd.iconSecurity", "Sicherheit") },
+  { value: "tools", label: t("admin.motd.iconMaintenance", "Wartung") },
 ];
 
 const audienceOptions = [
-  { value: 'all', label: t('admin.motd.audienceAll', 'Alle Benutzer') },
-  { value: 'admins', label: t('admin.motd.audienceAdmins', 'Nur Administratoren') },
-  { value: 'users', label: t('admin.motd.audienceUsers', 'Nur Standardbenutzer') }
+  { value: "all", label: t("admin.motd.audienceAll", "Alle Benutzer") },
+  {
+    value: "admins",
+    label: t("admin.motd.audienceAdmins", "Nur Administratoren"),
+  },
+  {
+    value: "users",
+    label: t("admin.motd.audienceUsers", "Nur Standardbenutzer"),
+  },
 ];
 
 const markdownTools = [
-  { name: 'bold', icon: 'fa-bold', title: t('admin.motd.toolBold', 'Fett'), pattern: '**$selection$**' },
-  { name: 'italic', icon: 'fa-italic', title: t('admin.motd.toolItalic', 'Kursiv'), pattern: '*$selection$*' },
-  { name: 'heading', icon: 'fa-heading', title: t('admin.motd.toolHeading', 'Überschrift'), pattern: '## $selection$' },
-  { name: 'list', icon: 'fa-list-ul', title: t('admin.motd.toolList', 'Liste'), pattern: '- $selection$' },
-  { name: 'link', icon: 'fa-link', title: t('admin.motd.toolLink', 'Link'), pattern: '[$selection$](https://)' },
-  { name: 'code', icon: 'fa-code', title: t('admin.motd.toolCode', 'Code'), pattern: '`$selection$`' },
-  { name: 'quote', icon: 'fa-quote-right', title: t('admin.motd.toolQuote', 'Zitat'), pattern: '> $selection$' },
-  { name: 'emoji', icon: 'fa-smile', title: t('admin.motd.toolEmoji', 'Emoji 🙂'), pattern: '🙂 $selection$' }
+  {
+    name: "bold",
+    icon: "fa-bold",
+    title: t("admin.motd.toolBold", "Fett"),
+    pattern: "**$selection$**",
+  },
+  {
+    name: "italic",
+    icon: "fa-italic",
+    title: t("admin.motd.toolItalic", "Kursiv"),
+    pattern: "*$selection$*",
+  },
+  {
+    name: "heading",
+    icon: "fa-heading",
+    title: t("admin.motd.toolHeading", "Überschrift"),
+    pattern: "## $selection$",
+  },
+  {
+    name: "list",
+    icon: "fa-list-ul",
+    title: t("admin.motd.toolList", "Liste"),
+    pattern: "- $selection$",
+  },
+  {
+    name: "link",
+    icon: "fa-link",
+    title: t("admin.motd.toolLink", "Link"),
+    pattern: "[$selection$](https://)",
+  },
+  {
+    name: "code",
+    icon: "fa-code",
+    title: t("admin.motd.toolCode", "Code"),
+    pattern: "`$selection$`",
+  },
+  {
+    name: "quote",
+    icon: "fa-quote-right",
+    title: t("admin.motd.toolQuote", "Zitat"),
+    pattern: "> $selection$",
+  },
+  {
+    name: "emoji",
+    icon: "fa-smile",
+    title: t("admin.motd.toolEmoji", "Emoji 🙂"),
+    pattern: "🙂 $selection$",
+  },
 ];
 
 // Methods
-function applyMarkdownTool(tool: { name: string, pattern: string }) {
-  const textarea = document.querySelector('.admin-motd__content-textarea') as HTMLTextAreaElement;
-  
+function applyMarkdownTool(tool: { name: string; pattern: string }) {
+  const textarea = document.querySelector(
+    ".admin-motd__content-textarea",
+  ) as HTMLTextAreaElement;
+
   if (!textarea) return;
-  
+
   const { selectionStart, selectionEnd } = textarea;
-  const selectedText = motdConfig.value.content.substring(selectionStart, selectionEnd);
-  const replacement = tool.pattern.replace('$selection$', selectedText || '');
-  
-  const newContent = 
-    motdConfig.value.content.substring(0, selectionStart) + 
-    replacement + 
+  const selectedText = motdConfig.value.content.substring(
+    selectionStart,
+    selectionEnd,
+  );
+  const replacement = tool.pattern.replace("$selection$", selectedText || "");
+
+  const newContent =
+    motdConfig.value.content.substring(0, selectionStart) +
+    replacement +
     motdConfig.value.content.substring(selectionEnd);
-  
+
   motdConfig.value.content = newContent;
-  
+
   // Set focus back to textarea
   setTimeout(() => {
     textarea.focus();
@@ -403,68 +542,82 @@ function formatDate(dateString: string | number): string {
 }
 
 function getAudienceLabel(audience: string): string {
-  const option = audienceOptions.find(opt => opt.value === audience);
+  const option = audienceOptions.find((opt) => opt.value === audience);
   return option ? option.label : audience;
 }
 
 async function loadMotd() {
   try {
     await motdStore.fetchConfig();
-    motdConfig.value = {...config.value};
-    
+    motdConfig.value = { ...config.value };
+
     // Simulate version history
     versionHistory.value = [
       {
         timestamp: Date.now() - 20 * 24 * 60 * 60 * 1000,
-        user: 'admin@example.com',
-        config: {...motdConfig.value, content: 'Previous version from 20 days ago'}
+        user: "admin@example.com",
+        config: {
+          ...motdConfig.value,
+          content: "Previous version from 20 days ago",
+        },
       },
       {
         timestamp: Date.now() - 10 * 24 * 60 * 60 * 1000,
-        user: 'admin@example.com',
-        config: {...motdConfig.value, content: 'Previous version from 10 days ago'}
-      }
+        user: "admin@example.com",
+        config: {
+          ...motdConfig.value,
+          content: "Previous version from 10 days ago",
+        },
+      },
     ];
   } catch (err) {
-    console.error('Failed to load MOTD configuration', err);
+    console.error("Failed to load MOTD configuration", err);
   }
 }
 
 async function saveMotd() {
   try {
     // If scheduling is enabled, add a new version to the history
-    if (scheduling.enabled) {
+    if (scheduling.value.enabled) {
       versionHistory.value.unshift({
         timestamp: Date.now(),
-        user: 'current-user@example.com',
-        config: {...motdConfig.value}
+        user: "current-user@example.com",
+        config: { ...motdConfig.value },
       });
     }
-    
+
     await motdStore.updateConfig(motdConfig.value);
     await motdStore.saveConfig();
   } catch (err) {
-    console.error('Failed to save MOTD configuration', err);
+    console.error("Failed to save MOTD configuration", err);
   }
 }
 
 function resetMotd() {
   motdStore.resetConfig();
-  motdConfig.value = {...config.value};
+  motdConfig.value = { ...config.value };
 }
 
 function togglePreview() {
   motdStore.togglePreviewMode();
 }
 
-function restoreVersion(version: {timestamp: number, user: string, config: MotdConfig}) {
-  motdConfig.value = {...version.config};
+function restoreVersion(version: {
+  timestamp: number;
+  user: string;
+  config: MotdConfig;
+}) {
+  motdConfig.value = { ...version.config };
 }
 
 // Sync between store and local state
-watch(() => config.value, (newValue) => {
-  motdConfig.value = {...newValue};
-}, { deep: true });
+watch(
+  () => config.value,
+  (newValue) => {
+    motdConfig.value = { ...newValue };
+  },
+  { deep: true },
+);
 
 // Lifecycle hooks
 onMounted(async () => {
@@ -763,13 +916,13 @@ onMounted(async () => {
   .admin-motd__editor {
     grid-template-columns: 1fr;
   }
-  
+
   .admin-motd__header {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
   }
-  
+
   .admin-motd__actions {
     width: 100%;
     justify-content: space-between;

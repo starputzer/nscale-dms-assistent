@@ -2,8 +2,10 @@
   <div class="settings-panel" :class="{ 'settings-panel--visible': isVisible }">
     <div class="settings-panel__container">
       <div class="settings-panel__header">
-        <h2 class="settings-panel__title">{{ t('settings.title', 'Einstellungen') }}</h2>
-        <button 
+        <h2 class="settings-panel__title">
+          {{ t("settings.title", "Einstellungen") }}
+        </h2>
+        <button
           class="settings-panel__close-button"
           @click="handleClose"
           aria-label="Einstellungen schließen"
@@ -13,99 +15,145 @@
       </div>
 
       <div class="settings-panel__categories">
-        <button 
+        <button
           v-for="category in categories"
           :key="category.id"
           class="settings-panel__category-button"
-          :class="{ 'settings-panel__category-button--active': activeCategory === category.id }"
+          :class="{
+            'settings-panel__category-button--active':
+              activeCategory === category.id,
+          }"
           @click="activeCategory = category.id"
         >
-          <i :class="['settings-panel__category-icon', 'fas', category.icon]" aria-hidden="true"></i>
-          <span class="settings-panel__category-label">{{ category.label }}</span>
+          <i
+            :class="['settings-panel__category-icon', 'fas', category.icon]"
+            aria-hidden="true"
+          ></i>
+          <span class="settings-panel__category-label">{{
+            category.label
+          }}</span>
         </button>
       </div>
 
       <div class="settings-panel__content">
-        <component 
-          :is="activeCategoryComponent" 
+        <component
+          :is="activeCategoryComponent"
           @apply-settings="handleApplySettings"
           @reset="handleReset"
         ></component>
       </div>
 
       <div class="settings-panel__footer">
-        <button 
+        <button
           v-if="settingsStore.hasUnsavedChanges"
           class="settings-panel__button settings-panel__button--secondary"
           @click="handleReset"
         >
-          {{ t('settings.resetChanges', 'Änderungen zurücksetzen') }}
+          {{ t("settings.resetChanges", "Änderungen zurücksetzen") }}
         </button>
-        <button 
+        <button
           v-if="settingsStore.hasUnsavedChanges"
           class="settings-panel__button settings-panel__button--primary"
           @click="handleSave"
           :disabled="settingsStore.isLoading"
         >
-          <i v-if="settingsStore.isLoading" class="fas fa-spinner fa-spin" aria-hidden="true"></i>
-          {{ t('settings.saveChanges', 'Änderungen speichern') }}
+          <i
+            v-if="settingsStore.isLoading"
+            class="fas fa-spinner fa-spin"
+            aria-hidden="true"
+          ></i>
+          {{ t("settings.saveChanges", "Änderungen speichern") }}
         </button>
-        <span v-if="!settingsStore.hasUnsavedChanges && lastSaved" class="settings-panel__saved-indicator">
-          {{ t('settings.lastSaved', 'Zuletzt gespeichert') }}: {{ formatDate(lastSaved) }}
+        <span
+          v-if="!settingsStore.hasUnsavedChanges && lastSaved"
+          class="settings-panel__saved-indicator"
+        >
+          {{ t("settings.lastSaved", "Zuletzt gespeichert") }}:
+          {{ formatDate(lastSaved) }}
         </span>
-        <button 
+        <button
           class="settings-panel__button settings-panel__button--text"
           @click="handleRestoreDefaults"
         >
-          {{ t('settings.restoreDefaults', 'Standardeinstellungen wiederherstellen') }}
+          {{
+            t(
+              "settings.restoreDefaults",
+              "Standardeinstellungen wiederherstellen",
+            )
+          }}
         </button>
       </div>
     </div>
 
     <!-- Bestätigungsdialog für Standardeinstellungen -->
-    <dialog 
-      ref="confirmDialog"
-      class="settings-panel__dialog"
-    >
+    <dialog ref="confirmDialog" class="settings-panel__dialog">
       <div class="settings-panel__dialog-content">
         <h3 class="settings-panel__dialog-title">
-          {{ t('settings.restoreDefaultsTitle', 'Standardeinstellungen wiederherstellen') }}
+          {{
+            t(
+              "settings.restoreDefaultsTitle",
+              "Standardeinstellungen wiederherstellen",
+            )
+          }}
         </h3>
         <p class="settings-panel__dialog-message">
-          {{ t('settings.restoreDefaultsMessage', 'Möchten Sie wirklich alle Einstellungen auf die Standardwerte zurücksetzen? Diese Aktion kann nicht rückgängig gemacht werden.') }}
+          {{
+            t(
+              "settings.restoreDefaultsMessage",
+              "Möchten Sie wirklich alle Einstellungen auf die Standardwerte zurücksetzen? Diese Aktion kann nicht rückgängig gemacht werden.",
+            )
+          }}
         </p>
         <div class="settings-panel__dialog-actions">
-          <button 
-            @click="closeConfirmDialog" 
+          <button
+            @click="closeConfirmDialog"
             class="settings-panel__button settings-panel__button--secondary"
           >
-            {{ t('settings.cancel', 'Abbrechen') }}
+            {{ t("settings.cancel", "Abbrechen") }}
           </button>
-          <button 
-            @click="confirmRestoreDefaults" 
+          <button
+            @click="confirmRestoreDefaults"
             class="settings-panel__button settings-panel__button--primary"
           >
-            {{ t('settings.confirm', 'Bestätigen') }}
+            {{ t("settings.confirm", "Bestätigen") }}
           </button>
         </div>
       </div>
     </dialog>
 
-    <div v-if="isVisible" class="settings-panel__backdrop" @click="handleClose"></div>
+    <div
+      v-if="isVisible"
+      class="settings-panel__backdrop"
+      @click="handleClose"
+    ></div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, defineAsyncComponent } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { useSettingsStore } from '@/stores/settings';
-import { useToast } from '@/composables/useToast';
+import {
+  ref,
+  computed,
+  onMounted,
+  onUnmounted,
+  defineAsyncComponent,
+} from "vue";
+import { useI18n } from "vue-i18n";
+import { useSettingsStore } from "@/stores/settings";
+import { useToast } from "@/composables/useToast";
 
 // Asynchrones Laden der Unterkomponenten
-const AppearanceSettings = defineAsyncComponent(() => import('./AppearanceSettings.vue'));
-const NotificationSettings = defineAsyncComponent(() => import('./NotificationSettings.vue'));
-const PrivacySettings = defineAsyncComponent(() => import('./PrivacySettings.vue'));
-const AccessibilitySettings = defineAsyncComponent(() => import('./AccessibilitySettings.vue'));
+const AppearanceSettings = defineAsyncComponent(
+  () => import("./AppearanceSettings.vue"),
+);
+const NotificationSettings = defineAsyncComponent(
+  () => import("./NotificationSettings.vue"),
+);
+const PrivacySettings = defineAsyncComponent(
+  () => import("./PrivacySettings.vue"),
+);
+const AccessibilitySettings = defineAsyncComponent(
+  () => import("./AccessibilitySettings.vue"),
+);
 
 // Props
 interface SettingsPanelProps {
@@ -116,8 +164,8 @@ const props = defineProps<SettingsPanelProps>();
 
 // Emit Events
 const emit = defineEmits<{
-  (e: 'close'): void;
-  (e: 'save'): void;
+  (e: "close"): void;
+  (e: "save"): void;
 }>();
 
 // Store und Services
@@ -130,39 +178,39 @@ const confirmDialog = ref<HTMLDialogElement | null>(null);
 const lastSaved = ref<number | null>(null);
 
 // State
-const activeCategory = ref('appearance');
+const activeCategory = ref("appearance");
 
 // Kategorien-Konfiguration
 const categories = [
   {
-    id: 'appearance',
-    label: t('settings.categories.appearance', 'Erscheinungsbild'),
-    icon: 'fa-palette',
-    component: AppearanceSettings
+    id: "appearance",
+    label: t("settings.categories.appearance", "Erscheinungsbild"),
+    icon: "fa-palette",
+    component: AppearanceSettings,
   },
   {
-    id: 'notifications',
-    label: t('settings.categories.notifications', 'Benachrichtigungen'),
-    icon: 'fa-bell',
-    component: NotificationSettings
+    id: "notifications",
+    label: t("settings.categories.notifications", "Benachrichtigungen"),
+    icon: "fa-bell",
+    component: NotificationSettings,
   },
   {
-    id: 'privacy',
-    label: t('settings.categories.privacy', 'Datenschutz'),
-    icon: 'fa-shield-alt',
-    component: PrivacySettings
+    id: "privacy",
+    label: t("settings.categories.privacy", "Datenschutz"),
+    icon: "fa-shield-alt",
+    component: PrivacySettings,
   },
   {
-    id: 'accessibility',
-    label: t('settings.categories.accessibility', 'Barrierefreiheit'),
-    icon: 'fa-universal-access',
-    component: AccessibilitySettings
-  }
+    id: "accessibility",
+    label: t("settings.categories.accessibility", "Barrierefreiheit"),
+    icon: "fa-universal-access",
+    component: AccessibilitySettings,
+  },
 ];
 
 // Computed Properties
 const activeCategoryComponent = computed(() => {
-  const category = categories.find(c => c.id === activeCategory.value);
+  const category = categories.find((c) => c.id === activeCategory.value);
   return category ? category.component : null;
 });
 
@@ -171,54 +219,71 @@ function handleClose() {
   // Wenn ungespeicherte Änderungen vorhanden sind, zeige Bestätigungsdialog
   if (settingsStore.hasUnsavedChanges) {
     // Hier könnte man einen Dialog anzeigen
-    const confirmed = confirm(t('settings.unsavedChangesMessage', 'Es gibt ungespeicherte Änderungen. Möchten Sie wirklich schließen?'));
+    const confirmed = confirm(
+      t(
+        "settings.unsavedChangesMessage",
+        "Es gibt ungespeicherte Änderungen. Möchten Sie wirklich schließen?",
+      ),
+    );
     if (!confirmed) return;
-    
+
     // Änderungen zurücksetzen
     settingsStore.resetChanges();
   }
-  
-  emit('close');
+
+  emit("close");
 }
 
 async function handleSave() {
   try {
     const success = await settingsStore.saveSettings();
-    
+
     if (success) {
       lastSaved.value = Date.now();
-      
+
       showToast({
-        type: 'success',
-        title: t('settings.saveSuccess', 'Gespeichert'),
-        message: t('settings.saveSuccessMessage', 'Ihre Einstellungen wurden erfolgreich gespeichert.')
+        type: "success",
+        title: t("settings.saveSuccess", "Gespeichert"),
+        message: t(
+          "settings.saveSuccessMessage",
+          "Ihre Einstellungen wurden erfolgreich gespeichert.",
+        ),
       });
-      
-      emit('save');
+
+      emit("save");
     } else {
       showToast({
-        type: 'error',
-        title: t('settings.saveError', 'Fehler'),
-        message: t('settings.saveErrorMessage', 'Ihre Einstellungen konnten nicht gespeichert werden.')
+        type: "error",
+        title: t("settings.saveError", "Fehler"),
+        message: t(
+          "settings.saveErrorMessage",
+          "Ihre Einstellungen konnten nicht gespeichert werden.",
+        ),
       });
     }
   } catch (error) {
-    console.error('Error saving settings:', error);
+    console.error("Error saving settings:", error);
     showToast({
-      type: 'error',
-      title: t('settings.saveError', 'Fehler'),
-      message: t('settings.saveErrorMessage', 'Ihre Einstellungen konnten nicht gespeichert werden.')
+      type: "error",
+      title: t("settings.saveError", "Fehler"),
+      message: t(
+        "settings.saveErrorMessage",
+        "Ihre Einstellungen konnten nicht gespeichert werden.",
+      ),
     });
   }
 }
 
 function handleReset() {
   settingsStore.resetChanges();
-  
+
   showToast({
-    type: 'info',
-    title: t('settings.resetSuccess', 'Zurückgesetzt'),
-    message: t('settings.resetSuccessMessage', 'Ihre Änderungen wurden zurückgesetzt.')
+    type: "info",
+    title: t("settings.resetSuccess", "Zurückgesetzt"),
+    message: t(
+      "settings.resetSuccessMessage",
+      "Ihre Änderungen wurden zurückgesetzt.",
+    ),
   });
 }
 
@@ -236,29 +301,35 @@ function closeConfirmDialog() {
 
 async function confirmRestoreDefaults() {
   closeConfirmDialog();
-  
+
   try {
     await settingsStore.resetToDefault();
     lastSaved.value = Date.now();
-    
+
     showToast({
-      type: 'success',
-      title: t('settings.restoreDefaultsSuccess', 'Standardeinstellungen'),
-      message: t('settings.restoreDefaultsSuccessMessage', 'Die Einstellungen wurden auf die Standardwerte zurückgesetzt.')
+      type: "success",
+      title: t("settings.restoreDefaultsSuccess", "Standardeinstellungen"),
+      message: t(
+        "settings.restoreDefaultsSuccessMessage",
+        "Die Einstellungen wurden auf die Standardwerte zurückgesetzt.",
+      ),
     });
   } catch (error) {
-    console.error('Error restoring default settings:', error);
+    console.error("Error restoring default settings:", error);
     showToast({
-      type: 'error',
-      title: t('settings.restoreDefaultsError', 'Fehler'),
-      message: t('settings.restoreDefaultsErrorMessage', 'Die Standardeinstellungen konnten nicht wiederhergestellt werden.')
+      type: "error",
+      title: t("settings.restoreDefaultsError", "Fehler"),
+      message: t(
+        "settings.restoreDefaultsErrorMessage",
+        "Die Standardeinstellungen konnten nicht wiederhergestellt werden.",
+      ),
     });
   }
 }
 
 function handleApplySettings(category: string, settings: any) {
   switch (category) {
-    case 'appearance':
+    case "appearance":
       if (settings.theme) {
         settingsStore.setTheme(settings.theme);
       }
@@ -266,47 +337,47 @@ function handleApplySettings(category: string, settings: any) {
         settingsStore.updateFontSettings(settings.font);
       }
       break;
-    case 'notifications':
+    case "notifications":
       settingsStore.updateNotificationSettings(settings);
       break;
-    case 'privacy':
+    case "privacy":
       // Handle privacy settings
       break;
-    case 'accessibility':
+    case "accessibility":
       settingsStore.updateA11ySettings(settings);
       break;
   }
 }
 
 function formatDate(timestamp: number | null): string {
-  if (!timestamp) return '';
-  
-  return new Intl.DateTimeFormat('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  if (!timestamp) return "";
+
+  return new Intl.DateTimeFormat("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   }).format(new Date(timestamp));
 }
 
 // Add/remove event listeners for escape key
 function handleEscapeKey(event: KeyboardEvent) {
-  if (event.key === 'Escape' && props.isVisible) {
+  if (event.key === "Escape" && props.isVisible) {
     handleClose();
   }
 }
 
 // Lifecycle hooks
 onMounted(() => {
-  document.addEventListener('keydown', handleEscapeKey);
-  
+  document.addEventListener("keydown", handleEscapeKey);
+
   // Initialize settings from store
   settingsStore.initialize();
 });
 
 onUnmounted(() => {
-  document.removeEventListener('keydown', handleEscapeKey);
+  document.removeEventListener("keydown", handleEscapeKey);
 });
 </script>
 

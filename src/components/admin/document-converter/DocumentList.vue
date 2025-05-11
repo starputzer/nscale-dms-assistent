@@ -1,21 +1,33 @@
 <template>
-  <div 
+  <div
     class="document-list"
     role="region"
     aria-labelledby="document-list-title"
   >
     <div class="document-list__header">
       <div class="document-list__title-area">
-        <h3 id="document-list-title">{{ $t('documentList.title', 'Konvertierte Dokumente') }}</h3>
+        <h3 id="document-list-title">
+          {{ $t("documentList.title", "Konvertierte Dokumente") }}
+        </h3>
         <div class="document-list__stats">
-          <span class="document-list__document-count">{{ filteredDocuments.length }} {{ $t('documentList.documentsFound', 'Dokumente gefunden') }}</span>
-          <span v-if="selectedDocuments.length > 0" class="document-list__selected-count">({{ selectedDocuments.length }} {{ $t('documentList.selected', 'ausgewählt') }})</span>
+          <span class="document-list__document-count"
+            >{{ filteredDocuments.length }}
+            {{ $t("documentList.documentsFound", "Dokumente gefunden") }}</span
+          >
+          <span
+            v-if="selectedDocuments.length > 0"
+            class="document-list__selected-count"
+            >({{ selectedDocuments.length }}
+            {{ $t("documentList.selected", "ausgewählt") }})</span
+          >
         </div>
       </div>
 
       <div class="document-list__actions">
         <div class="document-list__filter-container">
-          <label for="status-filter" class="sr-only">{{ $t('documentList.statusFilter', 'Nach Status filtern') }}</label>
+          <label for="status-filter" class="sr-only">{{
+            $t("documentList.statusFilter", "Nach Status filtern")
+          }}</label>
           <select
             id="status-filter"
             v-model="statusFilter"
@@ -23,62 +35,102 @@
             aria-label="Status Filter"
             data-testid="status-filter"
           >
-            <option value="">{{ $t('documentList.allStatuses', 'Alle Status') }}</option>
-            <option value="success">{{ $t('documentList.statusSuccess', 'Erfolgreich') }}</option>
-            <option value="error">{{ $t('documentList.statusError', 'Fehler') }}</option>
-            <option value="pending">{{ $t('documentList.statusPending', 'Ausstehend') }}</option>
-            <option value="processing">{{ $t('documentList.statusProcessing', 'In Bearbeitung') }}</option>
+            <option value="">
+              {{ $t("documentList.allStatuses", "Alle Status") }}
+            </option>
+            <option value="success">
+              {{ $t("documentList.statusSuccess", "Erfolgreich") }}
+            </option>
+            <option value="error">
+              {{ $t("documentList.statusError", "Fehler") }}
+            </option>
+            <option value="pending">
+              {{ $t("documentList.statusPending", "Ausstehend") }}
+            </option>
+            <option value="processing">
+              {{ $t("documentList.statusProcessing", "In Bearbeitung") }}
+            </option>
           </select>
         </div>
 
         <div class="document-list__filter-container">
-          <label for="format-filter" class="sr-only">{{ $t('documentList.formatFilter', 'Nach Format filtern') }}</label>
-          <select 
-            id="format-filter" 
-            v-model="formatFilter" 
+          <label for="format-filter" class="sr-only">{{
+            $t("documentList.formatFilter", "Nach Format filtern")
+          }}</label>
+          <select
+            id="format-filter"
+            v-model="formatFilter"
             class="document-list__format-filter"
             aria-label="Format Filter"
           >
-            <option value="">{{ $t('documentList.allFormats', 'Alle Formate') }}</option>
-            <option v-for="format in supportedFormats" :key="format" :value="format">
+            <option value="">
+              {{ $t("documentList.allFormats", "Alle Formate") }}
+            </option>
+            <option
+              v-for="format in supportedFormats"
+              :key="format"
+              :value="format"
+            >
               {{ format.toUpperCase() }}
             </option>
           </select>
         </div>
-        
+
         <div class="document-list__sort-container">
-          <label for="sort-by" class="sr-only">{{ $t('documentList.sortBy', 'Sortieren nach') }}</label>
-          <select 
-            id="sort-by" 
-            v-model="sortBy" 
+          <label for="sort-by" class="sr-only">{{
+            $t("documentList.sortBy", "Sortieren nach")
+          }}</label>
+          <select
+            id="sort-by"
+            v-model="sortBy"
             class="document-list__sort-by"
             aria-label="Sort By"
           >
-            <option value="name">{{ $t('documentList.sortByName', 'Name') }}</option>
-            <option value="date">{{ $t('documentList.sortByDate', 'Datum') }}</option>
-            <option value="size">{{ $t('documentList.sortBySize', 'Größe') }}</option>
-            <option value="format">{{ $t('documentList.sortByFormat', 'Format') }}</option>
+            <option value="name">
+              {{ $t("documentList.sortByName", "Name") }}
+            </option>
+            <option value="date">
+              {{ $t("documentList.sortByDate", "Datum") }}
+            </option>
+            <option value="size">
+              {{ $t("documentList.sortBySize", "Größe") }}
+            </option>
+            <option value="format">
+              {{ $t("documentList.sortByFormat", "Format") }}
+            </option>
           </select>
-          
-          <button 
+
+          <button
             @click="toggleSortDirection"
             class="document-list__sort-direction"
-            :title="sortDirection === 'asc' ? $t('documentList.sortAscending', 'Aufsteigend sortieren') : $t('documentList.sortDescending', 'Absteigend sortieren')"
+            :title="
+              sortDirection === 'asc'
+                ? $t('documentList.sortAscending', 'Aufsteigend sortieren')
+                : $t('documentList.sortDescending', 'Absteigend sortieren')
+            "
             aria-label="Toggle Sort Direction"
           >
-            <i :class="sortDirection === 'asc' ? 'fa fa-sort-up' : 'fa fa-sort-down'"></i>
+            <i
+              :class="
+                sortDirection === 'asc' ? 'fa fa-sort-up' : 'fa fa-sort-down'
+              "
+            ></i>
           </button>
         </div>
-        
+
         <div class="document-list__search-container">
-          <label for="search-input" class="sr-only">{{ $t('documentList.search', 'Suchen') }}</label>
+          <label for="search-input" class="sr-only">{{
+            $t("documentList.search", "Suchen")
+          }}</label>
           <div class="document-list__search-input-wrapper">
             <i class="fa fa-search document-list__search-icon"></i>
             <input
               id="search-input"
               type="text"
               v-model="searchQuery"
-              :placeholder="$t('documentList.searchPlaceholder', 'Dokumente durchsuchen...')"
+              :placeholder="
+                $t('documentList.searchPlaceholder', 'Dokumente durchsuchen...')
+              "
               class="document-list__search-input"
               aria-label="Search documents"
               data-testid="search-input"
@@ -98,42 +150,52 @@
     </div>
 
     <!-- Batch Actions when multiple documents are selected -->
-    <div v-if="selectedDocuments.length > 0" class="document-list__batch-actions" data-testid="batch-actions">
+    <div
+      v-if="selectedDocuments.length > 0"
+      class="document-list__batch-actions"
+      data-testid="batch-actions"
+    >
       <div class="document-list__batch-action-buttons">
-        <button 
-          @click="downloadSelectedDocuments" 
-          class="document-list__batch-action-btn" 
+        <button
+          @click="downloadSelectedDocuments"
+          class="document-list__batch-action-btn"
           :disabled="!hasSuccessfulSelected"
         >
-          <i class="fa fa-download"></i> {{ $t('documentList.downloadSelected', 'Ausgewählte herunterladen') }}
+          <i class="fa fa-download"></i>
+          {{ $t("documentList.downloadSelected", "Ausgewählte herunterladen") }}
         </button>
-        <button 
-          @click="confirmDeleteSelected" 
+        <button
+          @click="confirmDeleteSelected"
           class="document-list__batch-action-btn document-list__batch-action-btn--danger"
         >
-          <i class="fa fa-trash"></i> {{ $t('documentList.deleteSelected', 'Ausgewählte löschen') }}
+          <i class="fa fa-trash"></i>
+          {{ $t("documentList.deleteSelected", "Ausgewählte löschen") }}
         </button>
       </div>
 
-      <button @click="clearSelection" class="document-list__clear-selection-btn">
-        <i class="fa fa-times"></i> {{ $t('documentList.clearSelection', 'Auswahl aufheben') }}
+      <button
+        @click="clearSelection"
+        class="document-list__clear-selection-btn"
+      >
+        <i class="fa fa-times"></i>
+        {{ $t("documentList.clearSelection", "Auswahl aufheben") }}
       </button>
     </div>
-    
+
     <!-- Loading state -->
-    <div 
-      v-if="loading" 
+    <div
+      v-if="loading"
       class="document-list__loading-indicator"
       role="status"
       aria-live="polite"
     >
       <div class="document-list__spinner" aria-hidden="true"></div>
-      <p>{{ $t('documentList.loading', 'Lade Dokumente...') }}</p>
+      <p>{{ $t("documentList.loading", "Lade Dokumente...") }}</p>
     </div>
-    
+
     <!-- Empty state -->
-    <div 
-      v-else-if="filteredDocuments.length === 0" 
+    <div
+      v-else-if="filteredDocuments.length === 0"
       class="document-list__empty-state"
       role="status"
       aria-live="polite"
@@ -142,20 +204,31 @@
         <i class="fa fa-file-alt"></i>
       </div>
       <p v-if="documents.length === 0" class="document-list__empty-message">
-        {{ $t('documentList.noDocuments', 'Keine Dokumente gefunden. Laden Sie Dokumente hoch, um sie zu konvertieren.') }}
+        {{
+          $t(
+            "documentList.noDocuments",
+            "Keine Dokumente gefunden. Laden Sie Dokumente hoch, um sie zu konvertieren.",
+          )
+        }}
       </p>
       <p v-else class="document-list__empty-message">
-        {{ $t('documentList.noMatchingDocuments', 'Keine Dokumente entsprechen Ihren Filterkriterien.') }}
+        {{
+          $t(
+            "documentList.noMatchingDocuments",
+            "Keine Dokumente entsprechen Ihren Filterkriterien.",
+          )
+        }}
       </p>
-      <button 
+      <button
         v-if="hasActiveFilters"
-        @click="clearFilters" 
+        @click="clearFilters"
         class="document-list__clear-filters-btn"
       >
-        <i class="fa fa-filter-slash"></i> {{ $t('documentList.clearFilters', 'Filter zurücksetzen') }}
+        <i class="fa fa-filter-slash"></i>
+        {{ $t("documentList.clearFilters", "Filter zurücksetzen") }}
       </button>
     </div>
-    
+
     <!-- Document list -->
     <ul
       v-else
@@ -171,7 +244,7 @@
         :class="{
           'document-list__item--selected': isSelected(document.id),
           [`document-list__item--${document.status}`]: true,
-          'document-list__item--swiping': swipingDocumentId === document.id
+          'document-list__item--swiping': swipingDocumentId === document.id,
         }"
         role="listitem"
         :aria-selected="isSelected(document.id)"
@@ -198,43 +271,64 @@
             data-testid="document-checkbox"
           />
         </div>
-        <div 
-          class="document-list__icon" 
+        <div
+          class="document-list__icon"
           :class="`document-list__icon--${document.originalFormat}`"
           aria-hidden="true"
         >
           <i :class="getFormatIcon(document.originalFormat)"></i>
         </div>
-        
+
         <div class="document-list__info">
           <h4 class="document-list__name">
             {{ document.originalName }}
-            <span v-if="document.metadata?.title && document.metadata.title !== document.originalName" class="document-list__title">({{ document.metadata.title }})</span>
+            <span
+              v-if="
+                document.metadata?.title &&
+                document.metadata.title !== document.originalName
+              "
+              class="document-list__title"
+              >({{ document.metadata.title }})</span
+            >
           </h4>
 
           <div class="document-list__meta">
             <span class="document-list__format">
-              <span class="document-list__meta-label" aria-hidden="true">{{ $t('documentList.format', 'Format') }}:</span>
+              <span class="document-list__meta-label" aria-hidden="true"
+                >{{ $t("documentList.format", "Format") }}:</span
+              >
               <span>{{ document.originalFormat.toUpperCase() }}</span>
             </span>
-            
+
             <span class="document-list__size">
-              <span class="document-list__meta-label" aria-hidden="true">{{ $t('documentList.size', 'Größe') }}:</span>
+              <span class="document-list__meta-label" aria-hidden="true"
+                >{{ $t("documentList.size", "Größe") }}:</span
+              >
               <span>{{ formatFileSize(document.size) }}</span>
             </span>
-            
+
             <span class="document-list__date">
-              <span class="document-list__meta-label" aria-hidden="true">{{ $t('documentList.date', 'Datum') }}:</span>
-              <span>{{ formatDate(document.convertedAt || document.uploadedAt) }}</span>
+              <span class="document-list__meta-label" aria-hidden="true"
+                >{{ $t("documentList.date", "Datum") }}:</span
+              >
+              <span>{{
+                formatDate(document.convertedAt || document.uploadedAt)
+              }}</span>
             </span>
           </div>
-          
+
           <div
             v-if="document.status"
             class="document-list__status"
             :class="`document-list__status--${document.status}`"
           >
-            <div class="document-list__metadata-tags" v-if="document.metadata?.keywords && document.metadata.keywords.length > 0">
+            <div
+              class="document-list__metadata-tags"
+              v-if="
+                document.metadata?.keywords &&
+                document.metadata.keywords.length > 0
+              "
+            >
               <span
                 v-for="(keyword, keywordIdx) in displayedKeywords(document)"
                 :key="`${document.id}-${keywordIdx}`"
@@ -242,28 +336,48 @@
               >
                 {{ keyword }}
               </span>
-              <span v-if="hasMoreKeywords(document)" class="document-list__more-keywords">
+              <span
+                v-if="hasMoreKeywords(document)"
+                class="document-list__more-keywords"
+              >
                 +{{ document.metadata.keywords.length - maxKeywords }}
               </span>
             </div>
             <span class="document-list__status-icon">
               <i :class="getStatusIcon(document.status)"></i>
             </span>
-            <span class="document-list__status-text">{{ getStatusText(document.status) }}</span>
-            
-            <span v-if="document.error" class="document-list__status-error-message">
+            <span class="document-list__status-text">{{
+              getStatusText(document.status)
+            }}</span>
+
+            <span
+              v-if="document.error"
+              class="document-list__status-error-message"
+            >
               {{ document.error }}
             </span>
           </div>
         </div>
-        
+
         <div class="document-list__actions">
           <button
             @click.stop="viewDocument(document)"
             class="document-list__action-btn"
             :disabled="document.status !== 'success'"
-            :aria-label="$t('documentList.viewDocument', { name: document.originalName }, `Dokument anzeigen: ${document.originalName}`)"
-            :title="$t('documentList.viewDocument', { name: document.originalName }, `Dokument anzeigen: ${document.originalName}`)"
+            :aria-label="
+              $t(
+                'documentList.viewDocument',
+                { name: document.originalName },
+                `Dokument anzeigen: ${document.originalName}`,
+              )
+            "
+            :title="
+              $t(
+                'documentList.viewDocument',
+                { name: document.originalName },
+                `Dokument anzeigen: ${document.originalName}`,
+              )
+            "
             data-testid="view-document-btn"
           >
             <i class="fa fa-eye" aria-hidden="true"></i>
@@ -273,8 +387,20 @@
             @click.stop="downloadDocument(document)"
             class="document-list__action-btn"
             :disabled="document.status !== 'success'"
-            :aria-label="$t('documentList.downloadDocument', { name: document.originalName }, `Dokument herunterladen: ${document.originalName}`)"
-            :title="$t('documentList.downloadDocument', { name: document.originalName }, `Dokument herunterladen: ${document.originalName}`)"
+            :aria-label="
+              $t(
+                'documentList.downloadDocument',
+                { name: document.originalName },
+                `Dokument herunterladen: ${document.originalName}`,
+              )
+            "
+            :title="
+              $t(
+                'documentList.downloadDocument',
+                { name: document.originalName },
+                `Dokument herunterladen: ${document.originalName}`,
+              )
+            "
             data-testid="download-document-btn"
           >
             <i class="fa fa-download" aria-hidden="true"></i>
@@ -301,9 +427,9 @@
                 data-testid="delete-document-btn"
               >
                 <i class="fa fa-trash" aria-hidden="true"></i>
-                {{ $t('documentList.delete', 'Löschen') }}
+                {{ $t("documentList.delete", "Löschen") }}
               </button>
-              
+
               <button
                 v-if="document.status === 'error'"
                 @click.stop="retryConversion(document)"
@@ -311,42 +437,48 @@
                 data-testid="retry-conversion-btn"
               >
                 <i class="fa fa-redo" aria-hidden="true"></i>
-                {{ $t('documentList.retry', 'Erneut versuchen') }}
+                {{ $t("documentList.retry", "Erneut versuchen") }}
               </button>
             </div>
           </div>
         </div>
       </li>
     </ul>
-    
+
     <!-- Pagination -->
-    <div 
-      v-if="totalPages > 1" 
+    <div
+      v-if="totalPages > 1"
       class="document-list__pagination"
       role="navigation"
       aria-label="Pagination controls"
     >
-      <button 
-        @click="prevPage" 
+      <button
+        @click="prevPage"
         :disabled="currentPage === 1"
         class="document-list__pagination-btn"
         aria-label="Previous page"
       >
         <i class="fa fa-chevron-left" aria-hidden="true"></i>
-        <span>{{ $t('documentList.prevPage', 'Zurück') }}</span>
+        <span>{{ $t("documentList.prevPage", "Zurück") }}</span>
       </button>
-      
+
       <span class="document-list__pagination-info" aria-live="polite">
-        {{ $t('documentList.pageInfo', { current: currentPage, total: totalPages }, `Seite ${currentPage} von ${totalPages}`) }}
+        {{
+          $t(
+            "documentList.pageInfo",
+            { current: currentPage, total: totalPages },
+            `Seite ${currentPage} von ${totalPages}`,
+          )
+        }}
       </span>
-      
-      <button 
-        @click="nextPage" 
+
+      <button
+        @click="nextPage"
         :disabled="currentPage === totalPages"
         class="document-list__pagination-btn"
         aria-label="Next page"
       >
-        <span>{{ $t('documentList.nextPage', 'Weiter') }}</span>
+        <span>{{ $t("documentList.nextPage", "Weiter") }}</span>
         <i class="fa fa-chevron-right" aria-hidden="true"></i>
       </button>
     </div>
@@ -354,11 +486,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
-import { ConversionResult, SupportedFormat } from '@/types/documentConverter';
-import { useGlobalDialog } from '@/composables/useDialog';
-import { useToasts } from '@/composables/useToast';
-import { vTouch } from '@/directives/touch-directives';
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
+import { ConversionResult, SupportedFormat } from "@/types/documentConverter";
+import { useGlobalDialog } from "@/composables/useDialog";
+import { useToasts } from "@/composables/useToast";
+import { vTouch } from "@/directives/touch-directives";
 
 // State for mobile touch gestures
 const swipingDocumentId = ref<string | null>(null);
@@ -376,16 +508,16 @@ const props = withDefaults(defineProps<Props>(), {
   documents: () => [],
   selectedDocument: null,
   loading: false,
-  supportedFormats: () => ['pdf', 'docx', 'xlsx', 'pptx', 'html', 'txt']
+  supportedFormats: () => ["pdf", "docx", "xlsx", "pptx", "html", "txt"],
 });
 
 // Event-Emitter
 const emit = defineEmits<{
-  (e: 'select', documentId: string): void;
-  (e: 'view', documentId: string): void;
-  (e: 'download', documentId: string): void;
-  (e: 'delete', documentId: string): void;
-  (e: 'retry', documentId: string): void;
+  (e: "select", documentId: string): void;
+  (e: "view", documentId: string): void;
+  (e: "download", documentId: string): void;
+  (e: "delete", documentId: string): void;
+  (e: "retry", documentId: string): void;
 }>();
 
 // Services
@@ -393,13 +525,13 @@ const dialog = useGlobalDialog();
 const toast = useToasts();
 
 // Zustandsvariablen
-const searchQuery = ref('');
-const statusFilter = ref('');
-const formatFilter = ref('');
+const searchQuery = ref("");
+const statusFilter = ref("");
+const formatFilter = ref("");
 const currentPage = ref(1);
 const itemsPerPage = ref(10);
-const sortBy = ref<'name' | 'date' | 'size' | 'format'>('date');
-const sortDirection = ref<'asc' | 'desc'>('desc');
+const sortBy = ref<"name" | "date" | "size" | "format">("date");
+const sortDirection = ref<"asc" | "desc">("desc");
 const selectedDocuments = ref<string[]>([]);
 const openActionMenuId = ref<string | null>(null);
 const maxKeywords = 3; // Maximale Anzahl anzuzeigender Keywords
@@ -408,44 +540,50 @@ const maxKeywords = 3; // Maximale Anzahl anzuzeigender Keywords
  * Gefilterte Dokumente basierend auf Suchbegriff und Filtern
  */
 const filteredDocuments = computed(() => {
-  let result = props.documents.filter(doc => {
+  let result = props.documents.filter((doc) => {
     // Suchbegriff filtern
-    const matchesSearch = !searchQuery.value ||
-      doc.originalName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      (doc.metadata?.title && doc.metadata.title.toLowerCase().includes(searchQuery.value.toLowerCase()));
+    const matchesSearch =
+      !searchQuery.value ||
+      doc.originalName
+        .toLowerCase()
+        .includes(searchQuery.value.toLowerCase()) ||
+      (doc.metadata?.title &&
+        doc.metadata.title
+          .toLowerCase()
+          .includes(searchQuery.value.toLowerCase()));
 
     // Format filtern
-    const matchesFormat = !formatFilter.value || doc.originalFormat === formatFilter.value;
+    const matchesFormat =
+      !formatFilter.value || doc.originalFormat === formatFilter.value;
 
     // Status filtern
-    const matchesStatus = !statusFilter.value || doc.status === statusFilter.value;
+    const matchesStatus =
+      !statusFilter.value || doc.status === statusFilter.value;
 
     return matchesSearch && matchesFormat && matchesStatus;
   });
-  
+
   // Sortierung anwenden
   return result.sort((a, b) => {
     let comparison = 0;
-    
+
     // Nach Eigenschaft sortieren
-    if (sortBy.value === 'name') {
+    if (sortBy.value === "name") {
       comparison = a.originalName.localeCompare(b.originalName);
-    } 
-    else if (sortBy.value === 'date') {
+    } else if (sortBy.value === "date") {
       const dateA = a.convertedAt || a.uploadedAt || new Date(0);
       const dateB = b.convertedAt || b.uploadedAt || new Date(0);
-      comparison = (dateA instanceof Date ? dateA : new Date(dateA)).getTime() - 
-                  (dateB instanceof Date ? dateB : new Date(dateB)).getTime();
-    } 
-    else if (sortBy.value === 'size') {
+      comparison =
+        (dateA instanceof Date ? dateA : new Date(dateA)).getTime() -
+        (dateB instanceof Date ? dateB : new Date(dateB)).getTime();
+    } else if (sortBy.value === "size") {
       comparison = (a.size || 0) - (b.size || 0);
-    } 
-    else if (sortBy.value === 'format') {
+    } else if (sortBy.value === "format") {
       comparison = a.originalFormat.localeCompare(b.originalFormat);
     }
-    
+
     // Sortierrichtung berücksichtigen
-    return sortDirection.value === 'asc' ? comparison : -comparison;
+    return sortDirection.value === "asc" ? comparison : -comparison;
   });
 });
 
@@ -460,7 +598,10 @@ const hasActiveFilters = computed(() => {
  * Anzahl der Seiten für die Paginierung
  */
 const totalPages = computed(() => {
-  return Math.max(1, Math.ceil(filteredDocuments.value.length / itemsPerPage.value));
+  return Math.max(
+    1,
+    Math.ceil(filteredDocuments.value.length / itemsPerPage.value),
+  );
 });
 
 /**
@@ -486,16 +627,18 @@ function toggleDocumentSelection(document: ConversionResult): void {
   const documentId = document.id;
 
   if (isSelected(documentId)) {
-    selectedDocuments.value = selectedDocuments.value.filter(id => id !== documentId);
+    selectedDocuments.value = selectedDocuments.value.filter(
+      (id) => id !== documentId,
+    );
   } else {
     selectedDocuments.value.push(documentId);
   }
 
   // Wenn ein Dokument ausgewählt ist, es auch in der übergeordneten Komponente markieren
   if (selectedDocuments.value.length === 1) {
-    emit('select', selectedDocuments.value[0]);
+    emit("select", selectedDocuments.value[0]);
   } else if (selectedDocuments.value.length === 0 && props.selectedDocument) {
-    emit('select', '');
+    emit("select", "");
   }
 }
 
@@ -503,8 +646,8 @@ function toggleDocumentSelection(document: ConversionResult): void {
  * Zeigt ein Dokument an
  */
 function viewDocument(document: ConversionResult): void {
-  if (document.status === 'success') {
-    emit('view', document.id);
+  if (document.status === "success") {
+    emit("view", document.id);
   }
 }
 
@@ -512,8 +655,8 @@ function viewDocument(document: ConversionResult): void {
  * Lädt ein Dokument herunter
  */
 function downloadDocument(document: ConversionResult): void {
-  if (document.status === 'success') {
-    emit('download', document.id);
+  if (document.status === "success") {
+    emit("download", document.id);
   }
 }
 
@@ -522,13 +665,17 @@ function downloadDocument(document: ConversionResult): void {
  */
 async function confirmDelete(document: ConversionResult): Promise<void> {
   const confirmed = await dialog.confirm({
-    title: $t('documentList.deleteConfirmTitle', 'Dokument löschen'),
-    message: $t('documentList.deleteConfirmMessage', { name: document.originalName }, `Sind Sie sicher, dass Sie das Dokument "${document.originalName}" löschen möchten?`),
-    type: 'warning',
-    confirmButtonText: $t('documentList.delete', 'Löschen'),
-    cancelButtonText: $t('documentList.cancel', 'Abbrechen')
+    title: $t("documentList.deleteConfirmTitle", "Dokument löschen"),
+    message: $t(
+      "documentList.deleteConfirmMessage",
+      { name: document.originalName },
+      `Sind Sie sicher, dass Sie das Dokument "${document.originalName}" löschen möchten?`,
+    ),
+    type: "warning",
+    confirmButtonText: $t("documentList.delete", "Löschen"),
+    cancelButtonText: $t("documentList.cancel", "Abbrechen"),
   });
-  
+
   if (confirmed) {
     deleteDocument(document);
   }
@@ -538,18 +685,20 @@ async function confirmDelete(document: ConversionResult): Promise<void> {
  * Versucht die Konvertierung eines fehlgeschlagenen Dokuments erneut
  */
 function retryConversion(document: ConversionResult): void {
-  emit('retry', document.id);
+  emit("retry", document.id);
 }
 
 /**
  * Löscht ein Dokument
  */
 function deleteDocument(document: ConversionResult): void {
-  emit('delete', document.id);
-  
+  emit("delete", document.id);
+
   // Aus der Auswahl entfernen, falls vorhanden
   if (isSelected(document.id)) {
-    selectedDocuments.value = selectedDocuments.value.filter(id => id !== document.id);
+    selectedDocuments.value = selectedDocuments.value.filter(
+      (id) => id !== document.id,
+    );
   }
 }
 
@@ -570,7 +719,10 @@ function toggleActionMenu(documentId: string): void {
 function handleClickOutside(event: MouseEvent): void {
   if (openActionMenuId.value) {
     const target = event.target as HTMLElement;
-    if (!target.closest('.document-list__action-dropdown-menu') && !target.closest('.document-list__action-dropdown-toggle')) {
+    if (
+      !target.closest(".document-list__action-dropdown-menu") &&
+      !target.closest(".document-list__action-dropdown-toggle")
+    ) {
       openActionMenuId.value = null;
     }
   }
@@ -581,7 +733,7 @@ function handleClickOutside(event: MouseEvent): void {
  */
 function clearSelection(): void {
   selectedDocuments.value = [];
-  emit('select', '');
+  emit("select", "");
 }
 
 /**
@@ -591,31 +743,58 @@ function downloadSelectedDocuments(): void {
   if (selectedDocuments.value.length === 0) return;
 
   // Für jedes ausgewählte Dokument mit Status "success" den Download auslösen
-  const successDocs = props.documents.filter(doc =>
-    selectedDocuments.value.includes(doc.id) && doc.status === 'success'
+  const successDocs = props.documents.filter(
+    (doc) =>
+      selectedDocuments.value.includes(doc.id) && doc.status === "success",
   );
 
   if (successDocs.length === 0) {
-    toast.error($t('documentList.noSuccessfulDocuments', 'Keine erfolgreich konvertierten Dokumente ausgewählt'));
+    toast.error(
+      $t(
+        "documentList.noSuccessfulDocuments",
+        "Keine erfolgreich konvertierten Dokumente ausgewählt",
+      ),
+    );
     return;
   }
 
   // Bei mehr als 5 Dokumenten Bestätigung anfordern
   if (successDocs.length > 5) {
-    dialog.confirm({
-      title: $t('documentList.bulkDownloadTitle', 'Mehrere Dokumente herunterladen'),
-      message: $t('documentList.bulkDownloadConfirm', { count: successDocs.length }, `Möchten Sie ${successDocs.length} Dokumente herunterladen?`),
-      confirmButtonText: $t('documentList.download', 'Herunterladen'),
-      cancelButtonText: $t('documentList.cancel', 'Abbrechen')
-    }).then(confirmed => {
-      if (confirmed) {
-        successDocs.forEach(doc => emit('download', doc.id));
-        toast.success($t('documentList.downloadStarted', { count: successDocs.length }, `Download von ${successDocs.length} Dokumenten gestartet`));
-      }
-    });
+    dialog
+      .confirm({
+        title: $t(
+          "documentList.bulkDownloadTitle",
+          "Mehrere Dokumente herunterladen",
+        ),
+        message: $t(
+          "documentList.bulkDownloadConfirm",
+          { count: successDocs.length },
+          `Möchten Sie ${successDocs.length} Dokumente herunterladen?`,
+        ),
+        confirmButtonText: $t("documentList.download", "Herunterladen"),
+        cancelButtonText: $t("documentList.cancel", "Abbrechen"),
+      })
+      .then((confirmed) => {
+        if (confirmed) {
+          successDocs.forEach((doc) => emit("download", doc.id));
+          toast.success(
+            $t(
+              "documentList.downloadStarted",
+              { count: successDocs.length },
+              `Download von ${successDocs.length} Dokumenten gestartet`,
+            ),
+          );
+        }
+      });
   } else {
-    successDocs.forEach(doc => emit('download', doc.id));
-    toast.success($t('documentList.downloadStarted', { count: successDocs.length }, `Download von ${successDocs.length} Dokumenten gestartet`));
+    successDocs.forEach((doc) => emit("download", doc.id));
+    toast.success(
+      $t(
+        "documentList.downloadStarted",
+        { count: successDocs.length },
+        `Download von ${successDocs.length} Dokumenten gestartet`,
+      ),
+    );
   }
 }
 
@@ -626,22 +805,32 @@ async function confirmDeleteSelected(): Promise<void> {
   if (selectedDocuments.value.length === 0) return;
 
   const confirmed = await dialog.confirm({
-    title: $t('documentList.deleteMultipleTitle', 'Mehrere Dokumente löschen'),
-    message: $t('documentList.deleteMultipleConfirm', { count: selectedDocuments.value.length }, `Sind Sie sicher, dass Sie ${selectedDocuments.value.length} Dokumente löschen möchten?`),
-    type: 'warning',
-    confirmButtonText: $t('documentList.delete', 'Löschen'),
-    cancelButtonText: $t('documentList.cancel', 'Abbrechen')
+    title: $t("documentList.deleteMultipleTitle", "Mehrere Dokumente löschen"),
+    message: $t(
+      "documentList.deleteMultipleConfirm",
+      { count: selectedDocuments.value.length },
+      `Sind Sie sicher, dass Sie ${selectedDocuments.value.length} Dokumente löschen möchten?`,
+    ),
+    type: "warning",
+    confirmButtonText: $t("documentList.delete", "Löschen"),
+    cancelButtonText: $t("documentList.cancel", "Abbrechen"),
   });
 
   if (confirmed) {
     // Kopie der ausgewählten IDs erstellen, bevor wir die Liste ändern
     const docsToDelete = [...selectedDocuments.value];
-    
+
     for (const id of docsToDelete) {
-      emit('delete', id);
+      emit("delete", id);
     }
-    
-    toast.success($t('documentList.documentsDeleted', { count: docsToDelete.length }, `${docsToDelete.length} Dokumente wurden gelöscht`));
+
+    toast.success(
+      $t(
+        "documentList.documentsDeleted",
+        { count: docsToDelete.length },
+        `${docsToDelete.length} Dokumente wurden gelöscht`,
+      ),
+    );
     selectedDocuments.value = [];
   }
 }
@@ -650,9 +839,9 @@ async function confirmDeleteSelected(): Promise<void> {
  * Leert alle Filter und setzt die Suche zurück
  */
 function clearFilters(): void {
-  searchQuery.value = '';
-  statusFilter.value = '';
-  formatFilter.value = '';
+  searchQuery.value = "";
+  statusFilter.value = "";
+  formatFilter.value = "";
   currentPage.value = 1;
 }
 
@@ -660,14 +849,14 @@ function clearFilters(): void {
  * Leert nur die Suche
  */
 function clearSearch(): void {
-  searchQuery.value = '';
+  searchQuery.value = "";
 }
 
 /**
  * Ändert die Sortierrichtung
  */
 function toggleSortDirection(): void {
-  sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+  sortDirection.value = sortDirection.value === "asc" ? "desc" : "asc";
 }
 
 /**
@@ -693,19 +882,19 @@ function nextPage(): void {
  */
 function getFormatIcon(format: string): string {
   const icons: Record<string, string> = {
-    pdf: 'fa fa-file-pdf',
-    docx: 'fa fa-file-word',
-    doc: 'fa fa-file-word',
-    xlsx: 'fa fa-file-excel',
-    xls: 'fa fa-file-excel',
-    pptx: 'fa fa-file-powerpoint',
-    ppt: 'fa fa-file-powerpoint',
-    html: 'fa fa-file-code',
-    htm: 'fa fa-file-code',
-    txt: 'fa fa-file-alt'
+    pdf: "fa fa-file-pdf",
+    docx: "fa fa-file-word",
+    doc: "fa fa-file-word",
+    xlsx: "fa fa-file-excel",
+    xls: "fa fa-file-excel",
+    pptx: "fa fa-file-powerpoint",
+    ppt: "fa fa-file-powerpoint",
+    html: "fa fa-file-code",
+    htm: "fa fa-file-code",
+    txt: "fa fa-file-alt",
   };
-  
-  return icons[format] || 'fa fa-file';
+
+  return icons[format] || "fa fa-file";
 }
 
 /**
@@ -713,44 +902,44 @@ function getFormatIcon(format: string): string {
  */
 function getStatusIcon(status: string): string {
   const icons: Record<string, string> = {
-    success: 'fa fa-check-circle',
-    error: 'fa fa-exclamation-circle',
-    pending: 'fa fa-clock',
-    processing: 'fa fa-spinner fa-spin'
+    success: "fa fa-check-circle",
+    error: "fa fa-exclamation-circle",
+    pending: "fa fa-clock",
+    processing: "fa fa-spinner fa-spin",
   };
-  
-  return icons[status] || 'fa fa-question-circle';
+
+  return icons[status] || "fa fa-question-circle";
 }
 
 /**
  * Formatiert die Dateigröße benutzerfreundlich
  */
 function formatFileSize(bytes?: number): string {
-  if (!bytes) return '0 Bytes';
-  
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  if (!bytes) return "0 Bytes";
+
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return Math.round(bytes / Math.pow(1024, i)) + ' ' + sizes[i];
+  return Math.round(bytes / Math.pow(1024, i)) + " " + sizes[i];
 }
 
 /**
  * Formatiert ein Datum benutzerfreundlich
  */
 function formatDate(timestamp?: Date | string): string {
-  if (!timestamp) return '';
-  
+  if (!timestamp) return "";
+
   const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
-  
+
   if (isNaN(date.getTime())) {
-    return '';
+    return "";
   }
-  
-  return date.toLocaleDateString('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+
+  return date.toLocaleDateString("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
@@ -759,12 +948,12 @@ function formatDate(timestamp?: Date | string): string {
  */
 function getStatusText(status: string): string {
   const statusTexts: Record<string, string> = {
-    success: $t('documentList.statusSuccess', 'Erfolgreich'),
-    error: $t('documentList.statusError', 'Fehler'),
-    pending: $t('documentList.statusPending', 'Ausstehend'),
-    processing: $t('documentList.statusProcessing', 'In Bearbeitung')
+    success: $t("documentList.statusSuccess", "Erfolgreich"),
+    error: $t("documentList.statusError", "Fehler"),
+    pending: $t("documentList.statusPending", "Ausstehend"),
+    processing: $t("documentList.statusProcessing", "In Bearbeitung"),
   };
-  
+
   return statusTexts[status] || status;
 }
 
@@ -772,10 +961,13 @@ function getStatusText(status: string): string {
  * Gibt die anzuzeigenden Keywords zurück (begrenzt auf maxKeywords)
  */
 function displayedKeywords(document: ConversionResult): string[] {
-  if (!document.metadata?.keywords || !Array.isArray(document.metadata.keywords)) {
+  if (
+    !document.metadata?.keywords ||
+    !Array.isArray(document.metadata.keywords)
+  ) {
     return [];
   }
-  
+
   return document.metadata.keywords.slice(0, maxKeywords);
 }
 
@@ -783,28 +975,35 @@ function displayedKeywords(document: ConversionResult): string[] {
  * Prüft, ob es mehr Keywords gibt als angezeigt werden
  */
 function hasMoreKeywords(document: ConversionResult): boolean {
-  return document.metadata?.keywords && 
-         Array.isArray(document.metadata.keywords) && 
-         document.metadata.keywords.length > maxKeywords;
+  return (
+    document.metadata?.keywords &&
+    Array.isArray(document.metadata.keywords) &&
+    document.metadata.keywords.length > maxKeywords
+  );
 }
 
 /**
  * Prüft, ob erfolgreiche Dokumente in der Auswahl sind
  */
 const hasSuccessfulSelected = computed(() => {
-  return props.documents.some(doc =>
-    selectedDocuments.value.includes(doc.id) && doc.status === 'success'
+  return props.documents.some(
+    (doc) =>
+      selectedDocuments.value.includes(doc.id) && doc.status === "success",
   );
 });
 
 // i18n Hilfsfunktion
-function $t(key: string, params: Record<string, any> = {}, fallback: string = key): string {
+function $t(
+  key: string,
+  params: Record<string, any> = {},
+  fallback: string = key,
+): string {
   // In einer echten Implementierung würde hier die i18n-Bibliothek verwendet werden
-  if (typeof fallback === 'string') {
+  if (typeof fallback === "string") {
     let result = fallback;
     // Parameter ersetzen
     Object.entries(params).forEach(([param, value]) => {
-      result = result.replace(new RegExp(`\\{${param}\\}`, 'g'), String(value));
+      result = result.replace(new RegExp(`\\{${param}\\}`, "g"), String(value));
     });
     return result;
   }
@@ -813,11 +1012,11 @@ function $t(key: string, params: Record<string, any> = {}, fallback: string = ke
 
 // Event-Listener für Klick außerhalb des Aktionsmenüs und Lebenszyklus-Hooks
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
+  document.addEventListener("click", handleClickOutside);
 });
 
 onBeforeUnmount(() => {
-  document.removeEventListener('click', handleClickOutside);
+  document.removeEventListener("click", handleClickOutside);
 });
 
 // Beobachter für Filter und Sortierung - Zurücksetzen der Seitennummer
@@ -826,15 +1025,18 @@ watch([searchQuery, statusFilter, formatFilter, sortBy, sortDirection], () => {
 });
 
 // Synchronisierung mit der übergeordneten Komponente
-watch(() => props.selectedDocument, (newDoc) => {
-  if (newDoc && !selectedDocuments.value.includes(newDoc.id)) {
-    // Die Auswahl im Store wurde aktualisiert, aber nicht hier
-    selectedDocuments.value = [newDoc.id];
-  } else if (!newDoc && selectedDocuments.value.length > 0) {
-    // Der Store hat keine Auswahl mehr, aber wir haben noch eine
-    selectedDocuments.value = [];
-  }
-});
+watch(
+  () => props.selectedDocument,
+  (newDoc) => {
+    if (newDoc && !selectedDocuments.value.includes(newDoc.id)) {
+      // Die Auswahl im Store wurde aktualisiert, aber nicht hier
+      selectedDocuments.value = [newDoc.id];
+    } else if (!newDoc && selectedDocuments.value.length > 0) {
+      // Der Store hat keine Auswahl mehr, aber wir haben noch eine
+      selectedDocuments.value = [];
+    }
+  },
+);
 
 /**
  * Handle swipe gestures for mobile
@@ -844,16 +1046,18 @@ watch(() => props.selectedDocument, (newDoc) => {
  * Handle left swipe on document item - trigger download action
  */
 function handleSwipeLeft(document: ConversionResult): void {
-  if (document.status === 'success') {
+  if (document.status === "success") {
     // Show download action
     swipingDocumentId.value = document.id;
 
     // Trigger download after short delay for visual feedback
     setTimeout(() => {
-      emit('download', document.id);
+      emit("download", document.id);
 
       // Toast notification
-      toast.success($t('documentList.downloadStarted', { count: 1 }, 'Download gestartet'));
+      toast.success(
+        $t("documentList.downloadStarted", { count: 1 }, "Download gestartet"),
+      );
 
       // Reset swiping state after delay
       setTimeout(() => {
@@ -1039,8 +1243,12 @@ function handleSwipeRight(document: ConversionResult): void {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .document-list__batch-action-buttons {
@@ -1158,7 +1366,9 @@ function handleSwipeRight(document: ConversionResult): void {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Document List Items */
@@ -1241,12 +1451,28 @@ function handleSwipeRight(document: ConversionResult): void {
   flex-shrink: 0;
 }
 
-.document-list__icon--pdf { background-color: #e74c3c; }
-.document-list__icon--docx, .document-list__icon--doc { background-color: #3498db; }
-.document-list__icon--xlsx, .document-list__icon--xls { background-color: #2ecc71; }
-.document-list__icon--pptx, .document-list__icon--ppt { background-color: #e67e22; }
-.document-list__icon--html, .document-list__icon--htm { background-color: #9b59b6; }
-.document-list__icon--txt { background-color: #95a5a6; }
+.document-list__icon--pdf {
+  background-color: #e74c3c;
+}
+.document-list__icon--docx,
+.document-list__icon--doc {
+  background-color: #3498db;
+}
+.document-list__icon--xlsx,
+.document-list__icon--xls {
+  background-color: #2ecc71;
+}
+.document-list__icon--pptx,
+.document-list__icon--ppt {
+  background-color: #e67e22;
+}
+.document-list__icon--html,
+.document-list__icon--htm {
+  background-color: #9b59b6;
+}
+.document-list__icon--txt {
+  background-color: #95a5a6;
+}
 
 /* Document Info */
 .document-list__info {
@@ -1708,7 +1934,11 @@ function handleSwipeRight(document: ConversionResult): void {
     bottom: 0.5rem;
     width: 30px;
     height: 44px;
-    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.8));
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(255, 255, 255, 0.8)
+    );
     pointer-events: none;
   }
 }
@@ -1746,12 +1976,18 @@ function handleSwipeRight(document: ConversionResult): void {
 }
 
 @keyframes bounce {
-  from { transform: translateY(-50%) translateX(-5px); }
-  to { transform: translateY(-50%) translateX(5px); }
+  from {
+    transform: translateY(-50%) translateX(-5px);
+  }
+  to {
+    transform: translateY(-50%) translateX(5px);
+  }
 }
 /* Swipe gesture indicator styles */
 .document-list__item--swiping {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
 }
 
@@ -1768,8 +2004,14 @@ function handleSwipeRight(document: ConversionResult): void {
 }
 
 @keyframes swipeHighlight {
-  0% { opacity: 0; }
-  50% { opacity: 1; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 </style>

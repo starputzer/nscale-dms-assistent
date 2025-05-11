@@ -1,5 +1,5 @@
 <template>
-  <div 
+  <div
     class="n-table-container"
     :class="{
       'n-table-container--responsive': responsive,
@@ -12,14 +12,24 @@
     <div v-if="loading" class="n-table-loading-overlay" aria-live="polite">
       <div class="n-table-loading-spinner">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <circle class="n-table-spinner-path" cx="12" cy="12" r="10" fill="none" stroke-width="3" />
+          <circle
+            class="n-table-spinner-path"
+            cx="12"
+            cy="12"
+            r="10"
+            fill="none"
+            stroke-width="3"
+          />
         </svg>
       </div>
       <span>{{ loadingText }}</span>
     </div>
 
     <!-- Search and actions bar -->
-    <div v-if="searchable || showActionsBar || $slots.actions" class="n-table-actions">
+    <div
+      v-if="searchable || showActionsBar || $slots.actions"
+      class="n-table-actions"
+    >
       <div v-if="searchable" class="n-table-search">
         <input
           type="text"
@@ -45,27 +55,31 @@
           'n-table--striped': striped,
           'n-table--compact': compact,
           'n-table--dense': size === 'small',
-          'n-table--relaxed': size === 'large'
+          'n-table--relaxed': size === 'large',
         }"
         :aria-busy="loading ? 'true' : 'false'"
         :aria-colcount="columns.length"
         :aria-rowcount="computedItems.length + 1"
       >
-        <caption v-if="caption" class="n-table-caption">{{ caption }}</caption>
+        <caption v-if="caption" class="n-table-caption">
+          {{
+            caption
+          }}
+        </caption>
         <thead class="n-table-header">
           <tr>
-            <th 
-              v-for="(column, idx) in columns" 
+            <th
+              v-for="(column, idx) in columns"
               :key="column.key || idx"
               :class="[
                 'n-table-th',
-                { 
+                {
                   'n-table-th--sortable': column.sortable,
                   'n-table-th--sorted': sortKey === (column.key || idx),
                   'n-table-th--align-left': column.align === 'left',
                   'n-table-th--align-center': column.align === 'center',
-                  'n-table-th--align-right': column.align === 'right'
-                }
+                  'n-table-th--align-right': column.align === 'right',
+                },
               ]"
               :style="{ width: column.width }"
               :aria-sort="getSortAriaLabel(column.key || idx)"
@@ -73,15 +87,36 @@
             >
               <div class="n-table-th-content">
                 <span>{{ column.label }}</span>
-                <span v-if="column.sortable" class="n-table-sort-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="16" height="16" v-if="sortKey === (column.key || idx) && sortDir === 'asc'">
+                <span
+                  v-if="column.sortable"
+                  class="n-table-sort-icon"
+                  aria-hidden="true"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    v-if="sortKey === (column.key || idx) && sortDir === 'asc'"
+                  >
                     <path d="M7 14l5-5 5 5H7z" fill="currentColor" />
                   </svg>
-                  <svg viewBox="0 0 24 24" width="16" height="16" v-else-if="sortKey === (column.key || idx) && sortDir === 'desc'">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    v-else-if="
+                      sortKey === (column.key || idx) && sortDir === 'desc'
+                    "
+                  >
                     <path d="M7 10l5 5 5-5H7z" fill="currentColor" />
                   </svg>
                   <svg viewBox="0 0 24 24" width="16" height="16" v-else>
-                    <path d="M7 10l5 5 5-5H7z M7 14l5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.5" />
+                    <path
+                      d="M7 10l5 5 5-5H7z M7 14l5-5 5 5"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                    />
                   </svg>
                 </span>
               </div>
@@ -92,47 +127,48 @@
           </tr>
         </thead>
         <tbody class="n-table-body">
-          <tr 
-            v-for="(item, rowIndex) in computedItems" 
+          <tr
+            v-for="(item, rowIndex) in computedItems"
             :key="item.id || rowIndex"
             class="n-table-row"
             :class="{ 'n-table-row--clickable': rowClickable }"
             @click="rowClickable ? handleRowClick(item, rowIndex) : null"
             :aria-rowindex="rowIndex + 2"
           >
-            <td 
-              v-for="(column, colIndex) in columns" 
+            <td
+              v-for="(column, colIndex) in columns"
               :key="column.key || colIndex"
               class="n-table-td"
               :class="[
-                { 
+                {
                   'n-table-td--align-left': column.align === 'left',
                   'n-table-td--align-center': column.align === 'center',
-                  'n-table-td--align-right': column.align === 'right'
-                }
+                  'n-table-td--align-right': column.align === 'right',
+                },
               ]"
               :aria-colindex="colIndex + 1"
             >
-              <slot 
-                :name="`cell(${column.key || colIndex})`" 
+              <slot
+                :name="`cell(${column.key || colIndex})`"
                 :value="getCellValue(item, column.key)"
                 :item="item"
                 :index="rowIndex"
                 :column="column"
               >
-                {{ formatCellValue(getCellValue(item, column.key), column.format) }}
+                {{
+                  formatCellValue(getCellValue(item, column.key), column.format)
+                }}
               </slot>
             </td>
             <td v-if="hasRowActions" class="n-table-td n-table-td--actions">
-              <slot 
-                name="row-actions" 
-                :item="item" 
-                :index="rowIndex"
-              ></slot>
+              <slot name="row-actions" :item="item" :index="rowIndex"></slot>
             </td>
           </tr>
           <tr v-if="computedItems.length === 0" class="n-table-empty-row">
-            <td :colspan="columns.length + (hasRowActions ? 1 : 0)" class="n-table-empty-message">
+            <td
+              :colspan="columns.length + (hasRowActions ? 1 : 0)"
+              class="n-table-empty-message"
+            >
               <slot name="empty">
                 {{ emptyText }}
               </slot>
@@ -162,10 +198,16 @@
           aria-label="Previous page"
         >
           <svg viewBox="0 0 24 24" width="16" height="16">
-            <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path
+              d="M15 18l-6-6 6-6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
           </svg>
         </button>
-        
+
         <div class="n-table-pagination-pages">
           <button
             v-for="page in visiblePages"
@@ -178,7 +220,7 @@
             {{ page }}
           </button>
         </div>
-        
+
         <button
           class="n-table-pagination-button n-table-pagination-next"
           :disabled="currentPage >= totalPages"
@@ -186,20 +228,32 @@
           aria-label="Next page"
         >
           <svg viewBox="0 0 24 24" width="16" height="16">
-            <path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path
+              d="M9 18l6-6-6-6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
           </svg>
         </button>
       </div>
-      
+
       <div v-if="pageSizeOptions.length > 0" class="n-table-pagination-size">
-        <label :id="id + '-pagesize-label'" class="n-table-pagination-size-label">Rows per page:</label>
+        <label
+          :id="id + '-pagesize-label'"
+          class="n-table-pagination-size-label"
+          >Rows per page:</label
+        >
         <select
           :aria-labelledby="id + '-pagesize-label'"
           class="n-table-pagination-size-select"
           :value="pageSize"
-          @change="e => handlePageSizeChange(Number(e.target.value))"
+          @change="(e) => handlePageSizeChange(Number(e.target.value))"
         >
-          <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
+          <option v-for="size in pageSizeOptions" :key="size" :value="size">
+            {{ size }}
+          </option>
         </select>
       </div>
     </div>
@@ -207,15 +261,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, useSlots, onMounted } from 'vue';
-import { generateUniqueId } from '../../../utils/uuidUtil';
+import { ref, computed, watch, useSlots, onMounted } from "vue";
+import { generateUniqueId } from "../../../utils/uuidUtil";
 
 /**
  * Table component for displaying data in rows and columns
  * @displayName Table
  * @example
- * <Table 
- *   :columns="[{key: 'name', label: 'Name'}, {key: 'age', label: 'Age'}]" 
+ * <Table
+ *   :columns="[{key: 'name', label: 'Name'}, {key: 'age', label: 'Age'}]"
  *   :items="[{name: 'John', age: 30}, {name: 'Jane', age: 25}]"
  * />
  */
@@ -229,7 +283,7 @@ export interface TableColumn {
   /** Column width (e.g., '100px', '20%') */
   width?: string;
   /** Text alignment in the column */
-  align?: 'left' | 'center' | 'right';
+  align?: "left" | "center" | "right";
   /** Custom formatter function or format string */
   format?: (value: any) => string | string;
 }
@@ -254,7 +308,7 @@ export interface TableProps {
   /** Whether the table is more compact */
   compact?: boolean;
   /** Size variant for the table */
-  size?: 'small' | 'medium' | 'large';
+  size?: "small" | "medium" | "large";
   /** Whether the table should be horizontally scrollable */
   scrollable?: boolean;
   /** Whether the table should be responsive */
@@ -290,15 +344,15 @@ const props = withDefaults(defineProps<TableProps>(), {
   hoverable: true,
   striped: false,
   loading: false,
-  loadingText: 'Loading data...',
-  emptyText: 'No data available',
+  loadingText: "Loading data...",
+  emptyText: "No data available",
   compact: false,
-  size: 'medium',
+  size: "medium",
   scrollable: false,
   responsive: true,
   searchable: false,
-  searchPlaceholder: 'Search...',
-  initialSearchTerm: '',
+  searchPlaceholder: "Search...",
+  initialSearchTerm: "",
   rowClickable: false,
   showActionsBar: false,
   pagination: false,
@@ -306,17 +360,17 @@ const props = withDefaults(defineProps<TableProps>(), {
   pageSize: 10,
   totalItems: 0,
   pageSizeOptions: () => [10, 25, 50, 100],
-  id: () => `n-table-${generateUniqueId()}`
+  id: () => `n-table-${generateUniqueId()}`,
 });
 
 const emit = defineEmits<{
-  (e: 'row-click', item: any, index: number): void;
-  (e: 'sort', key: string, direction: 'asc' | 'desc'): void;
-  (e: 'search', term: string): void;
-  (e: 'page-change', page: number): void;
-  (e: 'page-size-change', pageSize: number): void;
-  (e: 'update:page', page: number): void;
-  (e: 'update:pageSize', pageSize: number): void;
+  (e: "row-click", item: any, index: number): void;
+  (e: "sort", key: string, direction: "asc" | "desc"): void;
+  (e: "search", term: string): void;
+  (e: "page-change", page: number): void;
+  (e: "page-size-change", pageSize: number): void;
+  (e: "update:page", page: number): void;
+  (e: "update:pageSize", pageSize: number): void;
 }>();
 
 const slots = useSlots();
@@ -324,12 +378,12 @@ const slots = useSlots();
 // State
 const searchTerm = ref(props.initialSearchTerm);
 const sortKey = ref<string | null>(null);
-const sortDir = ref<'asc' | 'desc'>('asc');
+const sortDir = ref<"asc" | "desc">("asc");
 const currentPage = ref(props.page);
 const currentPageSize = ref(props.pageSize);
 
 // Computed values
-const hasRowActions = computed(() => !!slots['row-actions']);
+const hasRowActions = computed(() => !!slots["row-actions"]);
 
 const totalPages = computed(() => {
   if (!props.pagination || props.totalItems <= 0) return 0;
@@ -338,121 +392,132 @@ const totalPages = computed(() => {
 
 const visiblePages = computed(() => {
   if (!props.pagination || totalPages.value <= 0) return [];
-  
+
   // For small number of pages, show all
   if (totalPages.value <= 7) {
     return Array.from({ length: totalPages.value }, (_, i) => i + 1);
   }
-  
+
   // For larger number of pages, use ellipsis
   const pages = [];
   const currentPageValue = currentPage.value;
-  
+
   pages.push(1);
-  
+
   if (currentPageValue > 3) {
-    pages.push('...');
+    pages.push("...");
   }
-  
+
   // Show pages around current page
   const start = Math.max(2, currentPageValue - 1);
   const end = Math.min(totalPages.value - 1, currentPageValue + 1);
-  
+
   for (let i = start; i <= end; i++) {
     pages.push(i);
   }
-  
+
   if (currentPageValue < totalPages.value - 2) {
-    pages.push('...');
+    pages.push("...");
   }
-  
+
   pages.push(totalPages.value);
-  
+
   return pages;
 });
 
 const paginationInfoText = computed(() => {
-  if (!props.pagination || props.totalItems <= 0) return '';
-  
+  if (!props.pagination || props.totalItems <= 0) return "";
+
   const start = (currentPage.value - 1) * currentPageSize.value + 1;
   const end = Math.min(start + currentPageSize.value - 1, props.totalItems);
-  
+
   return `${start}-${end} of ${props.totalItems}`;
 });
 
 const computedItems = computed(() => {
   let items = [...props.items];
-  
+
   // Apply search if needed
   if (props.searchable && searchTerm.value) {
     const term = searchTerm.value.toLowerCase();
-    items = items.filter(item => {
-      return props.columns.some(column => {
+    items = items.filter((item) => {
+      return props.columns.some((column) => {
         const value = getCellValue(item, column.key);
         return value != null && String(value).toLowerCase().includes(term);
       });
     });
   }
-  
+
   // Apply sorting if needed
   if (sortKey.value) {
     items = [...items].sort((a, b) => {
       const aValue = getCellValue(a, sortKey.value);
       const bValue = getCellValue(b, sortKey.value);
-      
+
       // Handle nullish values
       if (aValue == null && bValue == null) return 0;
-      if (aValue == null) return sortDir.value === 'asc' ? -1 : 1;
-      if (bValue == null) return sortDir.value === 'asc' ? 1 : -1;
-      
+      if (aValue == null) return sortDir.value === "asc" ? -1 : 1;
+      if (bValue == null) return sortDir.value === "asc" ? 1 : -1;
+
       // Compare based on value type
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortDir.value === 'asc' 
-          ? aValue.localeCompare(bValue) 
+      if (typeof aValue === "string" && typeof bValue === "string") {
+        return sortDir.value === "asc"
+          ? aValue.localeCompare(bValue)
           : bValue.localeCompare(aValue);
       }
-      
+
       // Numeric comparison
-      return sortDir.value === 'asc' 
-        ? (aValue > bValue ? 1 : -1) 
-        : (bValue > aValue ? 1 : -1);
+      return sortDir.value === "asc"
+        ? aValue > bValue
+          ? 1
+          : -1
+        : bValue > aValue
+          ? 1
+          : -1;
     });
   }
-  
+
   // Apply pagination if needed
   if (props.pagination && !props.totalItems) {
     const start = (currentPage.value - 1) * currentPageSize.value;
     const end = start + currentPageSize.value;
     items = items.slice(start, end);
   }
-  
+
   return items;
 });
 
 // Methods
 function getCellValue(item: any, key: string | null): any {
   if (key === null) return null;
-  
+
   // Handle nested paths with dot notation
-  if (key.includes('.')) {
-    return key.split('.').reduce((obj, path) => {
+  if (key.includes(".")) {
+    return key.split(".").reduce((obj, path) => {
       return obj && obj[path] !== undefined ? obj[path] : null;
     }, item);
   }
-  
+
   return item[key];
 }
 
-function formatCellValue(value: any, format?: ((value: any) => string) | string): string {
-  if (value == null) return '';
-  
-  if (typeof format === 'function') {
+function formatCellValue(
+  value: any,
+  format?: ((value: any) => string) | string,
+): string {
+  if (value == null) return "";
+
+  if (typeof format === "function") {
     return format(value);
   }
-  
-  if (typeof format === 'string') {
+
+  if (typeof format === "string") {
     // Simple date formatting for ISO strings
-    if (format.includes('date') && typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+    if (
+      format.includes("date") &&
+      typeof value === "string" &&
+      /^\d{4}-\d{2}-\d{2}/.test(value)
+    ) {
       try {
         const date = new Date(value);
         return date.toLocaleDateString();
@@ -460,9 +525,9 @@ function formatCellValue(value: any, format?: ((value: any) => string) | string)
         return value;
       }
     }
-    
+
     // Number formatting
-    if (format.includes('number') && typeof value === 'number') {
+    if (format.includes("number") && typeof value === "number") {
       try {
         return value.toLocaleString();
       } catch (e) {
@@ -470,32 +535,32 @@ function formatCellValue(value: any, format?: ((value: any) => string) | string)
       }
     }
   }
-  
+
   return String(value);
 }
 
 function handleSort(key: string): void {
   if (sortKey.value === key) {
     // Toggle direction
-    sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc';
+    sortDir.value = sortDir.value === "asc" ? "desc" : "asc";
   } else {
     // New sort key
     sortKey.value = key;
-    sortDir.value = 'asc';
+    sortDir.value = "asc";
   }
-  
-  emit('sort', key, sortDir.value);
+
+  emit("sort", key, sortDir.value);
 }
 
 function getSortAriaLabel(key: string): string {
-  if (sortKey.value !== key) return 'none';
-  return sortDir.value === 'asc' ? 'ascending' : 'descending';
+  if (sortKey.value !== key) return "none";
+  return sortDir.value === "asc" ? "ascending" : "descending";
 }
 
 function handleSearch(term: string): void {
   searchTerm.value = term;
-  emit('search', term);
-  
+  emit("search", term);
+
   // Reset to first page when searching
   if (props.pagination) {
     handlePageChange(1);
@@ -504,43 +569,49 @@ function handleSearch(term: string): void {
 
 function handleRowClick(item: any, index: number): void {
   if (props.rowClickable) {
-    emit('row-click', item, index);
+    emit("row-click", item, index);
   }
 }
 
 function handlePageChange(page: number): void {
   if (page < 1 || page > totalPages.value) return;
-  
+
   currentPage.value = page;
-  emit('page-change', page);
-  emit('update:page', page);
+  emit("page-change", page);
+  emit("update:page", page);
 }
 
 function handlePageSizeChange(size: number): void {
   currentPageSize.value = size;
-  
+
   // Reset to first page when changing page size
   currentPage.value = 1;
-  
-  emit('page-size-change', size);
-  emit('update:pageSize', size);
-  emit('update:page', 1);
+
+  emit("page-size-change", size);
+  emit("update:pageSize", size);
+  emit("update:page", 1);
 }
 
 // Watchers
-watch(() => props.page, (newPage) => {
-  currentPage.value = newPage;
-});
+watch(
+  () => props.page,
+  (newPage) => {
+    currentPage.value = newPage;
+  },
+);
 
-watch(() => props.pageSize, (newSize) => {
-  currentPageSize.value = newSize;
-});
+watch(
+  () => props.pageSize,
+  (newSize) => {
+    currentPageSize.value = newSize;
+  },
+);
 
 // Lifecycle
 onMounted(() => {
   // Initialize with first sortable column if available
-  if (props.columns.some(col => col.sortable)) {
-    const firstSortableColumn = props.columns.find(col => col.sortable);
+  if (props.columns.some((col) => col.sortable)) {
+    const firstSortableColumn = props.columns.find((col) => col.sortable);
     if (firstSortableColumn) {
       sortKey.value = firstSortableColumn.key;
     }
@@ -561,7 +632,7 @@ onMounted(() => {
   --n-table-pagination-active-bg: var(--nscale-primary);
   --n-table-pagination-active-text: var(--nscale-white);
   --n-table-pagination-hover-bg: var(--nscale-gray-100);
-  
+
   width: 100%;
   position: relative;
   margin-bottom: var(--nscale-space-6);
@@ -583,15 +654,15 @@ onMounted(() => {
     .n-table {
       display: block;
     }
-    
+
     .n-table-header {
       display: none;
     }
-    
+
     .n-table-body {
       display: block;
     }
-    
+
     .n-table-row {
       display: block;
       margin-bottom: var(--nscale-space-4);
@@ -599,7 +670,7 @@ onMounted(() => {
       border-radius: var(--nscale-border-radius-md);
       padding: var(--nscale-space-2);
     }
-    
+
     .n-table-td {
       display: flex;
       justify-content: space-between;
@@ -609,22 +680,22 @@ onMounted(() => {
       border: none;
       border-bottom: 1px solid var(--n-table-border-color);
     }
-    
+
     .n-table-td:before {
       content: attr(data-label);
       font-weight: var(--nscale-font-weight-semibold);
       margin-right: var(--nscale-space-4);
       text-align: left;
     }
-    
+
     .n-table-td:last-child {
       border-bottom: none;
     }
-    
+
     .n-table-td--actions {
       justify-content: flex-end;
     }
-    
+
     .n-table-td--actions:before {
       display: none;
     }

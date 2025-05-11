@@ -3,9 +3,9 @@
  */
 
 export interface FontSettings {
-  size: 'small' | 'medium' | 'large' | 'extra-large';
-  family: 'system' | 'serif' | 'sans-serif' | 'monospace';
-  lineHeight: 'compact' | 'normal' | 'relaxed';
+  size: "small" | "medium" | "large" | "extra-large";
+  family: "system" | "serif" | "sans-serif" | "monospace";
+  lineHeight: "compact" | "normal" | "relaxed";
 }
 
 export interface ColorTheme {

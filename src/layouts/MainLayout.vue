@@ -1,10 +1,10 @@
 <template>
   <div class="main-layout">
     <HeaderComponent />
-    
+
     <div class="main-content">
       <SidebarComponent />
-      
+
       <div class="content-area">
         <router-view />
       </div>
@@ -13,23 +13,23 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useStore } from 'vuex';
-import HeaderComponent from '@/components/HeaderComponent.vue';
-import SidebarComponent from '@/components/SidebarComponent.vue';
+import { onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useStore } from "vuex";
+import HeaderComponent from "@/components/HeaderComponent.vue";
+import SidebarComponent from "@/components/SidebarComponent.vue";
 
 const store = useStore();
 const router = useRouter();
 
 onMounted(() => {
-  const isAuthenticated = store.getters['auth/isAuthenticated'];
-  
+  const isAuthenticated = store.getters["auth/isAuthenticated"];
+
   if (!isAuthenticated) {
-    router.push('/login');
+    router.push("/login");
   } else {
     // Load sessions when layout is mounted
-    store.dispatch('sessions/fetchSessions');
+    store.dispatch("sessions/fetchSessions");
   }
 });
 </script>

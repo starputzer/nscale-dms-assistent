@@ -1,22 +1,29 @@
 <template>
-  <nav 
-    class="n-navigation-bar" 
-    :class="{ 
+  <nav
+    class="n-navigation-bar"
+    :class="{
       'n-navigation-bar--condensed': condensed,
       'n-navigation-bar--bordered': bordered,
-      'n-navigation-bar--elevated': elevated 
+      'n-navigation-bar--elevated': elevated,
     }"
   >
     <div class="n-navigation-bar__left">
       <!-- Toggle Sidebar Button -->
-      <button 
-        v-if="showSidebarToggle" 
-        class="n-navigation-bar__toggle-btn" 
+      <button
+        v-if="showSidebarToggle"
+        class="n-navigation-bar__toggle-btn"
         type="button"
         aria-label="Toggle Sidebar"
         @click="onSidebarToggle"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <line x1="3" y1="12" x2="21" y2="12"></line>
           <line x1="3" y1="6" x2="21" y2="6"></line>
           <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -26,9 +33,18 @@
       <!-- Logo -->
       <div class="n-navigation-bar__logo">
         <slot name="logo">
-          <img v-if="logo" :src="logo" :alt="logoAlt || title" class="n-navigation-bar__logo-img" />
+          <img
+            v-if="logo"
+            :src="logo"
+            :alt="logoAlt || title"
+            class="n-navigation-bar__logo-img"
+          />
           <template v-else>
-            <img src="/images/senmvku-logo.png" alt="nscale Logo" class="n-navigation-bar__logo-img" />
+            <img
+              src="/images/senmvku-logo.png"
+              alt="nscale Logo"
+              class="n-navigation-bar__logo-img"
+            />
           </template>
         </slot>
       </div>
@@ -51,37 +67,68 @@
         <div class="n-navigation-bar__actions">
           <slot name="actions">
             <template v-if="isAuthenticated">
-              <button 
-                class="n-navigation-bar__action-button n-navigation-bar__action-button--primary" 
-                @click="$emit('new-chat')" 
+              <button
+                class="n-navigation-bar__action-button n-navigation-bar__action-button--primary"
+                @click="$emit('new-chat')"
                 title="Neue Unterhaltung"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="n-navigation-bar__action-icon">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="n-navigation-bar__action-icon"
+                >
                   <line x1="12" y1="5" x2="12" y2="19"></line>
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
-                <span class="n-navigation-bar__action-text">Neue Unterhaltung</span>
+                <span class="n-navigation-bar__action-text"
+                  >Neue Unterhaltung</span
+                >
               </button>
-              
-              <button 
-                v-if="userRole === 'admin'" 
-                class="n-navigation-bar__action-button" 
-                @click="toggleAdminView" 
+
+              <button
+                v-if="userRole === 'admin'"
+                class="n-navigation-bar__action-button"
+                @click="toggleAdminView"
                 title="Administration"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="n-navigation-bar__action-icon">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="n-navigation-bar__action-icon"
+                >
                   <circle cx="12" cy="12" r="3"></circle>
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                  <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                  ></path>
                 </svg>
-                <span class="n-navigation-bar__action-text">Administration</span>
+                <span class="n-navigation-bar__action-text"
+                  >Administration</span
+                >
               </button>
-              
-              <button 
-                class="n-navigation-bar__action-button n-navigation-bar__action-button--icon-only" 
-                @click="toggleTheme" 
+
+              <button
+                class="n-navigation-bar__action-button n-navigation-bar__action-button--icon-only"
+                @click="toggleTheme"
                 title="Theme wechseln"
               >
-                <svg v-if="isDarkTheme" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="n-navigation-bar__action-icon">
+                <svg
+                  v-if="isDarkTheme"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="n-navigation-bar__action-icon"
+                >
                   <circle cx="12" cy="12" r="5"></circle>
                   <line x1="12" y1="1" x2="12" y2="3"></line>
                   <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -92,17 +139,36 @@
                   <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
                   <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
                 </svg>
-                <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="n-navigation-bar__action-icon">
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                <svg
+                  v-else
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="n-navigation-bar__action-icon"
+                >
+                  <path
+                    d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
+                  ></path>
                 </svg>
               </button>
-              
-              <button 
-                class="n-navigation-bar__action-button" 
-                @click="$emit('logout')" 
+
+              <button
+                class="n-navigation-bar__action-button"
+                @click="$emit('logout')"
                 title="Abmelden"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="n-navigation-bar__action-icon">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="n-navigation-bar__action-icon"
+                >
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                   <polyline points="16 17 21 12 16 7"></polyline>
                   <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -118,8 +184,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useSettingsStore } from '../stores/settings';
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useSettingsStore } from "../stores/settings";
 
 export interface NavigationBarProps {
   /** Titel in der Navigationsleiste */
@@ -145,25 +211,25 @@ export interface NavigationBarProps {
 }
 
 const props = withDefaults(defineProps<NavigationBarProps>(), {
-  title: 'nscale DMS Assistent',
+  title: "nscale DMS Assistent",
   condensed: false,
   bordered: true,
   elevated: false,
   showTitle: true,
   showSidebarToggle: true,
   isAuthenticated: true,
-  userRole: ''
+  userRole: "",
 });
 
 const emit = defineEmits<{
   /** Wird ausgelöst, wenn der Sidebar-Toggle geklickt wird */
-  (e: 'sidebar-toggle'): void;
+  (e: "sidebar-toggle"): void;
   /** Wird ausgelöst, wenn der Abmelden-Button geklickt wird */
-  (e: 'logout'): void;
+  (e: "logout"): void;
   /** Wird ausgelöst, wenn eine neue Unterhaltung gestartet werden soll */
-  (e: 'new-chat'): void;
+  (e: "new-chat"): void;
   /** Wird ausgelöst, wenn die Admin-Ansicht umgeschaltet werden soll */
-  (e: 'toggle-admin'): void;
+  (e: "toggle-admin"): void;
 }>();
 
 // Store
@@ -183,15 +249,15 @@ function toggleTheme() {
  * Löst das Sidebar-Toggle-Event aus
  */
 function onSidebarToggle() {
-  emit('sidebar-toggle');
+  emit("sidebar-toggle");
 }
 
 /**
  * Schaltet die Admin-Ansicht um
  */
 function toggleAdminView() {
-  if (props.userRole === 'admin') {
-    emit('toggle-admin');
+  if (props.userRole === "admin") {
+    emit("toggle-admin");
   }
 }
 </script>
@@ -208,7 +274,9 @@ function toggleAdminView() {
   width: 100%;
   box-sizing: border-box;
   z-index: var(--n-navigation-bar-z-index, 100);
-  transition: height 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    height 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .n-navigation-bar--condensed {
@@ -255,7 +323,10 @@ function toggleAdminView() {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: var(--n-navigation-bar-icon-color, var(--n-text-color-primary, #2d3748));
+  color: var(
+    --n-navigation-bar-icon-color,
+    var(--n-text-color-primary, #2d3748)
+  );
   border-radius: var(--n-border-radius-md, 4px);
   margin-right: var(--n-spacing-md, 16px);
   transition: background-color 0.2s ease;
@@ -294,7 +365,10 @@ function toggleAdminView() {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: var(--n-navigation-bar-title-color, var(--n-text-color-primary, #2d3748));
+  color: var(
+    --n-navigation-bar-title-color,
+    var(--n-text-color-primary, #2d3748)
+  );
 }
 
 .n-navigation-bar--condensed .n-navigation-bar__title {
@@ -320,7 +394,9 @@ function toggleAdminView() {
   font-size: var(--n-font-size-sm, 0.875rem);
   font-weight: var(--n-font-weight-medium, 500);
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease;
   white-space: nowrap;
 }
 
@@ -367,19 +443,19 @@ function toggleAdminView() {
   .n-navigation-bar {
     padding: 0 var(--n-spacing-sm, 8px);
   }
-  
+
   .n-navigation-bar__title {
     max-width: 160px;
   }
-  
+
   .n-navigation-bar__center {
     display: none;
   }
-  
+
   .n-navigation-bar__action-text {
     display: none;
   }
-  
+
   .n-navigation-bar__action-button {
     width: 36px;
     padding: 0;
@@ -390,13 +466,13 @@ function toggleAdminView() {
   .n-navigation-bar__title {
     max-width: 100px;
   }
-  
+
   .n-navigation-bar__toggle-btn {
     width: 36px;
     height: 36px;
     margin-right: var(--n-spacing-sm, 8px);
   }
-  
+
   .n-navigation-bar__logo-img {
     height: 24px;
     max-width: 80px;

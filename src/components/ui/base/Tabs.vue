@@ -1,17 +1,17 @@
 <template>
-  <div 
-    class="n-tabs" 
+  <div
+    class="n-tabs"
     :class="[
       `n-tabs--${variant}`,
       {
         'n-tabs--vertical': vertical,
         'n-tabs--stretch': stretch,
-        'n-tabs--animated': animated
-      }
+        'n-tabs--animated': animated,
+      },
     ]"
   >
     <!-- Tab headers -->
-    <div 
+    <div
       class="n-tabs__nav"
       role="tablist"
       :aria-orientation="vertical ? 'vertical' : 'horizontal'"
@@ -23,7 +23,7 @@
         class="n-tabs__tab"
         :class="{
           'n-tabs__tab--active': activeIndex === index,
-          'n-tabs__tab--disabled': tab.disabled
+          'n-tabs__tab--disabled': tab.disabled,
         }"
         role="tab"
         :aria-selected="activeIndex === index ? 'true' : 'false'"
@@ -40,21 +40,27 @@
         @keydown.end.prevent="focusLastTab"
       >
         <div class="n-tabs__tab-inner">
-          <component 
-            v-if="tab.icon" 
-            :is="tab.icon" 
+          <component
+            v-if="tab.icon"
+            :is="tab.icon"
             class="n-tabs__tab-icon"
             :class="{ 'n-tabs__tab-icon--only': !tab.label }"
           />
-          <span v-if="tab.label" class="n-tabs__tab-label">{{ tab.label }}</span>
+          <span v-if="tab.label" class="n-tabs__tab-label">{{
+            tab.label
+          }}</span>
           <span v-if="tab.badge" class="n-tabs__tab-badge">
             <Badge :value="tab.badge" size="small" />
           </span>
         </div>
-        <div v-if="showIndicator" class="n-tabs__indicator" :style="indicatorStyles"></div>
+        <div
+          v-if="showIndicator"
+          class="n-tabs__indicator"
+          :style="indicatorStyles"
+        ></div>
       </button>
     </div>
-    
+
     <!-- Tab panels -->
     <div class="n-tabs__content">
       <div
@@ -63,37 +69,33 @@
         :id="`${tabsId}-panel-${index}`"
         class="n-tabs__panel"
         :class="{
-          'n-tabs__panel--active': activeIndex === index
+          'n-tabs__panel--active': activeIndex === index,
         }"
         role="tabpanel"
         :aria-labelledby="`${tabsId}-tab-${index}`"
         :tabindex="0"
         v-show="activeIndex === index || !lazy"
       >
-        <component 
+        <component
           :is="tab.component"
           v-if="tab.component && (!lazy || activeIndex === index)"
           v-bind="tab.props || {}"
         />
-        <slot 
-          v-else-if="$slots[`tab-${index}`]" 
+        <slot
+          v-else-if="$slots[`tab-${index}`]"
           :name="`tab-${index}`"
           :tab="tab"
           :index="index"
         />
-        <slot 
-          v-else-if="$slots.default" 
-          :tab="tab"
-          :index="index"
-        />
+        <slot v-else-if="$slots.default" :tab="tab" :index="index" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, useSlots, watch, nextTick } from 'vue';
-import { Badge } from './';
+import { ref, computed, onMounted, useSlots, watch, nextTick } from "vue";
+import { Badge } from "./";
 
 /**
  * Tab item interface
@@ -132,7 +134,7 @@ export interface TabsProps {
   /** Default active tab index when not using v-model */
   defaultTab?: number;
   /** Variant style */
-  variant?: 'default' | 'pills' | 'underline' | 'minimal';
+  variant?: "default" | "pills" | "underline" | "minimal";
   /** Whether to show tabs vertically */
   vertical?: boolean;
   /** Whether to stretch tabs to full width */
@@ -150,34 +152,39 @@ export interface TabsProps {
 const props = withDefaults(defineProps<TabsProps>(), {
   modelValue: undefined,
   defaultTab: 0,
-  variant: 'default',
+  variant: "default",
   vertical: false,
   stretch: false,
   animated: true,
   lazy: true,
   showIndicator: true,
-  id: undefined
+  id: undefined,
 });
 
 const slots = useSlots();
 
 // Generate a unique ID for this tabs instance
-const tabsId = computed(() => props.id || `n-tabs-${Math.random().toString(36).substring(2, 9)}`);
+const tabsId = computed(
+  () => props.id || `n-tabs-${Math.random().toString(36).substring(2, 9)}`,
+);
 
 // Active tab state, controlled or uncontrolled
 const activeIndexInternal = ref(props.defaultTab);
 const activeIndex = computed({
-  get: () => props.modelValue !== undefined ? props.modelValue : activeIndexInternal.value,
+  get: () =>
+    props.modelValue !== undefined
+      ? props.modelValue
+      : activeIndexInternal.value,
   set: (value) => {
     if (props.modelValue !== undefined) {
       // When using v-model, emit event
-      emit('update:modelValue', value);
+      emit("update:modelValue", value);
     } else {
       // When not using v-model, update internal state
       activeIndexInternal.value = value;
     }
-    emit('change', value, props.tabs[value]);
-  }
+    emit("change", value, props.tabs[value]);
+  },
 });
 
 // Indicator styles (for animated indicator)
@@ -189,7 +196,7 @@ const indicatorStyles = computed(() => {
 // Select a tab
 function selectTab(index: number) {
   if (props.tabs[index]?.disabled) return;
-  
+
   activeIndex.value = index;
   nextTick(() => {
     // Focus the selected tab for accessibility
@@ -203,14 +210,16 @@ function selectTab(index: number) {
 // Focus the next tab (for keyboard navigation)
 function focusNextTab(currentIndex: number) {
   let nextIndex = currentIndex;
-  
+
   do {
     nextIndex = (nextIndex + 1) % props.tabs.length;
     // Avoid infinite loop if all tabs are disabled
     if (nextIndex === currentIndex) break;
   } while (props.tabs[nextIndex]?.disabled);
-  
-  const tabElement = document.getElementById(`${tabsId.value}-tab-${nextIndex}`);
+
+  const tabElement = document.getElementById(
+    `${tabsId.value}-tab-${nextIndex}`,
+  );
   if (tabElement) {
     tabElement.focus();
   }
@@ -219,14 +228,16 @@ function focusNextTab(currentIndex: number) {
 // Focus the previous tab (for keyboard navigation)
 function focusPrevTab(currentIndex: number) {
   let prevIndex = currentIndex;
-  
+
   do {
     prevIndex = (prevIndex - 1 + props.tabs.length) % props.tabs.length;
     // Avoid infinite loop if all tabs are disabled
     if (prevIndex === currentIndex) break;
   } while (props.tabs[prevIndex]?.disabled);
-  
-  const tabElement = document.getElementById(`${tabsId.value}-tab-${prevIndex}`);
+
+  const tabElement = document.getElementById(
+    `${tabsId.value}-tab-${prevIndex}`,
+  );
   if (tabElement) {
     tabElement.focus();
   }
@@ -259,17 +270,20 @@ function focusLastTab() {
 }
 
 // Watch for tab changes
-watch(() => props.tabs.length, (newLength, oldLength) => {
-  // If active tab is removed, select first available tab
-  if (activeIndex.value >= newLength) {
-    selectTab(Math.max(0, newLength - 1));
-  }
-});
+watch(
+  () => props.tabs.length,
+  (newLength, oldLength) => {
+    // If active tab is removed, select first available tab
+    if (activeIndex.value >= newLength) {
+      selectTab(Math.max(0, newLength - 1));
+    }
+  },
+);
 
 // Emit events
 const emit = defineEmits<{
-  (e: 'update:modelValue', index: number): void;
-  (e: 'change', index: number, tab: TabItem): void;
+  (e: "update:modelValue", index: number): void;
+  (e: "change", index: number, tab: TabItem): void;
 }>();
 </script>
 
@@ -278,7 +292,15 @@ const emit = defineEmits<{
   /* Base styles */
   display: flex;
   flex-direction: column;
-  font-family: var(--n-font-family, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-family: var(
+    --n-font-family,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif
+  );
   width: 100%;
 }
 
@@ -385,7 +407,7 @@ const emit = defineEmits<{
 
 /* Style when not using animation */
 .n-tabs:not(.n-tabs--animated) .n-tabs__tab--active::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -1px;
   left: 0;
@@ -461,7 +483,8 @@ const emit = defineEmits<{
   color: var(--n-color-white, #ffffff);
 }
 
-.n-tabs--pills .n-tabs__tab:hover:not(.n-tabs__tab--active):not(.n-tabs__tab--disabled) {
+.n-tabs--pills
+  .n-tabs__tab:hover:not(.n-tabs__tab--active):not(.n-tabs__tab--disabled) {
   background-color: var(--n-color-primary-light, #e6f0f9);
 }
 
@@ -531,7 +554,8 @@ const emit = defineEmits<{
     color: var(--n-color-white, #ffffff);
   }
 
-  .n-tabs--pills .n-tabs__tab:hover:not(.n-tabs__tab--active):not(.n-tabs__tab--disabled) {
+  .n-tabs--pills
+    .n-tabs__tab:hover:not(.n-tabs__tab--active):not(.n-tabs__tab--disabled) {
     background-color: var(--n-color-gray-700, #2d3748);
   }
 

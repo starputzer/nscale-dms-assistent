@@ -1,60 +1,37 @@
 <template>
   <div class="base-components-demo">
     <h1>Basis-UI-Komponenten Demo</h1>
-    
+
     <section>
       <h2>Buttons</h2>
       <div class="demo-grid">
-        <div v-for="variant in buttonVariants" :key="`btn-${variant}`" class="demo-item">
+        <div
+          v-for="variant in buttonVariants"
+          :key="`btn-${variant}`"
+          class="demo-item"
+        >
           <h3>{{ variant }}</h3>
           <div class="button-row">
-            <Button 
-              :variant="variant" 
-              size="small"
-            >
-              Small
-            </Button>
-            
-            <Button 
-              :variant="variant"
-            >
-              Medium
-            </Button>
-            
-            <Button 
-              :variant="variant" 
-              size="large"
-            >
-              Large
-            </Button>
+            <Button :variant="variant" size="small"> Small </Button>
+
+            <Button :variant="variant"> Medium </Button>
+
+            <Button :variant="variant" size="large"> Large </Button>
           </div>
-          
+
           <div class="button-row">
-            <Button 
-              :variant="variant" 
-              :loading="true"
-            >
-              Loading
-            </Button>
-            
-            <Button 
-              :variant="variant" 
-              disabled
-            >
-              Disabled
-            </Button>
-            
-            <Button 
-              :variant="variant" 
-              :iconLeft="iconSearch"
-            >
+            <Button :variant="variant" :loading="true"> Loading </Button>
+
+            <Button :variant="variant" disabled> Disabled </Button>
+
+            <Button :variant="variant" :iconLeft="iconSearch">
               With Icon
             </Button>
           </div>
         </div>
       </div>
     </section>
-    
+
     <section>
       <h2>Inputs</h2>
       <div class="demo-grid">
@@ -66,7 +43,7 @@
             helperText="This is a standard text input"
           />
         </div>
-        
+
         <div class="demo-item">
           <Input
             v-model="passwordInput"
@@ -75,7 +52,7 @@
             placeholder="Enter your password"
           />
         </div>
-        
+
         <div class="demo-item">
           <Input
             v-model="errorInput"
@@ -83,7 +60,7 @@
             error="This field has an error"
           />
         </div>
-        
+
         <div class="demo-item">
           <Input
             v-model="disabledInput"
@@ -94,15 +71,16 @@
         </div>
       </div>
     </section>
-    
+
     <section>
       <h2>Cards</h2>
       <div class="demo-grid">
-        <div v-for="variant in cardVariants" :key="`card-${variant}`" class="demo-item">
-          <Card 
-            :title="`${variant} Card`" 
-            :variant="variant"
-          >
+        <div
+          v-for="variant in cardVariants"
+          :key="`card-${variant}`"
+          class="demo-item"
+        >
+          <Card :title="`${variant} Card`" :variant="variant">
             <p>This is a {{ variant }} card example with some content.</p>
             <template #footer>
               <Button size="small" variant="tertiary">Cancel</Button>
@@ -110,23 +88,30 @@
             </template>
           </Card>
         </div>
-        
+
         <div class="demo-item">
-          <Card 
-            title="Interactive Card" 
+          <Card
+            title="Interactive Card"
             :interactive="true"
             @click="showAlert('Card clicked!')"
           >
-            <p>This card is interactive. Click anywhere on it to trigger an action.</p>
+            <p>
+              This card is interactive. Click anywhere on it to trigger an
+              action.
+            </p>
           </Card>
         </div>
       </div>
     </section>
-    
+
     <section>
       <h2>Alerts</h2>
       <div class="demo-stacked">
-        <div v-for="type in alertTypes" :key="`alert-${type}`" class="demo-item">
+        <div
+          v-for="type in alertTypes"
+          :key="`alert-${type}`"
+          class="demo-item"
+        >
           <Alert
             :type="type"
             :title="`${type} Alert`"
@@ -136,15 +121,17 @@
         </div>
       </div>
     </section>
-    
+
     <section>
       <h2>Modals</h2>
       <div class="demo-grid">
-        <div v-for="size in modalSizes" :key="`modal-${size}`" class="demo-item">
-          <Button @click="openModal(size)">
-            Open {{ size }} Modal
-          </Button>
-          
+        <div
+          v-for="size in modalSizes"
+          :key="`modal-${size}`"
+          class="demo-item"
+        >
+          <Button @click="openModal(size)"> Open {{ size }} Modal </Button>
+
           <Modal
             :open="openModals[size]"
             :title="`${size} Modal`"
@@ -152,11 +139,18 @@
             @close="closeModal(size)"
           >
             <p>This is a {{ size }} modal with some content.</p>
-            <p>Modals are useful for displaying focused content that requires user attention or interaction.</p>
-            
+            <p>
+              Modals are useful for displaying focused content that requires
+              user attention or interaction.
+            </p>
+
             <template #footer>
-              <Button variant="secondary" @click="closeModal(size)">Cancel</Button>
-              <Button variant="primary" @click="confirmModal(size)">Confirm</Button>
+              <Button variant="secondary" @click="closeModal(size)"
+                >Cancel</Button
+              >
+              <Button variant="primary" @click="confirmModal(size)"
+                >Confirm</Button
+              >
             </template>
           </Modal>
         </div>
@@ -166,11 +160,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
-import { Button, Input, Card, Alert, Modal } from '@/components/ui/base';
+import { ref, reactive } from "vue";
+import { Button, Input, Card, Alert, Modal } from "@/components/ui/base";
 
 // Button demo data
-const buttonVariants = ['primary', 'secondary', 'tertiary', 'danger', 'ghost'];
+const buttonVariants = ["primary", "secondary", "tertiary", "danger", "ghost"];
 
 // Mock icon component for demonstration
 const iconSearch = {
@@ -178,28 +172,28 @@ const iconSearch = {
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
       <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
     </svg>
-  `
+  `,
 };
 
 // Input demo data
-const textInput = ref('');
-const passwordInput = ref('');
-const errorInput = ref('Invalid input');
-const disabledInput = ref('Disabled value');
+const textInput = ref("");
+const passwordInput = ref("");
+const errorInput = ref("Invalid input");
+const disabledInput = ref("Disabled value");
 
 // Card demo data
-const cardVariants = ['default', 'elevated', 'bordered', 'flat'];
+const cardVariants = ["default", "elevated", "bordered", "flat"];
 
 // Alert demo data
-const alertTypes = ['info', 'success', 'warning', 'error'];
+const alertTypes = ["info", "success", "warning", "error"];
 
 // Modal demo data
-const modalSizes = ['small', 'medium', 'large', 'full'];
+const modalSizes = ["small", "medium", "large", "full"];
 const openModals = reactive({
   small: false,
   medium: false,
   large: false,
-  full: false
+  full: false,
 });
 
 // Modal functions
@@ -227,7 +221,15 @@ function showAlert(message: string) {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
-  font-family: var(--n-font-family, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-family: var(
+    --n-font-family,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif
+  );
 }
 
 section {

@@ -1,7 +1,7 @@
 <template>
   <div class="feedback-examples">
     <h1>Feedback Component Examples</h1>
-    
+
     <section>
       <h2>Toast Examples</h2>
       <div class="button-group">
@@ -12,7 +12,7 @@
         <button @click="showToastWithAction">Toast with Action</button>
       </div>
     </section>
-    
+
     <section>
       <h2>Dialog Examples</h2>
       <div class="button-group">
@@ -22,54 +22,56 @@
         <button @click="showCustomDialog">Custom Dialog</button>
       </div>
     </section>
-    
+
     <section>
       <h2>Progress Indicator Examples</h2>
       <div class="examples-grid">
         <div class="example-card">
           <h3>Linear Progress (Determinate)</h3>
-          <ProgressIndicator 
-            type="linear" 
-            :value="progressValue" 
-            :max="100" 
+          <ProgressIndicator
+            type="linear"
+            :value="progressValue"
+            :max="100"
             show-label
           />
           <button @click="incrementProgress">Increment Progress</button>
         </div>
-        
+
         <div class="example-card">
           <h3>Linear Progress (Indeterminate)</h3>
           <ProgressIndicator type="linear" indeterminate />
         </div>
-        
+
         <div class="example-card">
           <h3>Circular Progress</h3>
-          <ProgressIndicator 
-            type="circular" 
-            :value="progressValue" 
+          <ProgressIndicator
+            type="circular"
+            :value="progressValue"
             :max="100"
             size="large"
             show-label
           />
         </div>
-        
+
         <div class="example-card">
           <h3>Segmented Progress</h3>
-          <ProgressIndicator 
-            type="segmented" 
-            :value="currentStep" 
-            :max="5" 
+          <ProgressIndicator
+            type="segmented"
+            :value="currentStep"
+            :max="5"
             :segments="5"
             show-label
           />
           <div class="button-group">
-            <button @click="prevStep" :disabled="currentStep <= 0">Previous</button>
+            <button @click="prevStep" :disabled="currentStep <= 0">
+              Previous
+            </button>
             <button @click="nextStep" :disabled="currentStep >= 5">Next</button>
           </div>
         </div>
       </div>
     </section>
-    
+
     <section>
       <h2>Notification Examples</h2>
       <div class="button-group">
@@ -80,14 +82,14 @@
         <button @click="addGroupedNotifications">Add Multiple (Group)</button>
       </div>
     </section>
-    
+
     <section>
       <h2>Loading Overlay Examples</h2>
       <div class="button-group">
         <button @click="showGlobalLoading">Global Loading (3s)</button>
         <button @click="showLocalLoading">Component Loading (3s)</button>
       </div>
-      
+
       <div class="example-container" ref="loadingContainer">
         <div v-if="localContentReady" class="example-content">
           <h3>Component with Local Loading Overlay</h3>
@@ -97,25 +99,35 @@
       </div>
     </section>
   </div>
-  
+
   <!-- Include all our feedback components -->
   <Toast />
   <Dialog />
   <Notification />
-  
+
   <!-- Global loading overlay -->
-  <LoadingOverlay 
-    v-model="isGlobalLoading" 
-    fullscreen 
+  <LoadingOverlay
+    v-model="isGlobalLoading"
+    fullscreen
     text="Loading..."
     spinner-size="large"
   />
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Toast, Dialog, ProgressIndicator, Notification, LoadingOverlay } from '../src/components/ui';
-import { toastService, dialogService, notificationService } from '../src/services/ui';
+import { ref } from "vue";
+import {
+  Toast,
+  Dialog,
+  ProgressIndicator,
+  Notification,
+  LoadingOverlay,
+} from "../src/components/ui";
+import {
+  toastService,
+  dialogService,
+  notificationService,
+} from "../src/services/ui";
 
 // Progress indicator state
 const progressValue = ref(25);
@@ -139,69 +151,69 @@ const prevStep = () => {
 
 // Toast examples
 const showSuccessToast = () => {
-  toastService.success('Operation completed successfully!');
+  toastService.success("Operation completed successfully!");
 };
 
 const showErrorToast = () => {
-  toastService.error('An error occurred while processing your request.');
+  toastService.error("An error occurred while processing your request.");
 };
 
 const showWarningToast = () => {
-  toastService.warning('Please review your changes before continuing.', {
-    duration: 5000
+  toastService.warning("Please review your changes before continuing.", {
+    duration: 5000,
   });
 };
 
 const showInfoToast = () => {
-  toastService.info('A new update is available for the application.');
+  toastService.info("A new update is available for the application.");
 };
 
 const showToastWithAction = () => {
-  toastService.info('Document has been archived.', {
+  toastService.info("Document has been archived.", {
     actions: [
       {
-        label: 'Undo',
+        label: "Undo",
         handler: () => {
-          toastService.success('Document has been restored!');
-        }
-      }
-    ]
+          toastService.success("Document has been restored!");
+        },
+      },
+    ],
   });
 };
 
 // Dialog examples
 const showConfirmDialog = async () => {
   const confirmed = await dialogService.confirm({
-    title: 'Confirm Action',
-    message: 'Are you sure you want to proceed with this action?',
-    confirmText: 'Yes, proceed',
-    cancelText: 'No, cancel'
+    title: "Confirm Action",
+    message: "Are you sure you want to proceed with this action?",
+    confirmText: "Yes, proceed",
+    cancelText: "No, cancel",
   });
-  
+
   if (confirmed) {
-    toastService.success('Action confirmed!');
+    toastService.success("Action confirmed!");
   } else {
-    toastService.info('Action cancelled.');
+    toastService.info("Action cancelled.");
   }
 };
 
 const showAlertDialog = async () => {
   await dialogService.alert({
-    title: 'Information',
-    message: 'Your session will expire in 5 minutes.',
-    type: 'info'
+    title: "Information",
+    message: "Your session will expire in 5 minutes.",
+    type: "info",
   });
 };
 
 const showPromptDialog = async () => {
   const name = await dialogService.prompt({
-    title: 'Enter Information',
-    message: 'Please enter your name:',
-    placeholder: 'Your name',
-    defaultValue: '',
-    confirmText: 'Submit'
+    title: "Enter Information",
+    message: "Please enter your name:",
+    placeholder: "Your name",
+    defaultValue: "",
+    confirmText: "Submit",
   });
-  
+
   if (name) {
     toastService.success(`Hello, ${name}!`);
   }
@@ -209,7 +221,7 @@ const showPromptDialog = async () => {
 
 const showCustomDialog = async () => {
   await dialogService.custom({
-    title: 'Custom Dialog',
+    title: "Custom Dialog",
     component: {
       template: `
         <div style="padding: 20px;">
@@ -220,91 +232,92 @@ const showCustomDialog = async () => {
             <li>Can include forms, tables, etc.</li>
           </ul>
         </div>
-      `
+      `,
     },
     buttons: [
       {
-        text: 'Close',
-        type: 'primary',
+        text: "Close",
+        type: "primary",
         handler: (resolve) => {
           resolve(null);
-        }
-      }
-    ]
+        },
+      },
+    ],
   });
 };
 
 // Notification examples
 const addInfoNotification = () => {
-  notificationService.info('File upload completed', {
-    title: 'Upload Status',
+  notificationService.info("File upload completed", {
+    title: "Upload Status",
     actions: [
       {
-        label: 'View File',
-        type: 'primary',
+        label: "View File",
+        type: "primary",
         handler: () => {
-          dialogService.alert('File viewer would open here');
-        }
-      }
-    ]
+          dialogService.alert("File viewer would open here");
+        },
+      },
+    ],
   });
 };
 
 const addSuccessNotification = () => {
-  notificationService.success('Your document has been successfully processed', {
-    title: 'Processing Complete',
-    priority: 'medium'
+  notificationService.success("Your document has been successfully processed", {
+    title: "Processing Complete",
+    priority: "medium",
   });
 };
 
 const addWarningNotification = () => {
-  notificationService.warning('Your storage is almost full (85% used)', {
-    title: 'Storage Warning',
-    priority: 'high',
+  notificationService.warning("Your storage is almost full (85% used)", {
+    title: "Storage Warning",
+    priority: "high",
     actions: [
       {
-        label: 'Manage Storage',
-        type: 'primary',
+        label: "Manage Storage",
+        type: "primary",
         handler: () => {
-          dialogService.alert('Storage management would open here');
-        }
-      }
-    ]
+          dialogService.alert("Storage management would open here");
+        },
+      },
+    ],
   });
 };
 
 const addErrorNotification = () => {
-  notificationService.error('Failed to synchronize data with the server', {
-    title: 'Sync Error',
-    priority: 'high',
-    details: 'Error code: ERR_CONNECTION_REFUSED. The server is not responding to sync requests. This could be due to network issues or server maintenance.',
-    persistent: true
+  notificationService.error("Failed to synchronize data with the server", {
+    title: "Sync Error",
+    priority: "high",
+    details:
+      "Error code: ERR_CONNECTION_REFUSED. The server is not responding to sync requests. This could be due to network issues or server maintenance.",
+    persistent: true,
   });
 };
 
 const addGroupedNotifications = () => {
-  const group = 'system-updates';
-  
-  notificationService.info('System update available: v2.3.4', {
+  const group = "system-updates";
+
+  notificationService.info("System update available: v2.3.4", {
     group,
-    title: 'System Update',
-    timestamp: Date.now()
+    title: "System Update",
+    timestamp: Date.now(),
   });
-  
+
   setTimeout(() => {
-    notificationService.info('Security patches available for installation', {
+    notificationService.info("Security patches available for installation", {
       group,
-      title: 'System Update',
-      timestamp: Date.now() + 100
+      title: "System Update",
+      timestamp: Date.now() + 100,
     });
   }, 1000);
-  
+
   setTimeout(() => {
-    notificationService.warning('System restart required after updates', {
+    notificationService.warning("System restart required after updates", {
       group,
-      title: 'System Update',
-      priority: 'medium',
-      timestamp: Date.now() + 200
+      title: "System Update",
+      priority: "medium",
+      timestamp: Date.now() + 200,
     });
   }, 2000);
 };
@@ -319,31 +332,44 @@ const showGlobalLoading = () => {
   isGlobalLoading.value = true;
   setTimeout(() => {
     isGlobalLoading.value = false;
-    toastService.success('Global operation completed!');
+    toastService.success("Global operation completed!");
   }, 3000);
 };
 
 const showLocalLoading = () => {
   isLocalLoading.value = true;
   localContentReady.value = false;
-  
+
   setTimeout(() => {
     isLocalLoading.value = false;
     localContentReady.value = true;
-    toastService.success('Component loaded successfully!');
+    toastService.success("Component loaded successfully!");
   }, 3000);
 };
 </script>
 
 <style>
 .feedback-examples {
-  font-family: var(--n-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif);
+  font-family: var(
+    --n-font-family,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    "Open Sans",
+    sans-serif
+  );
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   margin-top: 0;
   color: var(--n-color-text-primary, #333333);
 }

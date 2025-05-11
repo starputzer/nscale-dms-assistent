@@ -11,11 +11,16 @@
       <template #fallback="{ error, resetFallback }">
         <div class="app-fallback">
           <div class="app-fallback__content">
-            <h1 class="app-fallback__title">{{ t('app.error.title') }}</h1>
-            <p class="app-fallback__message">{{ t('app.error.message') }}</p>
-            <p v-if="error" class="app-fallback__details">{{ error?.message }}</p>
-            <button @click="resetFallback" class="nscale-btn-primary app-fallback__button">
-              {{ t('app.error.retry') }}
+            <h1 class="app-fallback__title">{{ t("app.error.title") }}</h1>
+            <p class="app-fallback__message">{{ t("app.error.message") }}</p>
+            <p v-if="error" class="app-fallback__details">
+              {{ error?.message }}
+            </p>
+            <button
+              @click="resetFallback"
+              class="nscale-btn-primary app-fallback__button"
+            >
+              {{ t("app.error.retry") }}
             </button>
           </div>
         </div>
@@ -32,10 +37,7 @@
           @sidebar-item-select="handleNavigationSelect"
         >
           <template #header>
-            <Header
-              :user="headerUser"
-              @logout="handleLogout"
-            />
+            <Header :user="headerUser" @logout="handleLogout" />
           </template>
 
           <router-view v-slot="{ Component }">
@@ -43,27 +45,31 @@
               <KeepAlive>
                 <ErrorBoundary
                   :key="$route.path"
-                  :featureFlag="getFeatureFlagFromRoute($route.name?.toString())"
+                  :featureFlag="
+                    getFeatureFlagFromRoute($route.name?.toString())
+                  "
                   @error="handleViewError"
                 >
                   <component :is="Component" />
 
                   <template #error="{ error, retry }">
                     <div class="view-error">
-                      <h3 class="view-error__title">{{ t('app.viewError.title') }}</h3>
+                      <h3 class="view-error__title">
+                        {{ t("app.viewError.title") }}
+                      </h3>
                       <p class="view-error__message">{{ error?.message }}</p>
                       <div class="view-error__actions">
                         <button
                           @click="retry"
                           class="nscale-btn-primary view-error__retry"
                         >
-                          {{ t('app.viewError.retry') }}
+                          {{ t("app.viewError.retry") }}
                         </button>
                         <button
                           @click="handleNavigateHome"
                           class="nscale-btn-secondary"
                         >
-                          {{ t('app.viewError.home') }}
+                          {{ t("app.viewError.home") }}
                         </button>
                       </div>
                     </div>
@@ -77,9 +83,15 @@
             <div class="app-footer">
               <p>© {{ currentYear }} nscale DMS Assistent</p>
               <div class="app-footer__links">
-                <a href="#" @click.prevent="openSettings">{{ t('app.footer.settings') }}</a>
-                <a href="#" @click.prevent="toggleTheme">{{ t('app.footer.theme') }}</a>
-                <a href="#" @click.prevent="showAbout">{{ t('app.footer.about') }}</a>
+                <a href="#" @click.prevent="openSettings">{{
+                  t("app.footer.settings")
+                }}</a>
+                <a href="#" @click.prevent="toggleTheme">{{
+                  t("app.footer.theme")
+                }}</a>
+                <a href="#" @click.prevent="showAbout">{{
+                  t("app.footer.about")
+                }}</a>
               </div>
             </div>
           </template>
@@ -98,14 +110,16 @@
 
               <template #error="{ error, retry }">
                 <div class="view-error">
-                  <h3 class="view-error__title">{{ t('app.viewError.title') }}</h3>
+                  <h3 class="view-error__title">
+                    {{ t("app.viewError.title") }}
+                  </h3>
                   <p class="view-error__message">{{ error?.message }}</p>
                   <div class="view-error__actions">
                     <button
                       @click="retry"
                       class="nscale-btn-primary view-error__retry"
                     >
-                      {{ t('app.viewError.retry') }}
+                      {{ t("app.viewError.retry") }}
                     </button>
                   </div>
                 </div>
@@ -121,11 +135,17 @@
     <DialogProvider />
     <MobileFocusManager />
 
+    <!-- Keyboard Shortcuts Help Overlay -->
+    <KeyboardShortcutsHelp
+      v-model:open="showKeyboardShortcuts"
+      :shortcuts="registeredShortcuts"
+    />
+
     <!-- Offline Status Banner -->
     <div v-if="isOffline" class="offline-banner">
-      {{ t('app.offline.message') }}
+      {{ t("app.offline.message") }}
       <button @click="checkConnection" class="offline-banner__retry">
-        {{ t('app.offline.retry') }}
+        {{ t("app.offline.retry") }}
       </button>
     </div>
 
@@ -133,16 +153,16 @@
     <div v-if="!storeInitializationComplete" class="app-initialization-overlay">
       <div class="app-initialization-content">
         <div class="app-initialization-spinner"></div>
-        <p>{{ t('app.initializing') }}</p>
+        <p>{{ t("app.initializing") }}</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, provide, watch, onBeforeUnmount } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import { useMobileFocus } from './composables/useMobileFocus';
+import { ref, computed, onMounted, provide, watch, onBeforeUnmount } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { useMobileFocus } from "./composables/useMobileFocus";
 // If you're having issues with vue-i18n, you can implement a temporary solution:
 // Uncomment this if vue-i18n is not installed
 /*
@@ -150,25 +170,31 @@ const useI18n = () => ({
   t: (key: string) => key // Simple fallback that returns the key
 });
 */
-import { useI18n } from 'vue-i18n';
-import { useAuthStore } from '@/stores/auth';
-import { useUIStore } from '@/stores/ui';
-import { useSessionsStore } from '@/stores/sessions';
-import { useFeatureTogglesStore } from '@/stores/featureToggles';
-import { useErrorReporting } from '@/utils/errorReportingService';
-import { useFallbackManager } from '@/utils/fallbackManager';
-import { useTheme } from '@/composables/useTheme';
-import { isInitialized } from '@/stores/storeInitializer';
-import type { ErrorSeverity } from '@/components/shared/ErrorBoundary.vue';
-import type { SidebarItem } from '@/components/layout/MainLayout.vue';
+import { useI18n } from "vue-i18n";
+import { useAuthStore } from "@/stores/auth";
+import { useUIStore } from "@/stores/ui";
+import { useSessionsStore } from "@/stores/sessions";
+import { useFeatureTogglesStore } from "@/stores/featureToggles";
+import { useErrorReporting } from "@/utils/errorReportingService";
+import { useFallbackManager } from "@/utils/fallbackManager";
+import { useTheme } from "@/composables/useTheme";
+import { isInitialized } from "@/stores/storeInitializer";
+import type { ErrorSeverity } from "@/components/shared/ErrorBoundary.vue";
+import type { SidebarItem } from "@/components/layout/MainLayout.vue";
+import {
+  useKeyboardShortcuts,
+  SHORTCUT_CONTEXTS,
+  ShortcutDefinition,
+} from "@/utils/keyboardShortcutsManager";
 
 // Import von Komponenten
-import MainLayout from '@/components/layout/MainLayout.vue';
-import Header from '@/components/layout/Header.vue';
-import Toast from '@/components/ui/Toast.vue';
-import DialogProvider from '@/components/dialog/DialogProvider.vue';
-import ErrorBoundary from '@/components/shared/ErrorBoundary.vue';
-import MobileFocusManager from '@/components/shared/MobileFocusManager.vue';
+import MainLayout from "@/components/layout/MainLayout.vue";
+import Header from "@/components/layout/Header.vue";
+import Toast from "@/components/ui/Toast.vue";
+import DialogProvider from "@/components/dialog/DialogProvider.vue";
+import ErrorBoundary from "@/components/shared/ErrorBoundary.vue";
+import MobileFocusManager from "@/components/shared/MobileFocusManager.vue";
+import KeyboardShortcutsHelp from "@/components/ui/KeyboardShortcutsHelp.vue";
 
 // Define interfaces for header user
 interface HeaderUser {
@@ -204,33 +230,34 @@ const fallbackManager = useFallbackManager();
 const isOffline = ref(false);
 const initializationComplete = ref(false);
 const storeInitializationComplete = computed(() => isInitialized.value);
+const showKeyboardShortcuts = ref(false);
+const registeredShortcuts = ref<ShortcutDefinition[]>([]);
 
 // Theme-Informationen
-const {
-  currentTheme,
-  isDarkTheme,
-  isLightTheme,
-  isContrastTheme,
-  setTheme
-} = useTheme();
+const { currentTheme, isDarkTheme, isLightTheme, isContrastTheme, setTheme } =
+  useTheme();
+
+// Keyboard shortcuts
+const { registerShortcut, setShortcutContext, getShortcuts } =
+  useKeyboardShortcuts();
 
 // Convert authStore.user to HeaderUser format
 const headerUser = computed<HeaderUser | undefined>(() => {
   if (!authStore.user) return undefined;
-  
+
   return {
     name: authStore.user.displayName || authStore.user.email,
     email: authStore.user.email,
-    avatar: undefined // Add avatar property if it exists in your user object
+    avatar: undefined, // Add avatar property if it exists in your user object
   };
 });
 
 // Abgeleitete Werte
 const themeClass = computed(() => {
   return {
-    'theme-dark': isDarkTheme.value,
-    'theme-light': isLightTheme.value,
-    'theme-contrast': isContrastTheme.value
+    "theme-dark": isDarkTheme.value,
+    "theme-light": isLightTheme.value,
+    "theme-contrast": isContrastTheme.value,
   };
 });
 
@@ -240,39 +267,39 @@ const currentYear = computed(() => new Date().getFullYear());
 const navigationItems = computed<SidebarItem[]>(() => {
   const items: SidebarItem[] = [
     {
-      id: 'chat',
-      label: t('navigation.chat'),
-      icon: 'chat',
-      route: '/',
-      active: route.name === 'Chat'
+      id: "chat",
+      label: t("navigation.chat"),
+      icon: "chat",
+      route: "/",
+      active: route.name === "Chat",
     },
     {
-      id: 'documents',
-      label: t('navigation.documents'),
-      icon: 'document',
-      route: '/documents',
-      active: route.name === 'Documents'
-    }
+      id: "documents",
+      label: t("navigation.documents"),
+      icon: "document",
+      route: "/documents",
+      active: route.name === "Documents",
+    },
   ];
 
   // Admin-Bereich nur für Administratoren anzeigen
   if (authStore.isAdmin) {
     items.push({
-      id: 'admin',
-      label: t('navigation.admin'),
-      icon: 'admin',
-      route: '/admin',
-      active: route.name === 'Admin'
+      id: "admin",
+      label: t("navigation.admin"),
+      icon: "admin",
+      route: "/admin",
+      active: route.name === "Admin",
     });
   }
 
   // Einstellungen für alle anzeigen
   items.push({
-    id: 'settings',
-    label: t('navigation.settings'),
-    icon: 'settings',
-    route: '/settings',
-    active: route.name === 'Settings'
+    id: "settings",
+    label: t("navigation.settings"),
+    icon: "settings",
+    route: "/settings",
+    active: route.name === "Settings",
   });
 
   return items;
@@ -280,21 +307,23 @@ const navigationItems = computed<SidebarItem[]>(() => {
 
 // Mapping von Routen zu Feature-Flags
 const routeFeatureFlagMap: Record<string, string> = {
-  'Chat': 'useSfcChat',
-  'Documents': 'useSfcDocConverter',
-  'Admin': 'useSfcAdmin',
-  'Settings': 'useSfcSettings',
-  'Login': 'useSfcLogin'
+  Chat: "useSfcChat",
+  Documents: "useSfcDocConverter",
+  Admin: "useSfcAdmin",
+  Settings: "useSfcSettings",
+  Login: "useSfcLogin",
 };
 
 // Toggle sidebar collapsed state - fix for setSidebarIsCollapsed missing
 function toggleSidebarCollapsed(collapsed: boolean) {
   // Check if uiStore has the method, if not, provide an alternative implementation
-  if ('setSidebarIsCollapsed' in uiStore) {
+  if ("setSidebarIsCollapsed" in uiStore) {
     (uiStore as any).setSidebarIsCollapsed(collapsed);
   } else {
     // Fallback implementation if the method doesn't exist
-    console.warn('setSidebarIsCollapsed method not found in uiStore, using fallback implementation');
+    console.warn(
+      "setSidebarIsCollapsed method not found in uiStore, using fallback implementation",
+    );
     (uiStore as any).sidebarIsCollapsed = collapsed;
   }
 }
@@ -304,7 +333,7 @@ function toggleSidebarCollapsed(collapsed: boolean) {
  * Behandelt Navigationsauswahl aus der Sidebar
  */
 function handleNavigationSelect(id: string) {
-  const item = navigationItems.value.find(item => item.id === id);
+  const item = navigationItems.value.find((item) => item.id === id);
   if (item && item.route) {
     router.push(item.route);
   }
@@ -316,17 +345,17 @@ function handleNavigationSelect(id: string) {
 async function handleLogout() {
   try {
     await authStore.logout();
-    router.push('/login');
-    uiStore.showSuccess(t('auth.logout.success'));
+    router.push("/login");
+    uiStore.showSuccess(t("auth.logout.success"));
   } catch (error) {
-    uiStore.showError(t('auth.logout.error'));
+    uiStore.showError(t("auth.logout.error"));
     errorReporting.captureError(error as Error, {
-      severity: 'medium',
+      severity: "medium",
       source: {
-        type: 'component',
-        name: 'App'
+        type: "component",
+        name: "App",
       },
-      feature: 'auth'
+      feature: "auth",
     });
   }
 }
@@ -335,21 +364,21 @@ async function handleLogout() {
  * Behandelt allgemeine App-Fehler
  */
 function handleError(error: any) {
-  console.error('App Error:', error);
+  console.error("App Error:", error);
 
   errorReporting.captureError(error.originalError as Error, {
     severity: error.severity as ErrorSeverity,
     source: {
-      type: 'component',
-      name: error.component || 'App'
+      type: "component",
+      name: error.component || "App",
     },
-    feature: 'app'
+    feature: "app",
   });
 
   // Fehler dem Benutzer anzeigen
   uiStore.showError(error.message, {
     duration: 8000,
-    closable: true
+    closable: true,
   });
 }
 
@@ -357,19 +386,21 @@ function handleError(error: any) {
  * Behandelt Fallback-Aktivierung
  */
 function handleFallback(error: any) {
-  console.error('App Fallback activated:', error);
+  console.error("App Fallback activated:", error);
 
   // Globalen Fallback aktivieren
-  featureToggles.setFallbackMode('app', true);
+  featureToggles.setFallbackMode("app", true);
 
   // Kritischen Fehler anzeigen
-  uiStore.showError(t('app.criticalError'), {
+  uiStore.showError(t("app.criticalError"), {
     duration: 0,
     closable: true,
-    actions: [{
-      label: t('app.reload'),
-      onClick: () => window.location.reload()
-    }]
+    actions: [
+      {
+        label: t("app.reload"),
+        onClick: () => window.location.reload(),
+      },
+    ],
   });
 }
 
@@ -377,7 +408,7 @@ function handleFallback(error: any) {
  * Behandelt Fehler in View-Komponenten
  */
 function handleViewError(error: any) {
-  console.error('View Error:', error);
+  console.error("View Error:", error);
 
   const routeName = route.name as string;
   const featureFlag = getFeatureFlagFromRoute(routeName);
@@ -385,16 +416,16 @@ function handleViewError(error: any) {
   errorReporting.captureError(error.originalError as Error, {
     severity: error.severity as ErrorSeverity,
     source: {
-      type: 'component',
-      name: error.component || routeName
+      type: "component",
+      name: error.component || routeName,
     },
-    feature: featureFlag
+    feature: featureFlag,
   });
 
   // Fehler dem Benutzer anzeigen
-  uiStore.showError(`${t('app.viewError.prefix')} ${error.message}`, {
+  uiStore.showError(`${t("app.viewError.prefix")} ${error.message}`, {
     duration: 8000,
-    closable: true
+    closable: true,
   });
 }
 
@@ -402,15 +433,15 @@ function handleViewError(error: any) {
  * Ermittelt das Feature-Flag für eine Route
  */
 function getFeatureFlagFromRoute(routeName: string | null | undefined): string {
-  if (!routeName) return 'app';
-  return routeFeatureFlagMap[routeName] || 'app';
+  if (!routeName) return "app";
+  return routeFeatureFlagMap[routeName] || "app";
 }
 
 /**
  * Navigiert zur Startseite
  */
 function handleNavigateHome() {
-  router.push('/');
+  router.push("/");
 }
 
 /**
@@ -418,7 +449,7 @@ function handleNavigateHome() {
  */
 async function checkConnection() {
   try {
-    const response = await fetch('/api/health');
+    const response = await fetch("/api/health");
     isOffline.value = !response.ok;
   } catch (error) {
     isOffline.value = true;
@@ -429,7 +460,7 @@ async function checkConnection() {
  * Öffnet die Einstellungen
  */
 function openSettings() {
-  router.push('/settings');
+  router.push("/settings");
 }
 
 /**
@@ -437,9 +468,9 @@ function openSettings() {
  */
 function toggleTheme() {
   if (isDarkTheme.value) {
-    setTheme('light');
+    setTheme("light");
   } else {
-    setTheme('dark');
+    setTheme("dark");
   }
 }
 
@@ -448,16 +479,160 @@ function toggleTheme() {
  */
 function showAbout() {
   // Check if the showDialog method exists on uiStore
-  if ('showDialog' in uiStore) {
+  if ("showDialog" in uiStore) {
     (uiStore as any).showDialog({
-      title: t('app.about.title'),
-      content: t('app.about.content'),
-      confirmText: t('common.ok'),
-      type: 'info'
+      title: t("app.about.title"),
+      content: t("app.about.content"),
+      confirmText: t("common.ok"),
+      type: "info",
     });
   } else {
     // Fallback if showDialog doesn't exist
-    uiStore.showInfo(t('app.about.title') + ': ' + t('app.about.content'));
+    uiStore.showInfo(t("app.about.title") + ": " + t("app.about.content"));
+  }
+}
+
+/**
+ * Register global keyboard shortcuts for the application
+ */
+function registerAppShortcuts() {
+  const shortcutsToRegister: ShortcutDefinition[] = [
+    // Global navigation shortcuts
+    {
+      id: "global-home",
+      name: "Home",
+      context: SHORTCUT_CONTEXTS.GLOBAL,
+      key: "h",
+      modifiers: { alt: true },
+      description: t("shortcuts.global.home"),
+      handler: () => router.push("/"),
+      global: true,
+    },
+    {
+      id: "global-documents",
+      name: "Documents",
+      context: SHORTCUT_CONTEXTS.GLOBAL,
+      key: "d",
+      modifiers: { alt: true },
+      description: t("shortcuts.global.documents"),
+      handler: () => router.push("/documents"),
+      global: true,
+    },
+    {
+      id: "global-settings",
+      name: "Settings",
+      context: SHORTCUT_CONTEXTS.GLOBAL,
+      key: "s",
+      modifiers: { alt: true },
+      description: t("shortcuts.global.settings"),
+      handler: () => router.push("/settings"),
+      global: true,
+    },
+
+    // Admin access for admin users
+    ...(authStore.isAdmin
+      ? [
+          {
+            id: "global-admin",
+            name: "Admin Panel",
+            context: SHORTCUT_CONTEXTS.GLOBAL,
+            key: "a",
+            modifiers: { alt: true },
+            description: t("shortcuts.global.admin"),
+            handler: () => router.push("/admin"),
+            global: true,
+          },
+        ]
+      : []),
+
+    // UI shortcuts
+    {
+      id: "global-theme",
+      name: "Toggle Theme",
+      context: SHORTCUT_CONTEXTS.GLOBAL,
+      key: "t",
+      modifiers: { alt: true, shift: true },
+      description: t("shortcuts.global.toggleTheme"),
+      handler: toggleTheme,
+      global: true,
+    },
+    {
+      id: "global-help",
+      name: "Keyboard Shortcuts Help",
+      context: SHORTCUT_CONTEXTS.GLOBAL,
+      key: "?",
+      description: t("shortcuts.global.help"),
+      handler: () => {
+        showKeyboardShortcuts.value = !showKeyboardShortcuts.value;
+      },
+      global: true,
+    },
+
+    // Chat-specific shortcuts (these are registered here but only active in chat context)
+    {
+      id: "chat-new-session",
+      name: "New Chat Session",
+      context: SHORTCUT_CONTEXTS.CHAT,
+      key: "n",
+      modifiers: { alt: true },
+      description: t("shortcuts.chat.newSession"),
+      handler: () => {
+        if (sessionsStore && "createNewSession" in sessionsStore) {
+          (sessionsStore as any).createNewSession();
+        }
+      },
+    },
+    {
+      id: "chat-focus-input",
+      name: "Focus Message Input",
+      context: SHORTCUT_CONTEXTS.CHAT,
+      key: "m",
+      modifiers: { alt: true },
+      description: t("shortcuts.chat.focusInput"),
+      handler: () => {
+        const messageInput = document.querySelector(
+          ".n-chat-input__textarea",
+        ) as HTMLTextAreaElement;
+        if (messageInput) {
+          messageInput.focus();
+        }
+      },
+    },
+  ];
+
+  // Register each shortcut
+  shortcutsToRegister.forEach((shortcut) => {
+    registerShortcut(shortcut);
+  });
+
+  // Update the shortcuts list for the help overlay
+  registeredShortcuts.value = getShortcuts();
+
+  // Set the initial context based on the current route
+  updateShortcutContext();
+}
+
+/**
+ * Update the shortcut context based on the current route
+ */
+function updateShortcutContext() {
+  const routeName = route.name?.toString() || "";
+
+  switch (routeName) {
+    case "Chat":
+      setShortcutContext(SHORTCUT_CONTEXTS.CHAT);
+      break;
+    case "Documents":
+      setShortcutContext(SHORTCUT_CONTEXTS.DOCUMENT_CONVERTER);
+      break;
+    case "Admin":
+      setShortcutContext(SHORTCUT_CONTEXTS.ADMIN);
+      break;
+    case "Settings":
+      setShortcutContext(SHORTCUT_CONTEXTS.SETTINGS);
+      break;
+    default:
+      setShortcutContext(SHORTCUT_CONTEXTS.GLOBAL);
   }
 }
 
@@ -465,7 +640,7 @@ function showAbout() {
 function handleOnline() {
   isOffline.value = false;
   if (initializationComplete.value) {
-    uiStore.showSuccess(t('app.online.message'));
+    uiStore.showSuccess(t("app.online.message"));
 
     // Verbindung wiederherstellen
     initializeDataAfterReconnect();
@@ -475,9 +650,9 @@ function handleOnline() {
 function handleOffline() {
   isOffline.value = true;
   if (initializationComplete.value) {
-    uiStore.showWarning(t('app.offline.message'), {
+    uiStore.showWarning(t("app.offline.message"), {
       duration: 0,
-      closable: true
+      closable: true,
     });
   }
 }
@@ -498,7 +673,7 @@ async function initializeDataAfterReconnect() {
       await featureToggles.refreshFeatures();
     }
   } catch (error) {
-    console.error('Error reconnecting:', error);
+    console.error("Error reconnecting:", error);
   }
 }
 
@@ -513,73 +688,71 @@ async function initializeApp() {
     if (authStore.isAuthenticated) {
       if (currentRoute.meta.guest) {
         // Wenn bereits angemeldet und auf Guest-Route, zur Hauptseite umleiten
-        router.push('/');
+        router.push("/");
       } else if (currentRoute.meta.requiresAuth) {
         // Prüfen, ob Admin-Bereich zugänglich ist
         if (currentRoute.meta.adminOnly && !authStore.isAdmin) {
-          router.push('/');
+          router.push("/");
         }
       }
     } else if (currentRoute.meta.requiresAuth) {
       // Wenn nicht angemeldet und Route erfordert Authentifizierung, zum Login umleiten
-      router.push('/login');
+      router.push("/login");
     }
 
     // Initialisierung abgeschlossen
     initializationComplete.value = true;
   } catch (error) {
-    console.error('Error initializing app:', error);
+    console.error("Error initializing app:", error);
 
     errorReporting.captureError(error as Error, {
-      severity: 'high',
+      severity: "high",
       source: {
-        type: 'system',
-        name: 'App Initialization'
+        type: "system",
+        name: "App Initialization",
       },
-      feature: 'app'
+      feature: "app",
     });
 
     // Kritischen Fehler anzeigen
-    uiStore.showError(t('app.initError'), {
+    uiStore.showError(t("app.initError"), {
       duration: 0,
       closable: true,
-      actions: [{
-        label: t('app.reload'),
-        onClick: () => window.location.reload()
-      }]
+      actions: [
+        {
+          label: t("app.reload"),
+          onClick: () => window.location.reload(),
+        },
+      ],
     });
   }
 }
 
 // Provide-Funktionen für Komponentenhierarchie
 // Stelle UI-Context zur Verfügung, um Prop-Drilling zu vermeiden
-provide('uiStore', uiStore);
+provide("uiStore", uiStore);
 
 // Provide theme information to all components
-provide('isDarkTheme', isDarkTheme);
-provide('isContrastTheme', isContrastTheme);
-provide('isLightTheme', isLightTheme);
-provide('currentTheme', currentTheme);
-provide('setTheme', setTheme);
+provide("isDarkTheme", isDarkTheme);
+provide("isContrastTheme", isContrastTheme);
+provide("isLightTheme", isLightTheme);
+provide("currentTheme", currentTheme);
+provide("setTheme", setTheme);
 
 // Error-Reporting-Context zur Verfügung stellen
-provide('errorReporting', errorReporting);
+provide("errorReporting", errorReporting);
 
 // Fallback-Manager zur Verfügung stellen
-provide('fallbackManager', fallbackManager);
+provide("fallbackManager", fallbackManager);
 
 // Handler for custom API error events
 function handleApiError(event: CustomEvent<ApiErrorEventDetail>) {
   const detail = event.detail;
 
-  errorReporting.captureApiError(
-    detail.url || 'unknown',
-    detail.message,
-    {
-      severity: 'medium',
-      context: detail
-    }
-  );
+  errorReporting.captureApiError(detail.url || "unknown", detail.message, {
+    severity: "medium",
+    context: detail,
+  });
 
   // Fehler anzeigen, wenn nicht schon durch den ApiService geschehen
   if (!detail.handled) {
@@ -590,14 +763,14 @@ function handleApiError(event: CustomEvent<ApiErrorEventDetail>) {
 // Lifecycle-Hooks
 onMounted(() => {
   // Event-Listener für Online/Offline-Status
-  window.addEventListener('online', handleOnline);
-  window.addEventListener('offline', handleOffline);
+  window.addEventListener("online", handleOnline);
+  window.addEventListener("offline", handleOffline);
 
   // Anfänglichen Netzwerkstatus prüfen
   isOffline.value = !navigator.onLine;
 
   // API-Fehler abfangen - fixed by using a properly typed event listener
-  window.addEventListener('api:error', handleApiError as EventListener);
+  window.addEventListener("api:error", handleApiError as EventListener);
 
   // Setup focus management for mobile and keyboard users
   const { usingTouch, usingKeyboard } = useMobileFocus();
@@ -606,9 +779,11 @@ onMounted(() => {
   if (!usingTouch.value) {
     // Focus the first focusable element in the main content area
     // This helps keyboard users navigate more efficiently
-    const mainContent = document.querySelector('.app-container');
+    const mainContent = document.querySelector(".app-container");
     if (mainContent) {
-      const firstFocusable = mainContent.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      const firstFocusable = mainContent.querySelector(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
       if (firstFocusable instanceof HTMLElement) {
         firstFocusable.focus({ preventScroll: true });
       }
@@ -617,34 +792,43 @@ onMounted(() => {
 
   // App initialisieren
   initializeApp();
+
+  // Register global keyboard shortcuts
+  registerAppShortcuts();
 });
 
 onBeforeUnmount(() => {
   // Event-Listener entfernen
-  window.removeEventListener('online', handleOnline);
-  window.removeEventListener('offline', handleOffline);
-  window.removeEventListener('api:error', handleApiError as EventListener);
+  window.removeEventListener("online", handleOnline);
+  window.removeEventListener("offline", handleOffline);
+  window.removeEventListener("api:error", handleApiError as EventListener);
 });
 
 // Route-Änderungen überwachen
-watch(() => route.path, () => {
-  // Feature-Flag aus der Route ermitteln
-  const featureFlag = getFeatureFlagFromRoute(route.name as string);
+watch(
+  () => route.path,
+  () => {
+    // Feature-Flag aus der Route ermitteln
+    const featureFlag = getFeatureFlagFromRoute(route.name as string);
 
-  // Prüfen, ob Feature aktiviert ist
-  if (featureFlag && !featureToggles.isEnabled(featureFlag)) {
-    // Fallback-Verhalten basierend auf Feature-Flag
-    const fallbackRoute = featureToggles.getFeatureFallbackRoute(featureFlag);
+    // Prüfen, ob Feature aktiviert ist
+    if (featureFlag && !featureToggles.isEnabled(featureFlag)) {
+      // Fallback-Verhalten basierend auf Feature-Flag
+      const fallbackRoute = featureToggles.getFeatureFallbackRoute(featureFlag);
 
-    if (fallbackRoute) {
-      router.push(fallbackRoute);
+      if (fallbackRoute) {
+        router.push(fallbackRoute);
 
-      uiStore.showWarning(t('app.feature.disabled'), {
-        duration: 5000
-      });
+        uiStore.showWarning(t("app.feature.disabled"), {
+          duration: 5000,
+        });
+      }
     }
-  }
-});
+
+    // Update keyboard shortcut context based on current route
+    updateShortcutContext();
+  },
+);
 </script>
 
 <style>
@@ -654,7 +838,8 @@ watch(() => route.path, () => {
   padding: 0;
 }
 
-body, html {
+body,
+html {
   font-family: var(--nscale-font-family-base);
   height: 100%;
   width: 100%;
@@ -859,23 +1044,59 @@ body, html {
 }
 
 /* Utility classes updated with design system spacing variables */
-.flex { display: flex; }
-.flex-col { flex-direction: column; }
-.justify-center { justify-content: center; }
-.items-center { align-items: center; }
-.space-x-2 > * + * { margin-left: var(--nscale-space-2); }
-.space-y-4 > * + * { margin-top: var(--nscale-space-4); }
-.w-full { width: 100%; }
-.max-w-md { max-width: 28rem; }
-.p-4 { padding: var(--nscale-space-4); }
-.p-8 { padding: var(--nscale-space-8); }
-.py-2 { padding-top: var(--nscale-space-2); padding-bottom: var(--nscale-space-2); }
-.px-4 { padding-left: var(--nscale-space-4); padding-right: var(--nscale-space-4); }
-.mb-6 { margin-bottom: var(--nscale-space-6); }
-.text-center { text-align: center; }
-.text-lg { font-size: var(--nscale-font-size-lg); }
-.font-medium { font-weight: var(--nscale-font-weight-medium); }
-.border-b { border-bottom: 1px solid var(--nscale-border); }
+.flex {
+  display: flex;
+}
+.flex-col {
+  flex-direction: column;
+}
+.justify-center {
+  justify-content: center;
+}
+.items-center {
+  align-items: center;
+}
+.space-x-2 > * + * {
+  margin-left: var(--nscale-space-2);
+}
+.space-y-4 > * + * {
+  margin-top: var(--nscale-space-4);
+}
+.w-full {
+  width: 100%;
+}
+.max-w-md {
+  max-width: 28rem;
+}
+.p-4 {
+  padding: var(--nscale-space-4);
+}
+.p-8 {
+  padding: var(--nscale-space-8);
+}
+.py-2 {
+  padding-top: var(--nscale-space-2);
+  padding-bottom: var(--nscale-space-2);
+}
+.px-4 {
+  padding-left: var(--nscale-space-4);
+  padding-right: var(--nscale-space-4);
+}
+.mb-6 {
+  margin-bottom: var(--nscale-space-6);
+}
+.text-center {
+  text-align: center;
+}
+.text-lg {
+  font-size: var(--nscale-font-size-lg);
+}
+.font-medium {
+  font-weight: var(--nscale-font-weight-medium);
+}
+.border-b {
+  border-bottom: 1px solid var(--nscale-border);
+}
 
 /* App Initialization Overlay */
 .app-initialization-overlay {
@@ -914,7 +1135,11 @@ body, html {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>

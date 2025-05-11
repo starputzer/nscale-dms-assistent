@@ -1,6 +1,12 @@
-import { ref, shallowRef, markRaw } from 'vue';
+import { ref, shallowRef, markRaw } from "vue";
 
-export type DialogType = 'info' | 'warning' | 'error' | 'success' | 'confirm' | 'input';
+export type DialogType =
+  | "info"
+  | "warning"
+  | "error"
+  | "success"
+  | "confirm"
+  | "input";
 
 export interface DialogOptions {
   title?: string;
@@ -14,7 +20,7 @@ export interface DialogOptions {
   onClose?: () => void;
 }
 
-export interface InputDialogOptions extends Omit<DialogOptions, 'type'> {
+export interface InputDialogOptions extends Omit<DialogOptions, "type"> {
   inputLabel?: string;
   inputType?: string;
   placeholder?: string;
@@ -34,29 +40,33 @@ export interface InputDialogOptions extends Omit<DialogOptions, 'type'> {
  */
 export function useDialog() {
   const isVisible = ref(false);
-  const dialogType = ref<DialogType>('info');
-  const dialogTitle = ref('');
-  const dialogMessage = ref('');
-  const confirmButtonText = ref('OK');
-  const cancelButtonText = ref('Abbrechen');
+  const dialogType = ref<DialogType>("info");
+  const dialogTitle = ref("");
+  const dialogMessage = ref("");
+  const confirmButtonText = ref("OK");
+  const cancelButtonText = ref("Abbrechen");
   const showCancelButton = ref(true);
-  
+
   // Input-Dialog-spezifische Eigenschaften
-  const inputLabel = ref('Eingabe');
-  const inputType = ref('text');
-  const placeholder = ref('');
-  const defaultValue = ref('');
+  const inputLabel = ref("Eingabe");
+  const inputType = ref("text");
+  const placeholder = ref("");
+  const defaultValue = ref("");
   const minLength = ref(0);
   const maxLength = ref(256);
   const required = ref(true);
-  const validationMessage = ref('Bitte geben Sie einen gültigen Wert ein.');
-  const validator = shallowRef<((value: string) => boolean | string) | null>(null);
+  const validationMessage = ref("Bitte geben Sie einen gültigen Wert ein.");
+  const validator = shallowRef<((value: string) => boolean | string) | null>(
+    null,
+  );
 
   // Referenzen für die Callbacks
   const confirmCallback = shallowRef<(() => void) | null>(null);
   const cancelCallback = shallowRef<(() => void) | null>(null);
   const closeCallback = shallowRef<(() => void) | null>(null);
-  const inputConfirmCallback = shallowRef<((value: string) => void) | null>(null);
+  const inputConfirmCallback = shallowRef<((value: string) => void) | null>(
+    null,
+  );
 
   /**
    * Zeigt einen Bestätigungsdialog an
@@ -66,17 +76,17 @@ export function useDialog() {
   const confirm = (options: string | DialogOptions): Promise<boolean> => {
     return new Promise((resolve) => {
       // Dialog-Parameter konfigurieren
-      if (typeof options === 'string') {
+      if (typeof options === "string") {
         dialogMessage.value = options;
-        dialogTitle.value = 'Bestätigung';
-        dialogType.value = 'confirm';
-        confirmButtonText.value = 'Bestätigen';
+        dialogTitle.value = "Bestätigung";
+        dialogType.value = "confirm";
+        confirmButtonText.value = "Bestätigen";
       } else {
         dialogMessage.value = options.message;
-        dialogTitle.value = options.title || 'Bestätigung';
-        dialogType.value = options.type || 'confirm';
-        confirmButtonText.value = options.confirmButtonText || 'Bestätigen';
-        cancelButtonText.value = options.cancelButtonText || 'Abbrechen';
+        dialogTitle.value = options.title || "Bestätigung";
+        dialogType.value = options.type || "confirm";
+        confirmButtonText.value = options.confirmButtonText || "Bestätigen";
+        cancelButtonText.value = options.cancelButtonText || "Abbrechen";
         showCancelButton.value = options.showCancelButton !== false;
         confirmCallback.value = options.onConfirm || null;
         cancelCallback.value = options.onCancel || null;
@@ -108,21 +118,23 @@ export function useDialog() {
    * Zeigt einen Info-Dialog an
    * @param options Dialog-Konfiguration oder Nachrichtentext
    */
-  const info = (options: string | Omit<DialogOptions, 'type'>): Promise<boolean> => {
-    if (typeof options === 'string') {
+  const info = (
+    options: string | Omit<DialogOptions, "type">,
+  ): Promise<boolean> => {
+    if (typeof options === "string") {
       return confirm({
         message: options,
-        title: 'Information',
-        type: 'info',
-        confirmButtonText: 'OK',
-        showCancelButton: false
+        title: "Information",
+        type: "info",
+        confirmButtonText: "OK",
+        showCancelButton: false,
       });
     }
-    
+
     return confirm({
       ...options,
-      type: 'info',
-      showCancelButton: options.showCancelButton === true
+      type: "info",
+      showCancelButton: options.showCancelButton === true,
     });
   };
 
@@ -130,19 +142,21 @@ export function useDialog() {
    * Zeigt einen Warnungs-Dialog an
    * @param options Dialog-Konfiguration oder Nachrichtentext
    */
-  const warning = (options: string | Omit<DialogOptions, 'type'>): Promise<boolean> => {
-    if (typeof options === 'string') {
+  const warning = (
+    options: string | Omit<DialogOptions, "type">,
+  ): Promise<boolean> => {
+    if (typeof options === "string") {
       return confirm({
         message: options,
-        title: 'Warnung',
-        type: 'warning',
-        confirmButtonText: 'OK'
+        title: "Warnung",
+        type: "warning",
+        confirmButtonText: "OK",
       });
     }
-    
+
     return confirm({
       ...options,
-      type: 'warning'
+      type: "warning",
     });
   };
 
@@ -150,21 +164,23 @@ export function useDialog() {
    * Zeigt einen Fehler-Dialog an
    * @param options Dialog-Konfiguration oder Nachrichtentext
    */
-  const error = (options: string | Omit<DialogOptions, 'type'>): Promise<boolean> => {
-    if (typeof options === 'string') {
+  const error = (
+    options: string | Omit<DialogOptions, "type">,
+  ): Promise<boolean> => {
+    if (typeof options === "string") {
       return confirm({
         message: options,
-        title: 'Fehler',
-        type: 'error',
-        confirmButtonText: 'OK',
-        showCancelButton: false
+        title: "Fehler",
+        type: "error",
+        confirmButtonText: "OK",
+        showCancelButton: false,
       });
     }
-    
+
     return confirm({
       ...options,
-      type: 'error',
-      showCancelButton: options.showCancelButton === true
+      type: "error",
+      showCancelButton: options.showCancelButton === true,
     });
   };
 
@@ -172,21 +188,23 @@ export function useDialog() {
    * Zeigt einen Erfolgs-Dialog an
    * @param options Dialog-Konfiguration oder Nachrichtentext
    */
-  const success = (options: string | Omit<DialogOptions, 'type'>): Promise<boolean> => {
-    if (typeof options === 'string') {
+  const success = (
+    options: string | Omit<DialogOptions, "type">,
+  ): Promise<boolean> => {
+    if (typeof options === "string") {
       return confirm({
         message: options,
-        title: 'Erfolg',
-        type: 'success',
-        confirmButtonText: 'OK',
-        showCancelButton: false
+        title: "Erfolg",
+        type: "success",
+        confirmButtonText: "OK",
+        showCancelButton: false,
       });
     }
-    
+
     return confirm({
       ...options,
-      type: 'success',
-      showCancelButton: options.showCancelButton === true
+      type: "success",
+      showCancelButton: options.showCancelButton === true,
     });
   };
 
@@ -195,7 +213,7 @@ export function useDialog() {
    */
   const close = () => {
     isVisible.value = false;
-    
+
     // Callbacks zurücksetzen
     confirmCallback.value = null;
     cancelCallback.value = null;
@@ -218,42 +236,46 @@ export function useDialog() {
    * @param options Dialog-Konfiguration
    * @returns Ein Promise, das mit dem eingegebenen Wert aufgelöst wird, wenn der Benutzer bestätigt
    */
-  const prompt = (options: string | InputDialogOptions): Promise<string | null> => {
+  const prompt = (
+    options: string | InputDialogOptions,
+  ): Promise<string | null> => {
     return new Promise((resolve) => {
       // Dialog-Parameter konfigurieren
-      if (typeof options === 'string') {
+      if (typeof options === "string") {
         dialogMessage.value = options;
-        dialogTitle.value = 'Eingabe';
-        dialogType.value = 'input';
-        confirmButtonText.value = 'Bestätigen';
-        inputLabel.value = 'Eingabe';
-        inputType.value = 'text';
-        placeholder.value = '';
-        defaultValue.value = '';
+        dialogTitle.value = "Eingabe";
+        dialogType.value = "input";
+        confirmButtonText.value = "Bestätigen";
+        inputLabel.value = "Eingabe";
+        inputType.value = "text";
+        placeholder.value = "";
+        defaultValue.value = "";
         minLength.value = 0;
         maxLength.value = 256;
         required.value = true;
-        validationMessage.value = 'Bitte geben Sie einen gültigen Wert ein.';
+        validationMessage.value = "Bitte geben Sie einen gültigen Wert ein.";
         validator.value = null;
       } else {
         dialogMessage.value = options.message;
-        dialogTitle.value = options.title || 'Eingabe';
-        dialogType.value = 'input';
-        confirmButtonText.value = options.confirmButtonText || 'Bestätigen';
-        cancelButtonText.value = options.cancelButtonText || 'Abbrechen';
+        dialogTitle.value = options.title || "Eingabe";
+        dialogType.value = "input";
+        confirmButtonText.value = options.confirmButtonText || "Bestätigen";
+        cancelButtonText.value = options.cancelButtonText || "Abbrechen";
         showCancelButton.value = options.showCancelButton !== false;
-        
+
         // Input-spezifische Optionen
-        inputLabel.value = options.inputLabel || 'Eingabe';
-        inputType.value = options.inputType || 'text';
-        placeholder.value = options.placeholder || '';
-        defaultValue.value = options.defaultValue || '';
+        inputLabel.value = options.inputLabel || "Eingabe";
+        inputType.value = options.inputType || "text";
+        placeholder.value = options.placeholder || "";
+        defaultValue.value = options.defaultValue || "";
         minLength.value = options.minLength || 0;
         maxLength.value = options.maxLength || 256;
         required.value = options.required !== false;
-        validationMessage.value = options.validationMessage || 'Bitte geben Sie einen gültigen Wert ein.';
+        validationMessage.value =
+          options.validationMessage ||
+          "Bitte geben Sie einen gültigen Wert ein.";
         validator.value = options.validator || null;
-        
+
         // Callbacks
         cancelCallback.value = options.onCancel || null;
         closeCallback.value = options.onClose || null;
@@ -296,7 +318,7 @@ export function useDialog() {
     confirmButtonText,
     cancelButtonText,
     showCancelButton,
-    
+
     // Input-Dialog-Eigenschaften
     inputLabel,
     inputType,
@@ -307,7 +329,7 @@ export function useDialog() {
     required,
     validationMessage,
     validator,
-    
+
     // Methoden
     confirm,
     info,
@@ -316,11 +338,11 @@ export function useDialog() {
     success,
     prompt,
     close,
-    
+
     // Event-Handler
     handleConfirm,
     handleCancel,
-    handleInputConfirm
+    handleInputConfirm,
   };
 }
 
@@ -336,7 +358,7 @@ export function useGlobalDialog() {
   if (!globalDialogInstance) {
     globalDialogInstance = useDialog();
   }
-  
+
   return globalDialogInstance;
 }
 

@@ -9,14 +9,17 @@
  */
 export function generateUUID(): string {
   let d = new Date().getTime();
-  if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
+  if (
+    typeof performance !== "undefined" &&
+    typeof performance.now === "function"
+  ) {
     d += performance.now(); // Hinzufügen der Performance-Zeit für höhere Genauigkeit
   }
-  
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
     const r = (d + Math.random() * 16) % 16 | 0;
     d = Math.floor(d / 16);
-    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
   });
 }
 
@@ -31,27 +34,35 @@ export const v4 = generateUUID;
  * @returns Eine kryptografisch sichere UUID
  */
 export function generateSecureUUID(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
     return crypto.randomUUID();
-  } else if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+  } else if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.getRandomValues === "function"
+  ) {
     const buffer = new Uint8Array(16);
     crypto.getRandomValues(buffer);
-    
+
     // UUID-Version und -Variante setzen
     buffer[6] = (buffer[6] & 0x0f) | 0x40; // Version 4
     buffer[8] = (buffer[8] & 0x3f) | 0x80; // Variante 1
-    
+
     // In UUID-String konvertieren
-    const hexValues = Array.from(buffer).map(b => b.toString(16).padStart(2, '0'));
+    const hexValues = Array.from(buffer).map((b) =>
+      b.toString(16).padStart(2, "0"),
+    );
     return [
-      hexValues.slice(0, 4).join(''),
-      hexValues.slice(4, 6).join(''),
-      hexValues.slice(6, 8).join(''),
-      hexValues.slice(8, 10).join(''),
-      hexValues.slice(10).join('')
-    ].join('-');
+      hexValues.slice(0, 4).join(""),
+      hexValues.slice(4, 6).join(""),
+      hexValues.slice(6, 8).join(""),
+      hexValues.slice(8, 10).join(""),
+      hexValues.slice(10).join(""),
+    ].join("-");
   }
-  
+
   // Fallback zur normalen UUID-Generierung
   return generateUUID();
 }
@@ -59,5 +70,5 @@ export function generateSecureUUID(): string {
 export default {
   generateUUID,
   v4,
-  generateSecureUUID
+  generateSecureUUID,
 };
