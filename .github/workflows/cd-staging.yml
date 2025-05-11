@@ -1,0 +1,174 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run lint & type check
+        run: |
+          npm run lint
+          npm run typecheck
+      - name: Run tests
+        run: npm run test
+
+  build:
+    name: Build for Staging
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Create Staging environment file
+        run: |
+          cat > .env.staging << 'EOF'
+          # Staging Environment Configuration
+
+          # API Configuration
+          VITE_API_URL=${{ secrets.STAGING_API_URL }}
+          VITE_API_VERSION=v1
+          VITE_API_TIMEOUT=30000
+
+          # Environment Information
+          VITE_ENV=staging
+          VITE_PORT=3001
+          VITE_PREVIEW_PORT=4174
+          VITE_ENABLE_MOCK_API=false
+
+          # Application Features
+          VITE_ENABLE_DEBUG=true
+          VITE_ENABLE_LOGGER=true
+          VITE_LOGGER_LEVEL=info
+          VITE_ENABLE_CONSOLE=true
+
+          # Feature Flags
+          VITE_FEATURE_ENHANCED_CHAT=true
+          VITE_FEATURE_DOCUMENT_CONVERTER=true
+          VITE_FEATURE_ADMIN_PANEL=true
+
+          # Cache Configuration
+          VITE_CACHE_STORAGE=localStorage
+          VITE_CACHE_LIFETIME=7200
+          VITE_CACHE_PREFIX=nscale_staging_
+
+          # Authentication
+          VITE_AUTH_STORAGE=localStorage
+          VITE_AUTH_REMEMBER_ME=true
+          VITE_AUTH_SESSION_TIMEOUT=43200
+
+          # UI Configuration
+          VITE_DEFAULT_THEME=light
+          VITE_DEFAULT_LANG=de
+          VITE_ENABLE_ANIMATIONS=true
+
+          # Performance
+          VITE_ENABLE_PERFORMANCE_METRICS=true
+          VITE_ENABLE_ERROR_REPORTING=true
+          EOF
+      - name: Build for staging
+        run: npm run build -- --mode staging
+      - name: Create version info
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S")
+          GIT_COMMIT=${GITHUB_SHA}
+          GIT_BRANCH=${GITHUB_REF#refs/heads/}
+          
+          cat > "dist/version.json" << EOF
+          {
+            "version": "$VERSION",
+            "environment": "staging",
+            "buildDate": "$BUILD_DATE",
+            "gitCommit": "$GIT_COMMIT",
+            "gitBranch": "$GIT_BRANCH",
+            "buildNumber": "${GITHUB_RUN_NUMBER}"
+          }
+          EOF
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: staging-build
+          path: dist/
+          retention-days: 7
+  
+  deploy:
+    name: Deploy to Staging Server
+    needs: build
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: staging-build
+          path: dist/
+      - name: Display structure of downloaded files
+        run: ls -R dist/
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.STAGING_SSH_KEY }}
+      - name: Add known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan ${{ secrets.STAGING_SERVER }} >> ~/.ssh/known_hosts
+      - name: Deploy to staging server
+        run: |
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          RELEASE_PATH="${{ secrets.STAGING_PATH }}/releases/${TIMESTAMP}"
+          
+          # Erstelle Releases-Verzeichnis
+          ssh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_SERVER }} "mkdir -p ${RELEASE_PATH}"
+          
+          # Kopiere Build-Dateien
+          rsync -avz --delete dist/ ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_SERVER }}:${RELEASE_PATH}/
+          
+          # Setze Berechtigungen
+          ssh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_SERVER }} "chmod -R 755 ${RELEASE_PATH} && find ${RELEASE_PATH} -type f -exec chmod 644 {} \;"
+          
+          # Aktualisiere Symlink für das aktuelle Release
+          ssh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_SERVER }} "ln -sfn ${RELEASE_PATH} ${{ secrets.STAGING_PATH }}/current"
+          
+          # Bereinige alte Releases (behalte die letzten 5)
+          ssh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_SERVER }} "cd ${{ secrets.STAGING_PATH }}/releases && ls -t | tail -n +6 | xargs rm -rf"
+          
+          # Logge Deployment
+          ssh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_SERVER }} "echo \"$(date): Deployed build ${GITHUB_RUN_NUMBER} (commit ${GITHUB_SHA})\" >> ${{ secrets.STAGING_PATH }}/deployment.log"
+      
+      - name: Verify deployment
+        run: |
+          # Prüfe, ob die Anwendung erreichbar ist
+          if curl -s -f -o /dev/null "${{ secrets.STAGING_URL }}"; then
+            echo "Staging deployment successful! The application is accessible."
+          else
+            echo "Warning: The application doesn't seem to be accessible. Please check server configuration."
+          fi
+      
+      - name: Notify on Slack
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,workflow
+          text: "Staging Deployment ${{ job.status }}\nURL: ${{ secrets.STAGING_URL }}"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

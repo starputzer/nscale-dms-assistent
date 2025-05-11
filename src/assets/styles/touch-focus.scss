@@ -1,0 +1,425 @@
+/**
+ * Touch Focus Management & Mobile Optimization Styles
+ *
+ * These styles improve the user experience on mobile and touch devices by:
+ * - Optimizing focus handling for touch vs keyboard interactions
+ * - Providing standardized touch target sizes (min 44x44px per WCAG)
+ * - Adding mobile-optimized layout patterns and responsive helpers
+ * - Implementing touch feedback mechanisms
+ *
+ * Usage:
+ * - The .using-touch class is added to the body when touch interactions are detected
+ * - The .using-keyboard class is added when keyboard navigation is detected
+ * - Add .touch-target to interactive elements for proper sizing
+ * - Add .touch-feedback for visual touch interaction feedback
+ * - Use responsive layout classes like .mobile-stack and .mobile-container
+ */
+
+/* Core variables for mobile optimization */
+:root {
+  /* Touch-optimized sizing and spacing */
+  --touch-target-min: 44px;     /* WCAG minimum (actual min clickable area) */
+  --touch-target-optimal: 48px; /* Optimal minimum size for most touch targets */
+  --touch-spacing-xs: 0.5rem;   /* 8px - Small touch spacing */
+  --touch-spacing-sm: 0.75rem;  /* 12px - Medium touch spacing */
+  --touch-spacing-md: 1rem;     /* 16px - Standard touch spacing */
+  --touch-spacing-lg: 1.5rem;   /* 24px - Large touch spacing */
+
+  /* Touch feedback colors */
+  --touch-highlight: rgba(0, 0, 0, 0.05);      /* Light touch highlight */
+  --touch-highlight-primary: rgba(0, 165, 80, 0.1); /* Primary color touch highlight */
+
+  /* Standardized breakpoints for mobile-first approach */
+  --mobile-max: 767px;      /* Mobile breakpoint */
+  --tablet-min: 768px;      /* Tablet minimum */
+  --tablet-max: 1023px;     /* Tablet maximum */
+  --desktop-min: 1024px;    /* Desktop minimum */
+}
+
+/*
+ * Focus Management
+ * Intelligently shows or hides focus indicators based on input method
+ */
+
+/* Hide focus outlines for touch users */
+body.using-touch {
+  * {
+    &:focus:not([data-focus-visible-added]) {
+      outline: none !important;
+      box-shadow: none !important;
+    }
+  }
+
+  /* Specific handling for interactive elements */
+  button,
+  [role="button"],
+  a,
+  select,
+  input[type="checkbox"],
+  input[type="radio"],
+  .touch-target {
+    &:focus:not([data-focus-visible-added]) {
+      outline: none !important;
+      box-shadow: none !important;
+    }
+
+    /* Subtle scale effect for touch feedback */
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+}
+
+/* Show focus outlines for keyboard users */
+body.using-keyboard {
+  * {
+    &:focus {
+      outline: 2px solid var(--primary-600, #4a6cf7) !important;
+      outline-offset: 2px !important;
+    }
+  }
+
+  /* Specific handling for form inputs */
+  input,
+  select,
+  textarea {
+    &:focus {
+      border-color: var(--primary-600, #4a6cf7) !important;
+      box-shadow: 0 0 0 3px rgba(var(--primary-600-rgb, 74, 108, 247), 0.25) !important;
+    }
+  }
+}
+
+/*
+ * Touch Targets
+ * Ensures interactive elements meet size requirements for touch accessibility
+ */
+
+.touch-target {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target-min, 44px);
+  min-height: var(--touch-target-min, 44px);
+  position: relative;
+
+  /* Enhanced tap target without changing visual size */
+  &::after {
+    content: "";
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    bottom: -8px;
+    left: -8px;
+    z-index: -1;
+  }
+}
+
+/* Larger touch targets for primary actions */
+.touch-target-large {
+  min-width: var(--touch-target-optimal, 48px);
+  min-height: var(--touch-target-optimal, 48px);
+}
+
+/* Touchable icon with proper sizing */
+.touch-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target-min, 44px);
+  min-height: var(--touch-target-min, 44px);
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/*
+ * Touch Feedback
+ * Visual feedback for touch interactions
+ */
+
+.touch-feedback {
+  position: relative;
+  /* Remove default mobile tap highlight */
+  -webkit-tap-highlight-color: transparent;
+
+  /* Active state feedback */
+  &:active {
+    background-color: var(--touch-highlight, rgba(0, 0, 0, 0.05));
+  }
+}
+
+/* Material design inspired ripple effect */
+.touch-ripple {
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    background-color: var(--touch-highlight-primary, rgba(0, 165, 80, 0.1));
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.4s, opacity 0.4s;
+  }
+
+  &:active::after {
+    transform: translate(-50%, -50%) scale(2.5);
+    opacity: 1;
+    transition: 0s;
+  }
+}
+
+/*
+ * Mobile-Optimized Layouts
+ * Responsive patterns for better mobile experiences
+ */
+
+/* Container with optimized mobile padding */
+.mobile-container {
+  padding: var(--touch-spacing-md, 1rem);
+  width: 100%;
+
+  @media (max-width: var(--mobile-max, 767px)) {
+    padding: var(--touch-spacing-sm, 0.75rem);
+  }
+}
+
+/* Mobile-first responsive grid */
+.mobile-grid {
+  display: grid;
+  gap: var(--touch-spacing-md, 1rem);
+  grid-template-columns: 1fr;
+  width: 100%;
+
+  @media (min-width: 480px) {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+}
+
+/* Stacked elements that become horizontal on larger screens */
+.mobile-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--touch-spacing-sm, 0.75rem);
+  width: 100%;
+
+  @media (min-width: var(--tablet-min, 768px)) {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+/* Touch-optimized list items */
+.mobile-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--touch-spacing-sm, 0.75rem);
+  width: 100%;
+
+  &__item {
+    min-height: var(--touch-target-min, 44px);
+    padding: var(--touch-spacing-md, 1rem);
+    border-radius: 8px;
+    background-color: var(--bg-tertiary, #f8f9fa);
+    border: 1px solid var(--border-color, #e9ecef);
+
+    /* Increased spacing on mobile */
+    @media (max-width: var(--mobile-max, 767px)) {
+      padding: var(--touch-spacing-lg, 1.5rem);
+      margin-bottom: var(--touch-spacing-xs, 0.5rem);
+    }
+  }
+}
+
+/* Mobile-optimized tables that transform to cards on small screens */
+.mobile-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  @media (max-width: var(--mobile-max, 767px)) {
+    /* Reset table display */
+    &, thead, tbody, tr, th, td {
+      display: block;
+    }
+
+    /* Hide headers */
+    thead {
+      position: absolute;
+      left: -9999px;
+    }
+
+    /* Style rows as cards */
+    tr {
+      margin-bottom: var(--touch-spacing-md, 1rem);
+      border-radius: 8px;
+      border: 1px solid var(--border-color, #e9ecef);
+      background-color: var(--bg-tertiary, #f8f9fa);
+    }
+
+    /* Style cells as key-value pairs */
+    td {
+      position: relative;
+      min-height: var(--touch-target-min, 44px);
+      padding: var(--touch-spacing-sm, 0.75rem) var(--touch-spacing-md, 1rem);
+      padding-left: 45%;
+      text-align: right;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      border-bottom: 1px solid var(--border-color, #e9ecef);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      /* Use data-label for column headers */
+      &::before {
+        content: attr(data-label);
+        position: absolute;
+        left: var(--touch-spacing-md, 1rem);
+        width: 40%;
+        padding-right: var(--touch-spacing-xs, 0.5rem);
+        text-align: left;
+        font-weight: bold;
+        color: var(--text-secondary, #6c757d);
+      }
+    }
+  }
+}
+
+/*
+ * Mobile Visibility Helpers
+ * Classes to show/hide content based on viewport size
+ */
+@media (max-width: var(--mobile-max, 767px)) {
+  .hide-on-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: var(--tablet-min, 768px)) and (max-width: var(--tablet-max, 1023px)) {
+  .hide-on-tablet {
+    display: none !important;
+  }
+}
+
+@media (min-width: var(--desktop-min, 1024px)) {
+  .hide-on-desktop {
+    display: none !important;
+  }
+}
+
+.show-on-mobile {
+  display: none !important;
+
+  @media (max-width: var(--mobile-max, 767px)) {
+    display: initial !important;
+  }
+}
+
+.show-on-tablet {
+  display: none !important;
+
+  @media (min-width: var(--tablet-min, 768px)) and (max-width: var(--tablet-max, 1023px)) {
+    display: initial !important;
+  }
+}
+
+.show-on-desktop {
+  display: none !important;
+
+  @media (min-width: var(--desktop-min, 1024px)) {
+    display: initial !important;
+  }
+}
+
+/*
+ * Mobile Form Optimizations
+ * Improved touch-friendly form elements
+ */
+.touch-form {
+  &__group {
+    margin-bottom: var(--touch-spacing-lg, 1.5rem);
+  }
+
+  &__label {
+    display: block;
+    margin-bottom: var(--touch-spacing-xs, 0.5rem);
+    font-weight: 500;
+  }
+
+  &__input {
+    width: 100%;
+    min-height: var(--touch-target-min, 44px);
+    padding: 0 var(--touch-spacing-md, 1rem);
+    border: 1px solid var(--border-color, #e9ecef);
+    border-radius: 8px;
+    font-size: 16px; /* Prevents iOS zoom on focus */
+
+    &:focus {
+      border-color: var(--primary-600, #4a6cf7);
+      outline: none;
+    }
+  }
+
+  &__select {
+    width: 100%;
+    min-height: var(--touch-target-min, 44px);
+    padding: 0 var(--touch-spacing-md, 1rem);
+    border: 1px solid var(--border-color, #e9ecef);
+    border-radius: 8px;
+    font-size: 16px;
+    background-position: right var(--touch-spacing-sm, 0.75rem) center;
+    background-size: 16px;
+    appearance: none;
+  }
+
+  &__textarea {
+    width: 100%;
+    min-height: calc(var(--touch-target-min, 44px) * 2);
+    padding: var(--touch-spacing-sm, 0.75rem) var(--touch-spacing-md, 1rem);
+    border: 1px solid var(--border-color, #e9ecef);
+    border-radius: 8px;
+    font-size: 16px; /* Prevents iOS zoom on focus */
+    resize: vertical;
+
+    &:focus {
+      border-color: var(--primary-600, #4a6cf7);
+      outline: none;
+    }
+  }
+
+  &__button {
+    min-height: var(--touch-target-min, 44px);
+    padding: 0 var(--touch-spacing-lg, 1.5rem);
+    background-color: var(--primary-600, #4a6cf7);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 16px;
+  }
+}
+
+/* Accessibility overrides for users with reduced motion */
+@media screen and (prefers-reduced-motion: reduce) {
+  .touch-ripple::after {
+    transition: none !important;
+  }
+
+  .touch-feedback:active,
+  .touch-target:active,
+  button:active {
+    transform: none !important;
+  }
+}

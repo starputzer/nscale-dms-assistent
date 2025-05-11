@@ -1,0 +1,172 @@
+/* Feedback-Button-Stile */
+.feedback-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.feedback-buttons:hover {
+    opacity: 1;
+}
+
+.feedback-button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s;
+    margin-left: 0.2rem;
+}
+
+/* Hover-Effekt für individuelle Buttons angepasst */
+.feedback-button:hover {
+    color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Ausgewählter positiver Button */
+.feedback-button.selected {
+    color: var(--nscale-green);
+}
+
+/* Ausgewählter negativer Button */
+.feedback-button.selected.negative {
+    color: #ef4444;
+}
+
+.feedback-comment {
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 0.2rem;
+    margin-right: 1rem;
+}
+
+/* Stelle sicher, dass Feedback-Buttons nur in Assistentennachrichten erscheinen */
+.user-message .feedback-buttons {
+    display: none;
+}
+
+/* Theme-spezifische Anpassungen für Feedback-Buttons */
+.theme-dark .feedback-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.theme-dark .feedback-comment {
+    color: #aaa;
+}
+
+.theme-dark .feedback-button.selected {
+    color: #00c060;
+}
+
+.theme-contrast .feedback-button {
+    color: #ffeb3b;
+}
+
+.theme-contrast .feedback-button:hover {
+    background-color: #333300;
+}
+
+.theme-contrast .feedback-button.selected {
+    color: #ffeb3b;
+    font-weight: bold;
+}
+
+.theme-contrast .feedback-button.selected.negative {
+    color: #ff4444;
+}
+
+.theme-contrast .feedback-comment {
+    color: #ffeb3b;
+}
+
+/* Feedback-Dialog */
+.feedback-dialog {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    max-width: 500px;
+    width: 100%;
+}
+
+.feedback-dialog-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--nscale-dark-gray);
+}
+
+.feedback-dialog-message {
+    margin-bottom: 1rem;
+    color: var(--nscale-dark-gray);
+}
+
+.feedback-textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    resize: vertical;
+}
+
+.feedback-textarea:focus {
+    border-color: var(--nscale-green);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 165, 80, 0.1);
+}
+
+.feedback-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+/* Theme-spezifische Anpassungen für Feedback-Dialog */
+.theme-dark .feedback-dialog {
+    background-color: #1e1e1e;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.theme-dark .feedback-dialog-title,
+.theme-dark .feedback-dialog-message {
+    color: #f0f0f0;
+}
+
+.theme-dark .feedback-textarea {
+    background-color: #333;
+    color: #f0f0f0;
+    border-color: #444;
+}
+
+.theme-dark .feedback-textarea:focus {
+    box-shadow: 0 0 0 2px rgba(0, 192, 96, 0.2);
+}
+
+.theme-contrast .feedback-dialog {
+    background-color: #000000;
+    border: 2px solid #ffeb3b;
+    box-shadow: 0 4px 15px rgba(255, 235, 59, 0.3);
+}
+
+.theme-contrast .feedback-dialog-title,
+.theme-contrast .feedback-dialog-message {
+    color: #ffeb3b;
+}
+
+.theme-contrast .feedback-textarea {
+    background-color: #000000;
+    color: #ffffff;
+    border: 2px solid #ffeb3b;
+}
+
+.theme-contrast .feedback-textarea:focus {
+    box-shadow: 0 0 0 2px rgba(255, 235, 59, 0.3);
+}

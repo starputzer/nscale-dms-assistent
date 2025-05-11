@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue 3 SFC Testseite</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+        .header h1 {
+            margin-bottom: 0.5rem;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .button.secondary {
+            background-color: #2196F3;
+        }
+        .button.secondary:hover {
+            background-color: #0b7dda;
+        }
+        .test-controls {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        #vue-app, #doc-converter-mount {
+            margin-top: 2rem;
+            min-height: 400px;
+        }
+        .log-output {
+            font-family: monospace;
+            background-color: #f1f1f1;
+            padding: 1rem;
+            border-radius: 4px;
+            height: 200px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+        .log-output .error {
+            color: red;
+        }
+        .log-output .success {
+            color: green;
+        }
+        .log-output .info {
+            color: blue;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Vue 3 SFC Testseite</h1>
+            <p>Diese Seite dient zum Testen der Vue 3 SFC-Integration im nscale DMS Assistenten</p>
+        </div>
+        
+        <div class="card">
+            <h2>Teststatus</h2>
+            <div class="test-controls">
+                <button id="enable-vue" class="button">Vue aktivieren</button>
+                <button id="enable-doc-converter" class="button secondary">Dokumentenkonverter aktivieren</button>
+            </div>
+            
+            <div>
+                <h3>Konsole:</h3>
+                <div id="log-output" class="log-output"></div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Vue App:</h2>
+            <div id="vue-app"></div>
+        </div>
+        
+        <div class="card">
+            <h2>Dokumentenkonverter:</h2>
+            <div id="doc-converter-mount"></div>
+        </div>
+    </div>
+    
+    <script type="module">
+        // Eigene Konsole für Debugging
+        const logOutput = document.getElementById('log-output');
+        
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        const originalConsoleInfo = console.info;
+        
+        console.log = function(...args) {
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg) : arg
+            ).join(' ');
+            
+            const logEntry = document.createElement('div');
+            logEntry.textContent = `[LOG] ${message}`;
+            logOutput.appendChild(logEntry);
+            logOutput.scrollTop = logOutput.scrollHeight;
+            
+            originalConsoleLog.apply(console, args);
+        };
+        
+        console.error = function(...args) {
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg) : arg
+            ).join(' ');
+            
+            const logEntry = document.createElement('div');
+            logEntry.textContent = `[ERROR] ${message}`;
+            logEntry.className = 'error';
+            logOutput.appendChild(logEntry);
+            logOutput.scrollTop = logOutput.scrollHeight;
+            
+            originalConsoleError.apply(console, args);
+        };
+        
+        console.info = function(...args) {
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg) : arg
+            ).join(' ');
+            
+            const logEntry = document.createElement('div');
+            logEntry.textContent = `[INFO] ${message}`;
+            logEntry.className = 'info';
+            logOutput.appendChild(logEntry);
+            logOutput.scrollTop = logOutput.scrollHeight;
+            
+            originalConsoleInfo.apply(console, args);
+        };
+        
+        // Feature-Flags setzen
+        document.getElementById('enable-vue').addEventListener('click', () => {
+            localStorage.setItem('useVueComponents', 'true');
+            console.log('Vue-Komponenten aktiviert');
+            location.reload();
+        });
+        
+        document.getElementById('enable-doc-converter').addEventListener('click', () => {
+            localStorage.setItem('useVueDocConverter', 'true');
+            console.log('Dokumentenkonverter aktiviert');
+            location.reload();
+        });
+        
+        // Main-Skript über CDN importieren
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.esm-browser.js';
+        script.type = 'module';
+        document.head.appendChild(script);
+        
+        console.log('Vue über CDN geladen');
+        
+        // Feature-Flags in der Konsole anzeigen
+        setTimeout(() => {
+            try {
+                const { createApp } = Vue;
+                
+                const vueApp = createApp({
+                    template: `
+                        <div style="padding: 1rem; background-color: #e8f5e9; border: 2px solid #4caf50; border-radius: 8px;">
+                            <h3>Vue Test erfolgreich!</h3>
+                            <p>Vue 3 wurde über CDN geladen und initialisiert.</p>
+                        </div>
+                    `
+                });
+                
+                const appElement = document.getElementById('vue-app');
+                if (appElement) {
+                    vueApp.mount('#vue-app');
+                    console.log('Vue 3 Test-App initialisiert');
+                }
+            } catch (e) {
+                console.error('Fehler bei Vue-Initialisierung:', e);
+            }
+        }, 1000);
+            
+        // Status anzeigen
+        if (localStorage.getItem('useVueComponents') === 'true') {
+            console.info('Vue-Komponenten sind aktiviert');
+        } else {
+            console.info('Vue-Komponenten sind deaktiviert');
+        }
+        
+        if (localStorage.getItem('useVueDocConverter') === 'true') {
+            console.info('Dokumentenkonverter ist aktiviert');
+        } else {
+            console.info('Dokumentenkonverter ist deaktiviert');
+        }
+    </script>
+</body>
+</html>

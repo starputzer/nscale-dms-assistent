@@ -1,0 +1,326 @@
+/**
+ * nscale DMS Assistant CSS Variables
+ * 
+ * Ein umfassendes CSS-Variablen-System für den nscale DMS Assistenten.
+ * Entwickelt im Rahmen der Migration von Vanilla JS zu Vue 3 SFC.
+ * 
+ * Letzte Aktualisierung: 08.05.2025
+ */
+
+:root {
+  /* ===== Farben: Basis-System ===== */
+  --nscale-primary: #00a550;
+  --nscale-primary-dark: #009046;
+  --nscale-primary-light: #e0f5ea;
+  --nscale-primary-ultra-light: #f0faf5;
+  
+  /* Graustufen */
+  --nscale-white: #ffffff;
+  --nscale-gray-50: #f8f9fa;
+  --nscale-gray-100: #f0f2f5;
+  --nscale-gray-200: #e2e8f0;
+  --nscale-gray-300: #d1d5db;
+  --nscale-gray-400: #9ca3af;
+  --nscale-gray-500: #6b7280;
+  --nscale-gray-600: #4b5563;
+  --nscale-gray-700: #374151;
+  --nscale-gray-800: #1f2937;
+  --nscale-gray-900: #111827;
+  --nscale-black: #000000;
+  
+  /* Feedback-Farben */
+  --nscale-error: #dc2626;
+  --nscale-error-light: #fee2e2;
+  --nscale-warning: #f59e0b;
+  --nscale-warning-light: #fef3c7;
+  --nscale-success: #10b981;
+  --nscale-success-light: #d1fae5;
+  --nscale-info: #3b82f6;
+  --nscale-info-light: #dbeafe;
+  
+  /* ===== Layout und Spacing ===== */
+  /* Einheitliches 4px-System für Konsistenz */
+  --nscale-space-1: 0.25rem;   /* 4px */
+  --nscale-space-2: 0.5rem;    /* 8px */
+  --nscale-space-3: 0.75rem;   /* 12px */
+  --nscale-space-4: 1rem;      /* 16px */
+  --nscale-space-5: 1.25rem;   /* 20px */
+  --nscale-space-6: 1.5rem;    /* 24px */
+  --nscale-space-8: 2rem;      /* 32px */
+  --nscale-space-10: 2.5rem;   /* 40px */
+  --nscale-space-12: 3rem;     /* 48px */
+  --nscale-space-16: 4rem;     /* 64px */
+  --nscale-space-20: 5rem;     /* 80px */
+  --nscale-space-24: 6rem;     /* 96px */
+  
+  /* Containergröße */
+  --nscale-sidebar-width: 280px;
+  --nscale-header-height: 64px;
+  --nscale-footer-height: 48px;
+  --nscale-content-max-width: 1200px;
+  
+  /* ===== Typografie ===== */
+  --nscale-font-family-base: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, 'Helvetica Neue', sans-serif;
+  --nscale-font-family-mono: 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
+  
+  --nscale-font-size-xs: 0.75rem;    /* 12px */
+  --nscale-font-size-sm: 0.875rem;   /* 14px */
+  --nscale-font-size-base: 1rem;     /* 16px */
+  --nscale-font-size-lg: 1.125rem;   /* 18px */
+  --nscale-font-size-xl: 1.25rem;    /* 20px */
+  --nscale-font-size-2xl: 1.5rem;    /* 24px */
+  --nscale-font-size-3xl: 1.875rem;  /* 30px */
+  --nscale-font-size-4xl: 2.25rem;   /* 36px */
+  
+  --nscale-font-weight-light: 300;
+  --nscale-font-weight-normal: 400;
+  --nscale-font-weight-medium: 500;
+  --nscale-font-weight-semibold: 600;
+  --nscale-font-weight-bold: 700;
+  
+  --nscale-line-height-tight: 1.25;
+  --nscale-line-height-normal: 1.5;
+  --nscale-line-height-relaxed: 1.75;
+  
+  /* ===== Komponenten-Stilisierung ===== */
+  /* Border-Radius */
+  --nscale-border-radius-sm: 0.25rem; /* 4px */
+  --nscale-border-radius-md: 0.5rem;  /* 8px */
+  --nscale-border-radius-lg: 0.75rem; /* 12px */
+  --nscale-border-radius-xl: 1rem;    /* 16px */
+  --nscale-border-radius-full: 9999px;
+  
+  /* Schatten */
+  --nscale-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --nscale-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --nscale-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --nscale-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  /* Transitions */
+  --nscale-transition-quick: 150ms;
+  --nscale-transition-normal: 300ms;
+  --nscale-transition-slow: 500ms;
+  
+  /* Z-Index-Stacks */
+  --nscale-z-index-dropdown: 1000;
+  --nscale-z-index-sticky: 1020;
+  --nscale-z-index-fixed: 1030;
+  --nscale-z-index-modal-backdrop: 1040;
+  --nscale-z-index-modal: 1050;
+  --nscale-z-index-popover: 1060;
+  --nscale-z-index-tooltip: 1070;
+  
+  /* ===== Responsive Breakpoints ===== */
+  --nscale-screen-xs: 480px;
+  --nscale-screen-sm: 640px;
+  --nscale-screen-md: 768px;
+  --nscale-screen-lg: 1024px;
+  --nscale-screen-xl: 1280px;
+  --nscale-screen-2xl: 1536px;
+  
+  /* ===== Helligkeitsmodus: Hell (Standard) ===== */
+  --nscale-body-bg: var(--nscale-white);
+  --nscale-body-color: var(--nscale-gray-800);
+  
+  --nscale-card-bg: var(--nscale-white);
+  --nscale-card-border: var(--nscale-gray-200);
+  
+  --nscale-input-bg: var(--nscale-white);
+  --nscale-input-border: var(--nscale-gray-300);
+  --nscale-input-text: var(--nscale-gray-800);
+  --nscale-input-placeholder: var(--nscale-gray-400);
+  
+  --nscale-sidebar-bg: var(--nscale-gray-50);
+  --nscale-sidebar-text: var(--nscale-gray-700);
+  --nscale-sidebar-border: var(--nscale-gray-200);
+  
+  --nscale-header-bg: var(--nscale-white);
+  --nscale-header-text: var(--nscale-gray-800);
+  --nscale-header-border: var(--nscale-gray-200);
+  
+  --nscale-message-user-bg: var(--nscale-primary-light);
+  --nscale-message-user-text: var(--nscale-gray-800);
+  
+  --nscale-message-assistant-bg: var(--nscale-white);
+  --nscale-message-assistant-text: var(--nscale-gray-800);
+  --nscale-message-assistant-border: var(--nscale-gray-200);
+  
+  --nscale-message-system-bg: var(--nscale-warning-light);
+  --nscale-message-system-text: var(--nscale-gray-800);
+  --nscale-message-system-border: var(--nscale-warning);
+  
+  --nscale-session-item-bg: transparent;
+  --nscale-session-item-bg-hover: var(--nscale-gray-100);
+  --nscale-session-item-bg-active: var(--nscale-primary-light);
+  --nscale-session-item-text: var(--nscale-gray-700);
+  --nscale-session-item-border-active: var(--nscale-primary);
+  
+  --nscale-btn-primary-bg: var(--nscale-primary);
+  --nscale-btn-primary-text: var(--nscale-white);
+  --nscale-btn-primary-bg-hover: var(--nscale-primary-dark);
+  
+  --nscale-btn-secondary-bg: var(--nscale-white);
+  --nscale-btn-secondary-text: var(--nscale-primary);
+  --nscale-btn-secondary-border: var(--nscale-primary);
+  --nscale-btn-secondary-bg-hover: var(--nscale-primary-light);
+}
+
+/* ===== Helligkeitsmodus: Dunkel ===== */
+.theme-dark {
+  --nscale-body-bg: var(--nscale-gray-900);
+  --nscale-body-color: var(--nscale-gray-100);
+  
+  --nscale-card-bg: var(--nscale-gray-800);
+  --nscale-card-border: var(--nscale-gray-700);
+  
+  --nscale-input-bg: var(--nscale-gray-700);
+  --nscale-input-border: var(--nscale-gray-600);
+  --nscale-input-text: var(--nscale-gray-100);
+  --nscale-input-placeholder: var(--nscale-gray-400);
+  
+  --nscale-sidebar-bg: var(--nscale-gray-800);
+  --nscale-sidebar-text: var(--nscale-gray-100);
+  --nscale-sidebar-border: var(--nscale-gray-700);
+  
+  --nscale-header-bg: var(--nscale-gray-800);
+  --nscale-header-text: var(--nscale-gray-100);
+  --nscale-header-border: var(--nscale-gray-700);
+  
+  --nscale-message-user-bg: var(--nscale-primary-dark);
+  --nscale-message-user-text: var(--nscale-white);
+  
+  --nscale-message-assistant-bg: var(--nscale-gray-800);
+  --nscale-message-assistant-text: var(--nscale-gray-100);
+  --nscale-message-assistant-border: var(--nscale-gray-700);
+  
+  --nscale-message-system-bg: var(--nscale-gray-800);
+  --nscale-message-system-text: var(--nscale-warning-light);
+  --nscale-message-system-border: var(--nscale-warning);
+  
+  --nscale-session-item-bg: transparent;
+  --nscale-session-item-bg-hover: var(--nscale-gray-700);
+  --nscale-session-item-bg-active: var(--nscale-primary-dark);
+  --nscale-session-item-text: var(--nscale-gray-200);
+  --nscale-session-item-border-active: var(--nscale-primary);
+  
+  --nscale-btn-primary-bg: var(--nscale-primary);
+  --nscale-btn-primary-text: var(--nscale-gray-900);
+  --nscale-btn-primary-bg-hover: var(--nscale-primary-light);
+  
+  --nscale-btn-secondary-bg: transparent;
+  --nscale-btn-secondary-text: var(--nscale-primary-light);
+  --nscale-btn-secondary-border: var(--nscale-primary);
+  --nscale-btn-secondary-bg-hover: rgba(0, 165, 80, 0.2);
+}
+
+/* ===== Helligkeitsmodus: Kontrast ===== */
+.theme-contrast {
+  /* Anpassung der Primärfarbe auf Gelb für besseren Kontrast */
+  --nscale-primary: #ffeb3b;
+  --nscale-primary-dark: #ffd600;
+  --nscale-primary-light: #fff9c4;
+  
+  --nscale-body-bg: var(--nscale-black);
+  --nscale-body-color: var(--nscale-white);
+  
+  --nscale-card-bg: var(--nscale-black);
+  --nscale-card-border: var(--nscale-primary);
+  
+  --nscale-input-bg: var(--nscale-black);
+  --nscale-input-border: var(--nscale-primary);
+  --nscale-input-text: var(--nscale-white);
+  --nscale-input-placeholder: var(--nscale-gray-400);
+  
+  --nscale-sidebar-bg: var(--nscale-black);
+  --nscale-sidebar-text: var(--nscale-white);
+  --nscale-sidebar-border: var(--nscale-primary);
+  
+  --nscale-header-bg: var(--nscale-black);
+  --nscale-header-text: var(--nscale-white);
+  --nscale-header-border: var(--nscale-primary);
+  
+  --nscale-message-user-bg: var(--nscale-gray-900);
+  --nscale-message-user-text: var(--nscale-primary);
+  --nscale-message-user-border: var(--nscale-primary);
+  
+  --nscale-message-assistant-bg: var(--nscale-black);
+  --nscale-message-assistant-text: var(--nscale-white);
+  --nscale-message-assistant-border: var(--nscale-primary);
+  
+  --nscale-message-system-bg: var(--nscale-gray-900);
+  --nscale-message-system-text: var(--nscale-primary);
+  --nscale-message-system-border: var(--nscale-primary);
+  
+  --nscale-session-item-bg: transparent;
+  --nscale-session-item-bg-hover: var(--nscale-gray-900);
+  --nscale-session-item-bg-active: var(--nscale-gray-900);
+  --nscale-session-item-text: var(--nscale-white);
+  --nscale-session-item-border-active: var(--nscale-primary);
+  
+  --nscale-btn-primary-bg: var(--nscale-primary);
+  --nscale-btn-primary-text: var(--nscale-black);
+  --nscale-btn-primary-bg-hover: var(--nscale-primary-dark);
+  
+  --nscale-btn-secondary-bg: var(--nscale-black);
+  --nscale-btn-secondary-text: var(--nscale-primary);
+  --nscale-btn-secondary-border: var(--nscale-primary);
+  --nscale-btn-secondary-bg-hover: var(--nscale-gray-900);
+}
+
+/* ===== Barrierefreiheit: Reduzierte Bewegung ===== */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.reduce-motion {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ===== Schriftgrößen-Klassen ===== */
+.font-size-small {
+  font-size: var(--nscale-font-size-sm);
+}
+
+.font-size-medium {
+  font-size: var(--nscale-font-size-base);
+}
+
+.font-size-large {
+  font-size: var(--nscale-font-size-lg);
+}
+
+/* ===== Responsive Media Queries ===== */
+/* Mobile first: Diese Breakpoints werden verwendet, um Stile für größere Bildschirme anzuwenden */
+@media (min-width: 640px) {
+  :root {
+    --nscale-sidebar-width: 280px;
+  }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --nscale-sidebar-width: 320px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --nscale-sidebar-width: 350px;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --nscale-content-max-width: 1200px;
+  }
+}

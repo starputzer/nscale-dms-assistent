@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nscale DMS Assistent - Abhängigkeitstest</title>
+
+    <!-- Vue und Abhängigkeiten -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@vueuse/shared@9.13.0/index.iife.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@vueuse/core@9.13.0/index.iife.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-demi@0.13.11/lib/index.iife.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pinia@2.0.33/dist/pinia.iife.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .card { border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        button { padding: 8px 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0069d9; }
+        pre { background-color: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .test-item { margin-bottom: 10px; padding: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>nscale DMS Assistent - Abhängigkeitstest</h1>
+    
+    <div id="dependency-test">
+        <div class="card">
+            <h2>Bibliotheken-Verfügbarkeit</h2>
+            <div v-for="(result, library) in libraryTests" :key="library" 
+                 class="test-item" :class="result.available ? 'success' : 'error'">
+                <strong>{{ library }}:</strong> {{ result.available ? 'Verfügbar' : 'Nicht verfügbar' }}
+                <div v-if="result.version">Version: {{ result.version }}</div>
+                <div v-if="!result.available" class="error-detail">{{ result.error }}</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Vue-Instanz-Test</h2>
+            <button @click="testVueInstance">Vue-Instanz testen</button>
+            <div v-if="vueInstanceTest" class="test-item" 
+                 :class="vueInstanceTest.success ? 'success' : 'error'">
+                <strong>Ergebnis:</strong> {{ vueInstanceTest.message }}
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Pinia-Store-Test</h2>
+            <button @click="testPiniaStore">Pinia-Store testen</button>
+            <div v-if="piniaStoreTest" class="test-item"
+                 :class="piniaStoreTest.success ? 'success' : 'error'">
+                <strong>Ergebnis:</strong> {{ piniaStoreTest.message }}
+                <pre v-if="piniaStoreTest.data">{{ piniaStoreTest.data }}</pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>LocalStorage Feature Toggles</h2>
+            <div>
+                <pre>{{ featureTogglesJson }}</pre>
+                <button @click="enableAllSfcFeatures">Alle SFC-Features aktivieren</button>
+                <button @click="reloadPage" class="btn-secondary">Seite neu laden</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted } = Vue;
+        const { createPinia, defineStore } = Pinia;
+
+        const app = createApp({
+            setup() {
+                const libraryTests = ref({});
+                const vueInstanceTest = ref(null);
+                const piniaStoreTest = ref(null);
+                const featureTogglesJson = ref('Loading...');
+
+                // Test für alle Bibliotheken
+                onMounted(() => {
+                    testLibraries();
+                    loadFeatureToggles();
+                });
+
+                function testLibraries() {
+                    const libraries = {
+                        'Vue': window.Vue,
+                        'VueDemi': window.VueDemi,
+                        'Pinia': window.Pinia,
+                        'VueUse': window.VueUse,
+                        'axios': window.axios,
+                        'marked': window.marked
+                    };
+
+                    Object.entries(libraries).forEach(([name, lib]) => {
+                        if (lib) {
+                            libraryTests.value[name] = { 
+                                available: true, 
+                                version: lib.version || 'Unbekannt' 
+                            };
+                        } else {
+                            libraryTests.value[name] = { 
+                                available: false, 
+                                error: `${name} ist nicht global verfügbar` 
+                            };
+                        }
+                    });
+                }
+
+                function testVueInstance() {
+                    try {
+                        const testApp = createApp({
+                            template: '<div>Test App</div>'
+                        });
+                        const testComponent = {
+                            template: '<div>Test Component</div>'
+                        };
+                        testApp.component('TestComponent', testComponent);
+                        
+                        // Cleanup vorher
+                        const oldEl = document.getElementById('vue-test-mount');
+                        if (oldEl) {
+                            oldEl.remove();
+                        }
+                        
+                        // Neues Element erstellen
+                        const el = document.createElement('div');
+                        el.id = 'vue-test-mount';
+                        document.body.appendChild(el);
+                        
+                        testApp.mount('#vue-test-mount');
+                        
+                        vueInstanceTest.value = {
+                            success: true,
+                            message: 'Vue-Instanz erfolgreich erstellt und gemountet'
+                        };
+                    } catch (error) {
+                        vueInstanceTest.value = {
+                            success: false,
+                            message: `Fehler beim Erstellen der Vue-Instanz: ${error.message}`
+                        };
+                    }
+                }
+
+                function testPiniaStore() {
+                    try {
+                        const testApp = createApp({});
+                        const pinia = createPinia();
+                        testApp.use(pinia);
+                        
+                        const useTestStore = defineStore('test', {
+                            state: () => ({ counter: 0 }),
+                            actions: {
+                                increment() {
+                                    this.counter++;
+                                }
+                            }
+                        });
+                        
+                        // Cleanup vorher
+                        const oldEl = document.getElementById('pinia-test-mount');
+                        if (oldEl) {
+                            oldEl.remove();
+                        }
+                        
+                        // Neues Element erstellen
+                        const el = document.createElement('div');
+                        el.id = 'pinia-test-mount';
+                        document.body.appendChild(el);
+                        
+                        const vm = testApp.mount('#pinia-test-mount');
+                        const store = useTestStore(pinia);
+                        
+                        store.increment();
+                        store.increment();
+                        
+                        piniaStoreTest.value = {
+                            success: true,
+                            message: 'Pinia-Store erfolgreich erstellt und getestet',
+                            data: JSON.stringify(store.$state, null, 2)
+                        };
+                    } catch (error) {
+                        piniaStoreTest.value = {
+                            success: false,
+                            message: `Fehler beim Erstellen des Pinia-Stores: ${error.message}`
+                        };
+                    }
+                }
+
+                function loadFeatureToggles() {
+                    try {
+                        const toggles = localStorage.getItem('featureToggles');
+                        if (toggles) {
+                            const parsed = JSON.parse(toggles);
+                            featureTogglesJson.value = JSON.stringify(parsed, null, 2);
+                        } else {
+                            featureTogglesJson.value = 'Keine Feature-Toggles im localStorage gefunden';
+                        }
+                    } catch (error) {
+                        featureTogglesJson.value = `Fehler beim Laden der Feature-Toggles: ${error.message}`;
+                    }
+                }
+
+                function enableAllSfcFeatures() {
+                    try {
+                        let toggles = {};
+                        try {
+                            toggles = JSON.parse(localStorage.getItem('featureToggles') || '{}');
+                        } catch (e) {
+                            toggles = {};
+                        }
+
+                        // Setze alle SFC-Features auf true
+                        toggles = {
+                            ...toggles,
+                            useSfcAdmin: true,
+                            useSfcDocConverter: true, 
+                            useSfcChat: true,
+                            useSfcSettings: true,
+                            // Abhängigkeiten
+                            usePiniaAuth: true,
+                            usePiniaUI: true,
+                            usePiniaSessions: true,
+                            usePiniaSettings: true,
+                            useLegacyBridge: true
+                        };
+
+                        localStorage.setItem('featureToggles', JSON.stringify(toggles));
+                        loadFeatureToggles();
+                        
+                        alert('Alle SFC-Features wurden aktiviert. Laden Sie die Hauptseite neu, um die Änderungen zu sehen.');
+                    } catch (error) {
+                        alert(`Fehler beim Aktivieren der Features: ${error.message}`);
+                    }
+                }
+
+                function reloadPage() {
+                    window.location.reload();
+                }
+
+                return {
+                    libraryTests,
+                    vueInstanceTest,
+                    piniaStoreTest,
+                    featureTogglesJson,
+                    testVueInstance,
+                    testPiniaStore,
+                    enableAllSfcFeatures,
+                    reloadPage
+                };
+            }
+        });
+
+        app.mount('#dependency-test');
+    </script>
+</body>
+</html>

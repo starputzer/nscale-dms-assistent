@@ -1,0 +1,581 @@
+/**
+ * Verbessertes CSS für die Interaktivität im nscale DMS Assistent
+ * Diese Datei stellt sicher, dass alle interaktiven Elemente korrekt angezeigt und betriebsbereit sind
+ */
+
+/* Debug-Panel Styling */
+#repair-debug {
+  font-family: monospace;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+#repair-debug .debug-entry {
+  margin-bottom: 3px;
+}
+
+#repair-debug .debug-time {
+  color: #0ff;
+  margin-right: 8px;
+}
+
+#repair-debug .debug-msg {
+  color: #0f0;
+}
+
+/* Verbesserte Sichtbarkeit für interaktive Elemente */
+button, 
+input[type="submit"],
+a[href],
+.clickable,
+[role="button"] {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  opacity: 1 !important;
+  user-select: auto !important;
+}
+
+/* Bessere Hover-Zustände für Buttons */
+button:hover, 
+a[href]:hover,
+.clickable:hover,
+[role="button"]:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+}
+
+/* Active-Zustände für Buttons */
+button:active, 
+a[href]:active,
+.clickable:active,
+[role="button"]:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+/* Verbesserte Sichtbarkeit für Admin-Tabs */
+.admin-tab-button {
+  position: relative;
+  overflow: visible;
+}
+
+/* Markierung für aktiven Tab */
+.admin-tab-button.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 3px;
+  background-color: var(--nscale-green, #00a550);
+}
+
+/* Verbesserte Settings-Dialog-Sichtbarkeit */
+.settings-dialog, 
+.settings-dialog-overlay {
+  z-index: 9999 !important;
+}
+
+/* Verbesserte Admin-Tab-Inhalte */
+.admin-tab-content, 
+[class*="admin-tab"] {
+  display: none;
+}
+
+.admin-tab-content.active, 
+[class*="admin-tab"].active {
+  display: block !important;
+}
+
+/* Chat-Input-Verbesserungen */
+form input[type="text"], 
+form textarea {
+  cursor: text !important;
+  background-color: white !important;
+}
+
+/* Klare Fokus-Stile */
+button:focus, 
+input:focus, 
+textarea:focus, 
+select:focus, 
+a:focus {
+  outline: 2px solid var(--nscale-green, #00a550) !important;
+  outline-offset: 2px !important;
+}
+
+/* Z-Index Korrekturen für Overlays */
+.feedback-dialog-overlay,
+.settings-dialog-overlay {
+  z-index: 9998 !important;
+}
+
+/* Vue-Komponenten-Reparatur */
+[id^="vue-"], 
+[id*="vue-"] {
+  display: block !important;
+}
+
+/* Fehlerbehebung für versteckte Admin-Tabs */
+.admin-tab-button {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: flex !important;
+  align-items: center;
+  padding: 8px 16px;
+  margin-bottom: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  background-color: #f5f7fa;
+}
+
+.admin-tab-button i {
+  margin-right: 8px;
+}
+
+.admin-tab-button:hover {
+  background-color: #e9ecef;
+}
+
+.admin-tab-button.active {
+  background-color: var(--nscale-green, #00a550);
+  color: white;
+}
+
+/* Verbesserungen der Sichtbarkeit von Buttons in der Admin-Oberfläche */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  background-color: #f8f9fa;
+  color: #495057;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn.primary {
+  background-color: var(--nscale-green, #00a550);
+  border-color: var(--nscale-green-dark, #009046);
+  color: white;
+}
+
+.btn.danger {
+  background-color: #dc3545;
+  border-color: #bd2130;
+  color: white;
+}
+
+.btn.success {
+  background-color: #28a745;
+  border-color: #1e7e34;
+  color: white;
+}
+
+.btn.small {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.btn:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+/* Verbesserte Sichtbarkeit für Seitenleisten-Elemente */
+.sessions-sidebar .session-item {
+  opacity: 1 !important;
+  cursor: pointer !important;
+}
+
+.sessions-sidebar .session-item button {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.sessions-sidebar .session-item:hover button {
+  opacity: 1;
+}
+
+/* Verbesserte Chat-Nachrichtenformatierung */
+.message-container {
+  margin-bottom: 16px !important;
+  opacity: 1 !important;
+}
+
+.message-container .message-text {
+  white-space: pre-wrap !important;
+}
+
+/* Tabellen in Admin-Ansicht */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.admin-table th, 
+.admin-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.admin-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.admin-table tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Badges in Admin-Tabellen */
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge.admin {
+  background-color: #007bff;
+  color: white;
+}
+
+.badge.user {
+  background-color: #6c757d;
+  color: white;
+}
+
+.badge.active {
+  background-color: #28a745;
+  color: white;
+}
+
+.badge.inactive {
+  background-color: #dc3545;
+  color: white;
+}
+
+/* MOTD-Styling */
+.motd-container {
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.motd-content {
+  display: flex;
+  align-items: start;
+}
+
+.motd-icon {
+  margin-right: 12px;
+  font-size: 18px;
+}
+
+/* Feedback-Dialog */
+.feedback-dialog {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  max-width: 500px;
+  width: 90%;
+}
+
+.feedback-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.feedback-dialog-content {
+  padding: 16px;
+}
+
+.feedback-buttons {
+  display: flex;
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.feedback-button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
+
+.feedback-button.positive {
+  border-color: #28a745;
+}
+
+.feedback-button.positive.selected {
+  background-color: #d4edda;
+}
+
+.feedback-button.negative {
+  border-color: #dc3545;
+}
+
+.feedback-button.negative.selected {
+  background-color: #f8d7da;
+}
+
+.feedback-button i {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.feedback-comment-section {
+  margin-top: 16px;
+}
+
+.feedback-comment-section textarea {
+  width: 100%;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  min-height: 80px;
+  margin-top: 8px;
+}
+
+.feedback-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.submit-button {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  background-color: var(--nscale-green, #00a550);
+  color: white;
+  cursor: pointer;
+}
+
+.submit-button i {
+  margin-right: 8px;
+}
+
+/* Source-Referenzen */
+.source-references {
+  margin-top: 8px;
+  border: 1px solid #eaeaea;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.source-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.source-content {
+  padding: 8px 12px;
+}
+
+.source-item {
+  margin-bottom: 8px;
+}
+
+.source-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.source-detail {
+  padding: 8px;
+  border: 1px solid #eaeaea;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  background-color: #ffffff;
+}
+
+.source-metadata {
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.source-text {
+  white-space: pre-wrap;
+}
+
+/* Settings-Dialog */
+.settings-dialog {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  max-width: 600px;
+  width: 90%;
+}
+
+.settings-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.settings-dialog-content {
+  padding: 16px;
+}
+
+.settings-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.settings-section {
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.settings-section h4 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+.settings-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.settings-label {
+  font-weight: 500;
+}
+
+.settings-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
+
+.settings-button.active {
+  background-color: var(--nscale-green, #00a550);
+  color: white;
+  border-color: var(--nscale-green-dark, #009046);
+}
+
+.settings-select {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  background-color: white;
+}
+
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.settings-reset-button {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
+
+.settings-reset-button i {
+  margin-right: 8px;
+}
+
+.system-info {
+  margin-top: 12px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+.info-item {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.info-label {
+  font-weight: 500;
+  width: 120px;
+}
+
+/* Verbesserungen für Mobile-Ansicht */
+@media (max-width: 768px) {
+  .admin-tab-button span {
+    display: none;
+  }
+  
+  .admin-tab-button i {
+    margin-right: 0;
+    font-size: 18px;
+  }
+  
+  .settings-option {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .settings-control {
+    width: 100%;
+  }
+  
+  .settings-button {
+    flex: 1;
+    text-align: center;
+  }
+}

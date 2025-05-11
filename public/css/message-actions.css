@@ -1,0 +1,218 @@
+/* message-actions.css - Verbesserte Styling für Nachrichtenaktionen */
+
+/* Nachrichtenaktionen mit Animation */
+.message-actions {
+    margin-top: 10px;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+/* Nachrichtenaktionen erst anzeigen, wenn Streaming abgeschlossen ist und Maus über Nachricht */
+.nscale-message-assistant:hover .message-actions {
+    opacity: 1;
+}
+
+/* Während des Streamings keine Aktionen anzeigen */
+.is-streaming .message-actions {
+    display: none !important;
+}
+
+/* Quellenreferenzen im Text hervorheben */
+.source-reference {
+    display: inline-block;
+    padding: 0 2px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: rgba(0, 165, 80, 0.1);
+    border: 1px solid rgba(0, 165, 80, 0.2);
+    color: #008d45;
+}
+
+.source-reference:hover {
+    background-color: rgba(0, 165, 80, 0.2);
+    transform: translateY(-1px);
+}
+
+/* Quellen-Buttons styling */
+.source-buttons {
+    display: flex;
+    margin-top: 8px;
+    gap: 10px;
+}
+
+.source-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: #f8f9fa;
+    border: 1px solid #e2e8f0;
+    color: #4a5568;
+}
+
+.source-btn i {
+    margin-right: 6px;
+}
+
+.source-btn:hover {
+    background-color: #edf2f7;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Verstecke message_id Debug-Info */
+div[style*="font-size: 10px"][style*="color: gray"] {
+    display: none !important;
+}
+
+/* Dark mode Anpassungen */
+.theme-dark .source-reference {
+    background-color: rgba(0, 192, 96, 0.2);
+    border: 1px solid rgba(0, 192, 96, 0.3);
+    color: #00c060;
+}
+
+.theme-dark .source-reference:hover {
+    background-color: rgba(0, 192, 96, 0.3);
+}
+
+.theme-dark .source-btn {
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    color: #f0f0f0;
+}
+
+.theme-dark .source-btn:hover {
+    background-color: #333;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Contrast mode Anpassungen */
+.theme-contrast .source-reference {
+    background-color: #333300;
+    border: 1px solid #ffeb3b;
+    color: #ffeb3b;
+    font-weight: bold;
+}
+
+.theme-contrast .source-reference:hover {
+    background-color: #444400;
+}
+
+.theme-contrast .source-btn {
+    background-color: #000000;
+    border: 1px solid #ffeb3b;
+    color: #ffeb3b;
+}
+
+.theme-contrast .source-btn:hover {
+    background-color: #333300;
+    box-shadow: 0 2px 5px rgba(255, 235, 59, 0.2);
+}
+
+/* Popup für Quellendetails */
+.source-popup {
+    position: absolute;
+    background-color: white;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 12px;
+    max-width: 300px;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.source-popup-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.source-popup-content {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
+.source-popup-file {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.source-popup-close {
+    display: block;
+    text-align: right;
+    font-size: 0.85rem;
+    color: #666;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+.source-popup-close:hover {
+    color: #333;
+    text-decoration: underline;
+}
+
+/* Dark mode für Popup */
+.theme-dark .source-popup {
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    color: #f0f0f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.theme-dark .source-popup-title {
+    border-bottom-color: #333;
+    color: #00c060;
+}
+
+.theme-dark .source-popup-file {
+    color: #aaa;
+}
+
+.theme-dark .source-popup-close {
+    color: #aaa;
+}
+
+.theme-dark .source-popup-close:hover {
+    color: #fff;
+}
+
+/* Kontrast-Modus für Popup */
+.theme-contrast .source-popup {
+    background-color: #000000;
+    border: 2px solid #ffeb3b;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(255, 235, 59, 0.2);
+}
+
+.theme-contrast .source-popup-title {
+    border-bottom-color: #ffeb3b;
+    color: #ffeb3b;
+}
+
+.theme-contrast .source-popup-file {
+    color: #ffeb3b;
+}
+
+.theme-contrast .source-popup-close {
+    color: #ffeb3b;
+}
+
+.theme-contrast .source-popup-close:hover {
+    color: #ffffff;
+}

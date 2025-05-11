@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nscale DMS Assistent - Direct Launch</title>
+    
+    <!-- CSS imports -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/themes.css">
+    <link rel="stylesheet" href="/css/improved-ui.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="/css/feedback.css">
+    <link rel="stylesheet" href="/css/message-actions.css">
+    <link rel="stylesheet" href="/css/settings.css">
+    <link rel="stylesheet" href="/css/source-references.css">
+    
+    <!-- Vue direct import (development version) -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pinia@2.0.33/dist/pinia.iife.js"></script>
+    
+    <style>
+        .debug-panel {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 9999;
+            font-family: monospace;
+            max-width: 500px;
+        }
+        
+        .debug-panel button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            margin: 5px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        .debug-panel .feature-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .feature-toggle button {
+            background-color: #555;
+            padding: 2px 5px;
+            font-size: 12px;
+        }
+        
+        .feature-toggle button.active {
+            background-color: #4CAF50;
+        }
+        
+        .feature-toggle button.inactive {
+            background-color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="min-h-screen bg-gray-50">
+        <h1 class="text-2xl font-bold p-4 bg-indigo-600 text-white">nscale DMS Assistent - Direct Launch</h1>
+        
+        <div class="p-4">
+            <div class="mb-4">
+                <h2 class="text-xl font-semibold mb-2">Vanilla JS App</h2>
+                <button @click="launchVanillaApp" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Launch Original App
+                </button>
+            </div>
+            
+            <div class="mb-4">
+                <h2 class="text-xl font-semibold mb-2">Vue 3 SFC</h2>
+                <div class="flex space-x-2">
+                    <button @click="launchVueApp" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                        Launch Vue 3 App
+                    </button>
+                    <button @click="launchDocConverter" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                        Launch Document Converter
+                    </button>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <h2 class="text-xl font-semibold mb-2">Test Components</h2>
+                <div id="vue-test-container" class="border p-4 rounded min-h-[300px] bg-white"></div>
+            </div>
+        </div>
+        
+        <div class="debug-panel">
+            <h3>Debug Tools</h3>
+            <div class="feature-toggles">
+                <div class="feature-toggle">
+                    <span>Use Vue Components:</span>
+                    <button @click="toggleFeature('useVueComponents')" :class="isFeatureEnabled('useVueComponents') ? 'active' : 'inactive'">
+                        {{ isFeatureEnabled('useVueComponents') ? 'Enabled' : 'Disabled' }}
+                    </button>
+                </div>
+                <div class="feature-toggle">
+                    <span>Use Vue Doc Converter:</span>
+                    <button @click="toggleFeature('useVueDocConverter')" :class="isFeatureEnabled('useVueDocConverter') ? 'active' : 'inactive'">
+                        {{ isFeatureEnabled('useVueDocConverter') ? 'Enabled' : 'Disabled' }}
+                    </button>
+                </div>
+            </div>
+            <div>
+                <button @click="enableAllFeatures">Enable All Features</button>
+                <button @click="clearLocalStorage">Clear LocalStorage</button>
+            </div>
+            <div class="mt-2">
+                <p>Debug Log:</p>
+                <div style="max-height: 150px; overflow-y: auto; font-size: 12px; margin-top: 5px;">
+                    <div v-for="(log, index) in debugLogs" :key="index" style="border-bottom: 1px solid #555; padding: 2px 0;">
+                        {{ log }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        const { createApp, ref, onMounted } = Vue;
+        
+        const app = createApp({
+            setup() {
+                const debugLogs = ref([]);
+                
+                // Log function for debug panel
+                function log(message) {
+                    debugLogs.value.push(`[${new Date().toLocaleTimeString()}] ${message}`);
+                    console.log(message);
+                }
+                
+                // Feature toggle helpers
+                function isFeatureEnabled(feature) {
+                    if (feature === 'useVueComponents' || feature === 'useVueDocConverter') {
+                        return localStorage.getItem(feature) === 'true';
+                    } else {
+                        const featureToggles = JSON.parse(localStorage.getItem('featureToggles') || '{}');
+                        return featureToggles[feature] === true;
+                    }
+                }
+                
+                function toggleFeature(feature) {
+                    if (feature === 'useVueComponents' || feature === 'useVueDocConverter') {
+                        const currentValue = localStorage.getItem(feature) === 'true';
+                        localStorage.setItem(feature, !currentValue);
+                        log(`Toggled ${feature} to ${!currentValue}`);
+                    } else {
+                        const featureToggles = JSON.parse(localStorage.getItem('featureToggles') || '{}');
+                        featureToggles[feature] = !featureToggles[feature];
+                        localStorage.setItem('featureToggles', JSON.stringify(featureToggles));
+                        log(`Toggled ${feature} to ${featureToggles[feature]}`);
+                    }
+                }
+                
+                function enableAllFeatures() {
+                    // Set direct localStorage flags
+                    localStorage.setItem('useVueComponents', 'true');
+                    localStorage.setItem('useVueDocConverter', 'true');
+                    
+                    // Set Pinia feature toggles
+                    const featureToggles = JSON.parse(localStorage.getItem('featureToggles') || '{}');
+                    
+                    // Enable SFC features
+                    featureToggles.useSfcAdmin = true;
+                    featureToggles.useSfcDocConverter = true;
+                    featureToggles.useSfcChat = true;
+                    featureToggles.useSfcSettings = true;
+                    
+                    // Enable dependencies
+                    featureToggles.usePiniaAuth = true;
+                    featureToggles.usePiniaUI = true;
+                    featureToggles.usePiniaSessions = true;
+                    featureToggles.usePiniaSettings = true;
+                    featureToggles.useLegacyBridge = true;
+                    
+                    localStorage.setItem('featureToggles', JSON.stringify(featureToggles));
+                    
+                    log('All features enabled');
+                }
+                
+                function clearLocalStorage() {
+                    localStorage.removeItem('useVueComponents');
+                    localStorage.removeItem('useVueDocConverter');
+                    localStorage.removeItem('featureToggles');
+                    log('LocalStorage cleared');
+                }
+                
+                // App launcher functions
+                function launchVanillaApp() {
+                    log('Launching vanilla JS app...');
+                    window.location.href = '/frontend/index.html';
+                }
+                
+                function launchVueApp() {
+                    log('Launching Vue 3 app...');
+                    enableAllFeatures();
+                    setTimeout(() => {
+                        window.location.href = '/frontend/vue-dms-assistant.html';
+                    }, 500);
+                }
+                
+                function launchDocConverter() {
+                    log('Launching Document Converter...');
+                    enableAllFeatures();
+                    
+                    // Create test mount point if needed
+                    const container = document.getElementById('vue-test-container');
+                    container.innerHTML = '';
+                    
+                    const docConverterMount = document.createElement('div');
+                    docConverterMount.id = 'doc-converter-mount';
+                    container.appendChild(docConverterMount);
+                    
+                    // Import doc converter directly
+                    import('/frontend/vue/doc-converter-app.js')
+                        .then(module => {
+                            log('Document converter module loaded');
+                            const DocConverterApp = module.default;
+                            
+                            // Create Pinia instance
+                            const pinia = window.Pinia.createPinia();
+                            
+                            // Mount app
+                            const docApp = Vue.createApp(DocConverterApp);
+                            docApp.use(pinia);
+                            docApp.mount('#doc-converter-mount');
+                            log('Document converter mounted successfully');
+                        })
+                        .catch(error => {
+                            log(`Error loading document converter: ${error.message}`);
+                            console.error(error);
+                        });
+                }
+                
+                // Initialize on mount
+                onMounted(() => {
+                    log('Direct Launch initialized');
+                    
+                    // Log initial state
+                    log(`useVueComponents: ${localStorage.getItem('useVueComponents')}`);
+                    log(`useVueDocConverter: ${localStorage.getItem('useVueDocConverter')}`);
+                    
+                    const featureToggles = JSON.parse(localStorage.getItem('featureToggles') || '{}');
+                    log(`SFC features: ${JSON.stringify({
+                        admin: featureToggles.useSfcAdmin,
+                        docConverter: featureToggles.useSfcDocConverter,
+                        chat: featureToggles.useSfcChat,
+                        settings: featureToggles.useSfcSettings
+                    })}`);
+                });
+                
+                return {
+                    debugLogs,
+                    isFeatureEnabled,
+                    toggleFeature,
+                    enableAllFeatures,
+                    clearLocalStorage,
+                    launchVanillaApp,
+                    launchVueApp,
+                    launchDocConverter
+                };
+            }
+        });
+        
+        app.mount('#app');
+    </script>
+</body>
+</html>
