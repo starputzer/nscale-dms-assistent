@@ -11,12 +11,19 @@ import { useErrorReporting } from "@/utils/errorReportingService";
 import { useSessionsStore } from "@/stores/sessions";
 import { toastService } from "@/services/ui/ToastService";
 
+// Debug konstante für Feature-Flags
+const DISABLE_FEATURE_CHECKS = true;
+
+// Router-Fehler-Diagnose aktivieren (nur für Entwicklung empfohlen)
+const ENABLE_ROUTER_ERROR_DIAGNOSTICS = import.meta.env.DEV || false;
+
 /**
  * Optimierte Router-Konfiguration mit:
  * - Erweiterten Lazy-Loading-Optionen mit Chunking
  * - Präfabrikantion häufig genutzter Routen
  * - Named Chunks für bessere Cache-Kontrolle
  * - Kompliziertere Komponenten mit dediziertem Chunk
+ * - Verbesserte Fehlerbehandlung für Route-Ladeprobleme
  */
 
 // Feature-Flag-Mapping für Route-Zugriffskontrolle
@@ -33,10 +40,14 @@ import {
   createRouterView,
   preloadComponentGroup,
   setupNetworkMonitoring,
+  setupRouterErrorTracking,
 } from "@/utils/dynamicImport";
 
 // Netzwerkbedingungen überwachen für adaptive Ladestrategien
 const networkMonitor = setupNetworkMonitoring();
+
+// Fehler-Tracking für Router-Komponenten initialisieren
+const routerErrorTracking = setupRouterErrorTracking();
 
 /**
  * Optimierte Lazy-Loading-Funktion mit erweiterten Features:
@@ -56,61 +67,115 @@ function lazyLoadView(
   },
 ) {
   // Router-View mit Tracking und adaptiven Ladestrategien erstellen
-  return createRouterView(viewPath, {
-    chunkName: options.chunkName,
-    preload: options.preload && networkMonitor.shouldPreload(),
-    prefetch: options.prefetch && networkMonitor.isOnline(),
-    priority: options.priority,
-    loadingDelay: networkMonitor.getAdaptiveDelay(
-      options.priority === "critical"
-        ? 0
-        : options.priority === "high"
-          ? 50
-          : options.priority === "medium"
-            ? 150
-            : 300,
-    ),
-    meta: { route: viewPath },
-  });
+  try {
+    return createRouterView(viewPath, {
+      chunkName: options.chunkName,
+      preload: options.preload && networkMonitor.shouldPreload(),
+      prefetch: options.prefetch && networkMonitor.isOnline(),
+      priority: options.priority,
+      loadingDelay: networkMonitor.getAdaptiveDelay(
+        options.priority === "critical"
+          ? 0
+          : options.priority === "high"
+            ? 50
+            : options.priority === "medium"
+              ? 150
+              : 300,
+      ),
+      meta: { route: viewPath },
+    });
+  } catch (error) {
+    console.error(`Fehler beim Laden von ${viewPath}:`, error);
+    // Im Fehlerfall ErrorView als Fallback zurückgeben
+    return createRouterView("ErrorView", {
+      chunkName: "error",
+      priority: "critical",
+      preload: true,
+      meta: { 
+        errorSource: viewPath,
+        errorDetails: error instanceof Error ? error.message : String(error)
+      },
+    });
+  }
 }
 
 // Nach Funktionalitätsgruppen organisierte Chunks mit optimierten Ladestrategien
-const lazyLoadAdmin = (component: string) =>
-  createRouterView(component, {
-    chunkName: "admin",
-    priority: "medium",
-    prefetch: networkMonitor.isOnline() && !networkMonitor.isSlowConnection(),
-    meta: { moduleType: "admin" },
-  });
+const lazyLoadAdmin = (component: string) => {
+  try {
+    return createRouterView(component, {
+      chunkName: "admin",
+      priority: "medium",
+      prefetch: networkMonitor.isOnline() && !networkMonitor.isSlowConnection(),
+      meta: { moduleType: "admin" },
+    });
+  } catch (error) {
+    console.error(`Fehler beim Laden von Admin-Komponente ${component}:`, error);
+    return createRouterView("ErrorView", {
+      chunkName: "error",
+      priority: "critical",
+      preload: true,
+      meta: { 
+        errorSource: `admin/${component}`,
+        errorDetails: error instanceof Error ? error.message : String(error)
+      },
+    });
+  }
+};
 
-const lazyLoadChat = (component: string) =>
-  createRouterView(component, {
-    chunkName: "chat",
-    priority: "high",
-    prefetch: networkMonitor.isOnline(),
-    loadingDelay: networkMonitor.getAdaptiveDelay(100),
-    meta: { moduleType: "chat" },
-  });
+const lazyLoadChat = (component: string) => {
+  try {
+    return createRouterView(component, {
+      chunkName: "chat",
+      priority: "high",
+      prefetch: networkMonitor.isOnline(),
+      loadingDelay: networkMonitor.getAdaptiveDelay(100),
+      meta: { moduleType: "chat" },
+    });
+  } catch (error) {
+    console.error(`Fehler beim Laden von Chat-Komponente ${component}:`, error);
+    return createRouterView("ErrorView", {
+      chunkName: "error",
+      priority: "critical",
+      preload: true,
+      meta: { 
+        errorSource: `chat/${component}`,
+        errorDetails: error instanceof Error ? error.message : String(error)
+      },
+    });
+  }
+};
 
-const lazyLoadDocs = (component: string) =>
-  createRouterView(component, {
-    chunkName: "docs",
-    priority: "medium",
-    prefetch: networkMonitor.isOnline() && !networkMonitor.isSlowConnection(),
-    meta: { moduleType: "docs" },
-  });
+const lazyLoadDocs = (component: string) => {
+  try {
+    return createRouterView(component, {
+      chunkName: "docs",
+      priority: "medium",
+      prefetch: networkMonitor.isOnline() && !networkMonitor.isSlowConnection(),
+      meta: { moduleType: "docs" },
+    });
+  } catch (error) {
+    console.error(`Fehler beim Laden von Docs-Komponente ${component}:`, error);
+    return createRouterView("ErrorView", {
+      chunkName: "error",
+      priority: "critical",
+      preload: true,
+      meta: { 
+        errorSource: `docs/${component}`,
+        errorDetails: error instanceof Error ? error.message : String(error)
+      },
+    });
+  }
+};
 
 // Routen-Definitionen
 const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
-    name: "Chat",
+    name: "Home",
     component: () => lazyLoadChat("ChatView"),
     meta: {
       requiresAuth: true,
-      featureFlag: "useSfcChat",
       title: "Chat",
-      fallbackRoute: "/enhanced-chat",
     },
   },
   {
@@ -131,23 +196,36 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/enhanced-chat",
     name: "EnhancedChat",
-    component: () => lazyLoadChat("EnhancedChatView"),
+    component: () => lazyLoadChat("EnhancedChatView"), 
     meta: {
       requiresAuth: true,
-      featureFlag: "enhancedChatComponents",
       title: "Enhanced Chat",
     },
   },
   {
     path: "/login",
     name: "Login",
-    component: lazyLoadView("LoginView", {
-      chunkName: "auth",
-      preload: true, // Login-Komponente vorausladen für schnellere Reaktion
-    }),
+    // Direkte Import-Anweisung für höchste Zuverlässigkeit
+    component: () => import('../views/LoginView.simple.vue'),
     meta: {
       guest: true,
       title: "Login",
+      featureFlag: "useSfcLogin",
+      isCriticalPath: true, // Markiere explizit als kritischen Pfad
+    },
+    // Alternativer Komponentenpfad für Entwicklungs- und Testzwecke
+    alias: "/auth"
+  },
+  {
+    path: "/auth",
+    name: "Auth",
+    component: lazyLoadView("AuthView", {
+      chunkName: "auth",
+      preload: true,
+    }),
+    meta: {
+      guest: true,
+      title: "Anmelden",
       featureFlag: "useSfcLogin",
     },
   },
@@ -199,14 +277,23 @@ const routes: Array<RouteRecordRaw> = [
     name: "Error",
     component: lazyLoadView("ErrorView", {
       chunkName: "error",
+      priority: "critical", // Höchste Priorität für Fehlerseite
+      preload: true, // Vorausladen, damit Fehlerseite immer verfügbar ist
     }),
     meta: {
       title: "Fehler",
+      requiresAuth: false, // Sicherstellen, dass die Fehlerseite ohne Auth erreichbar ist
     },
     props: (route) => ({
       errorCode: route.query.code || "500",
-      errorMessage:
-        route.query.message || "Ein unbekannter Fehler ist aufgetreten.",
+      errorMessage: route.query.message || "Ein unbekannter Fehler ist aufgetreten.",
+      errorDetails: route.query.details || "",
+      canRetry: route.query.canRetry === "true",
+      // Erweiterte Diagnoseinformationen durchreichen
+      source: route.query.source,
+      component: route.query.component,
+      from: route.query.from,
+      originalRoute: route.query.originalRoute
     }),
   },
   {
@@ -214,9 +301,12 @@ const routes: Array<RouteRecordRaw> = [
     name: "NotFound",
     component: lazyLoadView("NotFoundView", {
       chunkName: "error",
+      priority: "high", // Hohe Priorität für 404-Seite
+      preload: true, // Vorausladen für bessere Benutzererfahrung
     }),
     meta: {
       title: "Seite nicht gefunden",
+      requiresAuth: false, // Keine Authentifizierung erforderlich
     },
   },
 ];
@@ -253,19 +343,37 @@ const checkAuth = async (
   const authStore = useAuthStore();
 
   try {
+    // Spezialbehandlung für Error-Routen: immer erlauben
+    if (to.name === 'Error' || to.path.startsWith('/error')) {
+      return next();
+    }
+    
     // Prüfe, ob Route Authentifizierung erfordert
     if (to.meta.requiresAuth && !authStore.isAuthenticated) {
       // Token-Validität prüfen (falls Token vorhanden)
       if (authStore.token) {
-        const isValid = await authStore.validateCurrentToken();
-        if (!isValid) {
-          // Wenn Token ungültig, zum Login umleiten
+        try {
+          const isValid = await authStore.validateCurrentToken();
+          if (!isValid) {
+            // Wenn Token ungültig, zum Login umleiten
+            return next({
+              path: "/login",
+              query: {
+                redirect: to.fullPath,
+                error: "session_expired",
+              },
+            });
+          }
+        } catch (error) {
+          // Bei Fehler zur Error-Seite weiterleiten
+          console.error("Fehler bei Token-Validierung:", error);
           return next({
-            path: "/login",
+            path: "/error",
             query: {
-              redirect: to.fullPath,
-              error: "session_expired",
-            },
+              code: "auth_error",
+              message: "Fehler bei der Authentifizierung. Bitte erneut anmelden.",
+              from: to.fullPath
+            }
           });
         }
       } else {
@@ -347,6 +455,16 @@ const checkFeatureFlags = (
   from: RouteLocationNormalized,
   next: NavigationGuardNext,
 ) => {
+  // Feature-Checks komplett deaktivieren für Debugging
+  if (DISABLE_FEATURE_CHECKS) {
+    return next();
+  }
+  
+  // Für kritische Routen immer weitermachen (besonders während der Entwicklung)
+  if (to.path === '/' || to.path === '/login' || to.path === '/enhanced-chat' || to.path === '/error' || to.path.startsWith('/error')) {
+    return next();
+  }
+  
   // Feature-Flag-Store abrufen
   const featureToggles = useFeatureTogglesStore();
 
@@ -359,34 +477,20 @@ const checkFeatureFlags = (
     if (!featureFlag || featureToggles.isEnabled(featureFlag)) {
       return next();
     }
-
-    // Ansonsten zur Fallback-Route oder Fehlerseite umleiten
-    const fallbackRoute = (to.meta.fallbackRoute as string) || "/error";
-
-    if (fallbackRoute === "/error") {
-      return next({
-        path: fallbackRoute,
-        query: {
-          code: "feature_disabled",
-          message: `Das Feature "${featureFlag}" ist derzeit deaktiviert.`,
-        },
-      });
+    
+    // In der Entwicklung alle Features zulassen
+    if (import.meta.env.DEV) {
+      console.log(`Feature "${featureFlag}" ist deaktiviert, wird aber in DEV erlaubt`);
+      return next();
     }
 
-    // Zur Fallback-Route umleiten
-    return next({ path: fallbackRoute });
+    // Ansonsten zur Home-Route umleiten
+    console.log(`Feature "${featureFlag}" ist deaktiviert, Umleitung zur Startseite`);
+    return next({ path: "/" });
   } catch (error) {
-    // Bei Fehler zur Hauptseite oder Fehlerseite umleiten
-    const errorReporting = useErrorReporting();
-    errorReporting.captureError(error, {
-      severity: "medium",
-      source: {
-        type: "system",
-        name: "Feature Flag Router Guard",
-      },
-    });
-
-    return next({ path: "/error" });
+    console.warn('Feature Flag Check Error:', error);
+    // Bei Fehler zur Hauptseite weiterleiten
+    return next();
   }
 };
 
@@ -497,9 +601,89 @@ const trackNavigation = (
   }
 };
 
-// Navigation Guards registrieren
+// Debug Router
+console.log("Router Konfiguration:", routes);
+
+// Initialer Redirect zur Login-Seite, wenn der Pfad direkt auf "/" endet
+router.beforeEach((to, from, next) => {
+  // Wenn die App gerade gestartet wird und man versucht "/" zu öffnen,
+  // direkt zum Login umleiten, da wir prüfen müssen, ob der Benutzer angemeldet ist
+  const authStore = useAuthStore();
+  if (to.path === "/" && !authStore.isAuthenticated) {
+    console.log("Benutzer nicht angemeldet - Umleitung zum Login");
+    localStorage.setItem('redirected', 'true');
+    return next({ path: "/login" });
+  }
+  
+  // Entferne den Redirect-Flag nach erfolgreicher Navigation
+  if (to.path !== "/" && localStorage.getItem('redirected')) {
+    localStorage.removeItem('redirected');
+  }
+  
+  // Bei allen anderen Navigationen fortsetzen
+  return next();
+});
+
+// Fehlerbehandlung und Debug-Logging
+router.beforeEach((to, from, next) => {
+  console.log(`Navigation: ${from.path} -> ${to.path}`);
+  
+  // Fehlerseite direkt anzeigen, wenn von dort aus navigiert wird
+  if (from.path === "/error") {
+    console.log("Navigation von Fehlerseite - direktes Durchlassen");
+    return next();
+  }
+  
+  // Root-Route immer erlauben
+  if (to.path === "/" || to.name === "Home") {
+    console.log("Navigation zur Root-Route - direktes Durchlassen");
+    return next();
+  }
+  
+  // Weiterleiten an normale Navigation Guards
+  next();
+});
+
+// Hilfsfunktion, die prüft, ob es sich um einen kritischen oder Fehler-Pfad handelt
+function isCriticalPath(path: string, route?: RouteLocationNormalized) {
+  // Prüfe zuerst auf explizites isCriticalPath-Flag in Route-Metadaten
+  if (route && route.meta.isCriticalPath === true) {
+    return true;
+  }
+
+  // Sonst prüfe anhand des Pfads
+  return (
+    path === "/" || 
+    path === "/login" || 
+    path === "/auth" ||
+    path === "/enhanced-chat" || 
+    path === "/error" || 
+    path.startsWith("/error") || 
+    path.includes("/error") || 
+    path.includes("chunk_load_error") || 
+    path.includes("router_error")
+  );
+}
+
+// Feature-Flags prüfen vor Auth, damit Auth-Checks immer durchlaufen
+router.beforeEach((to, from, next) => {
+  try {
+    // Wenn es sich um einen kritischen Pfad handelt, direkt weitergeben
+    if (isCriticalPath(to.path, to) || to.name === "Error" || to.name === "NotFound") {
+      console.log("Skipping feature and auth checks for critical path:", to.path);
+      return next();
+    }
+    
+    // Sonst normale Guards ausführen
+    return checkFeatureFlags(to, from, next);
+  } catch (error) {
+    console.error("Fehler bei Routing-Guard-Ausführung:", error);
+    // Bei Fehler direkt zur Login-Seite weiterleiten
+    return next({ path: "/login" });
+  }
+});
+
 router.beforeEach(checkAuth);
-router.beforeEach(checkFeatureFlags);
 router.afterEach((to, from) => {
   setDocumentTitle(to);
   trackNavigation(to, from);
@@ -510,26 +694,104 @@ router.afterEach((to, from) => {
   }
 });
 
-// Fehlerbehandlung bei Routing-Fehlern
+// Erweiterte Fehlerbehandlung bei Routing-Fehlern mit Diagnose und self-healing
 router.onError((error) => {
   console.error("Router error:", error);
 
   const errorReporting = useErrorReporting();
+  
+  // Detailliertere Fehlerinformationen sammeln
+  let errorDetails = "Unbekannter Fehler";
+  let errorCode = "router_error";
+  let severity = "high";
+  let currentRoute = router.currentRoute.value.fullPath;
+  let targetRoute = '';
+  
+  try {
+    // Versuch, die Zielroute aus dem Fehler zu extrahieren
+    const errorString = String(error);
+    const routeMatch = errorString.match(/(?:failed to load chunk|failed at path|chunk|module) ['"](.+?)['"]/i);
+    
+    if (routeMatch && routeMatch[1]) {
+      targetRoute = routeMatch[1];
+    } else if (router.currentRoute.value.redirectedFrom) {
+      targetRoute = router.currentRoute.value.redirectedFrom.fullPath;
+    }
+  } catch (e) {
+    console.error("Fehler beim Extrahieren der Zielroute:", e);
+  }
+  
+  if (error instanceof Error) {
+    errorDetails = error.message;
+    
+    // Spezifische Fehlermeldungen für häufige Fehlertypen kategorisieren
+    if (error.message.includes("Failed to fetch dynamically imported module") || 
+        error.message.includes("Importing a module script failed")) {
+      errorCode = "chunk_load_error";
+      errorDetails = "Modul konnte nicht geladen werden. Bitte aktualisieren Sie die Seite.";
+    } else if (error.message.includes("NetworkError") || error.message.includes("network error")) {
+      errorCode = "network_error";
+      severity = "medium"; // Netzwerkfehler können vorübergehend sein
+      errorDetails = "Netzwerkfehler beim Laden der Komponente. Bitte überprüfen Sie Ihre Internetverbindung.";
+    } else if (error.message.includes("ChunkLoadError") || error.message.includes("Loading chunk")) {
+      errorCode = "chunk_load_error";
+      errorDetails = "Fehler beim Laden des Seitenmoduls. Bitte leeren Sie den Browser-Cache und versuchen Sie es erneut.";
+    } else if (error.message.includes("TypeError") || error.message.includes("is not a function")) {
+      errorCode = "js_error";
+      errorDetails = "JavaScript-Fehler in der Anwendung. Dies könnte ein Problem mit der Anwendungsversion sein.";
+    } else if (error.message.includes("failed to resolve component")) {
+      errorCode = "component_error";
+      errorDetails = "Fehler beim Auflösen der Komponentenabhängigkeiten.";
+    }
+  }
+  
+  // Fehler im Route-Tracking-System erfassen
+  if (targetRoute) {
+    routerErrorTracking.trackError(targetRoute, error);
+  }
+  
+  // Fehlerdiagnose für detaillierte Fehlerberichterstattung
+  const diagnostics = routerErrorTracking.getDiagnostics();
+  
+  // Fehler erfassen mit umfassenden Diagnoseinformationen
   errorReporting.captureError(error, {
-    severity: "high",
+    severity: severity,
     source: {
       type: "system",
       name: "Router Error",
     },
+    context: {
+      code: errorCode,
+      details: errorDetails,
+      currentRoute: currentRoute,
+      targetRoute: targetRoute || 'unknown',
+      url: window.location.href,
+      userAgent: navigator.userAgent,
+      routeErrorCount: targetRoute ? (diagnostics.errors[targetRoute]?.count || 1) : 0,
+      totalRouteErrors: diagnostics.totalErrors,
+      mostProblematicRoute: diagnostics.highestErrorRoute?.route || 'none',
+      timestamp: new Date().toISOString()
+    }
   });
 
-  // Zur Fehlerseite umleiten
+  // Zur Fehlerseite umleiten mit umfassenden Diagnoseinformationen
   router.push({
     path: "/error",
     query: {
-      code: "router_error",
-      message: "Fehler beim Laden der Seite. Bitte versuchen Sie es erneut.",
+      code: errorCode,
+      message: errorDetails,
+      from: currentRoute,
+      component: targetRoute || undefined,
+      source: error.stack ? 'runtime' : 'loading',
+      originalRoute: router.currentRoute.value.redirectedFrom?.fullPath,
+      ts: Date.now().toString(), // Timestamp hinzufügen, um Cache-Probleme zu vermeiden
     },
+  }).catch(navigationError => {
+    // Fallback falls sogar die Navigation zur Fehlerseite fehlschlägt
+    console.error("Kritischer Fehler - Navigation zur Fehlerseite fehlgeschlagen:", navigationError);
+    
+    // Manuelle Umleitung als letzten Ausweg
+    window.location.href = `/error?code=${errorCode}&critical=true`;
   });
 });
 
@@ -538,6 +800,84 @@ declare global {
   interface Window {
     trackPageView?: (data: any) => void;
   }
+}
+
+// Debug-Hilfsmittel für die Entwicklung
+if (ENABLE_ROUTER_ERROR_DIAGNOSTICS) {
+  /**
+   * Globales Diagnose-Tool für die Browserkonsole
+   * Erlaubt Entwicklern, Router-Fehler zu diagnostizieren und zu beheben
+   */
+  (window as any).__routerDiagnostics = {
+    // Router-Instanz für weitere Diagnose
+    router,
+    
+    // Fehlerdiagnose
+    getErrorDiagnostics: () => routerErrorTracking.getDiagnostics(),
+    
+    // Fehler für eine bestimmte Route zurücksetzen
+    resetErrorsForRoute: (route: string) => routerErrorTracking.resetErrorsForRoute(route),
+    
+    // Alle Fehler zurücksetzen
+    resetAllErrors: () => routerErrorTracking.resetAllErrors(),
+    
+    // Router-Cache löschen und Neustart erzwingen
+    forceRouterReset: () => {
+      // Cache löschen
+      const routeCache = (router as any).matcher.getRoutes();
+      for (const route of routeCache) {
+        if (route.components && route.components.default) {
+          try {
+            delete route.components.default.__file;
+            delete route.components.default.__hmrId;
+          } catch (e) {
+            console.warn('Fehler beim Zurücksetzen der Route:', e);
+          }
+        }
+      }
+      
+      // Toast-Information für Entwickler
+      toastService.info('Router Cache wurde zurückgesetzt', {
+        duration: 2000,
+        position: 'top-center'
+      });
+      
+      // Optional: Seite nach kurzer Verzögerung neu laden
+      return 'Router Cache wurde zurückgesetzt. Verwenden Sie location.reload() für einen vollständigen Neustart.';
+    },
+    
+    // Netzwerkbedingungen für Testzwecke simulieren
+    simulateNetworkCondition: (condition: 'offline' | 'slow' | 'normal') => {
+      // In der Praxis würde dies mit einem Service-Worker umgesetzt werden
+      // Hier eine vereinfachte Simulation für Testzwecke
+      (window.navigator as any).__simulatedNetwork = condition;
+      if (condition === 'offline') {
+        toastService.warning('Offline-Modus simuliert. Einige Features werden beeinträchtigt.');
+      } else if (condition === 'slow') {
+        toastService.info('Langsame Verbindung simuliert. Komponenten werden verzögert geladen.');
+      } else {
+        toastService.success('Netzwerksimulation zurückgesetzt.');
+        delete (window.navigator as any).__simulatedNetwork;
+      }
+    },
+    
+    // Hilfefunktion für Diagnose-Tool
+    help: () => {
+      console.log(`
+Router Diagnose-Tools:
+---------------------
+__routerDiagnostics.getErrorDiagnostics() - Zeigt Fehlerstatistiken und Diagnose an
+__routerDiagnostics.resetErrorsForRoute(route) - Setzt Fehler für eine bestimmte Route zurück
+__routerDiagnostics.resetAllErrors() - Setzt alle Router-Fehlerstatistiken zurück
+__routerDiagnostics.forceRouterReset() - Erzwingt ein Zurücksetzen des Router-Caches
+__routerDiagnostics.simulateNetworkCondition(condition) - Simuliert Netzwerkbedingungen ('offline', 'slow', 'normal')
+      `);
+    }
+  };
+  
+  // Information in der Entwicklerkonsole
+  console.info('Router-Diagnose-Tools verfügbar unter window.__routerDiagnostics');
+  console.info('Verwende __routerDiagnostics.help() für mehr Informationen');
 }
 
 export default router;

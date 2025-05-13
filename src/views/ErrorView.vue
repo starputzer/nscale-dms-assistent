@@ -12,22 +12,37 @@
         <Button @click="goHome"> Zur Startseite </Button>
         <Button v-if="canRetry" @click="retry"> Erneut versuchen </Button>
       </div>
-      <div v-if="showDetails && errorDetails" class="error-details">
+      <div v-if="showDetails" class="error-details">
         <h3>Details</h3>
-        <pre>{{ errorDetails }}</pre>
+        <pre v-if="errorDetails">{{ errorDetails }}</pre>
+        <pre v-if="additionalDetails">{{ additionalDetails }}</pre>
+        <div v-if="isDevMode && router.currentRoute.value.query" class="dev-details">
+          <h4>Debug-Informationen</h4>
+          <pre>{{ JSON.stringify(router.currentRoute.value.query, null, 2) }}</pre>
+        </div>
       </div>
       <div class="error-toggle-details">
         <a href="#" @click.prevent="toggleDetails">
           {{ showDetails ? "Details ausblenden" : "Details anzeigen" }}
         </a>
       </div>
+      <div class="error-help">
+        <p>
+          Wenn das Problem weiterhin besteht, versuchen Sie:
+        </p>
+        <ul>
+          <li>Browser-Cache leeren und Seite neu laden</li>
+          <li>Überprüfen Sie Ihre Internetverbindung</li>
+          <li>Kontaktieren Sie den Support, falls das Problem bestehen bleibt</li>
+        </ul>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { useRouter } from "vue-router";
+import { ref, computed, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import ErrorIcon from "@/components/icons/ErrorIcon.vue";
 import Button from "@/components/ui/base/Button.vue";
 import { useErrorReporting } from "@/composables/useErrorReporting";
@@ -51,8 +66,38 @@ const props = defineProps({
   },
 });
 
+// Zusätzliche Fehlerinformationen aus der Route für bessere Diagnose
+const route = useRoute();
+const additionalDetails = ref('');
+const isDevMode = ref(import.meta.env.DEV);
+
+onMounted(() => {
+  // Sammelt zusätzliche Diagnoseinformationen
+  const details = [];
+  
+  // Routeninformationen
+  if (route.query.source) details.push(`Quelle: ${route.query.source}`);
+  if (route.query.component) details.push(`Komponente: ${route.query.component}`);
+  if (route.query.ts) {
+    const timestamp = new Date(parseInt(route.query.ts as string));
+    details.push(`Zeitpunkt: ${timestamp.toLocaleString()}`);
+  }
+  
+  // Browser-Informationen für Diagnose
+  details.push(`Browser: ${navigator.userAgent}`);
+  details.push(`URL: ${window.location.href}`);
+  
+  // Wenn in Entwicklungsumgebung, zeige zusätzliche Details an
+  if (import.meta.env.DEV) {
+    details.push(`Umgebung: Entwicklung`);
+    // In der Produktion würden wir keine detaillierten Routen anzeigen
+    details.push(`Route: ${JSON.stringify(route.fullPath)}`);
+  }
+  
+  additionalDetails.value = details.join('\n');
+});
+
 const router = useRouter();
-const { reportError } = useErrorReporting();
 const showDetails = ref(false);
 
 const formattedErrorCode = computed(() => {
@@ -67,10 +112,15 @@ const errorTitle = computed(() => {
     "404": "Seite nicht gefunden",
     "500": "Serverfehler",
     "503": "Dienst nicht verfügbar",
-    offline: "Keine Verbindung",
+    "offline": "Keine Verbindung",
     "feature-disabled": "Funktion deaktiviert",
-    timeout: "Zeitüberschreitung",
-    unknown: "Unbekannter Fehler",
+    "timeout": "Zeitüberschreitung",
+    "unknown": "Unbekannter Fehler",
+    "router_error": "Navigationsfehler",
+    "chunk_load_error": "Ladefehler",
+    "network_error": "Netzwerkproblem",
+    "component_load_error": "Komponentenfehler",
+    "module_not_found": "Modul nicht gefunden"
   };
   return titles[props.errorCode] || "Fehler";
 });
@@ -80,15 +130,99 @@ const goBack = () => {
 };
 
 const goHome = () => {
-  router.push({ name: "Home" });
+  try {
+    router.push({ path: "/" }).catch(err => {
+      console.error("Error navigating to home:", err);
+      // Fallback für den Fall, dass der Router nicht funktioniert
+      window.location.href = "/";
+    });
+  } catch (err) {
+    console.error("Unexpected error navigating to home:", err);
+    window.location.href = "/";
+  }
 };
 
 const retry = () => {
-  if (router.currentRoute.value.query.from) {
-    const fromPath = router.currentRoute.value.query.from as string;
-    router.push(fromPath);
-  } else {
-    router.go(0); // Refresh the current page
+  try {
+    // Bei 'critical=true' Parameter oder Chunk-Ladefehlern: Erst versuchen, die App zu reparieren
+    const isCritical = router.currentRoute.value.query.critical === 'true';
+    const isChunkError = router.currentRoute.value.query.code === 'chunk_load_error' || 
+                         (router.currentRoute.value.query.message as string || '').includes('chunk');
+    
+    if (isCritical || isChunkError) {
+      console.log("Versuche grundlegende App-Reparatur vor erneutem Laden...");
+      
+      // Lösche Cache (anstatt nur zu aktualisieren)
+      try {
+        // Service Worker deregistrieren, falls vorhanden
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(registrations => {
+            for (const registration of registrations) {
+              registration.unregister();
+            }
+          });
+        }
+        
+        // Cache-Storage leeren
+        if ('caches' in window) {
+          caches.keys().then(keyList => {
+            return Promise.all(keyList.map(key => caches.delete(key)));
+          });
+        }
+        
+        // Lokalen Storage für App-bezogene Daten leeren (aber User-Session beibehalten)
+        const keysToKeep = ['token', 'userId', 'userRole'];
+        const savedValues: Record<string, string> = {};
+        
+        // Speichere wichtige Werte
+        keysToKeep.forEach(key => {
+          const value = localStorage.getItem(key);
+          if (value) savedValues[key] = value;
+        });
+        
+        // Lokalen Speicher leeren
+        localStorage.clear();
+        
+        // Wichtige Werte wiederherstellen
+        Object.entries(savedValues).forEach(([key, value]) => {
+          localStorage.setItem(key, value);
+        });
+        
+        // Hard Reload mit Cache-Invalidierung
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 500);
+        
+        return;
+      } catch (cacheError) {
+        console.error("Fehler beim Cache-Leeren:", cacheError);
+      }
+    }
+    
+    // Erst versuchen, zu der Route zurückzukehren, von der wir kamen
+    if (router.currentRoute.value.query.from) {
+      const fromPath = router.currentRoute.value.query.from as string;
+      console.log(`Versuche Navigation zurück zur ursprünglichen Route: ${fromPath}`);
+      router.push(fromPath);
+      return;
+    }
+    
+    // Wenn keine from-Route vorhanden ist, aber eine Ursprungs-Route
+    if (router.currentRoute.value.query.originalRoute) {
+      const originalRoute = router.currentRoute.value.query.originalRoute as string;
+      console.log(`Versuche Navigation zur Original-Route: ${originalRoute}`);
+      router.push(originalRoute);
+      return;
+    }
+    
+    // Als letzten Ausweg, aktualisieren wir einfach die Seite
+    // Wir nutzen ein kurzes Timeout, um mögliche Race-Conditions zu vermeiden
+    console.log("Kein Navigationspfad gefunden, lade die Seite neu");
+    setTimeout(() => window.location.reload(), 100);
+  } catch (error) {
+    console.error("Fehler beim Wiederversuch:", error);
+    // Fallback: Seite neu laden mit Cache-Invalidierung
+    window.location.href = '/?cache_bust=' + Date.now();
   }
 };
 
@@ -178,6 +312,36 @@ const toggleDetails = () => {
 
 .error-toggle-details a:hover {
   text-decoration: underline;
+}
+
+.error-help {
+  margin-top: 2rem;
+  font-size: 0.9rem;
+  color: var(--color-text-light);
+  text-align: left;
+  border-top: 1px solid var(--color-border);
+  padding-top: 1rem;
+}
+
+.error-help ul {
+  margin: 0.5rem 0 0 1.5rem;
+  padding: 0;
+  list-style-type: disc;
+}
+
+.error-help li {
+  margin-bottom: 0.5rem;
+}
+
+.dev-details {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--color-border);
+}
+
+.dev-details h4 {
+  color: #ff9800;
+  margin-bottom: 0.5rem;
 }
 
 @media (max-width: 600px) {
