@@ -14,8 +14,10 @@ import {
   type FallbackError,
   type FallbackErrorSeverity,
 } from "./fallbackManager";
-import { useFeatureTogglesStore } from "@/stores/featureToggles";
+// In der Pure Vue Version verwenden wir das Feature-Flags-System aus der Konfiguration
+import { isFeatureEnabled } from "@/config/featureFlags";
 import { useLogger } from "@/composables/useLogger";
+import { getNodeEnv, isDevelopment } from "./environmentUtils";
 
 /**
  * Fehler-Quellen für die Kategorisierung
@@ -200,12 +202,73 @@ export class ErrorReportingService {
   private user = reactive<Required<ErrorReportingOptions["userInfo"]>>(
     DEFAULT_OPTIONS.userInfo,
   );
-  /** Integration mit Fallback-Manager */
-  private fallbackManager = useFallbackManager();
-  /** Integration mit Feature-Toggle-Store */
-  private featureToggles = useFeatureTogglesStore();
-  /** Logger für Konsolen-Ausgaben */
-  private logger = useLogger();
+  /** Integration mit Fallback-Manager (lazy-loaded) */
+  private _fallbackManager: ReturnType<typeof useFallbackManager> | null = null;
+  /** Integration mit Feature-Toggle-Store (lazy-loaded) */
+  private _featureToggles: ReturnType<typeof useFeatureTogglesStore> | null = null;
+  /** Logger für Konsolen-Ausgaben (lazy-loaded) */
+  private _logger: ReturnType<typeof useLogger> | null = null;
+
+  /** Getter für den Logger, der bei Bedarf initialisiert wird */
+  private get logger(): ReturnType<typeof useLogger> {
+    try {
+      if (!this._logger) {
+        this._logger = useLogger();
+      }
+      return this._logger;
+    } catch (err) {
+      console.warn('[ErrorReportingService] Logger nicht verfügbar, verwende Dummy-Implementation');
+      // Minimale Mock-Implementation zurückgeben
+      return {
+        debug: console.debug,
+        info: console.info,
+        warn: console.warn,
+        error: console.error,
+        getOptions: () => ({}),
+        setOptions: () => {},
+        getComponent: () => 'unknown',
+        getLogs: () => [],
+        clearLogs: () => {}
+      } as any;
+    }
+  }
+
+  /** Getter für den Fallback-Manager, der bei Bedarf initialisiert wird */
+  private get fallbackManager(): ReturnType<typeof useFallbackManager> {
+    try {
+      if (!this._fallbackManager) {
+        this._fallbackManager = useFallbackManager();
+      }
+      return this._fallbackManager;
+    } catch (err) {
+      this.logger.warn('[ErrorReportingService] Fallback-Manager nicht verfügbar, verwende Dummy-Implementation', err);
+      // Minimale Mock-Implementation zurückgeben
+      return {
+        reportError: () => {},
+        enableFallback: () => {},
+        disableFallback: () => {},
+        isFallbackEnabled: () => false,
+      } as any;
+    }
+  }
+
+  /** Getter für den Feature-Toggles-Store, der bei Bedarf initialisiert wird */
+  private get featureToggles(): ReturnType<typeof useFeatureTogglesStore> {
+    try {
+      if (!this._featureToggles) {
+        this._featureToggles = useFeatureTogglesStore();
+      }
+      return this._featureToggles;
+    } catch (err) {
+      this.logger.warn('[ErrorReportingService] Feature-Toggles-Store nicht verfügbar, verwende Dummy-Implementation', err);
+      // Minimale Mock-Implementation zurückgeben
+      return {
+        $state: {},
+        isFeatureEnabled: () => true,
+        getFeatureConfig: () => ({}),
+      } as any;
+    }
+  }
   /** Handler für unbehandelte Fehler */
   private unhandledErrorHandler: ((event: ErrorEvent) => void) | null = null;
   /** Handler für unbehandelte Rejections */
@@ -229,7 +292,7 @@ export class ErrorReportingService {
     }
 
     // Log-Level anpassen
-    this.logger.setLevel(this.options.consoleLogLevel);
+    this.logger.setOptions({ level: this.options.consoleLogLevel });
 
     // Unbehandelte Fehler erfassen, wenn gewünscht
     if (this.options.captureUnhandledErrors) {
@@ -442,12 +505,17 @@ export class ErrorReportingService {
 
       // Feature-Flags-Status abfragen
       const featureFlags: Record<string, boolean> = {};
-      const featureKeys = Object.keys(this.featureToggles.$state).filter(
-        (key) => typeof this.featureToggles.$state[key] === "boolean",
-      );
+      try {
+        const featureKeys = Object.keys(this.featureToggles.$state).filter(
+          (key) => typeof this.featureToggles.$state[key] === "boolean",
+        );
 
-      for (const key of featureKeys) {
-        featureFlags[key] = this.featureToggles.$state[key] as boolean;
+        for (const key of featureKeys) {
+          featureFlags[key] = this.featureToggles.$state[key] as boolean;
+        }
+      } catch (err) {
+        this.logger.debug('[ErrorReportingService] Konnte Feature-Flags nicht abrufen', err);
+        // Leeres Objekt wenn Feature-Flags nicht verfügbar sind
       }
 
       // UI-State zusammenstellen
@@ -519,7 +587,7 @@ export class ErrorReportingService {
       reported: false,
       userFeedback: options.userFeedback,
       meta: {
-        devMode: process.env.NODE_ENV === "development",
+        devMode: isDevelopment(),
         occurrences: 1,
       },
     };
@@ -681,8 +749,13 @@ export class ErrorReportingService {
       },
     };
 
-    // An Fallback-Manager melden
-    this.fallbackManager.reportError(feature, fallbackError as FallbackError);
+    try {
+      // An Fallback-Manager melden
+      this.fallbackManager.reportError(feature, fallbackError as FallbackError);
+    } catch (err) {
+      this.logger.warn('[ErrorReportingService] Fehler beim Melden an Fallback-System', err);
+      // Fehler beim Melden ignorieren
+    }
   }
 
   /**

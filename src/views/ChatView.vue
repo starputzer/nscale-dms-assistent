@@ -641,15 +641,15 @@ const currentSourceReferences = ref<SourceReference[]>([]);
 const currentSourceMessageId = ref<string | null>(null);
 
 // Computed Properties
-const user = computed(() => authStore.user);
+const user = computed<any>(() => authStore.user);
 
-const userInitials = computed(() => {
+const userInitials = computed<string>(() => {
   if (!user.value) return "?";
 
   if (user.value.displayName) {
     return user.value.displayName
       .split(" ")
-      .map((name) => name.charAt(0))
+      .map((name: string) => name.charAt(0))
       .join("")
       .substr(0, 2)
       .toUpperCase();
@@ -658,33 +658,33 @@ const userInitials = computed(() => {
   return user.value.username.substring(0, 2).toUpperCase();
 });
 
-const userRoleLabel = computed(() => {
+const userRoleLabel = computed<string>(() => {
   if (!user.value) return "";
 
-  if (user.value.roles.includes("admin")) return "Administrator";
-  if (user.value.roles.includes("support")) return "Support";
-  if (user.value.roles.includes("user")) return "Benutzer";
+  if (user.value.role === "admin") return "Administrator";
+  if (user.value.role === "support") return "Support";
+  if (user.value.role === "user") return "Benutzer";
 
-  return user.value.roles[0] || "";
+  return user.value.role || "";
 });
 
 // Sessions store state
-const sessions = computed(() => sessionsStore.sessions);
-const currentSessionId = computed(() => sessionsStore.currentSessionId);
-const currentSession = computed(() => sessionsStore.currentSession);
-const currentMessages = computed(() => sessionsStore.allCurrentMessages);
-const isStreaming = computed(() => sessionsStore.isStreaming);
-const isLoadingMessages = computed(() => sessionsStore.isLoading);
-const isSendingMessage = computed(() => isStreaming.value);
-const isLoadingSessions = computed(() => sessionsStore.isLoading);
-const availableTags = computed(() => sessionsStore.availableTags);
-const availableCategories = computed(() => sessionsStore.availableCategories);
+const sessions = computed<ChatSession[]>(() => sessionsStore.sessions);
+const currentSessionId = computed<string | null>(() => sessionsStore.currentSessionId);
+const currentSession = computed<ChatSession | null>(() => sessionsStore.currentSession);
+const currentMessages = computed<ChatMessage[]>(() => sessionsStore.allCurrentMessages);
+const isStreaming = computed<boolean>(() => sessionsStore.isStreaming);
+const isLoadingMessages = computed<boolean>(() => sessionsStore.isLoading);
+const isSendingMessage = computed<boolean>(() => isStreaming.value);
+const isLoadingSessions = computed<boolean>(() => sessionsStore.isLoading);
+const availableTags = computed<SessionTag[]>(() => sessionsStore.availableTags);
+const availableCategories = computed<SessionCategory[]>(() => sessionsStore.availableCategories);
 
 // Sortierte Sessions basierend auf dem Store-Getter
-const sortedSessions = computed(() => sessionsStore.sortedSessions);
+const sortedSessions = computed<ChatSession[]>(() => sessionsStore.sortedSessions);
 
 // Anzahl der Nachrichten in der aktuellen Sitzung
-const currentMessageCount = computed(() => {
+const currentMessageCount = computed<number>(() => {
   const sessionId = currentSessionId.value;
   if (!sessionId) return 0;
 
@@ -692,14 +692,14 @@ const currentMessageCount = computed(() => {
 });
 
 // Platzhaltertext für das Eingabefeld
-const inputPlaceholder = computed(() => {
+const inputPlaceholder = computed<string>(() => {
   if (isStreaming.value) return "Warte auf Antwort...";
   if (!currentSessionId.value) return "Starten Sie eine neue Unterhaltung...";
   return "Nachricht eingeben...";
 });
 
 // Prüfen, ob das Eingabefeld deaktiviert werden sollte
-const isInputDisabled = computed(() => {
+const isInputDisabled = computed<boolean>(() => {
   return (
     isStreaming.value || isLoadingMessages.value || !currentSessionId.value
   );
@@ -843,7 +843,7 @@ function handleReorderSessions(reorderedSessions: ChatSession[]) {
   console.log("Sessions neu angeordnet:", reorderedSessions);
 }
 
-function handleBulkAction(action: string, sessionIds: string[], data?: any) {
+function handleBulkAction(action: string, sessionIds: string[], data?: any): void {
   switch (action) {
     case "delete":
       // Bestätigung anfordern
@@ -855,38 +855,38 @@ function handleBulkAction(action: string, sessionIds: string[], data?: any) {
         return;
       }
 
-      sessionIds.forEach((id) => {
-        sessionsStore.archiveSession(id).catch((error) => {
+      sessionIds.forEach((id: string) => {
+        sessionsStore.archiveSession(id).catch((error: Error) => {
           console.error(`Fehler beim Löschen der Session ${id}:`, error);
         });
       });
       break;
 
     case "archive":
-      sessionIds.forEach((id) => {
-        sessionsStore.toggleArchiveSession(id, true).catch((error) => {
+      sessionIds.forEach((id: string) => {
+        sessionsStore.toggleArchiveSession(id, true).catch((error: Error) => {
           console.error(`Fehler beim Archivieren der Session ${id}:`, error);
         });
       });
       break;
 
     case "tag":
-      const tagId = data || prompt("Welchen Tag möchten Sie hinzufügen?");
+      const tagId: string = data || prompt("Welchen Tag möchten Sie hinzufügen?");
       if (!tagId) return;
 
-      sessionIds.forEach((id) => {
-        sessionsStore.addTagToSession(id, tagId).catch((error) => {
+      sessionIds.forEach((id: string) => {
+        sessionsStore.addTagToSession(id, tagId).catch((error: Error) => {
           console.error(`Fehler beim Taggen der Session ${id}:`, error);
         });
       });
       break;
 
     case "categorize":
-      const categoryId = data || prompt("Welche Kategorie möchten Sie setzen?");
+      const categoryId: string = data || prompt("Welche Kategorie möchten Sie setzen?");
       if (!categoryId) return;
 
-      sessionIds.forEach((id) => {
-        sessionsStore.setCategoryForSession(id, categoryId).catch((error) => {
+      sessionIds.forEach((id: string) => {
+        sessionsStore.setCategoryForSession(id, categoryId).catch((error: Error) => {
           console.error(`Fehler beim Kategorisieren der Session ${id}:`, error);
         });
       });
@@ -938,7 +938,7 @@ function handleMessageFeedback(payload: {
   messageId: string;
   type: "positive" | "negative";
   feedback?: string;
-}) {
+}): void {
   // In einer vollständigen Implementierung würde hier das Feedback an den Server gesendet werden
   console.log("Feedback für Nachricht:", payload);
 
@@ -946,15 +946,15 @@ function handleMessageFeedback(payload: {
   uiStore.showSuccess("Vielen Dank für Ihr Feedback!");
 }
 
-function handleViewSources(payload: { messageId: string }) {
+function handleViewSources(payload: { messageId: string }): void {
   if (!currentSessionId.value) return;
 
   // Nachricht finden
-  const message = currentMessages.value.find((m) => m.id === payload.messageId);
+  const message = currentMessages.value.find((m: ChatMessage) => m.id === payload.messageId);
   if (!message) return;
 
   // Quellen aus den Metadaten extrahieren
-  const sources = message.metadata?.sourceReferences || [];
+  const sources: SourceReference[] = message.metadata?.sourceReferences || [];
 
   // Quellen anzeigen
   currentSourceReferences.value = sources;
@@ -962,13 +962,13 @@ function handleViewSources(payload: { messageId: string }) {
   showSourcesModal.value = true;
 }
 
-function closeSourcesModal() {
+function closeSourcesModal(): void {
   showSourcesModal.value = false;
   currentSourceReferences.value = [];
   currentSourceMessageId.value = null;
 }
 
-function handleViewExplanation(payload: { messageId: string }) {
+function handleViewExplanation(payload: { messageId: string }): void {
   // In einer vollständigen Implementierung würde hier eine Erklärung angefordert werden
   console.log("Erklärung für Nachricht angefordert:", payload);
 
@@ -980,7 +980,7 @@ function handleLoadMoreMessages(payload: {
   direction: "up" | "down";
   firstVisibleIndex?: number;
   lastVisibleIndex?: number;
-}) {
+}): void {
   if (!currentSessionId.value) return;
 
   if (payload.direction === "up") {
@@ -1096,7 +1096,7 @@ function exportSession(sessionId: string) {
 }
 
 // Hilfsfunktion zum Formatieren von Datum und Uhrzeit
-function formatDate(dateString: string) {
+function formatDate(dateString: string): string {
   try {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("de-DE", {
@@ -1112,7 +1112,7 @@ function formatDate(dateString: string) {
 }
 
 // Hilfsfunktion zum Überprüfen der Bildschirmgröße
-function checkScreenSize() {
+function checkScreenSize(): void {
   isMobile.value = window.innerWidth < 768;
 
   // Bei größeren Bildschirmen die mobile Sidebar schließen

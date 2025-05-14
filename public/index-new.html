@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="nscale DMS Assistent - Ihr Digitalisierungspartner für DMS-Lösungen">
+    <title>nscale DMS Assistent</title>
+    
+    <!-- Basis CSS für initiales Rendering (minimiert) -->
+    <link rel="stylesheet" href="./assets/styles/base.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="./assets/images/favicon.ico" type="image/x-icon">
+    
+    <!-- Preload kritische Assets -->
+    <link rel="preload" href="./assets/images/senmvku-logo.png" as="image">
+
+    <!-- Feature-Flags und Konfiguration -->
+    <script>
+      // Feature Detection für progressive Enhancement
+      document.documentElement.classList.add('js-enabled');
+      
+      // Theme-Präferenz laden
+      (function() {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const savedTheme = localStorage.getItem('theme');
+        const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+        document.documentElement.classList.add(`theme-${theme}`);
+      })();
+      
+      // Globale Konfiguration
+      window.APP_CONFIG = {
+        apiBaseUrl: '/api',
+        buildVersion: '1.2.3-migration',
+        buildTimestamp: '20250511',
+        environment: 'production',
+        featureFlags: {
+          ENABLE_OPTIMIZED_STRUCTURE: true,
+          ENABLE_LEGACY_HTML_REMOVAL: false,
+          ENABLE_CDN_MIGRATION: false
+        }
+      };
+      
+      // Legacy-Detection (für Übergangszeitraum)
+      window.isLegacyMode = function() {
+        return !window.APP_CONFIG.featureFlags.ENABLE_OPTIMIZED_STRUCTURE;
+      };
+      
+      // Migrations-Bridge (für Übergangszeitraum)
+      window.migrationBridge = {
+        legacyEvents: {},
+        publishEvent: function(eventName, data) {
+          if (this.legacyEvents[eventName]) {
+            this.legacyEvents[eventName].forEach(callback => {
+              try {
+                callback(data);
+              } catch (err) {
+                console.error('Error in legacy event handler:', err);
+              }
+            });
+          }
+        },
+        subscribeToEvent: function(eventName, callback) {
+          if (!this.legacyEvents[eventName]) {
+            this.legacyEvents[eventName] = [];
+          }
+          this.legacyEvents[eventName].push(callback);
+          
+          return {
+            unsubscribe: () => {
+              if (this.legacyEvents[eventName]) {
+                this.legacyEvents[eventName] = this.legacyEvents[eventName].filter(cb => cb !== callback);
+              }
+            }
+          };
+        }
+      };
+      
+      // Globaler Fehler-Handler
+      window.addEventListener('error', function(event) {
+        console.error('Globaler Fehler abgefangen:', event.error);
+        
+        // Nur kritische UI-Fehler anzeigen, nicht für Asset-Lade-Fehler
+        if (event.error && event.error.message && !event.filename.includes('.js') && !event.filename.includes('.css')) {
+          const errorElement = document.createElement('div');
+          errorElement.className = 'critical-error';
+          errorElement.innerHTML = `
+            <h1>Anwendungsfehler</h1>
+            <p>Es ist ein unerwarteter Fehler aufgetreten. Bitte laden Sie die Seite neu.</p>
+            <button onclick="window.location.reload()">Neu laden</button>
+          `;
+          
+          const appLoader = document.getElementById('app-loading');
+          if (appLoader) appLoader.style.display = 'none';
+          
+          document.body.appendChild(errorElement);
+        }
+      });
+    </script>
+</head>
+<body>
+    <!-- App Mount Point -->
+    <div id="app"><!-- Vue-App wird hier gemountet --></div>
+    
+    <!-- Initiales Lade-Feedback -->
+    <div id="app-loading" class="app-loader">
+        <div class="app-loader-content">
+            <img src="./assets/images/senmvku-logo.png" alt="nscale Logo" class="app-loader-logo">
+            <div class="app-loader-spinner"></div>
+            <p>Anwendung wird geladen...</p>
+        </div>
+    </div>
+    
+    <!-- Haupt-App-Bundle - dynamisch via Vite erzeugt -->
+    <script type="module" src="./src/main.ts"></script>
+    
+    <!-- Fallback für ältere Browser -->
+    <script nomodule>
+      document.body.innerHTML = `
+        <div class="critical-error">
+          <h1>Browser nicht unterstützt</h1>
+          <p>Bitte verwenden Sie einen modernen Browser wie Chrome, Firefox, Edge oder Safari.</p>
+          <p>Die nscale DMS Assistant Anwendung erfordert JavaScript-Module-Unterstützung.</p>
+        </div>
+      `;
+    </script>
+</body>
+</html>

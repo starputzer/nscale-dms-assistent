@@ -1,403 +1,379 @@
-import { watch, onMounted, onBeforeUnmount } from "vue";
-import { useAuthStore } from "../stores/auth";
-import { useSessionsStore } from "../stores/sessions";
-import { useUIStore } from "../stores/ui";
-import { useSettingsStore } from "../stores/settings";
-
 /**
- * Bridge um Legacy-Code mit den Pinia Stores zu verbinden
- *
- * Diese Bridge stellt globale Funktionen zur Verfügung, die vom Legacy-Code verwendet werden können,
- * und leitet Ereignisse zwischen Legacy-Code und Vue-Komponenten weiter.
+ * @file Bridge System Entry Point
+ * @description Consolidated bridge system for communication between Vue 3
+ * components and legacy JavaScript code.
+ * 
+ * @redundancy-analysis
+ * This file provides a new unified entry point that consolidates functionality from:
+ * - bridge/index.ts (original implementation)
+ * - bridge/enhanced/index.ts
+ * - bridge/enhanced/optimized/index.ts
+ * 
+ * The implementation follows a modular approach to reduce redundancy and
+ * improve maintainability.
  */
 
-// EventBus für die Kommunikation zwischen Legacy-Code und Vue
-class EventBus {
-  private listeners: Map<string, Array<(data?: any) => void>> = new Map();
+// Import core utilities
+import type { BridgeConfig, BridgeAPI } from './core/types';
+import { DEFAULT_BRIDGE_CONFIG } from './core/types';
+import { eventBus } from './core/eventBus';
+import { logger } from './core/logger';
+import { success, failure, tryAsync } from './core/results';
 
-  on(event: string, callback: (data?: any) => void): () => void {
-    if (!this.listeners.has(event)) {
-      this.listeners.set(event, []);
-    }
-    this.listeners.get(event)!.push(callback);
+// Import bridge modules
+import { initAuthBridge } from './modules/auth';
+import { initSessionsBridge } from './modules/sessions';
+import { initUIBridge } from './modules/ui';
 
-    // Unsubscribe-Funktion
-    return () => {
-      const callbacks = this.listeners.get(event);
-      if (callbacks) {
-        const index = callbacks.indexOf(callback);
-        if (index !== -1) {
-          callbacks.splice(index, 1);
-        }
-      }
-    };
+// Import diagnostics
+import { initDiagnostics } from './diagnostics';
+
+/**
+ * Bridge singleton instance
+ */
+let bridgeInstance: BridgeAPI | null = null;
+
+/**
+ * Flag indicating whether the bridge is initialized
+ */
+let isInitialized = false;
+
+/**
+ * Get the current bridge API instance
+ * 
+ * @throws Error if the bridge is not initialized
+ */
+export function getBridge(): BridgeAPI {
+  if (!bridgeInstance) {
+    throw new Error('Bridge not initialized. Call initBridge() first.');
   }
-
-  emit(event: string, data?: any): void {
-    if (this.listeners.has(event)) {
-      this.listeners.get(event)!.forEach((callback) => callback(data));
-    }
-  }
-
-  clear(): void {
-    this.listeners.clear();
-  }
+  
+  return bridgeInstance;
 }
 
-// Singleton-Instanz des EventBus
-export const bus = new EventBus();
-
 /**
- * Bridge-Funktionen für Legacy-Code
+ * Initialize the bridge system
+ * 
+ * @param config Bridge configuration options
+ * @returns Promise resolving to the bridge API instance
  */
-export function setupBridge() {
-  // Store-Referenzen
-  const authStore = useAuthStore();
-  const sessionsStore = useSessionsStore();
-  const uiStore = useUIStore();
-  const settingsStore = useSettingsStore();
-
-  // Feature-Toggle für die Bridge-Funktionalität
-  const bridgeEnabled = true;
-
-  // Zu bereinigende Event-Listener
-  const cleanupFunctions: Array<() => void> = [];
-
-  /**
-   * Initialisiert globale Funktionen für den Legacy-Code
-   */
-  function exposeGlobalAPI() {
-    // Auth-Funktionen
-    window.nscaleAuth = {
-      login: async (email: string, password: string) => {
-        return await authStore.login({ email, password });
-      },
-      logout: () => {
-        authStore.logout();
-      },
-      getToken: () => {
-        return authStore.token;
-      },
-      isAuthenticated: () => {
-        return authStore.isAuthenticated;
-      },
-      hasRole: (role: string) => {
-        return authStore.hasRole(role);
-      },
-      getUser: () => {
-        return authStore.user;
-      },
-    };
-
-    // Session-Funktionen
-    window.nscaleChat = {
-      createSession: async (title?: string) => {
-        return await sessionsStore.createSession(title || "Neue Unterhaltung");
-      },
-      sendMessage: async (sessionId: string, content: string) => {
-        return await sessionsStore.sendMessage({ sessionId, content });
-      },
-      getSessions: () => {
-        return sessionsStore.sessions;
-      },
-      getCurrentSession: () => {
-        return sessionsStore.currentSession;
-      },
-      setCurrentSession: async (sessionId: string) => {
-        return await sessionsStore.setCurrentSession(sessionId);
-      },
-      getMessages: (sessionId: string) => {
-        return sessionsStore.messages[sessionId] || [];
-      },
-      cancelStreaming: () => {
-        sessionsStore.cancelStreaming();
-      },
-    };
-
-    // UI-Funktionen
-    window.nscaleUI = {
-      toggleDarkMode: () => {
-        uiStore.toggleDarkMode();
-      },
-      isDarkMode: () => {
-        return uiStore.isDarkMode;
-      },
-      openSidebar: () => {
-        uiStore.openSidebar();
-      },
-      closeSidebar: () => {
-        uiStore.closeSidebar();
-      },
-      showToast: (message: string, type: string = "info") => {
-        if (type === "success") {
-          uiStore.showSuccess(message);
-        } else if (type === "error") {
-          uiStore.showError(message);
-        } else if (type === "warning") {
-          uiStore.showWarning(message);
-        } else {
-          uiStore.showInfo(message);
-        }
-      },
-      openModal: (title: string, content: string, options: any = {}) => {
-        return uiStore.openModal({
-          title,
-          content,
-          ...options,
-        });
-      },
-      closeModal: (modalId: string) => {
-        uiStore.closeModal(modalId);
-      },
-    };
-
-    // Settings-Funktionen
-    window.nscaleSettings = {
-      getTheme: () => {
-        return settingsStore.currentTheme;
-      },
-      setTheme: (themeId: string) => {
-        settingsStore.setTheme(themeId);
-      },
-      getFontSize: () => {
-        return settingsStore.fontSize;
-      },
-      setFontSize: (size: number) => {
-        settingsStore.setFontSize(size);
-      },
-      getSetting: (key: string) => {
-        return settingsStore.getSetting(key);
-      },
-      setSetting: (key: string, value: any) => {
-        settingsStore.setSetting(key, value);
-      },
-    };
-
-    // Event-Bridge für Legacy-Event-Kommunikation
-    window.nscaleEvents = {
-      emit: (event: string, data?: any) => {
-        bus.emit(event, data);
-      },
-      on: (event: string, callback: (data?: any) => void) => {
-        const unsubscribe = bus.on(event, callback);
-        cleanupFunctions.push(unsubscribe);
-        return unsubscribe;
-      },
-    };
-
-    console.log("nscale Bridge: Global API initialisiert");
+export async function initBridge(config: Partial<BridgeConfig> = {}): Promise<BridgeAPI> {
+  // Skip initialization if already initialized
+  if (isInitialized) {
+    logger.namespace('bridge').warn('Bridge already initialized, skipping initialization');
+    return bridgeInstance!;
   }
-
-  /**
-   * Beobachtet Store-Änderungen und sendet Ereignisse
-   */
-  function setupStoreWatchers() {
-    // Auth-Store-Änderungen beobachten
-    const unwatchAuth = watch(
-      () => authStore.isAuthenticated,
-      (isAuthenticated) => {
-        bus.emit("auth:changed", { isAuthenticated });
-
-        if (isAuthenticated) {
-          bus.emit("auth:login", { user: authStore.user });
-        } else {
-          bus.emit("auth:logout");
-        }
-      },
-    );
-    cleanupFunctions.push(unwatchAuth);
-
-    // Sessions-Store-Änderungen beobachten
-    const unwatchSessions = watch(
-      () => sessionsStore.currentSessionId,
-      (sessionId) => {
-        if (sessionId) {
-          bus.emit("session:changed", {
-            sessionId,
-            session: sessionsStore.currentSession,
-          });
-        }
-      },
-    );
-    cleanupFunctions.push(unwatchSessions);
-
-    // UI-Store-Änderungen beobachten
-    const unwatchDarkMode = watch(
-      () => uiStore.darkMode,
-      (isDark) => {
-        bus.emit("ui:darkModeChanged", { isDark });
-      },
-    );
-    cleanupFunctions.push(unwatchDarkMode);
-
-    console.log("nscale Bridge: Store-Watcher initialisiert");
-  }
-
-  /**
-   * Verbindet Legacy-Events mit Store-Aktionen
-   */
-  function setupLegacyEventListeners() {
-    // Globales CustomEvent-Handling für Legacy-Code
-    const handleLegacyEvent = (event: CustomEvent) => {
-      const { type, detail } = event;
-
-      // Auth-Events
-      if (type === "nscale:login") {
-        authStore.login(detail);
-      } else if (type === "nscale:logout") {
-        authStore.logout();
-      }
-
-      // Session-Events
-      else if (type === "nscale:createSession") {
-        sessionsStore.createSession(detail?.title);
-      } else if (type === "nscale:sendMessage") {
-        sessionsStore.sendMessage({
-          sessionId: detail.sessionId,
-          content: detail.content,
-        });
-      } else if (type === "nscale:setCurrentSession") {
-        sessionsStore.setCurrentSession(detail.sessionId);
-      }
-
-      // UI-Events
-      else if (type === "nscale:toggleDarkMode") {
-        uiStore.toggleDarkMode();
-      } else if (type === "nscale:showToast") {
-        const { message, type: toastType } = detail;
-        if (toastType === "success") {
-          uiStore.showSuccess(message);
-        } else if (toastType === "error") {
-          uiStore.showError(message);
-        } else if (toastType === "warning") {
-          uiStore.showWarning(message);
-        } else {
-          uiStore.showInfo(message);
-        }
-      }
-
-      // Settings-Events
-      else if (type === "nscale:setTheme") {
-        settingsStore.setTheme(detail.themeId);
-      } else if (type === "nscale:setSetting") {
-        settingsStore.setSetting(detail.key, detail.value);
-      }
-    };
-
-    window.addEventListener("nscale", handleLegacyEvent as EventListener);
-    cleanupFunctions.push(() => {
-      window.removeEventListener("nscale", handleLegacyEvent as EventListener);
-    });
-
-    console.log("nscale Bridge: Legacy-Event-Listener initialisiert");
-  }
-
-  /**
-   * Bereinigt alle Event-Listener
-   */
-  function cleanup() {
-    cleanupFunctions.forEach((fn) => fn());
-    cleanupFunctions.length = 0;
-    bus.clear();
-
-    // Globale API zurücksetzen
-    delete window.nscaleAuth;
-    delete window.nscaleChat;
-    delete window.nscaleUI;
-    delete window.nscaleSettings;
-    delete window.nscaleEvents;
-
-    console.log("nscale Bridge: Cleanup durchgeführt");
-  }
-
-  // Bridge nur initialisieren, wenn aktiviert
-  if (bridgeEnabled) {
-    exposeGlobalAPI();
-    setupStoreWatchers();
-    setupLegacyEventListeners();
-  }
-
-  // Initialisierungsstatus zurückgeben
-  return {
-    enabled: bridgeEnabled,
-    cleanup,
+  
+  // Create logger
+  const bridgeLogger = logger.namespace('bridge');
+  
+  // Merge with default configuration
+  const mergedConfig: BridgeConfig = {
+    ...DEFAULT_BRIDGE_CONFIG,
+    ...config,
+    modules: {
+      ...DEFAULT_BRIDGE_CONFIG.modules,
+      ...config.modules
+    },
+    selfHealing: {
+      ...DEFAULT_BRIDGE_CONFIG.selfHealing,
+      ...config.selfHealing
+    },
+    diagnostics: {
+      ...DEFAULT_BRIDGE_CONFIG.diagnostics,
+      ...config.diagnostics
+    }
   };
-}
+  
+  // Set debug mode for the logger
+  if (mergedConfig.debug) {
+    logger.setMinLevel('debug');
+  }
+  
+  // Log initialization
+  bridgeLogger.info('Initializing bridge system', { config: mergedConfig });
+  
+  try {
+    // Initialize bridge modules
+    bridgeLogger.debug('Initializing bridge modules');
 
-// Typen für globale API-Erweiterungen
-declare global {
-  interface Window {
-    nscaleAuth?: {
-      login: (email: string, password: string) => Promise<boolean>;
-      logout: () => void;
-      getToken: () => string | null;
-      isAuthenticated: () => boolean;
-      hasRole: (role: string) => boolean;
-      getUser: () => any;
+    // Initialize auth bridge
+    const auth = initAuthBridge(eventBus, mergedConfig.modules?.auth || {});
+
+    // Initialize sessions bridge
+    const sessions = initSessionsBridge(eventBus, mergedConfig.modules?.sessions || {});
+
+    // Initialize UI bridge
+    const ui = initUIBridge(eventBus, mergedConfig.modules?.ui || {});
+
+    // Create a temporary bridge API for diagnostics initialization
+    const tempBridge: BridgeAPI = {
+      events: {
+        emit: (eventType, payload) => eventBus.emit(eventType, payload),
+        on: (eventType, handler) => eventBus.on(eventType, handler),
+        once: (eventType, handler) => eventBus.once(eventType, handler)
+      },
+      stores: {
+        getValue: () => undefined,
+        setValue: () => failure('Not implemented', 'NOT_IMPLEMENTED'),
+        watch: () => ({ id: 'temp', unsubscribe: () => {}, pause: () => {}, resume: () => {} })
+      },
+      status: {
+        getStatus: () => ({}),
+        getDiagnostics: () => ({})
+      },
+      utils: {
+        log: (level, message, ...args) => logger.namespace('bridge:temp')[level](message, ...args),
+        isFeatureEnabled: () => false
+      },
+      auth: {
+        getCurrentUser: () => null,
+        isAuthenticated: () => false,
+        hasPermission: () => false,
+        hasRole: () => false,
+        hasAnyRole: () => false,
+        getAuthHeaders: () => ({}),
+        login: async () => failure('Not implemented', 'NOT_IMPLEMENTED'),
+        logout: async () => failure('Not implemented', 'NOT_IMPLEMENTED'),
+        refreshUserInfo: async () => failure('Not implemented', 'NOT_IMPLEMENTED'),
+        validateToken: async () => failure('Not implemented', 'NOT_IMPLEMENTED'),
+        dispose: () => {}
+      },
+      sessions: {
+        getCurrentSession: () => null,
+        getSessions: () => [],
+        getSession: () => null,
+        getMessages: () => [],
+        createSession: async () => failure('Not implemented', 'NOT_IMPLEMENTED'),
+        updateSession: async () => failure('Not implemented', 'NOT_IMPLEMENTED'),
+        deleteSession: async () => failure('Not implemented', 'NOT_IMPLEMENTED'),
+        selectSession: async () => failure('Not implemented', 'NOT_IMPLEMENTED'),
+        sendMessage: async () => failure('Not implemented', 'NOT_IMPLEMENTED'),
+        deleteMessage: async () => failure('Not implemented', 'NOT_IMPLEMENTED'),
+        isSessionStreaming: () => false,
+        getStreamingStatus: () => ({ isActive: false, progress: 0, sessionId: null }),
+        dispose: () => {}
+      },
+      ui: {
+        getTheme: () => ({ isDarkMode: false }),
+        toggleDarkMode: () => failure('Not implemented', 'NOT_IMPLEMENTED'),
+        setDarkMode: () => failure('Not implemented', 'NOT_IMPLEMENTED'),
+        getSidebarState: () => ({ isOpen: false, width: 0, activeTab: null }),
+        toggleSidebar: () => failure('Not implemented', 'NOT_IMPLEMENTED'),
+        openModal: () => failure('Not implemented', 'NOT_IMPLEMENTED'),
+        closeModal: () => failure('Not implemented', 'NOT_IMPLEMENTED'),
+        showConfirmation: async () => failure('Not implemented', 'NOT_IMPLEMENTED'),
+        showToast: () => failure('Not implemented', 'NOT_IMPLEMENTED'),
+        dismissToast: () => failure('Not implemented', 'NOT_IMPLEMENTED'),
+        setLoading: () => failure('Not implemented', 'NOT_IMPLEMENTED'),
+        getViewMode: () => 'default',
+        setViewMode: () => failure('Not implemented', 'NOT_IMPLEMENTED'),
+        dispose: () => {}
+      },
+      dispose: () => {}
     };
-    nscaleChat?: {
-      createSession: (title?: string) => Promise<string>;
-      sendMessage: (sessionId: string, content: string) => Promise<void>;
-      getSessions: () => any[];
-      getCurrentSession: () => any;
-      setCurrentSession: (sessionId: string) => Promise<void>;
-      getMessages: (sessionId: string) => any[];
-      cancelStreaming: () => void;
+
+    // Initialize diagnostics with temporary bridge API
+    const diagnostics = initDiagnostics(tempBridge, eventBus, mergedConfig.diagnostics || {});
+    
+    // Create bridge API
+    bridgeInstance = {
+      // Event methods
+      events: {
+        emit: (eventType, payload) => {
+          eventBus.emit(eventType, payload);
+        },
+        on: (eventType, handler) => {
+          return eventBus.on(eventType, handler);
+        },
+        once: (eventType, handler) => {
+          return eventBus.once(eventType, handler);
+        }
+      },
+      
+      // Store methods
+      stores: {
+        getValue: (storeName, path) => {
+          // Delegate to appropriate module
+          switch (storeName) {
+            case 'auth':
+              return auth.getValue(path);
+            case 'sessions':
+              return sessions.getValue(path);
+            case 'ui':
+              return ui.getValue(path);
+            default:
+              bridgeLogger.warn(`Unknown store: ${storeName}`);
+              return undefined;
+          }
+        },
+        setValue: (storeName, path, value) => {
+          // Delegate to appropriate module
+          switch (storeName) {
+            case 'auth':
+              return auth.setValue(path, value);
+            case 'sessions':
+              return sessions.setValue(path, value);
+            case 'ui':
+              return ui.setValue(path, value);
+            default:
+              return failure(`Unknown store: ${storeName}`, 'UNKNOWN_STORE');
+          }
+        },
+        watch: (storeName, path, handler) => {
+          // Delegate to appropriate module
+          switch (storeName) {
+            case 'auth':
+              return auth.watch(path, handler);
+            case 'sessions':
+              return sessions.watch(path, handler);
+            case 'ui':
+              return ui.watch(path, handler);
+            default:
+              bridgeLogger.warn(`Unknown store: ${storeName}`);
+              return {
+                id: 'invalid',
+                unsubscribe: () => {},
+                pause: () => {},
+                resume: () => {}
+              };
+          }
+        }
+      },
+      
+      // Status methods
+      status: {
+        getStatus: () => {
+          return {
+            auth: auth.getStatus(),
+            sessions: sessions.getStatus(),
+            ui: ui.getStatus()
+          };
+        },
+        getDiagnostics: () => {
+          return diagnostics.getDiagnostics();
+        }
+      },
+      
+      // Utility methods
+      utils: {
+        log: (level, message, ...args) => {
+          logger.namespace('bridge:api')[level](message, ...args);
+        },
+        isFeatureEnabled: (featureName) => {
+          return false; // TODO: Implement feature flags
+        }
+      },
+      
+      // Module-specific methods
+      auth: {
+        getCurrentUser: auth.getCurrentUser,
+        isAuthenticated: auth.isAuthenticated,
+        hasPermission: auth.hasPermission
+      },
+      sessions: {
+        getCurrentSession: sessions.getCurrentSession,
+        getSessions: sessions.getSessions,
+        getMessages: sessions.getMessages
+      },
+      ui: {
+        showToast: ui.showToast,
+        showModal: ui.openModal,
+        closeModal: ui.closeModal
+      },
+      
+      // Cleanup and disposal
+      dispose: () => {
+        // Clean up all modules
+        auth.dispose();
+        sessions.dispose();
+        ui.dispose();
+        diagnostics.dispose();
+
+        // Clean up event bus
+        eventBus.pause();
+
+        // Reset initialization status
+        isInitialized = false;
+        bridgeInstance = null;
+      }
     };
-    nscaleUI?: {
-      toggleDarkMode: () => void;
-      isDarkMode: () => boolean;
-      openSidebar: () => void;
-      closeSidebar: () => void;
-      showToast: (message: string, type?: string) => void;
-      openModal: (title: string, content: string, options?: any) => string;
-      closeModal: (modalId: string) => void;
-    };
-    nscaleSettings?: {
-      getTheme: () => any;
-      setTheme: (themeId: string) => void;
-      getFontSize: () => number;
-      setFontSize: (size: number) => void;
-      getSetting: (key: string) => any;
-      setSetting: (key: string, value: any) => void;
-    };
-    nscaleEvents?: {
-      emit: (event: string, data?: any) => void;
-      on: (event: string, callback: (data?: any) => void) => () => void;
-    };
+    
+    // Expose global API if configured
+    if (mergedConfig.exposeGlobal) {
+      const globalPath = mergedConfig.globalPath || 'nscale.bridge';
+      
+      // Parse path and ensure objects exist
+      const parts = globalPath.split('.');
+      let current: any = window;
+      
+      for (let i = 0; i < parts.length - 1; i++) {
+        if (!current[parts[i]]) {
+          current[parts[i]] = {};
+        }
+        current = current[parts[i]];
+      }
+      
+      // Set global object
+      current[parts[parts.length - 1]] = bridgeInstance;
+      
+      // Add backward compatibility
+      window.__BRIDGE_INITIALIZED = true;
+      window.__BRIDGE_API = bridgeInstance;
+    }
+    
+    // Mark as initialized
+    isInitialized = true;
+    
+    // Emit initialized event
+    eventBus.emit('bridge:initialized', undefined);
+    
+    // Log success
+    bridgeLogger.info('Bridge system initialized successfully');
+    
+    return bridgeInstance;
+  } catch (error) {
+    // Log error
+    bridgeLogger.error('Failed to initialize bridge system', error);
+    
+    // Emit error event
+    eventBus.emit('bridge:error', {
+      code: 'BRIDGE_INITIALIZATION_ERROR',
+      message: 'Failed to initialize bridge system',
+      cause: error
+    });
+    
+    // Rethrow error
+    throw error;
   }
 }
 
-// Komposable für Vue-Komponenten
-export function useBridge() {
-  const bridge = setupBridge();
-
-  // Automatisch aufräumen, wenn die Komponente zerstört wird
-  onBeforeUnmount(() => {
-    if (bridge.enabled) {
-      bridge.cleanup();
-    }
-  });
-
-  return {
-    bus,
-    isEnabled: bridge.enabled,
-  };
+/**
+ * Reset the bridge system (for testing)
+ */
+export function resetBridge(): void {
+  if (bridgeInstance) {
+    bridgeInstance.dispose();
+  }
+  
+  bridgeInstance = null;
+  isInitialized = false;
 }
 
 /**
- * Plugin für die Installation in der Vue-App
+ * Check if the bridge is initialized
  */
-export default {
-  install(app: any) {
-    const bridge = setupBridge();
+export function isBridgeInitialized(): boolean {
+  return isInitialized;
+}
 
-    // Die Bridge-Instanz für Komponenten verfügbar machen
-    app.provide("bridge", {
-      bus,
-      isEnabled: bridge.enabled,
-    });
+// Export core utilities for direct use
+export { eventBus, logger, success, failure, tryAsync };
 
-    console.log("nscale Bridge Plugin installiert");
-  },
-};
+// Export type definitions
+export * from './core/types';
+
+// Re-export module interfaces for direct use
+export type { AuthBridgeAPI } from './modules/auth';
+export type { SessionsBridgeAPI } from './modules/sessions';
+export type { UIBridgeAPI } from './modules/ui';

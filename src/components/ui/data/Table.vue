@@ -262,7 +262,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, useSlots, onMounted } from "vue";
-import { generateUniqueId } from "../../../utils/uuidUtil";
+import { generateUUID as generateUniqueId } from "../../../utils/uuidUtil";
 
 /**
  * Table component for displaying data in rows and columns

@@ -293,6 +293,36 @@ class UserManager:
         role = self.get_user_role(user_id)
         return role == UserRole.ADMIN
     
+    def get_user_by_email(self, email):
+        """Gibt Benutzerinformationen anhand der E-Mail-Adresse zurück"""
+        try:
+            conn = sqlite3.connect(Config.DB_PATH)
+            cursor = conn.cursor()
+            
+            cursor.execute(
+                "SELECT id, email, role, created_at, last_login FROM users WHERE email = ?",
+                (email,)
+            )
+            
+            result = cursor.fetchone()
+            conn.close()
+            
+            if result:
+                return {
+                    'id': result[0],
+                    'email': result[1],
+                    'username': result[1],  # Email als Username verwenden
+                    'role': result[2],
+                    'created_at': result[3],
+                    'last_login': result[4]
+                }
+            else:
+                logger.warning(f"Benutzer mit E-Mail {email} nicht gefunden")
+                return None
+        except Exception as e:
+            logger.error(f"Fehler beim Abrufen der Benutzerdaten: {e}")
+            return None
+    
     def verify_token(self, token):
         """Überprüft ein JWT-Token und gibt Benutzerinformationen zurück"""
         try:

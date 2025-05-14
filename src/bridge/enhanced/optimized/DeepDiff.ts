@@ -18,13 +18,25 @@ export enum DiffOperationType {
 // Diff-Operation-Interface
 export interface DiffOperation {
   type: DiffOperationType;
-  path: string[];
+  /**
+   * Pfad zur betroffenen Eigenschaft als Array von Schlüsseln.
+   * Für Objekte sind dies Strings, für Arrays können es Zahlen sein.
+   * Zahlen in Pfaden repräsentieren Array-Indizes.
+   */
+  path: (string | number)[];
+  /** Neuer Wert bei ADD oder REPLACE Operationen */
   value?: any;
+  /** Alter Wert bei REPLACE oder REMOVE Operationen */
   oldValue?: any;
+  /** Index für ARRAY_SPLICE Operationen */
   index?: number;
+  /** Entfernte Elemente bei ARRAY_SPLICE Operationen */
   removed?: any[];
+  /** Hinzugefügte Elemente bei ARRAY_SPLICE Operationen */
   added?: any[];
+  /** Quell-Index bei ARRAY_MOVE Operationen */
   from?: number;
+  /** Ziel-Index bei ARRAY_MOVE Operationen */
   to?: number;
 }
 
@@ -203,7 +215,7 @@ function diffArrays(oldArray: any[], newArray: any[]): DiffOperation[] {
     return [
       {
         type: DiffOperationType.REPLACE,
-        path: [oldArray.length - 1],
+        path: [(oldArray.length - 1) as number],
         oldValue: lastOldItem,
         value: lastNewItem,
       },
@@ -400,27 +412,30 @@ export function applyDiff(obj: any, operations: DiffOperation[]): any {
 /**
  * Hilfsfunktion zum Setzen einer verschachtelten Eigenschaft in einem Objekt
  */
-function setNestedProperty(obj: any, path: string[], value: any): void {
+function setNestedProperty(obj: any, path: (string | number)[], value: any): void {
   if (path.length === 0) {
     // Kann nicht auf root-Ebene setzen
     return;
   }
-  
+
   let current = obj;
-  
+
   // Bis zum vorletzten Element navigieren
   for (let i = 0; i < path.length - 1; i++) {
     const key = path[i];
-    
+
     // Wenn der Pfad nicht existiert, erstellen
     if (current[key] === undefined) {
       // Prüfen, ob der nächste Teil ein Index ist (für Arrays)
-      current[key] = isNaN(Number(path[i + 1])) ? {} : [];
+      const nextPathElement = path[i + 1];
+      current[key] = typeof nextPathElement === 'number' ||
+                     (typeof nextPathElement === 'string' && !isNaN(Number(nextPathElement)))
+                     ? [] : {};
     }
-    
+
     current = current[key];
   }
-  
+
   // Letztes Element setzen
   const lastKey = path[path.length - 1];
   current[lastKey] = value;
@@ -429,31 +444,33 @@ function setNestedProperty(obj: any, path: string[], value: any): void {
 /**
  * Hilfsfunktion zum Löschen einer verschachtelten Eigenschaft in einem Objekt
  */
-function deleteNestedProperty(obj: any, path: string[]): void {
+function deleteNestedProperty(obj: any, path: (string | number)[]): void {
   if (path.length === 0) {
     // Kann nicht auf root-Ebene löschen
     return;
   }
-  
+
   let current = obj;
-  
+
   // Bis zum vorletzten Element navigieren
   for (let i = 0; i < path.length - 1; i++) {
     const key = path[i];
-    
+
     if (current[key] === undefined) {
       // Pfad existiert nicht, nichts zu tun
       return;
     }
-    
+
     current = current[key];
   }
-  
+
   // Eigenschaft löschen
   const lastKey = path[path.length - 1];
-  
+
   if (Array.isArray(current)) {
-    if (!isNaN(Number(lastKey))) {
+    if (typeof lastKey === 'number') {
+      current.splice(lastKey, 1);
+    } else if (typeof lastKey === 'string' && !isNaN(Number(lastKey))) {
       current.splice(Number(lastKey), 1);
     }
   } else {
@@ -464,20 +481,20 @@ function deleteNestedProperty(obj: any, path: string[]): void {
 /**
  * Hilfsfunktion zum Abrufen einer verschachtelten Eigenschaft aus einem Objekt
  */
-function getNestedProperty(obj: any, path: string[]): any {
+function getNestedProperty(obj: any, path: (string | number)[]): any {
   if (path.length === 0) {
     return obj;
   }
-  
+
   let current = obj;
-  
+
   for (const key of path) {
     if (current === undefined || current === null) {
       return undefined;
     }
-    
+
     current = current[key];
   }
-  
+
   return current;
 }

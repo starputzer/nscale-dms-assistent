@@ -11,8 +11,8 @@ import { useErrorReporting } from "@/utils/errorReportingService";
 import { useSessionsStore } from "@/stores/sessions";
 import { toastService } from "@/services/ui/ToastService";
 
-// Debug konstante für Feature-Flags
-const DISABLE_FEATURE_CHECKS = true;
+// Debug konstante für Feature-Flags - FALSE für aktivierte Feature-Checks
+const DISABLE_FEATURE_CHECKS = false;
 
 // Router-Fehler-Diagnose aktivieren (nur für Entwicklung empfohlen)
 const ENABLE_ROUTER_ERROR_DIAGNOSTICS = import.meta.env.DEV || false;
@@ -172,7 +172,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
     name: "Home",
-    component: () => lazyLoadChat("ChatView"),
+    component: () => import('../views/ChatView.vue'),
     meta: {
       requiresAuth: true,
       title: "Chat",
@@ -196,7 +196,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/enhanced-chat",
     name: "EnhancedChat",
-    component: () => lazyLoadChat("EnhancedChatView"), 
+    component: () => import('../views/EnhancedChatView.vue'), 
     meta: {
       requiresAuth: true,
       title: "Enhanced Chat",
@@ -205,13 +205,14 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/login",
     name: "Login",
-    // Direkte Import-Anweisung für höchste Zuverlässigkeit
-    component: () => import('../views/LoginView.simple.vue'),
+    // Direkte, nicht-async Import-Anweisung für maximale Zuverlässigkeit
+    component: () => import('../views/EnhancedLoginView.vue'),
     meta: {
       guest: true,
       title: "Login",
-      featureFlag: "useSfcLogin",
       isCriticalPath: true, // Markiere explizit als kritischen Pfad
+      important: true,      // Zusätzlicher Marker für wichtige Routen
+      bypassChecks: true    // Umgehe alle Checks für diese Route
     },
     // Alternativer Komponentenpfad für Entwicklungs- und Testzwecke
     alias: "/auth"
@@ -232,7 +233,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/admin",
     name: "Admin",
-    component: () => lazyLoadAdmin("AdminView"),
+    component: () => import('../views/AdminView.vue'),
     meta: {
       requiresAuth: true,
       adminOnly: true,
@@ -243,7 +244,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/documents",
     name: "Documents",
-    component: () => lazyLoadDocs("DocumentsView"),
+    component: () => import('../views/DocumentsView.vue'),
     meta: {
       requiresAuth: true,
       title: "Dokumentenkonverter",
@@ -253,9 +254,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/settings",
     name: "Settings",
-    component: lazyLoadView("SettingsView", {
-      chunkName: "settings",
-    }),
+    component: () => import('../views/SettingsView.vue'),
     meta: {
       requiresAuth: true,
       title: "Einstellungen",
@@ -265,7 +264,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/session/:id",
     name: "Session",
-    component: () => lazyLoadChat("ChatView"),
+    component: () => import('../views/ChatView.vue'),
     meta: {
       requiresAuth: true,
       title: "Chat Session",
@@ -275,11 +274,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/error",
     name: "Error",
-    component: lazyLoadView("ErrorView", {
-      chunkName: "error",
-      priority: "critical", // Höchste Priorität für Fehlerseite
-      preload: true, // Vorausladen, damit Fehlerseite immer verfügbar ist
-    }),
+    component: () => import('../views/ErrorView.vue'),
     meta: {
       title: "Fehler",
       requiresAuth: false, // Sicherstellen, dass die Fehlerseite ohne Auth erreichbar ist
@@ -299,11 +294,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/:pathMatch(.*)*",
     name: "NotFound",
-    component: lazyLoadView("NotFoundView", {
-      chunkName: "error",
-      priority: "high", // Hohe Priorität für 404-Seite
-      preload: true, // Vorausladen für bessere Benutzererfahrung
-    }),
+    component: () => import('../views/NotFoundView.vue'),
     meta: {
       title: "Seite nicht gefunden",
       requiresAuth: false, // Keine Authentifizierung erforderlich
@@ -646,16 +637,23 @@ router.beforeEach((to, from, next) => {
 
 // Hilfsfunktion, die prüft, ob es sich um einen kritischen oder Fehler-Pfad handelt
 function isCriticalPath(path: string, route?: RouteLocationNormalized) {
-  // Prüfe zuerst auf explizites isCriticalPath-Flag in Route-Metadaten
-  if (route && route.meta.isCriticalPath === true) {
+  // Immer true für Login-/Auth-Pfade
+  if (path === "/login" || path === "/auth") {
     return true;
+  }
+  
+  // Prüfe auf explizite Metadaten-Flags in Route-Metadaten
+  if (route) {
+    if (route.meta.isCriticalPath === true || 
+        route.meta.important === true || 
+        route.meta.bypassChecks === true) {
+      return true;
+    }
   }
 
   // Sonst prüfe anhand des Pfads
   return (
     path === "/" || 
-    path === "/login" || 
-    path === "/auth" ||
     path === "/enhanced-chat" || 
     path === "/error" || 
     path.startsWith("/error") || 

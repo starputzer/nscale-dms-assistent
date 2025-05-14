@@ -1,4 +1,4 @@
-import { logger } from '../logger';
+import { createLogger } from '../logger/index';
 
 /**
  * Performance measurement types
@@ -48,17 +48,20 @@ export class PerformanceMonitor {
   
   // Store aggregated metrics for efficient reporting
   private aggregatedStats: Map<string, PerformanceStats> = new Map();
-  
+
   // Mark when the last aggregation happened
   private lastAggregation = 0;
+
+  // Logger for this component
+  private logger = createLogger('PerformanceMonitor');
   
   /**
    * Enable or disable performance monitoring
    */
   public setEnabled(enabled: boolean): void {
     this.enabled = enabled;
-    logger.info(`Performance monitoring ${enabled ? 'enabled' : 'disabled'}`);
-    
+    this.logger.info(`Performance monitoring ${enabled ? 'enabled' : 'disabled'}`);
+
     if (!enabled) {
       // Clear metrics when disabling to free memory
       this.metrics = [];
@@ -273,9 +276,10 @@ export class PerformanceMonitor {
     }
     
     // Calculate stats for each key
-    for (const [key, durations] of metricsByKey.entries()) {
+    // Use Array.from to avoid compatibility issues with Map iterators
+    Array.from(metricsByKey.entries()).forEach(([key, durations]) => {
       this.aggregatedStats.set(key, this.calculateStats(durations));
-    }
+    });
   }
   
   /**
@@ -286,9 +290,10 @@ export class PerformanceMonitor {
     this.lastAggregation = Date.now();
     
     const result: Record<string, PerformanceStats> = {};
-    for (const [key, stats] of this.aggregatedStats.entries()) {
+    // Use Array.from to avoid compatibility issues with Map iterators
+    Array.from(this.aggregatedStats.entries()).forEach(([key, stats]) => {
       result[key] = stats;
-    }
+    });
     
     return result;
   }
@@ -300,7 +305,7 @@ export class PerformanceMonitor {
     this.metrics = [];
     this.aggregatedStats.clear();
     this.lastAggregation = 0;
-    logger.debug('Performance metrics cleared');
+    this.logger.debug('Performance metrics cleared');
   }
   
   /**
@@ -329,10 +334,11 @@ export class PerformanceMonitor {
     };
     
     // Look for slow operations
-    for (const [key, stats] of this.aggregatedStats.entries()) {
+    // Use Array.from to avoid compatibility issues with Map iterators
+    Array.from(this.aggregatedStats.entries()).forEach(([key, stats]) => {
       // Different thresholds based on operation type
       let threshold = 16.67; // 60fps frame budget
-      
+
       if (key.startsWith(PerformanceMetricType.STATE_UPDATE)) {
         threshold = 5; // State updates should be fast
       } else if (key.startsWith(PerformanceMetricType.COMPONENT_RENDER)) {
@@ -349,7 +355,7 @@ export class PerformanceMonitor {
           threshold,
           count: stats.count
         });
-        
+
         // Add recommendations based on issue type
         if (key.startsWith(PerformanceMetricType.STATE_UPDATE)) {
           summary.recommendations.push(
@@ -361,7 +367,7 @@ export class PerformanceMonitor {
           );
         }
       }
-    }
+    });
     
     return summary;
   }

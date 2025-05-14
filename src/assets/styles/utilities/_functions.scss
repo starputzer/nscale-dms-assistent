@@ -1,0 +1,75 @@
+// SASS Functions
+// Sammlung nützlicher Funktionen für die Anwendung
+
+@use "sass:math";
+@use "sass:map";
+@use "sass:color";
+
+// Verwende das SASS Math-Modul für mathematische Operationen
+@function calculate-rem($size-in-px) {
+  @return math.div($size-in-px, 16) * 1rem;
+}
+
+// Sicheres map.get mit Fallback
+@function get-map-value($map, $key, $default: null) {
+  @if map.has-key($map, $key) {
+    @return map.get($map, $key);
+  }
+  @return $default;
+}
+
+// Korrigierte Prozent-Funktion mit math.percentage
+@function calculate-percentage($size, $columns) {
+  @return math.percentage(math.div($size, $columns));
+}
+
+// Farbadjustierungen
+@function lighten-color($color, $amount) {
+  @return color.scale($color, $lightness: $amount);
+}
+
+@function darken-color($color, $amount) {
+  @return color.scale($color, $lightness: -$amount);
+}
+
+// Funktionen für den Umgang mit Variablen
+@function get-spacing($size) {
+  $spacing-map: (
+    "xs": 0.25rem,
+    "sm": 0.5rem,
+    "md": 1rem,
+    "lg": 1.5rem,
+    "xl": 2rem,
+    "2xl": 3rem
+  );
+  
+  @return get-map-value($spacing-map, $size, 1rem);
+}
+
+// Funktionen für Responsiveness
+@function get-breakpoint($name) {
+  $breakpoints: (
+    "sm": 640px,
+    "md": 768px,
+    "lg": 1024px,
+    "xl": 1280px,
+    "2xl": 1536px
+  );
+  
+  @return get-map-value($breakpoints, $name, 0);
+}
+
+// Z-Index-Management
+@function z-index($layer) {
+  $z-layers: (
+    "base": 1,
+    "dropdown": 10,
+    "sticky": 20,
+    "fixed": 30,
+    "modal": 40,
+    "popover": 50,
+    "toast": 60
+  );
+  
+  @return get-map-value($z-layers, $layer, 1);
+}

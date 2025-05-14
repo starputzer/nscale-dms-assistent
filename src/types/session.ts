@@ -81,3 +81,9 @@ export interface SendMessageParams {
   content: string;
   role?: "user" | "system";
 }
+
+/**
+ * Type aliases for backward compatibility
+ */
+export type Session = ChatSession;
+export type Message = ChatMessage;

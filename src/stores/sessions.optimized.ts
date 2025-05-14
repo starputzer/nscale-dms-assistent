@@ -11,6 +11,7 @@ import type {
   SessionTag,
   SessionCategory,
 } from "../types/session";
+import type { OptimizedSessionsStore, OptimizedSessionsStoreReturn } from "../types/stores";
 import { useAuthStore } from "./auth";
 
 /**
@@ -21,9 +22,9 @@ import { useAuthStore } from "./auth";
  * - Verbesserte Offline-Unterstützung
  * - Memoization für rechenintensive Getter
  */
-export const useSessionsStore = defineStore(
+export const useSessionsStore = defineStore<string, OptimizedSessionsStoreReturn>(
   "sessions",
-  () => {
+  (): OptimizedSessionsStoreReturn => {
     // Referenz auf den Auth-Store für Benutzerinformationen
     const authStore = useAuthStore();
 
@@ -2077,3 +2078,6 @@ export const useSessionsStore = defineStore(
     },
   },
 );
+
+// Alias für die optimierte Store-Version exportieren
+export const useSessionsStoreOptimized = useSessionsStore as typeof useSessionsStore;

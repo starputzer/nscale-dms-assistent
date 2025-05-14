@@ -6,20 +6,7 @@ import {
   FeatureConfig,
   FeatureToggleRole,
 } from "../stores/featureToggles";
-
-/**
- * Optionen für das Feature Toggle Composable
- */
-export interface FeatureToggleOptions {
-  /** Gibt an, ob automatisch auf den Fallback zurückgefallen werden soll bei Fehlern */
-  autoFallback?: boolean;
-  /** Fehlerhandler-Funktion, die bei Feature-Fehlern aufgerufen wird */
-  onError?: (error: FeatureToggleError) => void;
-  /** Aktuelle Benutzerrolle für Feature-Verfügbarkeit */
-  userRole?: FeatureToggleRole;
-  /** Gibt an, ob der Debug-Modus aktiv sein soll */
-  debug?: boolean;
-}
+import type { FeatureToggleOptions } from "../utils/composableTypes";
 
 /**
  * Feature Toggle Komposable
@@ -30,7 +17,8 @@ export interface FeatureToggleOptions {
  * Erweitert für die Vue 3 SFC-Migration mit Unterstützung für Fehlerbehandlung
  * und automatischem Fallback auf Legacy-Implementierungen.
  *
- * @param options Optionen für das Feature Toggle Composable
+ * @param {FeatureToggleOptions} options - Optionen für das Feature Toggle Composable
+ * @returns Objekt mit Feature Toggle Funktionen und reaktiven Eigenschaften
  */
 export function useFeatureToggles(options: FeatureToggleOptions = {}) {
   const featureStore = useFeatureTogglesStore();

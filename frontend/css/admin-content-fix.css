@@ -1,0 +1,232 @@
+/* Admin Content Fixes */
+
+/* Einheitliches Layout für alle Admin-Tabs */
+.admin-content-area {
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.theme-dark .admin-content-area {
+  background-color: #1e1e1e;
+  border-color: #333;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.theme-contrast .admin-content-area {
+  background-color: #000;
+  border: 2px solid #ffeb3b;
+  box-shadow: 0 1px 3px rgba(255, 235, 59, 0.2);
+}
+
+/* Admin Section Headers */
+.admin-section-header {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  color: #333;
+}
+
+.theme-dark .admin-section-header {
+  color: #f0f0f0;
+  border-bottom-color: #333;
+}
+
+.theme-contrast .admin-section-header {
+  color: #ffeb3b;
+  border-bottom-color: #ffeb3b;
+}
+
+/* Admin Cards Grid Layout */
+.admin-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Admin Card */
+.admin-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1.25rem;
+}
+
+.theme-dark .admin-card {
+  background-color: #2a2a2a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.theme-contrast .admin-card {
+  background-color: #000;
+  border: 1px solid #ffeb3b;
+  box-shadow: 0 1px 3px rgba(255, 235, 59, 0.2);
+}
+
+/* Admin Tables */
+.admin-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.admin-table th {
+  background-color: #f8f9fa;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table tr:hover td {
+  background-color: #f8f9fa;
+}
+
+.theme-dark .admin-table th {
+  background-color: #333;
+  border-bottom-color: #444;
+  color: #f0f0f0;
+}
+
+.theme-dark .admin-table td {
+  border-bottom-color: #444;
+  color: #e2e8f0;
+}
+
+.theme-dark .admin-table tr:hover td {
+  background-color: #2a2a2a;
+}
+
+.theme-contrast .admin-table th {
+  background-color: #333300;
+  border-bottom-color: #ffeb3b;
+  color: #ffeb3b;
+}
+
+.theme-contrast .admin-table td {
+  border-bottom-color: #ffeb3b;
+  color: #fff;
+}
+
+.theme-contrast .admin-table tr:hover td {
+  background-color: #111100;
+}
+
+/* Admin Buttons */
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.admin-btn-primary {
+  background-color: var(--nscale-green, #00a550);
+  color: white;
+  border: none;
+}
+
+.admin-btn-primary:hover {
+  background-color: var(--nscale-green-dark, #009046);
+  transform: translateY(-1px);
+}
+
+.admin-btn-secondary {
+  background-color: white;
+  color: var(--nscale-green, #00a550);
+  border: 1px solid var(--nscale-green, #00a550);
+}
+
+.admin-btn-secondary:hover {
+  background-color: var(--nscale-light-green, #e8f7ef);
+  transform: translateY(-1px);
+}
+
+.admin-btn-danger {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+}
+
+.admin-btn-danger:hover {
+  background-color: #dc2626;
+  transform: translateY(-1px);
+}
+
+.theme-dark .admin-btn-secondary {
+  background-color: #1e1e1e;
+  color: #00c060;
+  border-color: #00c060;
+}
+
+.theme-dark .admin-btn-secondary:hover {
+  background-color: #003320;
+}
+
+.theme-contrast .admin-btn-primary {
+  background-color: #ffeb3b;
+  color: #000;
+  border: 1px solid #ffeb3b;
+}
+
+.theme-contrast .admin-btn-primary:hover {
+  background-color: #ffd600;
+}
+
+.theme-contrast .admin-btn-secondary {
+  background-color: #000;
+  color: #ffeb3b;
+  border-color: #ffeb3b;
+}
+
+.theme-contrast .admin-btn-secondary:hover {
+  background-color: #333300;
+}
+
+.theme-contrast .admin-btn-danger {
+  background-color: #ff4444;
+  color: #fff;
+  border: 1px solid #ff4444;
+}
+
+.theme-contrast .admin-btn-danger:hover {
+  background-color: #cc0000;
+}
+
+/* Fix für admin-tab-button */
+.admin-tab-button.active,
+.admin-tab-button:hover {
+  border-left: 3px solid var(--nscale-green, #00a550);
+}
+
+.theme-dark .admin-tab-button.active,
+.theme-dark .admin-tab-button:hover {
+  border-left-color: #00c060;
+}
+
+.theme-contrast .admin-tab-button.active,
+.theme-contrast .admin-tab-button:hover {
+  border-left-color: #ffeb3b;
+}

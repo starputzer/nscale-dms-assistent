@@ -1,4 +1,6 @@
 import { reactive, readonly } from "vue";
+import { useUIStore } from "@/stores/ui";
+import type { Toast as ToastMessage } from "@/types/ui";
 
 /**
  * Toast-Nachrichtentypen
@@ -24,41 +26,11 @@ export interface ToastOptions {
     | "bottom-left"
     | "top-center"
     | "bottom-center";
-}
-
-/**
- * Toast-Nachricht
- */
-export interface ToastMessage {
+    
   /**
-   * Eindeutige ID des Toasts
+   * Titel des Toasts (optional)
    */
-  id: string;
-
-  /**
-   * Anzuzeigende Nachricht
-   */
-  message: string;
-
-  /**
-   * Typ der Nachricht (success, error, warning, info)
-   */
-  type: ToastType;
-
-  /**
-   * Zeitstempel der Erstellung
-   */
-  timestamp: Date;
-
-  /**
-   * Anzeigedauer in Millisekunden
-   */
-  duration: number;
-
-  /**
-   * Position des Toasts
-   */
-  position: string;
+  title?: string;
 }
 
 /**
@@ -74,11 +46,16 @@ export interface ToastShowConfig {
    * Typ der Nachricht (success, error, warning, info)
    */
   type?: ToastType;
-
+  
   /**
-   * Optionen für die Anzeige
+   * Titel des Toasts (optional)
    */
-  options?: ToastOptions;
+  title?: string;
+  
+  /**
+   * Dauer der Anzeige in Millisekunden
+   */
+  duration?: number;
 }
 
 /**
@@ -106,24 +83,37 @@ const state = reactive<ToastState>({
  * Composable für Toast-Benachrichtigungen
  *
  * Ermöglicht die Anzeige von temporären Benachrichtigungen im UI.
+ * Kompatibel mit dem UI-Store für konsistente Toast-Anzeige.
  */
 export function useToast() {
+  const uiStore = useUIStore();
+
   /**
    * Zeigt eine neue Toast-Nachricht an
    */
   function show(config: ToastShowConfig): string {
+    // Versuche, den UI Store zu verwenden, wenn verfügbar
+    if (uiStore && typeof uiStore.showToast === 'function') {
+      return uiStore.showToast({
+        type: config.type || 'info',
+        message: config.message,
+        duration: config.duration
+      });
+    }
+    
+    // Fallback zur lokalen Implementierung
     const id = `toast-${state.counter++}`;
-    const { message, type = "info", options = {} } = config;
-    const { duration = 3000, position = "bottom-right" } = options;
+    const { message, type = "info", title, duration = 3000 } = config;
 
-    const toast: ToastMessage = {
+    const toast = {
       id,
       message,
       type,
-      timestamp: new Date(),
+      title,
       duration,
-      position,
-    };
+      timestamp: new Date(),
+      position: "bottom-right"
+    } as unknown as ToastMessage;
 
     // Toast zur Liste hinzufügen
     state.toasts.push(toast);
@@ -140,6 +130,13 @@ export function useToast() {
    * Entfernt eine Toast-Nachricht basierend auf ihrer ID
    */
   function dismiss(id: string): void {
+    // Versuche, den UI Store zu verwenden, wenn verfügbar
+    if (uiStore && typeof uiStore.dismissToast === 'function') {
+      uiStore.dismissToast(id);
+      return;
+    }
+    
+    // Fallback zur lokalen Implementierung
     const index = state.toasts.findIndex((toast) => toast.id === id);
     if (index !== -1) {
       state.toasts.splice(index, 1);
@@ -150,6 +147,14 @@ export function useToast() {
    * Entfernt alle aktiven Toast-Nachrichten
    */
   function dismissAll(): void {
+    if (uiStore && typeof uiStore.closeAllModals === 'function') {
+      // Versuche, die UI Store-Methode zu verwenden
+      // (Angenommen, dass closeAllModals alle Benachrichtigungen schließt)
+      uiStore.closeAllModals();
+      return;
+    }
+    
+    // Fallback zur lokalen Implementierung
     state.toasts = [];
   }
 
@@ -157,28 +162,72 @@ export function useToast() {
    * Zeigt eine Erfolgs-Toast-Nachricht an
    */
   function success(message: string, options?: ToastOptions): string {
-    return show({ message, type: "success", options });
+    // UI Store verwenden, wenn verfügbar
+    if (uiStore && typeof uiStore.showSuccess === 'function') {
+      return uiStore.showSuccess(message, options);
+    }
+    
+    // Fallback zur lokalen Implementierung
+    return show({
+      message,
+      type: "success",
+      title: options?.title,
+      duration: options?.duration
+    });
   }
 
   /**
    * Zeigt eine Fehler-Toast-Nachricht an
    */
   function error(message: string, options?: ToastOptions): string {
-    return show({ message, type: "error", options });
+    // UI Store verwenden, wenn verfügbar
+    if (uiStore && typeof uiStore.showError === 'function') {
+      return uiStore.showError(message, options);
+    }
+    
+    // Fallback zur lokalen Implementierung
+    return show({
+      message,
+      type: "error",
+      title: options?.title,
+      duration: options?.duration
+    });
   }
 
   /**
    * Zeigt eine Warnungs-Toast-Nachricht an
    */
   function warning(message: string, options?: ToastOptions): string {
-    return show({ message, type: "warning", options });
+    // UI Store verwenden, wenn verfügbar
+    if (uiStore && typeof uiStore.showWarning === 'function') {
+      return uiStore.showWarning(message, options);
+    }
+    
+    // Fallback zur lokalen Implementierung
+    return show({
+      message,
+      type: "warning",
+      title: options?.title,
+      duration: options?.duration
+    });
   }
 
   /**
    * Zeigt eine Info-Toast-Nachricht an
    */
   function info(message: string, options?: ToastOptions): string {
-    return show({ message, type: "info", options });
+    // UI Store verwenden, wenn verfügbar
+    if (uiStore && typeof uiStore.showInfo === 'function') {
+      return uiStore.showInfo(message, options);
+    }
+    
+    // Fallback zur lokalen Implementierung
+    return show({
+      message,
+      type: "info",
+      title: options?.title,
+      duration: options?.duration
+    });
   }
 
   return {

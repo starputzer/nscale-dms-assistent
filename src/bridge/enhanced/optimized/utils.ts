@@ -326,12 +326,13 @@ export function memoize<T extends (...args: any[]) => any>(
       let oldestKey: string | null = null;
       let oldestTime = Infinity;
 
-      for (const [k, v] of cache.entries()) {
+      // Use Array.from to avoid compatibility issues with Map iterators
+      Array.from(cache.entries()).forEach(([k, v]) => {
         if (v.lastAccessed < oldestTime) {
           oldestKey = k;
           oldestTime = v.lastAccessed;
         }
-      }
+      });
 
       if (oldestKey) {
         cache.delete(oldestKey);

@@ -270,7 +270,7 @@ export class OptimizedEventBus implements EventBus {
   /**
    * Emits an event
    */
-  emit(eventName: string, data: any): void {
+  emit(eventName: string, data?: any): void {
     const startTime = performance.now();
 
     // Update event stats
@@ -412,11 +412,12 @@ export class OptimizedEventBus implements EventBus {
       // Find wildcard listeners that match this event
       const wildcardListeners: EventListenerEntry[] = [];
 
-      for (const [pattern, listeners] of this.listeners.entries()) {
+      // Use Array.from to avoid compatibility issues with Map iterators
+      Array.from(this.listeners.entries()).forEach(([pattern, listeners]) => {
         if (pattern !== eventName && this.matchesWildcard(eventName, pattern)) {
           wildcardListeners.push(...listeners);
         }
-      }
+      });
 
       // Combine and sort by priority
       const allListeners = [...directListeners, ...wildcardListeners]
@@ -716,13 +717,13 @@ export class OptimizedEventBus implements EventBus {
     const eventStatistics: Record<string, any> = {};
 
     // Get unique event patterns
-    const patterns = new Set([
-      ...this.eventStats.emitCount.keys(),
-      ...this.listeners.keys(),
-    ]);
+    const emitCountKeys = Array.from(this.eventStats.emitCount.keys());
+    const listenerKeys = Array.from(this.listeners.keys());
+    const patterns = new Set([...emitCountKeys, ...listenerKeys]);
 
     // Create stats for each pattern
-    for (const pattern of patterns) {
+    // Use Array.from to avoid compatibility issues with Set iterators
+    Array.from(patterns).forEach(pattern => {
       const emitCount = this.eventStats.emitCount.get(pattern) || 0;
       const batchCount = this.eventStats.batchCount.get(pattern) || 0;
       const listenerCallCount =
@@ -754,7 +755,7 @@ export class OptimizedEventBus implements EventBus {
         activeListenerCount: listeners.filter((l) => l.active).length,
         category,
       };
-    }
+    });
 
     return {
       // Overall stats
@@ -801,7 +802,8 @@ export class OptimizedEventBus implements EventBus {
     const orphanedTimeout = 600000; // 10 minutes
     let totalCleaned = 0;
 
-    for (const [eventName, listeners] of this.listeners.entries()) {
+    // Use Array.from to avoid compatibility issues with Map iterators
+    Array.from(this.listeners.entries()).forEach(([eventName, listeners]) => {
       // Find inactive listeners and old listeners that were never called
       const toKeep = listeners.filter((listener) => {
         // Keep active listeners
@@ -829,7 +831,7 @@ export class OptimizedEventBus implements EventBus {
           `Cleaned up ${cleaned} orphaned listeners for ${eventName}`,
         );
       }
-    }
+    });
 
     if (totalCleaned > 0) {
       this.logger.info(`Cleaned up ${totalCleaned} total orphaned listeners`);
@@ -950,8 +952,9 @@ export class OptimizedEventBus implements EventBus {
    * Forces immediate processing of all batch queues
    */
   flushAllBatches(): void {
-    for (const eventName of this.batchQueues.keys()) {
+    // Use Array.from to avoid compatibility issues with Map iterators
+    Array.from(this.batchQueues.keys()).forEach(eventName => {
       this.processBatch(eventName);
-    }
+    });
   }
 }

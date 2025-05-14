@@ -40,8 +40,10 @@ export class EnhancedEventBus implements EventBus {
 
   /**
    * Löst ein Event aus
+   * @param eventName Name des auszulösenden Events
+   * @param data Daten, die an Listener übergeben werden sollen (optional)
    */
-  emit(eventName: string, data: any): void {
+  emit(eventName: string, data?: any): void {
     this.logger.debug(`Event ausgelöst: ${eventName}`, data);
 
     if (!this.batchingEnabled) {
@@ -231,7 +233,7 @@ export class EnhancedEventBus implements EventBus {
     this.listeners.clear();
 
     // Alle ausstehenden Batches leeren
-    this.batchQueue.forEach((batch, eventName) => {
+    this.batchQueue.forEach((batch) => {
       if (batch.timer !== null) {
         clearTimeout(batch.timer);
       }
@@ -262,7 +264,7 @@ export class EnhancedEventBus implements EventBus {
   getDiagnostics(): any {
     return {
       listenerCount: Array.from(this.listeners.entries()).reduce(
-        (sum, [eventName, listeners]) => sum + listeners.length,
+        (sum, [, listeners]) => sum + listeners.length,
         0,
       ),
       events: Array.from(this.listeners.keys()),

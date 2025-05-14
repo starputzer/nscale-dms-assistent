@@ -1,0 +1,66 @@
+/* Verbesserte Admin-Tab-Buttons */
+
+.admin-tab-button {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 6px;
+    background: transparent;
+    border: none;
+    color: var(--nscale-dark-gray);
+    text-align: left;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.admin-tab-button i {
+    width: 24px;
+    margin-right: 10px;
+    font-size: 16px;
+    text-align: center;
+}
+
+.admin-tab-button:hover {
+    background-color: var(--nscale-light-green);
+    color: var(--nscale-green-dark);
+}
+
+.admin-tab-button.active {
+    background-color: var(--nscale-light-green);
+    color: var(--nscale-green);
+    font-weight: 500;
+    border-left: 3px solid var(--nscale-green);
+}
+
+/* Dark mode styles */
+.theme-dark .admin-tab-button {
+    color: #e0e0e0;
+}
+
+.theme-dark .admin-tab-button:hover {
+    background-color: #2a2a2a;
+    color: #00c060;
+}
+
+.theme-dark .admin-tab-button.active {
+    background-color: #003320;
+    color: #00c060;
+    border-left-color: #00c060;
+}
+
+/* Contrast mode styles */
+.theme-contrast .admin-tab-button {
+    color: #ffeb3b;
+}
+
+.theme-contrast .admin-tab-button:hover {
+    background-color: #111100;
+    color: #ffeb3b;
+}
+
+.theme-contrast .admin-tab-button.active {
+    background-color: #333300;
+    color: #ffeb3b;
+    border-left-color: #ffeb3b;
+}

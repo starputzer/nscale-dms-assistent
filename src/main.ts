@@ -83,7 +83,8 @@ setupNetworkMonitoring()
 
 // Überprüfen, ob wir den Bridge-Modus aktiv haben oder nicht
 const useLegacyBridge = new URLSearchParams(window.location.search).get('useBridge') === 'true';
-const useMockApi = new URLSearchParams(window.location.search).get('mockApi') === 'true';
+// WICHTIG: Explizit auf false setzen, damit der Mock-Modus deaktiviert wird
+const useMockApi = false;
 
 // Erste Maßnahme: Sofortige Initialisierung des Source Reference Adapters
 // Dies garantiert, dass die wichtigsten Funktionen in jedem Fall verfügbar sind,
@@ -165,6 +166,8 @@ globalPlugins.forEach((plugin: PluginRegistration) => {
 // Mock-Service-Provider registrieren
 app.use(mockServiceProvider)
 
+// Vuelidate nicht über globale Plugin-Registrierung, da es per Composable verwendet wird
+
 // Nur Router registrieren (Pinia wurde bereits registriert)
 app.use(router)
 
@@ -220,20 +223,18 @@ setTimeout(() => showPureModeIndicator(), 500)
 
 // Hilfsmeldung in der Konsole ausgeben
 console.log(`
-✅ nscale DMS Assistant läuft im Pure Vue Mode!
-   • Verwendet Mock-Services anstatt echter API-Calls
-   • Keine Abhängigkeit von einer Backend-API
-   • Lokale Datenspeicherung und Simulation
+✅ nscale DMS Assistant läuft im Live Mode!
+   • Verwendet echte API-Services
+   • Verbindung zur Backend-API erforderlich
+   • Echte Datenspeicherung
 
 🔍 Hilfreiche URL-Parameter:
-   • ?mockApi=true - Aktiviert Mock-Services (aktuell aktiv)
    • ?useBridge=true - Aktiviert Legacy-Bridge-Modus
    • ?feature_*=true|false - Aktiviert/deaktiviert Features
 
 💻 Entwicklermodus:
    • Drücke F12 für Developer Tools
    • Sieh dir die Konsole für Debugging-Informationen an
-   • Pure Mode Indikator unten rechts zeigt den aktuellen Modus
 
 `)
 

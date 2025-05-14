@@ -5,154 +5,82 @@
 
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import { adminApi } from "@/services/api/admin";
+import { v4 as uuidv4 } from '@/utils/uuidUtil';
+
 import type {
   FeedbackStats,
   FeedbackEntry,
   FeedbackFilter,
-  AdminFeedbackState,
 } from "@/types/admin";
 
-export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
+export const useFeedbackStore = defineStore("feedback", () => {
   // State
-  const stats = ref<FeedbackStats>({
-    total: 0,
-    positive: 0,
-    negative: 0,
-    positive_percent: 0,
-    with_comments: 0,
-    feedback_rate: 0,
-    feedback_by_day: [],
-  });
+  const feedbacks = ref([
+    {
+      id: '1',
+      messageId: '103',
+      sessionId: '1',
+      type: 'positive',
+      comment: 'Sehr hilfreiche Antwort!',
+      timestamp: new Date(Date.now() - 86000000).toISOString() // 1 Tag zuvor
+    },
+    {
+      id: '2',
+      messageId: '203',
+      sessionId: '2',
+      type: 'negative',
+      comment: 'Die Information war nicht vollständig.',
+      timestamp: new Date(Date.now() - 172000000).toISOString() // 2 Tage zuvor
+    }
+  ]);
 
-  const negativeFeedback = ref<FeedbackEntry[]>([]);
-  const filter = ref<FeedbackFilter>({
-    dateFrom: undefined,
-    dateTo: undefined,
-    isPositive: undefined,
-    hasComment: undefined,
-    searchTerm: undefined,
-  });
-
-  const loading = ref(false);
+  const isSubmitting = ref(false);
   const error = ref<string | null>(null);
 
-  // Getters
-  const filteredFeedback = computed(() => {
-    return negativeFeedback.value.filter((feedback) => {
-      let matches = true;
-
-      // Filter by date range
-      if (
-        filter.value.dateFrom &&
-        feedback.created_at < filter.value.dateFrom
-      ) {
-        matches = false;
-      }
-      if (filter.value.dateTo && feedback.created_at > filter.value.dateTo) {
-        matches = false;
-      }
-
-      // Filter by whether it has comments
-      if (filter.value.hasComment !== undefined) {
-        if (filter.value.hasComment && !feedback.comment) {
-          matches = false;
-        } else if (!filter.value.hasComment && feedback.comment) {
-          matches = false;
-        }
-      }
-
-      // Filter by search term
-      if (filter.value.searchTerm) {
-        const searchTerm = filter.value.searchTerm.toLowerCase();
-        const hasMatch =
-          feedback.question?.toLowerCase().includes(searchTerm) ||
-          feedback.answer?.toLowerCase().includes(searchTerm) ||
-          feedback.comment?.toLowerCase().includes(searchTerm) ||
-          feedback.user_email?.toLowerCase().includes(searchTerm);
-
-        if (!hasMatch) {
-          matches = false;
-        }
-      }
-
-      return matches;
-    });
-  });
-
-  const feedbackWithComments = computed(() => {
-    return filteredFeedback.value.filter((feedback) => !!feedback.comment);
-  });
-
   // Actions
-  async function fetchStats() {
-    loading.value = true;
+  async function submitFeedback(feedback: any) {
+    isSubmitting.value = true;
     error.value = null;
 
     try {
-      const response = await adminApi.getFeedbackStats();
-      stats.value = response.data.stats;
-      return response.data.stats;
-    } catch (err: any) {
-      console.error("Fehler beim Laden der Feedback-Statistiken:", err);
-      error.value =
-        err.response?.data?.message ||
-        "Fehler beim Laden der Feedback-Statistiken";
+      // Mock API-Latenz
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Einfach zum lokalen Array hinzufügen
+      feedbacks.value.push({
+        id: uuidv4(),
+        messageId: feedback.messageId,
+        sessionId: feedback.sessionId,
+        type: feedback.type,
+        comment: feedback.comment,
+        timestamp: new Date().toISOString()
+      });
+
+      return { success: true };
+    } catch (err) {
+      console.error('Fehler beim Senden des Feedbacks:', err);
+      error.value = 'Fehler beim Senden des Feedbacks';
       throw err;
     } finally {
-      loading.value = false;
+      isSubmitting.value = false;
     }
   }
 
-  async function fetchNegativeFeedback() {
-    loading.value = true;
-    error.value = null;
-
-    try {
-      const response = await adminApi.getNegativeFeedback();
-      negativeFeedback.value = response.data.feedback;
-      return response.data.feedback;
-    } catch (err: any) {
-      console.error("Fehler beim Laden des negativen Feedbacks:", err);
-      error.value =
-        err.response?.data?.message ||
-        "Fehler beim Laden des negativen Feedbacks";
-      throw err;
-    } finally {
-      loading.value = false;
-    }
-  }
-
-  function setFilter(newFilter: Partial<FeedbackFilter>) {
-    filter.value = { ...filter.value, ...newFilter };
-  }
-
-  function resetFilter() {
-    filter.value = {
-      dateFrom: undefined,
-      dateTo: undefined,
-      isPositive: undefined,
-      hasComment: undefined,
-      searchTerm: undefined,
-    };
+  function getFeedbackForMessage(messageId: string) {
+    return feedbacks.value.find(f => f.messageId === messageId) || null;
   }
 
   return {
     // State
-    stats,
-    negativeFeedback,
-    filter,
-    loading,
+    feedbacks,
+    isSubmitting,
     error,
 
-    // Getters
-    filteredFeedback,
-    feedbackWithComments,
-
     // Actions
-    fetchStats,
-    fetchNegativeFeedback,
-    setFilter,
-    resetFilter,
+    submitFeedback,
+    getFeedbackForMessage
   };
 });
+
+// Für Legacy-Code auch als useAdminFeedbackStore exportieren 
+export const useAdminFeedbackStore = useFeedbackStore;

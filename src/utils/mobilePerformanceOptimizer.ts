@@ -96,7 +96,7 @@ export function detectDeviceCapabilities(): DeviceInfo {
   info.isLowEndDevice = info.cpuCores <= 2 || info.deviceMemory <= 2;
 
   // Network detection
-  // @ts-ignore - connection is not in all browsers' type definitions
+  // Verwendet Type-Definitionen aus browser-extensions.d.ts
   const connection =
     navigator.connection ||
     navigator.mozConnection ||
@@ -440,8 +440,10 @@ export class MobileMemoryManager {
   private checkMemoryUsage() {
     if (!this.isMemoryAPIAvailable()) return;
 
-    // @ts-ignore - memory is not in all browsers' type definitions
+    // Verwendet Type-Definitionen aus browser-extensions.d.ts
     const memory = window.performance.memory;
+    if (!memory) return;
+
     const usedJSHeapSize = memory.usedJSHeapSize;
     const totalJSHeapSize = memory.totalJSHeapSize;
 
@@ -570,8 +572,14 @@ export class MobileMemoryManager {
       };
     }
 
-    // @ts-ignore - memory is not in all browsers' type definitions
     const memory = window.performance.memory;
+    if (!memory) {
+      return {
+        usage: null,
+        trend: null,
+      };
+    }
+
     const currentUsage = (memory.usedJSHeapSize / memory.totalJSHeapSize) * 100;
 
     let trend = "stable";

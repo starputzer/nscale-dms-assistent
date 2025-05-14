@@ -1,5 +1,6 @@
 import { ref, watch, Ref } from "vue";
 import { useLogger } from "./useLogger";
+import type { UseLocalStorageReturn } from "../utils/composableTypes";
 
 /**
  * Options for the useLocalStorage composable
@@ -29,7 +30,7 @@ export interface LocalStorageOptions<T> {
  * @param key - Storage key
  * @param initialValue - Initial value (can be a function)
  * @param options - Configuration options
- * @returns Reactive ref and utility methods
+ * @returns {LocalStorageRef<T>} Reactive ref and utility methods
  *
  * @example
  * // Simple string
@@ -52,7 +53,7 @@ export function useLocalStorage<T>(
   key: string,
   initialValue?: T | (() => T),
   options: LocalStorageOptions<T> = {},
-) {
+): LocalStorageRef<T> {
   const {
     useJSON = true,
     defaultValue = null as unknown as T,
@@ -219,14 +220,12 @@ export function useLocalStorage<T>(
 }
 
 /**
- * Type for the return value of useLocalStorage
+ * Extended return type for our implementation of useLocalStorage
  */
-export type LocalStorageRef<T> = {
-  value: Ref<T>;
+export interface LocalStorageRef<T> extends UseLocalStorageReturn<T> {
   setValue: (value: T | ((prev: T) => T)) => void;
-  removeItem: () => void;
   hasItem: () => boolean;
   key: string;
-};
+}
 
 export default useLocalStorage;

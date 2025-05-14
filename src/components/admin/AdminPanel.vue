@@ -69,7 +69,7 @@
       <main class="admin-panel__content">
         <Transition name="fade" mode="out-in">
           <div v-if="isLoading" class="admin-panel__loading">
-            <LoadingSpinner size="large" />
+            <div class="admin-panel__spinner"></div>
             <p>{{ t("admin.loading", "Lade Daten...") }}</p>
           </div>
           <component
@@ -91,7 +91,7 @@
     <Dialog />
   </div>
   <div v-else-if="isLoading" class="admin-panel__auth-loading">
-    <LoadingSpinner size="large" />
+    <div class="admin-panel__spinner"></div>
     <p>{{ t("admin.checkingPermissions", "Überprüfe Berechtigungen...") }}</p>
   </div>
   <div v-else class="admin-panel__no-access">
@@ -118,7 +118,7 @@ import { useRouter } from "vue-router";
 
 // Stores
 import { useAuthStore } from "@/stores/auth";
-import { useUiStore } from "@/stores/ui";
+import { useUIStore } from "@/stores/ui";
 import { useFeatureTogglesStore } from "@/stores/featureToggles";
 import { useAdminUsersStore } from "@/stores/admin/users";
 import { useAdminSystemStore } from "@/stores/admin/system";
@@ -126,7 +126,7 @@ import { useAdminFeedbackStore } from "@/stores/admin/feedback";
 import { useAdminMotdStore } from "@/stores/admin/motd";
 
 // Components
-import { Toast, Dialog, LoadingSpinner } from "@/components/ui";
+import { Toast, Dialog } from "@/components/ui";
 import type { AdminTab } from "@/types/admin";
 
 // Lazy-loaded Tab-Komponenten
@@ -162,7 +162,7 @@ const router = useRouter();
 
 // Stores
 const authStore = useAuthStore();
-const uiStore = useUiStore();
+const uiStore = useUIStore();
 const featureTogglesStore = useFeatureTogglesStore();
 const adminUsersStore = useAdminUsersStore();
 const adminSystemStore = useAdminSystemStore();
@@ -555,6 +555,21 @@ watch(canAccessAdmin, (newValue) => {
   height: 100%;
   gap: 1rem;
   color: var(--n-color-text-secondary);
+}
+
+.admin-panel__spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(var(--n-color-primary-rgb, 0, 120, 212), 0.1);
+  border-radius: 50%;
+  border-top-color: var(--n-color-primary, #0078d4);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .admin-panel__error {

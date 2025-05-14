@@ -1,4 +1,13 @@
-import { logger } from '../logger';
+import { createLogger } from '../logger/index';
+import {
+  getWeakRefConstructor,
+  getFinalizationRegistryConstructor,
+  ES2021_SUPPORT
+} from '../../../utils/es2021-polyfills';
+
+// Verwende die nativen oder polyfillierten Konstruktoren
+const SafeWeakRef = getWeakRefConstructor();
+const SafeFinalizationRegistry = getFinalizationRegistryConstructor();
 
 /**
  * Manages references using WeakMap/WeakSet to prevent memory leaks
@@ -7,14 +16,24 @@ import { logger } from '../logger';
 export class MemoryManager {
   // Store event listeners by component reference
   private componentListeners = new WeakMap<object, Set<() => void>>();
-  
+
   // Track component references for debugging
   private trackedComponents = new WeakSet<object>();
-  
+
   // Finalizers for cleanup tracking
-  private finalizationRegistry = new FinalizationRegistry((id: string) => {
-    logger.debug(`Component ${id} was garbage collected`);
-  });
+  private finalizationRegistry: any;
+
+  // Logger for this component
+  private logger = createLogger('MemoryManager');
+
+  constructor() {
+    // Log, ob die nativen ES2021-Features unterstützt werden
+    this.logger.debug(`ES2021 support: WeakRef=${ES2021_SUPPORT.WeakRef}, FinalizationRegistry=${ES2021_SUPPORT.FinalizationRegistry}`);
+
+    this.finalizationRegistry = new SafeFinalizationRegistry((id: string) => {
+      this.logger.debug(`Component ${id} was garbage collected`);
+    });
+  }
 
   /**
    * Track a component's event listeners or other cleanup functions
@@ -24,7 +43,7 @@ export class MemoryManager {
    */
   public trackCleanup(component: object, cleanupFn: () => void, componentId?: string): void {
     if (!component || typeof cleanupFn !== 'function') {
-      logger.warn('Invalid parameters for trackCleanup');
+      this.logger.warn('Invalid parameters for trackCleanup');
       return;
     }
     
@@ -51,15 +70,15 @@ export class MemoryManager {
     const cleanupFns = this.componentListeners.get(component)!;
     let executedCount = 0;
     
-    // Execute all cleanup functions
-    for (const cleanupFn of cleanupFns) {
+    // Execute all cleanup functions - use Array.from to avoid Set iterator compatibility issues
+    Array.from(cleanupFns).forEach(cleanupFn => {
       try {
         cleanupFn();
         executedCount++;
       } catch (error) {
-        logger.error('Error during component cleanup:', error);
+        this.logger.error('Error during component cleanup:', error);
       }
-    }
+    });
     
     // Clear references
     this.componentListeners.delete(component);
@@ -78,15 +97,15 @@ export class MemoryManager {
     cleanup: () => void, 
     id?: string
   ): T {
-    // WeakRef to check if target is collected
-    const targetRef = new WeakRef(target);
-    
+    // SafeWeakRef to check if target is collected
+    const targetRef = new SafeWeakRef(target);
+
     // Registry to run cleanup when proxy is collected
-    const registry = new FinalizationRegistry(() => {
+    const registry = new SafeFinalizationRegistry(() => {
       const originalTarget = targetRef.deref();
       if (!originalTarget) {
         cleanup();
-        if (id) logger.debug(`Auto-cleaned proxy ${id}`);
+        if (id) this.logger.debug(`Auto-cleaned proxy ${id}`);
       }
     });
     
@@ -123,7 +142,7 @@ export class MemoryManager {
     const cache = new Map<string, { result: ReturnType<T>, timestamp: number }>();
     
     // Track parameters to result mapping
-    const resultMap = new WeakMap<object, WeakRef<ReturnType<T>>>();
+    const resultMap = new WeakMap<object, any>();
     
     const memoizedFn = ((...args: Parameters<T>): ReturnType<T> => {
       // Generate cache key
@@ -153,13 +172,14 @@ export class MemoryManager {
         // Find oldest entry
         let oldestKey = key;
         let oldestTime = Date.now();
-        
-        for (const [entryKey, entry] of cache.entries()) {
+
+        // Use Array.from to avoid compatibility issues with Map iterators
+        Array.from(cache.entries()).forEach(([entryKey, entry]) => {
           if (entry.timestamp < oldestTime) {
             oldestTime = entry.timestamp;
             oldestKey = entryKey;
           }
-        }
+        });
         
         // Remove oldest
         cache.delete(oldestKey);
@@ -168,7 +188,7 @@ export class MemoryManager {
       // Track object parameters with WeakMap if possible
       for (const arg of args) {
         if (typeof arg === 'object' && arg !== null) {
-          resultMap.set(arg, new WeakRef(result));
+          resultMap.set(arg, new SafeWeakRef(result));
         }
       }
       
@@ -199,11 +219,11 @@ export class MemoryManager {
     target.addEventListener(type, listener, options);
     
     // Create weak references
-    const targetRef = new WeakRef(target);
-    const listenerRef = typeof listener === 'function' 
-      ? new WeakRef(listener)
-      : new WeakRef(listener.handleEvent.bind(listener));
-    
+    const targetRef = new SafeWeakRef(target);
+    const listenerRef = typeof listener === 'function'
+      ? new SafeWeakRef(listener)
+      : new SafeWeakRef(listener.handleEvent.bind(listener));
+
     // Create cleanup function
     const cleanup = () => {
       const targetObj = targetRef.deref();
@@ -219,7 +239,7 @@ export class MemoryManager {
     };
     
     // Register for auto cleanup
-    const registry = new FinalizationRegistry(() => {
+    const registry = new SafeFinalizationRegistry(() => {
       cleanup();
     });
     

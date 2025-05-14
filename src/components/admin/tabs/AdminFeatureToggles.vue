@@ -387,8 +387,7 @@
               {{ activeFeatureCount }}
             </p>
             <p class="admin-feature-toggles__stat-detail">
-              {{ t('admin.featureToggles.monitoring.outOfTotal', 'von {{total}}
-              Features', { total: totalFeatureCount }) }}
+              {{ t('admin.featureToggles.monitoring.outOfTotal', 'von {total} Features', { total: totalFeatureCount }) }}
             </p>
           </div>
         </div>
@@ -412,8 +411,7 @@
               {{ featuresWithErrorsCount }}
             </p>
             <p class="admin-feature-toggles__stat-detail">
-              {{ t('admin.featureToggles.monitoring.totalErrors', 'Insgesamt {{count}}
-              Fehler', { count: totalErrorsCount }) }}
+              {{ t('admin.featureToggles.monitoring.totalErrors', 'Insgesamt {count} Fehler', { count: totalErrorsCount }) }}
             </p>
           </div>
         </div>
@@ -437,8 +435,7 @@
               {{ activeFallbacksCount }}
             </p>
             <p class="admin-feature-toggles__stat-detail">
-              {{ t('admin.featureToggles.monitoring.fallbacksAvailable', '{{count}}
-              Features mit Fallback', { count: featuresWithFallbackCount }) }}
+              {{ t('admin.featureToggles.monitoring.fallbacksAvailable', '{count} Features mit Fallback', { count: featuresWithFallbackCount }) }}
             </p>
           </div>
         </div>
@@ -462,7 +459,7 @@
               {{ migratedFeaturesCount }}
             </p>
             <p class="admin-feature-toggles__stat-detail">
-              {{ t('admin.featureToggles.monitoring.migrationProgress', '{{percent}}% abgeschlossen', { percent: migrationProgressPercent }) }}
+              {{ t('admin.featureToggles.monitoring.migrationProgress', '{percent}% abgeschlossen', { percent: migrationProgressPercent }) }}
             </p>
           </div>
         </div>

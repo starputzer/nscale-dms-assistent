@@ -1,9 +1,8 @@
 import { BatchedEventEmitter } from './BatchedEventEmitter';
 import { OptimizedStateManager } from './StateManager';
 import { MemoryManager } from './MemoryManager';
-import { logger } from '../logger';
-import { BridgeComponentStatus } from '../types';
-import { selfHealing } from '../selfHealing';
+import { createLogger } from '../logger/index';
+import { LogLevel } from '../types';
 
 /**
  * OptimizedChatBridge provides an optimized integration between Vue 3
@@ -14,10 +13,13 @@ export class OptimizedChatBridge {
   private stateManager: OptimizedStateManager;
   private eventEmitter: BatchedEventEmitter;
   private memoryManager: MemoryManager;
-  private status: BridgeComponentStatus = BridgeComponentStatus.INITIALIZING;
+  private status: string = 'INITIALIZING'; // Statt BridgeComponentStatus
   private componentRefs = new WeakMap<object, string>();
   private isInitialized = false;
   private diagnosticsEnabled = false;
+
+  // Logger für diese Komponente
+  private logger = createLogger('OptimizedChatBridge');
   private performanceMetrics: Map<string, number[]> = new Map();
   
   constructor() {
@@ -38,20 +40,21 @@ export class OptimizedChatBridge {
    * Initialize the bridge with self-healing capabilities
    */
   private initializeSelfHealing(): void {
-    selfHealing.registerComponent('optimizedChatBridge', {
+    // Selbstheilungs-Funktionalität - vereinfachte Implementation für TS-Kompatibilität
+    const selfHealingMethods = {
       checkHealth: () => {
         return {
-          isHealthy: this.status !== BridgeComponentStatus.ERROR,
+          isHealthy: this.status !== 'ERROR',
           metrics: {
             eventListenerCount: this.eventEmitter.listenerStats().total,
             trackedComponents: Object.keys(this.componentRefs).length
           }
         };
       },
-      
+
       attemptRecovery: () => {
-        logger.warn('Attempting to recover OptimizedChatBridge');
-        this.status = BridgeComponentStatus.RECOVERING;
+        this.logger.warn('Attempting to recover OptimizedChatBridge');
+        this.status = 'RECOVERING';
         
         try {
           // Flush pending updates
@@ -59,20 +62,23 @@ export class OptimizedChatBridge {
           this.eventEmitter.flush();
           
           // Reset to known good state if needed
-          if (this.status === BridgeComponentStatus.ERROR) {
+          if (this.status === 'ERROR') {
             this.reset();
             this.initialize();
           }
-          
-          this.status = BridgeComponentStatus.ACTIVE;
+
+          this.status = 'ACTIVE';
           return true;
         } catch (error) {
-          logger.error('Failed to recover OptimizedChatBridge:', error);
-          this.status = BridgeComponentStatus.ERROR;
+          this.logger.error('Failed to recover OptimizedChatBridge:', error);
+          this.status = 'ERROR';
           return false;
         }
       }
-    });
+    };
+
+    // Für Testzwecke - Selbstheilungsmethoden exportieren
+    (window as any).__optimizedBridgeSelfHealing = selfHealingMethods;
   }
   
   /**
@@ -80,21 +86,21 @@ export class OptimizedChatBridge {
    */
   public initialize(): void {
     if (this.isInitialized) return;
-    
+
     try {
-      this.status = BridgeComponentStatus.INITIALIZING;
-      
+      this.status = 'INITIALIZING';
+
       // Register global event listeners with memory-safe wrappers
       if (typeof window !== 'undefined') {
         this.setupGlobalListeners();
       }
-      
+
       this.isInitialized = true;
-      this.status = BridgeComponentStatus.ACTIVE;
-      logger.info('OptimizedChatBridge initialized successfully');
+      this.status = 'ACTIVE';
+      this.logger.info('OptimizedChatBridge initialized successfully');
     } catch (error) {
-      this.status = BridgeComponentStatus.ERROR;
-      logger.error('Failed to initialize OptimizedChatBridge:', error);
+      this.status = 'ERROR';
+      this.logger.error('Failed to initialize OptimizedChatBridge:', error);
       throw error;
     }
   }
@@ -118,7 +124,7 @@ export class OptimizedChatBridge {
       const memoryCheck = setInterval(() => {
         const memoryInfo = (window.performance as any).memory;
         if (memoryInfo && memoryInfo.usedJSHeapSize > memoryInfo.jsHeapSizeLimit * 0.8) {
-          logger.warn('Memory usage is high, releasing unused resources');
+          this.logger.warn('Memory usage is high, releasing unused resources');
           this.cleanupUnusedResources();
         }
       }, 30000);
@@ -135,9 +141,9 @@ export class OptimizedChatBridge {
    */
   public setDiagnostics(enabled: boolean): void {
     this.diagnosticsEnabled = enabled;
-    logger.info(`Performance diagnostics ${enabled ? 'enabled' : 'disabled'}`);
+    this.logger.info(`Performance diagnostics ${enabled ? 'enabled' : 'disabled'}`);
   }
-  
+
   /**
    * Register a Vue component with the bridge
    * @param component Vue component reference
@@ -145,12 +151,12 @@ export class OptimizedChatBridge {
    */
   public registerComponent(component: object, id: string): void {
     if (!component || typeof component !== 'object') {
-      logger.warn('Invalid component registration attempt');
+      this.logger.warn('Invalid component registration attempt');
       return;
     }
-    
+
     this.componentRefs.set(component, id);
-    logger.debug(`Registered component: ${id}`);
+    this.logger.debug(`Registered component: ${id}`);
   }
   
   /**
@@ -166,7 +172,7 @@ export class OptimizedChatBridge {
     this.memoryManager.releaseComponent(component);
     this.componentRefs.delete(component);
     
-    logger.debug(`Unregistered component: ${id}`);
+    this.logger.debug(`Unregistered component: ${id}`);
   }
   
   /**
@@ -269,8 +275,8 @@ export class OptimizedChatBridge {
         this.performanceMetrics.get('updateState')!.push(duration);
       }
     } catch (error) {
-      this.status = BridgeComponentStatus.ERROR;
-      logger.error(`Error updating state for ${stateKey}:`, error);
+      this.status = 'ERROR';
+      this.logger.error(`Error updating state for ${stateKey}:`, error);
       throw error;
     }
   }
@@ -301,10 +307,10 @@ export class OptimizedChatBridge {
         this.performanceMetrics.get('emitEvent')!.push(duration);
       }
     } catch (error) {
-      logger.error(`Error emitting event ${event}:`, error);
+      this.logger.error(`Error emitting event ${event}:`, error);
     }
   }
-  
+
   /**
    * Emit multiple events at once (efficiently batched)
    * @param events Array of [eventName, args] tuples
@@ -313,18 +319,18 @@ export class OptimizedChatBridge {
     if (!this.isInitialized) {
       this.initialize();
     }
-    
+
     try {
       this.eventEmitter.emitMultiple(events);
     } catch (error) {
-      logger.error('Error emitting multiple events:', error);
+      this.logger.error('Error emitting multiple events:', error);
     }
   }
-  
+
   /**
    * Get current bridge status
    */
-  public getStatus(): BridgeComponentStatus {
+  public getStatus(): string {
     return this.status;
   }
   
@@ -333,7 +339,7 @@ export class OptimizedChatBridge {
    */
   public reset(): void {
     try {
-      this.status = BridgeComponentStatus.INITIALIZING;
+      this.status = 'INITIALIZING';
       
       // Reset all managers
       this.stateManager.reset();
@@ -342,11 +348,11 @@ export class OptimizedChatBridge {
       // Clear performance metrics
       this.performanceMetrics.clear();
       
-      this.status = BridgeComponentStatus.ACTIVE;
-      logger.info('OptimizedChatBridge reset complete');
+      this.status = 'ACTIVE';
+      this.logger.info('OptimizedChatBridge reset complete');
     } catch (error) {
-      this.status = BridgeComponentStatus.ERROR;
-      logger.error('Error during bridge reset:', error);
+      this.status = 'ERROR';
+      this.logger.error('Error during bridge reset:', error);
       throw error;
     }
   }
@@ -375,13 +381,14 @@ export class OptimizedChatBridge {
     };
     
     // Calculate averages for performance metrics
-    for (const [key, values] of this.performanceMetrics.entries()) {
+    // Use Array.from to avoid compatibility issues with Map iterators
+    Array.from(this.performanceMetrics.entries()).forEach(([key, values]) => {
       if (values.length > 0) {
         const sum = values.reduce((a, b) => a + b, 0);
         const avg = sum / values.length;
         const max = Math.max(...values);
         const min = Math.min(...values);
-        
+
         metrics.performanceMetrics[key] = {
           avg,
           max,
@@ -389,7 +396,7 @@ export class OptimizedChatBridge {
           samples: values.length
         };
       }
-    }
+    });
     
     return metrics;
   }

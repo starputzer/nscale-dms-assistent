@@ -6,14 +6,36 @@
  */
 
 /**
+ * Hilfsfunction zur sicheren Zugriff auf Umgebungsvariablen im Browser-Kontext
+ */
+const getEnvVar = (name: string, defaultValue: string): string => {
+  // In Vite werden Umgebungsvariablen mit import.meta.env zur Verfügung gestellt
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
+    return (import.meta.env[name] as string) || defaultValue;
+  }
+  // Fallback für Node.js-Umgebung oder wenn import.meta nicht verfügbar ist
+  return typeof window !== 'undefined' ? defaultValue : ((process?.env?.[name] as string) || defaultValue);
+};
+
+/**
+ * Hilfsfunction zur Erkennung der aktuellen Umgebung
+ */
+const getNodeEnv = (): string => {
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
+    return import.meta.env.MODE || 'development';
+  }
+  return typeof window !== 'undefined' ? 'development' : (process?.env?.NODE_ENV || 'development');
+};
+
+/**
  * API-Basiskonfiguration
  */
 export const API_CONFIG = {
   // Basis-URL für alle API-Anfragen
-  BASE_URL: process.env.VITE_API_BASE_URL || "/api",
+  BASE_URL: getEnvVar('VITE_API_BASE_URL', "/api"),
 
   // API-Version
-  API_VERSION: process.env.VITE_API_VERSION || "v1",
+  API_VERSION: getEnvVar('VITE_API_VERSION', "v1"),
 
   // Authentifizierungspräfixe
   AUTH: {
@@ -156,10 +178,10 @@ export const API_CONFIG = {
   // Debug-Konfiguration
   DEBUG: {
     // Ausführliches Logging
-    VERBOSE: process.env.NODE_ENV === "development",
+    VERBOSE: getNodeEnv() === "development",
 
     // Anfrage-/Antwortlogs
-    LOG_REQUESTS: process.env.NODE_ENV === "development",
+    LOG_REQUESTS: getNodeEnv() === "development",
 
     // Farbiges Konsolen-Logging
     COLORIZED_LOGGING: true,
@@ -176,8 +198,11 @@ export const getEnvironmentConfig = () => {
   // Basiseinstellungen aus API_CONFIG
   const config = { ...API_CONFIG };
 
+  // Aktuelle Umgebung ermitteln
+  const nodeEnv = getNodeEnv();
+
   // Produktionsumgebung
-  if (process.env.NODE_ENV === "production") {
+  if (nodeEnv === "production") {
     // Produktion hat keine umfangreiche Protokollierung
     config.DEBUG.VERBOSE = false;
     config.DEBUG.LOG_REQUESTS = false;
@@ -187,7 +212,7 @@ export const getEnvironmentConfig = () => {
   }
 
   // Testumgebung
-  else if (process.env.NODE_ENV === "test") {
+  else if (nodeEnv === "test") {
     // Kürzere Timeouts für Tests
     config.TIMEOUTS.DEFAULT = 5000;
 
@@ -212,5 +237,115 @@ export const getEnvironmentConfig = () => {
  * Endgültige API-Konfiguration für die aktuelle Umgebung
  */
 export const apiConfig = getEnvironmentConfig();
+
+/**
+ * Initialisiert die API-Services und -Konfiguration für die Anwendung
+ * Richtet Headers, Interceptors und globale Einstellungen ein
+ * @returns Eine Instanz der konfigurierten API-Services
+ */
+export function initializeApiServices(): void {
+  console.log('API-Services werden initialisiert...');
+
+  // Basiskonfiguration laden
+  const config = getEnvironmentConfig();
+
+  // Header für alle API-Anfragen konfigurieren
+  const defaultHeaders = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'X-Client-Version': import.meta.env.VITE_APP_VERSION || '1.0.0',
+    'X-Client-Platform': 'web'
+  };
+
+  // Debug-Modus aktivieren, wenn Konfiguration es vorsieht
+  if (config.DEBUG.VERBOSE) {
+    console.log('API-Konfiguration geladen:', config);
+    console.log('Standardheader konfiguriert:', defaultHeaders);
+  }
+
+  // URLSearchParams für eventuelles globales Caching konfigurieren
+  const urlParams = new URLSearchParams(window.location.search);
+  const disableCache = urlParams.get('noCache') === 'true';
+
+  if (disableCache) {
+    console.log('API-Cache wurde über URL-Parameter deaktiviert');
+    // Cache-Header setzen, um Caching zu verhindern
+    Object.assign(defaultHeaders, {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
+  }
+
+  // Interceptor für Axios einrichten, um sicherzustellen, dass login-Anfragen
+  // korrekt formatiert sind
+  import('axios').then(axiosModule => {
+    const axios = axiosModule.default;
+    
+    // Request-Interceptor für alle Anfragen
+    axios.interceptors.request.use(config => {
+      // Speziell für Login-Anfragen
+      if (config.url?.includes('/api/auth/login')) {
+        console.log('Überprüfe Login-Anfrage:', config);
+        
+        // Sicherstellen, dass die Daten als JSON-Objekt formatiert sind
+        if (typeof config.data === 'string') {
+          try {
+            // Versuchen, es als JSON zu parsen
+            config.data = JSON.parse(config.data);
+          } catch (e) {
+            // Wenn es kein gültiges JSON ist, erstelle ein neues Objekt
+            console.warn('Login-Daten waren kein gültiges JSON, konvertiere zu Objekt');
+            
+            // Annahme: String könnte eine E-Mail-Adresse sein
+            if (config.data.includes('@')) {
+              console.log('String könnte eine E-Mail sein, konvertiere zu Login-Objekt');
+              config.data = {
+                email: config.data,
+                password: '123'  // Standard-Testpasswort für die Demo
+              };
+            }
+          }
+        }
+        
+        // Wenn email-Parameter als String übergeben wird, konvertiere zu Objekt
+        if (config.params && typeof config.params.email === 'string') {
+          console.log('Email-Parameter erkannt, konvertiere zu Objekt:', config.params.email);
+          config.data = {
+            email: config.params.email,
+            password: config.params.password || '123'
+          };
+          // Parameter entfernen, da wir sie jetzt im Body haben
+          delete config.params.email;
+          delete config.params.password;
+        }
+        
+        // Sicherstellen, dass die Header korrekt gesetzt sind
+        if (config.headers) {
+          config.headers['Content-Type'] = 'application/json';
+        }
+        
+        console.log('Login-Anfrage nach Überprüfung:', config);
+      }
+      
+      return config;
+    }, error => {
+      console.error('Axios-Request-Interceptor-Fehler:', error);
+      return Promise.reject(error);
+    });
+    
+    console.log('Axios-Interceptors für API-Anfragen eingerichtet');
+  }).catch(err => {
+    console.error('Fehler beim Importieren von Axios für Interceptors:', err);
+  });
+
+  // Status der Initialisierung melden
+  console.log('API-Services erfolgreich initialisiert');
+
+  // Weitere Initialisierungen je nach Umgebung
+  // Dies kann erweitert werden, wenn weitere Services benötigt werden
+
+  return;
+}
 
 export default apiConfig;

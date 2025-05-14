@@ -5,7 +5,7 @@
  * Fehlererkennung für die optimierte Chat-Bridge.
  */
 
-import { Logger, LogLevel } from "../logger";
+import { createLogger, LogLevel } from "../logger/index";
 import { PerformanceMonitor } from "./performanceMonitor";
 import { SelectiveChatBridge } from "./selectiveChatBridge";
 import { EventListenerManager } from "./eventListenerManager";
@@ -122,7 +122,7 @@ interface DiagnosticReport {
  * ChatBridgeDiagnostics bietet Überwachung und Diagnose für die optimierte ChatBridge
  */
 export class ChatBridgeDiagnostics {
-  private logger: Logger;
+  private logger;
   private config: ChatBridgeDiagnosticsConfig;
   private performanceMonitor: PerformanceMonitor;
   private statusManager: BridgeStatusManager;
@@ -164,7 +164,7 @@ export class ChatBridgeDiagnostics {
     this.performanceMonitor = performanceMonitor;
     this.statusManager = statusManager;
 
-    this.logger = new Logger("ChatBridgeDiagnostics", LogLevel.INFO);
+    this.logger = createLogger("ChatBridgeDiagnostics");
 
     // Konsolen-Befehle registrieren
     if (this.config.enableConsoleCommands) {

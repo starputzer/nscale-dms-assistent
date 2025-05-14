@@ -5,7 +5,7 @@
  * Event-Listenern und Ressourcen in der Bridge-Kommunikation.
  */
 
-import { Logger, LogLevel } from "../logger";
+import { createLogger, LogLevel } from "../logger/index";
 import { PerformanceMonitor } from "./performanceMonitor";
 
 // Konfiguration
@@ -68,7 +68,7 @@ interface ListenerStats {
  * EventListenerManager überwacht und verwaltet Event-Listener zur Vermeidung von Memory-Leaks
  */
 export class EventListenerManager {
-  private logger: Logger;
+  private logger;
   private config: EventListenerManagerConfig;
   private performanceMonitor?: PerformanceMonitor;
 
@@ -107,10 +107,7 @@ export class EventListenerManager {
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.performanceMonitor = performanceMonitor;
 
-    this.logger = new Logger(
-      "EventListenerManager",
-      this.config.debugMode ? LogLevel.DEBUG : LogLevel.INFO,
-    );
+    this.logger = createLogger("EventListenerManager");
 
     // GC-Timer starten, wenn konfiguriert
     if (this.config.enableGarbageCollection) {

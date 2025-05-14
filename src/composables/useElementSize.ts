@@ -1,12 +1,13 @@
-import { ref, onMounted, onBeforeUnmount, watch } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch, Ref } from "vue";
+import type { UseElementSizeReturn } from "../utils/composableTypes";
 
 /**
  * Composable zur reaktiven Beobachtung der Größe eines Elements
  *
  * @param elementRef - Vue-Ref des zu beobachtenden Elements
- * @returns Objekt mit reaktiven width und height Eigenschaften
+ * @returns {UseElementSizeReturn} Objekt mit reaktiven width und height Eigenschaften
  */
-export function useElementSize(elementRef: any) {
+export function useElementSize(elementRef: Ref<HTMLElement | null>): UseElementSizeReturn {
   const width = ref(0);
   const height = ref(0);
   let resizeObserver: ResizeObserver | null = null;

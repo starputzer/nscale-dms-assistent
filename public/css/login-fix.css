@@ -1,0 +1,54 @@
+/* 
+ * Zusätzliche CSS-Fixes für die Login-Seite 
+ * 
+ * Diese Datei behebt Layout-Probleme mit der Anmeldemaske
+ * im Live-Modus und stellt sicher, dass das Login-Formular
+ * korrekt zentriert angezeigt wird.
+ */
+
+.login-page, .login-container, div[class*="login-container"] {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  max-width: 100% !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  background-color: #f5f7fa !important;
+}
+
+.login-page .login-container, .login-card, .nscale-card {
+  width: 100% !important;
+  max-width: 480px !important;
+  margin: 2rem auto !important;
+  perspective: 1000px !important; 
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.login-card, .nscale-card {
+  width: 100% !important;
+  background-color: #ffffff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1) !important;
+  padding: 2.5rem !important;
+  position: relative !important;
+}
+
+/* Mobil-Optimierung */
+@media (max-width: 640px) {
+  .login-page .login-container, .login-container, .nscale-card {
+    margin: 1rem auto !important;
+  }
+  
+  .login-card, .nscale-card {
+    padding: 1.5rem !important;
+  }
+}

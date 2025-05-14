@@ -1279,12 +1279,30 @@ class MockDocumentConverterService implements IDocumentConverterService {
   }
 }
 
+// Hilfsfunction zur sicheren Zugriff auf Umgebungsvariablen im Browser-Kontext
+const getEnvVar = (name: string, defaultValue: string): string => {
+  // In Vite werden Umgebungsvariablen mit import.meta.env zur Verfügung gestellt
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
+    return (import.meta.env[name] as string) || defaultValue;
+  }
+  // Fallback für Node.js-Umgebung oder wenn import.meta nicht verfügbar ist
+  return typeof window !== 'undefined' ? defaultValue : ((process?.env?.[name] as string) || defaultValue);
+};
+
+// Hilfsfunction zur Erkennung der aktuellen Umgebung
+const getNodeEnv = (): string => {
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
+    return import.meta.env.MODE || 'development';
+  }
+  return typeof window !== 'undefined' ? 'development' : (process?.env?.NODE_ENV || 'development');
+};
+
 // Bestimme die richtige Implementierung basierend auf der Umgebung
-const isDevelopment = process.env.NODE_ENV === "development";
-const isTest = process.env.NODE_ENV === "test";
+const isDevelopment = getNodeEnv() === "development";
+const isTest = getNodeEnv() === "test";
 const useMockService =
   (isDevelopment || isTest) &&
-  (process.env.VITE_USE_MOCK_API === "true" || !process.env.VITE_API_BASE_URL);
+  (getEnvVar('VITE_USE_MOCK_API', 'false') === "true" || !getEnvVar('VITE_API_BASE_URL', ''));
 
 // Service-Instanz erstellen
 const documentConverterService: IDocumentConverterService = useMockService

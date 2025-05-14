@@ -8,13 +8,16 @@ import type {
   TokenStatus,
   PermissionCheck,
 } from "../types/auth";
+import type { UseAuthReturn } from "../utils/composableTypes";
 
 /**
  * Hook für Authentifizierungsfunktionen in Komponenten
  * Kapselt den Zugriff auf den Auth-Store und bietet eine einheitliche API
  * für Authentifizierungs-, Autorisierungs- und Benutzerverwaltungsfunktionen
+ *
+ * @returns {UseAuthReturn} Objekt mit Authentifizierungsfunktionen und reaktiven Eigenschaften
  */
-export function useAuth() {
+export function useAuth(): UseAuthReturn {
   const authStore = useAuthStore();
 
   // Computed Properties für Reaktivität

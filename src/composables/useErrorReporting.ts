@@ -438,10 +438,13 @@ export function useErrorReporting(
   }
 
   // Ressourcen freigeben, wenn die Komponente unmounted wird
-  onUnmounted(() => {
-    // Nichts zu tun, da der ErrorReportingService global ist
-    // und nicht von einer einzelnen Komponente freigegeben werden sollte
-  });
+  // Nur ausführen, wenn eine aktive Komponenten-Instanz vorhanden ist
+  if (instance) {
+    onUnmounted(() => {
+      // Nichts zu tun, da der ErrorReportingService global ist
+      // und nicht von einer einzelnen Komponente freigegeben werden sollte
+    });
+  }
 
   return {
     hasError,

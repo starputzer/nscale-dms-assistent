@@ -20,11 +20,7 @@ function trackLegacyUsage(componentName, action) {
 trackLegacyUsage('app', 'initialize');
 
 
-import { setupChat } from "./chat.js";
-import { setupFeedback } from "./feedback.js";
-import { setupAdmin } from "./admin.js";
-import { setupSettings } from "./settings.js";
-import { setupSourceReferences } from "./source-references.js";
+// Die setupChat-Funktion wird jetzt durch Vue 3 Komponenten und Composables ersetzt
 import { initializeABTests, trackTestMetric } from "./ab-testing.js";
 
 // Vue global verfügbar machen
@@ -171,7 +167,15 @@ createApp({
         password.value = "";
 
         // Benutzerrolle laden
-        await adminFunctions.loadUserRole();
+        // Dies wird jetzt über den Vue 3 AuthStore verwaltet
+        try {
+          const response = await axios.get("/api/user/role");
+          userRole.value = response.data.role;
+          console.log(`Benutzerrolle geladen: ${userRole.value}`);
+        } catch (error) {
+          console.error("Fehler beim Laden der Benutzerrolle:", error);
+          userRole.value = "user"; // Fallback zur Standardrolle
+        }
 
         // Load sessions
         loadSessions();
@@ -330,12 +334,8 @@ createApp({
           localStorage.removeItem("motdDismissed");
         }
 
-        // Feedback für jede Assistenten-Nachricht laden
-        for (const message of messages.value) {
-          if (!message.is_user && message.id) {
-            await feedbackFunctions.loadMessageFeedback(message.id);
-          }
-        }
+        // Feedback wird jetzt über den Vue 3 Store geladen
+        // Feedback-Daten werden automatisch vom Store geladen
 
         // Zur Chat-Ansicht wechseln
         activeView.value = "chat";
@@ -550,57 +550,24 @@ createApp({
       }
     };
 
-    // Initialize chat functionality
-    const chatFunctions = setupChat({
-      token,
-      messages,
-      question,
-      currentSessionId,
-      isLoading,
-      isStreaming,
-      eventSource,
-      scrollToBottom,
-      nextTick,
-      loadSessions,
-      motdDismissed,
-    });
+    // Chat-Funktionalität wird jetzt vollständig durch den Vue 3 useChat-Composable und sessions-Store bereitgestellt
 
-    // Initialize feedback functionality
-    const feedbackFunctions = setupFeedback({
-      messages,
-      currentSessionId,
-      showFeedbackDialog,
-      feedbackComment,
-      feedbackMessage,
-    });
+    // Feedback-Funktionalität wurde zu Vue 3 Composables migriert
 
-    // Initialize admin functionality
-    const adminFunctions = setupAdmin({
-      token,
-      userRole,
-      isLoading,
-    });
+    // Admin-Funktionalität wurde zu Vue 3 Composables und Pinia Stores migriert
+    // Die Admin-Funktionen werden jetzt über Admin-Komponenten und Stores bereitgestellt
 
-    // Initialize settings functionality
-    const settingsFunction = setupSettings({
-      token,
-    });
-
-    // Initialize source references functionality
-    const sourceReferences = setupSourceReferences({
-      token,
-      messages,
-      isLoading,
-    });
-
-    // Extrahiere die toggleSettings-Funktion aus dem settingsFunction-Objekt
-    const { toggleSettings } = settingsFunction;
+    // Settings-Funktionalität wurde zu Vue 3 Composables und Pinia Store migriert
+    // Die Einstellungsfunktionen werden jetzt über den useSettings-Composable bereitgestellt
 
     // UI-Navigation Funktionen
     // Aktualisierte toggleView Funktion - Öffnet Barrierefreiheitseinstellungen für alle Benutzer
     const toggleView = () => {
       // Das Zahnrad-Symbol unten öffnet für alle Benutzer die Barrierefreiheitseinstellungen
-      toggleSettings();
+      // Ruft die toggleSettings-Funktion vom Vue 3 useSettings-Composable auf
+      if (window.toggleVueSettings) {
+        window.toggleVueSettings();
+      }
     };
 
     // Neue Funktion - Wechselt für Admins zum Admin-Bereich
@@ -612,21 +579,10 @@ createApp({
     };
 
     // Hilfsfunktion für admin Tab-Titel
+    // Diese Funktion wird jetzt über Vue 3 Admin-Komponenten bereitgestellt
     const getAdminTabTitle = () => {
-      switch (adminFunctions.adminTab.value) {
-        case "users":
-          return "Benutzerverwaltung";
-        case "system":
-          return "Systemüberwachung";
-        case "feedback":
-          return "Feedback-Analyse";
-        case "motd":
-          return "Message of the Day";
-        case "abtests":
-          return "A/B-Tests";
-        default:
-          return "Administration";
-      }
+      // Rückgabe des Standardtitels, detaillierte Titel werden jetzt in AdminPanel.vue verwaltet
+      return "Administration";
     };
 
     // Laden der MOTD
@@ -657,19 +613,12 @@ createApp({
     };
 
     // Neue Funktion für die Formatierung von Nachrichten mit Quellenhervorhebung
+    // Verbessert: Nutzt jetzt direkt marked, Vue 3 SFC übernimmt die Hervorhebung
     const formatMessageWithSources = (text) => {
       if (!text) return "";
-
-      // Prüfen, ob die Nachricht Quellenverweise enthält
-      if (sourceReferences.hasSourceReferences(text)) {
-        // Wenn ja, mit Quellenhervorhebung formatieren
-        const formattedText =
-          sourceReferences.formatMessageWithSourceHighlighting(text);
-        return marked.parse(formattedText);
-      } else {
-        // Wenn nicht, normale Formatierung verwenden
-        return formatMessage(text);
-      }
+      
+      // Normale Formatierung verwenden, die Quellenhervorhebung erfolgt in Vue 3
+      return formatMessage(text);
     };
 
     // Event-Listener für Seiten-Reload
@@ -701,7 +650,15 @@ createApp({
         await loadSessions();
 
         // Benutzerrolle laden
-        await adminFunctions.loadUserRole();
+        // Dies wird jetzt über den Vue 3 AuthStore verwaltet
+        try {
+          const response = await axios.get("/api/user/role");
+          userRole.value = response.data.role;
+          console.log(`Benutzerrolle geladen: ${userRole.value}`);
+        } catch (error) {
+          console.error("Fehler beim Laden der Benutzerrolle:", error);
+          userRole.value = "user"; // Fallback zur Standardrolle
+        }
 
         // Versuche, die letzte aktive Session wiederherzustellen
         await restoreLastActiveSession();
@@ -758,7 +715,14 @@ createApp({
           localStorage.removeItem("lastActiveSession");
         } else {
           // Wenn sich der Token ändert (z.B. nach Login), Benutzerrolle laden
-          adminFunctions.loadUserRole();
+          // Dies wird jetzt über den Vue 3 AuthStore verwaltet
+          try {
+            const response = await axios.get("/api/user/role");
+            userRole.value = response.data.role;
+          } catch (error) {
+            console.error("Fehler beim Laden der Benutzerrolle:", error);
+            userRole.value = "user";
+          }
         }
       });
 
@@ -819,26 +783,21 @@ createApp({
       saveCurrentSessionToStorage,
       restoreLastActiveSession,
 
-      // Chat streaming functionality
-      ...chatFunctions,
+      // Chat-Funktionalität ist jetzt vollständig in Vue 3 Composables und Stores implementiert
 
-      // Feedback functionality
-      ...feedbackFunctions,
+      // Feedback-Funktionalität wurde zu Vue 3 Composables migriert
       showFeedbackDialog,
       feedbackComment,
 
-      // Admin functionality
-      ...adminFunctions,
+      // Admin-Funktionalität ist jetzt über Vue 3 Stores verfügbar
       userRole,
       getAdminTabTitle,
       toggleView,
       toggleAdminView,
 
-      // Settings functionality
-      ...settingsFunction,
+      // Settings functionality ist jetzt über Vue 3 Composables verfügbar
 
-      // Quellenreferenzen
-      ...sourceReferences,
+      // Nachrichtenformatierung
       formatMessageWithSources,
 
       // MOTD

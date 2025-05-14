@@ -275,7 +275,19 @@ async def login(request: Request):
                 
                 if token:
                     print(f"LOGIN DEBUG - Authentication successful for {email}")
-                    return {"token": token}
+                    # Benutzerinformationen abrufen
+                    user = user_manager.get_user_by_email(email)
+                    if user:
+                        user_data = {
+                            "id": user.get("id"),
+                            "email": user.get("email"),
+                            "username": user.get("username"),
+                            "role": user.get("role"),
+                            "created_at": user.get("created_at")
+                        }
+                        return {"token": token, "user": user_data}
+                    else:
+                        return {"token": token}
                 else:
                     print(f"LOGIN DEBUG - Authentication failed for {email}, trying with default password")
                     # Mit Standard-Testpasswort versuchen, falls reguläres Passwort fehlschlägt
@@ -283,7 +295,19 @@ async def login(request: Request):
                         token = user_manager.authenticate(email, "123")
                         if token:
                             print(f"LOGIN DEBUG - Authentication successful with default password for {email}")
-                            return {"token": token}
+                            # Benutzerinformationen abrufen
+                            user = user_manager.get_user_by_email(email)
+                            if user:
+                                user_data = {
+                                    "id": user.get("id"),
+                                    "email": user.get("email"),
+                                    "username": user.get("username"),
+                                    "role": user.get("role"),
+                                    "created_at": user.get("created_at")
+                                }
+                                return {"token": token, "user": user_data}
+                            else:
+                                return {"token": token}
                     
                     print(f"LOGIN DEBUG - Authentication failed completely for {email}")
                     raise HTTPException(status_code=401, detail="Ungültige Anmeldedaten")
@@ -302,7 +326,19 @@ async def login(request: Request):
             raise HTTPException(status_code=401, detail="Ungültige Anmeldedaten")
         
         print(f"LOGIN DEBUG - Fallback authentication successful for {email}")
-        return {"token": token}
+        # Benutzerinformationen abrufen
+        user = user_manager.get_user_by_email(email)
+        if user:
+            user_data = {
+                "id": user.get("id"),
+                "email": user.get("email"),
+                "username": user.get("username"),
+                "role": user.get("role"),
+                "created_at": user.get("created_at")
+            }
+            return {"token": token, "user": user_data}
+        else:
+            return {"token": token}
         
     except HTTPException as he:
         # HTTP Exceptions durchreichen
@@ -344,6 +380,22 @@ async def set_password(request: SetPasswordRequest):
         raise HTTPException(status_code=400, detail="Ungültiger oder abgelaufener Token")
     
     return {"message": "Passwort erfolgreich zurückgesetzt"}
+
+@app.get("/api/auth/validate")
+async def validate_token(user_data: Dict[str, Any] = Depends(get_current_user)):
+    """Validiert das aktuelle Token und gibt Benutzerinformationen zurück"""
+    user = user_manager.get_user_by_email(user_data['email'])
+    if user:
+        user_info = {
+            "id": user.get("id"),
+            "email": user.get("email"),
+            "username": user.get("username"),
+            "role": user.get("role"),
+            "created_at": user.get("created_at")
+        }
+        return {"valid": True, "user": user_info}
+    else:
+        return {"valid": False}
 
 # API-Endpunkte für Benutzerverwaltung (nur für Admins)
 @app.get("/api/admin/users")
@@ -1170,6 +1222,72 @@ async def error_reporting(request: Request):
             status_code=500,
             content={"status": "error", "message": f"Interner Serverfehler: {str(e)}"}
         )
+
+# Sessions API Endpunkte
+@app.post("/api/sessions")
+async def create_session(request: dict, user_data: Dict[str, Any] = Depends(get_current_user)):
+    """Erstellt eine neue Chat-Session"""
+    session_id = str(uuid.uuid4())
+    user_id = user_data['user_id']
+    
+    session = {
+        "id": session_id,
+        "userId": user_id,
+        "title": request.get("title", "Neue Konversation"),
+        "messages": [],
+        "createdAt": time.time(),
+        "updatedAt": time.time()
+    }
+    
+    # In einer echten Anwendung würde dies in einer Datenbank gespeichert
+    return session
+
+@app.get("/api/sessions")
+async def get_sessions(user_data: Dict[str, Any] = Depends(get_current_user)):
+    """Gibt alle Sessions eines Benutzers zurück"""
+    user_id = user_data['user_id']
+    
+    # In einer echten Anwendung würde dies aus einer Datenbank geladen
+    return {"sessions": []}
+
+@app.get("/api/sessions/{session_id}")
+async def get_session(session_id: str, user_data: Dict[str, Any] = Depends(get_current_user)):
+    """Gibt eine spezifische Session zurück"""
+    # In einer echten Anwendung würde dies aus einer Datenbank geladen
+    return {"id": session_id, "messages": []}
+
+@app.put("/api/sessions/{session_id}")
+async def update_session(session_id: str, request: dict, user_data: Dict[str, Any] = Depends(get_current_user)):
+    """Aktualisiert eine Session"""
+    # In einer echten Anwendung würde dies in einer Datenbank aktualisiert
+    return {"id": session_id, "updated": True}
+
+@app.delete("/api/sessions/{session_id}")
+async def delete_session(session_id: str, user_data: Dict[str, Any] = Depends(get_current_user)):
+    """Löscht eine Session"""
+    # In einer echten Anwendung würde dies aus einer Datenbank gelöscht
+    return {"deleted": True}
+
+@app.post("/api/sessions/{session_id}/messages")
+async def add_message(session_id: str, request: dict, user_data: Dict[str, Any] = Depends(get_current_user)):
+    """Fügt eine Nachricht zu einer Session hinzu"""
+    message_id = str(uuid.uuid4())
+    message = {
+        "id": message_id,
+        "sessionId": session_id,
+        "content": request.get("content", ""),
+        "role": request.get("role", "user"),
+        "timestamp": time.time()
+    }
+    
+    # In einer echten Anwendung würde dies in einer Datenbank gespeichert
+    return message
+
+@app.get("/api/sessions/{session_id}/messages")
+async def get_messages(session_id: str, user_data: Dict[str, Any] = Depends(get_current_user)):
+    """Gibt alle Nachrichten einer Session zurück"""
+    # In einer echten Anwendung würde dies aus einer Datenbank geladen
+    return {"messages": []}
 
 if __name__ == "__main__":
     import uvicorn

@@ -108,9 +108,14 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, nextTick } from "vue";
-import { useStore } from "vuex";
 import DOMPurify from "dompurify";
 import marked from "marked";
+
+// Replace Vuex with Pinia stores
+import { useSessionsStore } from "@/stores/sessions";
+import { useSourcesStore } from "@/stores/sources";
+import { useFeedbackStore } from "@/stores/admin/feedback";
+import { useSourceReferences } from "@/composables/useSourceReferences";
 
 interface Message {
   id: string;
@@ -124,9 +129,21 @@ const props = defineProps<{
   isLoading: boolean;
 }>();
 
-const store = useStore();
+// Use Pinia stores
+const sessionsStore = useSessionsStore();
+const sourcesStore = useSourcesStore();
+const feedbackStore = useFeedbackStore();
+
+// Use source references composable
+const {
+  hasSourceReferences,
+  isSourceReferencesVisible,
+  isLoadingSourceReferences,
+  showSourcePopupHandler
+} = useSourceReferences();
+
 const scrollContainer = ref<HTMLElement | null>(null);
-const isTyping = computed(() => store.getters["sessions/isTyping"]);
+const isTyping = computed(() => sessionsStore.isTyping);
 
 // Watch for new messages to scroll to bottom
 watch(
@@ -147,6 +164,22 @@ watch(
 
 onMounted(() => {
   scrollToBottom();
+
+  // Set up event handler for source reference clicks
+  const handleSourceReferenceClick = (event: MouseEvent) => {
+    const target = event.target as HTMLElement;
+    if (target.matches('.source-reference')) {
+      const sourceId = target.getAttribute('data-source-id');
+      if (sourceId) {
+        showSourcePopupHandler(event, sourceId);
+      }
+    }
+  };
+
+  // Add event listener to the scroll container
+  if (scrollContainer.value) {
+    scrollContainer.value.addEventListener('click', handleSourceReferenceClick);
+  }
 });
 
 // Format message content with markdown
@@ -155,16 +188,22 @@ function formatMessageContent(content: string): string {
   const sanitizedContent = DOMPurify.sanitize(marked(content));
 
   // Replace source reference markers with clickable spans
-  return sanitizedContent.replace(
+  let formattedContent = sanitizedContent.replace(
     /\[\[src:([^\]]+)\]\]/g,
     (match, sourceId) => {
       return `<span class="source-reference" data-source-id="${sourceId}">[${sourceId}]</span>`;
-    },
+    }
   );
-}
 
-function hasSourceReferences(content: string): boolean {
-  return content.includes("[[src:");
+  // Add support for legacy source reference patterns
+  formattedContent = formattedContent.replace(
+    /\(Quelle-(\d+)\)/g,
+    (match, sourceId) => {
+      return `<span class="source-reference" data-source-id="${sourceId}">${match}</span>`;
+    }
+  );
+
+  return formattedContent;
 }
 
 // Format time (e.g., "14:35")
@@ -192,21 +231,21 @@ function messageRoleLabel(role: string): string {
 
 // Send feedback for a message
 function sendFeedback(messageId: string, type: "positive" | "negative"): void {
-  store.dispatch("feedback/sendFeedback", {
+  feedbackStore.sendFeedback({
     messageId,
     type,
-    sessionId: store.getters["sessions/activeSessionId"],
+    sessionId: sessionsStore.currentSessionId || '',
   });
 }
 
 // Show explanation for a message
 function showExplanation(messageId: string): void {
-  store.dispatch("sources/showExplanation", { messageId });
+  sourcesStore.showExplanation({ messageId });
 }
 
 // Show sources for a message
 function showSources(messageId: string): void {
-  store.dispatch("sources/showSources", { messageId });
+  sourcesStore.showSources({ messageId });
 }
 
 // Scroll to bottom of the message container

@@ -2,6 +2,7 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useMonitoringStore } from "../stores/monitoringStore";
 import { useFeatureTogglesStore } from "../stores/featureToggles";
 import { LogService } from "../services/log/LogService";
+import { isDevelopment } from "@/utils/environmentUtils";
 
 export function useMonitoring(featureId: string, componentName: string) {
   const monitoringStore = useMonitoringStore();
@@ -96,7 +97,7 @@ export function useMonitoring(featureId: string, componentName: string) {
     );
 
     // Also log to console in development mode
-    if (process.env.NODE_ENV === "development") {
+    if (isDevelopment()) {
       LogService.error(
         `[${featureId}/${componentName}] ${errorMessage}`,
         error,

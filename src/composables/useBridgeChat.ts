@@ -6,7 +6,7 @@
  * über die Enhanced Bridge.
  */
 
-import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted, getCurrentInstance } from "vue";
 import { useBridge } from "@/bridge/enhanced";
 import { useChat } from "@/composables/useChat";
 // Import sessions store
@@ -40,31 +40,40 @@ export function useBridgeChat() {
   const isSyncing = ref(false);
   const lastSyncTime = ref(Date.now());
 
-  // Bridge-Events registrieren
-  onMounted(() => {
-    // Von Vanilla JS
-    bridge.on("vanillaChat:sendMessage", handleVanillaSendMessage);
-    bridge.on("vanillaChat:editMessage", handleVanillaEditMessage);
-    bridge.on("vanillaChat:retryMessage", handleVanillaRetryMessage);
-    bridge.on("vanillaChat:loadSession", handleVanillaLoadSession);
-    bridge.on("vanillaChat:createSession", handleVanillaCreateSession);
-    bridge.on("vanillaChat:deleteSession", handleVanillaDeleteSession);
-    bridge.on("vanillaChat:stopGeneration", handleVanillaStopGeneration);
+  // Prüfen, ob wir innerhalb einer Vue-Komponente sind
+  const instance = getCurrentInstance();
 
-    // Initialen Status senden
-    syncToVanilla();
-  });
+  // Bridge-Events immer registrieren, damit das Composable auch außerhalb von Komponenten funktioniert
+  // Von Vanilla JS
+  bridge.on("vanillaChat:sendMessage", handleVanillaSendMessage);
+  bridge.on("vanillaChat:editMessage", handleVanillaEditMessage);
+  bridge.on("vanillaChat:retryMessage", handleVanillaRetryMessage);
+  bridge.on("vanillaChat:loadSession", handleVanillaLoadSession);
+  bridge.on("vanillaChat:createSession", handleVanillaCreateSession);
+  bridge.on("vanillaChat:deleteSession", handleVanillaDeleteSession);
+  bridge.on("vanillaChat:stopGeneration", handleVanillaStopGeneration);
 
-  // Cleanup
-  onUnmounted(() => {
-    bridge.off("vanillaChat:sendMessage", handleVanillaSendMessage);
-    bridge.off("vanillaChat:editMessage", handleVanillaEditMessage);
-    bridge.off("vanillaChat:retryMessage", handleVanillaRetryMessage);
-    bridge.off("vanillaChat:loadSession", handleVanillaLoadSession);
-    bridge.off("vanillaChat:createSession", handleVanillaCreateSession);
-    bridge.off("vanillaChat:deleteSession", handleVanillaDeleteSession);
-    bridge.off("vanillaChat:stopGeneration", handleVanillaStopGeneration);
-  });
+  // Initialen Status senden
+  syncToVanilla();
+
+  // Lifecycle-Hooks nur innerhalb einer Komponente registrieren
+  if (instance) {
+    // Nach dem Komponenten-Mount
+    onMounted(() => {
+      // Nichts zusätzlich zu tun, da Events bereits registriert sind
+    });
+
+    // Cleanup beim Komponenten-Unmount
+    onUnmounted(() => {
+      bridge.off("vanillaChat:sendMessage", handleVanillaSendMessage);
+      bridge.off("vanillaChat:editMessage", handleVanillaEditMessage);
+      bridge.off("vanillaChat:retryMessage", handleVanillaRetryMessage);
+      bridge.off("vanillaChat:loadSession", handleVanillaLoadSession);
+      bridge.off("vanillaChat:createSession", handleVanillaCreateSession);
+      bridge.off("vanillaChat:deleteSession", handleVanillaDeleteSession);
+      bridge.off("vanillaChat:stopGeneration", handleVanillaStopGeneration);
+    });
+  }
 
   // Änderungen an Nachrichten beobachten und zur Vanilla-Seite synchronisieren
   watch(

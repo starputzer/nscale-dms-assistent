@@ -5,32 +5,39 @@
  * zusammenführt und koordiniert.
  */
 
-import { watch, onBeforeUnmount } from "vue";
+import { watch, onBeforeUnmount, getCurrentInstance } from "vue";
 import {
-  BridgeAPI,
   BridgeConfiguration,
   DEFAULT_BRIDGE_CONFIG,
-  BridgeErrorState,
-  BridgeStatusInfo,
   LogLevel,
+  EventOptions,
+  EventSubscription,
+  StoreConnectorMap,
+  LegacyState,
+  // Importiere die Bridge-API-Interfaces
+  BridgeAPI,
   AuthBridgeAPI,
   SessionBridgeAPI,
   UIBridgeAPI,
-  FeatureToggleBridgeAPI,
-  EventOptions,
-  EventSubscription,
+  FeatureToggleBridgeAPI
 } from "./types";
+
+// Nur die tatsächlich verwendeten Typen importieren
+import type { BridgeErrorState, BridgeStatusInfo } from "./types";
+
+// Logger und State-Management-Importe, die in der Klasse verwendet werden
 import { EnhancedBridgeLogger } from "./logger";
 import { EnhancedEventBus } from "./eventBus";
 import { EnhancedStateManager } from "./stateManager";
 import { BridgeStatusManager } from "./statusManager";
 import { SelfHealingBridge } from "./selfHealing";
 
-// Import der Store-Typen (angepasst an Ihren Store-Aufbau)
+// Import der Store-Typen
 import { useAuthStore } from "@/stores/auth";
 import { useSessionsStore } from "@/stores/sessions";
 import { useUIStore } from "@/stores/ui";
 import { useFeatureTogglesStore } from "@/stores/featureToggles";
+import type { IAuthStore, ISessionsStore, IUIStore, IFeatureTogglesStore } from "@/types/stores";
 
 /**
  * Effiziente Serialisierung für komplexe Datenstrukturen
@@ -70,7 +77,8 @@ class EfficientSerializer {
 
     if (this.serializationCache.has(hashCode)) {
       this.cacheHits++;
-      return this.serializationCache.get(hashCode)!;
+      const cached = this.serializationCache.get(hashCode);
+      return cached !== undefined ? cached : JSON.stringify(value);
     }
 
     this.cacheMisses++;
@@ -78,8 +86,10 @@ class EfficientSerializer {
 
     // Cache-Größe kontrollieren
     if (this.serializationCache.size >= this.maxCacheSize) {
-      const firstKey = this.serializationCache.keys().next().value;
-      this.serializationCache.delete(firstKey);
+      const firstEntry = this.serializationCache.keys().next();
+      if (!firstEntry.done && firstEntry.value) {
+        this.serializationCache.delete(firstEntry.value);
+      }
     }
 
     this.serializationCache.set(hashCode, serialized);
@@ -102,8 +112,10 @@ class EfficientSerializer {
 
     // Cache-Größe kontrollieren
     if (this.deserializationCache.size >= this.maxCacheSize) {
-      const firstKey = this.deserializationCache.keys().next().value;
-      this.deserializationCache.delete(firstKey);
+      const firstEntry = this.deserializationCache.keys().next();
+      if (!firstEntry.done && firstEntry.value) {
+        this.deserializationCache.delete(firstEntry.value);
+      }
     }
 
     this.deserializationCache.set(serialized, deserialized);
@@ -162,12 +174,10 @@ export class EnhancedBridge {
   private serializer: EfficientSerializer;
 
   // Store-Referenzen
-  private authStore: ReturnType<typeof useAuthStore> | null = null;
-  private sessionsStore: ReturnType<typeof useSessionsStore> | null = null;
-  private uiStore: ReturnType<typeof useUIStore> | null = null;
-  private featureTogglesStore: ReturnType<
-    typeof useFeatureTogglesStore
-  > | null = null;
+  private authStore!: IAuthStore;
+  private sessionsStore!: ISessionsStore;
+  private uiStore!: IUIStore;
+  private featureTogglesStore!: IFeatureTogglesStore;
 
   // Bridge-API-Implementierungen
   private authBridgeAPI: AuthBridgeAPI | null = null;
@@ -176,7 +186,12 @@ export class EnhancedBridge {
   private featuresBridgeAPI: FeatureToggleBridgeAPI | null = null;
 
   // Legacy-State
-  private legacyState: Record<string, any> = {};
+  private legacyState: LegacyState = {
+    auth: { user: null, token: null, isAuthenticated: false },
+    sessions: { list: [], currentId: null, messages: {} },
+    ui: { darkMode: false, sidebar: { isOpen: true, collapsed: false }, toasts: [], modals: [] },
+    features: { toggles: {} }
+  };
 
   // Cleanup-Funktionen
   private cleanupFunctions: Array<() => void> = [];
@@ -234,11 +249,95 @@ export class EnhancedBridge {
    * Verbindet die Bridge mit den Stores
    */
   connect(): void {
-    // Stores initialisieren
-    this.authStore = useAuthStore();
-    this.sessionsStore = useSessionsStore();
-    this.uiStore = useUIStore();
-    this.featureTogglesStore = useFeatureTogglesStore();
+    // Stores initialisieren mit korrekter Typkonvertierung
+    // Erstelle für jeden Store ein Proxy-Objekt, das die fehlenden Interface-Methoden hinzufügt
+    const authStore = useAuthStore();
+    const authProxy = {
+      ...authStore,
+      // Implementiere die fehlenden Interface-Methoden
+      initialize: async () => {
+        // Rufe die originale Methode auf, falls vorhanden, sonst leere Implementierung
+        if (typeof (authStore as any).initialize === 'function') {
+          return await (authStore as any).initialize();
+        }
+        this.logger.debug("Auth Store initialize proxy aufgerufen");
+      },
+      reset: () => {
+        // Rufe die originale Methode auf, falls vorhanden, sonst leere Implementierung
+        if (typeof (authStore as any).reset === 'function') {
+          (authStore as any).reset();
+        }
+        this.logger.debug("Auth Store reset proxy aufgerufen");
+      }
+    };
+    // Sichere Typumwandlung über den Proxy
+    this.authStore = authProxy as unknown as IAuthStore;
+
+    const sessionsStore = useSessionsStore();
+    const sessionsProxy = {
+      ...sessionsStore,
+      // Implementiere die fehlenden Interface-Methoden
+      initialize: async () => {
+        // Rufe die originale Methode auf, falls vorhanden, sonst leere Implementierung
+        if (typeof (sessionsStore as any).initialize === 'function') {
+          return await (sessionsStore as any).initialize();
+        }
+        this.logger.debug("Sessions Store initialize proxy aufgerufen");
+      },
+      reset: () => {
+        // Rufe die originale Methode auf, falls vorhanden, sonst leere Implementierung
+        if (typeof (sessionsStore as any).reset === 'function') {
+          (sessionsStore as any).reset();
+        }
+        this.logger.debug("Sessions Store reset proxy aufgerufen");
+      }
+    };
+    // Sichere Typumwandlung über den Proxy
+    this.sessionsStore = sessionsProxy as unknown as ISessionsStore;
+
+    const uiStore = useUIStore();
+    const uiProxy = {
+      ...uiStore,
+      // Implementiere die fehlenden Interface-Methoden
+      initialize: async () => {
+        // Rufe die originale Methode auf, falls vorhanden, sonst leere Implementierung
+        if (typeof (uiStore as any).initialize === 'function') {
+          return await (uiStore as any).initialize();
+        }
+        this.logger.debug("UI Store initialize proxy aufgerufen");
+      },
+      reset: () => {
+        // Rufe die originale Methode auf, falls vorhanden, sonst leere Implementierung
+        if (typeof (uiStore as any).reset === 'function') {
+          (uiStore as any).reset();
+        }
+        this.logger.debug("UI Store reset proxy aufgerufen");
+      }
+    };
+    // Sichere Typumwandlung über den Proxy
+    this.uiStore = uiProxy as unknown as IUIStore;
+
+    const featureTogglesStore = useFeatureTogglesStore();
+    const featureTogglesProxy = {
+      ...featureTogglesStore,
+      // Implementiere die fehlenden Interface-Methoden
+      initialize: async () => {
+        // Rufe die originale Methode auf, falls vorhanden, sonst leere Implementierung
+        if (typeof (featureTogglesStore as any).initialize === 'function') {
+          return await (featureTogglesStore as any).initialize();
+        }
+        this.logger.debug("FeatureToggles Store initialize proxy aufgerufen");
+      },
+      reset: () => {
+        // Rufe die originale Methode auf, falls vorhanden, sonst leere Implementierung
+        if (typeof (featureTogglesStore as any).reset === 'function') {
+          (featureTogglesStore as any).reset();
+        }
+        this.logger.debug("FeatureToggles Store reset proxy aufgerufen");
+      }
+    };
+    // Sichere Typumwandlung über den Proxy
+    this.featureTogglesStore = featureTogglesProxy as unknown as IFeatureTogglesStore;
 
     // Legacy-State initialisieren
     this.initializeLegacyState();
@@ -247,15 +346,14 @@ export class EnhancedBridge {
     this.initializeStoreAPI();
 
     // State-Manager mit Stores verbinden
-    this.stateManager.connect(
-      {
-        auth: this.authStore,
-        sessions: this.sessionsStore,
-        ui: this.uiStore,
-        features: this.featureTogglesStore,
-      },
-      this.legacyState,
-    );
+    const storeMap: StoreConnectorMap = {
+      auth: this.authStore,
+      sessions: this.sessionsStore,
+      ui: this.uiStore,
+      features: this.featureTogglesStore
+    };
+    
+    this.stateManager.connect(storeMap, this.legacyState);
 
     // Store-Watchers einrichten
     this.setupStoreWatchers();
@@ -267,28 +365,6 @@ export class EnhancedBridge {
    * Initialisiert den Legacy-State
    */
   private initializeLegacyState(): void {
-    this.legacyState = {
-      auth: {
-        user: null,
-        token: null,
-        isAuthenticated: false,
-      },
-      sessions: {
-        list: [],
-        currentId: null,
-        messages: {},
-      },
-      ui: {
-        darkMode: false,
-        sidebar: { isOpen: true, collapsed: false },
-        toasts: [],
-        modals: [],
-      },
-      features: {
-        toggles: {},
-      },
-    };
-
     // Initialen Zustand aus localStorage laden
     this.loadInitialState();
 
@@ -359,6 +435,7 @@ export class EnhancedBridge {
     return {
       async login(email: string, password: string): Promise<boolean> {
         try {
+          // Credentials als Parameter-Objekt übergeben
           const result = await authStore.login({ email, password });
           eventBus.emit("auth:login", { success: result });
           return result;
@@ -454,11 +531,11 @@ export class EnhancedBridge {
         }
       },
 
-      getCurrentSession(): any {
+      getCurrentSession() {
         return sessionsStore.currentSession;
       },
 
-      getAllSessions(): any[] {
+      getAllSessions() {
         return sessionsStore.sessions;
       },
     };
@@ -476,19 +553,14 @@ export class EnhancedBridge {
 
     return {
       showToast(message: string, type?: string): void {
-        switch (type) {
-          case "success":
-            uiStore.showSuccess(message);
-            break;
-          case "error":
-            uiStore.showError(message);
-            break;
-          case "warning":
-            uiStore.showWarning(message);
-            break;
-          default:
-            uiStore.showInfo(message);
-            break;
+        if (type === "success") {
+          uiStore.showSuccess(message);
+        } else if (type === "error") {
+          uiStore.showError(message);
+        } else if (type === "warning") {
+          uiStore.showWarning(message);
+        } else {
+          uiStore.showInfo(message);
         }
       },
 
@@ -547,24 +619,22 @@ export class EnhancedBridge {
    * Richtet Store-Watchers ein
    */
   private setupStoreWatchers(): void {
-    if (
-      !this.authStore ||
-      !this.sessionsStore ||
-      !this.uiStore ||
-      !this.featureTogglesStore
-    ) {
-      this.logger.error("Stores nicht initialisiert");
-      return;
-    }
+    // Stores sind bereits initialisiert durch definitive assignment assertion (!)
+
+    // Store-Referenzen für sicheres Zugreifen
+    const authStore = this.authStore;
+    const sessionsStore = this.sessionsStore;
+    const uiStore = this.uiStore;
+    const featureTogglesStore = this.featureTogglesStore;
 
     // Auth-Store Änderungen beobachten
     const unwatchAuth = watch(
-      () => this.authStore!.isAuthenticated,
-      (isAuthenticated) => {
+      () => authStore.isAuthenticated,
+      (isAuthenticated: boolean) => {
         this.eventBus.emit("auth:changed", { isAuthenticated });
 
         if (isAuthenticated) {
-          this.eventBus.emit("auth:login", { user: this.authStore!.user });
+          this.eventBus.emit("auth:login", { user: authStore.user });
         } else {
           this.eventBus.emit("auth:logout");
         }
@@ -574,13 +644,13 @@ export class EnhancedBridge {
 
     // Sessions-Store Änderungen beobachten
     const unwatchSessionId = watch(
-      () => this.sessionsStore!.currentSessionId,
-      (sessionId, oldSessionId) => {
+      () => sessionsStore.currentSessionId,
+      (sessionId: string | null, oldSessionId: string | null) => {
         if (sessionId) {
           this.eventBus.emit("session:changed", {
             sessionId,
             oldSessionId,
-            session: this.sessionsStore!.currentSession,
+            session: sessionsStore.currentSession,
           });
         }
       },
@@ -588,8 +658,8 @@ export class EnhancedBridge {
     this.cleanupFunctions.push(unwatchSessionId);
 
     const unwatchSessions = watch(
-      () => this.sessionsStore!.sessions,
-      (sessions) => {
+      () => sessionsStore.sessions,
+      (sessions: any[]) => {
         this.eventBus.emit("sessions:updated", { sessions });
       },
       { deep: true },
@@ -598,8 +668,8 @@ export class EnhancedBridge {
 
     // UI-Store Änderungen beobachten
     const unwatchDarkMode = watch(
-      () => this.uiStore!.darkMode,
-      (isDark) => {
+      () => uiStore.darkMode,
+      (isDark: boolean) => {
         this.eventBus.emit("ui:darkModeChanged", { isDark });
       },
     );
@@ -607,8 +677,8 @@ export class EnhancedBridge {
 
     // Feature-Toggles Änderungen beobachten
     const unwatchFeatures = watch(
-      () => this.featureTogglesStore!.features,
-      (features) => {
+      () => featureTogglesStore.features,
+      (features: Record<string, boolean>) => {
         this.eventBus.emit("features:updated", { features });
       },
       { deep: true },
@@ -715,14 +785,24 @@ export class EnhancedBridge {
       !this.featuresBridgeAPI
     ) {
       this.connect();
+
+      // Überprüfen, ob die APIs erfolgreich initialisiert wurden
+      if (
+        !this.authBridgeAPI ||
+        !this.sessionsBridgeAPI ||
+        !this.uiBridgeAPI ||
+        !this.featuresBridgeAPI
+      ) {
+        throw new Error("Bridge-APIs konnten nicht initialisiert werden");
+      }
     }
 
     // Bridge-API zusammenstellen
     const api: BridgeAPI = {
-      auth: this.authBridgeAPI!,
-      sessions: this.sessionsBridgeAPI!,
-      ui: this.uiBridgeAPI!,
-      features: this.featuresBridgeAPI!,
+      auth: this.authBridgeAPI,
+      sessions: this.sessionsBridgeAPI,
+      ui: this.uiBridgeAPI,
+      features: this.featuresBridgeAPI,
 
       // State-Management
       getState: (path: string) => this.stateManager.getState(path),
@@ -732,13 +812,42 @@ export class EnhancedBridge {
         this.stateManager.subscribe(path, callback as any),
 
       // Event-Handling
-      emit: (event: string, data: any) => this.eventBus.emit(event, data),
+      emit: (event: string, data?: any) => this.eventBus.emit(event, data),
       on: (event: string, callback: Function, options?: EventOptions) =>
         this.eventBus.on(event, callback, options),
       off: (
         event: string,
         callbackOrSubscription: Function | EventSubscription,
       ) => this.eventBus.off(event, callbackOrSubscription as any),
+
+      // Logging mit Überladungen für verschiedene Aufrufmuster
+      log: (levelOrMessage: LogLevel | string, messageOrData?: string | any, data?: any) => {
+        if (typeof levelOrMessage === 'string') {
+          // Überladung für log(message, data?) - Standard-Debug-Logging
+          this.logger.debug(levelOrMessage, messageOrData);
+        } else if (typeof messageOrData === 'string') {
+          // Überladung für log(level, message, data?) - Logging mit spezifischem Level
+          switch (levelOrMessage) {
+            case LogLevel.DEBUG:
+              this.logger.debug(messageOrData, data);
+              break;
+            case LogLevel.INFO:
+              this.logger.info(messageOrData, data);
+              break;
+            case LogLevel.WARN:
+              this.logger.warn(messageOrData, data);
+              break;
+            case LogLevel.ERROR:
+              this.logger.error(messageOrData, data);
+              break;
+            default:
+              this.logger.debug(messageOrData, data);
+          }
+        } else {
+          // Fallback für ungültige Parameter
+          this.logger.warn("Ungültiger Aufruf der log-Funktion", { levelOrMessage, messageOrData, data });
+        }
+      },
 
       // Diagnose
       getStatus: () => this.statusManager.getStatus(),
@@ -810,17 +919,20 @@ export class EnhancedBridge {
 export function useBridge() {
   // Bridge-Instanz erstellen, wenn sie noch nicht existiert
   const bridge = new EnhancedBridge({
-    debugging: process.env.NODE_ENV !== "production",
+    debugging: import.meta.env.MODE !== "production",
   });
 
   // Bridge verbinden und globale API bereitstellen
   bridge.connect();
   const api = bridge.exposeGlobalAPI();
 
-  // Beim Komponenten-Unmount aufräumen
-  onBeforeUnmount(() => {
-    bridge.disconnect();
-  });
+  // Nur innerhalb einer Komponente den Unmount-Handler registrieren
+  const instance = getCurrentInstance();
+  if (instance) {
+    onBeforeUnmount(() => {
+      bridge.disconnect();
+    });
+  }
 
   return api;
 }

@@ -6,7 +6,7 @@
  * konfiguriert und miteinander verbindet.
  */
 
-import { EnhancedEventBus } from "./enhancedEventBus";
+import { OptimizedEventBus } from "./enhancedEventBus";
 import { BatchedEventEmitter } from "./batchedEventEmitter";
 import { MemoryManager } from "./memoryManager";
 import { PerformanceMonitor } from "./performanceMonitor";
@@ -16,7 +16,7 @@ import { EventListenerManager } from "./eventListenerManager";
 import { SelectiveChatBridge } from "./selectiveChatBridge";
 import { ChatBridgeDiagnostics } from "./chatBridgeDiagnostics";
 import { BridgeStatusManager } from "../statusManager";
-import { Logger, LogLevel } from "../logger";
+import { LogLevel } from "../logger/index";
 
 // Konfiguration für das optimierte Bridge-System
 export interface OptimizedBridgeConfig {
@@ -58,7 +58,7 @@ const DEFAULT_CONFIG: OptimizedBridgeConfig = {
 
 // Integrierte Bridge-Komponenten
 interface OptimizedBridgeComponents {
-  eventBus: EnhancedEventBus; // Optimierter Event-Bus
+  eventBus: OptimizedEventBus; // Optimierter Event-Bus
   batchedEmitter: BatchedEventEmitter; // Batched Event-Emitter
   memoryManager: MemoryManager; // Speicherverwaltung
   performanceMonitor: PerformanceMonitor; // Leistungsüberwachung
@@ -112,7 +112,8 @@ let components: OptimizedBridgeComponents | null = null;
 let isInitialized = false;
 
 // Logger
-const logger = new Logger("OptimizedBridge", LogLevel.INFO);
+import { createLogger } from '../logger/index';
+const logger = createLogger("OptimizedBridge");
 
 /**
  * Bridge-System mit optimierten Komponenten initialisieren
@@ -154,14 +155,19 @@ export async function initializeOptimizedBridge(
       : undefined;
 
     // Event-Bus erstellen
-    const eventBus = new EnhancedEventBus(
+    const eventBus = new OptimizedEventBus(
+      logger,
+      statusManager,
       {
-        logLevel: mergedConfig.logLevel,
-        monitorPerformance: mergedConfig.enablePerformanceMonitoring,
-        optimizeEventMatching: true,
-        trackEventStats: true,
-      },
-      performanceMonitor,
+        defaultBatchDelay: 50,
+        defaultBatchSize: 10,
+        eventConfigs: {
+          "chat:message:*": {
+            batchEnabled: true,
+            priority: "high"
+          }
+        }
+      }
     );
 
     // Event-Batching erstellen

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="login-container flex justify-center items-center min-h-screen p-4"
+    class="login-page login-container flex justify-center items-center min-h-screen p-4"
   >
     <div class="nscale-card max-w-md w-full p-8">
       <div class="nscale-logo text-center mb-6">

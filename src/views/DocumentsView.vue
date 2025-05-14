@@ -249,9 +249,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from "vue";
-import { useDocumentConverterStore } from "@/stores/documentConverter";
-import { useDialogStore } from "@/stores/dialog";
-import { storeToRefs } from "pinia";
+import { useDocumentConverterCompat } from "@/stores/adapters/documentConverterAdapter";
+import { dialogStoreCompat } from "@/stores/adapters/dialogStoreAdapter";
 import DocumentConverterServiceWrapper from "@/services/api/DocumentConverterServiceWrapper";
 import {
   ConversionResult,
@@ -266,29 +265,25 @@ import DocumentList from "@/components/admin/document-converter/DocumentList.vue
 import ErrorDisplay from "@/components/admin/document-converter/ErrorDisplay.vue";
 
 // Stores
-const documentConverterStore = useDocumentConverterStore();
-const dialogStore = useDialogStore();
+const documentConverterStore = useDocumentConverterCompat();
+const dialogStore = dialogStoreCompat;
 
-// Reaktive Zustände aus dem Store extrahieren
-const {
-  convertedDocuments: documents,
-  isConverting,
-  isUploading,
-  isLoading,
-  error,
-  conversionProgress,
-  conversionStep,
-  estimatedTimeRemaining,
-  currentView,
-  useFallback,
-  selectedDocument,
-} = storeToRefs(documentConverterStore);
+// Reaktive Zustände für TypeScript-Kompatibilität
+const documents = computed(() => documentConverterStore.convertedDocuments || []);
+const isConverting = computed(() => documentConverterStore.isConverting || false);
+const isUploading = computed(() => documentConverterStore.isUploading || false);
+const isLoading = computed(() => documentConverterStore.isLoading || false);
+const error = computed(() => documentConverterStore.error || null);
+const conversionProgress = computed(() => documentConverterStore.conversionProgress || 0);
+const conversionStep = computed(() => documentConverterStore.conversionStep || '');
+const estimatedTimeRemaining = computed(() => documentConverterStore.estimatedTimeRemaining || 0);
+const currentView = computed(() => documentConverterStore.currentView || 'upload');
+const useFallback = computed(() => documentConverterStore.useFallback || false);
+const selectedDocument = computed(() => documentConverterStore.selectedDocument || null);
 
 // Computed-Eigenschaften aus dem Store
-const supportedFormats = computed(
-  () => documentConverterStore.supportedFormats,
-);
-const maxFileSize = computed(() => documentConverterStore.maxFileSize);
+const supportedFormats = computed(() => documentConverterStore.supportedFormats || ['.pdf', '.docx', '.xlsx', '.pptx', '.html', '.txt']);
+const maxFileSize = computed(() => documentConverterStore.maxFileSize || 10485760);
 
 // Lokaler Zustand
 const documentContent = ref<string | null>(null);
@@ -553,9 +548,23 @@ async function handleCancelConversion(): Promise<void> {
  * Versucht, zur Standardkonvertierung zurückzukehren
  */
 function retryStandardConversion(): void {
-  documentConverterStore.setUseFallback(false);
-  documentConverterStore.clearError();
-  documentConverterStore.setView("upload");
+  if (typeof documentConverterStore.setUseFallback === 'function') {
+    documentConverterStore.setUseFallback(false);
+  } else {
+    documentConverterStore.$patch({ useFallback: false });
+  }
+
+  if (typeof documentConverterStore.clearError === 'function') {
+    documentConverterStore.clearError();
+  } else {
+    documentConverterStore.$patch({ error: null });
+  }
+
+  if (typeof documentConverterStore.setView === 'function') {
+    documentConverterStore.setView("upload");
+  } else {
+    documentConverterStore.$patch({ currentView: "upload" });
+  }
 }
 
 /**
@@ -563,7 +572,21 @@ function retryStandardConversion(): void {
  */
 async function refreshDocumentList(): Promise<void> {
   try {
-    await documentConverterStore.refreshDocuments();
+    if (typeof documentConverterStore.refreshDocuments === 'function') {
+      await documentConverterStore.refreshDocuments();
+    } else {
+      // Fallback implementation
+      documentConverterStore.$patch({ isLoading: true });
+      try {
+        const documents = await DocumentConverterServiceWrapper.getDocuments();
+        documentConverterStore.$patch({
+          convertedDocuments: documents,
+          lastUpdated: new Date()
+        });
+      } finally {
+        documentConverterStore.$patch({ isLoading: false });
+      }
+    }
   } catch (err) {
     dialogStore.showError({
       title: "Aktualisierungsfehler",

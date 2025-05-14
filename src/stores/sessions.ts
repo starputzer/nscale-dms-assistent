@@ -11,6 +11,7 @@ import type {
   SessionTag,
   SessionCategory,
 } from "../types/session";
+import type { ISessionsStore, SessionsStoreReturn } from "../types/stores";
 import { useAuthStore } from "./auth";
 import { batchRequestService } from "@/services/api/BatchRequestService";
 import {
@@ -27,9 +28,9 @@ import {
  * - Optimierte Persistenz für große Datensätze
  * - Automatische Synchronisation mit Server
  */
-export const useSessionsStore = defineStore(
+export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
   "sessions",
-  () => {
+  (): SessionsStoreReturn => {
     // Referenz auf den Auth-Store für Benutzerinformationen
     const authStore = useAuthStore();
 
@@ -50,10 +51,12 @@ export const useSessionsStore = defineStore(
       lastSyncTime: number;
       isSyncing: boolean;
       error: string | null;
+      pendingSessionIds?: Set<string>; // Added for compatibility with optimized store
     }>({
       lastSyncTime: 0,
       isSyncing: false,
       error: null,
+      pendingSessionIds: new Set(), // Initialize for API compatibility
     });
 
     // Verfügbare Tags und Kategorien
@@ -178,13 +181,20 @@ export const useSessionsStore = defineStore(
 
     const sortedSessions = computed(() => {
       return [...sessions.value].sort((a, b) => {
+        // Sicherheitsprüfung
+        if (!a || !b) return 0;
+        
         // Archivierte Sessions zuletzt
-        if (!a.isArchived && b.isArchived) return -1;
-        if (a.isArchived && !b.isArchived) return 1;
+        const aArchived = a.isArchived || false;
+        const bArchived = b.isArchived || false;
+        if (!aArchived && bArchived) return -1;
+        if (aArchived && !bArchived) return 1;
 
         // Gepinnte Sessions zuerst (innerhalb ihrer Gruppe)
-        if (a.isPinned && !b.isPinned) return -1;
-        if (!a.isPinned && b.isPinned) return 1;
+        const aPinned = a.isPinned || false;
+        const bPinned = b.isPinned || false;
+        if (aPinned && !bPinned) return -1;
+        if (!aPinned && bPinned) return 1;
 
         // Dann nach Datum (neueste zuerst)
         return (

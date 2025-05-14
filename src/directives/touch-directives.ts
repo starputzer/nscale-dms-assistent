@@ -21,6 +21,11 @@ export interface TouchDirectiveOptions {
   longPressTime?: number; // Millisekunden für Long-Press
 }
 
+// Export the directives needed by index.ts
+export const touchSwipe = { name: 'touchSwipe' };
+export const touchTap = { name: 'touchTap' };
+export const touchLongPress = { name: 'touchLongPress' };
+
 export const vTouch = {
   beforeMount(
     el: HTMLElement,

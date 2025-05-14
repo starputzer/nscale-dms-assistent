@@ -5,106 +5,289 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>nscale DMS Assistent</title>
     
-    <!-- Externe CDN-Abhängigkeiten - mit Cache-Busting-Parameter für zuverlässiges Laden -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css?v=20250508" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css?v=20250508">
-    <script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.prod.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Basis CSS für initiales Rendering (minimiert) -->
+    <link rel="stylesheet" href="/assets/index.css">
     
-    <!-- CSS direkt einbinden mit Cache-Busting - Hinweis: keine type="module" bei link-Tags -->
-    <link rel="stylesheet" href="/css/main.css?v=20250508">
-    <link rel="stylesheet" href="/css/themes.css?v=20250508">
-    <link rel="stylesheet" href="/css/improved-ui.css?v=20250508">
-    <link rel="stylesheet" href="/css/admin.css?v=20250508">
-    <link rel="stylesheet" href="/css/feedback.css?v=20250508">
-    <link rel="stylesheet" href="/css/message-actions.css?v=20250508">
-    <link rel="stylesheet" href="/css/settings.css?v=20250508">
-    <link rel="stylesheet" href="/css/source-references.css?v=20250508">
+    <!-- Login-Fix CSS für zentriertes Login-Formular -->
+    <link rel="stylesheet" href="/css/login-fix.css">
     
-    <!-- Extra-Skript für CSS-Fehlerbehandlung (fallback) -->
-    <script>
-        // Prüfe, ob alle CSS-Dateien korrekt geladen wurden
-        document.addEventListener('DOMContentLoaded', () => {
-            const cssFiles = [
-                '/css/main.css',
-                '/css/themes.css',
-                '/css/improved-ui.css',
-                '/css/admin.css',
-                '/css/feedback.css',
-                '/css/message-actions.css',
-                '/css/settings.css',
-                '/css/source-references.css'
-            ];
-            
-            // Überprüfe für jede Datei, ob sie bereits als Stylesheet vorhanden ist
-            cssFiles.forEach(cssFile => {
-                const cssFileBase = cssFile.split('?')[0]; // Entferne potentiellen Query-Parameter
-                const isLoaded = Array.from(document.styleSheets).some(
-                    sheet => sheet.href && sheet.href.includes(cssFileBase)
-                );
-                
-                if (!isLoaded) {
-                    console.warn(`CSS-Datei ${cssFile} wurde nicht geladen, versuche erneut`);
-                    const link = document.createElement('link');
-                    link.rel = 'stylesheet';
-                    link.href = `${cssFile}?fallback=true&v=${new Date().getTime()}`;
-                    document.head.appendChild(link);
-                }
-            });
-        });
-    </script>
-
-    <!-- Haupt-JavaScript-Datei direkt einbinden - definitiv als Modul, aber ohne CSS-Importe -->
-    <script type="module" src="/js/main.js?v=20250508"></script>
+    <!-- Favicon -->
+    <link rel="icon" href="/assets/images/senmvku-logo.png" type="image/png">
     
-    <!-- Fallback für ältere Browser oder fehlende ES-Module-Unterstützung -->
-    <script nomodule>
-        console.warn('Browser unterstützt keine ES-Module. Verwende Fallback.');
-        // Lade Legacy-Script synchron
-        const fallbackScript = document.createElement('script');
-        fallbackScript.src = '/js/app.js?v=20250508';
-        document.head.appendChild(fallbackScript);
-    </script>
+    <!-- Preload kritische Assets -->
+    <link rel="preload" href="/assets/images/senmvku-logo.png" as="image">
 </head>
-<body class="min-h-screen bg-gray-50">
-    <div id="app" class="h-screen flex flex-col">
-        <!-- Login & Register -->
-        <div v-if="!token" class="flex items-center justify-center h-full bg-gray-50">
-            <div class="nscale-card max-w-md w-full p-8">
-                <div class="text-center mb-8">
-                    <div class="nscale-logo mx-auto">
-                        <img src="/images/senmvku-logo.png" alt="nscale Logo" class="h-12 mx-auto">
-                    </div>
-                    <p class="text-gray-500 mt-2">Ihr Digitalisierungspartner für DMS-Lösungen</p>
-                </div>
-                
-                <!-- Hauptinhalt -->
-                <!-- Rest des Inhalts bleibt wie im Original -->
-                
-            </div>
-        </div>
-        
-        <!-- Main Application (wenn eingeloggt) -->
-        <div v-else class="flex flex-col h-full">
-            <!-- Haupt-App-Inhalt -->
-            <!-- Rest des Inhalts bleibt wie im Original -->
+<body>
+    <!-- App Mount Point -->
+    <div id="app"><!-- Vue-App wird hier gemountet --></div>
+    
+    <!-- Initiales Lade-Feedback -->
+    <div id="app-loading" class="app-loader">
+        <div class="app-loader-content">
+            <img src="/assets/images/senmvku-logo.png" alt="nscale Logo" class="app-loader-logo">
+            <div class="app-loader-spinner"></div>
+            <p>Anwendung wird geladen...</p>
         </div>
     </div>
     
-    <!-- Debug-Infos für Entwicklung -->
+    <!-- Kritische Inline-Skripte für initiale Konfiguration -->
     <script>
-        // Nur im Entwicklungsmodus ausführen
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            // Protokolliere geladene Stylesheets
-            document.addEventListener('DOMContentLoaded', () => {
-                console.group('Geladene Stylesheets:');
-                Array.from(document.styleSheets).forEach((sheet, index) => {
-                    console.log(`[${index}] ${sheet.href || 'Inline-Stylesheet'}`);
-                });
-                console.groupEnd();
-            });
+        // Grundlegende Konfiguration und Feature-Detection
+        window.APP_CONFIG = {
+            apiBaseUrl: '/api',
+            buildVersion: '1.0.0',
+            buildTimestamp: '20250511',
+            environment: 'development'
+        };
+        
+        // Theme-Präferenz aus LocalStorage oder Systemeinstellung laden
+        (function() {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const savedTheme = localStorage.getItem('theme');
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            document.documentElement.classList.add(`theme-${theme}`);
+            window.APP_CONFIG.initialTheme = theme;
+        })();
+        
+        // Globaler Fehler-Handler
+        window.addEventListener('error', function(event) {
+            console.error('Globaler Fehler abgefangen:', event.error);
+            const errorElement = document.createElement('div');
+            errorElement.className = 'critical-error';
+            errorElement.innerHTML = `
+                <div class="critical-error-content">
+                    <h2>Anwendungsfehler</h2>
+                    <p>Es ist ein unerwarteter Fehler aufgetreten. Bitte laden Sie die Seite neu.</p>
+                    <button onclick="window.location.reload()">Neu laden</button>
+                </div>
+            `;
+            
+            const appLoader = document.getElementById('app-loading');
+            if (appLoader) appLoader.style.display = 'none';
+            
+            document.body.appendChild(errorElement);
+        });
+
+        // Quellenreferenzen Legacy-Fallback-Funktionen
+        // Verbessertes System mit zentraler Fehlerbehandlung und weiteren Fallback-Mechanismen
+        
+        // Zentrale Speicherung des Zustands
+        window.__sourceReferencesState = {
+            visibleSourceReferences: {},
+            openSourceDetails: {},
+            messageSourceReferences: {},
+            isLoadingReferences: {},
+            sourcePopupState: {
+                isVisible: false,
+                position: { top: 0, left: 0 },
+                content: { title: '', text: '', sourceId: '' }
+            }
+        };
+        
+        // Zentrale Fehlerverwaltung für alle Source-Reference-Funktionen
+        function handleSourceReferenceError(functionName, error, fallbackValue) {
+            console.error(`[SOURCE-REFERENCES] Fehler in ${functionName}:`, error);
+            console.trace();
+            return fallbackValue;
         }
+        
+        // VERBESSERTE IMPLEMENTIERUNG: Zuverlässige Prüfung auf sichtbare Quellenreferenzen
+        window.isSourceReferencesVisible = function(message) {
+            try {
+                if (!message) return false;
+                const messageId = typeof message === 'string' ? message : message.id;
+                if (!messageId) return false;
+                
+                return !!window.__sourceReferencesState.visibleSourceReferences[messageId];
+            } catch (error) {
+                return handleSourceReferenceError('isSourceReferencesVisible', error, false);
+            }
+        };
+        
+        // VERBESSERTE IMPLEMENTIERUNG: Robuste Toggle-Funktion mit vollständiger Fehlerbehandlung
+        window.toggleSourceReferences = function(message) {
+            try {
+                if (!message) return;
+                const messageId = typeof message === 'string' ? message : message.id;
+                if (!messageId) return;
+                
+                // Zustand umschalten
+                window.__sourceReferencesState.visibleSourceReferences[messageId] = 
+                    !window.__sourceReferencesState.visibleSourceReferences[messageId];
+                
+                // Event auslösen für andere Komponenten
+                const event = new CustomEvent('sourceReferencesToggled', { 
+                    detail: { 
+                        messageId: messageId, 
+                        visible: window.__sourceReferencesState.visibleSourceReferences[messageId] 
+                    } 
+                });
+                window.dispatchEvent(event);
+                
+                return window.__sourceReferencesState.visibleSourceReferences[messageId];
+            } catch (error) {
+                return handleSourceReferenceError('toggleSourceReferences', error, false);
+            }
+        };
+        
+        // VERBESSERTE IMPLEMENTIERUNG: Zuverlässiges Abrufen von Quellenreferenzen
+        window.getSourceReferences = function(message) {
+            try {
+                if (!message) return [];
+                
+                const messageId = typeof message === 'string' ? message : message.id;
+                if (!messageId) return [];
+                
+                // Quellen aus verschiedenen möglichen Quellen abrufen
+                const fromState = window.__sourceReferencesState.messageSourceReferences[messageId]?.sources || [];
+                const fromMessage = message.sources || message.metadata?.sourceReferences || [];
+                
+                return fromState.length > 0 ? fromState : fromMessage;
+            } catch (error) {
+                return handleSourceReferenceError('getSourceReferences', error, []);
+            }
+        };
+        
+        // VERBESSERTE IMPLEMENTIERUNG: Lade-Status-Überprüfung
+        window.isLoadingSourceReferences = function(message) {
+            try {
+                if (!message) return false;
+                
+                const messageId = typeof message === 'string' ? message : message.id;
+                if (!messageId) return false;
+                
+                return !!window.__sourceReferencesState.isLoadingReferences[messageId];
+            } catch (error) {
+                return handleSourceReferenceError('isLoadingSourceReferences', error, false);
+            }
+        };
+        
+        // VERBESSERTE IMPLEMENTIERUNG: Prüfung auf geöffnete Quellendetails
+        window.isSourceDetailOpen = function(message, sourceIndex) {
+            try {
+                if (!message) return false;
+                
+                const messageId = typeof message === 'string' ? message : message.id;
+                if (!messageId) return false;
+                
+                const key = `${messageId}-${sourceIndex}`;
+                return !!window.__sourceReferencesState.openSourceDetails[key];
+            } catch (error) {
+                return handleSourceReferenceError('isSourceDetailOpen', error, false);
+            }
+        };
+        
+        // VERBESSERTE IMPLEMENTIERUNG: Umschalten von Quellendetails
+        window.toggleSourceDetail = function(message, sourceIndex) {
+            try {
+                if (!message) return;
+                
+                const messageId = typeof message === 'string' ? message : message.id;
+                if (!messageId) return;
+                
+                const key = `${messageId}-${sourceIndex}`;
+                window.__sourceReferencesState.openSourceDetails[key] = 
+                    !window.__sourceReferencesState.openSourceDetails[key];
+                
+                // Event auslösen
+                const event = new CustomEvent('sourceDetailToggled', { 
+                    detail: { 
+                        messageId: messageId, 
+                        sourceIndex: sourceIndex,
+                        isOpen: window.__sourceReferencesState.openSourceDetails[key]
+                    } 
+                });
+                window.dispatchEvent(event);
+            } catch (error) {
+                handleSourceReferenceError('toggleSourceDetail', error);
+            }
+        };
+        
+        // Weitere Hilfsfunktionen für die Nachrichtenformatierung
+        window.formatMessage = function(text) {
+            try {
+                return text?.replace(/\n/g, '<br>') || '';
+            } catch (error) {
+                return handleSourceReferenceError('formatMessage', error, text || '');
+            }
+        };
+        
+        window.formatMessageWithSources = function(text) {
+            try {
+                if (!text) return '';
+                
+                // Einfache Quellenannotationen mit formatieren
+                let formattedText = text.replace(/\n/g, '<br>');
+                
+                // Quellenreferenzen im Format [[src:123]] finden und formatieren
+                formattedText = formattedText.replace(
+                    /\[\[src:(\w+)\]\]/g, 
+                    '<span class="source-reference" data-source-id="$1">[Quelle $1]</span>'
+                );
+                
+                return formattedText;
+            } catch (error) {
+                return handleSourceReferenceError('formatMessageWithSources', error, text || '');
+            }
+        };
+        
+        window.formatMotdContent = function(content) {
+            try {
+                return content?.replace(/\n/g, '<br>') || '';
+            } catch (error) {
+                return handleSourceReferenceError('formatMotdContent', error, content || '');
+            }
+        };
+        
+        // Hilfsfunktion um zu prüfen, ob eine Nachricht Quellenreferenzen enthält
+        window.hasSourceReferences = function(content) {
+            try {
+                if (!content) return false;
+                
+                return (
+                    /\(Quelle-\d+\)/.test(content) ||
+                    /Dokument \d+/.test(content) ||
+                    /Quelle(n)?:/.test(content) ||
+                    /Abschnitt/.test(content) ||
+                    /aus nscale/.test(content) ||
+                    content.includes("[[src:") ||
+                    /\[\[src:\w+\]\]/i.test(content)
+                );
+            } catch (error) {
+                return handleSourceReferenceError('hasSourceReferences', error, false);
+            }
+        };
+        
+        // Debug-Hilfsfunktion zur Überprüfung des Zustands der Quellenreferenzen
+        window.debugSourceReferences = function() {
+            console.log('[SOURCE-REFERENCES DEBUG] Aktueller Zustand:', {
+                visibleSourceReferences: window.__sourceReferencesState.visibleSourceReferences,
+                openSourceDetails: window.__sourceReferencesState.openSourceDetails,
+                messageSourceReferences: window.__sourceReferencesState.messageSourceReferences,
+                isLoadingReferences: window.__sourceReferencesState.isLoadingReferences
+            });
+            
+            const functions = [
+                'isSourceReferencesVisible',
+                'toggleSourceReferences',
+                'getSourceReferences',
+                'isLoadingSourceReferences',
+                'isSourceDetailOpen',
+                'toggleSourceDetail'
+            ];
+            
+            console.log('[SOURCE-REFERENCES DEBUG] Verfügbare Funktionen:', 
+                functions.reduce((acc, fn) => {
+                    acc[fn] = typeof window[fn] === 'function';
+                    return acc;
+                }, {})
+            );
+            
+            return 'SOURCE-REFERENCES DEBUG-INFO in der Konsole angezeigt';
+        };
     </script>
+    
+    <!-- Haupt-App-Bundle - dynamisch via Vite erzeugt -->
+    <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

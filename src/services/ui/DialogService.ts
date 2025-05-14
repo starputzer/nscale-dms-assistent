@@ -1,6 +1,6 @@
 import { ref, shallowRef, readonly } from "vue";
 import { v4 as uuidv4 } from "uuid";
-import { i18n } from "@/i18n";
+import { i18n } from "@/composables/useI18n";
 
 /**
  * Arten von Dialogen

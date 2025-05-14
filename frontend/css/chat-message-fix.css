@@ -1,0 +1,278 @@
+/* Verbessertes Styling für Chat Nachrichten */
+
+/* Container für Nachrichten */
+.message-container {
+    margin-bottom: 1.5rem;
+    animation: fade-in 0.3s ease-in-out;
+    max-width: 100%;
+}
+
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* User Message */
+.user-message {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.user-message-content {
+    background-color: var(--nscale-light-green, #e8f7ef);
+    border-radius: 12px;
+    border-top-right-radius: 4px;
+    padding: 0.75rem 1rem;
+    max-width: 80%;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    color: var(--nscale-dark-gray, #333333);
+}
+
+/* Assistant Message */
+.assistant-message {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.assistant-message-content {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    border-top-left-radius: 4px;
+    padding: 0.75rem 1rem;
+    max-width: 80%;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    color: var(--nscale-dark-gray, #333333);
+}
+
+/* Message Headers */
+.message-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.message-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.5rem;
+}
+
+.user-message-content .message-icon {
+    background-color: var(--nscale-green, #00a550);
+    color: white;
+}
+
+.assistant-message-content .message-icon {
+    background-color: #4b5563;
+    color: white;
+}
+
+.message-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.message-sender {
+    font-weight: 600;
+    color: #4b5563;
+}
+
+.message-time {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+/* Message Text with Markdown */
+.message-text {
+    line-height: 1.5;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.message-text p {
+    margin-bottom: 0.75rem;
+}
+
+.message-text p:last-child {
+    margin-bottom: 0;
+}
+
+.message-text pre {
+    background-color: #f3f4f6;
+    padding: 0.75rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+.message-text code {
+    font-family: monospace;
+    background-color: #f3f4f6;
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
+    font-size: 0.9rem;
+}
+
+.message-text ul, .message-text ol {
+    margin: 0.75rem 0;
+    padding-left: 1.5rem;
+}
+
+.message-text ul li, .message-text ol li {
+    margin-bottom: 0.3rem;
+}
+
+/* Feedback Controls */
+.message-actions {
+    margin-top: 0.75rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.message-feedback {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Source References Styling (integrated with messages) */
+.source-button, .feedback-button {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    border: none;
+    background-color: #f3f4f6;
+    color: #4b5563;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.source-button:hover, .feedback-button:hover {
+    background-color: #e5e7eb;
+    transform: translateY(-1px);
+}
+
+.feedback-button i {
+    font-size: 0.8rem;
+}
+
+.feedback-given {
+    background-color: #dcfce7;
+    color: #065f46;
+}
+
+/* Dark Mode Adjustments */
+.theme-dark .user-message-content {
+    background-color: var(--nscale-light-green, #003320);
+    color: #e5e7eb;
+    border: none;
+}
+
+.theme-dark .assistant-message-content {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #e5e7eb;
+}
+
+.theme-dark .message-sender {
+    color: #d1d5db;
+}
+
+.theme-dark .message-text pre,
+.theme-dark .message-text code {
+    background-color: #111827;
+    color: #d1d5db;
+}
+
+.theme-dark .source-button,
+.theme-dark .feedback-button {
+    background-color: #374151;
+    color: #d1d5db;
+}
+
+.theme-dark .source-button:hover,
+.theme-dark .feedback-button:hover {
+    background-color: #4b5563;
+}
+
+.theme-dark .feedback-given {
+    background-color: #065f46;
+    color: #d1fae5;
+}
+
+/* Contrast Mode Adjustments */
+.theme-contrast .user-message-content {
+    background-color: #333300;
+    color: #ffeb3b;
+    border: 2px solid #ffeb3b;
+}
+
+.theme-contrast .assistant-message-content {
+    background-color: #000000;
+    border: 2px solid #ffeb3b;
+    color: #ffffff;
+}
+
+.theme-contrast .message-sender {
+    color: #ffeb3b;
+}
+
+.theme-contrast .message-time {
+    color: #ffffff;
+}
+
+.theme-contrast .message-text pre,
+.theme-contrast .message-text code {
+    background-color: #111100;
+    color: #ffffff;
+    border: 1px solid #ffeb3b;
+}
+
+.theme-contrast .source-button,
+.theme-contrast .feedback-button {
+    background-color: #111100;
+    color: #ffeb3b;
+    border: 1px solid #ffeb3b;
+}
+
+.theme-contrast .source-button:hover,
+.theme-contrast .feedback-button:hover {
+    background-color: #333300;
+}
+
+.theme-contrast .feedback-given {
+    background-color: #ffeb3b;
+    color: #000000;
+}
+
+/* Ensure messages are visible even with minimal styling */
+.user-message-content,
+.assistant-message-content {
+    min-width: 200px;
+    min-height: 40px;
+}
+
+/* Ensure message spacing */
+.message-container + .message-container {
+    margin-top: 16px;
+}
+
+/* Fix for empty messages */
+.message-text:empty::after {
+    content: "[Leere Nachricht]";
+    color: #9ca3af;
+    font-style: italic;
+}

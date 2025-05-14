@@ -1,0 +1,79 @@
+/* MOTD (Message of the Day) Styling */
+
+.motd-container {
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid;
+    position: relative;
+    animation: fadeIn 0.5s ease-out;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.motd-content {
+    display: flex;
+    align-items: flex-start;
+}
+
+.motd-icon {
+    margin-right: 0.75rem;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+}
+
+.motd-text {
+    flex: 1;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.motd-text p {
+    margin: 0.5rem 0;
+}
+
+.motd-text strong {
+    font-weight: 600;
+}
+
+.motd-dismiss {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: transparent;
+    border: none;
+    color: inherit;
+    opacity: 0.6;
+    cursor: pointer;
+    padding: 0.25rem;
+    transition: opacity 0.2s;
+}
+
+.motd-dismiss:hover {
+    opacity: 1;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Dark theme adjustments */
+.theme-dark .motd-container {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Make sure MOTD only appears where it should */
+.motd-container {
+    display: none; /* Hidden by default */
+}
+
+/* Only show in chat view with specific conditions */
+.activeView-chat .motd-container[data-show-in-chat="true"][data-dismissed="false"] {
+    display: block; /* Show in chat view if showInChat is true and not dismissed */
+}
+
+/* Only show in new chat sessions */
+.new-session .motd-container[data-show-on-startup="true"][data-dismissed="false"] {
+    display: block; /* Show in new sessions if showOnStartup is true and not dismissed */
+}

@@ -6,11 +6,11 @@
  */
 
 import { ref, watch, toRaw, computed, nextTick } from "vue";
-import { EnhancedEventBus } from "./enhancedEventBus";
+import { OptimizedEventBus } from "./enhancedEventBus";
 import { MemoryManager } from "./memoryManager";
 import { PerformanceMonitor } from "./performanceMonitor";
 import { EnhancedSelfHealing } from "./enhancedSelfHealing";
-import { Logger, LogLevel } from "../logger";
+import { createLogger, LogLevel } from "../logger";
 import { BridgeStatusManager } from "../statusManager";
 import { BridgeErrorState } from "../types";
 
@@ -106,12 +106,12 @@ const DEFAULT_CONFIG: SelectiveSyncConfig = {
  */
 export class SelectiveChatBridge {
   // Kernkomponenten
-  private eventBus: EnhancedEventBus;
+  private eventBus: OptimizedEventBus;
   private memoryManager?: MemoryManager;
   private performanceMonitor?: PerformanceMonitor;
   private selfHealing?: EnhancedSelfHealing;
   private statusManager: BridgeStatusManager;
-  private logger: Logger;
+  private logger;
 
   // Konfiguration
   private config: SelectiveSyncConfig;
@@ -157,7 +157,7 @@ export class SelectiveChatBridge {
    * Konstruktor
    */
   constructor(
-    eventBus: EnhancedEventBus,
+    eventBus: OptimizedEventBus,
     statusManager: BridgeStatusManager,
     config: Partial<SelectiveSyncConfig> = {},
     memoryManager?: MemoryManager,
@@ -172,10 +172,7 @@ export class SelectiveChatBridge {
     this.selfHealing = selfHealing;
 
     // Logger initialisieren
-    this.logger = new Logger(
-      "SelectiveChatBridge",
-      this.config.diagnosticsLevel,
-    );
+    this.logger = createLogger("SelectiveChatBridge");
 
     this.logger.info(
       "SelectiveChatBridge initialisiert mit Konfiguration",
@@ -1201,12 +1198,27 @@ export class SelectiveChatBridge {
   }
 
   /**
-   * Eindeutige ID generieren
+   * Eindeutige ID generieren im UUID-ähnlichen Format
+   * @returns Eindeutige ID als String
    */
   private generateId(): string {
-    return (
-      Date.now().toString(36) + Math.random().toString(36).substring(2, 10)
-    );
+    // Implementierung einer UUID v4-ähnlichen Funktion, die keine externen Abhängigkeiten erfordert
+    const hexChars = '0123456789abcdef';
+    let uuid = '';
+
+    for (let i = 0; i < 36; i++) {
+      if (i === 8 || i === 13 || i === 18 || i === 23) {
+        uuid += '-';
+      } else if (i === 14) {
+        uuid += '4'; // Version 4 UUID
+      } else if (i === 19) {
+        uuid += hexChars[(Math.random() * 4 | 0) + 8]; // Variant bits
+      } else {
+        uuid += hexChars[Math.random() * 16 | 0];
+      }
+    }
+
+    return uuid;
   }
 
   /**
@@ -1242,13 +1254,13 @@ export class SelectiveChatBridge {
     }
 
     // Event-Listener entfernen
-    this.eventBus.off("vueChat:messagesUpdated", this.handleMessagesUpdated);
-    this.eventBus.off("vueChat:sessionCreated", this.handleSessionCreated);
-    this.eventBus.off("vueChat:sessionDeleted", this.handleSessionDeleted);
-    this.eventBus.off("vueChat:sessionsUpdated", this.handleSessionsUpdated);
-    this.eventBus.off("vueChat:statusUpdated", this.handleStatusUpdated);
-    this.eventBus.off("vueChat:error", this.handleVueError);
-    this.eventBus.off("vueChat:pingVanilla", this.handlePingRequest);
+    this.eventBus.off("vueChat:messagesUpdated", this.handleMessagesUpdated.bind(this));
+    this.eventBus.off("vueChat:sessionCreated", this.handleSessionCreated.bind(this));
+    this.eventBus.off("vueChat:sessionDeleted", this.handleSessionDeleted.bind(this));
+    this.eventBus.off("vueChat:sessionsUpdated", this.handleSessionsUpdated.bind(this));
+    this.eventBus.off("vueChat:statusUpdated", this.handleStatusUpdated.bind(this));
+    this.eventBus.off("vueChat:error", this.handleVueError.bind(this));
+    this.eventBus.off("vueChat:pingVanilla", this.handlePingRequest.bind(this));
 
     // Daten löschen
     this.sessions.value.clear();
@@ -1276,18 +1288,47 @@ export class SelectiveChatBridge {
 declare global {
   interface Window {
     nScaleChat?: {
+      /**
+       * Callback für aktualisierte Nachrichten
+       * @param messages Die aktualisierten Nachrichten
+       */
       onMessagesUpdated?: (messages: ChatMessage[]) => void;
+
+      /**
+       * Callback für Statusaktualisierungen
+       * @param status Der aktuelle Status
+       */
       onStatusUpdated?: (status: {
         isLoading: boolean;
         isSending: boolean;
         hasStreamingMessage: boolean;
       }) => void;
+
+      /**
+       * Callback für aktualisierte Sitzungen
+       * @param data Die Sitzungsdaten
+       */
       onSessionsUpdated?: (data: {
         sessions: ChatSession[];
         activeSessionId: string | null;
       }) => void;
+
+      /**
+       * Callback für erstellte Sitzungen
+       * @param sessionId Die ID der erstellten Sitzung
+       */
       onSessionCreated?: (sessionId: string) => void;
+
+      /**
+       * Callback für gelöschte Sitzungen
+       * @param sessionId Die ID der gelöschten Sitzung
+       */
       onSessionDeleted?: (sessionId: string) => void;
+
+      /**
+       * Callback für Fehler
+       * @param data Die Fehlerdaten
+       */
       onError?: (data: { action: string; error: string }) => void;
     };
   }
@@ -1297,7 +1338,7 @@ declare global {
  * Factory-Funktion für SelectiveChatBridge
  */
 export function createSelectiveChatBridge(
-  eventBus: EnhancedEventBus,
+  eventBus: OptimizedEventBus,
   statusManager: BridgeStatusManager,
   config: Partial<SelectiveSyncConfig> = {},
   memoryManager?: MemoryManager,

@@ -5,28 +5,28 @@
         {{ t("admin.motd.title", "Message of the Day Editor") }}
       </h2>
       <div class="admin-motd__actions">
-        <BaseButton
+        <Button
           variant="primary"
           :disabled="!hasUnsavedChanges"
           @click="saveMotd"
           :loading="loading"
         >
           {{ t("admin.motd.save", "Speichern") }}
-        </BaseButton>
-        <BaseButton
+        </Button>
+        <Button
           variant="secondary"
           :disabled="!hasUnsavedChanges"
           @click="resetMotd"
         >
           {{ t("admin.motd.reset", "Zurücksetzen") }}
-        </BaseButton>
-        <BaseButton variant="outline" @click="togglePreview">
+        </Button>
+        <Button variant="outline" @click="togglePreview">
           {{
             previewMode
               ? t("admin.motd.edit", "Bearbeiten")
               : t("admin.motd.preview", "Vorschau")
           }}
-        </BaseButton>
+        </Button>
       </div>
     </div>
 
@@ -49,7 +49,7 @@
           </legend>
 
           <div class="admin-motd__field">
-            <BaseCheckbox
+            <Toggle
               v-model="motdConfig.enabled"
               :label="t('admin.motd.enabled', 'Aktiviert')"
             />
@@ -59,7 +59,7 @@
             <label class="admin-motd__label">{{
               t("admin.motd.format", "Format")
             }}</label>
-            <BaseSelect v-model="motdConfig.format" :options="formatOptions" />
+            <Card v-model="motdConfig.format" :options="formatOptions" />
           </div>
         </fieldset>
 
@@ -72,28 +72,28 @@
             <label class="admin-motd__label">{{
               t("admin.motd.position", "Position")
             }}</label>
-            <BaseSelect
+            <Card
               v-model="motdConfig.display.position"
               :options="positionOptions"
             />
           </div>
 
           <div class="admin-motd__field">
-            <BaseCheckbox
+            <Toggle
               v-model="motdConfig.display.dismissible"
               :label="t('admin.motd.dismissible', 'Schließbar')"
             />
           </div>
 
           <div class="admin-motd__field">
-            <BaseCheckbox
+            <Toggle
               v-model="motdConfig.display.showOnStartup"
               :label="t('admin.motd.showOnStartup', 'Beim Start anzeigen')"
             />
           </div>
 
           <div class="admin-motd__field">
-            <BaseCheckbox
+            <Toggle
               v-model="motdConfig.display.showInChat"
               :label="t('admin.motd.showInChat', 'Im Chat anzeigen')"
             />
@@ -115,7 +115,7 @@
                 v-model="motdConfig.style.backgroundColor"
                 class="admin-motd__color-input"
               />
-              <BaseInput
+              <Input
                 v-model="motdConfig.style.backgroundColor"
                 class="admin-motd__color-value"
               />
@@ -132,7 +132,7 @@
                 v-model="motdConfig.style.borderColor"
                 class="admin-motd__color-input"
               />
-              <BaseInput
+              <Input
                 v-model="motdConfig.style.borderColor"
                 class="admin-motd__color-value"
               />
@@ -149,7 +149,7 @@
                 v-model="motdConfig.style.textColor"
                 class="admin-motd__color-input"
               />
-              <BaseInput
+              <Input
                 v-model="motdConfig.style.textColor"
                 class="admin-motd__color-value"
               />
@@ -160,7 +160,7 @@
             <label class="admin-motd__label">{{
               t("admin.motd.icon", "Icon")
             }}</label>
-            <BaseSelect
+            <Card
               v-model="motdConfig.style.iconClass"
               :options="iconOptions"
             />
@@ -173,7 +173,7 @@
           </legend>
 
           <div class="admin-motd__field">
-            <BaseCheckbox
+            <Toggle
               v-model="scheduling.enabled"
               :label="t('admin.motd.schedulingEnabled', 'Zeitplan aktivieren')"
             />
@@ -184,21 +184,21 @@
               <label class="admin-motd__label">{{
                 t("admin.motd.startDate", "Startdatum")
               }}</label>
-              <BaseInput type="datetime-local" v-model="scheduling.startDate" />
+              <Input type="datetime-local" v-model="scheduling.startDate" />
             </div>
 
             <div class="admin-motd__field">
               <label class="admin-motd__label">{{
                 t("admin.motd.endDate", "Enddatum")
               }}</label>
-              <BaseInput type="datetime-local" v-model="scheduling.endDate" />
+              <Input type="datetime-local" v-model="scheduling.endDate" />
             </div>
 
             <div class="admin-motd__field">
               <label class="admin-motd__label">{{
                 t("admin.motd.audience", "Zielgruppe")
               }}</label>
-              <BaseSelect
+              <Card
                 v-model="scheduling.audience"
                 :options="audienceOptions"
               />
@@ -232,13 +232,13 @@
                 }}</span>
                 <span class="admin-motd__version-user">{{ version.user }}</span>
               </div>
-              <BaseButton
+              <Button
                 size="small"
                 variant="outline"
                 @click="restoreVersion(version)"
               >
                 {{ t("admin.motd.restore", "Wiederherstellen") }}
-              </BaseButton>
+              </Button>
             </div>
           </div>
         </fieldset>
@@ -385,11 +385,11 @@ import type { MotdConfig } from "@/types/admin";
 
 // UI Components
 import {
-  BaseButton,
-  BaseInput,
-  BaseSelect,
-  BaseCheckbox,
+  Button,
+  Input,
+  Card,
   Alert,
+  Toggle,
 } from "@/components/ui/base";
 
 // i18n

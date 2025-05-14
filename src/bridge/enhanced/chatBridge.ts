@@ -336,7 +336,7 @@ export class ChatBridge {
         reject(new Error("Timeout beim Löschen der Session"));
       }, 5000);
 
-      const handleSessionDeleted = (data: { sessionId: string }) => {
+      const handleSessionDeleted = () => {
         clearTimeout(timeout);
         this.bridge.off("vueChat:sessionDeleted", handleSessionDeleted);
 
@@ -376,8 +376,10 @@ export class ChatBridge {
 
         // Cache-Größe kontrollieren
         if (this.messageCache.size > this.config.messageCacheSize) {
-          const oldestKey = this.messageCache.keys().next().value;
-          this.messageCache.delete(oldestKey);
+          const oldestEntry = this.messageCache.keys().next();
+          if (!oldestEntry.done && oldestEntry.value) {
+            this.messageCache.delete(oldestEntry.value);
+          }
         }
       }
     }
@@ -446,8 +448,10 @@ export class ChatBridge {
             this.sessionCache.delete(oldestKey);
           } else {
             // Wenn alle angepinnt sind, die älteste entfernen
-            oldestKey = this.sessionCache.keys().next().value;
-            this.sessionCache.delete(oldestKey);
+            const oldestEntry = this.sessionCache.keys().next();
+            if (!oldestEntry.done && oldestEntry.value) {
+              this.sessionCache.delete(oldestEntry.value);
+            }
           }
         }
       }
@@ -550,7 +554,7 @@ export class ChatBridge {
         resolve({ connected: false, latency: -1 });
       }, 1000);
 
-      const handlePong = (data: { timestamp: number; latency: number }) => {
+      const handlePong = () => {
         clearTimeout(timeout);
         this.bridge.off("vanillaChat:pong", handlePong);
 

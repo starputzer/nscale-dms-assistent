@@ -6,7 +6,7 @@
  * den modernen Vue 3 Komponenten mit Pinia-Stores.
  */
 
-import bridgePlugin from "./index";
+import { initBridge } from "./index";
 
 /**
  * Globale Feature-Flags für die Bridge-Funktionalität
@@ -55,7 +55,15 @@ export function installBridge(
 
   // Bridge nur installieren, wenn aktiviert
   if (BRIDGE_CONFIG.ENABLED) {
-    app.use(bridgePlugin);
+    // Initialisiere die Bridge
+    initBridge({
+      debug: BRIDGE_CONFIG.DEBUG,
+      modules: {
+        auth: { enabled: BRIDGE_CONFIG.AUTH_ENABLED },
+        sessions: { enabled: BRIDGE_CONFIG.SESSIONS_ENABLED },
+        ui: { enabled: BRIDGE_CONFIG.UI_ENABLED }
+      }
+    });
 
     if (BRIDGE_CONFIG.DEBUG) {
       console.log("Bridge in Vue-App installiert");

@@ -30,11 +30,16 @@
     <link rel="stylesheet" href="/css/settings.css?v=20250508214949">
     <link rel="stylesheet" href="/css/source-references.css?v=20250508214949">
     <link rel="stylesheet" href="/frontend/css/ab-tests.css?v=20250511">
+    <!-- Unified nscale Theme System - konsolidierte Styling-Fixes -->
+    <link rel="stylesheet" href="/frontend/css/nscale-theme-system.css?v=20250511">
     <!-- Haupt-JavaScript-Datei direkt einbinden - definitiv als Modul, aber ohne CSS-Importe -->
     <script type="module" src="/js/main.js?v=20250508214949"></script>
 
     <!-- Formular-Fix für korrekte Einreichung ohne Seitenneuladen -->
     <script type="module" src="/frontend/js/form-fix.js?v=20250511"></script>
+
+    <!-- Vue-Legacy Bridge für verbesserte Integration zwischen Vue 3 SFCs und Legacy-Code -->
+    <script type="module" src="/frontend/js/vue-legacy-bridge.js?v=20250511"></script>
 
     <!-- A/B Testing System -->
     <script type="module" src="/frontend/js/utils/uuid-util.js?v=20250511"></script>
@@ -50,7 +55,7 @@
         document.head.appendChild(fallbackScript);
     </script>
 </head>
-<body class="min-h-screen bg-gray-50">
+<body class="min-h-screen bg-gray-50" :class="['activeView-' + activeView]">
     <div id="app" class="h-screen flex flex-col">
         <!-- Vue 3 Mount-Punkt -->
         <div id="vue-dms-app"></div>
@@ -96,14 +101,14 @@
                             </div>
                             
                             <div class="text-sm">
-                                <a href="#" @click.prevent="authMode = 'reset-password'" class="font-medium text-indigo-600 hover:text-indigo-500">
+                                <a href="#" @click.prevent="authMode = 'reset-password'" class="font-medium text-nscale hover:text-nscale-dark">
                                     Passwort vergessen?
                                 </a>
                             </div>
                         </div>
                         
                         <div>
-                            <button type="submit" :disabled="loading" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <button type="submit" :disabled="loading" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white nscale-btn-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                                 <span v-if="loading">Wird angemeldet...</span>
                                 <span v-else>Anmelden</span>
                             </button>
@@ -113,7 +118,7 @@
                     <div class="mt-6 text-center">
                         <p class="text-sm text-gray-600">
                             Noch kein Konto?
-                            <a href="#" @click.prevent="authMode = 'register'" class="font-medium text-indigo-600 hover:text-indigo-500">
+                            <a href="#" @click.prevent="authMode = 'register'" class="font-medium text-nscale hover:text-nscale-dark">
                                 Registrieren
                             </a>
                         </p>
@@ -139,7 +144,7 @@
                         </div>
                         
                         <div>
-                            <button type="submit" :disabled="loading" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <button type="submit" :disabled="loading" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white nscale-btn-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                                 <span v-if="loading">Wird registriert...</span>
                                 <span v-else>Registrieren</span>
                             </button>
@@ -149,7 +154,7 @@
                     <div class="mt-6 text-center">
                         <p class="text-sm text-gray-600">
                             Bereits ein Konto?
-                            <a href="#" @click.prevent="authMode = 'login'" class="font-medium text-indigo-600 hover:text-indigo-500">
+                            <a href="#" @click.prevent="authMode = 'login'" class="font-medium text-nscale hover:text-nscale-dark">
                                 Anmelden
                             </a>
                         </p>
@@ -174,7 +179,7 @@
                         </div>
                         
                         <div>
-                            <button type="submit" :disabled="loading" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <button type="submit" :disabled="loading" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white nscale-btn-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                                 <span v-if="loading">Wird zurückgesetzt...</span>
                                 <span v-else>Passwort zurücksetzen</span>
                             </button>
@@ -183,7 +188,7 @@
                     
                     <div class="mt-6 text-center">
                         <p class="text-sm text-gray-600">
-                            <a href="#" @click.prevent="authMode = 'login'" class="font-medium text-indigo-600 hover:text-indigo-500">
+                            <a href="#" @click.prevent="authMode = 'login'" class="font-medium text-nscale hover:text-nscale-dark">
                                 Zurück zum Login
                             </a>
                         </p>
@@ -206,11 +211,11 @@
                     
                     <div class="flex items-center space-x-4">
                         <!-- Admin-Toggle (nur für Admins sichtbar) -->
-                        <button v-if="userRole === 'admin'" @click="toggleAdminView" class="text-indigo-600 hover:text-indigo-800">
+                        <button v-if="userRole === 'admin'" @click="toggleAdminView" class="text-nscale hover:text-nscale-dark">
                             <i class="fas" :class="activeView === 'chat' ? 'fa-tools' : 'fa-comments'"></i>
                             <span class="ml-1 hidden md:inline">{{ activeView === 'chat' ? 'Admin' : 'Chat' }}</span>
                         </button>
-                        
+
                         <!-- Einstellungen-Toggle -->
                         <button @click="toggleView" class="text-gray-500 hover:text-gray-700">
                             <i class="fas fa-cog"></i>
@@ -226,11 +231,17 @@
             </header>
             
             <!-- MOTD (Message of the Day) -->
-            <div v-if="motd && motd.enabled && !motdDismissed && motd.display.showInChat" class="motd-container" :style="{
-                backgroundColor: motd.style.backgroundColor || '#fff3cd',
-                borderColor: motd.style.borderColor || '#ffeeba',
-                color: motd.style.textColor || '#856404'
-            }">
+            <div v-if="motd && motd.enabled"
+                 class="motd-container"
+                 :class="{ 'new-session': messages.length === 0 }"
+                 :data-show-in-chat="motd.display.showInChat"
+                 :data-show-on-startup="motd.display.showOnStartup"
+                 :data-dismissed="motdDismissed"
+                 :style="{
+                    backgroundColor: motd.style.backgroundColor || '#fff3cd',
+                    borderColor: motd.style.borderColor || '#ffeeba',
+                    color: motd.style.textColor || '#856404'
+                }">
                 <div class="motd-content">
                     <div class="motd-icon" v-if="motd.style.iconClass">
                         <i :class="'fas fa-' + motd.style.iconClass"></i>
@@ -250,7 +261,7 @@
                     <div class="w-64 bg-gray-50 border-r border-gray-200 flex flex-col h-full sessions-sidebar">
                         <div class="p-4 border-b border-gray-200 flex justify-between items-center">
                             <h2 class="font-medium text-gray-700">Unterhaltungen</h2>
-                            <button @click="startNewSession" class="text-indigo-600 hover:text-indigo-800" title="Neue Unterhaltung starten">
+                            <button @click="startNewSession" class="text-nscale hover:text-nscale-dark" title="Neue Unterhaltung starten">
                                 <i class="fas fa-plus-circle"></i>
                             </button>
                         </div>
@@ -260,14 +271,14 @@
                                 Keine Unterhaltungen vorhanden
                             </div>
                             
-                            <div v-for="session in sessions" :key="session.id" 
+                            <div v-for="session in sessions" :key="session.id"
                                  @click="loadSession(session.id)"
-                                 class="session-item p-2 mb-1 rounded hover:bg-gray-200 cursor-pointer flex justify-between items-center"
-                                 :class="{ 'bg-indigo-100': currentSessionId === session.id }">
+                                 class="nscale-session-item p-2 mb-1 rounded cursor-pointer flex justify-between items-center"
+                                 :class="{ 'active': currentSessionId === session.id }">
                                 <div class="truncate">
                                     {{ session.title }}
                                 </div>
-                                <button @click.stop="deleteSession(session.id)" class="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100">
+                                <button @click.stop="deleteSession(session.id)" class="session-delete-button text-red-500 hover:text-red-700">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </div>
@@ -381,11 +392,11 @@
                                 <input type="text"
                                        v-model="question"
                                        :disabled="isLoading || isStreaming"
-                                       class="flex-1 rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                       class="nscale-input flex-1 rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                                        placeholder="Stellen Sie eine Frage zu nscale...">
                                 <button type="submit"
                                         :disabled="isLoading || isStreaming || !question.trim()"
-                                        class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md px-4 py-2 flex items-center justify-center">
+                                        class="nscale-btn-primary rounded-md px-4 py-2 flex items-center justify-center">
                                     <i class="fas fa-paper-plane" v-if="!isLoading && !isStreaming"></i>
                                     <i class="fas fa-spinner fa-spin" v-else></i>
                                 </button>
@@ -442,65 +453,66 @@
                             <!-- Benutzer-Verwaltung -->
                             <div v-if="adminTab === 'users'">
                                 <!-- Benutzer Tab Inhalt -->
-                                <div class="admin-table-container">
-                                    <table class="admin-table">
-                                        <thead>
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>E-Mail</th>
-                                                <th>Rolle</th>
-                                                <th>Status</th>
-                                                <th>Aktionen</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr v-for="user in usersList" :key="user.id">
-                                                <td>{{ user.id }}</td>
-                                                <td>{{ user.email }}</td>
-                                                <td>
-                                                    <span class="badge" :class="user.role">{{ user.role }}</span>
-                                                </td>
-                                                <td>
-                                                    <span class="badge" :class="user.is_active ? 'active' : 'inactive'">
-                                                        {{ user.is_active ? 'Aktiv' : 'Inaktiv' }}
-                                                    </span>
-                                                </td>
-                                                <td class="actions">
-                                                    <button @click="toggleUserRole(user)" class="btn small primary" title="Rolle ändern">
-                                                        <i class="fas fa-user-shield"></i>
-                                                    </button>
-                                                    <button @click="toggleUserStatus(user)" class="btn small" :class="user.is_active ? 'danger' : 'success'" :title="user.is_active ? 'Deaktivieren' : 'Aktivieren'">
-                                                        <i class="fas" :class="user.is_active ? 'fa-user-slash' : 'fa-user-check'"></i>
-                                                    </button>
-                                                    <button @click="confirmDeleteUser(user)" class="btn small danger" title="Löschen">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                <div class="admin-content-area">
+                                    <h2 class="admin-section-header">Benutzerverwaltung</h2>
+                                    <div class="admin-table-container">
+                                        <table class="admin-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>E-Mail</th>
+                                                    <th>Rolle</th>
+                                                    <th>Status</th>
+                                                    <th>Aktionen</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="user in usersList" :key="user.id">
+                                                    <td>{{ user.id }}</td>
+                                                    <td>{{ user.email }}</td>
+                                                    <td>
+                                                        <span class="badge" :class="user.role">{{ user.role }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge" :class="user.is_active ? 'active' : 'inactive'">
+                                                            {{ user.is_active ? 'Aktiv' : 'Inaktiv' }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="actions">
+                                                        <button @click="toggleUserRole(user)" class="admin-btn admin-btn-primary" title="Rolle ändern">
+                                                            <i class="fas fa-user-shield"></i>
+                                                        </button>
+                                                        <button @click="toggleUserStatus(user)" class="admin-btn" :class="user.is_active ? 'admin-btn-danger' : 'admin-btn-secondary'" :title="user.is_active ? 'Deaktivieren' : 'Aktivieren'">
+                                                            <i class="fas" :class="user.is_active ? 'fa-user-slash' : 'fa-user-check'"></i>
+                                                        </button>
+                                                        <button @click="confirmDeleteUser(user)" class="admin-btn admin-btn-danger" title="Löschen">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                             
                             <!-- System-Überwachung -->
                             <div v-else-if="adminTab === 'system'">
                                 <!-- System Tab Inhalt -->
-                                <div class="admin-panels">
-                                    <div class="admin-panel">
-                                        <h3 class="panel-title">System-Status</h3>
-                                        <div class="grid grid-cols-2 gap-4">
-                                            <div class="status-card" v-for="(stat, index) in systemStats" :key="index">
-                                                <div class="stat-title">{{ stat.name }}</div>
-                                                <div class="stat-value" :class="stat.status">{{ stat.value }}</div>
-                                            </div>
+                                <div class="admin-content-area">
+                                    <h2 class="admin-section-header">System-Status</h2>
+                                    <div class="admin-cards-grid">
+                                        <div class="admin-card" v-for="(stat, index) in systemStats" :key="index">
+                                            <div class="stat-title">{{ stat.name }}</div>
+                                            <div class="stat-value" :class="stat.status">{{ stat.value }}</div>
                                         </div>
                                     </div>
-                                    
-                                    <div class="admin-panel">
-                                        <h3 class="panel-title">Nutzungsstatistiken</h3>
-                                        <div class="stats-container">
-                                            <canvas id="usageChart" height="200"></canvas>
-                                        </div>
+                                </div>
+
+                                <div class="admin-content-area">
+                                    <h2 class="admin-section-header">Nutzungsstatistiken</h2>
+                                    <div class="stats-container">
+                                        <canvas id="usageChart" height="200"></canvas>
                                     </div>
                                 </div>
                             </div>
@@ -508,50 +520,56 @@
                             <!-- Feedback-Analyse -->
                             <div v-else-if="adminTab === 'feedback'">
                                 <!-- Feedback Tab Inhalt -->
-                                <div class="admin-panels">
-                                    <div class="admin-panel">
-                                        <h3 class="panel-title">Feedback-Übersicht</h3>
-                                        <div class="feedback-summary">
-                                            <div class="feedback-stat positive">
-                                                <i class="fas fa-thumbs-up"></i>
-                                                <div>
-                                                    <div class="stat-value">{{ feedbackStats.positive }}</div>
-                                                    <div class="stat-label">Positiv</div>
+                                <div class="admin-content-area">
+                                    <h2 class="admin-section-header">Feedback-Übersicht</h2>
+                                    <div class="feedback-summary">
+                                        <div class="admin-cards-grid">
+                                            <div class="admin-card">
+                                                <div class="feedback-stat positive">
+                                                    <i class="fas fa-thumbs-up"></i>
+                                                    <div>
+                                                        <div class="stat-value">{{ feedbackStats.positive }}</div>
+                                                        <div class="stat-label">Positiv</div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div class="feedback-stat negative">
-                                                <i class="fas fa-thumbs-down"></i>
-                                                <div>
-                                                    <div class="stat-value">{{ feedbackStats.negative }}</div>
-                                                    <div class="stat-label">Negativ</div>
+                                            <div class="admin-card">
+                                                <div class="feedback-stat negative">
+                                                    <i class="fas fa-thumbs-down"></i>
+                                                    <div>
+                                                        <div class="stat-value">{{ feedbackStats.negative }}</div>
+                                                        <div class="stat-label">Negativ</div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div class="feedback-stat total">
-                                                <i class="fas fa-comment"></i>
-                                                <div>
-                                                    <div class="stat-value">{{ feedbackStats.total }}</div>
-                                                    <div class="stat-label">Insgesamt</div>
+                                            <div class="admin-card">
+                                                <div class="feedback-stat total">
+                                                    <i class="fas fa-comment"></i>
+                                                    <div>
+                                                        <div class="stat-value">{{ feedbackStats.total }}</div>
+                                                        <div class="stat-label">Insgesamt</div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    
-                                    <div class="admin-panel">
-                                        <h3 class="panel-title">Neuestes Feedback</h3>
-                                        <div class="feedback-items">
-                                            <div v-for="(item, index) in recentFeedback" :key="index" class="feedback-item" :class="item.type">
-                                                <div class="feedback-header">
-                                                    <div class="feedback-type">
-                                                        <i class="fas" :class="item.type === 'positive' ? 'fa-thumbs-up' : 'fa-thumbs-down'"></i>
-                                                        <span>{{ item.type === 'positive' ? 'Positiv' : 'Negativ' }}</span>
-                                                    </div>
-                                                    <div class="feedback-date">{{ new Date(item.timestamp).toLocaleString() }}</div>
+                                </div>
+
+                                <div class="admin-content-area">
+                                    <h2 class="admin-section-header">Neuestes Feedback</h2>
+                                    <div class="feedback-items">
+                                        <div v-for="(item, index) in recentFeedback" :key="index" class="feedback-item" :class="item.type">
+                                            <div class="feedback-header">
+                                                <div class="feedback-type">
+                                                    <i class="fas" :class="item.type === 'positive' ? 'fa-thumbs-up' : 'fa-thumbs-down'"></i>
+                                                    <span>{{ item.type === 'positive' ? 'Positiv' : 'Negativ' }}</span>
                                                 </div>
-                                                <div class="feedback-content">
-                                                    <div class="feedback-message">{{ item.message }}</div>
-                                                    <div v-if="item.comment" class="feedback-comment">
-                                                        <strong>Kommentar:</strong> {{ item.comment }}
-                                                    </div>
+                                                <div class="feedback-date">{{ new Date(item.timestamp).toLocaleString() }}</div>
+                                            </div>
+                                            <div class="feedback-content">
+                                                <div class="feedback-message">{{ item.message }}</div>
+                                                <div v-if="item.comment" class="feedback-comment">
+                                                    <strong>Kommentar:</strong> {{ item.comment }}
                                                 </div>
                                             </div>
                                         </div>

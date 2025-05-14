@@ -210,8 +210,26 @@ export class FallbackManager {
   private recoveryTimers: Map<string, number> = new Map();
   /** Timer-ID für Status-Check */
   private statusCheckTimerId: number | null = null;
-  /** Feature-Toggles-Store */
-  private store = useFeatureTogglesStore();
+  /** Feature-Toggles-Store (lazy-loaded) */
+  private _store: ReturnType<typeof useFeatureTogglesStore> | null = null;
+
+  /** Getter für den Store, der bei Bedarf initialisiert wird */
+  private get store(): ReturnType<typeof useFeatureTogglesStore> {
+    try {
+      if (!this._store) {
+        this._store = useFeatureTogglesStore();
+      }
+      return this._store;
+    } catch (err) {
+      console.warn('Feature-Toggles-Store nicht verfügbar, verwende Fallback-Konfiguration', err);
+      // Return a minimal mock store with required methods
+      return {
+        toggleFeature: () => {},
+        isFeatureEnabled: () => true,
+        getFeatureConfig: () => ({}),
+      } as any;
+    }
+  }
 
   /**
    * Konstruktor

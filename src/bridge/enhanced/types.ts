@@ -5,6 +5,53 @@
  * Komponenten der Bridge verwendet werden.
  */
 
+// Minimal versions of the type definitions we need
+export interface SimpleChatSession {
+  id: string;
+  title: string;
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: any;
+}
+
+export interface SimpleChatMessage {
+  id: string;
+  sessionId: string;
+  content: string;
+  role: string;
+  timestamp: string | number;
+  [key: string]: any;
+}
+
+export type ChatSession = SimpleChatSession;
+export type ChatMessage = SimpleChatMessage;
+
+// Simplified store interfaces
+export interface IAuthStore {
+  isAuthenticated: boolean;
+  token: string | null;
+  user: any | null;
+  [key: string]: any;
+}
+
+export interface ISessionsStore {
+  sessions: ChatSession[];
+  currentSessionId: string | null;
+  messages: Record<string, ChatMessage[]>;
+  [key: string]: any;
+}
+
+export interface IUIStore {
+  darkMode: boolean;
+  sidebar: { isOpen: boolean };
+  [key: string]: any;
+}
+
+export interface IFeatureTogglesStore {
+  features: Record<string, boolean>;
+  [key: string]: any;
+}
+
 /**
  * Log-Level für das Logging-System
  */
@@ -111,7 +158,17 @@ export interface StateManager {
  * EventBus-Interface
  */
 export interface EventBus {
+  /**
+   * Emits an event with data
+   * @param eventName Name of the event to emit
+   * @param data Data to pass to listeners
+   */
   emit(eventName: string, data: any): void;
+  /**
+   * Emits an event without data (for compatibility with existing code)
+   * @param eventName Name of the event to emit
+   */
+  emit(eventName: string): void;
   on(
     eventName: string,
     callback: Function,
@@ -177,8 +234,8 @@ export interface SessionBridgeAPI {
   loadSession(sessionId: string): Promise<boolean>;
   deleteSession(sessionId: string): Promise<boolean>;
   sendMessage(sessionId: string, content: string): Promise<void>;
-  getCurrentSession(): any;
-  getAllSessions(): any[];
+  getCurrentSession(): ChatSession | null;
+  getAllSessions(): ChatSession[];
 }
 
 /**
@@ -214,7 +271,17 @@ export interface BridgeAPI {
   getState(path: string): any;
   setState(path: string, value: any): boolean;
   subscribe(path: string, callback: Function): () => void;
+  /**
+   * Emits an event with data
+   * @param event Name of the event to emit
+   * @param data Data to pass to listeners
+   */
   emit(event: string, data: any): void;
+  /**
+   * Emits an event without data (for compatibility with existing code)
+   * @param event Name of the event to emit
+   */
+  emit(event: string): void;
   on(
     event: string,
     callback: Function,
@@ -224,8 +291,59 @@ export interface BridgeAPI {
     event: string,
     callbackOrSubscription: Function | EventSubscription,
   ): void;
+  /**
+   * Logs a message with specified log level
+   * @param level Log level severity
+   * @param message Message to log
+   * @param data Additional data to log (optional)
+   */
+  log(level: LogLevel, message: string, data?: any): void;
+  /**
+   * Logs a debug message
+   * @param message Debug message
+   * @param data Additional data (optional)
+   */
+  log(message: string, data?: any): void;
   getStatus(): BridgeStatusInfo;
   getLogs(): any[];
   clearLogs(): void;
   diagnostics(): any;
+}
+
+/**
+ * Interface für die Store-Verbinder-Map
+ */
+export interface StoreConnectorMap {
+  auth: IAuthStore;
+  sessions: ISessionsStore;
+  ui: IUIStore;
+  features: IFeatureTogglesStore;
+}
+
+/**
+ * Legacy-State-Struktur
+ */
+export interface LegacyState {
+  auth: {
+    user: any | null;
+    token: string | null;
+    isAuthenticated: boolean;
+  };
+  sessions: {
+    list: ChatSession[];
+    currentId: string | null;
+    messages: Record<string, ChatMessage[]>;
+  };
+  ui: {
+    darkMode: boolean;
+    sidebar: { 
+      isOpen: boolean; 
+      collapsed: boolean;
+    };
+    toasts: Array<any>;
+    modals: Array<any>;
+  };
+  features: {
+    toggles: Record<string, boolean>;
+  };
 }

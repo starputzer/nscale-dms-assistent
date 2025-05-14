@@ -131,6 +131,9 @@ export const useFeatureTogglesStore = defineStore(
     const errors = reactive<Record<string, FeatureToggleError[]>>({});
     const activeFallbacks = reactive<Record<string, boolean>>({});
 
+    // Hauptfeatures-Objekt für Typensicherheit und Kompatibilität
+    const features = reactive<Record<string, boolean>>({});
+
     // Feature-Konfigurationen
     const featureConfigs = reactive<Record<string, FeatureConfig>>({
       // UI Features
@@ -1388,6 +1391,81 @@ export const useFeatureTogglesStore = defineStore(
      */
     const isLoaded = ref<boolean>(false);
 
+    // Aktualisiere features-Objekt mit allen Feature-Flags für Typensicherheit
+    Object.defineProperties(features, {
+      // Basis-Features
+      usePiniaAuth: {
+        get: () => usePiniaAuth.value,
+        set: (value) => { usePiniaAuth.value = value; },
+        enumerable: true
+      },
+      usePiniaSessions: {
+        get: () => usePiniaSessions.value,
+        set: (value) => { usePiniaSessions.value = value; },
+        enumerable: true
+      },
+      usePiniaUI: {
+        get: () => usePiniaUI.value,
+        set: (value) => { usePiniaUI.value = value; },
+        enumerable: true
+      },
+      usePiniaSettings: {
+        get: () => usePiniaSettings.value,
+        set: (value) => { usePiniaSettings.value = value; },
+        enumerable: true
+      },
+      useNewUIComponents: {
+        get: () => useNewUIComponents.value,
+        set: (value) => { useNewUIComponents.value = value; },
+        enumerable: true
+      },
+      useToastNotifications: {
+        get: () => useToastNotifications.value,
+        set: (value) => { useToastNotifications.value = value; },
+        enumerable: true
+      },
+      useModernSidebar: {
+        get: () => useModernSidebar.value,
+        set: (value) => { useModernSidebar.value = value; },
+        enumerable: true
+      },
+      useNewAdminPanel: {
+        get: () => useNewAdminPanel.value,
+        set: (value) => { useNewAdminPanel.value = value; },
+        enumerable: true
+      },
+      uiComponentsDemo: {
+        get: () => uiComponentsDemo.value,
+        set: (value) => { uiComponentsDemo.value = value; },
+        enumerable: true
+      },
+      useDarkMode: {
+        get: () => useDarkMode.value,
+        set: (value) => { useDarkMode.value = value; },
+        enumerable: true
+      },
+      useThemeCustomization: {
+        get: () => useThemeCustomization.value,
+        set: (value) => { useThemeCustomization.value = value; },
+        enumerable: true
+      },
+      useLegacyBridge: {
+        get: () => useLegacyBridge.value,
+        set: (value) => { useLegacyBridge.value = value; },
+        enumerable: true
+      },
+      migrateLocalStorage: {
+        get: () => migrateLocalStorage.value,
+        set: (value) => { migrateLocalStorage.value = value; },
+        enumerable: true
+      },
+      useModernDocConverter: {
+        get: () => useModernDocConverter.value,
+        set: (value) => { useModernDocConverter.value = value; },
+        enumerable: true
+      }
+    });
+
     return {
       // State
       version,
@@ -1406,6 +1484,9 @@ export const useFeatureTogglesStore = defineStore(
       migrateLocalStorage,
       useModernDocConverter,
       isLoaded,
+
+      // Expose the features map for BridgeAPI compatibility
+      features,
 
       // SFC-Migration Features
       useSfcDocConverter,

@@ -1,30 +1,55 @@
-// Export all composables for easier imports
+/**
+ * Composables Barrel-Export-Datei
+ *
+ * Diese Datei ermöglicht es, alle Composables zentral zu importieren.
+ * Anstatt einzelne Importe wie `import { useA } from '@/composables/useA'`
+ * und `import { useB } from '@/composables/useB'` zu verwenden, kann man
+ * einfach `import { useA, useB } from '@/composables'` schreiben.
+ */
+
+// Core composables
 export { useAuth } from "./useAuth";
 export { useChat } from "./useChat";
-export { useDialog } from "./useDialog";
-export { useDocumentConverter } from "./useDocumentConverter";
-export { useErrorReporting } from "./useErrorReporting";
-export { useFeatureToggles } from "./useFeatureToggles";
-export { useLogger } from "./useLogger";
-export { useMonitoring } from "./useMonitoring";
-export { useNScale } from "./useNScale";
+export { useUI } from "./useUI";
 export { useSettings } from "./useSettings";
 export { useTheme } from "./useTheme";
+
+// Dialog and UI composables
+export { useDialog } from "./useDialog";
 export { useToast } from "./useToast";
-export { useUI } from "./useUI";
 export { useWindowSize } from "./useWindowSize";
-export { useThrottleFn } from "./useThrottleFn";
 export { useElementSize } from "./useElementSize";
 export { useFocusTrap } from "./useFocusTrap";
+export { useIntersectionObserver } from "./useIntersectionObserver";
+export { useClipboard } from "./useClipboard";
+
+// Optimization composables
+export { useThrottleFn } from "./useThrottleFn";
 export { useMobileFocus } from "./useMobileFocus";
+export { useOfflineDetection } from "./useOfflineDetection";
+export { useApiCache } from "./useApiCache";
+
+// Feature composables
+export { useDocumentConverter } from "./useDocumentConverter";
+export { useFeatureToggles } from "./useFeatureToggles";
+export { useNScale } from "./useNScale";
+export { useForm } from "./useForm";
+export { useLocalStorage } from "./useLocalStorage";
+
+// Specialized chat composables
 export { useEnhancedChat } from "./useEnhancedChat";
 export { useOptimizedChat } from "./useOptimizedChat";
 export { useBridgeChat } from "./useBridgeChat";
+export { useSourceReferences } from "./useSourceReferences";
 
-// New composables
-export { useIntersectionObserver } from "./useIntersectionObserver";
-export { useOfflineDetection } from "./useOfflineDetection";
-export { useApiCache } from "./useApiCache";
-export { useForm } from "./useForm";
-export { useLocalStorage } from "./useLocalStorage";
-export { useClipboard } from "./useClipboard";
+// Logging and monitoring
+export { useErrorReporting } from "./useErrorReporting";
+export { useLogger } from "./useLogger";
+export { useMonitoring } from "./useMonitoring";
+
+// Check for i18n composable and add if available
+try {
+  export { useI18n } from "./useI18n";
+} catch (e) {
+  // I18n composable not available, ignore
+}

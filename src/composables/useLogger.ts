@@ -1,4 +1,5 @@
 import { getCurrentInstance } from "vue";
+import { isDevelopment, isProduction } from "@/utils/environmentUtils";
 
 /**
  * Log-Level für die Anwendung
@@ -59,10 +60,10 @@ const LOG_COLORS: Record<LogLevel, string> = {
 
 // Globale Log-Einstellungen
 let globalOptions: LoggerOptions = {
-  level: process.env.NODE_ENV === "production" ? "error" : "debug",
+  level: isProduction() ? "error" : "debug",
   includeComponent: true,
   includeTimestamp: true,
-  remoteLogging: process.env.NODE_ENV === "production",
+  remoteLogging: isProduction(),
   useColors: true,
   maxMemoryLogs: 100,
 };

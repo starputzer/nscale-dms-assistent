@@ -187,7 +187,7 @@ import { useToast } from "@/composables/useToast";
 
 // Services
 const { t } = useI18n();
-const { showToast } = useToast();
+const toast = useToast();
 
 // State
 const isSettingsPanelVisible = ref(false);
@@ -247,7 +247,7 @@ function openSettingsCategory(category: string) {
 }
 
 function handleSettingsSaved() {
-  showToast({
+  toast.show({
     type: "success",
     title: t("settings.saveSuccess", "Gespeichert"),
     message: t(

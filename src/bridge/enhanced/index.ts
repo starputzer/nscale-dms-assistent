@@ -5,12 +5,15 @@
  * stellt ein Vue-Plugin für die einfache Integration bereit.
  */
 
-import { App, Plugin } from "vue";
-import { BridgeConfiguration, BridgeAPI, LogLevel } from "./types";
+// Nur die benötigten Vue-Typen
+import type { Plugin } from "vue";
+import type { ComponentPublicInstance } from "vue";
+
+// Bridge-Typen und Komponenten
+import { BridgeConfiguration, LogLevel } from "./types";
 import { EnhancedBridge } from "./bridgeCore";
 import {
   createChatBridge,
-  ChatBridge,
   ChatBridgeConfiguration,
 } from "./chatBridge";
 
@@ -27,7 +30,7 @@ export function createBridge(
  * Vue-Plugin für die Bridge
  */
 export const BridgePlugin: Plugin = {
-  install(app: App, config?: Partial<BridgeConfiguration>) {
+  install(app: ComponentPublicInstance, config?: Partial<BridgeConfiguration>) {
     // Standard-Konfiguration für Entwicklung/Produktion
     const defaultConfig: Partial<BridgeConfiguration> = {
       debugging: process.env.NODE_ENV !== "production",

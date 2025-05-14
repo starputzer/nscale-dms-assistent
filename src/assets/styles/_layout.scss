@@ -2,7 +2,7 @@
 // Layout system for nscale-assist app
 // Contains grid, flexbox, spacing and positioning utilities
 
-@use 'variables' as *;
+@import './_variables';
 
 // Container
 .container {

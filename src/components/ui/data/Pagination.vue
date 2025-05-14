@@ -103,7 +103,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
-import { generateUniqueId } from "../../../utils/uuidUtil";
+import { generateUUID as generateUniqueId } from "../../../utils/uuidUtil";
 
 /**
  * Pagination component for navigating through pages of data

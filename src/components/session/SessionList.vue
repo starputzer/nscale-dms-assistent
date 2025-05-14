@@ -338,7 +338,7 @@
         :session="item"
         :is-active="activeSessionId === item.id"
         :is-pinned="item.isPinned"
-        :show-drag-handle="false" <!-- Disabled for virtual scrolling -->
+        :show-drag-handle="false"
         :index="index"
         :tag="item.tag"
         @select="handleSessionSelect"
@@ -347,6 +347,7 @@
         @delete="handleConfirmDelete"
         @rename="handleRenameSession"
       />
+      <!-- Drag handle disabled for virtual scrolling -->
     </RecycleScroller>
 
     <!-- Normale Liste mit Drag-and-Drop für weniger Sessions -->

@@ -1,9 +1,11 @@
 import { ref } from "vue";
+import type { ClipboardOptions, UseClipboardReturn } from "../utils/composableTypes";
 
 /**
  * Composable for interacting with the clipboard
  *
- * @returns Object containing clipboard related methods and state
+ * @param {ClipboardOptions} options - Configuration options for the clipboard
+ * @returns {UseClipboardReturn & { copyFromElement: (element: HTMLElement) => Promise<void>, paste: () => Promise<string>, text: Ref<string>, reset: () => void }} Object containing clipboard related methods and state
  *
  * @example
  * const { copy, copied, error } = useClipboard();
@@ -29,8 +31,13 @@ import { ref } from "vue";
  *   }
  * }
  */
-export function useClipboard(options = { timeout: 1500 }) {
-  const { timeout } = options;
+export function useClipboard(options: ClipboardOptions = { successDuration: 1500 }): UseClipboardReturn & {
+  copyFromElement: (element: HTMLElement) => Promise<void>;
+  paste: () => Promise<string>;
+  text: Ref<string>;
+  reset: () => void;
+} {
+  const { successDuration: timeout = 1500 } = options;
 
   // State
   const copied = ref(false);

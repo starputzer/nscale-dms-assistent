@@ -693,6 +693,15 @@ export class ApiService {
   }
 
   /**
+   * Benutzerdefinierte Anfrage mit vollständigen Optionen
+   */
+  public async customRequest<T = any>(
+    options: ApiRequestOptions,
+  ): Promise<ApiResponse<T>> {
+    return this.request<T>(options.method || 'get', options.url || '', options);
+  }
+
+  /**
    * Paginierte GET-Anfrage
    */
   public async getPaginated<T = any>(

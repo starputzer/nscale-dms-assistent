@@ -1,12 +1,15 @@
 import { computed, ref } from "vue";
 import { useSessionsStore } from "../stores/sessions";
 import type { ChatSession, ChatMessage } from "../types/session";
+import type { UseChatReturn } from "../utils/composableTypes";
 
 /**
  * Hook für Chat-Funktionen in Komponenten
  * Kapselt den Zugriff auf den Sessions-Store und bietet eine vereinfachte API
+ *
+ * @returns {UseChatReturn} Objekt mit Chat-Funktionen und reaktiven Eigenschaften
  */
-export function useChat() {
+export function useChat(): UseChatReturn {
   const sessionsStore = useSessionsStore();
 
   // Lokaler Zustand für Benutzereingaben

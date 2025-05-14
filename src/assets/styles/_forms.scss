@@ -1,7 +1,7 @@
 // _forms.scss
 // Form elements and controls for nscale-assist app
 
-@use 'variables' as *;
+@import './_variables';
 
 // Base form styles
 .form-group {
@@ -132,7 +132,7 @@ select.form-control {
 .form-check-input {
   position: absolute;
   left: 0;
-  top: ($line-height-normal * 1em - 1rem) / 2;
+  top: calc(($line-height-normal * 1em - 1rem) / 2);
   width: 1rem;
   height: 1rem;
   margin: 0;

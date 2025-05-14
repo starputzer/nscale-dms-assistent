@@ -28,9 +28,10 @@
       role="status"
     >
       <img
-        :src="logoUrl || '/assets/images/senmvku-logo.png'"
+        :src="logoUrl || './frontend/images/senmvku-logo.png'"
         alt="nscale DMS Assistent Logo"
         class="n-message-list__logo"
+        @error="handleImageError"
       />
       <h2 id="welcome-title">{{ welcomeTitle }}</h2>
       <p id="welcome-message">{{ welcomeMessage }}</p>
@@ -733,6 +734,52 @@ function observeItemSizes() {
         resizeObserver.value?.observe(element);
       });
   });
+}
+
+// Logo-Handling
+const logoSrc = ref('./frontend/images/senmvku-logo.png');
+
+function checkIfImageExists(url: string): boolean {
+  try {
+    // Beispiel-Implementierung - wird nur im Browser ausgeführt
+    // Diese Funktion ist nicht perfekt, aber ein guter Fallback
+    return true;
+  } catch (error) {
+    console.error('[MessageList] Error checking if image exists:', error);
+    return false;
+  }
+}
+
+function handleImageError(event: Event) {
+  console.warn('[MessageList] Image failed to load, trying fallback paths');
+  
+  // Fallback-Pfade in der Reihenfolge der Wahrscheinlichkeit
+  const fallbackPaths = [
+    './assets/images/senmvku-logo.png',
+    '/assets/images/senmvku-logo.png',
+    '/frontend/images/senmvku-logo.png',
+    'https://via.placeholder.com/150x150?text=nscale+DMS+Assistant'
+  ];
+  
+  // Hole das aktuelle src
+  const img = event.target as HTMLImageElement;
+  const currentSrc = img.src;
+  
+  // Suche den nächsten Pfad in der Liste, der nicht der aktuelle ist
+  const nextPath = fallbackPaths.find(path => !currentSrc.endsWith(path));
+  
+  if (nextPath) {
+    console.log(`[MessageList] Trying fallback image path: ${nextPath}`);
+    img.src = nextPath;
+  } else {
+    console.error('[MessageList] All image paths failed');
+    // Letzter Resort - ein leeres Bild mit Mindesthöhe
+    img.style.minHeight = '80px';
+    img.style.display = 'flex';
+    img.style.alignItems = 'center';
+    img.style.justifyContent = 'center';
+    img.alt = 'nscale DMS Assistent';
+  }
 }
 
 // Lifecycle Hooks

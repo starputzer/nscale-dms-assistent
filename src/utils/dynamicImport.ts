@@ -111,12 +111,23 @@ export function dynamicImport(
   let loader: AsyncComponentLoader<any>;
 
   // Vite erfordert statische Pfade für Import-Analyse
-  // Wir fügen @vite-ignore hinzu, um die Warnung zu deaktivieren
-  loader = () =>
-    import(
+  // Wir verwenden relative Pfade für better compatibility
+  loader = () => {
+    let importPath = normalizedPath;
+    
+    // Konvertiere verschiedene Pfadformate
+    if (normalizedPath.startsWith('./src/')) {
+      importPath = normalizedPath.replace('./src/', '../');
+    } else if (!normalizedPath.startsWith('/') && !normalizedPath.startsWith('.')) {
+      // Wenn kein führender Slash oder Punkt, füge '../' hinzu
+      importPath = '../' + normalizedPath;
+    }
+    
+    return import(
       /* @vite-ignore */
-      `@/${normalizedPath}`
+      importPath
     );
+  };
 
   // Komponente vorausladen, wenn gewünscht
   if (preload) {

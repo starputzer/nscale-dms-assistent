@@ -116,8 +116,10 @@ export class BridgeStatusManager {
    */
   private showUserNotification(): void {
     // Hier könnte eine benutzerfreundliche Benachrichtigung im UI angezeigt werden
-    if (window.nscaleUI?.showToast) {
-      window.nscaleUI.showToast(
+    // Use type assertion to access nscaleUI property
+    const nscaleUI = (window as any).nscaleUI;
+    if (nscaleUI?.showToast) {
+      nscaleUI.showToast(
         `Bridge-Fehler: ${this.currentStatus.message}. Seite neuladen, um das Problem zu beheben.`,
         "error",
         { duration: 0, dismissible: true },

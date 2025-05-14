@@ -489,7 +489,7 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { ConversionResult, SupportedFormat } from "@/types/documentConverter";
 import { useGlobalDialog } from "@/composables/useDialog";
-import { useToasts } from "@/composables/useToast";
+import { useToast } from "@/composables/useToast";
 import { vTouch } from "@/directives/touch-directives";
 
 // State for mobile touch gestures
