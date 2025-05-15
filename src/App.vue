@@ -102,7 +102,7 @@ import ImprovedErrorBoundary from '@/components/shared/ImprovedErrorBoundary.vue
 import AuthErrorBoundary from '@/components/auth/AuthErrorBoundary.vue'
 import ErrorDebugPanel from '@/components/debug/ErrorDebugPanel.vue'
 import SpinnerIcon from '@/components/icons/SpinnerIcon.vue'
-import RouterHealthMonitor from '@/components/monitoring/RouterHealthMonitor.vue'
+// import RouterHealthMonitor from '@/components/monitoring/RouterHealthMonitor.vue' // ENTFERNT
 
 // Services und Composables
 import { routerService } from '@/services/router/RouterServiceFixed'
@@ -134,8 +134,8 @@ export default defineComponent({
     ImprovedErrorBoundary,
     AuthErrorBoundary,
     ErrorDebugPanel,
-    SpinnerIcon,
-    RouterHealthMonitor
+    SpinnerIcon
+    // RouterHealthMonitor // ENTFERNT
   },
   setup() {
     const route = useRoute()
@@ -153,10 +153,10 @@ export default defineComponent({
     const showDebugPanel = ref(false)
     const isDevMode = computed(() => import.meta.env.DEV)
     const isRouterReady = ref(false)
-    const healthMonitor = ref(null)
+    // const healthMonitor = ref(null) // ENTFERNT
     
     // Computed für Router-Fehler
-    const hasRouterErrors = computed(() => false) // Temporär deaktiviert
+    // const hasRouterErrors = computed(() => false) // ENTFERNT
     
     // TEMPORÄR: Basic Route Fallback ohne DOM-Fehlererkennung
     const {
@@ -409,8 +409,8 @@ export default defineComponent({
       showDebugPanel,
       isDevMode,
       isRouterReady,
-      hasRouterErrors,
-      healthMonitor,
+      // hasRouterErrors, // ENTFERNT
+      // healthMonitor, // ENTFERNT
       
       // Settings
       fontSizeLevel,
