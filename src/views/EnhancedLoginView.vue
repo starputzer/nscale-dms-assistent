@@ -1,127 +1,167 @@
 <template>
-  <div class="login-page">
-    <div class="login-container">
-      <div class="login-card">
-        <div class="login-header">
-          <img src="@/assets/images/senmvku-logo.png" alt="nscale DMS Assistent" class="logo" />
-          <h1 class="app-title">nscale DMS Assistent</h1>
+  <div class="enhanced-login-container">
+    <div class="auth-wrapper">
+      <div class="auth-content">
+        <!-- Logo/Header -->
+        <div class="auth-header">
+          <img v-if="logoUrl" :src="logoUrl" alt="Logo" class="auth-logo" />
+          <h1 class="auth-title">nscale DMS Assistent</h1>
+          <p class="auth-subtitle">{{ activeTab === 'login' ? 'Willkommen zurück!' : 'Jetzt registrieren' }}</p>
         </div>
         
+        <!-- Tab-Navigation für Login/Register -->
         <div class="auth-tabs">
-          <button 
-            class="tab-button" 
-            :class="{ active: activeTab === 'login' }" 
+          <button
+            type="button"
+            :class="['auth-tab', { active: activeTab === 'login' }]"
             @click="setActiveTab('login')"
           >
             Anmelden
           </button>
-          <button 
-            class="tab-button" 
-            :class="{ active: activeTab === 'register' }" 
+          <button
+            type="button"
+            :class="['auth-tab', { active: activeTab === 'register' }]"
             @click="setActiveTab('register')"
           >
             Registrieren
           </button>
         </div>
         
-        <form class="auth-form" @submit.prevent="submitForm">
-          <!-- E-Mail-Feld (für beide Tabs) -->
+        <!-- Feedback-Bereich (Fehler und Erfolgsmeldungen) -->
+        <div v-if="authError || formError" class="auth-error">
+          <span class="error-icon">⚠️</span>
+          <p>{{ authError || formError }}</p>
+        </div>
+        
+        <div v-if="loginSuccess" class="auth-success">
+          <span class="success-icon">✅</span>
+          <p>Anmeldung erfolgreich! Sie werden weitergeleitet...</p>
+        </div>
+        
+        <!-- Formular -->
+        <form @submit.prevent="submitForm" class="auth-form">
+          <!-- Email-Feld (für beide Tabs) -->
           <div class="form-group">
             <label for="email">E-Mail</label>
             <input
-              id="email"
               v-model="formData.email"
               type="email"
-              class="form-input"
-              :class="{ 'input-error': v$.email.$error }"
-              placeholder="name@example.com"
+              id="email"
+              name="email"
+              placeholder="ihre-email@beispiel.de"
+              :disabled="isLoading"
               required
               autocomplete="email"
-              :disabled="isLoading"
-              @blur="v$.email.$touch()"
+              @blur="v$.email.$touch"
             />
-            <div v-if="v$.email.$error" class="input-error-message">
-              {{ v$.email.$errors[0].$message }}
+            <div v-if="v$.email.$error" class="form-error">
+              <span v-for="error in v$.email.$errors" :key="error.$uid">
+                {{ error.$message }}
+              </span>
             </div>
           </div>
           
-          <!-- Username (nur für Registrierung) -->
+          <!-- Benutzername (nur für Registrierung) -->
           <div v-if="activeTab === 'register'" class="form-group">
             <label for="username">Benutzername</label>
             <input
-              id="username"
               v-model="formData.username"
               type="text"
-              class="form-input"
-              :class="{ 'input-error': v$.username?.$error }"
-              placeholder="Benutzername"
-              required
-              autocomplete="username"
+              id="username"
+              name="username"
+              placeholder="benutzername"
               :disabled="isLoading"
-              @blur="v$.username?.$touch()"
+              @blur="v$.username?.$touch"
             />
-            <div v-if="v$.username?.$error" class="input-error-message">
-              {{ v$.username.$errors[0].$message }}
+            <div v-if="v$.username?.$error" class="form-error">
+              <span v-for="error in v$.username.$errors" :key="error.$uid">
+                {{ error.$message }}
+              </span>
             </div>
           </div>
           
-          <!-- Passwort (für beide Tabs) -->
+          <!-- Anzeigename (nur für Registrierung) -->
+          <div v-if="activeTab === 'register'" class="form-group">
+            <label for="displayName">Anzeigename (optional)</label>
+            <input
+              v-model="formData.displayName"
+              type="text"
+              id="displayName"
+              name="displayName"
+              placeholder="Max Mustermann"
+              :disabled="isLoading"
+            />
+          </div>
+          
+          <!-- Passwort-Feld -->
           <div class="form-group">
             <label for="password">Passwort</label>
-            <div class="password-input-container">
+            <div class="password-input-wrapper">
               <input
-                id="password"
                 v-model="formData.password"
                 :type="showPassword ? 'text' : 'password'"
-                class="form-input"
-                :class="{ 'input-error': v$.password.$error }"
+                id="password"
+                name="password"
                 placeholder="••••••••"
-                required
-                :autocomplete="activeTab === 'login' ? 'current-password' : 'new-password'"
                 :disabled="isLoading"
-                @blur="v$.password.$touch()"
+                required
+                autocomplete="current-password"
+                @blur="v$.password.$touch"
               />
               <button
                 type="button"
                 class="password-toggle"
                 @click="togglePasswordVisibility"
+                :aria-label="showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'"
               >
-                <span v-if="showPassword">Verbergen</span>
-                <span v-else>Anzeigen</span>
+                {{ showPassword ? '👁️' : '👁️‍🗨️' }}
               </button>
             </div>
-            <div v-if="v$.password.$error" class="input-error-message">
-              {{ v$.password.$errors[0].$message }}
+            <div v-if="v$.password.$error" class="form-error">
+              <span v-for="error in v$.password.$errors" :key="error.$uid">
+                {{ error.$message }}
+              </span>
             </div>
-            
-            <!-- Passwort-Hinweis -->
-            <p v-if="activeTab === 'login'" class="password-hint">
-              Hinweis: Verwenden Sie "123" als Test-Passwort.
-            </p>
           </div>
           
-          <!-- "Angemeldet bleiben" Checkbox (nur für Login) -->
+          <!-- Passwort bestätigen (nur für Registrierung) -->
+          <div v-if="activeTab === 'register'" class="form-group">
+            <label for="passwordConfirm">Passwort bestätigen</label>
+            <input
+              v-model="formData.passwordConfirm"
+              :type="showPassword ? 'text' : 'password'"
+              id="passwordConfirm"
+              name="passwordConfirm"
+              placeholder="••••••••"
+              :disabled="isLoading"
+              @blur="v$.passwordConfirm?.$touch"
+            />
+            <div v-if="v$.passwordConfirm?.$error" class="form-error">
+              <span v-for="error in v$.passwordConfirm.$errors" :key="error.$uid">
+                {{ error.$message }}
+              </span>
+            </div>
+          </div>
+          
+          <!-- Passwort-Stärke-Anzeige (nur für Registrierung) -->
+          <div v-if="activeTab === 'register' && formData.password" class="password-strength">
+            <div class="strength-indicator">
+              <div :class="['strength-bar', `strength-${passwordStrength.score}`]"></div>
+            </div>
+            <span class="strength-label">{{ passwordStrengthLabel }}</span>
+          </div>
+          
+          <!-- Remember Me (nur für Login) -->
           <div v-if="activeTab === 'login'" class="form-group checkbox-group">
-            <div class="checkbox-container">
+            <label>
               <input
-                id="rememberMe"
                 v-model="formData.rememberMe"
                 type="checkbox"
+                name="rememberMe"
                 :disabled="isLoading"
               />
-              <label for="rememberMe">Angemeldet bleiben</label>
-            </div>
-          </div>
-          
-          <!-- Fehlermeldungen -->
-          <div v-if="authError" class="auth-error-message">
-            <strong>Fehler:</strong> {{ authError.message }}
-          </div>
-          
-          <!-- Erfolgsmeldung -->
-          <div v-if="loginSuccess" class="auth-success-message">
-            {{ activeTab === 'login' ? 'Login erfolgreich!' : 'Registrierung erfolgreich!' }}
-            Sie werden weitergeleitet...
+              Angemeldet bleiben
+            </label>
           </div>
           
           <!-- Submit-Button -->
@@ -166,7 +206,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useVuelidate } from '@vuelidate/core'
 import { required, email, minLength, sameAs, helpers } from '@vuelidate/validators'
@@ -177,24 +217,6 @@ import { useToast } from '@/composables/useToast'
 // Router und Services einbinden
 const router = useRouter()
 const toast = useToast()
-
-// Error Reporting mit Fallback
-let errorReporting;
-try {
-  errorReporting = useErrorReporting();
-} catch (e) {
-  console.warn('Error Reporting Service konnte nicht initialisiert werden, verwende Dummy-Implementation', e);
-  // Dummy-Implementation importieren
-  import('@/utils/errorReportingDummy').then(module => {
-    errorReporting = module.default;
-  }).catch(err => {
-    console.error('Fehler beim Laden des Dummy Error Reporting:', err);
-    // Minimaler Fallback, wenn selbst das Dummy nicht geladen werden kann
-    errorReporting = {
-      captureError: (error) => { console.error('[FEHLER]', error); return 'error-id'; }
-    };
-  });
-}
 
 // Auth-Composable mit reactive state und Methoden
 const { 
@@ -211,7 +233,6 @@ const {
 const activeTab = ref<'login' | 'register'>('login')
 const loginSuccess = ref(false)
 const showPassword = ref(false)
-const redirectTimeout = ref<number | null>(null)
 const formError = ref<string | null>(null)
 
 // Das aktuelle Jahr für das Copyright
@@ -226,6 +247,9 @@ const formData = reactive({
   displayName: '',
   rememberMe: false,
 })
+
+// Logo URL (optional, kann angepasst werden)
+const logoUrl = computed(() => '/images/senmvku-logo.png')
 
 // Validierungsregeln
 const rules = computed(() => {
@@ -296,48 +320,19 @@ const passwordStrengthLabel = computed(() => {
   return 'Sehr stark'
 })
 
-const passwordStrengthColor = computed(() => {
-  const score = passwordStrength.value.score
-  if (score <= 1) return 'strength-weak'
-  if (score === 2) return 'strength-medium'
-  if (score === 3) return 'strength-good'
-  return 'strength-strong'
-})
+// Submit-Button deaktivieren, wenn Formular ungültig oder lädt
+const isSubmitDisabled = computed(() => isLoading.value || v$.value.$invalid)
 
-// Ist der Submit-Button deaktiviert?
-const isSubmitDisabled = computed(() => {
-  if (isLoading.value) return true
-  
-  // Bei Registrierung Passwortübereinstimmung prüfen
-  if (activeTab.value === 'register') {
-    return formData.password !== formData.passwordConfirm
-  }
-  
-  return false
-})
-
-// Tab wechseln und Formular zurücksetzen
+// Aktiven Tab setzen
 function setActiveTab(tab: 'login' | 'register') {
-  // Aktiven Tab setzen
   activeTab.value = tab
-  
-  // Fehler zurücksetzen
   resetError()
   formError.value = null
+  loginSuccess.value = false
   
-  // Formularvalidierung zurücksetzen
   nextTick(() => {
     v$.value.$reset()
   })
-  
-  // Erfolg zurücksetzen
-  loginSuccess.value = false
-  
-  // Timeout löschen
-  if (redirectTimeout.value) {
-    window.clearTimeout(redirectTimeout.value)
-    redirectTimeout.value = null
-  }
 }
 
 // Passwortsichtbarkeit umschalten
@@ -350,17 +345,9 @@ function calculatePasswordScore(password: string): number {
   if (!password) return 0
   
   let score = 0
-  
-  // Mindestlänge (8 Zeichen)
   if (password.length >= 8) score++
-  
-  // Zeichenkomplexität
   if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++
-  
-  // Zahlen
   if (/[0-9]/.test(password)) score++
-  
-  // Sonderzeichen
   if (/[^A-Za-z0-9]/.test(password)) score++
   
   return score
@@ -372,7 +359,6 @@ async function submitForm() {
     resetError()
     formError.value = null
     
-    // Formular validieren
     const isFormValid = await v$.value.$validate()
     if (!isFormValid) {
       return
@@ -385,27 +371,7 @@ async function submitForm() {
     }
   } catch (error) {
     console.error('Fehler beim Absenden des Formulars:', error)
-    
-    // Error an Error-Reporting-Service senden
-    try {
-      if (errorReporting && typeof errorReporting.captureError === 'function') {
-        errorReporting.captureError(error as Error, {
-          source: { type: 'auth', name: 'LoginView' },
-          severity: 'high',
-          context: { activeTab: activeTab.value }
-        });
-      } else {
-        // Fallback, wenn errorReporting nicht verfügbar ist
-        console.error('[LoginView] Fehler:', error, 'activeTab:', activeTab.value);
-      }
-    } catch (e) {
-      console.error('[LoginView] Fehler beim Error-Reporting:', e);
-    }
-    
-    // Benutzerfreundliche Fehlermeldung anzeigen
-    formError.value = 'Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.'
-    
-    // Toast-Nachricht anzeigen
+    formError.value = 'Ein unerwarteter Fehler ist aufgetreten.'
     toast.error('Ein unerwarteter Fehler ist aufgetreten')
   }
 }
@@ -413,6 +379,7 @@ async function submitForm() {
 // Login-Handler
 async function handleLogin() {
   try {
+    console.log('handleLogin aufgerufen')
     const success = await login({
       email: formData.email,
       password: formData.password,
@@ -421,14 +388,16 @@ async function handleLogin() {
     
     if (success) {
       loginSuccess.value = true
+      toast.success('Login erfolgreich!')
       
-      // Zur Hauptseite weiterleiten
-      redirectAfterSuccess()
+      // Kurze Verzögerung, dann weiterleiten
+      setTimeout(() => {
+        const redirect = router.currentRoute.value.query.redirect as string || '/chat'
+        router.push(redirect)
+      }, 500)
     }
   } catch (error) {
     console.error('Login fehlgeschlagen:', error)
-    
-    // Fehler wird bereits vom useAuthentication Composable behandelt
   }
 }
 
@@ -444,362 +413,384 @@ async function handleRegister() {
     
     if (success) {
       loginSuccess.value = true
+      toast.success('Registrierung erfolgreich! Sie werden weitergeleitet...')
       
-      // Zur Hauptseite weiterleiten
-      redirectAfterSuccess()
-      
-      // Erfolgsmeldung anzeigen
-      toast.success('Registrierung erfolgreich')
+      setTimeout(() => {
+        router.push('/chat')
+      }, 1500)
     }
   } catch (error) {
     console.error('Registrierung fehlgeschlagen:', error)
-    
-    // Fehler wird bereits vom useAuthentication Composable behandelt
   }
 }
 
 // Demo-Login-Handler
 async function handleDemoLogin() {
   try {
-    resetError()
-    
+    console.log('Demo-Login wird ausgeführt')
     const success = await demoLogin()
     
     if (success) {
       loginSuccess.value = true
+      toast.success('Demo-Login erfolgreich!')
       
-      // Zur Hauptseite weiterleiten
-      redirectAfterSuccess()
+      setTimeout(() => {
+        router.push('/chat')
+      }, 500)
     }
   } catch (error) {
     console.error('Demo-Login fehlgeschlagen:', error)
-    
-    // Fehler wird bereits vom useAuthentication Composable behandelt
   }
-}
-
-// Nach erfolgreichem Login/Registrierung weiterleiten
-function redirectAfterSuccess() {
-  // Bereits bestehenden Timeout löschen
-  if (redirectTimeout.value) {
-    window.clearTimeout(redirectTimeout.value)
-  }
-  
-  // Neuen Timeout setzen
-  redirectTimeout.value = window.setTimeout(() => {
-    // Prüfen, ob es einen Redirect-Parameter gibt
-    const redirect = router.currentRoute.value.query.redirect as string
-    
-    if (redirect) {
-      // Zur Redirect-URL navigieren
-      router.push(redirect)
-    } else {
-      // Zur Hauptseite navigieren
-      router.push({ name: 'Home' })
-    }
-    
-    // Timeout zurücksetzen
-    redirectTimeout.value = null
-  }, 1000) // 1 Sekunde Verzögerung für besseres UX-Feedback
 }
 
 // Passwort vergessen Handler
 function handleForgotPassword() {
-  // Hier könnte ein Modal oder eine separate Route geöffnet werden
   toast.info('Passwort-Wiederherstellung ist aktuell nicht verfügbar.')
 }
 
 // Rechtliche Informationen anzeigen
 function showLegal(type: 'datenschutz' | 'impressum') {
-  // Hier könnte ein Modal oder eine separate Route geöffnet werden
   toast.info(`${type === 'datenschutz' ? 'Datenschutz' : 'Impressum'} wird geladen...`)
 }
 
-/**
- * Lifecycle Hooks
- */
-onMounted(() => {
-  // Prüfen, ob Benutzer bereits angemeldet ist
-  if (isAuthenticated.value) {
-    router.push({ name: 'Home' })
-  }
-  
-  // Event Listener für Formularverlassen hinzufügen
-  window.addEventListener('beforeunload', handleBeforeUnload)
-})
-
-// Überwachen, ob der Benutzer authentifiziert ist
-watch(isAuthenticated, (newValue) => {
-  if (newValue === true) {
-    router.push({ name: 'Home' })
-  }
-})
-
-// Beim Tab-Wechsel Formularvalidierung zurücksetzen
-watch(activeTab, () => {
-  nextTick(() => {
-    v$.value.$reset()
-  })
-})
-
-// Warnung beim Verlassen der Seite, wenn das Formular ausgefüllt wurde
+// beforeunload Event Handler
 function handleBeforeUnload(event: BeforeUnloadEvent) {
-  if (
-    (formData.email && formData.email !== 'martin@danglefeet.com') ||
-    (formData.password && formData.password !== '123') ||
-    formData.username ||
-    formData.displayName
-  ) {
+  if ((formData.email || formData.password) && !loginSuccess.value) {
     event.preventDefault()
     event.returnValue = ''
   }
 }
+
+// KEINE automatischen Weiterleitungen in onMounted oder watch!
+onMounted(() => {
+  window.addEventListener('beforeunload', handleBeforeUnload)
+})
+
+// Aufräumen
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', handleBeforeUnload)
+})
 </script>
 
 <style scoped>
-/* Container und Layout */
-.login-page {
-  min-height: 100vh !important;
-  width: 100vw !important; 
-  max-width: 100% !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  background-color: var(--color-background, #f5f7fa) !important;
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  box-sizing: border-box !important;
-  z-index: 9999 !important; /* Höchste Priorität */
+.enhanced-login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  padding: 1rem;
 }
 
-.login-container {
-  width: 100% !important;
-  max-width: 480px !important;
-  margin: 2rem !important;
-  perspective: 1000px !important;
-  position: relative !important;
-  z-index: 10000 !important; /* Höhere Priorität als die Seite */
-}
-
-.login-card {
+.auth-wrapper {
   width: 100%;
-  background-color: var(--color-card-bg, #ffffff);
-  border-radius: 12px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
-  padding: 2.5rem;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  max-width: 420px;
+  margin: 0 auto;
 }
 
-/* Header mit Logo */
-.login-header {
+.auth-content {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  padding: 2.5rem;
+  position: relative;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.auth-header {
   text-align: center;
   margin-bottom: 2rem;
 }
 
-.logo {
-  height: 3rem;
-  margin-bottom: 1rem;
+.auth-logo {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1rem;
+  object-fit: contain;
 }
 
-.app-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--color-text-primary, #1a202c);
-  margin: 0;
+.auth-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 0.5rem;
 }
 
-/* Tabs */
+.auth-subtitle {
+  color: #666;
+  font-size: 1rem;
+}
+
 .auth-tabs {
   display: flex;
-  border-bottom: 1px solid var(--color-border, #e2e8f0);
+  gap: 0.5rem;
   margin-bottom: 2rem;
+  border-bottom: 2px solid #e0e0e0;
 }
 
-.tab-button {
+.auth-tab {
   flex: 1;
-  background: transparent;
+  padding: 0.75rem 1rem;
+  background: none;
   border: none;
-  padding: 0.75rem 0;
-  color: var(--color-text-secondary, #4a5568);
+  color: #666;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: color 0.2s, border-color 0.2s;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
-.tab-button.active {
-  color: var(--color-primary, #3182ce);
-  border-bottom: 2px solid var(--color-primary, #3182ce);
+.auth-tab:hover {
+  color: #1a1a2e;
 }
 
-/* Formular */
-.auth-form {
+.auth-tab.active {
+  color: #1a1a2e;
+}
+
+.auth-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #007bff;
+}
+
+.auth-error,
+.auth-success {
   display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.auth-error {
+  background: #fee;
+  color: #c33;
+  border: 1px solid #fcc;
+}
+
+.auth-success {
+  background: #efe;
+  color: #393;
+  border: 1px solid #cfc;
+}
+
+.error-icon,
+.success-icon {
+  font-size: 1.25rem;
+}
+
+.auth-form {
+  margin-bottom: 1.5rem;
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  margin-bottom: 1.25rem;
 }
 
-.checkbox-group {
-  margin-top: -0.5rem;
+.form-group label {
+  display: block;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
 }
 
-.checkbox-container {
+.form-group input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.form-group input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.password-input-wrapper {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
 }
 
-label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--color-text-secondary, #4a5568);
-}
-
-.optional {
-  font-weight: normal;
-  font-size: 0.75rem;
-  color: var(--color-text-tertiary, #718096);
-}
-
-.form-input {
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: 0.375rem;
-  font-size: 1rem;
-  width: 100%;
-  background-color: var(--color-input-bg, #ffffff);
-  color: var(--color-text-primary, #1a202c);
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.form-input:focus {
-  border-color: var(--color-primary, #3182ce);
-  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15);
-  outline: none;
-}
-
-.form-input.input-error {
-  border-color: var(--color-error, #e53e3e);
-}
-
-.input-error-message {
-  font-size: 0.75rem;
-  color: var(--color-error, #e53e3e);
-  margin-top: 0.25rem;
-}
-
-/* Password Input mit Toggle */
-.password-input-container {
-  position: relative;
+.password-input-wrapper input {
+  padding-right: 3rem;
 }
 
 .password-toggle {
   position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
+  right: 0.75rem;
   background: none;
   border: none;
-  font-size: 0.75rem;
-  color: var(--color-text-tertiary, #718096);
+  font-size: 1.25rem;
   cursor: pointer;
-  padding: 0.25rem 0.5rem;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
 }
 
 .password-toggle:hover {
-  color: var(--color-primary, #3182ce);
+  opacity: 1;
 }
 
-.password-hint {
-  font-size: 0.75rem;
-  color: var(--color-text-tertiary, #718096);
+.form-error {
   margin-top: 0.5rem;
+  color: #c33;
+  font-size: 0.85rem;
 }
 
-/* Fehler und Erfolg */
-.auth-error-message,
-.auth-success-message {
-  padding: 0.75rem;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
+.form-error span {
+  display: block;
 }
 
-.auth-error-message {
-  background-color: var(--color-error-bg, #fff5f5);
-  color: var(--color-error, #e53e3e);
-  border: 1px solid var(--color-error-border, #fed7d7);
-}
-
-.auth-success-message {
-  background-color: var(--color-success-bg, #f0fff4);
-  color: var(--color-success, #38a169);
-  border: 1px solid var(--color-success-border, #c6f6d5);
-}
-
-/* Buttons */
-.auth-submit-button,
-.demo-login-button {
-  position: relative;
-  padding: 0.75rem 1rem;
-  border-radius: 0.375rem;
-  font-size: 1rem;
-  font-weight: 500;
-  text-align: center;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
-  border: none;
-}
-
-.auth-submit-button {
-  background-color: var(--color-primary, #3182ce);
-  color: white;
-}
-
-.auth-submit-button:hover:not(:disabled) {
-  background-color: var(--color-primary-dark, #2c5282);
-}
-
-.auth-submit-button:active:not(:disabled) {
-  transform: translateY(1px);
-}
-
-.demo-login-button {
-  background-color: var(--color-bg-tertiary, #edf2f7);
-  color: var(--color-text-secondary, #4a5568);
+.password-strength {
   margin-top: 0.75rem;
 }
 
-.demo-login-button:hover:not(:disabled) {
-  background-color: var(--color-bg-tertiary-dark, #e2e8f0);
+.strength-indicator {
+  height: 4px;
+  background: #e0e0e0;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
 }
 
-.auth-submit-button:disabled,
+.strength-bar {
+  height: 100%;
+  width: 0;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.strength-bar.strength-0 {
+  width: 20%;
+  background: #c33;
+}
+
+.strength-bar.strength-1 {
+  width: 40%;
+  background: #f93;
+}
+
+.strength-bar.strength-2 {
+  width: 60%;
+  background: #fc3;
+}
+
+.strength-bar.strength-3 {
+  width: 80%;
+  background: #9c3;
+}
+
+.strength-bar.strength-4 {
+  width: 100%;
+  background: #3c9;
+}
+
+.strength-label {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.checkbox-group {
+  margin-bottom: 1.5rem;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-weight: normal;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  cursor: pointer;
+}
+
+.auth-submit-button,
+.demo-login-button {
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.auth-submit-button {
+  background: #007bff;
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.auth-submit-button:hover:not(:disabled) {
+  background: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.auth-submit-button:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.demo-login-button {
+  background: transparent;
+  color: #007bff;
+  border: 2px solid #007bff;
+}
+
+.demo-login-button:hover:not(:disabled) {
+  background: #007bff;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+}
+
 .demo-login-button:disabled {
-  opacity: 0.6;
+  color: #6c757d;
+  border-color: #6c757d;
   cursor: not-allowed;
 }
 
-/* Loading Spinner */
 .loading-spinner {
-  display: inline-block;
-  width: 1rem;
-  height: 1rem;
-  margin-right: 0.5rem;
+  width: 16px;
+  height: 16px;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
   border-top-color: white;
-  animation: spin 1s linear infinite;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.demo-login-button .loading-spinner {
+  border-color: rgba(0, 123, 255, 0.3);
+  border-top-color: #007bff;
 }
 
 @keyframes spin {
@@ -808,30 +799,29 @@ label {
   }
 }
 
-/* Passwort vergessen */
 .forgot-password {
   text-align: center;
-  margin-top: 1.5rem;
-  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
 }
 
 .forgot-password a {
-  color: var(--color-primary, #3182ce);
+  color: #007bff;
   text-decoration: none;
+  font-size: 0.95rem;
+  transition: color 0.3s ease;
 }
 
 .forgot-password a:hover {
+  color: #0056b3;
   text-decoration: underline;
 }
 
-/* Footer */
 .auth-footer {
-  margin-top: 2rem;
-  border-top: 1px solid var(--color-border, #e2e8f0);
-  padding-top: 1.5rem;
   text-align: center;
-  font-size: 0.75rem;
-  color: var(--color-text-tertiary, #718096);
+  color: #999;
+  font-size: 0.85rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e0e0e0;
 }
 
 .legal-links {
@@ -842,22 +832,33 @@ label {
 }
 
 .legal-links a {
-  color: var(--color-text-secondary, #4a5568);
+  color: #666;
   text-decoration: none;
+  transition: color 0.3s ease;
 }
 
 .legal-links a:hover {
+  color: #007bff;
   text-decoration: underline;
 }
 
 /* Responsive Design */
-@media (max-width: 640px) {
-  .login-container {
-    margin: 1rem;
+@media (max-width: 480px) {
+  .auth-content {
+    padding: 1.5rem;
   }
   
-  .login-card {
-    padding: 1.5rem;
+  .auth-title {
+    font-size: 1.5rem;
+  }
+  
+  .auth-tabs {
+    gap: 0.25rem;
+  }
+  
+  .auth-tab {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
   }
 }
 </style>

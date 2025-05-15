@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
-import { ApiService } from "./ApiService";
+import apiService from "./ApiService";
 
 /**
  * Interface für API-Request-Definitionen
@@ -159,7 +159,7 @@ export class BatchRequestService {
       batchDelay: 50,
       timeout: 30000,
       abortOnCriticalError: true,
-      batchEndpoint: "/api/batch",
+      batchEndpoint: "/batch", // API-Basis-URL und Version werden automatisch hinzugefügt
       retries: 2,
       retryDelay: 1000,
       enableCaching: true,
@@ -273,18 +273,56 @@ export class BatchRequestService {
     this.batchTimeout = null;
 
     try {
+      // API-Service importieren
+      if (!apiService) {
+        throw new Error("API-Service nicht verfügbar");
+      }
+
       // Batch-Anfrage erstellen
-      const response = await ApiService.customRequest({
+      const response = await apiService.customRequest<{
+        success: boolean;
+        data: {
+          responses: BatchResponse[];
+        };
+      }>({
         url: this.options.batchEndpoint,
-        method: "POST",
+        method: "post",
         data: { requests },
         timeout: this.options.timeout,
       });
 
       // Batch-Antworten verarbeiten
-      this.processBatchResponse(response.data.responses, requests);
-    } catch (error) {
+      // Der Server sendet die Antworten in einem data-Objekt
+      // Debug log
+      console.log('BatchRequestService - Response structure:', {
+        hasResponse: !!response,
+        responseType: typeof response,
+        responseKeys: response ? Object.keys(response) : [],
+        hasSuccess: response ? 'success' in response : false,
+        successValue: response ? response.success : undefined,
+        hasData: response ? !!response.data : false,
+        dataKeys: response && response.data ? Object.keys(response.data) : [],
+        hasResponses: response && response.data ? !!response.data.responses : false
+      });
+      
+      // Der ApiService gibt die ApiResponse zurück, die bereits die success/data Struktur hat
+      // Vereinfachte Validierung - vertraue auf das Server-Format
+      if (response?.data?.responses && Array.isArray(response.data.responses)) {
+        this.processBatchResponse(response.data.responses, requests);
+      } else {
+        console.error('BatchRequestService: Unexpected response format', response);
+        throw new Error("Ungültige Batch-Antwort vom Server: " + JSON.stringify(response));
+      }
+    } catch (error: any) {
       this.requestStats.errors++;
+      console.error('Batch request error:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        config: error.config,
+        endpoint: this.options.batchEndpoint,
+      });
 
       // Wiederholungsversuche, falls konfiguriert
       if (retryCount < (this.options.retries || 0)) {
@@ -491,4 +529,6 @@ export class BatchRequestService {
 }
 
 // Singleton-Instanz für die Anwendung
-export const batchRequestService = new BatchRequestService();
+export const batchRequestService = new BatchRequestService({
+  batchEndpoint: "/batch", // API-Basis-URL und Version werden automatisch hinzugefügt
+});

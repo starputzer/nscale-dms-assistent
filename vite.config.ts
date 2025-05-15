@@ -198,6 +198,16 @@ export default defineConfig(({ mode }): UserConfig => {
       preprocessorOptions: {
         scss: {
           additionalData: `@import "@/assets/styles/variables.css";`,
+          api: 'modern',
+          logger: {
+            warn: (message: string) => {
+              // Unterdrücke Import-Warnungen
+              if (message.includes('@import rules are deprecated')) {
+                return;
+              }
+              console.warn(message);
+            }
+          }
         },
       },
       // PostCSS-Plugins für CSS-Optimierung

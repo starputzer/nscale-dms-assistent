@@ -11,6 +11,7 @@ import type {
   LoginResponse,
 } from "../types/auth";
 import axios from "axios";
+import { apiService } from "../services/api/ApiService";
 // Debug axios requests/responses for authentication
 axios.interceptors.request.use(
   (config) => {
@@ -366,6 +367,13 @@ export const useAuthStore = defineStore(
             token.value = newToken;
             refreshToken.value =
               response.data.refreshToken || refreshToken.value;
+            
+            // Token auch in localStorage speichern für ApiService mit korrektem Prefix
+            localStorage.setItem('nscale_access_token', newToken);
+            if (refreshToken.value) {
+              localStorage.setItem('nscale_refresh_token', refreshToken.value);
+            }
+            console.log("Token nach Refresh in localStorage aktualisiert");
 
             // Ablaufzeit aus Token extrahieren oder vom Server verwenden
             try {
@@ -489,6 +497,11 @@ export const useAuthStore = defineStore(
         console.error("Fehler bei HTTP-Client-Bereinigung:", cleanupError);
       }
       
+      // LocalStorage bereinigen mit korrektem Prefix
+      localStorage.removeItem('nscale_access_token');
+      localStorage.removeItem('nscale_refresh_token');
+      console.log("LocalStorage bereinigt (mit nscale_ prefix)");
+      
       console.log("Auth-Store Cleanup abgeschlossen");
     }
 
@@ -577,8 +590,18 @@ export const useAuthStore = defineStore(
               
               // Token und RefreshToken setzen
               token.value = newToken;
+              console.log("Token in auth store gesetzt. Token value:", token.value?.substring(0, 10) + "...");
+              
+              // Token auch in localStorage speichern für ApiService
+              // Die config verwendet bereits "nscale_access_token" als key
+              localStorage.setItem('nscale_access_token', newToken);
+              console.log("Token in localStorage gespeichert unter key:", 'nscale_access_token', "value:", newToken.substring(0, 10) + "...");
+              
               // Type assertion for refreshToken since it might not be in the response type
               refreshToken.value = (response.data as any).refreshToken || null; // Server might not provide refresh token
+              if (refreshToken.value) {
+                localStorage.setItem('nscale_refresh_token', refreshToken.value);
+              }
               console.log("RefreshToken gesetzt:", refreshToken.value ? "Ja" : "Nein");
 
               // Extract user data from JWT token
@@ -710,6 +733,14 @@ export const useAuthStore = defineStore(
               // Token und RefreshToken setzen
               token.value = newToken;
               refreshToken.value = response.data.refreshToken || null;
+              
+              // Token auch in localStorage speichern für ApiService mit korrektem Prefix
+              localStorage.setItem('nscale_access_token', newToken);
+              console.log("Token in localStorage gespeichert unter 'nscale_access_token'");
+              
+              if (refreshToken.value) {
+                localStorage.setItem('nscale_refresh_token', refreshToken.value);
+              }
               console.log("RefreshToken gesetzt:", refreshToken.value ? "Ja" : "Nein");
               
               // User-Objekt vom Server verwenden oder aus Token extrahieren
@@ -853,6 +884,9 @@ export const useAuthStore = defineStore(
       } finally {
         // Lokalen State in einer bestimmten Reihenfolge zurücksetzen
         console.log("Setze lokalen Auth-State zurück");
+        
+        // Cleanup durchführen (entfernt Interceptors und cleared localStorage)
+        cleanup();
         
         // Erst Tokens löschen
         token.value = null;
@@ -1028,8 +1062,8 @@ export const useAuthStore = defineStore(
       }
     }
 
-    // IDs der aktiven Interceptors
-    const activeInterceptors = ref<number[]>([]);
+    // IDs der aktiven Interceptors mit Metadaten für die korrekte Entfernung
+    const activeInterceptors = ref<{id: number, type: 'global' | 'apiService', category: 'request' | 'response'}[]>([]);
     
     // Manuelle Initialisierung der HTTP-Clients statt Watch
     function configureHttpClients(newToken: string | null) {
@@ -1038,7 +1072,7 @@ export const useAuthStore = defineStore(
         removeHttpInterceptors();
         
         if (newToken) {
-          console.log("Token gesetzt, konfiguriere HTTP-Clients");
+          console.log("Token gesetzt, konfiguriere HTTP-Clients mit Token:", newToken.substring(0, 10) + "...");
           
           // Axios-Interceptor für automatischen Token-Refresh
           const refreshInterceptorId = axios.interceptors.response.use(
@@ -1080,8 +1114,9 @@ export const useAuthStore = defineStore(
           const requestInterceptorId = axios.interceptors.request.use(
             (config) => {
               // Token zu allen Anfragen außer /auth/login hinzufügen
+              const currentToken = token.value; // Capture current token value
               if (
-                token.value && 
+                currentToken && 
                 !config.url?.includes('/auth/login') &&
                 !config.headers?.Authorization
               ) {
@@ -1089,7 +1124,7 @@ export const useAuthStore = defineStore(
                 // This is safe because Authorization is a valid header
                 (config.headers as any) = {
                   ...(config.headers || {}),
-                  Authorization: `Bearer ${token.value}`
+                  Authorization: `Bearer ${currentToken}`
                 };
                 console.debug("Token zu Anfrage hinzugefügt:", config.url);
               }
@@ -1100,10 +1135,78 @@ export const useAuthStore = defineStore(
               return Promise.reject(error);
             }
           );
+          
+          // Auch für apiService-Instanz die gleichen Interceptors hinzufügen
+          console.log("Füge Request-Interceptor zu apiService hinzu...");
+          const apiServiceRequestInterceptorId = apiService.addRequestInterceptor(
+            (config) => {
+              console.log("ApiService interceptor called for:", config.url, "Current token value:", !!token.value);
+              // Token zu allen Anfragen außer /auth/login hinzufügen
+              if (
+                token.value && 
+                !config.url?.includes('/auth/login') &&
+                !config.headers?.Authorization
+              ) {
+                // Using type assertion to avoid TypeScript errors with axios headers
+                // This is safe because Authorization is a valid header
+                const currentToken = token.value;
+                (config.headers as any) = {
+                  ...(config.headers || {}),
+                  Authorization: `Bearer ${currentToken}`
+                };
+                console.log("Token zu ApiService-Anfrage hinzugefügt:", config.url, "Token:", currentToken.substring(0, 10) + "...");
+              } else {
+                console.log("Kein Token für ApiService-Anfrage:", config.url, "Token vorhanden:", !!token.value, "Headers bereits gesetzt:", !!config.headers?.Authorization);
+              }
+              return config;
+            },
+            (error) => {
+              console.error("ApiService Request-Interceptor-Fehler:", error);
+              return Promise.reject(error);
+            }
+          );
+          console.log("ApiService Request-Interceptor ID:", apiServiceRequestInterceptorId);
+          
+          const apiServiceRefreshInterceptorId = apiService.addResponseInterceptor(
+            (response) => response,
+            async (error) => {
+              // Try/catch wrappen um robustere Fehlerbehandlung zu gewährleisten
+              try {
+                const originalRequest = error.config;
+  
+                // Wenn der Fehler 401 ist und es sich nicht um einen Token-Refresh-Request handelt
+                // und der Request noch nicht wiederholt wurde
+                if (
+                  error.response?.status === 401 &&
+                  originalRequest && 
+                  !originalRequest._retry &&
+                  originalRequest.url && !originalRequest.url.includes("/api/auth/refresh")
+                ) {
+                  originalRequest._retry = true;
+  
+                  console.log("401 Fehler in ApiService erhalten, versuche Token-Refresh");
+                  const refreshSuccess = await refreshTokenIfNeeded();
+                  if (refreshSuccess && token.value) {
+                    // Ursprüngliche Anfrage mit neuem Token wiederholen
+                    console.log("Token-Refresh erfolgreich, wiederhole ApiService-Anfrage");
+                    originalRequest.headers = originalRequest.headers || {};
+                    originalRequest.headers.Authorization = `Bearer ${token.value}`;
+                    return apiService.customRequest(originalRequest);
+                  }
+                }
+              } catch (interceptorError) {
+                console.error("Fehler im ApiService-Interceptor:", interceptorError);
+              }
+  
+              return Promise.reject(error);
+            },
+          );
   
           // Interceptor-IDs speichern
-          activeInterceptors.value.push(refreshInterceptorId);
-          activeInterceptors.value.push(requestInterceptorId);
+          activeInterceptors.value.push({id: refreshInterceptorId, type: 'global', category: 'response'});
+          activeInterceptors.value.push({id: requestInterceptorId, type: 'global', category: 'request'});
+          activeInterceptors.value.push({id: apiServiceRequestInterceptorId, type: 'apiService', category: 'request'});
+          activeInterceptors.value.push({id: apiServiceRefreshInterceptorId, type: 'apiService', category: 'response'});
           
           console.log("HTTP-Clients konfiguriert mit Interceptors:", activeInterceptors.value);
           return activeInterceptors.value;
@@ -1121,13 +1224,24 @@ export const useAuthStore = defineStore(
         if (activeInterceptors.value.length > 0) {
           console.log(`Entferne ${activeInterceptors.value.length} aktive HTTP-Interceptors`);
           
-          // Response-Interceptors entfernen
-          activeInterceptors.value.forEach(id => {
+          // Interceptors basierend auf Typ und Kategorie entfernen
+          activeInterceptors.value.forEach(interceptor => {
             try {
-              axios.interceptors.response.eject(id);
-              axios.interceptors.request.eject(id);
+              if (interceptor.type === 'global') {
+                if (interceptor.category === 'request') {
+                  axios.interceptors.request.eject(interceptor.id);
+                } else {
+                  axios.interceptors.response.eject(interceptor.id);
+                }
+              } else if (interceptor.type === 'apiService') {
+                if (interceptor.category === 'request') {
+                  apiService.removeRequestInterceptor(interceptor.id);
+                } else {
+                  apiService.removeResponseInterceptor(interceptor.id);
+                }
+              }
             } catch (ejectError) {
-              console.warn(`Fehler beim Entfernen des Interceptors ${id}:`, ejectError);
+              console.warn(`Fehler beim Entfernen des Interceptors ${interceptor.id}:`, ejectError);
             }
           });
           
@@ -1169,6 +1283,10 @@ export const useAuthStore = defineStore(
         // 3. Token setzen
         token.value = newToken;
         console.log("Token wurde gesetzt");
+        
+        // Token auch in localStorage speichern für ApiService mit korrektem Prefix
+        localStorage.setItem('nscale_access_token', newToken);
+        console.log("Token in localStorage gespeichert unter 'nscale_access_token'");
         
         // 4. Benutzerdaten aus Token extrahieren
         try {

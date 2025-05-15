@@ -350,35 +350,27 @@
       <!-- Drag handle disabled for virtual scrolling -->
     </RecycleScroller>
 
-    <!-- Normale Liste mit Drag-and-Drop für weniger Sessions -->
-    <draggable
+    <!-- Normale Liste ohne Drag-and-Drop für now -->
+    <div 
       v-else
-      v-model="draggableSessions"
       class="n-session-list__items"
-      handle=".n-session-list__drag-handle"
-      item-key="id"
-      :disabled="!enableDragAndDrop || isLoading"
-      @end="handleDragEnd"
-      ghost-class="n-session-list__item--ghost"
-      chosen-class="n-session-list__item--chosen"
-      drag-class="n-session-list__item--drag"
     >
-      <template #item="{ element, index }">
-        <SessionItem
-          :session="element"
-          :is-active="activeSessionId === element.id"
-          :is-pinned="element.isPinned"
-          :show-drag-handle="enableDragAndDrop"
-          :index="index"
-          :tag="element.tag"
-          @select="handleSessionSelect"
-          @contextmenu="handleContextMenu"
-          @pin="handlePinSession"
-          @delete="handleConfirmDelete"
-          @rename="handleRenameSession"
-        />
-      </template>
-    </draggable>
+      <SessionItem
+        v-for="(element, index) in draggableSessions"
+        :key="element.id"
+        :session="element"
+        :is-active="activeSessionId === element.id"
+        :is-pinned="element.isPinned"
+        :show-drag-handle="false"
+        :index="index"
+        :tag="element.tag"
+        @select="handleSessionSelect"
+        @contextmenu="handleContextMenu"
+        @pin="handlePinSession"
+        @delete="handleConfirmDelete"
+        @rename="handleRenameSession"
+      />
+    </div>
     
     <!-- Create Session Button (Floating) -->
     <button 
@@ -582,7 +574,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
 import { useSessionsStore } from '@/stores/sessions';
 import type { ChatSession } from '@/types/session';
-import draggable from 'vuedraggable';
+// import draggable from 'vuedraggable'; // temporarily disabled
 import { RecycleScroller } from 'vue-virtual-scroller';
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
 import SessionItem from './SessionItem.vue';

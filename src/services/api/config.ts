@@ -42,12 +42,12 @@ export const API_CONFIG = {
     // Token-Präfix für HTTP-Header
     TOKEN_PREFIX: "Bearer",
 
-    // Namen der localStorage-Schlüssel
+    // Namen der localStorage-Schlüssel (ohne prefix, da StorageService "nscale_" hinzufügt)
     STORAGE_KEYS: {
-      ACCESS_TOKEN: "nscale_access_token",
-      REFRESH_TOKEN: "nscale_refresh_token",
-      TOKEN_EXPIRY: "nscale_token_expiry",
-      USER: "nscale_user",
+      ACCESS_TOKEN: "access_token",
+      REFRESH_TOKEN: "refresh_token",
+      TOKEN_EXPIRY: "token_expiry",
+      USER: "user",
     },
   },
 

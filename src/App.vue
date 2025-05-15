@@ -1,67 +1,86 @@
 <!--
-App.vue.fixed - Diese Datei enthält eine bereinigte Version der App.vue mit TypeScript-Korrekturen
+App.vue - Hauptanwendungskomponente mit verbesserter 404-Fehlerbehandlung
 -->
 <template>
   <div class="app-container" :class="{ 'theme-dark': isDarkTheme }">
-    <div id="fallback-container" style="display: none;">
-      <h1>nscale DMS Assistant</h1>
-      <p>Anwendung wird geladen...</p>
-      <button @click="navigateHome">Zur Startseite</button>
-    </div>
-    
-    <!-- Vue Router View mit höchster Priorität für Login-Seite -->
-    <router-view v-if="isAuthRoute" />
-    
-    <!-- Hauptanwendung nur anzeigen, wenn nicht auf Auth-Route -->
-    <template v-else>
-      <!-- Vue Router View für alle anderen Seiten -->
-      <router-view />
+    <!-- Improved Error Boundary mit robuster 404-Behandlung -->
+    <ImprovedErrorBoundary
+      :enableAutoRecovery="true"
+      :showDiagnostics="isDevMode"
+      @error="handleError"
+      @recovery-started="handleRecoveryStarted"
+      @recovery-completed="handleRecoveryCompleted"
+    >
+      <div id="fallback-container" style="display: none;">
+        <h1>nscale DMS Assistant</h1>
+        <p>Anwendung wird geladen...</p>
+        <button @click="navigateHome">Zur Startseite</button>
+      </div>
       
-      <!-- Modals -->
-      <feedback-dialog 
-        v-if="showFeedbackDialog"
-        :message="feedbackMessage"
-        :type="feedbackType"
-        v-model:comment="feedbackComment"
-        @close="showFeedbackDialog = false"
-        @submit="submitFeedbackWithComment"
-        @select-type="submitFeedback"
-      />
+      <!-- Router-Bereitschaftsprüfung -->
+      <div v-if="!isRouterReady" class="router-initialization">
+        <SpinnerIcon size="large" />
+        <p>Router wird initialisiert...</p>
+      </div>
       
-      <settings-dialog
-        v-if="settingsVisible"
-        v-model:font-size="fontSizeLevel"
-        v-model:contrast-mode="contrastMode"
-        v-model:color-mode="colorMode"
-        v-model:language="language"
-        v-model:streaming-enabled="streamingEnabled"
-        :system-info="systemInfo"
-        :user-role="userRole"
-        @close="toggleSettings"
-        @reset="resetSettings"
-      />
-      
-      <!-- Toast-Container für Benachrichtigungen -->
-      <toast-container />
-      
-      <!-- Error-Boundary für Fehlerfälle -->
-      <error-boundary>
-        <template #default="{ error, resetError }">
-          <critical-error :error="error" @reset="resetError" />
+      <!-- Hauptanwendung -->
+      <template v-else>
+        <!-- Vue Router View mit höchster Priorität für Login-Seite -->
+        <router-view v-if="isAuthRoute" />
+        
+        <!-- Hauptanwendung nur anzeigen, wenn nicht auf Auth-Route -->
+        <template v-else>
+          <!-- Vue Router View für alle anderen Seiten -->
+          <router-view />
+          
+          <!-- Modals -->
+          <feedback-dialog 
+            v-if="showFeedbackDialog"
+            :message="feedbackMessage"
+            :type="feedbackType"
+            v-model:comment="feedbackComment"
+            @close="showFeedbackDialog = false"
+            @submit="submitFeedbackWithComment"
+            @select-type="submitFeedback"
+          />
+          
+          <settings-dialog
+            v-if="settingsVisible"
+            v-model:font-size="fontSizeLevel"
+            v-model:contrast-mode="contrastMode"
+            v-model:color-mode="colorMode"
+            v-model:language="language"
+            v-model:streaming-enabled="streamingEnabled"
+            :system-info="systemInfo"
+            :user-role="userRole"
+            @close="toggleSettings"
+            @reset="resetSettings"
+          />
+          
+          <!-- Toast-Container für Benachrichtigungen -->
+          <toast-container />
+          
+          <!-- Error Debug Panel (nur im Dev-Modus oder bei aktiviertem Debug) -->
+          <ErrorDebugPanel
+            v-if="showDebugPanel"
+            :enabled="showDebugPanel"
+            @close="showDebugPanel = false"
+            @action="handleDebugAction"
+          />
         </template>
-      </error-boundary>
-    </template>
-    
-    <!-- Auth-Error-Boundary für Auth-bezogene Fehler -->
-    <auth-error-boundary @retry-auth="retryAuthentication">
-      <!-- Auth-bezogene Fehler werden hier abgefangen -->
-    </auth-error-boundary>
+      </template>
+      
+      <!-- Auth-Error-Boundary für Auth-bezogene Fehler -->
+      <auth-error-boundary @retry-auth="retryAuthentication">
+        <!-- Auth-bezogene Fehler werden hier abgefangen -->
+      </auth-error-boundary>
+    </ImprovedErrorBoundary>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { defineComponent, ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 // Komponenten importieren
 import AppHeader from '@/components/layout/Header.vue'
@@ -69,585 +88,395 @@ import AppMotd from '@/components/ui/Motd.vue'
 import FeedbackDialog from '@/components/dialog/FeedbackDialog.vue'
 import SettingsDialog from '@/components/dialog/SettingsDialog.vue'
 import ToastContainer from '@/components/ui/ToastContainer.vue'
-import ErrorBoundary from '@/components/shared/ErrorBoundary.vue'
-import CriticalError from '@/components/shared/CriticalError.vue'
+import ImprovedErrorBoundary from '@/components/shared/ImprovedErrorBoundary.vue'
 import AuthErrorBoundary from '@/components/auth/AuthErrorBoundary.vue'
+import ErrorDebugPanel from '@/components/debug/ErrorDebugPanel.vue'
+import SpinnerIcon from '@/components/icons/SpinnerIcon.vue'
+
+// Services und Composables
+import { routerService } from '@/services/router/RouterService'
+import { navigationController } from '@/controllers/NavigationController'
+import { useEnhancedRouteFallback } from '@/composables/useEnhancedRouteFallback'
+import { domErrorDetector } from '@/utils/domErrorDiagnostics'
+import { useLogger } from '@/composables/useLogger'
+import { useToast } from '@/composables/useToast'
+import { installRouterGuards } from '@/plugins/routerGuards'
 
 // Type definitions and interfaces
-interface ChatSession {
-  id: string;
-  title: string;
-  createdAt: string;
-  updatedAt: string;
-  userId: string;
-  isArchived?: boolean;
-  isPinned?: boolean;
-}
-
-// Message type (compatible with different message formats)
-interface Message {
-  id: string;
-  sessionId?: string;
-  content?: string;
-  role?: 'user' | 'assistant' | 'system';
-  text?: string;
-  is_user?: boolean;
-  timestamp: string;
-  sources?: any[];
-}
-
-// MOTD configuration
-interface MotdConfig {
-  enabled: boolean;
-  title?: string;
-  content: string;
-  display?: {
-    showInChat: boolean;
-    showOnStartup: boolean;
-  };
-  format?: string;
-  style?: Record<string, string>;
-}
-
-// Store types (mock implementations)
-interface AuthStore {
-  isAuthenticated: boolean;
-  token: string | null;
-  userRole: string;
-  logout(): void;
-  validateToken(): Promise<void>;
-}
-
-interface SessionsStore {
-  sessions: ChatSession[];
-  currentSession: ChatSession | null;
-  messages: Message[];
-  loadSessions(): Promise<void>;
-  createNewSession(): Promise<string>;
-  setCurrentSession(sessionId: string): Promise<void>;
-  loadSession(sessionId: string): Promise<void>;
-  deleteSession(sessionId: string): Promise<void>;
-  archiveSession(sessionId: string): Promise<void>;
-  sendMessage(params: { sessionId: string, content: string, role?: string }): Promise<void>;
-  addMessage(message: Message): void;
-  updateStreamedMessage(content: string): void;
-  clearSessions(): void;
-}
-
-interface SettingsStore {
-  fontSizeLevel: number;
-  contrastMode: string;
-  colorMode: string;
-  language: string;
-  streamingEnabled: boolean;
-  setFontSizeLevel(value: number): void;
-  setContrastMode(value: string): void;
-  setColorMode(value: string): void;
-  setLanguage(value: string): void;
-  setStreamingEnabled(value: boolean): void;
-  resetToDefaults(): void;
-}
-
-interface UIStore {
-  activeView: string;
-  settingsVisible: boolean;
-  setActiveView(view: string): void;
-  toggleSettings(): void;
-  showToast(toast: {type: string, message: string}): void;
-}
-
-interface MotdStore {
-  config: MotdConfig;
-  editConfig: MotdConfig;
-  dismissed: boolean;
-  dismiss(): void;
-  saveConfig(config: MotdConfig): void;
-}
-
-interface FeedbackStore {
-  submitFeedback(feedback: {
-    messageId: string | null;
-    type: string;
-    comment: string;
-    sessionId: string | null;
-  }): Promise<void>;
-}
-
-interface ABTestStore {
-  tests: any[];
-  loadTests(): Promise<void>;
-}
-
-// Mock store functions with initial values
-function useAuthStore(): AuthStore {
-  return {
-    isAuthenticated: false,
-    token: null,
-    userRole: 'user',
-    logout: () => {},
-    validateToken: async () => {}
-  };
-}
-
-function useSessionsStore(): SessionsStore {
-  return {
-    sessions: [],
-    currentSession: null,
-    messages: [],
-    loadSessions: async () => {},
-    createNewSession: async () => "session-id",
-    setCurrentSession: async () => {},
-    loadSession: async () => {},
-    deleteSession: async () => {},
-    archiveSession: async () => {},
-    sendMessage: async () => {},
-    addMessage: () => {},
-    updateStreamedMessage: () => {},
-    clearSessions: () => {}
-  };
-}
-
-function useSettingsStore(): SettingsStore {
-  return {
-    fontSizeLevel: 1,
-    contrastMode: 'normal',
-    colorMode: 'light',
-    language: 'de',
-    streamingEnabled: true,
-    setFontSizeLevel: () => {},
-    setContrastMode: () => {},
-    setColorMode: () => {},
-    setLanguage: () => {},
-    setStreamingEnabled: () => {},
-    resetToDefaults: () => {}
-  };
-}
-
-function useUIStore(): UIStore {
-  return {
-    activeView: 'chat',
-    settingsVisible: false,
-    setActiveView: () => {},
-    toggleSettings: () => {},
-    showToast: () => {}
-  };
-}
-
-function useMotdStore(): MotdStore {
-  return {
-    config: {
-      enabled: false,
-      content: '',
-      display: {
-        showInChat: false,
-        showOnStartup: false
-      }
-    },
-    editConfig: {
-      enabled: false,
-      content: '',
-      display: {
-        showInChat: false,
-        showOnStartup: false
-      }
-    },
-    dismissed: false,
-    dismiss: () => {},
-    saveConfig: () => {}
-  };
-}
-
-function useFeedbackStore(): FeedbackStore {
-  return {
-    submitFeedback: async () => {}
-  };
-}
-
-function useABTestStore(): ABTestStore {
-  return {
-    tests: [],
-    loadTests: async () => {}
-  };
+interface SystemInfo {
+  version: string;
+  environment: string;
+  apiStatus: string;
+  lastUpdate: string;
 }
 
 export default defineComponent({
   name: 'App',
-  
   components: {
     AppHeader,
     AppMotd,
     FeedbackDialog,
     SettingsDialog,
     ToastContainer,
-    ErrorBoundary,
-    CriticalError,
-    AuthErrorBoundary
+    ImprovedErrorBoundary,
+    AuthErrorBoundary,
+    ErrorDebugPanel,
+    SpinnerIcon
   },
-  
-  props: {
-    // App doesn't have props since it's the root component
-  },
-  
   setup() {
-    // Stores
-    const authStore = useAuthStore()
-    const settingsStore = useSettingsStore()
-    const uiStore = useUIStore()
-    const feedbackStore = useFeedbackStore()
     const route = useRoute()
+    const router = useRouter()
+    const logger = useLogger()
+    const toast = useToast()
     
-    // Reaktive State-Variablen
+    // State variables
+    const isDarkTheme = ref(false)
     const showFeedbackDialog = ref(false)
-    const feedbackMessage = ref<Message | null>(null)
+    const feedbackMessage = ref('')
     const feedbackType = ref('')
     const feedbackComment = ref('')
+    const settingsVisible = ref(false)
+    const showDebugPanel = ref(false)
+    const isDevMode = computed(() => import.meta.env.DEV)
+    const isRouterReady = ref(false)
     
-    // Computed Properties
-    const userRole = computed(() => authStore.userRole)
-    const settingsVisible = computed(() => uiStore.settingsVisible)
-    const isDarkTheme = computed(() => settingsStore.colorMode === 'dark' || 
-      (settingsStore.colorMode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches))
-    
-    // Prüfen, ob die aktuelle Route eine Auth-Route ist
-    const isAuthRoute = computed(() => {
-      return route.path === '/login' || 
-             route.path === '/register' || 
-             route.path.startsWith('/auth');
+    // Enhanced Route Fallback mit robuster Fehlerbehandlung
+    const { 
+      isMonitoring,
+      routeHealth,
+      safeNavigate,
+      checkRouteHealth
+    } = useEnhancedRouteFallback({
+      enabled: true,
+      autoRepairEnabled: true,
+      debugMode: isDevMode.value
     })
     
-    // Feedback-Funktionen
-
-    // Feedback-Funktionen
-    const submitFeedback = (type: string): void => {
-      feedbackType.value = type
-    }
-
-    const submitFeedbackWithComment = async (): Promise<void> => {
-      try {
-        await feedbackStore.submitFeedback({
-          messageId: feedbackMessage.value?.id || null,
-          type: feedbackType.value,
-          comment: feedbackComment.value,
-          sessionId: null
-        })
-
-        showFeedbackDialog.value = false
-        feedbackType.value = ''
-        feedbackComment.value = ''
-
-        uiStore.showToast({
-          type: 'success',
-          message: 'Vielen Dank für Ihr Feedback!'
-        })
-      } catch (error) {
-        uiStore.showToast({
-          type: 'error',
-          message: 'Fehler beim Senden des Feedbacks'
-        })
-      }
-    }
-
-    // Einstellungen
-    const toggleSettings = (): void => {
-      uiStore.toggleSettings()
-    }
-
-    const resetSettings = (): void => {
-      settingsStore.resetToDefaults()
-    }
-
-    // Auth-Funktionen werden über den Router und Guards gehandhabt
+    // Settings
+    const fontSizeLevel = ref(2)
+    const contrastMode = ref(false)
+    const colorMode = ref('light')
+    const language = ref('de')
+    const streamingEnabled = ref(true)
     
-    // Hilfsfunktion für erneuten Authentifizierungsversuch
-    const retryAuthentication = () => {
-      console.log('Authentifizierung wird erneut versucht...');
-      
-      // Zurücksetzen von Auth-Fehlern
-      if (authStore.resetAuthErrors) {
-        authStore.resetAuthErrors();
+    // User and system info
+    const userRole = ref('user')
+    const systemInfo = ref<SystemInfo>({
+      version: '1.0.0',
+      environment: 'production',
+      apiStatus: 'online',
+      lastUpdate: new Date().toISOString()
+    })
+    
+    // Computed properties
+    const isAuthRoute = computed(() => 
+      route.path === '/login' || 
+      route.path === '/auth' || 
+      route.path.startsWith('/auth/')
+    )
+    
+    // Router Initialization
+    const initializeRouter = async () => {
+      try {
+        logger.info('Router-Initialisierung gestartet')
+        
+        // Router Service initialisieren
+        const initialized = await routerService.initialize(router)
+        
+        if (!initialized) {
+          throw new Error('Router Service konnte nicht initialisiert werden')
+        }
+        
+        // Router Guards installieren
+        installRouterGuards(router, {
+          enableLogging: isDevMode.value,
+          enableFeatureChecks: true,
+          enableAuthChecks: true
+        })
+        
+        isRouterReady.value = true
+        logger.info('Router erfolgreich initialisiert')
+      } catch (error) {
+        logger.error('Router-Initialisierung fehlgeschlagen', error)
+        toast.error('Router-Initialisierung fehlgeschlagen. Bitte Seite neu laden.')
+        
+        // Fallback: Seite nach Verzögerung neu laden
+        setTimeout(() => {
+          window.location.reload()
+        }, 3000)
       }
+    }
+    
+    // Navigation Methods mit Error Handling
+    const navigateHome = async () => {
+      try {
+        const success = await navigationController.navigateHome({
+          showToast: true,
+          fallbackOnError: false
+        })
+        
+        if (!success) {
+          window.location.href = '/'
+        }
+      } catch (error) {
+        logger.error('Navigation zur Startseite fehlgeschlagen', error)
+        window.location.href = '/'
+      }
+    }
+    
+    const toggleSettings = () => {
+      settingsVisible.value = !settingsVisible.value
+    }
+    
+    const resetSettings = () => {
+      fontSizeLevel.value = 2
+      contrastMode.value = false
+      colorMode.value = 'light'
+      language.value = 'de'
+      streamingEnabled.value = true
+    }
+    
+    const submitFeedback = (type: string) => {
+      feedbackType.value = type
+      // Feedback logic
+    }
+    
+    const submitFeedbackWithComment = () => {
+      // Submit feedback with comment
+      showFeedbackDialog.value = false
+    }
+    
+    const retryAuthentication = async () => {
+      logger.info('Retrying authentication...')
+      // Retry authentication logic
+    }
+    
+    // Error Handlers
+    const handleError = (error: Error) => {
+      logger.error('App-Level Error:', error)
       
-      // Optional: Weiterleitung zur Login-Seite
-      if (route.path !== '/login') {
-        const router = (window as any).$router;
-        if (router) {
-          router.push('/login');
-        } else {
-          // Fallback bei fehlerhaftem Router
-          window.location.href = '/login';
+      // Spezielle Behandlung für currentRoute-Fehler
+      if (error.message.includes('Cannot read properties of undefined')) {
+        if (error.message.includes('currentRoute')) {
+          logger.warn('CurrentRoute-Fehler erkannt, Router-Reset...')
+          initializeRouter()
         }
       }
-      
-      // Toast-Benachrichtigung anzeigen
-      uiStore.showToast({
-        type: 'info',
-        message: 'Bitte erneut anmelden'
-      });
     }
-
-    // Initialisierung
-    onMounted(() => {
-      // Theme setzen basierend auf Einstellungen
-      document.documentElement.classList.toggle('theme-dark', isDarkTheme.value)
-      
-      // Entferne Ladeanimation
-      const appLoader = document.getElementById('app-loading')
-      if (appLoader) {
-        appLoader.classList.add('app-loader-fade')
-        setTimeout(() => {
-          appLoader.style.display = 'none'
-        }, 500)
+    
+    const handleRecoveryStarted = () => {
+      logger.info('Fehlerwiederherstellung gestartet')
+      toast.info('Automatische Fehlerkorrektur läuft...')
+    }
+    
+    const handleRecoveryCompleted = (success: boolean) => {
+      if (success) {
+        logger.info('Fehlerwiederherstellung erfolgreich')
+        toast.success('Fehler erfolgreich behoben')
+      } else {
+        logger.error('Fehlerwiederherstellung fehlgeschlagen')
+        toast.error('Automatische Korrektur fehlgeschlagen. Bitte Seite neu laden.')
+        showDebugPanel.value = true
       }
+    }
+    
+    const handleDebugAction = (action: string, result: any) => {
+      logger.info(`Debug action: ${action}`, result)
+    }
+    
+    // Lifecycle hooks
+    onMounted(async () => {
+      // Router initialisieren
+      await initializeRouter()
+      
+      // Theme initialization
+      const savedTheme = localStorage.getItem('theme')
+      if (savedTheme) {
+        isDarkTheme.value = savedTheme === 'dark'
+        colorMode.value = savedTheme
+      }
+      
+      // Developer mode setup
+      if (isDevMode.value) {
+        // Debug keyboard shortcut (Ctrl+Shift+D)
+        const handleKeyPress = (e: KeyboardEvent) => {
+          if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+            showDebugPanel.value = !showDebugPanel.value
+          }
+        }
+        window.addEventListener('keydown', handleKeyPress)
+        
+        // Cleanup
+        onBeforeUnmount(() => {
+          window.removeEventListener('keydown', handleKeyPress)
+        })
+      }
+      
+      // Global Error Handler für undefined currentRoute
+      window.addEventListener('error', (event) => {
+        if (event.error?.message?.includes('Cannot read properties of undefined')) {
+          if (event.error.message.includes('currentRoute')) {
+            event.preventDefault()
+            handleError(event.error)
+          }
+        }
+      })
+      
+      // Start DOM error detection
+      const stopDetection = domErrorDetector.startAutoDetection(3000)
+      
+      onBeforeUnmount(() => {
+        stopDetection()
+      })
     })
     
-    // Watch für Theme-Änderungen
-    watch(isDarkTheme, (newValue: boolean) => {
+    // Watch theme changes
+    watch(isDarkTheme, (newValue) => {
+      localStorage.setItem('theme', newValue ? 'dark' : 'light')
       document.documentElement.classList.toggle('theme-dark', newValue)
+    })
+    
+    // Watch route changes for error detection
+    watch(() => route.path, async () => {
+      // Verzögerte Prüfung der Route-Gesundheit
+      setTimeout(() => {
+        checkRouteHealth()
+      }, 500)
+    })
+    
+    // Watch Router Health
+    watch(routeHealth, (health) => {
+      if (!health.healthy && health.consecutiveFailures > 2) {
+        logger.warn('Route-Gesundheit kritisch', health)
+        if (!showDebugPanel.value && isDevMode.value) {
+          showDebugPanel.value = true
+        }
+      }
     })
     
     return {
       // State
-      userRole,
+      isDarkTheme,
       showFeedbackDialog,
       feedbackMessage,
       feedbackType,
       feedbackComment,
       settingsVisible,
-      isDarkTheme,
+      showDebugPanel,
+      isDevMode,
+      isRouterReady,
+      
+      // Settings
+      fontSizeLevel,
+      contrastMode,
+      colorMode,
+      language,
+      streamingEnabled,
+      
+      // User and system
+      userRole,
+      systemInfo,
+      
+      // Computed
       isAuthRoute,
+      isMonitoring,
+      routeHealth,
       
-      // Einstellungen mit korrekter Typisierung für Vue 3 computed mit Getter/Setter
-      fontSizeLevel: {
-        get: () => settingsStore.fontSizeLevel,
-        set: (value: number) => settingsStore.setFontSizeLevel(value)
-      },
-      contrastMode: {
-        get: () => settingsStore.contrastMode,
-        set: (value: string) => settingsStore.setContrastMode(value)
-      },
-      colorMode: {
-        get: () => settingsStore.colorMode,
-        set: (value: string) => settingsStore.setColorMode(value)
-      },
-      language: {
-        get: () => settingsStore.language,
-        set: (value: string) => settingsStore.setLanguage(value)
-      },
-      streamingEnabled: {
-        get: () => settingsStore.streamingEnabled,
-        set: (value: boolean) => settingsStore.setStreamingEnabled(value)
-      },
-      systemInfo: computed(() => ({
-        version: '1.0.0',
-        build: '20250511',
-        model: 'nScale Assistant',
-        endpoint: '/api'
-      })),
-      
-      // Methoden
-      submitFeedback,
-      submitFeedbackWithComment,
+      // Methods
+      navigateHome,
       toggleSettings,
       resetSettings,
+      submitFeedback,
+      submitFeedbackWithComment,
       retryAuthentication,
-      
-      // Notfall-Navigation
-      navigateHome: () => {
-        window.location.href = "/";
-      }
+      handleError,
+      handleRecoveryStarted,
+      handleRecoveryCompleted,
+      handleDebugAction
     }
   }
 })
 </script>
 
-<style lang="scss">
-// Basis-Styles
-:root {
-  /* Primary color palette */
-  --nscale-green: #00a550;
-  --nscale-green-dark: #008d45;
-  --nscale-green-darker: #00773b;
-  --nscale-green-light: #e8f7ef;
-  --nscale-green-lighter: #f2fbf7;
-  
-  /* Secondary colors */
-  --nscale-dark-gray: #333333;
-  --nscale-mid-gray: #666666;
-  --nscale-light-gray: #cccccc;
-  --nscale-lightest-gray: #f5f5f5;
-
-  /* State colors */
-  --nscale-success: #00a550;
-  --nscale-warning: #ffc107;
-  --nscale-error: #dc3545;
-  --nscale-info: #17a2b8;
-  
-  /* UI component colors */
-  --nscale-border-color: #e2e8f0;
-  --nscale-shadow-color: rgba(0, 0, 0, 0.1);
-  --nscale-focus-ring: rgba(0, 165, 80, 0.25);
-  
-  /* Background colors */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --bg-tertiary: #f1f5f9;
-  
-  /* Text colors */
-  --text-primary: #333333;
-  --text-secondary: #666666;
-  --text-muted: #888888;
-  
-  /* Spacing */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-  
-  /* Border radius */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  
-  /* Animation duration */
-  --duration-fast: 150ms;
-  --duration-normal: 300ms;
-  --duration-slow: 500ms;
-}
-
-// Dark theme variables
-.theme-dark {
-  --nscale-green-light: rgba(0, 165, 80, 0.2);
-  --nscale-green-lighter: rgba(0, 165, 80, 0.1);
-  
-  --bg-primary: #1a1a1a;
-  --bg-secondary: #2a2a2a;
-  --bg-tertiary: #333333;
-  
-  --text-primary: #f1f5f9;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  
-  --nscale-border-color: #444444;
-  --nscale-shadow-color: rgba(0, 0, 0, 0.3);
-}
-
-// Basis-Stile
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: 16px;
-  line-height: 1.5;
-}
-
+<style scoped>
 .app-container {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  transition: all 0.3s ease;
 }
 
-.main-layout {
+.app-container.theme-dark {
+  background-color: var(--color-background-dark);
+  color: var(--color-text-dark);
+}
+
+.router-initialization {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   min-height: 100vh;
+  gap: 1rem;
 }
 
-.main-content {
-  flex: 1;
-  display: flex;
-  overflow: hidden;
+.router-initialization p {
+  font-size: 1.2rem;
+  color: var(--color-text-light);
 }
 
-// Lade-Animation
-.app-loader {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--bg-primary);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  transition: opacity var(--duration-normal) ease-out;
-  
-  &.app-loader-fade {
-    opacity: 0;
-  }
-}
-
-.app-loader-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-md);
-}
-
-.app-loader-logo {
-  width: 80px;
-  height: auto;
-}
-
-.app-loader-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid var(--nscale-green-light);
-  border-top-color: var(--nscale-green);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-// Critical error styling
-.critical-error {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10000;
-}
-
-.critical-error-content {
-  background-color: var(--bg-primary);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-xl);
-  max-width: 500px;
-  width: 90%;
+#fallback-container {
   text-align: center;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  padding: 2rem;
+  margin-top: 20vh;
 }
 
-.critical-error h2 {
-  color: var(--nscale-error);
-  margin-top: 0;
+#fallback-container h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: var(--color-primary);
 }
 
-.critical-error button {
-  background-color: var(--nscale-green);
+#fallback-container p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  color: var(--color-text-light);
+}
+
+#fallback-container button {
+  padding: 0.75rem 1.5rem;
+  background-color: var(--color-primary);
   color: white;
   border: none;
-  padding: var(--spacing-md) var(--spacing-xl);
-  border-radius: var(--radius-sm);
-  font-weight: 500;
+  border-radius: 4px;
   cursor: pointer;
-  margin-top: var(--spacing-md);
-  transition: background-color var(--duration-fast) ease;
-  
-  &:hover {
-    background-color: var(--nscale-green-dark);
-  }
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+#fallback-container button:hover {
+  background-color: var(--color-primary-dark);
+}
+
+/* Global error handling styles */
+:deep(.error-boundary-fallback) {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--color-background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+}
+
+/* Debug panel positioning */
+:deep(.error-debug-panel) {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
 }
 </style>

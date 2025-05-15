@@ -151,7 +151,7 @@ export class ApiService {
         config.headers["X-Request-ID"] = requestId;
 
         // Debug-Logging
-        if (apiConfig.DEBUG.LOG_REQUESTS) {
+        if (apiConfig.DEBUG.LOG_REQUESTS || config.url?.includes('batch')) {
           this.logService.debug(
             `📤 Request [${config.method?.toUpperCase()}] ${config.url}`,
             {
@@ -159,16 +159,44 @@ export class ApiService {
               headers: config.headers,
               params: config.params,
               data: config.data,
+              hasAuthHeader: !!config.headers?.Authorization,
+              authHeaderValue: config.headers?.Authorization ? config.headers.Authorization.substring(0, 20) + '...' : null,
             },
           );
         }
 
         // Auth-Token hinzufügen, wenn vorhanden
-        const token = this.storageService.getItem(
+        // Versuche zuerst aus StorageService
+        let token = this.storageService.getItem(
           apiConfig.AUTH.STORAGE_KEYS.ACCESS_TOKEN,
         );
-        if (token) {
+        
+        // Fallback: Direkt aus localStorage mit korrektem key
+        if (!token) {
+          token = localStorage.getItem('nscale_access_token');
+        }
+        
+        // Debug logging for batch requests
+        if (config.url?.includes('batch')) {
+          // Let's check what's actually in localStorage
+          const allKeys = Object.keys(localStorage);
+          const tokenKeys = allKeys.filter(key => key.includes('token'));
+          console.log("Batch request auth check:", {
+            tokenFromStorage: !!token,
+            tokenLength: token?.length,
+            tokenPreview: token ? token.substring(0, 20) + '...' : null,
+            authAlreadySet: !!config.headers.Authorization,
+            url: config.url,
+            storageKey: apiConfig.AUTH.STORAGE_KEYS.ACCESS_TOKEN,
+            allTokenKeys: tokenKeys,
+            directLocalStorageValue: localStorage.getItem('nscale_access_token')?.substring(0, 20) + '...',
+            currentHeaders: Object.keys(config.headers || {})
+          });
+        }
+        
+        if (token && !config.headers.Authorization) {
           config.headers.Authorization = `${apiConfig.AUTH.TOKEN_PREFIX} ${token}`;
+          this.logService.debug("Auth header added to request");
         }
 
         // API-Version hinzufügen, wenn konfiguriert
@@ -890,6 +918,40 @@ export class ApiService {
     } catch (e) {
       return null;
     }
+  }
+
+  /**
+   * Fügt einen Request-Interceptor hinzu
+   */
+  public addRequestInterceptor(
+    onFulfilled: (config: any) => any,
+    onRejected?: (error: any) => any
+  ): number {
+    return this.axiosInstance.interceptors.request.use(onFulfilled, onRejected);
+  }
+
+  /**
+   * Fügt einen Response-Interceptor hinzu
+   */
+  public addResponseInterceptor(
+    onFulfilled: (response: any) => any,
+    onRejected?: (error: any) => any
+  ): number {
+    return this.axiosInstance.interceptors.response.use(onFulfilled, onRejected);
+  }
+
+  /**
+   * Entfernt einen Request-Interceptor
+   */
+  public removeRequestInterceptor(id: number): void {
+    this.axiosInstance.interceptors.request.eject(id);
+  }
+
+  /**
+   * Entfernt einen Response-Interceptor
+   */
+  public removeResponseInterceptor(id: number): void {
+    this.axiosInstance.interceptors.response.eject(id);
   }
 }
 

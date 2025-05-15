@@ -4,7 +4,7 @@ import sqlite3
 import hashlib
 import secrets
 import time
-import jwt
+from jose import jwt
 from ..core.config import Config
 from ..core.logging import LogManager
 
@@ -139,12 +139,15 @@ class UserManager:
                 'user_id': user[0],
                 'email': user[1],
                 'role': user[2],
-                'exp': int(time.time()) + Config.JWT_EXPIRATION
+                'exp': int(time.time()) + Config.JWT_EXPIRATION,
+                'tokenExpiry': int(time.time()) + Config.JWT_EXPIRATION  # Add tokenExpiry for frontend compatibility
             }
             token = jwt.encode(payload, Config.SECRET_KEY, algorithm='HS256')
             
             conn.close()
             logger.info(f"Benutzer {email} erfolgreich authentifiziert mit Rolle {user[2]}")
+            logger.debug(f"Token payload: {payload}")
+            logger.debug(f"Token generated: {token[:20]}...")
             return token
         
         conn.close()
@@ -326,13 +329,29 @@ class UserManager:
     def verify_token(self, token):
         """Überprüft ein JWT-Token und gibt Benutzerinformationen zurück"""
         try:
+            logger.debug(f"Verifying token: {token[:20]}...")
+            logger.debug(f"Using secret key: {Config.SECRET_KEY[:20]}...")
+            
             payload = jwt.decode(token, Config.SECRET_KEY, algorithms=['HS256'])
+            logger.debug(f"Token decoded successfully: {payload}")
+            
+            # Check if token is expired
+            if 'exp' in payload:
+                expiry = payload['exp']
+                current_time = int(time.time())
+                logger.debug(f"Token expiry: {expiry}, Current time: {current_time}")
+                
+                if current_time > expiry:
+                    logger.warning(f"Token has expired. Expiry: {expiry}, Current: {current_time}")
+                    return None
+            
             return payload
-        except jwt.ExpiredSignatureError:
-            logger.warning("Abgelaufenes Token verwendet")
+        except jwt.ExpiredSignatureError as e:
+            logger.warning(f"Token ist abgelaufen: {e}")
             return None
-        except jwt.InvalidTokenError:
-            logger.warning("Ungültiges Token verwendet")
+        except jwt.JWTError as e:
+            logger.warning(f"Fehler bei Token-Verifizierung: {e}")
+            logger.debug(f"Token details: {token[:50]}...")
             return None
         except Exception as e:
             logger.error(f"Unerwarteter Fehler bei Token-Verifizierung: {e}")

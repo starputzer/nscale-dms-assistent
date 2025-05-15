@@ -14,6 +14,12 @@ import type {
 import type { ISessionsStore, SessionsStoreReturn } from "../types/stores";
 import { useAuthStore } from "./auth";
 import { batchRequestService } from "@/services/api/BatchRequestService";
+import { 
+  processBatchResponse, 
+  extractBatchResponseData, 
+  validateSessionsResponse, 
+  validateMessagesResponse 
+} from './sessionsResponseFix';
 import {
   batchStoreQueries,
   batchOperationByIds,
@@ -259,39 +265,94 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
      * - Intelligente Erkennung von Änderungen minimiert unnötige Updates
      */
     async function synchronizeSessions(): Promise<void> {
+      console.log("=== synchronizeSessions called ===");
+      console.log("Auth status:", authStore.isAuthenticated);
+      console.log("Sync status:", syncStatus.value.isSyncing);
+      
+      // Check and sync auth status first
+      if (window.authSyncFixed) {
+        window.authSyncFixed.checkAuthConsistency();
+      }
+      
       if (!authStore.isAuthenticated || syncStatus.value.isSyncing) return;
 
       syncStatus.value.isSyncing = true;
       error.value = null;
 
       try {
-        // Optimierte Implementierung mit Batching
-        const sessionsRequest = {
-          endpoint: "/api/sessions",
-          method: "GET",
-          params: {
-            since: syncStatus.value.lastSyncTime,
+        // Check if auth headers are available
+        if (!authStore.createAuthHeaders) {
+          console.error("Auth store method createAuthHeaders not available");
+          // Don't throw, just return to allow app to continue
+          return;
+        }
+
+        const authHeaders = authStore.createAuthHeaders();
+        if (!authHeaders || Object.keys(authHeaders).length === 0) {
+          console.warn("No auth headers available, skipping sync");
+          return;
+        }
+
+        // Server unterstützt jetzt Batch-API!
+        const requests = [
+          {
+            id: "sessions_sync",
+            endpoint: "/api/sessions",
+            method: "GET" as const,
+            params: {
+              since: syncStatus.value.lastSyncTime,
+            },
+            headers: authHeaders,
           },
-          headers: authStore.createAuthHeaders(),
-          id: "sessions_sync",
-        };
+          {
+            id: "sessions_stats",
+            endpoint: "/api/sessions/stats",
+            method: "GET" as const,
+            headers: authHeaders,
+          },
+        ];
 
-        // Statistiken zum Debuggen laden (optional)
-        const statsRequest = {
-          endpoint: "/api/sessions/stats",
-          method: "GET",
-          headers: authStore.createAuthHeaders(),
-          id: "sessions_stats",
-        };
-
-        // Beide Anfragen in einem Batch senden
-        const [sessionsResponse, statsResponse] = await batchStoreQueries<any>([
-          sessionsRequest,
-          statsRequest,
-        ]);
-
-        // Server-Sessions mit dem lokalen Zustand zusammenführen
-        const serverSessions = sessionsResponse as ChatSession[];
+        // Batch-Request verwenden
+        console.log("About to execute batch request for sessions with:", requests);
+        let rawResponses;
+        try {
+          rawResponses = await batchRequestService.executeBatch(requests);
+          console.log("Batch request successful, got raw responses:", rawResponses);
+        } catch (batchError: any) {
+          console.error("Batch request failed:", {
+            error: batchError,
+            message: batchError?.message,
+            stack: batchError?.stack
+          });
+          // Don't throw - allow app to continue with empty sessions
+          sessions.value = [];
+          return;
+        }
+        
+        // Process batch response with new fix
+        let responses;
+        try {
+          responses = processBatchResponse(rawResponses, 'synchronizeSessions');
+        } catch (processError) {
+          console.error("Error processing batch response:", processError);
+          sessions.value = [];
+          return;
+        }
+        
+        // Extract data from responses
+        const sessionsData = extractBatchResponseData(responses, 0, 'sessions');
+        const statsData = extractBatchResponseData(responses, 1, 'stats');
+        
+        // Validate and extract sessions
+        const { valid, sessions: serverSessions } = validateSessionsResponse(sessionsData);
+        
+        if (!valid) {
+          console.warn("Invalid sessions response format:", sessionsData);
+          sessions.value = [];
+          return;
+        }
+        
+        console.log(`Processing ${serverSessions.length} sessions from server`);
 
         // Optimierte Sessions-Verarbeitung mit Map für schnelleren Zugriff
         if (serverSessions && serverSessions.length > 0) {
@@ -353,14 +414,23 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
         syncStatus.value.error = null;
 
         // Statistik-Informationen verarbeiten, wenn vorhanden
-        if (statsResponse && typeof statsResponse === "object") {
-          console.log("Session statistics:", statsResponse);
+        if (statsData && typeof statsData === "object") {
+          console.log("Session statistics:", statsData);
           // Hier könnten Statistikdaten für UI-Updates verwendet werden
         }
       } catch (err: any) {
-        console.error("Error synchronizing sessions:", err);
+        console.error("Error synchronizing sessions - Details:", {
+          fullError: err,
+          errorMessage: err?.message,
+          errorResponse: err?.response,
+          errorData: err?.data,
+          errorStack: err?.stack,
+          errorType: err?.constructor?.name,
+          isNetworkError: err?.code === 'ECONNABORTED',
+          status: err?.response?.status
+        });
         syncStatus.value.error =
-          err.response?.data?.message || "Fehler bei der Synchronisation";
+          err.response?.data?.message || err.message || "Fehler bei der Synchronisation";
       } finally {
         syncStatus.value.isSyncing = false;
       }
@@ -372,67 +442,94 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
      * Optimierte Version mit API-Batching und Cache-Control
      */
     async function fetchMessages(sessionId: string): Promise<ChatMessage[]> {
+      console.log("=== fetchMessages called ===");
+      console.log("Session ID:", sessionId);
+      console.log("Auth status:", authStore.isAuthenticated);
+      
       if (!sessionId || !authStore.isAuthenticated) return [];
 
       isLoading.value = true;
       error.value = null;
 
       try {
-        // Optimierte Implementierung mit Batching
-        const messagesRequest = {
-          endpoint: `/api/sessions/${sessionId}/messages`,
-          method: "GET",
-          headers: authStore.createAuthHeaders(),
-          id: `messages_${sessionId}`,
-          // Cache-Kontrolle für optimale Performance
-          meta: {
-            cacheTTL: 60000, // 1 Minute Cache-Lebensdauer
-          },
-        };
-
-        // Metadaten für die Session gleichzeitig laden
-        const metadataRequest = {
-          endpoint: `/api/sessions/${sessionId}/metadata`,
-          method: "GET",
-          headers: authStore.createAuthHeaders(),
-          id: `metadata_${sessionId}`,
-        };
-
-        // Beide Anfragen in einem Batch senden
-        const [messagesResponse, metadataResponse] =
-          await batchStoreQueries<any>([messagesRequest, metadataRequest]);
-
-        // Nachrichten für diese Session speichern
-        messages.value = {
-          ...messages.value,
-          [sessionId]: messagesResponse as ChatMessage[],
-        };
-
-        // Wenn Metadaten geladen wurden, Session-Metadaten aktualisieren
-        if (metadataResponse && typeof metadataResponse === "object") {
-          // Session-Metadaten aktualisieren (z.B. Lesezeichen, Tags, etc.)
-          const sessionIndex = sessions.value.findIndex(
-            (s) => s.id === sessionId,
-          );
-          if (sessionIndex !== -1) {
-            sessions.value[sessionIndex] = {
-              ...sessions.value[sessionIndex],
-              ...metadataResponse,
-              // Wichtig: UpdatedAt vom Server nicht übernehmen, wenn es älter ist
-              updatedAt:
-                new Date(metadataResponse.updatedAt).getTime() >
-                new Date(sessions.value[sessionIndex].updatedAt).getTime()
-                  ? metadataResponse.updatedAt
-                  : sessions.value[sessionIndex].updatedAt,
-            };
-          }
+        // Check if auth headers are available
+        if (!authStore.createAuthHeaders) {
+          console.error("Auth store method createAuthHeaders not available");
+          throw new Error("Authentication methods not available");
         }
 
-        return messagesResponse as ChatMessage[];
+        const authHeaders = authStore.createAuthHeaders();
+        if (!authHeaders || Object.keys(authHeaders).length === 0) {
+          console.warn("No auth headers available, skipping message fetch");
+          return [];
+        }
+
+        // Server unterstützt jetzt Batch-API!
+        // Nur Messages-Endpoint verwenden, da Metadata-Endpoint nicht unterstützt wird
+        const requests = [
+          {
+            id: `messages_${sessionId}`,
+            endpoint: `/api/sessions/${sessionId}/messages`,
+            method: "GET" as const,
+            headers: authHeaders,
+            // Cache-Kontrolle für optimale Performance
+            meta: {
+              cacheTTL: 60000, // 1 Minute Cache-Lebensdauer
+            },
+          },
+        ];
+
+        // Batch-Request verwenden
+        console.log("About to execute batch request for messages with:", requests);
+        let rawResponses;
+        try {
+          rawResponses = await batchRequestService.executeBatch(requests);
+          console.log("Batch request successful, got raw responses:", rawResponses);
+        } catch (batchError: any) {
+          console.error("Batch request failed:", {
+            error: batchError,
+            message: batchError?.message,
+            stack: batchError?.stack
+          });
+          throw batchError;
+        }
+        
+        // Process batch response with new fix
+        const responses = processBatchResponse(rawResponses, 'fetchMessages');
+        
+        // Extract data from responses (nur noch eine Antwort)
+        const messagesData = extractBatchResponseData(responses, 0, 'messages');
+        
+        // Validate and extract messages
+        const { valid, messages: validMessages } = validateMessagesResponse(messagesData);
+        
+        if (!valid) {
+          console.warn("Invalid messages response format:", messagesData);
+        }
+        
+        console.log(`Processing ${validMessages.length} messages for session ${sessionId}`);
+        
+        messages.value = {
+          ...messages.value,
+          [sessionId]: validMessages,
+        };
+
+        // Metadata-Verarbeitung entfernt, da der Endpoint nicht vom Server unterstützt wird
+
+        return validMessages;
       } catch (err: any) {
-        console.error(`Error fetching messages for session ${sessionId}:`, err);
+        console.error(`Error fetching messages for session ${sessionId} - Details:`, {
+          fullError: err,
+          errorMessage: err?.message,
+          errorResponse: err?.response,
+          errorData: err?.data,
+          errorStack: err?.stack,
+          errorType: err?.constructor?.name,
+          isNetworkError: err?.code === 'ECONNABORTED',
+          status: err?.response?.status
+        });
         error.value =
-          err.response?.data?.message || "Fehler beim Laden der Nachrichten";
+          err.response?.data?.message || err.message || "Fehler beim Laden der Nachrichten";
         return [];
       } finally {
         isLoading.value = false;
@@ -578,6 +675,25 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
         messages.value[sessionId].length === 0
       ) {
         await fetchMessages(sessionId);
+      }
+    }
+
+    /**
+     * Lade Sessions ohne Batch-API (Fallback)
+     */
+    async function loadSessions(): Promise<void> {
+      try {
+        loading.value = true;
+        error.value = null;
+        
+        // Use synchronizeSessions if available
+        await synchronizeSessions();
+      } catch (err) {
+        console.error("Error loading sessions:", err);
+        // Continue with empty sessions on error
+        sessions.value = [];
+      } finally {
+        loading.value = false;
       }
     }
 
@@ -1595,6 +1711,7 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
       // Actions
       initialize,
       synchronizeSessions,
+      loadSessions,
       fetchMessages,
       createSession,
       setCurrentSession,

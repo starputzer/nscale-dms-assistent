@@ -232,15 +232,23 @@ async def get_admin_user(request: Request) -> Dict[str, Any]:
 async def get_current_user(request: Request) -> Dict[str, Any]:
     """Extrahiert und verifiziert den aktuellen Benutzer aus dem JWT-Token"""
     auth_header = request.headers.get("Authorization")
+    logger.debug(f"get_current_user - Authorization header: {auth_header[:50]}...") if auth_header else logger.debug("get_current_user - No Authorization header")
+    
     if not auth_header or not auth_header.startswith("Bearer "):
+        logger.warning(f"Invalid authorization header format: {auth_header}")
         raise HTTPException(status_code=401, detail="Nicht authentifiziert")
     
     token = auth_header.split("Bearer ")[1]
+    logger.debug(f"Extracted token: {token[:20]}...")
+    
     user_data = user_manager.verify_token(token)
+    logger.debug(f"Token verification result: {user_data}")
     
     if not user_data:
+        logger.warning(f"Token verification failed for token: {token[:20]}...")
         raise HTTPException(status_code=401, detail="Ungültiges oder abgelaufenes Token")
     
+    logger.debug(f"Successfully authenticated user: {user_data.get('email')}")
     return user_data
 
 
@@ -1248,7 +1256,7 @@ async def get_sessions(user_data: Dict[str, Any] = Depends(get_current_user)):
     user_id = user_data['user_id']
     
     # In einer echten Anwendung würde dies aus einer Datenbank geladen
-    return {"sessions": []}
+    return []
 
 @app.get("/api/sessions/{session_id}")
 async def get_session(session_id: str, user_data: Dict[str, Any] = Depends(get_current_user)):
@@ -1287,7 +1295,203 @@ async def add_message(session_id: str, request: dict, user_data: Dict[str, Any] 
 async def get_messages(session_id: str, user_data: Dict[str, Any] = Depends(get_current_user)):
     """Gibt alle Nachrichten einer Session zurück"""
     # In einer echten Anwendung würde dies aus einer Datenbank geladen
-    return {"messages": []}
+    return []
+
+@app.get("/api/sessions/stats")
+async def get_sessions_stats(user_data: Dict[str, Any] = Depends(get_current_user)):
+    """Gibt Statistiken über Sessions zurück"""
+    user_id = user_data['user_id']
+    
+    # In einer echten Anwendung würde dies aus einer Datenbank berechnet
+    return {
+        "totalSessions": 0,
+        "totalMessages": 0,
+        "lastActive": None
+    }
+
+# Batch API-Endpunkt - unterstützt beide Pfade für Kompatibilität
+@app.post("/api/batch")
+@app.post("/api/v1/batch")
+async def handle_batch(request: Request, user_data: Dict[str, Any] = Depends(get_current_user)):
+    """
+    Handler für Batch-API-Anfragen. Erlaubt die Ausführung mehrerer API-Requests in einem einzigen Call.
+    
+    Erwartet ein JSON-Objekt mit einem 'requests'-Array, das mehrere API-Anfragen enthält.
+    Führt diese Anfragen parallel aus und gibt die Ergebnisse zurück.
+    """
+    # Debug: Log the Authorization header
+    auth_header = request.headers.get("Authorization")
+    logger.info(f"Batch request - Authorization header: {auth_header[:50]}...") if auth_header else logger.info("Batch request - No Authorization header")
+    
+    # User data comes from the dependency injection, no need to manually get it
+    # If we reach this point, user is authenticated
+    logger.info(f"Batch request - User data: {user_data}")
+    
+    try:
+        data = await request.json()
+        
+        if not isinstance(data, dict) or 'requests' not in data:
+            raise HTTPException(status_code=400, detail="Invalid request format, missing 'requests' array")
+        
+        requests_list = data.get('requests', [])
+        
+        if not isinstance(requests_list, list):
+            raise HTTPException(status_code=400, detail="Requests must be an array")
+        
+        # Leere Anfrage behandeln
+        if len(requests_list) == 0:
+            return {
+                'success': True,
+                'data': {
+                    'responses': [],
+                    'count': 0,
+                    'timestamp': int(time.time() * 1000)
+                }
+            }
+        
+        # Maximale Anzahl von Anfragen pro Batch begrenzen
+        max_batch_size = 20
+        if len(requests_list) > max_batch_size:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Batch size exceeds maximum of {max_batch_size} requests"
+            )
+        
+        # Batch verarbeiten
+        responses = []
+        
+        for idx, req in enumerate(requests_list):
+            request_id = req.get('id', f'req_{idx}')
+            endpoint = req.get('endpoint', '')
+            method = req.get('method', 'GET').upper()
+            params = req.get('params', {})
+            payload = req.get('data', {})
+            headers = req.get('headers', {})
+            
+            # Response-Template
+            response = {
+                'id': request_id,
+                'status': 500,
+                'success': False,
+                'error': 'Unknown error',
+                'data': None,
+                'timestamp': int(time.time() * 1000),
+                'request': req
+            }
+            
+            try:
+                # Route zur internen FastAPI-Instanz
+                if not endpoint.startswith('/'):
+                    endpoint = '/' + endpoint
+                    
+                # Interne Funktion finden und aufrufen basierend auf der Route
+                # Da wir innerhalb der FastAPI-App sind, können wir direkt die Funktionen aufrufen
+                
+                # Beispiele für implementierte Endpunkte
+                if endpoint == '/api/sessions' and method == 'GET':
+                    if user_data is None:
+                        logger.warning("No user data available for sessions request")
+                        result = []
+                    else:
+                        result = await get_sessions(user_data)
+                    response.update({
+                        'status': 200,
+                        'success': True,
+                        'data': result,
+                        'error': None
+                    })
+                elif endpoint == '/api/sessions' and method == 'POST':
+                    # Erstelle Mock-Request für create_session
+                    result = await create_session(payload, user_data or {"user_id": 1, "email": "test@test.com", "role": "user"})
+                    response.update({
+                        'status': 200,
+                        'success': True,
+                        'data': result,
+                        'error': None
+                    })
+                elif endpoint.startswith('/api/sessions/') and endpoint.endswith('/messages') and method == 'GET':
+                    session_id = endpoint.split('/')[-2]
+                    if user_data is None:
+                        logger.warning(f"No user data available for messages request for session {session_id}")
+                        result = []
+                    else:
+                        result = await get_messages(session_id, user_data)
+                    response.update({
+                        'status': 200,
+                        'success': True,
+                        'data': result,
+                        'error': None
+                    })
+                elif endpoint == '/api/user/role' and method == 'GET':
+                    result = await get_current_user_role(user_data or {"user_id": 1, "email": "test@test.com", "role": "user"})
+                    response.update({
+                        'status': 200,
+                        'success': True,
+                        'data': result,
+                        'error': None
+                    })
+                elif endpoint == '/api/auth/validate' and method == 'GET':
+                    result = await validate_token(user_data or {"user_id": 1, "email": "test@test.com", "role": "user"})
+                    response.update({
+                        'status': 200,
+                        'success': True,
+                        'data': result,
+                        'error': None
+                    })
+                elif endpoint == '/api/sessions/stats' and method == 'GET':
+                    if user_data is None:
+                        logger.warning("No user data available for sessions stats request")
+                        result = {"totalSessions": 0, "totalMessages": 0, "lastActive": None}
+                    else:
+                        result = await get_sessions_stats(user_data)
+                    response.update({
+                        'status': 200,
+                        'success': True,
+                        'data': result,
+                        'error': None
+                    })
+                else:
+                    # Endpunkt nicht implementiert
+                    response.update({
+                        'status': 404,
+                        'success': False,
+                        'error': f"Endpoint {endpoint} not found or not supported in batch mode",
+                        'data': None
+                    })
+                    
+            except HTTPException as he:
+                response.update({
+                    'status': he.status_code,
+                    'success': False,
+                    'error': he.detail,
+                    'data': None
+                })
+            except Exception as e:
+                logger.error(f"Batch request error for {endpoint}: {str(e)}")
+                response.update({
+                    'status': 500,
+                    'success': False,
+                    'error': str(e),
+                    'data': None
+                })
+            
+            responses.append(response)
+        
+        # Antwort zurückgeben - Die TypeScript-Seite erwartet data.responses
+        return {
+            'success': True,
+            'data': {
+                'responses': responses,
+                'count': len(responses),
+                'timestamp': int(time.time() * 1000)
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Batch request handler error: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn

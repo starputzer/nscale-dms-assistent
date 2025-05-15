@@ -123,10 +123,7 @@ export function dynamicImport(
       importPath = '../' + normalizedPath;
     }
     
-    return import(
-      /* @vite-ignore */
-      importPath
-    );
+    return import(/* @vite-ignore */ importPath);
   };
 
   // Komponente vorausladen, wenn gewünscht
@@ -273,18 +270,15 @@ export function createRouterView(
   const errorTracking = setupRouterErrorTracking();
   
   // Erzeugt den vollqualifizierten Pfad zur View-Komponente
-  // Verbesserte Pfaderkennung für robustere Komponentenladung
-  const getFullComponentPath = () => {
-    // Versuche zuerst den direkten Pfad
-    return viewPath.endsWith('.vue') ? 
-      `../views/${viewPath}` : 
-      `../views/${viewPath}.vue`;
-  };
+  // Verwende korrekte relative Pfade für Vite
+  const fullPath = viewPath.endsWith('.vue') ? 
+    `../../views/${viewPath}` : 
+    `../../views/${viewPath}.vue`;
   
   // Fallback-Komponente für Fehlerbehandlung (statt 404 oder leerer Seite)
   const fallbackPath = options.errorComponent ? 
-    `../views/${options.errorComponent}.vue` : 
-    '../views/ErrorView.vue';
+    `../../views/${options.errorComponent}.vue` : 
+    '../../views/ErrorView.vue';
   
   // Wrapper-Funktion für das Laden und Tracking mit verbesserter Fehlerbehandlung
   return () => {
@@ -293,7 +287,19 @@ export function createRouterView(
     
     try {
       // Komponente direkt laden mit Vite-kompatiblem Import
-      const loader = () => import(getFullComponentPath());
+      const loader = () => {
+        // Für Vite verwenden wir relative Pfade aus src/router
+        if (viewPath === 'ChatView') return import('@/views/ChatView.vue');
+        if (viewPath === 'DocumentsView') return import('@/views/DocumentsView.vue');
+        if (viewPath === 'AdminView') return import('@/views/AdminView.vue');
+        if (viewPath === 'SettingsView') return import('@/views/SettingsView.vue');
+        if (viewPath === 'AuthView') return import('@/views/AuthView.vue');
+        if (viewPath === 'EnhancedChatView') return import('@/views/EnhancedChatView.vue');
+        if (viewPath === 'ErrorView') return import('@/views/ErrorView.vue');
+        if (viewPath === 'NotFoundView') return import('@/views/NotFoundView.vue');
+        // Fallback
+        return import(/* @vite-ignore */ fullPath);
+      };
       const result = loader();
       
       // Verbessertes Tracking und Fehlerbehandlung
@@ -337,7 +343,7 @@ export function createRouterView(
       
       // Fallback zur ErrorView im Fall von kritischen Fehlern
       try {
-        return import(fallbackPath).then((module) => {
+        return import(/* @vite-ignore */ fallbackPath).then((module) => {
           // Dynamisch Eigenschaften hinzufügen, um Fehlerdetails durchzureichen
           const component = module.default;
           component.props = {
@@ -464,6 +470,14 @@ export function setupRouterErrorTracking() {
      */
     resetAllErrors: () => {
       window.__ROUTE_LOAD_ERRORS__ = {};
+    },
+    
+    /**
+     * Route-Update verarbeiten (für Router afterEach Hook)
+     */
+    updateRoute: (to: any, from: any) => {
+      // Optional: Hier können Sie Route-Updates tracken
+      // Derzeit ist dies ein Dummy, um den Fehler zu beheben
     }
   };
 }

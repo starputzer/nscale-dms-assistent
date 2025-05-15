@@ -603,11 +603,14 @@ import {
   watch,
   nextTick,
   onBeforeUnmount,
+  onErrorCaptured,
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useSessionsStore } from "@/stores/sessions";
 import { useAuthStore } from "@/stores/auth";
 import { useUIStore } from "@/stores/ui";
+import { useUIDiagnostics } from "@/utils/uiDiagnostics";
+import authSyncFixed from "@/utils/authStatusSyncFixed";
 import type {
   ChatSession,
   ChatMessage,
@@ -618,6 +621,9 @@ import type {
 import MessageList from "@/components/chat/MessageList.vue";
 import MessageInput from "@/components/chat/MessageInput.vue";
 import SessionList from "@/components/session/SessionList.vue";
+
+// Diagnostics Setup
+const { captureError, trackDataLoad, trackLifecycle, exportToConsole } = useUIDiagnostics('ChatView');
 
 // Router und Stores
 const route = useRoute();
@@ -679,6 +685,7 @@ const isSendingMessage = computed<boolean>(() => isStreaming.value);
 const isLoadingSessions = computed<boolean>(() => sessionsStore.isLoading);
 const availableTags = computed<SessionTag[]>(() => sessionsStore.availableTags);
 const availableCategories = computed<SessionCategory[]>(() => sessionsStore.availableCategories);
+const isAuthenticated = computed<boolean>(() => authStore.isAuthenticated);
 
 // Sortierte Sessions basierend auf dem Store-Getter
 const sortedSessions = computed<ChatSession[]>(() => sessionsStore.sortedSessions);
@@ -1123,27 +1130,53 @@ function checkScreenSize(): void {
 
 // Lifecycle-Hooks
 onMounted(async () => {
-  // Event-Listener für Bildschirmgrößenänderungen hinzufügen
-  window.addEventListener("resize", checkScreenSize);
+  try {
+    trackLifecycle('mounted');
+    
+    // Event-Listener für Bildschirmgrößenänderungen hinzufügen
+    window.addEventListener("resize", checkScreenSize);
+    
+    // Auth status sync first
+    authSyncFixed.checkAuthConsistency();
 
-  // Sessions laden
-  await sessionsStore.synchronizeSessions();
-
-  // Session-ID aus der URL auslesen
-  const sessionIdFromRoute = route.params.id as string;
-
-  // Prüfen, ob eine Session-ID in der Route vorhanden ist
-  if (sessionIdFromRoute) {
-    await sessionsStore.setCurrentSession(sessionIdFromRoute);
-  } else {
-    // Wenn keine Session-ID in der Route, die erste verfügbare verwenden oder eine neue erstellen
-    if (sessions.value.length > 0) {
-      const firstSessionId = sessions.value[0].id;
-      router.push(`/chat/${firstSessionId}`);
-    } else {
-      // Neue Session erstellen
-      handleCreateSession();
+    // Sessions laden mit Fehlerbehandlung
+    try {
+      trackDataLoad('sessions-sync', 'start');
+      await sessionsStore.synchronizeSessions();
+      trackDataLoad('sessions-sync', 'success');
+    } catch (syncError) {
+      console.warn('Session sync failed, continuing without sessions:', syncError);
+      trackDataLoad('sessions-sync', 'error', { error: syncError });
+      captureError(syncError as Error, 'mounted');
+      // Fahre fort ohne Sessions
     }
+
+    // Session-ID aus der URL auslesen
+    const sessionIdFromRoute = route.params.id as string;
+
+    // Prüfen, ob eine Session-ID in der Route vorhanden ist
+    if (sessionIdFromRoute) {
+      try {
+        await sessionsStore.setCurrentSession(sessionIdFromRoute);
+      } catch (loadError) {
+        console.warn('Failed to load session from route:', loadError);
+        captureError(loadError as Error, 'mounted');
+        // Ignorieren und neue Session erstellen
+      }
+    } else {
+      // Wenn keine Session-ID in der Route, die erste verfügbare verwenden oder eine neue erstellen
+      if (sessions.value.length > 0) {
+        const firstSessionId = sessions.value[0].id;
+        router.push(`/chat/${firstSessionId}`);
+      } else {
+        // Neue Session erstellen
+        await handleCreateSession();
+      }
+    }
+  } catch (error) {
+    console.error('Error in ChatView mounted:', error);
+    captureError(error as Error, 'mounted');
+    uiStore.showError('Fehler beim Laden der Chat-Ansicht');
   }
 });
 
@@ -1157,17 +1190,41 @@ onBeforeUnmount(() => {
   }
 });
 
+// Error Capture Hook
+onErrorCaptured((err, instance, info) => {
+  console.error('Error captured in ChatView:', err);
+  captureError(err, 'render', { instance, info });
+  
+  // Prevent the error from propagating
+  return false;
+});
+
 // URL-Änderungen überwachen
 watch(
   () => route.params.id,
   async (newId) => {
     if (newId && newId !== currentSessionId.value) {
-      // Zur neuen Session wechseln
-      await sessionsStore.setCurrentSession(newId as string);
+      try {
+        // Zur neuen Session wechseln
+        await sessionsStore.setCurrentSession(newId as string);
+      } catch (error) {
+        console.error('Error switching session:', error);
+        captureError(error as Error, 'render');
+      }
     }
   },
   { immediate: true },
 );
+
+// Expose diagnostics for debugging in development
+if (import.meta.env.DEV) {
+  window.chatDiagnostics = {
+    exportReport: exportToConsole,
+    sessionsStore,
+    authStore,
+    uiStore
+  };
+}
 </script>
 
 <style scoped>

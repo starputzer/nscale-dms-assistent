@@ -3,6 +3,7 @@
 // Imports all component SCSS files and establishes global styles
 
 // Import variables first so they're available to all other files
+@use 'sass:math';
 @import './_variables';
 
 // Import core components

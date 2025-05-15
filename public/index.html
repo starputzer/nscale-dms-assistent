@@ -49,9 +49,52 @@
             window.APP_CONFIG.initialTheme = theme;
         })();
         
-        // Globaler Fehler-Handler
+        // UI Diagnostics Helper
+        window.debugUI = {
+            exportReport: function() {
+                if (window.chatDiagnostics) {
+                    window.chatDiagnostics.exportReport();
+                } else {
+                    console.log('UI Diagnostics not available yet');
+                }
+            },
+            stores: function() {
+                if (window.chatDiagnostics) {
+                    console.log('Stores:', {
+                        sessions: window.chatDiagnostics.sessionsStore,
+                        auth: window.chatDiagnostics.authStore,
+                        ui: window.chatDiagnostics.uiStore
+                    });
+                } else {
+                    console.log('Stores not available yet');
+                }
+            },
+            checkAuth: function() {
+                if (window.authDebug) {
+                    window.authDebug.checkAuthStatus();
+                } else {
+                    console.log('Auth debug not available');
+                }
+            }
+        };
+        
+        // Globaler Fehler-Handler mit erweitertem Logging
         window.addEventListener('error', function(event) {
-            console.error('Globaler Fehler abgefangen:', event.error);
+            console.error('Globaler Fehler abgefangen:', {
+                message: event.message,
+                filename: event.filename,
+                lineno: event.lineno,
+                colno: event.colno,
+                error: event.error
+            });
+            
+            // Spezielle Behandlung für bekannte Fehler
+            if (event.message.includes('messagesResponse is not defined')) {
+                console.error('Known issue: messagesResponse is not defined - this has been fixed in sessions.ts');
+                event.preventDefault();
+                return;
+            }
+            
             const errorElement = document.createElement('div');
             errorElement.className = 'critical-error';
             errorElement.innerHTML = `
@@ -59,6 +102,10 @@
                     <h2>Anwendungsfehler</h2>
                     <p>Es ist ein unerwarteter Fehler aufgetreten. Bitte laden Sie die Seite neu.</p>
                     <button onclick="window.location.reload()">Neu laden</button>
+                    <details style="margin-top: 1rem;">
+                        <summary>Fehlerdetails</summary>
+                        <pre style="text-align: left; font-size: 0.8rem; overflow-x: auto;">${event.message}\n${event.filename}:${event.lineno}:${event.colno}</pre>
+                    </details>
                 </div>
             `;
             
@@ -66,6 +113,10 @@
             if (appLoader) appLoader.style.display = 'none';
             
             document.body.appendChild(errorElement);
+        });
+        
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Unhandled Promise Rejection:', event.reason);
         });
 
         // Quellenreferenzen Legacy-Fallback-Funktionen
@@ -289,5 +340,15 @@
     
     <!-- Haupt-App-Bundle - dynamisch via Vite erzeugt -->
     <script type="module" src="/src/main.ts"></script>
+    
+    <!-- Debug Console Info -->
+    <script>
+        console.log('%c🔍 Debug Console Commands Available:', 'color: #00a550; font-weight: bold;');
+        console.log('%c  window.debugUI.exportReport() - Export UI diagnostics report', 'color: #666;');
+        console.log('%c  window.debugUI.stores() - View current store states', 'color: #666;');
+        console.log('%c  window.debugUI.checkAuth() - Check authentication status', 'color: #666;');
+        console.log('%c  window.authDebug.* - Various auth debugging functions', 'color: #666;');
+        console.log('%c  window.debugSourceReferences() - Debug source references state', 'color: #666;');
+    </script>
 </body>
 </html>
