@@ -22,7 +22,7 @@ import type {
 export const useUIStore = defineStore(
   "ui",
   () => {
-    // UI State
+    // UI State mit sicherer Initialisierung
     const sidebar = ref<SidebarState>({
       isOpen: true,
       width: 280,
@@ -36,18 +36,17 @@ export const useUIStore = defineStore(
     const toasts = ref<Toast[]>([]);
     const isLoading = ref<boolean>(false);
     const isMobile = ref<boolean>(false);
-    const version = ref<number>(2); // Für Migrationen zwischen verschiedenen Speicherformaten
+    const version = ref<number>(2);
     const layoutConfig = ref<LayoutConfig>({
-      // Standardkonfiguration für das Layout
       contentMaxWidth: "1200px",
       navbarHeight: "60px",
       footerHeight: "40px",
       headerVisible: true,
       footerVisible: true,
       splitPaneEnabled: false,
-      splitPaneRatio: 50, // Prozentsatz für die linke Seite
-      sidebarBreakpoint: 768, // Breakpoint für mobile Ansicht
-      textScale: 1, // Skalierungsfaktor für Text
+      splitPaneRatio: 50,
+      sidebarBreakpoint: 768,
+      textScale: 1,
       density: "comfortable", // UI-Dichte (compact, comfortable, spacious)
     });
 
@@ -671,57 +670,111 @@ export const useUIStore = defineStore(
      * Dark Mode basierend auf Systemeinstellungen initialisieren
      */
     function initDarkMode(): void {
-      // Prüfen, ob der Benutzer bereits eine Präferenz gesetzt hat
-      const savedPreference = localStorage.getItem("nscale_darkMode");
-
-      if (savedPreference !== null) {
-        darkMode.value = savedPreference === "true";
-      } else {
-        // Sonst System-Präferenz verwenden
-        const prefersDark = window.matchMedia(
-          "(prefers-color-scheme: dark)",
-        ).matches;
-        darkMode.value = prefersDark;
-      }
-
-      requestUIUpdate("darkMode");
-
-      // Auf Änderungen der System-Präferenz reagieren
-      const darkModeMediaQuery = window.matchMedia(
-        "(prefers-color-scheme: dark)",
-      );
-      const handleMediaQueryChange = (e: MediaQueryListEvent) => {
-        // Nur ändern, wenn keine benutzerdefinierte Einstellung vorhanden ist
-        if (localStorage.getItem("nscale_darkMode") === null) {
-          darkMode.value = e.matches;
-          requestUIUpdate("darkMode");
+      try {
+        // Sicherstellen, dass darkMode einen Wert hat
+        if (darkMode.value === null || darkMode.value === undefined) {
+          darkMode.value = false;
         }
-      };
+        
+        // Prüfen, ob der Benutzer bereits eine Präferenz gesetzt hat
+        const savedPreference = localStorage.getItem("nscale_darkMode");
 
-      darkModeMediaQuery.addEventListener("change", handleMediaQueryChange);
+        if (savedPreference !== null) {
+          try {
+            darkMode.value = savedPreference === "true";
+          } catch (e) {
+            console.warn("Fehler beim Parsen der Dark Mode Einstellung:", e);
+            darkMode.value = false;
+          }
+        } else {
+          // Sonst System-Präferenz verwenden
+          try {
+            const prefersDark = window.matchMedia(
+              "(prefers-color-scheme: dark)",
+            ).matches;
+            darkMode.value = prefersDark;
+          } catch (e) {
+            console.warn("Fehler beim Abrufen der System-Präferenz:", e);
+            darkMode.value = false;
+          }
+        }
 
-      // Aufräumen, wenn der Store nicht mehr verwendet wird
-      return () => {
-        darkModeMediaQuery.removeEventListener(
-          "change",
-          handleMediaQueryChange,
+        requestUIUpdate("darkMode");
+
+        // Auf Änderungen der System-Präferenz reagieren
+        const darkModeMediaQuery = window.matchMedia(
+          "(prefers-color-scheme: dark)",
         );
-      };
+        const handleMediaQueryChange = (e: MediaQueryListEvent) => {
+          // Nur ändern, wenn keine benutzerdefinierte Einstellung vorhanden ist
+          if (localStorage.getItem("nscale_darkMode") === null) {
+            darkMode.value = e.matches;
+            requestUIUpdate("darkMode");
+          }
+        };
+
+        darkModeMediaQuery.addEventListener("change", handleMediaQueryChange);
+
+        // Aufräumen, wenn der Store nicht mehr verwendet wird
+        return () => {
+          darkModeMediaQuery.removeEventListener(
+            "change",
+            handleMediaQueryChange,
+          );
+        };
+      } catch (error) {
+        console.error("Fehler in initDarkMode:", error);
+        return () => {};
+      }
     }
 
     /**
      * Alle Einstellungen initialisieren und anwenden
      */
     function initialize(): void {
-      migrateFromLegacyStorage();
-      const cleanupDarkMode = initDarkMode();
-      const cleanupLayout = setupResponsiveLayout();
+      try {
+        // Sicherstellen, dass alle Werte initialisiert sind
+        if (darkMode.value === undefined || darkMode.value === null) {
+          darkMode.value = false;
+        }
+        
+        if (!sidebar.value) {
+          sidebar.value = {
+            isOpen: true,
+            width: 280,
+            activeTab: "chat",
+            collapsed: false,
+          };
+        }
+        
+        if (!layoutConfig.value) {
+          layoutConfig.value = {
+            contentMaxWidth: "1200px",
+            navbarHeight: "60px",
+            footerHeight: "40px",
+            headerVisible: true,
+            footerVisible: true,
+            splitPaneEnabled: false,
+            splitPaneRatio: 50,
+            sidebarBreakpoint: 768,
+            textScale: 1,
+            density: "comfortable",
+          };
+        }
+        
+        migrateFromLegacyStorage();
+        const cleanupDarkMode = initDarkMode();
+        const cleanupLayout = setupResponsiveLayout();
 
-      // Zur Verfügung stellen, um beim Zerstören des Stores aufzuräumen
-      return () => {
-        if (cleanupDarkMode) cleanupDarkMode();
-        if (cleanupLayout) cleanupLayout();
-      };
+        // Zur Verfügung stellen, um beim Zerstören des Stores aufzuräumen
+        return () => {
+          if (cleanupDarkMode) cleanupDarkMode();
+          if (cleanupLayout) cleanupLayout();
+        };
+      } catch (error) {
+        console.error("Fehler bei der Store-Initialisierung:", error);
+        return () => {};
+      }
     }
 
     // Bei Dark Mode-Änderungen speichern
@@ -887,14 +940,30 @@ export const useUIStore = defineStore(
           storage: localStorage,
           paths: [
             "darkMode",
-            "sidebar.width",
-            "sidebar.activeTab",
-            "sidebar.isOpen",
-            "sidebar.collapsed",
             "viewMode",
+            "sidebar",
             "layoutConfig",
             "version",
           ],
+          // Fehlerbehandlung bei der Hydration
+          beforeRestore: (context) => {
+            console.log('UI Store Hydration beginnt...');
+          },
+          afterRestore: (context) => {
+            console.log('UI Store Hydration abgeschlossen');
+            // Sicherstellen, dass alle Werte initialisiert sind
+            if (context.store.darkMode === undefined) {
+              context.store.darkMode = false;
+            }
+            if (context.store.sidebar === undefined) {
+              context.store.sidebar = {
+                isOpen: true,
+                width: 280,
+                activeTab: "chat",
+                collapsed: false,
+              };
+            }
+          },
         },
       ],
     },
