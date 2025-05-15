@@ -8,6 +8,11 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 ## [Unreleased]
 
 ### Hinzugefügt
+- (15.05.2025) DOM-Fehlererkennung temporär deaktiviert:
+  - Aggressive Fehlererkennung verursachte falsche Positiv-Meldungen
+  - Basic Route Fallback implementiert ohne DOM-Analyse
+  - Temporäre Deaktivierung der Enhanced Route Features
+  - Vereinfachte Navigation ohne automatische Fehlerkorrektur
 - (15.05.2025) Behebung kritischer Navigationsprobleme nach Login:
   - Vereinfachung der Router-Guards zur Vermeidung von Endlosschleifen
   - Entfernung automatischer Weiterleitungen in Login-View

@@ -96,8 +96,10 @@ import SpinnerIcon from '@/components/icons/SpinnerIcon.vue'
 // Services und Composables
 import { routerService } from '@/services/router/RouterService'
 import { navigationController } from '@/controllers/NavigationController'
-import { useEnhancedRouteFallback } from '@/composables/useEnhancedRouteFallback'
-import { domErrorDetector } from '@/utils/domErrorDiagnostics'
+// TEMPORÄR: Verwende Basic statt Enhanced Route Fallback
+// import { useEnhancedRouteFallback } from '@/composables/useEnhancedRouteFallback'
+import { useBasicRouteFallback } from '@/composables/useBasicRouteFallback'
+// import { domErrorDetector } from '@/utils/domErrorDiagnostics'
 import { useLogger } from '@/composables/useLogger'
 import { useToast } from '@/composables/useToast'
 import { installRouterGuards } from '@/plugins/routerGuards'
@@ -140,17 +142,19 @@ export default defineComponent({
     const isDevMode = computed(() => import.meta.env.DEV)
     const isRouterReady = ref(false)
     
-    // Enhanced Route Fallback mit robuster Fehlerbehandlung
-    const { 
-      isMonitoring,
-      routeHealth,
-      safeNavigate,
-      checkRouteHealth
-    } = useEnhancedRouteFallback({
-      enabled: true,
-      autoRepairEnabled: true,
-      debugMode: isDevMode.value
-    })
+    // TEMPORÄR: Basic Route Fallback ohne DOM-Fehlererkennung
+    const {
+      navigateToFallback,
+      enable: enableFallback,
+      disable: disableFallback,
+      enabled: fallbackEnabled
+    } = useBasicRouteFallback()
+    
+    // Dummy-Werte für deaktivierte Features
+    const isMonitoring = ref(false)
+    const routeHealth = ref({ healthy: true, consecutiveFailures: 0 })
+    const safeNavigate = async (path: string) => router.push(path)
+    const checkRouteHealth = () => {}
     
     // Settings
     const fontSizeLevel = ref(2)
@@ -337,12 +341,15 @@ export default defineComponent({
     })
     
     // Watch route changes for error detection
+    // TEMPORÄR DEAKTIVIERT - DOM-Fehlererkennung ist zu aggressiv
+    /*
     watch(() => route.path, async () => {
       // Verzögerte Prüfung der Route-Gesundheit
       setTimeout(() => {
         checkRouteHealth()
       }, 500)
     })
+    */
     
     // Watch Router Health
     watch(routeHealth, (health) => {
