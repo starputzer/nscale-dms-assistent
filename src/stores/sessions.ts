@@ -975,7 +975,8 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
 
       try {
         // Event-Source für Streaming einrichten
-        const authToken = authStore.getToken();
+        const authToken = authStore.token;
+        // Die Backend-URL muss mit dem tatsächlichen Endpoint übereinstimmen
         const streamUrl = `/api/question/stream?question=${encodeURIComponent(content)}&session_id=${sessionId}&auth_token=${authToken}`;
         console.log('Streaming URL:', streamUrl);
         
@@ -1017,9 +1018,15 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
         eventSource.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
+            console.log('Received streaming data:', data);
 
-            if (data.type === "content") {
+            // RAG-Engine sendet {'response': chunk}
+            if (data.response !== undefined) {
               // Inhalt zur Antwort hinzufügen
+              assistantContent += data.response;
+              updateMessageContent(assistantContent);
+            } else if (data.type === "content") {
+              // Fallback für altes Format
               assistantContent += data.content;
               updateMessageContent(assistantContent);
             } else if (data.type === "metadata") {
@@ -1036,6 +1043,11 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
             } else if (data.type === "progress") {
               // Fortschritt aktualisieren
               streaming.value.progress = data.progress;
+            } else if (data.error) {
+              // Fehler behandeln
+              console.error("Streaming error:", data.error);
+              updateMessageContent(assistantContent || "Ein Fehler ist aufgetreten: " + data.error);
+              eventSource.close();
             }
           } catch (err) {
             console.error("Error parsing streaming event:", err);
@@ -1045,7 +1057,18 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
         // Event-Handler für den Abschluss des Streamings
         eventSource.addEventListener("done", async (event) => {
           try {
-            const data = JSON.parse((event as MessageEvent).data);
+            console.log('Done event received:', event);
+            
+            // Das Backend sendet ein leeres data-Feld beim done-Event
+            let data = {};
+            if ((event as MessageEvent).data && (event as MessageEvent).data.trim()) {
+              try {
+                data = JSON.parse((event as MessageEvent).data);
+              } catch (e) {
+                // Ignoriere Parser-Fehler bei leeren done-Events
+                console.log('Empty done event received');
+              }
+            }
 
             // Streaming beenden
             streaming.value = {
@@ -1062,7 +1085,7 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
               messages.value[sessionId][index] = {
                 ...messages.value[sessionId][index],
                 id: data.id || assistantTempId,
-                content: data.content || assistantContent,
+                content: assistantContent,  // Use the accumulated content
                 isStreaming: false,
                 status: "sent",
                 metadata:

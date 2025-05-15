@@ -866,7 +866,7 @@ async def answer_question(request: QuestionRequest, request_obj: Request, user_d
 @app.get("/api/question/stream")
 async def stream_question(
     question: str, 
-    session_id: int,
+    session_id: str,
     simple_language: Optional[str] = None,
     auth_token: Optional[str] = None,
     request: Request = None
@@ -900,20 +900,22 @@ async def stream_question(
     
     # Prüfe, ob die Session existiert und dem Benutzer gehört
     user_sessions = chat_history.get_user_sessions(user_id)
-    session_ids = [s['id'] for s in user_sessions]
+    session_ids = [str(s['id']) for s in user_sessions]  # Konvertiere IDs zu Strings
     
     if session_id not in session_ids:
         # Erstelle eine neue Session, wenn die angegebene nicht existiert
         logger.warning(f"Session {session_id} nicht gefunden, erstelle neue Session")
-        session_id = chat_history.create_session(user_id, "Neue Unterhaltung")
+        new_session_id = chat_history.create_session(user_id, "Neue Unterhaltung")
         
-        if not session_id:
+        if not new_session_id:
             logger.error("Fehler beim Erstellen einer neuen Session")
             raise HTTPException(status_code=500, detail="Fehler beim Erstellen einer Session")
+        
+        session_id = str(new_session_id)  # Konvertiere zu String
     
     # Speichere die Benutzerfrage in der Chat-Historie und erhalte die Nachricht-ID
     logger.info(f"Speichere Benutzerfrage in Session {session_id}")
-    message_id = chat_history.add_message(session_id, question, is_user=True)
+    message_id = chat_history.add_message(int(session_id), question, is_user=True)
     
     if not message_id:
         logger.error(f"Fehler beim Speichern der Benutzerfrage in Session {session_id}")
@@ -935,6 +937,9 @@ async def stream_question(
     # Dieser wird verwendet, um laufende Streams zu identifizieren und zu gruppieren
     stream_id = f"stream_{session_id}_{hash(question)}"
     
+    # Konvertiere session_id zu int für interne Verarbeitung
+    session_id_int = int(session_id)
+    
     # Stream die Antwort vom RAG-Engine mit Spracheinstellung
     try:
         logger.info(f"Starte Streaming für Frage: '{question[:50]}...' (Einfache Sprache: {use_simple_language})")
@@ -950,7 +955,7 @@ async def stream_question(
                         logger.error(f"Fehler beim Abbrechen aktiver Streams: {cancel_err}")
         
         # Start des neuen Streams mit Stream-ID
-        response = await rag_engine.stream_answer(question, session_id, use_simple_language, stream_id=stream_id)
+        response = await rag_engine.stream_answer(question, session_id_int, use_simple_language, stream_id=stream_id)
         
         # Speichern der vollständigen Antwort erfolgt intern in stream_answer
         
