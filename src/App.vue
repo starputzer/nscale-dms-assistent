@@ -68,15 +68,15 @@ App.vue - Hauptanwendungskomponente mit verbesserter 404-Fehlerbehandlung
             @action="handleDebugAction"
           />
           
-          <!-- Router Health Monitor -->
-          <RouterHealthMonitor
+          <!-- Router Health Monitor - DEAKTIVIERT -->
+          <!-- <RouterHealthMonitor
             v-if="isDevMode || hasRouterErrors"
             :position="'bottom-right'"
             :start-expanded="hasRouterErrors"
             :auto-hide="true"
             :auto-hide-delay="30000"
             ref="healthMonitor"
-          />
+          /> -->
         </template>
       </template>
       
