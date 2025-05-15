@@ -1152,7 +1152,7 @@ onMounted(async () => {
     }
 
     // Session-ID aus der URL auslesen
-    const sessionIdFromRoute = route.params.id as string;
+    const sessionIdFromRoute = route.params.sessionId as string;
 
     // Prüfen, ob eine Session-ID in der Route vorhanden ist
     if (sessionIdFromRoute) {
@@ -1201,12 +1201,12 @@ onErrorCaptured((err, instance, info) => {
 
 // URL-Änderungen überwachen
 watch(
-  () => route.params.id,
-  async (newId) => {
-    if (newId && newId !== currentSessionId.value) {
+  () => route.params.sessionId,
+  async (newSessionId) => {
+    if (newSessionId && newSessionId !== currentSessionId.value) {
       try {
         // Zur neuen Session wechseln
-        await sessionsStore.setCurrentSession(newId as string);
+        await sessionsStore.setCurrentSession(newSessionId as string);
       } catch (error) {
         console.error('Error switching session:', error);
         captureError(error as Error, 'render');

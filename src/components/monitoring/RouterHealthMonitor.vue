@@ -84,8 +84,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { unifiedDiagnosticsService } from '@/services/diagnostics/UnifiedDiagnosticsService';
-import { routerService } from '@/services/router/RouterService';
+import { unifiedDiagnosticsService } from '@/services/diagnostics/UnifiedDiagnosticsServiceFixed';
+import { routerService } from '@/services/router/RouterServiceFixed';
 import { useLogger } from '@/composables/useLogger';
 import { useToast } from '@/composables/useToast';
 

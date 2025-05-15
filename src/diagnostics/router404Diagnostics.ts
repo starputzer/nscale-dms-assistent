@@ -407,7 +407,10 @@ export class Router404Diagnostics {
   }
 }
 
+// Singleton-Instanz
+export const router404Diagnostics = new Router404Diagnostics();
+
 // Export für globalen Zugriff
 if (typeof window !== 'undefined') {
-  (window as any).__router404Diagnostics = new Router404Diagnostics();
+  (window as any).__router404Diagnostics = router404Diagnostics;
 }

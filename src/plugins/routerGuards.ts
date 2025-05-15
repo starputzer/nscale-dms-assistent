@@ -5,7 +5,7 @@
  */
 
 import { Router, NavigationGuardNext, RouteLocationNormalized } from 'vue-router';
-import { routerService } from '@/services/router/RouterService';
+import { routerService } from '@/services/router/RouterServiceFixed';
 import { useLogger } from '@/composables/useLogger';
 import { useAuthStore } from '@/stores/auth';
 import { useFeatureTogglesStore } from '@/stores/featureToggles';

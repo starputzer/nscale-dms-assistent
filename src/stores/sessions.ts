@@ -975,9 +975,11 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
 
       try {
         // Event-Source für Streaming einrichten
-        const eventSource = new EventSource(
-          `/api/sessions/${sessionId}/stream?message=${encodeURIComponent(content)}`,
-        );
+        const authToken = authStore.getToken();
+        const streamUrl = `/api/question/stream?question=${encodeURIComponent(content)}&session_id=${sessionId}&auth_token=${authToken}`;
+        console.log('Streaming URL:', streamUrl);
+        
+        const eventSource = new EventSource(streamUrl);
 
         // Temporäre ID für die Antwortnachricht
         const assistantTempId = `temp-response-${uuidv4()}`;

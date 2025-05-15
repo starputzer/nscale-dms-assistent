@@ -105,15 +105,15 @@ import SpinnerIcon from '@/components/icons/SpinnerIcon.vue'
 import RouterHealthMonitor from '@/components/monitoring/RouterHealthMonitor.vue'
 
 // Services und Composables
-import { routerService } from '@/services/router/RouterService'
+import { routerService } from '@/services/router/RouterServiceFixed'
 import { navigationController } from '@/controllers/NavigationController'
-// TEMPORÄR: Verwende Basic statt Enhanced Route Fallback
-// import { useEnhancedRouteFallback } from '@/composables/useEnhancedRouteFallback'
+// Verwende Basic Route Fallback ohne DOM-Fehler-Erkennung
 import { useBasicRouteFallback } from '@/composables/useBasicRouteFallback'
-// import { domErrorDetector } from '@/utils/domErrorDiagnostics'
+import { domErrorDetector } from '@/utils/domErrorDiagnosticsFixed'
+import { diagnosticsInitializer } from '@/services/diagnostics/DiagnosticsInitializer'
 import { useLogger } from '@/composables/useLogger'
 import { useToast } from '@/composables/useToast'
-import { installRouterGuards } from '@/plugins/routerGuards'
+import { installRouterGuards } from '@/plugins/routerGuardsFixed'
 
 // Type definitions and interfaces
 interface SystemInfo {
@@ -198,13 +198,18 @@ export default defineComponent({
     // Router Initialization
     const initializeRouter = async () => {
       try {
-        logger.info('Router-Initialisierung gestartet')
+        logger.info('Diagnose-System-Initialisierung gestartet')
         
-        // Router Service initialisieren
-        const initialized = await routerService.initialize(router)
+        // Router im Service setzen
+        if (router) {
+          routerService.setRouter(router)
+        }
         
-        if (!initialized) {
-          throw new Error('Router Service konnte nicht initialisiert werden')
+        // Alle Diagnose-Services initialisieren
+        const services = await diagnosticsInitializer.initialize(router)
+        
+        if (!services.initialized) {
+          throw new Error('Diagnose-Services konnten nicht initialisiert werden')
         }
         
         // Router Guards installieren
@@ -215,15 +220,18 @@ export default defineComponent({
         })
         
         isRouterReady.value = true
-        logger.info('Router erfolgreich initialisiert')
+        logger.info('Diagnose-System erfolgreich initialisiert', services)
       } catch (error) {
-        logger.error('Router-Initialisierung fehlgeschlagen', error)
-        toast.error('Router-Initialisierung fehlgeschlagen. Bitte Seite neu laden.')
+        logger.error('Diagnose-System-Initialisierung fehlgeschlagen', error)
+        toast.error('System-Initialisierung fehlgeschlagen. Bitte Seite neu laden.')
         
-        // Fallback: Seite nach Verzögerung neu laden
+        // Fallback: Grundfunktionalität sicherstellen
+        isRouterReady.value = true
+        
+        // Seite nach Verzögerung neu laden
         setTimeout(() => {
           window.location.reload()
-        }, 3000)
+        }, 5000)
       }
     }
     
@@ -342,11 +350,24 @@ export default defineComponent({
         }
       })
       
-      // Start DOM error detection
-      const stopDetection = domErrorDetector.startAutoDetection(3000)
+      // Start DOM error detection with defensive programming
+      let stopDetection: (() => void) | null = null
+      
+      try {
+        if (domErrorDetector && typeof domErrorDetector.startAutoDetection === 'function') {
+          stopDetection = domErrorDetector.startAutoDetection(3000)
+          console.log('DOM error detection started successfully')
+        } else {
+          console.warn('domErrorDetector not available or invalid')
+        }
+      } catch (error) {
+        console.error('Failed to start DOM error detection:', error)
+      }
       
       onBeforeUnmount(() => {
-        stopDetection()
+        if (stopDetection && typeof stopDetection === 'function') {
+          stopDetection()
+        }
       })
     })
     

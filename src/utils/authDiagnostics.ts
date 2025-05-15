@@ -376,7 +376,7 @@ class AuthDiagnostics {
 }
 
 // Create global instance
-const authDiagnostics = new AuthDiagnostics();
+export const authDiagnostics = new AuthDiagnostics();
 
 // Attach to window for easy access
 if (typeof window !== 'undefined') {

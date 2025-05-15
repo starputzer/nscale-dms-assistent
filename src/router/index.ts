@@ -22,6 +22,19 @@ const routes: Array<RouteRecordRaw> = [
     },
   },
   {
+    path: "/chat/:sessionId",
+    name: "ChatSession",
+    component: () => import("@/views/ChatView.vue"),
+    meta: {
+      requiresAuth: true,
+      title: "nscale DMS Assistant",
+    },
+  },
+  {
+    path: "/session/:sessionId",
+    redirect: (to) => ({ name: 'ChatSession', params: { sessionId: to.params.sessionId } }),
+  },
+  {
     path: "/login",
     name: "Login",
     component: () => import("@/views/EnhancedLoginView.vue"),

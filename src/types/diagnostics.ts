@@ -8,8 +8,8 @@ export interface RouterHealthMetrics {
   piniaReady: boolean;
   navigationSuccessRate: number;
   errorCount: number;
-  lastError: ErrorInfo | null;
-  lastSuccessfulNavigation: NavigationInfo | null;
+  lastError: Error | null;
+  lastSuccessfulNavigation: string | null;
   consecutiveFailures: number;
 }
 
@@ -43,6 +43,8 @@ export interface Router404Status {
   errorCount: number;
   recommendations: string[];
   routerInitErrors: number;
+  navigationQueueLength: number;
+  currentRoute: string | null;
 }
 
 export interface DomErrorState {

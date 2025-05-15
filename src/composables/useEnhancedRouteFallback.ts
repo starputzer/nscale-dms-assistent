@@ -7,8 +7,8 @@
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter, useRoute, RouteLocationNormalized } from 'vue-router';
 import { useLogger } from '@/composables/useLogger';
-import { routerService } from '@/services/router/RouterService';
-import { domErrorDetector } from '@/utils/domErrorDiagnostics';
+import { routerService } from '@/services/router/RouterServiceFixed';
+// import { domErrorDetector } from '@/utils/domErrorDiagnostics'; // DEAKTIVIERT wegen Endlosschleife
 
 export interface EnhancedRouteFallbackOptions {
   enabled?: boolean;
@@ -58,10 +58,11 @@ export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions =
     logger.info('Enhanced Route Fallback: Initialisierung');
     
     // Router Service initialisieren
-    const initialized = await routerService.initialize(router);
-    
-    if (!initialized) {
-      logger.error('Router Service konnte nicht initialisiert werden');
+    try {
+      routerService.setRouter(router);
+      logger.info('Router Service initialisiert');
+    } catch (error) {
+      logger.error('Router Service konnte nicht initialisiert werden', error);
       return;
     }
 
@@ -106,13 +107,13 @@ export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions =
    */
   const checkRouteHealth = async () => {
     try {
-      // Prüfe DOM auf Fehler
-      const domDiagnostics = domErrorDetector.detectErrorState();
+      // Prüfe DOM auf Fehler - DEAKTIVIERT wegen Endlosschleife
+      // const domDiagnostics = domErrorDetector.detectErrorState();
       
-      if (domDiagnostics.has404Page || domDiagnostics.hasErrorScreen) {
-        handleRouteError(new Error(`DOM-Fehler erkannt: ${domDiagnostics.errorType}`));
-        return;
-      }
+      // if (domDiagnostics.has404Page || domDiagnostics.hasErrorScreen) {
+      //   handleRouteError(new Error(`DOM-Fehler erkannt: ${domDiagnostics.errorType}`));
+      //   return;
+      // }
 
       // Prüfe Router-Zustand
       const currentRoute = routerService.getCurrentRoute();
@@ -392,7 +393,7 @@ export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions =
       currentRoute: routerService.getCurrentRoute(),
       isMonitoring: isMonitoring.value,
       queueLength: navigationQueue.value.length,
-      domDiagnostics: domErrorDetector.detectErrorState()
+      // domDiagnostics: domErrorDetector.detectErrorState() // DEAKTIVIERT wegen Endlosschleife
     };
   };
 

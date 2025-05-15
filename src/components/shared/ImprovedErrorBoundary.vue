@@ -88,7 +88,7 @@ import { ref, computed, watch, onErrorCaptured, onMounted, onBeforeUnmount } fro
 import { useRouter, useRoute } from 'vue-router';
 import { useLogger } from '@/composables/useLogger';
 import { useEnhancedRouteFallback } from '@/composables/useEnhancedRouteFallback';
-import { routerService } from '@/services/router/RouterService';
+import { routerService } from '@/services/router/RouterServiceFixed';
 import { domErrorDetector } from '@/utils/domErrorDiagnostics';
 import { selfHealingService } from '@/services/selfHealing/SelfHealingService';
 import Button from '@/components/ui/base/Button.vue';
@@ -139,15 +139,38 @@ const recoverySteps = ref([
   { id: 'restore', label: 'Navigation wiederherstellen', completed: false, failed: false }
 ]);
 
-// Enhanced Route Fallback
-const { 
-  safeNavigate, 
-  checkRouteHealth,
-  getDiagnostics 
-} = useEnhancedRouteFallback({
-  enabled: true,
-  autoRepairEnabled: props.enableAutoRecovery
-});
+// Enhanced Route Fallback - TEMPORÄR DEAKTIVIERT
+// const { 
+//   safeNavigate, 
+//   checkRouteHealth,
+//   getDiagnostics 
+// } = useEnhancedRouteFallback({
+//   enabled: true,
+//   autoRepairEnabled: props.enableAutoRecovery
+
+// Temporäre Ersatzfunktionen
+const safeNavigate = async (path: string) => {
+  try {
+    await router.push(path);
+    return { success: true };
+  } catch (error) {
+    logger.error('Navigation fehlgeschlagen', error);
+    return { success: false, error };
+  }
+};
+
+const checkRouteHealth = async () => {
+  // Einfache Prüfung ob Route existiert
+  const currentRoute = router.currentRoute.value;
+  return currentRoute && !currentRoute.matched.length === 0;
+};
+
+const getDiagnostics = () => {
+  return {
+    routerStatus: 'operational',
+    errorCount: 0
+  };
+};
 
 // Computed
 const canGoBack = computed(() => window.history.length > 1);
@@ -238,7 +261,7 @@ const attemptRecovery = async () => {
 
     // Step 5: Restore Navigation
     await executeRecoveryStep('restore', async () => {
-      const result = await routerService.navigateToLastWorking();
+      const result = await routerService.navigateToHome();
       if (!result.success) {
         throw new Error('Navigation konnte nicht wiederhergestellt werden');
       }

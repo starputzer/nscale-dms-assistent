@@ -5,7 +5,7 @@
  */
 
 import { RouteLocationNormalized } from 'vue-router';
-import { routerService } from '@/services/router/RouterService';
+import { routerService } from '@/services/router/RouterServiceFixed';
 import type { Logger } from '@/composables/useLogger';
 import type { Toast } from '@/composables/useToast';
 

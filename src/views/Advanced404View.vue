@@ -112,9 +112,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { unifiedDiagnosticsService } from '@/services/diagnostics/UnifiedDiagnosticsService';
+import { unifiedDiagnosticsService } from '@/services/diagnostics/UnifiedDiagnosticsServiceFixed';
 import { selfHealingService } from '@/services/selfHealing/SelfHealingService';
-import { routerService } from '@/services/router/RouterService';
+import { routerService } from '@/services/router/RouterServiceFixed';
 import { useLogger } from '@/composables/useLogger';
 import { useToast } from '@/composables/useToast';
 import type { RecoveryOption } from '@/types/recovery';
