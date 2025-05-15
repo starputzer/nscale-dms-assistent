@@ -3,7 +3,7 @@
     <div class="header-container">
       <div class="header-logo">
         <img
-          src="@/assets/assets/images/senmvku-logo.png"
+          src="@/assets/images/senmvku-logo.png"
           alt="nscale DMS"
           class="logo-image"
         />

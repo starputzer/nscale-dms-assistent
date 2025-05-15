@@ -38,7 +38,7 @@ export class RouterInitDebugger {
     
     // Starte Überwachung
     this.initTester.startTest();
-    this.diagnostics.enableRealTimeMonitoring();
+    // this.diagnostics.enableRealTimeMonitoring(); // DEAKTIVIERT - Router Debug Monitor
     
     // Installiere globale Debug-Commands
     this.installDebugCommands();
@@ -337,16 +337,16 @@ export class RouterInitDebugger {
 // Export Singleton-Instanz
 export const routerInitDebugger = new RouterInitDebugger();
 
-// Auto-Enable in Development
-if (process.env.NODE_ENV === 'development') {
-  console.log('🐛 Router Init Debugger aktiviert');
-  
-  // Aktiviere Visual Monitoring nach DOM-Ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      routerInitDebugger.enableVisualMonitoring();
-    });
-  } else {
-    routerInitDebugger.enableVisualMonitoring();
-  }
-}
+// Auto-Enable in Development - DEAKTIVIERT
+// if (process.env.NODE_ENV === 'development') {
+//   console.log('🐛 Router Init Debugger aktiviert');
+//   
+//   // Aktiviere Visual Monitoring nach DOM-Ready
+//   if (document.readyState === 'loading') {
+//     document.addEventListener('DOMContentLoaded', () => {
+//       routerInitDebugger.enableVisualMonitoring();
+//     });
+//   } else {
+//     routerInitDebugger.enableVisualMonitoring();
+//   }
+// }

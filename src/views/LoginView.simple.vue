@@ -2,7 +2,7 @@
   <div class="login-container">
     <div class="login-card">
       <div class="logo-container">
-        <img src="@/assets/assets/images/senmvku-logo.png" alt="nscale DMS Assistent" class="logo" />
+        <img src="@/assets/images/senmvku-logo.png" alt="nscale DMS Assistent" class="logo" />
         <h1>nscale DMS Assistent</h1>
       </div>
       
@@ -65,15 +65,6 @@
           {{ activeTab === "login" ? "Anmelden" : "Registrieren" }}
         </button>
         
-        <button 
-          v-if="activeTab === 'login'" 
-          type="button" 
-          class="secondary-button" 
-          :disabled="isLoading"
-          @click="loginWithTestUser"
-        >
-          Demo-Login (martin@danglefeet.com/123)
-        </button>
       </form>
     </div>
   </div>
@@ -92,9 +83,9 @@ const router = useRouter();
 // Form state
 const activeTab = ref('login');
 const formData = reactive({
-  email: 'martin@danglefeet.com',
+  email: '',
   username: '',
-  password: '123',
+  password: '',
   rememberMe: false
 });
 

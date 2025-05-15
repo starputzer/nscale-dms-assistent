@@ -171,6 +171,27 @@
       </svg>
     </button>
 
+    <!-- Sidebar Toggle Button für eingeklappte Sidebar -->
+    <button
+      v-if="!isMobile && isSidebarCollapsed"
+      class="n-chat-sidebar-toggle"
+      @click="toggleSidebar"
+      aria-label="Sidebar aufklappen"
+      title="Sidebar aufklappen"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <polyline points="13 17 18 12 13 7"></polyline>
+        <polyline points="6 17 11 12 6 7"></polyline>
+      </svg>
+    </button>
+
     <!-- Haupt-Chat-Bereich -->
     <div class="n-chat-main">
       <!-- Chat-Header mit Sitzungsinformationen und Aktionen -->
@@ -1836,8 +1857,75 @@ if (import.meta.env.DEV) {
   color: var(--nscale-text-color-secondary, #475569);
 }
 
+/* Sidebar Toggle Button */
+.n-chat-sidebar-toggle {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: var(--nscale-surface-color, #ffffff);
+  border: 1px solid var(--nscale-border-color, #e2e8f0);
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  color: var(--nscale-primary, #00a550);
+  transition: all 0.2s ease;
+}
+
+.n-chat-sidebar-toggle:hover {
+  background-color: var(--nscale-primary-light, #d1fae5);
+  border-color: var(--nscale-primary, #00a550);
+}
+
+.n-chat-sidebar-toggle svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Mobile Sidebar Toggle */
+.n-chat-mobile-toggle {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: var(--nscale-surface-color, #ffffff);
+  border: 1px solid var(--nscale-border-color, #e2e8f0);
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  color: var(--nscale-primary, #00a550);
+  transition: all 0.2s ease;
+}
+
+.n-chat-mobile-toggle:hover {
+  background-color: var(--nscale-primary-light, #d1fae5);
+  border-color: var(--nscale-primary, #00a550);
+}
+
+.n-chat-mobile-toggle svg {
+  width: 24px;
+  height: 24px;
+}
+
 /* Mobile Anpassungen */
 @media (max-width: 767px) {
+  .n-chat-mobile-toggle {
+    display: flex;
+  }
+  
+  .n-chat-sidebar-toggle {
+    display: none;
+  }
   .n-chat-view {
     display: grid;
     grid-template-columns: 1fr;
@@ -2040,6 +2128,17 @@ if (import.meta.env.DEV) {
     background-color: var(--nscale-dark-surface-color, #1e1e1e);
     border-color: var(--nscale-dark-border-color, #333333);
     color: var(--nscale-dark-text-color, #e2e8f0);
+  }
+  
+  .n-chat-sidebar-toggle {
+    background-color: var(--nscale-dark-surface-color, #1e1e1e);
+    border-color: var(--nscale-dark-border-color, #333333);
+    color: var(--nscale-dark-primary, #00d06a);
+  }
+  
+  .n-chat-sidebar-toggle:hover {
+    background-color: var(--nscale-dark-primary-ultra-light, rgba(0, 165, 80, 0.1));
+    border-color: var(--nscale-dark-primary, #00d06a);
   }
 }
 </style>

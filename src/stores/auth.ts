@@ -439,6 +439,43 @@ export const useAuthStore = defineStore(
       console.log("Auth-Store wird initialisiert");
       migrateFromLegacyStorage();
 
+      // Falls immer noch kein Token: direkt aus localStorage laden
+      if (!token.value) {
+        const storedToken = localStorage.getItem('nscale_access_token');
+        const storedRefreshToken = localStorage.getItem('nscale_refresh_token');
+        
+        if (storedToken) {
+          console.log("Token aus localStorage wiederhergestellt in initialize()");
+          token.value = storedToken;
+          if (storedRefreshToken) {
+            refreshToken.value = storedRefreshToken;
+          }
+          
+          // Benutzerdaten aus Token extrahieren
+          try {
+            const decodedToken: any = jwtDecode(storedToken);
+            user.value = {
+              id: decodedToken.user_id || decodedToken.sub || '1',
+              username: decodedToken.email || decodedToken.name || 'user@example.com',
+              email: decodedToken.email || decodedToken.name || 'user@example.com',
+              roles: [decodedToken.role || "user"]
+            };
+            
+            // Ablaufzeit setzen
+            if (decodedToken.exp) {
+              expiresAt.value = decodedToken.exp * 1000;
+            } else {
+              expiresAt.value = Date.now() + 24 * 60 * 60 * 1000; // 24 Stunden
+            }
+          } catch (e) {
+            console.error("Fehler beim Dekodieren des gespeicherten Tokens:", e);
+            // Token ist ungültig, löschen
+            token.value = null;
+            localStorage.removeItem('nscale_access_token');
+          }
+        }
+      }
+
       // HTTP-Clients explizit konfigurieren, wenn Token vorhanden ist
       if (token.value) {
         console.log("Token gefunden, konfiguriere HTTP-Clients während der Initialisierung");
@@ -1431,6 +1468,12 @@ export const useAuthStore = defineStore(
 
       // Selektives Speichern bestimmter State-Elemente
       paths: ["token", "refreshToken", "user", "expiresAt", "version"],
+      
+      // Nach dem Wiederherstellen aus der Persistenz initialisieren
+      afterRestore: () => {
+        console.log("Auth-Store aus Persistenz wiederhergestellt");
+        initialize();
+      },
 
       // Sicherheitsmaßnahmen für die Persistenz
       serializer: {

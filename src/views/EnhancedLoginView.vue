@@ -174,17 +174,6 @@
             {{ activeTab === "login" ? "Anmelden" : "Registrieren" }}
           </button>
           
-          <!-- Demo-Login-Button -->
-          <button
-            v-if="activeTab === 'login'"
-            type="button"
-            class="demo-login-button"
-            :disabled="isLoading"
-            @click="handleDemoLogin"
-          >
-            <span v-if="isLoading" class="loading-spinner"></span>
-            Demo-Login (martin@danglefeet.com/123)
-          </button>
         </form>
         
         <!-- Passwort vergessen (nur für Login) -->
@@ -240,16 +229,16 @@ const currentYear = new Date().getFullYear()
 
 // Formulardaten
 const formData = reactive({
-  email: 'martin@danglefeet.com', // Default-Email für einfaches Testen
+  email: '',
   username: '',
-  password: '123', // Default-Passwort für einfaches Testen
+  password: '',
   passwordConfirm: '',
   displayName: '',
   rememberMe: false,
 })
 
 // Logo URL (optional, kann angepasst werden)
-const logoUrl = computed(() => '/assets/assets/images/senmvku-logo.png')
+const logoUrl = computed(() => '/assets/images/senmvku-logo.png')
 
 // Validierungsregeln
 const rules = computed(() => {

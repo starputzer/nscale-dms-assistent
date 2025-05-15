@@ -227,7 +227,7 @@
             <h3 class="settings-section-title">Über</h3>
             
             <div class="about-info">
-              <img src="/assets/assets/images/senmvku-logo.png" alt="nscale Logo" class="about-logo">
+              <img src="/assets/images/senmvku-logo.png" alt="nscale Logo" class="about-logo">
               <h2>nscale DMS Assistant</h2>
               <p class="about-version">Version {{ version }}</p>
               <p class="about-build">Build {{ buildDate }}</p>

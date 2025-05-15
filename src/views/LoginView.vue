@@ -5,7 +5,7 @@
     <div class="nscale-card max-w-md w-full p-8">
       <div class="nscale-logo text-center mb-6">
         <img
-          src="@/assets/assets/images/senmvku-logo.png"
+          src="@/assets/images/senmvku-logo.png"
           alt="nscale DMS Assistent"
           class="h-12 mx-auto mb-4"
         />
@@ -146,17 +146,6 @@
           {{ activeTab === "login" ? "Anmelden" : "Registrieren" }}
         </button>
         
-        <!-- Test Login Button -->
-        <button
-          v-if="activeTab === 'login'"
-          class="nscale-btn-secondary w-full mt-4"
-          type="button"
-          :disabled="isLoading"
-          @click="loginWithTestUser"
-        >
-          <span v-if="isLoading" class="loading-spinner mr-2"></span>
-          Demo-Login (martin@danglefeet.com/123)
-        </button>
 
         <!-- Password Requirements (Register) -->
         <div v-if="activeTab === 'register'" class="text-sm text-gray-600 mt-4">

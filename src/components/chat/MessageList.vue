@@ -28,7 +28,7 @@
       role="status"
     >
       <img
-        :src="logoUrl || './frontend/assets/images/senmvku-logo.png'"
+        :src="logoUrl || '/assets/images/senmvku-logo.png'"
         alt="nscale DMS Assistent Logo"
         class="n-message-list__logo"
         @error="handleImageError"
@@ -737,7 +737,7 @@ function observeItemSizes() {
 }
 
 // Logo-Handling
-const logoSrc = ref('./frontend/assets/images/senmvku-logo.png');
+const logoSrc = ref('/assets/images/senmvku-logo.png');
 
 function checkIfImageExists(url: string): boolean {
   try {
@@ -751,34 +751,54 @@ function checkIfImageExists(url: string): boolean {
 }
 
 function handleImageError(event: Event) {
+  const img = event.target as HTMLImageElement;
+  
+  // Wenn bereits alle Versuche durchgeführt wurden, beenden
+  if (img.dataset.failedPaths) {
+    const failedPaths = JSON.parse(img.dataset.failedPaths) as string[];
+    if (failedPaths.length >= 4) {
+      console.error('[MessageList] All image paths failed, giving up');
+      // Entferne den error handler um weitere Fehler zu vermeiden
+      img.onerror = null;
+      return;
+    }
+  }
+  
   console.warn('[MessageList] Image failed to load, trying fallback paths');
   
   // Fallback-Pfade in der Reihenfolge der Wahrscheinlichkeit
   const fallbackPaths = [
-    './assets/assets/images/senmvku-logo.png',
-    '/assets/assets/images/senmvku-logo.png',
+    '/assets/images/senmvku-logo.png',
+    './assets/images/senmvku-logo.png',
     '/frontend/assets/images/senmvku-logo.png',
     'https://via.placeholder.com/150x150?text=nscale+DMS+Assistant'
   ];
   
-  // Hole das aktuelle src
-  const img = event.target as HTMLImageElement;
-  const currentSrc = img.src;
+  // Verfolge bereits versuchte Pfade
+  const failedPaths = img.dataset.failedPaths ? JSON.parse(img.dataset.failedPaths) : [];
+  const currentPath = img.src;
   
-  // Suche den nächsten Pfad in der Liste, der nicht der aktuelle ist
-  const nextPath = fallbackPaths.find(path => !currentSrc.endsWith(path));
+  // Füge den aktuellen Pfad zu den fehlgeschlagenen hinzu
+  if (!failedPaths.includes(currentPath)) {
+    failedPaths.push(currentPath);
+  }
+  
+  // Finde den nächsten noch nicht versuchten Pfad
+  const nextPath = fallbackPaths.find(path => {
+    const absolutePath = new URL(path, window.location.origin).href;
+    return !failedPaths.some(failed => failed.includes(path) || failed === absolutePath);
+  });
   
   if (nextPath) {
     console.log(`[MessageList] Trying fallback image path: ${nextPath}`);
+    img.dataset.failedPaths = JSON.stringify(failedPaths);
     img.src = nextPath;
   } else {
     console.error('[MessageList] All image paths failed');
-    // Letzter Resort - ein leeres Bild mit Mindesthöhe
-    img.style.minHeight = '80px';
-    img.style.display = 'flex';
-    img.style.alignItems = 'center';
-    img.style.justifyContent = 'center';
-    img.alt = 'nscale DMS Assistent';
+    // Entferne den error handler um weitere Fehler zu vermeiden
+    img.onerror = null;
+    // Verstecke das Bild
+    img.style.display = 'none';
   }
 }
 

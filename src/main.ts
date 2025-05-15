@@ -5,6 +5,7 @@
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { RouteLocationNormalized } from 'vue-router'
 import { RouterInitializationTester } from '@/utils/routerInitializationTester'
 import { routerInitDebugger } from '@/utils/routerInitDebugger'
@@ -64,6 +65,9 @@ function initializePinia() {
   
   const pinia = createPinia();
   
+  // Pinia Persist Plugin hinzufügen für Store-Persistenz
+  pinia.use(piniaPluginPersistedstate);
+  
   // Setze globale Referenz für Legacy-Code
   if (typeof window !== 'undefined') {
     (window as any).__pinia = pinia;
@@ -84,6 +88,29 @@ async function initializeStores(pinia: ReturnType<typeof createPinia>) {
   // Auth Store MUSS zuerst initialisiert werden
   const { useAuthStore } = await import('./stores/auth');
   const authStore = useAuthStore(pinia);
+  
+  // Gebe dem Persistenz-Plugin Zeit, den Store zu laden
+  await new Promise(resolve => setTimeout(resolve, 10));
+  
+  // Token aus localStorage laden falls Pinia-Persist fehlschlägt
+  if (!authStore.token) {
+    const storedToken = localStorage.getItem('nscale_access_token');
+    const storedRefreshToken = localStorage.getItem('nscale_refresh_token');
+    
+    if (storedToken) {
+      console.log('[MAIN] Token aus localStorage wiederhergestellt');
+      await authStore.setToken(storedToken);
+      if (storedRefreshToken) {
+        authStore.refreshToken = storedRefreshToken;
+      }
+    }
+  }
+  
+  // Auth-Store explizit initialisieren
+  if (!authStore.activeInterceptors || authStore.activeInterceptors.length === 0) {
+    console.log('[MAIN] Auth-Store wird manuell initialisiert');
+    authStore.initialize();
+  }
   
   // Weitere kritische Stores
   const storeImports = [
