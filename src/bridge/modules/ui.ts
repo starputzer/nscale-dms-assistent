@@ -154,28 +154,33 @@ export function initUIBridge(
     // Subscribe to UI store changes
     const uiUnwatch = uiStore.$subscribe((mutation, store) => {
       if (mutation.type === 'direct' || mutation.type === 'patch function') {
+        // Sicherheitscheck für mutation.payload
+        if (!mutation.payload || typeof mutation.payload !== 'object') {
+          return;
+        }
+        
         // If dark mode changes
-        if (mergedConfig.syncTheme && 'darkMode' in mutation.payload) {
+        if (mergedConfig.syncTheme && mutation.payload && 'darkMode' in mutation.payload) {
           eventBus.emit('ui:themeChanged', { isDarkMode: uiStore.darkMode });
         }
         
         // If sidebar state changes
-        if ('sidebar' in mutation.payload) {
+        if (mutation.payload && 'sidebar' in mutation.payload) {
           eventBus.emit('ui:sidebarToggled', { isOpen: uiStore.sidebar.isOpen });
         }
         
         // If view mode changes
-        if ('viewMode' in mutation.payload) {
+        if (mutation.payload && 'viewMode' in mutation.payload) {
           eventBus.emit('ui:viewChanged', { view: uiStore.viewMode });
         }
         
         // If loading state changes
-        if ('isLoading' in mutation.payload) {
+        if (mutation.payload && 'isLoading' in mutation.payload) {
           eventBus.emit('ui:loadingChanged', { isLoading: uiStore.isLoading });
         }
         
         // If toasts change
-        if (mergedConfig.syncToasts && 'toasts' in mutation.payload) {
+        if (mergedConfig.syncToasts && mutation.payload && 'toasts' in mutation.payload) {
           // Only emit for toasts that weren't created through the bridge to avoid loops
           const newToasts = uiStore.toasts.filter(toast => 
             !state.bridgeCreatedToasts.has(toast.id)
@@ -187,7 +192,7 @@ export function initUIBridge(
         }
         
         // If modals change
-        if (mergedConfig.syncModals && 'activeModals' in mutation.payload) {
+        if (mergedConfig.syncModals && mutation.payload && 'activeModals' in mutation.payload) {
           // Only emit for modals that weren't created through the bridge to avoid loops
           const newModals = uiStore.activeModals.filter(modal => 
             !state.bridgeCreatedModals.has(modal.id)
