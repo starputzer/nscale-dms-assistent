@@ -77,7 +77,12 @@ export const useAuthStore = defineStore(
     // Getters
     const isAuthenticated = computed(() => !!token.value && !!user.value);
 
-    const isAdmin = computed(() => !!user.value?.roles?.includes("admin"));
+    const isAdmin = computed(() => {
+      // Unterstütze sowohl 'role' (singular) als auch 'roles' (plural)
+      if (user.value?.role === "admin") return true;
+      if (user.value?.roles?.includes("admin")) return true;
+      return false;
+    });
 
     const isExpired = computed(() => {
       if (!expiresAt.value) return false;

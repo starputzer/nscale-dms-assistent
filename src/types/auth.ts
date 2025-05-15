@@ -6,11 +6,11 @@ export interface User {
   id: string;
   username: string;
   email: string;
-  roles: Role[];
+  roles?: Role[];
   displayName?: string;
   lastLogin?: string;
   preferences?: UserPreferences;
-  /** @deprecated Verwende roles[] stattdessen */
+  /** Backend verwendet 'role' (singular) */
   role?: UserRole;
 }
 
