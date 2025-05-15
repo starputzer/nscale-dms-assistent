@@ -5,7 +5,7 @@
     <div class="nscale-card max-w-md w-full p-8">
       <div class="nscale-logo text-center mb-6">
         <img
-          src="@/assets/images/senmvku-logo.png"
+          src="@/assets/assets/images/senmvku-logo.png"
           alt="nscale DMS Assistent"
           class="h-12 mx-auto mb-4"
         />

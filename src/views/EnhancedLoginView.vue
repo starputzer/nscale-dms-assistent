@@ -249,7 +249,7 @@ const formData = reactive({
 })
 
 // Logo URL (optional, kann angepasst werden)
-const logoUrl = computed(() => '/images/senmvku-logo.png')
+const logoUrl = computed(() => '/assets/assets/images/senmvku-logo.png')
 
 // Validierungsregeln
 const rules = computed(() => {

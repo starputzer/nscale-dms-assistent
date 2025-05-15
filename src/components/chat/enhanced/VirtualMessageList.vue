@@ -28,7 +28,7 @@
       role="status"
     >
       <img
-        :src="logoUrl || '/assets/images/senmvku-logo.png'"
+        :src="logoUrl || '/assets/assets/images/senmvku-logo.png'"
         alt="nscale DMS Assistent Logo"
         class="n-virtual-message-list__logo"
       />

@@ -2,7 +2,7 @@
   <div class="login-container">
     <div class="login-card">
       <div class="logo-container">
-        <img src="@/assets/images/senmvku-logo.png" alt="nscale DMS Assistent" class="logo" />
+        <img src="@/assets/assets/images/senmvku-logo.png" alt="nscale DMS Assistent" class="logo" />
         <h1>nscale DMS Assistent</h1>
       </div>
       

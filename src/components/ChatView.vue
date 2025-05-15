@@ -13,7 +13,7 @@
       >
         <div class="welcome-message">
           <img
-            src="/images/senmvku-logo.png"
+            src="/assets/images/senmvku-logo.png"
             alt="nscale DMS Assistent"
             class="welcome-logo"
           />

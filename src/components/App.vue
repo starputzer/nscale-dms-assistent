@@ -14,7 +14,7 @@
           <div class="auth-form">
             <div class="auth-logo">
               <img
-                src="/images/senmvku-logo.png"
+                src="/assets/images/senmvku-logo.png"
                 alt="nscale Logo"
                 class="auth-logo-image"
               />
@@ -72,7 +72,7 @@
         >
           <div class="welcome-content">
             <img
-              src="/images/senmvku-logo.png"
+              src="/assets/images/senmvku-logo.png"
               alt="nscale Logo"
               class="welcome-logo"
             />

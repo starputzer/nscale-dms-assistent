@@ -8,7 +8,7 @@
     <div v-else-if="messages.length === 0" class="no-messages">
       <div class="welcome-message">
         <img
-          src="@/assets/images/senmvku-logo.png"
+          src="@/assets/assets/images/senmvku-logo.png"
           alt="nscale DMS Assistent"
           class="welcome-logo"
         />

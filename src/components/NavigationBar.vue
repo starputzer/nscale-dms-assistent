@@ -41,7 +41,7 @@
           />
           <template v-else>
             <img
-              src="/images/senmvku-logo.png"
+              src="/assets/images/senmvku-logo.png"
               alt="nscale Logo"
               class="n-navigation-bar__logo-img"
             />

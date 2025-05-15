@@ -2,7 +2,7 @@
   <div class="auth-container">
     <div class="auth-card">
       <div class="auth-header">
-        <img src="/assets/images/senmvku-logo.png" alt="nscale Logo" class="auth-logo">
+        <img src="/assets/assets/images/senmvku-logo.png" alt="nscale Logo" class="auth-logo">
         <h1>nscale DMS Assistant</h1>
       </div>
       

@@ -28,7 +28,7 @@
       role="status"
     >
       <img
-        :src="logoUrl || './frontend/images/senmvku-logo.png'"
+        :src="logoUrl || './frontend/assets/images/senmvku-logo.png'"
         alt="nscale DMS Assistent Logo"
         class="n-message-list__logo"
         @error="handleImageError"
@@ -737,7 +737,7 @@ function observeItemSizes() {
 }
 
 // Logo-Handling
-const logoSrc = ref('./frontend/images/senmvku-logo.png');
+const logoSrc = ref('./frontend/assets/images/senmvku-logo.png');
 
 function checkIfImageExists(url: string): boolean {
   try {
@@ -755,9 +755,9 @@ function handleImageError(event: Event) {
   
   // Fallback-Pfade in der Reihenfolge der Wahrscheinlichkeit
   const fallbackPaths = [
-    './assets/images/senmvku-logo.png',
-    '/assets/images/senmvku-logo.png',
-    '/frontend/images/senmvku-logo.png',
+    './assets/assets/images/senmvku-logo.png',
+    '/assets/assets/images/senmvku-logo.png',
+    '/frontend/assets/images/senmvku-logo.png',
     'https://via.placeholder.com/150x150?text=nscale+DMS+Assistant'
   ];
   
