@@ -67,6 +67,16 @@ App.vue - Hauptanwendungskomponente mit verbesserter 404-Fehlerbehandlung
             @close="showDebugPanel = false"
             @action="handleDebugAction"
           />
+          
+          <!-- Router Health Monitor -->
+          <RouterHealthMonitor
+            v-if="isDevMode || hasRouterErrors"
+            :position="'bottom-right'"
+            :start-expanded="hasRouterErrors"
+            :auto-hide="true"
+            :auto-hide-delay="30000"
+            ref="healthMonitor"
+          />
         </template>
       </template>
       
@@ -92,6 +102,7 @@ import ImprovedErrorBoundary from '@/components/shared/ImprovedErrorBoundary.vue
 import AuthErrorBoundary from '@/components/auth/AuthErrorBoundary.vue'
 import ErrorDebugPanel from '@/components/debug/ErrorDebugPanel.vue'
 import SpinnerIcon from '@/components/icons/SpinnerIcon.vue'
+import RouterHealthMonitor from '@/components/monitoring/RouterHealthMonitor.vue'
 
 // Services und Composables
 import { routerService } from '@/services/router/RouterService'
@@ -123,7 +134,8 @@ export default defineComponent({
     ImprovedErrorBoundary,
     AuthErrorBoundary,
     ErrorDebugPanel,
-    SpinnerIcon
+    SpinnerIcon,
+    RouterHealthMonitor
   },
   setup() {
     const route = useRoute()
@@ -141,6 +153,10 @@ export default defineComponent({
     const showDebugPanel = ref(false)
     const isDevMode = computed(() => import.meta.env.DEV)
     const isRouterReady = ref(false)
+    const healthMonitor = ref(null)
+    
+    // Computed für Router-Fehler
+    const hasRouterErrors = computed(() => false) // Temporär deaktiviert
     
     // TEMPORÄR: Basic Route Fallback ohne DOM-Fehlererkennung
     const {
@@ -372,6 +388,8 @@ export default defineComponent({
       showDebugPanel,
       isDevMode,
       isRouterReady,
+      hasRouterErrors,
+      healthMonitor,
       
       // Settings
       fontSizeLevel,

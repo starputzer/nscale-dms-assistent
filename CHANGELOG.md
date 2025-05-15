@@ -8,6 +8,13 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 ## [Unreleased]
 
 ### Hinzugefügt
+- (15.05.2025) Optimiertes Diagnose- und Selbstheilungssystem:
+  - UnifiedDiagnosticsService: Zentraler Service für alle Diagnose-Daten
+  - Advanced404View: Erweiterte 404-Seite mit Selbstheilungs-Optionen
+  - RouterHealthMonitor: Widget für kontinuierliche Router-Überwachung
+  - Smart Recovery: Intelligente Fehlerbehebung basierend auf Diagnose
+  - Session-Wiederherstellung für Chat-Routen
+  - Export-Funktion für Support-Tickets
 - (15.05.2025) DOM-Fehlererkennung temporär deaktiviert:
   - Aggressive Fehlererkennung verursachte falsche Positiv-Meldungen
   - Basic Route Fallback implementiert ohne DOM-Analyse
