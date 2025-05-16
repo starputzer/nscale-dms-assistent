@@ -113,7 +113,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { nextTick } from '@vue/runtime-core'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useSessionsStore } from '@/stores/sessions'
 import { marked } from 'marked'
@@ -121,6 +121,7 @@ import DOMPurify from 'dompurify'
 import axios from 'axios'
 
 const route = useRoute()
+const router = useRouter()
 const authStore = useAuthStore()
 const sessionsStore = useSessionsStore()
 
@@ -130,7 +131,7 @@ const isLoading = ref(false)
 const messageArea = ref<HTMLElement>()
 
 // Computed
-const currentSessionId = computed(() => route.params.id as string || sessionsStore.currentSession?.id)
+const currentSessionId = computed(() => route.params.id as string || sessionsStore.currentSessionId)
 const currentSession = computed(() => sessionsStore.currentSession)
 const messages = computed(() => sessionsStore.allCurrentMessages)
 const isStreaming = computed(() => sessionsStore.isStreaming)
@@ -238,19 +239,19 @@ const handleFeedback = async (message: any, type: 'positive' | 'negative', event
     console.log('Feedback gespeichert:', response.data)
     
     // Zeige eine kurze Bestätigungsmeldung
-    const feedbackButton = event?.currentTarget as HTMLElement
+    const feedbackButton = event?.currentTarget as HTMLButtonElement
     if (feedbackButton) {
       const originalContent = feedbackButton.innerHTML
       feedbackButton.innerHTML = '✓'
       feedbackButton.style.backgroundColor = type === 'positive' ? '#d1fae5' : '#fee2e2'
       feedbackButton.style.color = type === 'positive' ? '#00a550' : '#dc3545'
-      feedbackButton.disabled = true
+      feedbackButton.setAttribute('disabled', 'true')
       
       setTimeout(() => {
         feedbackButton.innerHTML = originalContent
         feedbackButton.style.backgroundColor = ''
         feedbackButton.style.color = ''
-        feedbackButton.disabled = false
+        feedbackButton.removeAttribute('disabled')
       }, 2000)
     }
   } catch (error) {
@@ -285,8 +286,19 @@ watch(isStreaming, (newVal) => {
 })
 
 // Lifecycle
-onMounted(() => {
-  loadMessages()
+onMounted(async () => {
+  // Set current session from route or use persisted session
+  if (route.params.id) {
+    await sessionsStore.setCurrentSession(route.params.id as string)
+  } else if (sessionsStore.currentSessionId) {
+    // If no route param but we have a persisted session, use it
+    router.replace(`/chat/${sessionsStore.currentSessionId}`)
+  }
+  
+  // Load messages for current session
+  if (sessionsStore.currentSessionId) {
+    await loadMessages()
+  }
 })
 </script>
 

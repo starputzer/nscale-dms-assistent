@@ -247,7 +247,87 @@
   // Animations
   --nscale-transition-fast: 0ms;
   --nscale-transition-normal: 0ms;
-  --nscale-transition-slow: 0ms;
+}
+
+// Custom Contrast Theme with user-selected accent color
+[data-theme="custom-contrast"] {
+  // Define custom accent color variable
+  --custom-accent-color: #ffeb3b; // Default fallback
+  
+  // Core Brand Colors - Use custom accent color
+  --nscale-primary: var(--custom-accent-color);
+  --nscale-primary-hover: var(--custom-accent-color);
+  --nscale-primary-active: var(--custom-accent-color);
+  --nscale-primary-light: #000000;
+  --nscale-primary-ultra-light: #000000;
+  
+  // Background Colors
+  --nscale-bg-primary: #000000;
+  --nscale-bg-secondary: #000000;
+  --nscale-bg-tertiary: #000000;
+  --nscale-bg-surface: #000000;
+  --nscale-bg-overlay: rgba(0, 0, 0, 0.95);
+  --nscale-background: #000000;
+  --nscale-surface: #000000;
+  
+  // Text Colors
+  --nscale-text-primary: var(--custom-accent-color);
+  --nscale-text-secondary: var(--custom-accent-color);
+  --nscale-text-tertiary: var(--custom-accent-color);
+  --nscale-text-inverse: #000000;
+  --nscale-text-link: var(--custom-accent-color);
+  --nscale-text-heading: var(--custom-accent-color);
+  --nscale-text: var(--custom-accent-color);
+  
+  // Border Colors
+  --nscale-border-default: var(--custom-accent-color);
+  --nscale-border-subtle: var(--custom-accent-color);
+  --nscale-border-strong: var(--custom-accent-color);
+  --nscale-border-focus: var(--custom-accent-color);
+  --nscale-border: var(--custom-accent-color);
+  
+  // State Colors
+  --nscale-state-success: #00ff00;
+  --nscale-state-warning: var(--custom-accent-color);
+  --nscale-state-error: #ff0000;
+  --nscale-state-info: #00ffff;
+  
+  // State Background Colors
+  --nscale-state-success-bg: #003300;
+  --nscale-state-warning-bg: #000000;
+  --nscale-state-error-bg: #330000;
+  --nscale-state-info-bg: #003333;
+  
+  // Component-specific Variables
+  --nscale-button-primary-bg: var(--custom-accent-color);
+  --nscale-button-primary-text: #000000;
+  --nscale-button-primary-hover: var(--custom-accent-color);
+  --nscale-button-secondary-bg: #000000;
+  --nscale-button-secondary-text: var(--custom-accent-color);
+  --nscale-button-secondary-border: var(--custom-accent-color);
+  --nscale-button-hover: rgba(255, 255, 255, 0.1);
+  
+  --nscale-input-bg: #000000;
+  --nscale-input-border: var(--custom-accent-color);
+  --nscale-input-text: var(--custom-accent-color);
+  --nscale-input-placeholder: var(--custom-accent-color);
+  --nscale-input-focus-border: var(--custom-accent-color);
+  
+  --nscale-message-user-bg: #000000;
+  --nscale-message-user-text: var(--custom-accent-color);
+  --nscale-message-assistant-bg: #000000;
+  --nscale-message-assistant-text: var(--custom-accent-color);
+  --nscale-message-assistant-border: var(--custom-accent-color);
+  
+  // Shadows
+  --nscale-shadow-sm: 0 0 0 2px var(--custom-accent-color);
+  --nscale-shadow-md: 0 0 0 3px var(--custom-accent-color);
+  --nscale-shadow-lg: 0 0 0 4px var(--custom-accent-color);
+  --nscale-shadow-xl: 0 0 0 5px var(--custom-accent-color);
+  
+  // Focus Indicators
+  --nscale-focus-ring: 0 0 0 4px var(--custom-accent-color);
+  --nscale-focus-outline: 3px solid var(--custom-accent-color);
 }
 
 // Utility Classes

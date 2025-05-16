@@ -1,8 +1,20 @@
+---
+title: "Integration des erweiterten Diagnose- und Selbstheilungssystems"
+version: "1.0.0"
+date: "16.05.2025"
+lastUpdate: "16.05.2025"
+author: "Claude"
+status: "Aktiv"
+priority: "Hoch"
+category: "Entwicklung"
+tags: ["Diagnose", "Selbstheilung", "404-Fehler", "Router", "Digitale Akte", "Assistent"]
+---
+
 # Integration des erweiterten Diagnose- und Selbstheilungssystems
 
 ## Übersicht
 
-Das erweiterte Diagnose- und Selbstheilungssystem wurde entwickelt, um die persistenten 404-Fehler und Router-Probleme im nscale DMS Assistenten zu adressieren. Es baut auf den vorhandenen Komponenten auf und erweitert diese gezielt.
+Das erweiterte Diagnose- und Selbstheilungssystem wurde entwickelt, um die persistenten 404-Fehler und Router-Probleme im Digitale Akte Assistenten zu adressieren. Es baut auf den vorhandenen Komponenten auf und erweitert diese gezielt.
 
 ## Neue Komponenten
 

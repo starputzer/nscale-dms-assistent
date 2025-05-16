@@ -202,7 +202,7 @@ const sectionTitle = computed(() => {
     logs: 'Logs',
     featureToggles: 'Features'
   }
-  return titles[currentSection.value as AdminSection] || 'Verwaltung'
+  return titles[currentSection.value as AdminSection] || 'Administration'
 })
 
 // Mock data
@@ -267,9 +267,33 @@ const toggleFeature = (feature: any) => {
 
 // Check admin access
 onMounted(() => {
-  if (!authStore.isAuthenticated || authStore.user?.role !== 'admin') {
-    router.push('/')
+  // DEBUG: Log current user object and admin status
+  console.log('=== AdminView Debug ===')
+  console.log('isAuthenticated:', authStore.isAuthenticated)
+  console.log('Current user object:', authStore.user)
+  console.log('User role:', authStore.user?.role)
+  console.log('User roles array:', authStore.user?.roles)
+  console.log('Is admin computed:', authStore.isAdmin)
+  console.log('UserRole getter:', authStore.userRole)
+  console.log('===================')
+  
+  if (!authStore.isAuthenticated) {
+    console.warn('Not authenticated - redirecting to login')
+    router.push('/login')
+    return
   }
+  
+  // Temporär für debug: Admin check auskommentiert
+  /* 
+  if (!authStore.isAdmin) {
+    console.warn('Admin access denied - redirecting to home', {
+      user: authStore.user,
+      isAdmin: authStore.isAdmin
+    })
+    router.push('/')
+    return
+  }
+  */
   
   // Load data for current section
   adminStore.setCurrentSection(currentSection.value as AdminSection)

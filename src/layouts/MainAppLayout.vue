@@ -20,7 +20,7 @@
           v-if="currentView === 'admin'"
           class="close-admin-btn"
           @click="closeAdmin"
-          title="Verwaltung schließen"
+          title="Administration schließen"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -58,7 +58,7 @@
                 <path d="M12 7v5"></path>
                 <path d="M12 16h.01"></path>
               </svg>
-              Verwaltung
+              Administration
             </button>
             <button class="dropdown-item" @click="handleSettings">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -114,7 +114,7 @@
         <!-- Admin Navigation - only show for admin users and when in admin view -->
         <nav v-if="isAdmin && currentView === 'admin'" class="sidebar-nav admin-nav">
           <div class="nav-section-header">
-            <h3>Verwaltung</h3>
+            <h3>Administration</h3>
           </div>
           
           <button 
@@ -267,14 +267,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useSessionsStore } from '@/stores/sessions'
 import { useThemeStore } from '@/stores/theme'
 import { useAdminStore } from '@/stores/admin'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const sessionsStore = useSessionsStore()
 const themeStore = useThemeStore()
@@ -284,6 +285,17 @@ const adminStore = useAdminStore()
 const showUserMenu = ref(false)
 const currentView = ref('chat')
 const currentConversationId = ref<string | null>(null)
+
+// Synchronize view with route
+watch(() => route.path, (newPath) => {
+  if (newPath.startsWith('/admin')) {
+    currentView.value = 'admin'
+  } else if (newPath.startsWith('/chat')) {
+    currentView.value = 'chat'
+  } else if (newPath.startsWith('/help')) {
+    currentView.value = 'help'
+  }
+}, { immediate: true })
 
 // Computed
 const user = computed(() => authStore.user)
@@ -315,7 +327,9 @@ const toggleUserMenu = (event: MouseEvent) => {
 
 const handleAdmin = () => {
   showUserMenu.value = false
-  router.push('/admin')
+  currentView.value = 'admin'
+  adminStore.setCurrentSection('dashboard')
+  router.push('/admin/dashboard')
 }
 
 const handleSettings = () => {
@@ -334,8 +348,8 @@ const handleLogout = async () => {
     console.error('Error during logout:', e)
   }
   
-  // Always redirect to login page
-  window.location.href = '/login'
+  // Use router push instead of window.location
+  router.push('/login')
 }
 
 const navigateTo = (view: string) => {
@@ -346,7 +360,7 @@ const navigateTo = (view: string) => {
 const navigateToAdmin = (section: string) => {
   currentView.value = 'admin'
   adminStore.setCurrentSection(section as any)
-  router.push('/admin')
+  router.push(`/admin/${section}`)
 }
 
 const closeAdmin = () => {
@@ -442,6 +456,7 @@ onBeforeUnmount(() => {
   font-size: 20px;
   font-weight: 600;
   margin: 0;
+  color: var(--nscale-text);
 }
 
 .app-header-right {
@@ -521,6 +536,7 @@ onBeforeUnmount(() => {
 .user-name {
   font-weight: 500;
   margin-bottom: 4px;
+  color: var(--nscale-text);
 }
 
 .user-email {
@@ -544,6 +560,7 @@ onBeforeUnmount(() => {
   cursor: pointer;
   text-align: left;
   transition: background 0.2s;
+  color: var(--nscale-text);
 }
 
 .dropdown-item:hover {

@@ -12,12 +12,12 @@
 
       <div class="appearance-settings__themes">
         <div
-          v-for="theme in settingsStore.allThemes"
+          v-for="theme in themeStore.themeOptions"
           :key="theme.id"
           class="appearance-settings__theme-card"
           :class="{
             'appearance-settings__theme-card--active':
-              selectedTheme === theme.id,
+              themeStore.currentTheme === theme.id,
           }"
           @click="selectTheme(theme.id)"
         >
@@ -26,6 +26,22 @@
             :style="getThemePreviewStyle(theme)"
           ></div>
           <div class="appearance-settings__theme-name">{{ theme.name }}</div>
+        </div>
+      </div>
+
+      <!-- Custom Accent Color Picker for custom contrast theme -->
+      <div v-if="themeStore.currentTheme === 'custom-contrast'" class="appearance-settings__color-picker-section">
+        <h5 class="appearance-settings__subsection-title">
+          {{ t("settings.appearance.accentColor", "Akzentfarbe") }}
+        </h5>
+        <div class="appearance-settings__color-picker">
+          <input
+            type="color"
+            v-model="customAccentColor"
+            @change="updateCustomAccentColor"
+            class="appearance-settings__color-input"
+          />
+          <span class="appearance-settings__color-value">{{ customAccentColor }}</span>
         </div>
       </div>
     </div>
@@ -347,11 +363,14 @@ const emit = defineEmits<{
 const settingsStore = useSettingsStore();
 const { t } = useI18n();
 const { showToast } = useToast();
+import { useThemeStore } from '@/stores/theme';
+const themeStore = useThemeStore();
 
 // Referenzen
-const selectedTheme = ref(settingsStore.theme.currentTheme);
+const selectedTheme = ref(themeStore.currentTheme);
 const fontSettings = reactive<FontSettings>({ ...settingsStore.font });
 const showCustomThemeEditor = ref(false);
+const customAccentColor = ref(themeStore.customAccentColor);
 
 // Default-Werte für das benutzerdefinierte Thema
 const defaultCustomTheme: ColorTheme = {
@@ -450,10 +469,15 @@ const currentFontFamily = computed(() => {
 
 // Methoden
 function selectTheme(themeId: string) {
+  themeStore.setTheme(themeId as any);
   selectedTheme.value = themeId;
 
   // Theme-Änderung an Parent-Komponente weitergeben
   emit("apply-settings", "appearance", { theme: themeId });
+}
+
+function updateCustomAccentColor() {
+  themeStore.setCustomAccentColor(customAccentColor.value);
 }
 
 function setFontSize(size: string) {
@@ -471,13 +495,22 @@ function applyFontSettings() {
   emit("apply-settings", "appearance", { font: fontSettings });
 }
 
-function getThemePreviewStyle(theme: ColorTheme) {
+function getThemePreviewStyle(theme: any) {
+  if (theme.preview) {
+    return {
+      backgroundColor: theme.preview.background,
+      borderColor: theme.preview.primary,
+      "--primary-color": theme.preview.primary,
+      "--text-color": theme.preview.text,
+      "--surface-color": theme.preview.surface,
+    };
+  }
   return {
-    backgroundColor: theme.colors.background,
-    borderColor: theme.colors.border || theme.colors.primary,
-    "--primary-color": theme.colors.primary,
-    "--secondary-color": theme.colors.secondary,
-    "--text-color": theme.colors.text,
+    backgroundColor: theme.colors?.background || '#ffffff',
+    borderColor: theme.colors?.border || theme.colors?.primary || '#000000',
+    "--primary-color": theme.colors?.primary || '#000000',
+    "--secondary-color": theme.colors?.secondary || '#666666',
+    "--text-color": theme.colors?.text || '#000000',
   };
 }
 
@@ -982,5 +1015,53 @@ input:checked + .appearance-settings__toggle-slider:before {
   .appearance-settings__preview-alerts {
     flex-direction: column;
   }
+}
+/* Custom Color Picker Styles */
+.appearance-settings__color-picker-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--n-color-border);
+}
+
+.appearance-settings__subsection-title {
+  margin: 0.5rem 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--n-color-text-secondary);
+}
+
+.appearance-settings__color-picker {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.appearance-settings__color-input {
+  width: 60px;
+  height: 40px;
+  border: 2px solid var(--nscale-border);
+  border-radius: 8px;
+  cursor: pointer;
+  background: transparent;
+  padding: 0;
+}
+
+.appearance-settings__color-input::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.appearance-settings__color-input::-webkit-color-swatch {
+  border: none;
+  border-radius: 4px;
+}
+
+.appearance-settings__color-value {
+  font-family: monospace;
+  font-size: 0.875rem;
+  color: var(--nscale-text-secondary);
+  background: var(--nscale-bg-tertiary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--nscale-border);
 }
 </style>

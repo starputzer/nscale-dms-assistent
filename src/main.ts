@@ -5,6 +5,7 @@
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import type { Pinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { RouteLocationNormalized } from 'vue-router'
 
@@ -37,7 +38,7 @@ import '@/assets/layout-fixes.css'
 
 // Create app
 const app = createApp(App)
-const pinia = createPinia()
+const pinia: Pinia = createPinia()
 
 // Persist certain stores
 pinia.use(piniaPluginPersistedstate)
@@ -59,13 +60,17 @@ for (const [name, directive] of Object.entries(globalDirectives)) {
 // Initialize services
 const initApp = async () => {
   try {
-    // Initialize stores
-    const authStore = useAuthStore()
-    const uiStore = useUIStore()
+    // Initialize stores - must be done after pinia is installed on app
+    const authStore = useAuthStore(pinia)
+    const uiStore = useUIStore(pinia)
     
     // Initialize theme
     const { initializeTheme } = useTheme()
     initializeTheme()
+    
+    // Initialize stores using the storeInitializer
+    const { initializeStores } = await import('./stores/storeInitializer')
+    await initializeStores()
     
     // Initialize API services
     await initializeApiServices()
@@ -91,7 +96,7 @@ const initApp = async () => {
     
     // Initialize auth state properly
     // Don't clear existing valid tokens
-    const pinia = app.config.globalProperties.$pinia
+    // NOTE: pinia is already defined above, no need to access from app.config
     
     // Check if we have an existing valid token
     const existingToken = localStorage.getItem('nscale_access_token')
@@ -147,17 +152,39 @@ const initApp = async () => {
       next()
     })
     
-    // Mount app
-    app.mount('#app')
-    
     console.log('Digitale Akte Assistent initialized successfully')
   } catch (error) {
     console.error('Failed to initialize application:', error)
-    
-    // Mount app even if initialization fails
-    app.mount('#app')
+    throw error; // Re-throw to handle in mount process
   }
 }
 
-// Start app
-initApp()
+// Mount app and then initialize
+app.mount('#app')
+
+// Initialize after mounting to ensure DOM is ready
+initApp().catch(error => {
+  console.error('Critical initialization error:', error)
+  // Show error to user in UI if possible
+  const root = document.getElementById('app')
+  if (root) {
+    root.innerHTML = `
+      <div class="error-container" style="
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        font-family: system-ui, -apple-system, sans-serif;
+        color: #dc3545;
+        text-align: center;
+        padding: 20px;
+      ">
+        <div>
+          <h1>Initialization Error</h1>
+          <p>Failed to initialize the application. Please refresh the page.</p>
+          <p style="font-size: 0.875rem; color: #6c757d;">${error.message}</p>
+        </div>
+      </div>
+    `
+  }
+})

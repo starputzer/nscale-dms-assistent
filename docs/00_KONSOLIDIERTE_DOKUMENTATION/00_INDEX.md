@@ -1,181 +1,183 @@
 ---
-title: "Konsolidierte Dokumentation Index"
-version: "1.0.0"
-date: "12.05.2025"
-lastUpdate: "13.05.2025"
-author: "Martin Heinrich"
+title: "Dokumentations-Index - Digitale Akte Assistent"
+version: "3.0.0"
+date: "16.05.2025"
+lastUpdate: "16.05.2025"
+author: "Original: Martin Heinrich, Aktualisiert: Claude"
 status: "Aktiv"
 priority: "Hoch"
 category: "Index"
-tags: ["Dokumentation", "Index", "Übersicht", "Konsolidierung", "nscale", "DMS", "Assistent"]
+tags: ["Dokumentation", "Index", "Übersicht", "Konsolidierung", "Digitale Akte", "Assistent"]
 ---
 
-# nscale DMS Assistent - Konsolidierte Dokumentation
+# Digitale Akte Assistent - Konsolidierte Dokumentation
 
-> **Letzte Aktualisierung:** 13.05.2025 | **Version:** 1.0.0 | **Status:** Aktiv
+> **Letzte Aktualisierung:** 16.05.2025 | **Version:** 3.0.0 | **Status:** Aktiv
 
 ## Übersicht
 
-Diese Dokumentation enthält die konsolidierten und standardisierten Informationen zum nscale DMS Assistenten. Die Dokumente wurden aus verschiedenen Quellen zusammengeführt, redundante Informationen entfernt und in ein einheitliches Format gebracht.
+Diese konsolidierte Dokumentation enthält alle wichtigen Informationen zum Digitale Akte Assistenten. Die Dokumente wurden aus verschiedenen Quellen zusammengeführt, auf Redundanzen geprüft und in ein einheitliches Format gebracht.
 
-Die Dokumentation folgt einer klaren, hierarchischen Struktur, die alle Aspekte des Systems abdeckt - von der Projektübersicht über technische Architektur bis hin zu Betriebs- und Entwicklungsanleitung.
+Die Dokumentation folgt einer klaren hierarchischen Struktur, die alle Aspekte des Systems abdeckt - von der Projektübersicht über technische Architektur bis hin zu Betriebs- und Entwicklungsanleitungen.
 
 ## Inhaltsverzeichnis
 
-### 1. Projektübersicht
+### 00_PROJEKT - Projektübersicht und Planung
 
-- [01_PROJEKTUEBERBLICK.md](./00_PROJEKT/01_PROJEKTUEBERBLICK.md): Grundlegende Informationen zum nscale DMS Assistenten
-- [02_ROADMAP.md](./00_PROJEKT/02_ROADMAP.md): Entwicklungsplan und Meilensteine
-- [03_TEAM.md](./00_PROJEKT/03_TEAM.md): Teamstruktur und Verantwortlichkeiten
-- [04_GLOSSAR.md](./00_PROJEKT/04_GLOSSAR.md): Fachbegriffe und Definitionen
+- [00_status.md](./00_PROJEKT/00_status.md) - Aktueller Projektstatus
+- [01_projektueberblick.md](./00_PROJEKT/01_projektueberblick.md) - Hauptprojektdokumentation
+- [02_roadmap.md](./00_PROJEKT/02_roadmap.md) - Entwicklungsfahrplan und Meilensteine
 
-### 2. Migration und Planung
+### 01_MIGRATION - Vue 3 Migration (Abgeschlossen)
 
-- [01_MIGRATIONSSTATUS_UND_PLANUNG.md](./01_MIGRATION/01_MIGRATIONSSTATUS_UND_PLANUNG.md): Aktueller Migrationsstand und detaillierter Migrationsplan für die Vue 3 SFC-Migration
-- [02_VUE3_COMPOSITION_API.md](./01_MIGRATION/02_VUE3_COMPOSITION_API.md): Umfassende Dokumentation der Vue 3 Composition API und Implementierung
-- [03_LEGACY_CODE_DEAKTIVIERUNG.md](./01_MIGRATION/03_LEGACY_CODE_DEAKTIVIERUNG.md): Strategien und Fortschritt bei der Deaktivierung von Legacy-Code
-- [04_MIGRATION_CHECKLISTE.md](./01_MIGRATION/04_MIGRATION_CHECKLISTE.md): Schritt-für-Schritt Anleitung zur Migration und Validierung
+- [01_migrationsstatus_und_planung.md](./01_MIGRATION/01_MIGRATIONSSTATUS_UND_PLANUNG.md) - Status und Planung
+- [02_legacy_code_deaktivierung.md](./01_MIGRATION/02_LEGACY_CODE_DEAKTIVIERUNG.md) - Legacy-Code-Entfernung
+- [03_vue3_composition_api.md](./01_MIGRATION/03_VUE3_COMPOSITION_API.md) - Vue 3 Composition API
+- [04_duplicate_code_cleanup.md](./01_MIGRATION/04_DUPLICATE_CODE_CLEANUP.md) - Code-Bereinigung
+- [05_finale_vue3_migration.md](./01_MIGRATION/05_FINALE_VUE3_MIGRATION.md) - Finale Migration
+- [06_pinia_store_bridge.md](./01_MIGRATION/06_PINIA_STORE_BRIDGE.md) - Store-Bridge-System
+- [07_quellreferenzen_migration.md](./01_MIGRATION/07_QUELLREFERENZEN_MIGRATION.md) - Source References
+- [08_vue3_vite_browser_kompatibilitaet.md](./01_MIGRATION/08_VUE3_VITE_BROWSER_KOMPATIBILITAET.md) - Browser-Kompatibilität
+- [09_feedback_migration.md](./01_MIGRATION/09_FEEDBACK_MIGRATION.md) - Feedback-System
+- [10_settings_migration.md](./01_MIGRATION/10_SETTINGS_MIGRATION.md) - Einstellungen
+- [11_admin_migration.md](./01_MIGRATION/11_ADMIN_MIGRATION.md) - Admin-Bereich
+- [12_chat_migration.md](./01_MIGRATION/12_CHAT_MIGRATION.md) - Chat-Interface
 
-### 3. Architektur
+### 02_KOMPONENTEN - Komponentendokumentation
 
-- [01_SYSTEMARCHITEKTUR.md](./02_ARCHITEKTUR/01_SYSTEMARCHITEKTUR.md): Überblick über die Gesamtarchitektur des Systems
-- [02_FRONTEND_STRUKTUR.md](./02_ARCHITEKTUR/02_FRONTEND_STRUKTUR.md): Detaillierte Beschreibung der Frontend-Architektur und -Komponenten
-- [03_BACKEND_AUFBAU.md](./02_ARCHITEKTUR/03_BACKEND_AUFBAU.md): Aufbau und Struktur der Backend-Komponenten
-- [04_DATENMODELL.md](./02_ARCHITEKTUR/04_DATENMODELL.md): Beschreibung des Datenmodells und der Datenflüsse
-- [05_BRIDGE_SYSTEM.md](./02_ARCHITEKTUR/05_BRIDGE_SYSTEM.md): Vollständige Dokumentation des Bridge-Systems für Legacy-Code-Integration
-- [06_FEATURE_TOGGLE_SYSTEM.md](./02_ARCHITEKTUR/06_FEATURE_TOGGLE_SYSTEM.md): Dokumentation des Feature-Toggle-Systems und seiner Verwendung
-- [07_PINIA_STORE_ARCHITEKTUR.md](./02_ARCHITEKTUR/07_PINIA_STORE_ARCHITEKTUR.md): Architektur und Implementierung der Pinia Stores
-- [08_COMPOSABLES.md](./02_ARCHITEKTUR/08_COMPOSABLES.md): Übersicht und Dokumentation aller wiederverwendbaren Composables
-- [09_DIALOG_SYSTEM.md](./02_ARCHITEKTUR/09_DIALOG_SYSTEM.md): Dokumentation des Dialog-Systems für konsistente UI-Interaktionen
+- [01_dokumentenkonverter.md](./02_KOMPONENTEN/01_dokumentenkonverter.md) - Document Converter
+- [02_ui_basiskomponenten.md](./02_KOMPONENTEN/02_ui_basiskomponenten.md) - Basis-UI-Komponenten
+- [03_chat_interface.md](./02_KOMPONENTEN/03_chat_interface.md) - Chat-Interface
+- [04_admin_komponenten.md](./02_KOMPONENTEN/04_admin_komponenten.md) - Admin-Dashboard
+- [05_css_design_system_und_komponenten_bibliothek.md](./02_KOMPONENTEN/05_css_design_system_und_komponenten_bibliothek.md) - Design System
+- [06_dokumentenkonverter_komplett.md](./02_KOMPONENTEN/06_dokumentenkonverter_komplett.md) - Dokumentenkonverter (Komplett)
+- [07_chat_und_session_management.md](./02_KOMPONENTEN/07_chat_und_session_management.md) - Session Management
+- [08_fehlermeldungen_und_benachrichtigungen.md](./02_KOMPONENTEN/08_fehlermeldungen_und_benachrichtigungen.md) - Notifications
+- [09_feedback_komponenten.md](./02_KOMPONENTEN/09_feedback_komponenten.md) - Feedback System
+- [10_composables.md](./02_KOMPONENTEN/10_composables.md) - Vue 3 Composables
+- [11_source_references_fix.md](./02_KOMPONENTEN/11_source_references_fix.md) - Source References Fix
 
-### 4. Komponenten
+### 03_ARCHITEKTUR - Systemarchitektur
 
-- [01_UI_KOMPONENTEN.md](./03_KOMPONENTEN/01_UI_KOMPONENTEN.md): Dokumentation der UI-Basiskomponenten und Design-System
-- [02_CHAT_INTERFACE.md](./03_KOMPONENTEN/02_CHAT_INTERFACE.md): Dokumentation des Chat-Interfaces und der Nachrichtenverarbeitung
-- [03_DOKUMENTENKONVERTER.md](./03_KOMPONENTEN/03_DOKUMENTENKONVERTER.md): Dokumentation des Dokumentenkonverters und seiner Funktionen
-- [04_ADMIN_BEREICH.md](./03_KOMPONENTEN/04_ADMIN_BEREICH.md): Dokumentation des Admin-Bereichs und seiner Funktionen
-- [05_SETTINGS_BEREICH.md](./03_KOMPONENTEN/05_SETTINGS_BEREICH.md): Dokumentation des Einstellungsbereichs und der Benutzerkonfiguration
+- [01_feature_toggle_system.md](./03_ARCHITEKTUR/01_FEATURE_TOGGLE_SYSTEM.md) - Feature Toggles
+- [02_dialog_system.md](./03_ARCHITEKTUR/02_DIALOG_SYSTEM.md) - Dialog System
+- [03_bridge_system.md](./03_ARCHITEKTUR/03_BRIDGE_SYSTEM.md) - Bridge System
+- [04_frontend_struktur_und_optimierung.md](./03_ARCHITEKTUR/04_FRONTEND_STRUKTUR_UND_OPTIMIERUNG.md) - Frontend-Struktur
+- [05_datenpersistenz_und_api_integration.md](./03_ARCHITEKTUR/05_DATENPERSISTENZ_UND_API_INTEGRATION.md) - API & Persistenz
+- [06_systemarchitektur.md](./03_ARCHITEKTUR/06_SYSTEMARCHITEKTUR.md) - Gesamtarchitektur
+- [07_ab_testing_system.md](./03_ARCHITEKTUR/07_AB_TESTING_SYSTEM.md) - A/B Testing
+- [08_asset_pfad_konfiguration.md](./03_ARCHITEKTUR/08_ASSET_PFAD_KONFIGURATION.md) - Asset Management
 
-### 5. Betrieb
+### 04_ENTWICKLUNG - Entwicklungsrichtlinien
 
-- [01_INSTALLATION.md](./04_BETRIEB/01_INSTALLATION.md): Anleitung zur Installation und ersten Konfiguration
-- [02_KONFIGURATION.md](./04_BETRIEB/02_KONFIGURATION.md): Detaillierte Konfigurationsoptionen und -parameter
-- [03_MONITORING.md](./04_BETRIEB/03_MONITORING.md): Überwachung und Protokollierung im Betrieb
-- [04_PERFORMANCE_OPTIMIERUNG.md](./04_BETRIEB/04_PERFORMANCE_OPTIMIERUNG.md): Techniken und Best Practices zur Leistungsoptimierung
-- [05_FEHLERBEHEBUNG.md](./04_BETRIEB/05_FEHLERBEHEBUNG.md): Anleitungen zur Diagnose und Behebung häufiger Probleme
+- [01_fehlerbehandlung_und_fallbacks.md](./04_ENTWICKLUNG/01_fehlerbehandlung_und_fallbacks.md) - Error Handling
+- [03_mobile_optimierung.md](./04_ENTWICKLUNG/03_mobile_optimierung.md) - Mobile Optimization
+- [04_barrierefreiheit.md](./04_ENTWICKLUNG/04_barrierefreiheit.md) - Accessibility
+- [05_BEITRAGEN.md](./04_ENTWICKLUNG/05_BEITRAGEN.md) - Contributing Guidelines
+- [06_edge_cases_und_grenzfaelle.md](./04_ENTWICKLUNG/06_EDGE_CASES_UND_GRENZFAELLE.md) - Edge Cases
+- [07_diagnostics_system_integration.md](./04_ENTWICKLUNG/07_DIAGNOSTICS_SYSTEM_INTEGRATION.md) - Diagnose-System
 
-### 6. Entwicklung
+### 05_BETRIEB - Betriebsdokumentation
 
-- [01_ENTWICKLUNGSUMGEBUNG.md](./05_ENTWICKLUNG/01_ENTWICKLUNGSUMGEBUNG.md): Einrichtung einer Entwicklungsumgebung
-- [02_CODE_STANDARDS.md](./05_ENTWICKLUNG/02_CODE_STANDARDS.md): Coding-Standards und Best Practices
-- [03_TESTING.md](./05_ENTWICKLUNG/03_TESTING.md): Teststrategie und -implementierung
-- [04_CI_CD_PIPELINE.md](./05_ENTWICKLUNG/04_CI_CD_PIPELINE.md): Dokumentation der CI/CD-Pipeline
-- [05_BEITRAGEN.md](./05_ENTWICKLUNG/05_BEITRAGEN.md): Anleitung für externe Beiträge und Pull-Requests
-- [06_TYPESCRIPT_MIGRATION.md](./05_ENTWICKLUNG/06_TYPESCRIPT_MIGRATION.md): Anleitung und Status der TypeScript-Migration
-- [07_TYPESCRIPT_TYPSYSTEM.md](./05_ENTWICKLUNG/07_TYPESCRIPT_TYPSYSTEM.md): Umfassende Dokumentation des TypeScript-Typsystems
+- [01_performance_optimierung.md](./05_BETRIEB/01_PERFORMANCE_OPTIMIERUNG.md) - Performance
+- [02_fehlerbehebung.md](./05_BETRIEB/02_FEHLERBEHEBUNG.md) - Troubleshooting
 
-## Dokument-Standards
 
-Alle Dokumente in dieser konsolidierten Dokumentation folgen einem einheitlichen Format:
+### 06_REFERENZEN - Technische Referenzen
+
+- [01_typescript_typsystem.md](./06_REFERENZEN/01_typescript_typsystem.md) - TypeScript Types
+- [02_state_management.md](./06_REFERENZEN/02_state_management.md) - State Management
+- [03_teststrategie.md](./06_REFERENZEN/03_teststrategie.md) - Umfassende Test-Dokumentation
+- [04_pinia_store_testing.md](./06_REFERENZEN/04_pinia_store_testing.md) - Store Testing
+- [05_auth_debugging_guide.md](./06_REFERENZEN/05_AUTH_DEBUGGING_GUIDE.md) - Authentication Debugging
+
+## Migrationsstatus
+
+Die Vue 3 Migration ist zu **100%** abgeschlossen. Alle Komponenten wurden erfolgreich migriert:
+
+| Bereich | Status | Abschlussdatum |
+|---------|--------|----------------|
+| Infrastruktur & Build | ✅ 100% | Mai 2025 |
+| Feature-Toggle-System | ✅ 100% | Mai 2025 |
+| Pinia Stores | ✅ 100% | Mai 2025 |
+| Composables | ✅ 100% | Mai 2025 |
+| UI-Basiskomponenten | ✅ 100% | Mai 2025 |
+| Chat-Interface | ✅ 100% | Mai 2025 |
+| Admin-Bereich | ✅ 100% | Mai 2025 |
+| Dokumenten-Konverter | ✅ 100% | Mai 2025 |
+| Tests & Qualitätssicherung | ✅ 100% | Mai 2025 |
+| **Gesamtfortschritt** | **✅ 100%** | **Mai 2025** |
+
+## Dokumentationsstandards
+
+Alle Dokumente folgen einem einheitlichen Format:
 
 ```markdown
 ---
 title: "Dokumenttitel"
-version: "1.0.0"
-date: "Erstellungsdatum"
-lastUpdate: "13.05.2025"
-author: "Martin Heinrich"
+version: "X.Y.Z"
+date: "YYYY-MM-DD"
+lastUpdate: "YYYY-MM-DD"
+author: "Autor"
 status: "Status"
 priority: "Priorität"
 category: "Kategorie"
 tags: ["Tag1", "Tag2"]
 ---
-
-# Dokumenttitel
-
-> **Letzte Aktualisierung:** 13.05.2025 | **Version:** 1.0.0 | **Status:** Status
-
-## Inhaltsübersicht
-...
-
-Dokumentinhalt...
 ```
 
-### Mögliche Status-Werte
-
+### Status-Werte
 - **Aktiv**: Aktuelle und gültige Dokumentation
-- **Entwurf**: Vorläufige Dokumentation, noch nicht vollständig
-- **Veraltet**: Noch gültig, aber zur Überarbeitung vorgemerkt
-- **Archiviert**: Historisches Dokument, nicht mehr aktiv verwendet
-- **Ersetzt**: Wurde durch ein neueres Dokument ersetzt (Verweis auf Nachfolger)
+- **Entwurf**: Vorläufige Dokumentation
+- **Veraltet**: Zur Überarbeitung vorgemerkt
+- **Archiviert**: Historisches Dokument
+- **Ersetzt**: Durch neueres Dokument ersetzt
 
-### Mögliche Prioritäts-Werte
-
-- **Hoch**: Kritische Dokumentation, für das Verständnis des Systems essentiell
-- **Mittel**: Wichtige Dokumentation, für bestimmte Funktionen relevant
-- **Niedrig**: Ergänzende Dokumentation, für tieferes Verständnis
-
-## Migrationsstatistik und Systemstatus
-
-Die Vue 3 Migration ist zu 100% abgeschlossen. Alle Kernkomponenten wurden erfolgreich migriert und laufen im Produktionsmodus.
-
-| Bereich | Fertigstellungsgrad | Status |
-|---------|-------------------|--------|
-| Infrastruktur & Build     | 100% | Abgeschlossen |
-| Feature-Toggle-System     | 100% | Abgeschlossen |
-| Pinia Stores              | 100% | Abgeschlossen |
-| Composables               | 100% | Abgeschlossen |
-| UI-Basiskomponenten       | 100% | Abgeschlossen |
-| Chat-Interface            | 100% | Abgeschlossen |
-| Admin-Bereich             | 100% | Abgeschlossen |
-| Dokumenten-Konverter      | 100% | Abgeschlossen |
-| Routing-System            | 100% | Abgeschlossen |
-| Plugin-System             | 100% | Abgeschlossen |
-| **Gesamtfortschritt**     | **100%** | **Abgeschlossen** |
-
-Für detaillierte Informationen zum Migrationsstatus und -plan, siehe [01_MIGRATIONSSTATUS_UND_PLANUNG.md](./01_MIGRATION/01_MIGRATIONSSTATUS_UND_PLANUNG.md).
-
-Die TypeScript-Implementierung ist zu 98% abgeschlossen, mit laufenden Optimierungen zur Verbesserung der Typsicherheit.
-
-Für detaillierte Informationen zur TypeScript-Implementierung, siehe [07_TYPESCRIPT_TYPSYSTEM.md](./05_ENTWICKLUNG/07_TYPESCRIPT_TYPSYSTEM.md).
-
-## Konsolidierungshinweise
-
-Diese Dokumentation ist das Ergebnis einer umfassenden Konsolidierung aller vorhandenen Dokumentation des nscale DMS Assistenten. Der Konsolidierungsprozess folgte einem strukturierten [Dokumentationskonsolidierungsplan](/opt/nscale-assist/app/docs/DOCUMENTATION_CONSOLIDATION_PLAN.md) mit detailliertem [Aktionsplan](/opt/nscale-assist/app/docs/DOCUMENTATION_ACTION_PLAN.md).
-
-Die Konsolidierung umfasste:
-1. Analyse von 126 Markdown-Dateien in verschiedenen Verzeichnissen
-2. Identifikation und Auflösung von Redundanzen und Widersprüchen
-3. Migration zu einem einheitlichen Dokumentationsformat
-4. Ergänzung fehlender Informationen
-5. Erstellung einer klaren, logischen Struktur
-
-Die Original-Dokumente bleiben zu Referenzzwecken erhalten, sollten jedoch nicht mehr aktiv verwendet werden. Alle zukünftigen Änderungen sollten an den konsolidierten Dokumenten vorgenommen werden.
+### Prioritäts-Werte
+- **Hoch**: Kritische Dokumentation
+- **Mittel**: Wichtige Dokumentation
+- **Niedrig**: Ergänzende Dokumentation
 
 ## Verwendung dieser Dokumentation
 
-Diese Dokumentation ist für verschiedene Benutzergruppen konzipiert:
+### Für Entwickler
+- [Projektübersicht](./00_PROJEKT/01_projektueberblick.md)
+- [Entwicklungsrichtlinien](./04_ENTWICKLUNG/)
+- [Komponenten-Referenz](./02_KOMPONENTEN/)
+- [TypeScript-Referenz](./05_REFERENZEN/01_typescript_typsystem.md)
 
-- **Für Entwickler**: Architektur, Komponenten und Entwicklungsanleitungen
-- **Für Administratoren**: Installations- und Konfigurationsanleitungen
-- **Für Betreiber**: Monitoring und Fehlerbehebung
-- **Für Projektmanager**: Projektstatus und Roadmap
+### Für Projektmanager
+- [Roadmap](./00_PROJEKT/02_roadmap.md)
+- [Systemarchitektur](./03_ARCHITEKTUR/07_systemarchitektur.md)
 
-Die Navigation erfolgt über diesen Index oder direkt über die Verzeichnisstruktur.
+### Für neue Teammitglieder
+- [Projektübersicht](./00_PROJEKT/01_projektueberblick.md)
+- [Contributing Guidelines](./04_ENTWICKLUNG/05_BEITRAGEN.md)
 
-## Zu beachtende Schlüsseldokumente
+## Mitwirkung
 
-Folgende Dokumente sind besonders wichtig für das Verständnis des Systems:
+Beiträge zur Verbesserung dieser Dokumentation sind willkommen. Bitte folgen Sie den [Contributing Guidelines](./04_ENTWICKLUNG/05_BEITRAGEN.md).
 
-1. [01_SYSTEMARCHITEKTUR.md](./02_ARCHITEKTUR/01_SYSTEMARCHITEKTUR.md): Bietet einen Überblick über das Gesamtsystem
-2. [05_BRIDGE_SYSTEM.md](./02_ARCHITEKTUR/05_BRIDGE_SYSTEM.md): Erklärt die kritische Bridge zwischen altem und neuem Code
-3. [01_MIGRATIONSSTATUS_UND_PLANUNG.md](./01_MIGRATION/01_MIGRATIONSSTATUS_UND_PLANUNG.md): Detaillierter Status der Vue 3 Migration
-4. [07_TYPESCRIPT_TYPSYSTEM.md](./05_ENTWICKLUNG/07_TYPESCRIPT_TYPSYSTEM.md): Umfassende TypeScript-Referenz
+## Aktuelle Hinweise
 
-## Mitwirkung an der Dokumentation
+### Rebranding abgeschlossen
+Das Projekt wurde erfolgreich von "nscale DMS Assistent" zu "Digitale Akte Assistent" umbenannt.
 
-Beiträge zur Verbesserung dieser Dokumentation sind willkommen. Bitte folgen Sie den Anweisungen in [05_BEITRAGEN.md](./05_ENTWICKLUNG/05_BEITRAGEN.md) für den Beitragsprozess.
+### Nächste Prioritäten
+1. Performance-Optimierungen
+2. Erweiterte Dokumentenkonverter-Funktionen
+3. Mobile Experience-Verbesserungen
+
+## Konsolidierungsdokumentation
+
+Die folgenden Dokumente beschreiben den Konsolidierungsprozess:
+
+- [INVENTAR.md](./INVENTAR.md) - Vollständiges Dokumenteninventar
+- [KONSOLIDIERUNG_ZUSAMMENFASSUNG.md](./KONSOLIDIERUNG_ZUSAMMENFASSUNG.md) - Zusammenfassung der Konsolidierung
+- [KONSOLIDIERUNG_BERICHT.md](./KONSOLIDIERUNG_BERICHT.md) - Detaillierter Abschlussbericht
+- [STRUKTUR_BEREINIGUNG.md](./STRUKTUR_BEREINIGUNG.md) - Dokumentation der Strukturbereinigung
+- [LINK_VALIDIERUNG.md](./LINK_VALIDIERUNG.md) - Validierung aller Links nach Strukturbereinigung
 
 ---
 
-*Zuletzt aktualisiert: 13.05.2025*
+*Zuletzt aktualisiert: 16.05.2025*

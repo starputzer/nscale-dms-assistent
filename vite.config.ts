@@ -6,6 +6,7 @@ import { visualizer } from "rollup-plugin-visualizer";
 import viteCompression from "vite-plugin-compression";
 import { splitVendorChunkPlugin } from "vite";
 import autoprefixer from "autoprefixer";
+import { buildExclusions } from "./src/config/build-exclusions";
 
 // Pfade für Projektstruktur
 const projectRoot = resolve(__dirname);
@@ -24,32 +25,53 @@ function getVendorChunkName(id: string): string {
 
   const vendorName = vendorMatch[1];
 
-  // Gruppiere wichtige Framework-Pakete
-  const vuePackages = ['vue', '@vue', 'vue-router', '@vue/runtime', '@vue/reactivity'];
-  if (vuePackages.some(pkg => vendorName.startsWith(pkg))) {
-    return 'vendor-vue';
+  // Kritische Framework-Pakete - diese sollten zuerst geladen werden
+  if (['vue', '@vue/runtime-core', '@vue/runtime-dom', '@vue/reactivity'].some(pkg => vendorName.startsWith(pkg))) {
+    return 'vendor-vue-core';
+  }
+  
+  // Vue-Router separat, da nicht auf allen Seiten benötigt
+  if (vendorName === 'vue-router') {
+    return 'vendor-vue-router';
   }
 
   // State Management
-  if (['pinia', 'vuex'].includes(vendorName)) {
+  if (['pinia', 'pinia-plugin-persistedstate'].includes(vendorName)) {
     return 'vendor-state';
   }
 
   // HTTP-Client
-  if (['axios', 'fetch'].includes(vendorName)) {
+  if (['axios'].includes(vendorName)) {
     return 'vendor-http';
   }
 
-  // Utility-Bibliotheken
-  const utilPackages = ['lodash', 'uuid', 'date-fns', 'dayjs', 'moment', '@vueuse'];
-  if (utilPackages.some(pkg => vendorName.startsWith(pkg))) {
-    return 'vendor-utils';
+  // Utility-Bibliotheken - nur die wirklich genutzten
+  if (['uuid', '@vueuse/core'].includes(vendorName)) {
+    return 'vendor-utils-core';
+  }
+  
+  // Große/selten genutzte Utils separat
+  if (['lodash', 'lodash-es', 'moment', 'dayjs', 'date-fns'].some(pkg => vendorName.startsWith(pkg))) {
+    return 'vendor-utils-large';
   }
 
-  // UI-Bibliotheken
-  const uiPackages = ['@popperjs', 'marked', 'highlight.js'];
-  if (uiPackages.some(pkg => vendorName.startsWith(pkg))) {
-    return 'vendor-ui-libs';
+  // UI-Bibliotheken für Markdown/Code-Highlighting
+  if (['marked', 'dompurify'].includes(vendorName)) {
+    return 'vendor-markdown';
+  }
+  
+  if (['highlight.js', 'prismjs'].some(pkg => vendorName.startsWith(pkg))) {
+    return 'vendor-code-highlight';
+  }
+
+  // Icons und UI-Komponenten
+  if (['@fortawesome', '@mdi', 'font-awesome'].some(pkg => vendorName.startsWith(pkg))) {
+    return 'vendor-icons';
+  }
+
+  // Vuetify oder andere UI-Frameworks
+  if (['vuetify', '@vuetify'].some(pkg => vendorName.startsWith(pkg))) {
+    return 'vendor-ui-framework';
   }
 
   // Andere Vendor-Pakete in einen gemeinsamen Chunk
@@ -296,19 +318,47 @@ export default defineConfig(({ mode }): UserConfig => {
               drop_console: true,
               drop_debugger: true,
               pure_funcs: ["console.log", "console.debug", "console.info"],
+              // Weitere Optimierungen
+              passes: 2,
+              toplevel: true,
+              collapse_vars: true,
+              inline: 2,
+              // Entferne toten Code
+              dead_code: true,
+              // Vereinfache Conditionals
+              conditionals: true,
+              // Optimiere Switches
+              switches: true,
+            },
+            mangle: {
+              // Kürzere Variablennamen für kleinere Dateien
+              toplevel: true,
+              properties: {
+                regex: /^_/, // Nur private Properties (mit _ beginnend) manglen
+              },
             },
             format: {
               comments: false,
+              // Kompaktere Ausgabe
+              ascii_only: true,
+              wrap_iife: true,
             },
           }
         : undefined,
       
       // Optimierter Build für Produktion mit granularem Chunk-Splitting
       rollupOptions: {
+        // Exclude Mock-Dateien und Tests in Produktion
+        external: isProduction ? buildExclusions.map(pattern => 
+          new RegExp(pattern.replace(/\*/g, '.*'))
+        ) : [],
         output: {
           // Erweiterte dynamische Chunk-Strategie mit feingranulareren Splitting
           manualChunks: isProduction
             ? (id: string) => {
+                // Skip bereits verarbeitete Chunks
+                if (id.includes('?')) return;
+                
                 // Vendors in separate Chunks
                 if (isVendorModule(id)) {
                   return getVendorChunkName(id);
@@ -320,8 +370,13 @@ export default defineConfig(({ mode }): UserConfig => {
                   return featureChunk;
                 }
 
-                // Für nicht kategorisierte Module: Standard-Chunking-Algorithmus
-                return undefined;
+                // Haupteingangspunkt bleibt im Haupt-Bundle
+                if (id.includes('main.ts') || id.includes('App.vue')) {
+                  return undefined;
+                }
+
+                // Alles andere in einen gemeinsamen Chunk
+                return 'app-misc';
               }
             : undefined,
 
@@ -353,12 +408,22 @@ export default defineConfig(({ mode }): UserConfig => {
         "vue",
         "vue-router",
         "pinia",
+        "pinia-plugin-persistedstate",
         "@vueuse/core",
         "axios",
         "uuid",
         "marked",
+        "dompurify",
       ],
-      exclude: ["vue-demi"],
+      exclude: [
+        "vue-demi",
+        "@vueuse/shared", // Wird automatisch von @vueuse/core geladen
+      ],
+      // Aggressivere Optimierung für schnellere Kaltstarts
+      esbuildOptions: {
+        target: 'es2021',
+        platform: 'browser',
+      },
     },
 
     // ESBuild-Konfiguration für ES2021

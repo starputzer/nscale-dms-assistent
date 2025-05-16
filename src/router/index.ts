@@ -1,17 +1,35 @@
 import { createRouter, createWebHistory, RouteRecordRaw, RouteLocationNormalized, NavigationGuardNext } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
-// Import layouts
-import GuestLayout from '@/layouts/GuestLayout.vue'
-import MainAppLayout from '@/layouts/MainAppLayout.vue'
+// Lazy load layouts mit Webpack-Chunk-Namen
+const GuestLayout = () => import(/* webpackChunkName: "layout-guest" */ '@/layouts/GuestLayout.vue')
+const MainAppLayout = () => import(/* webpackChunkName: "layout-main" */ '@/layouts/MainAppLayout.vue')
 
-// Import views
+// Kritische Views direkt importieren (Login und Chat)
 import LoginView from '@/views/LoginView.vue'
 import SimpleChatView from '@/views/SimpleChatView.vue'
-import DocumentsView from '@/views/DocumentsView.vue'
-import SettingsView from '@/views/SettingsView.vue'
-import HelpView from '@/views/Advanced404View.vue' // Using 404 as help for now
-import NotFoundView from '@/views/NotFoundView.vue'
+
+// Lazy load weniger kritische Views
+const DocumentsView = () => import(
+  /* webpackChunkName: "view-documents" */
+  '@/views/DocumentsView.vue'
+)
+const SettingsView = () => import(
+  /* webpackChunkName: "view-settings" */
+  '@/views/SettingsView.vue'
+)
+const HelpView = () => import(
+  /* webpackChunkName: "view-help" */
+  '@/views/Advanced404View.vue'
+)
+const NotFoundView = () => import(
+  /* webpackChunkName: "view-404" */
+  '@/views/NotFoundView.vue'
+)
+const AdminView = () => import(
+  /* webpackChunkName: "view-admin" */
+  '@/views/AdminView.vue'
+)
 
 const routes: RouteRecordRaw[] = [
   // Guest routes (no authentication required)
@@ -76,8 +94,54 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'admin',
         name: 'Admin',
-        component: () => import('@/views/AdminView.vue'),
-        meta: { requiresAdmin: true }
+        component: AdminView,
+        meta: { requiresAdmin: true },
+        children: [
+          {
+            path: '',
+            redirect: 'dashboard'
+          },
+          {
+            path: 'dashboard',
+            name: 'AdminDashboard',
+            component: () => import(
+              /* webpackChunkName: "admin-dashboard" */
+              '@/components/admin/tabs/AdminDashboard.vue'
+            )
+          },
+          {
+            path: 'users',
+            name: 'AdminUsers',
+            component: () => import(
+              /* webpackChunkName: "admin-users" */
+              '@/components/admin/tabs/AdminUsers.vue'
+            )
+          },
+          {
+            path: 'settings',
+            name: 'AdminSettings',
+            component: () => import(
+              /* webpackChunkName: "admin-settings" */
+              '@/components/admin/tabs/AdminSystemSettings.vue'
+            )
+          },
+          {
+            path: 'logs',
+            name: 'AdminLogs',
+            component: () => import(
+              /* webpackChunkName: "admin-logs" */
+              '@/components/admin/tabs/AdminLogViewer.vue'
+            )
+          },
+          {
+            path: 'converter',
+            name: 'AdminConverter',
+            component: () => import(
+              /* webpackChunkName: "admin-converter" */
+              '@/components/admin/document-converter/FallbackConverter.vue'
+            )
+          }
+        ]
       }
     ]
   },
@@ -92,7 +156,20 @@ const routes: RouteRecordRaw[] = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
+  // Scrollverhalten für bessere UX
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    } else if (to.hash) {
+      return {
+        el: to.hash,
+        behavior: 'smooth'
+      }
+    } else {
+      return { top: 0 }
+    }
+  }
 })
 
 // Navigation guards

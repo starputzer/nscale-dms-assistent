@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Persistence Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+        }
+        h2 {
+            color: #333;
+            margin-top: 0;
+        }
+        .key-value {
+            margin: 5px 0;
+            padding: 5px;
+            background-color: white;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .key {
+            font-weight: bold;
+            color: #0066cc;
+        }
+        .value {
+            color: #333;
+        }
+        .empty {
+            color: #999;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Session Persistence Test</h1>
+        
+        <div class="section">
+            <h2>localStorage - Current Session ID</h2>
+            <div id="localStorage-session"></div>
+        </div>
+        
+        <div class="section">
+            <h2>sessionStorage Items</h2>
+            <div id="sessionStorage-items"></div>
+        </div>
+        
+        <div class="section">
+            <h2>All localStorage Items</h2>
+            <div id="localStorage-items"></div>
+        </div>
+    </div>
+
+    <script>
+        // Function to display storage items
+        function displayStorageItems(storage, elementId, storageType) {
+            const container = document.getElementById(elementId);
+            const items = [];
+            
+            for (let i = 0; i < storage.length; i++) {
+                const key = storage.key(i);
+                const value = storage.getItem(key);
+                items.push({ key, value });
+            }
+            
+            if (items.length === 0) {
+                container.innerHTML = '<div class="empty">No items in ' + storageType + '</div>';
+            } else {
+                container.innerHTML = items.map(item => `
+                    <div class="key-value">
+                        <span class="key">${item.key}:</span>
+                        <span class="value">${item.value}</span>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        // Display current session ID from localStorage
+        const currentSessionId = localStorage.getItem('sessions_currentSessionId');
+        document.getElementById('localStorage-session').innerHTML = currentSessionId 
+            ? `<div class="key-value"><span class="key">sessions_currentSessionId:</span> <span class="value">${currentSessionId}</span></div>`
+            : '<div class="empty">No session ID found in localStorage</div>';
+        
+        // Log the current session ID to console
+        console.log('localStorage - sessions_currentSessionId:', currentSessionId);
+        
+        // Display all sessionStorage items
+        displayStorageItems(sessionStorage, 'sessionStorage-items', 'sessionStorage');
+        
+        // Display all localStorage items
+        displayStorageItems(localStorage, 'localStorage-items', 'localStorage');
+        
+        // Log sessionStorage items to console
+        console.log('sessionStorage items:');
+        for (let i = 0; i < sessionStorage.length; i++) {
+            const key = sessionStorage.key(i);
+            const value = sessionStorage.getItem(key);
+            console.log(`  ${key}: ${value}`);
+        }
+        
+        // Add timestamp
+        const timestamp = new Date().toLocaleString();
+        document.querySelector('.container').insertAdjacentHTML('beforeend', 
+            `<p style="text-align: center; color: #666; margin-top: 20px;">Last updated: ${timestamp}</p>`
+        );
+    </script>
+</body>
+</html>

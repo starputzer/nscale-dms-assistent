@@ -88,6 +88,8 @@ export const useAuthStore = defineStore(
     const tokenRefreshInProgress = ref<boolean>(false);
     const lastTokenRefresh = ref<number>(0);
     const tokenRefreshInterval = ref<number | null>(null);
+    const requestInterceptorId = ref<number | null>(null);
+    const responseInterceptorId = ref<number | null>(null);
     const permissions = ref<Set<string>>(new Set());
 
     // Getters
@@ -95,6 +97,10 @@ export const useAuthStore = defineStore(
 
     const isAdmin = computed(() => {
       // Unterstütze sowohl 'role' (singular) als auch 'roles' (plural)
+      console.log("DEBUG: isAdmin check - user.value:", user.value);
+      console.log("DEBUG: isAdmin check - user.value?.role:", user.value?.role);
+      console.log("DEBUG: isAdmin check - user.value?.roles:", user.value?.roles);
+      
       if (user.value?.role === "admin") return true;
       if (user.value?.roles?.includes("admin")) return true;
       return false;
@@ -627,6 +633,9 @@ export const useAuthStore = defineStore(
               try {
                 const decodedToken: any = jwtDecode(newToken);
                 console.log("Token dekodiert:", !!decodedToken);
+                console.log("DEBUG: Full decoded token:", decodedToken);
+                console.log("DEBUG: Token role field:", decodedToken.role);
+                console.log("DEBUG: Token roles field:", decodedToken.roles);
                 
                 // Sicherstellen, dass user_id existiert, sonst Default verwenden
                 const userId = decodedToken.user_id || decodedToken.sub || '1';
@@ -636,12 +645,14 @@ export const useAuthStore = defineStore(
                   id: userId.toString(),
                   username: decodedToken.email || decodedToken.name || 'default@example.com',
                   email: decodedToken.email || decodedToken.name || 'default@example.com',
-                  roles: [decodedToken.role || "user"]
+                  roles: [decodedToken.role || "user"],
+                  role: decodedToken.role || "user" // Support both 'role' and 'roles'
                 };
                 
                 // Benutzer setzen
                 user.value = userObj;
                 console.log("Benutzer aus Token erstellt:", userObj);
+                console.log("DEBUG: isAdmin computed value:", isAdmin.value);
 
                 // Set token expiration time
                 if (decodedToken.exp) {
@@ -1128,6 +1139,25 @@ export const useAuthStore = defineStore(
           console.log("Alle HTTP-Interceptors wurden entfernt");
         } else {
           console.log("Keine aktiven HTTP-Interceptors zum Entfernen");
+        }
+        
+        // Legacy-IDs auch prüfen und entfernen
+        if (requestInterceptorId.value !== null) {
+          try {
+            axios.interceptors.request.eject(requestInterceptorId.value);
+            requestInterceptorId.value = null;
+          } catch (e) {
+            console.warn("Fehler beim Entfernen des Legacy-Request-Interceptors:", e);
+          }
+        }
+        
+        if (responseInterceptorId.value !== null) {
+          try {
+            axios.interceptors.response.eject(responseInterceptorId.value);
+            responseInterceptorId.value = null;
+          } catch (e) {
+            console.warn("Fehler beim Entfernen des Legacy-Response-Interceptors:", e);
+          }
         }
       } catch (error) {
         console.error("Fehler beim Entfernen der HTTP-Interceptors:", error);

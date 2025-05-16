@@ -1,8 +1,20 @@
+---
+title: "Authentication Debugging Guide"
+version: "1.0.0"
+date: "16.05.2025"
+lastUpdate: "16.05.2025"
+author: "Claude"
+status: "Aktiv"
+priority: "Hoch"
+category: "Debugging"
+tags: ["Authentifizierung", "Debugging", "API", "Token"]
+---
+
 # Authentication Debugging Guide
 
 ## Overview
 
-This guide provides comprehensive steps for debugging and fixing authentication issues in the nscale DMS Assistant application.
+This guide provides comprehensive steps for debugging and fixing authentication issues in the Digitale Akte Assistent application.
 
 ## Common Authentication Issues
 

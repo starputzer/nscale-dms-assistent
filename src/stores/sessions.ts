@@ -1023,10 +1023,15 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
           const finishStreaming = () => {
             const finalMsgIndex = messages.value[sessionId].findIndex(msg => msg.id === assistantTempId);
             if (finalMsgIndex !== -1) {
-              messages.value[sessionId][finalMsgIndex] = {
-                ...messages.value[sessionId][finalMsgIndex],
+              const updatedMessages = [...messages.value[sessionId]];
+              updatedMessages[finalMsgIndex] = {
+                ...updatedMessages[finalMsgIndex],
                 isStreaming: false,
                 status: "sent"
+              };
+              messages.value = {
+                ...messages.value,
+                [sessionId]: updatedMessages
               };
             }
             
@@ -1058,11 +1063,14 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
               
               try {
                 const parsedData = JSON.parse(dataContent);
-                if (parsedData.chunk) chunk = parsedData.chunk;
-                else if (parsedData.delta) chunk = parsedData.delta;
-                else if (parsedData.content) chunk = parsedData.content;
-                else if (parsedData.response) chunk = parsedData.response;
-                else if (parsedData.text) chunk = parsedData.text;
+                // Try different possible field names
+                chunk = parsedData.chunk ||
+                        parsedData.delta ||
+                        parsedData.content ||
+                        parsedData.response ||
+                        parsedData.text ||
+                        parsedData.message ||
+                        '';
               } catch (e) {
                 // If JSON parsing fails, treat as plain text
                 chunk = dataContent;
@@ -1070,15 +1078,20 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
             } else {
               // No "data: " prefix, try to parse directly
               try {
-                const data = JSON.parse(event.data);
-                
-                // Check for different data formats
-                if (data.delta) chunk = data.delta;
-                else if (data.content) chunk = data.content;
-                else if (data.response) chunk = data.response;
-                else if (data.text) chunk = data.text;
-                else if (data.chunk) chunk = data.chunk;
-                else if (typeof data === 'string') chunk = data;
+                // First check if it's already a plain string
+                if (event.data.trim() && !event.data.startsWith('{')) {
+                  chunk = event.data;
+                } else {
+                  const data = JSON.parse(event.data);
+                  // Try different possible field names
+                  chunk = data.delta ||
+                          data.content ||
+                          data.response ||
+                          data.text ||
+                          data.chunk ||
+                          data.message ||
+                          (typeof data === 'string' ? data : '');
+                }
               } catch (e) {
                 // If JSON parsing fails, use as is
                 chunk = event.data;
@@ -1091,12 +1104,19 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
             // Update the message - force reactive update
             const msgIndex = messages.value[sessionId].findIndex(msg => msg.id === assistantTempId);
             if (msgIndex !== -1) {
-              // Force Vue's reactivity by replacing the entire message object
-              messages.value[sessionId] = [...messages.value[sessionId]];
-              messages.value[sessionId][msgIndex] = {
-                ...messages.value[sessionId][msgIndex],
+              // Create a new array to trigger reactivity
+              const updatedMessages = [...messages.value[sessionId]];
+              // Update the specific message
+              updatedMessages[msgIndex] = {
+                ...updatedMessages[msgIndex],
                 content: responseContent,
-                isStreaming: true
+                isStreaming: true,
+                status: "sending"
+              };
+              // Replace the entire array to trigger Vue's reactivity
+              messages.value = {
+                ...messages.value,
+                [sessionId]: updatedMessages
               };
             }
           };

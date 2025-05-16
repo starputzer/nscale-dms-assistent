@@ -6,18 +6,20 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 
-export type ThemeMode = 'light' | 'dark' | 'high-contrast'
+export type ThemeMode = 'light' | 'dark' | 'high-contrast' | 'custom-contrast'
 
 export const useThemeStore = defineStore('theme', () => {
   // State
   const currentTheme = ref<ThemeMode>('light')
   const systemPreference = ref<'light' | 'dark' | null>(null)
   const isAutoMode = ref(false)
+  const customAccentColor = ref('#ffeb3b') // Default to yellow
   
   // Getters
   const isDarkMode = computed(() => currentTheme.value === 'dark')
-  const isHighContrastMode = computed(() => currentTheme.value === 'high-contrast')
+  const isHighContrastMode = computed(() => currentTheme.value === 'high-contrast' || currentTheme.value === 'custom-contrast')
   const isLightMode = computed(() => currentTheme.value === 'light')
+  const isCustomContrastMode = computed(() => currentTheme.value === 'custom-contrast')
   
   // Get effective theme considering auto mode
   const effectiveTheme = computed(() => {
@@ -64,6 +66,18 @@ export const useThemeStore = defineStore('theme', () => {
         text: '#ffffff',
         primary: '#ffeb3b'
       }
+    },
+    {
+      id: 'custom-contrast',
+      name: 'Individueller Kontrast',
+      description: 'Schwarzer Hintergrund mit wählbarer Akzentfarbe',
+      icon: 'fas fa-palette',
+      preview: {
+        background: '#000000',
+        surface: '#000000',
+        text: customAccentColor.value,
+        primary: customAccentColor.value
+      }
     }
   ])
   
@@ -74,6 +88,14 @@ export const useThemeStore = defineStore('theme', () => {
     
     if (!skipPersist) {
       saveThemePreference(theme, isAutoMode.value)
+    }
+  }
+
+  function setCustomAccentColor(color: string) {
+    customAccentColor.value = color
+    localStorage.setItem('custom-accent-color', color)
+    if (currentTheme.value === 'custom-contrast') {
+      applyTheme('custom-contrast')
     }
   }
   
@@ -92,7 +114,7 @@ export const useThemeStore = defineStore('theme', () => {
     document.documentElement.setAttribute('data-theme', theme)
     
     // Also apply theme classes for legacy support
-    document.body.classList.remove('theme-light', 'theme-dark', 'theme-contrast')
+    document.body.classList.remove('theme-light', 'theme-dark', 'theme-contrast', 'theme-custom-contrast')
     
     switch (theme) {
       case 'light':
@@ -103,6 +125,11 @@ export const useThemeStore = defineStore('theme', () => {
         break
       case 'high-contrast':
         document.body.classList.add('theme-contrast')
+        break
+      case 'custom-contrast':
+        document.body.classList.add('theme-custom-contrast')
+        // Apply custom accent color
+        document.documentElement.style.setProperty('--custom-accent-color', customAccentColor.value)
         break
     }
     
@@ -118,8 +145,12 @@ export const useThemeStore = defineStore('theme', () => {
   function loadSavedTheme() {
     const savedTheme = localStorage.getItem('theme-preference')
     const savedAutoMode = localStorage.getItem('theme-auto-mode') === 'true'
+    const savedAccentColor = localStorage.getItem('custom-accent-color')
     
     isAutoMode.value = savedAutoMode
+    if (savedAccentColor) {
+      customAccentColor.value = savedAccentColor
+    }
     
     if (savedTheme && isValidTheme(savedTheme)) {
       setTheme(savedTheme as ThemeMode, true)
@@ -156,7 +187,7 @@ export const useThemeStore = defineStore('theme', () => {
   }
   
   function isValidTheme(theme: string): boolean {
-    return ['light', 'dark', 'high-contrast'].includes(theme)
+    return ['light', 'dark', 'high-contrast', 'custom-contrast'].includes(theme)
   }
   
   // Reset to default theme
@@ -179,16 +210,19 @@ export const useThemeStore = defineStore('theme', () => {
     currentTheme,
     systemPreference,
     isAutoMode,
+    customAccentColor,
     
     // Getters
     isDarkMode,
     isHighContrastMode,
     isLightMode,
+    isCustomContrastMode,
     effectiveTheme,
     themeOptions,
     
     // Actions
     setTheme,
+    setCustomAccentColor,
     toggleAutoMode,
     loadSavedTheme,
     resetTheme

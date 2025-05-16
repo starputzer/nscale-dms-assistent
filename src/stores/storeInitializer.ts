@@ -131,9 +131,9 @@ export const initializeStores = async (): Promise<void> => {
         // Wenn das Feature-Flag für optimierte Stores aktiviert ist, verwende den optimierten Store
         if (featureTogglesStore.isFeatureEnabled("optimizedStores")) {
           const optimizedSessionsStore = useSessionsStoreOptimized();
-          await optimizedSessionsStore.loadSessions();
+          await optimizedSessionsStore.initialize();
         } else {
-          await sessionsStore.loadSessions();
+          await sessionsStore.initialize();
         }
       }),
 

@@ -1,9 +1,9 @@
 ---
 title: "Umfassende Teststrategie und Implementierung"
-version: "3.0.0"
+version: "3.0.1"
 date: "10.05.2025"
-lastUpdate: "11.05.2025"
-author: "Martin Heinrich"
+lastUpdate: "16.05.2025"
+author: "Martin Heinrich, Claude (Konsolidierung)"
 status: "Aktiv"
 priority: "Hoch"
 category: "Referenzen"
