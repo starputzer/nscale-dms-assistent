@@ -203,6 +203,26 @@ export function useTheme() {
       !(useSystemTheme.value && systemIsDark.value),
   );
 
+  /**
+   * Initializes the theme system
+   */
+  function initializeTheme(): void {
+    // Apply the initial theme
+    const theme = useSystemTheme.value && systemIsDark.value
+      ? THEMES.DARK
+      : currentTheme.value;
+    document.documentElement.setAttribute("data-theme", theme);
+    
+    // Setup system theme listeners
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    mediaQuery.addEventListener("change", (e) => {
+      systemIsDark.value = e.matches;
+      if (useSystemTheme.value) {
+        setTheme(systemIsDark.value ? THEMES.DARK : THEMES.LIGHT);
+      }
+    });
+  }
+
   // API des Composables
   return {
     // State
@@ -221,6 +241,7 @@ export function useTheme() {
     toggleTheme,
     toggleContrastMode,
     setUseSystemTheme,
+    initializeTheme,
 
     // Constants
     THEMES,

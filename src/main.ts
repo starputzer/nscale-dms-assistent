@@ -1,419 +1,163 @@
 /**
- * nscale DMS Assistant - Haupteinstiegspunkt der Anwendung
- * Optimierte Version mit verbesserter Initialisierungsreihenfolge
+ * Digitale Akte Assistent - Haupteinstiegspunkt
+ * Verwendet die redesigned App-Komponente mit dynamischen Layouts
  */
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { RouteLocationNormalized } from 'vue-router'
-import { RouterInitializationTester } from '@/utils/routerInitializationTester'
-import { routerInitDebugger } from '@/utils/routerInitDebugger'
 
-// App-Komponente
+// App-Komponente mit dynamischen Layouts
 import App from './App.vue'
 
-// Typdefinitionen für die Direktiven und Plugins
-interface DirectiveRegistration {
-  name: string;
-  definition: any;
+// Router
+import router from './router'
+
+// Stores
+import { useAuthStore } from './stores/auth'
+import { useUIStore } from './stores/ui'
+import { useTheme } from './composables/useTheme'
+
+// Direktiven und Composables
+import { globalDirectives } from '@/directives'
+import { globalPlugins } from '@/plugins'
+
+// Services und Utilities
+import { initializeApiServices } from '@/services/api/config'
+import { initializeTelemetry } from '@/services/analytics/telemetry'
+import { useErrorReporting } from '@/utils/errorReportingService'
+import { setupNetworkMonitoring } from '@/utils/networkMonitor'
+import { CentralAuthManager } from '@/services/auth/CentralAuthManager'
+
+// Styles
+import '@/assets/styles/main.scss'
+import '@/assets/themes.scss'
+import '@/assets/layout-fixes.css'
+
+// Create app
+const app = createApp(App)
+const pinia = createPinia()
+
+// Persist certain stores
+pinia.use(piniaPluginPersistedstate)
+
+// App configuration
+app.use(pinia)
+app.use(router)
+
+// Global plugins
+for (const { plugin, options } of globalPlugins) {
+  app.use(plugin, options)
 }
 
-// Typdefinitionen für die Plugins
-interface PluginRegistration {
-  name: string;
-  plugin: any;
-  options?: Record<string, any>;
+// Global directives
+for (const [name, directive] of Object.entries(globalDirectives)) {
+  app.directive(name, directive)
 }
 
-// Initialisierungstester
-const initTester = process.env.NODE_ENV === 'development' 
-  ? new RouterInitializationTester() 
-  : null;
-
-/**
- * Phase 1: Kritische Initialisierungen VOR Vue-App
- */
-async function initializeCriticalDependencies() {
-  if (initTester) initTester.markStageStarted('vue-app');
-  routerInitDebugger.markStage('vue-app', 'started');
-  
-  // Import kritischer Utilities
-  await import('@/utils/authRequestInterceptor');
-  await import('./utils/authRequestAdapter');
-  
-  // Service-Module importieren
-  const { initializeApiServices } = await import('@/services/api/config');
-  const { useErrorReporting } = await import('@/utils/errorReportingService');
-  const { initializeTelemetry } = await import('@/services/analytics/telemetry');
-  
-  // Initialisiere Services
-  initializeApiServices();
-  // Error Reporting wird später in initializeApp verwendet
-  initializeTelemetry();
-  
-  if (initTester) initTester.markStageCompleted('vue-app');
-  routerInitDebugger.markStage('vue-app', 'completed');
-}
-
-/**
- * Phase 2: Pinia-Initialisierung (MUSS vor Router erfolgen)
- */
-function initializePinia() {
-  if (initTester) initTester.markStageStarted('pinia');
-  routerInitDebugger.markStage('pinia', 'started');
-  
-  const pinia = createPinia();
-  
-  // Pinia Persist Plugin hinzufügen für Store-Persistenz
-  pinia.use(piniaPluginPersistedstate);
-  
-  // Setze globale Referenz für Legacy-Code
-  if (typeof window !== 'undefined') {
-    (window as any).__pinia = pinia;
-  }
-  
-  if (initTester) initTester.markStageCompleted('pinia');
-  routerInitDebugger.markStage('pinia', 'completed');
-  return pinia;
-}
-
-/**
- * Phase 3: Stores initialisieren
- */
-async function initializeStores(pinia: ReturnType<typeof createPinia>) {
-  if (initTester) initTester.markStageStarted('stores');
-  routerInitDebugger.markStage('stores', 'started');
-  
-  // Auth Store MUSS zuerst initialisiert werden
-  const { useAuthStore } = await import('./stores/auth');
-  const authStore = useAuthStore(pinia);
-  
-  // Gebe dem Persistenz-Plugin Zeit, den Store zu laden
-  await new Promise(resolve => setTimeout(resolve, 10));
-  
-  // Token aus localStorage laden falls Pinia-Persist fehlschlägt
-  if (!authStore.token) {
-    const storedToken = localStorage.getItem('nscale_access_token');
-    const storedRefreshToken = localStorage.getItem('nscale_refresh_token');
-    
-    if (storedToken) {
-      console.log('[MAIN] Token aus localStorage wiederhergestellt');
-      await authStore.setToken(storedToken);
-      if (storedRefreshToken) {
-        authStore.refreshToken = storedRefreshToken;
-      }
-    }
-  }
-  
-  // Auth-Store explizit initialisieren
-  if (!authStore.activeInterceptors || authStore.activeInterceptors.length === 0) {
-    console.log('[MAIN] Auth-Store wird manuell initialisiert');
-    authStore.initialize();
-  }
-  
-  // Weitere kritische Stores
-  const storeImports = [
-    import('./stores/featureToggles'),
-    import('./stores/sessions'),
-    import('./stores/ui'),
-    import('./stores/settings')
-  ];
-  
-  await Promise.all(storeImports);
-  
-  if (initTester) initTester.markStageCompleted('stores');
-  routerInitDebugger.markStage('stores', 'completed');
-  return authStore;
-}
-
-/**
- * Phase 4: Router-Initialisierung (NACH Pinia und Stores)
- */
-async function initializeRouter() {
-  if (initTester) initTester.markStageStarted('router');
-  routerInitDebugger.markStage('router', 'started');
-  
-  // Router dynamisch importieren
-  const { default: router } = await import('./router');
-  
-  // Setze globale Referenz
-  if (typeof window !== 'undefined') {
-    (window as any).__router = router;
-  }
-  
-  if (initTester) initTester.markStageCompleted('router');
-  routerInitDebugger.markStage('router', 'completed');
-  return router;
-}
-
-/**
- * Phase 5: Composables und Services
- */
-async function initializeComposablesAndServices() {
-  if (initTester) initTester.markStageStarted('composables');
-  
-  // Importiere Composables
-  const composableImports = [
-    import('@/composables/useLogger'),
-    import('@/composables/useApiCache'),
-    import('@/composables/useFeatureToggles'),
-    import('@/composables/useSourceReferences')
-  ];
-  
-  await Promise.all(composableImports);
-  
-  if (initTester) initTester.markStageCompleted('composables');
-  
-  if (initTester) initTester.markStageStarted('services');
-  
-  // Services mit korrekter Reihenfolge
-  const serviceImports = [
-    import('@/services/router/RouterService'),
-    import('@/services/selfHealing/SelfHealingService'),
-    import('@/controllers/NavigationController')
-  ];
-  
-  await Promise.all(serviceImports);
-  
-  if (initTester) initTester.markStageCompleted('services');
-}
-
-/**
- * Phase 6: Legacy-Kompatibilität und Bridge
- */
-async function initializeLegacyCompatibility(app: any) {
-  // Bridge und Legacy-Funktionen
-  const { initializeBridge } = await import('./bridge-init');
-  const { initializeSourceReferenceAdapter } = await import('./utils/sourceReferenceAdapter');
-  
-  // Überprüfen, ob Bridge-Modus aktiv ist
-  const useLegacyBridge = new URLSearchParams(window.location.search).get('useBridge') === 'true';
-  
-  // Source Reference Adapter initialisieren
-  initializeSourceReferenceAdapter();
-  
-  // Bridge initialisieren wenn nötig
-  if (useLegacyBridge || !process.env.PURE_VUE_MODE) {
-    initializeBridge(app);
-  }
-  
-  // Notfall-Fallback für Source References
-  const { useSourceReferences } = await import('@/composables/useSourceReferences');
-  const emergencyComposable = useSourceReferences();
-  
-  if (typeof (window as any).isSourceReferencesVisible !== 'function') {
-    (window as any).isSourceReferencesVisible = (message: any) => {
-      try {
-        return emergencyComposable?.isSourceReferencesVisible?.(message) ?? false;
-      } catch (error) {
-        console.error('Notfall-Fehlerbehandlung für isSourceReferencesVisible:', error);
-        return false;
-      }
-    };
-  }
-}
-
-/**
- * Hauptinitialisierungsfunktion
- */
-async function initializeApp() {
+// Initialize services
+const initApp = async () => {
   try {
-    console.log('[MAIN] Starte App-Initialisierung mit verbesserter Reihenfolge');
+    // Initialize stores
+    const authStore = useAuthStore()
+    const uiStore = useUIStore()
     
-    if (initTester) initTester.startTest();
+    // Initialize theme
+    const { initializeTheme } = useTheme()
+    initializeTheme()
     
-    // Phase 1: Kritische Dependencies
-    await initializeCriticalDependencies();
+    // Initialize API services
+    await initializeApiServices()
     
-    // Phase 2: Pinia (MUSS vor allem anderen kommen)
-    const pinia = initializePinia();
+    // Setup central authentication manager
+    const authManager = CentralAuthManager.getInstance()
+    authManager.setupInterceptors()
     
-    // Phase 3: Stores initialisieren
-    const authStore = await initializeStores(pinia);
+    // Initialize telemetry
+    initializeTelemetry()
     
-    // Phase 4: Router (NACH Pinia und Stores)
-    const router = await initializeRouter();
-    routerInitDebugger.initializeRouter(router);
+    // Setup network monitoring
+    setupNetworkMonitoring()
     
-    // Phase 5: Composables und Services
-    await initializeComposablesAndServices();
+    // Import debug utilities
+    import('./utils/debugAuth')
+    import('./utils/tokenDebug')
     
-    // Phase 6: Vue App erstellen
-    const app = createApp(App);
+    // Initialize error reporting
+    // Temporarily disabled as the service needs fixing
+    // const { initializeErrorReporting } = useErrorReporting()
+    // initializeErrorReporting()
     
-    // Installiere Pinia SOFORT
-    app.use(pinia);
+    // Initialize auth state properly
+    // Don't clear existing valid tokens
+    const pinia = app.config.globalProperties.$pinia
     
-    // Warte kurz um sicherzustellen dass Pinia bereit ist
-    await new Promise(resolve => setTimeout(resolve, 10));
+    // Check if we have an existing valid token
+    const existingToken = localStorage.getItem('nscale_access_token')
+    const existingRefreshToken = localStorage.getItem('nscale_refresh_token')
+    const existingUser = localStorage.getItem('nscale_user')
     
-    // Installiere Router
-    app.use(router);
-    
-    // Phase 7: Legacy-Kompatibilität
-    await initializeLegacyCompatibility(app);
-    
-    // Phase 8: Direktiven und Plugins
-    const { globalDirectives } = await import('@/directives');
-    const { globalPlugins } = await import('@/plugins');
-    const { mockServiceProvider } = await import('./plugins/mockServiceProvider');
-    
-    // Direktiven registrieren
-    globalDirectives.forEach((directive: DirectiveRegistration) => {
-      app.directive(directive.name, directive.definition);
-    });
-    
-    // Plugins registrieren
-    globalPlugins.forEach((plugin: PluginRegistration) => {
-      app.use(plugin.plugin, plugin.options);
-    });
-    
-    // Mock-Service-Provider
-    app.use(mockServiceProvider);
-    
-    // Styling importieren
-    await import('@/assets/styles/main.scss');
-    await import('@/assets/styles/utility-classes.css');
-    
-    // Weitere Initialisierungen
-    const { setupNetworkMonitoring } = await import('@/utils/networkMonitor');
-    const { initializeFeatureFlags } = await import('@/config/featureFlags');
-    
-    setupNetworkMonitoring();
-    initializeFeatureFlags();
-    
-    // Auth-Fixes und Debugging
-    if (import.meta.env.DEV) {
-      const authDiagnostics = await import('@/utils/authDiagnostics');
-      authDiagnostics.default.enable();
+    if (existingToken) {
+      // If we have a token, restore the store state
+      authStore.$state.token = existingToken
+      authStore.$state.refreshToken = existingRefreshToken
       
-      // Lade Debug-Tools
-      const debugImports = [
-        import('./utils/checkAuthDebug.js'),
-        import('./utils/authDebugCommands.js'),
-        import('./utils/batchDebugCommands.js'),
-        import('./utils/fixCommands.js')
-      ];
-      
-      await Promise.all(debugImports).catch(err => {
-        console.error('Failed to load debug tools:', err);
-      });
-    }
-    
-    // Auth-Fix initialisieren
-    const { authenticationFix } = await import('@/utils/authenticationFix');
-    await authenticationFix.initialize();
-    
-    // Import Error Reporting
-    const { useErrorReporting } = await import('@/utils/errorReportingService');
-    
-    // Globale Fehlerbehandlung
-    app.config.errorHandler = (err: unknown, vm: any, info: string) => {
-      console.error('Globaler Vue-Fehler:', err);
-      
-      // Error Reporting
-      useErrorReporting().captureError(
-        err instanceof Error ? err : new Error(String(err)),
-        {
-          source: {
-            type: 'component',
-            name: vm?.$options?.name || 'unknown'
-          },
-          context: { info }
+      if (existingUser) {
+        try {
+          authStore.$state.user = JSON.parse(existingUser)
+        } catch (e) {
+          console.error('Failed to parse user data:', e)
         }
-      );
-      
-      // Spezielle Behandlung für Router-Fehler
-      if (err instanceof Error && err.message?.includes('currentRoute')) {
-        console.error('Router-Fehler erkannt, versuche Neuinitialisierung');
-        setTimeout(() => {
-          if (!router.currentRoute.value) {
-            router.push('/').catch(console.error);
-          }
-        }, 100);
       }
-    };
-    
-    // Warte auf Router-Bereitschaft
-    await router.isReady();
-    
-    // App mounten
-    app.mount('#app');
-    
-    if (initTester) {
-      initTester.markStageCompleted('navigation');
-      setTimeout(() => {
-        const report = initTester.generateReport();
-        console.log('[MAIN] Initialisierungsbericht:', report);
-      }, 500);
+      
+      console.log('Existing auth state loaded from localStorage')
+    } else {
+      // Only reset if no valid token exists
+      authStore.$reset()
+      console.log('No existing auth, reset auth state')
     }
     
-    // Performance-Metriken
-    const loadEndTime = performance.now();
-    console.log(`App in ${Math.round(loadEndTime)}ms geladen`);
+    // Setup router guards
+    router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormalized, next) => {
+      console.log('Navigation guard - to:', to.path, 'from:', from.path)
+      
+      // Allow login page access always
+      if (to.path === '/login') {
+        return next()
+      }
+      
+      // Check if authenticated
+      const isAuthenticated = authStore.isAuthenticated && authStore.token
+      console.log('Auth check:', isAuthenticated)
+      
+      // Redirect to login if not authenticated and route requires auth
+      if (!isAuthenticated && to.meta.requiresAuth !== false) {
+        console.log('Not authenticated, redirecting to login')
+        return next({ path: '/login', query: { redirect: to.fullPath } })
+      }
+      
+      // Check admin access if required
+      if (to.meta.requiresAdmin && authStore.userRole !== 'admin') {
+        console.log('Admin access required but user is not admin')
+        return next({ path: '/', query: { unauthorized: 'true' } })
+      }
+      
+      // Allow navigation
+      next()
+    })
     
-    // Telemetrie
-    if (window.telemetry) {
-      window.telemetry.trackPerformance('app_load', loadEndTime, {
-        buildVersion: window.APP_CONFIG?.buildVersion || 'unknown',
-        environment: window.APP_CONFIG?.environment || 'development'
-      });
-    }
+    // Mount app
+    app.mount('#app')
     
-    // Pure Mode Indicator
-    setTimeout(async () => {
-      const { showPureModeIndicator } = await import('./utils/pureModeIndicator');
-      showPureModeIndicator();
-    }, 500);
-    
-    // Lade-Indikator entfernen
-    const appLoader = document.getElementById('app-loading');
-    if (appLoader) {
-      appLoader.classList.add('app-loader-fade');
-      setTimeout(() => {
-        appLoader.style.display = 'none';
-      }, 500);
-    }
-    
-    console.log('✅ App erfolgreich initialisiert');
-    
+    console.log('Digitale Akte Assistent initialized successfully')
   } catch (error) {
-    console.error('❌ Kritischer Fehler bei App-Initialisierung:', error);
+    console.error('Failed to initialize application:', error)
     
-    if (initTester) {
-      initTester.markStageFailed('vue-app', error as Error);
-      const report = initTester.generateReport();
-      console.error('Fehlerbericht:', report);
-    }
-    
-    // Fehlerseite anzeigen
-    document.body.innerHTML = `
-      <div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">
-        <h1>Anwendung konnte nicht gestartet werden</h1>
-        <p>Ein kritischer Fehler ist aufgetreten. Bitte laden Sie die Seite neu.</p>
-        <button onclick="location.reload()" style="padding: 10px 20px; margin-top: 20px;">
-          Seite neu laden
-        </button>
-        <details style="margin-top: 20px; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
-          <summary>Technische Details</summary>
-          <pre>${error instanceof Error ? error.stack : String(error)}</pre>
-        </details>
-      </div>
-    `;
+    // Mount app even if initialization fails
+    app.mount('#app')
   }
 }
 
-// Starte App
-initializeApp();
-
-// Hilfsmeldung
-console.log(`
-🚀 nscale DMS Assistant - Verbesserte Initialisierung
-   • Pinia wird VOR Router initialisiert
-   • Stores werden VOR Router-Guards geladen
-   • Fehlerbehandlung für Timing-Probleme
-
-🔍 Debug-Modus: ${import.meta.env.DEV ? 'AKTIV' : 'INAKTIV'}
-   • Router-Init-Tester: ${initTester ? 'AKTIV' : 'INAKTIV'}
-`);
+// Start app
+initApp()

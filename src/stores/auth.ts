@@ -12,6 +12,9 @@ import type {
 } from "../types/auth";
 import axios from "axios";
 import { apiService } from "../services/api/ApiService";
+import { apiConfig } from "../services/api/config";
+import { authTokenManager } from "../services/auth/AuthTokenManager";
+import { sessionContinuityService } from "../services/auth/SessionContinuityService";
 // Debug axios requests/responses for authentication
 axios.interceptors.request.use(
   (config) => {
@@ -61,6 +64,19 @@ import { jwtDecode } from "jwt-decode";
 export const useAuthStore = defineStore(
   "auth",
   () => {
+    // $reset function for Pinia compatibility
+    const $reset = () => {
+      user.value = null;
+      token.value = null;
+      refreshToken.value = null;
+      expiresAt.value = null;
+      isLoading.value = false;
+      error.value = null;
+      permissions.value.clear();
+      tokenRefreshInProgress.value = false;
+      lastTokenRefresh.value = 0;
+      tokenRefreshInterval.value = null;
+    };
     // State
     const user = ref<User | null>(null);
     const token = ref<string | null>(null);
@@ -82,6 +98,14 @@ export const useAuthStore = defineStore(
       if (user.value?.role === "admin") return true;
       if (user.value?.roles?.includes("admin")) return true;
       return false;
+    });
+
+    // userRole getter for compatibility
+    const userRole = computed(() => {
+      // Return the first role or default to 'user'
+      if (user.value?.role) return user.value.role;
+      if (user.value?.roles && user.value.roles.length > 0) return user.value.roles[0];
+      return 'user';
     });
 
     const isExpired = computed(() => {
@@ -360,7 +384,7 @@ export const useAuthStore = defineStore(
       tokenRefreshInProgress.value = true;
 
       try {
-        const response = await axios.post("/api/auth/refresh", {
+        const response = await axios.post(apiConfig.ENDPOINTS.AUTH.REFRESH, {
           refreshToken: refreshToken.value,
         });
 
@@ -433,59 +457,32 @@ export const useAuthStore = defineStore(
     }
 
     /**
-     * Initialisiert den Auth-Store
+     * Initialisiert den Auth-Store mit verbesserter Token-Wiederherstellung
      */
-    function initialize() {
-      console.log("Auth-Store wird initialisiert");
-      migrateFromLegacyStorage();
-
-      // Falls immer noch kein Token: direkt aus localStorage laden
-      if (!token.value) {
-        const storedToken = localStorage.getItem('nscale_access_token');
-        const storedRefreshToken = localStorage.getItem('nscale_refresh_token');
-        
-        if (storedToken) {
-          console.log("Token aus localStorage wiederhergestellt in initialize()");
-          token.value = storedToken;
-          if (storedRefreshToken) {
-            refreshToken.value = storedRefreshToken;
-          }
-          
-          // Benutzerdaten aus Token extrahieren
-          try {
-            const decodedToken: any = jwtDecode(storedToken);
-            user.value = {
-              id: decodedToken.user_id || decodedToken.sub || '1',
-              username: decodedToken.email || decodedToken.name || 'user@example.com',
-              email: decodedToken.email || decodedToken.name || 'user@example.com',
-              roles: [decodedToken.role || "user"]
-            };
-            
-            // Ablaufzeit setzen
-            if (decodedToken.exp) {
-              expiresAt.value = decodedToken.exp * 1000;
-            } else {
-              expiresAt.value = Date.now() + 24 * 60 * 60 * 1000; // 24 Stunden
-            }
-          } catch (e) {
-            console.error("Fehler beim Dekodieren des gespeicherten Tokens:", e);
-            // Token ist ungültig, löschen
-            token.value = null;
-            localStorage.removeItem('nscale_access_token');
-          }
-        }
+    async function initialize() {
+      console.log("[AuthStore] Initialisiere mit Enhanced Token Recovery");
+      
+      // Versuche zuerst Token aus verschiedenen Quellen wiederherzustellen
+      const restored = await restoreAuthSession();
+      
+      if (restored) {
+        console.log("[AuthStore] Session erfolgreich wiederhergestellt");
+        sessionContinuityService.setAuthenticatedState(true);
+      } else {
+        // Fallback auf Legacy-Migration
+        migrateFromLegacyStorage();
       }
 
       // HTTP-Clients explizit konfigurieren, wenn Token vorhanden ist
       if (token.value) {
-        console.log("Token gefunden, konfiguriere HTTP-Clients während der Initialisierung");
+        console.log("[AuthStore] Token gefunden, konfiguriere HTTP-Clients");
         try {
           configureHttpClients(token.value);
         } catch (error) {
-          console.error("Fehler beim Konfigurieren der HTTP-Clients während der Initialisierung:", error);
+          console.error("[AuthStore] Fehler beim Konfigurieren der HTTP-Clients:", error);
         }
       } else {
-        console.log("Kein Token während der Initialisierung vorhanden");
+        console.log("[AuthStore] Kein Token während der Initialisierung vorhanden");
       }
 
       // Automatischer Token-Refresh, wenn der Benutzer aktiv ist
@@ -559,29 +556,30 @@ export const useAuthStore = defineStore(
     }
 
     /**
-     * Login-Vorgang durchführen
+     * Login-Vorgang durchführen mit verbesserter Persistenz
      */
     async function login(credentials: LoginCredentials | string): Promise<boolean> {
-      console.log("Login-Funktion wird aufgerufen");
+      console.log("[AuthStore] Login-Funktion aufgerufen");
       isLoading.value = true;
       error.value = null;
 
       try {
         // Erst Cleanup durchführen, um alte Zustände zu bereinigen
         cleanup();
+        authTokenManager.clearTokens();
       
         // Ensure we have a proper credentials object
         let loginCredentials: any;
         
         if (typeof credentials === 'string') {
           // If it's a string, assume it's an email address
-          console.log("String-Anmeldedaten werden in Objekt umgewandelt");
+          console.log("[AuthStore] String-Anmeldedaten werden in Objekt umgewandelt");
           loginCredentials = { email: credentials, password: "" };
         } else {
           loginCredentials = credentials;
         }
         
-        console.log("Login-Versuch mit Anmeldedaten. E-Mail beginnt mit:", 
+        console.log("[AuthStore] Login-Versuch mit E-Mail:", 
           loginCredentials.email ? loginCredentials.email.substring(0, 2) + '...' : 'keine');
         
         try {
@@ -589,29 +587,8 @@ export const useAuthStore = defineStore(
             { ...loginCredentials, password: '***' });
             
           // Lokaler Demo-Account für Testzwecke
-          if (loginCredentials.email === 'martin@danglefeet.com' && 
-              loginCredentials.password === '123') {
-            
-            console.log("Demo-Account erkannt! Verwende lokale Test-Authentifizierung");
-            
-            // Simuliere verzögerte Antwort
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Simuliere Erfolgsantwort
-            return {
-              data: {
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsImVtYWlsIjoibWFydGluQGRhbmdsZWZlZXQuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNjE0NTk1NjAwLCJleHAiOjE5NzgyNjMzNDQ4OTl9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-                refreshToken: "demo_refresh_token_" + Date.now(),
-                status: 200,
-                user: {
-                  id: "1",
-                  email: "martin@danglefeet.com",
-                  username: "martin",
-                  roles: ["admin"]
-                }
-              }
-            } as any;
-          }
+          // Demo-Modus deaktiviert - verwende echtes Backend
+          console.log("Login wird über echtes Backend versucht für:", loginCredentials.email);
             
           // Standard API-Anfrage
           const response = await axios.post<{token: string}>(
@@ -698,20 +675,26 @@ export const useAuthStore = defineStore(
                 console.log("Berechtigungen extrahiert:", Array.from(permissions.value));
               }
 
-              // 5. HTTP-Clients explizit konfigurieren mit dem neuen Token
+              // 5. Persistiere Auth-Daten mit dem neuen TokenManager
+              persistAuthData();
+              
+              // Session für Continuity Service markieren
+              sessionContinuityService.setAuthenticatedState(true);
+              
+              // 6. HTTP-Clients explizit konfigurieren mit dem neuen Token
               try {
-                console.log("HTTP-Clients werden mit neuem Token konfiguriert");
+                console.log("[AuthStore] HTTP-Clients werden mit neuem Token konfiguriert");
                 configureHttpClients(newToken);
               } catch (configError) {
-                console.error("Fehler beim Konfigurieren der HTTP-Clients:", configError);
+                console.error("[AuthStore] Fehler beim Konfigurieren der HTTP-Clients:", configError);
                 // Weiter fortfahren trotz Fehler
               }
 
-              // Wenn der Benutzer angemeldet ist, initialisieren wir den Token-Refresh-Mechanismus
-              console.log("Initialisiere Auth-Store nach erfolgreicher Anmeldung");
-              initialize();
+              // 7. Initialisiere Token-Refresh-Mechanismus
+              console.log("[AuthStore] Initialisiere Token-Refresh nach erfolgreicher Anmeldung");
+              await initialize();
 
-              console.log("Login erfolgreich abgeschlossen");
+              console.log("[AuthStore] Login erfolgreich abgeschlossen");
               return true;
             } else {
               console.error("Ungültiger Token vom Server erhalten");
@@ -897,56 +880,38 @@ export const useAuthStore = defineStore(
       isLoading.value = true;
 
       try {
-        // Erst Cleanup für Timer, Intervalle und HTTP-Clients durchführen
-        cleanup();
-
-        // Nur Logout-Request senden, wenn ein Token vorhanden ist
-        if (token.value) {
-          console.log("Token vorhanden, sende Logout-Request an Server");
-          try {
-            await axios.post(
-              "/api/auth/logout",
-              {
-                refreshToken: refreshToken.value,
-              },
-              {
-                headers: createAuthHeaders(),
-                // Kurzes Timeout für Logout-Request
-                timeout: 3000
-              },
-            );
-            console.log("Logout-Request erfolgreich");
-          } catch (err) {
-            // Fehler beim Logout ignorieren, trotzdem lokal abmelden
-            console.warn("Fehler beim Logout-Request:", err);
-          }
-        } else {
-          console.log("Kein Token vorhanden, führe nur lokalen Logout durch");
-        }
+        // Skip API call - just perform local cleanup
+        console.log("Führe lokalen Logout durch");
       } finally {
-        // Lokalen State in einer bestimmten Reihenfolge zurücksetzen
-        console.log("Setze lokalen Auth-State zurück");
+          // Lokalen State in einer bestimmten Reihenfolge zurücksetzen
+        console.log("[AuthStore] Setze lokalen Auth-State zurück");
+        
+        // Session-Status für Continuity Service zurücksetzen
+        sessionContinuityService.setAuthenticatedState(false);
         
         // Cleanup durchführen (entfernt Interceptors und cleared localStorage)
         cleanup();
         
+        // TokenManager bereinigen
+        authTokenManager.clearTokens();
+        
         // Erst Tokens löschen
         token.value = null;
         refreshToken.value = null;
-        console.log("Tokens zurückgesetzt");
+        console.log("[AuthStore] Tokens zurückgesetzt");
         
         // Dann Benutzer- und Sitzungsdaten
         user.value = null;
         expiresAt.value = null;
         lastTokenRefresh.value = 0;
-        console.log("Benutzerdaten zurückgesetzt");
+        console.log("[AuthStore] Benutzerdaten zurückgesetzt");
         
         // Zuletzt Berechtigungen und Status
         try {
           permissions.value.clear();
-          console.log("Berechtigungen zurückgesetzt");
+          console.log("[AuthStore] Berechtigungen zurückgesetzt");
         } catch (e) {
-          console.error("Fehler beim Zurücksetzen der Berechtigungen:", e);
+          console.error("[AuthStore] Fehler beim Zurücksetzen der Berechtigungen:", e);
         }
         
         // Version und Error behalten für Diagnose
@@ -954,7 +919,7 @@ export const useAuthStore = defineStore(
         
         // Laden-Status am Ende zurücksetzen
         isLoading.value = false;
-        console.log("Logout abgeschlossen");
+        console.log("[AuthStore] Logout abgeschlossen");
       }
     }
 
@@ -1110,154 +1075,25 @@ export const useAuthStore = defineStore(
     // Manuelle Initialisierung der HTTP-Clients statt Watch
     function configureHttpClients(newToken: string | null) {
       try {
-        // Erst bestehende Interceptors entfernen
+        // Entferne alle bestehenden Interceptors
         removeHttpInterceptors();
         
+        // Nutze den zentralen Auth Manager
         if (newToken) {
           console.log("Token gesetzt, konfiguriere HTTP-Clients mit Token:", newToken.substring(0, 10) + "...");
           
-          // Axios-Interceptor für automatischen Token-Refresh
-          const refreshInterceptorId = axios.interceptors.response.use(
-            (response) => response,
-            async (error) => {
-              // Try/catch wrappen um robustere Fehlerbehandlung zu gewährleisten
-              try {
-                const originalRequest = error.config;
-  
-                // Wenn der Fehler 401 ist und es sich nicht um einen Token-Refresh-Request handelt
-                // und der Request noch nicht wiederholt wurde
-                if (
-                  error.response?.status === 401 &&
-                  originalRequest && 
-                  !originalRequest._retry &&
-                  originalRequest.url && !originalRequest.url.includes("/api/auth/refresh")
-                ) {
-                  originalRequest._retry = true;
-  
-                  console.log("401 Fehler erhalten, versuche Token-Refresh");
-                  const refreshSuccess = await refreshTokenIfNeeded();
-                  if (refreshSuccess && token.value) {
-                    // Ursprüngliche Anfrage mit neuem Token wiederholen
-                    console.log("Token-Refresh erfolgreich, wiederhole Anfrage");
-                    originalRequest.headers = originalRequest.headers || {};
-                    originalRequest.headers.Authorization = `Bearer ${token.value}`;
-                    return axios(originalRequest);
-                  }
-                }
-              } catch (interceptorError) {
-                console.error("Fehler im Axios-Interceptor:", interceptorError);
-              }
-  
-              return Promise.reject(error);
-            },
-          );
-          
-          // Request-Interceptor für automatisches Hinzufügen des Tokens zu Anfragen
-          const requestInterceptorId = axios.interceptors.request.use(
-            (config) => {
-              // Token zu allen Anfragen außer /auth/login hinzufügen
-              const currentToken = token.value; // Capture current token value
-              if (
-                currentToken && 
-                !config.url?.includes('/auth/login') &&
-                !config.headers?.Authorization
-              ) {
-                // Using type assertion to avoid TypeScript errors with axios headers
-                // This is safe because Authorization is a valid header
-                (config.headers as any) = {
-                  ...(config.headers || {}),
-                  Authorization: `Bearer ${currentToken}`
-                };
-                console.debug("Token zu Anfrage hinzugefügt:", config.url);
-              }
-              return config;
-            },
-            (error) => {
-              console.error("Request-Interceptor-Fehler:", error);
-              return Promise.reject(error);
-            }
-          );
-          
-          // Auch für apiService-Instanz die gleichen Interceptors hinzufügen
-          console.log("Füge Request-Interceptor zu apiService hinzu...");
-          const apiServiceRequestInterceptorId = apiService.addRequestInterceptor(
-            (config) => {
-              console.log("ApiService interceptor called for:", config.url, "Current token value:", !!token.value);
-              // Token zu allen Anfragen außer /auth/login hinzufügen
-              if (
-                token.value && 
-                !config.url?.includes('/auth/login') &&
-                !config.headers?.Authorization
-              ) {
-                // Using type assertion to avoid TypeScript errors with axios headers
-                // This is safe because Authorization is a valid header
-                const currentToken = token.value;
-                (config.headers as any) = {
-                  ...(config.headers || {}),
-                  Authorization: `Bearer ${currentToken}`
-                };
-                console.log("Token zu ApiService-Anfrage hinzugefügt:", config.url, "Token:", currentToken.substring(0, 10) + "...");
-              } else {
-                console.log("Kein Token für ApiService-Anfrage:", config.url, "Token vorhanden:", !!token.value, "Headers bereits gesetzt:", !!config.headers?.Authorization);
-              }
-              return config;
-            },
-            (error) => {
-              console.error("ApiService Request-Interceptor-Fehler:", error);
-              return Promise.reject(error);
-            }
-          );
-          console.log("ApiService Request-Interceptor ID:", apiServiceRequestInterceptorId);
-          
-          const apiServiceRefreshInterceptorId = apiService.addResponseInterceptor(
-            (response) => response,
-            async (error) => {
-              // Try/catch wrappen um robustere Fehlerbehandlung zu gewährleisten
-              try {
-                const originalRequest = error.config;
-  
-                // Wenn der Fehler 401 ist und es sich nicht um einen Token-Refresh-Request handelt
-                // und der Request noch nicht wiederholt wurde
-                if (
-                  error.response?.status === 401 &&
-                  originalRequest && 
-                  !originalRequest._retry &&
-                  originalRequest.url && !originalRequest.url.includes("/api/auth/refresh")
-                ) {
-                  originalRequest._retry = true;
-  
-                  console.log("401 Fehler in ApiService erhalten, versuche Token-Refresh");
-                  const refreshSuccess = await refreshTokenIfNeeded();
-                  if (refreshSuccess && token.value) {
-                    // Ursprüngliche Anfrage mit neuem Token wiederholen
-                    console.log("Token-Refresh erfolgreich, wiederhole ApiService-Anfrage");
-                    originalRequest.headers = originalRequest.headers || {};
-                    originalRequest.headers.Authorization = `Bearer ${token.value}`;
-                    return apiService.customRequest(originalRequest);
-                  }
-                }
-              } catch (interceptorError) {
-                console.error("Fehler im ApiService-Interceptor:", interceptorError);
-              }
-  
-              return Promise.reject(error);
-            },
-          );
-  
-          // Interceptor-IDs speichern
-          activeInterceptors.value.push({id: refreshInterceptorId, type: 'global', category: 'response'});
-          activeInterceptors.value.push({id: requestInterceptorId, type: 'global', category: 'request'});
-          activeInterceptors.value.push({id: apiServiceRequestInterceptorId, type: 'apiService', category: 'request'});
-          activeInterceptors.value.push({id: apiServiceRefreshInterceptorId, type: 'apiService', category: 'response'});
-          
-          console.log("HTTP-Clients konfiguriert mit Interceptors:", activeInterceptors.value);
-          return activeInterceptors.value;
+          import('@/services/auth/CentralAuthManager').then(module => {
+            const authManager = module.CentralAuthManager.getInstance()
+            authManager.updateAuthHeader(newToken)
+          }).catch(e => {
+            console.warn('Could not update auth header:', e)
+          })
         }
-      } catch (setupError) {
-        console.error("Fehler beim Setup des HTTP-Clients:", setupError);
+      } catch (error) {
+        console.error('Error configuring HTTP clients:', error)
       }
-      return null;
     }
+
     
     // Entfernt alle aktiven HTTP-Interceptors
     function removeHttpInterceptors() {
@@ -1296,6 +1132,17 @@ export const useAuthStore = defineStore(
       } catch (error) {
         console.error("Fehler beim Entfernen der HTTP-Interceptors:", error);
       }
+    }
+    
+    // Überprüfe auf inkonsistenten State beim Start
+    if ((!!token.value) !== (!!user.value)) {
+      console.warn("Inkonsistenter Auth-State erkannt, führe Cleanup durch");
+      // Wenn Token ohne User oder User ohne Token vorhanden ist, state bereinigen
+      token.value = null;
+      user.value = null;
+      refreshToken.value = null;
+      expiresAt.value = null;
+      cleanup();
     }
     
     // Aktivere HTTP-Client-Konfiguration sofort mit dem aktuellen Token
@@ -1414,6 +1261,72 @@ export const useAuthStore = defineStore(
       error.value = errorMessage;
     }
 
+    /**
+     * Erweiterte Session-Wiederherstellung mit robuster Fehlerbehandlung
+     */
+    async function restoreAuthSession(): Promise<boolean> {
+      console.log("[AuthStore] Starte Session-Wiederherstellung");
+      
+      try {
+        // Verwende den neuen AuthTokenManager
+        const storedData = authTokenManager.loadTokens();
+        
+        if (!storedData) {
+          console.log("[AuthStore] Keine gespeicherten Token gefunden");
+          return false;
+        }
+        
+        // Validiere Token
+        if (!authTokenManager.validateToken(storedData.token)) {
+          console.log("[AuthStore] Gespeicherter Token ist ungültig");
+          authTokenManager.clearTokens();
+          return false;
+        }
+        
+        // Setze alle Auth-Daten
+        token.value = storedData.token;
+        refreshToken.value = storedData.refreshToken;
+        expiresAt.value = storedData.expiresAt;
+        
+        // Setze Benutzerdaten
+        if (storedData.userInfo) {
+          user.value = storedData.userInfo;
+          extractPermissionsFromRoles(storedData.userInfo.roles);
+        } else {
+          // Extrahiere aus Token wenn keine gespeicherten Benutzerdaten
+          const extractedUser = authTokenManager.extractUserFromToken(storedData.token);
+          if (extractedUser) {
+            user.value = extractedUser;
+            extractPermissionsFromRoles(extractedUser.roles);
+          }
+        }
+        
+        // Session für Continuity Service markieren
+        sessionContinuityService.setAuthenticatedState(true);
+        
+        console.log("[AuthStore] Session erfolgreich wiederhergestellt");
+        return true;
+        
+      } catch (error) {
+        console.error("[AuthStore] Fehler bei der Session-Wiederherstellung:", error);
+        return false;
+      }
+    }
+
+    /**
+     * Persistiere Auth-Daten bei Änderungen
+     */
+    function persistAuthData(): void {
+      if (!token.value || !user.value) return;
+      
+      authTokenManager.saveTokens({
+        token: token.value,
+        refreshToken: refreshToken.value,
+        expiresAt: expiresAt.value || Date.now() + 24 * 60 * 60 * 1000,
+        userInfo: user.value
+      });
+    }
+
     return {
       // State
       user,
@@ -1429,6 +1342,7 @@ export const useAuthStore = defineStore(
       // Getters
       isAuthenticated,
       isAdmin,
+      userRole,
       isExpired,
       tokenExpiresIn,
       tokenStatus,
@@ -1453,11 +1367,16 @@ export const useAuthStore = defineStore(
       extractPermissionsFromRoles,
       setToken,
       setError,
+      restoreAuthSession,
+      persistAuthData,
       
       // HTTP-Client-Management
       configureHttpClients,
       removeHttpInterceptors,
-      cleanup
+      cleanup,
+      
+      // Pinia compatibility
+      $reset
     };
   },
   // @ts-ignore - Pinia-Plugin-Persistedstate wird über Plugin eingebunden

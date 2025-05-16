@@ -30,77 +30,101 @@ export function useAuthStoreCompat(): AuthStoreWithCompat {
   return {
     ...store,
     
-    // login kann unterschiedliche Implementierungen haben
-    login: async (credentialsOrUsername: LoginCredentials | string, password?: string): Promise<boolean> => {
-      if (typeof store.login === 'function') {
-        // Fall 1: Verwende das LoginCredentials Objekt direkt
-        if (typeof credentialsOrUsername === 'object') {
-          return store.login(credentialsOrUsername);
-        } 
-        // Fall 2: Erstelle ein LoginCredentials Objekt aus username und password
-        else if (typeof credentialsOrUsername === 'string' && password !== undefined) {
-          return store.login({
-            email: credentialsOrUsername,
-            password: password
-          });
-        }
-        // Fall 3: Nur Email/Username ohne Passwort (verwende Standard-Passwort)
-        else if (typeof credentialsOrUsername === 'string') {
-          return store.login({
-            email: credentialsOrUsername,
-            password: "123" // Standard-Testpasswort verwenden
-          });
-        }
-      }
+    // Kompatible login-Methode (unterstützt verschiedene Signaturen)
+    async login(credentials: LoginCredentials | string, password?: string): Promise<boolean> {
+      let actualCredentials: LoginCredentials;
       
-      // Fallback: Login über API-Service
-      console.warn('login Methode nicht im Store vorhanden, verwende API-Service');
-      return Promise.reject(new Error('Login-Funktionalität nicht verfügbar'));
+      // Unterstütze alte Signatur mit separaten username/password Parametern
+      if (typeof credentials === 'string' && password) {
+        actualCredentials = {
+          email: credentials,
+          password: password,
+          remember: false
+        };
+      } else if (typeof credentials === 'object') {
+        actualCredentials = credentials;
+      } else {
+        throw new Error('Invalid login credentials format');
+      }
+
+      try {
+        // Rufe die moderne login-Methode auf
+        return await store.login(actualCredentials);
+      } catch (error) {
+        // Fallback für ältere Versionen, die möglicherweise andere Methoden haben
+        if (typeof store.authenticate === 'function') {
+          return await store.authenticate(actualCredentials);
+        }
+        throw error;
+      }
     },
     
-    // register kann fehlen
-    register: async (username: string, password: string, role?: string): Promise<boolean> => {
-      if (typeof store.register === 'function') {
-        if (role) {
-          return store.register({ username, password, role });
+    // Kompatible register-Methode
+    async register(username: string, password: string, role: string = 'user'): Promise<boolean> {
+      try {
+        // Moderne register-Methode
+        if (typeof store.register === 'function') {
+          return await store.register({ username, password, role });
         }
-        return store.register({ username, password });
+        
+        // Fallback für ältere Versionen
+        if (typeof store.createUser === 'function') {
+          return await store.createUser({ username, password, role });
+        }
+        
+        throw new Error('Register method not available');
+      } catch (error) {
+        console.error('Registration error:', error);
+        return false;
       }
-      
-      console.warn('register Methode nicht im Store vorhanden');
-      return Promise.reject(new Error('Registrierungs-Funktionalität nicht verfügbar'));
     },
     
-    // Fehlerbehandlung
+    // Kompatible error-Property (als Getter)
     get error(): string | null {
-      if ('error' in store) {
-        return (store as any).error;
-      }
-      return null;
+      return store.error || null;
     },
     
-    // Token direkt setzen
-    setToken: async (token: string): Promise<boolean> => {
-      if (typeof store.setToken === 'function') {
-        return store.setToken(token);
+    // Kompatible setToken-Methode
+    async setToken(token: string): Promise<boolean> {
+      try {
+        if (typeof store.setToken === 'function') {
+          return await store.setToken(token);
+        }
+        
+        // Fallback: Direkt den Token setzen
+        store.token = token;
+        return true;
+      } catch (error) {
+        console.error('setToken error:', error);
+        return false;
       }
-      
-      console.warn('setToken Methode nicht im Store vorhanden');
-      return Promise.reject(new Error('Token-Verwaltung nicht verfügbar'));
     },
     
-    // Fehler direkt setzen
-    setError: (message: string | null): void => {
+    // Kompatible setError-Methode
+    setError(message: string | null): void {
       if (typeof store.setError === 'function') {
         store.setError(message);
       } else if ('error' in store) {
+        // Fallback: Direkt die error-Property setzen
         (store as any).error = message;
-      } else {
-        console.warn('setError Methode nicht im Store vorhanden');
       }
     }
   };
 }
 
-// Singleton-Export für einfache Verwendung
-export const authStoreCompat = useAuthStoreCompat();
+// Erstelle eine Factory-Funktion für verzögerte Initialisierung
+let cachedStore: AuthStoreWithCompat | null = null;
+
+export function getAuthStoreCompat(): AuthStoreWithCompat {
+  if (!cachedStore) {
+    cachedStore = useAuthStoreCompat();
+  }
+  return cachedStore;
+}
+
+// Export für direkte Verwendung (wird bei Bedarf erstellt)
+export const authStoreCompat = { 
+  get() {
+    return getAuthStoreCompat();
+  }
+};

@@ -246,6 +246,8 @@ export class BatchRequestService {
   private async sendBatch(retryCount = 0): Promise<void> {
     if (this.pendingRequests.length === 0) return;
 
+    // Demo-Modus deaktiviert - verwende echte API
+
     // Batch-Tracking für Performance-Analyse
     this.requestStats.batchedRequests += this.pendingRequests.length;
     this.requestStats.savedRequests += this.pendingRequests.length - 1; // Eine Anfrage ist immer nötig

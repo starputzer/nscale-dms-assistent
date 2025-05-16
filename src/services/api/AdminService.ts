@@ -753,6 +753,48 @@ export class AdminService {
   }
 
   /**
+   * Feedback-Statistiken abrufen
+   */
+  public async getFeedbackStats(): Promise<any> {
+    try {
+      // Prüfen, ob Admin-Rechte vorhanden sind
+      if (!this.hasAdminAccess()) {
+        throw new Error("Keine Berechtigung für diese Operation");
+      }
+
+      const response = await apiService.get('/admin/feedback/stats');
+      if (response.success && response.data) {
+        return response.data.stats;
+      }
+      throw new Error(response.message || 'Fehler beim Abrufen der Feedback-Statistiken');
+    } catch (error) {
+      this.logger.error("Fehler beim Abrufen der Feedback-Statistiken", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Negative Feedback-Einträge abrufen
+   */
+  public async getNegativeFeedback(limit: number = 100): Promise<any[]> {
+    try {
+      // Prüfen, ob Admin-Rechte vorhanden sind
+      if (!this.hasAdminAccess()) {
+        throw new Error("Keine Berechtigung für diese Operation");
+      }
+
+      const response = await apiService.get(`/admin/feedback/negative?limit=${limit}`);
+      if (response.success && response.data) {
+        return response.data.feedback || [];
+      }
+      throw new Error(response.message || 'Fehler beim Abrufen des negativen Feedbacks');
+    } catch (error) {
+      this.logger.error("Fehler beim Abrufen des negativen Feedbacks", error);
+      throw error;
+    }
+  }
+
+  /**
    * Registriert einen Event-Handler
    */
   public on(event: string, handler: Function): void {

@@ -106,5 +106,13 @@ export function useSessionsStoreCompat(): SessionStoreWithCompat {
   };
 }
 
-// Singleton-Export für einfache Verwendung
-export const sessionStoreCompat = useSessionsStoreCompat();
+// Cached store instance
+let cachedStore: SessionStoreWithCompat | null = null;
+
+// Factory function to get the store instance
+export function getSessionStoreCompat(): SessionStoreWithCompat {
+  if (!cachedStore) {
+    cachedStore = useSessionsStoreCompat();
+  }
+  return cachedStore;
+}

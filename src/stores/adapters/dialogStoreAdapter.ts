@@ -37,21 +37,26 @@ export interface DialogStoreWithCompat {
   $patch: (partialStateOrMutator: any) => void;
 }
 
-// Versuche den Dialog-Store zu importieren, falls er existiert
+// Dialog Store reference - will be initialized lazily
 let dialogStore: Store<string, any, any, any> | null = null;
-try {
-  // Dynamischer Import, um Fehler zu vermeiden, wenn der Store nicht existiert
-  const { useDialogStore } = require('@/stores/dialog');
-  dialogStore = useDialogStore();
-} catch (e) {
-  console.warn('Dialog-Store nicht gefunden, verwende Fallback');
-}
+let attempted = false;
 
 /**
  * Erstellt einen Dialog-Store mit kompatiblen Methoden
  * für verschiedene Versionen der API
  */
 export function useDialogStoreCompat(): DialogStoreWithCompat {
+  // Try to get the dialog store lazily
+  if (!attempted && !dialogStore) {
+    attempted = true;
+    try {
+      const { useDialogStore } = require('@/stores/dialog');
+      dialogStore = useDialogStore();
+    } catch (e) {
+      console.warn('Dialog-Store nicht gefunden, verwende Fallback');
+    }
+  }
+  
   // Fallback-Variablen, falls kein Store existiert
   const isVisible = ref(false);
   const title = ref('');
@@ -199,5 +204,13 @@ export function useDialogStoreCompat(): DialogStoreWithCompat {
   };
 }
 
-// Singleton-Export für einfache Verwendung
-export const dialogStoreCompat = useDialogStoreCompat();
+// Cached store instance
+let cachedStore: DialogWithCompat | null = null;
+
+// Factory function to get the store instance
+export function getDialogStoreCompat(): DialogWithCompat {
+  if (!cachedStore) {
+    cachedStore = useDialogStoreCompat();
+  }
+  return cachedStore;
+}

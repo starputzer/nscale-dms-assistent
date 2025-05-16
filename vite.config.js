@@ -38,6 +38,7 @@ export default defineConfig({
     emptyOutDir: true,
     assetsDir: 'assets',
     rollupOptions: {
+      input: 'index.html',
       output: {
         manualChunks: {
           'vendor': ['vue', 'vue-router', 'pinia', '@vuelidate/core', '@vuelidate/validators'],

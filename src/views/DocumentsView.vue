@@ -250,7 +250,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from "vue";
 import { useDocumentConverterCompat } from "@/stores/adapters/documentConverterAdapter";
-import { dialogStoreCompat } from "@/stores/adapters/dialogStoreAdapter";
+import { getDialogStoreCompat } from "@/stores/adapters/dialogStoreAdapter";
 import DocumentConverterServiceWrapper from "@/services/api/DocumentConverterServiceWrapper";
 import {
   ConversionResult,
@@ -266,7 +266,7 @@ import ErrorDisplay from "@/components/admin/document-converter/ErrorDisplay.vue
 
 // Stores
 const documentConverterStore = useDocumentConverterCompat();
-const dialogStore = dialogStoreCompat;
+const dialogStore = getDialogStoreCompat();
 
 // Reaktive Zustände für TypeScript-Kompatibilität
 const documents = computed(() => documentConverterStore.convertedDocuments || []);

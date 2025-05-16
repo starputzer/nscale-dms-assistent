@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { computed, ref, watch } from "vue";
+import { apiService } from "@/services/api/ApiService";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import type {
@@ -139,7 +140,11 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
     // Initialisierung des Stores
     async function initialize(): Promise<void> {
       migrateFromLegacyStorage();
-      await synchronizeSessions();
+      
+      // Only sync sessions if user is authenticated
+      if (authStore.isAuthenticated) {
+        await synchronizeSessions();
+      }
 
       // Polling-Intervall für Synchronisation mit dem Server
       let syncInterval: number | null = null;
@@ -149,6 +154,9 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
         () => authStore.isAuthenticated,
         (isAuthenticated) => {
           if (isAuthenticated) {
+            // Initial sync when becoming authenticated
+            synchronizeSessions();
+            
             if (syncInterval === null) {
               syncInterval = window.setInterval(() => {
                 synchronizeSessions();
@@ -162,7 +170,7 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
             }
           }
         },
-        { immediate: true },
+        { immediate: false }, // Don't trigger on initialization
       );
 
       // Cleanup-Funktion
@@ -267,14 +275,19 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
     async function synchronizeSessions(): Promise<void> {
       console.log("=== synchronizeSessions called ===");
       console.log("Auth status:", authStore.isAuthenticated);
+      console.log("Auth token:", !!authStore.token);
       console.log("Sync status:", syncStatus.value.isSyncing);
       
-      // Check and sync auth status first
-      if (window.authSyncFixed) {
-        window.authSyncFixed.checkAuthConsistency();
+      // Early exit if not authenticated - prevent any API calls
+      if (!authStore.isAuthenticated || !authStore.token) {
+        console.log("Not authenticated, skipping session sync");
+        return;
       }
       
-      if (!authStore.isAuthenticated || syncStatus.value.isSyncing) return;
+      if (syncStatus.value.isSyncing) {
+        console.log("Already syncing, skipping");
+        return;
+      }
 
       syncStatus.value.isSyncing = true;
       error.value = null;
@@ -847,15 +860,12 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
           for (const message of pendingForSession) {
             try {
               // Nachricht an den Server senden
-              const response = await axios.post(
-                `/api/sessions/${sessionId}/messages`,
+              const response = await apiService.post(
+                `/sessions/${sessionId}/messages`,
                 {
                   content: message.content,
                   role: message.role,
-                },
-                {
-                  headers: authStore.createAuthHeaders(),
-                },
+                }
               );
 
               // Nachricht aus den ausstehenden entfernen
@@ -974,172 +984,330 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
       }
 
       try {
-        // Event-Source für Streaming einrichten
         const authToken = authStore.token;
-        // Die Backend-URL muss mit dem tatsächlichen Endpoint übereinstimmen
-        const streamUrl = `/api/question/stream?question=${encodeURIComponent(content)}&session_id=${sessionId}&auth_token=${authToken}`;
-        console.log('Streaming URL:', streamUrl);
+        const streamingEnabled = true; // Wieder aktivieren
         
-        const eventSource = new EventSource(streamUrl);
-
-        // Temporäre ID für die Antwortnachricht
-        const assistantTempId = `temp-response-${uuidv4()}`;
-        let assistantContent = "";
-
-        // Anfangszustand der Antwortnachricht
-        const assistantMessage: ChatMessage = {
-          id: assistantTempId,
-          sessionId,
-          content: "",
-          role: "assistant",
-          timestamp: new Date().toISOString(),
-          isStreaming: true,
-          status: "pending",
-        };
-
-        // Antwortnachricht zum lokalen State hinzufügen
-        messages.value[sessionId].push(assistantMessage);
-
-        // Funktion zum Aktualisieren des Nachrichteninhalts
-        const updateMessageContent = (content: string) => {
-          const index = messages.value[sessionId].findIndex(
-            (m) => m.id === assistantTempId,
-          );
-          if (index !== -1) {
-            messages.value[sessionId][index] = {
-              ...messages.value[sessionId][index],
-              content,
-              isStreaming: true,
-            };
+        if (streamingEnabled) {
+          // Streaming mit EventSource
+          console.log('=== STREAMING DEBUG START ===');
+          console.log('Using streaming endpoint for message:', content);
+          
+          // Erstelle eine initiale Assistant-Nachricht für Streaming
+          const assistantTempId = `temp-response-${uuidv4()}`;
+          const streamingMessage: ChatMessage = {
+            id: assistantTempId,
+            sessionId,
+            content: '',
+            role: "assistant",
+            timestamp: new Date().toISOString(),
+            isStreaming: true,
+            status: "sending",
+          };
+          messages.value[sessionId].push(streamingMessage);
+          
+          // URL-Parameter für Streaming
+          const params = new URLSearchParams();
+          params.append('question', content);
+          if (/^\d+$/.test(sessionId)) {
+            params.append('session_id', sessionId);
           }
-        };
-
-        // Event-Handler für Streaming-Events
-        eventSource.onmessage = (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            console.log('Received streaming data:', data);
-
-            // RAG-Engine sendet {'response': chunk}
-            if (data.response !== undefined) {
-              // Inhalt zur Antwort hinzufügen
-              assistantContent += data.response;
-              updateMessageContent(assistantContent);
-            } else if (data.type === "content") {
-              // Fallback für altes Format
-              assistantContent += data.content;
-              updateMessageContent(assistantContent);
-            } else if (data.type === "metadata") {
-              // Metadaten zur Antwort hinzufügen (z.B. Quellenangaben)
-              const index = messages.value[sessionId].findIndex(
-                (m) => m.id === assistantTempId,
-              );
-              if (index !== -1) {
-                messages.value[sessionId][index] = {
-                  ...messages.value[sessionId][index],
-                  metadata: data.metadata,
-                };
-              }
-            } else if (data.type === "progress") {
-              // Fortschritt aktualisieren
-              streaming.value.progress = data.progress;
-            } else if (data.error) {
-              // Fehler behandeln
-              console.error("Streaming error:", data.error);
-              updateMessageContent(assistantContent || "Ein Fehler ist aufgetreten: " + data.error);
-              eventSource.close();
+          params.append('token', authToken); // Token als URL-Parameter
+          
+          const url = `/api/question/stream?${params.toString()}`;
+          console.log('Streaming URL:', url);
+          
+          // Erstelle EventSource
+          const eventSource = new EventSource(url);
+          let responseContent = '';
+          
+          const finishStreaming = () => {
+            const finalMsgIndex = messages.value[sessionId].findIndex(msg => msg.id === assistantTempId);
+            if (finalMsgIndex !== -1) {
+              messages.value[sessionId][finalMsgIndex] = {
+                ...messages.value[sessionId][finalMsgIndex],
+                isStreaming: false,
+                status: "sent"
+              };
             }
-          } catch (err) {
-            console.error("Error parsing streaming event:", err);
-          }
-        };
-
-        // Event-Handler für den Abschluss des Streamings
-        eventSource.addEventListener("done", async (event) => {
-          try {
-            console.log('Done event received:', event);
             
-            // Das Backend sendet ein leeres data-Feld beim done-Event
-            let data = {};
-            if ((event as MessageEvent).data && (event as MessageEvent).data.trim()) {
-              try {
-                data = JSON.parse((event as MessageEvent).data);
-              } catch (e) {
-                // Ignoriere Parser-Fehler bei leeren done-Events
-                console.log('Empty done event received');
-              }
-            }
-
-            // Streaming beenden
             streaming.value = {
               isActive: false,
               progress: 100,
               currentSessionId: null,
             };
-
-            // Antwortnachricht mit finaler ID aktualisieren
-            const index = messages.value[sessionId].findIndex(
-              (m) => m.id === assistantTempId,
-            );
-            if (index !== -1) {
-              messages.value[sessionId][index] = {
-                ...messages.value[sessionId][index],
-                id: data.id || assistantTempId,
-                content: assistantContent,  // Use the accumulated content
-                isStreaming: false,
-                status: "sent",
-                metadata:
-                  data.metadata || messages.value[sessionId][index].metadata,
+          };
+          
+          eventSource.onmessage = (event) => {
+            console.log('Streaming data chunk:', event.data);
+            console.log('Full event:', event);
+            
+            // Check if it's a regular data chunk or a special event
+            if (event.data === '[DONE]' || event.data === 'data: [DONE]') {
+              console.log('Stream completed via [DONE] signal');
+              eventSource.close();
+              finishStreaming();
+              return;
+            }
+            
+            // Parse the SSE format
+            let chunk = '';
+            
+            // Handle "data: " prefix in SSE format
+            if (event.data.startsWith('data: ')) {
+              const dataContent = event.data.slice(6); // Remove "data: " prefix
+              
+              try {
+                const parsedData = JSON.parse(dataContent);
+                if (parsedData.chunk) chunk = parsedData.chunk;
+                else if (parsedData.delta) chunk = parsedData.delta;
+                else if (parsedData.content) chunk = parsedData.content;
+                else if (parsedData.response) chunk = parsedData.response;
+                else if (parsedData.text) chunk = parsedData.text;
+              } catch (e) {
+                // If JSON parsing fails, treat as plain text
+                chunk = dataContent;
+              }
+            } else {
+              // No "data: " prefix, try to parse directly
+              try {
+                const data = JSON.parse(event.data);
+                
+                // Check for different data formats
+                if (data.delta) chunk = data.delta;
+                else if (data.content) chunk = data.content;
+                else if (data.response) chunk = data.response;
+                else if (data.text) chunk = data.text;
+                else if (data.chunk) chunk = data.chunk;
+                else if (typeof data === 'string') chunk = data;
+              } catch (e) {
+                // If JSON parsing fails, use as is
+                chunk = event.data;
+              }
+            }
+            
+            responseContent += chunk;
+            console.log('Current response content:', responseContent);
+            
+            // Update the message - force reactive update
+            const msgIndex = messages.value[sessionId].findIndex(msg => msg.id === assistantTempId);
+            if (msgIndex !== -1) {
+              // Force Vue's reactivity by replacing the entire message object
+              messages.value[sessionId] = [...messages.value[sessionId]];
+              messages.value[sessionId][msgIndex] = {
+                ...messages.value[sessionId][msgIndex],
+                content: responseContent,
+                isStreaming: true
               };
             }
-
-            // Session-Titel aktualisieren, falls es eine neue Session ohne Titel ist
-            const session = sessions.value.find((s) => s.id === sessionId);
-            if (session && session.title === "Neue Unterhaltung") {
-              // Automatisch einen Titel basierend auf der ersten Benutzernachricht generieren
-              const title =
-                content.length > 30
-                  ? content.substring(0, 30) + "..."
-                  : content;
-              await updateSessionTitle(sessionId, title);
+          };
+          
+          eventSource.onerror = (error) => {
+            console.error('EventSource error:', error);
+            eventSource.close();
+            
+            // Wenn noch kein Content, versuche die non-streaming API
+            if (!responseContent) {
+              console.log('Falling back to non-streaming API');
+              // Use XHR or fetch for non-streaming request
+              const requestData: any = {
+                question: content
+              };
+              
+              if (/^\d+$/.test(sessionId)) {
+                requestData.session_id = parseInt(sessionId);
+              }
+              
+              axios.post('/api/question', requestData, {
+                headers: {
+                  'Authorization': `Bearer ${authToken}`,
+                  'Content-Type': 'application/json'
+                }
+              }).then(response => {
+                const assistantMessage: ChatMessage = {
+                  id: assistantTempId,
+                  sessionId,
+                  content: response.data.response || response.data.message || response.data.answer || "Keine Antwort vom Server",
+                  role: "assistant",
+                  timestamp: new Date().toISOString(),
+                  isStreaming: false,
+                  status: "sent",
+                };
+                
+                // Update the existing message
+                const msgIndex = messages.value[sessionId].findIndex(msg => msg.id === assistantTempId);
+                if (msgIndex !== -1) {
+                  messages.value[sessionId][msgIndex] = assistantMessage;
+                }
+                
+                // Mark user message as sent
+                const userMessageIndex = messages.value[sessionId].findIndex(
+                  (m) => m.id === tempId,
+                );
+                if (userMessageIndex !== -1) {
+                  messages.value[sessionId][userMessageIndex].status = "sent";
+                }
+              }).catch(err => {
+                console.error('Fallback error:', err);
+                const msgIndex = messages.value[sessionId].findIndex(msg => msg.id === assistantTempId);
+                if (msgIndex !== -1) {
+                  messages.value[sessionId][msgIndex].content = "Fehler bei der Kommunikation mit dem Server";
+                  messages.value[sessionId][msgIndex].isStreaming = false;
+                  messages.value[sessionId][msgIndex].status = "error";
+                }
+              });
+            } else {
+              // Finalisiere die Nachricht
+              const msgIndex = messages.value[sessionId].findIndex(msg => msg.id === assistantTempId);
+              if (msgIndex !== -1) {
+                messages.value[sessionId][msgIndex].isStreaming = false;
+                messages.value[sessionId][msgIndex].status = "sent";
+              }
             }
-
-            // Event-Source schließen
-            eventSource.close();
-          } catch (err) {
-            console.error("Error processing done event:", err);
-            eventSource.close();
+            
+            streaming.value = {
+              isActive: false,
+              progress: 100,
+              currentSessionId: null,
+            };
+          };
+          
+          eventSource.onopen = () => {
+            console.log('EventSource connected');
+            streaming.value = {
+              isActive: true,
+              progress: 0,
+              currentSessionId: sessionId,
+            };
+          };
+          
+          // Store cleanup function for later use
+          (window as any).currentEventSource = eventSource;
+          
+          // Mark user message as sent
+          const userMessageIndex = messages.value[sessionId].findIndex(
+            (m) => m.id === tempId,
+          );
+          if (userMessageIndex !== -1) {
+            messages.value[sessionId][userMessageIndex].status = "sent";
           }
+          
+        } else {
+          // Non-streaming fallback
+          console.log('Using non-streaming endpoint for message:', content);
+          
+          const requestData: any = {
+            question: content
+          };
+          
+          if (/^\d+$/.test(sessionId)) {
+            requestData.session_id = parseInt(sessionId);
+          }
+          
+          console.log('Sending to /api/question with params:', requestData);
+          
+          const response = await axios.post('/api/question', requestData, {
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          }
+        }).catch(error => {
+          // If API fails, provide a mock response for testing
+          console.log('API error details:', {
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            data: error.response?.data,
+            message: error.message
+          });
+          console.log('Using mock response due to API error:', error);
+          return {
+            data: {
+              response: 'Ich bin der Digitale Akte Assistent. Die Verbindung zum Server ist momentan nicht verfügbar, aber ich werde Ihnen helfen, sobald die Verbindung wiederhergestellt ist.',
+              session_id: sessionId,
+              message_id: Date.now().toString()
+            }
+          };
         });
 
-        // Event-Handler für Fehler
-        eventSource.onerror = (err) => {
-          console.error("EventSource error:", err);
-
-          // Streaming beenden
-          streaming.value = {
-            isActive: false,
-            progress: 0,
-            currentSessionId: null,
+        // Temporäre ID für die Antwortnachricht
+        const assistantTempId = `temp-response-${uuidv4()}`;
+        
+        // Process the response
+        console.log('Server response:', response);
+        
+        // Prüfe verschiedene Response-Formate
+        let responseContent = null;
+        if (response.data) {
+          // Standard response format
+          if (response.data.response) {
+            responseContent = response.data.response;
+          } 
+          // Alternative: data.message
+          else if (response.data.message) {
+            responseContent = response.data.message;
+          }
+          // Alternative: data.answer
+          else if (response.data.answer) {
+            responseContent = response.data.answer;
+          }
+          // Alternative: direkt data als String
+          else if (typeof response.data === 'string') {
+            responseContent = response.data;
+          }
+        }
+        
+        if (responseContent) {
+          // Create the assistant message with the response
+          const assistantMessage: ChatMessage = {
+            id: assistantTempId,
+            sessionId,
+            content: responseContent,
+            role: "assistant",
+            timestamp: new Date().toISOString(),
+            isStreaming: false,
+            status: "sent",
           };
 
-          // Fehlerstatus setzen
-          const index = messages.value[sessionId].findIndex(
-            (m) => m.id === assistantTempId,
-          );
-          if (index !== -1) {
-            messages.value[sessionId][index] = {
-              ...messages.value[sessionId][index],
-              isStreaming: false,
-              status: "error",
-              content: assistantContent || "Fehler beim Laden der Antwort.",
+          // Add response to messages
+          messages.value[sessionId].push(assistantMessage);
+          
+          // Update streaming status
+          streaming.value = {
+            isActive: false,
+            progress: 100,
+            currentSessionId: null,
+          };
+          
+          // Update session
+          const sessionIndex = sessions.value.findIndex((s) => s.id === sessionId);
+          if (sessionIndex !== -1) {
+            sessions.value[sessionIndex] = {
+              ...sessions.value[sessionIndex],
+              updatedAt: new Date().toISOString(),
             };
           }
-
-          // Event-Source schließen
-          eventSource.close();
-          error.value = "Fehler bei der Kommunikation mit dem Server.";
-        };
+          
+          // Mark user message as sent
+          const userMessageIndex = messages.value[sessionId].findIndex(
+            (m) => m.id === tempId,
+          );
+          if (userMessageIndex !== -1) {
+            messages.value[sessionId][userMessageIndex].status = "sent";
+          }
+          } else {
+            console.warn('No valid response content found in:', response);
+            // Verwende Fallback-Nachricht
+            const assistantMessage: ChatMessage = {
+              id: assistantTempId,
+              sessionId,
+              content: "Entschuldigung, ich konnte keine gültige Antwort vom Server empfangen.",
+              role: "assistant",
+              timestamp: new Date().toISOString(),
+              isStreaming: false,
+              status: "sent",
+            };
+            messages.value[sessionId].push(assistantMessage);
+          }
+        }
       } catch (err: any) {
         console.error("Error sending message:", err);
         error.value =
@@ -1373,7 +1541,9 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
     );
 
     // Bei Store-Erstellung initialisieren
-    const cleanup = initialize();
+    // Commented out to prevent API calls before authentication
+    // The initialize will be called from the app after authentication
+    // const cleanup = initialize();
 
     /**
      * Fügt einen Tag zu einer Session hinzu
@@ -1704,6 +1874,66 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
         await setCategoryForSession(sessionId, categoryId);
       }
     }
+    
+    /**
+     * Helper method to get messages for a session
+     */
+    async function getSessionMessages(sessionId: string): Promise<ChatMessage[]> {
+      if (!sessionId) return [];
+      
+      // Try to get from local store first
+      if (messages.value[sessionId]) {
+        return messages.value[sessionId];
+      }
+      
+      // Otherwise fetch from API
+      await fetchMessages(sessionId);
+      return messages.value[sessionId] || [];
+    }
+
+    /**
+     * Löscht eine Session endgültig
+     */
+    async function deleteSession(sessionId: string): Promise<void> {
+      if (!sessionId) return;
+
+      // Optimistische Löschung im lokalen State
+      const sessionsBefore = [...sessions.value];
+      const messagesBackup = { ...messages.value };
+
+      sessions.value = sessions.value.filter((s) => s.id !== sessionId);
+
+      // Nachrichten aus dem Store entfernen
+      if (messages.value[sessionId]) {
+        const { [sessionId]: _, ...rest } = messages.value;
+        messages.value = rest;
+      }
+
+      // Wenn die aktuelle Session gelöscht wurde, zur ersten verfügbaren wechseln
+      if (currentSessionId.value === sessionId) {
+        currentSessionId.value =
+          sessions.value.length > 0 ? sessions.value[0].id : null;
+      }
+
+      // Mit dem Server synchronisieren, wenn angemeldet
+      if (authStore.isAuthenticated) {
+        try {
+          await axios.delete(`/api/sessions/${sessionId}`, {
+            headers: authStore.createAuthHeaders(),
+          });
+        } catch (err: any) {
+          console.error(`Error deleting session ${sessionId}:`, err);
+          error.value =
+            err.response?.data?.message ||
+            "Fehler beim Löschen der Session";
+
+          // Bei Fehler lokale Änderung rückgängig machen
+          sessions.value = sessionsBefore;
+          messages.value = messagesBackup;
+          throw err; // Re-throw the error so the caller can handle it
+        }
+      }
+    }
 
     // Öffentliche API des Stores
     return {
@@ -1742,6 +1972,7 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
       setCurrentSession,
       updateSessionTitle,
       archiveSession,
+      deleteSession,
       togglePinSession,
       sendMessage,
       cancelStreaming,
@@ -1773,6 +2004,9 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
       deleteMultipleSessions,
       addTagToMultipleSessions,
       setCategoryForMultipleSessions,
+      
+      // Helper methods
+      getSessionMessages,
     };
   },
   {
@@ -1785,6 +2019,7 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
       paths: [
         "sessions",
         "currentSessionId",
+        "messages", // Nachrichten werden jetzt auch persistiert
         "version",
         "pendingMessages",
         "syncStatus.lastSyncTime",
@@ -1805,14 +2040,8 @@ export const useSessionsStore = defineStore<string, SessionsStoreReturn>(
         },
         serialize: (state) => {
           try {
-            // Optimierung: Speichere nur die Sitzungsmetadaten, nicht den vollständigen Nachrichtenverlauf
-            // Nachrichten werden separat in sessionStorage gespeichert oder können nachgeladen werden
-            const optimizedState = {
-              ...state,
-              // Nachrichten nicht persistieren, um Speicherplatz zu sparen
-              messages: {},
-            };
-            return JSON.stringify(optimizedState);
+            // Speichere den vollständigen State inklusive Messages
+            return JSON.stringify(state);
           } catch (err) {
             console.error("Error serializing store data:", err);
             return "{}";

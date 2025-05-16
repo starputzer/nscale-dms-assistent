@@ -114,5 +114,13 @@ export function useDocumentConverterCompat(): DocumentConverterWithCompat {
   };
 }
 
-// Singleton-Export für einfache Verwendung
-export const documentConverterCompat = useDocumentConverterCompat();
+// Cached store instance
+let cachedStore: DocumentConverterWithCompat | null = null;
+
+// Factory function to get the store instance
+export function getDocumentConverterCompat(): DocumentConverterWithCompat {
+  if (!cachedStore) {
+    cachedStore = useDocumentConverterCompat();
+  }
+  return cachedStore;
+}

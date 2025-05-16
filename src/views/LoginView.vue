@@ -4,12 +4,13 @@
   >
     <div class="nscale-card max-w-md w-full p-8">
       <div class="nscale-logo text-center mb-6">
-        <img
-          src="@/assets/images/senmvku-logo.png"
-          alt="nscale DMS Assistent"
-          class="h-12 mx-auto mb-4"
-        />
-        <h1 class="text-xl">nscale DMS Assistent</h1>
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="logo-icon mx-auto mb-4">
+          <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+          <line x1="8" y1="8" x2="16" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <line x1="8" y1="16" x2="11" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <h1 class="text-2xl font-bold text-gray-900">Digitale Akte Assistent</h1>
       </div>
 
       <div class="flex border-b mb-6">
@@ -118,15 +119,15 @@
             class="mr-2"
             :disabled="isLoading"
           />
-          <label for="rememberMe" class="text-sm text-gray-600"
+          <label for="rememberMe" class="text-sm text-gray-700"
             >Angemeldet bleiben</label
           >
         </div>
 
         <!-- Error Message -->
-        <div v-if="authError" class="error-message">
+        <div v-if="errorMessage" class="error-message">
           <div class="font-bold">Fehler:</div>
-          {{ authError }}
+          {{ errorMessage }}
         </div>
         
         <!-- Success Message (after successful login) -->
@@ -142,8 +143,8 @@
             isLoading || (activeTab === 'register' && !isPasswordMatch)
           "
         >
-          <span v-if="isLoading" class="loading-spinner mr-2"></span>
-          {{ activeTab === "login" ? "Anmelden" : "Registrieren" }}
+          <span v-if="isLoading">Wird angemeldet...</span>
+          <span v-else>{{ activeTab === "login" ? "Anmelden" : "Registrieren" }}</span>
         </button>
         
 
@@ -185,14 +186,14 @@
 <script setup lang="ts">
 import { ref, computed, reactive, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { useAuthStoreCompat } from "@/stores/adapters/authStoreAdapter";
+import { useAuthStore } from "@/stores/auth";
 
 // Stores und Composables
 const router = useRouter();
-const authStore = useAuthStoreCompat(); // Adapter für erweiterte Funktionen
+const authStore = useAuthStore();
 const isLoading = ref(false);
 const loginSuccess = ref(false);
-const authError = computed(() => authStore.error);
+const errorMessage = ref<string | null>(null);
 
 // LogService für die Fehlerdiagnose laden (asynchron)
 let logger: any = console;
@@ -280,157 +281,79 @@ async function submitForm() {
   }
 }
 
-// Login mit Test-Benutzer
-async function loginWithTestUser() {
-  // Direkt mit Hardcoded-Credentials einloggen
-  formData.email = "martin@danglefeet.com";
-  formData.password = "123";
-  await handleLogin();
-}
-
-// Verbesserte Login-Funktion mit mehreren Fallbacks und robuster Fehlerbehandlung
+// Verbesserte Login-Funktion
 async function handleLogin() {
-  // Importiere auth-adapter für verbesserte Login-Robustheit
-  const authAdapter = await import('@/utils/authRequestAdapter');
-  logger.info('Starte Login-Prozess');
+  isLoading.value = true;
+  loginSuccess.value = false;
+  errorMessage.value = null;
   
   try {
-    // Lade-Indikator aktivieren
-    isLoading.value = true;
-    // Erfolgs-Status zurücksetzen
-    loginSuccess.value = false;
+    const success = await authStore.login({
+      email: formData.email,
+      password: formData.password,
+      remember: formData.rememberMe
+    });
     
-    logger.info(`Login-Versuch mit: ${formData.email}, Password length: ${formData.password?.length || 0}`);
+    console.log('Login result:', success);
     
-    // Sicherstellen, dass das Passwort gesetzt ist (mindestens als leerer String)
-    if (formData.password === undefined || formData.password === null) {
-      formData.password = "123"; // Standard-Testpasswort verwenden
-      logger.info("Passwort war undefined, verwende Standard-Testpasswort");
+    if (success) {
+      loginSuccess.value = true;
+      console.log('Login successful, redirecting to chat...');
+      
+      // Direct navigation without timeout
+      try {
+        await router.push('/chat');
+        console.log('Navigation to /chat completed');
+      } catch (navError) {
+        console.error('Navigation error:', navError);
+        // Fallback to location.href
+        window.location.href = '/chat';
+      }
+    } else {
+      errorMessage.value = authStore.error || 'Anmeldung fehlgeschlagen';
     }
-    
-    // Mit dem Auth-Adapter authentifizieren (robustere Alternative zum direkten API-Aufruf)
-    try {
-      logger.info('Verwende Auth-Adapter für Login-Anfrage');
-      
-      // Adapter kümmert sich um Format- und Fehlerbehandlung
-      const loginResponse = await authAdapter.sendLoginRequest({
-        email: formData.email,
-        password: formData.password
-      });
-      
-      logger.info('Login-Antwort erhalten', loginResponse);
-      
-      if (loginResponse.token) {
-        // Token manuell im Store speichern
-        await authStore.setToken(loginResponse.token);
-        
-        // Zeige Erfolgs-Nachricht an
-        loginSuccess.value = true;
-        
-        // Leere Fehler-Meldung
-        authStore.setError(null);
-        
-        // Kurze Verzögerung für Feedback - dann direkt zur Hauptansicht
-        setTimeout(() => {
-          // Einfache Weiterleitung zur Hauptseite - robuster Ansatz ohne komplexe Router-Logik
-          window.location.href = "/";
-        }, 1000);
-      } else {
-        // Keine Token in der Antwort
-        logger.error('Login-Fehler: Kein Token in der Antwort');
-        authStore.setError('Keine Authentifizierungsdaten erhalten');
-        isLoading.value = false;
-      }
-    } catch (authError: any) {
-      logger.error("Auth-Adapter-Fehler:", authError);
-      
-      // Fehlermeldung im Store setzen
-      authStore.setError(authError.response?.data?.detail || authError.message || "Authentifizierungsfehler");
-      
-      // Bei 401/403 nochmal mit Standard-Passwort versuchen
-      if ((authError.response?.status === 401 || authError.response?.status === 403) && 
-          formData.password !== "123") {
-        logger.info("Versuche erneut mit Standard-Passwort '123'");
-        formData.password = "123";
-        
-        setTimeout(() => {
-          handleLogin(); // Rekursiver Aufruf mit Standard-Passwort
-        }, 500);
-        return; // Früher beenden, um doppelte Fehlermeldungen zu vermeiden
-      }
-      
-      // Fallbacks für bekannte API-Fehler implementieren
-      if (authError.message?.includes('Network Error') || authError.message?.includes('timeout')) {
-        logger.warn("Netzwerkfehler beim Login, versuche Fallback auf Standard-Benutzer");
-        // Hier könnte ein Fallback auf einen Test-Benutzer implementiert werden
-        formData.email = "martin@danglefeet.com";
-        formData.password = "123";
-        
-        setTimeout(() => {
-          handleLogin(); // Rekursiver Aufruf mit Standard-Benutzer
-        }, 800);
-        return;
-      }
-      
-      // Lade-Indikator deaktivieren
-      isLoading.value = false;
-    }
-  } catch (error) {
-    logger.error("Login fehlgeschlagen mit unerwarteter Exception:", error);
-    
-    // Benutzerfreundliche Fehlermeldung im Store setzen
-    authStore.setError("Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.");
-    
-    // Lade-Indikator deaktivieren
+  } catch (error: any) {
+    logger.error('Login-Fehler:', error);
+    errorMessage.value = error.message || 'Ein unerwarteter Fehler ist aufgetreten';
+  } finally {
     isLoading.value = false;
-    
-    // Telemetrie für schwerwiegende Fehler
-    if (window.telemetry) {
-      window.telemetry.trackError(error, { component: 'LoginView', action: 'login' });
-    }
   }
 }
 
 async function handleRegister() {
+  isLoading.value = true;
+  errorMessage.value = null;
+  
   try {
     // Prüfen, ob Passwörter übereinstimmen
     if (formData.password !== formData.passwordConfirm) {
-      logger.error("Die Passwörter stimmen nicht überein.");
-      authStore.setError("Die Passwörter stimmen nicht überein.");
+      errorMessage.value = "Die Passwörter stimmen nicht überein.";
       return;
     }
 
-    // Registrieren versuchen
-    isLoading.value = true;
-    const success = await authStore.register(formData.username || formData.email, formData.password);
+    const success = await authStore.register({
+      email: formData.email,
+      username: formData.username || formData.email,
+      password: formData.password,
+      displayName: formData.displayName
+    });
 
     if (success) {
-      // Bei Erfolg zur Startseite navigieren mit direktem Redirect
       loginSuccess.value = true;
-      try {
-        // Kurze Verzögerung für Feedback
-        setTimeout(() => {
-          // Direkte Umleitung für maximale Robustheit
-          console.log("NAVIGATION: Direkte Umleitung nach Registration");
-          window.location.href = "/";
-        }, 500);
-      } catch (navError) {
-        logger.error("Unerwarteter Navigationsfehler nach Registration:", navError);
-        window.location.href = "/";
-      }
+      // Weiterleitung zur Chat-Seite
+      setTimeout(() => {
+        router.push('/chat');
+      }, 1000);
     } else {
-      // Lade-Indikator deaktivieren
-      isLoading.value = false;
+      errorMessage.value = authStore.error || 'Registrierung fehlgeschlagen';
     }
-  } catch (error) {
-    logger.error("Registrierung fehlgeschlagen:", error);
+  } catch (error: any) {
+    logger.error('Registrierung fehlgeschlagen:', error);
+    errorMessage.value = error.message || 'Registrierung fehlgeschlagen';
+  } finally {
     isLoading.value = false;
-    authStore.setError("Registrierung fehlgeschlagen. Bitte versuchen Sie es später erneut.");
   }
 }
-
-// Import globalen Typen für Telemetrie aus bestehendem shims-vue.d.ts
-// Statt hier eine eigene Definition zu deklarieren
 </script>
 
 <style scoped>
@@ -438,12 +361,22 @@ async function handleRegister() {
   background-color: var(--nscale-background);
 }
 
+.logo-icon {
+  width: 64px;
+  height: 64px;
+  color: var(--nscale-primary);
+}
+
 .nscale-logo {
   color: var(--nscale-text);
 }
 
+.nscale-logo h1 {
+  color: var(--nscale-text);
+}
+
 .nscale-card {
-  background-color: var(--nscale-card-bg);
+  background-color: var(--nscale-surface);
   border-radius: 0.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -453,7 +386,7 @@ async function handleRegister() {
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--nscale-border);
   border-radius: 0.375rem;
-  background-color: var(--nscale-input-bg);
+  background-color: var(--nscale-background);
   color: var(--nscale-text);
   transition: border-color 0.15s ease-in-out;
 }
@@ -461,7 +394,7 @@ async function handleRegister() {
 .nscale-input:focus {
   outline: none;
   border-color: var(--nscale-primary);
-  box-shadow: 0 0 0 3px rgba(var(--nscale-primary-rgb), 0.2);
+  box-shadow: 0 0 0 3px rgba(0, 165, 80, 0.2);
 }
 
 .nscale-btn-primary {
@@ -471,6 +404,8 @@ async function handleRegister() {
   border-radius: 0.375rem;
   font-weight: 500;
   transition: background-color 0.15s ease-in-out;
+  border: none;
+  cursor: pointer;
 }
 
 .nscale-btn-primary:hover:not(:disabled) {
@@ -478,24 +413,6 @@ async function handleRegister() {
 }
 
 .nscale-btn-primary:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-}
-
-.nscale-btn-secondary {
-  background-color: #6c757d;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  font-weight: 500;
-  transition: background-color 0.15s ease-in-out;
-}
-
-.nscale-btn-secondary:hover:not(:disabled) {
-  background-color: #5a6268;
-}
-
-.nscale-btn-secondary:disabled {
   opacity: 0.65;
   cursor: not-allowed;
 }
@@ -510,7 +427,7 @@ async function handleRegister() {
   display: block;
   margin-bottom: 0.5rem;
   font-size: 0.875rem;
-  color: var(--nscale-text-light);
+  color: var(--nscale-text-secondary);
 }
 
 .error-message {
@@ -529,22 +446,6 @@ async function handleRegister() {
   background-color: var(--nscale-success-bg, #d4edda);
   border-radius: 4px;
   margin-top: 0.5rem;
-}
-
-.loading-spinner {
-  display: inline-block;
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: #fff;
-  animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /* Utility Classes */
@@ -609,18 +510,6 @@ async function handleRegister() {
   min-height: 100vh;
 }
 
-.h-12 {
-  height: 3rem;
-}
-
-.h-2 {
-  height: 0.5rem;
-}
-
-.h-full {
-  height: 100%;
-}
-
 .w-full {
   width: 100%;
 }
@@ -655,6 +544,10 @@ async function handleRegister() {
   max-width: 28rem;
 }
 
+.text-2xl {
+  font-size: 1.5rem;
+}
+
 .text-xl {
   font-size: 1.25rem;
 }
@@ -663,12 +556,24 @@ async function handleRegister() {
   font-size: 0.875rem;
 }
 
+.font-bold {
+  font-weight: 700;
+}
+
 .font-medium {
   font-weight: 500;
 }
 
 .text-gray-600 {
   color: #718096;
+}
+
+.text-gray-700 {
+  color: #4a5568;
+}
+
+.text-gray-900 {
+  color: #1a202c;
 }
 
 .text-green-600 {
@@ -705,5 +610,21 @@ async function handleRegister() {
 
 .list-disc {
   list-style-type: disc;
+}
+
+.h-2 {
+  height: 0.5rem;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.mt-1 {
+  margin-top: 0.25rem;
+}
+
+.border-b {
+  border-bottom-width: 1px;
 }
 </style>

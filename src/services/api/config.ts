@@ -32,10 +32,10 @@ const getNodeEnv = (): string => {
  */
 export const API_CONFIG = {
   // Basis-URL für alle API-Anfragen
-  BASE_URL: getEnvVar('VITE_API_BASE_URL', "/api"),
+  BASE_URL: getEnvVar('VITE_API_BASE_URL', "/api/v1"),
 
   // API-Version
-  API_VERSION: getEnvVar('VITE_API_VERSION', "v1"),
+  API_VERSION: getEnvVar('VITE_API_VERSION', ""),
 
   // Authentifizierungspräfixe
   AUTH: {
@@ -284,6 +284,16 @@ export function initializeApiServices(): void {
     
     // Request-Interceptor für alle Anfragen
     axios.interceptors.request.use(config => {
+      // Add authorization header for all non-login requests
+      if (!config.url?.includes('/api/auth/login')) {
+        const token = localStorage.getItem('nscale_access_token');
+        if (token) {
+          config.headers = config.headers || {};
+          config.headers['Authorization'] = `Bearer ${token}`;
+          console.log('Added authorization header to request');
+        }
+      }
+      
       // Speziell für Login-Anfragen
       if (config.url?.includes('/api/auth/login')) {
         console.log('Überprüfe Login-Anfrage:', config);

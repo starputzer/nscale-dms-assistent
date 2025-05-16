@@ -27,6 +27,7 @@ import { RetryHandler } from "./RetryHandler";
 import { RateLimitHandler } from "./RateLimitHandler";
 import { StorageService } from "../storage/StorageService";
 import { LogService } from "../log/LogService";
+import { CentralAuthManager } from "../auth/CentralAuthManager";
 
 /**
  * Optionen für API-Anfragen
@@ -95,13 +96,26 @@ export class ApiService {
   /** Token-Refresh-Promise für parallele Anfragen */
   private refreshTokenPromise: Promise<string> | null = null;
 
+  /** Central auth manager instance */
+  private centralAuthManager: CentralAuthManager;
+
   /**
    * Konstruktor
    */
   constructor() {
+    // Get central auth manager instance
+    this.centralAuthManager = CentralAuthManager.getInstance();
+    
     // Konfiguriere Axios-Instanz
+    // baseURL ist bereits korrekt mit Version konfiguriert (/api/v1)
+    const baseURL = apiConfig.BASE_URL;
+    console.log('[ApiService] Base URL configuration:', {
+      BASE_URL: apiConfig.BASE_URL,
+      API_VERSION: apiConfig.API_VERSION,
+      finalBaseURL: baseURL
+    });
     this.axiosInstance = axios.create({
-      baseURL: apiConfig.BASE_URL,
+      baseURL: baseURL,
       timeout: apiConfig.TIMEOUTS.DEFAULT,
       headers: {
         "Content-Type": "application/json",
@@ -166,7 +180,7 @@ export class ApiService {
         }
 
         // Auth-Token hinzufügen, wenn vorhanden
-        // Versuche zuerst aus StorageService
+        // Versuche zuerst aus StorageService (StorageService fügt automatisch "nscale_" prefix hinzu)
         let token = this.storageService.getItem(
           apiConfig.AUTH.STORAGE_KEYS.ACCESS_TOKEN,
         );
@@ -176,36 +190,35 @@ export class ApiService {
           token = localStorage.getItem('nscale_access_token');
         }
         
-        // Debug logging for batch requests
-        if (config.url?.includes('batch')) {
-          // Let's check what's actually in localStorage
-          const allKeys = Object.keys(localStorage);
-          const tokenKeys = allKeys.filter(key => key.includes('token'));
-          console.log("Batch request auth check:", {
+        // Debug logging for all requests
+        if (apiConfig.DEBUG.LOG_REQUESTS || config.url?.includes('batch')) {
+          console.log(`🔐 Auth check for ${config.method?.toUpperCase()} ${config.url}:`, {
             tokenFromStorage: !!token,
             tokenLength: token?.length,
             tokenPreview: token ? token.substring(0, 20) + '...' : null,
             authAlreadySet: !!config.headers.Authorization,
-            url: config.url,
             storageKey: apiConfig.AUTH.STORAGE_KEYS.ACCESS_TOKEN,
-            allTokenKeys: tokenKeys,
-            directLocalStorageValue: localStorage.getItem('nscale_access_token')?.substring(0, 20) + '...',
-            currentHeaders: Object.keys(config.headers || {})
+            fullStorageKey: `nscale_${apiConfig.AUTH.STORAGE_KEYS.ACCESS_TOKEN}`,
+            isLoginRequest: config.url?.includes('/login'),
+            skipAuth: config.url?.includes('/login') || config.url?.includes('/refresh')
           });
         }
         
-        if (token && !config.headers.Authorization) {
+        // Skip auth for login and refresh endpoints
+        const skipAuthEndpoints = ['/login', '/refresh'];
+        const shouldSkipAuth = skipAuthEndpoints.some(endpoint => config.url?.includes(endpoint));
+        
+        if (token && !config.headers.Authorization && !shouldSkipAuth) {
           config.headers.Authorization = `${apiConfig.AUTH.TOKEN_PREFIX} ${token}`;
-          this.logService.debug("Auth header added to request");
+          this.logService.debug(`✅ Auth header added to request: ${config.url}`, {
+            token: token.substring(0, 20) + '...'
+          });
+        } else if (!token && !shouldSkipAuth) {
+          this.logService.warn(`⚠️ No auth token available for request: ${config.url}`);
         }
 
-        // API-Version hinzufügen, wenn konfiguriert
-        if (
-          apiConfig.DEFAULT_PARAMS.includeVersion &&
-          !config.url?.includes(`/${apiConfig.API_VERSION}/`)
-        ) {
-          config.url = `/${apiConfig.API_VERSION}${config.url}`;
-        }
+        // API-Version nicht hinzufügen, da sie bereits in der baseURL enthalten ist
+        // (Entfernt, um doppelte Version zu vermeiden)
 
         return config;
       },
@@ -479,7 +492,7 @@ export class ApiService {
         const response = await this.axiosInstance.post<
           ApiResponse<LoginResponse>
         >(
-          apiConfig.ENDPOINTS.AUTH.REFRESH,
+          '/api/auth/token/refresh',
           { refreshToken },
           { _retry: true }, // Verhindere endlose Refresh-Schleife
         );
@@ -600,6 +613,14 @@ export class ApiService {
     options: ApiRequestOptions,
   ): Promise<ApiResponse<T>> {
     try {
+      // Debug-Ausgabe für URL-Konstruktion
+      console.log('[ApiService] Executing request:', {
+        url: options.url,
+        baseURL: this.axiosInstance.defaults.baseURL,
+        finalURL: options.url?.startsWith('http') ? options.url : `${this.axiosInstance.defaults.baseURL}${options.url}`,
+        axiosConfig: options
+      });
+      
       // Überprüfe auf Rate-Limiting
       if (options.handleRateLimit) {
         await this.rateLimitHandler.applyThrottling();
@@ -825,6 +846,14 @@ export class ApiService {
     if (response.success && response.data) {
       const { accessToken, refreshToken, expiresAt, user } = response.data;
 
+      // Debug logging for token storage
+      this.logService.debug("🔐 Storing tokens after login:", {
+        accessTokenPreview: accessToken.substring(0, 20) + '...',
+        storageKeys: apiConfig.AUTH.STORAGE_KEYS,
+        userEmail: user?.email,
+        userRole: user?.role
+      });
+
       // Token und Benutzerdaten speichern
       this.storageService.setItem(
         apiConfig.AUTH.STORAGE_KEYS.ACCESS_TOKEN,
@@ -842,6 +871,20 @@ export class ApiService {
         apiConfig.AUTH.STORAGE_KEYS.USER,
         JSON.stringify(user),
       );
+
+      // Verify storage was successful
+      const storedToken = this.storageService.getItem(apiConfig.AUTH.STORAGE_KEYS.ACCESS_TOKEN);
+      if (storedToken === accessToken) {
+        this.logService.debug("✅ Token successfully stored and verified");
+        
+        // Update the central auth manager with the new token
+        this.centralAuthManager.updateAuthHeader(accessToken);
+      } else {
+        this.logService.error("❌ Token storage verification failed", {
+          expected: accessToken.substring(0, 20) + '...',
+          actual: storedToken?.substring(0, 20) + '...'
+        });
+      }
 
       // Authentifizierungs-Event auslösen
       window.dispatchEvent(new CustomEvent("auth:login", { detail: { user } }));

@@ -1,139 +1,119 @@
-import {
-  createRouter,
-  createWebHistory,
-  RouteRecordRaw,
-  NavigationGuardNext,
-  RouteLocationNormalized,
-} from "vue-router";
+import { createRouter, createWebHistory, RouteRecordRaw, RouteLocationNormalized, NavigationGuardNext } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
-// Routen-Definitionen
-const routes: Array<RouteRecordRaw> = [
-  {
-    path: "/",
-    redirect: "/chat",
-  },
-  {
-    path: "/chat",
-    name: "Chat",
-    component: () => import("@/views/ChatView.vue"),
-    meta: {
-      requiresAuth: true,
-      title: "nscale DMS Assistant",
-    },
-  },
-  {
-    path: "/chat/:sessionId",
-    name: "ChatSession",
-    component: () => import("@/views/ChatView.vue"),
-    meta: {
-      requiresAuth: true,
-      title: "nscale DMS Assistant",
-    },
-  },
-  {
-    path: "/session/:sessionId",
-    redirect: (to) => ({ name: 'ChatSession', params: { sessionId: to.params.sessionId } }),
-  },
-  {
-    path: "/login",
-    name: "Login",
-    component: () => import("@/views/EnhancedLoginView.vue"),
-    meta: {
-      guest: true,
-      title: "Login",
-    },
-  },
-  {
-    path: "/admin",
-    name: "Admin",
-    component: () => import("@/views/AdminView.vue"),
-    meta: {
-      requiresAuth: true,
-      adminOnly: true,
-      title: "Administration",
-    },
-  },
-  {
-    path: "/documents",
-    name: "Documents",
-    component: () => import("@/views/DocumentsView.vue"),
-    meta: {
-      requiresAuth: true,
-      title: "Dokumentenkonverter",
-    },
-  },
-  {
-    path: "/settings",
-    name: "Settings",
-    component: () => import("@/views/SettingsView.vue"),
-    meta: {
-      requiresAuth: true,
-      title: "Einstellungen",
-    },
-  },
-  {
-    path: "/error",
-    name: "Error",
-    component: () => import("@/views/ErrorView.vue"),
-    meta: {
-      title: "Fehler",
-    },
-  },
-  {
-    path: "/:pathMatch(.*)*",
-    name: "NotFound",
-    component: () => import("@/views/Advanced404View.vue"),
-    meta: {
-      title: "Seite nicht gefunden",
-    },
-  },
-];
+// Import layouts
+import GuestLayout from '@/layouts/GuestLayout.vue'
+import MainAppLayout from '@/layouts/MainAppLayout.vue'
 
-// Router-Instanz erstellen
+// Import views
+import LoginView from '@/views/LoginView.vue'
+import SimpleChatView from '@/views/SimpleChatView.vue'
+import DocumentsView from '@/views/DocumentsView.vue'
+import SettingsView from '@/views/SettingsView.vue'
+import HelpView from '@/views/Advanced404View.vue' // Using 404 as help for now
+import NotFoundView from '@/views/NotFoundView.vue'
+
+const routes: RouteRecordRaw[] = [
+  // Guest routes (no authentication required)
+  {
+    path: '/login',
+    component: GuestLayout,
+    children: [
+      {
+        path: '',
+        name: 'Login',
+        component: LoginView
+      }
+    ]
+  },
+  
+  // Authenticated routes
+  {
+    path: '/',
+    component: MainAppLayout,
+    meta: { requiresAuth: true },
+    children: [
+      // Redirect root to chat
+      {
+        path: '',
+        redirect: '/chat'
+      },
+      
+      // Chat routes
+      {
+        path: 'chat',
+        name: 'Chat',
+        component: SimpleChatView
+      },
+      {
+        path: 'chat/:id',
+        name: 'ChatSession',
+        component: SimpleChatView
+      },
+      
+      // Documents
+      {
+        path: 'documents',
+        name: 'Documents',
+        component: DocumentsView
+      },
+      
+      // Settings
+      {
+        path: 'settings',
+        name: 'Settings',
+        component: SettingsView
+      },
+      
+      // Help
+      {
+        path: 'help',
+        name: 'Help',
+        component: HelpView
+      },
+      
+      // Admin
+      {
+        path: 'admin',
+        name: 'Admin',
+        component: () => import('@/views/AdminView.vue'),
+        meta: { requiresAdmin: true }
+      }
+    ]
+  },
+  
+  // 404 route
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: NotFoundView
+  }
+]
+
 const router = createRouter({
   history: createWebHistory(),
-  routes,
-});
+  routes
+})
 
-// Einfacher globaler Guard - nur das Nötigste
-router.beforeEach(async (to, from, next) => {
-  console.log(`Navigation: ${from.path} -> ${to.path}`);
+// Navigation guards
+router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
+  const authStore = useAuthStore()
   
-  // Lazy-Load Auth Store
-  let authStore;
-  try {
-    const { useAuthStore } = await import("@/stores/auth");
-    authStore = useAuthStore();
-  } catch (error) {
-    console.error('Auth Store Fehler:', error);
-    return next('/error');
-  }
-
-  // Skip-auth routes
-  if (['/login', '/error', '/404'].includes(to.path)) {
-    return next();
-  }
-
-  // Auth check
+  // Check if route requires authentication
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    console.log('Nicht authentifiziert, redirect zu /login');
-    return next(`/login?redirect=${to.fullPath}`);
+    // Redirect to login
+    return next({
+      path: '/login',
+      query: { redirect: to.fullPath }
+    })
   }
-
-  // Guest routes (redirect authenticated users)
-  if (to.meta.guest && authStore.isAuthenticated) {
-    console.log('Bereits authentifiziert, redirect zu /chat');
-    return next('/chat');
+  
+  // If logged in and trying to access login, redirect to chat
+  if (to.path === '/login' && authStore.isAuthenticated) {
+    return next('/chat')
   }
+  
+  next()
+})
 
-  // Admin check
-  if (to.meta.adminOnly && !authStore.isAdmin) {
-    console.log('Keine Admin-Rechte');
-    return next('/error');
-  }
-
-  // Alles OK
-  next();
-});
-
-export default router;
+export default router
