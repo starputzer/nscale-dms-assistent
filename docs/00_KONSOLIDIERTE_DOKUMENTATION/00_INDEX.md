@@ -67,6 +67,7 @@ Die Dokumentation folgt einer klaren hierarchischen Struktur, die alle Aspekte d
 - [06_systemarchitektur.md](./03_ARCHITEKTUR/06_SYSTEMARCHITEKTUR.md) - Gesamtarchitektur
 - [07_ab_testing_system.md](./03_ARCHITEKTUR/07_AB_TESTING_SYSTEM.md) - A/B Testing
 - [08_asset_pfad_konfiguration.md](./03_ARCHITEKTUR/08_ASSET_PFAD_KONFIGURATION.md) - Asset Management
+- [09_pure_vue_mode.md](./03_ARCHITEKTUR/09_PURE_VUE_MODE.md) - Pure Vue Mode
 
 ### 04_ENTWICKLUNG - Entwicklungsrichtlinien
 
@@ -81,15 +82,17 @@ Die Dokumentation folgt einer klaren hierarchischen Struktur, die alle Aspekte d
 
 - [01_performance_optimierung.md](./05_BETRIEB/01_PERFORMANCE_OPTIMIERUNG.md) - Performance
 - [02_fehlerbehebung.md](./05_BETRIEB/02_FEHLERBEHEBUNG.md) - Troubleshooting
+- [03_cleanup_liste.md](./05_BETRIEB/03_CLEANUP_LISTE.md) - Aufräum-Liste
 
 
 ### 06_REFERENZEN - Technische Referenzen
 
-- [01_typescript_typsystem.md](./06_REFERENZEN/01_typescript_typsystem.md) - TypeScript Types
-- [02_state_management.md](./06_REFERENZEN/02_state_management.md) - State Management
-- [03_teststrategie.md](./06_REFERENZEN/03_teststrategie.md) - Umfassende Test-Dokumentation
-- [04_pinia_store_testing.md](./06_REFERENZEN/04_pinia_store_testing.md) - Store Testing
+- [01_typescript_typsystem.md](./06_REFERENZEN/01_TYPESCRIPT_TYPSYSTEM.md) - TypeScript Types
+- [02_state_management.md](./06_REFERENZEN/02_STATE_MANAGEMENT.md) - State Management
+- [03_teststrategie.md](./06_REFERENZEN/03_TESTSTRATEGIE.md) - Umfassende Test-Dokumentation
+- [04_pinia_store_testing.md](./06_REFERENZEN/04_PINIA_STORE_TESTING.md) - Store Testing
 - [05_auth_debugging_guide.md](./06_REFERENZEN/05_AUTH_DEBUGGING_GUIDE.md) - Authentication Debugging
+- [06_dependency_analysis.md](./06_REFERENZEN/06_DEPENDENCY_ANALYSIS.md) - Abhängigkeitsanalyse
 
 ## Migrationsstatus
 
