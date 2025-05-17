@@ -135,11 +135,11 @@ const AdminDashboard = defineAsyncComponent(
 );
 const AdminUsers = defineAsyncComponent(() => import("./tabs/AdminUsers.vue"));
 const AdminFeedback = defineAsyncComponent(
-  () => import("./tabs/AdminFeedback.vue"),
+  () => import("./tabs/AdminFeedback.enhanced.vue"),
 );
-const AdminMotd = defineAsyncComponent(() => import("./tabs/AdminMotd.vue"));
+const AdminMotd = defineAsyncComponent(() => import("./tabs/AdminMotd.enhanced.vue"));
 const AdminSystem = defineAsyncComponent(
-  () => import("./tabs/AdminSystem.vue"),
+  () => import("./tabs/AdminSystem.enhanced.vue"),
 );
 const AdminStatistics = defineAsyncComponent(
   () => import("./tabs/AdminStatistics.vue"),
@@ -148,7 +148,7 @@ const AdminSystemSettings = defineAsyncComponent(
   () => import("./tabs/AdminSystemSettings.vue"),
 );
 const AdminFeatureToggles = defineAsyncComponent(
-  () => import("./tabs/AdminFeatureToggles.vue"),
+  () => import("./tabs/AdminFeatureToggles.enhanced.vue"),
 );
 const AdminLogViewer = defineAsyncComponent(
   () => import("./tabs/AdminLogViewerUpdated.vue"),
