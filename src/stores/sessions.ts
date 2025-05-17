@@ -20,6 +20,7 @@ import {
   validateSessionsResponse, 
   validateMessagesResponse 
 } from './sessionsResponseFix';
+import { streamingService } from '@/services/streamingService';
 
 /**
  * Sessions Store zur Verwaltung von Chat-Sessions und Nachrichten
@@ -917,7 +918,7 @@ export const useSessionsStore = defineStore(
         const streamingEnabled = true; // Wieder aktivieren
         
         if (streamingEnabled) {
-          // Streaming mit EventSource
+          // Streaming mit dem verbesserten StreamingService
           console.log('=== STREAMING DEBUG START ===');
           console.log('Using streaming endpoint for message:', content);
           
@@ -934,146 +935,124 @@ export const useSessionsStore = defineStore(
           };
           messages.value[sessionId].push(streamingMessage);
           
-          const finishStreaming = () => {
-            const finalMsgIndex = messages.value[sessionId].findIndex(msg => msg.id === assistantTempId);
-            if (finalMsgIndex !== -1) {
-              const updatedMessages = [...messages.value[sessionId]];
-              updatedMessages[finalMsgIndex] = {
-                ...updatedMessages[finalMsgIndex],
-                isStreaming: false,
-                status: "sent"
-              };
-              messages.value = {
-                ...messages.value,
-                [sessionId]: updatedMessages
-              };
-            }
-            
-            streaming.value = {
-              isActive: false,
-              progress: 100,
-              currentSessionId: null,
-            };
-          };
-          
-          // URL-Parameter für Streaming
-          const params = new URLSearchParams();
-          params.append('question', content);
-          // session_id ist immer erforderlich
-          params.append('session_id', sessionId || 'new');
-          // NICHT token in die URL - sollte im Header sein!
-          // params.append('token', authToken); // Token als URL-Parameter
-          
-          const url = `/api/question/stream?${params.toString()}`;
-          console.log('Streaming URL:', url);
-          
-          // Ersetze EventSource durch fetch mit Headers
-          let responseContent = '';
+          // Verwende den importierten streamingService
           try {
-            const response = await fetch(url, {
-              method: 'GET',
-              headers: {
-                'Authorization': `Bearer ${authToken}`,
-                'Accept': 'text/event-stream',
+            // Service wird importiert aus '@/services/streamingService'
+            // Falls nicht bereits importiert, füge folgende Zeile am Anfang der Datei hinzu:
+            // import { streamingService } from '@/services/streamingService';
+            
+            let responseContent = '';
+            
+            // Streaming starten mit dem neuen Service
+            await streamingService.startStream({
+              question: content,
+              sessionId: sessionId,
+              simpleLanguage: false, // oder aus den Einstellungen
+              onMessage: (chunk) => {
+                // Jeden Chunk zur Antwort hinzufügen
+                responseContent += chunk;
+                console.log('Current response content:', responseContent);
+                
+                // Nachricht in der UI aktualisieren
+                const msgIndex = messages.value[sessionId].findIndex(msg => msg.id === assistantTempId);
+                if (msgIndex !== -1) {
+                  const updatedMessages = [...messages.value[sessionId]];
+                  updatedMessages[msgIndex] = {
+                    ...updatedMessages[msgIndex],
+                    content: responseContent,
+                    isStreaming: true,
+                    status: "pending"
+                  };
+                  messages.value = {
+                    ...messages.value,
+                    [sessionId]: updatedMessages
+                  };
+                }
               },
-            });
-
-            if (!response.ok) {
-              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            const reader = response.body?.getReader();
-            const decoder = new TextDecoder();
-
-            if (!reader) {
-              throw new Error('No response body');
-            }
-
-            // Stream verarbeiten
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-
-              const chunk = decoder.decode(value, { stream: true });
-              
-              // SSE-Format parsen
-              const lines = chunk.split('\n');
-              for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                  const data = line.slice(6);
-                  if (data === '[DONE]') {
-                    finishStreaming();
-                    return;
+              onError: async (error) => {
+                console.error('Streaming error:', error);
+                
+                // Fallback auf nicht-streaming API
+                console.log('Falling back to non-streaming API');
+                
+                // Wenn noch kein Content, versuche die non-streaming API
+                if (!responseContent) {
+                  const requestData: any = {
+                    question: content
+                  };
+                  
+                  if (/^\d+$/.test(sessionId)) {
+                    requestData.session_id = parseInt(sessionId);
                   }
                   
-                  responseContent += data;
-                  console.log('Current response content:', responseContent);
+                  const fallbackResponse = await axios.post('/api/question', requestData, {
+                    headers: {
+                      'Authorization': `Bearer ${authToken}`,
+                      'Content-Type': 'application/json'
+                    }
+                  });
                   
-                  // Update the message
+                  const assistantMessage: ChatMessage = {
+                    id: assistantTempId,
+                    sessionId,
+                    content: fallbackResponse.data.response || fallbackResponse.data.message || fallbackResponse.data.answer || "Keine Antwort vom Server",
+                    role: "assistant",
+                    timestamp: new Date().toISOString(),
+                    status: "sent",
+                  };
+                  
+                  // Update message 
                   const msgIndex = messages.value[sessionId].findIndex(msg => msg.id === assistantTempId);
                   if (msgIndex !== -1) {
                     const updatedMessages = [...messages.value[sessionId]];
-                    updatedMessages[msgIndex] = {
-                      ...updatedMessages[msgIndex],
-                      content: responseContent,
-                      isStreaming: true,
-                      status: "pending"
-                    };
+                    updatedMessages[msgIndex] = assistantMessage;
                     messages.value = {
                       ...messages.value,
                       [sessionId]: updatedMessages
                     };
                   }
                 }
-              }
-            }
-            
-            finishStreaming();
-          } catch (error) {
-            console.error('Streaming error:', error);
-            
-            // Fallback auf nicht-streaming API
-            console.log('Falling back to non-streaming API');
-            
-            // Wenn noch kein Content, versuche die non-streaming API
-            if (!responseContent) {
-              const requestData: any = {
-                question: content
-              };
-              
-              if (/^\d+$/.test(sessionId)) {
-                requestData.session_id = parseInt(sessionId);
-              }
-              
-              const fallbackResponse = await axios.post('/api/question', requestData, {
-                headers: {
-                  'Authorization': `Bearer ${authToken}`,
-                  'Content-Type': 'application/json'
+              },
+              onComplete: () => {
+                // Streaming abgeschlossen
+                const msgIndex = messages.value[sessionId].findIndex(msg => msg.id === assistantTempId);
+                if (msgIndex !== -1) {
+                  const updatedMessages = [...messages.value[sessionId]];
+                  updatedMessages[msgIndex] = {
+                    ...updatedMessages[msgIndex],
+                    isStreaming: false,
+                    status: "sent"
+                  };
+                  messages.value = {
+                    ...messages.value,
+                    [sessionId]: updatedMessages
+                  };
                 }
-              });
-              
-              const assistantMessage: ChatMessage = {
-                id: assistantTempId,
-                sessionId,
-                content: fallbackResponse.data.response || fallbackResponse.data.message || fallbackResponse.data.answer || "Keine Antwort vom Server",
-                role: "assistant",
-                timestamp: new Date().toISOString(),
-                status: "sent",
-              };
-              
-              // Update message 
-              const msgIndex = messages.value[sessionId].findIndex(msg => msg.id === assistantTempId);
-              if (msgIndex !== -1) {
-                const updatedMessages = [...messages.value[sessionId]];
-                updatedMessages[msgIndex] = assistantMessage;
-                messages.value = {
-                  ...messages.value,
-                  [sessionId]: updatedMessages
+                
+                streaming.value = {
+                  isActive: false,
+                  progress: 100,
+                  currentSessionId: null,
                 };
               }
-            }
+            });
+          } catch (error) {
+            console.error('Main streaming error:', error);
             
-            finishStreaming();
+            // Streaming-Status zurücksetzen
+            streaming.value = {
+              isActive: false,
+              progress: 0,
+              currentSessionId: null,
+            };
+            
+            // Fehlerstatus für Assistenten-Nachricht setzen
+            const msgIndex = messages.value[sessionId].findIndex(msg => msg.id === assistantTempId);
+            if (msgIndex !== -1) {
+              messages.value[sessionId][msgIndex].status = "error";
+              messages.value[sessionId][msgIndex].isStreaming = false;
+              messages.value[sessionId][msgIndex].content += "\n[Fehler beim Streaming]";
+            }
           }
         } else {
           // Nicht-Streaming-Version verwenden
