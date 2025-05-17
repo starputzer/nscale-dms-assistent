@@ -1,0 +1,246 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      confirm_production:
+        description: 'Confirm production deployment (yes/no)'
+        required: true
+        default: 'no'
+
+jobs:
+  validate:
+    name: Validate Deployment
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.confirm_production == 'yes') || 
+      (github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'))
+    steps:
+      - name: Validate input
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [[ "${{ github.event.inputs.confirm_production }}" != "yes" ]]; then
+            echo "Production deployment not confirmed. Exiting."
+            exit 1
+          fi
+
+  test:
+    name: Run All Tests
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run lint & type check
+        run: |
+          npm run lint
+          npm run typecheck
+      - name: Run unit tests
+        run: npm run test
+      - name: Run component tests
+        run: npm run test -- --testNamePattern="components/ui"
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      - name: Run E2E tests
+        run: npm run test:e2e
+      - name: Run security checks
+        run: npm audit --production
+
+  build:
+    name: Build for Production
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Create Production environment file
+        run: |
+          cat > .env.production << 'EOF'
+          # Production Environment Configuration
+
+          # API Configuration
+          VITE_API_URL=${{ secrets.PRODUCTION_API_URL }}
+          VITE_API_VERSION=v1
+          VITE_API_TIMEOUT=30000
+
+          # Environment Information
+          VITE_ENV=production
+          VITE_PORT=8080
+          VITE_PREVIEW_PORT=8081
+          VITE_ENABLE_MOCK_API=false
+
+          # Application Features
+          VITE_ENABLE_DEBUG=false
+          VITE_ENABLE_LOGGER=true
+          VITE_LOGGER_LEVEL=error
+          VITE_ENABLE_CONSOLE=false
+
+          # Feature Flags
+          VITE_FEATURE_ENHANCED_CHAT=true
+          VITE_FEATURE_DOCUMENT_CONVERTER=true
+          VITE_FEATURE_ADMIN_PANEL=true
+
+          # Cache Configuration
+          VITE_CACHE_STORAGE=localStorage
+          VITE_CACHE_LIFETIME=43200
+          VITE_CACHE_PREFIX=nscale_
+
+          # Authentication
+          VITE_AUTH_STORAGE=localStorage
+          VITE_AUTH_REMEMBER_ME=true
+          VITE_AUTH_SESSION_TIMEOUT=28800
+
+          # UI Configuration
+          VITE_DEFAULT_THEME=light
+          VITE_DEFAULT_LANG=de
+          VITE_ENABLE_ANIMATIONS=true
+
+          # Performance
+          VITE_ENABLE_PERFORMANCE_METRICS=false
+          VITE_ENABLE_ERROR_REPORTING=true
+          EOF
+      - name: Build for production
+        run: npm run build -- --mode production
+      - name: Create version info
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S")
+          GIT_COMMIT=${GITHUB_SHA}
+          GIT_BRANCH=${GITHUB_REF#refs/heads/}
+          TAG_NAME=${{ github.ref_name }}
+          
+          # Verwende Tag-Name als Version, wenn ein Tag gepusht wurde
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION=${TAG_NAME#v}
+          fi
+          
+          cat > "dist/version.json" << EOF
+          {
+            "version": "$VERSION",
+            "environment": "production",
+            "buildDate": "$BUILD_DATE",
+            "gitCommit": "$GIT_COMMIT",
+            "gitBranch": "$GIT_BRANCH",
+            "buildNumber": "${GITHUB_RUN_NUMBER}",
+            "releaseTag": "$TAG_NAME"
+          }
+          EOF
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: production-build
+          path: dist/
+          retention-days: 14
+  
+  deploy:
+    name: Deploy to Production Server
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: production-build
+          path: dist/
+      - name: Display structure of downloaded files
+        run: ls -R dist/
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.PRODUCTION_SSH_KEY }}
+      - name: Add known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan ${{ secrets.PRODUCTION_SERVER }} >> ~/.ssh/known_hosts
+      - name: Deploy to production server
+        run: |
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          RELEASE_PATH="${{ secrets.PRODUCTION_PATH }}/releases/${TIMESTAMP}"
+          CURRENT_LINK="${{ secrets.PRODUCTION_PATH }}/current"
+          
+          # Erstelle Releases-Verzeichnis
+          ssh ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_SERVER }} "mkdir -p ${RELEASE_PATH}"
+          
+          # Kopiere Build-Dateien
+          rsync -avz --delete dist/ ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_SERVER }}:${RELEASE_PATH}/
+          
+          # Setze Berechtigungen
+          ssh ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_SERVER }} "chmod -R 755 ${RELEASE_PATH} && find ${RELEASE_PATH} -type f -exec chmod 644 {} \;"
+          
+          # Aktualisiere Symlink für das aktuelle Release
+          ssh ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_SERVER }} "ln -sfn ${RELEASE_PATH} ${CURRENT_LINK}"
+          
+          # Bereinige alte Releases (behalte die letzten 5)
+          ssh ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_SERVER }} "cd ${{ secrets.PRODUCTION_PATH }}/releases && ls -t | tail -n +6 | xargs rm -rf"
+          
+          # Logge Deployment
+          VERSION=$(cat dist/version.json | grep -o '"version":"[^"]*"' | cut -d '"' -f 4)
+          TAG_INFO=""
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG_INFO=" (tag ${{ github.ref_name }})"
+          fi
+          
+          ssh ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_SERVER }} "echo \"$(date): Deployed version ${VERSION}${TAG_INFO} (commit ${GITHUB_SHA})\" >> ${{ secrets.PRODUCTION_PATH }}/deployment.log"
+      
+      - name: Invalidate CDN cache
+        if: ${{ secrets.CDN_DISTRIBUTION_ID != '' }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          # Nur ausführen, wenn CloudFront-Konfiguration vorhanden ist
+          if [[ -n "$AWS_ACCESS_KEY_ID" && -n "$AWS_SECRET_ACCESS_KEY" && -n "${{ secrets.CDN_DISTRIBUTION_ID }}" ]]; then
+            # Invalidiere CloudFront-Cache
+            aws cloudfront create-invalidation \
+              --distribution-id ${{ secrets.CDN_DISTRIBUTION_ID }} \
+              --paths "/*" \
+              --reference "github-action-${GITHUB_RUN_NUMBER}"
+            echo "CDN cache invalidation initiated"
+          else
+            echo "CDN cache invalidation skipped (not configured)"
+          fi
+      
+      - name: Verify deployment
+        run: |
+          # Prüfe, ob die Anwendung erreichbar ist
+          if curl -s -f -o /dev/null "${{ secrets.PRODUCTION_URL }}"; then
+            echo "Production deployment successful! The application is accessible."
+          else
+            echo "Warning: The application doesn't seem to be accessible. Please check server configuration."
+          fi
+      
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+      
+      - name: Notify on Slack
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,workflow
+          text: "🚀 Production Deployment ${{ job.status }}\nURL: ${{ secrets.PRODUCTION_URL }}\nVersion: ${{ steps.version_info.outputs.version }}"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -1,0 +1,76 @@
+# Modell- und Datendateien
+/models/
+/data/
+/cache/
+/logs/
+
+# Falls diese Ordner relativ sind
+../models/
+../data/
+../cache/
+../logs/
+
+# Python-spezifische Ignores
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Node.js-spezifische Ignores
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+package-lock.json
+.pnpm-lock.yaml
+.npm/
+
+# Virtuelle Umgebungen
+venv/
+ENV/
+
+# IDE-spezifische Dateien
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# SSH-Schlüssel
+id_*
+*.pem
+*.key
+*.pub
+github-laptop*
+
+# Umgebungsvariablen
+.env
+*.env
+
+# OS-spezifisch
+.DS_Store
+Thumbs.db
+
+# Log-Dateien
+*.log
+
+# Build-Dateien
+/dist/
+/.cache/
+/.output/
+/.vite/

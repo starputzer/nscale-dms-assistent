@@ -1,0 +1,338 @@
+/* CSS für Quellenreferenzen und Erklärungsbuttons */
+
+/* Stil für die Quellenreferenzen im Text */
+.source-reference {
+    display: inline-block;
+    padding: 0 2px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    cursor: help;
+    transition: all 0.2s ease;
+    background-color: rgba(0, 165, 80, 0.1);
+    border: 1px solid rgba(0, 165, 80, 0.2);
+    color: #008d45;
+}
+
+.source-reference:hover {
+    background-color: rgba(0, 165, 80, 0.2);
+    transform: translateY(-1px);
+}
+
+/* Container für die Quellen-Buttons */
+.source-buttons {
+    display: flex;
+    margin-top: 12px;
+    gap: 10px;
+}
+
+/* Stil für die einzelnen Buttons */
+.source-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: #f8f9fa;
+    border: 1px solid #e2e8f0;
+    color: #4a5568;
+}
+
+.source-btn i {
+    margin-right: 6px;
+}
+
+.source-btn:hover {
+    background-color: #edf2f7;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Quellenreferenzen Anzeigebereich */
+.source-references {
+    margin-top: 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background-color: #f8f9fa;
+    overflow: hidden;
+}
+
+.source-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background-color: #edf2f7;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.source-header h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0;
+    color: #4a5568;
+}
+
+.source-header .close-button {
+    background: none;
+    border: none;
+    color: #718096;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.source-header .close-button:hover {
+    background-color: #e2e8f0;
+    color: #4a5568;
+}
+
+.source-content {
+    padding: 10px 12px;
+}
+
+.source-item {
+    margin-bottom: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.source-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    background-color: #f1f5f9;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.source-title:hover {
+    background-color: #e2e8f0;
+}
+
+.source-detail {
+    padding: 10px;
+    border-top: 1px solid #e2e8f0;
+    background-color: #ffffff;
+}
+
+.source-metadata {
+    font-size: 0.85rem;
+    color: #718096;
+    margin-bottom: 6px;
+}
+
+.source-text {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    white-space: pre-line;
+    padding: 6px;
+    background-color: #f8fafc;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+}
+
+.loading-sources {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    color: #718096;
+}
+
+.loading-spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #e2e8f0;
+    border-top: 3px solid #008d45;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.no-sources {
+    text-align: center;
+    padding: 15px;
+    color: #718096;
+    font-style: italic;
+}
+
+/* Dunkelmodus-Unterstützung */
+.theme-dark .source-reference {
+    background-color: rgba(0, 192, 96, 0.2);
+    border: 1px solid rgba(0, 192, 96, 0.3);
+    color: #00c060;
+}
+
+.theme-dark .source-reference:hover {
+    background-color: rgba(0, 192, 96, 0.3);
+}
+
+.theme-dark .source-btn {
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    color: #f0f0f0;
+}
+
+.theme-dark .source-btn:hover {
+    background-color: #333;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.theme-dark .source-references {
+    background-color: #1a1a1a;
+    border-color: #333;
+}
+
+.theme-dark .source-header {
+    background-color: #222;
+    border-color: #333;
+}
+
+.theme-dark .source-header h3 {
+    color: #e2e8f0;
+}
+
+.theme-dark .source-header .close-button {
+    color: #a0aec0;
+}
+
+.theme-dark .source-header .close-button:hover {
+    background-color: #333;
+    color: #e2e8f0;
+}
+
+.theme-dark .source-item {
+    border-color: #333;
+}
+
+.theme-dark .source-title {
+    background-color: #222;
+    color: #e2e8f0;
+}
+
+.theme-dark .source-title:hover {
+    background-color: #333;
+}
+
+.theme-dark .source-detail {
+    background-color: #1a1a1a;
+    border-color: #333;
+}
+
+.theme-dark .source-text {
+    background-color: #222;
+    border-color: #333;
+    color: #e2e8f0;
+}
+
+.theme-dark .source-metadata {
+    color: #a0aec0;
+}
+
+.theme-dark .loading-spinner {
+    border-color: #333;
+    border-top-color: #00c060;
+}
+
+.theme-dark .loading-sources,
+.theme-dark .no-sources {
+    color: #a0aec0;
+}
+
+/* Kontrastmodus-Unterstützung */
+.theme-contrast .source-reference {
+    background-color: #333300;
+    border: 1px solid #ffeb3b;
+    color: #ffeb3b;
+    font-weight: bold;
+}
+
+.theme-contrast .source-reference:hover {
+    background-color: #444400;
+}
+
+.theme-contrast .source-btn {
+    background-color: #000000;
+    border: 1px solid #ffeb3b;
+    color: #ffeb3b;
+}
+
+.theme-contrast .source-btn:hover {
+    background-color: #333300;
+    box-shadow: 0 2px 5px rgba(255, 235, 59, 0.2);
+}
+
+.theme-contrast .source-references {
+    background-color: #000000;
+    border-color: #ffeb3b;
+}
+
+.theme-contrast .source-header {
+    background-color: #111100;
+    border-color: #ffeb3b;
+}
+
+.theme-contrast .source-header h3 {
+    color: #ffeb3b;
+    font-weight: bold;
+}
+
+.theme-contrast .source-header .close-button {
+    color: #ffeb3b;
+}
+
+.theme-contrast .source-header .close-button:hover {
+    background-color: #333300;
+    color: #ffffff;
+}
+
+.theme-contrast .source-item {
+    border-color: #ffeb3b;
+}
+
+.theme-contrast .source-title {
+    background-color: #111100;
+    color: #ffeb3b;
+    font-weight: bold;
+}
+
+.theme-contrast .source-title:hover {
+    background-color: #333300;
+}
+
+.theme-contrast .source-detail {
+    background-color: #000000;
+    border-color: #ffeb3b;
+}
+
+.theme-contrast .source-text {
+    background-color: #111100;
+    border-color: #ffeb3b;
+    color: #ffffff;
+}
+
+.theme-contrast .source-metadata {
+    color: #ffeb3b;
+    font-weight: bold;
+}
+
+.theme-contrast .loading-spinner {
+    border-color: #ffeb3b;
+    border-top-color: #ffffff;
+}
+
+.theme-contrast .loading-sources,
+.theme-contrast .no-sources {
+    color: #ffeb3b;
+    font-weight: bold;
+}

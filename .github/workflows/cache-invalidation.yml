@@ -1,0 +1,89 @@
+name: Invalidate CDN Cache
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to invalidate cache for'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  invalidate:
+    name: Invalidate CDN Cache
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Get distribution ID and settings
+        id: settings
+        run: |
+          if [[ "${{ github.event.inputs.environment }}" == "staging" ]]; then
+            echo "distribution_id=${{ secrets.STAGING_CDN_DISTRIBUTION_ID }}" >> $GITHUB_OUTPUT
+            echo "url=${{ secrets.STAGING_URL }}" >> $GITHUB_OUTPUT
+          else
+            echo "distribution_id=${{ secrets.PRODUCTION_CDN_DISTRIBUTION_ID }}" >> $GITHUB_OUTPUT
+            echo "url=${{ secrets.PRODUCTION_URL }}" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Invalidate CloudFront cache
+        if: steps.settings.outputs.distribution_id != ''
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION || 'eu-central-1' }}
+          DISTRIBUTION_ID: ${{ steps.settings.outputs.distribution_id }}
+        run: |
+          # Erstelle Invalidierungs-Referenz
+          REFERENCE="manual-invalidation-$(date +%Y%m%d%H%M%S)"
+          
+          # Führe Invalidierung durch
+          aws cloudfront create-invalidation \
+            --distribution-id $DISTRIBUTION_ID \
+            --paths "/*" \
+            --reference $REFERENCE
+          
+          echo "CloudFront cache invalidation initiated with reference: $REFERENCE"
+          echo "The invalidation can take up to 15 minutes to complete."
+      
+      - name: Invalidate Cloudflare cache (alternative)
+        if: steps.settings.outputs.distribution_id == ''
+        env:
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_AUTH_EMAIL: ${{ secrets.CLOUDFLARE_AUTH_EMAIL }}
+          CLOUDFLARE_AUTH_KEY: ${{ secrets.CLOUDFLARE_AUTH_KEY }}
+        run: |
+          if [[ -n "$CLOUDFLARE_ZONE_ID" && -n "$CLOUDFLARE_AUTH_EMAIL" && -n "$CLOUDFLARE_AUTH_KEY" ]]; then
+            # Führe Invalidierung durch
+            RESPONSE=$(curl -X POST "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
+                 -H "X-Auth-Email: $CLOUDFLARE_AUTH_EMAIL" \
+                 -H "X-Auth-Key: $CLOUDFLARE_AUTH_KEY" \
+                 -H "Content-Type: application/json" \
+                 --data '{"purge_everything":true}')
+            
+            # Prüfe Antwort
+            if echo $RESPONSE | grep -q '"success":true'; then
+              echo "Cloudflare cache successfully invalidated."
+            else
+              echo "Error invalidating Cloudflare cache."
+              echo "Response: $RESPONSE"
+              exit 1
+            fi
+          else
+            echo "No CDN invalidation configuration found for ${{ github.event.inputs.environment }}."
+            echo "Please configure either CloudFront or Cloudflare credentials."
+            exit 1
+          fi
+      
+      - name: Notify on Slack
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,workflow
+          text: "🧹 Cache Invalidation for ${{ github.event.inputs.environment }} ${{ job.status }}\nURL: ${{ steps.settings.outputs.url }}"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

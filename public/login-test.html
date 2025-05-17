@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>Login Test</h1>
+    
+    <div class="form-group">
+        <label for="email">E-Mail:</label>
+        <input type="email" id="email" name="email" value="martin@danglefeet.com">
+    </div>
+    
+    <div class="form-group">
+        <label for="password">Passwort:</label>
+        <input type="password" id="password" name="password" value="123">
+    </div>
+    
+    <button onclick="login()">Anmelden</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = 'Anmelden...';
+            resultDiv.className = '';
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'success';
+                    resultDiv.innerHTML = `Angemeldet! Token: ${data.token.substring(0, 20)}...`;
+                    localStorage.setItem('auth_token', data.token);
+                    
+                    // Decode token to display user info
+                    const tokenParts = data.token.split('.');
+                    if (tokenParts.length === 3) {
+                        const payload = JSON.parse(atob(tokenParts[1]));
+                        resultDiv.innerHTML += `<br><br>Benutzer-ID: ${payload.user_id}<br>E-Mail: ${payload.email}<br>Rolle: ${payload.role}`;
+                    }
+                } else {
+                    resultDiv.className = 'error';
+                    resultDiv.innerHTML = `Fehler: ${data.detail || 'Unbekannter Fehler'}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `Fehler: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

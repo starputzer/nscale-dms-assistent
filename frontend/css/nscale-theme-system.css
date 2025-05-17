@@ -1,0 +1,1033 @@
+/**
+ * nScale Theme System - Unified Theme Implementation
+ * This file consolidates all theme-related styling to ensure consistency
+ * across the application in both legacy and Vue 3 SFC components.
+ */
+
+:root {
+  /* Primary color palette */
+  --nscale-green: #00a550;
+  --nscale-green-dark: #008d45;
+  --nscale-green-darker: #00773b;
+  --nscale-green-light: #e8f7ef;
+  --nscale-green-lighter: #f2fbf7;
+  
+  /* Secondary colors */
+  --nscale-dark-gray: #333333;
+  --nscale-mid-gray: #666666;
+  --nscale-light-gray: #cccccc;
+  --nscale-lightest-gray: #f5f5f5;
+
+  /* State colors */
+  --nscale-success: #00a550;
+  --nscale-warning: #ffc107;
+  --nscale-error: #dc3545;
+  --nscale-info: #17a2b8;
+  
+  /* UI component colors */
+  --nscale-border-color: #e2e8f0;
+  --nscale-shadow-color: rgba(0, 0, 0, 0.1);
+  --nscale-focus-ring: rgba(0, 165, 80, 0.25);
+}
+
+/* ==== GLOBAL THEME OVERRIDES ==== */
+/* Replace all indigo/blue colors with nscale green */
+
+/* Text colors */
+.text-indigo-600, .text-indigo-500, .text-blue-600, .text-blue-500 {
+  color: var(--nscale-green) !important;
+}
+
+.text-indigo-700, .text-indigo-800, .text-blue-700, .text-blue-800 {
+  color: var(--nscale-green-dark) !important;
+}
+
+.hover\:text-indigo-700:hover, .hover\:text-indigo-800:hover,
+.hover\:text-blue-700:hover, .hover\:text-blue-800:hover {
+  color: var(--nscale-green-dark) !important;
+}
+
+.text-nscale {
+  color: var(--nscale-green) !important;
+}
+
+.text-nscale-dark {
+  color: var(--nscale-green-dark) !important;
+}
+
+/* Background colors */
+.bg-indigo-600, .bg-indigo-500, .bg-blue-600, .bg-blue-500 {
+  background-color: var(--nscale-green) !important;
+}
+
+.bg-indigo-700, .bg-indigo-800, .bg-blue-700, .bg-blue-800 {
+  background-color: var(--nscale-green-dark) !important;
+}
+
+.bg-indigo-100, .bg-indigo-50, .bg-blue-100, .bg-blue-50 {
+  background-color: var(--nscale-green-light) !important;
+}
+
+.bg-nscale {
+  background-color: var(--nscale-green) !important;
+}
+
+.bg-nscale-light {
+  background-color: var(--nscale-green-light) !important;
+}
+
+/* Border colors */
+.border-indigo-600, .border-indigo-500, .border-blue-600, .border-blue-500 {
+  border-color: var(--nscale-green) !important;
+}
+
+.border-indigo-700, .border-indigo-800, .border-blue-700, .border-blue-800 {
+  border-color: var(--nscale-green-dark) !important;
+}
+
+.border-indigo-100, .border-indigo-50, .border-blue-100, .border-blue-50 {
+  border-color: var(--nscale-green-light) !important;
+}
+
+.border-nscale {
+  border-color: var(--nscale-green) !important;
+}
+
+/* Ring focus styles */
+.focus\:ring-indigo-500:focus, .focus\:ring-blue-500:focus {
+  --tw-ring-color: var(--nscale-green) !important;
+}
+
+.ring-indigo-500, .ring-blue-500 {
+  --tw-ring-color: var(--nscale-green) !important;
+}
+
+/* ==== INPUT ELEMENTS ==== */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  border-color: var(--nscale-green) !important;
+  box-shadow: 0 0 0 2px var(--nscale-focus-ring) !important;
+  --tw-ring-color: var(--nscale-green) !important;
+}
+
+.nscale-input:focus {
+  outline: none !important;
+  border-color: var(--nscale-green) !important;
+  box-shadow: 0 0 0 2px var(--nscale-focus-ring) !important;
+}
+
+/* Fix checkbox styling */
+input[type="checkbox"] {
+  color: var(--nscale-green) !important;
+}
+
+input[type="checkbox"]:checked {
+  background-color: var(--nscale-green) !important;
+  border-color: var(--nscale-green) !important;
+}
+
+.text-indigo-600.focus\:ring-indigo-500:focus {
+  --tw-ring-color: var(--nscale-green) !important;
+}
+
+/* ==== BUTTONS ==== */
+.nscale-btn-primary {
+  background-color: var(--nscale-green) !important;
+  color: white !important;
+  border-color: var(--nscale-green) !important;
+}
+
+.nscale-btn-primary:hover {
+  background-color: var(--nscale-green-dark) !important;
+  border-color: var(--nscale-green-dark) !important;
+}
+
+.nscale-btn-secondary {
+  background-color: white !important;
+  color: var(--nscale-dark-gray) !important;
+  border: 1px solid var(--nscale-light-gray) !important;
+}
+
+.nscale-btn-secondary:hover {
+  background-color: var(--nscale-lightest-gray) !important;
+}
+
+.nscale-btn-outline {
+  background-color: transparent !important;
+  color: var(--nscale-green) !important;
+  border: 1px solid var(--nscale-green) !important;
+}
+
+.nscale-btn-outline:hover {
+  background-color: var(--nscale-green-light) !important;
+}
+
+/* ==== ADMIN PANEL STYLING ==== */
+/* Admin tab buttons */
+.admin-tab-button {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: var(--nscale-dark-gray);
+  text-align: left;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.admin-tab-button i {
+  margin-right: 10px;
+  width: 16px;
+  text-align: center;
+}
+
+.admin-tab-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.admin-tab-button.active {
+  background-color: var(--nscale-green-light);
+  color: var(--nscale-green);
+  font-weight: 500;
+  border-left: 3px solid var(--nscale-green);
+}
+
+/* Admin content styling */
+.admin-content-area {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-section-header {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--nscale-dark-gray);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--nscale-border-color);
+}
+
+.admin-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.admin-card {
+  background: white;
+  border-radius: 6px;
+  border: 1px solid var(--nscale-border-color);
+  padding: 1rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.admin-table-container {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th {
+  background-color: var(--nscale-lightest-gray);
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--nscale-dark-gray);
+  border-bottom: 2px solid var(--nscale-border-color);
+}
+
+.admin-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--nscale-border-color);
+}
+
+.admin-table tr:hover {
+  background-color: var(--nscale-lightest-gray);
+}
+
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.375rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-btn-primary {
+  background-color: var(--nscale-green);
+  color: white;
+  border: none;
+}
+
+.admin-btn-primary:hover {
+  background-color: var(--nscale-green-dark);
+}
+
+.admin-btn-secondary {
+  background-color: var(--nscale-lightest-gray);
+  color: var(--nscale-dark-gray);
+  border: 1px solid var(--nscale-light-gray);
+}
+
+.admin-btn-secondary:hover {
+  background-color: var(--nscale-light-gray);
+}
+
+.admin-btn-danger {
+  background-color: #fef2f2;
+  color: #ef4444;
+  border: 1px solid #fee2e2;
+}
+
+.admin-btn-danger:hover {
+  background-color: #fee2e2;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.badge.admin {
+  background-color: var(--nscale-green-light);
+  color: var(--nscale-green);
+}
+
+.badge.user {
+  background-color: var(--nscale-lightest-gray);
+  color: var(--nscale-dark-gray);
+}
+
+.badge.active {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.badge.inactive {
+  background-color: #fef2f2;
+  color: #ef4444;
+}
+
+/* ==== CHAT MESSAGES STYLING ==== */
+/* User message styling */
+.user-message {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.user-message-content {
+  background-color: var(--nscale-green-light);
+  border-radius: 12px;
+  border-top-right-radius: 4px;
+  padding: 0.75rem 1rem;
+  max-width: 80%;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  color: var(--nscale-dark-gray);
+}
+
+.message-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.message-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.user-message .message-icon {
+  background-color: var(--nscale-green-light);
+  color: var(--nscale-green);
+}
+
+.message-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.message-sender {
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.message-time {
+  font-size: 0.75rem;
+  color: var(--nscale-mid-gray);
+}
+
+.message-text {
+  white-space: pre-line;
+}
+
+/* Assistant message styling */
+.assistant-message {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.assistant-message-content {
+  background-color: white;
+  border-radius: 12px;
+  border-top-left-radius: 4px;
+  padding: 0.75rem 1rem;
+  max-width: 80%;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  color: var(--nscale-dark-gray);
+}
+
+.assistant-message .message-icon {
+  background-color: var(--nscale-green-light);
+  color: var(--nscale-green);
+}
+
+/* Message actions and feedback */
+.message-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.75rem;
+}
+
+.message-feedback {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.feedback-button, .source-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  background-color: transparent;
+  color: var(--nscale-mid-gray);
+  border: 1px solid var(--nscale-light-gray);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.feedback-button:hover, .source-button:hover {
+  background-color: var(--nscale-lightest-gray);
+}
+
+.feedback-button i, .source-button i {
+  margin-right: 4px;
+}
+
+.feedback-button.feedback-given {
+  background-color: var(--nscale-green-light);
+  color: var(--nscale-green);
+  border-color: var(--nscale-green);
+}
+
+/* Source references styling */
+.source-references {
+  margin-top: 0.75rem;
+  border: 1px solid var(--nscale-border-color);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.source-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--nscale-lightest-gray);
+  border-bottom: 1px solid var(--nscale-border-color);
+}
+
+.source-header h3 {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--nscale-dark-gray);
+}
+
+.close-button {
+  background: transparent;
+  border: none;
+  color: var(--nscale-mid-gray);
+  cursor: pointer;
+}
+
+.close-button:hover {
+  color: var(--nscale-dark-gray);
+}
+
+.source-content {
+  padding: 0.75rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.source-item {
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--nscale-border-color);
+  padding-bottom: 0.75rem;
+}
+
+.source-item:last-child {
+  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.source-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background-color: var(--nscale-lightest-gray);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.source-title:hover {
+  background-color: var(--nscale-green-light);
+}
+
+.source-detail {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  background-color: white;
+  border: 1px solid var(--nscale-border-color);
+}
+
+.source-metadata {
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--nscale-mid-gray);
+}
+
+.source-text {
+  font-size: 0.875rem;
+  white-space: pre-line;
+}
+
+.no-sources, .loading-sources {
+  padding: 1rem;
+  text-align: center;
+  color: var(--nscale-mid-gray);
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--nscale-light-gray);
+  border-top-color: var(--nscale-green);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 0.5rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ==== MOTD STYLING ==== */
+/* MOTD container control */
+.motd-container {
+  display: none; /* Hidden by default */
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-radius: 6px;
+  position: relative;
+}
+
+/* Show in chat view with specific conditions */
+.activeView-chat .motd-container[data-show-in-chat="true"][data-dismissed="false"] {
+  display: block;
+}
+
+/* Show in new chat sessions */
+.new-session .motd-container[data-show-on-startup="true"][data-dismissed="false"] {
+  display: block;
+}
+
+/* MOTD content styling */
+.motd-content {
+  display: flex;
+  align-items: flex-start;
+}
+
+.motd-icon {
+  margin-right: 1rem;
+  font-size: 1.25rem;
+}
+
+.motd-text {
+  flex: 1;
+}
+
+.motd-dismiss {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  color: inherit;
+  opacity: 0.7;
+  cursor: pointer;
+}
+
+.motd-dismiss:hover {
+  opacity: 1;
+}
+
+/* ==== FEEDBACK DIALOG ==== */
+.feedback-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.feedback-dialog {
+  background: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.feedback-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: var(--nscale-green);
+  color: white;
+}
+
+.feedback-dialog-header h3 {
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.feedback-dialog-content {
+  padding: 1.5rem;
+}
+
+.feedback-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.feedback-button.positive, .feedback-button.negative {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: white;
+  border: 2px solid var(--nscale-border-color);
+  min-width: 100px;
+  transition: all 0.2s;
+}
+
+.feedback-button.positive:hover, .feedback-button.positive.selected {
+  background-color: #dcfce7;
+  border-color: #16a34a;
+  color: #16a34a;
+}
+
+.feedback-button.negative:hover, .feedback-button.negative.selected {
+  background-color: #fef2f2;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.feedback-button.positive i, .feedback-button.negative i {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.feedback-comment-section {
+  margin-top: 1.5rem;
+}
+
+.feedback-comment-section label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.feedback-comment-section textarea {
+  width: 100%;
+  border: 1px solid var(--nscale-border-color);
+  border-radius: 4px;
+  padding: 0.75rem;
+  height: 100px;
+  resize: vertical;
+}
+
+.feedback-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.submit-button {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: var(--nscale-green);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.submit-button:hover {
+  background-color: var(--nscale-green-dark);
+}
+
+.submit-button i {
+  margin-right: 0.5rem;
+}
+
+/* ==== SETTINGS DIALOG ==== */
+.settings-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.settings-dialog {
+  background: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.settings-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: var(--nscale-green);
+  color: white;
+}
+
+.settings-dialog-header h3 {
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.settings-dialog-content {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.settings-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.settings-section {
+  border-bottom: 1px solid var(--nscale-border-color);
+  padding-bottom: 1.5rem;
+}
+
+.settings-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.settings-section h4 {
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin: 0 0 1rem 0;
+  color: var(--nscale-dark-gray);
+}
+
+.settings-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.settings-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.settings-label {
+  font-weight: 500;
+  color: var(--nscale-dark-gray);
+}
+
+.settings-control {
+  display: flex;
+  align-items: center;
+}
+
+.settings-control.buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.settings-button {
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  background-color: var(--nscale-lightest-gray);
+  border: 1px solid var(--nscale-border-color);
+  color: var(--nscale-dark-gray);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+}
+
+.settings-button i {
+  margin-right: 0.25rem;
+}
+
+.settings-button:hover {
+  background-color: var(--nscale-light-gray);
+}
+
+.settings-button.active {
+  background-color: var(--nscale-green-light);
+  color: var(--nscale-green);
+  border-color: var(--nscale-green);
+}
+
+.settings-select {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--nscale-border-color);
+  background-color: white;
+}
+
+.settings-value {
+  margin-left: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--nscale-mid-gray);
+}
+
+.settings-control.toggle {
+  display: flex;
+  align-items: center;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--nscale-light-gray);
+  transition: .4s;
+  border-radius: 24px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: var(--nscale-green);
+}
+
+input:focus + .toggle-slider {
+  box-shadow: 0 0 1px var(--nscale-green);
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(22px);
+}
+
+.toggle-label {
+  margin-left: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.system-info {
+  margin-top: 0.5rem;
+  background-color: var(--nscale-lightest-gray);
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.info-item:last-child {
+  margin-bottom: 0;
+}
+
+.info-label {
+  font-weight: 500;
+  color: var(--nscale-dark-gray);
+}
+
+.info-value {
+  color: var(--nscale-mid-gray);
+}
+
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.settings-reset-button {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: var(--nscale-lightest-gray);
+  border: 1px solid var(--nscale-border-color);
+  color: var(--nscale-dark-gray);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.settings-reset-button:hover {
+  background-color: var(--nscale-light-gray);
+}
+
+.settings-reset-button i {
+  margin-right: 0.5rem;
+}
+
+/* Animation for typing indicator */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: fit-content;
+}
+
+.typing-indicator span {
+  height: 8px;
+  width: 8px;
+  margin: 0 2px;
+  background-color: var(--nscale-light-gray);
+  border-radius: 50%;
+  display: inline-block;
+  animation: typing 1.4s infinite ease-in-out both;
+}
+
+.typing-indicator span:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.5s;
+}
+
+@keyframes typing {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.5); }
+  100% { transform: scale(1); }
+}
+
+/* ==== RESPONSIVE DESIGN ==== */
+@media (max-width: 768px) {
+  .admin-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .settings-option {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .settings-control {
+    margin-top: 0.5rem;
+    width: 100%;
+  }
+  
+  .settings-control.buttons {
+    flex-wrap: wrap;
+  }
+}

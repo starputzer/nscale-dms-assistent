@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nscale DMS Assistent</title>
+    
+    <!-- Externe CDN-Abhängigkeiten - mit Cache-Busting-Parameter für zuverlässiges Laden -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css?v=20250508" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css?v=20250508">
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- CSS direkt einbinden mit Cache-Busting - Hinweis: keine type="module" bei link-Tags -->
+    <link rel="stylesheet" href="/css/main.css?v=20250508">
+    <link rel="stylesheet" href="/css/themes.css?v=20250508">
+    <link rel="stylesheet" href="/css/improved-ui.css?v=20250508">
+    <link rel="stylesheet" href="/css/admin.css?v=20250508">
+    <link rel="stylesheet" href="/css/feedback.css?v=20250508">
+    <link rel="stylesheet" href="/css/message-actions.css?v=20250508">
+    <link rel="stylesheet" href="/css/settings.css?v=20250508">
+    <link rel="stylesheet" href="/css/source-references.css?v=20250508">
+    
+    <!-- Extra-Skript für CSS-Fehlerbehandlung (fallback) -->
+    <script>
+        // Prüfe, ob alle CSS-Dateien korrekt geladen wurden
+        document.addEventListener('DOMContentLoaded', () => {
+            const cssFiles = [
+                '/css/main.css',
+                '/css/themes.css',
+                '/css/improved-ui.css',
+                '/css/admin.css',
+                '/css/feedback.css',
+                '/css/message-actions.css',
+                '/css/settings.css',
+                '/css/source-references.css'
+            ];
+            
+            // Überprüfe für jede Datei, ob sie bereits als Stylesheet vorhanden ist
+            cssFiles.forEach(cssFile => {
+                const cssFileBase = cssFile.split('?')[0]; // Entferne potentiellen Query-Parameter
+                const isLoaded = Array.from(document.styleSheets).some(
+                    sheet => sheet.href && sheet.href.includes(cssFileBase)
+                );
+                
+                if (!isLoaded) {
+                    console.warn(`CSS-Datei ${cssFile} wurde nicht geladen, versuche erneut`);
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = `${cssFile}?fallback=true&v=${new Date().getTime()}`;
+                    document.head.appendChild(link);
+                }
+            });
+        });
+    </script>
+
+    <!-- Haupt-JavaScript-Datei direkt einbinden - definitiv als Modul, aber ohne CSS-Importe -->
+    <script type="module" src="/js/main.js?v=20250508"></script>
+    
+    <!-- Fallback für ältere Browser oder fehlende ES-Module-Unterstützung -->
+    <script nomodule>
+        console.warn('Browser unterstützt keine ES-Module. Verwende Fallback.');
+        // Lade Legacy-Script synchron
+        const fallbackScript = document.createElement('script');
+        fallbackScript.src = '/js/app.js?v=20250508';
+        document.head.appendChild(fallbackScript);
+    </script>
+</head>
+<body class="min-h-screen bg-gray-50">
+    <div id="app" class="h-screen flex flex-col">
+        <!-- Login & Register -->
+        <div v-if="!token" class="flex items-center justify-center h-full bg-gray-50">
+            <div class="nscale-card max-w-md w-full p-8">
+                <div class="text-center mb-8">
+                    <div class="nscale-logo mx-auto">
+                        <img src="/images/senmvku-logo.png" alt="nscale Logo" class="h-12 mx-auto">
+                    </div>
+                    <p class="text-gray-500 mt-2">Ihr Digitalisierungspartner für DMS-Lösungen</p>
+                </div>
+                
+                <!-- Hauptinhalt -->
+                <!-- Rest des Inhalts bleibt wie im Original -->
+                
+            </div>
+        </div>
+        
+        <!-- Main Application (wenn eingeloggt) -->
+        <div v-else class="flex flex-col h-full">
+            <!-- Haupt-App-Inhalt -->
+            <!-- Rest des Inhalts bleibt wie im Original -->
+        </div>
+    </div>
+    
+    <!-- Debug-Infos für Entwicklung -->
+    <script>
+        // Nur im Entwicklungsmodus ausführen
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            // Protokolliere geladene Stylesheets
+            document.addEventListener('DOMContentLoaded', () => {
+                console.group('Geladene Stylesheets:');
+                Array.from(document.styleSheets).forEach((sheet, index) => {
+                    console.log(`[${index}] ${sheet.href || 'Inline-Stylesheet'}`);
+                });
+                console.groupEnd();
+            });
+        }
+    </script>
+</body>
+</html>

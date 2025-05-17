@@ -1,0 +1,380 @@
+/**
+ * nScale Theme System - Comprehensive Theme Variables
+ * This file provides a complete theme system that preserves the nScale green brand identity
+ * while providing accessibility options including dark mode and high contrast mode.
+ */
+
+// Default Light Theme
+:root,
+[data-theme="light"] {
+  // Core Brand Colors - nScale Green
+  --nscale-primary: #00a550;
+  --nscale-primary-hover: #00843d;
+  --nscale-primary-active: #006629;
+  --nscale-primary-light: #e8f7ef;
+  --nscale-primary-ultra-light: #f2fbf7;
+  --nscale-primary-dark: #00843d;
+  
+  // Background Colors
+  --nscale-bg-primary: #ffffff;
+  --nscale-bg-secondary: #fafafa;
+  --nscale-bg-tertiary: #f5f5f5;
+  --nscale-bg-surface: #ffffff;
+  --nscale-bg-overlay: rgba(0, 0, 0, 0.5);
+  --nscale-background: #ffffff;
+  --nscale-surface: #ffffff;
+  
+  // Text Colors
+  --nscale-text-primary: #333333;
+  --nscale-text-secondary: #666666;
+  --nscale-text-tertiary: #999999;
+  --nscale-text-inverse: #ffffff;
+  --nscale-text-link: #00a550;
+  --nscale-text-heading: #222222;
+  --nscale-text: #333333;
+  
+  // Border Colors
+  --nscale-border-default: #e2e8f0;
+  --nscale-border-subtle: #f0f0f0;
+  --nscale-border-strong: #d4d4d4;
+  --nscale-border-focus: #00a550;
+  --nscale-border: #e2e8f0;
+  
+  // Interactive States
+  --nscale-button-hover: rgba(0, 0, 0, 0.05);
+  
+  // State Colors
+  --nscale-state-success: #00a550;
+  --nscale-state-warning: #ffc107;
+  --nscale-state-error: #dc3545;
+  --nscale-state-info: #17a2b8;
+  
+  // State Background Colors
+  --nscale-state-success-bg: #d4edda;
+  --nscale-state-warning-bg: #fff3cd;
+  --nscale-state-error-bg: #f8d7da;
+  --nscale-state-info-bg: #d1ecf1;
+  
+  // Component-specific Variables
+  --nscale-button-primary-bg: #00a550;
+  --nscale-button-primary-text: #ffffff;
+  --nscale-button-primary-hover: #00843d;
+  --nscale-button-secondary-bg: #ffffff;
+  --nscale-button-secondary-text: #333333;
+  --nscale-button-secondary-border: #e2e8f0;
+  
+  --nscale-input-bg: #ffffff;
+  --nscale-input-border: #e2e8f0;
+  --nscale-input-text: #333333;
+  --nscale-input-placeholder: #999999;
+  --nscale-input-focus-border: #00a550;
+  
+  --nscale-message-user-bg: #e8f7ef;
+  --nscale-message-user-text: #333333;
+  --nscale-message-assistant-bg: #ffffff;
+  --nscale-message-assistant-text: #333333;
+  --nscale-message-assistant-border: #e2e8f0;
+  
+  // Shadows
+  --nscale-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --nscale-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --nscale-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --nscale-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+  
+  // Focus Indicators
+  --nscale-focus-ring: 0 0 0 3px rgba(0, 165, 80, 0.3);
+  --nscale-focus-outline: 2px solid #00a550;
+  
+  // Animations
+  --nscale-transition-fast: 150ms;
+  --nscale-transition-normal: 250ms;
+  --nscale-transition-slow: 350ms;
+}
+
+// Dark Theme
+[data-theme="dark"] {
+  // Core Brand Colors - Adapted for dark mode
+  --nscale-primary: #00c060;
+  --nscale-primary-hover: #00e070;
+  --nscale-primary-active: #00fa80;
+  --nscale-primary-light: #002620;
+  --nscale-primary-ultra-light: #001915;
+  --nscale-primary-dark: #00a050;
+  
+  // Background Colors
+  --nscale-bg-primary: #121212;
+  --nscale-bg-secondary: #1e1e1e;
+  --nscale-bg-tertiary: #262626;
+  --nscale-bg-surface: #2a2a2a;
+  --nscale-bg-overlay: rgba(0, 0, 0, 0.8);
+  --nscale-background: #121212;
+  --nscale-surface: #2a2a2a;
+  
+  // Text Colors
+  --nscale-text-primary: #f0f0f0;
+  --nscale-text-secondary: #a8a8a8;
+  --nscale-text-tertiary: #707070;
+  --nscale-text-inverse: #000000;
+  --nscale-text: #f0f0f0;
+  --nscale-text-link: #00c060;
+  --nscale-text-heading: #ffffff;
+  
+  // Border Colors
+  --nscale-border-default: #333333;
+  --nscale-border-subtle: #222222;
+  --nscale-border-strong: #444444;
+  --nscale-border-focus: #00c060;
+  --nscale-border: #333333;
+  
+  // Interactive States
+  --nscale-button-hover: rgba(255, 255, 255, 0.1);
+  
+  // State Colors
+  --nscale-state-success: #00c060;
+  --nscale-state-warning: #ffa500;
+  --nscale-state-error: #ff6b6b;
+  --nscale-state-info: #339af0;
+  
+  // State Background Colors
+  --nscale-state-success-bg: #002620;
+  --nscale-state-warning-bg: #332200;
+  --nscale-state-error-bg: #330000;
+  --nscale-state-info-bg: #001729;
+  
+  // Component-specific Variables
+  --nscale-button-primary-bg: #00c060;
+  --nscale-button-primary-text: #000000;
+  --nscale-button-primary-hover: #00e070;
+  --nscale-button-secondary-bg: #2a2a2a;
+  --nscale-button-secondary-text: #f0f0f0;
+  --nscale-button-secondary-border: #444444;
+  
+  --nscale-input-bg: #1e1e1e;
+  --nscale-input-border: #333333;
+  --nscale-input-text: #f0f0f0;
+  --nscale-input-placeholder: #707070;
+  --nscale-input-focus-border: #00c060;
+  
+  --nscale-message-user-bg: #002620;
+  --nscale-message-user-text: #f0f0f0;
+  --nscale-message-assistant-bg: #1e1e1e;
+  --nscale-message-assistant-text: #f0f0f0;
+  --nscale-message-assistant-border: #333333;
+  
+  // Shadows
+  --nscale-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --nscale-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --nscale-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  --nscale-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.6);
+  
+  // Focus Indicators
+  --nscale-focus-ring: 0 0 0 3px rgba(0, 192, 96, 0.3);
+  --nscale-focus-outline: 2px solid #00c060;
+}
+
+// High Contrast Theme
+[data-theme="high-contrast"] {
+  // Core Brand Colors - Maximum contrast
+  --nscale-primary: #ffeb3b;
+  --nscale-primary-hover: #fff59d;
+  --nscale-primary-active: #fffde7;
+  --nscale-primary-light: #333300;
+  --nscale-primary-ultra-light: #1a1a00;
+  
+  // Background Colors
+  --nscale-bg-primary: #000000;
+  --nscale-bg-secondary: #000000;
+  --nscale-bg-tertiary: #000000;
+  --nscale-bg-surface: #000000;
+  --nscale-bg-overlay: rgba(0, 0, 0, 0.95);
+  
+  // Text Colors
+  --nscale-text-primary: #ffffff;
+  --nscale-text-secondary: #ffffff;
+  --nscale-text-tertiary: #ffffff;
+  --nscale-text-inverse: #000000;
+  --nscale-text-link: #ffeb3b;
+  --nscale-text-heading: #ffeb3b;
+  
+  // Border Colors
+  --nscale-border-default: #ffffff;
+  --nscale-border-subtle: #ffffff;
+  --nscale-border-strong: #ffffff;
+  --nscale-border-focus: #ffeb3b;
+  
+  // State Colors
+  --nscale-state-success: #00ff00;
+  --nscale-state-warning: #ffeb3b;
+  --nscale-state-error: #ff0000;
+  --nscale-state-info: #00ffff;
+  
+  // State Background Colors
+  --nscale-state-success-bg: #003300;
+  --nscale-state-warning-bg: #333300;
+  --nscale-state-error-bg: #330000;
+  --nscale-state-info-bg: #003333;
+  
+  // Component-specific Variables
+  --nscale-button-primary-bg: #ffeb3b;
+  --nscale-button-primary-text: #000000;
+  --nscale-button-primary-hover: #fff59d;
+  --nscale-button-secondary-bg: #000000;
+  --nscale-button-secondary-text: #ffffff;
+  --nscale-button-secondary-border: #ffffff;
+  
+  --nscale-input-bg: #000000;
+  --nscale-input-border: #ffffff;
+  --nscale-input-text: #ffffff;
+  --nscale-input-placeholder: #cccccc;
+  --nscale-input-focus-border: #ffeb3b;
+  
+  --nscale-message-user-bg: #333300;
+  --nscale-message-user-text: #ffeb3b;
+  --nscale-message-assistant-bg: #000000;
+  --nscale-message-assistant-text: #ffffff;
+  --nscale-message-assistant-border: #ffffff;
+  
+  // Shadows - Increased contrast
+  --nscale-shadow-sm: 0 0 0 2px #ffffff;
+  --nscale-shadow-md: 0 0 0 3px #ffffff;
+  --nscale-shadow-lg: 0 0 0 4px #ffffff;
+  --nscale-shadow-xl: 0 0 0 5px #ffffff;
+  
+  // Focus Indicators
+  --nscale-focus-ring: 0 0 0 4px #ffeb3b;
+  --nscale-focus-outline: 3px solid #ffeb3b;
+  
+  // Animations
+  --nscale-transition-fast: 0ms;
+  --nscale-transition-normal: 0ms;
+}
+
+// Custom Contrast Theme with user-selected accent color
+[data-theme="custom-contrast"] {
+  // Define custom accent color variable
+  --custom-accent-color: #ffeb3b; // Default fallback
+  
+  // Core Brand Colors - Use custom accent color
+  --nscale-primary: var(--custom-accent-color);
+  --nscale-primary-hover: var(--custom-accent-color);
+  --nscale-primary-active: var(--custom-accent-color);
+  --nscale-primary-light: #000000;
+  --nscale-primary-ultra-light: #000000;
+  
+  // Background Colors
+  --nscale-bg-primary: #000000;
+  --nscale-bg-secondary: #000000;
+  --nscale-bg-tertiary: #000000;
+  --nscale-bg-surface: #000000;
+  --nscale-bg-overlay: rgba(0, 0, 0, 0.95);
+  --nscale-background: #000000;
+  --nscale-surface: #000000;
+  
+  // Text Colors
+  --nscale-text-primary: var(--custom-accent-color);
+  --nscale-text-secondary: var(--custom-accent-color);
+  --nscale-text-tertiary: var(--custom-accent-color);
+  --nscale-text-inverse: #000000;
+  --nscale-text-link: var(--custom-accent-color);
+  --nscale-text-heading: var(--custom-accent-color);
+  --nscale-text: var(--custom-accent-color);
+  
+  // Border Colors
+  --nscale-border-default: var(--custom-accent-color);
+  --nscale-border-subtle: var(--custom-accent-color);
+  --nscale-border-strong: var(--custom-accent-color);
+  --nscale-border-focus: var(--custom-accent-color);
+  --nscale-border: var(--custom-accent-color);
+  
+  // State Colors
+  --nscale-state-success: #00ff00;
+  --nscale-state-warning: var(--custom-accent-color);
+  --nscale-state-error: #ff0000;
+  --nscale-state-info: #00ffff;
+  
+  // State Background Colors
+  --nscale-state-success-bg: #003300;
+  --nscale-state-warning-bg: #000000;
+  --nscale-state-error-bg: #330000;
+  --nscale-state-info-bg: #003333;
+  
+  // Component-specific Variables
+  --nscale-button-primary-bg: var(--custom-accent-color);
+  --nscale-button-primary-text: #000000;
+  --nscale-button-primary-hover: var(--custom-accent-color);
+  --nscale-button-secondary-bg: #000000;
+  --nscale-button-secondary-text: var(--custom-accent-color);
+  --nscale-button-secondary-border: var(--custom-accent-color);
+  --nscale-button-hover: rgba(255, 255, 255, 0.1);
+  
+  --nscale-input-bg: #000000;
+  --nscale-input-border: var(--custom-accent-color);
+  --nscale-input-text: var(--custom-accent-color);
+  --nscale-input-placeholder: var(--custom-accent-color);
+  --nscale-input-focus-border: var(--custom-accent-color);
+  
+  --nscale-message-user-bg: #000000;
+  --nscale-message-user-text: var(--custom-accent-color);
+  --nscale-message-assistant-bg: #000000;
+  --nscale-message-assistant-text: var(--custom-accent-color);
+  --nscale-message-assistant-border: var(--custom-accent-color);
+  
+  // Shadows
+  --nscale-shadow-sm: 0 0 0 2px var(--custom-accent-color);
+  --nscale-shadow-md: 0 0 0 3px var(--custom-accent-color);
+  --nscale-shadow-lg: 0 0 0 4px var(--custom-accent-color);
+  --nscale-shadow-xl: 0 0 0 5px var(--custom-accent-color);
+  
+  // Focus Indicators
+  --nscale-focus-ring: 0 0 0 4px var(--custom-accent-color);
+  --nscale-focus-outline: 3px solid var(--custom-accent-color);
+}
+
+// Utility Classes
+.theme-transition {
+  transition: 
+    background-color var(--nscale-transition-normal) ease,
+    color var(--nscale-transition-normal) ease,
+    border-color var(--nscale-transition-normal) ease;
+}
+
+// Accessibility: Reduced Motion
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// Focus Visible
+:focus-visible {
+  outline: var(--nscale-focus-outline);
+  outline-offset: 2px;
+}
+
+// Selection Colors
+::selection {
+  background-color: var(--nscale-primary);
+  color: var(--nscale-text-inverse);
+}
+
+// Scrollbar Styling
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--nscale-bg-tertiary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--nscale-border-strong);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--nscale-text-secondary);
+}

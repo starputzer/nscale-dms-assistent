@@ -1,0 +1,1692 @@
+# Testanleitung für nscale-assist
+
+**Zuletzt aktualisiert:** 15.05.2025 | **Version:** 2.0.0
+
+Diese Anleitung beschreibt den Testprozess für nscale-assist und wie die vorhandene Testinfrastruktur genutzt werden kann.
+
+> **HINWEIS**: Diese Dokumentation wurde um eine umfassende Teststrategie für die Vue 3 SFC-Migration erweitert. Die neue Teststrategie beginnt im Abschnitt "Vue 3 SFC-Migration Teststrategie".
+
+## Testinfrastruktur
+
+### Testdateien und ihre Funktionen
+
+[... Inhalt beibehalten ...]
+
+## Vue 3 SFC-Migration Teststrategie
+
+Mit der Migration zu Vue 3 Single File Components (SFC) wird eine umfassende, moderne Teststrategie implementiert, die auf Best Practices und Tools basiert, die für Vue 3 und TypeScript optimiert sind.
+
+### 1. Übersicht der Test-Tools und -Bibliotheken
+
+Die folgenden Test-Tools und -Bibliotheken werden für die Vue 3 SFC-Migration verwendet:
+
+| Tool/Bibliothek | Zweck | Version |
+|-----------------|-------|---------|
+| Vitest | Test-Runner und Framework | ^1.2.0 |
+| @vue/test-utils | Vue-Komponententests | ^2.4.1 |
+| jsdom | DOM-Emulation für Tests | ^23.0.1 |
+| @testing-library/vue | Benutzerzentrierte Tests | ^8.0.1 |
+| happy-dom | Alternative DOM-Umgebung für Headless-Tests | ^6.0.1 |
+| vitest-axe | Accessibility-Tests | ^0.1.0 |
+| @storybook/testing-vue | Story-basierte Komponententests | ^1.0.0 |
+| @vitest/ui | Visuelle Testoberfläche | ^1.2.0 |
+| vitest-coverage-report | Testabdeckungsberichte | ^1.1.0 |
+
+### 2. Test-Arten und -Stufen
+
+Die Teststrategie umfasst die folgenden Test-Arten:
+
+#### 2.1 Unit-Tests
+
+**Ziel**: Einzelne Komponenten und Funktionen isoliert testen, um sicherzustellen, dass jede für sich korrekt funktioniert.
+
+**Tools**: Vitest, Vue Test Utils
+
+**Teststufen**:
+- Mounting/Rendering-Tests
+- Props-Validierung
+- Ereignisse (Events)
+- Reaktivität
+- Komponentenmethoden
+- Lebenszyklusmethoden
+
+#### 2.2 Integrationstests
+
+**Ziel**: Das Zusammenspiel mehrerer Komponenten testen, um sicherzustellen, dass sie korrekt miteinander interagieren.
+
+**Tools**: Vitest, Vue Test Utils, Testing Library
+
+**Teststufen**:
+- Komponenteninteraktionen
+- Store-Integration
+- Router-Integration
+- Plugin-Integration
+- API-Integration (mit Mock-Daten)
+
+#### 2.3 Visuelle Regressionstests
+
+**Ziel**: Sicherstellen, dass das visuelle Erscheinungsbild der Komponenten bei Änderungen konsistent bleibt.
+
+**Tools**: Storybook, Chromatic
+
+**Teststufen**:
+- Snapshots für kritische UI-Komponenten
+- Responsive Design-Tests
+- Farbschema- und Themen-Tests
+- Animationstests
+
+#### 2.4 Accessibility-Tests
+
+**Ziel**: Sicherstellen, dass alle Komponenten die Accessibility-Anforderungen erfüllen.
+
+**Tools**: Vitest-Axe, Testing Library
+
+**Teststufen**:
+- ARIA-Attribute
+- Tastaturfokus
+- Screenreader-Kompatibilität
+- Farbkontrast
+
+#### 2.5 Feature-Toggle-Tests
+
+**Ziel**: Sicherstellen, dass Feature-Toggles korrekt funktionieren und dass sowohl die aktivierte als auch die deaktivierte Ansicht korrekt angezeigt wird.
+
+**Tools**: Vitest, Vue Test Utils
+
+**Teststufen**:
+- Feature-Aktivierung/Deaktivierung
+- Fallback-Mechanismen
+- Toggle-Persistenz
+- Berechtigungsbasierte Toggles
+
+### 3. Verzeichnisstruktur und Namenskonventionen
+
+Die Testdateien werden nach der folgenden Struktur organisiert:
+
+```
+app/
+├── test/
+│   ├── components/              # Unit-Tests für Komponenten
+│   │   ├── ui/                  # Basiskomponententests
+│   │   ├── admin/               # Admin-Komponententests
+│   │   ├── layout/              # Layout-Komponententests
+│   │   └── ...
+│   ├── composables/             # Tests für Composables
+│   ├── stores/                  # Tests für Pinia-Stores
+│   ├── services/                # Tests für Services
+│   ├── integration/             # Integrationstests
+│   ├── accessibility/           # Accessibility-Tests
+│   ├── feature-toggles/         # Feature-Toggle-Tests
+│   ├── visual/                  # Visuelle Regressionstests
+│   ├── utils/                   # Hilfsfunktionen für Tests
+│   ├── mocks/                   # Mocks und Stubs
+│   ├── fixtures/                # Testdaten
+│   └── setup.ts                 # Globales Test-Setup
+```
+
+**Namenskonventionen**:
+- Unit-Tests: `ComponentName.spec.ts`
+- Integrationstests: `ComponentName.integration.spec.ts`
+- Accessibility-Tests: `ComponentName.a11y.spec.ts`
+- Feature-Toggle-Tests: `ComponentName.feature.spec.ts`
+- Visuelle Tests: `ComponentName.visual.spec.ts`
+
+### 4. Best Practices für Tests
+
+#### 4.1 Allgemeine Best Practices
+
+- Jeder Test sollte nur einen Aspekt testen (SRP - Single Responsibility Principle)
+- Tests sollten unabhängig voneinander sein (keine Abhängigkeiten zwischen Tests)
+- Tests sollten deterministisch sein (keine zufälligen Ergebnisse)
+- Tests sollten schnell ausgeführt werden können
+- Tests sollten lesbar und wartbar sein
+- Mocks und Stubs sollten sparsam und gezielt eingesetzt werden
+
+#### 4.2 Vue-spezifische Best Practices
+
+- Verwende `shallowMount` für Unit-Tests, um Komponenten isoliert zu testen
+- Verwende `mount` für Integrationstests, um das vollständige Komponentenverhalten zu testen
+- Teste immer die öffentliche API einer Komponente, nicht die interne Implementierung
+- Verwende `await nextTick()` für asynchrone Aktualisierungen
+- Mock globale Plugins und Abhängigkeiten, die nicht direkt zum Test gehören
+
+#### 4.3 TypeScript-spezifische Best Practices
+
+- Nutze TypeScript für Typensicherheit in Tests
+- Definiere klare Schnittstellen für Mocks und Fixtures
+- Verwende Generics für flexible Testhelfer
+- Stelle sicher, dass TypeScript-Typinformationen in Tests korrekt sind
+
+### 5. Beispiel-Testsuiten
+
+#### 5.1 Beispiel: Button-Komponententests
+
+```typescript
+// Button.spec.ts
+import { describe, it, expect } from 'vitest';
+import { mount } from '@vue/test-utils';
+import Button from '@/components/ui/base/Button.vue';
+
+describe('Button.vue', () => {
+  // Rendering-Tests
+  describe('Rendering', () => {
+    it('renders the button correctly with default props', () => {
+      const wrapper = mount(Button, {
+        props: {
+          label: 'Test Button'
+        }
+      });
+      
+      expect(wrapper.find('button').exists()).toBe(true);
+      expect(wrapper.text()).toContain('Test Button');
+      expect(wrapper.classes()).toContain('btn');
+      expect(wrapper.classes()).toContain('btn-primary'); // Default variant
+    });
+    
+    it('applies the correct variant class', () => {
+      const wrapper = mount(Button, {
+        props: {
+          label: 'Secondary Button',
+          variant: 'secondary'
+        }
+      });
+      
+      expect(wrapper.classes()).toContain('btn-secondary');
+    });
+    
+    it('renders an icon when provided', () => {
+      const wrapper = mount(Button, {
+        props: {
+          label: 'Icon Button',
+          icon: 'fa-check'
+        }
+      });
+      
+      expect(wrapper.find('i.fa-check').exists()).toBe(true);
+    });
+    
+    it('applies disabled state correctly', () => {
+      const wrapper = mount(Button, {
+        props: {
+          label: 'Disabled Button',
+          disabled: true
+        }
+      });
+      
+      expect(wrapper.find('button').attributes('disabled')).toBeDefined();
+      expect(wrapper.classes()).toContain('btn-disabled');
+    });
+  });
+  
+  // Interactions and Events
+  describe('Interactions', () => {
+    it('emits click event when clicked', async () => {
+      const wrapper = mount(Button, {
+        props: {
+          label: 'Clickable Button'
+        }
+      });
+      
+      await wrapper.find('button').trigger('click');
+      
+      expect(wrapper.emitted()).toHaveProperty('click');
+      expect(wrapper.emitted('click')).toHaveLength(1);
+    });
+    
+    it('does not emit click event when disabled', async () => {
+      const wrapper = mount(Button, {
+        props: {
+          label: 'Disabled Button',
+          disabled: true
+        }
+      });
+      
+      await wrapper.find('button').trigger('click');
+      
+      expect(wrapper.emitted('click')).toBeFalsy();
+    });
+    
+    it('adds loading state when loading prop is true', async () => {
+      const wrapper = mount(Button, {
+        props: {
+          label: 'Loading Button',
+          loading: true
+        }
+      });
+      
+      expect(wrapper.classes()).toContain('btn-loading');
+      expect(wrapper.find('.btn-spinner').exists()).toBe(true);
+      expect(wrapper.find('button').attributes('disabled')).toBeDefined();
+    });
+  });
+  
+  // Accessibility
+  describe('Accessibility', () => {
+    it('has appropriate aria attributes', () => {
+      const wrapper = mount(Button, {
+        props: {
+          label: 'Accessible Button',
+          ariaLabel: 'Custom Aria Label'
+        }
+      });
+      
+      expect(wrapper.find('button').attributes('aria-label')).toBe('Custom Aria Label');
+    });
+    
+    it('uses aria-disabled when in disabled state', () => {
+      const wrapper = mount(Button, {
+        props: {
+          label: 'Disabled Button',
+          disabled: true
+        }
+      });
+      
+      expect(wrapper.find('button').attributes('aria-disabled')).toBe('true');
+    });
+  });
+  
+  // Edge Cases
+  describe('Edge Cases', () => {
+    it('handles empty label', () => {
+      const wrapper = mount(Button, {
+        props: {
+          label: '',
+          icon: 'fa-plus'
+        }
+      });
+      
+      expect(wrapper.find('button').exists()).toBe(true);
+      expect(wrapper.find('i.fa-plus').exists()).toBe(true);
+      expect(wrapper.attributes('aria-label')).toBeDefined();
+    });
+    
+    it('has appropriate role when used as a link', () => {
+      const wrapper = mount(Button, {
+        props: {
+          label: 'Link Button',
+          href: 'https://example.com'
+        }
+      });
+      
+      expect(wrapper.element.tagName).toBe('A');
+      expect(wrapper.attributes('href')).toBe('https://example.com');
+      expect(wrapper.attributes('role')).toBe('button');
+    });
+  });
+});
+```
+
+#### 5.2 Beispiel: Card-Komponententests
+
+```typescript
+// Card.spec.ts
+import { describe, it, expect } from 'vitest';
+import { mount, shallowMount } from '@vue/test-utils';
+import Card from '@/components/ui/base/Card.vue';
+
+describe('Card.vue', () => {
+  // Rendering Tests
+  describe('Rendering', () => {
+    it('renders the card with default props', () => {
+      const wrapper = mount(Card);
+      
+      expect(wrapper.find('.card').exists()).toBe(true);
+      expect(wrapper.find('.card-body').exists()).toBe(true);
+    });
+    
+    it('renders the title when provided', () => {
+      const title = 'Card Title';
+      const wrapper = mount(Card, {
+        props: { title }
+      });
+      
+      expect(wrapper.find('.card-title').exists()).toBe(true);
+      expect(wrapper.find('.card-title').text()).toBe(title);
+    });
+    
+    it('does not render the title element when no title is provided', () => {
+      const wrapper = mount(Card);
+      
+      expect(wrapper.find('.card-title').exists()).toBe(false);
+    });
+    
+    it('renders a footer when footerText is provided', () => {
+      const footerText = 'Card Footer';
+      const wrapper = mount(Card, {
+        props: { footerText }
+      });
+      
+      expect(wrapper.find('.card-footer').exists()).toBe(true);
+      expect(wrapper.find('.card-footer').text()).toBe(footerText);
+    });
+    
+    it('applies variant class correctly', () => {
+      const wrapper = mount(Card, {
+        props: {
+          variant: 'primary'
+        }
+      });
+      
+      expect(wrapper.find('.card').classes()).toContain('card-primary');
+    });
+  });
+  
+  // Slot Tests
+  describe('Slots', () => {
+    it('renders default slot content', () => {
+      const wrapper = mount(Card, {
+        slots: {
+          default: '<div class="test-content">Test Content</div>'
+        }
+      });
+      
+      expect(wrapper.find('.card-body .test-content').exists()).toBe(true);
+      expect(wrapper.find('.test-content').text()).toBe('Test Content');
+    });
+    
+    it('renders header slot content', () => {
+      const wrapper = mount(Card, {
+        slots: {
+          header: '<div class="test-header">Custom Header</div>'
+        }
+      });
+      
+      expect(wrapper.find('.card-header .test-header').exists()).toBe(true);
+    });
+    
+    it('renders footer slot instead of footerText when both are provided', () => {
+      const wrapper = mount(Card, {
+        props: {
+          footerText: 'Footer Text'
+        },
+        slots: {
+          footer: '<button>Custom Footer Button</button>'
+        }
+      });
+      
+      expect(wrapper.find('.card-footer button').exists()).toBe(true);
+      expect(wrapper.find('.card-footer').text()).not.toBe('Footer Text');
+    });
+  });
+  
+  // Interaction Tests
+  describe('Interactions', () => {
+    it('emits click event when card is clicked and clickable is true', async () => {
+      const wrapper = mount(Card, {
+        props: {
+          clickable: true
+        }
+      });
+      
+      await wrapper.find('.card').trigger('click');
+      
+      expect(wrapper.emitted()).toHaveProperty('click');
+      expect(wrapper.emitted('click')).toHaveLength(1);
+    });
+    
+    it('does not emit click event when clickable is false', async () => {
+      const wrapper = mount(Card);
+      
+      await wrapper.find('.card').trigger('click');
+      
+      expect(wrapper.emitted('click')).toBeFalsy();
+    });
+    
+    it('applies hover effect class when hoverable is true', () => {
+      const wrapper = mount(Card, {
+        props: {
+          hoverable: true
+        }
+      });
+      
+      expect(wrapper.find('.card').classes()).toContain('card-hoverable');
+    });
+  });
+  
+  // Accessibility Tests
+  describe('Accessibility', () => {
+    it('sets appropriate role for clickable cards', () => {
+      const wrapper = mount(Card, {
+        props: {
+          clickable: true
+        }
+      });
+      
+      expect(wrapper.find('.card').attributes('role')).toBe('button');
+      expect(wrapper.find('.card').attributes('tabindex')).toBe('0');
+    });
+    
+    it('does not set role or tabindex for non-clickable cards', () => {
+      const wrapper = mount(Card);
+      
+      expect(wrapper.find('.card').attributes('role')).toBeUndefined();
+      expect(wrapper.find('.card').attributes('tabindex')).toBeUndefined();
+    });
+  });
+});
+```
+
+#### 5.3 Beispiel: MessageItem-Komponententests
+
+```typescript
+// MessageItem.spec.ts
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { mount } from '@vue/test-utils';
+import MessageItem from '@/components/chat/MessageItem.vue';
+import { useGlobalDialog } from '@/composables/useDialog';
+
+// Mock dependencies
+vi.mock('@/composables/useDialog', () => ({
+  useGlobalDialog: vi.fn(() => ({
+    confirm: vi.fn().mockResolvedValue(true)
+  }))
+}));
+
+describe('MessageItem.vue', () => {
+  // Default props for tests
+  const defaultProps = {
+    message: {
+      id: 'msg-1',
+      content: 'This is a test message',
+      role: 'user',
+      timestamp: new Date().toISOString(),
+      isError: false
+    },
+    isActive: false
+  };
+  
+  // Rendering Tests
+  describe('Rendering', () => {
+    it('renders the message content correctly', () => {
+      const wrapper = mount(MessageItem, {
+        props: defaultProps
+      });
+      
+      expect(wrapper.find('.message-item').exists()).toBe(true);
+      expect(wrapper.find('.message-content').text()).toBe('This is a test message');
+    });
+    
+    it('applies appropriate class based on message role', () => {
+      const userMessage = mount(MessageItem, {
+        props: {
+          ...defaultProps,
+          message: { ...defaultProps.message, role: 'user' }
+        }
+      });
+      
+      const assistantMessage = mount(MessageItem, {
+        props: {
+          ...defaultProps,
+          message: { ...defaultProps.message, role: 'assistant' }
+        }
+      });
+      
+      expect(userMessage.find('.message-item').classes()).toContain('message-user');
+      expect(assistantMessage.find('.message-item').classes()).toContain('message-assistant');
+    });
+    
+    it('shows error styles for error messages', () => {
+      const wrapper = mount(MessageItem, {
+        props: {
+          ...defaultProps,
+          message: { ...defaultProps.message, isError: true }
+        }
+      });
+      
+      expect(wrapper.find('.message-item').classes()).toContain('message-error');
+      expect(wrapper.find('.error-icon').exists()).toBe(true);
+    });
+    
+    it('displays timestamp in correct format', () => {
+      const date = new Date('2023-01-01T12:00:00Z');
+      const wrapper = mount(MessageItem, {
+        props: {
+          ...defaultProps,
+          message: { ...defaultProps.message, timestamp: date.toISOString() }
+        }
+      });
+      
+      const formattedTime = new Intl.DateTimeFormat('de-DE', {
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(date);
+      
+      expect(wrapper.find('.message-time').text()).toContain(formattedTime);
+    });
+    
+    it('shows actions only when message is active', async () => {
+      const inactiveWrapper = mount(MessageItem, {
+        props: defaultProps
+      });
+      
+      const activeWrapper = mount(MessageItem, {
+        props: {
+          ...defaultProps,
+          isActive: true
+        }
+      });
+      
+      expect(inactiveWrapper.find('.message-actions').exists()).toBe(false);
+      expect(activeWrapper.find('.message-actions').exists()).toBe(true);
+    });
+  });
+  
+  // Interaction Tests
+  describe('Interactions', () => {
+    it('emits select event when message is clicked', async () => {
+      const wrapper = mount(MessageItem, {
+        props: defaultProps
+      });
+      
+      await wrapper.find('.message-item').trigger('click');
+      
+      expect(wrapper.emitted()).toHaveProperty('select');
+      expect(wrapper.emitted('select')?.[0][0]).toBe(defaultProps.message.id);
+    });
+    
+    it('emits copy event when copy button is clicked', async () => {
+      const wrapper = mount(MessageItem, {
+        props: {
+          ...defaultProps,
+          isActive: true
+        }
+      });
+      
+      await wrapper.find('[data-action="copy"]').trigger('click');
+      
+      expect(wrapper.emitted()).toHaveProperty('copy');
+      expect(wrapper.emitted('copy')?.[0][0]).toBe(defaultProps.message.id);
+    });
+    
+    it('emits delete event after confirmation', async () => {
+      const confirmMock = vi.fn().mockResolvedValue(true);
+      vi.mocked(useGlobalDialog).mockReturnValue({
+        confirm: confirmMock
+      });
+      
+      const wrapper = mount(MessageItem, {
+        props: {
+          ...defaultProps,
+          isActive: true
+        }
+      });
+      
+      await wrapper.find('[data-action="delete"]').trigger('click');
+      
+      expect(confirmMock).toHaveBeenCalled();
+      expect(wrapper.emitted()).toHaveProperty('delete');
+      expect(wrapper.emitted('delete')?.[0][0]).toBe(defaultProps.message.id);
+    });
+    
+    it('does not emit delete event when confirmation is cancelled', async () => {
+      const confirmMock = vi.fn().mockResolvedValue(false);
+      vi.mocked(useGlobalDialog).mockReturnValue({
+        confirm: confirmMock
+      });
+      
+      const wrapper = mount(MessageItem, {
+        props: {
+          ...defaultProps,
+          isActive: true
+        }
+      });
+      
+      await wrapper.find('[data-action="delete"]').trigger('click');
+      
+      expect(confirmMock).toHaveBeenCalled();
+      expect(wrapper.emitted('delete')).toBeFalsy();
+    });
+  });
+  
+  // Accessibility Tests
+  describe('Accessibility', () => {
+    it('has appropriate aria attributes', () => {
+      const wrapper = mount(MessageItem, {
+        props: defaultProps
+      });
+      
+      expect(wrapper.find('.message-item').attributes('role')).toBe('listitem');
+      expect(wrapper.find('.message-item').attributes('aria-labelledby')).toBeDefined();
+    });
+    
+    it('has accessible action buttons', () => {
+      const wrapper = mount(MessageItem, {
+        props: {
+          ...defaultProps,
+          isActive: true
+        }
+      });
+      
+      const copyButton = wrapper.find('[data-action="copy"]');
+      const deleteButton = wrapper.find('[data-action="delete"]');
+      
+      expect(copyButton.attributes('aria-label')).toBeDefined();
+      expect(deleteButton.attributes('aria-label')).toBeDefined();
+    });
+  });
+  
+  // Slot Tests
+  describe('Slots', () => {
+    it('renders custom icon when provided', () => {
+      const wrapper = mount(MessageItem, {
+        props: defaultProps,
+        slots: {
+          icon: '<i class="custom-icon"></i>'
+        }
+      });
+      
+      expect(wrapper.find('.custom-icon').exists()).toBe(true);
+    });
+    
+    it('renders custom actions when provided', () => {
+      const wrapper = mount(MessageItem, {
+        props: {
+          ...defaultProps,
+          isActive: true
+        },
+        slots: {
+          actions: '<button class="custom-action">Custom Action</button>'
+        }
+      });
+      
+      expect(wrapper.find('.custom-action').exists()).toBe(true);
+    });
+  });
+});
+```
+
+### 6. Integration Tests
+
+Integrationstests prüfen das Zusammenspiel mehrerer Komponenten und stellen sicher, dass sie korrekt miteinander interagieren.
+
+#### 6.1 Beispiel: DocumentConverterContainer Integration Test
+
+```typescript
+// DocumentConverterContainer.integration.spec.ts
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { mount } from '@vue/test-utils';
+import { createTestingPinia } from '@pinia/testing';
+import DocConverterContainer from '@/components/admin/document-converter/DocConverterContainer.vue';
+import { useDocumentConverterStore } from '@/stores/documentConverter';
+import { useFeatureToggles } from '@/composables/useFeatureToggles';
+
+// Mock dependencies
+vi.mock('@/composables/useFeatureToggles', () => ({
+  useFeatureToggles: vi.fn(() => ({
+    isEnabled: vi.fn().mockReturnValue(true),
+    isDocConverterEnabled: true
+  }))
+}));
+
+describe('DocConverterContainer.vue Integration', () => {
+  let wrapper;
+  let store;
+  
+  beforeEach(() => {
+    // Create test pinia and mount component
+    wrapper = mount(DocConverterContainer, {
+      global: {
+        plugins: [
+          createTestingPinia({
+            createSpy: vi.fn,
+            initialState: {
+              documentConverter: {
+                uploadedFiles: [],
+                convertedDocuments: [],
+                isConverting: false,
+                isUploading: false,
+                error: null,
+                currentView: 'upload'
+              }
+            }
+          })
+        ],
+        stubs: {
+          FileUploadV2: true,
+          ConversionProgressV2: true,
+          DocumentList: true,
+          DocumentPreview: true,
+          ErrorDisplay: true
+        }
+      }
+    });
+    
+    // Get store after mounting
+    store = useDocumentConverterStore();
+  });
+  
+  // Integration Tests
+  describe('Component Integration', () => {
+    it('initializes and shows upload view by default', () => {
+      expect(store.initialize).toHaveBeenCalled();
+      expect(wrapper.findComponent({ name: 'FileUploadV2' }).exists()).toBe(true);
+    });
+    
+    it('shows conversion progress when converting', async () => {
+      // Update store state
+      store.isConverting = true;
+      await wrapper.vm.$nextTick();
+      
+      expect(wrapper.findComponent({ name: 'ConversionProgressV2' }).exists()).toBe(true);
+    });
+    
+    it('shows error display when error exists', async () => {
+      // Update store state
+      store.error = { code: 'TEST_ERROR', message: 'Test error', timestamp: new Date() };
+      await wrapper.vm.$nextTick();
+      
+      expect(wrapper.findComponent({ name: 'ErrorDisplay' }).exists()).toBe(true);
+    });
+    
+    it('handles file upload and starts conversion', async () => {
+      const testFile = new File(['test content'], 'test.pdf', { type: 'application/pdf' });
+      
+      // Mock successful upload
+      store.uploadDocument.mockResolvedValue('doc-123');
+      
+      // Simulate file upload
+      const fileUpload = wrapper.findComponent({ name: 'FileUploadV2' });
+      await fileUpload.vm.$emit('upload-single', testFile);
+      
+      expect(store.uploadDocument).toHaveBeenCalledWith(testFile);
+      expect(store.convertDocument).toHaveBeenCalledWith('doc-123');
+    });
+    
+    it('shows document list when documents exist and view is list', async () => {
+      // Update store state
+      store.convertedDocuments = [
+        { id: 'doc-1', originalName: 'test.pdf', status: 'success' }
+      ];
+      store.currentView = 'list';
+      await wrapper.vm.$nextTick();
+      
+      expect(wrapper.findComponent({ name: 'DocumentList' }).exists()).toBe(true);
+    });
+    
+    it('shows document preview when a document is selected', async () => {
+      // Update store state
+      store.convertedDocuments = [
+        { id: 'doc-1', originalName: 'test.pdf', status: 'success' }
+      ];
+      store.selectedDocumentId = 'doc-1';
+      store.currentView = 'results';
+      await wrapper.vm.$nextTick();
+      
+      expect(wrapper.findComponent({ name: 'DocumentPreview' }).exists()).toBe(true);
+    });
+    
+    it('cancels conversion when user requests it', async () => {
+      // Update store state
+      store.isConverting = true;
+      store.activeConversionId = 'doc-123';
+      await wrapper.vm.$nextTick();
+      
+      // Simulate cancel event
+      const progressComponent = wrapper.findComponent({ name: 'ConversionProgressV2' });
+      await progressComponent.vm.$emit('cancel');
+      
+      expect(store.cancelConversion).toHaveBeenCalledWith('doc-123');
+    });
+  });
+  
+  describe('Feature Toggle Integration', () => {
+    it('uses legacy components when feature toggle is disabled', async () => {
+      // Mock feature toggle to be disabled
+      vi.mocked(useFeatureToggles).mockReturnValue({
+        isEnabled: vi.fn().mockReturnValue(false),
+        isDocConverterEnabled: false
+      });
+      
+      // Remount component
+      wrapper = mount(DocConverterContainer, {
+        global: {
+          plugins: [createTestingPinia({ createSpy: vi.fn })],
+          stubs: {
+            FileUpload: true, // Legacy component
+            ConversionProgress: true, // Legacy component
+            FileUploadV2: true,
+            ConversionProgressV2: true,
+          }
+        }
+      });
+      
+      // Should use legacy components
+      expect(wrapper.findComponent({ name: 'FileUpload' }).exists()).toBe(true);
+      expect(wrapper.findComponent({ name: 'FileUploadV2' }).exists()).toBe(false);
+    });
+  });
+});
+```
+
+### 7. Visual Regression Tests
+
+Visuelle Regressionstests stellen sicher, dass das visuelle Erscheinungsbild der Komponenten konsistent bleibt.
+
+#### 7.1 Storybook-Integration
+
+Storybook wird für die visuelle Dokumentation und Testung genutzt:
+
+```typescript
+// Button.stories.ts
+import Button from '@/components/ui/base/Button.vue';
+import { Meta, StoryObj } from '@storybook/vue3';
+
+const meta: Meta<typeof Button> = {
+  title: 'UI/Button',
+  component: Button,
+  parameters: {
+    componentSubtitle: 'Standard-Schaltfläche für Benutzerinteraktionen',
+  },
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['primary', 'secondary', 'success', 'danger', 'warning', 'info'],
+      description: 'Visueller Stil der Schaltfläche'
+    },
+    size: {
+      control: 'select',
+      options: ['sm', 'md', 'lg'],
+      description: 'Größe der Schaltfläche'
+    },
+    disabled: {
+      control: 'boolean',
+      description: 'Deaktiviert die Schaltfläche'
+    },
+    loading: {
+      control: 'boolean',
+      description: 'Zeigt einen Ladeindikator an'
+    },
+    icon: {
+      control: 'text',
+      description: 'FontAwesome-Icon-Klasse'
+    },
+    label: {
+      control: 'text',
+      description: 'Text der Schaltfläche'
+    },
+    onClick: { action: 'clicked' }
+  }
+};
+
+export default meta;
+type Story = StoryObj<typeof Button>;
+
+export const Primary: Story = {
+  args: {
+    label: 'Primary Button',
+    variant: 'primary'
+  }
+};
+
+export const Secondary: Story = {
+  args: {
+    label: 'Secondary Button',
+    variant: 'secondary'
+  }
+};
+
+export const WithIcon: Story = {
+  args: {
+    label: 'Button with Icon',
+    icon: 'fa-check',
+    variant: 'success'
+  }
+};
+
+export const Loading: Story = {
+  args: {
+    label: 'Loading',
+    loading: true
+  }
+};
+
+export const Disabled: Story = {
+  args: {
+    label: 'Disabled Button',
+    disabled: true
+  }
+};
+```
+
+#### 7.2 Visual Regression Tests mit Storybook und Chromatic
+
+```typescript
+// Button.visual.spec.ts
+import { test, expect } from '@playwright/test';
+
+test.describe('Button Component Visual Tests', () => {
+  test('all button variants should match visual snapshot', async ({ page }) => {
+    // Navigate to storybook
+    await page.goto('http://localhost:6006/iframe.html?id=ui-button--primary');
+    // Take screenshot for primary button
+    await expect(page).toHaveScreenshot('button-primary.png');
+    
+    // Navigate to secondary button story
+    await page.goto('http://localhost:6006/iframe.html?id=ui-button--secondary');
+    // Take screenshot for secondary button
+    await expect(page).toHaveScreenshot('button-secondary.png');
+    
+    // Test other variants...
+  });
+  
+  test('button states should match visual snapshot', async ({ page }) => {
+    // Test hover state
+    await page.goto('http://localhost:6006/iframe.html?id=ui-button--primary');
+    await page.hover('button');
+    await expect(page).toHaveScreenshot('button-primary-hover.png');
+    
+    // Test active/pressed state
+    await page.mouse.down();
+    await expect(page).toHaveScreenshot('button-primary-active.png');
+    await page.mouse.up();
+    
+    // Test disabled state
+    await page.goto('http://localhost:6006/iframe.html?id=ui-button--disabled');
+    await expect(page).toHaveScreenshot('button-disabled.png');
+    
+    // Test loading state
+    await page.goto('http://localhost:6006/iframe.html?id=ui-button--loading');
+    await expect(page).toHaveScreenshot('button-loading.png');
+  });
+  
+  test('button should be responsive', async ({ page }) => {
+    await page.goto('http://localhost:6006/iframe.html?id=ui-button--primary');
+    
+    // Mobile size
+    await page.setViewportSize({ width: 375, height: 667 });
+    await expect(page).toHaveScreenshot('button-primary-mobile.png');
+    
+    // Tablet size
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await expect(page).toHaveScreenshot('button-primary-tablet.png');
+    
+    // Desktop size
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await expect(page).toHaveScreenshot('button-primary-desktop.png');
+  });
+});
+```
+
+### 8. Feature-Toggle-Tests
+
+Feature-Toggle-Tests stellen sicher, dass Feature-Toggles korrekt funktionieren und dass sowohl die aktivierte als auch die deaktivierte Ansicht korrekt angezeigt wird.
+
+#### 8.1 Beispiel: FeatureWrapper-Tests
+
+```typescript
+// FeatureWrapper.feature.spec.ts
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { mount } from '@vue/test-utils';
+import FeatureWrapper from '@/components/shared/FeatureWrapper.vue';
+import { useFeatureToggles } from '@/composables/useFeatureToggles';
+
+// Mock dependencies
+vi.mock('@/composables/useFeatureToggles', () => ({
+  useFeatureToggles: vi.fn()
+}));
+
+// Mock components
+const NewComponent = {
+  name: 'NewComponent',
+  template: '<div class="new-component">New Implementation</div>'
+};
+
+const LegacyComponent = {
+  name: 'LegacyComponent',
+  template: '<div class="legacy-component">Legacy Implementation</div>'
+};
+
+describe('FeatureWrapper.vue', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+  
+  describe('Feature Toggle Behavior', () => {
+    it('shows new component when feature is enabled', () => {
+      // Mock feature toggle to be enabled
+      vi.mocked(useFeatureToggles).mockReturnValue({
+        isEnabled: vi.fn().mockReturnValue(true)
+      });
+      
+      const wrapper = mount(FeatureWrapper, {
+        props: {
+          feature: 'testFeature',
+          newComponent: NewComponent,
+          legacyComponent: LegacyComponent
+        }
+      });
+      
+      expect(wrapper.findComponent(NewComponent).exists()).toBe(true);
+      expect(wrapper.findComponent(LegacyComponent).exists()).toBe(false);
+    });
+    
+    it('shows legacy component when feature is disabled', () => {
+      // Mock feature toggle to be disabled
+      vi.mocked(useFeatureToggles).mockReturnValue({
+        isEnabled: vi.fn().mockReturnValue(false)
+      });
+      
+      const wrapper = mount(FeatureWrapper, {
+        props: {
+          feature: 'testFeature',
+          newComponent: NewComponent,
+          legacyComponent: LegacyComponent
+        }
+      });
+      
+      expect(wrapper.findComponent(LegacyComponent).exists()).toBe(true);
+      expect(wrapper.findComponent(NewComponent).exists()).toBe(false);
+    });
+    
+    it('shows nothing when both components are undefined and renderEmpty is false', () => {
+      vi.mocked(useFeatureToggles).mockReturnValue({
+        isEnabled: vi.fn().mockReturnValue(true)
+      });
+      
+      const wrapper = mount(FeatureWrapper, {
+        props: {
+          feature: 'testFeature',
+          renderEmpty: false
+        }
+      });
+      
+      expect(wrapper.html()).toBe('');
+    });
+    
+    it('shows new component with renderEmpty true even when legacy is undefined', () => {
+      vi.mocked(useFeatureToggles).mockReturnValue({
+        isEnabled: vi.fn().mockReturnValue(true)
+      });
+      
+      const wrapper = mount(FeatureWrapper, {
+        props: {
+          feature: 'testFeature',
+          newComponent: NewComponent,
+          renderEmpty: true
+        }
+      });
+      
+      expect(wrapper.findComponent(NewComponent).exists()).toBe(true);
+    });
+  });
+  
+  describe('Error Handling', () => {
+    it('falls back to legacy component when new component throws an error', async () => {
+      // Mock feature toggle to be enabled
+      vi.mocked(useFeatureToggles).mockReturnValue({
+        isEnabled: vi.fn().mockReturnValue(true),
+        reportFeatureError: vi.fn()
+      });
+      
+      // Create an error-throwing component
+      const ErrorComponent = {
+        name: 'ErrorComponent',
+        setup() {
+          throw new Error('Test error');
+        },
+        template: '<div>Error Component</div>'
+      };
+      
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      
+      const wrapper = mount(FeatureWrapper, {
+        props: {
+          feature: 'testFeature',
+          newComponent: ErrorComponent,
+          legacyComponent: LegacyComponent,
+          captureErrors: true,
+          autoFallback: true
+        }
+      });
+      
+      // Should fall back to legacy component
+      expect(wrapper.findComponent(LegacyComponent).exists()).toBe(true);
+      
+      // Should report the error
+      expect(vi.mocked(useFeatureToggles).mock.results[0].value.reportFeatureError).toHaveBeenCalled();
+      
+      errorSpy.mockRestore();
+    });
+    
+    it('emits feature-error event when an error occurs', async () => {
+      // Mock feature toggle to be enabled
+      vi.mocked(useFeatureToggles).mockReturnValue({
+        isEnabled: vi.fn().mockReturnValue(true),
+        reportFeatureError: vi.fn()
+      });
+      
+      // Create an error-throwing component
+      const ErrorComponent = {
+        name: 'ErrorComponent',
+        setup() {
+          throw new Error('Test error');
+        },
+        template: '<div>Error Component</div>'
+      };
+      
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      
+      const wrapper = mount(FeatureWrapper, {
+        props: {
+          feature: 'testFeature',
+          newComponent: ErrorComponent,
+          legacyComponent: LegacyComponent,
+          captureErrors: true,
+          autoFallback: false // Don't auto fallback
+        }
+      });
+      
+      // Should emit feature-error event
+      expect(wrapper.emitted()).toHaveProperty('feature-error');
+      expect(wrapper.emitted('feature-error')[0][0]).toBeInstanceOf(Error);
+      
+      errorSpy.mockRestore();
+    });
+  });
+  
+  describe('Fallback Functionality', () => {
+    it('switches to legacy component when forceUseLegacy is true', async () => {
+      // Mock feature toggle to be enabled
+      vi.mocked(useFeatureToggles).mockReturnValue({
+        isEnabled: vi.fn().mockReturnValue(true)
+      });
+      
+      const wrapper = mount(FeatureWrapper, {
+        props: {
+          feature: 'testFeature',
+          newComponent: NewComponent,
+          legacyComponent: LegacyComponent,
+          forceUseLegacy: false
+        }
+      });
+      
+      // Initially should show new component
+      expect(wrapper.findComponent(NewComponent).exists()).toBe(true);
+      
+      // Update prop to force legacy
+      await wrapper.setProps({ forceUseLegacy: true });
+      
+      // Should now show legacy component
+      expect(wrapper.findComponent(LegacyComponent).exists()).toBe(true);
+      expect(wrapper.findComponent(NewComponent).exists()).toBe(false);
+    });
+    
+    it('emits feature-fallback event when falling back', async () => {
+      // Mock feature toggle to be enabled
+      vi.mocked(useFeatureToggles).mockReturnValue({
+        isEnabled: vi.fn().mockReturnValue(true),
+        reportFeatureError: vi.fn()
+      });
+      
+      // Create an error-throwing component
+      const ErrorComponent = {
+        name: 'ErrorComponent',
+        setup() {
+          throw new Error('Test error');
+        },
+        template: '<div>Error Component</div>'
+      };
+      
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      
+      const wrapper = mount(FeatureWrapper, {
+        props: {
+          feature: 'testFeature',
+          newComponent: ErrorComponent,
+          legacyComponent: LegacyComponent,
+          captureErrors: true,
+          autoFallback: true
+        }
+      });
+      
+      // Should emit feature-fallback event
+      expect(wrapper.emitted()).toHaveProperty('feature-fallback');
+      
+      errorSpy.mockRestore();
+    });
+  });
+  
+  describe('Props Passing', () => {
+    it('passes props to new component when enabled', () => {
+      // Mock feature toggle to be enabled
+      vi.mocked(useFeatureToggles).mockReturnValue({
+        isEnabled: vi.fn().mockReturnValue(true)
+      });
+      
+      const PropsTestComponent = {
+        name: 'PropsTestComponent',
+        props: ['testProp'],
+        template: '<div>{{ testProp }}</div>'
+      };
+      
+      const wrapper = mount(FeatureWrapper, {
+        props: {
+          feature: 'testFeature',
+          newComponent: PropsTestComponent,
+          legacyComponent: LegacyComponent,
+          componentProps: {
+            testProp: 'test value'
+          }
+        }
+      });
+      
+      const newComponent = wrapper.findComponent(PropsTestComponent);
+      expect(newComponent.props('testProp')).toBe('test value');
+    });
+    
+    it('passes props to legacy component when disabled', () => {
+      // Mock feature toggle to be disabled
+      vi.mocked(useFeatureToggles).mockReturnValue({
+        isEnabled: vi.fn().mockReturnValue(false)
+      });
+      
+      const LegacyWithProps = {
+        name: 'LegacyWithProps',
+        props: ['testProp'],
+        template: '<div>{{ testProp }}</div>'
+      };
+      
+      const wrapper = mount(FeatureWrapper, {
+        props: {
+          feature: 'testFeature',
+          newComponent: NewComponent,
+          legacyComponent: LegacyWithProps,
+          componentProps: {
+            testProp: 'test value'
+          }
+        }
+      });
+      
+      const legacyComponent = wrapper.findComponent(LegacyWithProps);
+      expect(legacyComponent.props('testProp')).toBe('test value');
+    });
+  });
+});
+```
+
+### 9. Accessibility Tests
+
+Accessibility-Tests stellen sicher, dass alle Komponenten die Accessibility-Anforderungen erfüllen.
+
+#### 9.1 Beispiel: Button Accessibility-Test
+
+```typescript
+// Button.a11y.spec.ts
+import { describe, it, expect } from 'vitest';
+import { mount } from '@vue/test-utils';
+import { axe, toHaveNoViolations } from 'vitest-axe';
+import Button from '@/components/ui/base/Button.vue';
+
+expect.extend(toHaveNoViolations);
+
+describe('Button.vue Accessibility', () => {
+  it('has no accessibility violations', async () => {
+    const wrapper = mount(Button, {
+      props: {
+        label: 'Accessible Button'
+      },
+      attachTo: document.body
+    });
+    
+    const results = await axe(wrapper.element);
+    expect(results).toHaveNoViolations();
+  });
+  
+  it('has no accessibility violations when disabled', async () => {
+    const wrapper = mount(Button, {
+      props: {
+        label: 'Disabled Button',
+        disabled: true
+      },
+      attachTo: document.body
+    });
+    
+    const results = await axe(wrapper.element);
+    expect(results).toHaveNoViolations();
+  });
+  
+  it('has no accessibility violations with only an icon', async () => {
+    const wrapper = mount(Button, {
+      props: {
+        label: '',
+        icon: 'fa-check',
+        ariaLabel: 'Success'
+      },
+      attachTo: document.body
+    });
+    
+    const results = await axe(wrapper.element);
+    expect(results).toHaveNoViolations();
+  });
+  
+  it('has no accessibility violations when loading', async () => {
+    const wrapper = mount(Button, {
+      props: {
+        label: 'Loading Button',
+        loading: true
+      },
+      attachTo: document.body
+    });
+    
+    const results = await axe(wrapper.element);
+    expect(results).toHaveNoViolations();
+  });
+});
+```
+
+### 10. Einrichtung und Ausführung der Tests
+
+#### 10.1 Einrichtung mit package.json
+
+Die folgenden Einträge werden in die package.json aufgenommen:
+
+```json
+{
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:unit": "vitest run unit",
+    "test:integration": "vitest run integration",
+    "test:a11y": "vitest run a11y",
+    "test:visual": "playwright test visual",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.42.0",
+    "@storybook/addon-essentials": "^7.6.10",
+    "@storybook/addon-interactions": "^7.6.10",
+    "@storybook/addon-links": "^7.6.10",
+    "@storybook/blocks": "^7.6.10",
+    "@storybook/testing-vue": "^1.0.0",
+    "@storybook/vue3": "^7.6.10",
+    "@storybook/vue3-vite": "^7.6.10",
+    "@testing-library/vue": "^8.0.1",
+    "@vitest/coverage-v8": "^1.2.0",
+    "@vitest/ui": "^1.2.0",
+    "happy-dom": "^6.0.1",
+    "jsdom": "^23.0.1",
+    "storybook": "^7.6.10",
+    "vitest": "^1.2.0",
+    "vitest-axe": "^0.1.0"
+  }
+}
+```
+
+#### 10.2 vitest.config.ts
+
+Die Vitest-Konfiguration wird wie folgt erweitert:
+
+```typescript
+// vitest.config.ts
+import { defineConfig } from 'vitest/config';
+import Vue from '@vitejs/plugin-vue';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+
+export default defineConfig({
+  plugins: [Vue()],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./test/setup.ts'],
+    include: ['**/*.{test,spec}.{js,ts,jsx,tsx}'],
+    exclude: ['**/node_modules/**', '**/dist/**'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'lcov'],
+      exclude: [
+        '**/node_modules/**',
+        '**/test/**',
+        '**/*.d.ts',
+        '**/*.config.ts',
+        '**/dist/**'
+      ]
+    },
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    }
+  },
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
+});
+```
+
+#### 10.3 Erweiterte Test-Setup-Datei
+
+```typescript
+// test/setup.ts
+import { vi, beforeAll, afterEach, afterAll } from 'vitest';
+import { config } from '@vue/test-utils';
+
+// Global mocks and stubs
+config.global.mocks = {
+  $t: (key: string, values?: Record<string, any>) => {
+    if (values) {
+      return Object.entries(values).reduce(
+        (acc, [key, value]) => acc.replace(`{${key}}`, String(value)),
+        key
+      );
+    }
+    return key;
+  },
+};
+
+// Mock window methods and browser APIs
+beforeAll(() => {
+  // Mock IntersectionObserver
+  global.IntersectionObserver = vi.fn(() => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+    root: null,
+    rootMargin: '',
+    thresholds: []
+  }));
+  
+  // Mock ResizeObserver
+  global.ResizeObserver = vi.fn(() => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn()
+  }));
+  
+  // Mock matchMedia
+  global.matchMedia = vi.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn()
+  }));
+  
+  // Mock window.Blob
+  class MockBlob {
+    size: number;
+    type: string;
+    
+    constructor(parts: any[], options?: BlobPropertyBag) {
+      this.size = parts.reduce((acc, part) => acc + (typeof part === 'string' ? part.length : part.size || 0), 0);
+      this.type = options?.type || '';
+    }
+  }
+  global.Blob = MockBlob as any;
+  
+  // Mock URL.createObjectURL and URL.revokeObjectURL
+  global.URL.createObjectURL = vi.fn().mockImplementation(() => 'mock-object-url');
+  global.URL.revokeObjectURL = vi.fn();
+  
+  // Mock window.fetch
+  global.fetch = vi.fn();
+  
+  // Mock FormData (needed for FileUpload)
+  global.FormData = class {
+    private data: Record<string, any> = {};
+    
+    append(key: string, value: any) {
+      this.data[key] = value;
+    }
+    
+    get(key: string) {
+      return this.data[key];
+    }
+    
+    has(key: string) {
+      return key in this.data;
+    }
+    
+    delete(key: string) {
+      delete this.data[key];
+    }
+  };
+  
+  // Mock setInterval and clearInterval
+  global.setInterval = vi.fn();
+  global.clearInterval = vi.fn();
+});
+
+// Clean up after each test
+afterEach(() => {
+  vi.clearAllMocks();
+});
+
+// Clean up after all tests
+afterAll(() => {
+  // Additional cleanup if needed
+});
+```
+
+### 11. Automatisierung und Continuous Integration
+
+#### 11.1 Testläufe in der CI/CD-Pipeline
+
+Die Tests sollen in einer CI/CD-Pipeline automatisiert laufen:
+
+```yaml
+# .github/workflows/tests.yml
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Typecheck
+        run: npm run typecheck
+        
+      - name: Lint
+        run: npm run lint
+        
+      - name: Run unit tests
+        run: npm run test:unit
+        
+      - name: Run integration tests
+        run: npm run test:integration
+        
+      - name: Run accessibility tests
+        run: npm run test:a11y
+        
+      - name: Install Playwright
+        run: npx playwright install --with-deps
+        
+      - name: Run visual tests
+        run: npm run test:visual
+        
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/lcov.info
+```
+
+#### 11.2 Pre-Commit-Hooks
+
+Pre-Commit-Hooks helfen, Fehler frühzeitig zu erkennen:
+
+```bash
+# .husky/pre-commit
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+npm run lint
+npm run typecheck
+npm run test:unit
+```
+
+### 12. Schlussfolgerung und Best Practices
+
+#### 12.1 Zusammenfassung der Teststrategie
+
+Die vorgestellte Teststrategie für die Vue 3 SFC-Migration bietet einen umfassenden Ansatz zum Testen der migrierten Komponenten:
+
+1. **Unit-Tests** stellen sicher, dass jede Komponente isoliert korrekt funktioniert
+2. **Integrationstests** stellen sicher, dass Komponenten korrekt miteinander interagieren
+3. **Visuelle Regressionstests** stellen sicher, dass das visuelle Erscheinungsbild konsistent bleibt
+4. **Accessibility-Tests** stellen sicher, dass die Komponenten die Accessibility-Anforderungen erfüllen
+5. **Feature-Toggle-Tests** stellen sicher, dass Feature-Toggles korrekt funktionieren
+
+#### 12.2 Best Practices für die Vue 3 SFC-Migration
+
+Bei der Migration zu Vue 3 SFC sollten folgende Best Practices beachtet werden:
+
+1. **Schrittweise Migration**: Komponenten schrittweise migrieren und dabei Feature-Toggles nutzen
+2. **Test-Driven Development**: Tests vor der Implementierung schreiben
+3. **Umfassende Testabdeckung**: Alle Aspekte der Komponenten testen
+4. **Accessibility First**: Accessibility von Anfang an berücksichtigen
+5. **Visuelle Konsistenz**: Visuelle Regressionstests für kritische Komponenten
+6. **Continuous Integration**: Tests in CI/CD-Pipeline integrieren
+7. **Mockdaten und Fixtures**: Realistische Mockdaten und Fixtures verwenden
+8. **Dokumentation**: Tests und Teststrategien dokumentieren
+
+#### 12.3 Nächste Schritte
+
+Um die Teststrategie vollständig zu implementieren, sind folgende Schritte erforderlich:
+
+1. Installation der benötigten Test-Abhängigkeiten
+2. Erstellung der Test-Setup-Dateien
+3. Implementierung der Test-Suites für alle Vue 3 SFC-Komponenten
+4. Integration der Tests in die CI/CD-Pipeline
+5. Kontinuierliche Verbesserung der Tests und der Testabdeckung
+
+## Testabdeckungsziele
+
+Für die Vue 3 SFC-Migration werden folgende Testabdeckungsziele angestrebt:
+
+| Komponentengruppe | Unit-Tests | Integration | A11y | Visuelle Tests |
+|------------------|------------|------------|------|---------------|
+| UI-Basiskomponenten | 95% | 80% | 100% | 100% |
+| Layout-Komponenten | 90% | 70% | 100% | 80% |
+| Formular-Komponenten | 95% | 80% | 100% | 80% |
+| Dialog-Komponenten | 90% | 80% | 100% | 80% |
+| Admin-Komponenten | 85% | 70% | 90% | 70% |
+| Dokumentenkonverter | 90% | 80% | 100% | 80% |
+| Feature-Wrapper | 100% | 100% | 100% | 80% |
+
+---
+
+_Dokumentation erstellt von nscale-assist Team am 15.05.2025_

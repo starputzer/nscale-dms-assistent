@@ -1,0 +1,18 @@
+{
+  "enabled": true,
+  "format": "markdown",
+  "content": "🛠️ **BETA-VERSION: Lokaler KI-Assistent für nscale**\n\nDieser Assistent beantwortet Fragen zur Nutzung der nscale DMS-Software auf Basis interner Informationen.\n\n🔒 **Wichtige Hinweise:**\n- Alle Datenverarbeitungen erfolgen **ausschließlich lokal im Landesnetz Berlin**.\n- Es besteht **keine Verbindung zum Internet** – Ihre Eingaben verlassen niemals das System.\n- **Niemand außer Ihnen** hat Zugriff auf Ihre Eingaben oder Fragen.\n- Die Antworten werden von einer KI generiert – **Fehlinformationen sind möglich**.\n- Bitte geben Sie **keine sensiblen oder personenbezogenen Daten** ein.\n\n🧠 Der Assistent befindet sich in der Erprobung und wird stetig weiterentwickelt.",
+  "style": {
+    "backgroundColor": "#fff3cd",
+    "borderColor": "#ffeeba",
+    "textColor": "#856404",
+    "iconClass": "info-circle"
+  },
+  "display": {
+    "position": "top", 
+    "dismissible": true,
+    "showOnStartup": true,
+    "showInChat": true,
+    "showInEverySession": true
+  }
+}
