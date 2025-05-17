@@ -114,7 +114,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, onMounted, defineEmits } from "vue";
 import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
 import { useAdminSystemStore } from "@/stores/admin/system";
@@ -122,9 +122,13 @@ import { useAdminUsersStore } from "@/stores/admin/users";
 import { useAdminFeedbackStore } from "@/stores/admin/feedback";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
+import { handleAdminError } from "@/utils/adminErrorHandler";
 
 // i18n
 const { t } = useI18n();
+
+// Define emits
+const emit = defineEmits(["error", "auth-error"]);
 
 // Stores
 const adminSystemStore = useAdminSystemStore();
@@ -138,6 +142,26 @@ const { stats: feedbackStats } = storeToRefs(adminFeedbackStore);
 
 // Local state
 const isLoading = ref(false);
+
+// Load initial data on mount with error handling
+// Lifecycle management with safe component access
+import { initializeAdminComponent } from "@/utils/adminComponentInitializer";
+
+// Initialize component with safe lifecycle handling
+const { isMounted, safeMountedExecution } = initializeAdminComponent({
+  componentName: "AdminDashboard",
+  loadData: async () => {
+    // Use Promise.all for parallel loading, but wrapped in safeMountedExecution
+    await Promise.all([
+      adminSystemStore.fetchStats(),
+      adminUsersStore.fetchUserCount(),
+      adminFeedbackStore.fetchStats(),
+    ]);
+  },
+  emit,
+  errorMessage: "Fehler beim Laden der Dashboard-Daten",
+  context: { component: "AdminDashboard" },
+});
 
 // Computed
 const systemStatusClass = computed(() => {
@@ -283,66 +307,75 @@ const recentActivity = ref([
 ]);
 
 // Methods
-function executeAction(actionId: string) {
+async function executeAction(actionId: string) {
   isLoading.value = true;
 
-  // Implementiere die entsprechenden Aktionen
-  switch (actionId) {
-    case "clearCache":
-      adminSystemStore
-        .clearCache()
-        .then(() => {
-          // Erfolgsbenachrichtigung
+  try {
+    // Implementiere die entsprechenden Aktionen
+    switch (actionId) {
+      case "clearCache":
+        try {
+          await adminSystemStore.clearCache();
           console.log("Cache geleert");
-        })
-        .catch((error) => {
-          console.error("Fehler beim Leeren des Caches:", error);
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
-      break;
+        } catch (error) {
+          await handleAdminError(error, emit, {
+            customMessage: "Fehler beim Leeren des Caches",
+            context: { actionId },
+          });
+        }
+        break;
 
-    case "reloadMotd":
-      adminSystemStore
-        .reloadMotd()
-        .then(() => {
+      case "reloadMotd":
+        try {
+          await adminSystemStore.reloadMotd();
           console.log("MOTD neu geladen");
-        })
-        .catch((error) => {
-          console.error("Fehler beim Neuladen des MOTD:", error);
-        })
-        .finally(() => {
-          isLoading.value = false;
-        });
-      break;
+        } catch (error) {
+          await handleAdminError(error, emit, {
+            customMessage: "Fehler beim Neuladen des MOTD",
+            context: { actionId },
+          });
+        }
+        break;
 
-    case "exportStats":
-      // Beispielimplementierung für Statistikexport
-      const statsData = JSON.stringify(systemStats.value, null, 2);
-      const blob = new Blob([statsData], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `system-stats-${new Date().toISOString().slice(0, 10)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      isLoading.value = false;
-      break;
+      case "exportStats":
+        // Beispielimplementierung für Statistikexport
+        const statsData = JSON.stringify(systemStats.value, null, 2);
+        const blob = new Blob([statsData], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `system-stats-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        break;
 
-    case "systemCheck":
-      // Beispielimplementierung für Systemprüfung
-      setTimeout(() => {
-        console.log("Systemprüfung abgeschlossen");
-        isLoading.value = false;
-      }, 2000);
-      break;
+      case "systemCheck":
+        try {
+          // Simulierte API-Anfrage für Systemcheck
+          await adminSystemStore.performSystemCheck();
+          console.log("Systemprüfung abgeschlossen");
+        } catch (error) {
+          await handleAdminError(error, emit, {
+            customMessage: "Fehler bei der Systemprüfung",
+            context: { actionId },
+          });
+        }
+        break;
 
-    default:
-      console.warn(`Unbekannte Aktion: ${actionId}`);
-      isLoading.value = false;
+      default:
+        console.warn(`Unbekannte Aktion: ${actionId}`);
+    }
+  } catch (error) {
+    // Fallback Error Handler
+    console.error(`Unbehandelter Fehler bei der Aktion ${actionId}:`, error);
+    emit("error", {
+      message: `Unerwarteter Fehler bei der Aktion: ${actionId}`,
+      error,
+    });
+  } finally {
+    isLoading.value = false;
   }
 }
 

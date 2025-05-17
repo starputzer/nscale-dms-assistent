@@ -5,12 +5,19 @@
         {{ t("admin.title", "nscale DMS Assistent Administration") }}
       </h1>
       <div class="admin-panel__user-info">
-        <span class="admin-panel__user-email">{{ currentUser?.email }}</span>
+        <span class="admin-panel__user-email">{{
+          currentUser?.email || currentUser?.username || "admin@localhost"
+        }}</span>
         <span
           class="admin-panel__role"
-          :class="`admin-panel__role--${currentUser?.role}`"
+          :class="`admin-panel__role--${currentUser?.role || 'admin'}`"
         >
-          {{ t(`admin.roles.${currentUser?.role}`, currentUser?.role) }}
+          {{
+            t(
+              `admin.roles.${currentUser?.role || "admin"}`,
+              currentUser?.role || "admin",
+            )
+          }}
         </span>
       </div>
     </header>
@@ -111,7 +118,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, defineAsyncComponent } from "vue";
+import {
+  ref,
+  computed,
+  watch,
+  onMounted,
+  defineAsyncComponent,
+  defineEmits,
+} from "vue";
 import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
@@ -125,9 +139,15 @@ import { useAdminSystemStore } from "@/stores/admin/system";
 import { useAdminFeedbackStore } from "@/stores/admin/feedback";
 import { useAdminMotdStore } from "@/stores/admin/motd";
 
+// Enable live data for admin panel
+import { enableLiveData } from "./useLiveData";
+
 // Components
 import { Toast, Dialog } from "@/components/ui";
 import type { AdminTab } from "@/types/admin";
+
+// Define emits
+const emit = defineEmits(["auth-error"]);
 
 // Lazy-loaded Tab-Komponenten
 const AdminDashboard = defineAsyncComponent(
@@ -137,7 +157,9 @@ const AdminUsers = defineAsyncComponent(() => import("./tabs/AdminUsers.vue"));
 const AdminFeedback = defineAsyncComponent(
   () => import("./tabs/AdminFeedback.enhanced.vue"),
 );
-const AdminMotd = defineAsyncComponent(() => import("./tabs/AdminMotd.enhanced.vue"));
+const AdminMotd = defineAsyncComponent(
+  () => import("./tabs/AdminMotd.enhanced.vue"),
+);
 const AdminSystem = defineAsyncComponent(
   () => import("./tabs/AdminSystem.enhanced.vue"),
 );
@@ -180,8 +202,22 @@ const appVersion = ref(import.meta.env.VITE_APP_VERSION || "1.0.0");
 
 // Computed properties
 const canAccessAdmin = computed(() => {
+  // First check authentication
   if (!isAuthenticated.value) return false;
-  return currentUser.value?.role === "admin";
+
+  // If not authenticated or currentUser is null, return false
+  if (!currentUser.value) return false;
+
+  // Check for admin role in both role property and roles array
+  if (currentUser.value.role === "admin") return true;
+
+  // If roles array exists, check for admin role
+  if (currentUser.value.roles && Array.isArray(currentUser.value.roles)) {
+    return currentUser.value.roles.includes("admin");
+  }
+
+  // Default to false if no admin role found
+  return false;
 });
 
 const themeClass = computed(() => {
@@ -322,6 +358,10 @@ function handleAction(action: string, payload?: any) {
         setActiveTab(payload);
       }
       break;
+    case "auth-error":
+      // Forward auth errors to parent component
+      emit("auth-error", payload);
+      break;
     default:
       console.warn(`Unhandled action: ${action}`, payload);
   }
@@ -368,6 +408,11 @@ async function loadDataForTab(tabId: string) {
     }
   } catch (error) {
     console.error(`Error loading data for tab ${tabId}:`, error);
+
+    // Check if this is an auth-related error (401 or 403)
+    if (error?.response?.status === 401 || error?.response?.status === 403) {
+      emit("auth-error", error);
+    }
   } finally {
     isLoading.value = false;
   }
@@ -387,6 +432,10 @@ function checkUrlForTab() {
 // Lifecycle hooks
 onMounted(async () => {
   isLoading.value = true;
+
+  // Enable live data for admin panel as per user's request
+  enableLiveData();
+  console.log("Live data enabled for admin panel");
 
   // Check authentication and permissions
   if (!isAuthenticated.value) {

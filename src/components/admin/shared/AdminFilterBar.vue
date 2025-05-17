@@ -15,9 +15,9 @@
       <slot></slot>
     </div>
     <div v-if="showResetButton" class="admin-filter-bar__reset">
-      <BaseButton 
-        variant="text" 
-        size="small" 
+      <BaseButton
+        variant="text"
+        size="small"
         @click="resetAllFilters"
         icon="times-circle"
       >
@@ -28,9 +28,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
-import BaseInput from '@/components/ui/base/Input.vue';
-import BaseButton from '@/components/ui/base/Button.vue';
+import { computed, ref, watch } from "vue";
+import BaseInput from "@/components/ui/base/Input.vue";
+import BaseButton from "@/components/ui/base/Button.vue";
 
 const props = defineProps({
   /**
@@ -45,14 +45,14 @@ const props = defineProps({
    */
   searchPlaceholder: {
     type: String,
-    default: 'Suchen...',
+    default: "Suchen...",
   },
   /**
    * The initial search query value
    */
   searchQuery: {
     type: String,
-    default: '',
+    default: "",
   },
   /**
    * The debounce delay in milliseconds
@@ -73,19 +73,23 @@ const props = defineProps({
    */
   resetLabel: {
     type: String,
-    default: 'Zurücksetzen',
+    default: "Zurücksetzen",
   },
 });
 
-const emit = defineEmits(['update:searchQuery', 'reset']);
+const emit = defineEmits(["update:searchQuery", "reset"]);
 
 // Internal search input value
 const searchInputModel = ref(props.searchQuery);
 
 // Watch for changes in the parent's searchQuery prop
-watch(() => props.searchQuery, (newVal) => {
-  searchInputModel.value = newVal;
-}, { immediate: true });
+watch(
+  () => props.searchQuery,
+  (newVal) => {
+    searchInputModel.value = newVal;
+  },
+  { immediate: true },
+);
 
 // Handle search updates with debouncing
 let debounceTimeout: NodeJS.Timeout | null = null;
@@ -94,17 +98,17 @@ const handleSearchUpdate = (value: string) => {
   if (debounceTimeout) {
     clearTimeout(debounceTimeout);
   }
-  
+
   debounceTimeout = setTimeout(() => {
-    emit('update:searchQuery', value);
+    emit("update:searchQuery", value);
   }, props.debounceDelay);
 };
 
 // Reset all filters
 const resetAllFilters = () => {
-  searchInputModel.value = '';
-  emit('update:searchQuery', '');
-  emit('reset');
+  searchInputModel.value = "";
+  emit("update:searchQuery", "");
+  emit("reset");
 };
 
 defineExpose({
@@ -120,44 +124,44 @@ defineExpose({
   width: 100%;
   margin-bottom: 1.5rem;
   align-items: center;
-  
+
   &__search {
     flex: 1;
     min-width: 250px;
   }
-  
+
   &__search-wrapper {
     max-width: 500px;
   }
-  
+
   &__filters {
     display: flex;
     gap: 0.75rem;
     flex-wrap: wrap;
     align-items: center;
   }
-  
+
   &__reset {
     margin-left: auto;
   }
-  
+
   /* Responsive adjustments */
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: stretch;
-    
+
     &__search {
       width: 100%;
     }
-    
+
     &__search-wrapper {
       max-width: 100%;
     }
-    
+
     &__filters {
       width: 100%;
     }
-    
+
     &__reset {
       margin-left: 0;
       width: 100%;
@@ -165,12 +169,12 @@ defineExpose({
       justify-content: flex-end;
     }
   }
-  
+
   @media (max-width: 480px) {
     &__filters {
       flex-direction: column;
       align-items: stretch;
-      
+
       & > * {
         width: 100%;
       }

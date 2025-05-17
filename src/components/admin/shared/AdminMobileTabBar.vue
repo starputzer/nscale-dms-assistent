@@ -1,12 +1,12 @@
 <template>
   <div v-if="isMobileView" class="admin-mobile-tab-bar">
-    <button 
-      v-for="tab in tabs" 
+    <button
+      v-for="tab in tabs"
       :key="tab.id"
       @click="handleTabClick(tab.id)"
-      :class="{ 
-        'admin-mobile-tab-bar__tab': true, 
-        'active': modelValue === tab.id 
+      :class="{
+        'admin-mobile-tab-bar__tab': true,
+        active: modelValue === tab.id,
       }"
       :aria-selected="modelValue === tab.id"
       role="tab"
@@ -18,8 +18,8 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits, computed } from 'vue';
-import { useWindowSize } from '@/composables/useWindowSize';
+import { defineProps, defineEmits, computed } from "vue";
+import { useWindowSize } from "@/composables/useWindowSize";
 
 interface Tab {
   id: string;
@@ -51,7 +51,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(["update:modelValue"]);
 
 // Determine if we should show the mobile tab bar
 const { isMobile } = useWindowSize();
@@ -59,7 +59,7 @@ const isMobileView = computed(() => props.forceDisplay || isMobile.value);
 
 // Handle tab clicks
 const handleTabClick = (tabId: string) => {
-  emit('update:modelValue', tabId);
+  emit("update:modelValue", tabId);
 };
 </script>
 
@@ -69,7 +69,7 @@ const handleTabClick = (tabId: string) => {
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   gap: 0.5rem;
   margin-bottom: 1.5rem;
-  
+
   &__tab {
     display: flex;
     align-items: center;
@@ -84,29 +84,29 @@ const handleTabClick = (tabId: string) => {
     cursor: pointer;
     transition: all 0.2s ease;
     min-height: 44px; /* Better touch target */
-    
+
     &:hover {
       background-color: var(--bg-hover, #f3f4f6);
     }
-    
+
     &.active {
       background-color: var(--primary, #3b82f6);
       color: white;
       border-color: var(--primary, #3b82f6);
     }
-    
+
     i {
       font-size: 1rem;
     }
   }
-  
+
   /* Responsive adjustments for very small screens */
   @media (max-width: 480px) {
     grid-template-columns: 1fr 1fr;
-    
+
     &__tab {
       padding: 0.75rem 0.5rem;
-      
+
       span {
         font-size: 0.875rem;
       }

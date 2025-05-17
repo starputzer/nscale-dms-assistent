@@ -307,6 +307,31 @@ export const useAdminUsersStore = defineStore("adminUsers", () => {
     return result;
   }
 
+  // Implementiert die fehlende fetchUserCount Funktion für AdminDashboard
+  async function fetchUserCount() {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      // Falls die Benutzer noch nicht geladen wurden, lade sie zuerst
+      if (users.value.length === 0) {
+        await fetchUsers();
+      }
+
+      // Berechne die Benutzeranzahl aus der vorhandenen users-Liste
+      // In einer echten Implementierung könnte hier ein separater API-Endpunkt
+      // für bessere Performance verwendet werden
+      return users.value.length;
+    } catch (err: any) {
+      console.error("Error fetching user count:", err);
+      error.value =
+        err.response?.data?.message || "Fehler beim Laden der Benutzeranzahl";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
   return {
     // State
     users,
@@ -327,6 +352,7 @@ export const useAdminUsersStore = defineStore("adminUsers", () => {
 
     // Actions
     fetchUsers,
+    fetchUserCount, // Neu hinzugefügt
     createUser,
     updateUserRole,
     deleteUser,

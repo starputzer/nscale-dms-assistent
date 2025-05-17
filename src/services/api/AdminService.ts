@@ -762,11 +762,13 @@ export class AdminService {
         throw new Error("Keine Berechtigung für diese Operation");
       }
 
-      const response = await apiService.get('/admin/feedback/stats');
+      const response = await apiService.get("/admin/feedback/stats");
       if (response.success && response.data) {
         return response.data.stats;
       }
-      throw new Error(response.message || 'Fehler beim Abrufen der Feedback-Statistiken');
+      throw new Error(
+        response.message || "Fehler beim Abrufen der Feedback-Statistiken",
+      );
     } catch (error) {
       this.logger.error("Fehler beim Abrufen der Feedback-Statistiken", error);
       throw error;
@@ -783,11 +785,15 @@ export class AdminService {
         throw new Error("Keine Berechtigung für diese Operation");
       }
 
-      const response = await apiService.get(`/admin/feedback/negative?limit=${limit}`);
+      const response = await apiService.get(
+        `/admin/feedback/negative?limit=${limit}`,
+      );
       if (response.success && response.data) {
         return response.data.feedback || [];
       }
-      throw new Error(response.message || 'Fehler beim Abrufen des negativen Feedbacks');
+      throw new Error(
+        response.message || "Fehler beim Abrufen des negativen Feedbacks",
+      );
     } catch (error) {
       this.logger.error("Fehler beim Abrufen des negativen Feedbacks", error);
       throw error;

@@ -160,10 +160,7 @@
             <label class="admin-motd__label">{{
               t("admin.motd.icon", "Icon")
             }}</label>
-            <Card
-              v-model="motdConfig.style.iconClass"
-              :options="iconOptions"
-            />
+            <Card v-model="motdConfig.style.iconClass" :options="iconOptions" />
           </div>
         </fieldset>
 
@@ -198,10 +195,7 @@
               <label class="admin-motd__label">{{
                 t("admin.motd.audience", "Zielgruppe")
               }}</label>
-              <Card
-                v-model="scheduling.audience"
-                :options="audienceOptions"
-              />
+              <Card v-model="scheduling.audience" :options="audienceOptions" />
             </div>
           </template>
         </fieldset>
@@ -384,13 +378,7 @@ import { useAdminMotdStore } from "@/stores/admin/motd";
 import type { MotdConfig } from "@/types/admin";
 
 // UI Components
-import {
-  Button,
-  Input,
-  Card,
-  Alert,
-  Toggle,
-} from "@/components/ui/base";
+import { Button, Input, Card, Alert, Toggle } from "@/components/ui/base";
 
 // i18n
 const { t } = useI18n();

@@ -626,7 +626,11 @@ const filteredUsers = computed(() => {
 
 // Methods
 function isCurrentUser(user: User): boolean {
-  return user.id === currentUser.value?.id;
+  // Add null checks to prevent "cannot read properties of undefined (reading 'value')"
+  if (!user || !currentUser || !currentUser.value) {
+    return false;
+  }
+  return user.id === currentUser.value.id;
 }
 
 function sortBy(field: keyof User) {
@@ -690,49 +694,82 @@ function validateForm(): boolean {
   return isValid;
 }
 
-// Modal methods
+// Modal methods using safe element access
 function openCreateUserModal() {
-  if (createUserDialog.value) {
+  // Only proceed if component is mounted
+  if (!isMounted.value) return;
+
+  // Safely access the dialog element
+  const dialog = safeElementAccess(createUserDialog);
+  if (dialog) {
     resetForm();
-    createUserDialog.value.showModal();
+    safeMountedExecution(() => dialog.showModal());
   }
 }
 
 function closeCreateUserModal() {
-  if (createUserDialog.value) {
-    createUserDialog.value.close();
+  const dialog = safeElementAccess(createUserDialog);
+  if (dialog) {
+    safeMountedExecution(() => dialog.close());
   }
 }
 
 function openEditRoleModal(user: User) {
-  selectedUser.value = user;
-  selectedRole.value = user.role;
+  // Only proceed if component is mounted
+  if (!isMounted.value) return;
 
-  if (editRoleDialog.value) {
-    editRoleDialog.value.showModal();
+  safeMountedExecution(() => {
+    selectedUser.value = user;
+    selectedRole.value = user.role;
+  });
+
+  const dialog = safeElementAccess(editRoleDialog);
+  if (dialog) {
+    safeMountedExecution(() => dialog.showModal());
   }
 }
 
 function closeEditRoleModal() {
-  if (editRoleDialog.value) {
-    editRoleDialog.value.close();
-    selectedUser.value = null;
+  const dialog = safeElementAccess(editRoleDialog);
+  if (dialog) {
+    safeMountedExecution(() => {
+      dialog.close();
+      selectedUser.value = null;
+    });
   }
 }
 
 function confirmDeleteUser(user: User) {
-  selectedUser.value = user;
+  // Only proceed if component is mounted
+  if (!isMounted.value) return;
 
-  if (confirmDeleteDialog.value) {
-    confirmDeleteDialog.value.showModal();
+  safeMountedExecution(() => {
+    selectedUser.value = user;
+  });
+
+  const dialog = safeElementAccess(confirmDeleteDialog);
+  if (dialog) {
+    safeMountedExecution(() => dialog.showModal());
   }
 }
 
 function closeConfirmDeleteModal() {
-  if (confirmDeleteDialog.value) {
-    confirmDeleteDialog.value.close();
-    selectedUser.value = null;
+  const dialog = safeElementAccess(confirmDeleteDialog);
+  if (dialog) {
+    safeMountedExecution(() => {
+      dialog.close();
+      selectedUser.value = null;
+    });
   }
+}
+
+// Safe element access helper that leverages the component lifecycle state
+function safeElementAccess<T>(elementRef: { value: T | null }): T | null {
+  // Only allow access if component is mounted
+  if (!isMounted.value) return null;
+
+  // Check if the ref exists and has a value
+  return elementRef?.value || null;
 }
 
 function resetForm() {
@@ -862,25 +899,42 @@ async function deleteUser() {
   }
 }
 
-// Lifecycle hooks
-onMounted(async () => {
-  isLoading.value = true;
+// Lifecycle management with safe component access
+import { initializeAdminComponent } from "@/utils/adminComponentInitializer";
 
-  try {
-    await adminUsersStore.fetchUsers();
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    showToast({
-      type: "error",
-      title: t("admin.users.toast.loadError", "Fehler"),
-      message: t(
-        "admin.users.error.loadFailed",
-        "Benutzer konnten nicht geladen werden",
-      ),
-    });
-  } finally {
-    isLoading.value = false;
-  }
+// Initialize component with safe lifecycle handling
+const { isMounted, safeMountedExecution } = initializeAdminComponent({
+  componentName: "AdminUsers",
+  loadData: async () => {
+    isLoading.value = true;
+
+    try {
+      await adminUsersStore.fetchUsers();
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      // Only show toast if component is still mounted
+      if (isMounted.value) {
+        showToast({
+          type: "error",
+          title: t("admin.users.toast.loadError", "Fehler"),
+          message: t(
+            "admin.users.error.loadFailed",
+            "Benutzer konnten nicht geladen werden",
+          ),
+        });
+      }
+      // Re-throw to allow the initializer to handle it properly
+      throw error;
+    } finally {
+      // Only update loading state if component is still mounted
+      if (isMounted.value) {
+        isLoading.value = false;
+      }
+    }
+  },
+  emit,
+  errorMessage: "Fehler beim Laden der Benutzerdaten",
+  context: { component: "AdminUsers" },
 });
 
 // Watch for store errors

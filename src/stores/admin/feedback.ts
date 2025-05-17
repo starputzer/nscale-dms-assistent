@@ -20,9 +20,9 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
     negative: 0,
     positive_percent: 0,
     with_comments: 0,
-    feedback_by_day: []
+    feedback_by_day: [],
   });
-  
+
   const negativeFeedback = ref<FeedbackEntry[]>([]);
   const filter = ref<FeedbackFilter>({});
   const loading = ref(false);
@@ -37,21 +37,17 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
 
     // Apply date filters
     if (filter.value.dateFrom) {
-      filtered = filtered.filter(
-        (f) => f.created_at >= filter.value.dateFrom!
-      );
+      filtered = filtered.filter((f) => f.created_at >= filter.value.dateFrom!);
     }
-    
+
     if (filter.value.dateTo) {
-      filtered = filtered.filter(
-        (f) => f.created_at <= filter.value.dateTo!
-      );
+      filtered = filtered.filter((f) => f.created_at <= filter.value.dateTo!);
     }
 
     // Apply comment filter
     if (filter.value.hasComment !== undefined) {
-      filtered = filtered.filter(
-        (f) => filter.value.hasComment ? !!f.comment : !f.comment
+      filtered = filtered.filter((f) =>
+        filter.value.hasComment ? !!f.comment : !f.comment,
       );
     }
 
@@ -63,7 +59,7 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
           f.user_email.toLowerCase().includes(searchLower) ||
           (f.comment && f.comment.toLowerCase().includes(searchLower)) ||
           (f.question && f.question.toLowerCase().includes(searchLower)) ||
-          (f.answer && f.answer.toLowerCase().includes(searchLower))
+          (f.answer && f.answer.toLowerCase().includes(searchLower)),
       );
     }
 
