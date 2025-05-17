@@ -614,6 +614,9 @@
       </div>
     </div>
   </div>
+  
+  <!-- Debug Panel for development environments -->
+  <StreamingDebugPanel v-if="import.meta.env.DEV" />
 </template>
 
 <script setup lang="ts">
@@ -642,6 +645,7 @@ import type {
 import MessageList from "@/components/chat/MessageList.vue";
 import MessageInput from "@/components/chat/MessageInput.vue";
 import SessionList from "@/components/session/SessionList.vue";
+import StreamingDebugPanel from "@/components/debug/StreamingDebugPanel.vue";
 
 // Diagnostics Setup
 const { captureError, trackDataLoad, trackLifecycle, exportToConsole } = useUIDiagnostics('ChatView');
