@@ -1,0 +1,52 @@
+/* This file is a critical direct fix for admin menu items display issues */
+
+/* Direct style - most important properties with high specificity */
+body .admin-panel__nav .admin-panel__nav-item {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-height: 36px !important;
+  box-sizing: border-box !important;
+  width: calc(100% - 1rem) !important;
+  margin: 2px 0.5rem !important;
+  color: #333333 !important;
+}
+
+body .admin-panel__nav .admin-panel__nav-item--active {
+  color: #00a550 !important;
+  background-color: #e6f7ef !important;
+}
+
+body .admin-panel__nav .admin-panel__nav-item .admin-panel__nav-label {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  max-width: 160px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  color: inherit !important;
+  font-size: 0.95rem !important;
+  font-weight: inherit !important;
+}
+
+body .theme-dark .admin-panel__nav .admin-panel__nav-item {
+  color: #f8f8f8 !important;
+}
+
+body .theme-dark .admin-panel__nav .admin-panel__nav-item--active {
+  color: #00c060 !important;
+}
+
+/* !important Mobile fixes */
+@media (max-width: 768px) {
+  body .admin-panel__nav .admin-panel__nav-item {
+    margin: 2px !important;
+    padding: 0.5rem 0.75rem !important;
+  }
+  
+  body .admin-panel__nav .admin-panel__nav-item .admin-panel__nav-label {
+    font-size: 0.8rem !important;
+    max-width: none !important;
+  }
+}

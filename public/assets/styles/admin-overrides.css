@@ -1,0 +1,43 @@
+/* Admin overrides for text display */
+.admin-panel__nav-item {
+  color: #333333 !important; 
+}
+
+.admin-panel__nav-item--active {
+  color: #00a550 !important;
+}
+
+.admin-panel__nav-label {
+  display: inline-block !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 160px !important;
+  color: inherit !important;
+  font-weight: inherit !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  font-size: 0.95rem !important;
+  /* Debug outline */
+  /* outline: 1px solid blue !important; */
+  /* Add important attributes to ensure display */
+  position: relative !important;
+  flex: 1 !important;
+}
+
+/* Dark theme support */
+.theme-dark .admin-panel__nav-item {
+  color: #f8f8f8 !important;
+}
+
+.theme-dark .admin-panel__nav-item--active {
+  color: #00c060 !important;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .admin-panel__nav-label {
+    max-width: none !important;
+    font-size: 0.8rem !important;
+  }
+}
