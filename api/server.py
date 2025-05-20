@@ -13,7 +13,7 @@ import sqlite3  # Fehlender Import hinzugefügt
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, Request, Query
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, Response
 from sse_starlette.sse import EventSourceResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -33,6 +33,11 @@ from modules.session.chat_history import ChatHistoryManager
 from modules.feedback.feedback_manager import FeedbackManager
 from modules.core.motd_manager import MOTDManager
 from api.telemetry_handler import handle_telemetry_request
+from api.admin_handler import (get_system_stats, get_feedback_stats, get_negative_feedback, 
+                              update_feedback_status, delete_feedback, filter_feedback, 
+                              export_feedback, get_available_actions, perform_system_check, 
+                              get_doc_converter_status, get_doc_converter_jobs, 
+                              get_doc_converter_settings, update_doc_converter_settings)
 
 try:
     from dotenv import load_dotenv
@@ -1054,7 +1059,7 @@ async def rename_session(request: RenameSessionRequest, user_data: Dict[str, Any
     
     return {"message": "Session erfolgreich umbenannt"}
 
-# Admin-API-Endpunkte
+# Admin-API-Endpunkte - Allgemeine Systemfunktionen
 @app.post("/api/admin/install-model")
 async def install_model(user_data: Dict[str, Any] = Depends(get_admin_user)):
     """Installiert das LLM-Modell (nur für Admins)"""
@@ -1106,12 +1111,150 @@ async def clear_embedding_cache(user_data: Dict[str, Any] = Depends(get_admin_us
         logger.error(f"Fehler beim Löschen des Embedding-Cache: {e}")
         raise HTTPException(status_code=500, detail=f"Fehler beim Löschen des Embedding-Cache: {str(e)}")
 
+# Neue Admin-Endpunkte für System-Statistiken und -Funktionen
 @app.get("/api/admin/stats")
-async def get_stats(user_data: Dict[str, Any] = Depends(get_admin_user)):
-    """Gibt Statistiken zum System zurück (nur für Admins)"""
-    stats = rag_engine.get_document_stats()
+async def get_admin_stats(user_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Gibt umfassende Systemstatistiken zurück (nur für Admins)"""
+    rag_stats = rag_engine.get_document_stats()
+    system_stats = get_system_stats()
     
-    return {"stats": stats}
+    # Kombiniere RAG-Engine-Statistiken mit Systemstatistiken
+    if isinstance(rag_stats, dict) and "stats" in rag_stats:
+        combined_stats = {**system_stats, **rag_stats["stats"]}
+    else:
+        combined_stats = system_stats
+    
+    return {"stats": combined_stats}
+
+@app.get("/api/v1/admin/system")
+async def get_admin_system_info(user_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Gibt Systemstatistiken zurück (nur für Admins) - API v1 Endpoint"""
+    system_stats = get_system_stats()
+    return {"stats": system_stats}
+
+@app.get("/api/v1/system/stats")
+async def get_system_statistics(user_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Gibt Systemstatistiken zurück (nur für Admins) - API v1 Endpoint für globale Systemstatistiken"""
+    system_stats = get_system_stats()
+    return {"stats": system_stats}
+
+@app.post("/api/v1/admin/system-check")
+async def run_system_check(user_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Führt eine Systemprüfung durch und gibt detaillierte Ergebnisse zurück"""
+    check_results = perform_system_check()
+    return check_results
+
+@app.get("/api/v1/admin/system-actions")
+async def get_system_actions(user_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Gibt verfügbare Systemaktionen zurück (nur für Admins)"""
+    actions = get_available_actions()
+    return {"actions": actions}
+
+# Admin-Feedback-Endpunkte
+@app.get("/api/v1/admin/feedback/stats")
+async def get_admin_feedback_stats(user_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Gibt detaillierte Feedback-Statistiken zurück (nur für Admins)"""
+    stats_data = get_feedback_stats()
+    return {"stats": stats_data}
+
+@app.get("/api/v1/admin/feedback/negative")
+async def get_admin_negative_feedback(
+    limit: int = Query(100, description="Maximale Anzahl an Einträgen"), 
+    user_data: Dict[str, Any] = Depends(get_admin_user)
+):
+    """Gibt eine Liste der negativen Feedback-Einträge zurück (nur für Admins)"""
+    feedback = get_negative_feedback(limit)
+    return {"feedback": feedback}
+
+@app.patch("/api/v1/admin/feedback/{feedback_id}/status")
+async def update_admin_feedback_status(
+    feedback_id: str, 
+    request: dict,
+    user_data: Dict[str, Any] = Depends(get_admin_user)
+):
+    """Aktualisiert den Status eines Feedback-Eintrags (nur für Admins)"""
+    status = request.get("status")
+    comment = request.get("comment")
+    
+    if not status:
+        raise HTTPException(status_code=400, detail="Status muss angegeben werden")
+        
+    updated_entry = update_feedback_status(feedback_id, status, comment)
+    return updated_entry
+
+@app.delete("/api/v1/admin/feedback/{feedback_id}")
+async def delete_admin_feedback(
+    feedback_id: str,
+    user_data: Dict[str, Any] = Depends(get_admin_user)
+):
+    """Löscht einen Feedback-Eintrag (nur für Admins)"""
+    success = delete_feedback(feedback_id)
+    return {"success": success, "message": f"Feedback {feedback_id} erfolgreich gelöscht"}
+
+@app.post("/api/v1/admin/feedback/filter")
+async def filter_admin_feedback(
+    filter_params: dict,
+    user_data: Dict[str, Any] = Depends(get_admin_user)
+):
+    """Filtert Feedback-Einträge nach verschiedenen Kriterien (nur für Admins)"""
+    filtered_feedback = filter_feedback(filter_params)
+    return {"feedback": filtered_feedback}
+
+@app.get("/api/v1/admin/feedback/export")
+async def export_admin_feedback(
+    format: str = Query(..., description="Exportformat (csv, json, xlsx, pdf)"),
+    fields: str = Query("id,user_email,question,answer,comment,created_at", description="Kommagetrennte Liste von Feldern"),
+    user_data: Dict[str, Any] = Depends(get_admin_user)
+):
+    """Exportiert Feedback-Daten in verschiedenen Formaten (nur für Admins)"""
+    field_list = fields.split(",")
+    
+    # Hole negative Feedback als Beispieldaten
+    data = get_negative_feedback(100)
+    
+    # Exportiere die Daten im angegebenen Format
+    export_options = {
+        "format": format,
+        "data": data,
+        "fields": field_list
+    }
+    
+    result_bytes, mime_type, filename = export_feedback(export_options)
+    
+    # Setze entsprechende Header für den Download
+    headers = {
+        "Content-Disposition": f"attachment; filename={filename}"
+    }
+    
+    return Response(content=result_bytes, media_type=mime_type, headers=headers)
+
+# Admin-Dokumentenkonverter-Endpunkte
+@app.get("/api/v1/admin/doc-converter/status")
+async def get_admin_doc_converter_status(user_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Gibt den aktuellen Status des Dokumentenkonverters zurück (nur für Admins)"""
+    status = get_doc_converter_status()
+    return {"status": status}
+
+@app.get("/api/v1/admin/doc-converter/jobs")
+async def get_admin_doc_converter_jobs(user_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Gibt die aktuellen Jobs des Dokumentenkonverters zurück (nur für Admins)"""
+    jobs = get_doc_converter_jobs()
+    return {"jobs": jobs}
+
+@app.get("/api/v1/admin/doc-converter/settings")
+async def get_admin_doc_converter_settings(user_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Gibt die Einstellungen des Dokumentenkonverters zurück (nur für Admins)"""
+    settings = get_doc_converter_settings()
+    return {"settings": settings}
+
+@app.put("/api/v1/admin/doc-converter/settings")
+async def update_admin_doc_converter_settings(
+    settings: dict,
+    user_data: Dict[str, Any] = Depends(get_admin_user)
+):
+    """Aktualisiert die Einstellungen des Dokumentenkonverters (nur für Admins)"""
+    updated_settings = update_doc_converter_settings(settings)
+    return {"settings": updated_settings, "message": "Einstellungen erfolgreich aktualisiert"}
 
 # CSS-Datei-Zeitstempel aktualisieren bei Serverstart
 @app.on_event("startup")
