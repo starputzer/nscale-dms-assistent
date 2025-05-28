@@ -35,6 +35,7 @@ import { CentralAuthManager } from '@/services/auth/CentralAuthManager'
 import '@/assets/styles/main.scss'
 import '@/assets/themes.scss'
 import '@/assets/layout-fixes.css'
+import '@/css/streaming-fixes.css' // Zusätzliche CSS-Fixes für Streaming-Nachrichten
 
 // Create app
 const app = createApp(App)

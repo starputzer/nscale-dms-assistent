@@ -4,7 +4,9 @@
     :class="{
       'n-chat-view--mobile-sidebar': isMobileSidebarOpen,
       'n-chat-view--sidebar-collapsed': isSidebarCollapsed,
+      'n-chat-view--debug': true, /* Always add debug class */
     }"
+    style="position: relative; min-height: 100vh; z-index: 1;"
   >
     <!-- Sidebar mit Sitzungsverwaltung -->
     <div
@@ -257,15 +259,31 @@
         </div>
       </div>
 
-      <!-- Message List -->
+      <!-- Debug Panel -->
+      <div style="position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.9); color: white; padding: 10px; z-index: 9999; font-size: 12px; width: 300px; max-height: 400px; overflow-y: auto;">
+        <h4 style="margin: 0 0 10px 0;">Store Debug</h4>
+        <div>SessionID: {{ currentSessionId }}</div>
+        <div>Messages Count: {{ currentMessages?.length }}</div>
+        <div>isStreaming: {{ isStreaming }}</div>
+        <div>Store Messages:</div>
+        <div v-if="sessionsStore.messages && currentSessionId">
+          <div>Session {{ currentSessionId }} messages: {{ sessionsStore.messages[currentSessionId]?.length || 0 }}</div>
+          <div v-for="(msg, idx) in (sessionsStore.messages[currentSessionId] || []).slice(0, 3)" :key="`store-${idx}`" style="margin-left: 10px; font-size: 11px;">
+            {{ idx }}: [{{ msg.role }}] {{ msg.content.substring(0, 30) }}... ({{ msg.id }})
+          </div>
+        </div>
+      </div>
+      
+      <!-- Message List with additional key for forced updates -->
       <MessageList
         ref="messageListRef"
         :messages="currentMessages"
         :isLoading="isLoadingMessages"
         :isStreaming="isStreaming"
         :showMessageActions="true"
-        :virtualized="true"
+        :virtualized="false"
         :showScrollToBottomButton="true"
+        :key="`message-list-${currentSessionId}-${currentMessages.length}-${isStreaming}`"
         @feedback="handleMessageFeedback"
         @view-sources="handleViewSources"
         @view-explanation="handleViewExplanation"
@@ -614,6 +632,9 @@
       </div>
     </div>
   </div>
+  
+  <!-- Streaming Debug Panel for Development -->
+  <StreamingDebugPanel v-if="import.meta.env.DEV" />
 </template>
 
 <script setup lang="ts">
@@ -642,6 +663,7 @@ import type {
 import MessageList from "@/components/chat/MessageList.vue";
 import MessageInput from "@/components/chat/MessageInput.vue";
 import SessionList from "@/components/session/SessionList.vue";
+import StreamingDebugPanel from "@/components/debug/StreamingDebugPanel.vue";
 
 // Diagnostics Setup
 const { captureError, trackDataLoad, trackLifecycle, exportToConsole } = useUIDiagnostics('ChatView');
@@ -793,17 +815,9 @@ function handleRenameSession(sessionId: string, newTitle?: string) {
 }
 
 function handleDeleteSession(sessionId: string) {
-  // Bestätigung anfordern
-  if (
-    !confirm(
-      "Möchten Sie diese Unterhaltung wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
-    )
-  ) {
-    return;
-  }
-
+  // SessionList already shows a confirmation dialog, so we don't need another one
   sessionsStore
-    .archiveSession(sessionId)
+    .deleteSession(sessionId)
     .then(() => {
       // Wenn die gelöschte Session die aktuelle ist, zur ersten verfügbaren wechseln
       if (sessionId === currentSessionId.value) {
@@ -874,17 +888,9 @@ function handleReorderSessions(reorderedSessions: ChatSession[]) {
 function handleBulkAction(action: string, sessionIds: string[], data?: any): void {
   switch (action) {
     case "delete":
-      // Bestätigung anfordern
-      if (
-        !confirm(
-          `Möchten Sie ${sessionIds.length} Unterhaltungen wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`,
-        )
-      ) {
-        return;
-      }
-
+      // SessionList already shows a confirmation dialog, so we don't need another one
       sessionIds.forEach((id: string) => {
-        sessionsStore.archiveSession(id).catch((error: Error) => {
+        sessionsStore.deleteSession(id).catch((error: Error) => {
           console.error(`Fehler beim Löschen der Session ${id}:`, error);
         });
       });

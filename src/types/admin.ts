@@ -102,8 +102,11 @@ export interface MotdConfig {
   enabled: boolean;
   format: "markdown" | "html" | "text";
   content: string;
+  priority?: "low" | "normal" | "high" | "urgent";
+  audience?: "all" | "admins" | "users" | "new" | "custom";
   style: MotdStyle;
   display: MotdDisplay;
+  schedule?: MotdSchedule;
 }
 
 export interface MotdStyle {
@@ -111,13 +114,53 @@ export interface MotdStyle {
   borderColor: string;
   textColor: string;
   iconClass: string;
+  borderRadius?: number;
+  shadow?: boolean;
 }
 
 export interface MotdDisplay {
-  position: "top" | "bottom";
+  position: "top" | "bottom" | "modal";
   dismissible: boolean;
   showOnStartup: boolean;
   showInChat: boolean;
+}
+
+export interface MotdSchedule {
+  enabled: boolean;
+  startDate: Date | null;
+  endDate: Date | null;
+  recurrence: "none" | "daily" | "weekly" | "monthly" | "custom";
+  timeSlots?: string[];
+}
+
+export interface MotdTemplate {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  tags: string[];
+  content: string;
+  style: Partial<MotdStyle>;
+  priority: string;
+}
+
+export interface MotdHistoryItem {
+  id: string;
+  title: string;
+  preview: string;
+  content: string;
+  timestamp: number;
+  user: string;
+  status: "active" | "scheduled" | "expired" | "draft";
+  views: number;
+  dismissals: number;
+  config: MotdConfig;
+}
+
+export interface MotdVariable {
+  key: string;
+  description: string;
+  example: string;
 }
 
 /**

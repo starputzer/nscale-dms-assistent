@@ -32,7 +32,9 @@ function loadCSSFile(href) {
 function initialize(elementId = "vue-dms-app") {
   // Prüfen, ob App bereits initialisiert
   if (vueApp !== null) {
-    console.warn("Vue-App wurde bereits initialisiert. Überspringe weitere Initialisierung.");
+    console.warn(
+      "Vue-App wurde bereits initialisiert. Überspringe weitere Initialisierung.",
+    );
     return vueApp;
   }
 
@@ -47,7 +49,9 @@ function initialize(elementId = "vue-dms-app") {
 
   // Prüfen, ob im Zielelement bereits Inhalte sind
   if (element.hasChildNodes()) {
-    console.warn(`Element #${elementId} hat bereits Kindelemente. Möglicherweise wurde hier bereits eine App gemountet.`);
+    console.warn(
+      `Element #${elementId} hat bereits Kindelemente. Möglicherweise wurde hier bereits eine App gemountet.`,
+    );
     // Trotzdem fortfahren, aber Warnung ausgeben
   }
 
@@ -89,5 +93,5 @@ export default {
 
     initialized = true;
     return initialize(elementId);
-  }
+  },
 };

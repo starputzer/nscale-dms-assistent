@@ -12,20 +12,19 @@
 
 // Monitoring für Legacy-Code-Nutzung
 function trackLegacyUsage(componentName, action) {
-  if (typeof window.telemetry !== 'undefined') {
-    window.telemetry.trackEvent('legacy_code_usage', {
+  if (typeof window.telemetry !== "undefined") {
+    window.telemetry.trackEvent("legacy_code_usage", {
       component: componentName,
       action: action,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 }
 
 // Tracking bei Modulinitialisierung
-trackLegacyUsage('feedback', 'initialize');
+trackLegacyUsage("feedback", "initialize");
 
-
-import { getUserTestVariant, trackTestMetric } from './ab-testing.js';
+import { getUserTestVariant, trackTestMetric } from "./ab-testing.js";
 
 export function setupFeedback(options) {
   const {
@@ -174,18 +173,23 @@ export function setupFeedback(options) {
         }
         console.log("✅ Feedback erfolgreich gesendet und UI aktualisiert");
 
-      // A/B Test: Feedback als Metrik erfassen
-      const chatVariant = getUserTestVariant('chat-interface-v2');
-      if (chatVariant) {
-        // Feedback-Wert auf Skala 0 (negativ) bis 1 (positiv)
-        const feedbackValue = isPositive ? 1 : 0;
-        trackTestMetric('chat-interface-v2', 'userSatisfaction', feedbackValue, {
-          messageId: numericMessageId,
-          sessionId: numericSessionId,
-          messageLength: messages.value[messageIndex]?.message?.length || 0
-        });
-        console.log(`A/B Test - Nutzer-Feedback erfasst: ${feedbackValue}`);
-      }
+        // A/B Test: Feedback als Metrik erfassen
+        const chatVariant = getUserTestVariant("chat-interface-v2");
+        if (chatVariant) {
+          // Feedback-Wert auf Skala 0 (negativ) bis 1 (positiv)
+          const feedbackValue = isPositive ? 1 : 0;
+          trackTestMetric(
+            "chat-interface-v2",
+            "userSatisfaction",
+            feedbackValue,
+            {
+              messageId: numericMessageId,
+              sessionId: numericSessionId,
+              messageLength: messages.value[messageIndex]?.message?.length || 0,
+            },
+          );
+          console.log(`A/B Test - Nutzer-Feedback erfasst: ${feedbackValue}`);
+        }
       } else {
         // Fallback: Aktualisiere die letzte Assistentennachricht
         const lastAssistantIndex = messages.value
@@ -204,16 +208,24 @@ export function setupFeedback(options) {
           }
 
           // A/B Test: Feedback als Metrik erfassen (auch im Fallback)
-          const chatVariant = getUserTestVariant('chat-interface-v2');
+          const chatVariant = getUserTestVariant("chat-interface-v2");
           if (chatVariant) {
             const feedbackValue = isPositive ? 1 : 0;
-            trackTestMetric('chat-interface-v2', 'userSatisfaction', feedbackValue, {
-              messageId: numericMessageId,
-              sessionId: numericSessionId,
-              messageLength: messages.value[lastAssistantIndex]?.message?.length || 0,
-              isFallback: true
-            });
-            console.log(`A/B Test - Nutzer-Feedback (Fallback) erfasst: ${feedbackValue}`);
+            trackTestMetric(
+              "chat-interface-v2",
+              "userSatisfaction",
+              feedbackValue,
+              {
+                messageId: numericMessageId,
+                sessionId: numericSessionId,
+                messageLength:
+                  messages.value[lastAssistantIndex]?.message?.length || 0,
+                isFallback: true,
+              },
+            );
+            console.log(
+              `A/B Test - Nutzer-Feedback (Fallback) erfasst: ${feedbackValue}`,
+            );
           }
         } else {
           console.warn("⚠️ Keine Assistentennachricht gefunden!");

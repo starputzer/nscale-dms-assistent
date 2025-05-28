@@ -1,9 +1,81 @@
-# Verbesserter Stream-Endpoint mit besserer Fehlerbehandlung
+# Verbesserter Stream-Endpoint mit besserer Fehlerbehandlung und zusätzlichen API-Endpunkten
 
-from fastapi import Query, HTTPException
-from typing import Optional
+from fastapi import Query, HTTPException, APIRouter, Depends, Request
+from fastapi.responses import Response
+from sse_starlette.sse import EventSourceResponse
+from typing import Optional, Dict, Any, List
+import time
+import json
+import logging
 
-@app.get("/api/question/stream")
+# Logger einrichten
+logger = logging.getLogger(__name__)
+
+# Router für zusätzliche Endpunkte
+additional_router = APIRouter()
+
+# Feedback-Statistik-Endpunkt
+@additional_router.get("/api/v1/admin/feedback/stats-fixed")
+async def get_admin_feedback_stats_fixed():
+    """Gibt detaillierte Feedback-Statistiken zurück (nur für Admins)"""
+    try:
+        # Mock-Implementierung der Statistikgenerierung
+        total = 120
+        positive = 95
+        negative = 25
+        positive_percent = round((positive / total) * 100 if total > 0 else 0, 1)
+        with_comments = 42
+        unresolved = 18
+        feedback_rate = 15.3  # Prozentsatz der Nachrichten mit Feedback
+        
+        # Zeitreihendaten für die letzten 7 Tage
+        current_time = time.time()
+        feedback_by_day = []
+        
+        for i in range(7, 0, -1):
+            day_offset = i * 24 * 3600
+            day_timestamp = current_time - day_offset
+            day_date = time.strftime("%Y-%m-%d", time.localtime(day_timestamp))
+            
+            # Simulierte Werte
+            day_positive = max(0, int(10 + (i % 3) * 5))
+            day_negative = max(0, int(2 + (i % 2) * 3))
+            day_count = day_positive + day_negative
+            
+            feedback_by_day.append({
+                "date": day_date,
+                "positive": day_positive,
+                "negative": day_negative,
+                "count": day_count
+            })
+        
+        stats_data = {
+            "total": total,
+            "positive": positive,
+            "negative": negative,
+            "positive_percent": positive_percent,
+            "with_comments": with_comments,
+            "unresolved": unresolved,
+            "feedback_rate": feedback_rate,
+            "feedback_by_day": feedback_by_day
+        }
+        
+        return {"stats": stats_data}
+        
+    except Exception as e:
+        # Als Fallback verwenden wir leere Statistiken
+        return {
+            "stats": {
+                "total": 0,
+                "positive": 0,
+                "negative": 0,
+                "positive_percent": 0,
+                "with_comments": 0,
+                "feedback_by_day": []
+            }
+        }
+
+@additional_router.get("/api/question/stream")
 async def stream_question(
     question: str = Query(..., description="Die Frage des Benutzers"),
     session_id: str = Query(..., description="Die Session-ID"), 

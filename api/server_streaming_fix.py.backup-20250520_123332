@@ -1,0 +1,237 @@
+import asyncio
+import json
+import time
+from datetime import datetime
+from typing import Dict, Any, Optional, List
+
+from fastapi import Request
+from starlette.responses import JSONResponse
+from sse_starlette.sse import EventSourceResponse
+
+async def stream_question_fix(
+    question: str,
+    session_id: str, 
+    simple_language: bool, 
+    request: Request,
+    user_data: Dict[str, Any],
+    chat_history,
+    rag_engine,
+    logger
+):
+    """
+    Verbesserter Streaming-Endpoint ohne Token in URL
+    Authentifizierung erfolgt über Authorization-Header
+    
+    Args:
+        question: Die Frage des Benutzers
+        session_id: Die Session-ID
+        simple_language: Einfache Sprache verwenden
+        request: FastAPI-Request-Objekt
+        user_data: Benutzerdaten aus Authentication
+        chat_history: ChatHistoryManager-Instanz
+        rag_engine: RAGEngine-Instanz
+        logger: Logger-Instanz
+    
+    Returns:
+        EventSourceResponse für SSE-Streaming
+    """
+    try:
+        # Dekodiere die Frage
+        import urllib.parse
+        decoded_question = urllib.parse.unquote_plus(question)
+        logger.info(f"Stream-Anfrage: Frage='{decoded_question[:50]}...', Session={session_id}")
+        
+        # Validierung
+        if not decoded_question or not decoded_question.strip():
+            logger.warning(f"Leere Frage in Streaming-Anfrage: '{question}'")
+            raise ValueError("Die Frage darf nicht leer sein")
+        
+        if not session_id or not session_id.strip():
+            logger.warning(f"Fehlende Session-ID in Streaming-Anfrage für Frage: '{decoded_question[:30]}...'")
+            raise ValueError("Session-ID ist erforderlich")
+        
+        user_id = user_data['user_id']
+        logger.info(f"Benutzer authentifiziert: {user_data.get('email')}")
+        
+        # Session-Validierung - aber überspringe den 404-Fehler, wenn die Session
+        # noch nicht existiert - wir erstellen sie einfach
+        try:
+            user_sessions = chat_history.get_user_sessions(user_id)
+            # String-Konvertierung für konsistente Vergleiche
+            session_ids = [str(s['id']) for s in user_sessions]
+            
+            logger.debug(f"Verfügbare Session-IDs für Benutzer {user_id}: {session_ids}")
+            logger.debug(f"Angefragte Session-ID: {session_id} (Typ: {type(session_id).__name__})")
+            
+            # Verbesserte Session-ID-Validierung mit String-Konvertierung
+            if str(session_id) not in session_ids:
+                logger.info(f"Session {session_id} nicht gefunden, erstelle neue Session für Benutzer {user_id}")
+                
+                # Wenn es ein UUID-Format ist, versuche die Session mit dieser ID zu erstellen
+                if isinstance(session_id, str) and len(session_id) > 30 and "-" in session_id:
+                    logger.info(f"UUID-Format erkannt für {session_id}, versuche Session mit dieser ID zu erstellen")
+                    try:
+                        # Versuche zuerst eine Session mit genau dieser ID zu erstellen, falls möglich
+                        if hasattr(chat_history, 'create_session_with_id'):
+                            success = chat_history.create_session_with_id(session_id, user_id, "Neue Unterhaltung")
+                            if success:
+                                logger.info(f"Session mit angegebener UUID {session_id} erfolgreich erstellt")
+                            else:
+                                # Fallback zu normaler Session-Erstellung
+                                new_session_id = chat_history.create_session(user_id, "Neue Unterhaltung")
+                                if not new_session_id:
+                                    logger.error(f"Fehler beim Erstellen einer neuen Session für Benutzer {user_id}")
+                                    raise ValueError("Fehler beim Erstellen einer Session")
+                                session_id = str(new_session_id)
+                                logger.info(f"Neue Session erstellt mit ID: {session_id}")
+                        else:
+                            # Normale Session-Erstellung als Fallback
+                            new_session_id = chat_history.create_session(user_id, "Neue Unterhaltung")
+                            if not new_session_id:
+                                logger.error(f"Fehler beim Erstellen einer neuen Session für Benutzer {user_id}")
+                                raise ValueError("Fehler beim Erstellen einer Session")
+                            session_id = str(new_session_id)
+                            logger.info(f"Neue Session erstellt mit ID: {session_id}")
+                    except Exception as e:
+                        logger.error(f"Fehler beim Erstellen einer Session mit UUID {session_id}: {e}")
+                        # Fallback zu normaler Session-Erstellung
+                        new_session_id = chat_history.create_session(user_id, "Neue Unterhaltung")
+                        if not new_session_id:
+                            logger.error(f"Fehler beim Erstellen einer neuen Session für Benutzer {user_id}")
+                            raise ValueError("Fehler beim Erstellen einer Session")
+                        session_id = str(new_session_id)
+                        logger.info(f"Neue Session erstellt mit ID: {session_id}")
+                else:
+                    # Standard-Fall: Erstelle neue Session mit generierter ID
+                    new_session_id = chat_history.create_session(user_id, "Neue Unterhaltung")
+                    if not new_session_id:
+                        logger.error(f"Fehler beim Erstellen einer neuen Session für Benutzer {user_id}")
+                        raise ValueError("Fehler beim Erstellen einer Session")
+                    session_id = str(new_session_id)
+                    logger.info(f"Neue Session erstellt mit ID: {session_id}")
+        except Exception as e:
+            # Bei Fehlern mit Session-Validierung einfach eine neue Session erstellen
+            logger.warning(f"Session-Validierung fehlgeschlagen: {e}, erstelle neue Session")
+            try:
+                new_session_id = chat_history.create_session(user_id, "Neue Unterhaltung")
+                if not new_session_id:
+                    logger.error(f"Fehler beim Erstellen einer neuen Session für Benutzer {user_id}")
+                    raise ValueError("Fehler beim Erstellen einer Session")
+                session_id = str(new_session_id)
+                logger.info(f"Neue Session erstellt mit ID (Fallback): {session_id}")
+            except Exception as create_error:
+                logger.error(f"Kritischer Fehler beim Erstellen einer Session: {create_error}")
+                raise ValueError(f"Kritischer Fehler bei Session-Erstellung: {create_error}")
+        
+        
+        # Speichere die Frage
+        try:
+            # Verbesserte Fehlerbehandlung für Session-ID-Konvertierung
+            if session_id.isdigit():
+                session_id_for_message = int(session_id)
+            else:
+                # UUID oder anderes Format - als String behandeln
+                session_id_for_message = session_id
+                
+            logger.debug(f"Verwende Session-ID für add_message: {session_id_for_message} (Typ: {type(session_id_for_message).__name__})")
+            message_id = chat_history.add_message(session_id_for_message, decoded_question, is_user=True)
+            logger.info(f"Frage gespeichert mit ID: {message_id}")
+        except Exception as e:
+            # Fallback wenn die Session-ID-Konvertierung fehlschlägt
+            logger.error(f"Fehler beim Speichern der Nachricht: {e}")
+            logger.info("Versuche Fallback mit Session-ID als String")
+            message_id = chat_history.add_message(session_id, decoded_question, is_user=True)
+            logger.info(f"Frage gespeichert mit ID (Fallback): {message_id}")
+        
+        # Stream-Generator
+        async def generate_stream():
+            try:
+                stream_id = f"stream_{session_id}_{hash(decoded_question)}"
+                logger.debug(f"Stream gestartet: ID={stream_id}")
+                
+                # Starte den Stream vom RAG-Engine
+                
+                # Verwende die gleiche Session-ID-Konvertierung, mit verbessertem Fehlerhandling
+                try:
+                    session_id_for_stream = int(session_id) if session_id.isdigit() else session_id
+                    
+                    # Prüfe, ob rag_engine initialisiert ist
+                    if not hasattr(rag_engine, 'stream_answer_chunks'):
+                        logger.error("RAG-Engine ist nicht richtig initialisiert oder stream_answer_chunks nicht verfügbar")
+                        yield f"data: {json.dumps({'error': 'Interner Serverfehler: RAG-Engine nicht bereit'})}\n\n"
+                        yield "event: error\ndata: \n\n"
+                        return
+                    
+                    # Verwende einen Timeout, um hängende Streams zu vermeiden
+                    try:
+                        async for chunk in rag_engine.stream_answer_chunks(
+                            decoded_question, 
+                            session_id_for_stream, 
+                            use_simple_language=simple_language,
+                            stream_id=stream_id
+                        ):
+                            # Formatiere als SSE
+                            if isinstance(chunk, dict):
+                                data = json.dumps(chunk)
+                            else:
+                                data = json.dumps({"content": chunk})
+                            
+                            yield f"data: {data}\n\n"
+                        
+                        # Stream-Ende signalisieren
+                        logger.debug(f"Stream beendet: ID={stream_id}")
+                        yield "event: done\ndata: [DONE]\n\n"
+                        
+                    except asyncio.TimeoutError:
+                        logger.error(f"Timeout bei Streaming-Anfrage für Stream-ID: {stream_id}")
+                        yield f"data: {json.dumps({'error': 'Zeitüberschreitung beim Generieren der Antwort'})}\n\n"
+                        yield "event: error\ndata: \n\n"
+                    except Exception as stream_error:
+                        logger.error(f"Fehler beim Streaming für Stream-ID {stream_id}: {stream_error}")
+                        yield f"data: {json.dumps({'error': str(stream_error)})}\n\n"
+                        yield "event: error\ndata: \n\n"
+                except Exception as e:
+                    logger.error(f"Fehler bei der Vorbereitung des Streams: {e}")
+                    yield f"data: {json.dumps({'error': f'Fehler bei der Stream-Initialisierung: {str(e)}'})}\n\n"
+                    yield "event: error\ndata: \n\n"
+                
+            except Exception as e:
+                logger.error(f"Fehler im Stream-Generator: {e}", exc_info=True)
+                error_data = json.dumps({"error": str(e)})
+                yield f"data: {error_data}\n\n"
+                yield "event: error\ndata: \n\n"
+        
+        # Rückgabe als StreamingResponse
+        return EventSourceResponse(
+            generate_stream(),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "X-Accel-Buffering": "no",  # Verhindert Nginx-Buffering
+            }
+        )
+        
+    except ValueError as ve:
+        # Value-Errors als 422 Unprocessable Entity
+        logger.warning(f"Validierungsfehler: {str(ve)}")
+        # Verbesserte Fehlerantwort mit strukturierten Daten
+        return JSONResponse(
+            status_code=422,
+            content={
+                "detail": str(ve),
+                "error": "validation_error",
+                "error_description": "Die Eingabedaten erfüllen nicht die Anforderungen",
+                "error_data": {
+                    "question": decoded_question if 'decoded_question' in locals() else question,
+                    "session_id": session_id,
+                    "timestamp": datetime.now().isoformat()
+                }
+            }
+        )
+    except Exception as e:
+        logger.error(f"Unerwarteter Fehler in stream_question: {e}", exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={"detail": f"Interner Serverfehler: {str(e)}"}
+        )

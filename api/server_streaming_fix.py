@@ -124,7 +124,7 @@ def create_improved_streaming_endpoint(app, user_manager, rag_engine, chat_histo
     @app.post("/api/question/stream")
     async def stream_question_post(
         request: Dict[str, Any],
-        user_data: Dict[str, Any] = Depends(get_current_user)
+        request_obj: Request = None
     ):
         """POST-Alternative für Streaming mit Body-Parametern"""
         question = request.get("question", "")
@@ -136,5 +136,5 @@ def create_improved_streaming_endpoint(app, user_manager, rag_engine, chat_histo
             question=question,
             session_id=session_id,
             simple_language=simple_language,
-            request=None
+            request=request_obj
         )

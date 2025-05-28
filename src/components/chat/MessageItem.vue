@@ -9,7 +9,12 @@
       'n-message-item--streaming': message.isStreaming,
     }"
     :data-message-id="message.id"
+    style="position: relative;"
   >
+    <!-- Debug overlay - hidden in production -->
+    <div style="position: absolute; top: 0; right: 0; background: rgba(0,0,0,0.7); color: #0f0; padding: 2px 4px; font-size: 8px; border-radius: 2px; z-index: 999;">
+      [{{ message.role }}] ID: {{ message.id.substring(0,8) }} | Len: {{ message.content.length }} | Stream: {{ message.isStreaming }}
+    </div>
     <div class="n-message-item__content">
       <div class="n-message-item__header">
         <div class="n-message-item__role">
@@ -28,9 +33,30 @@
         </div>
       </div>
 
+      <!-- Debug text to verify content length -->
+      <div class="n-message-debug-text" style="font-size: 10px; color: #666; margin-bottom: 5px;">
+        Content length: {{ message.content.length }} chars | isStreaming: {{ message.isStreaming }}
+      </div>
+      
+      <!-- Display raw content when streaming to eliminate Markdown processing issues -->
+      <div 
+        v-if="message.isStreaming" 
+        ref="streamingContentElement"
+        class="n-message-item__text n-message-item__text--streaming"
+        :data-content-length="message.content.length"
+        :data-streaming="message.isStreaming"
+        :key="`streaming-${message.id}-${message.content.length}`"
+      >
+        {{ message.content }}
+      </div>
+      
+      <!-- Normal formatted content for non-streaming messages -->
       <div
+        v-else
         ref="contentElement"
         class="n-message-item__text"
+        :data-content-length="message.content.length"
+        :key="`formatted-${message.id}-${message.content.length}`"
         v-html="formattedContent"
       ></div>
 
@@ -233,6 +259,21 @@ const contentElement = ref<HTMLElement | null>(null);
 const uiStore = useUIStore();
 const sourceRefs = useSourceReferences();
 
+// Debug: Watch message content changes
+watch(() => props.message.content, (newContent, oldContent) => {
+  if (newContent !== oldContent) {
+    console.log(`[MessageItem] Content changed for ${props.message.id}: ${oldContent?.length || 0} -> ${newContent.length} chars`);
+    console.log(`[MessageItem] isStreaming: ${props.message.isStreaming}`);
+    
+    // Force update the DOM
+    if (props.message.isStreaming) {
+      nextTick(() => {
+        console.log(`[MessageItem] DOM update triggered for streaming message ${props.message.id}`);
+      });
+    }
+  }
+}, { immediate: true, deep: false });
+
 // Quellenreferenzen in der Nachricht finden
 const hasSourceReferences = computed(() => {
   if (props.message.metadata?.sourceReferences?.length) {
@@ -246,12 +287,23 @@ const hasSourceReferences = computed(() => {
 // Formatiert den Nachrichteninhalt mit Markdown und Syntax-Highlighting
 const formattedContent = computed(() => {
   let content = props.message.content || "";
+  
+  // Debug log for streaming
+  if (props.message.isStreaming) {
+    console.log(`[MessageItem] Formatting streaming content: ${content.length} chars, id: ${props.message.id}`);
+  }
 
-  // Markdown zu HTML konvertieren
-  content = marked(content, { breaks: true });
+  // Skip Markdown processing for streaming messages to improve performance
+  if (props.message.isStreaming) {
+    // Simple text with line breaks for streaming
+    content = content.replace(/\n/g, '<br>');
+  } else {
+    // Markdown zu HTML konvertieren
+    content = marked(content, { breaks: true });
+  }
 
   // Quellenreferenzen in klickbare Spans umwandeln
-  if (props.formatLinks) {
+  if (props.formatLinks && !props.message.isStreaming) {
     content = linkifySourceReferences(content);
   }
 
@@ -548,8 +600,42 @@ function setupSourceReferenceClicks(): void {
     });
 }
 
+// New ref for streaming content element
+const streamingContentElement = ref<HTMLElement | null>(null);
+
+// Listen for custom message update events
+function setupMessageUpdateListener() {
+  const handleMessageUpdate = (event: CustomEvent) => {
+    const { messageId, content, isStreaming } = event.detail;
+    
+    // Only respond to events for this message
+    if (messageId === props.message.id) {
+      console.log(`[MessageItem] Received update event for message ${messageId}`, { 
+        contentLength: content.length, 
+        isStreaming 
+      });
+      
+      // Manually update the DOM if the streaming element is available
+      if (isStreaming && streamingContentElement.value) {
+        // Direct DOM update as a fallback for reactivity issues
+        streamingContentElement.value.textContent = content;
+        streamingContentElement.value.dataset.contentLength = String(content.length);
+      }
+    }
+  };
+  
+  // Add event listener
+  window.addEventListener('message-content-updated', handleMessageUpdate as EventListener);
+  
+  // Return cleanup function
+  return () => {
+    window.removeEventListener('message-content-updated', handleMessageUpdate as EventListener);
+  };
+}
+
 // Lifecycle Hooks
 onMounted(() => {
+  // Set up code highlighting and source references
   nextTick(() => {
     if (props.highlightCodeBlocks) {
       applyCodeHighlighting();
@@ -557,18 +643,35 @@ onMounted(() => {
 
     setupSourceReferenceClicks();
   });
+  
+  // Set up message update listener
+  const cleanup = setupMessageUpdateListener();
+  
+  // Clean up listener on unmount
+  onBeforeUnmount(cleanup);
 });
 
 // Watches
 watch(
   () => props.message.content,
-  () => {
+  (newContent, oldContent) => {
+    // Log content changes
+    if (props.message.isStreaming) {
+      console.log(`[MessageItem] Content changed for streaming message ${props.message.id}: ${oldContent?.length || 0} -> ${newContent.length} chars`);
+    }
+    
+    // Update DOM on next tick
     nextTick(() => {
-      if (props.highlightCodeBlocks) {
+      if (props.highlightCodeBlocks && !props.message.isStreaming) {
         applyCodeHighlighting();
       }
 
       setupSourceReferenceClicks();
+      
+      // For streaming messages, ensure content is updated in DOM
+      if (props.message.isStreaming && streamingContentElement.value) {
+        streamingContentElement.value.textContent = newContent;
+      }
     });
   },
 );
@@ -975,5 +1078,27 @@ watch(
     background-color: var(--nscale-dark-surface-color, #1a1a1a);
     border-color: var(--nscale-dark-border-color, #333);
   }
+}
+
+/* Streaming message style */
+.n-message-item__text--streaming {
+  background-color: rgba(255, 255, 240, 0.9);
+  border: 1px solid rgba(255, 193, 7, 0.2);
+  border-left: 3px solid rgba(255, 193, 7, 0.7);
+  border-radius: 4px;
+  padding: 10px;
+  font-family: monospace;
+  white-space: pre-wrap;
+  color: #333;
+  line-height: 1.5;
+  
+  /* Pulsating effect for streaming content */
+  animation: pulse-border 1.5s infinite;
+}
+
+@keyframes pulse-border {
+  0% { border-left-color: rgba(255, 193, 7, 0.3); }
+  50% { border-left-color: rgba(255, 193, 7, 0.9); }
+  100% { border-left-color: rgba(255, 193, 7, 0.3); }
 }
 </style>

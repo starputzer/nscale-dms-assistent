@@ -23,18 +23,17 @@
 
 // Monitoring für Legacy-Code-Nutzung
 function trackLegacyUsage(componentName, action) {
-  if (typeof window.telemetry !== 'undefined') {
-    window.telemetry.trackEvent('legacy_code_usage', {
+  if (typeof window.telemetry !== "undefined") {
+    window.telemetry.trackEvent("legacy_code_usage", {
       component: componentName,
       action: action,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 }
 
 // Tracking bei Modulinitialisierung
-trackLegacyUsage('app-extensions', 'initialize');
-
+trackLegacyUsage("app-extensions", "initialize");
 
 function removeMessageIdDebugInfo() {
   // Führe die Funktion in regelmäßigen Abständen aus, um auch dynamisch hinzugefügte Elemente zu erfassen

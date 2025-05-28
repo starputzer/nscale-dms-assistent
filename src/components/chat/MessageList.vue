@@ -11,6 +11,19 @@
     :aria-busy="isLoading"
     :aria-live="isLoading ? 'off' : 'polite'"
   >
+    <!-- DEBUG SECTION -->
+    <div style="position: fixed; top: 60px; right: 10px; background: rgba(0,0,0,0.9); color: white; padding: 10px; z-index: 9999; font-size: 12px; max-width: 300px;">
+      <h4 style="margin: 0 0 10px 0;">MessageList Debug</h4>
+      <div>Props messages: {{ messages.length }}</div>
+      <div>isLoading: {{ isLoading }}</div>
+      <div>isStreaming: {{ isStreaming }}</div>
+      <div>isVirtualized: {{ isVirtualized }}</div>
+      <div>Messages:</div>
+      <div v-for="(msg, idx) in messages.slice(0, 5)" :key="`debug-${idx}`" style="margin-left: 10px; font-size: 11px;">
+        {{ idx }}: [{{ msg.role }}] {{ msg.content.substring(0, 30) }}... ({{ msg.id }})
+      </div>
+      <div v-if="messages.length > 5">... and {{ messages.length - 5 }} more</div>
+    </div>
     <!-- Ladezustand -->
     <div
       v-if="isLoading"
@@ -63,15 +76,56 @@
         <span>Ältere Nachrichten laden</span>
       </div>
 
+      <!-- Non-virtualized list for debugging (FIXED) -->
+      <div v-if="!isVirtualized"
+        class="n-message-list__simple-container"
+        style="min-height: 200px;"
+        :data-message-count="messages.length"
+      >
+        <!-- Debug empty message list indicator -->
+        <div v-if="messages.length === 0" style="padding: 20px; background: #ffdddd; margin: 10px; border-radius: 8px;">
+          <strong>MessageList Debug:</strong> No messages to display (messages array is empty)
+        </div>
+        
+        <!-- Explicit non-virtualized message rendering with direct v-for binding -->
+        <template v-for="(message, index) in messages" :key="`msg-direct-${message.id}-${index}`">
+          <div
+            class="n-message-list__message-wrapper n-message-direct"
+            :data-message-id="message.id"
+            :data-message-index="index"
+            :data-content-length="message.content.length"
+            :data-streaming="String(!!message.isStreaming)"
+          >
+            <div class="n-debug-message-info" style="padding: 4px; font-size: 10px; color: #666; border-bottom: 1px solid #eee;">
+              Message #{{ index }} (ID: {{ message.id.substring(0,8) }}...) {{ message.isStreaming ? '⚡ STREAMING' : '' }}
+            </div>
+            <MessageItem
+              :message="message"
+              :show-actions="showMessageActions"
+              @feedback="$emit('feedback', $event)"
+              @view-sources="$emit('view-sources', $event)"
+              @view-explanation="$emit('view-explanation', $event)"
+              @retry="$emit('retry', $event)"
+              @delete="$emit('delete', $event)"
+            />
+          </div>
+        </template>
+        
+        <!-- Force render empty container for visual debugging -->
+        <div v-if="messages.length === 0" style="height: 200px; border: 1px dashed red; margin: 20px; display: flex; align-items: center; justify-content: center;">
+          <span>No messages in this conversation yet</span>
+        </div>
+      </div>
+      
       <!-- Container für virtuelle Liste -->
-      <div
+      <div v-else
         class="n-message-list__virtual-container"
         :style="virtualContainerStyle"
       >
         <!-- Virtualisierte Nachrichtenelemente -->
         <div
           v-for="item in visibleItems"
-          :key="item.id"
+          :key="`virtual-${item.id}`"
           class="n-message-list__message-wrapper"
           :style="getItemStyle(item)"
           :aria-setsize="totalItems"
@@ -264,11 +318,52 @@ const props = withDefaults(defineProps<Props>(), {
   scrollBehavior: "smooth",
   showMessageActions: true,
   autoScrollThreshold: 0.8,
-  virtualized: true,
+  virtualized: false, // Standard auf false gesetzt für robustere Darstellung
   overscan: 5,
   estimatedItemHeight: 100,
   showScrollToBottomButton: true,
 });
+
+// Debug logging für messages
+watch(() => props.messages, (newMessages, oldMessages) => {
+  console.log(`[MessageList] Messages changed: ${oldMessages?.length || 0} -> ${newMessages.length} messages`);
+  newMessages.forEach((msg, idx) => {
+    console.log(`[MessageList] Message ${idx}:`, {
+      id: msg.id,
+      role: msg.role,
+      contentLength: msg.content.length,
+      isStreaming: msg.isStreaming,
+      status: msg.status,
+      content: msg.content.substring(0, 50) + "..."
+    });
+  });
+  
+  // Force update virtual items when messages change
+  if (isVirtualized.value) {
+    console.log(`[MessageList] Forcing virtual items update`);
+    updateVirtualItems();
+  }
+}, { deep: true, immediate: true });
+
+// Watch individual message updates for streaming
+watch(() => props.messages.map(msg => ({ id: msg.id, content: msg.content })), (newContents, oldContents) => {
+  if (!oldContents) return;
+  
+  newContents.forEach((newContent, idx) => {
+    if (oldContents[idx] && newContent.content !== oldContents[idx].content) {
+      console.log(`[MessageList] Message content changed for ${newContent.id}: ${oldContents[idx].content.length} -> ${newContent.content.length} chars`);
+      
+      // Force immediate update for streaming messages
+      if (props.messages[idx].isStreaming) {
+        console.log(`[MessageList] Streaming message detected, forcing update`);
+        nextTick(() => {
+          updateVirtualItems();
+          updateVisibleRange();
+        });
+      }
+    }
+  });
+}, { deep: true });
 
 // Refs für DOM-Elemente
 const scrollContainer = ref<HTMLElement | null>(null);
@@ -1187,5 +1282,29 @@ defineExpose({
   .n-message-list__spinner {
     animation: none;
   }
+}
+/* Debug CSS - nur für Entwicklung */
+.n-message-list {
+  /* Force visible dimensions in debug mode */
+  min-height: 300px !important;
+  border: 1px solid rgba(255, 0, 0, 0.2) !important;
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.n-message-list__simple-container {
+  /* Ensure container is visible */
+  min-height: 200px !important;
+  border: 1px solid rgba(0, 0, 255, 0.2) !important;
+  padding: 10px !important;
+  margin: 10px !important;
+}
+
+.n-message-direct {
+  /* Make each message visually obvious */
+  margin: 10px 0 !important;
+  padding: 10px !important;
+  border: 1px solid rgba(0, 128, 0, 0.2) !important;
+  border-radius: 8px !important;
+  background-color: rgba(255, 255, 255, 0.9) !important;
 }
 </style>

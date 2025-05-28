@@ -692,8 +692,10 @@ export function useFeatureToggles(options: FeatureToggleOptions = {}) {
     disableAllChatComponents: () => featureStore.disableAllChatComponents(),
     enableAllAdminComponents: () => featureStore.enableAllAdminComponents(),
     disableAllAdminComponents: () => featureStore.disableAllAdminComponents(),
-    enableAllDocConverterComponents: () => featureStore.enableAllDocConverterComponents(),
-    disableAllDocConverterComponents: () => featureStore.disableAllDocConverterComponents(),
+    enableAllDocConverterComponents: () =>
+      featureStore.enableAllDocConverterComponents(),
+    disableAllDocConverterComponents: () =>
+      featureStore.disableAllDocConverterComponents(),
 
     // Direkte Konfiguration
     configure: (config: Record<string, boolean>) =>

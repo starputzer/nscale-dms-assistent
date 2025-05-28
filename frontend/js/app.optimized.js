@@ -4,21 +4,19 @@
  * Geplantes Entfernungsdatum: 2025-06-10
  */
 
-
 // Monitoring für Legacy-Code-Nutzung
 function trackLegacyUsage(componentName, action) {
-  if (typeof window.telemetry !== 'undefined') {
-    window.telemetry.trackEvent('legacy_code_usage', {
+  if (typeof window.telemetry !== "undefined") {
+    window.telemetry.trackEvent("legacy_code_usage", {
       component: componentName,
       action: action,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 }
 
 // Tracking bei Modulinitialisierung
-trackLegacyUsage('app.optimized', 'initialize');
-
+trackLegacyUsage("app.optimized", "initialize");
 
 import { setupChat } from "./chat.optimized.js";
 import { setupFeedback } from "./feedback.js";
