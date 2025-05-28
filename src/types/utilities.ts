@@ -1,6 +1,6 @@
 /**
  * Utility-Typen für häufig verwendete generische Typkonstrukte
- * 
+ *
  * Diese Datei enthält wiederverwendbare Typ-Utilities, die in verschiedenen
  * Teilen der Anwendung eingesetzt werden können.
  */
@@ -63,22 +63,35 @@ export type NonNullable<T> = T extends null | undefined ? never : T;
 /**
  * Extrahiert den Rückgabetyp eines Funktionstyps
  */
-export type ReturnType<T extends (...args: any) => any> = T extends (...args: any) => infer R ? R : any;
+export type ReturnType<T extends (...args: any) => any> = T extends (
+  ...args: any
+) => infer R
+  ? R
+  : any;
 
 /**
  * Extrahiert den Parameter-Typ eines Funktionstyps
  */
-export type Parameters<T extends (...args: any) => any> = T extends (...args: infer P) => any ? P : never;
+export type Parameters<T extends (...args: any) => any> = T extends (
+  ...args: infer P
+) => any
+  ? P
+  : never;
 
 /**
  * Extrahiert den Konstruktorparameter-Typ
  */
-export type ConstructorParameters<T extends new (...args: any) => any> = T extends new (...args: infer P) => any ? P : never;
+export type ConstructorParameters<T extends new (...args: any) => any> =
+  T extends new (...args: infer P) => any ? P : never;
 
 /**
  * Extrahiert den Instanztyp eines Konstruktors
  */
-export type InstanceType<T extends new (...args: any) => any> = T extends new (...args: any) => infer R ? R : any;
+export type InstanceType<T extends new (...args: any) => any> = T extends new (
+  ...args: any
+) => infer R
+  ? R
+  : any;
 
 /**
  * Typ für asynchrone Werte, einschließlich Promise und PromiseLike
@@ -93,12 +106,14 @@ export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 /**
  * Macht bestimmte Properties eines Typs erforderlich
  */
-export type RequiredBy<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
+export type RequiredBy<T, K extends keyof T> = Omit<T, K> &
+  Required<Pick<T, K>>;
 
 /**
  * Macht bestimmte Properties eines Typs schreibgeschützt
  */
-export type ReadonlyBy<T, K extends keyof T> = Omit<T, K> & Readonly<Pick<T, K>>;
+export type ReadonlyBy<T, K extends keyof T> = Omit<T, K> &
+  Readonly<Pick<T, K>>;
 
 /**
  * Nutzt den zweiten Typ, wenn der erste Typ undefined ist
@@ -113,13 +128,16 @@ export type ValueOf<T> = T[keyof T];
 /**
  * Konvertiert einen Union-Typ in einen Intersection-Typ
  */
-export type UnionToIntersection<U> = 
-  (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
+export type UnionToIntersection<U> = (
+  U extends any ? (k: U) => void : never
+) extends (k: infer I) => void
+  ? I
+  : never;
 
 /**
  * Extrahiert den Typ aus einem Array- oder arrayähnlichen Typ
  */
-export type ArrayElement<ArrayType extends readonly unknown[]> = 
+export type ArrayElement<ArrayType extends readonly unknown[]> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 
 /**
@@ -146,7 +164,7 @@ export type SubType<T> = {
 /**
  * JSON-serialisierbarer Typ
  */
-export type JSONValue = 
+export type JSONValue =
   | string
   | number
   | boolean
@@ -195,14 +213,14 @@ export type ThrottledFunction<T extends (...args: any[]) => any> = {
 /**
  * Result-Type für erfolgreiche oder fehlgeschlagene Operationen
  */
-export type Result<T, E = Error> = 
+export type Result<T, E = Error> =
   | { success: true; data: T; error?: never }
   | { success: false; data?: never; error: E };
 
 /**
  * Abfrage-Statustyp für API-Anfragen
  */
-export type QueryStatus = 'idle' | 'loading' | 'success' | 'error';
+export type QueryStatus = "idle" | "loading" | "success" | "error";
 
 /**
  * API-Antwort mit Metadaten
@@ -329,7 +347,10 @@ export type Unsubscribe = () => void;
  * Type für Event-Emitter
  */
 export interface EventEmitter<Events extends Record<string, any>> {
-  on<E extends keyof Events>(event: E, listener: Listener<Events[E]>): Unsubscribe;
+  on<E extends keyof Events>(
+    event: E,
+    listener: Listener<Events[E]>,
+  ): Unsubscribe;
   off<E extends keyof Events>(event: E, listener: Listener<Events[E]>): void;
   emit<E extends keyof Events>(event: E, payload: Events[E]): void;
 }

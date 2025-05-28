@@ -1,7 +1,7 @@
 <template>
   <div class="sync-example">
     <h2>Bridge-Synchronisations-Demo</h2>
-    
+
     <div class="section">
       <h3>1. Transaktionsbasierte Updates</h3>
       <div class="demo-box">
@@ -19,16 +19,30 @@
             <input v-model="user.email" type="email" />
           </div>
           <div class="buttons">
-            <button @click="updateUserWithTransaction" class="primary">Mit Transaktion speichern</button>
-            <button @click="updateUserWithoutTransaction">Ohne Transaktion speichern</button>
-            <button @click="simulateError" class="danger">Fehler simulieren</button>
+            <button @click="updateUserWithTransaction" class="primary">
+              Mit Transaktion speichern
+            </button>
+            <button @click="updateUserWithoutTransaction">
+              Ohne Transaktion speichern
+            </button>
+            <button @click="simulateError" class="danger">
+              Fehler simulieren
+            </button>
           </div>
         </div>
         <div class="results">
           <h4>Transaktions-Log:</h4>
           <div class="log-container">
-            <div v-for="(entry, index) in transactionLog" :key="index"
-                :class="{ 'log-entry': true, 'error': entry.type === 'error', 'success': entry.type === 'success', 'info': entry.type === 'info' }">
+            <div
+              v-for="(entry, index) in transactionLog"
+              :key="index"
+              :class="{
+                'log-entry': true,
+                error: entry.type === 'error',
+                success: entry.type === 'success',
+                info: entry.type === 'info',
+              }"
+            >
               <div class="log-time">{{ formatTime(entry.timestamp) }}</div>
               <div class="log-message">{{ entry.message }}</div>
             </div>
@@ -36,7 +50,7 @@
         </div>
       </div>
     </div>
-    
+
     <div class="section">
       <h3>2. Event-Queuing-System</h3>
       <div class="demo-box">
@@ -60,7 +74,11 @@
           </div>
           <div class="input-group">
             <label>Payload:</label>
-            <input v-model="newEvent.payload" type="text" placeholder="Event-Daten" />
+            <input
+              v-model="newEvent.payload"
+              type="text"
+              placeholder="Event-Daten"
+            />
           </div>
           <div class="buttons">
             <button @click="addEvent" class="primary">Event hinzufügen</button>
@@ -89,11 +107,20 @@
             </div>
           </div>
           <div class="log-container">
-            <div v-for="(entry, index) in eventLog" :key="index"
-                :class="{ 'log-entry': true, 'error': entry.status === 'FAILED', 'success': entry.status === 'COMPLETED', 'info': entry.status === 'PROCESSING', 'pending': entry.status === 'QUEUED' }">
+            <div
+              v-for="(entry, index) in eventLog"
+              :key="index"
+              :class="{
+                'log-entry': true,
+                error: entry.status === 'FAILED',
+                success: entry.status === 'COMPLETED',
+                info: entry.status === 'PROCESSING',
+                pending: entry.status === 'QUEUED',
+              }"
+            >
               <div class="log-time">{{ formatTime(entry.timestamp) }}</div>
               <div class="log-message">
-                <strong>[{{ getPriorityName(entry.priority) }}]</strong> 
+                <strong>[{{ getPriorityName(entry.priority) }}]</strong>
                 {{ entry.type }} - {{ entry.payload }}
               </div>
               <div class="log-status">{{ entry.status }}</div>
@@ -102,7 +129,7 @@
         </div>
       </div>
     </div>
-    
+
     <div class="section">
       <h3>3. Timeout-und-Retry-Mechanismus</h3>
       <div class="demo-box">
@@ -112,23 +139,43 @@
             <select v-model="operation.type">
               <option value="fast">Schnelle Operation (50ms)</option>
               <option value="slow">Langsame Operation (2s)</option>
-              <option value="flaky">Unzuverlässige Operation (50% Fehlerrate)</option>
+              <option value="flaky">
+                Unzuverlässige Operation (50% Fehlerrate)
+              </option>
               <option value="timeout">Timeout-Operation (6s)</option>
             </select>
           </div>
           <div class="input-group">
             <label>Timeout (ms):</label>
-            <input v-model.number="operation.timeout" type="number" min="100" step="100" />
+            <input
+              v-model.number="operation.timeout"
+              type="number"
+              min="100"
+              step="100"
+            />
           </div>
           <div class="input-group">
             <label>Max. Wiederholungen:</label>
-            <input v-model.number="operation.maxRetries" type="number" min="0" max="10" />
+            <input
+              v-model.number="operation.maxRetries"
+              type="number"
+              min="0"
+              max="10"
+            />
           </div>
           <div class="buttons">
-            <button @click="executeOperation" class="primary" :disabled="operationRunning">
+            <button
+              @click="executeOperation"
+              class="primary"
+              :disabled="operationRunning"
+            >
               Operation ausführen
             </button>
-            <button @click="abortOperation" class="danger" :disabled="!operationRunning">
+            <button
+              @click="abortOperation"
+              class="danger"
+              :disabled="!operationRunning"
+            >
               Operation abbrechen
             </button>
           </div>
@@ -137,23 +184,50 @@
           <h4>Operation-Status:</h4>
           <div class="operation-status" v-if="operationStatus">
             <div class="progress-container" v-if="operationRunning">
-              <div class="progress-bar" :style="{ width: `${operationProgress}%` }"></div>
+              <div
+                class="progress-bar"
+                :style="{ width: `${operationProgress}%` }"
+              ></div>
             </div>
-            <div class="status-text" :class="operationStatus.success ? 'success' : 'error'">
-              Status: {{ operationStatus.success ? 'Erfolgreich' : 'Fehlgeschlagen' }}
+            <div
+              class="status-text"
+              :class="operationStatus.success ? 'success' : 'error'"
+            >
+              Status:
+              {{ operationStatus.success ? "Erfolgreich" : "Fehlgeschlagen" }}
             </div>
-            <div class="attempts">Versuche: {{ operationStatus.attempts || 0 }}</div>
-            <div class="duration">Dauer: {{ operationStatus.totalTimeMs || 0 }}ms</div>
+            <div class="attempts">
+              Versuche: {{ operationStatus.attempts || 0 }}
+            </div>
+            <div class="duration">
+              Dauer: {{ operationStatus.totalTimeMs || 0 }}ms
+            </div>
             <div class="result" v-if="operationStatus.success">
               Ergebnis: {{ operationStatus.result }}
             </div>
-            <div class="error" v-if="!operationStatus.success && operationStatus.error">
-              Fehler: {{ operationStatus.error.message || JSON.stringify(operationStatus.error) }}
+            <div
+              class="error"
+              v-if="!operationStatus.success && operationStatus.error"
+            >
+              Fehler:
+              {{
+                operationStatus.error.message ||
+                JSON.stringify(operationStatus.error)
+              }}
             </div>
           </div>
           <div class="log-container">
-            <div v-for="(entry, index) in operationLog" :key="index"
-                :class="{ 'log-entry': true, 'error': entry.type === 'error', 'success': entry.type === 'success', 'info': entry.type === 'info', 'warning': entry.type === 'retry' }">
+            <div
+              v-for="(entry, index) in operationLog"
+              :key="index"
+              :class="{
+                'log-entry': true,
+                error: entry.type === 'error',
+                success: entry.type === 'success',
+                info: entry.type === 'info',
+                warning: entry.type === 'retry',
+              }"
+            >
               <div class="log-time">{{ formatTime(entry.timestamp) }}</div>
               <div class="log-message">{{ entry.message }}</div>
             </div>
@@ -165,157 +239,168 @@
 </template>
 
 <script>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
-import transactionManager from '../../src/bridge/enhanced/sync/TransactionManager';
-import eventQueue, { EventPriority } from '../../src/bridge/enhanced/sync/EventQueue';
-import { TimeoutRetry } from '../../src/bridge/enhanced/sync/TimeoutRetry';
+import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
+import transactionManager from "../../src/bridge/enhanced/sync/TransactionManager";
+import eventQueue, {
+  EventPriority,
+} from "../../src/bridge/enhanced/sync/EventQueue";
+import { TimeoutRetry } from "../../src/bridge/enhanced/sync/TimeoutRetry";
 
 export default {
-  name: 'SynchronizationExample',
-  
+  name: "SynchronizationExample",
+
   setup() {
     // ==================== Transaction Demo ====================
     const user = reactive({
-      firstName: 'Max',
-      lastName: 'Mustermann',
-      email: 'max@example.com'
+      firstName: "Max",
+      lastName: "Mustermann",
+      email: "max@example.com",
     });
-    
+
     const transactionLog = ref([]);
-    
-    const addLogEntry = (message, type = 'info') => {
+
+    const addLogEntry = (message, type = "info") => {
       transactionLog.value.push({
         message,
         type,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
     };
-    
+
     const updateUserWithTransaction = async () => {
-      addLogEntry('Starte Transaktion für User-Update...');
-      
+      addLogEntry("Starte Transaktion für User-Update...");
+
       // Transaktion starten
       const txId = transactionManager.beginTransaction({
-        name: 'Update User Profile',
-        autoCommit: false
+        name: "Update User Profile",
+        autoCommit: false,
       });
-      
+
       addLogEntry(`Transaktion ${txId} gestartet`);
-      
+
       // Original-Werte für Snapshots speichern
       const originalUser = {
         firstName: user.firstName,
         lastName: user.lastName,
-        email: user.email
+        email: user.email,
       };
-      
+
       // Snapshots für alle Felder erfassen
       transactionManager.captureSnapshot(
-        txId, 
-        ['user', 'firstName'], 
-        originalUser.firstName
+        txId,
+        ["user", "firstName"],
+        originalUser.firstName,
       );
-      
+
       transactionManager.captureSnapshot(
-        txId, 
-        ['user', 'lastName'], 
-        originalUser.lastName
+        txId,
+        ["user", "lastName"],
+        originalUser.lastName,
       );
-      
+
       transactionManager.captureSnapshot(
-        txId, 
-        ['user', 'email'], 
-        originalUser.email
+        txId,
+        ["user", "email"],
+        originalUser.email,
       );
-      
-      addLogEntry('Snapshots für User-Daten erfasst');
-      
+
+      addLogEntry("Snapshots für User-Daten erfasst");
+
       try {
         // Simuliere asynchrone Operation
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
         // Update in einer anderen Funktion durchführen
         simulateExternalUpdate(user);
-        
-        addLogEntry('Externe Aktualisierung durchgeführt');
-        
+
+        addLogEntry("Externe Aktualisierung durchgeführt");
+
         // Transaktion abschließen
         transactionManager.commitTransaction(txId);
-        
-        addLogEntry(`Transaktion ${txId} erfolgreich abgeschlossen`, 'success');
+
+        addLogEntry(`Transaktion ${txId} erfolgreich abgeschlossen`, "success");
       } catch (error) {
         // Bei Fehler Transaktion zurückrollen
         const originalValues = transactionManager.rollbackTransaction(txId);
-        
+
         // Original-Werte wiederherstellen
-        user.firstName = originalValues['user.firstName']?.value || user.firstName;
-        user.lastName = originalValues['user.lastName']?.value || user.lastName;
-        user.email = originalValues['user.email']?.value || user.email;
-        
-        addLogEntry(`Fehler: ${error.message}. Transaktion zurückgerollt.`, 'error');
+        user.firstName =
+          originalValues["user.firstName"]?.value || user.firstName;
+        user.lastName = originalValues["user.lastName"]?.value || user.lastName;
+        user.email = originalValues["user.email"]?.value || user.email;
+
+        addLogEntry(
+          `Fehler: ${error.message}. Transaktion zurückgerollt.`,
+          "error",
+        );
       }
     };
-    
+
     const updateUserWithoutTransaction = async () => {
-      addLogEntry('Führe Update ohne Transaktion durch...');
-      
+      addLogEntry("Führe Update ohne Transaktion durch...");
+
       try {
         // Simuliere asynchrone Operation
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
         // Update in einer anderen Funktion durchführen
         simulateExternalUpdate(user);
-        
-        addLogEntry('Aktualisierung abgeschlossen', 'success');
+
+        addLogEntry("Aktualisierung abgeschlossen", "success");
       } catch (error) {
-        addLogEntry(`Fehler: ${error.message}`, 'error');
+        addLogEntry(`Fehler: ${error.message}`, "error");
       }
     };
-    
+
     const simulateExternalUpdate = (userData) => {
       // Simuliere externe Aktualisierung
       userData.firstName = userData.firstName.toUpperCase();
       userData.lastName = userData.lastName.toUpperCase();
       userData.email = userData.email.toLowerCase();
     };
-    
+
     const simulateError = () => {
-      addLogEntry('Simuliere Fehler während der Aktualisierung...');
-      
+      addLogEntry("Simuliere Fehler während der Aktualisierung...");
+
       try {
-        throw new Error('Simulierter Fehler während des User-Updates');
+        throw new Error("Simulierter Fehler während des User-Updates");
       } catch (error) {
-        addLogEntry(error.message, 'error');
+        addLogEntry(error.message, "error");
       }
     };
-    
+
     // ==================== Event Queue Demo ====================
     const newEvent = reactive({
-      type: 'data',
+      type: "data",
       priority: 1,
-      payload: 'Test-Event'
+      payload: "Test-Event",
     });
-    
+
     const eventLog = ref([]);
     const eventStats = reactive({
       queued: 0,
       processing: 0,
       completed: 0,
-      failed: 0
+      failed: 0,
     });
-    
+
     const getPriorityName = (priority) => {
       switch (priority) {
-        case 0: return 'Niedrig';
-        case 1: return 'Normal';
-        case 2: return 'Hoch';
-        case 3: return 'Kritisch';
-        default: return 'Unbekannt';
+        case 0:
+          return "Niedrig";
+        case 1:
+          return "Normal";
+        case 2:
+          return "Hoch";
+        case 3:
+          return "Kritisch";
+        default:
+          return "Unbekannt";
       }
     };
-    
+
     const eventHandlers = {};
-    
+
     const addEvent = () => {
       const priority = parseInt(newEvent.priority);
       const eventId = eventQueue.enqueue(
@@ -324,85 +409,90 @@ export default {
         {
           priority,
           category: newEvent.type,
-          source: 'vue'
-        }
+          source: "vue",
+        },
       );
-      
+
       if (eventId) {
         eventLog.value.push({
           id: eventId,
           type: newEvent.type,
           priority,
           payload: newEvent.payload,
-          status: 'QUEUED',
-          timestamp: new Date()
+          status: "QUEUED",
+          timestamp: new Date(),
         });
-        
+
         eventStats.queued++;
-        
+
         // Event-Handler registrieren, falls noch nicht vorhanden
         if (!eventHandlers[newEvent.type]) {
-          eventHandlers[newEvent.type] = eventQueue.on(newEvent.type, async (event) => {
-            // Event als "in Verarbeitung" markieren
-            const logEntry = eventLog.value.find(e => e.id === event.id);
-            if (logEntry) {
-              logEntry.status = 'PROCESSING';
-              logEntry.timestamp = new Date();
-              eventStats.queued--;
-              eventStats.processing++;
-            }
-            
-            // Verzögerung simulieren basierend auf Priorität
-            const delay = 3000 - (event.priority * 500);
-            await new Promise(resolve => setTimeout(resolve, Math.max(500, delay)));
-            
-            // Zufälligen Fehler simulieren (10% Chance)
-            const shouldFail = Math.random() < 0.1;
-            
-            if (shouldFail) {
-              throw new Error('Simulierter Event-Verarbeitungsfehler');
-            }
-            
-            // Event als abgeschlossen markieren
-            if (logEntry) {
-              logEntry.status = 'COMPLETED';
-              logEntry.timestamp = new Date();
-              eventStats.processing--;
-              eventStats.completed++;
-            }
-          });
+          eventHandlers[newEvent.type] = eventQueue.on(
+            newEvent.type,
+            async (event) => {
+              // Event als "in Verarbeitung" markieren
+              const logEntry = eventLog.value.find((e) => e.id === event.id);
+              if (logEntry) {
+                logEntry.status = "PROCESSING";
+                logEntry.timestamp = new Date();
+                eventStats.queued--;
+                eventStats.processing++;
+              }
+
+              // Verzögerung simulieren basierend auf Priorität
+              const delay = 3000 - event.priority * 500;
+              await new Promise((resolve) =>
+                setTimeout(resolve, Math.max(500, delay)),
+              );
+
+              // Zufälligen Fehler simulieren (10% Chance)
+              const shouldFail = Math.random() < 0.1;
+
+              if (shouldFail) {
+                throw new Error("Simulierter Event-Verarbeitungsfehler");
+              }
+
+              // Event als abgeschlossen markieren
+              if (logEntry) {
+                logEntry.status = "COMPLETED";
+                logEntry.timestamp = new Date();
+                eventStats.processing--;
+                eventStats.completed++;
+              }
+            },
+          );
         }
       }
     };
-    
+
     const addMultipleEvents = () => {
       for (let i = 0; i < 10; i++) {
-        newEvent.payload = `Bulk-Event #${i+1}`;
+        newEvent.payload = `Bulk-Event #${i + 1}`;
         newEvent.priority = Math.floor(Math.random() * 4); // Zufällige Priorität
         addEvent();
       }
     };
-    
+
     const clearEvents = () => {
       eventLog.value = [];
       eventStats.queued = 0;
       eventStats.processing = 0;
       eventStats.completed = 0;
       eventStats.failed = 0;
-      
+
       // Event-Queue leeren
       eventQueue.clearQueue();
     };
-    
+
     // Event-Fehlerbehandlung
     eventQueue.onAny(async (event) => {
       try {
         // Normales Event-Handling wird vom spezifischen Handler durchgeführt
       } catch (error) {
         // Bei Fehler das Event als fehlgeschlagen markieren
-        const logEntry = eventLog.value.find(e => e.id === event.id);
+        const logEntry = eventLog.value.find((e) => e.id === event.id);
         if (logEntry) {
-          logEntry.status = 'FAILED';
+          logEntry.status = "FAILED";
           logEntry.timestamp = new Date();
           logEntry.error = error.message;
           eventStats.processing--;
@@ -410,37 +500,37 @@ export default {
         }
       }
     });
-    
+
     // ==================== Timeout-Retry Demo ====================
     const operation = reactive({
-      type: 'fast',
+      type: "fast",
       timeout: 3000,
-      maxRetries: 3
+      maxRetries: 3,
     });
-    
+
     const operationStatus = ref(null);
     const operationRunning = ref(false);
     const operationProgress = ref(0);
     const operationLog = ref([]);
     let operationAbortController = null;
-    
-    const addOperationLog = (message, type = 'info') => {
+
+    const addOperationLog = (message, type = "info") => {
       operationLog.value.push({
         message,
         type,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
     };
-    
+
     const executeOperation = async () => {
       // Operation vorbereiten
       operationRunning.value = true;
       operationProgress.value = 0;
       operationStatus.value = null;
       operationAbortController = new AbortController();
-      
+
       addOperationLog(`Führe ${operation.type} Operation aus...`);
-      
+
       // Progress-Simulation
       const progressInterval = setInterval(() => {
         if (operationRunning.value) {
@@ -449,7 +539,7 @@ export default {
           clearInterval(progressInterval);
         }
       }, 100);
-      
+
       // TimeoutRetry mit benutzerdefinierten Optionen erstellen
       const timeoutRetry = new TimeoutRetry({
         maxRetries: operation.maxRetries,
@@ -457,127 +547,148 @@ export default {
         retryDelay: 500,
         exponentialBackoff: true,
         onRetry: (attempt, delay, error) => {
-          addOperationLog(`Wiederhole Operation (Versuch ${attempt}/${operation.maxRetries}) in ${delay}ms. Fehler: ${error?.message || 'Timeout'}`, 'retry');
+          addOperationLog(
+            `Wiederhole Operation (Versuch ${attempt}/${operation.maxRetries}) in ${delay}ms. Fehler: ${error?.message || "Timeout"}`,
+            "retry",
+          );
         },
         onTimeout: (attempt, elapsed) => {
-          addOperationLog(`Operation-Timeout nach ${elapsed}ms (Versuch ${attempt})`, 'error');
-        }
+          addOperationLog(
+            `Operation-Timeout nach ${elapsed}ms (Versuch ${attempt})`,
+            "error",
+          );
+        },
       });
-      
+
       try {
         // Operation ausführen
         const result = await timeoutRetry.executeWithRetry(
-          () => performOperation(operation.type, operationAbortController.signal),
-          `${operation.type} Operation`
+          () =>
+            performOperation(operation.type, operationAbortController.signal),
+          `${operation.type} Operation`,
         );
-        
+
         operationStatus.value = result;
-        
+
         if (result.success) {
-          addOperationLog(`Operation erfolgreich abgeschlossen nach ${result.attempts} Versuch(en)`, 'success');
+          addOperationLog(
+            `Operation erfolgreich abgeschlossen nach ${result.attempts} Versuch(en)`,
+            "success",
+          );
         } else {
-          addOperationLog(`Operation fehlgeschlagen nach ${result.attempts} Versuch(en): ${result.error?.message || 'Unbekannter Fehler'}`, 'error');
+          addOperationLog(
+            `Operation fehlgeschlagen nach ${result.attempts} Versuch(en): ${result.error?.message || "Unbekannter Fehler"}`,
+            "error",
+          );
         }
       } catch (error) {
-        addOperationLog(`Unerwarteter Fehler: ${error.message}`, 'error');
+        addOperationLog(`Unerwarteter Fehler: ${error.message}`, "error");
       } finally {
         operationRunning.value = false;
         operationProgress.value = 100;
         clearInterval(progressInterval);
       }
     };
-    
+
     const abortOperation = () => {
       if (operationAbortController && operationRunning.value) {
         operationAbortController.abort();
-        addOperationLog('Operation abgebrochen', 'warning');
+        addOperationLog("Operation abgebrochen", "warning");
       }
     };
-    
+
     // Simulierte asynchrone Operation
     const performOperation = async (type, abortSignal) => {
       // Abbruch-Signal prüfen
       if (abortSignal && abortSignal.aborted) {
-        throw new Error('Operation abgebrochen');
+        throw new Error("Operation abgebrochen");
       }
-      
+
       // Registriere Abbruch-Listener
       return new Promise((resolve, reject) => {
         // Abbruch-Listener
         const abortHandler = () => {
-          reject(new Error('Operation abgebrochen'));
+          reject(new Error("Operation abgebrochen"));
         };
-        
+
         if (abortSignal) {
-          abortSignal.addEventListener('abort', abortHandler);
+          abortSignal.addEventListener("abort", abortHandler);
         }
-        
+
         let timeoutId;
-        
+
         try {
           switch (type) {
-            case 'fast':
+            case "fast":
               // Schnelle Operation (50ms)
               timeoutId = setTimeout(() => {
-                resolve('Schnelle Operation abgeschlossen');
+                resolve("Schnelle Operation abgeschlossen");
               }, 50);
               break;
-              
-            case 'slow':
+
+            case "slow":
               // Langsame Operation (2s)
               timeoutId = setTimeout(() => {
-                resolve('Langsame Operation abgeschlossen');
+                resolve("Langsame Operation abgeschlossen");
               }, 2000);
               break;
-              
-            case 'flaky':
+
+            case "flaky":
               // Unzuverlässige Operation (50% Fehlerrate)
               timeoutId = setTimeout(() => {
                 if (Math.random() < 0.5) {
-                  resolve('Unzuverlässige Operation erfolgreich');
+                  resolve("Unzuverlässige Operation erfolgreich");
                 } else {
-                  reject(new Error('Simulierter Fehler in unzuverlässiger Operation'));
+                  reject(
+                    new Error(
+                      "Simulierter Fehler in unzuverlässiger Operation",
+                    ),
+                  );
                 }
               }, 500);
               break;
-              
-            case 'timeout':
+
+            case "timeout":
               // Timeout-Operation (6s)
               timeoutId = setTimeout(() => {
-                resolve('Timeout-Operation abgeschlossen');
+                resolve("Timeout-Operation abgeschlossen");
               }, 6000);
               break;
-              
+
             default:
-              reject(new Error('Unbekannter Operationstyp'));
+              reject(new Error("Unbekannter Operationstyp"));
           }
-          
+
           // Abbruch-Cleanup
           if (abortSignal) {
-            abortSignal.addEventListener('abort', () => {
-              clearTimeout(timeoutId);
-            }, { once: true });
+            abortSignal.addEventListener(
+              "abort",
+              () => {
+                clearTimeout(timeoutId);
+              },
+              { once: true },
+            );
           }
         } catch (error) {
           if (abortSignal) {
-            abortSignal.removeEventListener('abort', abortHandler);
+            abortSignal.removeEventListener("abort", abortHandler);
           }
-          
+
           reject(error);
         }
       });
     };
-    
+
     // Gemeinsame Hilfsfunktionen
     const formatTime = (date) => {
-      return date.toLocaleTimeString('de-DE', { 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        second: '2-digit',
-        fractionalSecondDigits: 3
+      return date.toLocaleTimeString("de-DE", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        fractionalSecondDigits: 3,
       });
     };
-    
+
     return {
       // Transaction Demo
       user,
@@ -585,7 +696,7 @@ export default {
       updateUserWithTransaction,
       updateUserWithoutTransaction,
       simulateError,
-      
+
       // Event Queue Demo
       newEvent,
       eventLog,
@@ -594,7 +705,7 @@ export default {
       addEvent,
       addMultipleEvents,
       clearEvents,
-      
+
       // Timeout-Retry Demo
       operation,
       operationStatus,
@@ -603,11 +714,11 @@ export default {
       operationLog,
       executeOperation,
       abortOperation,
-      
+
       // Gemeinsame Hilfsfunktionen
-      formatTime
+      formatTime,
     };
-  }
+  },
 };
 </script>
 
@@ -847,7 +958,8 @@ h4 {
   color: #ff4c4c;
 }
 
-.attempts, .duration {
+.attempts,
+.duration {
   font-size: 14px;
   margin-bottom: 5px;
 }

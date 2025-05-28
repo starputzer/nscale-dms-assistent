@@ -334,7 +334,7 @@ export const toastService = {
    */
   success(message: string, options: ToastOptions = {}): string {
     return this.show(message, "success", {
-      title: options.title || i18n.t("toast.success"),
+      title: options.title || i18n.global.t("toast.success"),
       ...options,
     });
   },
@@ -347,7 +347,7 @@ export const toastService = {
    */
   error(message: string, options: ToastOptions = {}): string {
     return this.show(message, "error", {
-      title: options.title || i18n.t("toast.error"),
+      title: options.title || i18n.global.t("toast.error"),
       duration: options.duration || 0, // Fehler werden standardmäßig nicht automatisch geschlossen
       ...options,
     });
@@ -361,7 +361,7 @@ export const toastService = {
    */
   warning(message: string, options: ToastOptions = {}): string {
     return this.show(message, "warning", {
-      title: options.title || i18n.t("toast.warning"),
+      title: options.title || i18n.global.t("toast.warning"),
       ...options,
     });
   },
@@ -374,7 +374,7 @@ export const toastService = {
    */
   info(message: string, options: ToastOptions = {}): string {
     return this.show(message, "info", {
-      title: options.title || i18n.t("toast.info"),
+      title: options.title || i18n.global.t("toast.info"),
       ...options,
     });
   },

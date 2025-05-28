@@ -2,31 +2,41 @@
   <div class="chat-view">
     <div class="chat-header">
       <h2 class="chat-header__title">
-        {{ currentSession?.title || 'Neue Unterhaltung' }}
+        {{ currentSession?.title || "Neue Unterhaltung" }}
       </h2>
     </div>
 
     <div class="chat-messages" ref="messagesContainer">
       <div class="chat-messages__content">
-        <div 
+        <div
           v-for="message in messages"
           :key="message.id"
           class="message"
           :class="`message--${message.role}`"
         >
           <div class="message__content">
-            <div class="message__text" v-html="formatMessage(message.content)"></div>
+            <div
+              class="message__text"
+              v-html="formatMessage(message.content)"
+            ></div>
             <div class="message__time">{{ formatTime(message.createdAt) }}</div>
           </div>
           <div v-if="message.role === 'assistant'" class="message__actions">
-            <button 
+            <button
               class="message__action"
               @click="copyMessage(message.content)"
               title="Kopieren"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                <path
+                  d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                ></path>
               </svg>
             </button>
           </div>
@@ -55,12 +65,17 @@
           :disabled="isLoading"
           rows="1"
         ></textarea>
-        <button 
+        <button
           type="submit"
           class="chat-input__submit"
           :disabled="!messageInput.trim() || isLoading"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <line x1="22" y1="2" x2="11" y2="13"></line>
             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
           </svg>
@@ -71,109 +86,122 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import { useSessionsStore } from '@/stores/sessions'
-import { useUIStore } from '@/stores/ui'
-import { formatDistanceToNow } from 'date-fns'
-import { de } from 'date-fns/locale'
+import { ref, computed, onMounted, nextTick, watch } from "vue";
+import { useRoute } from "vue-router";
+import { useSessionsStore } from "@/stores/sessions";
+import { useUIStore } from "@/stores/ui";
+import { formatDistanceToNow } from "date-fns";
+import { de } from "date-fns/locale";
 
-const route = useRoute()
-const sessionsStore = useSessionsStore()
-const uiStore = useUIStore()
+const route = useRoute();
+const sessionsStore = useSessionsStore();
+const uiStore = useUIStore();
 
-const messagesContainer = ref<HTMLElement>()
-const messageInput = ref('')
-const isLoading = computed(() => sessionsStore.isLoading)
+const messagesContainer = ref<HTMLElement>();
+const messageInput = ref("");
+const isLoading = computed(() => sessionsStore.isLoading);
 
-const currentSession = computed(() => sessionsStore.currentSession)
-const messages = computed(() => sessionsStore.currentMessages)
+const currentSession = computed(() => sessionsStore.currentSession);
+const messages = computed(() => sessionsStore.currentMessages);
 
 const sendMessage = async () => {
-  const content = messageInput.value.trim()
-  if (!content || isLoading.value) return
+  const content = messageInput.value.trim();
+  if (!content || isLoading.value) return;
 
-  messageInput.value = ''
-  
+  messageInput.value = "";
+
   await sessionsStore.sendMessage({
-    sessionId: currentSession.value?.id || '',
-    content
-  })
-  
-  scrollToBottom()
-}
+    sessionId: currentSession.value?.id || "",
+    content,
+  });
+
+  scrollToBottom();
+};
 
 const copyMessage = async (content: string) => {
   try {
-    await navigator.clipboard.writeText(content)
-    uiStore.showSuccess('Nachricht kopiert')
+    await navigator.clipboard.writeText(content);
+    uiStore.showSuccess("Nachricht kopiert");
   } catch (error) {
-    uiStore.showError('Kopieren fehlgeschlagen')
+    uiStore.showError("Kopieren fehlgeschlagen");
   }
-}
+};
 
 const formatMessage = (content: string): string => {
   // Simple markdown formatting
   return content
-    .replace(/\n/g, '<br>')
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/`(.*?)`/g, '<code>$1</code>')
-}
+    .replace(/\n/g, "<br>")
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.*?)\*/g, "<em>$1</em>")
+    .replace(/`(.*?)`/g, "<code>$1</code>");
+};
 
 const formatTime = (date: string): string => {
   try {
-    return formatDistanceToNow(new Date(date), { addSuffix: true, locale: de })
+    return formatDistanceToNow(new Date(date), { addSuffix: true, locale: de });
   } catch {
-    return ''
+    return "";
   }
-}
+};
 
 const scrollToBottom = () => {
   nextTick(() => {
     if (messagesContainer.value) {
-      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
     }
-  })
-}
+  });
+};
 
 const newline = (event: KeyboardEvent) => {
-  const textarea = event.target as HTMLTextAreaElement
-  const start = textarea.selectionStart
-  const end = textarea.selectionEnd
-  messageInput.value = messageInput.value.substring(0, start) + '\n' + messageInput.value.substring(end)
+  const textarea = event.target as HTMLTextAreaElement;
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  messageInput.value =
+    messageInput.value.substring(0, start) +
+    "\n" +
+    messageInput.value.substring(end);
   nextTick(() => {
-    textarea.selectionStart = textarea.selectionEnd = start + 1
-  })
-}
+    textarea.selectionStart = textarea.selectionEnd = start + 1;
+  });
+};
 
 // Auto-resize textarea
 watch(messageInput, () => {
   nextTick(() => {
-    const textarea = document.querySelector('.chat-input__textarea') as HTMLTextAreaElement
+    const textarea = document.querySelector(
+      ".chat-input__textarea",
+    ) as HTMLTextAreaElement;
     if (textarea) {
-      textarea.style.height = 'auto'
-      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px'
+      textarea.style.height = "auto";
+      textarea.style.height = Math.min(textarea.scrollHeight, 120) + "px";
     }
-  })
-})
+  });
+});
 
 // Watch for session changes
-watch(() => route.params.sessionId, async (sessionId) => {
-  if (sessionId && typeof sessionId === 'string') {
-    await sessionsStore.setCurrentSession(sessionId)
-    scrollToBottom()
-  }
-}, { immediate: true })
+watch(
+  () => route.params.sessionId,
+  async (sessionId) => {
+    if (sessionId && typeof sessionId === "string") {
+      await sessionsStore.setCurrentSession(sessionId);
+      scrollToBottom();
+    }
+  },
+  { immediate: true },
+);
 
 // Watch for new messages
-watch(messages, () => {
-  scrollToBottom()
-}, { deep: true })
+watch(
+  messages,
+  () => {
+    scrollToBottom();
+  },
+  { deep: true },
+);
 
 onMounted(() => {
-  scrollToBottom()
-})
+  scrollToBottom();
+});
 </script>
 
 <style scoped>
@@ -310,7 +338,9 @@ onMounted(() => {
 }
 
 @keyframes loading {
-  0%, 80%, 100% {
+  0%,
+  80%,
+  100% {
     transform: scale(0);
     opacity: 0.5;
   }

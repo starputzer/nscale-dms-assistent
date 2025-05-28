@@ -5,33 +5,37 @@
  * Vue-Anwendung und stellt sie den Komponenten zur Verfügung.
  */
 
-import { App, reactive } from 'vue';
-import { mockServiceFactory } from '@/services/mocks/MockServiceFactory';
+import { App, reactive } from "vue";
+import { mockServiceFactory } from "@/services/mocks/MockServiceFactory";
 // Import des Mock Session Stores wenn mockApi=true
-const useMockApi = new URLSearchParams(window.location.search).get('mockApi') === 'true';
+const useMockApi =
+  new URLSearchParams(window.location.search).get("mockApi") === "true";
 
 export const mockServiceProvider = {
   install(app: App) {
-    console.log('Initialisiere Mock Service Provider...');
+    console.log("Initialisiere Mock Service Provider...");
 
     // Prüfen, ob der Mock-API-Modus aktiv ist
-    const useMockApi = new URLSearchParams(window.location.search).get('mockApi') === 'true';
-    
+    const useMockApi =
+      new URLSearchParams(window.location.search).get("mockApi") === "true";
+
     // AuthService initialisieren/registrieren
     if (useMockApi) {
-      console.log('Aktiviere Mock-Auth-Service');
+      console.log("Aktiviere Mock-Auth-Service");
       // AuthService wird durch die Store direkt bereitgestellt
       // Stelle sicher, dass der Mock-Auth-Store geladen wird
-      import('../stores/auth.mock').then(({ useAuthStore }) => {
-        console.log('Mock Auth Store erfolgreich geladen');
-      }).catch(error => {
-        console.error('Fehler beim Laden des Mock Auth Stores:', error);
-      });
+      import("../stores/auth.mock")
+        .then(({ useAuthStore }) => {
+          console.log("Mock Auth Store erfolgreich geladen");
+        })
+        .catch((error) => {
+          console.error("Fehler beim Laden des Mock Auth Stores:", error);
+        });
     }
 
     // Mock-Services über app.provide() bereitstellen
     const chatService = mockServiceFactory.getChatService();
-    app.provide('chatService', chatService);
+    app.provide("chatService", chatService);
 
     // globalProperties registrieren (für Options API)
     app.config.globalProperties.$chatService = chatService;
@@ -41,13 +45,15 @@ export const mockServiceProvider = {
 
     // Bereitstellung einer globalen isSourceReferencesVisible Funktion,
     // da diese auch im Pure-Vue-Modus benötigt wird
-    console.log('Registriere globale Fallback-Funktionen für Source References...');
+    console.log(
+      "Registriere globale Fallback-Funktionen für Source References...",
+    );
 
     // Reaktiver Zustand für Source References Tracking
     const sourceReferencesState = reactive({
       visibleReferences: new Map(),
       loadingReferences: new Map(),
-      referenceDetails: new Map()
+      referenceDetails: new Map(),
     });
 
     // Ein minimales Composable für Source References
@@ -79,7 +85,7 @@ export const mockServiceProvider = {
           /aus nscale/.test(content) ||
           content.includes("[[src:")
         );
-      }
+      },
     };
 
     // Globales Objekt für Source References registrieren (für Legacy-Code)
@@ -87,57 +93,63 @@ export const mockServiceProvider = {
 
     // Globale Funktionen für Legacy-Code registrieren
     window.isSourceReferencesVisible = (message) => {
-      console.log('[Mock] isSourceReferencesVisible called', message);
+      console.log("[Mock] isSourceReferencesVisible called", message);
       return sourceRefsComposable.isSourceReferencesVisible(message);
     };
 
     window.toggleSourceReferences = (message) => {
-      console.log('[Mock] toggleSourceReferences called', message);
+      console.log("[Mock] toggleSourceReferences called", message);
       return sourceRefsComposable.toggleSourceReferences(message);
     };
 
     window.getSourceReferences = (message) => {
-      console.log('[Mock] getSourceReferences called', message);
+      console.log("[Mock] getSourceReferences called", message);
       return sourceRefsComposable.getSourceReferences(message);
     };
 
     window.hasSourceReferences = (content) => {
-      console.log('[Mock] hasSourceReferences called');
+      console.log("[Mock] hasSourceReferences called");
       return sourceRefsComposable.hasSourceReferences(content);
     };
 
     // Provide the source references composable to Vue components
-    app.provide('sourceReferences', sourceRefsComposable);
+    app.provide("sourceReferences", sourceRefsComposable);
 
     // Wenn MockApi aktiv ist, die Mock Stores laden
     if (useMockApi) {
-      console.log('Lade Mock Stores...');
+      console.log("Lade Mock Stores...");
 
       // Session Store
-      import('../stores/sessions.mock').then(({ useSessionStore }) => {
-        console.log('Mock Session Store erfolgreich geladen');
-      }).catch(error => {
-        console.error('Fehler beim Laden des Mock Session Stores:', error);
-      });
+      import("../stores/sessions.mock")
+        .then(({ useSessionStore }) => {
+          console.log("Mock Session Store erfolgreich geladen");
+        })
+        .catch((error) => {
+          console.error("Fehler beim Laden des Mock Session Stores:", error);
+        });
 
       // Admin Stores
       // MOTD Store
-      import('../stores/admin/motd.mock').then(({ useMotdStore }) => {
-        console.log('Mock MOTD Store erfolgreich geladen');
-      }).catch(error => {
-        console.error('Fehler beim Laden des Mock MOTD Stores:', error);
-      });
+      import("../stores/admin/motd.mock")
+        .then(({ useMotdStore }) => {
+          console.log("Mock MOTD Store erfolgreich geladen");
+        })
+        .catch((error) => {
+          console.error("Fehler beim Laden des Mock MOTD Stores:", error);
+        });
 
       // Feedback Store
-      import('../stores/admin/feedback.mock').then(({ useFeedbackStore }) => {
-        console.log('Mock Feedback Store erfolgreich geladen');
-      }).catch(error => {
-        console.error('Fehler beim Laden des Mock Feedback Stores:', error);
-      });
+      import("../stores/admin/feedback.mock")
+        .then(({ useFeedbackStore }) => {
+          console.log("Mock Feedback Store erfolgreich geladen");
+        })
+        .catch((error) => {
+          console.error("Fehler beim Laden des Mock Feedback Stores:", error);
+        });
     }
 
-    console.log('Mock Service Provider erfolgreich initialisiert');
-  }
+    console.log("Mock Service Provider erfolgreich initialisiert");
+  },
 };
 
 export default mockServiceProvider;

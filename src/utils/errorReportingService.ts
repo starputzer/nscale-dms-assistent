@@ -205,7 +205,8 @@ export class ErrorReportingService {
   /** Integration mit Fallback-Manager (lazy-loaded) */
   private _fallbackManager: ReturnType<typeof useFallbackManager> | null = null;
   /** Integration mit Feature-Toggle-Store (lazy-loaded) */
-  private _featureToggles: ReturnType<typeof useFeatureTogglesStore> | null = null;
+  private _featureToggles: ReturnType<typeof useFeatureTogglesStore> | null =
+    null;
   /** Logger für Konsolen-Ausgaben (lazy-loaded) */
   private _logger: ReturnType<typeof useLogger> | null = null;
 
@@ -217,7 +218,9 @@ export class ErrorReportingService {
       }
       return this._logger;
     } catch (err) {
-      console.warn('[ErrorReportingService] Logger nicht verfügbar, verwende Dummy-Implementation');
+      console.warn(
+        "[ErrorReportingService] Logger nicht verfügbar, verwende Dummy-Implementation",
+      );
       // Minimale Mock-Implementation zurückgeben
       return {
         debug: console.debug,
@@ -226,9 +229,9 @@ export class ErrorReportingService {
         error: console.error,
         getOptions: () => ({}),
         setOptions: () => {},
-        getComponent: () => 'unknown',
+        getComponent: () => "unknown",
         getLogs: () => [],
-        clearLogs: () => {}
+        clearLogs: () => {},
       } as any;
     }
   }
@@ -241,7 +244,10 @@ export class ErrorReportingService {
       }
       return this._fallbackManager;
     } catch (err) {
-      this.logger.warn('[ErrorReportingService] Fallback-Manager nicht verfügbar, verwende Dummy-Implementation', err);
+      this.logger.warn(
+        "[ErrorReportingService] Fallback-Manager nicht verfügbar, verwende Dummy-Implementation",
+        err,
+      );
       // Minimale Mock-Implementation zurückgeben
       return {
         reportError: () => {},
@@ -260,7 +266,10 @@ export class ErrorReportingService {
       }
       return this._featureToggles;
     } catch (err) {
-      this.logger.warn('[ErrorReportingService] Feature-Toggles-Store nicht verfügbar, verwende Dummy-Implementation', err);
+      this.logger.warn(
+        "[ErrorReportingService] Feature-Toggles-Store nicht verfügbar, verwende Dummy-Implementation",
+        err,
+      );
       // Minimale Mock-Implementation zurückgeben
       return {
         $state: {},
@@ -514,7 +523,10 @@ export class ErrorReportingService {
           featureFlags[key] = this.featureToggles.$state[key] as boolean;
         }
       } catch (err) {
-        this.logger.debug('[ErrorReportingService] Konnte Feature-Flags nicht abrufen', err);
+        this.logger.debug(
+          "[ErrorReportingService] Konnte Feature-Flags nicht abrufen",
+          err,
+        );
         // Leeres Objekt wenn Feature-Flags nicht verfügbar sind
       }
 
@@ -753,7 +765,10 @@ export class ErrorReportingService {
       // An Fallback-Manager melden
       this.fallbackManager.reportError(feature, fallbackError as FallbackError);
     } catch (err) {
-      this.logger.warn('[ErrorReportingService] Fehler beim Melden an Fallback-System', err);
+      this.logger.warn(
+        "[ErrorReportingService] Fehler beim Melden an Fallback-System",
+        err,
+      );
       // Fehler beim Melden ignorieren
     }
   }

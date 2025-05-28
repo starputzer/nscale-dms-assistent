@@ -2,52 +2,52 @@
   <div class="critical-error-container" v-if="show">
     <div class="critical-error-content">
       <div class="critical-error-icon">!</div>
-      
+
       <h2 class="critical-error-title">{{ title }}</h2>
-      
+
       <p class="critical-error-message">{{ message }}</p>
-      
+
       <div v-if="details" class="critical-error-details">
-        <button 
-          class="critical-error-details-toggle" 
-          @click="toggleDetails" 
+        <button
+          class="critical-error-details-toggle"
+          @click="toggleDetails"
           :aria-expanded="showDetails"
         >
-          {{ showDetails ? 'Details ausblenden' : 'Details anzeigen' }}
-          <span class="toggle-icon">{{ showDetails ? '▲' : '▼' }}</span>
+          {{ showDetails ? "Details ausblenden" : "Details anzeigen" }}
+          <span class="toggle-icon">{{ showDetails ? "▲" : "▼" }}</span>
         </button>
-        
+
         <div v-if="showDetails" class="critical-error-details-content">
           <pre>{{ details }}</pre>
         </div>
       </div>
-      
+
       <div class="critical-error-actions">
-        <button 
-          v-if="canReload" 
-          class="critical-error-btn critical-error-btn-primary" 
+        <button
+          v-if="canReload"
+          class="critical-error-btn critical-error-btn-primary"
           @click="reload"
         >
           Seite neu laden
         </button>
-        
-        <button 
-          v-if="canRetry" 
-          class="critical-error-btn critical-error-btn-secondary" 
+
+        <button
+          v-if="canRetry"
+          class="critical-error-btn critical-error-btn-secondary"
           @click="retry"
         >
           Erneut versuchen
         </button>
-        
-        <button 
-          v-if="canReport" 
-          class="critical-error-btn critical-error-btn-tertiary" 
+
+        <button
+          v-if="canReport"
+          class="critical-error-btn critical-error-btn-tertiary"
           @click="report"
         >
           Fehler melden
         </button>
       </div>
-      
+
       <div class="critical-error-footer">
         <p>
           <template v-if="errorId">Fehler-ID: {{ errorId }}</template>
@@ -59,119 +59,119 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useErrorReporting } from '@/composables/useErrorReporting'
+import { ref, onMounted } from "vue";
+import { useErrorReporting } from "@/composables/useErrorReporting";
 
 // Props
 const props = defineProps({
   show: {
     type: Boolean,
-    default: true
+    default: true,
   },
   title: {
     type: String,
-    default: 'Schwerwiegender Fehler'
+    default: "Schwerwiegender Fehler",
   },
   message: {
     type: String,
-    default: 'Es ist ein unerwarteter Fehler aufgetreten.'
+    default: "Es ist ein unerwarteter Fehler aufgetreten.",
   },
   details: {
     type: String,
-    default: null
+    default: null,
   },
   errorId: {
     type: String,
-    default: null
+    default: null,
   },
   timestamp: {
     type: Number, // Unix-Timestamp
-    default: null
+    default: null,
   },
   canReload: {
     type: Boolean,
-    default: true
+    default: true,
   },
   canRetry: {
     type: Boolean,
-    default: false
+    default: false,
   },
   canReport: {
     type: Boolean,
-    default: true
+    default: true,
   },
   error: {
     type: Error,
-    default: null
+    default: null,
   },
   autoReport: {
     type: Boolean,
-    default: true
-  }
-})
+    default: true,
+  },
+});
 
 // Emits
-const emit = defineEmits(['reload', 'retry', 'report'])
+const emit = defineEmits(["reload", "retry", "report"]);
 
 // State
-const showDetails = ref(false)
-const { reportError } = useErrorReporting()
+const showDetails = ref(false);
+const { reportError } = useErrorReporting();
 
 // Methoden
 const toggleDetails = () => {
-  showDetails.value = !showDetails.value
-}
+  showDetails.value = !showDetails.value;
+};
 
 const reload = () => {
-  emit('reload')
-  window.location.reload()
-}
+  emit("reload");
+  window.location.reload();
+};
 
 const retry = () => {
-  emit('retry')
-}
+  emit("retry");
+};
 
 const report = () => {
   if (props.error) {
     reportError(props.error, {
-      context: 'CriticalErrorComponent',
+      context: "CriticalErrorComponent",
       errorId: props.errorId,
-      timestamp: props.timestamp || Date.now()
-    })
+      timestamp: props.timestamp || Date.now(),
+    });
   }
-  
-  emit('report')
-}
+
+  emit("report");
+};
 
 const formatTimestamp = (timestamp) => {
-  if (!timestamp) return ''
-  
+  if (!timestamp) return "";
+
   try {
-    const date = new Date(timestamp)
-    return new Intl.DateTimeFormat('de-DE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    }).format(date)
+    const date = new Date(timestamp);
+    return new Intl.DateTimeFormat("de-DE", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    }).format(date);
   } catch (e) {
-    return ''
+    return "";
   }
-}
+};
 
 // Automatisch Fehler melden, wenn autoReport aktiviert ist
 onMounted(() => {
   if (props.autoReport && props.error) {
     reportError(props.error, {
-      context: 'CriticalErrorComponent',
+      context: "CriticalErrorComponent",
       errorId: props.errorId,
       timestamp: props.timestamp || Date.now(),
-      autoReported: true
-    })
+      autoReported: true,
+    });
   }
-})
+});
 </script>
 
 <style scoped>
@@ -336,11 +336,11 @@ onMounted(() => {
   .critical-error-content {
     padding: 20px;
   }
-  
+
   .critical-error-actions {
     flex-direction: column;
   }
-  
+
   .critical-error-btn {
     width: 100%;
   }

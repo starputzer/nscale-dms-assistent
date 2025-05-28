@@ -605,7 +605,8 @@ import type {
   FeatureErrorLog,
 } from "@/types/featureToggles";
 
-const { t } = useI18n();
+const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
+console.log('[i18n] Component initialized with global scope and inheritance');
 const featureStore = useFeatureTogglesStore();
 const authStore = useAuthStore();
 const { features, categories } = storeToRefs(featureStore);
@@ -615,11 +616,11 @@ const viewMode = ref<"management" | "monitoring">("management");
 const viewModeOptions = [
   {
     value: "management",
-    label: t("admin.featureToggles.managementView", "Verwaltung"),
+    label: t("admin.featureToggles.managementView"),
   },
   {
     value: "monitoring",
-    label: t("admin.featureToggles.monitoringView", "Monitoring"),
+    label: t("admin.featureToggles.monitoringView"),
   },
 ];
 
@@ -688,7 +689,8 @@ const filteredFeatures = computed(() => {
       (feature) =>
         feature.name.toLowerCase().includes(query) ||
         feature.key.toLowerCase().includes(query) ||
-        feature.description.toLowerCase().includes(query),
+        (feature.description &&
+          feature.description.toLowerCase().includes(query)),
     );
   }
 
@@ -736,7 +738,7 @@ const categoryOptions = computed(() => {
   return [
     {
       value: null,
-      label: t("admin.featureToggles.allCategories", "Alle Kategorien"),
+      label: t("admin.featureToggles.allCategories"),
     },
     ...categories.value.map((cat) => ({ value: cat, label: cat })),
   ];
@@ -747,14 +749,14 @@ const allCategoryOptions = computed(() => {
 });
 
 const statusOptions = computed(() => [
-  { value: null, label: t("admin.featureToggles.allStatuses", "Alle Status") },
+  { value: null, label: t("admin.featureToggles.allStatuses") },
   {
     value: "enabled",
-    label: t("admin.featureToggles.statusEnabled", "Aktiviert"),
+    label: t("admin.featureToggles.statusEnabled"),
   },
   {
     value: "disabled",
-    label: t("admin.featureToggles.statusDisabled", "Deaktiviert"),
+    label: t("admin.featureToggles.statusDisabled"),
   },
 ]);
 
@@ -1021,7 +1023,7 @@ function updateCharts(metrics: any) {
   if (usageChart.value) {
     const ctx = usageChart.value.getContext("2d");
     if (ctx) {
-      const topFeatures = Object.entries(metrics.features)
+      const topFeatures = Object.entries(metrics.features || {})
         .sort(([, a]: any, [, b]: any) => b.usageCount - a.usageCount)
         .slice(0, 10);
 
@@ -1034,10 +1036,7 @@ function updateCharts(metrics: any) {
           }),
           datasets: [
             {
-              label: t(
-                "admin.featureToggles.monitoring.usageCount",
-                "Nutzungen",
-              ),
+              label: t("admin.featureToggles.monitoring.usageCount"),
               data: topFeatures.map(([, data]: any) => data.usageCount),
               backgroundColor: "rgba(54, 162, 235, 0.6)",
               borderColor: "rgba(54, 162, 235, 1)",
@@ -1071,7 +1070,7 @@ function updateCharts(metrics: any) {
   if (errorChart.value) {
     const ctx = errorChart.value.getContext("2d");
     if (ctx) {
-      const topErrorFeatures = Object.entries(metrics.features)
+      const topErrorFeatures = Object.entries(metrics.features || {})
         .sort(([, a]: any, [, b]: any) => b.errorCount - a.errorCount)
         .slice(0, 10);
 
@@ -1084,7 +1083,7 @@ function updateCharts(metrics: any) {
           }),
           datasets: [
             {
-              label: t("admin.featureToggles.monitoring.errorCount", "Fehler"),
+              label: t("admin.featureToggles.monitoring.errorCount"),
               data: topErrorFeatures.map(([, data]: any) => data.errorCount),
               backgroundColor: "rgba(255, 99, 132, 0.6)",
               borderColor: "rgba(255, 99, 132, 1)",
@@ -1139,7 +1138,7 @@ function updateTrendCharts() {
         ),
         datasets: [
           {
-            label: t("admin.featureToggles.monitoring.usage", "Nutzung"),
+            label: t("admin.featureToggles.monitoring.usage"),
             data: feature.metrics.trend.map((t) => t.count),
             borderColor: "rgba(54, 162, 235, 1)",
             backgroundColor: "rgba(54, 162, 235, 0.1)",
@@ -1204,6 +1203,12 @@ watch(
   },
   { deep: true },
 );
+
+// Log i18n initialization status
+console.log(`[AdminFeatureToggles.enhanced] i18n initialized with locale: ${locale.value}`);
+
+// Log i18n initialization status
+console.log(`[AdminFeatureToggles.enhanced] i18n initialized with locale: ${locale.value}`);
 </script>
 
 <style lang="scss">

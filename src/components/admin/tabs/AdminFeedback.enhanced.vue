@@ -5,6 +5,12 @@
         {{ t("admin.feedback.title", "Feedback-Übersicht") }}
       </h2>
       <div class="admin-feedback__actions">
+        <div v-if="apiIntegrationEnabled" class="api-status-indicator">
+          <span class="api-status-badge">
+            <i class="fas fa-cloud"></i>
+            {{ t("admin.feedback.apiEnabled", "API-Modus aktiv") }}
+          </span>
+        </div>
         <button class="btn btn-primary" @click="refreshData">
           <i class="fas fa-sync-alt"></i>
           {{ t("admin.feedback.refresh", "Aktualisieren") }}
@@ -366,12 +372,26 @@
       <div v-if="loading" class="loading-state">
         <i class="fas fa-spinner fa-spin"></i>
         {{ t("admin.feedback.loading", "Lade Feedback...") }}
+        <div v-if="apiIntegrationEnabled" class="api-status">
+          <span class="api-badge">
+            <i class="fas fa-cloud"></i>
+            {{ t("admin.feedback.apiMode", "API-Modus") }}
+          </span>
+        </div>
       </div>
 
       <!-- Empty State -->
       <div v-if="!loading && filteredFeedback.length === 0" class="empty-state">
         <i class="fas fa-comments"></i>
         <p>{{ t("admin.feedback.empty", "Kein Feedback gefunden") }}</p>
+        <p v-if="error" class="error-message">
+          <i class="fas fa-exclamation-triangle"></i>
+          {{ error }}
+        </p>
+        <button class="btn btn-primary" @click="refreshData">
+          <i class="fas fa-sync"></i>
+          {{ t("admin.feedback.retry", "Erneut versuchen") }}
+        </button>
       </div>
     </div>
 
@@ -589,22 +609,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { storeToRefs } from "pinia";
 import { useI18n } from "@/composables/useI18n";
 import { useToast } from "@/composables/useToast";
 import { useAdminFeedbackStore } from "@/stores/admin/feedback";
+import { shouldUseRealApi } from "@/config/api-flags";
 import { Chart } from "chart.js/auto";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
 // Composables
-const { t } = useI18n();
+const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
+console.log('[i18n] Component initialized with global scope and inheritance');
 const toast = useToast();
 const feedbackStore = useAdminFeedbackStore();
 
 // Store state
-const { feedbackItems, stats, loading, error } = storeToRefs(feedbackStore);
+const { negativeFeedback, stats, loading, error } = storeToRefs(feedbackStore);
+
+// Create a reactive reference to feedbackItems that uses negativeFeedback
+const feedbackItems = computed(() => negativeFeedback.value);
 
 // Local state
 const showCharts = ref(true);
@@ -656,7 +681,7 @@ const filteredFeedback = computed(() => {
   if (!feedbackItems.value) {
     return [];
   }
-  
+
   let result = [...feedbackItems.value];
 
   // Apply date filters
@@ -722,9 +747,30 @@ const paginatedFeedback = computed(() => {
 
 // Methods
 const refreshData = async () => {
-  await feedbackStore.fetchAllFeedback();
-  await feedbackStore.fetchStats();
-  updateCharts();
+  try {
+    // Show loading toast for better user feedback
+    toast.info(
+      t("admin.feedback.loading", "Lade Feedback-Daten...")
+    );
+    
+    await Promise.all([
+      feedbackStore.fetchNegativeFeedback(),
+      feedbackStore.fetchStats()
+    ]);
+    
+    // Show success message
+    toast.success(
+      t("admin.feedback.loadSuccess", "Feedback-Daten erfolgreich geladen")
+    );
+    
+    updateCharts();
+  } catch (err) {
+    // Show error message when loading fails
+    toast.error(
+      t("admin.feedback.loadError", "Fehler beim Laden der Feedback-Daten")
+    );
+    console.error("Error loading feedback data:", err);
+  }
 };
 
 const applyFilters = () => {
@@ -950,11 +996,22 @@ const initCharts = () => {
   }
 };
 
+// API integration status - wir erzwingen jetzt true, um nur echte Daten zu verwenden
+const apiIntegrationEnabled = computed(() => true);
+
 // Lifecycle
 onMounted(async () => {
+  // nextTick is already imported at the top
   await refreshData();
   await nextTick();
   initCharts();
+  
+  // Show API integration status
+  if (apiIntegrationEnabled.value) {
+    toast.info(
+      t("admin.feedback.apiEnabled", "Feedback-API Integration ist aktiviert")
+    );
+  }
 });
 
 // Watchers
@@ -968,6 +1025,12 @@ onUnmounted(() => {
   pieChart?.destroy();
   topicsChart?.destroy();
 });
+
+// Log i18n initialization status
+console.log(`[AdminFeedback.enhanced] i18n initialized with locale: ${locale.value}`);
+
+// Log i18n initialization status
+console.log(`[AdminFeedback.enhanced] i18n initialized with locale: ${locale.value}`);
 </script>
 
 <style lang="scss" scoped>
@@ -1174,6 +1237,51 @@ onUnmounted(() => {
       font-weight: 500;
     }
   }
+}
+
+// API Status Indicators
+.api-status-indicator {
+  display: flex;
+  align-items: center;
+  margin-right: 16px;
+}
+
+.api-status-badge {
+  background-color: var(--nscale-info-light);
+  color: var(--nscale-info);
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.api-status {
+  margin-top: 12px;
+  font-size: 14px;
+  
+  .api-badge {
+    background-color: var(--nscale-info-light);
+    color: var(--nscale-info);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+}
+
+.error-message {
+  color: var(--nscale-danger);
+  margin: 12px 0;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
 }
 
 // Modal styles

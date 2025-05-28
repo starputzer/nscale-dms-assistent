@@ -789,17 +789,17 @@ import {
   Button,
   Input,
   Alert,
-  Toggle
+  Toggle,
+  Select,
+  RadioGroup,
 } from "@/components/ui/base";
-// RadioGroup and Select components aren't exported, let's create workarounds
-const RadioGroup = Button; // temporary workaround, use Button as fallback
-const Select = Input; // temporary workaround, use Input as fallback
 
 // Marked for markdown parsing
 import { marked } from "marked";
 
 // i18n
-const { t } = useI18n();
+const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
+console.log('[i18n] Component initialized with global scope and inheritance');
 
 // Store
 const motdStore = useAdminMotdStore();
@@ -1424,6 +1424,12 @@ onMounted(async () => {
     activeTab.value = "content";
   }
 });
+
+// Log i18n initialization status
+console.log(`[AdminMotd.enhanced] i18n initialized with locale: ${locale.value}`);
+
+// Log i18n initialization status
+console.log(`[AdminMotd.enhanced] i18n initialized with locale: ${locale.value}`);
 </script>
 
 <style scoped>

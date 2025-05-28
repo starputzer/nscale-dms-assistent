@@ -145,18 +145,18 @@ function prepareTimeSeriesData(): ChartData {
   }
 
   // Get the data for each interval
-  const datasets: ChartData['datasets'] = [];
-  
+  const datasets: ChartData["datasets"] = [];
+
   // Get feature list - first check if we have a single featureId specified
   let featuresArray: Feature[] = [];
-  
+
   if (props.featureId) {
     // In a real implementation, featureStore would have a method like getFeatureById
     // For now, we'll simulate it
-    const feature = { 
-      id: props.featureId, 
+    const feature = {
+      id: props.featureId,
       name: props.featureId,
-      enabled: true 
+      enabled: true,
     };
     featuresArray = [feature];
   } else {
@@ -164,9 +164,9 @@ function prepareTimeSeriesData(): ChartData {
     // In a real implementation, featureStore would have a method like getEnabledFeatures
     // For now, we'll use a simpler approach
     featuresArray = [
-      { id: 'feature1', name: 'Feature 1', enabled: true },
-      { id: 'feature2', name: 'Feature 2', enabled: true },
-      { id: 'feature3', name: 'Feature 3', enabled: true }
+      { id: "feature1", name: "Feature 1", enabled: true },
+      { id: "feature2", name: "Feature 2", enabled: true },
+      { id: "feature3", name: "Feature 3", enabled: true },
     ];
   }
 
@@ -218,9 +218,9 @@ function preparePieData(): ChartData {
   // In a real implementation, featureStore would have a method like getEnabledFeatures
   // For now, we'll use a simpler approach
   const features = [
-    { id: 'feature1', name: 'Feature 1', enabled: true },
-    { id: 'feature2', name: 'Feature 2', enabled: true },
-    { id: 'feature3', name: 'Feature 3', enabled: true }
+    { id: "feature1", name: "Feature 1", enabled: true },
+    { id: "feature2", name: "Feature 2", enabled: true },
+    { id: "feature3", name: "Feature 3", enabled: true },
   ];
 
   // Count usage for each feature

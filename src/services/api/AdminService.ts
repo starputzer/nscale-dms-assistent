@@ -53,18 +53,18 @@ export class AdminService {
     if (hasAdminRole) {
       return true;
     }
-    
-    // Get the current user directly 
+
+    // Get the current user directly
     // Try accessing it from different properties
     const currentUser = authService.user || authService.currentUser;
-    
+
     // Get the current user from local storage as a fallback
     let userFromStorage = null;
     try {
       // Try both possible storage locations
-      const userJson = localStorage.getItem('nscale_user');
-      const userJson2 = localStorage.getItem('user');
-      
+      const userJson = localStorage.getItem("nscale_user");
+      const userJson2 = localStorage.getItem("user");
+
       if (userJson) {
         userFromStorage = JSON.parse(userJson);
       } else if (userJson2) {
@@ -73,27 +73,27 @@ export class AdminService {
     } catch (e) {
       console.error("Error parsing user from storage", e);
     }
-    
+
     // Try to get from session storage as another fallback
     let userFromSessionStorage = null;
     try {
-      const userJson = sessionStorage.getItem('nscale_user');
+      const userJson = sessionStorage.getItem("nscale_user");
       if (userJson) {
         userFromSessionStorage = JSON.parse(userJson);
       }
     } catch (e) {
       console.error("Error parsing user from session storage", e);
     }
-    
+
     // Log diagnostic info
     console.log("AdminService.hasAdminAccess diagnostics:", {
       hasAdminRole,
       currentUser,
       userFromStorage,
       userFromSessionStorage,
-      isAuthenticated: authService.isAuthenticated()
+      isAuthenticated: authService.isAuthenticated(),
     });
-    
+
     // Try to access user from apiService as well
     let userFromApiService = null;
     try {
@@ -101,32 +101,44 @@ export class AdminService {
     } catch (e) {
       console.error("Error getting user from apiService", e);
     }
-    
+
     // Log additional diagnostic info
     console.log("Additional user data:", {
       userFromApiService,
-      authServiceData: authService
+      authServiceData: authService,
     });
-    
+
     // Always return true if the user's email is martin@danglefeet.com
-    if (currentUser?.email === 'martin@danglefeet.com' || 
-        userFromStorage?.email === 'martin@danglefeet.com' ||
-        userFromSessionStorage?.email === 'martin@danglefeet.com' ||
-        userFromApiService?.email === 'martin@danglefeet.com') {
+    if (
+      currentUser?.email === "martin@danglefeet.com" ||
+      userFromStorage?.email === "martin@danglefeet.com" ||
+      userFromSessionStorage?.email === "martin@danglefeet.com" ||
+      userFromApiService?.email === "martin@danglefeet.com"
+    ) {
       console.log("Special admin access granted for martin@danglefeet.com");
       return true;
     }
-    
+
     // Check various methods for admin access
-    return hasAdminRole || 
-           (currentUser && currentUser.role === 'admin') || 
-           (currentUser && currentUser.roles && currentUser.roles.includes('admin')) ||
-           (userFromStorage && userFromStorage.role === 'admin') ||
-           (userFromStorage && userFromStorage.roles && userFromStorage.roles.includes('admin')) ||
-           (userFromSessionStorage && userFromSessionStorage.role === 'admin') ||
-           (userFromSessionStorage && userFromSessionStorage.roles && userFromSessionStorage.roles.includes('admin')) ||
-           (userFromApiService && userFromApiService.role === 'admin') ||
-           (userFromApiService && userFromApiService.roles && userFromApiService.roles.includes('admin'));
+    return (
+      hasAdminRole ||
+      (currentUser && currentUser.role === "admin") ||
+      (currentUser &&
+        currentUser.roles &&
+        currentUser.roles.includes("admin")) ||
+      (userFromStorage && userFromStorage.role === "admin") ||
+      (userFromStorage &&
+        userFromStorage.roles &&
+        userFromStorage.roles.includes("admin")) ||
+      (userFromSessionStorage && userFromSessionStorage.role === "admin") ||
+      (userFromSessionStorage &&
+        userFromSessionStorage.roles &&
+        userFromSessionStorage.roles.includes("admin")) ||
+      (userFromApiService && userFromApiService.role === "admin") ||
+      (userFromApiService &&
+        userFromApiService.roles &&
+        userFromApiService.roles.includes("admin"))
+    );
   }
 
   /**
@@ -853,7 +865,7 @@ export class AdminService {
       // Der Endpunkt existiert nicht laut Server-Log (404 Not Found)
       // Wir nutzen einen anderen Endpunkt oder simulieren eine erfolgreiche Antwort
       // const response = await apiService.get('/admin/feedback/stats');
-      
+
       // Simulierte erfolgreiche Antwort mit Demo-Daten
       const response = {
         success: true,
@@ -865,18 +877,21 @@ export class AdminService {
             positive_percent: 80,
             with_comments: 45,
             feedback_by_day: [
-              { date: '2025-05-01', count: 10, positive: 8 },
-              { date: '2025-05-02', count: 12, positive: 10 },
-              { date: '2025-05-03', count: 15, positive: 12 },
-              { date: '2025-05-04', count: 18, positive: 14 },
-              { date: '2025-05-05', count: 20, positive: 15 }
-            ]
-          }
+              { date: "2025-05-01", count: 10, positive: 8 },
+              { date: "2025-05-02", count: 12, positive: 10 },
+              { date: "2025-05-03", count: 15, positive: 12 },
+              { date: "2025-05-04", count: 18, positive: 14 },
+              { date: "2025-05-05", count: 20, positive: 15 },
+            ],
+          },
         },
-        message: "Feedback Statistiken erfolgreich abgerufen"
+        message: "Feedback Statistiken erfolgreich abgerufen",
       };
-      console.log('Raw feedback stats response:', JSON.stringify(response, null, 2));
-      
+      console.log(
+        "Raw feedback stats response:",
+        JSON.stringify(response, null, 2),
+      );
+
       // Handle case when response is successful but doesn't match expected structure
       if (response.success && response.data) {
         // Check if data contains stats property
@@ -884,16 +899,18 @@ export class AdminService {
           return response;
         } else {
           // Check if data has expected stats properties
-          if (response.data.total !== undefined || 
-              response.data.positive !== undefined || 
-              response.data.negative !== undefined) {
+          if (
+            response.data.total !== undefined ||
+            response.data.positive !== undefined ||
+            response.data.negative !== undefined
+          ) {
             // Create compatible response structure
             return {
               success: true,
               data: {
-                stats: response.data
+                stats: response.data,
               },
-              message: response.message
+              message: response.message,
             };
           } else {
             // Create a default response structure with empty stats
@@ -906,26 +923,28 @@ export class AdminService {
                   negative: 0,
                   positive_percent: 0,
                   with_comments: 0,
-                  feedback_by_day: []
-                }
+                  feedback_by_day: [],
+                },
               },
-              message: "Keine Statistiken verfügbar"
+              message: "Keine Statistiken verfügbar",
             };
           }
         }
       }
-      
+
       return response;
     } catch (error) {
       this.logger.error("Fehler beim Abrufen der Feedback-Statistiken", error);
       return {
         success: false,
-        message: error instanceof Error 
-          ? error.message 
-          : "Fehler beim Abrufen der Feedback-Statistiken",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Fehler beim Abrufen der Feedback-Statistiken",
         error: {
           code: "FEEDBACK_STATS_ERROR",
-          message: error instanceof Error ? error.message : "Unbekannter Fehler",
+          message:
+            error instanceof Error ? error.message : "Unbekannter Fehler",
         },
       };
     }
@@ -934,7 +953,9 @@ export class AdminService {
   /**
    * Negative Feedback-Einträge abrufen
    */
-  public async getNegativeFeedback(limit: number = 100): Promise<ApiResponse<any>> {
+  public async getNegativeFeedback(
+    limit: number = 100,
+  ): Promise<ApiResponse<any>> {
     try {
       // Prüfen, ob Admin-Rechte vorhanden sind
       if (!this.hasAdminAccess()) {
@@ -950,7 +971,7 @@ export class AdminService {
 
       // Der Endpunkt existiert vermutlich auch nicht (basierend auf der Erfahrung mit stats)
       // const response = await apiService.get(`/admin/feedback/negative?limit=${limit}`);
-      
+
       // Simulierte erfolgreiche Antwort mit Demo-Daten
       const response = {
         success: true,
@@ -963,7 +984,8 @@ export class AdminService {
               rating: 2,
               created_at: "2025-05-15T10:30:45Z",
               question: "Wie kann ich nach Dokumenten suchen?",
-              answer: "Sie können die Suchfunktion in der oberen rechten Ecke verwenden."
+              answer:
+                "Sie können die Suchfunktion in der oberen rechten Ecke verwenden.",
             },
             {
               id: "nf2",
@@ -972,7 +994,8 @@ export class AdminService {
               rating: 1,
               created_at: "2025-05-14T09:15:22Z",
               question: "Wie füge ich ein neues Dokument hinzu?",
-              answer: "Klicken Sie auf den 'Dokument hinzufügen' Button und wählen Sie die Datei aus."
+              answer:
+                "Klicken Sie auf den 'Dokument hinzufügen' Button und wählen Sie die Datei aus.",
             },
             {
               id: "nf3",
@@ -981,14 +1004,18 @@ export class AdminService {
               rating: 2,
               created_at: "2025-05-13T14:45:33Z",
               question: "Kann ich PDF-Dateien konvertieren?",
-              answer: "Ja, das System unterstützt die Konvertierung von PDF-Dateien."
-            }
-          ]
+              answer:
+                "Ja, das System unterstützt die Konvertierung von PDF-Dateien.",
+            },
+          ],
         },
-        message: "Negatives Feedback erfolgreich abgerufen"
+        message: "Negatives Feedback erfolgreich abgerufen",
       };
-      console.log('Raw negative feedback response:', JSON.stringify(response, null, 2));
-      
+      console.log(
+        "Raw negative feedback response:",
+        JSON.stringify(response, null, 2),
+      );
+
       // Handle case when response is successful but doesn't match expected structure
       if (response.success && response.data) {
         // Check if data contains feedback property
@@ -999,33 +1026,35 @@ export class AdminService {
           return {
             success: true,
             data: {
-              feedback: response.data
+              feedback: response.data,
             },
-            message: response.message
+            message: response.message,
           };
         } else {
           // Create a default response structure with empty feedback
           return {
             success: true,
             data: {
-              feedback: []
+              feedback: [],
             },
-            message: "Keine negativen Feedback-Einträge gefunden"
+            message: "Keine negativen Feedback-Einträge gefunden",
           };
         }
       }
-      
+
       return response;
     } catch (error) {
       this.logger.error("Fehler beim Abrufen des negativen Feedbacks", error);
       return {
         success: false,
-        message: error instanceof Error 
-          ? error.message 
-          : "Fehler beim Abrufen des negativen Feedbacks",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Fehler beim Abrufen des negativen Feedbacks",
         error: {
           code: "NEGATIVE_FEEDBACK_ERROR",
-          message: error instanceof Error ? error.message : "Unbekannter Fehler",
+          message:
+            error instanceof Error ? error.message : "Unbekannter Fehler",
         },
       };
     }

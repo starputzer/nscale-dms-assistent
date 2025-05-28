@@ -1,6 +1,6 @@
 [
   {
-    "timestamp": 1748411330.5147955,
+    "timestamp": 1748412812.1674829,
     "type": "unknown",
     "message": "STORE_INITIALIZATION_ERROR",
     "stack": "",
@@ -10,132 +10,7 @@
     "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
   },
   {
-    "timestamp": 1748411330.7247608,
-    "type": "unknown",
-    "message": "STORE_INITIALIZATION_ERROR",
-    "stack": "",
-    "context": {},
-    "user_id": null,
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": 1748411535.1750739,
-    "type": "unknown",
-    "message": "STORE_INITIALIZATION_ERROR",
-    "stack": "",
-    "context": {},
-    "user_id": null,
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": 1748411543.7131312,
-    "type": "unknown",
-    "message": "Fehler beim Abrufen der Feedback-Statistiken",
-    "stack": "",
-    "context": {
-      "promiseRejection": true,
-      "originalReason": {}
-    },
-    "user_id": null,
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": 1748411705.1147952,
-    "type": "unknown",
-    "message": "STORE_INITIALIZATION_ERROR",
-    "stack": "",
-    "context": {},
-    "user_id": null,
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": 1748411737.094718,
-    "type": "unknown",
-    "message": "STORE_INITIALIZATION_ERROR",
-    "stack": "",
-    "context": {},
-    "user_id": null,
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": 1748411891.1448376,
-    "type": "unknown",
-    "message": "STORE_INITIALIZATION_ERROR",
-    "stack": "",
-    "context": {},
-    "user_id": null,
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": 1748411895.4149704,
-    "type": "unknown",
-    "message": "STORE_INITIALIZATION_ERROR",
-    "stack": "",
-    "context": {},
-    "user_id": null,
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": 1748411901.304981,
-    "type": "unknown",
-    "message": "Request failed with status code 422",
-    "stack": "",
-    "context": {
-      "promiseRejection": true,
-      "originalReason": {
-        "message": "Request failed with status code 422",
-        "name": "[REDACTED]",
-        "stack": "AxiosError: Request failed with status code 422\n    at settle (http://localhost:3002/node_modules/.vite/deps/axios.js?v=54a80cf0:1229:12)\n    at XMLHttpRequest.onloadend (http://localhost:3002/node_modules/.vite/deps/axios.js?v=54a80cf0:1561:7)\n    at Axios.request (http://localhost:3002/node_modules/.vite/deps/axios.js?v=54a80cf0:2119:41)\n    at async Object.onError (http://localhost:3002/src/stores/sessions.ts:689:47)",
-        "config": {
-          "transitional": {
-            "silentJSONParsing": true,
-            "forcedJSONParsing": true,
-            "clarifyTimeoutError": false
-          },
-          "adapter": [
-            "xhr",
-            "http",
-            "fetch"
-          ],
-          "transformRequest": [
-            null
-          ],
-          "transformResponse": [
-            null
-          ],
-          "timeout": 0,
-          "xsrfCookieName": "[REDACTED]",
-          "xsrfHeaderName": "[REDACTED]",
-          "maxContentLength": -1,
-          "maxBodyLength": -1,
-          "env": {},
-          "headers": {
-            "Accept": "application/json, text/plain, */*",
-            "Content-Type": "application/json",
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJlbWFpbCI6Im1hcnRpbkBkYW5nbGVmZWV0LmNvbSIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTc0ODQ5ODI5NiwidG9rZW5FeHBpcnkiOjE3NDg0OTgyOTZ9.4mZdpsUpV8iecVcZc8W6oO-FBSiB4wpJfVLVDzmNKAQ"
-          },
-          "method": "post",
-          "url": "/api/question",
-          "data": "{\"question\":\"sdfdsf\",\"session_id\":\"undefined\"}",
-          "allowAbsoluteUrls": true
-        },
-        "code": "ERR_BAD_REQUEST",
-        "status": 422
-      }
-    },
-    "user_id": null,
-    "ip": "127.0.0.1",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
-  },
-  {
-    "timestamp": 1748411963.3847787,
+    "timestamp": 1748412818.244826,
     "type": "unknown",
     "message": "STORE_INITIALIZATION_ERROR",
     "stack": "",

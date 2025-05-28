@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia';
-import axios from 'axios';
-import type { SourceReference } from '@/types/session';
+import { defineStore } from "pinia";
+import axios from "axios";
+import type { SourceReference } from "@/types/session";
 
 /**
  * Interface für den State des Sources Store
@@ -20,7 +20,7 @@ interface SourcesState {
  * Pinia Store für die Verwaltung von Quellenreferenzen
  * Ersetzt die globalen Quellen-Funktionen mit einer zentralen State-Management-Lösung
  */
-export const useSourcesStore = defineStore('sources', {
+export const useSourcesStore = defineStore("sources", {
   state: (): SourcesState => ({
     currentSourceReferences: {},
     loadingState: {},
@@ -29,37 +29,45 @@ export const useSourcesStore = defineStore('sources', {
     showExplanationModal: false,
     showSourcesModal: false,
     explanationData: null,
-    isLoadingExplanation: false
+    isLoadingExplanation: false,
   }),
 
   getters: {
     /**
      * Gibt die Quellenreferenzen für eine bestimmte Nachricht zurück
      */
-    getReferencesForMessage: (state) => (messageId: string): SourceReference[] => {
-      return state.currentSourceReferences[messageId] || [];
-    },
+    getReferencesForMessage:
+      (state) =>
+      (messageId: string): SourceReference[] => {
+        return state.currentSourceReferences[messageId] || [];
+      },
 
     /**
      * Prüft, ob für eine bestimmte Nachricht gerade Quellen geladen werden
      */
-    isLoadingReferences: (state) => (messageId: string): boolean => {
-      return !!state.loadingState[messageId];
-    },
+    isLoadingReferences:
+      (state) =>
+      (messageId: string): boolean => {
+        return !!state.loadingState[messageId];
+      },
 
     /**
      * Gibt den Fehlerstatus für eine bestimmte Nachricht zurück
      */
-    getErrorForMessage: (state) => (messageId: string): string | null => {
-      return state.errorState[messageId] || null;
-    },
+    getErrorForMessage:
+      (state) =>
+      (messageId: string): string | null => {
+        return state.errorState[messageId] || null;
+      },
 
     /**
      * Gibt die aktuellen Quellenreferenzen zurück (für Modals)
      */
     currentReferences: (state): SourceReference[] => {
-      return state.currentMessageId ? state.currentSourceReferences[state.currentMessageId] || [] : [];
-    }
+      return state.currentMessageId
+        ? state.currentSourceReferences[state.currentMessageId] || []
+        : [];
+    },
   },
 
   actions: {
@@ -88,13 +96,13 @@ export const useSourcesStore = defineStore('sources', {
       } catch (error) {
         console.error("Fehler beim Laden der Quellenreferenzen:", error);
         let errorMessage = "Unbekannter Fehler beim Laden der Quellen";
-        
+
         if (axios.isAxiosError(error)) {
           errorMessage = error.response?.data?.message || error.message;
         } else if (error instanceof Error) {
           errorMessage = error.message;
         }
-        
+
         this.errorState[messageId] = errorMessage;
         return [];
       } finally {
@@ -116,14 +124,17 @@ export const useSourcesStore = defineStore('sources', {
 
         // Quellen aus der Erklärung extrahieren und im Store speichern
         if (response.data.source_references) {
-          const formattedSources: SourceReference[] = response.data.source_references.map((ref: any) => ({
-            id: ref.source_id || `src-${Math.random().toString(36).substr(2, 9)}`,
-            title: ref.title || ref.source_id || 'Unbekannte Quelle',
-            content: ref.preview || 'Keine Vorschau verfügbar',
-            source: ref.file || 'Unbekannt',
-            url: ref.url,
-            relevanceScore: ref.relevance || ref.relevance_score || 0
-          }));
+          const formattedSources: SourceReference[] =
+            response.data.source_references.map((ref: any) => ({
+              id:
+                ref.source_id ||
+                `src-${Math.random().toString(36).substr(2, 9)}`,
+              title: ref.title || ref.source_id || "Unbekannte Quelle",
+              content: ref.preview || "Keine Vorschau verfügbar",
+              source: ref.file || "Unbekannt",
+              url: ref.url,
+              relevanceScore: ref.relevance || ref.relevance_score || 0,
+            }));
 
           this.currentSourceReferences[messageId] = formattedSources;
         }
@@ -131,8 +142,9 @@ export const useSourcesStore = defineStore('sources', {
         console.error("Fehler beim Laden der Erklärung:", error);
         this.explanationData = {
           original_question: "Frage konnte nicht geladen werden",
-          explanation_text: "Es ist ein Fehler beim Laden der Erklärung aufgetreten.",
-          source_references: []
+          explanation_text:
+            "Es ist ein Fehler beim Laden der Erklärung aufgetreten.",
+          source_references: [],
         };
       } finally {
         this.isLoadingExplanation = false;
@@ -178,6 +190,6 @@ export const useSourcesStore = defineStore('sources', {
       this.showSourcesModal = false;
       this.explanationData = null;
       this.isLoadingExplanation = false;
-    }
-  }
+    },
+  },
 });

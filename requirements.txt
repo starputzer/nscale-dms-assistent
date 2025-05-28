@@ -40,6 +40,7 @@ nvidia-nvtx-cu12==12.4.127
 packaging==24.2
 passlib==1.7.4
 pillow==11.2.1
+psutil==5.9.8
 pyasn1==0.4.8
 pycparser==2.22
 pydantic==2.11.3

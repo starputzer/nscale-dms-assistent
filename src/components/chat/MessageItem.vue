@@ -147,7 +147,10 @@
 
       <!-- NOTFALL-FIX: Triple-Protection gegen undefined functions -->
       <div
-        v-if="message.metadata?.sourceReferences?.length && (showReferences || hasVisibleSources(message))"
+        v-if="
+          message.metadata?.sourceReferences?.length &&
+          (showReferences || hasVisibleSources(message))
+        "
         class="n-message-item__references"
       >
         <div class="n-message-item__references-heading">Quellen</div>
@@ -451,35 +454,52 @@ function handleDelete(): void {
 
 function handleShowSources(): void {
   try {
-    console.log('[MessageItem] handleShowSources aufgerufen für Message:', props.message.id);
-    
+    console.log(
+      "[MessageItem] handleShowSources aufgerufen für Message:",
+      props.message.id,
+    );
+
     // 1. Zuerst versuchen, die globale Funktion zu verwenden (unsere neue robuste Version)
-    if (typeof window !== 'undefined' && typeof window.toggleSourceReferences === 'function') {
-      console.log('[MessageItem] Verwende globale window.toggleSourceReferences');
+    if (
+      typeof window !== "undefined" &&
+      typeof window.toggleSourceReferences === "function"
+    ) {
+      console.log(
+        "[MessageItem] Verwende globale window.toggleSourceReferences",
+      );
       window.toggleSourceReferences(props.message);
-    } 
+    }
     // 2. Fallback: Die lokale sourceReferences.toggleSourceReferences verwenden
-    else if (sourceRefs && typeof sourceRefs.toggleSourceReferences === 'function') {
-      console.log('[MessageItem] Verwende lokale sourceRefs.toggleSourceReferences');
+    else if (
+      sourceRefs &&
+      typeof sourceRefs.toggleSourceReferences === "function"
+    ) {
+      console.log(
+        "[MessageItem] Verwende lokale sourceRefs.toggleSourceReferences",
+      );
       sourceRefs.toggleSourceReferences(props.message);
     }
     // 3. Notfall-Fallback: Direktes Manipulieren des Zustands
     else if (window.__sourceReferencesState) {
-      console.log('[MessageItem] NOTFALL-FALLBACK: Direktes Manipulieren des Zustands');
+      console.log(
+        "[MessageItem] NOTFALL-FALLBACK: Direktes Manipulieren des Zustands",
+      );
       const messageId = props.message.id;
-      window.__sourceReferencesState.visibleSourceReferences[messageId] = 
+      window.__sourceReferencesState.visibleSourceReferences[messageId] =
         !window.__sourceReferencesState.visibleSourceReferences[messageId];
     }
     // 4. Letzter Ausweg: Lokale Zustandsverwaltung, wenn nichts anderes funktioniert
     else {
-      console.warn('[MessageItem] KRITISCHER FALLBACK: Keine Methode zum Umschalten der Quellen gefunden');
+      console.warn(
+        "[MessageItem] KRITISCHER FALLBACK: Keine Methode zum Umschalten der Quellen gefunden",
+      );
       // Trotzdem das Event emittieren, damit andere Komponenten reagieren können
     }
-    
+
     // Event immer emittieren, um andere Komponenten zu informieren
     emit("view-sources", { messageId: props.message.id });
   } catch (error) {
-    console.error('[MessageItem] Fehler in handleShowSources:', error);
+    console.error("[MessageItem] Fehler in handleShowSources:", error);
     // Trotz Fehler das Event emittieren
     emit("view-sources", { messageId: props.message.id });
   }
@@ -494,44 +514,63 @@ function hasVisibleSources(message: any): boolean {
   try {
     // Sicherheitsprüfung zur Vermeidung von null/undefined-Fehlern
     if (!message || !message.id) {
-      console.warn('[MessageItem] hasVisibleSources: message oder message.id ist undefined', {
-        messageExists: !!message,
-        messageIdExists: message && !!message.id
-      });
+      console.warn(
+        "[MessageItem] hasVisibleSources: message oder message.id ist undefined",
+        {
+          messageExists: !!message,
+          messageIdExists: message && !!message.id,
+        },
+      );
       return false;
     }
 
-    // Direkt die globale Funktion verwenden - durch die verbesserte Implementierung 
+    // Direkt die globale Funktion verwenden - durch die verbesserte Implementierung
     // in index.html ist diese jetzt zuverlässig
-    if (typeof window !== 'undefined' && 
-        typeof window.isSourceReferencesVisible === 'function') {
-      
+    if (
+      typeof window !== "undefined" &&
+      typeof window.isSourceReferencesVisible === "function"
+    ) {
       // Zusätzliches Debug-Logging
       const result = window.isSourceReferencesVisible(message);
-      console.log(`[MessageItem] window.isSourceReferencesVisible(${message.id}) = ${result}`);
+      console.log(
+        `[MessageItem] window.isSourceReferencesVisible(${message.id}) = ${result}`,
+      );
       return result;
     }
-    
+
     // Wenn keine globale Funktion vorhanden ist, die lokale sourceRefs-Instanz verwenden
-    if (sourceRefs && typeof sourceRefs.isSourceReferencesVisible === 'function') {
+    if (
+      sourceRefs &&
+      typeof sourceRefs.isSourceReferencesVisible === "function"
+    ) {
       const result = sourceRefs.isSourceReferencesVisible(message);
-      console.log(`[MessageItem] sourceRefs.isSourceReferencesVisible(${message.id}) = ${result}`);
+      console.log(
+        `[MessageItem] sourceRefs.isSourceReferencesVisible(${message.id}) = ${result}`,
+      );
       return result;
     }
 
     // Alternative Methode: direkt auf die globale Zustandsvariable zugreifen
     if (window.__sourceReferencesState?.visibleSourceReferences) {
-      const result = !!window.__sourceReferencesState.visibleSourceReferences[message.id];
-      console.log(`[MessageItem] Direkte Prüfung auf __sourceReferencesState (${message.id}) = ${result}`);
+      const result =
+        !!window.__sourceReferencesState.visibleSourceReferences[message.id];
+      console.log(
+        `[MessageItem] Direkte Prüfung auf __sourceReferencesState (${message.id}) = ${result}`,
+      );
       return result;
     }
 
     // Fallback für den Fall, dass alles andere fehlschlägt
-    console.warn('[MessageItem] Keine Methode gefunden, um Sichtbarkeit zu prüfen. Gebe false zurück.');
+    console.warn(
+      "[MessageItem] Keine Methode gefunden, um Sichtbarkeit zu prüfen. Gebe false zurück.",
+    );
     return false;
   } catch (error) {
     // Allgemeiner Fehlerfall - zur Sicherheit false zurückgeben
-    console.error('[MessageItem] Unerwarteter Fehler in hasVisibleSources:', error);
+    console.error(
+      "[MessageItem] Unerwarteter Fehler in hasVisibleSources:",
+      error,
+    );
     return false;
   }
 }

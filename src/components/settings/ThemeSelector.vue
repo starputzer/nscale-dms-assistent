@@ -4,7 +4,7 @@
     <p class="theme-selector__description">
       Wählen Sie ein Farbschema für die Anwendung
     </p>
-    
+
     <!-- Auto Mode Toggle -->
     <div class="theme-selector__auto-mode">
       <label class="auto-mode-toggle">
@@ -20,34 +20,37 @@
         </span>
       </label>
     </div>
-    
+
     <!-- Theme Options -->
-    <div class="theme-selector__options" :class="{ 'theme-selector__options--disabled': isAutoMode }">
+    <div
+      class="theme-selector__options"
+      :class="{ 'theme-selector__options--disabled': isAutoMode }"
+    >
       <button
         v-for="theme in themeOptions"
         :key="theme.id"
         @click="selectTheme(theme.id)"
         :class="[
           'theme-option',
-          { 'theme-option--active': currentTheme === theme.id && !isAutoMode }
+          { 'theme-option--active': currentTheme === theme.id && !isAutoMode },
         ]"
         :disabled="isAutoMode"
       >
         <div class="theme-option__preview">
-          <div 
-            class="preview-bar preview-bar--bg" 
+          <div
+            class="preview-bar preview-bar--bg"
             :style="{ backgroundColor: theme.preview.background }"
           />
-          <div 
-            class="preview-bar preview-bar--surface" 
+          <div
+            class="preview-bar preview-bar--surface"
             :style="{ backgroundColor: theme.preview.surface }"
           />
-          <div 
-            class="preview-bar preview-bar--text" 
+          <div
+            class="preview-bar preview-bar--text"
             :style="{ backgroundColor: theme.preview.text }"
           />
-          <div 
-            class="preview-bar preview-bar--primary" 
+          <div
+            class="preview-bar preview-bar--primary"
             :style="{ backgroundColor: theme.preview.primary }"
           />
         </div>
@@ -58,49 +61,55 @@
           </div>
           <p class="theme-option__description">{{ theme.description }}</p>
         </div>
-        <div v-if="currentTheme === theme.id && !isAutoMode" class="theme-option__indicator">
+        <div
+          v-if="currentTheme === theme.id && !isAutoMode"
+          class="theme-option__indicator"
+        >
           <i class="fas fa-check-circle"></i>
         </div>
       </button>
     </div>
-    
+
     <!-- Current System Preference -->
-    <div v-if="isAutoMode && systemPreference" class="theme-selector__system-info">
+    <div
+      v-if="isAutoMode && systemPreference"
+      class="theme-selector__system-info"
+    >
       <i class="fas fa-info-circle"></i>
       <span>
-        Ihre Systemeinstellung ist aktuell: 
-        <strong>{{ systemPreference === 'dark' ? 'Dunkel' : 'Hell' }}</strong>
+        Ihre Systemeinstellung ist aktuell:
+        <strong>{{ systemPreference === "dark" ? "Dunkel" : "Hell" }}</strong>
       </span>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useThemeStore } from '@/stores/theme'
+import { computed } from "vue";
+import { useThemeStore } from "@/stores/theme";
 
-const themeStore = useThemeStore()
+const themeStore = useThemeStore();
 
 // Computed properties
-const currentTheme = computed(() => themeStore.currentTheme)
+const currentTheme = computed(() => themeStore.currentTheme);
 const isAutoMode = computed({
   get: () => themeStore.isAutoMode,
-  set: (value) => themeStore.toggleAutoMode()
-})
-const systemPreference = computed(() => themeStore.systemPreference)
-const themeOptions = computed(() => themeStore.themeOptions)
+  set: (value) => themeStore.toggleAutoMode(),
+});
+const systemPreference = computed(() => themeStore.systemPreference);
+const themeOptions = computed(() => themeStore.themeOptions);
 
 // Methods
 const selectTheme = (theme: string) => {
   if (!isAutoMode.value) {
-    themeStore.setTheme(theme as 'light' | 'dark' | 'high-contrast')
+    themeStore.setTheme(theme as "light" | "dark" | "high-contrast");
   }
-}
+};
 
 const handleAutoModeToggle = () => {
   // The v-model already handles the toggle
   // This is just for any additional logic if needed
-}
+};
 </script>
 
 <style scoped>
@@ -261,12 +270,12 @@ const handleAutoModeToggle = () => {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .theme-option__preview {
     width: 100%;
     max-width: 200px;
   }
-  
+
   .theme-option__indicator {
     top: 0.5rem;
     right: 0.5rem;

@@ -19,7 +19,8 @@ import { flushPromises as flush } from "../../setup";
 vi.mock("@/components/chat/MessageList.vue", () => ({
   default: {
     name: "MessageList",
-    template: '<div class="message-list-mock" data-testid="message-list"></div>',
+    template:
+      '<div class="message-list-mock" data-testid="message-list"></div>',
     props: [
       "messages",
       "isLoading",
@@ -36,7 +37,8 @@ vi.mock("@/components/chat/MessageList.vue", () => ({
 vi.mock("@/components/chat/MessageInput.vue", () => ({
   default: {
     name: "MessageInput",
-    template: '<div class="message-input-mock" data-testid="message-input"></div>',
+    template:
+      '<div class="message-input-mock" data-testid="message-input"></div>',
     props: [
       "modelValue",
       "disabled",
@@ -60,11 +62,11 @@ class MockEventSource {
   onopen: ((event: Event) => void) | null = null;
   readyState: number = 0;
   url: string;
-  
+
   constructor(url: string) {
     this.url = url;
     this.readyState = 0; // CONNECTING
-    
+
     // Auto-connect on creation
     setTimeout(() => {
       this.readyState = 1; // OPEN
@@ -73,11 +75,11 @@ class MockEventSource {
       }
     }, 10);
   }
-  
+
   close() {
     this.readyState = 2; // CLOSED
   }
-  
+
   // Test helper method to simulate incoming messages
   mockMessage(data: any) {
     if (this.onmessage) {
@@ -87,7 +89,7 @@ class MockEventSource {
       this.onmessage(messageEvent);
     }
   }
-  
+
   // Test helper to simulate errors
   mockError() {
     if (this.onerror) {
@@ -183,11 +185,11 @@ describe("Chat Functionality - Comprehensive", () => {
   beforeEach(() => {
     // Reset mocks
     vi.clearAllMocks();
-    
+
     // Mock for window.confirm and window.prompt
     global.confirm = vi.fn().mockReturnValue(true);
     global.prompt = vi.fn().mockReturnValue("New Session Title");
-    
+
     // Mount with testing pinia
     wrapper = mount(ChatContainer, {
       props: {
@@ -228,14 +230,16 @@ describe("Chat Functionality - Comprehensive", () => {
         },
       },
     });
-    
+
     // Get stores
     sessionsStore = useSessionsStore();
     uiStore = useUIStore();
-    
+
     // Mock store methods
     sessionsStore.sendMessage = vi.fn().mockResolvedValue({});
-    sessionsStore.loadMessages = vi.fn().mockResolvedValue(mockMessages["session-1"]);
+    sessionsStore.loadMessages = vi
+      .fn()
+      .mockResolvedValue(mockMessages["session-1"]);
     sessionsStore.createSession = vi.fn().mockResolvedValue(mockSessions[0]);
     sessionsStore.toggleArchiveSession = vi.fn();
     sessionsStore.deleteMessage = vi.fn();
@@ -251,13 +255,15 @@ describe("Chat Functionality - Comprehensive", () => {
   // Session management tests
   describe("Session Management", () => {
     it("renders the current session information correctly", () => {
-      expect(wrapper.find(".n-chat-container__title").text()).toContain("Test Session 1");
+      expect(wrapper.find(".n-chat-container__title").text()).toContain(
+        "Test Session 1",
+      );
     });
 
     it("handles session switching", async () => {
       // Trigger a session switch
       await wrapper.setProps({ sessionId: "session-2" });
-      
+
       // Store should be called with new session ID
       expect(sessionsStore.setCurrentSession).toHaveBeenCalledWith("session-2");
       expect(sessionsStore.loadMessages).toHaveBeenCalled();
@@ -266,16 +272,22 @@ describe("Chat Functionality - Comprehensive", () => {
     it("handles session renaming", async () => {
       const renameButton = wrapper.findAll(".n-chat-container__action-btn")[0];
       await renameButton.trigger("click");
-      
+
       expect(global.prompt).toHaveBeenCalled();
-      expect(sessionsStore.updateSessionTitle).toHaveBeenCalledWith("session-1", "New Session Title");
+      expect(sessionsStore.updateSessionTitle).toHaveBeenCalledWith(
+        "session-1",
+        "New Session Title",
+      );
     });
 
     it("handles session archiving", async () => {
       const archiveButton = wrapper.findAll(".n-chat-container__action-btn")[2];
       await archiveButton.trigger("click");
-      
-      expect(sessionsStore.toggleArchiveSession).toHaveBeenCalledWith("session-1", true);
+
+      expect(sessionsStore.toggleArchiveSession).toHaveBeenCalledWith(
+        "session-1",
+        true,
+      );
       expect(uiStore.showSuccess).toHaveBeenCalled();
     });
 
@@ -284,17 +296,22 @@ describe("Chat Functionality - Comprehensive", () => {
       await wrapper.setProps({ sessionId: "session-3" });
       sessionsStore.currentSession = mockSessions[2];
       await wrapper.vm.$nextTick();
-      
-      const unarchiveButton = wrapper.findAll(".n-chat-container__action-btn")[2];
+
+      const unarchiveButton = wrapper.findAll(
+        ".n-chat-container__action-btn",
+      )[2];
       await unarchiveButton.trigger("click");
-      
-      expect(sessionsStore.toggleArchiveSession).toHaveBeenCalledWith("session-3", false);
+
+      expect(sessionsStore.toggleArchiveSession).toHaveBeenCalledWith(
+        "session-3",
+        false,
+      );
     });
 
     it("handles session clearing", async () => {
       const clearButton = wrapper.findAll(".n-chat-container__action-btn")[3];
       await clearButton.trigger("click");
-      
+
       expect(global.confirm).toHaveBeenCalled();
       expect(sessionsStore.deleteMessage).toHaveBeenCalledTimes(2); // For each message
       expect(sessionsStore.refreshSession).toHaveBeenCalledWith("session-1");
@@ -305,8 +322,10 @@ describe("Chat Functionality - Comprehensive", () => {
   describe("Message Handling", () => {
     it("passes the correct messages to MessageList component", async () => {
       // Get the props passed to the MessageList component
-      const messageListProps = wrapper.findComponent({ name: "MessageList" }).props();
-      
+      const messageListProps = wrapper
+        .findComponent({ name: "MessageList" })
+        .props();
+
       // Verify the messages array matches our mock data
       expect(messageListProps.messages).toEqual(mockMessages["session-1"]);
     });
@@ -315,7 +334,7 @@ describe("Chat Functionality - Comprehensive", () => {
       // Set error state in the store
       sessionsStore.error = "Network error";
       await wrapper.vm.$nextTick();
-      
+
       // Error should be propagated to the UI
       expect(wrapper.find(".error-message").exists()).toBe(true);
       expect(wrapper.find(".error-message").text()).toContain("Network error");
@@ -325,12 +344,14 @@ describe("Chat Functionality - Comprehensive", () => {
       // Set loading state
       sessionsStore.isLoading = true;
       await wrapper.vm.$nextTick();
-      
+
       // Loading indicator should be visible
       expect(wrapper.find(".loading-indicator").exists()).toBe(true);
-      
+
       // MessageInput should be disabled
-      const messageInputProps = wrapper.findComponent({ name: "MessageInput" }).props();
+      const messageInputProps = wrapper
+        .findComponent({ name: "MessageInput" })
+        .props();
       expect(messageInputProps.disabled).toBe(true);
     });
 
@@ -338,12 +359,14 @@ describe("Chat Functionality - Comprehensive", () => {
       // Set streaming state
       sessionsStore.isStreaming = true;
       await wrapper.vm.$nextTick();
-      
+
       // Streaming indicator should be visible
       expect(wrapper.find(".streaming-indicator").exists()).toBe(true);
-      
+
       // MessageInput should indicate streaming
-      const messageInputProps = wrapper.findComponent({ name: "MessageInput" }).props();
+      const messageInputProps = wrapper
+        .findComponent({ name: "MessageInput" })
+        .props();
       expect(messageInputProps.isStreaming).toBe(true);
     });
   });
@@ -352,15 +375,21 @@ describe("Chat Functionality - Comprehensive", () => {
   describe("Accessibility", () => {
     it("uses proper ARIA attributes for accessibility", () => {
       // Check main container
-      expect(wrapper.find(".n-chat-container").attributes("role")).toBe("region");
-      expect(wrapper.find(".n-chat-container").attributes("aria-labelledby")).toBeTruthy();
-      
+      expect(wrapper.find(".n-chat-container").attributes("role")).toBe(
+        "region",
+      );
+      expect(
+        wrapper.find(".n-chat-container").attributes("aria-labelledby"),
+      ).toBeTruthy();
+
       // Check toolbar
-      expect(wrapper.find(".n-chat-container__actions").attributes("role")).toBe("toolbar");
-      
+      expect(
+        wrapper.find(".n-chat-container__actions").attributes("role"),
+      ).toBe("toolbar");
+
       // Check action buttons
       const buttons = wrapper.findAll(".n-chat-container__action-btn");
-      buttons.forEach(button => {
+      buttons.forEach((button) => {
         expect(button.attributes("aria-label")).toBeTruthy();
       });
     });
@@ -372,21 +401,27 @@ describe("Chat Functionality - Comprehensive", () => {
       // Create a new mock session with no messages
       sessionsStore.messages = { "empty-session": [] };
       await wrapper.setProps({ sessionId: "empty-session" });
-      sessionsStore.currentSession = { id: "empty-session", title: "Empty Session", isArchived: false };
+      sessionsStore.currentSession = {
+        id: "empty-session",
+        title: "Empty Session",
+        isArchived: false,
+      };
       await wrapper.vm.$nextTick();
-      
+
       // Should show welcome message when no messages exist
       expect(wrapper.find(".welcome-message").exists()).toBe(true);
     });
 
     it("handles session loading failure", async () => {
       // Mock loadMessages to reject
-      sessionsStore.loadMessages = vi.fn().mockRejectedValue(new Error("Failed to load messages"));
-      
+      sessionsStore.loadMessages = vi
+        .fn()
+        .mockRejectedValue(new Error("Failed to load messages"));
+
       // Trigger a session switch
       await wrapper.setProps({ sessionId: "session-2" });
       await flushPromises();
-      
+
       // Error should be shown
       expect(uiStore.showError).toHaveBeenCalled();
     });
@@ -399,7 +434,7 @@ describe("Chat Functionality - Comprehensive", () => {
         canExportSession: false,
         canClearSession: false,
       });
-      
+
       // Action buttons should not be rendered or should be disabled
       expect(wrapper.findAll(".n-chat-container__action-btn").length).toBe(0);
     });
@@ -411,29 +446,34 @@ describe("Chat Functionality - Comprehensive", () => {
       // Trigger a session action that would emit an event
       const renameButton = wrapper.findAll(".n-chat-container__action-btn")[0];
       await renameButton.trigger("click");
-      
+
       // Check for emitted events
       expect(wrapper.emitted("session-updated")).toBeTruthy();
     });
 
     it("handles message send events from input component", async () => {
       // Simulate a message send event from MessageInput
-      wrapper.findComponent({ name: "MessageInput" }).vm.$emit("send", "New test message");
+      wrapper
+        .findComponent({ name: "MessageInput" })
+        .vm.$emit("send", "New test message");
       await flush();
-      
+
       // Store should be called to send the message
-      expect(sessionsStore.sendMessage).toHaveBeenCalledWith("session-1", "New test message");
+      expect(sessionsStore.sendMessage).toHaveBeenCalledWith(
+        "session-1",
+        "New test message",
+      );
     });
 
     it("handles streaming cancel events", async () => {
       // Set streaming state
       sessionsStore.isStreaming = true;
       await wrapper.vm.$nextTick();
-      
+
       // Simulate a cancel event from MessageInput
       wrapper.findComponent({ name: "MessageInput" }).vm.$emit("cancel");
       await flush();
-      
+
       // Store should be called to stop streaming
       expect(sessionsStore.stopStreaming).toHaveBeenCalled();
     });
@@ -441,17 +481,19 @@ describe("Chat Functionality - Comprehensive", () => {
     it("handles message action events", async () => {
       // Mock the callback methods
       wrapper.vm.handleMessageAction = vi.fn();
-      
-      // Simulate a message action event 
-      wrapper.findComponent({ name: "MessageList" }).vm.$emit("message-action", { 
-        messageId: "msg1", 
-        action: "copy" 
-      });
-      
+
+      // Simulate a message action event
+      wrapper
+        .findComponent({ name: "MessageList" })
+        .vm.$emit("message-action", {
+          messageId: "msg1",
+          action: "copy",
+        });
+
       // Handler should be called
-      expect(wrapper.vm.handleMessageAction).toHaveBeenCalledWith({ 
-        messageId: "msg1", 
-        action: "copy" 
+      expect(wrapper.vm.handleMessageAction).toHaveBeenCalledWith({
+        messageId: "msg1",
+        action: "copy",
       });
     });
   });

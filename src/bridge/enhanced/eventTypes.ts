@@ -11,68 +11,95 @@
  */
 export interface EventDefinitions {
   // Auth Events
-  'auth:login': { success: boolean; user?: any; error?: any };
-  'auth:logout': void | {};
-  'auth:changed': { isAuthenticated: boolean };
-  'auth:token': { token: string | null };
-  'auth:error': { message: string; code?: number };
+  "auth:login": { success: boolean; user?: any; error?: any };
+  "auth:logout": void | {};
+  "auth:changed": { isAuthenticated: boolean };
+  "auth:token": { token: string | null };
+  "auth:error": { message: string; code?: number };
 
   // Session Events
-  'session:created': { sessionId: string };
-  'session:deleted': { sessionId: string };
-  'session:changed': { sessionId: string; oldSessionId: string | null; session: any };
-  'session:error': { action: string; sessionId?: string; error: any };
-  'sessions:updated': { sessions: any[] };
-  'session:message': { sessionId: string; message: any };
-  'session:message:sent': { sessionId: string; messageId: string };
-  'session:message:received': { sessionId: string; messageId: string; content: any };
-  'session:message:error': { sessionId: string; error: any };
+  "session:created": { sessionId: string };
+  "session:deleted": { sessionId: string };
+  "session:changed": {
+    sessionId: string;
+    oldSessionId: string | null;
+    session: any;
+  };
+  "session:error": { action: string; sessionId?: string; error: any };
+  "sessions:updated": { sessions: any[] };
+  "session:message": { sessionId: string; message: any };
+  "session:message:sent": { sessionId: string; messageId: string };
+  "session:message:received": {
+    sessionId: string;
+    messageId: string;
+    content: any;
+  };
+  "session:message:error": { sessionId: string; error: any };
 
   // UI Events
-  'ui:darkModeChanged': { isDark: boolean };
-  'ui:toast': { message: string; type?: 'info' | 'success' | 'warning' | 'error' };
-  'ui:modal': { id: string; action: 'open' | 'close'; data?: any };
-  'ui:sidebar': { isOpen: boolean };
-  'ui:view': { name: string; params?: Record<string, any> };
-  'ui:theme': { name: string; variant?: string };
-  'ui:notification': { title: string; message: string; type?: string; duration?: number };
+  "ui:darkModeChanged": { isDark: boolean };
+  "ui:toast": {
+    message: string;
+    type?: "info" | "success" | "warning" | "error";
+  };
+  "ui:modal": { id: string; action: "open" | "close"; data?: any };
+  "ui:sidebar": { isOpen: boolean };
+  "ui:view": { name: string; params?: Record<string, any> };
+  "ui:theme": { name: string; variant?: string };
+  "ui:notification": {
+    title: string;
+    message: string;
+    type?: string;
+    duration?: number;
+  };
 
   // Feature Flags Events
-  'features:updated': { features: Record<string, boolean> };
-  'feature:changed': { feature: string; enabled: boolean };
-  'feature:toggled': { feature: string; enabled: boolean };
+  "features:updated": { features: Record<string, boolean> };
+  "feature:changed": { feature: string; enabled: boolean };
+  "feature:toggled": { feature: string; enabled: boolean };
 
   // Bridge System Events
-  'bridge:ready': { version: string };
-  'bridge:error': { component: string; message: string; error?: any };
-  'bridge:disconnected': { reason?: string };
-  'bridge:reconnected': { timestamp: number };
-  'bridge:status': { component: string; status: 'healthy' | 'degraded' | 'error' };
+  "bridge:ready": { version: string };
+  "bridge:error": { component: string; message: string; error?: any };
+  "bridge:disconnected": { reason?: string };
+  "bridge:reconnected": { timestamp: number };
+  "bridge:status": {
+    component: string;
+    status: "healthy" | "degraded" | "error";
+  };
 
   // Document Converter Events
-  'document:upload:started': { fileName: string; size: number };
-  'document:upload:progress': { fileName: string; progress: number };
-  'document:upload:completed': { fileName: string; fileId: string };
-  'document:upload:error': { fileName: string; error: any };
-  'document:conversion:started': { fileId: string };
-  'document:conversion:progress': { fileId: string; progress: number };
-  'document:conversion:completed': { fileId: string; documentId: string };
-  'document:conversion:error': { fileId: string; error: any };
-  'documents:updated': { documents: any[] };
+  "document:upload:started": { fileName: string; size: number };
+  "document:upload:progress": { fileName: string; progress: number };
+  "document:upload:completed": { fileName: string; fileId: string };
+  "document:upload:error": { fileName: string; error: any };
+  "document:conversion:started": { fileId: string };
+  "document:conversion:progress": { fileId: string; progress: number };
+  "document:conversion:completed": { fileId: string; documentId: string };
+  "document:conversion:error": { fileId: string; error: any };
+  "documents:updated": { documents: any[] };
 
   // Performance Monitoring Events
-  'performance:metric': { name: string; value: number; tags?: Record<string, string> };
-  'performance:milestone': { name: string; timestamp: number };
-  'performance:error': { message: string; stack?: string; context?: any };
-  'performance:resource': { url: string; duration: number; type: string };
+  "performance:metric": {
+    name: string;
+    value: number;
+    tags?: Record<string, string>;
+  };
+  "performance:milestone": { name: string; timestamp: number };
+  "performance:error": { message: string; stack?: string; context?: any };
+  "performance:resource": { url: string; duration: number; type: string };
 
   // Allgemeine System Events
-  'system:error': { message: string; code?: number; details?: any };
-  'system:warning': { message: string; details?: any };
-  'system:info': { message: string; details?: any };
-  'system:startup': { timestamp: number; environment: string };
-  'system:shutdown': { timestamp: number; reason?: string };
-  'system:maintenance': { scheduled: boolean; startTime?: number; endTime?: number };
+  "system:error": { message: string; code?: number; details?: any };
+  "system:warning": { message: string; details?: any };
+  "system:info": { message: string; details?: any };
+  "system:startup": { timestamp: number; environment: string };
+  "system:shutdown": { timestamp: number; reason?: string };
+  "system:maintenance": {
+    scheduled: boolean;
+    startTime?: number;
+    endTime?: number;
+  };
 
   // Legacy-Kompatibilitäts-Events - diese können jeden beliebigen Payload haben
   [key: `legacy:${string}`]: any;
@@ -84,7 +111,8 @@ export interface EventDefinitions {
 /**
  * Extrahiert die Payload eines Events basierend auf seinem Namen
  */
-export type EventPayload<T extends keyof EventDefinitions> = EventDefinitions[T];
+export type EventPayload<T extends keyof EventDefinitions> =
+  EventDefinitions[T];
 
 /**
  * Erweiterte Event-Options für typsichere Events
@@ -105,17 +133,17 @@ export interface TypedEventSubscription {
    * Hebt die Registrierung des Event-Listeners auf
    */
   unsubscribe(): void;
-  
+
   /**
    * Eindeutige ID des Subscriptions
    */
   readonly id: string;
-  
+
   /**
    * Event-Name, auf den abonniert wurde
    */
   readonly eventName: string;
-  
+
   /**
    * Zeitpunkt der Registrierung
    */
@@ -125,9 +153,9 @@ export interface TypedEventSubscription {
 /**
  * Callback-Typ für typisierte Event-Listener
  */
-export type TypedEventListener<T extends keyof EventDefinitions> = 
-  EventDefinitions[T] extends void | {} 
-    ? () => void 
+export type TypedEventListener<T extends keyof EventDefinitions> =
+  EventDefinitions[T] extends void | {}
+    ? () => void
     : (data: EventDefinitions[T]) => void;
 
 /**
@@ -143,7 +171,7 @@ export interface TypedEventBus {
   on<T extends keyof EventDefinitions>(
     eventName: T,
     listener: TypedEventListener<T>,
-    options?: TypedEventOptions
+    options?: TypedEventOptions,
   ): TypedEventSubscription;
 
   /**
@@ -155,7 +183,7 @@ export interface TypedEventBus {
   once<T extends keyof EventDefinitions>(
     eventName: T,
     listener: TypedEventListener<T>,
-    options?: Omit<TypedEventOptions, 'once'>
+    options?: Omit<TypedEventOptions, "once">,
   ): TypedEventSubscription;
 
   /**
@@ -184,10 +212,12 @@ export interface TypedEventBus {
    * Sendet mehrere Events gleichzeitig
    * @param events Array von Event-Tupeln mit korrekten Typen
    */
-  emitMultiple(events: Array<
-    | [T: keyof EventDefinitions & string, payload: any]
-    | [T: keyof EventDefinitions & string]
-  >): void;
+  emitMultiple(
+    events: Array<
+      | [T: keyof EventDefinitions & string, payload: any]
+      | [T: keyof EventDefinitions & string]
+    >,
+  ): void;
 
   /**
    * Registriert einen typisierten Event-Listener mit Priorität
@@ -200,7 +230,7 @@ export interface TypedEventBus {
     eventName: T,
     priority: number,
     listener: TypedEventListener<T>,
-    options?: Omit<TypedEventOptions, 'priority'>
+    options?: Omit<TypedEventOptions, "priority">,
   ): TypedEventSubscription;
 
   /**
@@ -245,12 +275,12 @@ export interface EventBusLegacyAdapter {
    * Registriert einen Event-Listener mit einfacherer Schnittstelle
    */
   addEventListener(eventName: string, callback: Function): () => void;
-  
+
   /**
    * Entfernt einen Event-Listener mit einfacherer Schnittstelle
    */
   removeEventListener(eventName: string, callback: Function): void;
-  
+
   /**
    * Sendet ein Event mit einfacherer Schnittstelle
    */
@@ -261,5 +291,7 @@ export interface EventBusLegacyAdapter {
  * Utility-Typ für Event-Validierung
  * (Für interne Verwendung in Tests und Entwicklung)
  */
-export type ValidateEvent<T extends keyof EventDefinitions, P> = 
-  P extends EventDefinitions[T] ? P : never;
+export type ValidateEvent<
+  T extends keyof EventDefinitions,
+  P,
+> = P extends EventDefinitions[T] ? P : never;

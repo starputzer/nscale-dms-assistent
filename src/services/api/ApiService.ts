@@ -105,14 +105,14 @@ export class ApiService {
   constructor() {
     // Get central auth manager instance
     this.centralAuthManager = CentralAuthManager.getInstance();
-    
+
     // Konfiguriere Axios-Instanz
     // baseURL ist bereits korrekt mit Version konfiguriert (/api/v1)
     const baseURL = apiConfig.BASE_URL;
-    console.log('[ApiService] Base URL configuration:', {
+    console.log("[ApiService] Base URL configuration:", {
       BASE_URL: apiConfig.BASE_URL,
       API_VERSION: apiConfig.API_VERSION,
-      finalBaseURL: baseURL
+      finalBaseURL: baseURL,
     });
     this.axiosInstance = axios.create({
       baseURL: baseURL,
@@ -165,7 +165,7 @@ export class ApiService {
         config.headers["X-Request-ID"] = requestId;
 
         // Debug-Logging
-        if (apiConfig.DEBUG.LOG_REQUESTS || config.url?.includes('batch')) {
+        if (apiConfig.DEBUG.LOG_REQUESTS || config.url?.includes("batch")) {
           this.logService.debug(
             `📤 Request [${config.method?.toUpperCase()}] ${config.url}`,
             {
@@ -174,7 +174,9 @@ export class ApiService {
               params: config.params,
               data: config.data,
               hasAuthHeader: !!config.headers?.Authorization,
-              authHeaderValue: config.headers?.Authorization ? config.headers.Authorization.substring(0, 20) + '...' : null,
+              authHeaderValue: config.headers?.Authorization
+                ? config.headers.Authorization.substring(0, 20) + "..."
+                : null,
             },
           );
         }
@@ -184,37 +186,49 @@ export class ApiService {
         let token = this.storageService.getItem(
           apiConfig.AUTH.STORAGE_KEYS.ACCESS_TOKEN,
         );
-        
+
         // Fallback: Direkt aus localStorage mit korrektem key
         if (!token) {
-          token = localStorage.getItem('nscale_access_token');
+          token = localStorage.getItem("nscale_access_token");
         }
-        
+
         // Debug logging for all requests
-        if (apiConfig.DEBUG.LOG_REQUESTS || config.url?.includes('batch')) {
-          console.log(`🔐 Auth check for ${config.method?.toUpperCase()} ${config.url}:`, {
-            tokenFromStorage: !!token,
-            tokenLength: token?.length,
-            tokenPreview: token ? token.substring(0, 20) + '...' : null,
-            authAlreadySet: !!config.headers.Authorization,
-            storageKey: apiConfig.AUTH.STORAGE_KEYS.ACCESS_TOKEN,
-            fullStorageKey: `nscale_${apiConfig.AUTH.STORAGE_KEYS.ACCESS_TOKEN}`,
-            isLoginRequest: config.url?.includes('/login'),
-            skipAuth: config.url?.includes('/login') || config.url?.includes('/refresh')
-          });
+        if (apiConfig.DEBUG.LOG_REQUESTS || config.url?.includes("batch")) {
+          console.log(
+            `🔐 Auth check for ${config.method?.toUpperCase()} ${config.url}:`,
+            {
+              tokenFromStorage: !!token,
+              tokenLength: token?.length,
+              tokenPreview: token ? token.substring(0, 20) + "..." : null,
+              authAlreadySet: !!config.headers.Authorization,
+              storageKey: apiConfig.AUTH.STORAGE_KEYS.ACCESS_TOKEN,
+              fullStorageKey: `nscale_${apiConfig.AUTH.STORAGE_KEYS.ACCESS_TOKEN}`,
+              isLoginRequest: config.url?.includes("/login"),
+              skipAuth:
+                config.url?.includes("/login") ||
+                config.url?.includes("/refresh"),
+            },
+          );
         }
-        
+
         // Skip auth for login and refresh endpoints
-        const skipAuthEndpoints = ['/login', '/refresh'];
-        const shouldSkipAuth = skipAuthEndpoints.some(endpoint => config.url?.includes(endpoint));
-        
+        const skipAuthEndpoints = ["/login", "/refresh"];
+        const shouldSkipAuth = skipAuthEndpoints.some((endpoint) =>
+          config.url?.includes(endpoint),
+        );
+
         if (token && !config.headers.Authorization && !shouldSkipAuth) {
           config.headers.Authorization = `${apiConfig.AUTH.TOKEN_PREFIX} ${token}`;
-          this.logService.debug(`✅ Auth header added to request: ${config.url}`, {
-            token: token.substring(0, 20) + '...'
-          });
+          this.logService.debug(
+            `✅ Auth header added to request: ${config.url}`,
+            {
+              token: token.substring(0, 20) + "...",
+            },
+          );
         } else if (!token && !shouldSkipAuth) {
-          this.logService.warn(`⚠️ No auth token available for request: ${config.url}`);
+          this.logService.warn(
+            `⚠️ No auth token available for request: ${config.url}`,
+          );
         }
 
         // API-Version nicht hinzufügen, da sie bereits in der baseURL enthalten ist
@@ -488,11 +502,17 @@ export class ApiService {
           throw new Error("Kein Refresh-Token vorhanden");
         }
 
-        // Token-Refresh-Anfrage
+        // Token-Refresh-Anfrage mit korrektem Endpunkt aus der Konfiguration
+        const refreshEndpoint = apiConfig.ENDPOINTS.AUTH.REFRESH;
+        console.log(
+          "[ApiService] Sending token refresh request to:",
+          refreshEndpoint,
+        );
+
         const response = await this.axiosInstance.post<
           ApiResponse<LoginResponse>
         >(
-          '/api/auth/token/refresh',
+          refreshEndpoint,
           { refreshToken },
           { _retry: true }, // Verhindere endlose Refresh-Schleife
         );
@@ -614,13 +634,15 @@ export class ApiService {
   ): Promise<ApiResponse<T>> {
     try {
       // Debug-Ausgabe für URL-Konstruktion
-      console.log('[ApiService] Executing request:', {
+      console.log("[ApiService] Executing request:", {
         url: options.url,
         baseURL: this.axiosInstance.defaults.baseURL,
-        finalURL: options.url?.startsWith('http') ? options.url : `${this.axiosInstance.defaults.baseURL}${options.url}`,
-        axiosConfig: options
+        finalURL: options.url?.startsWith("http")
+          ? options.url
+          : `${this.axiosInstance.defaults.baseURL}${options.url}`,
+        axiosConfig: options,
       });
-      
+
       // Überprüfe auf Rate-Limiting
       if (options.handleRateLimit) {
         await this.rateLimitHandler.applyThrottling();
@@ -747,7 +769,7 @@ export class ApiService {
   public async customRequest<T = any>(
     options: ApiRequestOptions,
   ): Promise<ApiResponse<T>> {
-    return this.request<T>(options.method || 'get', options.url || '', options);
+    return this.request<T>(options.method || "get", options.url || "", options);
   }
 
   /**
@@ -848,10 +870,10 @@ export class ApiService {
 
       // Debug logging for token storage
       this.logService.debug("🔐 Storing tokens after login:", {
-        accessTokenPreview: accessToken.substring(0, 20) + '...',
+        accessTokenPreview: accessToken.substring(0, 20) + "...",
         storageKeys: apiConfig.AUTH.STORAGE_KEYS,
         userEmail: user?.email,
-        userRole: user?.role
+        userRole: user?.role,
       });
 
       // Token und Benutzerdaten speichern
@@ -873,16 +895,18 @@ export class ApiService {
       );
 
       // Verify storage was successful
-      const storedToken = this.storageService.getItem(apiConfig.AUTH.STORAGE_KEYS.ACCESS_TOKEN);
+      const storedToken = this.storageService.getItem(
+        apiConfig.AUTH.STORAGE_KEYS.ACCESS_TOKEN,
+      );
       if (storedToken === accessToken) {
         this.logService.debug("✅ Token successfully stored and verified");
-        
+
         // Update the central auth manager with the new token
         this.centralAuthManager.updateAuthHeader(accessToken);
       } else {
         this.logService.error("❌ Token storage verification failed", {
-          expected: accessToken.substring(0, 20) + '...',
-          actual: storedToken?.substring(0, 20) + '...'
+          expected: accessToken.substring(0, 20) + "...",
+          actual: storedToken?.substring(0, 20) + "...",
         });
       }
 
@@ -968,7 +992,7 @@ export class ApiService {
    */
   public addRequestInterceptor(
     onFulfilled: (config: any) => any,
-    onRejected?: (error: any) => any
+    onRejected?: (error: any) => any,
   ): number {
     return this.axiosInstance.interceptors.request.use(onFulfilled, onRejected);
   }
@@ -978,9 +1002,12 @@ export class ApiService {
    */
   public addResponseInterceptor(
     onFulfilled: (response: any) => any,
-    onRejected?: (error: any) => any
+    onRejected?: (error: any) => any,
   ): number {
-    return this.axiosInstance.interceptors.response.use(onFulfilled, onRejected);
+    return this.axiosInstance.interceptors.response.use(
+      onFulfilled,
+      onRejected,
+    );
   }
 
   /**

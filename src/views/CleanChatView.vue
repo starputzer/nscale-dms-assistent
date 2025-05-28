@@ -2,7 +2,9 @@
   <div class="chat-view">
     <!-- Chat Header -->
     <div class="chat-header">
-      <h2 class="chat-title">{{ currentSession?.title || 'Neue Unterhaltung' }}</h2>
+      <h2 class="chat-title">
+        {{ currentSession?.title || "Neue Unterhaltung" }}
+      </h2>
     </div>
 
     <!-- Message Area -->
@@ -10,11 +12,49 @@
       <!-- Welcome Message - shown when no messages -->
       <div v-if="!messages.length && !isLoading" class="welcome-message">
         <div class="welcome-logo">
-          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
-            <line x1="8" y1="8" x2="16" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <line x1="8" y1="16" x2="11" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <svg
+            width="64"
+            height="64"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              x="3"
+              y="3"
+              width="18"
+              height="18"
+              rx="2"
+              stroke="currentColor"
+              stroke-width="2"
+            />
+            <line
+              x1="8"
+              y1="8"
+              x2="16"
+              y2="8"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+            <line
+              x1="8"
+              y1="12"
+              x2="16"
+              y2="12"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+            <line
+              x1="8"
+              y1="16"
+              x2="11"
+              y2="16"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
           </svg>
         </div>
         <h3>Willkommen bei der Digitalen Akte Assistenten</h3>
@@ -23,44 +63,95 @@
 
       <!-- Messages -->
       <div v-else class="messages">
-        <div 
-          v-for="message in messages" 
+        <div
+          v-for="message in messages"
           :key="message.id"
           class="message"
-          :class="{ 'message-user': message.is_user, 'message-assistant': !message.is_user }"
+          :class="{
+            'message-user': message.is_user,
+            'message-assistant': !message.is_user,
+          }"
         >
           <div class="message-avatar">
             <span v-if="message.is_user">{{ userInitials }}</span>
-            <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="18" height="18" rx="2"/>
-              <line x1="8" y1="8" x2="16" y2="8" stroke-linecap="round"/>
-              <line x1="8" y1="12" x2="16" y2="12" stroke-linecap="round"/>
-              <line x1="8" y1="16" x2="11" y2="16" stroke-linecap="round"/>
+            <svg
+              v-else
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <line x1="8" y1="8" x2="16" y2="8" stroke-linecap="round" />
+              <line x1="8" y1="12" x2="16" y2="12" stroke-linecap="round" />
+              <line x1="8" y1="16" x2="11" y2="16" stroke-linecap="round" />
             </svg>
           </div>
-          
+
           <div class="message-content">
             <div class="message-header">
-              <span class="message-sender">{{ message.is_user ? 'Sie' : 'Assistent' }}</span>
-              <span class="message-time">{{ formatTime(message.timestamp) }}</span>
+              <span class="message-sender">{{
+                message.is_user ? "Sie" : "Assistent"
+              }}</span>
+              <span class="message-time">{{
+                formatTime(message.timestamp)
+              }}</span>
             </div>
-            <div class="message-text" v-html="formatMessage(message.text)"></div>
-            
+            <div
+              class="message-text"
+              v-html="formatMessage(message.text)"
+            ></div>
+
             <!-- Message Actions for Assistant Messages -->
             <div v-if="!message.is_user" class="message-actions">
-              <button class="action-btn" @click="handleFeedback(message, 'positive')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+              <button
+                class="action-btn"
+                @click="handleFeedback(message, 'positive')"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"
+                  ></path>
                 </svg>
               </button>
-              <button class="action-btn" @click="handleFeedback(message, 'negative')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path>
+              <button
+                class="action-btn"
+                @click="handleFeedback(message, 'negative')"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"
+                  ></path>
                 </svg>
               </button>
               <button class="action-btn" @click="handleViewSources(message)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                  ></path>
                 </svg>
                 <span>Quellen</span>
               </button>
@@ -89,12 +180,19 @@
           placeholder="Nachricht eingeben..."
           :disabled="isLoading"
         />
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           class="send-button"
           :disabled="!messageInput.trim() || isLoading"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <line x1="22" y1="2" x2="11" y2="13"></line>
             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
           </svg>
@@ -346,12 +444,16 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideIn {
-  from { 
+  from {
     opacity: 0;
     transform: translateY(10px);
   }
@@ -362,7 +464,9 @@
 }
 
 @keyframes bounce {
-  0%, 60%, 100% {
+  0%,
+  60%,
+  100% {
     transform: translateY(0);
   }
   30% {
@@ -372,81 +476,87 @@
 </style>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue'
-import { useRoute } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-import { useSessionsStore } from '@/stores/sessions'
-import { marked } from 'marked'
-import DOMPurify from 'dompurify'
+import { ref, computed, onMounted, nextTick } from "vue";
+import { useRoute } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
+import { useSessionsStore } from "@/stores/sessions";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 
-const route = useRoute()
-const authStore = useAuthStore()
-const sessionsStore = useSessionsStore()
+const route = useRoute();
+const authStore = useAuthStore();
+const sessionsStore = useSessionsStore();
 
 // State
-const messageInput = ref('')
-const isLoading = ref(false)
-const messageArea = ref<HTMLElement>()
+const messageInput = ref("");
+const isLoading = ref(false);
+const messageArea = ref<HTMLElement>();
 
 // Computed
-const currentSessionId = computed(() => route.params.id as string || sessionsStore.currentSessionId)
-const currentSession = computed(() => 
-  sessionsStore.sessions.find(s => s.id === currentSessionId.value) || 
-  sessionsStore.currentSession
-)
+const currentSessionId = computed(
+  () => (route.params.id as string) || sessionsStore.currentSessionId,
+);
+const currentSession = computed(
+  () =>
+    sessionsStore.sessions.find((s) => s.id === currentSessionId.value) ||
+    sessionsStore.currentSession,
+);
 const messages = computed(() => {
-  if (!currentSessionId.value) return []
-  return sessionsStore.messages[currentSessionId.value] || []
-})
+  if (!currentSessionId.value) return [];
+  return sessionsStore.messages[currentSessionId.value] || [];
+});
 const userInitials = computed(() => {
-  const name = authStore.user?.displayName || 
-              authStore.user?.username || 
-              authStore.user?.email?.split('@')[0] || 
-              'Benutzer'
+  const name =
+    authStore.user?.displayName ||
+    authStore.user?.username ||
+    authStore.user?.email?.split("@")[0] ||
+    "Benutzer";
   return name
-    .split(' ')
-    .map(part => part[0])
-    .join('')
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
     .toUpperCase()
-    .slice(0, 2)
-})
+    .slice(0, 2);
+});
 
 // Methods
 const loadMessages = async () => {
-  if (!currentSessionId.value) return
-  
-  isLoading.value = true
+  if (!currentSessionId.value) return;
+
+  isLoading.value = true;
   try {
-    const sessionMessages = await sessionsStore.getSessionMessages(currentSessionId.value)
-    messages.value = sessionMessages
+    const sessionMessages = await sessionsStore.getSessionMessages(
+      currentSessionId.value,
+    );
+    messages.value = sessionMessages;
   } catch (error) {
-    console.error('Failed to load messages:', error)
+    console.error("Failed to load messages:", error);
   } finally {
-    isLoading.value = false
-    await scrollToBottom()
+    isLoading.value = false;
+    await scrollToBottom();
   }
-}
+};
 
 const sendMessage = async () => {
-  const text = messageInput.value.trim()
-  if (!text || isLoading.value) return
+  const text = messageInput.value.trim();
+  if (!text || isLoading.value) return;
 
-  let sessionId = currentSessionId.value
-  
+  let sessionId = currentSessionId.value;
+
   // Create a new session if none exists
   if (!sessionId) {
     try {
-      const newSession = await sessionsStore.createSession()
-      sessionId = newSession.id
+      const newSession = await sessionsStore.createSession();
+      sessionId = newSession.id;
     } catch (error) {
-      console.error('Failed to create session:', error)
+      console.error("Failed to create session:", error);
       messages.value.push({
         id: Date.now().toString(),
-        text: 'Fehler beim Erstellen der Sitzung. Bitte versuchen Sie es später erneut.',
+        text: "Fehler beim Erstellen der Sitzung. Bitte versuchen Sie es später erneut.",
         is_user: false,
-        timestamp: new Date().toISOString()
-      })
-      return
+        timestamp: new Date().toISOString(),
+      });
+      return;
     }
   }
 
@@ -454,65 +564,68 @@ const sendMessage = async () => {
     id: Date.now().toString(),
     text,
     is_user: true,
-    timestamp: new Date().toISOString()
-  }
+    timestamp: new Date().toISOString(),
+  };
 
-  messages.value.push(userMessage)
-  messageInput.value = ''
-  isLoading.value = true
-  
-  await scrollToBottom()
+  messages.value.push(userMessage);
+  messageInput.value = "";
+  isLoading.value = true;
+
+  await scrollToBottom();
 
   try {
-    await sessionsStore.sendMessage({ sessionId, content: text })
+    await sessionsStore.sendMessage({ sessionId, content: text });
     // The response will be added through the store's message handling
   } catch (error) {
-    console.error('Failed to send message:', error)
+    console.error("Failed to send message:", error);
     messages.value.push({
       id: Date.now().toString(),
-      text: 'Entschuldigung, es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
+      text: "Entschuldigung, es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
       is_user: false,
-      timestamp: new Date().toISOString()
-    })
+      timestamp: new Date().toISOString(),
+    });
   } finally {
     // Set loading to false after a short delay to ensure response has been processed
     setTimeout(() => {
-      isLoading.value = false
-      scrollToBottom()
-    }, 500)
+      isLoading.value = false;
+      scrollToBottom();
+    }, 500);
   }
-}
+};
 
 const formatMessage = (text: string) => {
   // Convert markdown to HTML and sanitize
-  const html = marked(text)
-  return DOMPurify.sanitize(html)
-}
+  const html = marked(text);
+  return DOMPurify.sanitize(html);
+};
 
 const formatTime = (timestamp: string) => {
-  const date = new Date(timestamp)
-  return date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
-}
+  const date = new Date(timestamp);
+  return date.toLocaleTimeString("de-DE", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
-const handleFeedback = (message: any, type: 'positive' | 'negative') => {
-  console.log('Feedback:', type, message)
+const handleFeedback = (message: any, type: "positive" | "negative") => {
+  console.log("Feedback:", type, message);
   // Implement feedback functionality
-}
+};
 
 const handleViewSources = (message: any) => {
-  console.log('View sources:', message)
+  console.log("View sources:", message);
   // Implement source viewing functionality
-}
+};
 
 const scrollToBottom = async () => {
   if (messageArea.value) {
-    await nextTick()
-    messageArea.value.scrollTop = messageArea.value.scrollHeight
+    await nextTick();
+    messageArea.value.scrollTop = messageArea.value.scrollHeight;
   }
-}
+};
 
 // Lifecycle
 onMounted(() => {
-  loadMessages()
-})
+  loadMessages();
+});
 </script>

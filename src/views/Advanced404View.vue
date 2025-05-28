@@ -16,19 +16,34 @@
       <div class="router-status">
         <h3>Router-Status</h3>
         <div class="status-grid">
-          <div class="status-item" :class="{ ok: healthMetrics.initStatus === 'ready' }">
+          <div
+            class="status-item"
+            :class="{ ok: healthMetrics.initStatus === 'ready' }"
+          >
             <span class="status-label">Initialisiert</span>
             <span class="status-value">{{ healthMetrics.initStatus }}</span>
           </div>
-          <div class="status-item" :class="{ ok: healthMetrics.currentRouteAvailable }">
+          <div
+            class="status-item"
+            :class="{ ok: healthMetrics.currentRouteAvailable }"
+          >
             <span class="status-label">Current Route</span>
-            <span class="status-value">{{ healthMetrics.currentRouteAvailable ? 'Verfügbar' : 'Nicht verfügbar' }}</span>
+            <span class="status-value">{{
+              healthMetrics.currentRouteAvailable
+                ? "Verfügbar"
+                : "Nicht verfügbar"
+            }}</span>
           </div>
           <div class="status-item" :class="{ ok: healthMetrics.piniaReady }">
             <span class="status-label">Store-System</span>
-            <span class="status-value">{{ healthMetrics.piniaReady ? 'Bereit' : 'Nicht bereit' }}</span>
+            <span class="status-value">{{
+              healthMetrics.piniaReady ? "Bereit" : "Nicht bereit"
+            }}</span>
           </div>
-          <div class="status-item" :class="{ ok: healthMetrics.errorCount === 0 }">
+          <div
+            class="status-item"
+            :class="{ ok: healthMetrics.errorCount === 0 }"
+          >
             <span class="status-label">Fehler</span>
             <span class="status-value">{{ healthMetrics.errorCount }}</span>
           </div>
@@ -38,7 +53,7 @@
       <!-- Recovery Options -->
       <div class="recovery-section">
         <h3>Recovery-Optionen</h3>
-        
+
         <div v-if="activeRecovery" class="recovery-progress">
           <p>Recovery läuft: {{ activeRecovery.name }}</p>
           <div class="progress-bar">
@@ -88,7 +103,10 @@
       <!-- Session Recovery -->
       <div v-if="isInChatRoute" class="session-recovery">
         <h3>Session-Wiederherstellung</h3>
-        <p>Sie befanden sich in einer Chat-Session. Möchten Sie diese wiederherstellen?</p>
+        <p>
+          Sie befanden sich in einer Chat-Session. Möchten Sie diese
+          wiederherstellen?
+        </p>
         <button @click="recoverSession" class="session-recover-button">
           Session wiederherstellen
         </button>
@@ -110,14 +128,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import { unifiedDiagnosticsService } from '@/services/diagnostics/UnifiedDiagnosticsServiceFixed';
-import { selfHealingService } from '@/services/selfHealing/SelfHealingService';
-import { routerService } from '@/services/router/RouterServiceFixed';
-import { useLogger } from '@/composables/useLogger';
-import { useToast } from '@/composables/useToast';
-import type { RecoveryOption } from '@/types/recovery';
+import { ref, computed, onMounted, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { unifiedDiagnosticsService } from "@/services/diagnostics/UnifiedDiagnosticsServiceFixed";
+import { selfHealingService } from "@/services/selfHealing/SelfHealingService";
+import { routerService } from "@/services/router/RouterServiceFixed";
+import { useLogger } from "@/composables/useLogger";
+import { useToast } from "@/composables/useToast";
+import type { RecoveryOption } from "@/types/recovery";
 
 const router = useRouter();
 const route = useRoute();
@@ -137,48 +155,48 @@ const diagnosticsHistory = unifiedDiagnosticsService.getDiagnosticsHistory();
 
 // Computed
 const isInChatRoute = computed(() => {
-  return route.path.startsWith('/chat') || route.path.startsWith('/session');
+  return route.path.startsWith("/chat") || route.path.startsWith("/session");
 });
 
 const diagnostics = computed(() => {
   const recent = diagnosticsHistory.value.slice(-10);
-  const recurring404s = recent.filter(r => r.router404.has404Issues).length;
-  
+  const recurring404s = recent.filter((r) => r.router404.has404Issues).length;
+
   return {
     isRecurring: recurring404s > 3,
     errorCount: recent.reduce((sum, r) => sum + r.router404.errorCount, 0),
-    lastError: recent[recent.length - 1]?.healthMetrics.lastError
+    lastError: recent[recent.length - 1]?.healthMetrics.lastError,
   };
 });
 
 const recoveryOptions = computed((): RecoveryOption[] => {
   const options: RecoveryOption[] = [
     {
-      title: 'Soft Reset',
-      description: 'Router-State zurücksetzen',
-      action: 'soft_reset',
-      icon: '🔄'
+      title: "Soft Reset",
+      description: "Router-State zurücksetzen",
+      action: "soft_reset",
+      icon: "🔄",
     },
     {
-      title: 'Hard Reset',
-      description: 'Voller Neustart der Anwendung',
-      action: 'hard_reset',
-      icon: '🔁'
+      title: "Hard Reset",
+      description: "Voller Neustart der Anwendung",
+      action: "hard_reset",
+      icon: "🔁",
     },
     {
-      title: 'Cache leeren',
-      description: 'Browser-Cache leeren und neu laden',
-      action: 'clear_cache',
-      icon: '🧹'
-    }
+      title: "Cache leeren",
+      description: "Browser-Cache leeren und neu laden",
+      action: "clear_cache",
+      icon: "🧹",
+    },
   ];
 
   if (diagnostics.value.isRecurring) {
     options.unshift({
-      title: 'Smart Recovery',
-      description: 'Automatische Fehlerbehebung basierend auf Diagnose',
-      action: 'smart_recovery',
-      icon: '🤖'
+      title: "Smart Recovery",
+      description: "Automatische Fehlerbehebung basierend auf Diagnose",
+      action: "smart_recovery",
+      icon: "🤖",
     });
   }
 
@@ -191,11 +209,11 @@ const debugData = computed(() => {
       path: route.path,
       name: route.name,
       params: route.params,
-      query: route.query
+      query: route.query,
     },
     healthMetrics: healthMetrics.value,
     diagnostics: diagnostics.value,
-    activeRecoveries: unifiedDiagnosticsService.getActiveRecoveries().value
+    activeRecoveries: unifiedDiagnosticsService.getActiveRecoveries().value,
   };
 });
 
@@ -207,27 +225,27 @@ const toggleDebugInfo = () => {
 const executeRecovery = async (action: string) => {
   isRecovering.value = true;
   recoveryProgress.value = 0;
-  
+
   try {
     switch (action) {
-      case 'soft_reset':
+      case "soft_reset":
         await performSoftReset();
         break;
-      case 'hard_reset':
+      case "hard_reset":
         await performHardReset();
         break;
-      case 'clear_cache':
+      case "clear_cache":
         await performCacheClear();
         break;
-      case 'smart_recovery':
+      case "smart_recovery":
         await performSmartRecovery();
         break;
     }
-    
-    toast.success('Recovery erfolgreich abgeschlossen');
+
+    toast.success("Recovery erfolgreich abgeschlossen");
   } catch (error) {
-    logger.error('Recovery fehlgeschlagen:', error);
-    toast.error('Recovery fehlgeschlagen. Bitte versuchen Sie es erneut.');
+    logger.error("Recovery fehlgeschlagen:", error);
+    toast.error("Recovery fehlgeschlagen. Bitte versuchen Sie es erneut.");
   } finally {
     isRecovering.value = false;
     recoveryProgress.value = 0;
@@ -236,63 +254,63 @@ const executeRecovery = async (action: string) => {
 };
 
 const performSoftReset = async () => {
-  activeRecovery.value = { name: 'Soft Reset' };
-  
+  activeRecovery.value = { name: "Soft Reset" };
+
   // Schritt 1: Router State zurücksetzen
   recoveryProgress.value = 33;
   await routerService.reset();
-  
+
   // Schritt 2: Navigation Queue leeren
   recoveryProgress.value = 66;
   routerService.clearNavigationQueue();
-  
+
   // Schritt 3: Zur Startseite navigieren
   recoveryProgress.value = 100;
-  await router.push('/');
+  await router.push("/");
 };
 
 const performHardReset = async () => {
-  activeRecovery.value = { name: 'Hard Reset' };
-  
+  activeRecovery.value = { name: "Hard Reset" };
+
   // Schritt 1: Alle Stores zurücksetzen
   recoveryProgress.value = 25;
   // Reset stores logic here
-  
+
   // Schritt 2: Router unmounten
   recoveryProgress.value = 50;
   // Unmount router logic here
-  
+
   // Schritt 3: Cache leeren
   recoveryProgress.value = 75;
   selfHealingService.clearCaches();
-  
+
   // Schritt 4: Seite neu laden
   recoveryProgress.value = 100;
-  window.location.href = '/';
+  window.location.href = "/";
 };
 
 const performCacheClear = async () => {
-  activeRecovery.value = { name: 'Cache leeren' };
-  
+  activeRecovery.value = { name: "Cache leeren" };
+
   // Schritt 1: localStorage leeren
   recoveryProgress.value = 33;
   localStorage.clear();
-  
+
   // Schritt 2: sessionStorage leeren
   recoveryProgress.value = 66;
   sessionStorage.clear();
-  
+
   // Schritt 3: Seite neu laden
   recoveryProgress.value = 100;
   window.location.reload();
 };
 
 const performSmartRecovery = async () => {
-  activeRecovery.value = { name: 'Smart Recovery' };
-  
+  activeRecovery.value = { name: "Smart Recovery" };
+
   // Nutze UnifiedDiagnosticsService für intelligente Recovery
-  await unifiedDiagnosticsService.triggerManualRecovery('recurring_404');
-  
+  await unifiedDiagnosticsService.triggerManualRecovery("recurring_404");
+
   // Simuliere Fortschritt
   const interval = setInterval(() => {
     recoveryProgress.value += 10;
@@ -307,22 +325,22 @@ const navigateTo = async (path: string) => {
     // Nutze RouterService für sichere Navigation
     await routerService.navigate({ path });
   } catch (error) {
-    logger.error('Navigation fehlgeschlagen:', error);
-    toast.error('Navigation fehlgeschlagen');
+    logger.error("Navigation fehlgeschlagen:", error);
+    toast.error("Navigation fehlgeschlagen");
   }
 };
 
 const recoverSession = async () => {
   if (!sessionId.value) {
-    toast.warning('Keine Session-ID gefunden');
+    toast.warning("Keine Session-ID gefunden");
     return;
   }
 
   try {
     await router.push(`/session/${sessionId.value}`);
   } catch (error) {
-    logger.error('Session-Wiederherstellung fehlgeschlagen:', error);
-    toast.error('Session konnte nicht wiederhergestellt werden');
+    logger.error("Session-Wiederherstellung fehlgeschlagen:", error);
+    toast.error("Session konnte nicht wiederhergestellt werden");
   }
 };
 
@@ -330,7 +348,7 @@ const recoverSession = async () => {
 onMounted(() => {
   // Extrahiere Session-ID wenn in Chat-Route
   if (isInChatRoute.value) {
-    const pathParts = route.path.split('/');
+    const pathParts = route.path.split("/");
     sessionId.value = pathParts[pathParts.length - 1] || null;
   }
 
@@ -343,9 +361,11 @@ watch(
   () => diagnostics.value.isRecurring,
   (isRecurring) => {
     if (isRecurring && !isRecovering.value) {
-      toast.warning('Wiederkehrende Fehler erkannt. Smart Recovery wird vorgeschlagen.');
+      toast.warning(
+        "Wiederkehrende Fehler erkannt. Smart Recovery wird vorgeschlagen.",
+      );
     }
-  }
+  },
 );
 </script>
 

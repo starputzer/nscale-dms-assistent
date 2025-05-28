@@ -1,11 +1,11 @@
 /**
  * Globale TypeScript-Definitionen
- * 
+ *
  * Diese Datei definiert globale Typen für die Anwendung
  */
 
 // Vue-spezifische Typen
-declare module 'vue' {
+declare module "vue" {
   export interface GlobalProperties {
     $formatDate: (date: Date | string) => string;
     $formatCurrency: (amount: number) => string;
@@ -21,7 +21,7 @@ interface ImportMetaEnv {
   readonly VITE_PORT: string;
   readonly VITE_PREVIEW_PORT: string;
   readonly VITE_USE_MOCK_DATA: string;
-  readonly VITE_LOG_LEVEL: 'debug' | 'info' | 'warn' | 'error';
+  readonly VITE_LOG_LEVEL: "debug" | "info" | "warn" | "error";
   readonly VITE_MAX_FILE_SIZE: string;
   readonly VITE_ALLOWED_FILE_TYPES: string;
 }
@@ -38,10 +38,10 @@ interface Window {
   __DEBUG__: boolean;
   __STORE_DEBUG__: boolean;
   __PERFORMANCE_MONITOR__: boolean;
-  
+
   // Service Worker Registration
   __SW_REGISTRATION__?: ServiceWorkerRegistration;
-  
+
   // Performance Metrics
   __PERFORMANCE_MARKS__: Map<string, number>;
   __PERFORMANCE_MEASURES__: Array<{
@@ -116,7 +116,7 @@ export interface NavigationItem {
 // Notification Typen
 export interface Notification {
   id: string;
-  type: 'success' | 'info' | 'warning' | 'error';
+  type: "success" | "info" | "warning" | "error";
   title: string;
   message?: string;
   duration?: number;
@@ -124,14 +124,14 @@ export interface Notification {
   actions?: Array<{
     label: string;
     handler: () => void;
-    style?: 'primary' | 'secondary' | 'text';
+    style?: "primary" | "secondary" | "text";
   }>;
   timestamp: Date;
 }
 
 // User Preferences
 export interface UserPreferences {
-  theme: 'light' | 'dark' | 'system';
+  theme: "light" | "dark" | "system";
   language: string;
   notifications: {
     email: boolean;
@@ -139,8 +139,8 @@ export interface UserPreferences {
     inApp: boolean;
   };
   display: {
-    density: 'compact' | 'comfortable' | 'spacious';
-    fontSize: 'small' | 'medium' | 'large';
+    density: "compact" | "comfortable" | "spacious";
+    fontSize: "small" | "medium" | "large";
     animations: boolean;
   };
   privacy: {
@@ -154,7 +154,7 @@ export interface FileUpload {
   id: string;
   file: File;
   progress: number;
-  status: 'pending' | 'uploading' | 'completed' | 'error';
+  status: "pending" | "uploading" | "completed" | "error";
   error?: string;
   result?: {
     url: string;
@@ -168,7 +168,7 @@ export interface FileUpload {
 export interface SearchFilters {
   query: string;
   sortBy: string;
-  sortDirection: 'asc' | 'desc';
+  sortDirection: "asc" | "desc";
   filters: Record<string, any>;
   dateRange?: {
     start: Date;
@@ -211,7 +211,7 @@ export interface ChartSeries {
   name: string;
   data: ChartDataPoint[];
   color?: string;
-  type?: 'line' | 'bar' | 'area' | 'scatter';
+  type?: "line" | "bar" | "area" | "scatter";
   visible?: boolean;
 }
 
@@ -222,9 +222,9 @@ export interface TableColumn<T = any> {
   sortable?: boolean;
   filterable?: boolean;
   width?: string | number;
-  align?: 'left' | 'center' | 'right';
+  align?: "left" | "center" | "right";
   format?: (value: any, row: T) => string;
   component?: any;
   hidden?: boolean;
-  fixed?: 'left' | 'right';
+  fixed?: "left" | "right";
 }

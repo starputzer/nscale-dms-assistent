@@ -1,12 +1,12 @@
 /**
  * Service-bezogene Utility-Typen
- * 
+ *
  * Diese Datei enthält Utility-Typen speziell für die Service-Implementierungen
  * des Systems, einschließlich API-Services, Storage-Services und mehr.
  */
 
-import { APIResponse, APIError } from './apiTypes';
-import { Result, Dictionary } from './types';
+import { APIResponse, APIError } from "./apiTypes";
+import { Result, Dictionary } from "./types";
 
 // Die folgenden Typen werden derzeit nicht direkt verwendet, könnten aber
 // in der Zukunft für Erweiterungen der Services nützlich sein:
@@ -19,7 +19,7 @@ import { Result, Dictionary } from './types';
 export interface BaseService {
   /** Service initialisieren */
   initialize?(): Promise<void>;
-  
+
   /** Ressourcen bereinigen */
   destroy?(): void;
 }
@@ -30,10 +30,10 @@ export interface BaseService {
 export interface ServiceConfiguration {
   /** Ist der Service aktiviert? */
   enabled: boolean;
-  
+
   /** Debug-Modus */
   debug?: boolean;
-  
+
   /** Benutzerdefinierte Konfigurationsoptionen */
   [key: string]: any;
 }
@@ -44,22 +44,22 @@ export interface ServiceConfiguration {
 export interface ServiceRegistry {
   /** Service registrieren */
   register<T extends BaseService>(name: string, service: T): void;
-  
+
   /** Service abrufen */
   get<T extends BaseService>(name: string): T | null;
-  
+
   /** Prüfen, ob ein Service existiert */
   has(name: string): boolean;
-  
+
   /** Service entfernen */
   remove(name: string): boolean;
-  
+
   /** Alle Services abrufen */
   getAll(): Dictionary<BaseService>;
-  
+
   /** Alle Services initialisieren */
   initializeAll(): Promise<void>;
-  
+
   /** Alle Services bereinigen */
   destroyAll(): void;
 }
@@ -68,10 +68,10 @@ export interface ServiceRegistry {
  * ServiceStatus - Status eines Services
  */
 export enum ServiceStatus {
-  INITIALIZING = 'initializing',
-  READY = 'ready',
-  ERROR = 'error',
-  DISABLED = 'disabled'
+  INITIALIZING = "initializing",
+  READY = "ready",
+  ERROR = "error",
+  DISABLED = "disabled",
 }
 
 /**
@@ -80,16 +80,16 @@ export enum ServiceStatus {
 export interface ServiceStatusInfo {
   /** Name des Services */
   name: string;
-  
+
   /** Status des Services */
   status: ServiceStatus;
-  
+
   /** Fehlermeldung, wenn Status ERROR ist */
   error?: string;
-  
+
   /** Zeitpunkt der letzten Statusänderung */
   lastUpdated: number;
-  
+
   /** Zusätzliche Statusinformationen */
   [key: string]: any;
 }
@@ -100,13 +100,13 @@ export interface ServiceStatusInfo {
 export interface ServiceLifecycleHooks {
   /** Wird vor der Initialisierung aufgerufen */
   onBeforeInit?: () => void | Promise<void>;
-  
+
   /** Wird nach der Initialisierung aufgerufen */
   onAfterInit?: () => void | Promise<void>;
-  
+
   /** Wird vor der Zerstörung aufgerufen */
   onBeforeDestroy?: () => void | Promise<void>;
-  
+
   /** Wird nach der Zerstörung aufgerufen */
   onAfterDestroy?: () => void | Promise<void>;
 }
@@ -121,32 +121,59 @@ export type ServiceReference<T extends BaseService> = () => T;
  */
 export interface ApiServiceInterface extends BaseService {
   /** HTTP GET-Anfrage */
-  get<T = any>(url: string, params?: any, options?: ApiRequestOptions): Promise<APIResponse<T>>;
-  
+  get<T = any>(
+    url: string,
+    params?: any,
+    options?: ApiRequestOptions,
+  ): Promise<APIResponse<T>>;
+
   /** HTTP POST-Anfrage */
-  post<T = any>(url: string, data?: any, options?: ApiRequestOptions): Promise<APIResponse<T>>;
-  
+  post<T = any>(
+    url: string,
+    data?: any,
+    options?: ApiRequestOptions,
+  ): Promise<APIResponse<T>>;
+
   /** HTTP PUT-Anfrage */
-  put<T = any>(url: string, data?: any, options?: ApiRequestOptions): Promise<APIResponse<T>>;
-  
+  put<T = any>(
+    url: string,
+    data?: any,
+    options?: ApiRequestOptions,
+  ): Promise<APIResponse<T>>;
+
   /** HTTP PATCH-Anfrage */
-  patch<T = any>(url: string, data?: any, options?: ApiRequestOptions): Promise<APIResponse<T>>;
-  
+  patch<T = any>(
+    url: string,
+    data?: any,
+    options?: ApiRequestOptions,
+  ): Promise<APIResponse<T>>;
+
   /** HTTP DELETE-Anfrage */
-  delete<T = any>(url: string, options?: ApiRequestOptions): Promise<APIResponse<T>>;
-  
+  delete<T = any>(
+    url: string,
+    options?: ApiRequestOptions,
+  ): Promise<APIResponse<T>>;
+
   /** Paginierte GET-Anfrage */
-  getPaginated<T = any>(url: string, pagination: PaginationParams, options?: ApiRequestOptions): Promise<APIResponse<T>>;
-  
+  getPaginated<T = any>(
+    url: string,
+    pagination: PaginationParams,
+    options?: ApiRequestOptions,
+  ): Promise<APIResponse<T>>;
+
   /** Datei hochladen */
-  uploadFile<T = any>(url: string, file: File | Blob, options?: FileUploadOptions): Promise<APIResponse<T>>;
-  
+  uploadFile<T = any>(
+    url: string,
+    file: File | Blob,
+    options?: FileUploadOptions,
+  ): Promise<APIResponse<T>>;
+
   /** Datei herunterladen */
   downloadFile(url: string, options?: FileDownloadOptions): Promise<Blob>;
-  
+
   /** CancelToken für abbrechbare Anfragen erstellen */
   createCancelToken(): CancelTokenSource;
-  
+
   /** Prüfen, ob eine Anfrage abgebrochen wurde */
   isCancel(error: any): boolean;
 }
@@ -157,7 +184,7 @@ export interface ApiServiceInterface extends BaseService {
 export interface CancelTokenSource {
   /** Token für die Anfrage */
   token: any;
-  
+
   /** Methode zum Abbrechen der Anfrage */
   cancel(message?: string): void;
 }
@@ -168,49 +195,49 @@ export interface CancelTokenSource {
 export interface ApiRequestOptions {
   /** HTTP-Header */
   headers?: Record<string, string>;
-  
+
   /** Timeout in Millisekunden */
   timeout?: number;
-  
+
   /** Request mit Credentials senden */
   withCredentials?: boolean;
-  
+
   /** Priorität der Anfrage (höhere Werte = höhere Priorität) */
   priority?: number;
-  
+
   /** Maximale Anzahl von Wiederholungsversuchen */
   maxRetries?: number;
-  
+
   /** Soll die Anfrage im Fehlerfall automatisch wiederholt werden? */
   retry?: boolean;
-  
+
   /** Soll die Anfrage bei einem 401-Fehler automatisch Token-Refresh auslösen? */
   refreshToken?: boolean;
-  
+
   /** Soll die Anfrage im Falle von Rate-Limiting automatisch in die Warteschlange gestellt werden? */
   handleRateLimit?: boolean;
-  
+
   /** Callback für Upload-/Download-Fortschritt */
   onProgress?: (progressEvent: ProgressEvent) => void;
-  
+
   /** Optionen für das Abbrechen der Anfrage */
   cancelToken?: CancelTokenSource;
-  
+
   /** Sollen Fehler automatisch als Benutzerbenachrichtigungen angezeigt werden? */
   showErrorToast?: boolean;
-  
+
   /** Custom-Handler für spezifische Fehler */
   errorHandler?: (error: APIError) => void;
-  
+
   /** Aus dem Cache laden */
   cache?: boolean;
-  
+
   /** Veraltete Daten zeigen, während im Hintergrund aktualisiert wird */
   staleWhileRevalidate?: boolean;
-  
+
   /** Cache-Gültigkeitsdauer in Sekunden */
   cacheTTL?: number;
-  
+
   /** Zusätzliche Optionen als Record */
   [key: string]: any;
 }
@@ -221,7 +248,7 @@ export interface ApiRequestOptions {
 export interface FileUploadOptions extends ApiRequestOptions {
   /** Name des Formularfelds für die Datei */
   fieldName?: string;
-  
+
   /** Zusätzliche Metadaten */
   metadata?: Record<string, any>;
 }
@@ -240,19 +267,19 @@ export interface FileDownloadOptions extends ApiRequestOptions {
 export interface PaginationParams {
   /** Seitennummer (1-basiert) */
   page?: number;
-  
+
   /** Anzahl der Elemente pro Seite */
   pageSize?: number;
-  
+
   /** Sortierfeld */
   sortBy?: string;
-  
+
   /** Sortierrichtung */
-  sortDirection?: 'asc' | 'desc';
-  
+  sortDirection?: "asc" | "desc";
+
   /** Suchtext */
   search?: string;
-  
+
   /** Zusätzliche Filter */
   filters?: Record<string, any>;
 }
@@ -263,10 +290,10 @@ export interface PaginationParams {
 export interface RetryHandlerInterface {
   /** Prüft, ob ein Fehler wiederholt werden sollte */
   shouldRetry(error: any): boolean;
-  
+
   /** Berechnet die Verzögerung für den nächsten Wiederholungsversuch */
   calculateDelay(retryCount: number): number;
-  
+
   /** Führt einen Wiederholungsversuch durch */
   retryRequest<T>(config: any, instance: any): Promise<T>;
 }
@@ -277,22 +304,22 @@ export interface RetryHandlerInterface {
 export interface RetryHandlerOptions {
   /** Maximale Anzahl von Wiederholungsversuchen */
   maxRetries?: number;
-  
+
   /** Basisverzögerung in ms */
   baseDelay?: number;
-  
+
   /** Faktor für die exponentielle Verzögerung */
   backoffFactor?: number;
-  
+
   /** HTTP-Statuscodes, die für Wiederholungsversuche geeignet sind */
   retryStatusCodes?: number[];
-  
+
   /** Netzwerkfehler automatisch wiederholen */
   retryNetworkErrors?: boolean;
-  
+
   /** Maximale Verzögerung zwischen Wiederholungsversuchen (ms) */
   maxDelay?: number;
-  
+
   /** Zufällige Verzögerungsvariation (Jitter) aktivieren */
   enableJitter?: boolean;
 }
@@ -303,16 +330,16 @@ export interface RetryHandlerOptions {
 export interface RateLimitHandlerOptions {
   /** Header-Name für verbleibende Anfragen */
   remainingHeader?: string;
-  
+
   /** Header-Name für Limit-Reset */
   resetHeader?: string;
-  
+
   /** Header-Name für Limit-Maximum */
   limitHeader?: string;
-  
+
   /** Schwellenwert für verbleibende Anfragen, ab dem gedrosselt wird */
   throttleThreshold?: number;
-  
+
   /** Minimale Verzögerung (in ms) für gedrosselte Anfragen */
   minThrottleDelay?: number;
 }
@@ -323,10 +350,10 @@ export interface RateLimitHandlerOptions {
 export interface RequestQueueOptions {
   /** Maximale Anzahl gleichzeitiger Anfragen */
   maxConcurrent?: number;
-  
+
   /** Maximale Warteschlangengröße */
   maxQueueSize?: number;
-  
+
   /** Ist die Queue aktiviert? */
   enabled?: boolean;
 }
@@ -337,16 +364,16 @@ export interface RequestQueueOptions {
 export interface QueuedRequest<T = any> {
   /** Funktion, die die Anfrage ausführt */
   action: () => Promise<T>;
-  
+
   /** Priorität der Anfrage */
   priority: number;
-  
+
   /** Promise-Resolver */
   resolve: (value: T | PromiseLike<T>) => void;
-  
+
   /** Promise-Rejecter */
   reject: (reason?: any) => void;
-  
+
   /** Zeitpunkt der Einstellung in die Warteschlange */
   timestamp: number;
 }
@@ -357,22 +384,22 @@ export interface QueuedRequest<T = any> {
 export interface OfflineRequestInterface {
   /** Eindeutige ID der Anfrage */
   id: string;
-  
+
   /** URL der Anfrage */
   url: string;
-  
+
   /** HTTP-Methode der Anfrage */
   method: string;
-  
+
   /** Daten der Anfrage */
   data?: any;
-  
+
   /** Zeitpunkt der Anfrage */
   timestamp: number;
-  
+
   /** Status der Anfrage */
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  
+  status: "pending" | "processing" | "completed" | "failed";
+
   /** Fehlermeldung bei Status 'failed' */
   error?: string;
 }
@@ -383,27 +410,35 @@ export interface OfflineRequestInterface {
 export interface OfflineManagerInterface extends BaseService {
   /** Ist der Offline-Modus aktiv? */
   isOffline: boolean;
-  
+
   /** Synchronisiert Daten aus dem Offline-Speicher */
   synchronize(): Promise<void>;
-  
+
   /** Fügt eine Anfrage zur Synchronisationsqueue hinzu */
-  queueRequest(request: Omit<OfflineRequestInterface, 'id' | 'status'>): Promise<string>;
-  
+  queueRequest(
+    request: Omit<OfflineRequestInterface, "id" | "status">,
+  ): Promise<string>;
+
   /** Gibt die Anzahl der ausstehenden Anfragen zurück */
   getPendingRequestCount(): Promise<number>;
-  
+
   /** Überwacht Online-/Offline-Status */
   startNetworkMonitoring(): void;
-  
+
   /** Beendet Überwachung des Online-/Offline-Status */
   stopNetworkMonitoring(): void;
-  
+
   /** Event-Listener für Online/Offline-Events */
-  on(event: 'online' | 'offline' | 'synchronizing' | 'synchronized' | 'error', handler: Function): void;
-  
+  on(
+    event: "online" | "offline" | "synchronizing" | "synchronized" | "error",
+    handler: Function,
+  ): void;
+
   /** Event-Listener entfernen */
-  off(event: 'online' | 'offline' | 'synchronizing' | 'synchronized' | 'error', handler: Function): void;
+  off(
+    event: "online" | "offline" | "synchronizing" | "synchronized" | "error",
+    handler: Function,
+  ): void;
 }
 
 /**
@@ -412,31 +447,34 @@ export interface OfflineManagerInterface extends BaseService {
 export interface SessionServiceInterface extends BaseService {
   /** Holt alle Sessions */
   getSessions(pagination?: PaginationParams): Promise<APIResponse<any[]>>;
-  
+
   /** Holt eine einzelne Session */
   getSession(sessionId: string): Promise<APIResponse<any>>;
-  
+
   /** Erstellt eine neue Session */
   createSession(request?: any): Promise<APIResponse<any>>;
-  
+
   /** Löscht eine Session */
   deleteSession(sessionId: string): Promise<APIResponse<void>>;
-  
+
   /** Aktualisiert eine Session */
   updateSession(sessionId: string, updates: any): Promise<APIResponse<any>>;
-  
+
   /** Holt Nachrichten für eine Session */
-  getMessages(sessionId: string, pagination?: PaginationParams): Promise<APIResponse<any[]>>;
-  
+  getMessages(
+    sessionId: string,
+    pagination?: PaginationParams,
+  ): Promise<APIResponse<any[]>>;
+
   /** Sendet eine Nachricht an eine Session */
   sendMessage(sessionId: string, message: any): Promise<APIResponse<any>>;
-  
+
   /** Bricht die aktuelle Streaming-Anfrage ab */
   cancelStream(): void;
-  
+
   /** Event-Listener registrieren */
   on(event: string, handler: Function): void;
-  
+
   /** Event-Listener entfernen */
   off(event: string, handler: Function): void;
 }
@@ -447,19 +485,19 @@ export interface SessionServiceInterface extends BaseService {
 export interface StreamingServiceInterface {
   /** Verbindung initialisieren */
   init(): Promise<void>;
-  
+
   /** Verbindung schließen */
   close(): void;
-  
+
   /** Streaming-URL */
   url: string;
-  
+
   /** Ist die Verbindung aktiv? */
   isActive: boolean;
-  
+
   /** Event-Listener registrieren */
   on(event: string, handler: Function): void;
-  
+
   /** Event-Listener entfernen */
   off(event: string, handler: Function): void;
 }
@@ -470,25 +508,25 @@ export interface StreamingServiceInterface {
 export interface StreamingOptions {
   /** Streaming-URL */
   url: string;
-  
+
   /** Parameter der Anfrage */
   params?: Record<string, any>;
-  
+
   /** Event-Handler für empfangene Nachrichten */
   onMessage?: (message: any) => void;
-  
+
   /** Event-Handler für Verbindungsabschluss */
   onComplete?: (response: any) => void;
-  
+
   /** Event-Handler für Fehler */
   onError?: (error: Error) => void;
-  
+
   /** Event-Handler für Verbindungsaufbau */
   onOpen?: () => void;
-  
+
   /** Timeout für Verbindungsaufbau in Millisekunden */
   connectionTimeout?: number;
-  
+
   /** Weitere SSE-Konfigurationsoptionen */
   sseConfig?: Record<string, any>;
 }
@@ -504,13 +542,13 @@ export type ServiceEventHandler<T = any> = (data: T) => void;
 export interface ServiceEvent<T = any> {
   /** Name des Events */
   name: string;
-  
+
   /** Daten des Events */
   data: T;
-  
+
   /** Zeitstempel des Events */
   timestamp: number;
-  
+
   /** Quelle des Events */
   source: string;
 }
@@ -521,13 +559,13 @@ export interface ServiceEvent<T = any> {
 export interface CacheOptions extends ApiRequestOptions {
   /** Aus dem Cache laden */
   cache: boolean;
-  
+
   /** Veraltete Daten zeigen, während im Hintergrund aktualisiert wird */
   staleWhileRevalidate?: boolean;
-  
+
   /** Cache-Gültigkeitsdauer in Sekunden */
   cacheTTL?: number;
-  
+
   /** Cache-Schlüssel-Generator */
   cacheKeyFn?: (url: string, params?: any) => string;
 }
@@ -538,13 +576,13 @@ export interface CacheOptions extends ApiRequestOptions {
 export interface CacheEntry<T = any> {
   /** Gespeicherte Daten */
   data: T;
-  
+
   /** Zeitpunkt des Cache-Eintrags */
   timestamp: number;
-  
+
   /** Ablaufdatum des Cache-Eintrags */
   expires: number;
-  
+
   /** Wurde der Eintrag bereits verwendet? */
   used?: boolean;
 }
@@ -555,13 +593,13 @@ export interface CacheEntry<T = any> {
 export interface BatchRequestOptions {
   /** Parallele Ausführung aktivieren */
   parallel?: boolean;
-  
+
   /** Gemeinsame Optionen für alle Anfragen */
   commonOptions?: ApiRequestOptions;
-  
+
   /** Timeout für die gesamte Batch-Anfrage */
   batchTimeout?: number;
-  
+
   /** Nur erfolgreiche Antworten zurückgeben */
   successOnly?: boolean;
 }
@@ -572,16 +610,21 @@ export interface BatchRequestOptions {
 export class TypedServiceError extends Error {
   /** Fehlercode */
   code: string;
-  
+
   /** HTTP-Statuscode */
   status?: number;
-  
+
   /** Detaillierte Fehlerinformationen */
   details?: Record<string, any>;
-  
-  constructor(message: string, code: string, status?: number, details?: Record<string, any>) {
+
+  constructor(
+    message: string,
+    code: string,
+    status?: number,
+    details?: Record<string, any>,
+  ) {
     super(message);
-    this.name = 'ServiceError';
+    this.name = "ServiceError";
     this.code = code;
     this.status = status;
     this.details = details;
@@ -599,19 +642,19 @@ export type ServiceErrorHandler = (error: APIError | Error | unknown) => void;
 export interface ServiceRequest {
   /** Eindeutige ID der Anfrage */
   id: string;
-  
+
   /** Typ der Anfrage */
   type: string;
-  
+
   /** Daten der Anfrage */
   data: any;
-  
+
   /** Zeitpunkt der Anfrage */
   timestamp: number;
-  
+
   /** Absender der Anfrage */
   sender?: string;
-  
+
   /** Metadaten der Anfrage */
   metadata?: Record<string, any>;
 }
@@ -622,19 +665,19 @@ export interface ServiceRequest {
 export interface ServiceResponse<T = any> {
   /** Eindeutige ID der Anfrage */
   requestId: string;
-  
+
   /** Daten der Antwort */
   data?: T;
-  
+
   /** Fehlermeldung bei fehlgeschlagener Anfrage */
   error?: any;
-  
+
   /** War die Anfrage erfolgreich? */
   success: boolean;
-  
+
   /** Zeitpunkt der Antwort */
   timestamp: number;
-  
+
   /** Metadaten der Antwort */
   metadata?: Record<string, any>;
 }
@@ -686,10 +729,12 @@ export function mapApiToServiceResponse<T>(
 export interface TypedServiceFactory {
   /** Erzeugt eine ApiService-Instanz */
   createApiService(baseUrl: string, options?: any): ApiServiceInterface;
-  
+
   /** Erzeugt eine SessionService-Instanz */
-  createSessionService(apiService: ApiServiceInterface): SessionServiceInterface;
-  
+  createSessionService(
+    apiService: ApiServiceInterface,
+  ): SessionServiceInterface;
+
   /** Erzeugt eine StreamingService-Instanz */
   createStreamingService(options: StreamingOptions): StreamingServiceInterface;
 }
@@ -700,38 +745,38 @@ export interface TypedServiceFactory {
 export async function executeServiceMethod<T>(
   serviceMethod: () => Promise<APIResponse<T>>,
   errorHandler?: ServiceErrorHandler,
-  defaultErrorMessage: string = 'Servicefehler'
+  defaultErrorMessage: string = "Servicefehler",
 ): Promise<Result<T, APIError>> {
   try {
     const response = await serviceMethod();
-    
+
     if (!response.success || !response.data) {
       const error = response.error || {
-        code: 'SERVICE_ERROR',
+        code: "SERVICE_ERROR",
         message: response.message || defaultErrorMessage,
-        status: response.statusCode
+        status: response.statusCode,
       };
-      
+
       if (errorHandler) {
         errorHandler(error);
       }
-      
+
       return { success: false, error };
     }
-    
+
     return { success: true, data: response.data };
   } catch (error) {
     const apiError: APIError = {
-      code: 'UNEXPECTED_ERROR',
+      code: "UNEXPECTED_ERROR",
       message: error instanceof Error ? error.message : defaultErrorMessage,
       status: 500,
-      details: { originalError: error }
+      details: { originalError: error },
     };
-    
+
     if (errorHandler) {
       errorHandler(apiError);
     }
-    
+
     return { success: false, error: apiError };
   }
 }

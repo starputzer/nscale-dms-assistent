@@ -139,7 +139,7 @@ const {
   hasSourceReferences,
   isSourceReferencesVisible,
   isLoadingSourceReferences,
-  showSourcePopupHandler
+  showSourcePopupHandler,
 } = useSourceReferences();
 
 const scrollContainer = ref<HTMLElement | null>(null);
@@ -168,8 +168,8 @@ onMounted(() => {
   // Set up event handler for source reference clicks
   const handleSourceReferenceClick = (event: MouseEvent) => {
     const target = event.target as HTMLElement;
-    if (target.matches('.source-reference')) {
-      const sourceId = target.getAttribute('data-source-id');
+    if (target.matches(".source-reference")) {
+      const sourceId = target.getAttribute("data-source-id");
       if (sourceId) {
         showSourcePopupHandler(event, sourceId);
       }
@@ -178,7 +178,7 @@ onMounted(() => {
 
   // Add event listener to the scroll container
   if (scrollContainer.value) {
-    scrollContainer.value.addEventListener('click', handleSourceReferenceClick);
+    scrollContainer.value.addEventListener("click", handleSourceReferenceClick);
   }
 });
 
@@ -192,7 +192,7 @@ function formatMessageContent(content: string): string {
     /\[\[src:([^\]]+)\]\]/g,
     (match, sourceId) => {
       return `<span class="source-reference" data-source-id="${sourceId}">[${sourceId}]</span>`;
-    }
+    },
   );
 
   // Add support for legacy source reference patterns
@@ -200,7 +200,7 @@ function formatMessageContent(content: string): string {
     /\(Quelle-(\d+)\)/g,
     (match, sourceId) => {
       return `<span class="source-reference" data-source-id="${sourceId}">${match}</span>`;
-    }
+    },
   );
 
   return formattedContent;
@@ -234,7 +234,7 @@ function sendFeedback(messageId: string, type: "positive" | "negative"): void {
   feedbackStore.sendFeedback({
     messageId,
     type,
-    sessionId: sessionsStore.currentSessionId || '',
+    sessionId: sessionsStore.currentSessionId || "",
   });
 }
 

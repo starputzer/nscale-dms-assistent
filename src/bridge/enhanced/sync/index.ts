@@ -1,15 +1,29 @@
 /**
  * Bridge-Synchronisations-System
- * 
+ *
  * Dieses Modul stellt optimierte Synchronisations-Komponenten für das Bridge-System
  * bereit, die speziell entwickelt wurden, um Synchronisationsprobleme zwischen
  * Vue 3 und Legacy-JavaScript-Code zu lösen.
  */
 
-import transactionManager, { TransactionManager, TransactionStatus, Transaction } from './TransactionManager';
-import eventQueue, { EventQueue, EventPriority, EventStatus, EventCategory } from './EventQueue';
-import { TimeoutRetry, globalTimeoutRetry, bridgeTimeoutRetry, OperationStatus } from './TimeoutRetry';
-import { deepClone, deepEqual, objectHash } from './DeepCloneUtil';
+import transactionManager, {
+  TransactionManager,
+  TransactionStatus,
+  Transaction,
+} from "./TransactionManager";
+import eventQueue, {
+  EventQueue,
+  EventPriority,
+  EventStatus,
+  EventCategory,
+} from "./EventQueue";
+import {
+  TimeoutRetry,
+  globalTimeoutRetry,
+  bridgeTimeoutRetry,
+  OperationStatus,
+} from "./TimeoutRetry";
+import { deepClone, deepEqual, objectHash } from "./DeepCloneUtil";
 
 // Exporte für direkte Nutzung
 export {
@@ -17,24 +31,24 @@ export {
   transactionManager,
   TransactionManager,
   TransactionStatus,
-  
+
   // EventQueue
   eventQueue,
   EventQueue,
   EventPriority,
   EventStatus,
   EventCategory,
-  
+
   // TimeoutRetry
   TimeoutRetry,
   globalTimeoutRetry,
   bridgeTimeoutRetry,
   OperationStatus,
-  
+
   // DeepCloneUtil
   deepClone,
   deepEqual,
-  objectHash
+  objectHash,
 };
 
 /**
@@ -49,23 +63,26 @@ export interface SyncManager {
     options?: {
       priority?: EventPriority;
       category?: EventCategory;
-      source?: 'vue' | 'legacy' | 'system';
-    }
+      source?: "vue" | "legacy" | "system";
+    },
   ) => string | null;
-  
-  onEvent: <T>(eventName: string, handler: (event: any) => Promise<void> | void) => () => void;
-  
+
+  onEvent: <T>(
+    eventName: string,
+    handler: (event: any) => Promise<void> | void,
+  ) => () => void;
+
   // Transaktionsbasierte Updates
   beginTransaction: (name?: string) => string;
   commitTransaction: (transactionId: string) => void;
   rollbackTransaction: (transactionId: string) => Record<string, any>;
-  
+
   // Timeout-und-Retry-Mechanismus
   executeWithRetry: <T>(
     operation: () => Promise<T>,
-    operationName?: string
+    operationName?: string,
   ) => Promise<{ success: boolean; result?: T; error?: any; attempts: number }>;
-  
+
   // Hilfsfunktionen
   deepClone: <T>(value: T) => T;
   deepEqual: (a: any, b: any) => boolean;
@@ -85,53 +102,56 @@ export function createSyncManager(): SyncManager {
       options?: {
         priority?: EventPriority;
         category?: EventCategory;
-        source?: 'vue' | 'legacy' | 'system';
-      }
+        source?: "vue" | "legacy" | "system";
+      },
     ) => {
       return eventQueue.enqueue(name, data, options);
     },
-    
-    onEvent: <T>(eventName: string, handler: (event: any) => Promise<void> | void) => {
+
+    onEvent: <T>(
+      eventName: string,
+      handler: (event: any) => Promise<void> | void,
+    ) => {
       return eventQueue.on(eventName, handler);
     },
-    
+
     // Transaktionsbasierte Updates
     beginTransaction: (name?: string) => {
       return transactionManager.beginTransaction({
-        name: name || 'Unnamed Transaction'
+        name: name || "Unnamed Transaction",
       });
     },
-    
+
     commitTransaction: (transactionId: string) => {
       transactionManager.commitTransaction(transactionId);
     },
-    
+
     rollbackTransaction: (transactionId: string) => {
       return transactionManager.rollbackTransaction(transactionId);
     },
-    
+
     // Timeout-und-Retry-Mechanismus
     executeWithRetry: async <T>(
       operation: () => Promise<T>,
-      operationName?: string
+      operationName?: string,
     ) => {
       const result = await bridgeTimeoutRetry.executeWithRetry(
         operation,
-        operationName
+        operationName,
       );
-      
+
       return {
         success: result.success,
         result: result.result,
         error: result.error,
-        attempts: result.attempts
+        attempts: result.attempts,
       };
     },
-    
+
     // Hilfsfunktionen
     deepClone,
     deepEqual,
-    objectHash
+    objectHash,
   };
 }
 

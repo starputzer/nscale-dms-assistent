@@ -160,10 +160,7 @@
             <label class="admin-motd__label">{{
               t("admin.motd.icon", "Icon")
             }}</label>
-            <Card
-              v-model="motdConfig.style.iconClass"
-              :options="iconOptions"
-            />
+            <Card v-model="motdConfig.style.iconClass" :options="iconOptions" />
           </div>
         </fieldset>
 
@@ -198,10 +195,7 @@
               <label class="admin-motd__label">{{
                 t("admin.motd.audience", "Zielgruppe")
               }}</label>
-              <Card
-                v-model="scheduling.audience"
-                :options="audienceOptions"
-              />
+              <Card v-model="scheduling.audience" :options="audienceOptions" />
             </div>
           </template>
         </fieldset>
@@ -387,13 +381,15 @@ import type { MotdConfig } from "@/types/admin";
 import {
   Button,
   Input,
-  Card,
   Alert,
   Toggle,
+  Select,
+  Card,
 } from "@/components/ui/base";
 
 // i18n
-const { t } = useI18n();
+const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
+console.log('[i18n] Component initialized with global scope and inheritance');
 
 // Store
 const motdStore = useAdminMotdStore();
@@ -623,6 +619,12 @@ watch(
 onMounted(async () => {
   await loadMotd();
 });
+
+// Log i18n initialization status
+console.log(`[AdminMotd] i18n initialized with locale: ${locale.value}`);
+
+// Log i18n initialization status
+console.log(`[AdminMotd] i18n initialized with locale: ${locale.value}`);
 </script>
 
 <style scoped>

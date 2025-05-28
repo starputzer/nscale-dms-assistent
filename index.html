@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digitale Akte Assistent</title>
     
+    <!-- Externe CSS-Dateien -->
+    <link rel="stylesheet" href="/public/assets/styles/base-components.css">
+    <link rel="stylesheet" href="/public/assets/styles/admin-consolidated.css">
+    <link rel="stylesheet" href="/public/assets/styles/admin-modern.css">
+    
     <!-- Basis CSS für initiales Rendering -->
     <style>
         body {
@@ -70,6 +75,31 @@
         .theme-dark .app-loader-spinner {
             border-color: #3a3a3a;
             border-top-color: #00a550;
+        }
+        
+        /* Admin-Komponenten CSS-Variablen */
+        :root {
+          --admin-primary: #00a550;
+          --admin-primary-dark: #009046;
+          --admin-primary-light: #e8f7ef;
+          --admin-bg: #ffffff;
+          --admin-bg-alt: #f8f9fa;
+          --admin-text: #333333;
+          --admin-text-secondary: #666666;
+          --admin-border: #e5e5e5;
+          --admin-success: #28a745;
+          --admin-warning: #ffc107;
+          --admin-danger: #dc3545;
+          --admin-info: #17a2b8;
+          --admin-radius: 8px;
+        }
+        
+        .theme-dark {
+          --admin-bg: #1a1a1a;
+          --admin-bg-alt: #121212;
+          --admin-text: #ffffff;
+          --admin-text-secondary: #b0b0b0;
+          --admin-border: #333333;
         }
     </style>
 </head>

@@ -11,7 +11,17 @@
       <div class="auth-error-container">
         <div class="auth-error-icon">
           <div class="icon-wrapper">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <circle cx="12" cy="12" r="10"></circle>
               <line x1="12" y1="8" x2="12" y2="12"></line>
               <line x1="12" y1="16" x2="12.01" y2="16"></line>
@@ -20,21 +30,21 @@
         </div>
         <h2 class="auth-error-title">{{ errorTitle }}</h2>
         <p class="auth-error-message">{{ errorMessage }}</p>
-        
+
         <!-- Zusätzliche Details im ausgeklappten Zustand -->
         <div v-if="showDetails" class="auth-error-details">
           <pre>{{ JSON.stringify(errorDetails, null, 2) }}</pre>
         </div>
-        
+
         <!-- Toggle für Details -->
-        <button 
-          v-if="hasErrorDetails" 
-          @click="toggleDetails" 
+        <button
+          v-if="hasErrorDetails"
+          @click="toggleDetails"
           class="auth-details-toggle"
         >
-          {{ showDetails ? 'Details ausblenden' : 'Details anzeigen' }}
+          {{ showDetails ? "Details ausblenden" : "Details anzeigen" }}
         </button>
-        
+
         <!-- Aktionen für Benutzer -->
         <div class="auth-error-actions">
           <button @click="retryAuthentication" class="auth-error-retry">
@@ -46,113 +56,123 @@
         </div>
       </div>
     </template>
-    
+
     <!-- Standardinhalt (LoginView) wenn kein Fehler vorliegt -->
     <slot v-else></slot>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onErrorCaptured, provide } from 'vue'
-import { useRouter } from 'vue-router'
-import { useErrorReporting } from '@/composables/useErrorReporting'
+import { ref, computed, onErrorCaptured, provide } from "vue";
+import { useRouter } from "vue-router";
+import { useErrorReporting } from "@/composables/useErrorReporting";
 
 // Strukturierte Error-Typen für bessere Typprüfung
-type AuthErrorType = 'network' | 'server' | 'timeout' | 'token' | 'permission' | 'validation' | 'unknown'
+type AuthErrorType =
+  | "network"
+  | "server"
+  | "timeout"
+  | "token"
+  | "permission"
+  | "validation"
+  | "unknown";
 
 interface AuthError {
-  type: AuthErrorType
-  message: string
-  details?: Record<string, any>
-  timestamp: string
-  code?: string
-  retry?: boolean
+  type: AuthErrorType;
+  message: string;
+  details?: Record<string, any>;
+  timestamp: string;
+  code?: string;
+  retry?: boolean;
 }
 
 // Reaktiver State
-const error = ref<AuthError | null>(null)
-const showDetails = ref(false)
-const router = useRouter()
-const errorReporting = useErrorReporting()
+const error = ref<AuthError | null>(null);
+const showDetails = ref(false);
+const router = useRouter();
+const errorReporting = useErrorReporting();
 
 // Computed Properties für UI-Darstellung
 const errorTitle = computed(() => {
-  if (!error.value) return 'Unbekannter Fehler'
-  
+  if (!error.value) return "Unbekannter Fehler";
+
   switch (error.value.type) {
-    case 'network':
-      return 'Verbindungsproblem'
-    case 'server':
-      return 'Serverfehler'
-    case 'timeout':
-      return 'Zeitüberschreitung'
-    case 'token':
-      return 'Authentifizierungsproblem'
-    case 'permission':
-      return 'Berechtigungsfehler'
-    case 'validation':
-      return 'Ungültige Eingabe'
+    case "network":
+      return "Verbindungsproblem";
+    case "server":
+      return "Serverfehler";
+    case "timeout":
+      return "Zeitüberschreitung";
+    case "token":
+      return "Authentifizierungsproblem";
+    case "permission":
+      return "Berechtigungsfehler";
+    case "validation":
+      return "Ungültige Eingabe";
     default:
-      return 'Anmeldefehler'
+      return "Anmeldefehler";
   }
-})
+});
 
 const errorMessage = computed(() => {
-  if (!error.value) return 'Ein unbekannter Fehler ist aufgetreten.'
-  
+  if (!error.value) return "Ein unbekannter Fehler ist aufgetreten.";
+
   switch (error.value.type) {
-    case 'network':
-      return 'Verbindung zum Server nicht möglich. Bitte überprüfen Sie Ihre Internetverbindung.'
-    case 'server':
-      return 'Der Server konnte die Anfrage nicht verarbeiten. Bitte versuchen Sie es später erneut.'
-    case 'timeout':
-      return 'Die Anfrage hat zu lange gedauert. Bitte versuchen Sie es später erneut.'
-    case 'token':
-      return 'Ihre Sitzung ist abgelaufen oder ungültig. Bitte melden Sie sich erneut an.'
-    case 'permission':
-      return 'Sie haben keine Berechtigung für diese Aktion.'
-    case 'validation':
-      return error.value.message || 'Die eingegebenen Daten sind ungültig.'
+    case "network":
+      return "Verbindung zum Server nicht möglich. Bitte überprüfen Sie Ihre Internetverbindung.";
+    case "server":
+      return "Der Server konnte die Anfrage nicht verarbeiten. Bitte versuchen Sie es später erneut.";
+    case "timeout":
+      return "Die Anfrage hat zu lange gedauert. Bitte versuchen Sie es später erneut.";
+    case "token":
+      return "Ihre Sitzung ist abgelaufen oder ungültig. Bitte melden Sie sich erneut an.";
+    case "permission":
+      return "Sie haben keine Berechtigung für diese Aktion.";
+    case "validation":
+      return error.value.message || "Die eingegebenen Daten sind ungültig.";
     default:
-      return error.value.message || 'Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.'
+      return (
+        error.value.message ||
+        "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut."
+      );
   }
-})
+});
 
 const errorDetails = computed(() => {
-  if (!error.value) return {}
-  
+  if (!error.value) return {};
+
   return {
     type: error.value.type,
     message: error.value.message,
     code: error.value.code,
     timestamp: error.value.timestamp,
-    ...error.value.details
-  }
-})
+    ...error.value.details,
+  };
+});
 
 const hasErrorDetails = computed(() => {
-  return error.value?.details && Object.keys(error.value.details).length > 0
-})
+  return error.value?.details && Object.keys(error.value.details).length > 0;
+});
 
 // Methoden
 const toggleDetails = () => {
-  showDetails.value = !showDetails.value
-}
+  showDetails.value = !showDetails.value;
+};
 
 const resetError = () => {
-  error.value = null
+  error.value = null;
   // Browser-Seite neu laden als letzte Rettung
-  window.location.reload()
-}
+  window.location.reload();
+};
 
 const retryAuthentication = () => {
   // Fehler zurücksetzen
-  error.value = null
-  
-  // Optional: Trigger eines spezifischen Events 
+  error.value = null;
+
+  // Optional: Trigger eines spezifischen Events
   // für komponenten-übergreifende Koordination
-  emit('retry-auth')
-}
+  emit("retry-auth");
+};
 
 /**
  * Setzt den Fehler mit strukturiertem Format
@@ -162,10 +182,10 @@ const retryAuthentication = () => {
  * @param code Optionaler Fehlercode
  */
 const setAuthError = (
-  errorType: AuthErrorType, 
-  message: string, 
+  errorType: AuthErrorType,
+  message: string,
   details?: Record<string, any>,
-  code?: string
+  code?: string,
 ) => {
   error.value = {
     type: errorType,
@@ -173,104 +193,104 @@ const setAuthError = (
     details,
     code,
     timestamp: new Date().toISOString(),
-    retry: true
-  }
-  
+    retry: true,
+  };
+
   // Fehler an Error-Reporting-System melden
   if (errorReporting) {
     errorReporting.captureError(new Error(message), {
-      source: { type: 'auth', name: 'AuthErrorBoundary' },
-      severity: errorType === 'network' ? 'medium' : 'high',
+      source: { type: "auth", name: "AuthErrorBoundary" },
+      severity: errorType === "network" ? "medium" : "high",
       context: {
         errorType,
         errorCode: code,
-        ...details
-      }
-    })
+        ...details,
+      },
+    });
   }
-}
+};
 
 // Event-Emitter definieren
 const emit = defineEmits<{
-  (e: 'retry-auth'): void
-  (e: 'error', error: AuthError): void
-}>()
+  (e: "retry-auth"): void;
+  (e: "error", error: AuthError): void;
+}>();
 
 // Error-Handling mit onErrorCaptured Hook
 onErrorCaptured((err, instance, info) => {
-  console.error('[AuthErrorBoundary] Caught error:', err)
-  
+  console.error("[AuthErrorBoundary] Caught error:", err);
+
   // Error-Objekt analysieren und kategorisieren
-  let errorType: AuthErrorType = 'unknown'
-  let errorMessage = err instanceof Error ? err.message : String(err)
-  let errorDetails: Record<string, any> = { info }
-  let errorCode: string | undefined
-  
+  let errorType: AuthErrorType = "unknown";
+  let errorMessage = err instanceof Error ? err.message : String(err);
+  let errorDetails: Record<string, any> = { info };
+  let errorCode: string | undefined;
+
   // Error-Typen erkennen
   if (err instanceof Error) {
     // Netzwerkfehler erkennen
     if (
-      errorMessage.includes('network') || 
-      errorMessage.includes('Network Error') ||
-      errorMessage.includes('Failed to fetch')
+      errorMessage.includes("network") ||
+      errorMessage.includes("Network Error") ||
+      errorMessage.includes("Failed to fetch")
     ) {
-      errorType = 'network'
-    } 
+      errorType = "network";
+    }
     // Timeout erkennen
     else if (
-      errorMessage.includes('timeout') || 
-      errorMessage.includes('timed out')
+      errorMessage.includes("timeout") ||
+      errorMessage.includes("timed out")
     ) {
-      errorType = 'timeout'
+      errorType = "timeout";
     }
     // Server-Fehler erkennen
     else if (
-      errorMessage.includes('500') ||
-      errorMessage.includes('Server Error')
+      errorMessage.includes("500") ||
+      errorMessage.includes("Server Error")
     ) {
-      errorType = 'server'
+      errorType = "server";
     }
     // Token/Auth-Fehler erkennen
     else if (
-      errorMessage.includes('token') ||
-      errorMessage.includes('authentication') ||
-      errorMessage.includes('auth') ||
-      errorMessage.includes('401') ||
-      errorMessage.includes('403')
+      errorMessage.includes("token") ||
+      errorMessage.includes("authentication") ||
+      errorMessage.includes("auth") ||
+      errorMessage.includes("401") ||
+      errorMessage.includes("403")
     ) {
-      errorType = 'token'
+      errorType = "token";
     }
-    
+
     // Wenn Error ein eigenes "code"-Property hat (z.B. von API)
-    if ('code' in err) {
-      errorCode = (err as any).code
+    if ("code" in err) {
+      errorCode = (err as any).code;
     }
-    
+
     // Wenn Error ein eigenes "details"-Property hat
-    if ('details' in err) {
-      errorDetails = { ...errorDetails, ...(err as any).details }
+    if ("details" in err) {
+      errorDetails = { ...errorDetails, ...(err as any).details };
     }
   }
-  
+
   // Error mit erkanntem Typ setzen
-  setAuthError(errorType, errorMessage, errorDetails, errorCode)
-  
+  setAuthError(errorType, errorMessage, errorDetails, errorCode);
+
   // Event für den Parent emittieren
-  emit('error', error.value as AuthError)
-  
+  emit("error", error.value as AuthError);
+
   // Fehler abfangen - nicht an Vue propagieren
-  return false
-})
+  return false;
+});
 
 // Expose function für Parent Components
 defineExpose({
-  setAuthError
-})
+  setAuthError,
+});
 
 // Provide context für verschachtelte Komponenten
-provide('authErrorBoundary', {
-  setAuthError
-})
+provide("authErrorBoundary", {
+  setAuthError,
+});
 </script>
 
 <style scoped>
@@ -394,12 +414,12 @@ provide('authErrorBoundary', {
     margin: 1rem;
     padding: 1.5rem;
   }
-  
+
   .auth-error-actions {
     flex-direction: column;
     width: 100%;
   }
-  
+
   .auth-error-retry,
   .auth-error-reset {
     width: 100%;

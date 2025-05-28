@@ -11,11 +11,13 @@
  */
 export const getEnvVar = (name: string, defaultValue: string): string => {
   // In Vite werden Umgebungsvariablen mit import.meta.env zur Verfügung gestellt
-  if (typeof import.meta !== 'undefined' && import.meta.env) {
+  if (typeof import.meta !== "undefined" && import.meta.env) {
     return (import.meta.env[name] as string) || defaultValue;
   }
   // Fallback für Node.js-Umgebung oder wenn import.meta nicht verfügbar ist
-  return typeof window !== 'undefined' ? defaultValue : ((process?.env?.[name] as string) || defaultValue);
+  return typeof window !== "undefined"
+    ? defaultValue
+    : (process?.env?.[name] as string) || defaultValue;
 };
 
 /**
@@ -23,10 +25,12 @@ export const getEnvVar = (name: string, defaultValue: string): string => {
  * @returns Die aktuelle Umgebung oder "development" als Standard
  */
 export const getNodeEnv = (): string => {
-  if (typeof import.meta !== 'undefined' && import.meta.env) {
-    return import.meta.env.MODE || 'development';
+  if (typeof import.meta !== "undefined" && import.meta.env) {
+    return import.meta.env.MODE || "development";
   }
-  return typeof window !== 'undefined' ? 'development' : (process?.env?.NODE_ENV || 'development');
+  return typeof window !== "undefined"
+    ? "development"
+    : process?.env?.NODE_ENV || "development";
 };
 
 /**
@@ -34,7 +38,7 @@ export const getNodeEnv = (): string => {
  * @returns true, wenn die Anwendung im Entwicklungsmodus läuft
  */
 export const isDevelopment = (): boolean => {
-  return getNodeEnv() === 'development';
+  return getNodeEnv() === "development";
 };
 
 /**
@@ -42,7 +46,7 @@ export const isDevelopment = (): boolean => {
  * @returns true, wenn die Anwendung im Produktionsmodus läuft
  */
 export const isProduction = (): boolean => {
-  return getNodeEnv() === 'production';
+  return getNodeEnv() === "production";
 };
 
 /**
@@ -50,7 +54,7 @@ export const isProduction = (): boolean => {
  * @returns true, wenn die Anwendung im Testmodus läuft
  */
 export const isTest = (): boolean => {
-  return getNodeEnv() === 'test';
+  return getNodeEnv() === "test";
 };
 
 export default {
@@ -58,5 +62,5 @@ export default {
   getNodeEnv,
   isDevelopment,
   isProduction,
-  isTest
+  isTest,
 };

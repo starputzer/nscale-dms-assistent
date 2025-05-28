@@ -584,7 +584,8 @@ import { de } from "date-fns/locale";
 import type { SystemAction } from "@/types/admin";
 
 // i18n
-const { t } = useI18n();
+const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
+console.log('[i18n] Component initialized with global scope and inheritance');
 
 // Stores
 const adminSystemStore = useAdminSystemStore();
@@ -851,6 +852,12 @@ async function refreshStats() {
 onMounted(async () => {
   refreshStats();
 });
+
+// Log i18n initialization status
+console.log(`[AdminSystem] i18n initialized with locale: ${locale.value}`);
+
+// Log i18n initialization status
+console.log(`[AdminSystem] i18n initialized with locale: ${locale.value}`);
 </script>
 
 <style scoped>

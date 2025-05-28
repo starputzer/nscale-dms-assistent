@@ -221,7 +221,10 @@ export class FallbackManager {
       }
       return this._store;
     } catch (err) {
-      console.warn('Feature-Toggles-Store nicht verfügbar, verwende Fallback-Konfiguration', err);
+      console.warn(
+        "Feature-Toggles-Store nicht verfügbar, verwende Fallback-Konfiguration",
+        err,
+      );
       // Return a minimal mock store with required methods
       return {
         toggleFeature: () => {},

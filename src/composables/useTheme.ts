@@ -208,11 +208,12 @@ export function useTheme() {
    */
   function initializeTheme(): void {
     // Apply the initial theme
-    const theme = useSystemTheme.value && systemIsDark.value
-      ? THEMES.DARK
-      : currentTheme.value;
+    const theme =
+      useSystemTheme.value && systemIsDark.value
+        ? THEMES.DARK
+        : currentTheme.value;
     document.documentElement.setAttribute("data-theme", theme);
-    
+
     // Setup system theme listeners
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     mediaQuery.addEventListener("change", (e) => {

@@ -1,29 +1,29 @@
 /**
  * Beispiele für die Verwendung der typisierten Fehlerbehandlung in Bridge-Komponenten
- * 
+ *
  * Diese Datei zeigt praktische Beispiele, wie die BridgeResult<T, E>-Pattern
  * zur verbesserten Fehlerbehandlung in Bridge-Komponenten verwendet werden kann.
  */
 
-import { 
+import {
   BridgeErrorCode,
   BridgeResult,
   executeBridgeOperation,
   failure,
   success,
   unwrapResult,
-  withRecovery
-} from '../bridgeErrorUtils';
-import { createLogger } from '../logger/index';
+  withRecovery,
+} from "../bridgeErrorUtils";
+import { createLogger } from "../logger/index";
 
 // Komponenten-spezifischer Logger
-const logger = createLogger('BridgeResultExample');
+const logger = createLogger("BridgeResultExample");
 
 /**
  * Beispielklasse für eine Bridge-Komponente mit typisierten Fehlerresultaten
  */
 export class TypedBridgeComponent {
-  private componentName = 'TypedBridgeComponent';
+  private componentName = "TypedBridgeComponent";
   private isInitialized = false;
   private retryCount = 0;
   private maxRetries = 3;
@@ -35,22 +35,22 @@ export class TypedBridgeComponent {
   public async initialize(): Promise<BridgeResult<boolean>> {
     return executeBridgeOperation(
       async () => {
-        logger.info('Initialisiere TypedBridgeComponent...');
-        
+        logger.info("Initialisiere TypedBridgeComponent...");
+
         // Simulierte asynchrone Initialisierung
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
         // Beispiel für erfolgreiche Initialisierung
         this.isInitialized = true;
         return true;
       },
       {
         component: this.componentName,
-        operationName: 'initialize',
-        errorMessage: 'Initialisierung der Bridge-Komponente fehlgeschlagen',
+        operationName: "initialize",
+        errorMessage: "Initialisierung der Bridge-Komponente fehlgeschlagen",
         errorCode: BridgeErrorCode.INITIALIZATION_FAILED,
-        recoverable: true
-      }
+        recoverable: true,
+      },
     );
   }
 
@@ -63,12 +63,12 @@ export class TypedBridgeComponent {
     if (!this.isInitialized) {
       return failure(
         BridgeErrorCode.COMPONENT_INACTIVE,
-        'Komponente ist nicht initialisiert',
+        "Komponente ist nicht initialisiert",
         {
           component: this.componentName,
-          operation: 'performOperation',
-          recoverable: true
-        }
+          operation: "performOperation",
+          recoverable: true,
+        },
       );
     }
 
@@ -76,37 +76,39 @@ export class TypedBridgeComponent {
     const result = await executeBridgeOperation<string>(
       () => {
         // Simulieren einer fehlschlagenden Operation für Demo-Zwecke
-        if (id === 'error') {
-          throw new Error('Simulierter Fehler bei performOperation');
+        if (id === "error") {
+          throw new Error("Simulierter Fehler bei performOperation");
         }
-        
+
         return `Ergebnis für ${id}`;
       },
       {
         component: this.componentName,
-        operationName: 'performOperation',
+        operationName: "performOperation",
         errorCode: BridgeErrorCode.COMMUNICATION_ERROR,
-        recoverable: true
-      }
+        recoverable: true,
+      },
     );
 
     // Self-Healing-Mechanismus hinzufügen
     return withRecovery(result, async () => {
       // Implementiere Self-Healing für diese Operation
-      logger.warn(`Versuche Wiederherstellung nach Fehler in performOperation (${++this.retryCount}/${this.maxRetries})`);
-      
+      logger.warn(
+        `Versuche Wiederherstellung nach Fehler in performOperation (${++this.retryCount}/${this.maxRetries})`,
+      );
+
       if (this.retryCount >= this.maxRetries) {
         return failure<string>(
           BridgeErrorCode.RETRY_LIMIT_EXCEEDED,
           `Maximale Anzahl an Wiederholungsversuchen (${this.maxRetries}) überschritten`,
           {
             component: this.componentName,
-            operation: 'performOperation',
-            recoverable: false
-          }
+            operation: "performOperation",
+            recoverable: false,
+          },
         );
       }
-      
+
       // Simulierter Wiederherstellungsversuch (verwende einen Fallback-Wert)
       return success(`Fallback-Ergebnis für ${id} nach Wiederherstellung`);
     });
@@ -116,19 +118,21 @@ export class TypedBridgeComponent {
    * Beispiel für die sichere Verwendung mehrerer BridgeResult-Operationen
    * Demonstriert Verkettung und Fehlerbehandlung
    */
-  public async processData(data: unknown): Promise<BridgeResult<{ processed: boolean, id: string }>> {
+  public async processData(
+    data: unknown,
+  ): Promise<BridgeResult<{ processed: boolean; id: string }>> {
     // Stufenweise Verarbeitung mit Fehlerbehandlung
     const validateResult = await this.validateData(data);
     if (!validateResult.success) {
       return failure(
         BridgeErrorCode.INVALID_STATE,
-        'Datenvalidierung fehlgeschlagen',
+        "Datenvalidierung fehlgeschlagen",
         {
           component: this.componentName,
-          operation: 'processData',
+          operation: "processData",
           details: validateResult.error,
-          recoverable: false
-        }
+          recoverable: false,
+        },
       );
     }
 
@@ -142,17 +146,17 @@ export class TypedBridgeComponent {
         `Verarbeitung für ID ${id} fehlgeschlagen`,
         {
           component: this.componentName,
-          operation: 'processData',
+          operation: "processData",
           details: operationResult.error,
-          recoverable: false
-        }
+          recoverable: false,
+        },
       );
     }
 
     // Erfolgreiches Gesamtergebnis zurückgeben
     return success({
       processed: true,
-      id
+      id,
     });
   }
 
@@ -164,27 +168,29 @@ export class TypedBridgeComponent {
     return executeBridgeOperation(
       () => {
         if (!data) {
-          throw new Error('Daten dürfen nicht leer sein');
+          throw new Error("Daten dürfen nicht leer sein");
         }
-        
-        if (typeof data === 'object' && data !== null) {
-          if ('id' in data && typeof (data as any).id === 'string') {
+
+        if (typeof data === "object" && data !== null) {
+          if ("id" in data && typeof (data as any).id === "string") {
             return (data as any).id;
           }
         }
-        
-        if (typeof data === 'string') {
+
+        if (typeof data === "string") {
           return data;
         }
-        
-        throw new Error('Ungültiges Datenformat: ID konnte nicht extrahiert werden');
+
+        throw new Error(
+          "Ungültiges Datenformat: ID konnte nicht extrahiert werden",
+        );
       },
       {
         component: this.componentName,
-        operationName: 'validateData',
+        operationName: "validateData",
         errorCode: BridgeErrorCode.INVALID_STATE,
-        recoverable: false
-      }
+        recoverable: false,
+      },
     );
   }
 
@@ -197,15 +203,15 @@ export class TypedBridgeComponent {
     try {
       // Verarbeitung mit Result-Pattern
       const result = await this.processData(data);
-      
+
       // Auspacken des Ergebnisses (wirft bei Fehler)
       const processedData = unwrapResult(result);
-      
+
       // Formatieren für Legacy-Code
       return JSON.stringify(processedData);
     } catch (error) {
       // Fehlerbehandlung für Legacy-Code
-      logger.error('Fehler bei der Datenverarbeitung für Legacy-Code:', error);
+      logger.error("Fehler bei der Datenverarbeitung für Legacy-Code:", error);
       throw error; // Für Legacy-Code neu werfen
     }
   }
@@ -216,39 +222,48 @@ export class TypedBridgeComponent {
  */
 export async function demonstrateBridgeResultPattern(): Promise<void> {
   const component = new TypedBridgeComponent();
-  
+
   try {
     // Komponente initialisieren
     const initResult = await component.initialize();
     if (!initResult.success) {
-      logger.error('Initialisierung fehlgeschlagen:', initResult.error.message);
+      logger.error("Initialisierung fehlgeschlagen:", initResult.error.message);
       return;
     }
-    
+
     // Erfolgreiche Operation
-    const successResult = await component.performOperation('test123');
+    const successResult = await component.performOperation("test123");
     if (successResult.success) {
-      logger.info('Operation erfolgreich:', successResult.data);
+      logger.info("Operation erfolgreich:", successResult.data);
     } else {
-      logger.error('Operation fehlgeschlagen:', successResult.error.message);
+      logger.error("Operation fehlgeschlagen:", successResult.error.message);
     }
-    
+
     // Fehlgeschlagene Operation mit Wiederherstellung
-    const failureResult = await component.performOperation('error');
+    const failureResult = await component.performOperation("error");
     if (failureResult.success) {
-      logger.info('Operation nach Wiederherstellung erfolgreich:', failureResult.data);
+      logger.info(
+        "Operation nach Wiederherstellung erfolgreich:",
+        failureResult.data,
+      );
     } else {
-      logger.error('Operation trotz Wiederherstellung fehlgeschlagen:', failureResult.error.message);
+      logger.error(
+        "Operation trotz Wiederherstellung fehlgeschlagen:",
+        failureResult.error.message,
+      );
     }
-    
+
     // Komplexe Operation mit Verkettung
-    const processResult = await component.processData({ id: 'complex-data' });
+    const processResult = await component.processData({ id: "complex-data" });
     if (processResult.success) {
-      logger.info('Datenverarbeitung erfolgreich:', processResult.data);
+      logger.info("Datenverarbeitung erfolgreich:", processResult.data);
     } else {
-      logger.error('Datenverarbeitung fehlgeschlagen:', processResult.error.message);
+      logger.error(
+        "Datenverarbeitung fehlgeschlagen:",
+        processResult.error.message,
+      );
     }
   } catch (error) {
-    logger.error('Unerwarteter Fehler bei der Demonstration:', error);
+    logger.error("Unerwarteter Fehler bei der Demonstration:", error);
   }
 }

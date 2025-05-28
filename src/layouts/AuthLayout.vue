@@ -1,6 +1,6 @@
 <template>
   <div class="auth-layout">
-    <Header 
+    <Header
       title="Digitale Akte Assistent"
       :fixed="false"
       :bordered="true"
@@ -17,24 +17,62 @@
     >
       <template #logo>
         <div class="app-logo">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
-            <line x1="8" y1="8" x2="16" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <line x1="8" y1="16" x2="11" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              x="3"
+              y="3"
+              width="18"
+              height="18"
+              rx="2"
+              stroke="currentColor"
+              stroke-width="2"
+            />
+            <line
+              x1="8"
+              y1="8"
+              x2="16"
+              y2="8"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+            <line
+              x1="8"
+              y1="12"
+              x2="16"
+              y2="12"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+            <line
+              x1="8"
+              y1="16"
+              x2="11"
+              y2="16"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
           </svg>
         </div>
       </template>
     </Header>
 
     <div class="auth-content">
-      <Sidebar 
+      <Sidebar
         :theme="effectiveTheme"
         :collapsed="uiStore.sidebarCollapsed"
         @navigate="handleNavigation"
         @logout="handleLogout"
       />
-      
+
       <div class="content-area">
         <router-view />
       </div>
@@ -68,28 +106,28 @@ const handleSidebarToggle = () => {
 const handleLogout = async () => {
   try {
     await authStore.logout();
-    router.push('/login');
+    router.push("/login");
   } catch (error) {
-    console.error('Logout error:', error);
+    console.error("Logout error:", error);
   }
 };
 
 const handleNavigation = (itemId: string) => {
   switch (itemId) {
-    case 'chat':
-      router.push('/chat');
+    case "chat":
+      router.push("/chat");
       break;
-    case 'documents':
-      router.push('/documents');
+    case "documents":
+      router.push("/documents");
       break;
-    case 'settings':
-      router.push('/settings');
+    case "settings":
+      router.push("/settings");
       break;
-    case 'admin':
-      router.push('/admin');
+    case "admin":
+      router.push("/admin");
       break;
-    case 'help':
-      router.push('/help');
+    case "help":
+      router.push("/help");
       break;
   }
 };

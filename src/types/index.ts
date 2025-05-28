@@ -7,23 +7,23 @@
  */
 
 // Reexportiere alle Typdefinitionen
-export * from './store-types';
-export * from './api-types';
-export * from './component-types';
-export * from './composable-types';
+export * from "./store-types";
+export * from "./api-types";
+export * from "./component-types";
+export * from "./composable-types";
 
 // Exportiere auch andere spezifische Typdefinitionen
-export * from './auth';
-export * from './session';
-export * from './ui';
-export * from './documentConverter';
-export * from './admin';
+export * from "./auth";
+export * from "./session";
+export * from "./ui";
+export * from "./documentConverter";
+export * from "./admin";
 
 // Exportiere neue zentralisierte Typdeklarationen
-export * from './models';
-export * from './utilities';
-export * from './adapters';
-export * from './errors';
+export * from "./models";
+export * from "./utilities";
+export * from "./adapters";
+export * from "./errors";
 
 // Globale Typdefinitionen (werden automatisch importiert)
 // Referenziert in: './globals.d.ts'
@@ -61,8 +61,12 @@ export type NonNullable<T> = T extends null | undefined ? never : T;
 /**
  * Extrahiert den Typ des ersten Arguments einer Funktion
  */
-export type FirstArgument<T extends (...args: any[]) => any> = 
-  T extends (arg: infer A, ...args: any[]) => any ? A : never;
+export type FirstArgument<T extends (...args: any[]) => any> = T extends (
+  arg: infer A,
+  ...args: any[]
+) => any
+  ? A
+  : never;
 
 /**
  * Extrahiert den Rückgabetyp einer Funktion ohne Promise

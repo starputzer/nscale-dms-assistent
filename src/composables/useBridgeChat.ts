@@ -6,7 +6,14 @@
  * über die Enhanced Bridge.
  */
 
-import { ref, computed, watch, onMounted, onUnmounted, getCurrentInstance } from "vue";
+import {
+  ref,
+  computed,
+  watch,
+  onMounted,
+  onUnmounted,
+  getCurrentInstance,
+} from "vue";
 import { useBridge } from "@/bridge/enhanced";
 import { useChat } from "@/composables/useChat";
 // Import sessions store
@@ -24,13 +31,8 @@ export function useBridgeChat() {
   const sessionStore = useSessionsStore();
 
   // Standard-Chat-Composable
-  const {
-    messages,
-    isLoading,
-    isStreaming,
-    sendMessage,
-  } = useChat();
-  
+  const { messages, isLoading, isStreaming, sendMessage } = useChat();
+
   // Lokale Refs für fehlende Werte
   const isSending = ref(false);
   const streamingMessage = ref(null);
@@ -38,20 +40,20 @@ export function useBridgeChat() {
   // Synchronisierungsstatus
   const isSyncing = ref(false);
   const lastSyncTime = ref(Date.now());
-  
+
   // Stub-Implementierungen für fehlende Funktionen
   const loadMessages = async () => {
     // Implementierung folgt
   };
-  
+
   const editMessage = async (messageId: string, newContent: string) => {
     // Implementierung folgt
   };
-  
+
   const retryMessage = async (messageId: string) => {
     // Implementierung folgt
   };
-  
+
   const stopGeneration = async () => {
     // Implementierung folgt
   };
@@ -260,7 +262,8 @@ export function useBridgeChat() {
       // Sessions synchronisieren
       bridge.emit("vueChat:sessionsUpdated", {
         sessions: sessionStore.sessions || [],
-        activeSessionId: sessionStore.currentSession?.id || sessionStore.currentSessionId,
+        activeSessionId:
+          sessionStore.currentSession?.id || sessionStore.currentSessionId,
         timestamp: lastSyncTime.value,
       });
     } catch (error) {

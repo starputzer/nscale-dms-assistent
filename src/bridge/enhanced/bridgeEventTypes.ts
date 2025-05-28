@@ -1,6 +1,6 @@
 /**
  * Bridge-spezifische Event-Typen
- * 
+ *
  * Diese Datei definiert die Event-Typen, die speziell für die Bridge-Komponenten
  * zwischen Vue 3 und dem Legacy-Code verwendet werden.
  */
@@ -12,44 +12,44 @@ import { EventPayload } from "../../utils/eventTypes";
  */
 export interface BridgeEventMap {
   // Basis-Bridge-Events
-  'bridge:ready': EventPayload;
-  'bridge:initialized': BridgeInitializedEvent;
-  'bridge:error': BridgeErrorEvent;
-  'bridge:statusChanged': BridgeStatusEvent;
-  'bridge:diagnostics': BridgeDiagnosticsEvent;
-  
+  "bridge:ready": EventPayload;
+  "bridge:initialized": BridgeInitializedEvent;
+  "bridge:error": BridgeErrorEvent;
+  "bridge:statusChanged": BridgeStatusEvent;
+  "bridge:diagnostics": BridgeDiagnosticsEvent;
+
   // State-Synchronisierungsevents
-  'state:updated': StateUpdateEvent;
-  'state:synced': StateSyncEvent;
-  'state:resetRequired': EventPayload;
-  'state:conflict': StateConflictEvent;
-  
+  "state:updated": StateUpdateEvent;
+  "state:synced": StateSyncEvent;
+  "state:resetRequired": EventPayload;
+  "state:conflict": StateConflictEvent;
+
   // Legacy-zu-Vue-Events (Daten von Legacy nach Vue)
-  'legacy:sessionCreated': LegacySessionEvent;
-  'legacy:sessionUpdated': LegacySessionEvent;
-  'legacy:sessionDeleted': LegacySessionEvent;
-  'legacy:messageAdded': LegacyMessageEvent;
-  'legacy:messageUpdated': LegacyMessageEvent;
-  'legacy:messageDeleted': LegacyMessageEvent;
-  'legacy:streamingUpdate': LegacyStreamingEvent;
-  'legacy:uiStateChanged': LegacyUIStateEvent;
-  
+  "legacy:sessionCreated": LegacySessionEvent;
+  "legacy:sessionUpdated": LegacySessionEvent;
+  "legacy:sessionDeleted": LegacySessionEvent;
+  "legacy:messageAdded": LegacyMessageEvent;
+  "legacy:messageUpdated": LegacyMessageEvent;
+  "legacy:messageDeleted": LegacyMessageEvent;
+  "legacy:streamingUpdate": LegacyStreamingEvent;
+  "legacy:uiStateChanged": LegacyUIStateEvent;
+
   // Vue-zu-Legacy-Events (Befehle von Vue nach Legacy)
-  'vue:createSession': VueCommandEvent;
-  'vue:sendMessage': VueSendMessageEvent;
-  'vue:selectSession': VueSessionCommandEvent;
-  'vue:deleteSession': VueSessionCommandEvent;
-  'vue:updateSession': VueUpdateSessionEvent;
-  'vue:deleteMessage': VueDeleteMessageEvent;
-  'vue:cancelStreaming': VueSessionCommandEvent;
-  'vue:uiAction': VueUIActionEvent;
-  
+  "vue:createSession": VueCommandEvent;
+  "vue:sendMessage": VueSendMessageEvent;
+  "vue:selectSession": VueSessionCommandEvent;
+  "vue:deleteSession": VueSessionCommandEvent;
+  "vue:updateSession": VueUpdateSessionEvent;
+  "vue:deleteMessage": VueDeleteMessageEvent;
+  "vue:cancelStreaming": VueSessionCommandEvent;
+  "vue:uiAction": VueUIActionEvent;
+
   // Selbstheilungs- und Diagnose-Events
-  'bridge:healthCheck': BridgeHealthCheckEvent;
-  'bridge:healing': BridgeHealingEvent;
-  'bridge:memoryWarning': BridgeMemoryEvent;
-  'bridge:performanceReport': BridgePerformanceEvent;
-  
+  "bridge:healthCheck": BridgeHealthCheckEvent;
+  "bridge:healing": BridgeHealingEvent;
+  "bridge:memoryWarning": BridgeMemoryEvent;
+  "bridge:performanceReport": BridgePerformanceEvent;
+
   // Erweiterbar für benutzerdefinierte Events
   [key: `bridge:${string}`]: EventPayload;
 }
@@ -96,7 +96,13 @@ export interface BridgeErrorEvent extends EventPayload {
  * Bridge-Status-Event
  */
 export interface BridgeStatusEvent extends EventPayload {
-  status: 'initializing' | 'active' | 'degraded' | 'error' | 'recovering' | 'inactive';
+  status:
+    | "initializing"
+    | "active"
+    | "degraded"
+    | "error"
+    | "recovering"
+    | "inactive";
   previousStatus?: string;
   timestamp: number;
   message?: string;
@@ -135,7 +141,7 @@ export interface StateUpdateEvent extends EventPayload {
   value: any;
   previousValue?: any;
   timestamp: number;
-  source: 'legacy' | 'vue';
+  source: "legacy" | "vue";
   isPartial?: boolean;
 }
 
@@ -147,7 +153,7 @@ export interface StateSyncEvent extends EventPayload {
   duration: number;
   paths: string[];
   operationCount: number;
-  source: 'legacy' | 'vue';
+  source: "legacy" | "vue";
 }
 
 /**
@@ -158,7 +164,7 @@ export interface StateConflictEvent extends EventPayload {
   legacyValue: any;
   vueValue: any;
   timestamp: number;
-  resolutionStrategy: 'legacy' | 'vue' | 'merge' | 'none';
+  resolutionStrategy: "legacy" | "vue" | "merge" | "none";
 }
 
 /**
@@ -185,7 +191,7 @@ export interface LegacyMessageEvent extends EventPayload {
   messageId: string;
   sessionId: string;
   content: string;
-  role: 'user' | 'assistant' | 'system';
+  role: "user" | "assistant" | "system";
   timestamp: number;
   metadata?: {
     status?: string;
@@ -249,17 +255,21 @@ export interface VueCommandEvent extends EventPayload {
  * Vue-Send-Message-Event
  */
 export interface VueSendMessageEvent extends VueCommandEvent {
-  command: 'sendMessage';
+  command: "sendMessage";
   sessionId: string;
   content: string;
-  role?: 'user' | 'system';
+  role?: "user" | "system";
 }
 
 /**
  * Vue-Session-Command-Event
  */
 export interface VueSessionCommandEvent extends VueCommandEvent {
-  command: 'selectSession' | 'createSession' | 'deleteSession' | 'cancelStreaming';
+  command:
+    | "selectSession"
+    | "createSession"
+    | "deleteSession"
+    | "cancelStreaming";
   sessionId?: string;
 }
 
@@ -267,7 +277,7 @@ export interface VueSessionCommandEvent extends VueCommandEvent {
  * Vue-Update-Session-Event
  */
 export interface VueUpdateSessionEvent extends VueCommandEvent {
-  command: 'updateSession';
+  command: "updateSession";
   sessionId: string;
   updates: {
     title?: string;
@@ -282,7 +292,7 @@ export interface VueUpdateSessionEvent extends VueCommandEvent {
  * Vue-Delete-Message-Event
  */
 export interface VueDeleteMessageEvent extends VueCommandEvent {
-  command: 'deleteMessage';
+  command: "deleteMessage";
   sessionId: string;
   messageId: string;
 }
@@ -291,7 +301,7 @@ export interface VueDeleteMessageEvent extends VueCommandEvent {
  * Vue-UI-Action-Event
  */
 export interface VueUIActionEvent extends VueCommandEvent {
-  command: 'uiAction';
+  command: "uiAction";
   action: string;
   target?: string;
   data?: any;
@@ -304,11 +314,11 @@ export interface BridgeHealthCheckEvent extends EventPayload {
   timestamp: number;
   components: {
     [componentName: string]: {
-      status: 'healthy' | 'degraded' | 'error';
+      status: "healthy" | "degraded" | "error";
       details?: string;
     };
   };
-  overall: 'healthy' | 'degraded' | 'error';
+  overall: "healthy" | "degraded" | "error";
 }
 
 /**
@@ -359,8 +369,9 @@ export interface BridgePerformanceEvent extends EventPayload {
 /**
  * Bridge-Event-Handler-Typ
  */
-export type BridgeEventHandler<T extends keyof BridgeEventMap> = 
-  (data: BridgeEventMap[T]) => void;
+export type BridgeEventHandler<T extends keyof BridgeEventMap> = (
+  data: BridgeEventMap[T],
+) => void;
 
 /**
  * Bridge-Event-Unsubscribe-Funktion
@@ -378,10 +389,10 @@ export interface BridgeEventBus {
    * @returns Unsubscribe-Funktion
    */
   on<T extends keyof BridgeEventMap>(
-    eventName: T, 
-    handler: BridgeEventHandler<T>
+    eventName: T,
+    handler: BridgeEventHandler<T>,
   ): BridgeEventUnsubscribe;
-  
+
   /**
    * Registriert einen einmaligen Handler für ein Event
    * @param eventName Name des Events
@@ -389,30 +400,30 @@ export interface BridgeEventBus {
    * @returns Unsubscribe-Funktion
    */
   once<T extends keyof BridgeEventMap>(
-    eventName: T, 
-    handler: BridgeEventHandler<T>
+    eventName: T,
+    handler: BridgeEventHandler<T>,
   ): BridgeEventUnsubscribe;
-  
+
   /**
    * Entfernt einen Handler für ein Event
    * @param eventName Name des Events
    * @param handler Event-Handler-Funktion
    */
   off<T extends keyof BridgeEventMap>(
-    eventName: T, 
-    handler: BridgeEventHandler<T>
+    eventName: T,
+    handler: BridgeEventHandler<T>,
   ): void;
-  
+
   /**
    * Löst ein Event aus
    * @param eventName Name des Events
    * @param data Event-Daten
    */
   emit<T extends keyof BridgeEventMap>(
-    eventName: T, 
-    data: BridgeEventMap[T]
+    eventName: T,
+    data: BridgeEventMap[T],
   ): void;
-  
+
   /**
    * Entfernt alle Event-Listener
    */
@@ -424,18 +435,18 @@ export interface BridgeEventBus {
  */
 export function isValidBridgeEvent<T extends keyof BridgeEventMap>(
   _eventName: T,
-  payload: any
+  payload: any,
 ): payload is BridgeEventMap[T] {
-  if (!payload || typeof payload !== 'object') {
+  if (!payload || typeof payload !== "object") {
     return false;
   }
-  
+
   // Minimale Validierung für alle Event-Typen
-  if ('timestamp' in payload && typeof payload.timestamp !== 'number') {
+  if ("timestamp" in payload && typeof payload.timestamp !== "number") {
     return false;
   }
-  
+
   // Hier könnten spezifische Validierungen für bestimmte Event-Typen ergänzt werden
-  
+
   return true;
 }

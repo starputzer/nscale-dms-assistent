@@ -1,23 +1,23 @@
 /**
  * API Utility Types
- * 
+ *
  * Diese Datei enthält Utility-Typen speziell für die Arbeit mit APIs, HTTP-Anfragen und Antworten.
  * Sie bietet Typen für REST, GraphQL und andere API-Interaktionen.
  */
 
-import { Result } from './types';
+import { Result } from "./types";
 
 /**
  * HTTPMethod - Enum für HTTP-Methoden
  */
 export enum HTTPMethod {
-  GET = 'GET',
-  POST = 'POST',
-  PUT = 'PUT',
-  DELETE = 'DELETE',
-  PATCH = 'PATCH',
-  HEAD = 'HEAD',
-  OPTIONS = 'OPTIONS'
+  GET = "GET",
+  POST = "POST",
+  PUT = "PUT",
+  DELETE = "DELETE",
+  PATCH = "PATCH",
+  HEAD = "HEAD",
+  OPTIONS = "OPTIONS",
 }
 
 /**
@@ -54,25 +54,25 @@ export enum StatusCode {
   NOT_IMPLEMENTED = 501,
   BAD_GATEWAY = 502,
   SERVICE_UNAVAILABLE = 503,
-  GATEWAY_TIMEOUT = 504
+  GATEWAY_TIMEOUT = 504,
 }
 
 /**
  * APIErrorCode - Enum für API-spezifische Fehlercodes
  */
 export enum APIErrorCode {
-  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
-  NETWORK_ERROR = 'NETWORK_ERROR',
-  TIMEOUT = 'TIMEOUT',
-  AUTHENTICATION_FAILED = 'AUTHENTICATION_FAILED',
-  INSUFFICIENT_PERMISSIONS = 'INSUFFICIENT_PERMISSIONS',
-  INVALID_INPUT = 'INVALID_INPUT',
-  RESOURCE_NOT_FOUND = 'RESOURCE_NOT_FOUND',
-  RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED',
-  SERVER_ERROR = 'SERVER_ERROR',
-  VALIDATION_ERROR = 'VALIDATION_ERROR',
-  BUSINESS_LOGIC_ERROR = 'BUSINESS_LOGIC_ERROR',
-  SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE'
+  UNKNOWN_ERROR = "UNKNOWN_ERROR",
+  NETWORK_ERROR = "NETWORK_ERROR",
+  TIMEOUT = "TIMEOUT",
+  AUTHENTICATION_FAILED = "AUTHENTICATION_FAILED",
+  INSUFFICIENT_PERMISSIONS = "INSUFFICIENT_PERMISSIONS",
+  INVALID_INPUT = "INVALID_INPUT",
+  RESOURCE_NOT_FOUND = "RESOURCE_NOT_FOUND",
+  RATE_LIMIT_EXCEEDED = "RATE_LIMIT_EXCEEDED",
+  SERVER_ERROR = "SERVER_ERROR",
+  VALIDATION_ERROR = "VALIDATION_ERROR",
+  BUSINESS_LOGIC_ERROR = "BUSINESS_LOGIC_ERROR",
+  SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE",
 }
 
 /**
@@ -130,7 +130,7 @@ export interface PaginationParams {
   page?: number;
   pageSize?: number;
   sortBy?: string;
-  sortDirection?: 'asc' | 'desc';
+  sortDirection?: "asc" | "desc";
   search?: string;
   filters?: Record<string, any>;
 }
@@ -138,7 +138,7 @@ export interface PaginationParams {
 /**
  * SortOrder - Sortierreihenfolge für API-Anfragen
  */
-export type SortOrder = 'asc' | 'desc';
+export type SortOrder = "asc" | "desc";
 
 /**
  * SortParams - Parameter für Sortieranfragen
@@ -152,16 +152,16 @@ export interface SortParams {
  * FilterOperator - Operatoren für Filteranfragen
  */
 export enum FilterOperator {
-  EQ = 'eq',      // Equal
-  NE = 'ne',      // Not Equal
-  GT = 'gt',      // Greater Than
-  GTE = 'gte',    // Greater Than or Equal
-  LT = 'lt',      // Less Than
-  LTE = 'lte',    // Less Than or Equal
-  IN = 'in',      // In Array
-  NIN = 'nin',    // Not In Array
-  LIKE = 'like',  // String Contains
-  ILIKE = 'ilike' // Case-Insensitive String Contains
+  EQ = "eq", // Equal
+  NE = "ne", // Not Equal
+  GT = "gt", // Greater Than
+  GTE = "gte", // Greater Than or Equal
+  LT = "lt", // Less Than
+  LTE = "lte", // Less Than or Equal
+  IN = "in", // In Array
+  NIN = "nin", // Not In Array
+  LIKE = "like", // String Contains
+  ILIKE = "ilike", // Case-Insensitive String Contains
 }
 
 /**
@@ -178,7 +178,7 @@ export interface FilterCondition {
  */
 export interface FilterParams {
   conditions: FilterCondition[];
-  logic?: 'and' | 'or';
+  logic?: "and" | "or";
 }
 
 /**
@@ -192,7 +192,7 @@ export interface APIRequest {
   data?: any;
   timeout?: number;
   withCredentials?: boolean;
-  responseType?: 'json' | 'text' | 'blob' | 'arraybuffer';
+  responseType?: "json" | "text" | "blob" | "arraybuffer";
   signal?: AbortSignal;
 }
 
@@ -261,9 +261,9 @@ export interface TokenResponse {
  * Token-Typen für Auth-Flow
  */
 export enum TokenType {
-  ACCESS = 'access',
-  REFRESH = 'refresh',
-  ID = 'id'
+  ACCESS = "access",
+  REFRESH = "refresh",
+  ID = "id",
 }
 
 /**
@@ -271,18 +271,18 @@ export enum TokenType {
  */
 export type APIRequestMiddleware = (
   request: APIRequest,
-  next: (request: APIRequest) => Promise<any>
+  next: (request: APIRequest) => Promise<any>,
 ) => Promise<any>;
 
 /**
  * Cache-Policy für API-Requests
  */
 export enum CachePolicy {
-  CACHE_FIRST = 'cache-first',      // Versuche Cache, dann Netzwerk
-  NETWORK_FIRST = 'network-first',  // Versuche Netzwerk, dann Cache
-  CACHE_ONLY = 'cache-only',        // Nur Cache verwenden
-  NETWORK_ONLY = 'network-only',    // Nur Netzwerk verwenden
-  STALE_WHILE_REVALIDATE = 'stale-while-revalidate' // Cache sofort, dann aktualisieren
+  CACHE_FIRST = "cache-first", // Versuche Cache, dann Netzwerk
+  NETWORK_FIRST = "network-first", // Versuche Netzwerk, dann Cache
+  CACHE_ONLY = "cache-only", // Nur Cache verwenden
+  NETWORK_ONLY = "network-only", // Nur Netzwerk verwenden
+  STALE_WHILE_REVALIDATE = "stale-while-revalidate", // Cache sofort, dann aktualisieren
 }
 
 /**
@@ -333,7 +333,7 @@ export interface WebSocketMessage<T = any> {
  */
 export interface BatchAPIRequest {
   requests: APIRequest[];
-  executionMode?: 'parallel' | 'sequential';
+  executionMode?: "parallel" | "sequential";
 }
 
 /**
@@ -351,13 +351,13 @@ export interface BatchAPIResponse {
 export function createApiResponse<T>(
   data: T,
   success = true,
-  message?: string
+  message?: string,
 ): APIResponse<T> {
   return {
     success,
     data,
     message,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 }
 
@@ -368,12 +368,12 @@ export function createApiError(
   code: APIErrorCode | string,
   message: string,
   details?: Record<string, any>,
-  status?: number
+  status?: number,
 ): APIError {
   return {
     code,
     message,
     details,
-    status
+    status,
   };
 }

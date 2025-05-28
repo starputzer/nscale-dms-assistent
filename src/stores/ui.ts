@@ -675,7 +675,7 @@ export const useUIStore = defineStore(
         if (darkMode.value === null || darkMode.value === undefined) {
           darkMode.value = false;
         }
-        
+
         // Prüfen, ob der Benutzer bereits eine Präferenz gesetzt hat
         const savedPreference = localStorage.getItem("nscale_darkMode");
 
@@ -737,7 +737,7 @@ export const useUIStore = defineStore(
         if (darkMode.value === undefined || darkMode.value === null) {
           darkMode.value = false;
         }
-        
+
         if (!sidebar.value) {
           sidebar.value = {
             isOpen: true,
@@ -746,7 +746,7 @@ export const useUIStore = defineStore(
             collapsed: false,
           };
         }
-        
+
         if (!layoutConfig.value) {
           layoutConfig.value = {
             contentMaxWidth: "1200px",
@@ -761,7 +761,7 @@ export const useUIStore = defineStore(
             density: "comfortable",
           };
         }
-        
+
         migrateFromLegacyStorage();
         const cleanupDarkMode = initDarkMode();
         const cleanupLayout = setupResponsiveLayout();
@@ -966,19 +966,13 @@ export const useUIStore = defineStore(
         {
           // UI-Einstellungen im localStorage speichern
           storage: localStorage,
-          paths: [
-            "darkMode",
-            "viewMode",
-            "sidebar",
-            "layoutConfig",
-            "version",
-          ],
+          paths: ["darkMode", "viewMode", "sidebar", "layoutConfig", "version"],
           // Fehlerbehandlung bei der Hydration
           beforeRestore: (context) => {
-            console.log('UI Store Hydration beginnt...');
+            console.log("UI Store Hydration beginnt...");
           },
           afterRestore: (context) => {
-            console.log('UI Store Hydration abgeschlossen');
+            console.log("UI Store Hydration abgeschlossen");
             // Sicherstellen, dass alle Werte initialisiert sind
             if (context.store.darkMode === undefined) {
               context.store.darkMode = false;

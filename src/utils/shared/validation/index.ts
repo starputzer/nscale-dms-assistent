@@ -10,7 +10,7 @@
  * @returns True if the string is not empty, false otherwise
  */
 export function isNotEmpty(value: string): boolean {
-  return value !== null && value !== undefined && value.trim() !== '';
+  return value !== null && value !== undefined && value.trim() !== "";
 }
 
 /**
@@ -65,7 +65,7 @@ export function isStrongPassword(password: string): boolean {
  * @returns True if the value is a number, false otherwise
  */
 export function isNumber(value: any): boolean {
-  return typeof value === 'number' && !isNaN(value);
+  return typeof value === "number" && !isNaN(value);
 }
 
 /**

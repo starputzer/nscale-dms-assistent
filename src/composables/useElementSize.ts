@@ -7,7 +7,9 @@ import type { UseElementSizeReturn } from "../utils/composableTypes";
  * @param elementRef - Vue-Ref des zu beobachtenden Elements
  * @returns {UseElementSizeReturn} Objekt mit reaktiven width und height Eigenschaften
  */
-export function useElementSize(elementRef: Ref<HTMLElement | null>): UseElementSizeReturn {
+export function useElementSize(
+  elementRef: Ref<HTMLElement | null>,
+): UseElementSizeReturn {
   const width = ref(0);
   const height = ref(0);
   let resizeObserver: ResizeObserver | null = null;

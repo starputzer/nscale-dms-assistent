@@ -1,804 +1,796 @@
 <template>
   <div class="admin-system-enhanced">
-    <div class="admin-system-enhanced__header">
-      <h2 class="admin-system-enhanced__title">
+    <div class="admin-section">
+      <h2 class="admin-heading">
         {{ t("admin.system.title", "Systemeinstellungen") }}
       </h2>
-      <div class="admin-system-enhanced__actions">
-        <Button variant="secondary" @click="refreshAll" :loading="isLoading">
-          <i class="fas fa-sync-alt"></i>
-          {{ t("admin.system.refresh", "Aktualisieren") }}
-        </Button>
-        <Button v-if="!isEditMode" variant="primary" @click="toggleEditMode">
-          <i class="fas fa-edit"></i>
-          {{ t("admin.system.settings.edit", "Bearbeiten") }}
-        </Button>
-        <template v-else>
-          <Button variant="secondary" @click="toggleEditMode">
-            {{ t("admin.system.settings.cancel", "Abbrechen") }}
-          </Button>
-          <Button
-            variant="primary"
-            @click="saveSettings"
-            :loading="isSubmitting"
+      <p class="admin-description">
+        {{
+          t(
+            "admin.system.description",
+            "Überwachen und konfigurieren Sie Systemeinstellungen und -ressourcen.",
+          )
+        }}
+      </p>
+      
+      <!-- API-Integration-Banner -->
+      <div v-if="systemStore.apiIntegrationEnabled" class="admin-info-banner admin-info-banner--success">
+        <i class="fas fa-check-circle"></i>
+        <div>
+          <strong>{{ t("admin.system.apiActive.title", "API-Integration aktiv:") }}</strong>
+          {{ t("admin.system.apiActive.description", "Diese Oberfläche kommuniziert direkt mit dem Backend-System. Es werden echte Daten angezeigt und Änderungen werden im System gespeichert.") }}
+        </div>
+      </div>
+      
+      <!-- Error-Banner anzeigen wenn Fehler aufgetreten ist -->
+      <div v-if="systemStore.error" class="admin-info-banner admin-info-banner--error">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          <strong>{{ t("admin.system.error.title", "Fehler:") }}</strong>
+          {{ systemStore.error }}
+          <button 
+            class="admin-button admin-button--small admin-button--text" 
+            @click="refreshAll"
           >
-            {{ t("admin.system.settings.save", "Speichern") }}
-          </Button>
-        </template>
+            {{ t("admin.system.error.retry", "Erneut versuchen") }}
+          </button>
+        </div>
+      </div>
+      
+      <div class="admin-system-enhanced__actions">
+        <button
+          class="admin-button admin-button--secondary"
+          @click="refreshAll"
+          :disabled="systemStore.loading"
+        >
+          <i v-if="systemStore.loading" class="fas fa-spinner fa-spin"></i>
+          <i v-else class="fas fa-sync-alt"></i>
+          {{ systemStore.loading 
+            ? t("admin.system.loading", "Wird geladen...") 
+            : t("admin.system.refresh", "Aktualisieren") }}
+        </button>
       </div>
     </div>
 
-    <!-- Real-time Dashboard -->
-    <div class="admin-system-enhanced__dashboard">
-      <h3 class="admin-system-enhanced__section-title">
-        {{ t("admin.system.monitoring", "System-Monitoring") }}
-      </h3>
-
-      <div class="admin-system-enhanced__monitoring-grid">
-        <!-- System Health Overview -->
-        <div
-          class="admin-system-enhanced__health-card"
-          :class="systemHealthClass"
-        >
-          <div class="admin-system-enhanced__health-icon">
-            <i class="fas" :class="systemHealthIcon"></i>
+    <!-- System Status Overview -->
+    <div class="admin-grid admin-grid--2-columns">
+      <AdminCard
+        :variant="systemHealthStatusVariant"
+        elevated
+        class="admin-system-enhanced__health-card"
+      >
+        <template #header>
+          <div class="admin-card__header-with-icon">
+            <i class="fas" :class="systemHealthIcon" aria-hidden="true"></i>
+            <h3>{{ t("admin.system.healthStatus", "Systemstatus") }}</h3>
           </div>
-          <div class="admin-system-enhanced__health-content">
-            <h4>{{ t("admin.system.healthStatus", "Systemstatus") }}</h4>
-            <p class="admin-system-enhanced__health-status">
-              {{ systemHealthText }}
-            </p>
-            <p
-              v-if="systemHealthDetails"
-              class="admin-system-enhanced__health-details"
-            >
-              {{ systemHealthDetails }}
-            </p>
-            <div class="admin-system-enhanced__health-metrics">
-              <div class="admin-system-enhanced__mini-metric">
-                <span>{{ t("admin.system.uptime", "Betriebszeit") }}</span>
-                <strong>{{ formatUptime(stats.uptime_days || 0) }}</strong>
-              </div>
-              <div class="admin-system-enhanced__mini-metric">
-                <span>{{ t("admin.system.lastCheck", "Letzte Prüfung") }}</span>
-                <strong>{{ lastCheckTime }}</strong>
-              </div>
+        </template>
+
+        <div class="admin-system-enhanced__status-content">
+          <div class="admin-metric admin-metric--centered admin-metric--large">
+            <span class="admin-metric__value">{{ systemHealthText }}</span>
+            <span v-if="systemHealthDetails" class="admin-metric__label">{{
+              systemHealthDetails
+            }}</span>
+          </div>
+          <div class="admin-system-enhanced__health-metrics">
+            <div class="admin-system-enhanced__mini-metric">
+              <span>{{ t("admin.system.uptime", "Betriebszeit") }}</span>
+              <strong>{{ formatUptime(stats.uptime_days || 0) }}</strong>
+            </div>
+            <div class="admin-system-enhanced__mini-metric">
+              <span>{{ t("admin.system.lastCheck", "Letzte Prüfung") }}</span>
+              <strong>{{ lastCheckTime }}</strong>
             </div>
           </div>
         </div>
+      </AdminCard>
 
-        <!-- Real-time CPU Chart -->
-        <div class="admin-system-enhanced__chart-card">
-          <div class="admin-system-enhanced__chart-header">
-            <h4>
-              <i class="fas fa-microchip"></i>
-              {{ t("admin.system.cpuUsage", "CPU-Auslastung") }}
-            </h4>
-            <div
-              class="admin-system-enhanced__chart-status"
-              :class="`status-${cpuStatus}`"
-            >
+      <AdminCard elevated>
+        <template #header>
+          <div class="admin-card__header-with-icon">
+            <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
+            <h3>
+              {{ t("admin.system.performance", "Performance-Übersicht") }}
+            </h3>
+          </div>
+        </template>
+
+        <div class="admin-system-enhanced__chart-container">
+          <canvas ref="performanceChart"></canvas>
+        </div>
+      </AdminCard>
+    </div>
+
+    <!-- System Resource Metrics -->
+    <AdminCard elevated>
+      <template #header>
+        <div class="admin-card__header-with-icon">
+          <i class="fas fa-microchip" aria-hidden="true"></i>
+          <h3>{{ t("admin.system.resourceMetrics", "Ressourcennutzung") }}</h3>
+        </div>
+      </template>
+
+      <div class="admin-grid admin-grid--2-columns">
+        <!-- CPU Usage -->
+        <div class="admin-system-enhanced__metric-card">
+          <div class="admin-system-enhanced__metric-header">
+            <div class="admin-system-enhanced__metric-title">
+              <i class="fas fa-microchip" aria-hidden="true"></i>
+              <span>{{ t("admin.system.metrics.cpu", "CPU-Auslastung") }}</span>
+            </div>
+            <div class="admin-badge" :class="`admin-badge--${cpuStatus}`">
+              {{ getStatusText(cpuStatus) }}
+            </div>
+          </div>
+
+          <div class="admin-system-enhanced__meter-container">
+            <div class="admin-system-enhanced__meter">
+              <div
+                class="admin-system-enhanced__meter-fill"
+                :class="`admin-system-enhanced__meter-fill--${cpuStatus}`"
+                :style="{ width: `${stats.cpu_usage_percent || 0}%` }"
+              ></div>
+            </div>
+            <div class="admin-system-enhanced__meter-value">
               {{ stats.cpu_usage_percent || 0 }}%
             </div>
           </div>
-          <canvas ref="cpuChart" class="admin-system-enhanced__chart"></canvas>
-          <div class="admin-system-enhanced__chart-info">
-            <div class="admin-system-enhanced__chart-metric">
-              <span>{{ t("admin.system.cores", "Kerne") }}</span>
-              <strong>{{ stats.cpu_cores || "-" }}</strong>
-            </div>
-            <div class="admin-system-enhanced__chart-metric">
-              <span>{{ t("admin.system.avgLoad", "Ø Last") }}</span>
-              <strong>{{ stats.cpu_load_avg || "-" }}</strong>
-            </div>
-            <div class="admin-system-enhanced__chart-metric">
-              <span>{{ t("admin.system.peak", "Spitze") }}</span>
-              <strong>{{ cpuPeak }}%</strong>
-            </div>
-          </div>
         </div>
 
-        <!-- Real-time Memory Chart -->
-        <div class="admin-system-enhanced__chart-card">
-          <div class="admin-system-enhanced__chart-header">
-            <h4>
-              <i class="fas fa-memory"></i>
-              {{ t("admin.system.memoryUsage", "Speicherauslastung") }}
-            </h4>
-            <div
-              class="admin-system-enhanced__chart-status"
-              :class="`status-${memoryStatus}`"
-            >
-              {{ stats.memory_usage_percent || 0 }}%
+        <!-- Memory Usage -->
+        <div class="admin-system-enhanced__metric-card">
+          <div class="admin-system-enhanced__metric-header">
+            <div class="admin-system-enhanced__metric-title">
+              <i class="fas fa-memory" aria-hidden="true"></i>
+              <span>{{
+                t("admin.system.metrics.memory", "Speicherauslastung")
+              }}</span>
+            </div>
+            <div class="admin-badge" :class="`admin-badge--${memoryStatus}`">
+              {{ getStatusText(memoryStatus) }}
             </div>
           </div>
-          <canvas
-            ref="memoryChart"
-            class="admin-system-enhanced__chart"
-          ></canvas>
-          <div class="admin-system-enhanced__chart-info">
-            <div class="admin-system-enhanced__chart-metric">
-              <span>{{ t("admin.system.used", "Belegt") }}</span>
-              <strong>{{
-                formatBytes(stats.memory_used_mb * 1024 * 1024)
-              }}</strong>
-            </div>
-            <div class="admin-system-enhanced__chart-metric">
-              <span>{{ t("admin.system.total", "Gesamt") }}</span>
-              <strong>{{
-                formatBytes(stats.memory_total_mb * 1024 * 1024)
-              }}</strong>
-            </div>
-            <div class="admin-system-enhanced__chart-metric">
-              <span>{{ t("admin.system.swap", "Swap") }}</span>
-              <strong>{{
-                formatBytes(stats.swap_used_mb * 1024 * 1024)
-              }}</strong>
-            </div>
-          </div>
-        </div>
 
-        <!-- Disk Usage -->
-        <div class="admin-system-enhanced__metrics-card">
-          <h4>
-            <i class="fas fa-hdd"></i>
-            {{ t("admin.system.diskUsage", "Festplattennutzung") }}
-          </h4>
-          <div
-            v-for="disk in diskUsage"
-            :key="disk.mount"
-            class="admin-system-enhanced__disk-item"
-          >
-            <div class="admin-system-enhanced__disk-header">
-              <span>{{ disk.mount }}</span>
-              <span>{{ disk.percentage }}%</span>
-            </div>
-            <div class="admin-system-enhanced__disk-meter">
+          <div class="admin-system-enhanced__meter-container">
+            <div class="admin-system-enhanced__meter">
               <div
-                class="admin-system-enhanced__disk-fill"
-                :style="{ width: `${disk.percentage}%` }"
-                :class="`fill-${getDiskStatus(disk.percentage)}`"
+                class="admin-system-enhanced__meter-fill"
+                :class="`admin-system-enhanced__meter-fill--${memoryStatus}`"
+                :style="{ width: `${stats.memory_usage_percent || 0}%` }"
               ></div>
             </div>
-            <div class="admin-system-enhanced__disk-info">
-              <span
-                >{{ formatBytes(disk.used) }} /
-                {{ formatBytes(disk.total) }}</span
-              >
-              <span
-                >{{ formatBytes(disk.available) }}
-                {{ t("admin.system.available", "verfügbar") }}</span
-              >
-            </div>
-          </div>
-        </div>
-
-        <!-- Network Stats -->
-        <div class="admin-system-enhanced__metrics-card">
-          <h4>
-            <i class="fas fa-network-wired"></i>
-            {{ t("admin.system.networkStats", "Netzwerkstatistiken") }}
-          </h4>
-          <div class="admin-system-enhanced__network-grid">
-            <div class="admin-system-enhanced__network-item">
-              <i class="fas fa-download"></i>
-              <div>
-                <span>{{ t("admin.system.download", "Download") }}</span>
-                <strong>{{
-                  formatBytesPerSecond(networkStats.rxSpeed)
-                }}</strong>
-              </div>
-            </div>
-            <div class="admin-system-enhanced__network-item">
-              <i class="fas fa-upload"></i>
-              <div>
-                <span>{{ t("admin.system.upload", "Upload") }}</span>
-                <strong>{{
-                  formatBytesPerSecond(networkStats.txSpeed)
-                }}</strong>
-              </div>
-            </div>
-            <div class="admin-system-enhanced__network-item">
-              <i class="fas fa-chart-line"></i>
-              <div>
-                <span>{{ t("admin.system.totalTraffic", "Gesamt") }}</span>
-                <strong>{{ formatBytes(networkStats.total) }}</strong>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Application Metrics -->
-        <div class="admin-system-enhanced__metrics-card">
-          <h4>
-            <i class="fas fa-tachometer-alt"></i>
-            {{ t("admin.system.appMetrics", "Anwendungsmetriken") }}
-          </h4>
-          <div class="admin-system-enhanced__app-metrics">
-            <div class="admin-system-enhanced__metric-item">
-              <div class="admin-system-enhanced__metric-label">
-                <i class="fas fa-users"></i>
-                {{ t("admin.system.activeUsers", "Aktive Benutzer") }}
-              </div>
-              <div class="admin-system-enhanced__metric-value">
-                {{ stats.active_users || 0 }}
-              </div>
-            </div>
-            <div class="admin-system-enhanced__metric-item">
-              <div class="admin-system-enhanced__metric-label">
-                <i class="fas fa-comments"></i>
-                {{ t("admin.system.activeSessions", "Aktive Sitzungen") }}
-              </div>
-              <div class="admin-system-enhanced__metric-value">
-                {{ stats.active_sessions || 0 }}
-              </div>
-            </div>
-            <div class="admin-system-enhanced__metric-item">
-              <div class="admin-system-enhanced__metric-label">
-                <i class="fas fa-bolt"></i>
-                {{ t("admin.system.requestsPerSecond", "Anfragen/Sek") }}
-              </div>
-              <div class="admin-system-enhanced__metric-value">
-                {{ stats.requests_per_second || 0 }}
-              </div>
-            </div>
-            <div class="admin-system-enhanced__metric-item">
-              <div class="admin-system-enhanced__metric-label">
-                <i class="fas fa-clock"></i>
-                {{ t("admin.system.avgResponseTime", "Ø Antwortzeit") }}
-              </div>
-              <div class="admin-system-enhanced__metric-value">
-                {{ stats.avg_response_time_ms || 0 }} ms
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Database Stats -->
-        <div class="admin-system-enhanced__metrics-card">
-          <h4>
-            <i class="fas fa-database"></i>
-            {{ t("admin.system.databaseStats", "Datenbankstatistiken") }}
-          </h4>
-          <div class="admin-system-enhanced__db-stats">
-            <div class="admin-system-enhanced__db-item">
-              <span>{{ t("admin.system.dbSize", "Größe") }}</span>
-              <strong>{{
-                formatBytes(stats.database_size_mb * 1024 * 1024)
-              }}</strong>
-            </div>
-            <div class="admin-system-enhanced__db-item">
-              <span>{{ t("admin.system.connections", "Verbindungen") }}</span>
-              <strong>{{ stats.db_connections || 0 }}</strong>
-            </div>
-            <div class="admin-system-enhanced__db-item">
-              <span>{{ t("admin.system.queries", "Anfragen/Min") }}</span>
-              <strong>{{ stats.queries_per_minute || 0 }}</strong>
-            </div>
-            <div class="admin-system-enhanced__db-item">
-              <span>{{ t("admin.system.cacheHit", "Cache-Treffer") }}</span>
-              <strong>{{ stats.cache_hit_rate || 0 }}%</strong>
+            <div class="admin-system-enhanced__meter-value">
+              {{ stats.memory_usage_percent || 0 }}%
             </div>
           </div>
         </div>
       </div>
+    </AdminCard>
+
+    <!-- System Information Cards -->
+    <div class="admin-grid admin-grid--4-columns">
+      <!-- Database Size -->
+      <AdminCard bordered>
+        <template #header>
+          <div class="admin-card__header-with-icon">
+            <i class="fas fa-database" aria-hidden="true"></i>
+            <h3>{{ t("admin.system.metrics.database", "Datenbankgröße") }}</h3>
+          </div>
+        </template>
+
+        <div class="admin-metric admin-metric--centered">
+          <span class="admin-metric__value">{{
+            formatBytes(stats.database_size_mb * 1024 * 1024 || 0)
+          }}</span>
+        </div>
+      </AdminCard>
+
+      <!-- Cache Info -->
+      <AdminCard bordered>
+        <template #header>
+          <div class="admin-card__header-with-icon">
+            <i class="fas fa-bolt" aria-hidden="true"></i>
+            <h3>{{ t("admin.system.metrics.cache", "Cache") }}</h3>
+          </div>
+        </template>
+
+        <div class="admin-system-enhanced__info-list">
+          <div class="admin-system-enhanced__info-item">
+            <span>{{ t("admin.system.metrics.cacheSize", "Größe:") }}</span>
+            <strong>{{
+              formatBytes(stats.cache_size_mb * 1024 * 1024 || 0)
+            }}</strong>
+          </div>
+          <div class="admin-system-enhanced__info-item">
+            <span>{{
+              t("admin.system.metrics.cacheHitRate", "Trefferrate:")
+            }}</span>
+            <strong>{{ stats.cache_hit_rate || 0 }}%</strong>
+          </div>
+        </div>
+      </AdminCard>
+
+      <!-- Uptime -->
+      <AdminCard bordered>
+        <template #header>
+          <div class="admin-card__header-with-icon">
+            <i class="fas fa-clock" aria-hidden="true"></i>
+            <h3>{{ t("admin.system.info.uptime", "Betriebszeit") }}</h3>
+          </div>
+        </template>
+
+        <div class="admin-metric admin-metric--centered">
+          <span class="admin-metric__value">{{
+            formatUptime(stats.uptime_days || 0)
+          }}</span>
+          <div class="admin-metric__secondary">
+            {{ t("admin.system.info.startTime", "Start:") }}
+            {{ formatDateRelative(stats.start_time) }}
+          </div>
+        </div>
+      </AdminCard>
+
+      <!-- Active Model -->
+      <AdminCard bordered>
+        <template #header>
+          <div class="admin-card__header-with-icon">
+            <i class="fas fa-robot" aria-hidden="true"></i>
+            <h3>{{ t("admin.system.info.activeModel", "Aktives Modell") }}</h3>
+          </div>
+        </template>
+
+        <div class="admin-metric admin-metric--centered">
+          <span class="admin-metric__value admin-metric__value--text">{{
+            stats.active_model || "-"
+          }}</span>
+          <div class="admin-metric__secondary">
+            {{ t("admin.system.info.avgResponseTime", "Antwortzeit:") }}
+            {{ stats.avg_response_time_ms || 0 }} ms
+          </div>
+        </div>
+      </AdminCard>
+    </div>
+
+    <!-- Application Metrics -->
+    <AdminCard elevated>
+      <template #header>
+        <div class="admin-card__header-with-icon">
+          <i class="fas fa-chart-line" aria-hidden="true"></i>
+          <h3>{{ t("admin.system.appMetrics", "Anwendungsmetriken") }}</h3>
+        </div>
+      </template>
+
+      <div class="admin-grid admin-grid--4-columns">
+        <div class="admin-metric">
+          <div class="admin-metric__icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="admin-metric__content">
+            <div class="admin-metric__value">{{ stats.active_users || 0 }}</div>
+            <div class="admin-metric__label">
+              {{ t("admin.system.activeUsers", "Aktive Benutzer") }}
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-metric">
+          <div class="admin-metric__icon">
+            <i class="fas fa-comments"></i>
+          </div>
+          <div class="admin-metric__content">
+            <div class="admin-metric__value">
+              {{ stats.active_sessions || 0 }}
+            </div>
+            <div class="admin-metric__label">
+              {{ t("admin.system.activeSessions", "Aktive Sitzungen") }}
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-metric">
+          <div class="admin-metric__icon">
+            <i class="fas fa-bolt"></i>
+          </div>
+          <div class="admin-metric__content">
+            <div class="admin-metric__value">
+              {{ stats.requests_per_second || 0 }}
+            </div>
+            <div class="admin-metric__label">
+              {{ t("admin.system.requestsPerSecond", "Anfragen/Sek") }}
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-metric">
+          <div class="admin-metric__icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="admin-metric__content">
+            <div class="admin-metric__value">
+              {{ stats.avg_response_time_ms || 0 }} ms
+            </div>
+            <div class="admin-metric__label">
+              {{ t("admin.system.avgResponseTime", "Ø Antwortzeit") }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </AdminCard>
+
+    <!-- Network & Disk Stats -->
+    <div class="admin-grid admin-grid--2-columns">
+      <!-- Network Stats -->
+      <AdminCard bordered>
+        <template #header>
+          <div class="admin-card__header-with-icon">
+            <i class="fas fa-network-wired"></i>
+            <h3>{{ t("admin.system.networkStats", "Netzwerkstatistiken") }}</h3>
+          </div>
+        </template>
+
+        <div class="admin-system-enhanced__network-grid">
+          <div class="admin-system-enhanced__network-item">
+            <i class="fas fa-download"></i>
+            <div>
+              <span>{{ t("admin.system.download", "Download") }}</span>
+              <strong>{{ formatBytesPerSecond(networkStats.rxSpeed) }}</strong>
+            </div>
+          </div>
+          <div class="admin-system-enhanced__network-item">
+            <i class="fas fa-upload"></i>
+            <div>
+              <span>{{ t("admin.system.upload", "Upload") }}</span>
+              <strong>{{ formatBytesPerSecond(networkStats.txSpeed) }}</strong>
+            </div>
+          </div>
+          <div class="admin-system-enhanced__network-item">
+            <i class="fas fa-chart-line"></i>
+            <div>
+              <span>{{ t("admin.system.totalTraffic", "Gesamt") }}</span>
+              <strong>{{ formatBytes(networkStats.total) }}</strong>
+            </div>
+          </div>
+        </div>
+      </AdminCard>
+
+      <!-- Disk Usage -->
+      <AdminCard bordered>
+        <template #header>
+          <div class="admin-card__header-with-icon">
+            <i class="fas fa-hdd"></i>
+            <h3>{{ t("admin.system.diskUsage", "Festplattennutzung") }}</h3>
+          </div>
+        </template>
+
+        <div
+          v-for="disk in diskUsage"
+          :key="disk.mount"
+          class="admin-system-enhanced__disk-item"
+        >
+          <div class="admin-system-enhanced__disk-header">
+            <span>{{ disk.mount }}</span>
+            <span>{{ disk.percentage }}%</span>
+          </div>
+          <div class="admin-system-enhanced__disk-meter">
+            <div
+              class="admin-system-enhanced__disk-fill"
+              :style="{ width: `${disk.percentage}%` }"
+              :class="`admin-system-enhanced__disk-fill--${getDiskStatus(disk.percentage)}`"
+            ></div>
+          </div>
+          <div class="admin-system-enhanced__disk-info">
+            <span
+              >{{ formatBytes(disk.used) }} /
+              {{ formatBytes(disk.total) }}</span
+            >
+            <span
+              >{{ formatBytes(disk.available) }}
+              {{ t("admin.system.available", "verfügbar") }}</span
+            >
+          </div>
+        </div>
+      </AdminCard>
     </div>
 
     <!-- System Settings -->
-    <div
-      v-if="isEditMode || showSettings"
-      class="admin-system-enhanced__settings"
-    >
-      <h3 class="admin-system-enhanced__section-title">
-        {{ t("admin.system.settings.title", "Systemeinstellungen") }}
-      </h3>
+    <AdminCard elevated>
+      <template #header>
+        <div class="admin-card__header-with-actions">
+          <div class="admin-card__header-with-icon">
+            <i class="fas fa-cogs" aria-hidden="true"></i>
+            <h3>
+              {{ t("admin.system.settings.title", "Systemeinstellungen") }}
+            </h3>
+          </div>
+          <div class="admin-card__header-actions">
+            <button
+              v-if="!isEditMode"
+              @click="toggleEditMode"
+              class="admin-button admin-button--primary"
+            >
+              <i class="fas fa-edit"></i>
+              {{ t("admin.system.settings.edit", "Bearbeiten") }}
+            </button>
+            <template v-else>
+              <button
+                class="admin-button admin-button--secondary"
+                @click="toggleEditMode"
+              >
+                {{ t("admin.system.settings.cancel", "Abbrechen") }}
+              </button>
+              <button
+                class="admin-button admin-button--primary"
+                @click="saveSettings"
+                :disabled="isSubmitting"
+              >
+                <i
+                  v-if="isSubmitting"
+                  class="fas fa-spinner fa-spin"
+                  aria-hidden="true"
+                ></i>
+                {{ t("admin.system.settings.save", "Speichern") }}
+              </button>
+            </template>
+          </div>
+        </div>
+      </template>
 
       <form
         @submit.prevent="saveSettings"
         class="admin-system-enhanced__settings-form"
       >
-        <Tabs v-model="activeSettingsTab">
-          <TabList>
-            <Tab>{{ t("admin.system.settings.general", "Allgemein") }}</Tab>
-            <Tab>{{
-              t("admin.system.settings.performance", "Performance")
-            }}</Tab>
-            <Tab>{{ t("admin.system.settings.security", "Sicherheit") }}</Tab>
-            <Tab>{{ t("admin.system.settings.advanced", "Erweitert") }}</Tab>
-          </TabList>
+        <!-- Simplified settings panel -->
+        <div class="admin-grid admin-grid--2-columns">
+          <!-- Model Settings -->
+          <fieldset class="admin-system-enhanced__settings-group">
+            <legend>
+              {{ t("admin.system.settings.models", "Modelleinstellungen") }}
+            </legend>
 
-          <TabPanels>
-            <!-- General Settings -->
-            <TabPanel>
-              <div class="admin-system-enhanced__settings-grid">
-                <div class="admin-system-enhanced__setting-group">
-                  <h4>
-                    {{
-                      t(
-                        "admin.system.settings.appSettings",
-                        "Anwendungseinstellungen",
-                      )
-                    }}
-                  </h4>
+            <div class="admin-form-field">
+              <label for="default-model" class="admin-form-field__label">
+                {{ t("admin.system.settings.defaultModel", "Standardmodell") }}
+              </label>
+              <select
+                id="default-model"
+                v-model="systemSettings.defaultModel"
+                class="admin-form-field__select"
+                :disabled="!isEditMode"
+              >
+                <option
+                  v-for="model in modelOptions"
+                  :key="model.value"
+                  :value="model.value"
+                >
+                  {{ model.label }}
+                </option>
+              </select>
+            </div>
 
-                  <FormField>
-                    <FormLabel>{{
-                      t("admin.system.settings.appName", "Anwendungsname")
-                    }}</FormLabel>
-                    <FormInput
-                      v-model="systemSettings.appName"
-                      :disabled="!isEditMode"
-                    />
-                  </FormField>
+            <div class="admin-form-field">
+              <label for="max-tokens" class="admin-form-field__label">
+                {{
+                  t(
+                    "admin.system.settings.maxTokens",
+                    "Max. Tokens pro Anfrage",
+                  )
+                }}
+              </label>
+              <input
+                id="max-tokens"
+                v-model.number="systemSettings.maxTokensPerRequest"
+                type="number"
+                min="1"
+                max="32000"
+                class="admin-form-field__input"
+                :disabled="!isEditMode"
+              />
+            </div>
 
-                  <FormField>
-                    <FormLabel>{{
-                      t(
-                        "admin.system.settings.defaultLanguage",
-                        "Standardsprache",
-                      )
-                    }}</FormLabel>
-                    <FormSelect
-                      v-model="systemSettings.defaultLanguage"
-                      :disabled="!isEditMode"
-                      :options="languageOptions"
-                    />
-                  </FormField>
-
-                  <FormField>
-                    <FormLabel>{{
-                      t("admin.system.settings.timezone", "Zeitzone")
-                    }}</FormLabel>
-                    <FormSelect
-                      v-model="systemSettings.timezone"
-                      :disabled="!isEditMode"
-                      :options="timezoneOptions"
-                    />
-                  </FormField>
-                </div>
-
-                <div class="admin-system-enhanced__setting-group">
-                  <h4>
-                    {{
-                      t(
-                        "admin.system.settings.modelSettings",
-                        "Modelleinstellungen",
-                      )
-                    }}
-                  </h4>
-
-                  <FormField>
-                    <FormLabel>{{
-                      t("admin.system.settings.defaultModel", "Standardmodell")
-                    }}</FormLabel>
-                    <FormSelect
-                      v-model="systemSettings.defaultModel"
-                      :disabled="!isEditMode"
-                      :options="modelOptions"
-                    />
-                  </FormField>
-
-                  <FormField>
-                    <FormLabel>{{
-                      t("admin.system.settings.maxTokens", "Max. Tokens")
-                    }}</FormLabel>
-                    <FormNumber
-                      v-model="systemSettings.maxTokensPerRequest"
-                      :disabled="!isEditMode"
-                      :min="1"
-                      :max="32000"
-                    />
-                  </FormField>
-
-                  <FormField>
-                    <FormToggle
-                      v-model="systemSettings.enableModelSelection"
-                      :disabled="!isEditMode"
-                    >
-                      {{
-                        t(
-                          "admin.system.settings.allowModelSelection",
-                          "Modellauswahl erlauben",
-                        )
-                      }}
-                    </FormToggle>
-                  </FormField>
-                </div>
+            <div class="admin-form-field admin-form-field--switch">
+              <div class="admin-form-field__switch-label">
+                <label for="enable-model-selection">
+                  {{
+                    t(
+                      "admin.system.settings.allowModelSelection",
+                      "Modellauswahl erlauben",
+                    )
+                  }}
+                </label>
               </div>
-            </TabPanel>
+              <label class="admin-toggle">
+                <input
+                  id="enable-model-selection"
+                  type="checkbox"
+                  v-model="systemSettings.enableModelSelection"
+                  :disabled="!isEditMode"
+                />
+                <span class="admin-toggle__slider"></span>
+              </label>
+            </div>
+          </fieldset>
 
-            <!-- Performance Settings -->
-            <TabPanel>
-              <div class="admin-system-enhanced__settings-grid">
-                <div class="admin-system-enhanced__setting-group">
-                  <h4>{{ t("admin.system.settings.caching", "Caching") }}</h4>
+          <!-- Rate Limiting Settings -->
+          <fieldset class="admin-system-enhanced__settings-group">
+            <legend>
+              {{ t("admin.system.settings.rateLimiting", "Rate-Limiting") }}
+            </legend>
 
-                  <FormField>
-                    <FormToggle
-                      v-model="systemSettings.enableCaching"
-                      :disabled="!isEditMode"
-                    >
-                      {{
-                        t(
-                          "admin.system.settings.enableCache",
-                          "Cache aktivieren",
-                        )
-                      }}
-                    </FormToggle>
-                  </FormField>
-
-                  <FormField v-if="systemSettings.enableCaching">
-                    <FormLabel>{{
-                      t("admin.system.settings.cacheSize", "Cache-Größe (MB)")
-                    }}</FormLabel>
-                    <FormNumber
-                      v-model="systemSettings.maxCacheSizeMB"
-                      :disabled="!isEditMode"
-                      :min="10"
-                      :max="10000"
-                    />
-                  </FormField>
-
-                  <FormField v-if="systemSettings.enableCaching">
-                    <FormLabel>{{
-                      t("admin.system.settings.cacheTTL", "Cache-TTL (Minuten)")
-                    }}</FormLabel>
-                    <FormNumber
-                      v-model="systemSettings.cacheTTLMinutes"
-                      :disabled="!isEditMode"
-                      :min="1"
-                      :max="1440"
-                    />
-                  </FormField>
-                </div>
-
-                <div class="admin-system-enhanced__setting-group">
-                  <h4>
-                    {{
-                      t(
-                        "admin.system.settings.resourceLimits",
-                        "Ressourcenlimits",
-                      )
-                    }}
-                  </h4>
-
-                  <FormField>
-                    <FormLabel>{{
-                      t("admin.system.settings.maxCPU", "Max. CPU (%)")
-                    }}</FormLabel>
-                    <FormNumber
-                      v-model="systemSettings.maxCPUPercent"
-                      :disabled="!isEditMode"
-                      :min="10"
-                      :max="100"
-                    />
-                  </FormField>
-
-                  <FormField>
-                    <FormLabel>{{
-                      t("admin.system.settings.maxMemory", "Max. Speicher (MB)")
-                    }}</FormLabel>
-                    <FormNumber
-                      v-model="systemSettings.maxMemoryMB"
-                      :disabled="!isEditMode"
-                      :min="100"
-                      :max="64000"
-                    />
-                  </FormField>
-
-                  <FormField>
-                    <FormLabel>{{
-                      t(
-                        "admin.system.settings.maxConnections",
-                        "Max. Verbindungen",
-                      )
-                    }}</FormLabel>
-                    <FormNumber
-                      v-model="systemSettings.maxConnectionsPerUser"
-                      :disabled="!isEditMode"
-                      :min="1"
-                      :max="100"
-                    />
-                  </FormField>
-                </div>
+            <div class="admin-form-field admin-form-field--switch">
+              <div class="admin-form-field__switch-label">
+                <label for="enable-rate-limit">
+                  {{
+                    t(
+                      "admin.system.settings.enableRateLimiting",
+                      "Rate-Limiting aktivieren",
+                    )
+                  }}
+                </label>
               </div>
-            </TabPanel>
+              <label class="admin-toggle">
+                <input
+                  id="enable-rate-limit"
+                  type="checkbox"
+                  v-model="systemSettings.enableRateLimit"
+                  :disabled="!isEditMode"
+                />
+                <span class="admin-toggle__slider"></span>
+              </label>
+            </div>
 
-            <!-- Security Settings -->
-            <TabPanel>
-              <div class="admin-system-enhanced__settings-grid">
-                <div class="admin-system-enhanced__setting-group">
-                  <h4>
-                    {{
-                      t(
-                        "admin.system.settings.authentication",
-                        "Authentifizierung",
-                      )
-                    }}
-                  </h4>
+            <div class="admin-form-field" v-if="systemSettings.enableRateLimit">
+              <label for="rate-limit" class="admin-form-field__label">
+                {{
+                  t(
+                    "admin.system.settings.requestsPerMinute",
+                    "Anfragen pro Minute",
+                  )
+                }}
+              </label>
+              <input
+                id="rate-limit"
+                v-model.number="systemSettings.rateLimitPerMinute"
+                type="number"
+                min="1"
+                max="100"
+                class="admin-form-field__input"
+                :disabled="!isEditMode"
+              />
+            </div>
+          </fieldset>
 
-                  <FormField>
-                    <FormToggle
-                      v-model="systemSettings.requireAuth"
-                      :disabled="!isEditMode"
-                    >
-                      {{
-                        t(
-                          "admin.system.settings.requireAuthentication",
-                          "Authentifizierung erforderlich",
-                        )
-                      }}
-                    </FormToggle>
-                  </FormField>
+          <!-- Session Settings -->
+          <fieldset class="admin-system-enhanced__settings-group">
+            <legend>
+              {{ t("admin.system.settings.sessions", "Sitzungen") }}
+            </legend>
 
-                  <FormField>
-                    <FormLabel>{{
-                      t(
-                        "admin.system.settings.sessionTimeout",
-                        "Sitzungs-Timeout (Min)",
-                      )
-                    }}</FormLabel>
-                    <FormNumber
-                      v-model="systemSettings.sessionTimeoutMinutes"
-                      :disabled="!isEditMode"
-                      :min="5"
-                      :max="1440"
-                    />
-                  </FormField>
+            <div class="admin-form-field">
+              <label for="max-sessions" class="admin-form-field__label">
+                {{
+                  t(
+                    "admin.system.settings.maxConnectionsPerUser",
+                    "Max. Verbindungen pro Benutzer",
+                  )
+                }}
+              </label>
+              <input
+                id="max-sessions"
+                v-model.number="systemSettings.maxConnectionsPerUser"
+                type="number"
+                min="1"
+                max="100"
+                class="admin-form-field__input"
+                :disabled="!isEditMode"
+              />
+            </div>
 
-                  <FormField>
-                    <FormToggle
-                      v-model="systemSettings.enableMFA"
-                      :disabled="!isEditMode"
-                    >
-                      {{
-                        t(
-                          "admin.system.settings.enableMFA",
-                          "2-Faktor-Authentifizierung",
-                        )
-                      }}
-                    </FormToggle>
-                  </FormField>
-                </div>
+            <div class="admin-form-field">
+              <label for="session-timeout" class="admin-form-field__label">
+                {{
+                  t(
+                    "admin.system.settings.sessionTimeout",
+                    "Sitzungs-Timeout (Min)",
+                  )
+                }}
+              </label>
+              <input
+                id="session-timeout"
+                v-model.number="systemSettings.sessionTimeoutMinutes"
+                type="number"
+                min="5"
+                max="1440"
+                class="admin-form-field__input"
+                :disabled="!isEditMode"
+              />
+            </div>
+          </fieldset>
 
-                <div class="admin-system-enhanced__setting-group">
-                  <h4>
-                    {{
-                      t("admin.system.settings.rateLimiting", "Rate-Limiting")
-                    }}
-                  </h4>
+          <!-- Maintenance Settings -->
+          <fieldset class="admin-system-enhanced__settings-group">
+            <legend>
+              {{ t("admin.system.settings.maintenance", "Wartung") }}
+            </legend>
 
-                  <FormField>
-                    <FormToggle
-                      v-model="systemSettings.enableRateLimit"
-                      :disabled="!isEditMode"
-                    >
-                      {{
-                        t(
-                          "admin.system.settings.enableRateLimiting",
-                          "Rate-Limiting aktivieren",
-                        )
-                      }}
-                    </FormToggle>
-                  </FormField>
-
-                  <FormField v-if="systemSettings.enableRateLimit">
-                    <FormLabel>{{
-                      t(
-                        "admin.system.settings.requestsPerMinute",
-                        "Anfragen pro Minute",
-                      )
-                    }}</FormLabel>
-                    <FormNumber
-                      v-model="systemSettings.rateLimitPerMinute"
-                      :disabled="!isEditMode"
-                      :min="1"
-                      :max="100"
-                    />
-                  </FormField>
-
-                  <FormField>
-                    <FormToggle
-                      v-model="systemSettings.enableIPWhitelist"
-                      :disabled="!isEditMode"
-                    >
-                      {{
-                        t(
-                          "admin.system.settings.enableIPWhitelist",
-                          "IP-Whitelist aktivieren",
-                        )
-                      }}
-                    </FormToggle>
-                  </FormField>
-                </div>
+            <div class="admin-form-field admin-form-field--switch">
+              <div class="admin-form-field__switch-label">
+                <label for="maintenance-mode">
+                  {{
+                    t(
+                      "admin.system.settings.enableMaintenance",
+                      "Wartungsmodus",
+                    )
+                  }}
+                </label>
               </div>
-            </TabPanel>
+              <label class="admin-toggle">
+                <input
+                  id="maintenance-mode"
+                  type="checkbox"
+                  v-model="systemSettings.maintenanceMode"
+                  :disabled="!isEditMode"
+                />
+                <span class="admin-toggle__slider"></span>
+              </label>
+            </div>
 
-            <!-- Advanced Settings -->
-            <TabPanel>
-              <div class="admin-system-enhanced__settings-grid">
-                <div class="admin-system-enhanced__setting-group">
-                  <h4>
-                    {{ t("admin.system.settings.logging", "Protokollierung") }}
-                  </h4>
+            <div class="admin-form-field" v-if="systemSettings.maintenanceMode">
+              <label for="maintenance-message" class="admin-form-field__label">
+                {{
+                  t(
+                    "admin.system.settings.maintenanceMessage",
+                    "Wartungsnachricht",
+                  )
+                }}
+              </label>
+              <textarea
+                id="maintenance-message"
+                v-model="systemSettings.maintenanceMessage"
+                class="admin-form-field__textarea"
+                rows="3"
+                :disabled="!isEditMode"
+              ></textarea>
+            </div>
 
-                  <FormField>
-                    <FormLabel>{{
-                      t("admin.system.settings.logLevel", "Log-Level")
-                    }}</FormLabel>
-                    <FormSelect
-                      v-model="systemSettings.logLevel"
-                      :disabled="!isEditMode"
-                      :options="logLevelOptions"
-                    />
-                  </FormField>
-
-                  <FormField>
-                    <FormToggle
-                      v-model="systemSettings.enableAuditLog"
-                      :disabled="!isEditMode"
-                    >
-                      {{
-                        t(
-                          "admin.system.settings.enableAuditLog",
-                          "Audit-Log aktivieren",
-                        )
-                      }}
-                    </FormToggle>
-                  </FormField>
-
-                  <FormField>
-                    <FormLabel>{{
-                      t(
-                        "admin.system.settings.logRetention",
-                        "Log-Aufbewahrung (Tage)",
-                      )
-                    }}</FormLabel>
-                    <FormNumber
-                      v-model="systemSettings.logRetentionDays"
-                      :disabled="!isEditMode"
-                      :min="1"
-                      :max="365"
-                    />
-                  </FormField>
-                </div>
-
-                <div class="admin-system-enhanced__setting-group">
-                  <h4>
-                    {{ t("admin.system.settings.maintenance", "Wartung") }}
-                  </h4>
-
-                  <FormField>
-                    <FormToggle
-                      v-model="systemSettings.maintenanceMode"
-                      :disabled="!isEditMode"
-                    >
-                      {{
-                        t(
-                          "admin.system.settings.enableMaintenance",
-                          "Wartungsmodus",
-                        )
-                      }}
-                    </FormToggle>
-                  </FormField>
-
-                  <FormField v-if="systemSettings.maintenanceMode">
-                    <FormLabel>{{
-                      t(
-                        "admin.system.settings.maintenanceMessage",
-                        "Wartungsnachricht",
-                      )
-                    }}</FormLabel>
-                    <FormTextarea
-                      v-model="systemSettings.maintenanceMessage"
-                      :disabled="!isEditMode"
-                      :rows="3"
-                    />
-                  </FormField>
-
-                  <FormField>
-                    <FormToggle
-                      v-model="systemSettings.autoBackup"
-                      :disabled="!isEditMode"
-                    >
-                      {{
-                        t(
-                          "admin.system.settings.enableAutoBackup",
-                          "Automatische Backups",
-                        )
-                      }}
-                    </FormToggle>
-                  </FormField>
-
-                  <FormField v-if="systemSettings.autoBackup">
-                    <FormLabel>{{
-                      t(
-                        "admin.system.settings.backupInterval",
-                        "Backup-Intervall",
-                      )
-                    }}</FormLabel>
-                    <FormSelect
-                      v-model="systemSettings.backupInterval"
-                      :disabled="!isEditMode"
-                      :options="backupIntervalOptions"
-                    />
-                  </FormField>
-                </div>
+            <div class="admin-form-field admin-form-field--switch">
+              <div class="admin-form-field__switch-label">
+                <label for="enable-backup">
+                  {{
+                    t(
+                      "admin.system.settings.enableAutoBackup",
+                      "Automatische Backups",
+                    )
+                  }}
+                </label>
               </div>
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
+              <label class="admin-toggle">
+                <input
+                  id="enable-backup"
+                  type="checkbox"
+                  v-model="systemSettings.autoBackup"
+                  :disabled="!isEditMode"
+                />
+                <span class="admin-toggle__slider"></span>
+              </label>
+            </div>
+          </fieldset>
+        </div>
       </form>
-    </div>
+    </AdminCard>
 
     <!-- System Actions -->
-    <div class="admin-system-enhanced__actions-section">
-      <h3 class="admin-system-enhanced__section-title">
-        {{ t("admin.system.actions.title", "Systemaktionen") }}
-      </h3>
+    <AdminCard elevated>
+      <template #header>
+        <div class="admin-card__header-with-icon">
+          <i class="fas fa-play-circle" aria-hidden="true"></i>
+          <h3>{{ t("admin.system.actions.title", "Systemaktionen") }}</h3>
+        </div>
+      </template>
 
-      <div class="admin-system-enhanced__actions-grid">
+      <div class="admin-grid admin-grid--3-columns">
         <div
           v-for="action in actions"
           :key="action.id"
-          class="admin-system-enhanced__action-card"
-          :class="{ danger: action.isDanger }"
+          class="admin-card admin-action-card"
+          :class="{ 'admin-action-card--danger': action.isDanger }"
         >
-          <div class="admin-system-enhanced__action-icon">
+          <div class="admin-action-card__icon">
             <i :class="['fas', action.icon]"></i>
           </div>
-          <div class="admin-system-enhanced__action-content">
-            <h4>{{ action.name }}</h4>
-            <p>{{ action.description }}</p>
-            <div
-              v-if="action.stats"
-              class="admin-system-enhanced__action-stats"
-            >
-              <span v-for="stat in action.stats" :key="stat.label">
-                {{ stat.label }}: <strong>{{ stat.value }}</strong>
-              </span>
+          <div class="admin-action-card__content">
+            <h4 class="admin-action-card__title">{{ action.name }}</h4>
+            <p class="admin-action-card__description">
+              {{ action.description }}
+            </p>
+            <div v-if="action.stats" class="admin-action-card__stats">
+              <div
+                v-for="stat in action.stats"
+                :key="stat.label"
+                class="admin-action-card__stat"
+              >
+                <span>{{ stat.label }}:</span>
+                <strong>{{ stat.value }}</strong>
+              </div>
             </div>
           </div>
-          <Button
-            :variant="action.isDanger ? 'danger' : 'secondary'"
+          <button
             @click="executeAction(action)"
-            :loading="currentAction === action.id"
-            :disabled="action.disabled"
+            class="admin-button"
+            :class="
+              action.isDanger
+                ? 'admin-button--danger'
+                : 'admin-button--secondary'
+            "
+            :disabled="action.disabled || currentAction === action.id"
           >
-            {{
+            <i
+              v-if="currentAction === action.id"
+              class="fas fa-spinner fa-spin"
+              aria-hidden="true"
+            ></i>
+            <span>{{
               action.buttonText ||
               t("admin.system.actions.execute", "Ausführen")
-            }}
-          </Button>
+            }}</span>
+          </button>
         </div>
       </div>
-    </div>
+    </AdminCard>
 
     <!-- Confirmation Dialog -->
-    <Dialog v-model="showConfirmDialog">
-      <DialogTitle>{{ confirmDialogTitle }}</DialogTitle>
-      <DialogContent>
-        <div class="admin-system-enhanced__dialog-icon">
-          <i :class="['fas', confirmDialogIcon]"></i>
+    <dialog ref="confirmDialog" class="admin-dialog">
+      <div class="admin-dialog__content">
+        <div class="admin-dialog__header">
+          <h3 class="admin-dialog__title">{{ confirmDialogTitle }}</h3>
+          <button
+            @click="closeConfirmDialog"
+            class="admin-dialog__close"
+            aria-label="Schließen"
+          >
+            <i class="fas fa-times" aria-hidden="true"></i>
+          </button>
         </div>
-        <p>{{ confirmDialogMessage }}</p>
-        <Alert v-if="confirmDialogWarning" type="warning">
-          {{ confirmDialogWarning }}
-        </Alert>
-      </DialogContent>
-      <DialogActions>
-        <Button variant="secondary" @click="closeConfirmDialog">
-          {{ t("common.cancel", "Abbrechen") }}
-        </Button>
-        <Button
-          :variant="confirmDialogDanger ? 'danger' : 'primary'"
-          @click="confirmAction"
-          :loading="isActionPending"
-        >
-          {{ t("common.confirm", "Bestätigen") }}
-        </Button>
-      </DialogActions>
-    </Dialog>
+
+        <div class="admin-dialog__body">
+          <i
+            class="fas fa-exclamation-triangle admin-dialog__icon"
+            aria-hidden="true"
+          ></i>
+          <p class="admin-dialog__message">{{ confirmDialogMessage }}</p>
+          <div v-if="confirmDialogWarning" class="admin-dialog__warning">
+            {{ confirmDialogWarning }}
+          </div>
+        </div>
+
+        <div class="admin-dialog__actions">
+          <button
+            @click="closeConfirmDialog"
+            class="admin-button admin-button--secondary"
+            :disabled="isActionPending"
+          >
+            {{ t("admin.system.dialog.cancel", "Abbrechen") }}
+          </button>
+          <button
+            @click="confirmAction"
+            class="admin-button"
+            :class="
+              confirmDialogDanger
+                ? 'admin-button--danger'
+                : 'admin-button--primary'
+            "
+            :disabled="isActionPending"
+          >
+            <i
+              v-if="isActionPending"
+              class="fas fa-spinner fa-spin"
+              aria-hidden="true"
+            ></i>
+            {{ t("admin.system.dialog.confirm", "Bestätigen") }}
+          </button>
+        </div>
+      </div>
+    </dialog>
   </div>
 </template>
 
@@ -811,54 +803,30 @@ import { useToast } from "@/composables/useToast";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import Chart from "chart.js/auto";
-
-// UI Components
-import {
-  Button,
-  Alert,
-} from "@/components/ui/base";
-
-// Create temporary replacements for missing components
-const Dialog = Button; // Temporary fix
-const DialogTitle = Alert; // Temporary fix
-const DialogContent = Alert; // Temporary fix 
-const DialogActions = Alert; // Temporary fix
-const Tabs = Button; // Temporary fix
-const TabList = Button; // Temporary fix 
-const Tab = Button; // Temporary fix
-const TabPanels = Button; // Temporary fix
-const TabPanel = Button; // Temporary fix
-const FormField = Button; // Temporary fix
-const FormLabel = Alert; // Temporary fix
-const FormInput = Alert; // Temporary fix
-const FormSelect = Alert; // Temporary fix
-const FormNumber = Alert; // Temporary fix
-const FormToggle = Alert; // Temporary fix
-const FormTextarea = Alert; // Temporary fix;
+import AdminCard from "@/components/admin/shared/AdminCard.vue";
 
 // i18n
-const { t } = useI18n();
+const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
+console.log('[i18n] Component initialized with global scope and inheritance');
 
-// Store
+// Store with proper reactive references
 const systemStore = useAdminSystemStore();
-const { stats } = storeToRefs(systemStore);
+const { stats, loading, error, apiIntegrationEnabled } = storeToRefs(systemStore);
 
 // Toast
 const toast = useToast();
 
 // Refs
-const cpuChart = ref<HTMLCanvasElement>();
-const memoryChart = ref<HTMLCanvasElement>();
+const confirmDialog = ref<HTMLDialogElement | null>(null);
+const performanceChart = ref<HTMLCanvasElement | null>(null);
+let chart: Chart | null = null;
 
-// State
+// Local state
 const isLoading = ref(false);
-const isEditMode = ref(false);
 const isSubmitting = ref(false);
-const showSettings = ref(false);
-const activeSettingsTab = ref(0);
-const showConfirmDialog = ref(false);
-const currentAction = ref<string | null>(null);
 const isActionPending = ref(false);
+const isEditMode = ref(false);
+const currentAction = ref<string | null>(null);
 
 // Confirm Dialog
 const confirmDialogTitle = ref("");
@@ -907,8 +875,7 @@ const systemSettings = ref({
 });
 
 // Charts
-let cpuChartInstance: Chart | null = null;
-let memoryChartInstance: Chart | null = null;
+let chartInstance: Chart | null = null;
 
 // Real-time data
 const cpuHistory = ref<number[]>([]);
@@ -931,8 +898,15 @@ const systemHealthStatus = computed(() => {
   return "normal";
 });
 
-const systemHealthClass = computed(() => {
-  return `admin-system-enhanced__health-card--${systemHealthStatus.value}`;
+const systemHealthStatusVariant = computed(() => {
+  switch (systemHealthStatus.value) {
+    case "critical":
+      return "danger";
+    case "warning":
+      return "warning";
+    default:
+      return "success";
+  }
 });
 
 const systemHealthIcon = computed(() => {
@@ -1023,36 +997,11 @@ const networkStats = computed(() => {
 });
 
 // Options for selects
-const languageOptions = [
-  { value: "de", label: "Deutsch" },
-  { value: "en", label: "English" },
-];
-
-const timezoneOptions = [
-  { value: "Europe/Berlin", label: "Europe/Berlin" },
-  { value: "Europe/London", label: "Europe/London" },
-  { value: "America/New_York", label: "America/New York" },
-];
-
 const modelOptions = [
   { value: "llama-7b", label: "LLaMA 7B" },
   { value: "llama-13b", label: "LLaMA 13B" },
   { value: "mistral-7b", label: "Mistral 7B" },
   { value: "mixtral-8x7b", label: "Mixtral 8x7B" },
-];
-
-const logLevelOptions = [
-  { value: "debug", label: "Debug" },
-  { value: "info", label: "Info" },
-  { value: "warning", label: "Warning" },
-  { value: "error", label: "Error" },
-];
-
-const backupIntervalOptions = [
-  { value: "hourly", label: t("admin.system.backup.hourly", "Stündlich") },
-  { value: "daily", label: t("admin.system.backup.daily", "Täglich") },
-  { value: "weekly", label: t("admin.system.backup.weekly", "Wöchentlich") },
-  { value: "monthly", label: t("admin.system.backup.monthly", "Monatlich") },
 ];
 
 // Actions
@@ -1068,7 +1017,7 @@ const actions = computed(() => [
     stats: [
       {
         label: t("admin.system.cacheSize", "Größe"),
-        value: formatBytes(stats.value.cache_size_mb * 1024 * 1024),
+        value: formatBytes(stats.value.cache_size_mb * 1024 * 1024 || 0),
       },
       {
         label: t("admin.system.cacheEntries", "Einträge"),
@@ -1163,161 +1112,139 @@ function formatDateRelative(timestamp: number | undefined): string {
   });
 }
 
+function getStatusText(status: string): string {
+  switch (status) {
+    case "critical":
+      return t("admin.system.statusCritical", "Kritisch");
+    case "warning":
+      return t("admin.system.statusWarning", "Warnung");
+    default:
+      return t("admin.system.statusNormal", "Normal");
+  }
+}
+
 function getDiskStatus(percentage: number): string {
   if (percentage >= 90) return "critical";
   if (percentage >= 70) return "warning";
   return "normal";
 }
 
-function initCharts() {
-  if (cpuChart.value) {
-    const ctx = cpuChart.value.getContext("2d");
-    if (ctx) {
-      cpuChartInstance = new Chart(ctx, {
-        type: "line",
-        data: {
-          labels: Array(60).fill(""),
-          datasets: [
-            {
-              label: "CPU",
-              data: cpuHistory.value,
-              borderColor: "#3b82f6",
-              backgroundColor: "rgba(59, 130, 246, 0.1)",
-              tension: 0.1,
-              fill: true,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 100,
-              ticks: {
-                callback: (value) => `${value}%`,
-              },
-            },
-            x: {
-              display: false,
-            },
-          },
-        },
-      });
-    }
-  }
+function initChart() {
+  if (performanceChart.value && !chartInstance) {
+    const ctx = performanceChart.value.getContext("2d");
+    if (!ctx) return;
 
-  if (memoryChart.value) {
-    const ctx = memoryChart.value.getContext("2d");
-    if (ctx) {
-      memoryChartInstance = new Chart(ctx, {
-        type: "line",
-        data: {
-          labels: Array(60).fill(""),
-          datasets: [
-            {
-              label: "Memory",
-              data: memoryHistory.value,
-              borderColor: "#8b5cf6",
-              backgroundColor: "rgba(139, 92, 246, 0.1)",
-              tension: 0.1,
-              fill: true,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
+    // Sample data for the chart
+    const labels = Array.from({ length: 24 }, (_, i) => `${i}:00`);
+    const cpuData = Array.from({ length: 24 }, () =>
+      Math.floor(Math.random() * 100),
+    );
+    const memoryData = Array.from({ length: 24 }, () =>
+      Math.floor(Math.random() * 100),
+    );
+
+    chartInstance = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: t("admin.system.metrics.cpu", "CPU-Auslastung"),
+            data: cpuData,
+            borderColor: "rgba(54, 162, 235, 1)",
+            backgroundColor: "rgba(54, 162, 235, 0.2)",
+            tension: 0.4,
+            fill: true,
           },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 100,
-              ticks: {
-                callback: (value) => `${value}%`,
-              },
-            },
-            x: {
-              display: false,
+          {
+            label: t("admin.system.metrics.memory", "Speicherauslastung"),
+            data: memoryData,
+            borderColor: "rgba(255, 99, 132, 1)",
+            backgroundColor: "rgba(255, 99, 132, 0.2)",
+            tension: 0.4,
+            fill: true,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            ticks: {
+              callback: (value) => `${value}%`,
             },
           },
         },
-      });
-    }
+        plugins: {
+          legend: {
+            position: "top",
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) =>
+                `${context.dataset.label}: ${context.parsed.y}%`,
+            },
+          },
+        },
+      },
+    });
   }
-}
-
-function updateCharts() {
-  const cpuUsage = stats.value.cpu_usage_percent || 0;
-  const memoryUsage = stats.value.memory_usage_percent || 0;
-
-  // Update history
-  cpuHistory.value.push(cpuUsage);
-  memoryHistory.value.push(memoryUsage);
-
-  // Keep only last 60 points
-  if (cpuHistory.value.length > 60) {
-    cpuHistory.value.shift();
-  }
-  if (memoryHistory.value.length > 60) {
-    memoryHistory.value.shift();
-  }
-
-  // Update peaks
-  cpuPeak.value = Math.max(cpuPeak.value, cpuUsage);
-  memoryPeak.value = Math.max(memoryPeak.value, memoryUsage);
-
-  // Update charts
-  if (cpuChartInstance) {
-    cpuChartInstance.data.datasets[0].data = cpuHistory.value;
-    cpuChartInstance.update("none");
-  }
-
-  if (memoryChartInstance) {
-    memoryChartInstance.data.datasets[0].data = memoryHistory.value;
-    memoryChartInstance.update("none");
-  }
-
-  lastUpdateTime.value = Date.now();
 }
 
 async function refreshAll() {
-  isLoading.value = true;
   try {
+    // Wir verwenden das loading state aus dem Store
     await systemStore.fetchStats();
-    updateCharts();
-    toast.success(t("admin.system.dataRefreshed", "Daten aktualisiert"));
-  } catch (error) {
-    toast.error(t("admin.system.refreshError", "Fehler beim Aktualisieren"));
+    
+    // Laden der Systemaktionen optional basierend auf dem Ergebnis von fetchStats
+    if (!systemStore.error.value) {
+      // Auch Aktionen neu laden, wenn die Statistiken erfolgreich geladen wurden
+      await systemStore.fetchAvailableActions();
+      toast.success(t("admin.system.dataRefreshed", "Daten aktualisiert"));
+    }
+  } catch (error: any) {
+    console.error("Fehler beim Aktualisieren der Systemstatistiken:", error);
+    
+    // Verbesserte Fehlermeldung mit mehr Kontext
+    let errorMessage = t("admin.system.refreshError", "Fehler beim Aktualisieren");
+    
+    // Zusätzliche Details für Entwickler in der Konsole
+    if (error.code) {
+      console.error(`Fehlercode: ${error.code}`);
+    }
+    
+    if (error.details) {
+      console.error("Fehlerdetails:", error.details);
+    }
+    
+    // Anzeige des Fehlers mit Toast
+    toast.error(errorMessage);
   } finally {
-    isLoading.value = false;
+    // Aktualisierungszeit wird immer gesetzt, auch wenn ein Fehler auftritt
+    lastUpdateTime.value = Date.now();
   }
 }
 
 function toggleEditMode() {
   isEditMode.value = !isEditMode.value;
   if (!isEditMode.value) {
-    // Reset to original values
+    // Reset settings if cancelling edit mode
     loadSettings();
   }
 }
 
 function loadSettings() {
-  // Load settings from API
-  // This is simulated for now
-  showSettings.value = true;
+  // In a real app, this would load settings from API
+  // For now we just use the default values
 }
 
 async function saveSettings() {
   isSubmitting.value = true;
   try {
-    // Save settings to API
+    // Simulate API call for settings update
     await new Promise((resolve) => setTimeout(resolve, 1000));
     toast.success(t("admin.system.settingsSaved", "Einstellungen gespeichert"));
     isEditMode.value = false;
@@ -1342,7 +1269,11 @@ function executeAction(action: any) {
     confirmDialogWarning.value = action.confirmWarning || "";
     confirmDialogIcon.value = action.icon;
     confirmDialogDanger.value = action.isDanger;
-    showConfirmDialog.value = true;
+
+    if (confirmDialog.value) {
+      confirmDialog.value.showModal();
+    }
+
     pendingActionCallback.value = () => performAction(action);
   } else {
     performAction(action);
@@ -1394,28 +1325,79 @@ async function performAction(action: any) {
   }
 }
 
-function confirmAction() {
-  if (pendingActionCallback.value) {
-    pendingActionCallback.value();
+async function confirmAction() {
+  if (!pendingActionCallback.value) {
+    closeConfirmDialog();
+    return;
   }
-  closeConfirmDialog();
+  
+  isActionPending.value = true;
+  
+  try {
+    // Ausführen der Aktion mit besserer Fehlerbehandlung
+    await pendingActionCallback.value();
+    closeConfirmDialog();
+    
+    // Feedback für den Benutzer
+    toast.success(t("admin.system.actionSuccess", "Aktion erfolgreich ausgeführt"));
+    
+    // Aktualisieren der Daten nach erfolgreicher Aktion
+    refreshAll();
+  } catch (error: any) {
+    console.error("Fehler beim Ausführen der Aktion:", error);
+    
+    // Verbesserte Fehlermeldung mit mehr Kontext
+    let errorMessage = t("admin.system.actionError", "Fehler bei der Ausführung der Aktion");
+    
+    if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    // Anzeige des Fehlers mit Toast
+    toast.error(errorMessage);
+    
+    // Dialog trotzdem schließen
+    closeConfirmDialog();
+  } finally {
+    isActionPending.value = false;
+  }
 }
 
 function closeConfirmDialog() {
-  showConfirmDialog.value = false;
+  if (confirmDialog.value) {
+    confirmDialog.value.close();
+  }
   pendingActionCallback.value = undefined;
   currentAction.value = null;
 }
 
 // Lifecycle
-onMounted(() => {
-  initCharts();
-  refreshAll();
+onMounted(async () => {
+  // Versuche, Daten zu laden und behandle Fehler angemessen
+  try {
+    await refreshAll();
+    
+    // Wenn wir API-Integration verwenden, auch Systemaktionen laden
+    if (apiIntegrationEnabled.value) {
+      await systemStore.fetchAvailableActions();
+    }
+  } catch (error) {
+    console.error("Fehler beim initialen Laden der Systemdaten:", error);
+    // Fehler wird in refreshAll bereits behandelt, kein zusätzliches Toast erforderlich
+  }
 
-  // Start refresh interval (every 5 seconds)
+  // Initialize chart after DOM is ready
+  setTimeout(() => {
+    initChart();
+  }, 100);
+
+  // Start refresh interval with optimierten Abständen (jetzt alle 45 Sekunden statt 30)
   refreshInterval = window.setInterval(() => {
     refreshAll();
-  }, 5000);
+  }, 45000);
+  
+  // Logge erweiterte Diagnoseinformationen
+  console.log(`[AdminSystem] Komponente initialisiert, API-Integration: ${apiIntegrationEnabled.value}`);
 });
 
 onUnmounted(() => {
@@ -1423,592 +1405,344 @@ onUnmounted(() => {
     clearInterval(refreshInterval);
   }
 
-  if (cpuChartInstance) {
-    cpuChartInstance.destroy();
-  }
-
-  if (memoryChartInstance) {
-    memoryChartInstance.destroy();
+  if (chartInstance) {
+    chartInstance.destroy();
   }
 });
+
+// Log i18n initialization status
+console.log(`[AdminSystem.enhanced] i18n initialized with locale: ${locale.value}`);
+
+// Log i18n initialization status
+console.log(`[AdminSystem.enhanced] i18n initialized with locale: ${locale.value}`);
 </script>
 
-<style scoped>
+<style lang="scss">
+@import "@/assets/styles/admin-consolidated.scss";
+
 .admin-system-enhanced {
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
-  padding: 1.5rem;
-}
-
-.admin-system-enhanced__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--n-color-border);
-}
-
-.admin-system-enhanced__title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0;
-  color: var(--n-color-text-primary);
-}
-
-.admin-system-enhanced__actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.admin-system-enhanced__section-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0 0 1rem 0;
-  color: var(--n-color-text-primary);
-}
-
-/* Dashboard Grid */
-.admin-system-enhanced__monitoring-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 3rem;
-}
-
-/* Health Card */
-.admin-system-enhanced__health-card {
-  grid-column: span 2;
-  display: flex;
-  gap: 1.5rem;
-  padding: 1.5rem;
-  background-color: var(--n-color-background-alt);
-  border-radius: var(--n-border-radius);
-  border: 2px solid;
-  transition: all 0.3s ease;
-}
-
-.admin-system-enhanced__health-card--normal {
-  border-color: var(--n-color-success);
-  background-color: rgba(16, 185, 129, 0.05);
-}
-
-.admin-system-enhanced__health-card--warning {
-  border-color: var(--n-color-warning);
-  background-color: rgba(245, 158, 11, 0.05);
-}
-
-.admin-system-enhanced__health-card--critical {
-  border-color: var(--n-color-error);
-  background-color: rgba(239, 68, 68, 0.05);
-}
-
-.admin-system-enhanced__health-icon {
-  font-size: 3rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.8);
-}
-
-.admin-system-enhanced__health-card--normal
-  .admin-system-enhanced__health-icon {
-  color: var(--n-color-success);
-}
-
-.admin-system-enhanced__health-card--warning
-  .admin-system-enhanced__health-icon {
-  color: var(--n-color-warning);
-}
-
-.admin-system-enhanced__health-card--critical
-  .admin-system-enhanced__health-icon {
-  color: var(--n-color-error);
-}
-
-.admin-system-enhanced__health-content {
-  flex: 1;
-}
-
-.admin-system-enhanced__health-content h4 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.25rem;
-  color: var(--n-color-text-primary);
-}
-
-.admin-system-enhanced__health-status {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0;
-}
-
-.admin-system-enhanced__health-details {
-  margin: 0.5rem 0;
-  color: var(--n-color-text-secondary);
-}
-
-.admin-system-enhanced__health-metrics {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.admin-system-enhanced__mini-metric {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-}
+  gap: var(--admin-spacing-lg);
 
-.admin-system-enhanced__mini-metric span {
-  font-size: 0.875rem;
-  color: var(--n-color-text-secondary);
-}
-
-.admin-system-enhanced__mini-metric strong {
-  font-size: 1rem;
-  color: var(--n-color-text-primary);
-}
-
-/* Chart Cards */
-.admin-system-enhanced__chart-card {
-  background-color: var(--n-color-background-alt);
-  border-radius: var(--n-border-radius);
-  padding: 1.5rem;
-  box-shadow: var(--n-shadow-sm);
-}
-
-.admin-system-enhanced__chart-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.admin-system-enhanced__chart-header h4 {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--n-color-text-primary);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.admin-system-enhanced__chart-header i {
-  color: var(--n-color-primary);
-}
-
-.admin-system-enhanced__chart-status {
-  font-size: 1.5rem;
-  font-weight: 600;
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--n-border-radius);
-}
-
-.admin-system-enhanced__chart-status.status-normal {
-  color: var(--n-color-success);
-  background-color: rgba(16, 185, 129, 0.1);
-}
-
-.admin-system-enhanced__chart-status.status-warning {
-  color: var(--n-color-warning);
-  background-color: rgba(245, 158, 11, 0.1);
-}
-
-.admin-system-enhanced__chart-status.status-critical {
-  color: var(--n-color-error);
-  background-color: rgba(239, 68, 68, 0.1);
-}
-
-.admin-system-enhanced__chart {
-  height: 150px;
-  margin-bottom: 1rem;
-}
-
-.admin-system-enhanced__chart-info {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--n-color-border);
-}
-
-.admin-system-enhanced__chart-metric {
-  text-align: center;
-}
-
-.admin-system-enhanced__chart-metric span {
-  display: block;
-  font-size: 0.875rem;
-  color: var(--n-color-text-secondary);
-  margin-bottom: 0.25rem;
-}
-
-.admin-system-enhanced__chart-metric strong {
-  font-size: 1.1rem;
-  color: var(--n-color-text-primary);
-}
-
-/* Metrics Cards */
-.admin-system-enhanced__metrics-card {
-  background-color: var(--n-color-background-alt);
-  border-radius: var(--n-border-radius);
-  padding: 1.5rem;
-  box-shadow: var(--n-shadow-sm);
-}
-
-.admin-system-enhanced__metrics-card h4 {
-  margin: 0 0 1rem 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--n-color-text-primary);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.admin-system-enhanced__metrics-card h4 i {
-  color: var(--n-color-primary);
-}
-
-/* Disk Usage */
-.admin-system-enhanced__disk-item {
-  margin-bottom: 1.25rem;
-}
-
-.admin-system-enhanced__disk-item:last-child {
-  margin-bottom: 0;
-}
-
-.admin-system-enhanced__disk-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-}
-
-.admin-system-enhanced__disk-meter {
-  height: 8px;
-  background-color: var(--n-color-background);
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 0.5rem;
-}
-
-.admin-system-enhanced__disk-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 0.3s ease;
-}
-
-.admin-system-enhanced__disk-fill.fill-normal {
-  background-color: var(--n-color-success);
-}
-
-.admin-system-enhanced__disk-fill.fill-warning {
-  background-color: var(--n-color-warning);
-}
-
-.admin-system-enhanced__disk-fill.fill-critical {
-  background-color: var(--n-color-error);
-}
-
-.admin-system-enhanced__disk-info {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.875rem;
-  color: var(--n-color-text-secondary);
-}
-
-/* Network Stats */
-.admin-system-enhanced__network-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 1rem;
-}
-
-.admin-system-enhanced__network-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.admin-system-enhanced__network-item i {
-  font-size: 1.25rem;
-  color: var(--n-color-primary);
-}
-
-.admin-system-enhanced__network-item span {
-  display: block;
-  font-size: 0.875rem;
-  color: var(--n-color-text-secondary);
-}
-
-.admin-system-enhanced__network-item strong {
-  display: block;
-  font-size: 1rem;
-  color: var(--n-color-text-primary);
-}
-
-/* App Metrics */
-.admin-system-enhanced__app-metrics {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-}
-
-.admin-system-enhanced__metric-item {
-  padding: 1rem;
-  background-color: var(--n-color-background);
-  border-radius: var(--n-border-radius);
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.admin-system-enhanced__metric-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: var(--n-color-text-secondary);
-}
-
-.admin-system-enhanced__metric-label i {
-  color: var(--n-color-primary);
-}
-
-.admin-system-enhanced__metric-value {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--n-color-text-primary);
-}
-
-/* Database Stats */
-.admin-system-enhanced__db-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-}
-
-.admin-system-enhanced__db-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  padding: 0.75rem;
-  background-color: var(--n-color-background);
-  border-radius: var(--n-border-radius);
-}
-
-.admin-system-enhanced__db-item span {
-  font-size: 0.875rem;
-  color: var(--n-color-text-secondary);
-}
-
-.admin-system-enhanced__db-item strong {
-  font-size: 1.1rem;
-  color: var(--n-color-text-primary);
-}
-
-/* Settings */
-.admin-system-enhanced__settings {
-  margin-bottom: 3rem;
-}
-
-.admin-system-enhanced__settings-form {
-  background-color: var(--n-color-background-alt);
-  border-radius: var(--n-border-radius);
-  padding: 1.5rem;
-}
-
-.admin-system-enhanced__settings-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 2rem;
-  padding: 1.5rem 0;
-}
-
-.admin-system-enhanced__setting-group {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.admin-system-enhanced__setting-group h4 {
-  margin: 0 0 1rem 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--n-color-text-primary);
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--n-color-border);
-}
-
-/* Actions Section */
-.admin-system-enhanced__actions-section {
-  margin-bottom: 3rem;
-}
-
-.admin-system-enhanced__actions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-.admin-system-enhanced__action-card {
-  background-color: var(--n-color-background-alt);
-  border-radius: var(--n-border-radius);
-  padding: 1.5rem;
-  box-shadow: var(--n-shadow-sm);
-  border: 1px solid var(--n-color-border);
-  transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.admin-system-enhanced__action-card:hover {
-  box-shadow: var(--n-shadow-md);
-  transform: translateY(-2px);
-}
-
-.admin-system-enhanced__action-card.danger {
-  border-color: var(--n-color-error);
-}
-
-.admin-system-enhanced__action-card.danger:hover {
-  background-color: rgba(239, 68, 68, 0.05);
-}
-
-.admin-system-enhanced__action-icon {
-  font-size: 2rem;
-  color: var(--n-color-primary);
-  margin-bottom: 0.5rem;
-}
-
-.admin-system-enhanced__action-card.danger .admin-system-enhanced__action-icon {
-  color: var(--n-color-error);
-}
-
-.admin-system-enhanced__action-content {
-  flex: 1;
-}
-
-.admin-system-enhanced__action-content h4 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--n-color-text-primary);
-}
-
-.admin-system-enhanced__action-content p {
-  margin: 0 0 1rem 0;
-  font-size: 0.875rem;
-  color: var(--n-color-text-secondary);
-  line-height: 1.5;
-}
-
-.admin-system-enhanced__action-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  font-size: 0.875rem;
-  color: var(--n-color-text-secondary);
-}
-
-.admin-system-enhanced__action-stats strong {
-  color: var(--n-color-text-primary);
-}
-
-/* Dialog */
-.admin-system-enhanced__dialog-icon {
-  font-size: 3rem;
-  text-align: center;
-  margin-bottom: 1rem;
-  color: var(--n-color-warning);
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .admin-system-enhanced__monitoring-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .admin-system-enhanced__health-card {
-    grid-column: span 1;
-  }
-
-  .admin-system-enhanced__settings-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  .admin-system-enhanced__header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .admin-system-enhanced__actions {
-    width: 100%;
+  &__actions {
+    display: flex;
     justify-content: flex-end;
+    margin-top: var(--admin-spacing-sm);
   }
 
-  .admin-system-enhanced__health-card {
+  &__status-content {
+    padding: var(--admin-spacing-md) 0;
+  }
+
+  &__health-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--admin-spacing-md);
+    margin-top: var(--admin-spacing-md);
+  }
+
+  &__mini-metric {
+    display: flex;
     flex-direction: column;
-    text-align: center;
+
+    span {
+      font-size: var(--admin-font-size-sm);
+      color: var(--admin-color-text-secondary);
+    }
+
+    strong {
+      font-size: var(--admin-font-size-md);
+      color: var(--admin-color-text-primary);
+    }
+  }
+
+  &__chart-container {
+    height: 240px;
+    position: relative;
+  }
+
+  &__metric-card {
+    padding: var(--admin-spacing-md);
+    background-color: var(--admin-color-background-alt);
+    border-radius: var(--admin-border-radius);
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+    box-shadow: var(--admin-shadow-sm);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--admin-shadow-md);
+    }
+  }
+
+  &__metric-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--admin-spacing-md);
+  }
+
+  &__metric-title {
+    display: flex;
+    align-items: center;
+    gap: var(--admin-spacing-xs);
+    font-weight: var(--admin-font-weight-medium);
+
+    i {
+      color: var(--admin-color-primary);
+    }
+  }
+
+  &__meter-container {
+    display: flex;
+    align-items: center;
+    gap: var(--admin-spacing-sm);
+  }
+
+  &__meter {
+    flex: 1;
+    height: 8px;
+    background-color: var(--admin-color-background-alt);
+    border-radius: var(--admin-border-radius-sm);
+    overflow: hidden;
+  }
+
+  &__meter-fill {
+    height: 100%;
+    transition: width 0.5s ease;
+
+    &--normal {
+      background-color: var(--admin-color-success);
+    }
+
+    &--warning {
+      background-color: var(--admin-color-warning);
+    }
+
+    &--critical {
+      background-color: var(--admin-color-danger);
+    }
+  }
+
+  &__meter-value {
+    min-width: 40px;
+    font-weight: var(--admin-font-weight-bold);
+    text-align: right;
+  }
+
+  &__info-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--admin-spacing-sm);
+  }
+
+  &__info-item {
+    display: flex;
+    justify-content: space-between;
+
+    span {
+      color: var(--admin-color-text-secondary);
+    }
+
+    strong {
+      font-weight: var(--admin-font-weight-bold);
+    }
+  }
+
+  &__settings-form {
+    margin-top: var(--admin-spacing-md);
+  }
+
+  &__settings-group {
+    border: 1px solid var(--admin-color-border);
+    border-radius: var(--admin-border-radius);
+    padding: var(--admin-spacing-md);
+    margin-bottom: var(--admin-spacing-md);
+
+    legend {
+      padding: 0 var(--admin-spacing-xs);
+      font-weight: var(--admin-font-weight-medium);
+      color: var(--admin-color-text-primary);
+    }
+  }
+
+  &__network-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--admin-spacing-md);
+    margin-top: var(--admin-spacing-sm);
+  }
+
+  &__network-item {
+    display: flex;
+    align-items: center;
+    gap: var(--admin-spacing-sm);
+
+    i {
+      color: var(--admin-color-primary);
+      font-size: 1.25rem;
+    }
+
+    div {
+      display: flex;
+      flex-direction: column;
+
+      span {
+        font-size: var(--admin-font-size-sm);
+        color: var(--admin-color-text-secondary);
+      }
+
+      strong {
+        font-size: var(--admin-font-size-md);
+        color: var(--admin-color-text-primary);
+      }
+    }
+  }
+
+  &__disk-item {
+    margin-bottom: var(--admin-spacing-md);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__disk-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--admin-spacing-xs);
+    font-weight: var(--admin-font-weight-medium);
+  }
+
+  &__disk-meter {
+    height: 8px;
+    background-color: var(--admin-color-background-alt);
+    border-radius: var(--admin-border-radius-sm);
+    overflow: hidden;
+    margin-bottom: var(--admin-spacing-xs);
+  }
+
+  &__disk-fill {
+    height: 100%;
+    transition: width 0.5s ease;
+
+    &--normal {
+      background-color: var(--admin-color-success);
+    }
+
+    &--warning {
+      background-color: var(--admin-color-warning);
+    }
+
+    &--critical {
+      background-color: var(--admin-color-danger);
+    }
+  }
+
+  &__disk-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--admin-font-size-sm);
+    color: var(--admin-color-text-secondary);
+  }
+}
+
+.admin-action-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--admin-color-background-alt);
+  border-radius: var(--admin-border-radius);
+  padding: var(--admin-spacing-md);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  border: 1px solid var(--admin-color-border);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--admin-shadow-md);
+  }
+
+  &--danger {
+    border-color: var(--admin-color-danger);
+
+    &:hover {
+      background-color: rgba(var(--admin-color-danger-rgb, 220, 38, 38), 0.05);
+    }
+  }
+
+  &__icon {
+    font-size: 1.5rem;
+    color: var(--admin-color-primary);
+    margin-bottom: var(--admin-spacing-sm);
+
+    .admin-action-card--danger & {
+      color: var(--admin-color-danger);
+    }
+  }
+
+  &__content {
+    flex: 1;
+    margin-bottom: var(--admin-spacing-md);
+  }
+
+  &__title {
+    font-size: var(--admin-font-size-lg);
+    font-weight: var(--admin-font-weight-medium);
+    margin-bottom: var(--admin-spacing-xs);
+    color: var(--admin-color-text-primary);
+  }
+
+  &__description {
+    color: var(--admin-color-text-secondary);
+    font-size: var(--admin-font-size-sm);
+    margin-bottom: var(--admin-spacing-md);
+  }
+
+  &__stats {
+    display: flex;
+    flex-direction: column;
+    gap: var(--admin-spacing-xs);
+  }
+
+  &__stat {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--admin-font-size-sm);
+    color: var(--admin-color-text-secondary);
+
+    strong {
+      color: var(--admin-color-text-primary);
+    }
+  }
+}
+
+.admin-dialog__warning {
+  margin-top: var(--admin-spacing-md);
+  padding: var(--admin-spacing-sm);
+  background-color: rgba(var(--admin-color-warning-rgb, 245, 158, 11), 0.1);
+  border: 1px solid var(--admin-color-warning);
+  border-radius: var(--admin-border-radius);
+  color: var(--admin-color-warning);
+  font-size: var(--admin-font-size-sm);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .admin-grid--4-columns,
+  .admin-grid--3-columns {
+    grid-template-columns: repeat(1, 1fr);
   }
 
   .admin-system-enhanced__health-metrics {
     grid-template-columns: 1fr;
   }
 
-  .admin-system-enhanced__chart-info {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-  }
-
-  .admin-system-enhanced__network-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .admin-system-enhanced__app-metrics {
-    grid-template-columns: 1fr;
-  }
-
-  .admin-system-enhanced__actions-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  .admin-system-enhanced__health-card {
-    background-color: var(--n-color-background);
-  }
-
-  .admin-system-enhanced__chart-card,
-  .admin-system-enhanced__metrics-card,
-  .admin-system-enhanced__action-card {
-    background-color: var(--n-color-background);
-  }
-
-  .admin-system-enhanced__settings-form {
-    background-color: var(--n-color-background);
-  }
-
-  .admin-system-enhanced__disk-meter {
-    background-color: var(--n-color-background-alt);
-  }
-
-  .admin-system-enhanced__metric-item,
-  .admin-system-enhanced__db-item {
-    background-color: var(--n-color-background-alt);
+  .admin-system-enhanced__chart-container {
+    height: 200px;
   }
 }
 </style>

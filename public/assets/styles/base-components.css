@@ -1,0 +1,369 @@
+/* Base Components CSS
+   This file provides core styling for all base components to ensure
+   they work well with the admin panel and match the site design.
+*/
+
+:root {
+  /* Core color variables */
+  --base-primary: var(--nscale-primary, #00a550);
+  --base-primary-dark: var(--nscale-primary-dark, #009046);
+  --base-primary-light: var(--nscale-primary-light, #e8f7ef);
+  --base-success: var(--nscale-success, #28a745);
+  --base-warning: var(--nscale-warning, #ffc107);
+  --base-danger: var(--nscale-danger, #dc3545);
+  --base-info: var(--nscale-info, #17a2b8);
+  
+  /* Text colors */
+  --base-text: var(--nscale-text, #333333);
+  --base-text-secondary: var(--nscale-text-secondary, #6c757d);
+  --base-text-disabled: var(--nscale-text-disabled, #adb5bd);
+  
+  /* Background colors */
+  --base-bg: var(--nscale-surface, #ffffff);
+  --base-bg-alt: var(--nscale-background, #f8f9fa);
+  --base-bg-disabled: var(--nscale-input-disabled, #e9ecef);
+  
+  /* Border colors */
+  --base-border: var(--nscale-border, #ced4da);
+  --base-border-focus: var(--nscale-primary, #00a550);
+  
+  /* Spacing */
+  --base-spacing-xs: 0.25rem;
+  --base-spacing-sm: 0.5rem;
+  --base-spacing-md: 1rem;
+  --base-spacing-lg: 1.5rem;
+  
+  /* Sizing */
+  --base-border-radius: 0.25rem;
+  --base-border-radius-lg: 0.5rem;
+  --base-border-radius-pill: 9999px;
+  --base-input-height: 38px;
+  
+  /* Effects */
+  --base-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --base-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --base-transition: all 0.2s ease-in-out;
+  --base-focus-ring: 0 0 0 3px rgba(0, 165, 80, 0.25);
+}
+
+/* Dark mode customizations */
+.theme-dark {
+  --base-bg: var(--nscale-surface-dark, #1a1a1a);
+  --base-bg-alt: var(--nscale-background-dark, #121212);
+  --base-bg-disabled: var(--nscale-input-disabled-dark, #2a2a2a);
+  --base-text: var(--nscale-text-dark, #f0f0f0);
+  --base-text-secondary: var(--nscale-text-secondary-dark, #b0b0b0);
+  --base-border: var(--nscale-border-dark, #444444);
+  --base-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --base-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Contrast theme customizations */
+.theme-contrast {
+  --base-primary: #ffeb3b;
+  --base-primary-dark: #ffd600;
+  --base-primary-light: #333300;
+  --base-success: #ffeb3b;
+  --base-warning: #ff9800;
+  --base-danger: #ff4444;
+  --base-info: #00c7e6;
+  --base-text: #ffffff;
+  --base-text-secondary: #dddddd;
+  --base-bg: #000000;
+  --base-bg-alt: #121212;
+  --base-border: #ffeb3b;
+  --base-focus-ring: 0 0 0 3px rgba(255, 235, 59, 0.5);
+}
+
+/* 
+ * This section provides enhancements for base components
+ * used in the admin interface. These styles ensure that all
+ * components maintain a consistent look and feel and work 
+ * properly with the admin panel styling.
+ */
+
+/* Base Button enhancements */
+.base-button {
+  transition: var(--base-transition);
+}
+
+.base-button:focus {
+  box-shadow: var(--base-focus-ring);
+}
+
+.theme-dark .base-button--secondary {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--base-border);
+}
+
+.theme-dark .base-button--secondary:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.theme-contrast .base-button--primary {
+  background-color: var(--base-primary);
+  color: #000000;
+  border-color: var(--base-primary);
+}
+
+.theme-contrast .base-button--secondary {
+  background-color: transparent;
+  color: var(--base-primary);
+  border-color: var(--base-primary);
+}
+
+/* Base Input enhancements */
+.base-input__field:focus {
+  border-color: var(--base-border-focus);
+  box-shadow: var(--base-focus-ring);
+}
+
+.theme-dark .base-input__field {
+  background-color: var(--base-bg);
+  color: var(--base-text);
+  border-color: var(--base-border);
+}
+
+.theme-dark .base-input__field:disabled {
+  background-color: var(--base-bg-disabled);
+}
+
+.theme-contrast .base-input__field:focus {
+  border-color: var(--base-primary);
+  box-shadow: 0 0 0 3px rgba(255, 235, 59, 0.25);
+}
+
+/* Base Select enhancements */
+.base-select__field:focus {
+  border-color: var(--base-border-focus);
+  box-shadow: var(--base-focus-ring);
+}
+
+.theme-dark .base-select__field {
+  background-color: var(--base-bg);
+  color: var(--base-text);
+  border-color: var(--base-border);
+}
+
+.theme-dark .base-select__field:disabled {
+  background-color: var(--base-bg-disabled);
+}
+
+.theme-contrast .base-select__options {
+  background-color: #121212;
+  border-color: var(--base-primary);
+}
+
+.theme-contrast .base-select__option {
+  color: var(--base-text);
+}
+
+.theme-contrast .base-select__option--highlighted {
+  background-color: var(--base-primary-light);
+}
+
+/* Base Toggle enhancements */
+.theme-dark .base-toggle__switch {
+  background-color: #2a2a2a;
+  border-color: #444444;
+}
+
+.theme-dark .base-toggle__switch:before {
+  background-color: #f0f0f0;
+}
+
+.theme-dark .base-toggle__input:checked + .base-toggle__switch {
+  background-color: var(--base-primary);
+  border-color: var(--base-primary);
+}
+
+.theme-contrast .base-toggle__switch {
+  background-color: #222222;
+  border-color: var(--base-primary);
+}
+
+.theme-contrast .base-toggle__input:checked + .base-toggle__switch {
+  background-color: var(--base-primary);
+}
+
+.theme-contrast .base-toggle__switch:before {
+  background-color: #000000;
+  border: 1px solid var(--base-primary);
+}
+
+/* Base Textarea enhancements */
+.base-textarea__field:focus {
+  border-color: var(--base-border-focus);
+  box-shadow: var(--base-focus-ring);
+}
+
+.theme-dark .base-textarea__field {
+  background-color: var(--base-bg);
+  color: var(--base-text);
+  border-color: var(--base-border);
+}
+
+.theme-dark .base-textarea__field:disabled {
+  background-color: var(--base-bg-disabled);
+}
+
+.theme-contrast .base-textarea__field:focus {
+  border-color: var(--base-primary);
+  box-shadow: 0 0 0 3px rgba(255, 235, 59, 0.25);
+}
+
+/* Base Modal enhancements */
+.theme-dark .base-modal__backdrop {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.theme-dark .base-modal__content {
+  background-color: var(--base-bg);
+  border-color: var(--base-border);
+}
+
+.theme-dark .base-modal__header {
+  border-bottom-color: var(--base-border);
+}
+
+.theme-dark .base-modal__footer {
+  border-top-color: var(--base-border);
+}
+
+.theme-contrast .base-modal__backdrop {
+  background-color: rgba(0, 0, 0, 0.85);
+}
+
+.theme-contrast .base-modal__content {
+  background-color: var(--base-bg);
+  border: 2px solid var(--base-primary);
+}
+
+.theme-contrast .base-modal__header {
+  border-bottom: 2px solid var(--base-primary);
+}
+
+.theme-contrast .base-modal__footer {
+  border-top: 2px solid var(--base-primary);
+}
+
+/* Base MultiSelect enhancements */
+.theme-dark .base-multi-select__field {
+  background-color: var(--base-bg);
+  color: var(--base-text);
+  border-color: var(--base-border);
+}
+
+.theme-dark .base-multi-select__dropdown {
+  background-color: var(--base-bg);
+  border-color: var(--base-border);
+}
+
+.theme-dark .base-multi-select__item {
+  background-color: var(--base-primary-light);
+  color: var(--base-primary);
+}
+
+.theme-dark .base-multi-select__option:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.theme-contrast .base-multi-select__field {
+  background-color: var(--base-bg);
+  color: var(--base-text);
+  border-color: var(--base-primary);
+}
+
+.theme-contrast .base-multi-select__dropdown {
+  background-color: #121212;
+  border-color: var(--base-primary);
+}
+
+.theme-contrast .base-multi-select__item {
+  background-color: var(--base-primary-light);
+  color: var(--base-primary);
+  border: 1px solid var(--base-primary);
+}
+
+/* Base DateRangePicker enhancements */
+.theme-dark .base-date-range-picker__field {
+  background-color: var(--base-bg);
+  color: var(--base-text);
+  border-color: var(--base-border);
+}
+
+.theme-dark .base-date-range-picker__calendar {
+  background-color: var(--base-bg);
+  border-color: var(--base-border);
+}
+
+.theme-dark .base-date-range-picker__day--selected {
+  background-color: var(--base-primary);
+  color: white;
+}
+
+.theme-dark .base-date-range-picker__day--in-range {
+  background-color: var(--base-primary-light);
+  color: var(--base-primary);
+}
+
+.theme-contrast .base-date-range-picker__field {
+  background-color: var(--base-bg);
+  color: var(--base-text);
+  border-color: var(--base-primary);
+}
+
+.theme-contrast .base-date-range-picker__calendar {
+  background-color: #121212;
+  border-color: var(--base-primary);
+}
+
+.theme-contrast .base-date-range-picker__day--selected {
+  background-color: var(--base-primary);
+  color: #000000;
+}
+
+.theme-contrast .base-date-range-picker__day--in-range {
+  background-color: var(--base-primary-light);
+  color: var(--base-primary);
+}
+
+/* Base ConfirmDialog enhancements */
+.theme-dark .base-confirm-dialog__icon {
+  color: var(--base-warning);
+}
+
+.theme-dark .base-confirm-dialog__message {
+  color: var(--base-text);
+}
+
+.theme-contrast .base-confirm-dialog__icon {
+  color: var(--base-warning);
+}
+
+.theme-contrast .base-confirm-dialog__message {
+  color: var(--base-text);
+}
+
+/* Base Switch enhancements */
+.theme-dark .base-switch__option {
+  color: var(--base-text-secondary);
+}
+
+.theme-dark .base-switch__option--active {
+  color: var(--base-text);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.theme-contrast .base-switch {
+  border-color: var(--base-primary);
+}
+
+.theme-contrast .base-switch__option {
+  color: var(--base-text-secondary);
+}
+
+.theme-contrast .base-switch__option--active {
+  color: var(--base-primary);
+  background-color: var(--base-primary-light);
+}

@@ -13,14 +13,13 @@ import type {
 } from "../types/session";
 import type { SessionsStoreReturn } from "../types/stores";
 import { useAuthStore } from "./auth";
-import { sessionAwareBatchHandler } from "@/services/api/sessionAwareBatchHandler";
-import { 
-  processBatchResponse, 
-  extractBatchResponseData, 
-  validateSessionsResponse, 
-  validateMessagesResponse 
-} from './sessionsResponseFix';
-import { streamingService } from '@/services/streamingService';
+import { batchRequestService } from "@/services/api/BatchRequestService";
+import {
+  processBatchResponse,
+  extractBatchResponseData,
+  validateSessionsResponse,
+  validateMessagesResponse,
+} from "./sessionsResponseFix";
 
 /**
  * Sessions Store zur Verwaltung von Chat-Sessions und Nachrichten
@@ -136,7 +135,7 @@ export const useSessionsStore = defineStore(
     // Initialisierung des Stores
     async function initialize(): Promise<void> {
       migrateFromLegacyStorage();
-      
+
       // Only sync sessions if user is authenticated
       if (authStore.isAuthenticated) {
         await synchronizeSessions();
@@ -152,7 +151,7 @@ export const useSessionsStore = defineStore(
           if (isAuthenticated) {
             // Initial sync when becoming authenticated
             synchronizeSessions();
-            
+
             if (syncInterval === null) {
               syncInterval = window.setInterval(() => {
                 synchronizeSessions();
@@ -176,7 +175,7 @@ export const useSessionsStore = defineStore(
         }
         unwatchAuth();
       };
-      
+
       return cleanup();
     }
 
@@ -195,7 +194,7 @@ export const useSessionsStore = defineStore(
       return [...sessions.value].sort((a, b) => {
         // Sicherheitsprüfung
         if (!a || !b) return 0;
-        
+
         // Archivierte Sessions zuletzt
         const aArchived = a.isArchived || false;
         const bArchived = b.isArchived || false;
@@ -275,13 +274,13 @@ export const useSessionsStore = defineStore(
       console.log("Auth status:", authStore.isAuthenticated);
       console.log("Auth token:", !!authStore.token);
       console.log("Sync status:", syncStatus.value.isSyncing);
-      
+
       // Early exit if not authenticated - prevent any API calls
       if (!authStore.isAuthenticated || !authStore.token) {
         console.log("Not authenticated, skipping session sync");
         return;
       }
-      
+
       if (syncStatus.value.isSyncing) {
         console.log("Already syncing, skipping");
         return;
@@ -324,45 +323,52 @@ export const useSessionsStore = defineStore(
         ];
 
         // Batch-Request verwenden
-        console.log("About to execute batch request for sessions with:", requests);
+        console.log(
+          "About to execute batch request for sessions with:",
+          requests,
+        );
         let rawResponses;
         try {
           rawResponses = await batchRequestService.executeBatch(requests);
-          console.log("Batch request successful, got raw responses:", rawResponses);
+          console.log(
+            "Batch request successful, got raw responses:",
+            rawResponses,
+          );
         } catch (batchError: any) {
           console.error("Batch request failed:", {
             error: batchError,
             message: batchError?.message,
-            stack: batchError?.stack
+            stack: batchError?.stack,
           });
           // Don't throw - allow app to continue with empty sessions
           sessions.value = [];
           return;
         }
-        
+
         // Process batch response with new fix
         let responses;
         try {
-          responses = processBatchResponse(rawResponses, 'synchronizeSessions');
+          responses = processBatchResponse(rawResponses, "synchronizeSessions");
         } catch (processError) {
           console.error("Error processing batch response:", processError);
           sessions.value = [];
           return;
         }
-        
+
         // Extract data from responses
-        const sessionsData = extractBatchResponseData(responses, 0, 'sessions');
-        const statsData = extractBatchResponseData(responses, 1, 'stats');
-        
+        const sessionsData = extractBatchResponseData(responses, 0, "sessions");
+        const statsData = extractBatchResponseData(responses, 1, "stats");
+
         // Validate and extract sessions
-        const { valid, sessions: serverSessions } = validateSessionsResponse(sessionsData);
-        
+        const { valid, sessions: serverSessions } =
+          validateSessionsResponse(sessionsData);
+
         if (!valid) {
           console.warn("Invalid sessions response format:", sessionsData);
           sessions.value = [];
           return;
         }
-        
+
         console.log(`Processing ${serverSessions.length} sessions from server`);
 
         // Optimierte Sessions-Verarbeitung mit Map für schnelleren Zugriff
@@ -413,7 +419,7 @@ export const useSessionsStore = defineStore(
           // (nur solche, die als isLocal markiert sind - andere wurden gelöscht)
           localSessionsMap.forEach((session) => {
             // if ((session as any).isLocal) { // isLocal check entfernt
-              updatedSessions.push(session);
+            updatedSessions.push(session);
             // }
           });
 
@@ -437,11 +443,13 @@ export const useSessionsStore = defineStore(
           errorData: err?.data,
           errorStack: err?.stack,
           errorType: err?.constructor?.name,
-          isNetworkError: err?.code === 'ECONNABORTED',
-          status: err?.response?.status
+          isNetworkError: err?.code === "ECONNABORTED",
+          status: err?.response?.status,
         });
         syncStatus.value.error =
-          err.response?.data?.message || err.message || "Fehler bei der Synchronisation";
+          err.response?.data?.message ||
+          err.message ||
+          "Fehler bei der Synchronisation";
       } finally {
         syncStatus.value.isSyncing = false;
       }
@@ -456,7 +464,7 @@ export const useSessionsStore = defineStore(
       console.log("=== fetchMessages called ===");
       console.log("Session ID:", sessionId);
       console.log("Auth status:", authStore.isAuthenticated);
-      
+
       if (!sessionId || !authStore.isAuthenticated) return [];
 
       isLoading.value = true;
@@ -491,35 +499,44 @@ export const useSessionsStore = defineStore(
         ];
 
         // Batch-Request verwenden
-        console.log("About to execute batch request for messages with:", requests);
+        console.log(
+          "About to execute batch request for messages with:",
+          requests,
+        );
         let rawResponses;
         try {
           rawResponses = await batchRequestService.executeBatch(requests);
-          console.log("Batch request successful, got raw responses:", rawResponses);
+          console.log(
+            "Batch request successful, got raw responses:",
+            rawResponses,
+          );
         } catch (batchError: any) {
           console.error("Batch request failed:", {
             error: batchError,
             message: batchError?.message,
-            stack: batchError?.stack
+            stack: batchError?.stack,
           });
           throw batchError;
         }
-        
+
         // Process batch response with new fix
-        const responses = processBatchResponse(rawResponses, 'fetchMessages');
-        
+        const responses = processBatchResponse(rawResponses, "fetchMessages");
+
         // Extract data from responses (nur noch eine Antwort)
-        const messagesData = extractBatchResponseData(responses, 0, 'messages');
-        
+        const messagesData = extractBatchResponseData(responses, 0, "messages");
+
         // Validate and extract messages
-        const { valid, messages: validMessages } = validateMessagesResponse(messagesData);
-        
+        const { valid, messages: validMessages } =
+          validateMessagesResponse(messagesData);
+
         if (!valid) {
           console.warn("Invalid messages response format:", messagesData);
         }
-        
-        console.log(`Processing ${validMessages.length} messages for session ${sessionId}`);
-        
+
+        console.log(
+          `Processing ${validMessages.length} messages for session ${sessionId}`,
+        );
+
         messages.value = {
           ...messages.value,
           [sessionId]: validMessages,
@@ -529,24 +546,28 @@ export const useSessionsStore = defineStore(
 
         return validMessages;
       } catch (err: any) {
-        console.error(`Error fetching messages for session ${sessionId} - Details:`, {
-          fullError: err,
-          errorMessage: err?.message,
-          errorResponse: err?.response,
-          errorData: err?.data,
-          errorStack: err?.stack,
-          errorType: err?.constructor?.name,
-          isNetworkError: err?.code === 'ECONNABORTED',
-          status: err?.response?.status
-        });
+        console.error(
+          `Error fetching messages for session ${sessionId} - Details:`,
+          {
+            fullError: err,
+            errorMessage: err?.message,
+            errorResponse: err?.response,
+            errorData: err?.data,
+            errorStack: err?.stack,
+            errorType: err?.constructor?.name,
+            isNetworkError: err?.code === "ECONNABORTED",
+            status: err?.response?.status,
+          },
+        );
         error.value =
-          err.response?.data?.message || err.message || "Fehler beim Laden der Nachrichten";
+          err.response?.data?.message ||
+          err.message ||
+          "Fehler beim Laden der Nachrichten";
         return [];
       } finally {
         isLoading.value = false;
       }
     }
-
 
     /**
      * Erstellt eine neue Chat-Session und wechselt zu ihr
@@ -588,13 +609,9 @@ export const useSessionsStore = defineStore(
               updatedAt: now,
             };
 
-            await axios.post<ChatSession>(
-              "/api/sessions",
-              payload,
-              {
-                headers: authStore.createAuthHeaders(),
-              },
-            );
+            await axios.post<ChatSession>("/api/sessions", payload, {
+              headers: authStore.createAuthHeaders(),
+            });
 
             // Lokale Markierung entfernen
             const index = sessions.value.findIndex((s) => s.id === sessionId);
@@ -792,7 +809,7 @@ export const useSessionsStore = defineStore(
                 {
                   content: message.content,
                   role: message.role,
-                }
+                },
               );
 
               // Nachricht aus den ausstehenden entfernen
@@ -860,7 +877,7 @@ export const useSessionsStore = defineStore(
 
       messages.value[sessionId].push({
         ...userMessage,
-        status: "sent" // Status sofort auf "sent" setzen
+        status: "sent", // Status sofort auf "sent" setzen
       });
 
       // Sitzung aktualisieren
@@ -916,223 +933,225 @@ export const useSessionsStore = defineStore(
       try {
         const authToken = authStore.token;
         const streamingEnabled = true; // Wieder aktivieren
-        
+
         if (streamingEnabled) {
-          // Streaming mit dem verbesserten StreamingService
-          console.log('=== STREAMING DEBUG START ===');
-          console.log('Using streaming endpoint for message:', content);
-          
+          // Streaming mit EventSource
+          console.log("=== STREAMING DEBUG START ===");
+          console.log("Using streaming endpoint for message:", content);
+
           // Erstelle eine initiale Assistant-Nachricht für Streaming
           const assistantTempId = `temp-response-${uuidv4()}`;
           const streamingMessage: ChatMessage = {
             id: assistantTempId,
             sessionId,
-            content: '',
+            content: "",
             role: "assistant",
             timestamp: new Date().toISOString(),
             isStreaming: true,
             status: "pending" as const,
           };
           messages.value[sessionId].push(streamingMessage);
-          
-          // Verwende den importierten streamingService
+
+          const finishStreaming = () => {
+            const finalMsgIndex = messages.value[sessionId].findIndex(
+              (msg) => msg.id === assistantTempId,
+            );
+            if (finalMsgIndex !== -1) {
+              const updatedMessages = [...messages.value[sessionId]];
+              updatedMessages[finalMsgIndex] = {
+                ...updatedMessages[finalMsgIndex],
+                isStreaming: false,
+                status: "sent",
+              };
+              messages.value = {
+                ...messages.value,
+                [sessionId]: updatedMessages,
+              };
+            }
+
+            streaming.value = {
+              isActive: false,
+              progress: 100,
+              currentSessionId: null,
+            };
+          };
+
+          // URL-Parameter für Streaming
+          const params = new URLSearchParams();
+          params.append("question", content);
+          // session_id ist immer erforderlich
+          params.append("session_id", sessionId || "new");
+          // NICHT token in die URL - sollte im Header sein!
+          // params.append('token', authToken); // Token als URL-Parameter
+
+          const url = `/api/question/stream?${params.toString()}`;
+          console.log("Streaming URL:", url);
+
+          // Ersetze EventSource durch fetch mit Headers
+          let responseContent = "";
           try {
-            // Service wird importiert aus '@/services/streamingService'
-            // Falls nicht bereits importiert, füge folgende Zeile am Anfang der Datei hinzu:
-            // import { streamingService } from '@/services/streamingService';
-            
-            let responseContent = '';
-            
-            // Streaming starten mit dem neuen Service
-            await streamingService.startStream({
-              question: content,
-              sessionId: sessionId,
-              simpleLanguage: false, // oder aus den Einstellungen
-              onMessage: (chunk) => {
-                // Jeden Chunk zur Antwort hinzufügen
-                responseContent += chunk;
-                console.log('Current response content:', responseContent);
-                
-                // Nachricht in der UI aktualisieren
-                const msgIndex = messages.value[sessionId].findIndex(msg => msg.id === assistantTempId);
-                if (msgIndex !== -1) {
-                  const updatedMessages = [...messages.value[sessionId]];
-                  updatedMessages[msgIndex] = {
-                    ...updatedMessages[msgIndex],
-                    content: responseContent,
-                    isStreaming: true,
-                    status: "pending"
-                  };
-                  messages.value = {
-                    ...messages.value,
-                    [sessionId]: updatedMessages
-                  };
-                }
+            const response = await fetch(url, {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${authToken}`,
+                Accept: "text/event-stream",
               },
-              onError: async (error) => {
-                console.error('Streaming error:', error);
-                
-                // Fallback auf nicht-streaming API
-                console.log('Falling back to non-streaming API');
-                
-                // Wenn noch kein Content, versuche die non-streaming API
-                if (!responseContent) {
-                  const requestData: any = {
-                    question: content
-                  };
-                  
-                  // Verbesserte Session-ID-Behandlung
-                  if (sessionId) {
-                    if (/^\d+$/.test(sessionId)) {
-                      // Wenn es eine Zahl ist, als Number senden
-                      requestData.session_id = parseInt(sessionId);
-                    } else {
-                      // Ansonsten als String (z.B. für UUIDs)
-                      requestData.session_id = sessionId;
-                      // Alternative Form für manche Server-Implementierungen
-                      requestData.session_id_str = sessionId;
-                    }
+            });
+
+            if (!response.ok) {
+              throw new Error(
+                `HTTP ${response.status}: ${response.statusText}`,
+              );
+            }
+
+            const reader = response.body?.getReader();
+            const decoder = new TextDecoder();
+
+            if (!reader) {
+              throw new Error("No response body");
+            }
+
+            // Stream verarbeiten
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+
+              const chunk = decoder.decode(value, { stream: true });
+
+              // SSE-Format parsen
+              const lines = chunk.split("\n");
+              for (const line of lines) {
+                if (line.startsWith("data: ")) {
+                  const data = line.slice(6);
+                  if (data === "[DONE]") {
+                    finishStreaming();
+                    return;
                   }
-                  
-                  console.log('Fallback request data:', requestData);
-                  
-                  try {
-                    const fallbackResponse = await axios.post('/api/question', requestData, {
-                      headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                      }
-                    });
-                  } catch (fallbackError) {
-                    console.error('Fallback request failed:', fallbackError);
-                    // Versuche einen zweiten Fallback mit etwas anderer Session-ID-Formatierung
-                    requestData.session_id = String(sessionId);
-                    delete requestData.session_id_str;
-                    
-                    console.log('Second fallback attempt with session_id as string');
-                    const fallbackResponse = await axios.post('/api/question', requestData, {
-                      headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                      }
-                    });
-                  }
-                  
-                  // Variable für die Antwort deklarieren
-                  let responseData;
-                  
-                  try {
-                    // Wert aus korrektem Scope verwenden
-                    responseData = fallbackResponse?.data;
-                  } catch (e) {
-                    console.error('Error accessing fallback response data:', e);
-                    responseData = { answer: "Fehler bei der Verarbeitung der Antwort" };
-                  }
-                  
-                  // Sicherheitscheck
-                  if (!responseData) {
-                    responseData = { answer: "Keine Daten in der Antwort" };
-                  }
-                  
-                  const assistantMessage: ChatMessage = {
-                    id: assistantTempId,
-                    sessionId,
-                    content: responseData.answer || responseData.response || responseData.message || responseData.content || "Keine Antwort vom Server",
-                    role: "assistant",
-                    timestamp: new Date().toISOString(),
-                    status: "sent",
-                  };
-                  
-                  // Update message 
-                  const msgIndex = messages.value[sessionId].findIndex(msg => msg.id === assistantTempId);
+
+                  responseContent += data;
+                  console.log("Current response content:", responseContent);
+
+                  // Update the message
+                  const msgIndex = messages.value[sessionId].findIndex(
+                    (msg) => msg.id === assistantTempId,
+                  );
                   if (msgIndex !== -1) {
                     const updatedMessages = [...messages.value[sessionId]];
-                    updatedMessages[msgIndex] = assistantMessage;
+                    updatedMessages[msgIndex] = {
+                      ...updatedMessages[msgIndex],
+                      content: responseContent,
+                      isStreaming: true,
+                      status: "pending",
+                    };
                     messages.value = {
                       ...messages.value,
-                      [sessionId]: updatedMessages
+                      [sessionId]: updatedMessages,
                     };
                   }
                 }
-              },
-              onComplete: () => {
-                // Streaming abgeschlossen
-                const msgIndex = messages.value[sessionId].findIndex(msg => msg.id === assistantTempId);
-                if (msgIndex !== -1) {
-                  const updatedMessages = [...messages.value[sessionId]];
-                  updatedMessages[msgIndex] = {
-                    ...updatedMessages[msgIndex],
-                    isStreaming: false,
-                    status: "sent"
-                  };
-                  messages.value = {
-                    ...messages.value,
-                    [sessionId]: updatedMessages
-                  };
-                }
-                
-                streaming.value = {
-                  isActive: false,
-                  progress: 100,
-                  currentSessionId: null,
+              }
+            }
+
+            finishStreaming();
+          } catch (error) {
+            console.error("Streaming error:", error);
+
+            // Fallback auf nicht-streaming API
+            console.log("Falling back to non-streaming API");
+
+            // Wenn noch kein Content, versuche die non-streaming API
+            if (!responseContent) {
+              const requestData: any = {
+                question: content,
+              };
+
+              if (/^\d+$/.test(sessionId)) {
+                requestData.session_id = parseInt(sessionId);
+              }
+
+              const fallbackResponse = await axios.post(
+                "/api/question",
+                requestData,
+                {
+                  headers: {
+                    Authorization: `Bearer ${authToken}`,
+                    "Content-Type": "application/json",
+                  },
+                },
+              );
+
+              const assistantMessage: ChatMessage = {
+                id: assistantTempId,
+                sessionId,
+                content:
+                  fallbackResponse.data.response ||
+                  fallbackResponse.data.message ||
+                  fallbackResponse.data.answer ||
+                  "Keine Antwort vom Server",
+                role: "assistant",
+                timestamp: new Date().toISOString(),
+                status: "sent",
+              };
+
+              // Update message
+              const msgIndex = messages.value[sessionId].findIndex(
+                (msg) => msg.id === assistantTempId,
+              );
+              if (msgIndex !== -1) {
+                const updatedMessages = [...messages.value[sessionId]];
+                updatedMessages[msgIndex] = assistantMessage;
+                messages.value = {
+                  ...messages.value,
+                  [sessionId]: updatedMessages,
                 };
               }
-            });
-          } catch (error) {
-            console.error('Main streaming error:', error);
-            
-            // Streaming-Status zurücksetzen
-            streaming.value = {
-              isActive: false,
-              progress: 0,
-              currentSessionId: null,
-            };
-            
-            // Fehlerstatus für Assistenten-Nachricht setzen
-            const msgIndex = messages.value[sessionId].findIndex(msg => msg.id === assistantTempId);
-            if (msgIndex !== -1) {
-              messages.value[sessionId][msgIndex].status = "error";
-              messages.value[sessionId][msgIndex].isStreaming = false;
-              messages.value[sessionId][msgIndex].content += "\n[Fehler beim Streaming]";
             }
+
+            finishStreaming();
           }
         } else {
           // Nicht-Streaming-Version verwenden
-          console.log('Using non-streaming endpoint for message:', content);
-          
+          console.log("Using non-streaming endpoint for message:", content);
+
           const assistantTempId = `temp-response-${uuidv4()}`; // Diese Variable fehlte
           const requestData: any = {
-            question: content
+            question: content,
           };
-          
+
           if (/^\d+$/.test(sessionId)) {
             requestData.session_id = parseInt(sessionId);
           }
-          
+
           try {
-            const response = await axios.post('/api/question', requestData, {
+            const response = await axios.post("/api/question", requestData, {
               headers: {
-                'Authorization': `Bearer ${authToken}`,
-                'Content-Type': 'application/json'
-              }
+                Authorization: `Bearer ${authToken}`,
+                "Content-Type": "application/json",
+              },
             });
-            
+
             const assistantMessage: ChatMessage = {
               id: assistantTempId,
               sessionId,
-              content: response.data.response || response.data.message || response.data.answer || "Keine Antwort vom Server",
+              content:
+                response.data.response ||
+                response.data.message ||
+                response.data.answer ||
+                "Keine Antwort vom Server",
               role: "assistant",
               timestamp: new Date().toISOString(),
               isStreaming: false,
               status: "sent",
             };
-            
+
             // Update the existing message
-            const msgIndex = messages.value[sessionId].findIndex(msg => msg.id === assistantTempId);
+            const msgIndex = messages.value[sessionId].findIndex(
+              (msg) => msg.id === assistantTempId,
+            );
             if (msgIndex !== -1) {
               messages.value[sessionId][msgIndex] = assistantMessage;
             }
-            
+
             // Mark user message as sent
             const userMessageIndex = messages.value[sessionId].findIndex(
               (m) => m.id === tempId,
@@ -1141,21 +1160,24 @@ export const useSessionsStore = defineStore(
               messages.value[sessionId][userMessageIndex].status = "sent";
             }
           } catch (err) {
-            console.error('Fallback error:', err);
-            const msgIndex = messages.value[sessionId].findIndex(msg => msg.id === assistantTempId);
+            console.error("Fallback error:", err);
+            const msgIndex = messages.value[sessionId].findIndex(
+              (msg) => msg.id === assistantTempId,
+            );
             if (msgIndex !== -1) {
-              messages.value[sessionId][msgIndex].content = "Fehler bei der Kommunikation mit dem Server";
+              messages.value[sessionId][msgIndex].content =
+                "Fehler bei der Kommunikation mit dem Server";
               messages.value[sessionId][msgIndex].isStreaming = false;
               messages.value[sessionId][msgIndex].status = "error";
             }
           }
-          
+
           streaming.value = {
-              isActive: false,
-              progress: 100,
-              currentSessionId: null,
-            };
-          
+            isActive: false,
+            progress: 100,
+            currentSessionId: null,
+          };
+
           // Mark user message as sent
           const userMessageIndex = messages.value[sessionId].findIndex(
             (m) => m.id === tempId,
@@ -1164,7 +1186,7 @@ export const useSessionsStore = defineStore(
             messages.value[sessionId][userMessageIndex].status = "sent";
           }
         }
-        
+
         // End of streaming vs non-streaming logic
       } catch (err: any) {
         console.error("Error sending message:", err);
@@ -1732,7 +1754,7 @@ export const useSessionsStore = defineStore(
         await setCategoryForSession(sessionId, categoryId);
       }
     }
-    
+
     /**
      * Löscht eine Session endgültig
      */
@@ -1766,8 +1788,7 @@ export const useSessionsStore = defineStore(
         } catch (err: any) {
           console.error(`Error deleting session ${sessionId}:`, err);
           error.value =
-            err.response?.data?.message ||
-            "Fehler beim Löschen der Session";
+            err.response?.data?.message || "Fehler beim Löschen der Session";
 
           // Bei Fehler lokale Änderung rückgängig machen
           sessions.value = sessionsBefore;

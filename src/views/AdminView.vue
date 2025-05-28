@@ -6,13 +6,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { useRoute } from "vue-router";
+import { computed, ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 // Import simplified admin component with better error handling
 import AdminPanelSimplified from "@/components/admin/AdminPanel.simplified.vue";
 
 const route = useRoute();
+const router = useRouter();
+const isLoading = ref(true);
+const error = ref(null);
+
+onMounted(() => {
+  console.log("[AdminView] Component mounted, route:", route.path);
+  isLoading.value = false;
+});
 
 // Get current tab from route
 const currentTab = computed(() => {
@@ -20,13 +28,13 @@ const currentTab = computed(() => {
     // Extract the tab from the route path
     const path = route.path;
     console.log("[AdminView] Current route path:", path);
-    
+
     if (path === "/admin") return "dashboard";
-    
+
     // Extract the last segment of the path (e.g., "/admin/dashboard" -> "dashboard")
-    const segments = path.split('/');
+    const segments = path.split("/");
     const lastSegment = segments[segments.length - 1];
-    
+
     console.log("[AdminView] Detected tab from URL:", lastSegment);
     return lastSegment || "dashboard";
   } catch (error) {

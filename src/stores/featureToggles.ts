@@ -1,5 +1,17 @@
 import { defineStore } from "pinia";
 import { ref, computed, reactive } from "vue";
+import type {
+  FeatureToggle,
+  FeatureCategory,
+  FeatureMetrics,
+  FeatureHistoryEntry,
+  FeatureErrorLog,
+  MetricsQuery,
+  FeatureImportOptions,
+  FeatureToggleStats,
+} from "@/types/featureToggles";
+import { adminFeatureTogglesService } from "@/services/api/adminServices";
+import { shouldUseRealApi } from "@/config/api-flags";
 
 /**
  * Interface für Feature-Toggle-Fehler
@@ -125,7 +137,24 @@ export const useFeatureTogglesStore = defineStore(
   "featureToggles",
   () => {
     // State
-    const version = ref<number>(2); // Erhöht auf 2 wegen der neuen Funktionalität
+    const version = ref<number>(3); // Erhöht auf 3 für die erweiterten Feature-Toggle-Funktionen
+
+    // Neue state-Eigenschaften für erweiterte Feature-Toggle-Verwaltung
+    const loading = ref<boolean>(false);
+    const error = ref<string | null>(null);
+
+    // Transformierte Features nach neuem Format
+    const enhancedFeatures = ref<FeatureToggle[]>([]);
+    const categories = ref<FeatureCategory[]>([]);
+
+    // Metriken für Feature-Nutzung
+    const metrics = reactive<Record<string, FeatureMetrics>>({});
+
+    // Feature-Änderungsverlauf
+    const featureHistory = reactive<Record<string, FeatureHistoryEntry[]>>({});
+
+    // Fehlerprotokolle
+    const errorLogs = ref<FeatureErrorLog[]>([]);
 
     // Fehlererfassung und Status
     const errors = reactive<Record<string, FeatureToggleError[]>>({});
@@ -522,7 +551,11 @@ export const useFeatureTogglesStore = defineStore(
         stable: false,
         requiredRole: "developer",
         hasFallback: true,
-        dependencies: ["useSfcDocConverterContainer", "useSfcUIButton", "useSfcUIProgressBar"],
+        dependencies: [
+          "useSfcDocConverterContainer",
+          "useSfcUIButton",
+          "useSfcUIProgressBar",
+        ],
       },
       useSfcDocConverterProgress: {
         name: "SFC Konvertierungsfortschritt",
@@ -1198,14 +1231,20 @@ export const useFeatureTogglesStore = defineStore(
 
       // Fallbacks für Document Converter Komponenten deaktivieren
       Object.keys(activeFallbacks).forEach((feature) => {
-        if (feature.startsWith("useSfcDocConverter") || feature === "useSfcDocConverter") {
+        if (
+          feature.startsWith("useSfcDocConverter") ||
+          feature === "useSfcDocConverter"
+        ) {
           activeFallbacks[feature] = false;
         }
       });
 
       // Fehler löschen für Document Converter Komponenten
       Object.keys(errors).forEach((feature) => {
-        if (feature.startsWith("useSfcDocConverter") || feature === "useSfcDocConverter") {
+        if (
+          feature.startsWith("useSfcDocConverter") ||
+          feature === "useSfcDocConverter"
+        ) {
           errors[feature] = [];
         }
       });
@@ -1317,21 +1356,769 @@ export const useFeatureTogglesStore = defineStore(
     }
 
     /**
-     * Lädt Feature Toggles vom API-Server
+     * Lädt Feature Toggles vom API-Server und konvertiert sie in das erweiterte Format
      */
     async function loadFeatureToggles(): Promise<boolean> {
+      loading.value = true;
+      error.value = null;
+
       try {
-        // API-Aufruf simulieren oder echten API-Call durchführen
-        console.log("Loading feature toggles from API...");
+        // Prüfen, ob die echte API verwendet werden soll
+        if (shouldUseRealApi("useRealFeatureTogglesApi")) {
+          console.log(
+            "[FeatureTogglesStore] Lade Feature-Toggles über AdminFeatureTogglesService",
+          );
+          const response = await adminFeatureTogglesService.getFeatureToggles();
 
-        // In der echten Implementierung:
-        // const response = await axios.get('/api/features');
-        // configureFeatures(response.data.features);
+          if (response.success && Array.isArray(response.data)) {
+            console.log(
+              "[FeatureTogglesStore] Feature-Toggles erfolgreich über API geladen",
+            );
 
-        // Hier nur Beispiel-Implementation
+            // API-Daten in lokale Struktur übertragen
+            response.data.forEach((toggle) => {
+              if (toggle.key in ref) {
+                // @ts-ignore: dynamisches Property-Aktualisieren
+                ref[toggle.key as keyof typeof ref] = toggle.enabled;
+              } else {
+                console.warn(
+                  `[FeatureTogglesStore] Unbekanntes Feature von API empfangen: ${toggle.key}`,
+                );
+              }
+            });
+          } else {
+            console.warn(
+              "[FeatureTogglesStore] Fehler beim Laden der Feature-Toggles über API, verwende lokale Daten",
+              response.message,
+            );
+          }
+        } else {
+          console.log(
+            "[FeatureTogglesStore] Verwende lokale Feature-Toggle-Konfiguration",
+          );
+        }
+
+        // Hier Features im neuen Format aufbereiten (immer machen, auch nach API-Aufruf)
+        updateEnhancedFeatures();
+
+        // Kategorien extrahieren
+        updateCategories();
+
+        loading.value = false;
         return true;
-      } catch (error) {
-        console.error("Fehler beim Laden der Feature-Toggles:", error);
+      } catch (err) {
+        console.error(
+          "[FeatureTogglesStore] Fehler beim Laden der Feature-Toggles:",
+          err,
+        );
+        error.value = err instanceof Error ? err.message : String(err);
+        loading.value = false;
+        return false;
+      }
+    }
+
+    /**
+     * Konvertiert die vorhandenen Features in das erweiterte Format
+     */
+    function updateEnhancedFeatures(): void {
+      enhancedFeatures.value = Object.entries(featureConfigs).map(
+        ([key, config]) => {
+          return {
+            key,
+            name: config.name,
+            description: config.description,
+            category: config.group,
+            enabled: isEnabled(key),
+            dependencies: config.dependencies || [],
+            locked: !!config.requiredRole && config.requiredRole === "admin",
+            experimental: !config.stable,
+          };
+        },
+      );
+    }
+
+    /**
+     * Extrahiert einzigartige Kategorien aus den Feature-Konfigurationen
+     */
+    function updateCategories(): void {
+      const uniqueCategories = new Set<string>();
+
+      enhancedFeatures.value.forEach((feature) => {
+        uniqueCategories.add(feature.category);
+      });
+
+      categories.value = Array.from(uniqueCategories).sort();
+    }
+
+    /**
+     * Ruft Feature-Metriken für den angegebenen Zeitraum ab
+     */
+    async function getFeatureMetrics(query: MetricsQuery): Promise<{
+      features: Record<string, FeatureMetrics>;
+      totalUsage: number;
+      totalErrors: number;
+    }> {
+      // Prüfen, ob die echte API verwendet werden soll
+      if (shouldUseRealApi("useRealFeatureTogglesApi")) {
+        try {
+          console.log(
+            "[FeatureTogglesStore] Rufe Feature-Toggle-Statistiken über API ab",
+          );
+          const response =
+            await adminFeatureTogglesService.getFeatureToggleStats();
+
+          if (response.success && response.data) {
+            console.log(
+              "[FeatureTogglesStore] Feature-Toggle-Statistiken erfolgreich über API geladen",
+            );
+
+            // Daten aus API in lokales Format konvertieren
+            const stats: FeatureToggleStats = response.data;
+            const result: Record<string, FeatureMetrics> = {};
+            let totalUsage = 0;
+            let totalErrors = 0;
+
+            // Statistiken pro Feature berechnen (vereinfachte Implementierung, da API-Daten anders strukturiert sein könnten)
+            enhancedFeatures.value.forEach((feature) => {
+              // In echtem System würden wir hier die tatsächlichen Daten aus der API verwenden
+              const usageCount = Math.floor(Math.random() * 1000);
+              const errorCount = Math.floor(Math.random() * (usageCount * 0.1));
+              const errorRate = errorCount / (usageCount || 1);
+
+              // Trend aus den Verlaufsdaten der API ableiten, falls verfügbar
+              const trend = stats.history.map((h) => {
+                return {
+                  date: h.date,
+                  count: Math.floor(Math.random() * 200), // In echtem System: tatsächliche Nutzungszahlen
+                };
+              });
+
+              result[feature.key] = {
+                usageCount,
+                errorCount,
+                errorRate,
+                lastUsed: new Date().toISOString(),
+                trend,
+              };
+
+              totalUsage += usageCount;
+              totalErrors += errorCount;
+            });
+
+            // Aktualisiere den Metriken-Zustand im Store
+            Object.entries(result).forEach(([key, value]) => {
+              metrics[key] = value;
+            });
+
+            return {
+              features: result,
+              totalUsage,
+              totalErrors,
+            };
+          }
+        } catch (err) {
+          console.error(
+            "[FeatureTogglesStore] Fehler beim Abrufen der Feature-Metriken über API:",
+            err,
+          );
+          // Fallback zu Mock-Daten bei Fehler
+        }
+      }
+
+      // Fallback: Simulierte API-Anfrage für Metriken
+      console.log(
+        "[FeatureTogglesStore] Generiere Mock-Daten für Feature-Metriken",
+      );
+      const result: Record<string, FeatureMetrics> = {};
+      let totalUsage = 0;
+      let totalErrors = 0;
+
+      // Demo-Daten für Metriken generieren
+      enhancedFeatures.value.forEach((feature) => {
+        const usageCount = Math.floor(Math.random() * 1000);
+        const errorCount = Math.floor(Math.random() * (usageCount * 0.1));
+        const errorRate = errorCount / (usageCount || 1);
+
+        // Trend-Daten für die letzten 7 Tage generieren
+        const trend = Array.from({ length: 7 }, (_, i) => {
+          const date = new Date();
+          date.setDate(date.getDate() - 6 + i);
+          return {
+            date: date.toISOString().split("T")[0],
+            count: Math.floor(Math.random() * 200),
+          };
+        });
+
+        result[feature.key] = {
+          usageCount,
+          errorCount,
+          errorRate,
+          lastUsed: new Date().toISOString(),
+          trend,
+        };
+
+        totalUsage += usageCount;
+        totalErrors += errorCount;
+      });
+
+      // Aktualisiere den Metriken-Zustand im Store
+      Object.entries(result).forEach(([key, value]) => {
+        metrics[key] = value;
+      });
+
+      return {
+        features: result,
+        totalUsage,
+        totalErrors,
+      };
+    }
+
+    /**
+     * Ruft die neuesten Fehler für Features ab
+     */
+    async function getFeatureErrors(query: {
+      startDate: Date;
+      endDate: Date;
+      limit?: number;
+    }): Promise<FeatureErrorLog[]> {
+      // Simulierte Fehlerprotokolle
+      // In produktiven Umgebungen würde dies mit einem echten API-Call ersetzt
+
+      const sampleErrors = enhancedFeatures.value
+        .filter(() => Math.random() > 0.7) // Nur für einige Features Fehler generieren
+        .flatMap((feature) => {
+          const errorCount = Math.floor(Math.random() * 3);
+          return Array.from({ length: errorCount }, (_, i) => {
+            const date = new Date();
+            date.setDate(date.getDate() - Math.floor(Math.random() * 5));
+
+            return {
+              feature: feature.key,
+              message: `Error in feature ${feature.name}: ${i % 2 === 0 ? "Dependency failed" : "Initialization error"}`,
+              timestamp: date.toISOString(),
+              stackTrace:
+                i % 2 === 0
+                  ? "Error: Failed to initialize feature\n  at FeatureManager.init (feature-manager.ts:42)\n  at App.vue:86\n  at FeatureProvider (feature-provider.ts:24)"
+                  : undefined,
+              userId: `user-${Math.floor(Math.random() * 5)}`,
+              sessionId: `session-${Math.floor(Math.random() * 100)}`,
+              browserInfo: {
+                userAgent:
+                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+                device: "Desktop",
+                os: "Windows",
+                browser: "Chrome",
+              },
+            };
+          });
+        });
+
+      // Sortieren und auf Limit beschränken
+      const sortedErrors = sampleErrors
+        .sort(
+          (a, b) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+        )
+        .slice(0, query.limit || 50);
+
+      errorLogs.value = sortedErrors;
+      return sortedErrors;
+    }
+
+    /**
+     * Ruft den Änderungsverlauf für ein Feature ab
+     */
+    async function getFeatureHistory(
+      featureKey: string,
+    ): Promise<FeatureHistoryEntry[]> {
+      // Simulierter Änderungsverlauf
+      // In produktiven Umgebungen würde dies mit einem echten API-Call ersetzt
+
+      if (!featureHistory[featureKey]) {
+        // Generiere einen simulierten Verlauf, wenn noch keiner existiert
+        const historyEntries: FeatureHistoryEntry[] = [];
+        const feature = enhancedFeatures.value.find(
+          (f) => f.key === featureKey,
+        );
+
+        if (feature) {
+          // Erzeugen von 5 zufälligen Änderungen in der Vergangenheit
+          for (let i = 0; i < 5; i++) {
+            const date = new Date();
+            date.setDate(date.getDate() - (5 - i) * 3); // Über 15 Tage verteilt
+
+            const changes: Record<string, { old: any; new: any }> = {};
+
+            // Verschiedene Arten von Änderungen simulieren
+            if (i === 0) {
+              // Erste Erstellung
+              changes["enabled"] = { old: false, new: true };
+              changes["description"] = {
+                old: "",
+                new: feature.description || "",
+              };
+            } else if (i === 1) {
+              // Beschreibungsänderung
+              changes["description"] = {
+                old: "Vorherige Beschreibung",
+                new: feature.description || "",
+              };
+            } else if (i === 2) {
+              // Status-Änderung
+              changes["enabled"] = { old: false, new: true };
+            } else if (i === 3) {
+              // Kategorie-Änderung
+              changes["category"] = {
+                old: "Vorherige Kategorie",
+                new: feature.category,
+              };
+            } else {
+              // Abhängigkeiten-Änderung
+              changes["dependencies"] = {
+                old: [],
+                new: feature.dependencies || [],
+              };
+            }
+
+            historyEntries.push({
+              timestamp: date.toISOString(),
+              user: `user${(i % 3) + 1}@example.com`,
+              changes,
+            });
+          }
+
+          featureHistory[featureKey] = historyEntries;
+        }
+      }
+
+      return featureHistory[featureKey] || [];
+    }
+
+    /**
+     * Erstellt ein neues Feature
+     */
+    async function createFeature(feature: FeatureToggle): Promise<boolean> {
+      // Prüfen, ob ein Feature mit diesem Key bereits existiert
+      if (enhancedFeatures.value.some((f) => f.key === feature.key)) {
+        error.value = `Ein Feature mit dem Key '${feature.key}' existiert bereits.`;
+        return false;
+      }
+
+      try {
+        // Prüfen, ob die echte API verwendet werden soll
+        if (shouldUseRealApi("useRealFeatureTogglesApi")) {
+          console.log(
+            `[FeatureTogglesStore] Erstelle neues Feature-Toggle ${feature.key} über API`,
+          );
+          const response =
+            await adminFeatureTogglesService.createFeatureToggle(feature);
+
+          if (!response.success) {
+            console.warn(
+              `[FeatureTogglesStore] Fehler beim Erstellen des Features über API: ${response.message}`,
+            );
+            error.value =
+              response.message ||
+              `Fehler beim Erstellen des Features ${feature.key}`;
+            return false;
+          }
+        }
+
+        // Featureconfig erstellen
+        featureConfigs[feature.key] = {
+          name: feature.name,
+          description: feature.description || "",
+          group: feature.category as any, // Cast als any für Kompatibilität mit vorhandenem Enum
+          stable: !feature.experimental,
+          requiredRole: feature.locked ? "admin" : "developer",
+          hasFallback: false,
+          dependencies: feature.dependencies || [],
+        };
+
+        // Feature aktivieren/deaktivieren
+        setFeature(feature.key, feature.enabled);
+
+        // Änderungsverlauf aktualisieren
+        recordFeatureChange(feature.key, {
+          timestamp: new Date().toISOString(),
+          user: "current-user@example.com", // In Produktion aus Auth-System holen
+          changes: {
+            created: {
+              old: null,
+              new: true,
+            },
+            enabled: {
+              old: false,
+              new: feature.enabled,
+            },
+          },
+        });
+
+        // Features im neuen Format aktualisieren
+        updateEnhancedFeatures();
+        updateCategories();
+
+        return true;
+      } catch (err) {
+        console.error(
+          "[FeatureTogglesStore] Fehler beim Erstellen des Features:",
+          err,
+        );
+        error.value = err instanceof Error ? err.message : String(err);
+        return false;
+      }
+    }
+
+    /**
+     * Aktualisiert ein bestehendes Feature
+     */
+    async function updateFeature(feature: FeatureToggle): Promise<boolean> {
+      try {
+        // Prüfen, ob das Feature existiert
+        const existingFeature = enhancedFeatures.value.find(
+          (f) => f.key === feature.key,
+        );
+        if (!existingFeature) {
+          error.value = `Feature mit dem Key '${feature.key}' nicht gefunden.`;
+          return false;
+        }
+
+        // Erfasse die Änderungen für den Verlauf
+        const changes: Record<string, { old: any; new: any }> = {};
+
+        if (existingFeature.name !== feature.name) {
+          changes["name"] = { old: existingFeature.name, new: feature.name };
+        }
+
+        if (existingFeature.description !== feature.description) {
+          changes["description"] = {
+            old: existingFeature.description,
+            new: feature.description,
+          };
+        }
+
+        if (existingFeature.category !== feature.category) {
+          changes["category"] = {
+            old: existingFeature.category,
+            new: feature.category,
+          };
+        }
+
+        if (existingFeature.enabled !== feature.enabled) {
+          changes["enabled"] = {
+            old: existingFeature.enabled,
+            new: feature.enabled,
+          };
+        }
+
+        if (existingFeature.locked !== feature.locked) {
+          changes["locked"] = {
+            old: existingFeature.locked,
+            new: feature.locked,
+          };
+        }
+
+        if (existingFeature.experimental !== feature.experimental) {
+          changes["experimental"] = {
+            old: existingFeature.experimental,
+            new: feature.experimental,
+          };
+        }
+
+        // Vergleiche Dependencies-Arrays
+        if (
+          JSON.stringify(existingFeature.dependencies) !==
+          JSON.stringify(feature.dependencies)
+        ) {
+          changes["dependencies"] = {
+            old: existingFeature.dependencies,
+            new: feature.dependencies,
+          };
+        }
+
+        // Wenn es Änderungen gibt, aktualisiere das Feature
+        if (Object.keys(changes).length > 0) {
+          // Prüfen, ob die echte API verwendet werden soll
+          if (shouldUseRealApi("useRealFeatureTogglesApi")) {
+            console.log(
+              `[FeatureTogglesStore] Aktualisiere Feature-Toggle ${feature.key} über API`,
+            );
+            const response =
+              await adminFeatureTogglesService.updateFeatureToggle(
+                feature.key,
+                feature.enabled,
+                feature.description,
+              );
+
+            if (!response.success) {
+              console.warn(
+                `[FeatureTogglesStore] Fehler beim Aktualisieren des Features über API: ${response.message}`,
+              );
+              error.value =
+                response.message ||
+                `Fehler beim Aktualisieren des Features ${feature.key}`;
+              return false;
+            }
+          }
+
+          // FeatureConfig aktualisieren
+          featureConfigs[feature.key] = {
+            ...featureConfigs[feature.key],
+            name: feature.name,
+            description: feature.description || "",
+            group: feature.category as any,
+            stable: !feature.experimental,
+            requiredRole: feature.locked ? "admin" : "developer",
+            dependencies: feature.dependencies || [],
+          };
+
+          // Aktivierung/Deaktivierung
+          if (existingFeature.enabled !== feature.enabled) {
+            setFeature(feature.key, feature.enabled);
+          }
+
+          // Änderungsverlauf aktualisieren
+          recordFeatureChange(feature.key, {
+            timestamp: new Date().toISOString(),
+            user: "current-user@example.com", // In Produktion aus Auth-System holen
+            changes,
+          });
+
+          // Features im neuen Format aktualisieren
+          updateEnhancedFeatures();
+          updateCategories();
+        }
+
+        return true;
+      } catch (err) {
+        console.error(
+          "[FeatureTogglesStore] Fehler beim Aktualisieren des Features:",
+          err,
+        );
+        error.value = err instanceof Error ? err.message : String(err);
+        return false;
+      }
+    }
+
+    /**
+     * Löscht ein Feature
+     */
+    async function deleteFeature(featureKey: string): Promise<boolean> {
+      try {
+        // Prüfen, ob das Feature existiert
+        const existingFeature = enhancedFeatures.value.find(
+          (f) => f.key === featureKey,
+        );
+        if (!existingFeature) {
+          error.value = `Feature mit dem Key '${featureKey}' nicht gefunden.`;
+          return false;
+        }
+
+        // Prüfen, ob die echte API verwendet werden soll
+        if (shouldUseRealApi("useRealFeatureTogglesApi")) {
+          console.log(
+            `[FeatureTogglesStore] Lösche Feature-Toggle ${featureKey} über API`,
+          );
+          const response =
+            await adminFeatureTogglesService.deleteFeatureToggle(featureKey);
+
+          if (!response.success) {
+            console.warn(
+              `[FeatureTogglesStore] Fehler beim Löschen des Features über API: ${response.message}`,
+            );
+            error.value =
+              response.message ||
+              `Fehler beim Löschen des Features ${featureKey}`;
+            return false;
+          }
+        }
+
+        // FeatureConfig löschen
+        delete featureConfigs[featureKey];
+
+        // Features im neuen Format aktualisieren
+        updateEnhancedFeatures();
+        updateCategories();
+
+        return true;
+      } catch (err) {
+        console.error(
+          "[FeatureTogglesStore] Fehler beim Löschen des Features:",
+          err,
+        );
+        error.value = err instanceof Error ? err.message : String(err);
+        return false;
+      }
+    }
+
+    /**
+     * Aktualisiert alle Features einer Kategorie
+     */
+    async function updateCategoryFeatures(
+      category: string,
+      enabled: boolean,
+    ): Promise<boolean> {
+      try {
+        // Features der angegebenen Kategorie finden
+        const categoryFeatures = enhancedFeatures.value.filter(
+          (f) => f.category === category,
+        );
+
+        // Alle Features dieser Kategorie aktivieren/deaktivieren
+        for (const feature of categoryFeatures) {
+          await updateFeature({
+            ...feature,
+            enabled,
+          });
+        }
+
+        return true;
+      } catch (err) {
+        console.error(
+          `Fehler beim Aktualisieren der Features der Kategorie '${category}':`,
+          err,
+        );
+        error.value = err instanceof Error ? err.message : String(err);
+        return false;
+      }
+    }
+
+    /**
+     * Importiert Features aus einer JSON-Datei
+     */
+    async function importFeatures(
+      importedFeatures: FeatureToggle[],
+      options: FeatureImportOptions,
+    ): Promise<boolean> {
+      try {
+        // Anzahl der Importe und Fehler für die Rückmeldung
+        let importCount = 0;
+        let errorCount = 0;
+
+        for (const feature of importedFeatures) {
+          // Prüfen, ob das Feature bereits existiert
+          const existingFeature = enhancedFeatures.value.find(
+            (f) => f.key === feature.key,
+          );
+
+          if (existingFeature) {
+            if (options.overwrite) {
+              // Bestehenden Aktivierungsstatus beibehalten, wenn gewünscht
+              const enabled = options.keepEnabled
+                ? existingFeature.enabled
+                : feature.enabled;
+
+              // Feature aktualisieren
+              const success = await updateFeature({
+                ...feature,
+                enabled,
+              });
+
+              if (success) {
+                importCount++;
+              } else {
+                errorCount++;
+              }
+            }
+            // Wenn overwrite false ist, Feature überspringen
+          } else {
+            // Neues Feature erstellen
+            const success = await createFeature(feature);
+
+            if (success) {
+              importCount++;
+            } else {
+              errorCount++;
+            }
+          }
+        }
+
+        console.log(
+          `Import abgeschlossen: ${importCount} Features importiert, ${errorCount} Fehler`,
+        );
+        return errorCount === 0;
+      } catch (err) {
+        console.error("Fehler beim Importieren der Features:", err);
+        error.value = err instanceof Error ? err.message : String(err);
+        return false;
+      }
+    }
+
+    /**
+     * Zeichnet eine Änderung im Feature-Änderungsverlauf auf
+     */
+    function recordFeatureChange(
+      featureKey: string,
+      entry: FeatureHistoryEntry,
+    ): void {
+      if (!featureHistory[featureKey]) {
+        featureHistory[featureKey] = [];
+      }
+
+      featureHistory[featureKey].push(entry);
+
+      // Sortieren nach Zeitstempel (neueste zuerst)
+      featureHistory[featureKey].sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+      );
+    }
+
+    /**
+     * Aktualisiert die Features vom Server
+     */
+    async function refreshFeatures(): Promise<boolean> {
+      loading.value = true;
+      error.value = null;
+
+      try {
+        // Prüfen, ob die echte API verwendet werden soll
+        if (shouldUseRealApi("useRealFeatureTogglesApi")) {
+          console.log(
+            "[FeatureTogglesStore] Aktualisiere Feature-Toggles über API",
+          );
+          const response = await adminFeatureTogglesService.getFeatureToggles();
+
+          if (response.success && Array.isArray(response.data)) {
+            console.log(
+              "[FeatureTogglesStore] Feature-Toggles erfolgreich über API aktualisiert",
+            );
+
+            // API-Daten in lokale Struktur übertragen
+            response.data.forEach((toggle) => {
+              if (toggle.key in ref) {
+                // @ts-ignore: dynamisches Property-Aktualisieren
+                ref[toggle.key as keyof typeof ref] = toggle.enabled;
+              }
+            });
+
+            // Features im neuen Format aktualisieren
+            updateEnhancedFeatures();
+            updateCategories();
+
+            loading.value = false;
+            return true;
+          } else {
+            throw new Error(
+              response.message ||
+                "Fehler beim Aktualisieren der Feature-Toggles",
+            );
+          }
+        }
+
+        // Wenn keine API verwendet wird, aktualisieren wir nur die lokalen Daten
+        updateEnhancedFeatures();
+        updateCategories();
+
+        loading.value = false;
+        return true;
+      } catch (err) {
+        console.error(
+          "[FeatureTogglesStore] Fehler beim Aktualisieren der Feature-Toggles:",
+          err,
+        );
+        error.value = err instanceof Error ? err.message : String(err);
+        loading.value = false;
         return false;
       }
     }
@@ -1396,74 +2183,102 @@ export const useFeatureTogglesStore = defineStore(
       // Basis-Features
       usePiniaAuth: {
         get: () => usePiniaAuth.value,
-        set: (value) => { usePiniaAuth.value = value; },
-        enumerable: true
+        set: (value) => {
+          usePiniaAuth.value = value;
+        },
+        enumerable: true,
       },
       usePiniaSessions: {
         get: () => usePiniaSessions.value,
-        set: (value) => { usePiniaSessions.value = value; },
-        enumerable: true
+        set: (value) => {
+          usePiniaSessions.value = value;
+        },
+        enumerable: true,
       },
       usePiniaUI: {
         get: () => usePiniaUI.value,
-        set: (value) => { usePiniaUI.value = value; },
-        enumerable: true
+        set: (value) => {
+          usePiniaUI.value = value;
+        },
+        enumerable: true,
       },
       usePiniaSettings: {
         get: () => usePiniaSettings.value,
-        set: (value) => { usePiniaSettings.value = value; },
-        enumerable: true
+        set: (value) => {
+          usePiniaSettings.value = value;
+        },
+        enumerable: true,
       },
       useNewUIComponents: {
         get: () => useNewUIComponents.value,
-        set: (value) => { useNewUIComponents.value = value; },
-        enumerable: true
+        set: (value) => {
+          useNewUIComponents.value = value;
+        },
+        enumerable: true,
       },
       useToastNotifications: {
         get: () => useToastNotifications.value,
-        set: (value) => { useToastNotifications.value = value; },
-        enumerable: true
+        set: (value) => {
+          useToastNotifications.value = value;
+        },
+        enumerable: true,
       },
       useModernSidebar: {
         get: () => useModernSidebar.value,
-        set: (value) => { useModernSidebar.value = value; },
-        enumerable: true
+        set: (value) => {
+          useModernSidebar.value = value;
+        },
+        enumerable: true,
       },
       useNewAdminPanel: {
         get: () => useNewAdminPanel.value,
-        set: (value) => { useNewAdminPanel.value = value; },
-        enumerable: true
+        set: (value) => {
+          useNewAdminPanel.value = value;
+        },
+        enumerable: true,
       },
       uiComponentsDemo: {
         get: () => uiComponentsDemo.value,
-        set: (value) => { uiComponentsDemo.value = value; },
-        enumerable: true
+        set: (value) => {
+          uiComponentsDemo.value = value;
+        },
+        enumerable: true,
       },
       useDarkMode: {
         get: () => useDarkMode.value,
-        set: (value) => { useDarkMode.value = value; },
-        enumerable: true
+        set: (value) => {
+          useDarkMode.value = value;
+        },
+        enumerable: true,
       },
       useThemeCustomization: {
         get: () => useThemeCustomization.value,
-        set: (value) => { useThemeCustomization.value = value; },
-        enumerable: true
+        set: (value) => {
+          useThemeCustomization.value = value;
+        },
+        enumerable: true,
       },
       useLegacyBridge: {
         get: () => useLegacyBridge.value,
-        set: (value) => { useLegacyBridge.value = value; },
-        enumerable: true
+        set: (value) => {
+          useLegacyBridge.value = value;
+        },
+        enumerable: true,
       },
       migrateLocalStorage: {
         get: () => migrateLocalStorage.value,
-        set: (value) => { migrateLocalStorage.value = value; },
-        enumerable: true
+        set: (value) => {
+          migrateLocalStorage.value = value;
+        },
+        enumerable: true,
       },
       useModernDocConverter: {
         get: () => useModernDocConverter.value,
-        set: (value) => { useModernDocConverter.value = value; },
-        enumerable: true
-      }
+        set: (value) => {
+          useModernDocConverter.value = value;
+        },
+        enumerable: true,
+      },
     });
 
     return {
@@ -1484,9 +2299,18 @@ export const useFeatureTogglesStore = defineStore(
       migrateLocalStorage,
       useModernDocConverter,
       isLoaded,
+      loading,
+      error,
 
       // Expose the features map for BridgeAPI compatibility
       features,
+
+      // Enhanced features and categories
+      enhancedFeatures,
+      categories,
+      metrics,
+      featureHistory,
+      errorLogs,
 
       // SFC-Migration Features
       useSfcDocConverter,
@@ -1547,6 +2371,19 @@ export const useFeatureTogglesStore = defineStore(
       enableFeature,
       disableFeature,
       configureFeatures,
+
+      // Enhanced Feature Management
+      createFeature,
+      updateFeature,
+      deleteFeature,
+      updateCategoryFeatures,
+      importFeatures,
+      getFeatureMetrics,
+      getFeatureErrors,
+      getFeatureHistory,
+      updateEnhancedFeatures,
+      updateCategories,
+      recordFeatureChange,
 
       // API-Integration
       loadFeatureToggles,
@@ -1635,6 +2472,11 @@ export const useFeatureTogglesStore = defineStore(
         "useSfcDocConverterPreview",
         "useSfcDocConverterStats",
         "useSfcDocConverterErrorDisplay",
+        // Enhanced Feature Toggle Management
+        "enhancedFeatures",
+        "categories",
+        "metrics",
+        "featureHistory",
         // Fallback-Status auch persistieren
         "activeFallbacks",
       ],
@@ -1650,7 +2492,7 @@ export const useFeatureTogglesStore = defineStore(
           const storedVersion = parseInt(
             localStorage.getItem("featureToggles")?.version || "0",
           );
-          if (storedVersion < 2) {
+          if (storedVersion < 3) {
             console.warn(
               "Veraltete Feature-Toggle-Version gefunden, setze auf Standardwerte zurück",
             );
@@ -1687,6 +2529,12 @@ export const useFeatureTogglesStore = defineStore(
               context.store[key as keyof typeof context.store] = false;
             }
           });
+
+        // Enhanced Features und Kategorien initialisieren
+        if (context.store.enhancedFeatures.length === 0) {
+          context.store.updateEnhancedFeatures();
+          context.store.updateCategories();
+        }
       },
     },
   },

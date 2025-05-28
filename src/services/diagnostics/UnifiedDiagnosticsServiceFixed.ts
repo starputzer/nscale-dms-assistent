@@ -1,6 +1,10 @@
-import { ref, computed, type Ref, type ComputedRef } from 'vue';
-import type { Router } from 'vue-router';
-import type { RouterHealthMetrics, DiagnosticReport, RecoveryStrategy } from '@/types/diagnostics';
+import { ref, computed, type Ref, type ComputedRef } from "vue";
+import type { Router } from "vue-router";
+import type {
+  RouterHealthMetrics,
+  DiagnosticReport,
+  RecoveryStrategy,
+} from "@/types/diagnostics";
 
 /**
  * Vereinfachte Version des UnifiedDiagnosticsService ohne externe Abhängigkeiten
@@ -8,28 +12,30 @@ import type { RouterHealthMetrics, DiagnosticReport, RecoveryStrategy } from '@/
  */
 export class UnifiedDiagnosticsServiceFixed {
   private diagnosticsHistory: Ref<DiagnosticReport[]> = ref([]);
-  private activeRecoveryAttempts: Ref<Map<string, RecoveryStrategy>> = ref(new Map());
+  private activeRecoveryAttempts: Ref<Map<string, RecoveryStrategy>> = ref(
+    new Map(),
+  );
   private healthMetrics: Ref<RouterHealthMetrics> = ref({
-    initStatus: 'pending',
+    initStatus: "pending",
     currentRouteAvailable: false,
     piniaReady: false,
     navigationSuccessRate: 1.0,
     errorCount: 0,
     lastError: null,
     lastSuccessfulNavigation: null,
-    consecutiveFailures: 0
+    consecutiveFailures: 0,
   });
 
   constructor() {
     // Monitoring wird später in initialize() gestartet
   }
-  
+
   /**
    * Initialisiert den Service
    */
   public async initialize(): Promise<void> {
     this.initializeMonitoring();
-    console.log('[UnifiedDiagnosticsService] Initialized');
+    console.log("[UnifiedDiagnosticsService] Initialized");
   }
 
   /**
@@ -56,29 +62,29 @@ export class UnifiedDiagnosticsServiceFixed {
     try {
       // Sicherer Router-Zugriff über window
       const router = (window as any).$router as Router | undefined;
-      
+
       if (!router) {
-        metrics.initStatus = 'failed';
+        metrics.initStatus = "failed";
         metrics.currentRouteAvailable = false;
         return;
       }
 
-      metrics.initStatus = 'ready';
+      metrics.initStatus = "ready";
 
       // Sichere CurrentRoute-Prüfung
       try {
         const currentRoute = router.currentRoute?.value;
         metrics.currentRouteAvailable = !!currentRoute;
-        
+
         if (currentRoute) {
           metrics.lastSuccessfulNavigation = {
             path: currentRoute.path,
             name: currentRoute.name as string | undefined,
-            timestamp: Date.now()
+            timestamp: Date.now(),
           };
         }
       } catch (error) {
-        console.warn('Router currentRoute Zugriff fehlgeschlagen:', error);
+        console.warn("Router currentRoute Zugriff fehlgeschlagen:", error);
         metrics.currentRouteAvailable = false;
       }
 
@@ -89,14 +95,13 @@ export class UnifiedDiagnosticsServiceFixed {
       } catch (error) {
         metrics.piniaReady = false;
       }
-
     } catch (error: any) {
-      console.error('Router-Gesundheitsprüfung fehlgeschlagen:', error);
+      console.error("Router-Gesundheitsprüfung fehlgeschlagen:", error);
       metrics.errorCount++;
       metrics.lastError = {
         message: error.message,
         stack: error.stack,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
     }
   }
@@ -111,7 +116,7 @@ export class UnifiedDiagnosticsServiceFixed {
       domErrors: this.getDomErrorStatus(),
       authStatus: this.getAuthStatus(),
       selfHealingStatus: this.getSelfHealingStatus(),
-      healthMetrics: { ...this.healthMetrics.value }
+      healthMetrics: { ...this.healthMetrics.value },
     };
 
     this.diagnosticsHistory.value.push(report);
@@ -134,7 +139,7 @@ export class UnifiedDiagnosticsServiceFixed {
       has404Issues: false,
       errorCount: 0,
       recommendations: [],
-      routerInitErrors: 0
+      routerInitErrors: 0,
     };
   }
 
@@ -151,7 +156,7 @@ export class UnifiedDiagnosticsServiceFixed {
       componentHierarchy: [],
       currentRoute: window.location.pathname,
       timestamp: Date.now(),
-      domSnapshot: ''
+      domSnapshot: "",
     };
   }
 
@@ -162,7 +167,7 @@ export class UnifiedDiagnosticsServiceFixed {
     return {
       isAuthenticated: false,
       lastAuthAction: null,
-      tokenValid: false
+      tokenValid: false,
     };
   }
 
@@ -174,7 +179,7 @@ export class UnifiedDiagnosticsServiceFixed {
       isActive: false,
       lastHealingAttempt: null,
       healingHistory: [],
-      successRate: 1.0
+      successRate: 1.0,
     };
   }
 
@@ -184,17 +189,21 @@ export class UnifiedDiagnosticsServiceFixed {
   private analyzeTrends(report: DiagnosticReport) {
     // Erkenne wiederkehrende Muster
     const recentReports = this.diagnosticsHistory.value.slice(-10);
-    
+
     // Prüfe auf wiederkehrende 404-Fehler
-    const recurring404s = recentReports.filter(r => r.router404.has404Issues).length;
+    const recurring404s = recentReports.filter(
+      (r) => r.router404.has404Issues,
+    ).length;
     if (recurring404s > 5) {
-      this.triggerSmartRecovery('recurring_404');
+      this.triggerSmartRecovery("recurring_404");
     }
 
     // Prüfe auf Router-Initialisierungsprobleme
-    const initFailures = recentReports.filter(r => r.healthMetrics.initStatus === 'failed').length;
+    const initFailures = recentReports.filter(
+      (r) => r.healthMetrics.initStatus === "failed",
+    ).length;
     if (initFailures > 3) {
-      this.triggerSmartRecovery('router_init_failure');
+      this.triggerSmartRecovery("router_init_failure");
     }
   }
 
@@ -213,7 +222,7 @@ export class UnifiedDiagnosticsServiceFixed {
       await this.executeRecoveryStrategy(strategy);
       this.activeRecoveryAttempts.value.delete(issue);
     } catch (error) {
-      console.error('Recovery-Strategie fehlgeschlagen:', error);
+      console.error("Recovery-Strategie fehlgeschlagen:", error);
       this.activeRecoveryAttempts.value.delete(issue);
     }
   }
@@ -224,28 +233,28 @@ export class UnifiedDiagnosticsServiceFixed {
   private selectRecoveryStrategy(issue: string): RecoveryStrategy {
     const strategies: Record<string, RecoveryStrategy> = {
       recurring_404: {
-        name: 'Router Reset mit Session Recovery',
+        name: "Router Reset mit Session Recovery",
         steps: [
-          { action: 'clearNavigationHistory', delay: 0 },
-          { action: 'resetRouterState', delay: 100 },
-          { action: 'navigateToHome', delay: 500 }
-        ]
+          { action: "clearNavigationHistory", delay: 0 },
+          { action: "resetRouterState", delay: 100 },
+          { action: "navigateToHome", delay: 500 },
+        ],
       },
       router_init_failure: {
-        name: 'Full Router Restart',
+        name: "Full Router Restart",
         steps: [
-          { action: 'unmountRouter', delay: 0 },
-          { action: 'clearRouterCache', delay: 100 },
-          { action: 'remountRouter', delay: 500 }
-        ]
+          { action: "unmountRouter", delay: 0 },
+          { action: "clearRouterCache", delay: 100 },
+          { action: "remountRouter", delay: 500 },
+        ],
       },
       dom_errors: {
-        name: 'DOM Cleanup und Neustart',
+        name: "DOM Cleanup und Neustart",
         steps: [
-          { action: 'cleanupErrorElements', delay: 0 },
-          { action: 'forceRerender', delay: 100 }
-        ]
-      }
+          { action: "cleanupErrorElements", delay: 0 },
+          { action: "forceRerender", delay: 100 },
+        ],
+      },
     };
 
     return strategies[issue] || strategies.dom_errors;
@@ -258,8 +267,8 @@ export class UnifiedDiagnosticsServiceFixed {
     console.info(`Führe Recovery-Strategie aus: ${strategy.name}`);
 
     for (const step of strategy.steps) {
-      await new Promise(resolve => setTimeout(resolve, step.delay));
-      
+      await new Promise((resolve) => setTimeout(resolve, step.delay));
+
       try {
         await this.executeRecoveryStep(step.action);
       } catch (error) {
@@ -273,27 +282,29 @@ export class UnifiedDiagnosticsServiceFixed {
    */
   private async executeRecoveryStep(action: string) {
     switch (action) {
-      case 'clearNavigationHistory':
+      case "clearNavigationHistory":
         // Implementierung folgt
         break;
-      
-      case 'resetRouterState':
+
+      case "resetRouterState":
         // Implementierung folgt
         break;
-      
-      case 'navigateToHome':
+
+      case "navigateToHome":
         const router = (window as any).$router;
         if (router) {
-          await router.push('/');
+          await router.push("/");
         }
         break;
-      
-      case 'cleanupErrorElements':
+
+      case "cleanupErrorElements":
         // Entferne Error-Elemente aus dem DOM
-        document.querySelectorAll('.error-boundary-fallback').forEach(el => el.remove());
+        document
+          .querySelectorAll(".error-boundary-fallback")
+          .forEach((el) => el.remove());
         break;
-      
-      case 'forceRerender':
+
+      case "forceRerender":
         // Force app re-render
         window.location.reload();
         break;
@@ -309,7 +320,9 @@ export class UnifiedDiagnosticsServiceFixed {
    */
   public async generateReport(): Promise<DiagnosticReport> {
     await this.collectDiagnostics();
-    return this.diagnosticsHistory.value[this.diagnosticsHistory.value.length - 1];
+    return this.diagnosticsHistory.value[
+      this.diagnosticsHistory.value.length - 1
+    ];
   }
 
   /**
@@ -330,7 +343,9 @@ export class UnifiedDiagnosticsServiceFixed {
    * Gibt aktive Recovery-Versuche zurück
    */
   public getActiveRecoveries(): ComputedRef<[string, RecoveryStrategy][]> {
-    return computed(() => Array.from(this.activeRecoveryAttempts.value.entries()));
+    return computed(() =>
+      Array.from(this.activeRecoveryAttempts.value.entries()),
+    );
   }
 
   /**
@@ -348,12 +363,14 @@ export class UnifiedDiagnosticsServiceFixed {
       history: this.diagnosticsHistory.value,
       currentHealth: this.healthMetrics.value,
       activeRecoveries: this.getActiveRecoveries().value,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `diagnostics-${Date.now()}.json`;
     a.click();

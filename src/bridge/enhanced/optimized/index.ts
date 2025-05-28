@@ -112,7 +112,7 @@ let components: OptimizedBridgeComponents | null = null;
 let isInitialized = false;
 
 // Logger
-import { createLogger } from '../logger/index';
+import { createLogger } from "../logger/index";
 const logger = createLogger("OptimizedBridge");
 
 /**
@@ -155,20 +155,16 @@ export async function initializeOptimizedBridge(
       : undefined;
 
     // Event-Bus erstellen
-    const eventBus = new OptimizedEventBus(
-      logger,
-      statusManager,
-      {
-        defaultBatchDelay: 50,
-        defaultBatchSize: 10,
-        eventConfigs: {
-          "chat:message:*": {
-            batchEnabled: true,
-            priority: "high"
-          }
-        }
-      }
-    );
+    const eventBus = new OptimizedEventBus(logger, statusManager, {
+      defaultBatchDelay: 50,
+      defaultBatchSize: 10,
+      eventConfigs: {
+        "chat:message:*": {
+          batchEnabled: true,
+          priority: "high",
+        },
+      },
+    });
 
     // Event-Batching erstellen
     const batchedEmitter = mergedConfig.enableEventBatching

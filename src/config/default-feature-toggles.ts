@@ -1,10 +1,10 @@
 /**
  * Standard-Feature-Toggles für SFC Migration
- * 
+ *
  * Diese Konfiguration definiert die Standardwerte für alle Feature-Toggles
  * im System. Diese Werte werden verwendet, wenn keine benutzerdefinierten
  * Einstellungen im localStorage vorhanden sind.
- * 
+ *
  * @version 3.0.0
  * @date 11.05.2025
  */
@@ -94,7 +94,7 @@ export const DEFAULT_FEATURE_TOGGLES = {
  */
 export const DEV_FEATURE_TOGGLES = {
   ...DEFAULT_FEATURE_TOGGLES,
-  
+
   // In dev können alle Debug-Features aktiviert werden
   showDebugOverlay: true,
   enablePerformanceMetrics: true,
@@ -107,7 +107,7 @@ export const DEV_FEATURE_TOGGLES = {
  */
 export const TEST_FEATURE_TOGGLES = {
   ...DEFAULT_FEATURE_TOGGLES,
-  
+
   // In Tests könnten einige Features deaktiviert werden, die in Tests problematisch sind
   // z.B. Animationen oder asynchrone Operationen, die Tests instabil machen können
   useAnimations: false,
@@ -122,14 +122,14 @@ export const FALLBACK_FEATURE_TOGGLES = {
   usePiniaAuth: true,
   usePiniaSessions: true,
   usePiniaUI: true,
-  
+
   // Aber alle SFC-Features deaktivieren und auf Legacy-Code zurückfallen
   useNewUIComponents: false,
   useSfcDocConverter: false,
   useSfcAdmin: false,
   useSfcChat: false,
   useSfcSettings: false,
-  
+
   // Legacy Bridge aktiviert lassen für Kompatibilität
   useLegacyBridge: true,
 };
@@ -139,17 +139,21 @@ export const FALLBACK_FEATURE_TOGGLES = {
  * und Unterschiede protokollieren
  */
 export function logMigrationStatus(): void {
-  const vanillaJsFeatures = Object.keys(DEFAULT_FEATURE_TOGGLES)
-    .filter(key => !key.startsWith('useSfc'))
-    .length;
-    
-  const sfcFeatures = Object.keys(DEFAULT_FEATURE_TOGGLES)
-    .filter(key => key.startsWith('useSfc'))
-    .length;
-    
+  const vanillaJsFeatures = Object.keys(DEFAULT_FEATURE_TOGGLES).filter(
+    (key) => !key.startsWith("useSfc"),
+  ).length;
+
+  const sfcFeatures = Object.keys(DEFAULT_FEATURE_TOGGLES).filter((key) =>
+    key.startsWith("useSfc"),
+  ).length;
+
   console.log(`Migration Status:`);
   console.log(`- Vanilla JS Features: ${vanillaJsFeatures}`);
   console.log(`- Vue 3 SFC Features: ${sfcFeatures}`);
-  console.log(`- Total Features: ${Object.keys(DEFAULT_FEATURE_TOGGLES).length}`);
-  console.log(`- Migration Percentage: ${Math.round((sfcFeatures / (sfcFeatures + vanillaJsFeatures)) * 100)}%`);
+  console.log(
+    `- Total Features: ${Object.keys(DEFAULT_FEATURE_TOGGLES).length}`,
+  );
+  console.log(
+    `- Migration Percentage: ${Math.round((sfcFeatures / (sfcFeatures + vanillaJsFeatures)) * 100)}%`,
+  );
 }

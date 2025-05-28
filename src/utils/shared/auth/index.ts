@@ -5,14 +5,14 @@
  */
 
 // Token storage keys
-const TOKEN_KEY = 'auth_token';
-const REFRESH_TOKEN_KEY = 'refresh_token';
-const USER_DATA_KEY = 'user_data';
+const TOKEN_KEY = "auth_token";
+const REFRESH_TOKEN_KEY = "refresh_token";
+const USER_DATA_KEY = "user_data";
 
 /**
  * Token type definitions
  */
-export type TokenType = 'access' | 'refresh';
+export type TokenType = "access" | "refresh";
 
 /**
  * User information interface
@@ -31,8 +31,8 @@ export interface UserInfo {
  * @param type The token type ('access' or 'refresh')
  * @returns The token or null if not found
  */
-export function getToken(type: TokenType = 'access'): string | null {
-  const key = type === 'access' ? TOKEN_KEY : REFRESH_TOKEN_KEY;
+export function getToken(type: TokenType = "access"): string | null {
+  const key = type === "access" ? TOKEN_KEY : REFRESH_TOKEN_KEY;
   return localStorage.getItem(key);
 }
 
@@ -41,8 +41,8 @@ export function getToken(type: TokenType = 'access'): string | null {
  * @param token The token to store
  * @param type The token type ('access' or 'refresh')
  */
-export function setToken(token: string, type: TokenType = 'access'): void {
-  const key = type === 'access' ? TOKEN_KEY : REFRESH_TOKEN_KEY;
+export function setToken(token: string, type: TokenType = "access"): void {
+  const key = type === "access" ? TOKEN_KEY : REFRESH_TOKEN_KEY;
   localStorage.setItem(key, token);
 }
 
@@ -66,7 +66,7 @@ export function getUserInfo(): UserInfo | null {
   try {
     return JSON.parse(userData) as UserInfo;
   } catch (e) {
-    console.error('Error parsing user data:', e);
+    console.error("Error parsing user data:", e);
     return null;
   }
 }
@@ -85,24 +85,32 @@ export function setUserInfo(user: UserInfo): void {
  * @param bufferSeconds Additional buffer time in seconds
  * @returns True if the token is expired, false otherwise
  */
-export function isTokenExpired(token: string | null, bufferSeconds: number = 60): boolean {
+export function isTokenExpired(
+  token: string | null,
+  bufferSeconds: number = 60,
+): boolean {
   if (!token) return true;
 
   try {
     // Extract the payload from the JWT
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => {
+          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join(""),
+    );
 
     const { exp } = JSON.parse(jsonPayload);
     if (!exp) return true;
 
     // Check expiration with buffer
-    return (exp * 1000) < (Date.now() + (bufferSeconds * 1000));
+    return exp * 1000 < Date.now() + bufferSeconds * 1000;
   } catch (e) {
-    console.error('Error checking token expiration:', e);
+    console.error("Error checking token expiration:", e);
     return true;
   }
 }
@@ -128,5 +136,5 @@ export function hasAnyRole(roles: string[]): boolean {
   const user = getUserInfo();
   if (!user || !user.roles) return false;
 
-  return roles.some(role => user.roles.includes(role));
+  return roles.some((role) => user.roles.includes(role));
 }

@@ -5,7 +5,10 @@
     </header>
 
     <div class="main-layout__body">
-      <aside class="main-layout__sidebar" :class="{ 'main-layout__sidebar--collapsed': sidebarCollapsed }">
+      <aside
+        class="main-layout__sidebar"
+        :class="{ 'main-layout__sidebar--collapsed': sidebarCollapsed }"
+      >
         <slot name="sidebar"></slot>
       </aside>
 
@@ -17,16 +20,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useUIStore } from '@/stores/ui'
+import { computed } from "vue";
+import { useUIStore } from "@/stores/ui";
 
-const uiStore = useUIStore()
+const uiStore = useUIStore();
 
-const sidebarCollapsed = computed(() => uiStore.sidebarCollapsed)
+const sidebarCollapsed = computed(() => uiStore.sidebarCollapsed);
 
 const layoutClasses = computed(() => ({
-  'main-layout--sidebar-collapsed': sidebarCollapsed.value
-}))
+  "main-layout--sidebar-collapsed": sidebarCollapsed.value,
+}));
 </script>
 
 <style scoped>
@@ -95,7 +98,7 @@ const layoutClasses = computed(() => ({
 
   /* Overlay when sidebar is open on mobile */
   .main-layout__body::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;

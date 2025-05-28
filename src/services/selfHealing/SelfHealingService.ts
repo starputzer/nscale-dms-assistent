@@ -1,15 +1,18 @@
 /**
  * Self-Healing Service für automatische Fehlerkorrektur
- * 
+ *
  * Dieser Service erkennt und behebt automatisch UI-Rendering-Probleme,
  * speziell das Problem mit dem "Schwerwiegender Fehler"-Bildschirm.
  */
 
-import { ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
-import { useLogger } from '@/composables/useLogger';
-import { domErrorDetector, type DomErrorDiagnostics } from '@/utils/domErrorDiagnostics';
-import { useFeatureTogglesStore } from '@/stores/featureToggles';
+import { ref, watch } from "vue";
+import { useRouter } from "vue-router";
+import { useLogger } from "@/composables/useLogger";
+import {
+  domErrorDetector,
+  type DomErrorDiagnostics,
+} from "@/utils/domErrorDiagnostics";
+import { useFeatureTogglesStore } from "@/stores/featureToggles";
 
 export interface HealingStrategy {
   name: string;
@@ -48,100 +51,110 @@ export class SelfHealingService {
     this.strategies = [
       // Strategie 1: DOM-Bereinigung für Fehlerbildschirm
       {
-        name: 'DOM_CLEANUP',
+        name: "DOM_CLEANUP",
         priority: 1,
-        condition: (diagnostics) => diagnostics.hasErrorScreen && diagnostics.has404Page,
+        condition: (diagnostics) =>
+          diagnostics.hasErrorScreen && diagnostics.has404Page,
         execute: async () => {
           try {
             // Finde und entferne den Fehlerbildschirm
             const errorElements = document.querySelectorAll(
-              '.critical-error, .error-view, .schwerwiegender-fehler, [data-error="critical"]'
+              '.critical-error, .error-view, .schwerwiegender-fehler, [data-error="critical"]',
             );
-            
-            errorElements.forEach(element => {
-              this.logger.info('Entferne Fehlerbildschirm-Element:', element.className);
+
+            errorElements.forEach((element) => {
+              this.logger.info(
+                "Entferne Fehlerbildschirm-Element:",
+                element.className,
+              );
               element.remove();
             });
 
             // Stelle sicher, dass die Vue-App sichtbar ist
-            const vueApp = document.querySelector('#app');
+            const vueApp = document.querySelector("#app");
             if (vueApp) {
-              (vueApp as HTMLElement).style.display = 'block';
-              (vueApp as HTMLElement).style.visibility = 'visible';
-              (vueApp as HTMLElement).style.zIndex = '1';
+              (vueApp as HTMLElement).style.display = "block";
+              (vueApp as HTMLElement).style.visibility = "visible";
+              (vueApp as HTMLElement).style.zIndex = "1";
             }
 
             return errorElements.length > 0;
           } catch (error) {
-            this.logger.error('DOM-Bereinigung fehlgeschlagen:', error);
+            this.logger.error("DOM-Bereinigung fehlgeschlagen:", error);
             return false;
           }
-        }
+        },
       },
 
       // Strategie 2: Route-Neuladung
       {
-        name: 'ROUTE_RELOAD',
+        name: "ROUTE_RELOAD",
         priority: 2,
-        condition: (diagnostics) => diagnostics.errorType === 'notFound',
+        condition: (diagnostics) => diagnostics.errorType === "notFound",
         execute: async () => {
           try {
             const currentRoute = this.router.currentRoute.value;
-            
+
             // Versuche die Route neu zu laden
             await this.router.replace({
               path: currentRoute.path,
-              force: true
+              force: true,
             } as any);
 
             return true;
           } catch (error) {
-            this.logger.error('Route-Neuladung fehlgeschlagen:', error);
+            this.logger.error("Route-Neuladung fehlgeschlagen:", error);
             return false;
           }
-        }
+        },
       },
 
       // Strategie 3: Fallback zur Startseite
       {
-        name: 'HOME_FALLBACK',
+        name: "HOME_FALLBACK",
         priority: 3,
         condition: (diagnostics) => diagnostics.has404Page,
         execute: async () => {
           try {
-            await this.router.push('/');
+            await this.router.push("/");
             return true;
           } catch (error) {
-            this.logger.error('Home-Fallback fehlgeschlagen:', error);
+            this.logger.error("Home-Fallback fehlgeschlagen:", error);
             return false;
           }
-        }
+        },
       },
 
       // Strategie 4: Cache-Bereinigung und Neustart
       {
-        name: 'CACHE_CLEAR_RESTART',
+        name: "CACHE_CLEAR_RESTART",
         priority: 4,
         condition: () => true, // Immer als letzte Option
         execute: async () => {
           try {
             // Service Worker deregistrieren
-            if ('serviceWorker' in navigator) {
-              const registrations = await navigator.serviceWorker.getRegistrations();
-              await Promise.all(registrations.map(reg => reg.unregister()));
+            if ("serviceWorker" in navigator) {
+              const registrations =
+                await navigator.serviceWorker.getRegistrations();
+              await Promise.all(registrations.map((reg) => reg.unregister()));
             }
 
             // Cache leeren
-            if ('caches' in window) {
+            if ("caches" in window) {
               const cacheNames = await caches.keys();
-              await Promise.all(cacheNames.map(name => caches.delete(name)));
+              await Promise.all(cacheNames.map((name) => caches.delete(name)));
             }
 
             // Lokalen Speicher teilweise leeren (wichtige Daten behalten)
-            const keysToKeep = ['token', 'userId', 'userRole', 'lastWorkingRoute'];
+            const keysToKeep = [
+              "token",
+              "userId",
+              "userRole",
+              "lastWorkingRoute",
+            ];
             const savedData: Record<string, string> = {};
-            
-            keysToKeep.forEach(key => {
+
+            keysToKeep.forEach((key) => {
               const value = localStorage.getItem(key);
               if (value) savedData[key] = value;
             });
@@ -154,30 +167,36 @@ export class SelfHealingService {
 
             // Seite neu laden
             setTimeout(() => {
-              window.location.href = '/';
+              window.location.href = "/";
             }, 500);
 
             return true;
           } catch (error) {
-            this.logger.error('Cache-Bereinigung fehlgeschlagen:', error);
+            this.logger.error("Cache-Bereinigung fehlgeschlagen:", error);
             return false;
           }
-        }
+        },
       },
 
       // Strategie 5: Feature-Toggle-Fallback
       {
-        name: 'FEATURE_TOGGLE_FALLBACK',
+        name: "FEATURE_TOGGLE_FALLBACK",
         priority: 5,
-        condition: (diagnostics) => diagnostics.errorType === 'render' || diagnostics.errorType === 'critical',
+        condition: (diagnostics) =>
+          diagnostics.errorType === "render" ||
+          diagnostics.errorType === "critical",
         execute: async () => {
           try {
             const featureToggles = useFeatureTogglesStore();
-            
+
             // Aktiviere Fallback-Modus für problematische Features
-            const problematicFeatures = ['useSfcChat', 'useSfcDocConverter', 'useSfcAdmin'];
-            
-            problematicFeatures.forEach(feature => {
+            const problematicFeatures = [
+              "useSfcChat",
+              "useSfcDocConverter",
+              "useSfcAdmin",
+            ];
+
+            problematicFeatures.forEach((feature) => {
               if (featureToggles.isEnabled(feature)) {
                 featureToggles.setFallbackMode(feature, true);
                 this.logger.info(`Fallback aktiviert für Feature: ${feature}`);
@@ -188,11 +207,11 @@ export class SelfHealingService {
             await this.router.go(0);
             return true;
           } catch (error) {
-            this.logger.error('Feature-Toggle-Fallback fehlgeschlagen:', error);
+            this.logger.error("Feature-Toggle-Fallback fehlgeschlagen:", error);
             return false;
           }
-        }
-      }
+        },
+      },
     ];
 
     // Sortiere Strategien nach Priorität
@@ -207,7 +226,7 @@ export class SelfHealingService {
       this.stopMonitoring();
     }
 
-    this.logger.info('Starte Selbstheilungs-Überwachung');
+    this.logger.info("Starte Selbstheilungs-Überwachung");
 
     this.monitoringInterval = window.setInterval(() => {
       this.checkAndHeal();
@@ -224,7 +243,7 @@ export class SelfHealingService {
     if (this.monitoringInterval) {
       clearInterval(this.monitoringInterval);
       this.monitoringInterval = null;
-      this.logger.info('Selbstheilungs-Überwachung gestoppt');
+      this.logger.info("Selbstheilungs-Überwachung gestoppt");
     }
   }
 
@@ -244,7 +263,7 @@ export class SelfHealingService {
 
     // Prüfe auf maximale Fehleranzahl
     if (this.failureCount >= this.maxFailures) {
-      this.logger.error('Maximale Selbstheilungsversuche erreicht');
+      this.logger.error("Maximale Selbstheilungsversuche erreicht");
       this.stopMonitoring();
       return;
     }
@@ -253,9 +272,9 @@ export class SelfHealingService {
     this.failureCount++;
 
     const result = await this.attemptHealing(diagnostics);
-    
+
     this.healingHistory.value.push(result);
-    
+
     // Behalte nur die letzten 10 Ergebnisse
     if (this.healingHistory.value.length > 10) {
       this.healingHistory.value.shift();
@@ -265,17 +284,19 @@ export class SelfHealingService {
 
     if (result.success) {
       this.failureCount = 0;
-      this.logger.info('Selbstheilung erfolgreich:', result);
+      this.logger.info("Selbstheilung erfolgreich:", result);
     } else {
-      this.logger.warn('Selbstheilung fehlgeschlagen:', result);
+      this.logger.warn("Selbstheilung fehlgeschlagen:", result);
     }
   }
 
   /**
    * Versucht die Heilung mit verschiedenen Strategien
    */
-  private async attemptHealing(diagnostics: DomErrorDiagnostics): Promise<HealingResult> {
-    this.logger.info('Starte Selbstheilungsversuch', diagnostics);
+  private async attemptHealing(
+    diagnostics: DomErrorDiagnostics,
+  ): Promise<HealingResult> {
+    this.logger.info("Starte Selbstheilungsversuch", diagnostics);
 
     for (const strategy of this.strategies) {
       if (strategy.condition(diagnostics)) {
@@ -286,7 +307,7 @@ export class SelfHealingService {
 
           if (success) {
             // Prüfe Zustand nach Heilung
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise((resolve) => setTimeout(resolve, 1000));
             const diagnosticsAfter = domErrorDetector.detectErrorState();
 
             return {
@@ -294,18 +315,21 @@ export class SelfHealingService {
               strategy: strategy.name,
               timestamp: Date.now(),
               diagnosticsBefore: diagnostics,
-              diagnosticsAfter
+              diagnosticsAfter,
             };
           }
         } catch (error) {
-          this.logger.error(`Strategie ${strategy.name} fehlgeschlagen:`, error);
-          
+          this.logger.error(
+            `Strategie ${strategy.name} fehlgeschlagen:`,
+            error,
+          );
+
           return {
             success: false,
             strategy: strategy.name,
             timestamp: Date.now(),
             diagnosticsBefore: diagnostics,
-            error: error as Error
+            error: error as Error,
           };
         }
       }
@@ -314,10 +338,10 @@ export class SelfHealingService {
     // Keine passende Strategie gefunden
     return {
       success: false,
-      strategy: 'NONE',
+      strategy: "NONE",
       timestamp: Date.now(),
       diagnosticsBefore: diagnostics,
-      error: new Error('Keine passende Heilungsstrategie gefunden')
+      error: new Error("Keine passende Heilungsstrategie gefunden"),
     };
   }
 

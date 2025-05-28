@@ -1,18 +1,18 @@
 /**
  * DialogStoreAdapter: Bietet eine kompatible Schnittstelle für verschiedene Versionen des Dialog-Stores
- * 
+ *
  * Dieser Adapter löst Kompatibilitätsprobleme zwischen verschiedenen Versionen der Store-API,
  * indem er fehlende Methoden implementiert und API-Unterschiede ausgleicht.
  */
 
-import { ref } from 'vue';
-import type { Store } from 'pinia';
+import { ref } from "vue";
+import type { Store } from "pinia";
 
 // Dialog-Options-Interface
 export interface DialogOptions {
   title?: string;
   message: string;
-  type?: 'info' | 'success' | 'warning' | 'error' | 'confirm';
+  type?: "info" | "success" | "warning" | "error" | "confirm";
   confirmText?: string;
   cancelText?: string;
   onConfirm?: () => void;
@@ -26,13 +26,13 @@ export interface DialogStoreWithCompat {
   showError(options: { title?: string; message: string }): void;
   showConfirm(options: DialogOptions): Promise<boolean>;
   hideDialog(): void;
-  
-  // Store-Eigenschaften für Kompatibilität 
+
+  // Store-Eigenschaften für Kompatibilität
   isVisible: boolean;
   title: string;
   message: string;
   type: string;
-  
+
   // Pinia Store-Kompatibilität
   $patch: (partialStateOrMutator: any) => void;
 }
@@ -50,19 +50,19 @@ export function useDialogStoreCompat(): DialogStoreWithCompat {
   if (!attempted && !dialogStore) {
     attempted = true;
     try {
-      const { useDialogStore } = require('@/stores/dialog');
+      const { useDialogStore } = require("@/stores/dialog");
       dialogStore = useDialogStore();
     } catch (e) {
-      console.warn('Dialog-Store nicht gefunden, verwende Fallback');
+      console.warn("Dialog-Store nicht gefunden, verwende Fallback");
     }
   }
-  
+
   // Fallback-Variablen, falls kein Store existiert
   const isVisible = ref(false);
-  const title = ref('');
-  const message = ref('');
-  const type = ref('info');
-  
+  const title = ref("");
+  const message = ref("");
+  const type = ref("info");
+
   // Verwende den vorhandenen Store oder erstelle einen Fallback
   return {
     // Gemeinsame Store-Eigenschaften mit Fallback
@@ -76,7 +76,7 @@ export function useDialogStoreCompat(): DialogStoreWithCompat {
         isVisible.value = value;
       }
     },
-    
+
     get title() {
       return dialogStore ? dialogStore.title : title.value;
     },
@@ -87,7 +87,7 @@ export function useDialogStoreCompat(): DialogStoreWithCompat {
         title.value = value;
       }
     },
-    
+
     get message() {
       return dialogStore ? dialogStore.message : message.value;
     },
@@ -98,7 +98,7 @@ export function useDialogStoreCompat(): DialogStoreWithCompat {
         message.value = value;
       }
     },
-    
+
     get type() {
       return dialogStore ? dialogStore.type : type.value;
     },
@@ -109,48 +109,48 @@ export function useDialogStoreCompat(): DialogStoreWithCompat {
         type.value = value;
       }
     },
-    
+
     // Dialog anzeigen
     showDialog: (options: DialogOptions): void => {
-      if (dialogStore && typeof dialogStore.showDialog === 'function') {
+      if (dialogStore && typeof dialogStore.showDialog === "function") {
         dialogStore.showDialog(options);
       } else {
         // Fallback: Eigenschaften direkt setzen
-        title.value = options.title || '';
+        title.value = options.title || "";
         message.value = options.message;
-        type.value = options.type || 'info';
+        type.value = options.type || "info";
         isVisible.value = true;
-        
+
         // Browseralert als absoluter Fallback
-        alert(`${options.title || ''}: ${options.message}`);
+        alert(`${options.title || ""}: ${options.message}`);
       }
     },
-    
+
     // Fehlerdialog anzeigen
     showError: (options: { title?: string; message: string }): void => {
-      if (dialogStore && typeof dialogStore.showError === 'function') {
+      if (dialogStore && typeof dialogStore.showError === "function") {
         dialogStore.showError(options);
       } else {
         // Fallback: Dialog mit Fehlertyp anzeigen
-        title.value = options.title || 'Fehler';
+        title.value = options.title || "Fehler";
         message.value = options.message;
-        type.value = 'error';
+        type.value = "error";
         isVisible.value = true;
-        
+
         // Browseralert als absoluter Fallback
         alert(`Fehler: ${options.message}`);
       }
     },
-    
+
     // Bestätigungsdialog anzeigen
     showConfirm: (options: DialogOptions): Promise<boolean> => {
-      if (dialogStore && typeof dialogStore.showConfirm === 'function') {
+      if (dialogStore && typeof dialogStore.showConfirm === "function") {
         return dialogStore.showConfirm(options);
       }
-      
+
       // Fallback: Verwende Browser-API
       return new Promise<boolean>((resolve) => {
-        const confirmed = confirm(`${options.title || ''}: ${options.message}`);
+        const confirmed = confirm(`${options.title || ""}: ${options.message}`);
         if (confirmed && options.onConfirm) {
           options.onConfirm();
         } else if (!confirmed && options.onCancel) {
@@ -159,24 +159,24 @@ export function useDialogStoreCompat(): DialogStoreWithCompat {
         resolve(confirmed);
       });
     },
-    
+
     // Dialog ausblenden
     hideDialog: (): void => {
-      if (dialogStore && typeof dialogStore.hideDialog === 'function') {
+      if (dialogStore && typeof dialogStore.hideDialog === "function") {
         dialogStore.hideDialog();
       } else {
         // Fallback: Direkt unsichtbar machen
         isVisible.value = false;
       }
     },
-    
+
     // Pinia $patch für Store-Kompatibilität
     $patch: (partialStateOrMutator: any): void => {
-      if (dialogStore && typeof dialogStore.$patch === 'function') {
+      if (dialogStore && typeof dialogStore.$patch === "function") {
         dialogStore.$patch(partialStateOrMutator);
       } else {
         // Fallback: Manuelles Update des Zustands
-        if (typeof partialStateOrMutator === 'function') {
+        if (typeof partialStateOrMutator === "function") {
           // Für Mutator-Funktionen
           partialStateOrMutator({
             isVisible: isVisible.value,
@@ -186,21 +186,21 @@ export function useDialogStoreCompat(): DialogStoreWithCompat {
           });
         } else {
           // Für partielle Zustandsupdates
-          if ('isVisible' in partialStateOrMutator) {
+          if ("isVisible" in partialStateOrMutator) {
             isVisible.value = partialStateOrMutator.isVisible;
           }
-          if ('title' in partialStateOrMutator) {
+          if ("title" in partialStateOrMutator) {
             title.value = partialStateOrMutator.title;
           }
-          if ('message' in partialStateOrMutator) {
+          if ("message" in partialStateOrMutator) {
             message.value = partialStateOrMutator.message;
           }
-          if ('type' in partialStateOrMutator) {
+          if ("type" in partialStateOrMutator) {
             type.value = partialStateOrMutator.type;
           }
         }
       }
-    }
+    },
   };
 }
 

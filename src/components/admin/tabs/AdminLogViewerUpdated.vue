@@ -373,7 +373,8 @@ import { useDialog } from "@/composables/useDialog";
 import { logService, type LogEntry } from "@/services/api/LogServiceWrapper";
 
 // i18n
-const { t } = useI18n();
+const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
+console.log('[i18n] Component initialized with global scope and inheritance');
 const { showToast } = useToast();
 const { showConfirmDialog } = useDialog();
 
@@ -717,6 +718,12 @@ watch(
 onMounted(async () => {
   await refreshLogs();
 });
+
+// Log i18n initialization status
+console.log(`[AdminLogViewerUpdated] i18n initialized with locale: ${locale.value}`);
+
+// Log i18n initialization status
+console.log(`[AdminLogViewerUpdated] i18n initialized with locale: ${locale.value}`);
 </script>
 
 <style scoped>

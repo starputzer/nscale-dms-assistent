@@ -2,22 +2,22 @@
 
 /**
  * TypeScript Migration Helper
- * 
+ *
  * Dieses Skript unterstützt bei der Migration zu strikteren TypeScript-Einstellungen.
  * Es automatisiert einige häufige Korrekturen und erstellt einen Migrationsplan.
  */
 
-import { execSync } from 'child_process';
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
-import { resolve, join, basename } from 'path';
-import { createInterface } from 'readline';
+import { execSync } from "child_process";
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
+import { resolve, join, basename } from "path";
+import { createInterface } from "readline";
 
 // Konfiguration
 const rootDir = resolve(process.cwd());
-const srcDir = join(rootDir, 'src');
-const reportsDir = join(rootDir, 'typecheck-reports');
-const tsConfigPath = join(rootDir, 'tsconfig.json');
-const tsConfigOptimizedPath = join(rootDir, 'tsconfig.optimized.json');
+const srcDir = join(rootDir, "src");
+const reportsDir = join(rootDir, "typecheck-reports");
+const tsConfigPath = join(rootDir, "tsconfig.json");
+const tsConfigOptimizedPath = join(rootDir, "tsconfig.optimized.json");
 
 // Sicherstellen, dass das Reports-Verzeichnis existiert
 if (!existsSync(reportsDir)) {
@@ -26,13 +26,13 @@ if (!existsSync(reportsDir)) {
 
 // Befehlszeilenargumente verarbeiten
 const args = process.argv.slice(2);
-const command = args[0] || 'help';
-const target = args[1] || '';
+const command = args[0] || "help";
+const target = args[1] || "";
 
 // Readline-Interface für die Benutzerinteraktion
 const rl = createInterface({
   input: process.stdin,
-  output: process.stdout
+  output: process.stdout,
 });
 
 // Hilfefunktion
@@ -63,108 +63,137 @@ Beispiele:
 
 // TypeScript-Fehler analysieren
 async function analyzeTypeScriptErrors() {
-  console.log('Analysiere TypeScript-Fehler...');
-  
+  console.log("Analysiere TypeScript-Fehler...");
+
   try {
     // Führe den inkrementellen TypeScript-Check aus
-    execSync('npm run typecheck:incremental', { stdio: 'inherit' });
-    
+    execSync("npm run typecheck:incremental", { stdio: "inherit" });
+
     // Lese den Bericht ein
-    const reportPath = join(reportsDir, 'typecheck-report.json');
+    const reportPath = join(reportsDir, "typecheck-report.json");
     if (!existsSync(reportPath)) {
-      console.error('Bericht nicht gefunden. Bitte führe zuerst "npm run typecheck:incremental" aus.');
+      console.error(
+        'Bericht nicht gefunden. Bitte führe zuerst "npm run typecheck:incremental" aus.',
+      );
       process.exit(1);
     }
-    
-    const report = JSON.parse(readFileSync(reportPath, 'utf8'));
-    
+
+    const report = JSON.parse(readFileSync(reportPath, "utf8"));
+
     // Fehlertypen kategorisieren
     const errorCategories = {
       unusedVariables: 0,
       nullChecks: 0,
       indexSignatures: 0,
       typeAssertions: 0,
-      other: 0
+      other: 0,
     };
-    
+
     // Für jedes Verzeichnis mit Fehlern
-    Object.keys(report.directories).forEach(dir => {
+    Object.keys(report.directories).forEach((dir) => {
       const errorFile = join(reportsDir, `${dir}-errors.txt`);
       if (existsSync(errorFile)) {
-        const errorContent = readFileSync(errorFile, 'utf8');
-        
+        const errorContent = readFileSync(errorFile, "utf8");
+
         // Zähle die verschiedenen Fehlertypen
-        if (errorContent.includes('TS6133:')) errorCategories.unusedVariables++;
-        if (errorContent.includes('TS2532:') || errorContent.includes('TS2533:')) errorCategories.nullChecks++;
-        if (errorContent.includes('TS4111:')) errorCategories.indexSignatures++;
-        if (errorContent.includes('TS2352:') || errorContent.includes('TS2339:')) errorCategories.typeAssertions++;
+        if (errorContent.includes("TS6133:")) errorCategories.unusedVariables++;
+        if (
+          errorContent.includes("TS2532:") ||
+          errorContent.includes("TS2533:")
+        )
+          errorCategories.nullChecks++;
+        if (errorContent.includes("TS4111:")) errorCategories.indexSignatures++;
+        if (
+          errorContent.includes("TS2352:") ||
+          errorContent.includes("TS2339:")
+        )
+          errorCategories.typeAssertions++;
         errorCategories.other++;
       }
     });
-    
+
     // Fehlerübersicht ausgeben
-    console.log('\nFehlerübersicht nach Kategorie:');
-    console.log('------------------------------');
-    console.log(`Nicht verwendete Variablen: ${errorCategories.unusedVariables}`);
+    console.log("\nFehlerübersicht nach Kategorie:");
+    console.log("------------------------------");
+    console.log(
+      `Nicht verwendete Variablen: ${errorCategories.unusedVariables}`,
+    );
     console.log(`Null-Checks-Probleme: ${errorCategories.nullChecks}`);
     console.log(`Index-Signatur-Probleme: ${errorCategories.indexSignatures}`);
     console.log(`Type-Assertion-Probleme: ${errorCategories.typeAssertions}`);
     console.log(`Andere Probleme: ${errorCategories.other}`);
-    
+
     // Empfehlungen für Korrekturen ausgeben
-    console.log('\nEmpfehlungen:');
-    console.log('-------------');
+    console.log("\nEmpfehlungen:");
+    console.log("-------------");
     if (errorCategories.unusedVariables > 0) {
-      console.log('- Verwende "node typescript-migration.js fix-unused" um nicht verwendete Variablen zu entfernen');
+      console.log(
+        '- Verwende "node typescript-migration.js fix-unused" um nicht verwendete Variablen zu entfernen',
+      );
     }
     if (errorCategories.nullChecks > 0) {
-      console.log('- Führe Null-Checks ein oder verwende den optionalen Ketten-Operator (?.)');
+      console.log(
+        "- Führe Null-Checks ein oder verwende den optionalen Ketten-Operator (?.)",
+      );
     }
     if (errorCategories.indexSignatures > 0) {
-      console.log('- Verwende Bracket-Notation für Index-Signaturen: obj["property"] statt obj.property');
+      console.log(
+        '- Verwende Bracket-Notation für Index-Signaturen: obj["property"] statt obj.property',
+      );
     }
     if (errorCategories.typeAssertions > 0) {
       console.log('- Ersetze "as" type assertions durch Typ-Guards');
     }
-    
+
     // Migrationsplan vorschlagen
-    console.log('\nNächste Schritte:');
-    console.log('--------------');
-    console.log('1. Verwende "node typescript-migration.js create-plan" um einen detaillierten Migrationsplan zu erstellen');
-    console.log('2. Beginne mit der Behebung von "Quick Wins" (Dateien mit wenigen Fehlern)');
-    console.log('3. Aktiviere striktere TypeScript-Optionen schrittweise');
-    
+    console.log("\nNächste Schritte:");
+    console.log("--------------");
+    console.log(
+      '1. Verwende "node typescript-migration.js create-plan" um einen detaillierten Migrationsplan zu erstellen',
+    );
+    console.log(
+      '2. Beginne mit der Behebung von "Quick Wins" (Dateien mit wenigen Fehlern)',
+    );
+    console.log("3. Aktiviere striktere TypeScript-Optionen schrittweise");
   } catch (error) {
-    console.error('Fehler bei der Analyse:', error.message);
+    console.error("Fehler bei der Analyse:", error.message);
     process.exit(1);
   }
 }
 
 // Nicht verwendete Variablen und Importe entfernen
 async function fixUnusedVariables() {
-  console.log('Entferne nicht verwendete Variablen und Importe...');
-  
+  console.log("Entferne nicht verwendete Variablen und Importe...");
+
   try {
     // ESLint mit der Regel no-unused-vars ausführen
-    console.log('Führe ESLint aus, um nicht verwendete Variablen zu finden...');
-    execSync('npx eslint --fix "src/**/*.{ts,tsx}" --rule "no-unused-vars: error" --rule "no-unused-imports: error"', 
-      { stdio: 'inherit' });
-    
-    console.log('\nNicht verwendete Variablen wurden entfernt!');
-    console.log('\nFühre nun TypeScript-Check aus, um den Fortschritt zu sehen...');
-    execSync('npm run typecheck:strict', { stdio: 'inherit' });
-    
+    console.log("Führe ESLint aus, um nicht verwendete Variablen zu finden...");
+    execSync(
+      'npx eslint --fix "src/**/*.{ts,tsx}" --rule "no-unused-vars: error" --rule "no-unused-imports: error"',
+      { stdio: "inherit" },
+    );
+
+    console.log("\nNicht verwendete Variablen wurden entfernt!");
+    console.log(
+      "\nFühre nun TypeScript-Check aus, um den Fortschritt zu sehen...",
+    );
+    execSync("npm run typecheck:strict", { stdio: "inherit" });
   } catch (error) {
     if (error.status !== 0) {
-      console.error('Fehler beim Entfernen nicht verwendeter Variablen:', error.message);
+      console.error(
+        "Fehler beim Entfernen nicht verwendeter Variablen:",
+        error.message,
+      );
       process.exit(1);
     }
-    
+
     // ESLint gibt Fehler aus, aber das ist in Ordnung, da wir nur nach Mustern suchen
-    console.log('\nEinige nicht verwendete Variablen wurden entfernt!');
-    console.log('\nFühre nun TypeScript-Check aus, um den Fortschritt zu sehen...');
+    console.log("\nEinige nicht verwendete Variablen wurden entfernt!");
+    console.log(
+      "\nFühre nun TypeScript-Check aus, um den Fortschritt zu sehen...",
+    );
     try {
-      execSync('npm run typecheck:strict', { stdio: 'inherit' });
+      execSync("npm run typecheck:strict", { stdio: "inherit" });
     } catch (e) {
       // TypeScript-Fehler sind zu erwarten
     }
@@ -174,47 +203,66 @@ async function fixUnusedVariables() {
 // Eine TypeScript-Option aktivieren
 async function enableTypeScriptOption(option) {
   if (!option) {
-    console.error('Bitte gib eine TypeScript-Option an, die aktiviert werden soll.');
+    console.error(
+      "Bitte gib eine TypeScript-Option an, die aktiviert werden soll.",
+    );
     process.exit(1);
   }
-  
+
   console.log(`Aktiviere TypeScript-Option: ${option}...`);
-  
+
   try {
     // tsconfig.json einlesen
-    const tsConfig = JSON.parse(readFileSync(tsConfigPath, 'utf8'));
-    
+    const tsConfig = JSON.parse(readFileSync(tsConfigPath, "utf8"));
+
     // Option aktivieren
     if (!tsConfig.compilerOptions) {
       tsConfig.compilerOptions = {};
     }
-    
+
     tsConfig.compilerOptions[option] = true;
-    
+
     // Änderungen bestätigen lassen
-    rl.question(`Möchtest du die Option "${option}" in tsconfig.json aktivieren? (j/N) `, answer => {
-      if (answer.toLowerCase() === 'j') {
-        // tsconfig.json schreiben
-        writeFileSync(tsConfigPath, JSON.stringify(tsConfig, null, 2), 'utf8');
-        console.log(`\nOption "${option}" wurde in tsconfig.json aktiviert!`);
-        
-        // TypeScript-Check ausführen
-        console.log('\nFühre TypeScript-Check aus, um die Auswirkungen zu sehen...');
-        try {
-          execSync('npm run typecheck', { stdio: 'inherit' });
-        } catch (e) {
-          console.log('\nEs gibt TypeScript-Fehler, die durch die neue Option verursacht werden.');
-          console.log('Verwende "node typescript-migration.js analyze" um die Fehler zu analysieren.');
+    rl.question(
+      `Möchtest du die Option "${option}" in tsconfig.json aktivieren? (j/N) `,
+      (answer) => {
+        if (answer.toLowerCase() === "j") {
+          // tsconfig.json schreiben
+          writeFileSync(
+            tsConfigPath,
+            JSON.stringify(tsConfig, null, 2),
+            "utf8",
+          );
+          console.log(`\nOption "${option}" wurde in tsconfig.json aktiviert!`);
+
+          // TypeScript-Check ausführen
+          console.log(
+            "\nFühre TypeScript-Check aus, um die Auswirkungen zu sehen...",
+          );
+          try {
+            execSync("npm run typecheck", { stdio: "inherit" });
+          } catch (e) {
+            console.log(
+              "\nEs gibt TypeScript-Fehler, die durch die neue Option verursacht werden.",
+            );
+            console.log(
+              'Verwende "node typescript-migration.js analyze" um die Fehler zu analysieren.',
+            );
+          }
+        } else {
+          console.log(
+            "\nVorgang abgebrochen. Keine Änderungen wurden vorgenommen.",
+          );
         }
-      } else {
-        console.log('\nVorgang abgebrochen. Keine Änderungen wurden vorgenommen.');
-      }
-      
-      rl.close();
-    });
-    
+
+        rl.close();
+      },
+    );
   } catch (error) {
-    console.error('Fehler beim Aktivieren der TypeScript-Option:', error.message);
+    console.error(
+      "Fehler beim Aktivieren der TypeScript-Option:",
+      error.message,
+    );
     rl.close();
     process.exit(1);
   }
@@ -222,26 +270,31 @@ async function enableTypeScriptOption(option) {
 
 // Einen Migrationsplan erstellen
 async function createMigrationPlan() {
-  console.log('Erstelle Migrationsplan...');
-  
+  console.log("Erstelle Migrationsplan...");
+
   try {
     // Führe den inkrementellen TypeScript-Check aus
-    execSync('npm run typecheck:incremental', { stdio: 'inherit' });
-    
+    execSync("npm run typecheck:incremental", { stdio: "inherit" });
+
     // Lese den Bericht ein
-    const reportPath = join(reportsDir, 'typecheck-report.json');
+    const reportPath = join(reportsDir, "typecheck-report.json");
     if (!existsSync(reportPath)) {
-      console.error('Bericht nicht gefunden. Bitte führe zuerst "npm run typecheck:incremental" aus.');
+      console.error(
+        'Bericht nicht gefunden. Bitte führe zuerst "npm run typecheck:incremental" aus.',
+      );
       process.exit(1);
     }
-    
-    const report = JSON.parse(readFileSync(reportPath, 'utf8'));
-    
+
+    const report = JSON.parse(readFileSync(reportPath, "utf8"));
+
     // Dateien nach Fehleranzahl sortieren
     const directoriesByErrorCount = Object.keys(report.directories)
-      .filter(dir => report.directories[dir].errorCount > 0)
-      .sort((a, b) => report.directories[a].errorCount - report.directories[b].errorCount);
-    
+      .filter((dir) => report.directories[dir].errorCount > 0)
+      .sort(
+        (a, b) =>
+          report.directories[a].errorCount - report.directories[b].errorCount,
+      );
+
     // Plan erstellen
     const plan = {
       timestamp: new Date().toISOString(),
@@ -251,7 +304,7 @@ async function createMigrationPlan() {
           name: "Phase 1: Quick Wins",
           description: "Dateien mit wenigen Fehlern beheben",
           directories: directoriesByErrorCount.slice(0, 5),
-          estimatedTime: "1-2 Tage"
+          estimatedTime: "1-2 Tage",
         },
         {
           name: "Phase 2: Häufige Fehler beheben",
@@ -260,61 +313,70 @@ async function createMigrationPlan() {
             "Nicht verwendete Variablen entfernen",
             "Null-Checks einführen",
             "Index-Signatur-Probleme beheben",
-            "Type-Assertions ersetzen"
+            "Type-Assertions ersetzen",
           ],
-          estimatedTime: "3-5 Tage"
+          estimatedTime: "3-5 Tage",
         },
         {
           name: "Phase 3: Komplexere Komponenten",
           description: "Komplexere Komponenten mit vielen Fehlern beheben",
           directories: directoriesByErrorCount.slice(5, 10),
-          estimatedTime: "5-7 Tage"
+          estimatedTime: "5-7 Tage",
         },
         {
           name: "Phase 4: Restliche Fehler",
           description: "Alle verbleibenden Fehler beheben",
           directories: directoriesByErrorCount.slice(10),
-          estimatedTime: "7-14 Tage"
+          estimatedTime: "7-14 Tage",
         },
         {
           name: "Phase 5: tsconfig.json optimieren",
-          description: "Optimierte TypeScript-Konfiguration als Standard festlegen",
+          description:
+            "Optimierte TypeScript-Konfiguration als Standard festlegen",
           tasks: [
             "tsconfig.optimized.json nach tsconfig.json übernehmen",
             "Finale Tests durchführen",
-            "Dokumentation aktualisieren"
+            "Dokumentation aktualisieren",
           ],
-          estimatedTime: "1 Tag"
-        }
-      ]
+          estimatedTime: "1 Tag",
+        },
+      ],
     };
-    
+
     // Plan speichern
-    const planPath = join(reportsDir, 'migration-plan.json');
-    writeFileSync(planPath, JSON.stringify(plan, null, 2), 'utf8');
-    
+    const planPath = join(reportsDir, "migration-plan.json");
+    writeFileSync(planPath, JSON.stringify(plan, null, 2), "utf8");
+
     // Menschenlesbaren Plan erstellen
     const humanReadablePlan = `# TypeScript-Migrationsplan
 
 Erstellt am: ${new Date().toLocaleString()}
 Gesamtfehler: ${plan.totalErrors}
 
-${plan.phases.map(phase => `
+${plan.phases
+  .map(
+    (phase) => `
 ## ${phase.name}
 ${phase.description}
 
-${phase.directories 
-  ? `Verzeichnisse:
-${phase.directories.map(dir => `- ${dir} (${report.directories[dir].errorCount} Fehler)`).join('\n')}`
-  : ''}
+${
+  phase.directories
+    ? `Verzeichnisse:
+${phase.directories.map((dir) => `- ${dir} (${report.directories[dir].errorCount} Fehler)`).join("\n")}`
+    : ""
+}
 
-${phase.tasks 
-  ? `Aufgaben:
-${phase.tasks.map(task => `- ${task}`).join('\n')}`
-  : ''}
+${
+  phase.tasks
+    ? `Aufgaben:
+${phase.tasks.map((task) => `- ${task}`).join("\n")}`
+    : ""
+}
 
 Geschätzte Zeit: ${phase.estimatedTime}
-`).join('\n')}
+`,
+  )
+  .join("\n")}
 
 ## Nächste Schritte
 
@@ -340,17 +402,16 @@ Weitere Informationen zur Typüberprüfung findest du in:
 - docs/TYPESCRIPT_STRICTER_TYPES.md
 - docs/TYPESCRIPT_GUIDELINES.md
 `;
-    
+
     // Menschenlesbaren Plan speichern
-    const humanReadablePlanPath = join(reportsDir, 'migration-plan.md');
-    writeFileSync(humanReadablePlanPath, humanReadablePlan, 'utf8');
-    
+    const humanReadablePlanPath = join(reportsDir, "migration-plan.md");
+    writeFileSync(humanReadablePlanPath, humanReadablePlan, "utf8");
+
     console.log(`\nMigrationsplan wurde erstellt und gespeichert unter:`);
     console.log(`- ${planPath} (JSON-Format)`);
     console.log(`- ${humanReadablePlanPath} (Markdown-Format)`);
-    
   } catch (error) {
-    console.error('Fehler beim Erstellen des Migrationsplans:', error.message);
+    console.error("Fehler beim Erstellen des Migrationsplans:", error.message);
     process.exit(1);
   }
 }
@@ -358,44 +419,51 @@ Weitere Informationen zur Typüberprüfung findest du in:
 // Automatische Korrekturen auf ein Verzeichnis anwenden
 async function applyFixes(directory) {
   if (!directory) {
-    console.error('Bitte gib ein Verzeichnis an, auf das die Korrekturen angewendet werden sollen.');
+    console.error(
+      "Bitte gib ein Verzeichnis an, auf das die Korrekturen angewendet werden sollen.",
+    );
     process.exit(1);
   }
-  
-  const targetDir = join(srcDir, directory.replace('src/', ''));
-  
+
+  const targetDir = join(srcDir, directory.replace("src/", ""));
+
   if (!existsSync(targetDir)) {
     console.error(`Verzeichnis nicht gefunden: ${targetDir}`);
     process.exit(1);
   }
-  
+
   console.log(`Wende automatische Korrekturen auf ${targetDir} an...`);
-  
+
   try {
     // Nicht verwendete Variablen entfernen
-    console.log('1. Entferne nicht verwendete Variablen...');
+    console.log("1. Entferne nicht verwendete Variablen...");
     try {
-      execSync(`npx eslint --fix "${targetDir}/**/*.{ts,tsx}" --rule "no-unused-vars: error"`, 
-        { stdio: 'inherit' });
+      execSync(
+        `npx eslint --fix "${targetDir}/**/*.{ts,tsx}" --rule "no-unused-vars: error"`,
+        { stdio: "inherit" },
+      );
     } catch (e) {
       // ESLint kann Fehler ausgeben, aber wir wollen weitermachen
     }
-    
+
     // Weitere automatische Korrekturen könnten hier hinzugefügt werden
-    
-    console.log('\nAutomatische Korrekturen wurden angewendet!');
-    console.log('\nFühre TypeScript-Check aus, um den Fortschritt zu sehen...');
-    
+
+    console.log("\nAutomatische Korrekturen wurden angewendet!");
+    console.log("\nFühre TypeScript-Check aus, um den Fortschritt zu sehen...");
+
     try {
-      execSync(`npx tsc --noEmit --project ${tsConfigOptimizedPath} --files ${targetDir}/**/*.ts ${targetDir}/**/*.tsx`, 
-        { stdio: 'inherit' });
-      console.log('\nKeine TypeScript-Fehler gefunden!');
+      execSync(
+        `npx tsc --noEmit --project ${tsConfigOptimizedPath} --files ${targetDir}/**/*.ts ${targetDir}/**/*.tsx`,
+        { stdio: "inherit" },
+      );
+      console.log("\nKeine TypeScript-Fehler gefunden!");
     } catch (e) {
-      console.log('\nEs gibt noch TypeScript-Fehler, die manuell behoben werden müssen.');
+      console.log(
+        "\nEs gibt noch TypeScript-Fehler, die manuell behoben werden müssen.",
+      );
     }
-    
   } catch (error) {
-    console.error('Fehler beim Anwenden der Korrekturen:', error.message);
+    console.error("Fehler beim Anwenden der Korrekturen:", error.message);
     process.exit(1);
   }
 }
@@ -403,22 +471,22 @@ async function applyFixes(directory) {
 // Hauptfunktion
 async function main() {
   switch (command) {
-    case 'analyze':
+    case "analyze":
       await analyzeTypeScriptErrors();
       break;
-    case 'fix-unused':
+    case "fix-unused":
       await fixUnusedVariables();
       break;
-    case 'enable':
+    case "enable":
       await enableTypeScriptOption(target);
       break;
-    case 'create-plan':
+    case "create-plan":
       await createMigrationPlan();
       break;
-    case 'apply-fixes':
+    case "apply-fixes":
       await applyFixes(target);
       break;
-    case 'help':
+    case "help":
     default:
       showHelp();
       break;
@@ -426,11 +494,13 @@ async function main() {
 }
 
 // Ausführen
-main().catch(error => {
-  console.error('Fehler:', error.message);
-  process.exit(1);
-}).finally(() => {
-  if (command !== 'enable') {
-    rl.close();
-  }
-});
+main()
+  .catch((error) => {
+    console.error("Fehler:", error.message);
+    process.exit(1);
+  })
+  .finally(() => {
+    if (command !== "enable") {
+      rl.close();
+    }
+  });

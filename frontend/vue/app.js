@@ -21,7 +21,7 @@ try {
           <p class="text-yellow-700">Die Hauptanwendung konnte nicht geladen werden. Bitte stellen Sie sicher, dass alle erforderlichen Dateien vorhanden sind.</p>
         </div>
       </div>
-    `
+    `,
   };
 }
 

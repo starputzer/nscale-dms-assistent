@@ -5,8 +5,8 @@
  */
 
 import type {
-  ChatSession, 
-  ChatMessage, 
+  ChatSession,
+  ChatMessage,
   StreamingStatus,
   SendMessageParams,
   SessionTag,
@@ -59,7 +59,7 @@ export interface IAuthStore extends IBaseStore {
 
 /**
  * Interface für den Sessions-Store
- * Definiert die Struktur und öffentliche API, die sowohl vom Standard als auch vom 
+ * Definiert die Struktur und öffentliche API, die sowohl vom Standard als auch vom
  * optimierten Store implementiert werden muss.
  */
 export interface ISessionsStore extends IBaseStore {
@@ -98,7 +98,7 @@ export interface ISessionsStore extends IBaseStore {
   initialize(): Promise<void | (() => void)>;
   synchronizeSessions(): Promise<void>;
   fetchMessages(sessionId: string): Promise<ChatMessage[]>;
-  
+
   // Session Management Actions
   createSession(title?: string): Promise<string>;
   setCurrentSession(sessionId: string): Promise<void>;
@@ -106,13 +106,13 @@ export interface ISessionsStore extends IBaseStore {
   archiveSession(sessionId: string): Promise<void>;
   deleteSession(sessionId: string): Promise<void>;
   togglePinSession(sessionId: string): Promise<void>;
-  
+
   // Message Actions
   sendMessage(params: SendMessageParams): Promise<void>;
   cancelStreaming(): void;
   deleteMessage(sessionId: string, messageId: string): Promise<void>;
   refreshSession(sessionId: string): Promise<void>;
-  
+
   // Storage and Sync Actions
   migrateFromLegacyStorage(): void;
   syncPendingMessages(): Promise<void>;
@@ -120,26 +120,33 @@ export interface ISessionsStore extends IBaseStore {
   importData(jsonData: string): boolean;
   cleanupStorage(): void;
   loadOlderMessages(sessionId: string): ChatMessage[];
-  
+
   // Tagging and Categorization
   addTagToSession(sessionId: string, tagId: string): Promise<void>;
   removeTagFromSession(sessionId: string, tagId: string): Promise<void>;
   setCategoryForSession(sessionId: string, categoryId: string): Promise<void>;
   removeCategoryFromSession(sessionId: string): Promise<void>;
   toggleArchiveSession(sessionId: string, archive?: boolean): Promise<void>;
-  updateSessionPreview(sessionId: string, previewText: string, messageCount: number): void;
-  
+  updateSessionPreview(
+    sessionId: string,
+    previewText: string,
+    messageCount: number,
+  ): void;
+
   // Selection Operations
   selectSession(sessionId: string): void;
   deselectSession(sessionId: string): void;
   toggleSessionSelection(sessionId: string): void;
   clearSessionSelection(): void;
-  
+
   // Batch Operations
   archiveMultipleSessions(sessionIds: string[]): Promise<void>;
   deleteMultipleSessions(sessionIds: string[]): Promise<void>;
   addTagToMultipleSessions(sessionIds: string[], tagId: string): Promise<void>;
-  setCategoryForMultipleSessions(sessionIds: string[], categoryId: string): Promise<void>;
+  setCategoryForMultipleSessions(
+    sessionIds: string[],
+    categoryId: string,
+  ): Promise<void>;
 
   // Streaming und Nachrichten-Management
   updateStreamedMessage?(message: ChatMessage): void;
@@ -172,14 +179,14 @@ export interface IUIStore extends IBaseStore {
     isActive: boolean;
     message: string;
   };
-  
+
   // Getters
   isDarkMode: boolean;
   isSidebarOpen: boolean;
   isSidebarCollapsed: boolean;
   currentToasts: any[];
   currentModal: any | null;
-  
+
   // Actions
   toggleDarkMode(): void;
   openSidebar(): void;
@@ -187,7 +194,11 @@ export interface IUIStore extends IBaseStore {
   toggleSidebar(): void;
   toggleSidebarCollapse(): void;
   setSidebarTab(tabId: string): void;
-  showToast(toast: { type: string; message: string; duration?: number }): string;
+  showToast(toast: {
+    type: string;
+    message: string;
+    duration?: number;
+  }): string;
   clearToasts(): void;
   dismissToast(id: string): void;
   showSuccess(message: string, options?: any): string;
@@ -237,11 +248,11 @@ export interface ISettingsStore extends IBaseStore {
     sound: boolean;
     desktop: boolean;
   };
-  
+
   // Getters
   currentTheme: any;
   fontSize: number;
-  
+
   // Actions
   setTheme(themeId: string): void;
   updateFontSettings(settings: Partial<any>): void;
@@ -261,10 +272,10 @@ export interface ISettingsStore extends IBaseStore {
 export interface IFeatureTogglesStore extends IBaseStore {
   // State
   features: Record<string, boolean>;
-  
+
   // Getters
   isEnabled(featureName: string): boolean;
-  
+
   // Actions
   enableFeature(featureName: string): void;
   disableFeature(featureName: string): void;
@@ -282,11 +293,11 @@ export interface IABTestsStore extends IBaseStore {
   // State
   activeTests: Record<string, string>;
   testDefinitions: Record<string, any>;
-  
+
   // Getters
   isVariantActive(testId: string, variantId: string): boolean;
   getActiveVariant(testId: string): string | null;
-  
+
   // Actions
   setVariant(testId: string, variantId: string): void;
   resetTest(testId: string): void;
@@ -325,16 +336,22 @@ export interface ABTestsStoreReturn extends IABTestsStore {
 /**
  * Typendefinition für den optimierten Sessions-Store mit Readonly-Eigenschaften
  */
-export interface OptimizedSessionsStore extends Omit<ISessionsStore, 
-  'sessions' | 'messages' | 'pendingMessages' | 'availableTags' | 'availableCategories'
-> {
+export interface OptimizedSessionsStore
+  extends Omit<
+    ISessionsStore,
+    | "sessions"
+    | "messages"
+    | "pendingMessages"
+    | "availableTags"
+    | "availableCategories"
+  > {
   // Readonly-Versionen der Eigenschaften für den optimierten Store
   sessions: Readonly<ChatSession[]>;
   messages: Readonly<Record<string, ChatMessage[]>>;
   pendingMessages: Readonly<Record<string, ChatMessage[]>>;
   availableTags: Readonly<SessionTag[]>;
   availableCategories: Readonly<SessionTag[]>;
-  
+
   // Spezifische optimierte Store-Methoden
   resetGetterCache(): void;
 }

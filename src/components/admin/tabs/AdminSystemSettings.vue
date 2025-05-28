@@ -804,7 +804,8 @@ import { useAdminSystemStore } from "@/stores/admin/system";
 import type { SystemSettings } from "@/stores/admin/settings";
 
 // i18n
-const { t } = useI18n();
+const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
+console.log('[i18n] Component initialized with global scope and inheritance');
 
 // Stores
 const settingsStore = useAdminSettingsStore();
@@ -1004,6 +1005,12 @@ watch(
   },
   { deep: true },
 );
+
+// Log i18n initialization status
+console.log(`[AdminSystemSettings] i18n initialized with locale: ${locale.value}`);
+
+// Log i18n initialization status
+console.log(`[AdminSystemSettings] i18n initialized with locale: ${locale.value}`);
 </script>
 
 <style scoped>

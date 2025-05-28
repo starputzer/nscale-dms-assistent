@@ -5,9 +5,14 @@
  * Interface zu verwenden, um Kompatibilität mit bestehendem Code zu gewährleisten.
  */
 
-import { EventBus, EventSubscription, EventOptions, BridgeLogger } from './types';
-import { TypedEventBus } from './eventTypes';
-import { EnhancedTypedEventBus } from './TypedEventBus';
+import {
+  EventBus,
+  EventSubscription,
+  EventOptions,
+  BridgeLogger,
+} from "./types";
+import { TypedEventBus } from "./eventTypes";
+import { EnhancedTypedEventBus } from "./TypedEventBus";
 
 /**
  * Adapter für die Legacy-EventBus-Schnittstelle
@@ -32,13 +37,17 @@ export class EventBusAdapter implements EventBus {
   on(
     eventName: string,
     callback: Function,
-    options?: EventOptions
+    options?: EventOptions,
   ): EventSubscription {
-    const subscription = this.typedEventBus.on(eventName as any, callback as any, options);
-    
+    const subscription = this.typedEventBus.on(
+      eventName as any,
+      callback as any,
+      options,
+    );
+
     // Adapter zur Konvertierung von TypedEventSubscription zu EventSubscription
     return {
-      unsubscribe: () => subscription.unsubscribe()
+      unsubscribe: () => subscription.unsubscribe(),
     };
   }
 
@@ -46,7 +55,7 @@ export class EventBusAdapter implements EventBus {
    * Entfernt einen Event-Listener
    */
   off(eventName: string, subscriptionOrId: EventSubscription | string): void {
-    if (typeof subscriptionOrId === 'string') {
+    if (typeof subscriptionOrId === "string") {
       this.typedEventBus.off(subscriptionOrId);
     } else {
       // Wir müssen den EventName verwenden, um Listener zu finden
@@ -60,13 +69,17 @@ export class EventBusAdapter implements EventBus {
   once(
     eventName: string,
     callback: Function,
-    options?: Omit<EventOptions, "once">
+    options?: Omit<EventOptions, "once">,
   ): EventSubscription {
-    const subscription = this.typedEventBus.once(eventName as any, callback as any, options);
-    
+    const subscription = this.typedEventBus.once(
+      eventName as any,
+      callback as any,
+      options,
+    );
+
     // Adapter zur Konvertierung von TypedEventSubscription zu EventSubscription
     return {
-      unsubscribe: () => subscription.unsubscribe()
+      unsubscribe: () => subscription.unsubscribe(),
     };
   }
 
@@ -77,18 +90,18 @@ export class EventBusAdapter implements EventBus {
     eventName: string,
     priority: number,
     callback: Function,
-    options?: Omit<EventOptions, "priority">
+    options?: Omit<EventOptions, "priority">,
   ): EventSubscription {
     const subscription = this.typedEventBus.priority(
       eventName as any,
       priority,
       callback as any,
-      options
+      options,
     );
-    
+
     // Adapter zur Konvertierung von TypedEventSubscription zu EventSubscription
     return {
-      unsubscribe: () => subscription.unsubscribe()
+      unsubscribe: () => subscription.unsubscribe(),
     };
   }
 
@@ -125,7 +138,10 @@ export class EventBusAdapter implements EventBus {
    */
   configureBatching(batchSize: number, batchDelay: number): void {
     // Direkter Zugriff über Cast, da diese Methode nicht im Interface definiert ist
-    (this.typedEventBus as EnhancedTypedEventBus).configureBatching(batchSize, batchDelay);
+    (this.typedEventBus as EnhancedTypedEventBus).configureBatching(
+      batchSize,
+      batchDelay,
+    );
   }
 
   /**
@@ -139,6 +155,9 @@ export class EventBusAdapter implements EventBus {
 /**
  * Factory-Funktion für die Erstellung eines EventBusAdapter
  */
-export function createEventBusAdapter(logger: BridgeLogger, batchDelay: number = 50): EventBus {
+export function createEventBusAdapter(
+  logger: BridgeLogger,
+  batchDelay: number = 50,
+): EventBus {
   return new EventBusAdapter(logger, batchDelay);
 }

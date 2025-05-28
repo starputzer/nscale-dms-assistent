@@ -1,6 +1,11 @@
-import { deepDiff, applyDiff, DiffOperation, DiffOperationType } from './DeepDiff';
-import { StateManager as BaseStateManager } from '../types';
-import { createLogger } from '../logger/index';
+import {
+  deepDiff,
+  applyDiff,
+  DiffOperation,
+  DiffOperationType,
+} from "./DeepDiff";
+import { StateManager as BaseStateManager } from "../types";
+import { createLogger } from "../logger/index";
 // import { debounce } from 'lodash-es';
 
 /**
@@ -17,20 +22,24 @@ export class OptimizedStateManager implements BaseStateManager {
   // Internal state for StateManager interface
   private vueStores: Record<string, any> = {};
   private legacyState: Record<string, any> = {};
-  private subscribers: Map<string, Array<(value: any, oldValue: any) => void>> = new Map();
+  private subscribers: Map<string, Array<(value: any, oldValue: any) => void>> =
+    new Map();
   private isConnected = false;
 
   // Logger for this component
-  private logger = createLogger('OptimizedStateManager');
+  private logger = createLogger("OptimizedStateManager");
 
   /**
    * Connect this state manager to Vue stores and legacy state
    */
-  public connect(vueStores: Record<string, any>, legacyState: Record<string, any>): void {
+  public connect(
+    vueStores: Record<string, any>,
+    legacyState: Record<string, any>,
+  ): void {
     this.vueStores = vueStores;
     this.legacyState = legacyState;
     this.isConnected = true;
-    this.logger.info('StateManager connected');
+    this.logger.info("StateManager connected");
   }
 
   /**
@@ -38,7 +47,7 @@ export class OptimizedStateManager implements BaseStateManager {
    */
   public disconnect(): void {
     this.isConnected = false;
-    this.logger.info('StateManager disconnected');
+    this.logger.info("StateManager disconnected");
   }
 
   /**
@@ -52,10 +61,14 @@ export class OptimizedStateManager implements BaseStateManager {
   /**
    * Set state value at a path
    */
-  public setState(path: string, value: any, source?: "legacy" | "vue"): boolean {
+  public setState(
+    path: string,
+    value: any,
+    source?: "legacy" | "vue",
+  ): boolean {
     try {
       // Use our syncState method instead
-      this.syncState(path, value, source === 'legacy');
+      this.syncState(path, value, source === "legacy");
       return true;
     } catch (error) {
       this.logger.error(`Error setting state for ${path}:`, error);
@@ -66,7 +79,10 @@ export class OptimizedStateManager implements BaseStateManager {
   /**
    * Subscribe to state changes
    */
-  public subscribe(path: string, callback: (value: any, oldValue: any) => void): () => void {
+  public subscribe(
+    path: string,
+    callback: (value: any, oldValue: any) => void,
+  ): () => void {
     if (!this.subscribers.has(path)) {
       this.subscribers.set(path, []);
     }
@@ -100,10 +116,13 @@ export class OptimizedStateManager implements BaseStateManager {
   public getDiagnostics(): any {
     return {
       isConnected: this.isConnected,
-      subscriberCount: Array.from(this.subscribers.values()).reduce((count, callbacks) => count + callbacks.length, 0),
+      subscriberCount: Array.from(this.subscribers.values()).reduce(
+        (count, callbacks) => count + callbacks.length,
+        0,
+      ),
       stateKeys: Object.keys(this.lastSyncedState),
       pendingUpdates: Array.from(this.pendingUpdates.keys()),
-      updateIntervals: Array.from(this.updateIntervals.entries())
+      updateIntervals: Array.from(this.updateIntervals.entries()),
     };
   }
 
@@ -113,13 +132,17 @@ export class OptimizedStateManager implements BaseStateManager {
    * @param newValue The new state value
    * @param oldValue The previous state value
    */
-  private notifySubscribers(stateKey: string, newValue: any, oldValue: any): void {
+  private notifySubscribers(
+    stateKey: string,
+    newValue: any,
+    oldValue: any,
+  ): void {
     if (!this.subscribers.has(stateKey)) return;
 
     const callbacks = this.subscribers.get(stateKey);
     if (!callbacks) return;
 
-    callbacks.forEach(callback => {
+    callbacks.forEach((callback) => {
       try {
         callback(newValue, oldValue);
       } catch (error) {
@@ -127,7 +150,7 @@ export class OptimizedStateManager implements BaseStateManager {
       }
     });
   }
-  
+
   /**
    * Set update interval for a specific state slice
    * @param stateKey The state slice identifier
@@ -155,7 +178,7 @@ export class OptimizedStateManager implements BaseStateManager {
 
     // Calculate diff between last synced state and new state
     const stateDiff = deepDiff(this.lastSyncedState[stateKey], newState);
-    
+
     if (stateDiff.length === 0) {
       this.logger.debug(`No changes detected for ${stateKey}, skipping sync`);
       return; // No changes, skip sync
@@ -163,12 +186,13 @@ export class OptimizedStateManager implements BaseStateManager {
 
     // Store pending updates
     this.pendingUpdates.set(stateKey, stateDiff);
-    
+
     // Process immediately or schedule debounced update
     if (immediate) {
       this.processPendingUpdates(stateKey);
     } else {
-      const intervalMs = this.updateIntervals.get(stateKey) || this.defaultDebounceMs;
+      const intervalMs =
+        this.updateIntervals.get(stateKey) || this.defaultDebounceMs;
       this.scheduleUpdate(stateKey, intervalMs);
     }
   }
@@ -181,12 +205,12 @@ export class OptimizedStateManager implements BaseStateManager {
     if (this.updateTimers.has(stateKey)) {
       window.clearTimeout(this.updateTimers.get(stateKey));
     }
-    
+
     // Set new timer
     const timerId = window.setTimeout(() => {
       this.processPendingUpdates(stateKey);
     }, intervalMs);
-    
+
     this.updateTimers.set(stateKey, timerId);
   }
 
@@ -195,27 +219,33 @@ export class OptimizedStateManager implements BaseStateManager {
    */
   private processPendingUpdates(stateKey: string): void {
     if (!this.pendingUpdates.has(stateKey)) return;
-    
+
     const operations = this.pendingUpdates.get(stateKey) || [];
-    
+
     if (operations.length === 0) return;
-    
+
     // Apply diff operations to last synced state to get new state
     const updatedState = applyDiff(
-      JSON.parse(JSON.stringify(this.lastSyncedState[stateKey])), 
-      operations
+      JSON.parse(JSON.stringify(this.lastSyncedState[stateKey])),
+      operations,
     );
-    
+
     // Notify subscribers with the updated state
-    this.notifySubscribers(stateKey, updatedState, JSON.parse(JSON.stringify(this.lastSyncedState[stateKey])));
-    
+    this.notifySubscribers(
+      stateKey,
+      updatedState,
+      JSON.parse(JSON.stringify(this.lastSyncedState[stateKey])),
+    );
+
     // Update last synced state
     this.lastSyncedState[stateKey] = updatedState;
-    
+
     // Clear pending updates
     this.pendingUpdates.delete(stateKey);
 
-    this.logger.debug(`Processed ${operations.length} diff operations for ${stateKey}`);
+    this.logger.debug(
+      `Processed ${operations.length} diff operations for ${stateKey}`,
+    );
   }
 
   /**
@@ -223,10 +253,10 @@ export class OptimizedStateManager implements BaseStateManager {
    */
   public flushPendingUpdates(): void {
     // Use Array.from to avoid compatibility issues with Map iterators
-    Array.from(this.pendingUpdates.keys()).forEach(stateKey => {
+    Array.from(this.pendingUpdates.keys()).forEach((stateKey) => {
       this.processPendingUpdates(stateKey);
     });
-    this.logger.debug('Flushed all pending state updates');
+    this.logger.debug("Flushed all pending state updates");
   }
 
   /**
@@ -235,15 +265,15 @@ export class OptimizedStateManager implements BaseStateManager {
   public reset(): void {
     this.lastSyncedState = {};
     this.pendingUpdates.clear();
-    
+
     // Clear all update timers
     // Use Array.from to avoid compatibility issues with Map iterators
-    Array.from(this.updateTimers.values()).forEach(timerId => {
+    Array.from(this.updateTimers.values()).forEach((timerId) => {
       window.clearTimeout(timerId);
     });
     this.updateTimers.clear();
 
-    this.logger.debug('OptimizedStateManager reset complete');
+    this.logger.debug("OptimizedStateManager reset complete");
   }
 }
 
@@ -251,8 +281,10 @@ export class OptimizedStateManager implements BaseStateManager {
  * Create a debounced state manager for high-frequency updates
  * @param debounceTime Default debounce time in milliseconds
  */
-export function createDebouncedStateManager(debounceTime = 50): OptimizedStateManager {
+export function createDebouncedStateManager(
+  debounceTime = 50,
+): OptimizedStateManager {
   const manager = new OptimizedStateManager();
-  manager['defaultDebounceMs'] = debounceTime;
+  manager["defaultDebounceMs"] = debounceTime;
   return manager;
 }

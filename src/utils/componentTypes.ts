@@ -1,11 +1,11 @@
 /**
  * Component Utility Types
- * 
+ *
  * Diese Datei enthält Utility-Typen speziell für die Arbeit mit Vue-Komponenten.
  * Sie bietet Typen für Props, Emits, Slots, Refs und andere komponentenspezifische Konzepte.
  */
 
-import { ComputedRef, Ref, UnwrapRef, SetupContext } from 'vue';
+import { ComputedRef, Ref, UnwrapRef, SetupContext } from "vue";
 
 /**
  * DefineProps<T> - Hilfstyp für typsichere Props-Definitionen
@@ -158,7 +158,7 @@ export interface ClassComponent<Props = {}, Emits = {}> {
  */
 export interface VModelType<T> {
   modelValue: T;
-  'onUpdate:modelValue': (value: T) => void;
+  "onUpdate:modelValue": (value: T) => void;
 }
 
 /**
@@ -176,7 +176,7 @@ export type VModelProps<T> = {
  * @template T Der Typ des modelValue
  */
 export type VModelEmits<T> = {
-  'update:modelValue': [T];
+  "update:modelValue": [T];
 };
 
 /**
@@ -218,7 +218,12 @@ export interface UseNamedModelReturn<T> extends UseModelReturn<T> {
 /**
  * FormItemValidationStatus - Status für Formular-Validierungen
  */
-export type FormItemValidationStatus = 'success' | 'error' | 'warning' | 'validating' | '';
+export type FormItemValidationStatus =
+  | "success"
+  | "error"
+  | "warning"
+  | "validating"
+  | "";
 
 /**
  * FormValidationRule<T> - Validierungsregel für Formulare
@@ -230,7 +235,7 @@ export interface FormValidationRule<T = any> {
   max?: number;
   pattern?: RegExp;
   validator?: (value: T) => boolean | string | Promise<boolean | string>;
-  trigger?: 'blur' | 'change' | Array<'blur' | 'change'>;
+  trigger?: "blur" | "change" | Array<"blur" | "change">;
 }
 
 /**
@@ -245,18 +250,25 @@ export interface FormItemProps<T = any> {
   validateStatus?: FormItemValidationStatus;
   help?: string;
   extra?: string;
-  validateTrigger?: 'blur' | 'change' | Array<'blur' | 'change'>;
+  validateTrigger?: "blur" | "change" | Array<"blur" | "change">;
 }
 
 /**
  * ComponentSize - Größenoptionen für Komponenten
  */
-export type ComponentSize = 'small' | 'medium' | 'large' | 'default';
+export type ComponentSize = "small" | "medium" | "large" | "default";
 
 /**
  * ComponentVariant - Variantenoptionen für Komponenten
  */
-export type ComponentVariant = 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info';
+export type ComponentVariant =
+  | "default"
+  | "primary"
+  | "secondary"
+  | "success"
+  | "warning"
+  | "danger"
+  | "info";
 
 /**
  * PropOptions<T> - Hilfsfunktion zum Erstellen von Prop-Optionen
@@ -280,7 +292,9 @@ export type ComponentVariant = 'default' | 'primary' | 'secondary' | 'success' |
  * });
  * ```
  */
-export function propOptions<T>(options: Partial<PropType<T>> & { type?: any }): any {
+export function propOptions<T>(
+  options: Partial<PropType<T>> & { type?: any },
+): any {
   return options;
 }
 
@@ -302,12 +316,12 @@ export function propOptions<T>(options: Partial<PropType<T>> & { type?: any }): 
  */
 export function requiredProp<T>(
   type: PropConstructor<T> | PropConstructor<T>[],
-  validator?: (value: unknown) => boolean
+  validator?: (value: unknown) => boolean,
 ): any {
   return {
     type,
     required: true,
-    validator
+    validator,
   };
 }
 
@@ -331,12 +345,12 @@ export function requiredProp<T>(
 export function withDefaultProp<T>(
   type: PropConstructor<T> | PropConstructor<T>[],
   defaultValue: T | (() => T),
-  validator?: (value: unknown) => boolean
+  validator?: (value: unknown) => boolean,
 ): any {
   return {
     type,
     default: defaultValue,
-    validator
+    validator,
   };
 }
 
@@ -346,26 +360,26 @@ export function withDefaultProp<T>(
 export interface UseComponentHookReturn<T> {
   /** Reaktive Referenz auf das Datenmodell */
   model: Ref<T>;
-  
+
   /** Callback bei Änderungen */
   onChange: (value: T) => void;
-  
+
   /** Lädt die Daten neu */
   refresh: () => Promise<void>;
-  
+
   /** Setzt das Modell zurück */
   reset: () => void;
-  
+
   /** Zeigt den Ladezustand an */
   loading: Ref<boolean>;
-  
+
   /** Zeigt den Fehlerzustand an */
   error: Ref<string | null>;
 }
 
 /**
  * StrictComponentProps<T> - Strenge Typprüfung für Komponenten-Props
- * 
+ *
  * Dieser Typ stellt sicher, dass alle erforderlichen Props vorhanden sind
  * und keine zusätzlichen Props verwendet werden.
  */
@@ -378,7 +392,10 @@ export type StrictComponentProps<T> = {
 /**
  * ComponentRenderContext - Kontext für Render-Funktionen
  */
-export interface ComponentRenderContext<Props = {}, Emit extends Record<string, any[]> = {}> {
+export interface ComponentRenderContext<
+  Props = {},
+  Emit extends Record<string, any[]> = {},
+> {
   attrs: Record<string, any>;
   slots: Record<string, SlotFn>;
   emit: EmitFn<Emit>;
@@ -391,7 +408,7 @@ export interface ComponentRenderContext<Props = {}, Emit extends Record<string, 
 export type SetupFn<
   Props = {},
   Emit extends Record<string, any[]> = {},
-  Return = any
+  Return = any,
 > = (props: Props, context: SetupContext<any>) => Return;
 
 /**
@@ -449,7 +466,7 @@ export interface LazyComponentOptions {
 export interface TransitionProps {
   name?: string;
   appear?: boolean;
-  mode?: 'in-out' | 'out-in';
+  mode?: "in-out" | "out-in";
   duration?: number | { enter: number; leave: number };
   enterClass?: string;
   leaveClass?: string;
@@ -491,11 +508,11 @@ export function templateRef<T>(defaultValue: T | null = null): Ref<T | null> {
 /**
  * FocusableElement - Typ für fokussierbare HTML-Elemente
  */
-export type FocusableElement = 
-  | HTMLButtonElement 
-  | HTMLInputElement 
-  | HTMLSelectElement 
-  | HTMLTextAreaElement 
+export type FocusableElement =
+  | HTMLButtonElement
+  | HTMLInputElement
+  | HTMLSelectElement
+  | HTMLTextAreaElement
   | HTMLAnchorElement;
 
 /**

@@ -1,6 +1,6 @@
 /**
  * Global type definitions for the nscale DMS Assistant
- * 
+ *
  * This file consolidates all global interfaces and type extensions
  * used across the application, ensuring type safety for global objects
  * and built-in interfaces.
@@ -35,7 +35,7 @@ interface Window {
     /** Whether to use mock API */
     USE_MOCK_API?: boolean;
   };
-  
+
   /**
    * Telemetry tracking capabilities
    */
@@ -45,9 +45,13 @@ interface Window {
     /** Track an error occurrence */
     trackError: (error: Error | unknown, props?: Record<string, any>) => void;
     /** Track a performance measurement */
-    trackPerformance: (name: string, duration: number, props?: Record<string, any>) => void;
+    trackPerformance: (
+      name: string,
+      duration: number,
+      props?: Record<string, any>,
+    ) => void;
   };
-  
+
   /**
    * Source references functionality
    */
@@ -58,26 +62,32 @@ interface Window {
   toggleSourceDetail?: (message: any, sourceIndex: number) => void;
   toggleSourceReferences: () => void | Promise<void>;
   hasSourceReferences?: (content: string) => boolean;
-  showSourcePopupHandler?: (event: MouseEvent, sourceId: string) => void | Promise<void>;
+  showSourcePopupHandler?: (
+    event: MouseEvent,
+    sourceId: string,
+  ) => void | Promise<void>;
   closeSourcePopup?: () => void;
   __sourceReferencesComposable: {
     isSourceReferencesVisible: () => boolean;
     toggleSourceReferences: () => void;
   };
-  
+
   /**
    * Bridge for legacy code integration
    */
   __BRIDGE_INITIALIZED?: boolean;
   __BRIDGE_EVENTS?: Record<string, any[]>;
   __dispatchBridgeEvent?: (eventName: string, data: any) => void;
-  __registerBridgeHandler?: (eventName: string, handler: (data: any) => void) => void;
-  
+  __registerBridgeHandler?: (
+    eventName: string,
+    handler: (data: any) => void,
+  ) => void;
+
   /**
    * Service instances for legacy code
    */
   $chatService?: any;
-  
+
   /**
    * Event bus (legacy)
    */
@@ -86,52 +96,63 @@ interface Window {
     emit: (event: string, ...args: any[]) => void;
     off: (event: string, callback?: (...args: any[]) => void) => void;
   };
-  
+
   /**
    * Original dialog functions (for restoration after overriding)
    */
   __originalConfirm?: (message?: string) => boolean;
   __originalPrompt?: (message?: string, defaultValue?: string) => string | null;
   __originalAlert?: (message?: any) => void;
-  
+
   /**
    * Error reporting service
    */
   errorReportingService?: {
-    captureError(error: Error, options?: {
-      tags?: Record<string, string>;
-      extra?: Record<string, any>;
-      level?: 'info' | 'warning' | 'error' | 'fatal';
-    }): void;
+    captureError(
+      error: Error,
+      options?: {
+        tags?: Record<string, string>;
+        extra?: Record<string, any>;
+        level?: "info" | "warning" | "error" | "fatal";
+      },
+    ): void;
     captureMessage(message: string, options?: any): void;
     setTags(tags: Record<string, string>): void;
     setUser(user: { id?: string; email?: string; username?: string }): void;
   };
-  
+
   /**
    * Cache invalidation
    */
   clearAppCache?: () => Promise<void>;
-  
+
   /**
    * Feature toggles
    */
   __FEATURE_FLAGS?: Record<string, boolean>;
   __isFeatureEnabled?: (featureName: string) => boolean;
-  
+
   /**
    * Feature toggle system event listeners
    */
-  addEventListener(type: 'feature-toggle-change', listener: (event: CustomEvent<{
-    feature: string;
-    enabled: boolean;
-    source: 'user' | 'system' | 'api';
-  }>) => void): void;
-  
+  addEventListener(
+    type: "feature-toggle-change",
+    listener: (
+      event: CustomEvent<{
+        feature: string;
+        enabled: boolean;
+        source: "user" | "system" | "api";
+      }>,
+    ) => void,
+  ): void;
+
   /**
    * Streaming event cancellation
    */
-  addEventListener(type: 'cancel-streaming', listener: (event: CustomEvent) => void): void;
+  addEventListener(
+    type: "cancel-streaming",
+    listener: (event: CustomEvent) => void,
+  ): void;
 }
 
 /**
@@ -165,7 +186,10 @@ interface SourceReferencesComposable {
   isSourceDetailOpen: (message: any, sourceIndex: number) => boolean;
   toggleSourceDetail: (message: any, sourceIndex: number) => void;
   toggleSourceReferences: (message: any) => Promise<void>;
-  showSourcePopupHandler: (event: MouseEvent, sourceId: string) => Promise<void>;
+  showSourcePopupHandler: (
+    event: MouseEvent,
+    sourceId: string,
+  ) => Promise<void>;
   closeSourcePopup: () => void;
   loadExplanation: (message: any) => Promise<void>;
   showSourcesDialog: (message: any) => void;
@@ -176,7 +200,7 @@ interface SourceReferencesComposable {
  * Web API extensions
  */
 interface RequestInit {
-  priority?: 'high' | 'low' | 'auto';
+  priority?: "high" | "low" | "auto";
 }
 
 /**

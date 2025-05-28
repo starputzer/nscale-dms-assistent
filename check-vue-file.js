@@ -1,7 +1,7 @@
-const { exec } = require('child_process');
+const { exec } = require("child_process");
 
 // File to check
-const filePath = 'src/App.pure.vue';
+const filePath = "src/App.pure.vue";
 
 // Run vue-tsc to check the file
 exec(`npx vue-tsc --noEmit ${filePath}`, (error, stdout, stderr) => {
@@ -15,11 +15,11 @@ exec(`npx vue-tsc --noEmit ${filePath}`, (error, stdout, stderr) => {
     }
     return;
   }
-  
+
   if (stderr) {
     console.error(`Error output: ${stderr}`);
     return;
   }
-  
-  console.log('Vue file TypeScript check passed successfully!');
+
+  console.log("Vue file TypeScript check passed successfully!");
 });

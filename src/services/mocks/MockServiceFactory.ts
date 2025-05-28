@@ -1,16 +1,16 @@
 /**
  * MockServiceFactory
- * 
+ *
  * Diese Klasse bietet ein Factory-Pattern, um zwischen Mock-Implementierungen und echten
  * API-Services zu wechseln. Dies ermöglicht die Entwicklung ohne Backend-Abhängigkeit.
  */
 
-import { chatService as realChatService } from '../api/ChatService';
-import { mockChatService } from './MockChatService';
+import { chatService as realChatService } from "../api/ChatService";
+import { mockChatService } from "./MockChatService";
 
-// Typen 
-type ServiceType = 'chat' | 'auth' | 'document' | 'admin';
-type EnvironmentMode = 'mock' | 'real' | 'auto';
+// Typen
+type ServiceType = "chat" | "auth" | "document" | "admin";
+type EnvironmentMode = "mock" | "real" | "auto";
 
 /**
  * Konfiguration für den MockServiceFactory
@@ -26,8 +26,8 @@ interface MockServiceFactoryConfig {
  */
 class MockServiceFactory {
   private config: MockServiceFactoryConfig = {
-    defaultMode: 'auto',
-    serviceOverrides: {}
+    defaultMode: "auto",
+    serviceOverrides: {},
   };
 
   /**
@@ -36,19 +36,22 @@ class MockServiceFactory {
   public initialize(config: Partial<MockServiceFactoryConfig> = {}): void {
     this.config = {
       ...this.config,
-      ...config
+      ...config,
     };
 
     // Log the configuration
-    console.log('MockServiceFactory initialisiert mit Konfiguration:', this.config);
+    console.log(
+      "MockServiceFactory initialisiert mit Konfiguration:",
+      this.config,
+    );
   }
 
   /**
    * Bestimmt den zu verwendenden Modus für einen bestimmten Service-Typ
    */
-  private determineMode(serviceType: ServiceType): 'mock' | 'real' {
+  private determineMode(serviceType: ServiceType): "mock" | "real" {
     // Wenn forciert, diesen Modus verwenden
-    if (this.config.forceMode && this.config.forceMode !== 'auto') {
+    if (this.config.forceMode && this.config.forceMode !== "auto") {
       return this.config.forceMode;
     }
 
@@ -56,21 +59,21 @@ class MockServiceFactory {
     if (
       this.config.serviceOverrides &&
       this.config.serviceOverrides[serviceType] &&
-      this.config.serviceOverrides[serviceType] !== 'auto'
+      this.config.serviceOverrides[serviceType] !== "auto"
     ) {
-      return this.config.serviceOverrides[serviceType] as 'mock' | 'real';
+      return this.config.serviceOverrides[serviceType] as "mock" | "real";
     }
 
     // Auto-Modus: prüfen, ob API erreichbar ist
-    if (this.config.defaultMode === 'auto') {
+    if (this.config.defaultMode === "auto") {
       // Im auto-Modus verwenden wir Mock-Implementierung, wenn kein Backend verfügbar ist
       // Wir könnten hier auch eine Prüfung hinzufügen, ob das Backend erreichbar ist
       const isBackendAvailable = this.checkBackendAvailability();
-      return isBackendAvailable ? 'real' : 'mock';
+      return isBackendAvailable ? "real" : "mock";
     }
 
     // Defaultmodus verwenden
-    return this.config.defaultMode as 'mock' | 'real';
+    return this.config.defaultMode as "mock" | "real";
   }
 
   /**
@@ -80,22 +83,22 @@ class MockServiceFactory {
     // Einfache Heuristik: Wenn wir auf einem lokalen Entwicklungsserver sind und kein
     // expliziter API-Server gesetzt ist, nehmen wir an, dass kein Backend verfügbar ist
     if (
-      window.location.hostname === 'localhost' || 
-      window.location.hostname === '127.0.0.1'
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1"
     ) {
       // Wir könnten hier auch einen Cookie oder localStorage prüfen, um zu sehen,
       // ob der Benutzer bereits entschieden hat, den Mock-Modus zu verwenden
-      const storedMode = localStorage.getItem('nscale_mock_mode');
-      if (storedMode === 'mock') {
+      const storedMode = localStorage.getItem("nscale_mock_mode");
+      if (storedMode === "mock") {
         return false;
       }
-      
+
       // Wenn im Produktionsserver ein flag gesetzt ist
       if (window.APP_CONFIG?.USE_MOCK_API === true) {
         return false;
       }
     }
-    
+
     return true;
   }
 
@@ -103,17 +106,17 @@ class MockServiceFactory {
    * Gibt den ChatService zurück (entweder echte oder Mock-Implementierung)
    */
   public getChatService() {
-    const mode = this.determineMode('chat');
+    const mode = this.determineMode("chat");
     console.log(`ChatService im Modus: ${mode}`);
-    
-    return mode === 'mock' ? mockChatService : realChatService;
+
+    return mode === "mock" ? mockChatService : realChatService;
   }
-  
+
   /**
    * Gibt an, ob der Mock-Modus für Auth-Service aktiv ist
    */
   public isAuthMockMode() {
-    return this.determineMode('auth') === 'mock';
+    return this.determineMode("auth") === "mock";
   }
 }
 
@@ -123,16 +126,19 @@ export const mockServiceFactory = new MockServiceFactory();
 // Initialisiere mit Default-Konfiguration
 mockServiceFactory.initialize({
   // Mock-Modus erzwingen, wenn URL-Parameter vorhanden ist
-  forceMode: new URLSearchParams(window.location.search).get('mockApi') === 'true' ? 'mock' : 'real',
+  forceMode:
+    new URLSearchParams(window.location.search).get("mockApi") === "true"
+      ? "mock"
+      : "real",
   // Default-Modus (wenn nicht forciert)
-  defaultMode: 'real',
+  defaultMode: "real",
   // Service-spezifische Überschreibungen
   serviceOverrides: {
-    chat: 'real', // Real statt Mock für Chat verwenden
-    auth: 'real',
-    document: 'real',
-    admin: 'real'
-  }
+    chat: "real", // Real statt Mock für Chat verwenden
+    auth: "real",
+    document: "real",
+    admin: "real",
+  },
 });
 
 export default mockServiceFactory;

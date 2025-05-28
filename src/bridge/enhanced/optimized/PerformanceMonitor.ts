@@ -1,16 +1,16 @@
-import { createLogger } from '../logger/index';
+import { createLogger } from "../logger/index";
 
 /**
  * Performance measurement types
  */
 export enum PerformanceMetricType {
-  STATE_UPDATE = 'state_update',
-  EVENT_EMISSION = 'event_emission',
-  EVENT_HANDLING = 'event_handling',
-  STATE_SYNC = 'state_sync',
-  COMPONENT_RENDER = 'component_render',
-  DIFF_CALCULATION = 'diff_calculation',
-  API_CALL = 'api_call'
+  STATE_UPDATE = "state_update",
+  EVENT_EMISSION = "event_emission",
+  EVENT_HANDLING = "event_handling",
+  STATE_SYNC = "state_sync",
+  COMPONENT_RENDER = "component_render",
+  DIFF_CALCULATION = "diff_calculation",
+  API_CALL = "api_call",
 }
 
 /**
@@ -45,7 +45,7 @@ export class PerformanceMonitor {
   private metrics: PerformanceMetric[] = [];
   private limitSize = 1000; // Maximum number of metrics to store
   private activeMarks: Map<string, number> = new Map();
-  
+
   // Store aggregated metrics for efficient reporting
   private aggregatedStats: Map<string, PerformanceStats> = new Map();
 
@@ -53,14 +53,16 @@ export class PerformanceMonitor {
   private lastAggregation = 0;
 
   // Logger for this component
-  private logger = createLogger('PerformanceMonitor');
-  
+  private logger = createLogger("PerformanceMonitor");
+
   /**
    * Enable or disable performance monitoring
    */
   public setEnabled(enabled: boolean): void {
     this.enabled = enabled;
-    this.logger.info(`Performance monitoring ${enabled ? 'enabled' : 'disabled'}`);
+    this.logger.info(
+      `Performance monitoring ${enabled ? "enabled" : "disabled"}`,
+    );
 
     if (!enabled) {
       // Clear metrics when disabling to free memory
@@ -68,7 +70,7 @@ export class PerformanceMonitor {
       this.aggregatedStats.clear();
     }
   }
-  
+
   /**
    * Start measuring a performance metric
    * @param type Type of metric being measured
@@ -76,13 +78,13 @@ export class PerformanceMonitor {
    * @returns A unique mark ID to use with endMark
    */
   public startMark(type: PerformanceMetricType, name: string): string {
-    if (!this.enabled) return '';
-    
+    if (!this.enabled) return "";
+
     const markId = `${type}_${name}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     this.activeMarks.set(markId, performance.now());
     return markId;
   }
-  
+
   /**
    * End a performance measurement and record the metric
    * @param markId The ID returned from startMark
@@ -91,42 +93,42 @@ export class PerformanceMonitor {
    */
   public endMark(markId: string, metadata?: Record<string, any>): number {
     if (!this.enabled || !markId || !this.activeMarks.has(markId)) return -1;
-    
+
     const startTime = this.activeMarks.get(markId)!;
     const endTime = performance.now();
     const duration = endTime - startTime;
-    
+
     // Extract type and name from markId
-    const [type, name] = markId.split('_', 2);
-    
+    const [type, name] = markId.split("_", 2);
+
     // Record the metric
     this.recordMetric({
       type: type as PerformanceMetricType,
       name,
       duration,
       timestamp: Date.now(),
-      metadata
+      metadata,
     });
-    
+
     // Clean up
     this.activeMarks.delete(markId);
-    
+
     return duration;
   }
-  
+
   /**
    * Record a metric directly without using marks
    */
   public recordMetric(metric: PerformanceMetric): void {
     if (!this.enabled) return;
-    
+
     this.metrics.push(metric);
-    
+
     // Trim metrics if exceeding limit
     if (this.metrics.length > this.limitSize) {
       this.metrics = this.metrics.slice(-this.limitSize);
     }
-    
+
     // Re-aggregate if it's been more than 5 seconds
     const now = Date.now();
     if (now - this.lastAggregation > 5000) {
@@ -134,7 +136,7 @@ export class PerformanceMonitor {
       this.lastAggregation = now;
     }
   }
-  
+
   /**
    * Measure the execution time of a function
    * @param fn Function to measure
@@ -147,10 +149,10 @@ export class PerformanceMonitor {
     fn: () => T,
     type: PerformanceMetricType,
     name: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ): T {
     if (!this.enabled) return fn();
-    
+
     const markId = this.startMark(type, name);
     try {
       const result = fn();
@@ -161,7 +163,7 @@ export class PerformanceMonitor {
       throw error;
     }
   }
-  
+
   /**
    * Create a wrapped version of a function that is automatically measured
    * @param fn Function to wrap
@@ -172,57 +174,52 @@ export class PerformanceMonitor {
   public createMeasuredFunction<T extends (...args: any[]) => any>(
     fn: T,
     type: PerformanceMetricType,
-    name: string
+    name: string,
   ): T {
     return ((...args: Parameters<T>): ReturnType<T> => {
-      return this.measure(
-        () => fn(...args),
-        type,
-        name,
-        { args: args.length }
-      );
+      return this.measure(() => fn(...args), type, name, { args: args.length });
     }) as T;
   }
-  
+
   /**
    * Get all recorded metrics
    */
   public getMetrics(): PerformanceMetric[] {
     return [...this.metrics];
   }
-  
+
   /**
    * Get metrics filtered by type and optionally name
    */
   public getMetricsByType(
     type: PerformanceMetricType,
-    name?: string
+    name?: string,
   ): PerformanceMetric[] {
-    return this.metrics.filter(m => 
-      m.type === type && (name === undefined || m.name === name)
+    return this.metrics.filter(
+      (m) => m.type === type && (name === undefined || m.name === name),
     );
   }
-  
+
   /**
    * Calculate performance statistics for a specific metric type
    */
   public getStatsByType(
     type: PerformanceMetricType,
-    name?: string
+    name?: string,
   ): PerformanceStats | null {
     // Check if we have pre-aggregated stats
     const key = name ? `${type}_${name}` : type;
     if (this.aggregatedStats.has(key)) {
       return this.aggregatedStats.get(key)!;
     }
-    
+
     // Otherwise calculate stats directly
     const metrics = this.getMetricsByType(type, name);
     if (metrics.length === 0) return null;
-    
-    return this.calculateStats(metrics.map(m => m.duration));
+
+    return this.calculateStats(metrics.map((m) => m.duration));
   }
-  
+
   /**
    * Calculate stats for a set of durations
    */
@@ -230,74 +227,74 @@ export class PerformanceMonitor {
     if (durations.length === 0) {
       return { avg: 0, min: 0, max: 0, p95: 0, count: 0, total: 0 };
     }
-    
+
     const sorted = [...durations].sort((a, b) => a - b);
     const min = sorted[0];
     const max = sorted[sorted.length - 1];
     const total = sorted.reduce((sum, val) => sum + val, 0);
     const avg = total / sorted.length;
-    
+
     // Calculate 95th percentile
     const p95Index = Math.floor(sorted.length * 0.95);
     const p95 = sorted[p95Index];
-    
+
     return {
       avg,
       min,
       max,
       p95,
       count: sorted.length,
-      total
+      total,
     };
   }
-  
+
   /**
    * Aggregate metrics for faster reporting
    */
   private aggregateMetrics(): void {
     const metricsByKey = new Map<string, number[]>();
-    
+
     // Group metrics by type and name
     for (const metric of this.metrics) {
       const typeKey = metric.type;
       const nameKey = `${metric.type}_${metric.name}`;
-      
+
       // Add to type-level metrics
       if (!metricsByKey.has(typeKey)) {
         metricsByKey.set(typeKey, []);
       }
       metricsByKey.get(typeKey)!.push(metric.duration);
-      
+
       // Add to name-level metrics
       if (!metricsByKey.has(nameKey)) {
         metricsByKey.set(nameKey, []);
       }
       metricsByKey.get(nameKey)!.push(metric.duration);
     }
-    
+
     // Calculate stats for each key
     // Use Array.from to avoid compatibility issues with Map iterators
     Array.from(metricsByKey.entries()).forEach(([key, durations]) => {
       this.aggregatedStats.set(key, this.calculateStats(durations));
     });
   }
-  
+
   /**
    * Get all aggregated statistics
    */
   public getAllStats(): Record<string, PerformanceStats> {
     this.aggregateMetrics();
     this.lastAggregation = Date.now();
-    
+
     const result: Record<string, PerformanceStats> = {};
     // Use Array.from to avoid compatibility issues with Map iterators
     Array.from(this.aggregatedStats.entries()).forEach(([key, stats]) => {
       result[key] = stats;
     });
-    
+
     return result;
   }
-  
+
   /**
    * Clear all recorded metrics
    */
@@ -305,34 +302,34 @@ export class PerformanceMonitor {
     this.metrics = [];
     this.aggregatedStats.clear();
     this.lastAggregation = 0;
-    this.logger.debug('Performance metrics cleared');
+    this.logger.debug("Performance metrics cleared");
   }
-  
+
   /**
    * Generate a performance report
    */
   public generateReport(): Record<string, any> {
     this.aggregateMetrics();
-    
+
     return {
       timestamp: Date.now(),
       metricsCount: this.metrics.length,
       enabled: this.enabled,
       stats: this.getAllStats(),
       activeMarks: this.activeMarks.size,
-      summary: this.generateSummary()
+      summary: this.generateSummary(),
     };
   }
-  
+
   /**
    * Generate a summary of performance issues
    */
   private generateSummary(): Record<string, any> {
     const summary: Record<string, any> = {
       issues: [],
-      recommendations: []
+      recommendations: [],
     };
-    
+
     // Look for slow operations
     // Use Array.from to avoid compatibility issues with Map iterators
     Array.from(this.aggregatedStats.entries()).forEach(([key, stats]) => {
@@ -346,29 +343,29 @@ export class PerformanceMonitor {
       } else if (key.startsWith(PerformanceMetricType.DIFF_CALCULATION)) {
         threshold = 3; // Diff calculations should be very fast
       }
-      
+
       if (stats.avg > threshold) {
         summary.issues.push({
-          type: 'slow_operation',
+          type: "slow_operation",
           key,
           avg: stats.avg,
           threshold,
-          count: stats.count
+          count: stats.count,
         });
 
         // Add recommendations based on issue type
         if (key.startsWith(PerformanceMetricType.STATE_UPDATE)) {
           summary.recommendations.push(
-            'Consider reducing state update frequency or size'
+            "Consider reducing state update frequency or size",
           );
         } else if (key.startsWith(PerformanceMetricType.COMPONENT_RENDER)) {
           summary.recommendations.push(
-            'Check for unnecessary renders or complex component trees'
+            "Check for unnecessary renders or complex component trees",
           );
         }
       }
     });
-    
+
     return summary;
   }
 }

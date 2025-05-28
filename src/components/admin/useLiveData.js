@@ -1,6 +1,6 @@
 /**
  * Helper to enable live data for admin panel
- * 
+ *
  * This script sets a localStorage flag that ensures we use live data
  * instead of falling back to mock data for API requests.
  */
@@ -24,5 +24,5 @@ export function isLiveDataEnabled() {
 export default {
   enableLiveData,
   disableLiveData,
-  isLiveDataEnabled
+  isLiveDataEnabled,
 };

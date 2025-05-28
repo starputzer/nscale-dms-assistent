@@ -1,6 +1,6 @@
 /**
  * Type-Definitionen für Browser-spezifische APIs
- * 
+ *
  * Diese Datei ergänzt Standard-Browser-Typdefinitionen um proprietäre
  * oder experimentelle APIs, die in einigen Browsern verfügbar sind.
  */

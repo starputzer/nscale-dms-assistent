@@ -16,7 +16,7 @@ const defaultConfig: TelemetryConfig = {
   enabled: false, // Standardmäßig deaktiviert
   anonymizeIP: true,
   sessionTimeout: 30, // Minuten
-  endpoint: '/api/telemetry',
+  endpoint: "/api/telemetry",
 };
 
 // Aktuelle Konfiguration
@@ -29,16 +29,16 @@ export const telemetryService = {
    */
   initialize(config: Partial<TelemetryConfig> = {}) {
     currentConfig = { ...defaultConfig, ...config };
-    
+
     if (!currentConfig.enabled) {
-      console.log('Telemetrie ist deaktiviert');
+      console.log("Telemetrie ist deaktiviert");
       return;
     }
-    
-    console.log('Telemetrie initialisiert mit Konfiguration:', currentConfig);
-    
+
+    console.log("Telemetrie initialisiert mit Konfiguration:", currentConfig);
+
     // Basis-Metriken senden
-    this.trackEvent('app_initialized', {
+    this.trackEvent("app_initialized", {
       timestamp: Date.now(),
       userAgent: navigator.userAgent,
       viewport: {
@@ -53,19 +53,19 @@ export const telemetryService = {
    */
   trackEvent(eventName: string, data: Record<string, any> = {}) {
     if (!currentConfig.enabled) return;
-    
+
     const payload = {
       event: eventName,
       timestamp: Date.now(),
       data,
     };
-    
+
     // Anonymisierung, falls aktiviert
     if (currentConfig.anonymizeIP && payload.data.ip) {
       // Anonymisiert die IP-Adresse (z.B. 192.168.1.1 -> 192.168.1.0)
       payload.data.ip = this.anonymizeIP(payload.data.ip);
     }
-    
+
     // Daten an den Telemetrie-Endpunkt senden
     this.sendData(payload);
   },
@@ -75,8 +75,8 @@ export const telemetryService = {
    */
   trackError(error: Error, context: Record<string, any> = {}) {
     if (!currentConfig.enabled) return;
-    
-    this.trackEvent('error', {
+
+    this.trackEvent("error", {
       message: error.message,
       stack: error.stack,
       ...context,
@@ -86,10 +86,14 @@ export const telemetryService = {
   /**
    * Erfasst eine Performance-Metrik
    */
-  trackPerformance(metricName: string, durationMs: number, context: Record<string, any> = {}) {
+  trackPerformance(
+    metricName: string,
+    durationMs: number,
+    context: Record<string, any> = {},
+  ) {
     if (!currentConfig.enabled) return;
-    
-    this.trackEvent('performance', {
+
+    this.trackEvent("performance", {
       metric: metricName,
       duration: durationMs,
       ...context,
@@ -101,8 +105,8 @@ export const telemetryService = {
    */
   trackSession(sessionId: string) {
     if (!currentConfig.enabled) return;
-    
-    this.trackEvent('session_start', {
+
+    this.trackEvent("session_start", {
       sessionId,
       startTime: Date.now(),
     });
@@ -113,7 +117,7 @@ export const telemetryService = {
    */
   anonymizeIP(ip: string): string {
     // Einfache Anonymisierung durch Nullsetzen des letzten Oktetts
-    return ip.replace(/\d+$/, '0');
+    return ip.replace(/\d+$/, "0");
   },
 
   /**
@@ -123,23 +127,25 @@ export const telemetryService = {
     try {
       // Verwendet sendBeacon für zuverlässige Übertragung, auch beim Seitenwechsel
       if (navigator.sendBeacon) {
-        const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+        const blob = new Blob([JSON.stringify(data)], {
+          type: "application/json",
+        });
         navigator.sendBeacon(currentConfig.endpoint, blob);
         return;
       }
-      
+
       // Fallback auf fetch, wenn sendBeacon nicht verfügbar ist
       await fetch(currentConfig.endpoint, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
         // Geringe Priorität, damit wichtigere Anfragen nicht blockiert werden
-        priority: 'low' as RequestPriority,
+        priority: "low" as RequestPriority,
       });
     } catch (error) {
-      console.error('Fehler beim Senden von Telemetriedaten:', error);
+      console.error("Fehler beim Senden von Telemetriedaten:", error);
     }
   },
 };
@@ -147,21 +153,28 @@ export const telemetryService = {
 /**
  * Initialisiert den Telemetrie-Service und konfiguriert Event-Listener
  */
-export function initializeTelemetry(config: Partial<TelemetryConfig> = {}): void {
+export function initializeTelemetry(
+  config: Partial<TelemetryConfig> = {},
+): void {
   // Telemetrie initialisieren
   telemetryService.initialize(config);
-  
+
   // Performance-Metriken
-  if ('performance' in window) {
-    window.addEventListener('load', () => {
+  if ("performance" in window) {
+    window.addEventListener("load", () => {
       if (performance.getEntriesByType) {
-        const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+        const navEntry = performance.getEntriesByType(
+          "navigation",
+        )[0] as PerformanceNavigationTiming;
         if (navEntry) {
-          telemetryService.trackPerformance('page_load', navEntry.loadEventEnd - navEntry.startTime);
+          telemetryService.trackPerformance(
+            "page_load",
+            navEntry.loadEventEnd - navEntry.startTime,
+          );
         }
       }
     });
   }
-  
+
   return;
 }

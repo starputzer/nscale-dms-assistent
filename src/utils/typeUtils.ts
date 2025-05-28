@@ -15,8 +15,8 @@ import {
   Nullable as NullableFromTypes,
   Optional as OptionalFromTypes,
   DeepPartial,
-  DeepReadonly
-} from './types';
+  DeepReadonly,
+} from "./types";
 
 // Expliziter Re-Export mit export type für isolatedModules
 export type { DeepPartial, DeepReadonly };
@@ -33,8 +33,8 @@ import {
   APIError,
   APIClientConfig as ApiConfigType,
   APIRequest as ApiOptionsType,
-  PaginationParams as PaginationParamsFromApi
-} from './apiTypes';
+  PaginationParams as PaginationParamsFromApi,
+} from "./apiTypes";
 
 // Expliziter Re-Export mit richtigen Typnamen
 export type ApiResponse = APIResponse;
@@ -49,8 +49,8 @@ import {
   StoreActions as StoreActionType,
   StoreGetters as StoreGetterType,
   StoreActions as StoreMutationType,
-  StoreState
-} from './storeTypes';
+  StoreState,
+} from "./storeTypes";
 
 // Expliziter Re-Export mit export type
 export type StoreAction = StoreActionType;
@@ -59,19 +59,13 @@ export type StoreMutation = StoreMutationType;
 export type { StoreState };
 
 // Import und Re-Export aus './eventTypes'
-import {
-  EventHandler as EventHandlerFromEvents
-} from './eventTypes';
+import { EventHandler as EventHandlerFromEvents } from "./eventTypes";
 
 export type EventHandlerType = EventHandlerFromEvents<any>;
 
 // Import und Re-Export aus './serviceTypes'
-import {
-  ServiceConfiguration as ServiceConfigType
-} from './serviceTypes';
-import {
-  APIRequest
-} from './apiTypes';
+import { ServiceConfiguration as ServiceConfigType } from "./serviceTypes";
+import { APIRequest } from "./apiTypes";
 
 export type ServiceConfig = ServiceConfigType;
 export type ServiceOptions = APIRequest;
@@ -80,8 +74,8 @@ export type ServiceOptions = APIRequest;
 import {
   ComponentRef,
   ComponentEmits,
-  ComponentSize as ComponentPropsType
-} from './componentTypes';
+  ComponentSize as ComponentPropsType,
+} from "./componentTypes";
 
 // Expliziter Re-Export mit export type
 export type { ComponentRef, ComponentEmits };
@@ -90,10 +84,7 @@ export type ComponentSlots = Record<string, any>;
 export type ComponentExpose = Record<string, any>;
 
 // Composable-bezogene Typen explizit importieren
-import {
-  ComposableReturn,
-  ComposableOptions
-} from './composableTypes';
+import { ComposableReturn, ComposableOptions } from "./composableTypes";
 
 // Expliziter Re-Export mit export type
 export type { ComposableReturn, ComposableOptions };
@@ -107,12 +98,12 @@ export type ComposableContext = Record<string, any>;
  */
 
 // Importiere die Typen in separate Namespace-Einträge
-import * as ApiTypesNamespace from './apiTypes';
-import * as StoreTypesNamespace from './storeTypes';
-import * as EventTypesNamespace from './eventTypes';
-import * as ServiceTypesNamespace from './serviceTypes';
-import * as ComponentTypesNamespace from './componentTypes';
-import * as ComposableTypesNamespace from './composableTypes';
+import * as ApiTypesNamespace from "./apiTypes";
+import * as StoreTypesNamespace from "./storeTypes";
+import * as EventTypesNamespace from "./eventTypes";
+import * as ServiceTypesNamespace from "./serviceTypes";
+import * as ComponentTypesNamespace from "./componentTypes";
+import * as ComposableTypesNamespace from "./composableTypes";
 
 // Exportiere die Namespaces als separate Utility-Objekte
 export namespace ApiUtils {

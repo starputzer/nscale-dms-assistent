@@ -166,7 +166,7 @@ export const initializeStores = async (): Promise<void> => {
         if (
           authStore.isAuthenticated &&
           (authStore.hasPermission("admin") ||
-          authStore.hasPermission("adminView"))
+            authStore.hasPermission("adminView"))
         ) {
           // Wenn Feature-Flag für optimierte Stores aktiviert ist, verwende optimierte Stores
           if (

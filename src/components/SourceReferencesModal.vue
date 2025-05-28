@@ -91,7 +91,10 @@
               <div class="source-item-text">
                 {{ source.content || "Kein Inhalt verfügbar" }}
               </div>
-              <div v-if="source.url || source.pageNumber" class="source-item-footer">
+              <div
+                v-if="source.url || source.pageNumber"
+                class="source-item-footer"
+              >
                 <a
                   v-if="source.url"
                   :href="source.url"
@@ -108,7 +111,9 @@
                     stroke-linecap="round"
                     stroke-linejoin="round"
                   >
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <path
+                      d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
+                    ></path>
                     <polyline points="15 3 21 3 21 9"></polyline>
                     <line x1="10" y1="14" x2="21" y2="3"></line>
                   </svg>
@@ -165,7 +170,7 @@ watch(
         toggleSource(firstSource.id, 0, true);
       }
     }
-  }
+  },
 );
 
 // Check if a source is open
@@ -175,17 +180,21 @@ function isOpen(sourceId: string, index: number): boolean {
 }
 
 // Toggle a source's open state
-function toggleSource(sourceId: string, index: number, forceOpen?: boolean): void {
+function toggleSource(
+  sourceId: string,
+  index: number,
+  forceOpen?: boolean,
+): void {
   const key = sourceId || `index-${index}`;
   if (forceOpen !== undefined) {
     openSources.value = {
       ...openSources.value,
-      [key]: forceOpen
+      [key]: forceOpen,
     };
   } else {
     openSources.value = {
       ...openSources.value,
-      [key]: !openSources.value[key]
+      [key]: !openSources.value[key],
     };
   }
 }

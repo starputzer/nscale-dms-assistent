@@ -1,15 +1,15 @@
 <template>
-  <div 
-    v-if="show" 
-    ref="popupRef" 
+  <div
+    v-if="show"
+    ref="popupRef"
     class="source-popup"
     :style="{ top: `${position.top}px`, left: `${position.left}px` }"
   >
     <div class="source-popup-header">
       <div class="source-popup-title">{{ content.title }}</div>
-      <button 
-        class="source-popup-close-btn" 
-        @click="close" 
+      <button
+        class="source-popup-close-btn"
+        @click="close"
         aria-label="Schließen"
       >
         <svg
@@ -25,20 +25,17 @@
         </svg>
       </button>
     </div>
-    
+
     <div v-if="content.file" class="source-popup-file">
       Quelle: {{ content.file }}
     </div>
-    
+
     <div class="source-popup-content">
       {{ content.text }}
     </div>
-    
+
     <div class="source-popup-actions">
-      <button 
-        class="source-popup-btn"
-        @click="showDetails"
-      >
+      <button class="source-popup-btn" @click="showDetails">
         <svg
           viewBox="0 0 24 24"
           fill="none"
@@ -59,8 +56,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
-import { useSourcesStore } from '@/stores/sources';
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
+import { useSourcesStore } from "@/stores/sources";
 
 const props = defineProps<{
   show: boolean;
@@ -77,8 +74,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'close'): void;
-  (e: 'show-details', sourceId: string): void;
+  (e: "close"): void;
+  (e: "show-details", sourceId: string): void;
 }>();
 
 const popupRef = ref<HTMLElement | null>(null);
@@ -87,25 +84,25 @@ const sourcesStore = useSourcesStore();
 // Adjust position to ensure popup stays within viewport
 function adjustPosition() {
   if (!popupRef.value) return;
-  
+
   const popup = popupRef.value;
   const rect = popup.getBoundingClientRect();
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
-  
+
   let newTop = props.position.top;
   let newLeft = props.position.left;
-  
+
   // Adjust horizontally if needed
   if (rect.right > viewportWidth) {
     newLeft = viewportWidth - rect.width - 10;
   }
-  
+
   // Adjust vertically if needed
   if (rect.bottom > viewportHeight) {
     newTop = props.position.top - rect.height - 10;
   }
-  
+
   // Apply adjusted position if different
   if (newTop !== props.position.top || newLeft !== props.position.left) {
     popup.style.top = `${newTop}px`;
@@ -122,50 +119,53 @@ function handleClickOutside(event: MouseEvent) {
 
 // Handle escape key to close the popup
 function handleKeyDown(event: KeyboardEvent) {
-  if (event.key === 'Escape') {
+  if (event.key === "Escape") {
     close();
   }
 }
 
 // Close the popup
 function close() {
-  emit('close');
+  emit("close");
 }
 
 // Show more details for this source
 function showDetails() {
-  emit('show-details', props.content.sourceId);
+  emit("show-details", props.content.sourceId);
   close();
 }
 
 // Watch for changes to the show prop
-watch(() => props.show, (newVal) => {
-  if (newVal) {
-    // Add click and keydown event listeners when popup is shown
-    setTimeout(() => {
-      document.addEventListener('click', handleClickOutside);
-      document.addEventListener('keydown', handleKeyDown);
-      adjustPosition();
-    }, 0);
-  } else {
-    // Remove event listeners when popup is hidden
-    document.removeEventListener('click', handleClickOutside);
-    document.removeEventListener('keydown', handleKeyDown);
-  }
-});
+watch(
+  () => props.show,
+  (newVal) => {
+    if (newVal) {
+      // Add click and keydown event listeners when popup is shown
+      setTimeout(() => {
+        document.addEventListener("click", handleClickOutside);
+        document.addEventListener("keydown", handleKeyDown);
+        adjustPosition();
+      }, 0);
+    } else {
+      // Remove event listeners when popup is hidden
+      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    }
+  },
+);
 
 // Setup and cleanup event listeners
 onMounted(() => {
   if (props.show) {
-    document.addEventListener('click', handleClickOutside);
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("click", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
     setTimeout(adjustPosition, 0);
   }
 });
 
 onBeforeUnmount(() => {
-  document.removeEventListener('click', handleClickOutside);
-  document.removeEventListener('keydown', handleKeyDown);
+  document.removeEventListener("click", handleClickOutside);
+  document.removeEventListener("keydown", handleKeyDown);
 });
 </script>
 

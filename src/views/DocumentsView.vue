@@ -269,21 +269,47 @@ const documentConverterStore = useDocumentConverterCompat();
 const dialogStore = getDialogStoreCompat();
 
 // Reaktive Zustände für TypeScript-Kompatibilität
-const documents = computed(() => documentConverterStore.convertedDocuments || []);
-const isConverting = computed(() => documentConverterStore.isConverting || false);
+const documents = computed(
+  () => documentConverterStore.convertedDocuments || [],
+);
+const isConverting = computed(
+  () => documentConverterStore.isConverting || false,
+);
 const isUploading = computed(() => documentConverterStore.isUploading || false);
 const isLoading = computed(() => documentConverterStore.isLoading || false);
 const error = computed(() => documentConverterStore.error || null);
-const conversionProgress = computed(() => documentConverterStore.conversionProgress || 0);
-const conversionStep = computed(() => documentConverterStore.conversionStep || '');
-const estimatedTimeRemaining = computed(() => documentConverterStore.estimatedTimeRemaining || 0);
-const currentView = computed(() => documentConverterStore.currentView || 'upload');
+const conversionProgress = computed(
+  () => documentConverterStore.conversionProgress || 0,
+);
+const conversionStep = computed(
+  () => documentConverterStore.conversionStep || "",
+);
+const estimatedTimeRemaining = computed(
+  () => documentConverterStore.estimatedTimeRemaining || 0,
+);
+const currentView = computed(
+  () => documentConverterStore.currentView || "upload",
+);
 const useFallback = computed(() => documentConverterStore.useFallback || false);
-const selectedDocument = computed(() => documentConverterStore.selectedDocument || null);
+const selectedDocument = computed(
+  () => documentConverterStore.selectedDocument || null,
+);
 
 // Computed-Eigenschaften aus dem Store
-const supportedFormats = computed(() => documentConverterStore.supportedFormats || ['.pdf', '.docx', '.xlsx', '.pptx', '.html', '.txt']);
-const maxFileSize = computed(() => documentConverterStore.maxFileSize || 10485760);
+const supportedFormats = computed(
+  () =>
+    documentConverterStore.supportedFormats || [
+      ".pdf",
+      ".docx",
+      ".xlsx",
+      ".pptx",
+      ".html",
+      ".txt",
+    ],
+);
+const maxFileSize = computed(
+  () => documentConverterStore.maxFileSize || 10485760,
+);
 
 // Lokaler Zustand
 const documentContent = ref<string | null>(null);
@@ -548,19 +574,19 @@ async function handleCancelConversion(): Promise<void> {
  * Versucht, zur Standardkonvertierung zurückzukehren
  */
 function retryStandardConversion(): void {
-  if (typeof documentConverterStore.setUseFallback === 'function') {
+  if (typeof documentConverterStore.setUseFallback === "function") {
     documentConverterStore.setUseFallback(false);
   } else {
     documentConverterStore.$patch({ useFallback: false });
   }
 
-  if (typeof documentConverterStore.clearError === 'function') {
+  if (typeof documentConverterStore.clearError === "function") {
     documentConverterStore.clearError();
   } else {
     documentConverterStore.$patch({ error: null });
   }
 
-  if (typeof documentConverterStore.setView === 'function') {
+  if (typeof documentConverterStore.setView === "function") {
     documentConverterStore.setView("upload");
   } else {
     documentConverterStore.$patch({ currentView: "upload" });
@@ -572,7 +598,7 @@ function retryStandardConversion(): void {
  */
 async function refreshDocumentList(): Promise<void> {
   try {
-    if (typeof documentConverterStore.refreshDocuments === 'function') {
+    if (typeof documentConverterStore.refreshDocuments === "function") {
       await documentConverterStore.refreshDocuments();
     } else {
       // Fallback implementation
@@ -581,7 +607,7 @@ async function refreshDocumentList(): Promise<void> {
         const documents = await DocumentConverterServiceWrapper.getDocuments();
         documentConverterStore.$patch({
           convertedDocuments: documents,
-          lastUpdated: new Date()
+          lastUpdated: new Date(),
         });
       } finally {
         documentConverterStore.$patch({ isLoading: false });

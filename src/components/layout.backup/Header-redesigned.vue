@@ -8,7 +8,12 @@
           @click="$emit('toggle-sidebar')"
           aria-label="Seitenleiste umschalten"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <line x1="3" y1="12" x2="21" y2="12"></line>
             <line x1="3" y1="6" x2="21" y2="6"></line>
             <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -26,7 +31,7 @@
 
       <div class="app-header__right">
         <div v-if="user" class="app-header__user">
-          <button 
+          <button
             class="app-header__user-button"
             @click="toggleUserMenu"
             :aria-expanded="isUserMenuOpen"
@@ -34,7 +39,12 @@
             <div class="app-header__user-avatar">
               <span>{{ getUserInitials(user.name) }}</span>
             </div>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </button>
@@ -51,12 +61,17 @@
                 </div>
               </div>
               <div class="app-header__dropdown-divider"></div>
-              <button 
+              <button
                 v-if="showLogout"
                 class="app-header__dropdown-item app-header__dropdown-item--danger"
                 @click="handleLogout"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                   <polyline points="16 17 21 12 16 7"></polyline>
                   <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -72,70 +87,70 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from "vue";
 
 interface User {
-  name?: string
-  email?: string
-  avatar?: string
+  name?: string;
+  email?: string;
+  avatar?: string;
 }
 
 interface Props {
-  title?: string
-  showTitle?: boolean
-  showToggleButton?: boolean
-  bordered?: boolean
-  user?: User
-  showLogout?: boolean
+  title?: string;
+  showTitle?: boolean;
+  showToggleButton?: boolean;
+  bordered?: boolean;
+  user?: User;
+  showLogout?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  title: 'Digitale Akte Assistent',
+  title: "Digitale Akte Assistent",
   showTitle: true,
   showToggleButton: true,
   bordered: true,
-  showLogout: true
-})
+  showLogout: true,
+});
 
 const emit = defineEmits<{
-  'toggle-sidebar': []
-  'logout': []
-}>()
+  "toggle-sidebar": [];
+  logout: [];
+}>();
 
-const isUserMenuOpen = ref(false)
+const isUserMenuOpen = ref(false);
 
 const toggleUserMenu = () => {
-  isUserMenuOpen.value = !isUserMenuOpen.value
-}
+  isUserMenuOpen.value = !isUserMenuOpen.value;
+};
 
 const handleLogout = () => {
-  isUserMenuOpen.value = false
-  emit('logout')
-}
+  isUserMenuOpen.value = false;
+  emit("logout");
+};
 
 const getUserInitials = (name?: string): string => {
-  if (!name) return 'U'
+  if (!name) return "U";
   return name
-    .split(' ')
-    .map(part => part.charAt(0).toUpperCase())
+    .split(" ")
+    .map((part) => part.charAt(0).toUpperCase())
     .slice(0, 2)
-    .join('')
-}
+    .join("");
+};
 
 const handleClickOutside = (event: MouseEvent) => {
-  const target = event.target as HTMLElement
-  if (!target.closest('.app-header__user')) {
-    isUserMenuOpen.value = false
+  const target = event.target as HTMLElement;
+  if (!target.closest(".app-header__user")) {
+    isUserMenuOpen.value = false;
   }
-}
+};
 
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-})
+  document.addEventListener("click", handleClickOutside);
+});
 
 onBeforeUnmount(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
+  document.removeEventListener("click", handleClickOutside);
+});
 </script>
 
 <style scoped>

@@ -8,13 +8,13 @@
         </button>
         <div class="toggle-container">
           <label>
-            <input type="checkbox" v-model="autoRefresh">
+            <input type="checkbox" v-model="autoRefresh" />
             Auto-Refresh ({{ refreshInterval / 1000 }}s)
           </label>
         </div>
       </div>
     </header>
-    
+
     <div class="dashboard-content">
       <!-- Übersicht -->
       <section class="overview-section">
@@ -22,36 +22,48 @@
         <div class="status-container">
           <div class="status-card">
             <div class="status-title">Status</div>
-            <div class="status-value" :class="statusClass">{{ formattedStatus }}</div>
+            <div class="status-value" :class="statusClass">
+              {{ formattedStatus }}
+            </div>
           </div>
-          
+
           <div class="status-card">
             <div class="status-title">Fortschritt</div>
             <div class="progress-container">
-              <div class="progress-bar" :style="{ width: `${migrationData.progress}%` }"></div>
-              <div class="progress-text">{{ Math.round(migrationData.progress) }}%</div>
+              <div
+                class="progress-bar"
+                :style="{ width: `${migrationData.progress}%` }"
+              ></div>
+              <div class="progress-text">
+                {{ Math.round(migrationData.progress) }}%
+              </div>
             </div>
           </div>
-          
+
           <div class="status-card">
             <div class="status-title">Komponenten</div>
             <div class="status-value">
-              {{ migrationData.statistics.migratedComponents }} / {{ migrationData.statistics.totalComponents }}
+              {{ migrationData.statistics.migratedComponents }} /
+              {{ migrationData.statistics.totalComponents }}
             </div>
           </div>
-          
+
           <div class="status-card">
             <div class="status-title">Start</div>
-            <div class="status-value">{{ formatDate(migrationData.startTime) }}</div>
+            <div class="status-value">
+              {{ formatDate(migrationData.startTime) }}
+            </div>
           </div>
-          
+
           <div class="status-card">
             <div class="status-title">Letzte Aktualisierung</div>
-            <div class="status-value">{{ formatDate(migrationData.lastUpdate) }}</div>
+            <div class="status-value">
+              {{ formatDate(migrationData.lastUpdate) }}
+            </div>
           </div>
         </div>
       </section>
-      
+
       <!-- Komponenten-Status -->
       <section class="components-section" v-if="report">
         <h2>Komponenten-Status</h2>
@@ -66,31 +78,50 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(component, id) in report.stateReports" :key="id"
-                :class="{ 'success': component.status === 'COMPLETED', 
-                          'warning': component.status === 'PARTIALLY_COMPLETED',
-                          'error': component.status === 'FAILED' }">
+            <tr
+              v-for="(component, id) in report.stateReports"
+              :key="id"
+              :class="{
+                success: component.status === 'COMPLETED',
+                warning: component.status === 'PARTIALLY_COMPLETED',
+                error: component.status === 'FAILED',
+              }"
+            >
               <td>{{ id }}</td>
               <td>{{ formatStatus(component.status) }}</td>
               <td>
                 <div class="progress-container small">
-                  <div class="progress-bar" 
-                       :style="{ width: `${calculateProgress(component)}%` }"></div>
+                  <div
+                    class="progress-bar"
+                    :style="{ width: `${calculateProgress(component)}%` }"
+                  ></div>
                   <div class="progress-text small">
-                    {{ component.migratedParts?.length || 0 }} / 
-                    {{ (component.migratedParts?.length || 0) + (component.pendingParts?.length || 0) }}
+                    {{ component.migratedParts?.length || 0 }} /
+                    {{
+                      (component.migratedParts?.length || 0) +
+                      (component.pendingParts?.length || 0)
+                    }}
                   </div>
                 </div>
               </td>
               <td>{{ formatDate(component.startedAt) }}</td>
-              <td>{{ component.completedAt ? formatDate(component.completedAt) : '-' }}</td>
+              <td>
+                {{
+                  component.completedAt
+                    ? formatDate(component.completedAt)
+                    : "-"
+                }}
+              </td>
             </tr>
           </tbody>
         </table>
       </section>
-      
+
       <!-- Legacy-Code Nutzung -->
-      <section class="legacy-usage-section" v-if="legacyUsage && legacyUsage.length > 0">
+      <section
+        class="legacy-usage-section"
+        v-if="legacyUsage && legacyUsage.length > 0"
+      >
         <h2>Legacy-Code Nutzung</h2>
         <table class="legacy-table">
           <thead>
@@ -107,33 +138,55 @@
           </tbody>
         </table>
       </section>
-      
+
       <!-- Probleme und Empfehlungen -->
       <section class="issues-section" v-if="report">
         <h2>Probleme und Empfehlungen</h2>
-        
-        <div class="issues-container" v-if="report.criticalIssues && report.criticalIssues.length > 0">
+
+        <div
+          class="issues-container"
+          v-if="report.criticalIssues && report.criticalIssues.length > 0"
+        >
           <h3>Kritische Probleme</h3>
           <ul class="issues-list">
-            <li v-for="(issue, index) in report.criticalIssues" :key="index" class="error">
+            <li
+              v-for="(issue, index) in report.criticalIssues"
+              :key="index"
+              class="error"
+            >
               {{ issue }}
             </li>
           </ul>
         </div>
-        
-        <div class="issues-container" v-if="report.warnings && report.warnings.length > 0">
+
+        <div
+          class="issues-container"
+          v-if="report.warnings && report.warnings.length > 0"
+        >
           <h3>Warnungen</h3>
           <ul class="issues-list">
-            <li v-for="(warning, index) in report.warnings" :key="index" class="warning">
+            <li
+              v-for="(warning, index) in report.warnings"
+              :key="index"
+              class="warning"
+            >
               {{ warning }}
             </li>
           </ul>
         </div>
-        
-        <div class="issues-container" v-if="report.recommendedActions && report.recommendedActions.length > 0">
+
+        <div
+          class="issues-container"
+          v-if="
+            report.recommendedActions && report.recommendedActions.length > 0
+          "
+        >
           <h3>Empfohlene Maßnahmen</h3>
           <ul class="issues-list recommendations">
-            <li v-for="(action, index) in report.recommendedActions" :key="index">
+            <li
+              v-for="(action, index) in report.recommendedActions"
+              :key="index"
+            >
               {{ action }}
             </li>
           </ul>
@@ -144,16 +197,16 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { migrationDiagnostics } from '../../src/migration/MigrationDiagnostics';
+import { ref, onMounted, onUnmounted, computed } from "vue";
+import { migrationDiagnostics } from "../../src/migration/MigrationDiagnostics";
 
 export default {
-  name: 'MigrationDashboardExample',
-  
+  name: "MigrationDashboardExample",
+
   setup() {
     // Zustandsdaten
     const migrationData = ref({
-      status: 'NOT_STARTED',
+      status: "NOT_STARTED",
       progress: 0,
       statistics: {
         totalComponents: 0,
@@ -161,52 +214,52 @@ export default {
         failedComponents: 0,
         partiallyMigratedComponents: 0,
         totalErrors: 0,
-        totalWarnings: 0
+        totalWarnings: 0,
       },
       startTime: null,
       completionTime: null,
-      lastUpdate: new Date()
+      lastUpdate: new Date(),
     });
-    
+
     const report = ref(null);
     const legacyUsage = ref([]);
     const autoRefresh = ref(true);
     const refreshInterval = ref(5000); // 5 Sekunden
     let refreshTimer = null;
-    
+
     // Berechnete Eigenschaften
     const statusClass = computed(() => {
       switch (migrationData.value.status) {
-        case 'COMPLETED':
-          return 'success';
-        case 'PARTIALLY_COMPLETED':
-          return 'warning';
-        case 'FAILED':
-          return 'error';
-        case 'IN_PROGRESS':
-          return 'info';
+        case "COMPLETED":
+          return "success";
+        case "PARTIALLY_COMPLETED":
+          return "warning";
+        case "FAILED":
+          return "error";
+        case "IN_PROGRESS":
+          return "info";
         default:
-          return '';
+          return "";
       }
     });
-    
+
     const formattedStatus = computed(() => {
       switch (migrationData.value.status) {
-        case 'NOT_STARTED':
-          return 'Nicht gestartet';
-        case 'IN_PROGRESS':
-          return 'In Bearbeitung';
-        case 'COMPLETED':
-          return 'Abgeschlossen';
-        case 'FAILED':
-          return 'Fehlgeschlagen';
-        case 'PARTIALLY_COMPLETED':
-          return 'Teilweise abgeschlossen';
+        case "NOT_STARTED":
+          return "Nicht gestartet";
+        case "IN_PROGRESS":
+          return "In Bearbeitung";
+        case "COMPLETED":
+          return "Abgeschlossen";
+        case "FAILED":
+          return "Fehlgeschlagen";
+        case "PARTIALLY_COMPLETED":
+          return "Teilweise abgeschlossen";
         default:
           return migrationData.value.status;
       }
     });
-    
+
     // Methoden
     const refreshData = () => {
       // Daten vom Diagnose-Tool abrufen
@@ -214,60 +267,60 @@ export default {
       report.value = migrationDiagnostics.generateReport();
       legacyUsage.value = migrationDiagnostics.identifyLegacyCodeUsage();
     };
-    
+
     const formatDate = (date) => {
-      if (!date) return '-';
-      
+      if (!date) return "-";
+
       // Datum formatieren
-      if (typeof date === 'string') {
+      if (typeof date === "string") {
         date = new Date(date);
       }
-      
-      return new Intl.DateTimeFormat('de-DE', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
+
+      return new Intl.DateTimeFormat("de-DE", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
       }).format(date);
     };
-    
+
     const formatStatus = (status) => {
       switch (status) {
-        case 'NOT_STARTED':
-          return 'Nicht gestartet';
-        case 'IN_PROGRESS':
-          return 'In Bearbeitung';
-        case 'COMPLETED':
-          return 'Abgeschlossen';
-        case 'FAILED':
-          return 'Fehlgeschlagen';
-        case 'PARTIALLY_COMPLETED':
-          return 'Teilweise abgeschlossen';
+        case "NOT_STARTED":
+          return "Nicht gestartet";
+        case "IN_PROGRESS":
+          return "In Bearbeitung";
+        case "COMPLETED":
+          return "Abgeschlossen";
+        case "FAILED":
+          return "Fehlgeschlagen";
+        case "PARTIALLY_COMPLETED":
+          return "Teilweise abgeschlossen";
         default:
           return status;
       }
     };
-    
+
     const calculateProgress = (component) => {
       const completed = component.migratedParts?.length || 0;
       const total = completed + (component.pendingParts?.length || 0);
-      
+
       return total > 0 ? (completed / total) * 100 : 0;
     };
-    
+
     const setupAutoRefresh = () => {
       if (refreshTimer) {
         clearInterval(refreshTimer);
         refreshTimer = null;
       }
-      
+
       if (autoRefresh.value) {
         refreshTimer = setInterval(refreshData, refreshInterval.value);
       }
     };
-    
+
     // Lifecycle-Hooks
     onMounted(() => {
       // Dashboard konfigurieren
@@ -277,23 +330,23 @@ export default {
         refreshInterval: refreshInterval.value,
         showDetailedReports: true,
         showErrorDetails: true,
-        showPerformanceMetrics: true
+        showPerformanceMetrics: true,
       });
-      
+
       // Initiale Daten laden
       refreshData();
-      
+
       // Auto-Refresh einrichten
       setupAutoRefresh();
     });
-    
+
     onUnmounted(() => {
       // Timer aufräumen
       if (refreshTimer) {
         clearInterval(refreshTimer);
       }
     });
-    
+
     return {
       migrationData,
       report,
@@ -305,9 +358,9 @@ export default {
       refreshData,
       formatDate,
       formatStatus,
-      calculateProgress
+      calculateProgress,
     };
-  }
+  },
 };
 </script>
 
@@ -449,7 +502,8 @@ table {
   border-collapse: collapse;
 }
 
-th, td {
+th,
+td {
   padding: 8px 12px;
   text-align: left;
   border-bottom: 1px solid #e9ecef;
