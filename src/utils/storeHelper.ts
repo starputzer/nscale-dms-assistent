@@ -8,12 +8,12 @@
  * "getActivePinia() was called but there was no active Pinia" zu vermeiden.
  */
 
-import { useDocumentConverterStore } from '@/stores/documentConverter';
-import { useSessionsStore } from '@/stores/sessions';
-import { useFeatureTogglesStore } from '@/stores/featureToggles';
-import type { ISessionsStore, IFeatureTogglesStore } from '@/types/stores';
-import type { IDocumentConverterStore } from '@/types/documentConverterStore';
-import type { SupportedFormat } from '@/types/documentConverter';
+import { useDocumentConverterStore } from "@/stores/documentConverter";
+import { useSessionsStore } from "@/stores/sessions";
+import { useFeatureTogglesStore } from "@/stores/featureToggles";
+import type { ISessionsStore, IFeatureTogglesStore } from "@/types/stores";
+import type { IDocumentConverterStore } from "@/types/documentConverterStore";
+import type { SupportedFormat } from "@/types/documentConverter";
 
 /**
  * Prüft, ob eine Methode in einem Store existiert
@@ -22,7 +22,7 @@ import type { SupportedFormat } from '@/types/documentConverter';
  * @returns true, wenn die Methode existiert, sonst false
  */
 export function hasMethod(store: any, methodName: string): boolean {
-  return typeof store?.[methodName] === 'function';
+  return typeof store?.[methodName] === "function";
 }
 
 /**
@@ -56,7 +56,7 @@ export function getSafeDocumentConverterStore(): IDocumentConverterStore {
       conversionSettings: {
         preserveFormatting: true,
         extractMetadata: true,
-        extractTables: true
+        extractTables: true,
       },
       lastUpdated: null,
       initialized: false,
@@ -74,9 +74,16 @@ export function getSafeDocumentConverterStore(): IDocumentConverterStore {
         pending: 0,
         processing: 0,
         success: 0,
-        error: 0
+        error: 0,
       },
-      supportedFormats: ["pdf", "docx", "xlsx", "pptx", "html", "txt"] as SupportedFormat[],
+      supportedFormats: [
+        "pdf",
+        "docx",
+        "xlsx",
+        "pptx",
+        "html",
+        "txt",
+      ] as SupportedFormat[],
       maxFileSize: 20 * 1024 * 1024,
 
       // Methoden
@@ -94,16 +101,16 @@ export function getSafeDocumentConverterStore(): IDocumentConverterStore {
       refreshDocuments: async () => {},
       setUseFallback: () => {},
       isSupportedFormat: () => false,
-      downloadDocument: async () => {}
+      downloadDocument: async () => {},
     };
 
     // Übernehme Werte aus dem tatsächlichen Store, falls verfügbar
     return {
       ...enhancedStore,
-      ...store as unknown as IDocumentConverterStore
+      ...(store as unknown as IDocumentConverterStore),
     };
   } catch (err) {
-    console.warn('DocumentConverter Store nicht verfügbar', err);
+    console.warn("DocumentConverter Store nicht verfügbar", err);
     // Umfassender Mock für Fallbacks mit allen benötigten Methoden/Eigenschaften
     const mockStore: IDocumentConverterStore = {
       // Basis-Store-Methoden
@@ -127,7 +134,7 @@ export function getSafeDocumentConverterStore(): IDocumentConverterStore {
       conversionSettings: {
         preserveFormatting: true,
         extractMetadata: true,
-        extractTables: true
+        extractTables: true,
       },
       lastUpdated: null,
       initialized: false,
@@ -145,9 +152,16 @@ export function getSafeDocumentConverterStore(): IDocumentConverterStore {
         pending: 0,
         processing: 0,
         success: 0,
-        error: 0
+        error: 0,
       },
-      supportedFormats: ["pdf", "docx", "xlsx", "pptx", "html", "txt"] as SupportedFormat[],
+      supportedFormats: [
+        "pdf",
+        "docx",
+        "xlsx",
+        "pptx",
+        "html",
+        "txt",
+      ] as SupportedFormat[],
       maxFileSize: 20 * 1024 * 1024,
 
       // Methoden
@@ -165,7 +179,7 @@ export function getSafeDocumentConverterStore(): IDocumentConverterStore {
       refreshDocuments: async () => {},
       setUseFallback: () => {},
       isSupportedFormat: () => false,
-      downloadDocument: async () => {}
+      downloadDocument: async () => {},
     };
 
     return mockStore;
@@ -201,7 +215,12 @@ export function getSafeSessionsStore(): ISessionsStore {
       error: null,
       version: 1,
       pendingMessages: {},
-      syncStatus: { lastSyncTime: 0, isSyncing: false, error: null, pendingSessionIds: new Set() },
+      syncStatus: {
+        lastSyncTime: 0,
+        isSyncing: false,
+        error: null,
+        pendingSessionIds: new Set(),
+      },
       availableTags: [],
       availableCategories: [],
       selectedSessionIds: [],
@@ -249,16 +268,16 @@ export function getSafeSessionsStore(): ISessionsStore {
       deleteMultipleSessions: async () => {},
       addTagToMultipleSessions: async () => {},
       setCategoryForMultipleSessions: async () => {},
-      updateStreamedMessage: () => {}
+      updateStreamedMessage: () => {},
     };
 
     // Übernehme alle Properties des vorhandenen Stores in den erweiterten Store
     return {
       ...enhancedStore,
-      ...(store as unknown as ISessionsStore)
+      ...(store as unknown as ISessionsStore),
     };
   } catch (err) {
-    console.warn('Sessions Store nicht verfügbar', err);
+    console.warn("Sessions Store nicht verfügbar", err);
     // Vollständiger Mock der das ISessionsStore Interface implementiert
     const mockStore: ISessionsStore = {
       // IBaseStore Methoden
@@ -278,7 +297,12 @@ export function getSafeSessionsStore(): ISessionsStore {
       error: null,
       version: 1,
       pendingMessages: {},
-      syncStatus: { lastSyncTime: 0, isSyncing: false, error: null, pendingSessionIds: new Set() },
+      syncStatus: {
+        lastSyncTime: 0,
+        isSyncing: false,
+        error: null,
+        pendingSessionIds: new Set(),
+      },
       availableTags: [],
       availableCategories: [],
       selectedSessionIds: [],
@@ -326,7 +350,7 @@ export function getSafeSessionsStore(): ISessionsStore {
       deleteMultipleSessions: async () => {},
       addTagToMultipleSessions: async () => {},
       setCategoryForMultipleSessions: async () => {},
-      updateStreamedMessage: () => {}
+      updateStreamedMessage: () => {},
     };
 
     return mockStore;
@@ -342,10 +366,12 @@ export function getSafeFeatureTogglesStore(): IFeatureTogglesStore {
     // Verwende unknown als Zwischentyp für korrektes Type Casting
     const store = useFeatureTogglesStore();
     // Überprüfe, ob der Store die benötigten Eigenschaften und Methoden hat
-    if (store &&
-        typeof store.isEnabled === 'function' &&
-        typeof store.enableFeature === 'function' &&
-        typeof store.disableFeature === 'function') {
+    if (
+      store &&
+      typeof store.isEnabled === "function" &&
+      typeof store.enableFeature === "function" &&
+      typeof store.disableFeature === "function"
+    ) {
       // Sicherstellen, dass der Store die erforderlichen Interface-Methoden implementiert
       // Falls nicht vorhanden, werden diese durch den Fallback unten ergänzt
       const enhancedStore: IFeatureTogglesStore = {
@@ -357,7 +383,7 @@ export function getSafeFeatureTogglesStore(): IFeatureTogglesStore {
         $subscribe: store.$subscribe || (() => () => {}),
 
         // State - Falls nicht vorhanden, leeres Objekt verwenden
-        features: store.features || {} as Record<string, boolean>,
+        features: store.features || ({} as Record<string, boolean>),
 
         // Methoden - Im Store vorhandene Methoden verwenden, sonst Fallbacks
         isEnabled: store.isEnabled || (() => false),
@@ -367,16 +393,16 @@ export function getSafeFeatureTogglesStore(): IFeatureTogglesStore {
         enableLegacyMode: store.enableLegacyMode || (() => {}),
         disableLegacyMode: store.disableLegacyMode || (() => {}),
         enableMigratedMode: store.enableMigratedMode || (() => {}),
-        isMigrated: store.isMigrated || (() => false)
+        isMigrated: store.isMigrated || (() => false),
       };
 
       return enhancedStore;
     }
 
     // Vollständiger Fallback, wenn der Store nicht korrekt geladen werden kann
-    throw new Error('FeatureToggles Store fehlt Interface-Implementierung');
+    throw new Error("FeatureToggles Store fehlt Interface-Implementierung");
   } catch (err) {
-    console.warn('FeatureToggles Store nicht verfügbar', err);
+    console.warn("FeatureToggles Store nicht verfügbar", err);
     // Erweiterter Mock für Fallbacks mit allen benötigten Methoden/Eigenschaften
     const mockStore: IFeatureTogglesStore = {
       // IBaseStore Methoden
@@ -397,7 +423,7 @@ export function getSafeFeatureTogglesStore(): IFeatureTogglesStore {
       enableLegacyMode: () => {},
       disableLegacyMode: () => {},
       enableMigratedMode: () => {},
-      isMigrated: () => false
+      isMigrated: () => false,
     };
 
     return mockStore;
@@ -414,7 +440,7 @@ export const documentConverterHelper = {
    */
   setUseFallback(value: boolean): void {
     const store = getSafeDocumentConverterStore();
-    if (hasMethod(store, 'setUseFallback')) {
+    if (hasMethod(store, "setUseFallback")) {
       store.setUseFallback(value);
     } else {
       store.$patch?.({ useFallback: value });
@@ -426,7 +452,7 @@ export const documentConverterHelper = {
    */
   clearError(): void {
     const store = getSafeDocumentConverterStore();
-    if (hasMethod(store, 'clearError')) {
+    if (hasMethod(store, "clearError")) {
       store.clearError();
     } else {
       store.$patch?.({ error: null });
@@ -439,7 +465,7 @@ export const documentConverterHelper = {
    */
   setView(view: string): void {
     const store = getSafeDocumentConverterStore();
-    if (hasMethod(store, 'setView')) {
+    if (hasMethod(store, "setView")) {
       store.setView(view);
     } else {
       store.$patch?.({ currentView: view });
@@ -451,14 +477,16 @@ export const documentConverterHelper = {
    */
   async refreshDocuments(): Promise<void> {
     const store = getSafeDocumentConverterStore();
-    if (hasMethod(store, 'refreshDocuments')) {
+    if (hasMethod(store, "refreshDocuments")) {
       await store.refreshDocuments();
     } else {
       // Keine direkte Fallback-Implementierung möglich,
       // müsste vom Aufrufer implementiert werden
-      console.warn('refreshDocuments nicht verfügbar im Document Converter Store');
+      console.warn(
+        "refreshDocuments nicht verfügbar im Document Converter Store",
+      );
     }
-  }
+  },
 };
 
 /**
@@ -471,7 +499,7 @@ export const sessionsHelper = {
    */
   async setCurrentSession(sessionId: string): Promise<void> {
     const store = getSafeSessionsStore();
-    if (hasMethod(store, 'setCurrentSession')) {
+    if (hasMethod(store, "setCurrentSession")) {
       await store.setCurrentSession(sessionId);
     } else {
       store.$patch?.({ currentSessionId: sessionId });
@@ -485,12 +513,12 @@ export const sessionsHelper = {
    */
   async createSession(title?: string): Promise<string> {
     const store = getSafeSessionsStore();
-    if (hasMethod(store, 'createSession')) {
+    if (hasMethod(store, "createSession")) {
       // Hier wird der title-Parameter explizit an die createSession-Methode übergeben
       return await store.createSession(title);
     }
 
-    throw new Error('Fehler beim Erstellen einer neuen Session');
+    throw new Error("Fehler beim Erstellen einer neuen Session");
   },
 
   /**
@@ -499,10 +527,10 @@ export const sessionsHelper = {
    */
   async deleteSession(sessionId: string): Promise<void> {
     const store = getSafeSessionsStore();
-    if (hasMethod(store, 'archiveSession')) {
+    if (hasMethod(store, "archiveSession")) {
       await store.archiveSession(sessionId);
     } else {
-      console.warn('Keine Methode zum Löschen von Sessions verfügbar');
+      console.warn("Keine Methode zum Löschen von Sessions verfügbar");
     }
   },
 
@@ -513,19 +541,19 @@ export const sessionsHelper = {
    */
   async renameSession(sessionId: string, newTitle: string): Promise<void> {
     const store = getSafeSessionsStore();
-    if (hasMethod(store, 'updateSessionTitle')) {
+    if (hasMethod(store, "updateSessionTitle")) {
       await store.updateSessionTitle(sessionId, newTitle);
     } else {
       // Fallback-Implementierung
       const sessions = store.sessions;
-      const sessionIndex = sessions.findIndex(s => s.id === sessionId);
+      const sessionIndex = sessions.findIndex((s) => s.id === sessionId);
       if (sessionIndex !== -1) {
         // Direkte Mutation vermeiden, stattdessen neues Array erstellen
         const updatedSessions = [...sessions];
         updatedSessions[sessionIndex] = {
           ...updatedSessions[sessionIndex],
           title: newTitle,
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         };
         store.$patch?.({ sessions: updatedSessions });
       }
@@ -537,26 +565,29 @@ export const sessionsHelper = {
    * @param sessionId Die ID der zu aktualisierenden Session
    * @param update Die zu aktualisierenden Eigenschaften
    */
-  async updateSession(sessionId: string, update: Record<string, any>): Promise<void> {
+  async updateSession(
+    sessionId: string,
+    update: Record<string, any>,
+  ): Promise<void> {
     const store = getSafeSessionsStore();
 
     // Fallback für isPinned-Update
-    if ('isPinned' in update && hasMethod(store, 'togglePinSession')) {
+    if ("isPinned" in update && hasMethod(store, "togglePinSession")) {
       const sessions = store.sessions;
-      const session = sessions.find(s => s.id === sessionId);
+      const session = sessions.find((s) => s.id === sessionId);
       if (session && session.isPinned !== update.isPinned) {
         await store.togglePinSession(sessionId);
       }
     } else {
       // Generischer Fallback
       const sessions = store.sessions;
-      const sessionIndex = sessions.findIndex(s => s.id === sessionId);
+      const sessionIndex = sessions.findIndex((s) => s.id === sessionId);
       if (sessionIndex !== -1) {
         const updatedSessions = [...sessions];
         updatedSessions[sessionIndex] = {
           ...updatedSessions[sessionIndex],
           ...update,
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         };
         store.$patch?.({ sessions: updatedSessions });
       }
@@ -568,12 +599,12 @@ export const sessionsHelper = {
    */
   async syncSessions(): Promise<void> {
     const store = getSafeSessionsStore();
-    if (hasMethod(store, 'synchronizeSessions')) {
+    if (hasMethod(store, "synchronizeSessions")) {
       await store.synchronizeSessions();
     } else {
-      console.warn('Keine Methode zur Session-Synchronisation verfügbar');
+      console.warn("Keine Methode zur Session-Synchronisation verfügbar");
     }
-  }
+  },
 };
 
 /**
@@ -587,10 +618,10 @@ export const featureTogglesHelper = {
    */
   isFeatureEnabled(featureName: string): boolean {
     const store = getSafeFeatureTogglesStore();
-    if (hasMethod(store, 'isEnabled')) {
+    if (hasMethod(store, "isEnabled")) {
       return store.isEnabled(featureName);
     } else {
       return false;
     }
-  }
+  },
 };

@@ -20,16 +20,16 @@ export async function handleResponse<T>(response: Response): Promise<T> {
     }
 
     // Create a standardized error object
-    const error = new Error(errorData.message || 'API request failed');
+    const error = new Error(errorData.message || "API request failed");
     (error as any).status = response.status;
     (error as any).data = errorData;
     throw error;
   }
 
   // For successful responses, check if there's content
-  const contentType = response.headers.get('content-type');
-  if (contentType && contentType.includes('application/json')) {
-    return await response.json() as T;
+  const contentType = response.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
+    return (await response.json()) as T;
   }
 
   return {} as T;
@@ -41,14 +41,17 @@ export async function handleResponse<T>(response: Response): Promise<T> {
  * @param options Fetch options
  * @returns The response data
  */
-export async function fetchApi<T>(url: string, options?: RequestInit): Promise<T> {
+export async function fetchApi<T>(
+  url: string,
+  options?: RequestInit,
+): Promise<T> {
   try {
     const response = await fetch(url, {
       headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers
+        "Content-Type": "application/json",
+        ...options?.headers,
       },
-      ...options
+      ...options,
     });
 
     return await handleResponse<T>(response);
@@ -68,11 +71,15 @@ export async function fetchApi<T>(url: string, options?: RequestInit): Promise<T
  * @param options Additional fetch options
  * @returns The response data
  */
-export async function postApi<T>(url: string, data: any, options?: RequestInit): Promise<T> {
+export async function postApi<T>(
+  url: string,
+  data: any,
+  options?: RequestInit,
+): Promise<T> {
   return fetchApi<T>(url, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify(data),
-    ...options
+    ...options,
   });
 }
 
@@ -83,11 +90,15 @@ export async function postApi<T>(url: string, data: any, options?: RequestInit):
  * @param options Additional fetch options
  * @returns The response data
  */
-export async function putApi<T>(url: string, data: any, options?: RequestInit): Promise<T> {
+export async function putApi<T>(
+  url: string,
+  data: any,
+  options?: RequestInit,
+): Promise<T> {
   return fetchApi<T>(url, {
-    method: 'PUT',
+    method: "PUT",
     body: JSON.stringify(data),
-    ...options
+    ...options,
   });
 }
 
@@ -97,9 +108,12 @@ export async function putApi<T>(url: string, data: any, options?: RequestInit): 
  * @param options Additional fetch options
  * @returns The response data
  */
-export async function deleteApi<T>(url: string, options?: RequestInit): Promise<T> {
+export async function deleteApi<T>(
+  url: string,
+  options?: RequestInit,
+): Promise<T> {
   return fetchApi<T>(url, {
-    method: 'DELETE',
-    ...options
+    method: "DELETE",
+    ...options,
   });
 }

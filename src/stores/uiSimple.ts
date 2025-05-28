@@ -65,7 +65,7 @@ export const useUIStore = defineStore(
     function initialize() {
       // Check viewport
       isMobile.value = window.innerWidth < 768;
-      
+
       // Apply dark mode
       if (darkMode.value) {
         document.documentElement.classList.add("dark");
@@ -104,5 +104,5 @@ export const useUIStore = defineStore(
   {
     // Keine Persistenz vorerst
     persist: false,
-  }
+  },
 );

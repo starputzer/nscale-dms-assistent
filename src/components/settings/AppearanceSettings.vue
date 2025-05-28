@@ -30,7 +30,10 @@
       </div>
 
       <!-- Custom Accent Color Picker for custom contrast theme -->
-      <div v-if="themeStore.currentTheme === 'custom-contrast'" class="appearance-settings__color-picker-section">
+      <div
+        v-if="themeStore.currentTheme === 'custom-contrast'"
+        class="appearance-settings__color-picker-section"
+      >
         <h5 class="appearance-settings__subsection-title">
           {{ t("settings.appearance.accentColor", "Akzentfarbe") }}
         </h5>
@@ -41,7 +44,9 @@
             @change="updateCustomAccentColor"
             class="appearance-settings__color-input"
           />
-          <span class="appearance-settings__color-value">{{ customAccentColor }}</span>
+          <span class="appearance-settings__color-value">{{
+            customAccentColor
+          }}</span>
         </div>
       </div>
     </div>
@@ -363,7 +368,7 @@ const emit = defineEmits<{
 const settingsStore = useSettingsStore();
 const { t } = useI18n();
 const { showToast } = useToast();
-import { useThemeStore } from '@/stores/theme';
+import { useThemeStore } from "@/stores/theme";
 const themeStore = useThemeStore();
 
 // Referenzen
@@ -506,11 +511,11 @@ function getThemePreviewStyle(theme: any) {
     };
   }
   return {
-    backgroundColor: theme.colors?.background || '#ffffff',
-    borderColor: theme.colors?.border || theme.colors?.primary || '#000000',
-    "--primary-color": theme.colors?.primary || '#000000',
-    "--secondary-color": theme.colors?.secondary || '#666666',
-    "--text-color": theme.colors?.text || '#000000',
+    backgroundColor: theme.colors?.background || "#ffffff",
+    borderColor: theme.colors?.border || theme.colors?.primary || "#000000",
+    "--primary-color": theme.colors?.primary || "#000000",
+    "--secondary-color": theme.colors?.secondary || "#666666",
+    "--text-color": theme.colors?.text || "#000000",
   };
 }
 

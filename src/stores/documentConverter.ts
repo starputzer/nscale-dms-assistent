@@ -1,701 +1,972 @@
 import { defineStore } from "pinia";
-import DocumentConverterService from "@/services/api/DocumentConverterService";
-import DocumentConverterApi from "@/services/api/DocumentConverterApi";
-import DocumentConverterServiceWrapper, {
-  ConversionError,
-} from "@/services/api/DocumentConverterServiceWrapper";
-import {
+import { ref, computed, watch } from "vue";
+import { documentConverterService } from "@/services/api/DocumentConverterService";
+import { adminDocConverterService } from "@/services/api/AdminDocConverterService";
+import { shouldUseRealApi } from "@/config/api-flags";
+import type {
   ConversionResult,
   ConversionSettings,
-  SupportedFormat,
-  DocumentMetadata,
+  DocumentStatistics,
+  QueueInfo,
+  ConverterSettings,
 } from "@/types/documentConverter";
 
-/**
- * Definiert den Konvertierungsansichtsmodus
- */
-export type ConverterView = "upload" | "conversion" | "results" | "list";
-
-/**
- * Stellt den Status des Konvertierungsprozesses dar
- */
-export type ConversionStatus =
-  | "idle"
-  | "uploading"
-  | "converting"
-  | "completed"
-  | "error";
-
-/**
- * Repräsentiert eine hochgeladene Datei vor der Konvertierung
- */
-export interface UploadedFile {
-  id: string;
-  file: File;
-  progress: number;
-  uploadedAt: Date;
-  error?: string;
-}
-
-/**
- * Repräsentiert einen Fehler im Dokumentenkonverter
- */
-export interface ConverterError {
-  code: string;
-  message: string;
-  details?: any;
-  timestamp: Date;
-}
-
-/**
- * Zustandsschnittstelle des Document Converter Stores
- */
-export interface DocumentConverterState {
-  // Hochgeladene Dateien, die noch nicht konvertiert wurden
-  uploadedFiles: UploadedFile[];
-
-  // Konvertierte Dokumente mit deren Ergebnissen
-  convertedDocuments: ConversionResult[];
-
-  // Fortschritt der aktuellen Konvertierung (0-100%)
-  conversionProgress: number;
-
-  // Aktueller Konvertierungsschritt als Textbeschreibung
-  conversionStep: string;
-
-  // Geschätzte verbleibende Zeit in Sekunden
-  estimatedTimeRemaining: number;
-
-  // Flag, ob gerade eine Konvertierung läuft
-  isConverting: boolean;
-
-  // Flag, ob gerade ein Upload läuft
-  isUploading: boolean;
-
-  // ID des aktuell ausgewählten Dokuments
-  selectedDocumentId: string | null;
-
-  // Fehlerinformationen bei Problemen
-  error: ConverterError | null;
-
-  // Aktuelle Ansicht im Dokumentenkonverter
-  currentView: ConverterView;
-
-  // Konvertierungseinstellungen für neue Dokumente
-  conversionSettings: Partial<ConversionSettings>;
-
-  // Zeitstempel der letzten Aktualisierung des Zustands
-  lastUpdated: Date | null;
-
-  // Flag, ob die Daten initialisiert wurden
-  initialized: boolean;
-
-  // Flag, ob gerade Daten geladen werden
-  isLoading: boolean;
-
-  // Flag, ob der Fallback-Konverter verwendet werden soll
-  useFallback: boolean;
-
-  // ID des aktiven Konvertierungsprozesses
-  activeConversionId: string | null;
-}
-
-/**
- * Pinia Store für den Dokumentenkonverter
- * Verwaltet den Zustand und die Aktionen für den Dokumentenkonvertierungsprozess
- */
-export const useDocumentConverterStore = defineStore("documentConverter", {
-  /**
-   * Initialzustand des Stores
-   */
-  state: (): DocumentConverterState => ({
-    uploadedFiles: [],
-    convertedDocuments: [],
-    conversionProgress: 0,
-    conversionStep: "",
-    estimatedTimeRemaining: 0,
-    isConverting: false,
-    isUploading: false,
-    selectedDocumentId: null,
-    error: null,
-    currentView: "upload",
-    conversionSettings: {
+export const useDocumentConverterStore = defineStore(
+  "documentConverter",
+  () => {
+    // State
+    const documents = ref<ConversionResult[]>([]);
+    const selectedDocumentId = ref<string | null>(null);
+    const currentView = ref<"upload" | "conversion" | "results" | "list">(
+      "upload",
+    );
+    const isLoading = ref(false);
+    const error = ref<string | null>(null);
+    const conversionProgress = ref({
+      percentage: 0,
+      currentStep: "",
+      estimatedTimeRemaining: 0,
+    });
+    const conversionSettings = ref<ConversionSettings>({
       preserveFormatting: true,
       extractMetadata: true,
       extractTables: true,
       ocrEnabled: false,
-      ocrLanguage: "de",
-    },
-    lastUpdated: null,
-    initialized: false,
-    isLoading: false,
-    useFallback: false,
-    activeConversionId: null,
-  }),
+      ocrLanguage: "en",
+    });
 
-  /**
-   * Getter für abgeleitete Zustandswerte
-   */
-  getters: {
-    /**
-     * Prüft, ob Dokumente zum Anzeigen vorhanden sind
-     */
-    hasDocuments: (state) => state.convertedDocuments.length > 0,
+    // Mock data for admin view
+    const createMockData = () => {
+      // Mock documents
+      if (documents.value.length === 0) {
+        const mockDocuments: ConversionResult[] = [
+          {
+            id: "doc1",
+            filename: "Annual Report 2024.pdf",
+            format: "pdf",
+            size: 3145728, // 3MB
+            status: "completed",
+            uploadedAt: Date.now() - 7 * 24 * 60 * 60 * 1000, // 7 days ago
+            convertedAt: Date.now() - 7 * 24 * 60 * 60 * 1000 + 35000, // 35 seconds later
+            content: "Lorem ipsum dolor sit amet...",
+            metadata: {
+              author: "Finance Department",
+              created: "2024-01-15",
+              pages: 24,
+            },
+          },
+          {
+            id: "doc2",
+            filename: "Product Specifications.docx",
+            format: "docx",
+            size: 1572864, // 1.5MB
+            status: "completed",
+            uploadedAt: Date.now() - 3 * 24 * 60 * 60 * 1000, // 3 days ago
+            convertedAt: Date.now() - 3 * 24 * 60 * 60 * 1000 + 28000, // 28 seconds later
+            content: "Product specifications for new release...",
+            metadata: {
+              author: "Product Team",
+              created: "2024-03-10",
+              pages: 12,
+            },
+          },
+          {
+            id: "doc3",
+            filename: "Financial Analysis.xlsx",
+            format: "xlsx",
+            size: 2097152, // 2MB
+            status: "completed",
+            uploadedAt: Date.now() - 1 * 24 * 60 * 60 * 1000, // 1 day ago
+            convertedAt: Date.now() - 1 * 24 * 60 * 60 * 1000 + 42000, // 42 seconds later
+            content: "Financial analysis for Q1 2024...",
+            metadata: {
+              author: "Finance Team",
+              created: "2024-04-01",
+              pages: 5,
+            },
+          },
+          {
+            id: "doc4",
+            filename: "Marketing Strategy.pptx",
+            format: "pptx",
+            size: 4194304, // 4MB
+            status: "failed",
+            error: "File format is not supported",
+            uploadedAt: Date.now() - 12 * 60 * 60 * 1000, // 12 hours ago
+            convertedAt: 0,
+          },
+          {
+            id: "doc5",
+            filename: "Customer Feedback.pdf",
+            format: "pdf",
+            size: 1048576, // 1MB
+            status: "processing",
+            uploadedAt: Date.now() - 1 * 60 * 60 * 1000, // 1 hour ago
+            convertedAt: 0,
+          },
+        ];
 
-    /**
-     * Gibt das aktuell ausgewählte Dokument zurück
-     */
-    selectedDocument: (state) => {
-      if (!state.selectedDocumentId) return null;
+        documents.value = mockDocuments;
+      }
+    };
+
+    // Getters
+    const getDocumentById = computed(() => (id: string) => {
+      return documents.value.find((doc) => doc.id === id) || null;
+    });
+
+    const selectedDocument = computed(() => {
+      if (!selectedDocumentId.value) return null;
       return (
-        state.convertedDocuments.find(
-          (doc) => doc.id === state.selectedDocumentId,
-        ) || null
+        documents.value.find((doc) => doc.id === selectedDocumentId.value) ||
+        null
       );
-    },
+    });
 
-    /**
-     * Gibt den aktuellen Konvertierungsstatus zurück
-     */
-    conversionStatus: (state): ConversionStatus => {
-      if (state.error) return "error";
-      if (state.isUploading) return "uploading";
-      if (state.isConverting) return "converting";
-      if (state.convertedDocuments.length > 0) return "completed";
-      return "idle";
-    },
-
-    /**
-     * Filtert Dokumente nach dem angegebenen Format oder Status
-     */
-    filteredDocuments: (state) => {
-      return (filterType: string): ConversionResult[] => {
-        if (!filterType) return state.convertedDocuments;
-
-        // Nach Format filtern
-        if (
-          ["pdf", "docx", "xlsx", "pptx", "html", "txt"].includes(filterType)
-        ) {
-          return state.convertedDocuments.filter(
-            (doc) => doc.originalFormat === filterType,
-          );
-        }
-
-        // Nach Status filtern
-        if (
-          ["pending", "processing", "success", "error"].includes(filterType)
-        ) {
-          return state.convertedDocuments.filter(
-            (doc) => doc.status === filterType,
-          );
-        }
-
-        return state.convertedDocuments;
-      };
-    },
-
-    /**
-     * Gruppiert Dokumente nach ihrem Originalformat
-     */
-    documentsByFormat: (state) => {
+    const documentsByFormat = computed(() => {
       const result: Record<string, ConversionResult[]> = {};
 
-      state.convertedDocuments.forEach((doc) => {
-        const format = doc.originalFormat || "unknown";
-        if (!result[format]) {
-          result[format] = [];
+      documents.value.forEach((doc) => {
+        if (!result[doc.format]) {
+          result[doc.format] = [];
         }
-        result[format].push(doc);
+        result[doc.format].push(doc);
       });
 
       return result;
-    },
+    });
 
-    /**
-     * Gibt die Anzahl der Dokumente je Status zurück
-     */
-    documentCounts: (state) => {
+    const documentsByStatus = computed(() => {
       return {
-        total: state.convertedDocuments.length,
-        pending: state.convertedDocuments.filter(
-          (doc) => doc.status === "pending",
-        ).length,
-        processing: state.convertedDocuments.filter(
+        completed: documents.value.filter((doc) => doc.status === "completed"),
+        processing: documents.value.filter(
           (doc) => doc.status === "processing",
-        ).length,
-        success: state.convertedDocuments.filter(
-          (doc) => doc.status === "success",
-        ).length,
-        error: state.convertedDocuments.filter((doc) => doc.status === "error")
-          .length,
+        ),
+        failed: documents.value.filter((doc) => doc.status === "failed"),
       };
-    },
+    });
 
-    /**
-     * Liefert die unterstützten Dateiformate
-     */
-    supportedFormats: (): SupportedFormat[] => {
-      return ["pdf", "docx", "xlsx", "pptx", "html", "txt"];
-    },
-
-    /**
-     * Liefert die maximale Dateigröße in Bytes
-     */
-    maxFileSize: (): number => {
-      return 20 * 1024 * 1024; // 20 MB
-    },
-  },
-
-  /**
-   * Aktionen für Zustandsänderungen und API-Aufrufe
-   */
-  actions: {
-    /**
-     * Initialisiert den Store und lädt vorhandene Dokumente
-     */
-    async initialize(): Promise<void> {
-      if (this.initialized) return;
-
-      this.isLoading = true;
-      this.error = null;
+    // Actions
+    const initialize = async () => {
+      isLoading.value = true;
+      error.value = null;
 
       try {
-        const documents = await DocumentConverterServiceWrapper.getDocuments();
-        this.convertedDocuments = documents;
-        this.initialized = true;
-        this.lastUpdated = new Date();
-        this.error = null;
-      } catch (err) {
-        this.setError("INITIALIZATION_FAILED", err);
-      } finally {
-        this.isLoading = false;
-      }
-    },
+        // Check if we should use real API calls for DocumentConverter
+        if (shouldUseRealApi("useRealDocumentConverterApi")) {
+          // Real API implementation
+          const response = await documentConverterService.getDocuments();
 
-    /**
-     * Lädt eine Datei hoch und gibt die Dokument-ID zurück
-     * @param file - Die hochzuladende Datei
-     * @returns Die ID des hochgeladenen Dokuments
-     */
-    async uploadDocument(file: File): Promise<string | null> {
-      try {
-        this.isUploading = true;
-        this.error = null;
-
-        // Neuen Upload zum Status hinzufügen
-        const uploadedFile: UploadedFile = {
-          id: `temp-${Date.now()}`,
-          file,
-          progress: 0,
-          uploadedAt: new Date(),
-        };
-
-        this.uploadedFiles.push(uploadedFile);
-
-        // Datei hochladen mit Fortschrittsanzeige
-        const documentId = await DocumentConverterServiceWrapper.uploadDocument(
-          file,
-          (progress: number) => {
-            // Upload-Fortschritt aktualisieren
-            const index = this.uploadedFiles.findIndex(
-              (f) => f.id === uploadedFile.id,
-            );
-            if (index !== -1) {
-              this.uploadedFiles[index].progress = progress;
-            }
-          },
-        );
-
-        // Hochgeladenes Dokument aktualisieren
-        const index = this.uploadedFiles.findIndex(
-          (f) => f.id === uploadedFile.id,
-        );
-        if (index !== -1) {
-          this.uploadedFiles[index].id = documentId;
-        }
-
-        // Neues Dokument zum Status hinzufügen
-        this.convertedDocuments.unshift({
-          id: documentId,
-          originalName: file.name,
-          originalFormat:
-            file.name.split(".").pop()?.toLowerCase() || "unknown",
-          size: file.size,
-          uploadedAt: new Date(),
-          status: "pending",
-        });
-
-        this.lastUpdated = new Date();
-        return documentId;
-      } catch (err) {
-        this.setError("UPLOAD_FAILED", err);
-        return null;
-      } finally {
-        this.isUploading = false;
-      }
-    },
-
-    /**
-     * Konvertiert ein hochgeladenes Dokument
-     * @param documentId - Die ID des zu konvertierenden Dokuments
-     * @param progressCallback - Callback-Funktion für Fortschrittsaktualisierungen
-     * @param settings - Optionale Konvertierungseinstellungen
-     */
-    async convertDocument(
-      documentId: string,
-      progressCallback?: (
-        progress: number,
-        step: string,
-        timeRemaining: number | null,
-      ) => void,
-      settings?: Partial<ConversionSettings>,
-    ): Promise<boolean> {
-      try {
-        this.isConverting = true;
-        this.conversionProgress = 0;
-        this.conversionStep = "Initialisiere Konvertierung...";
-        this.error = null;
-        this.currentView = "conversion";
-        this.activeConversionId = documentId;
-
-        // Dokumentstatus aktualisieren
-        const docIndex = this.convertedDocuments.findIndex(
-          (doc) => doc.id === documentId,
-        );
-        if (docIndex !== -1) {
-          this.convertedDocuments[docIndex].status = "processing";
-        }
-
-        // Konvertierungseinstellungen zusammenführen
-        const mergedSettings = {
-          ...this.conversionSettings,
-          ...settings,
-        };
-
-        // Eigenen Fortschritts-Callback für Store-Aktualisierungen
-        const updateProgress = (
-          progress: number,
-          step: string,
-          timeRemaining: number | null,
-        ) => {
-          this.conversionProgress = progress;
-          this.conversionStep = step;
-          this.estimatedTimeRemaining = timeRemaining || 0;
-
-          // Progresscallback weiterleiten, falls vorhanden
-          if (progressCallback) {
-            progressCallback(progress, step, timeRemaining);
-          }
-        };
-
-        // Konvertierung mit Fortschrittsanzeige starten
-        const result = await DocumentConverterServiceWrapper.convertDocument(
-          documentId,
-          mergedSettings,
-          updateProgress,
-        );
-
-        // Polling für Fortschrittsaktualisierungen
-        const pollInterval = setInterval(async () => {
-          if (!this.isConverting) {
-            clearInterval(pollInterval);
+          if (response && response.length > 0) {
+            // Map API response to store format
+            documents.value = response.map((doc) => ({
+              id: doc.id,
+              filename: doc.originalName || "Unknown",
+              format: doc.originalFormat || "unknown",
+              size: doc.size || 0,
+              status:
+                doc.status === "success"
+                  ? "completed"
+                  : doc.status === "error"
+                    ? "failed"
+                    : doc.status,
+              uploadedAt: doc.uploadedAt
+                ? new Date(doc.uploadedAt).getTime()
+                : Date.now(),
+              convertedAt: doc.convertedAt
+                ? new Date(doc.convertedAt).getTime()
+                : 0,
+              content: doc.content,
+              metadata: doc.metadata,
+              error: doc.error,
+            }));
             return;
           }
+        }
 
-          try {
-            const status =
-              await DocumentConverterServiceWrapper.getConversionStatus(
-                documentId,
-              );
-            updateProgress(
-              status.progress,
-              status.step || "Verarbeite Dokument...",
-              status.estimatedTimeRemaining || null,
-            );
+        // Fallback to mock implementation if API is disabled or fails
+        createMockData();
+      } catch (err: any) {
+        error.value = err.message || "Failed to initialize document converter";
+        console.error("Failed to initialize document converter:", err);
+        // Fallback to mock data in case of error
+        createMockData();
+      } finally {
+        isLoading.value = false;
+      }
+    };
 
-            if (status.status === "success" || status.status === "error") {
-              clearInterval(pollInterval);
-              if (status.status === "success") {
-                // Erfolgreich konvertiert
-                const document =
-                  await DocumentConverterServiceWrapper.getDocument(documentId);
+    const uploadDocument = async (file: File): Promise<string> => {
+      isLoading.value = true;
+      error.value = null;
 
-                // Dokument mit Ergebnis aktualisieren
-                if (docIndex !== -1) {
-                  this.convertedDocuments[docIndex] = {
-                    ...this.convertedDocuments[docIndex],
-                    ...document,
-                    status: "success",
-                    convertedAt: new Date(),
-                  };
-                }
+      try {
+        // Check if we should use real API calls for DocumentConverter
+        if (shouldUseRealApi("useRealDocumentConverterApi")) {
+          // Real API implementation with progress tracking
+          const onProgress = (progress: number) => {
+            conversionProgress.value.percentage = progress;
+            conversionProgress.value.currentStep = `Uploading file (${progress}%)`;
+            conversionProgress.value.estimatedTimeRemaining = Math.round(
+              (100 - progress) / 10,
+            ); // Simple estimate
+          };
 
-                this.currentView = "results";
-                this.selectedDocumentId = documentId;
-                this.isConverting = false;
-              } else if (status.status === "error") {
-                // Fehler bei der Konvertierung
-                throw new Error(
-                  status.error || "Unbekannter Fehler bei der Konvertierung",
-                );
-              }
+          // Upload document using API
+          const documentId = await documentConverterService.uploadDocument(
+            file,
+            onProgress,
+          );
+
+          // Add document to list with initial status
+          const document: ConversionResult = {
+            id: documentId,
+            filename: file.name,
+            format: file.name.split(".").pop() || "unknown",
+            size: file.size,
+            status: "processing",
+            uploadedAt: Date.now(),
+            convertedAt: 0,
+          };
+
+          documents.value.push(document);
+          return documentId;
+        }
+
+        // Fallback to mock implementation if API is disabled
+        const documentId = `doc${documents.value.length + 1}_${Date.now()}`;
+        const document: ConversionResult = {
+          id: documentId,
+          filename: file.name,
+          format: file.name.split(".").pop() || "unknown",
+          size: file.size,
+          status: "processing",
+          uploadedAt: Date.now(),
+          convertedAt: 0,
+        };
+
+        documents.value.push(document);
+        return documentId;
+      } catch (err: any) {
+        error.value = err.message || "Failed to upload document";
+        console.error("Failed to upload document:", err);
+        throw err;
+      } finally {
+        isLoading.value = false;
+      }
+    };
+
+    const convertDocument = async (
+      id: string,
+      settings?: Partial<ConversionSettings>,
+    ): Promise<void> => {
+      const document = documents.value.find((doc) => doc.id === id);
+      if (!document) {
+        throw new Error("Document not found");
+      }
+
+      document.status = "processing";
+
+      // Update settings if provided
+      if (settings) {
+        conversionSettings.value = { ...conversionSettings.value, ...settings };
+      }
+
+      // Check if we should use real API calls for DocumentConverter
+      if (shouldUseRealApi("useRealDocumentConverterApi")) {
+        try {
+          // Create progress handler
+          const onProgress = (
+            progress: number,
+            step: string,
+            timeRemaining: number,
+          ) => {
+            conversionProgress.value.percentage = progress;
+            conversionProgress.value.currentStep = step;
+            conversionProgress.value.estimatedTimeRemaining = timeRemaining;
+          };
+
+          // Start real conversion with API
+          const result = await documentConverterService.convertDocument(
+            id,
+            settings,
+            onProgress,
+          );
+
+          // Update document with result
+          if (result) {
+            document.status =
+              result.status === "success"
+                ? "completed"
+                : result.status === "error"
+                  ? "failed"
+                  : "processing";
+            document.convertedAt = result.convertedAt
+              ? new Date(result.convertedAt).getTime()
+              : Date.now();
+            document.content = result.content;
+            document.metadata = result.metadata;
+            document.error = result.error;
+          }
+
+          return;
+        } catch (err: any) {
+          // Handle API errors
+          document.status = "failed";
+          document.error = err.message || "Conversion failed";
+          throw err;
+        }
+      }
+
+      // Fallback to mock implementation if API is disabled
+      // Simulate conversion process
+      return new Promise((resolve, reject) => {
+        const totalSteps = 5;
+        let currentStep = 0;
+
+        const steps = [
+          "Preparing document",
+          "Extracting text",
+          "Processing tables",
+          "Applying formatting",
+          "Finalizing conversion",
+        ];
+
+        const interval = setInterval(() => {
+          currentStep++;
+          conversionProgress.value.percentage = Math.round(
+            (currentStep / totalSteps) * 100,
+          );
+          conversionProgress.value.currentStep = steps[currentStep - 1];
+          conversionProgress.value.estimatedTimeRemaining =
+            (totalSteps - currentStep) * 5; // 5 seconds per step
+
+          if (currentStep === totalSteps) {
+            clearInterval(interval);
+
+            // 10% chance of failure for simulation
+            if (Math.random() < 0.1) {
+              document.status = "failed";
+              document.error = "Conversion failed due to document complexity";
+              reject(new Error("Conversion failed"));
+            } else {
+              document.status = "completed";
+              document.convertedAt = Date.now();
+              document.content = "Converted content for " + document.filename;
+              document.metadata = {
+                author: "System",
+                created: new Date().toISOString().split("T")[0],
+                pages: Math.floor(Math.random() * 20) + 1,
+              };
+              resolve();
             }
-          } catch (err) {
-            clearInterval(pollInterval);
-            throw err;
           }
         }, 1000);
+      });
+    };
 
-        this.lastUpdated = new Date();
-        return true;
-      } catch (err) {
-        this.setError("CONVERSION_FAILED", err);
+    const deleteDocument = async (id: string): Promise<void> => {
+      isLoading.value = true;
+      error.value = null;
 
-        // Fehler im Dokument vermerken
-        const docIndex = this.convertedDocuments.findIndex(
-          (doc) => doc.id === documentId,
-        );
-        if (docIndex !== -1) {
-          this.convertedDocuments[docIndex].status = "error";
-          this.convertedDocuments[docIndex].error =
-            err instanceof Error ? err.message : "Unbekannter Fehler";
+      try {
+        // Check if we should use real API calls for DocumentConverter
+        if (shouldUseRealApi("useRealDocumentConverterApi")) {
+          // Real API implementation
+          await documentConverterService.deleteDocument(id);
+
+          // Update local state after successful API call
+          const index = documents.value.findIndex((doc) => doc.id === id);
+          if (index !== -1) {
+            documents.value.splice(index, 1);
+          }
+
+          if (selectedDocumentId.value === id) {
+            selectedDocumentId.value = null;
+          }
+          return;
         }
 
-        this.isConverting = false;
-        this.activeConversionId = null;
-        return false;
-      }
-    },
-
-    /**
-     * Löscht ein konvertiertes Dokument
-     * @param documentId - Die ID des zu löschenden Dokuments
-     */
-    async deleteDocument(documentId: string): Promise<boolean> {
-      try {
-        await DocumentConverterServiceWrapper.deleteDocument(documentId);
-
-        // Dokument aus der Liste entfernen
-        this.convertedDocuments = this.convertedDocuments.filter(
-          (doc) => doc.id !== documentId,
-        );
-
-        // Wenn das gelöschte Dokument ausgewählt war, Auswahl zurücksetzen
-        if (this.selectedDocumentId === documentId) {
-          this.selectedDocumentId = null;
+        // Fallback to mock implementation if API is disabled
+        const index = documents.value.findIndex((doc) => doc.id === id);
+        if (index !== -1) {
+          documents.value.splice(index, 1);
         }
 
-        this.lastUpdated = new Date();
-        return true;
-      } catch (err) {
-        this.setError("DELETE_FAILED", err);
-        return false;
+        if (selectedDocumentId.value === id) {
+          selectedDocumentId.value = null;
+        }
+      } catch (err: any) {
+        error.value = err.message || "Failed to delete document";
+        console.error("Failed to delete document:", err);
+        throw err;
+      } finally {
+        isLoading.value = false;
       }
-    },
+    };
 
-    /**
-     * Bricht eine laufende Konvertierung ab
-     * @param documentId - Die ID des Dokuments, dessen Konvertierung abgebrochen wird
-     */
-    async cancelConversion(documentId: string): Promise<void> {
+    const cancelConversion = async (id: string): Promise<void> => {
+      isLoading.value = true;
+      error.value = null;
+
       try {
-        // API-Aufruf zum Abbrechen der Konvertierung
-        await DocumentConverterServiceWrapper.cancelConversion(documentId);
+        // Check if we should use real API calls for DocumentConverter
+        if (shouldUseRealApi("useRealDocumentConverterApi")) {
+          // Real API implementation
+          await documentConverterService.cancelConversion(id);
 
-        // Status zurücksetzen
-        this.isConverting = false;
-        this.conversionProgress = 0;
-        this.conversionStep = "";
-        this.activeConversionId = null;
-
-        // Dokument-Status aktualisieren
-        const docIndex = this.convertedDocuments.findIndex(
-          (doc) => doc.id === documentId,
-        );
-        if (docIndex !== -1) {
-          this.convertedDocuments[docIndex].status = "error";
-          this.convertedDocuments[docIndex].error =
-            "Konvertierung wurde abgebrochen";
+          // Update local state after successful API call
+          const document = documents.value.find((doc) => doc.id === id);
+          if (document && document.status === "processing") {
+            document.status = "failed";
+            document.error = "Conversion canceled by user";
+          }
+          return;
         }
 
-        this.currentView = "upload";
-      } catch (err) {
-        this.setError("CANCEL_FAILED", err);
-      }
-    },
-
-    /**
-     * Wählt ein Dokument aus
-     * @param documentId - Die ID des auszuwählenden Dokuments
-     */
-    selectDocument(documentId: string | null): void {
-      this.selectedDocumentId = documentId;
-
-      if (documentId) {
-        const document = this.convertedDocuments.find(
-          (doc) => doc.id === documentId,
-        );
-        if (document && document.status === "success") {
-          this.currentView = "results";
+        // Fallback to mock implementation if API is disabled
+        const document = documents.value.find((doc) => doc.id === id);
+        if (document && document.status === "processing") {
+          document.status = "failed";
+          document.error = "Conversion canceled by user";
         }
+      } catch (err: any) {
+        error.value = err.message || "Failed to cancel conversion";
+        console.error("Failed to cancel conversion:", err);
+        throw err;
+      } finally {
+        isLoading.value = false;
       }
-    },
+    };
 
-    /**
-     * Setzt die aktuelle Ansicht
-     * @param view - Die neue Ansicht
-     */
-    setView(view: ConverterView): void {
-      this.currentView = view;
-    },
+    const downloadDocument = async (id: string): Promise<void> => {
+      isLoading.value = true;
+      error.value = null;
 
-    /**
-     * Aktualisiert die Konvertierungseinstellungen
-     * @param settings - Die neuen Einstellungen
-     */
-    updateSettings(settings: Partial<ConversionSettings>): void {
-      this.conversionSettings = {
-        ...this.conversionSettings,
-        ...settings,
-      };
-    },
-
-    /**
-     * Setzt einen Fehler im Store
-     * @param code - Der Fehlercode
-     * @param error - Das Fehlerobjekt oder die Nachricht
-     */
-    setError(code: string, error: any): void {
-      console.error(`DocumentConverterStore error (${code}):`, error);
-
-      // Wenn bereits ein formatierter Fehler (ConversionError) vorliegt, diesen verwenden
-      if (
-        error &&
-        typeof error === "object" &&
-        "code" in error &&
-        "type" in error &&
-        "timestamp" in error
-      ) {
-        this.error = error;
-      } else {
-        // Sonst einen neuen Error erstellen
-        this.error = {
-          code,
-          message: error instanceof Error ? error.message : String(error),
-          details:
-            error instanceof Error
-              ? error.stack
-              : JSON.stringify(error, null, 2),
-          timestamp: new Date(),
-        };
-      }
-    },
-
-    /**
-     * Löscht den aktuellen Fehler
-     */
-    clearError(): void {
-      this.error = null;
-    },
-
-    /**
-     * Setzt den Store auf den Ausgangszustand zurück
-     */
-    resetState(): void {
-      this.$reset();
-    },
-
-    /**
-     * Aktualisiert die Liste der konvertierten Dokumente
-     */
-    async refreshDocuments(): Promise<void> {
       try {
-        this.isLoading = true;
-        const documents = await DocumentConverterServiceWrapper.getDocuments();
-        this.convertedDocuments = documents;
-        this.lastUpdated = new Date();
-        this.isLoading = false;
-      } catch (err) {
-        this.setError("REFRESH_FAILED", err);
-        this.isLoading = false;
-      }
-    },
-
-    /**
-     * Aktiviert oder deaktiviert den Fallback-Konverter
-     */
-    setUseFallback(value: boolean): void {
-      this.useFallback = value;
-    },
-
-    /**
-     * Prüft, ob ein Format unterstützt wird
-     */
-    isSupportedFormat(format: string): boolean {
-      return DocumentConverterServiceWrapper.isFormatSupported(format);
-    },
-
-    /**
-     * Lädt ein konvertiertes Dokument herunter
-     */
-    async downloadDocument(documentId: string): Promise<void> {
-      try {
-        const document = this.convertedDocuments.find(
-          (doc) => doc.id === documentId,
-        );
+        // First get the document info to get the filename
+        const document = documents.value.find((doc) => doc.id === id);
         if (!document) {
-          throw new Error("Dokument nicht gefunden");
+          throw new Error("Document not found");
         }
 
-        await DocumentConverterServiceWrapper.downloadDocument(
-          documentId,
-          document.originalName,
-        );
-      } catch (err) {
-        this.setError("DOWNLOAD_FAILED", err);
+        // Check if we should use real API calls for DocumentConverter
+        if (shouldUseRealApi("useRealDocumentConverterApi")) {
+          // Progress callback for download
+          const onProgress = (progress: number) => {
+            conversionProgress.value.percentage = progress;
+            conversionProgress.value.currentStep = `Downloading file (${progress}%)`;
+            conversionProgress.value.estimatedTimeRemaining = Math.round(
+              (100 - progress) / 10,
+            ); // Simple estimate
+          };
+
+          // Real API implementation
+          const blob = await documentConverterService.downloadDocument(
+            id,
+            document.filename,
+            onProgress,
+          );
+
+          // Create download link and trigger download
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = document.filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
+          return;
+        }
+
+        // Fallback to mock implementation - just show a console message
+        console.log(`Downloading document: ${document?.filename}`);
+      } catch (err: any) {
+        error.value = err.message || "Failed to download document";
+        console.error("Failed to download document:", err);
+        throw err;
+      } finally {
+        isLoading.value = false;
       }
-    },
-  },
+    };
 
-  /**
-   * Persistenzkonfiguration für den Store
-   * Speichert ausgewählte Teile des Zustands im localStorage
-   */
-  persist: {
-    key: "nscale-doc-converter",
-    paths: [
-      "convertedDocuments",
-      "selectedDocumentId",
-      "conversionSettings",
-      "lastUpdated",
-    ],
-    // Serialisiert Date-Objekte beim Speichern und Wiederherstellen
-    serializer: {
-      serialize: (state) => {
-        const serializedState = JSON.stringify(state, (key, value) => {
-          // Serialisiert Date-Objekte als ISO-Strings
-          if (value instanceof Date) {
-            return { __type: "date", value: value.toISOString() };
-          }
-          return value;
-        });
-        return serializedState;
-      },
-      deserialize: (serializedState) => {
-        return JSON.parse(serializedState, (key, value) => {
-          // Konvertiert serialisierte Date-Objekte zurück
-          if (value && typeof value === "object" && value.__type === "date") {
-            return new Date(value.value);
-          }
-          return value;
-        });
-      },
-    },
-  },
-});
+    const selectDocument = (id: string | null) => {
+      selectedDocumentId.value = id;
+    };
 
-/**
- * Hilfsfunktion zum Import von API-Abhängigkeiten
- * Wird am Ende definiert, um Zirkelbezüge zu vermeiden
- */
-import ApiService from "@/services/api/ApiService";
+    const setView = (view: "upload" | "conversion" | "results" | "list") => {
+      currentView.value = view;
+    };
+
+    const refreshDocuments = async () => {
+      await initialize();
+    };
+
+    // Admin-specific functionality
+    const getDocumentStatistics = async (): Promise<DocumentStatistics> => {
+      isLoading.value = true;
+      error.value = null;
+
+      try {
+        // Check if we should use real API calls for DocumentConverter
+        if (shouldUseRealApi("useRealDocumentConverterApi")) {
+          // Real API implementation with admin specific service
+          const response =
+            await adminDocConverterService.getDocumentStatistics();
+
+          if (response.success && response.data) {
+            return response.data;
+          } else {
+            throw new Error(
+              response.message || "Fehler beim Abrufen der Dokumentstatistiken",
+            );
+          }
+        }
+
+        // Fallback to mock implementation if API is disabled or fails for development purposes
+        createMockData();
+
+        // Calculate statistics based on mock data
+        const completed = documents.value.filter(
+          (doc) => doc.status === "completed",
+        ).length;
+        const failed = documents.value.filter(
+          (doc) => doc.status === "failed",
+        ).length;
+        const processing = documents.value.filter(
+          (doc) => doc.status === "processing",
+        ).length;
+
+        // Count by format
+        const conversionsByFormat: Record<string, number> = {};
+        documents.value.forEach((doc) => {
+          if (!conversionsByFormat[doc.format]) {
+            conversionsByFormat[doc.format] = 0;
+          }
+          conversionsByFormat[doc.format]++;
+        });
+
+        // Mock trend data (last 7 days)
+        const conversionTrend = [12, 18, 15, 22, 30, 25, 28];
+
+        return {
+          totalConversions: completed + failed,
+          conversionsPastWeek: conversionTrend.reduce(
+            (sum, value) => sum + value,
+            0,
+          ),
+          successRate: Math.round((completed / (completed + failed)) * 100),
+          activeConversions: processing,
+          conversionsByFormat,
+          conversionTrend,
+        };
+      } catch (err: any) {
+        error.value = err.message || "Failed to get document statistics";
+        console.error("Failed to get document statistics:", err);
+        throw err;
+      } finally {
+        isLoading.value = false;
+      }
+    };
+
+    const getRecentConversions = async (): Promise<ConversionResult[]> => {
+      isLoading.value = true;
+      error.value = null;
+
+      try {
+        // Check if we should use real API calls for DocumentConverter
+        if (shouldUseRealApi("useRealDocumentConverterApi")) {
+          // Real API implementation with admin specific service
+          const response =
+            await adminDocConverterService.getRecentConversions();
+
+          if (response.success && response.data) {
+            return response.data;
+          } else {
+            throw new Error(
+              response.message ||
+                "Fehler beim Abrufen der letzten Konvertierungen",
+            );
+          }
+        }
+
+        // Fallback to mock implementation if API is disabled or fails for development purposes
+        createMockData();
+
+        // Sort by uploadedAt (descending)
+        return [...documents.value].sort((a, b) => b.uploadedAt - a.uploadedAt);
+      } catch (err: any) {
+        error.value = err.message || "Failed to get recent conversions";
+        console.error("Failed to get recent conversions:", err);
+        throw err;
+      } finally {
+        isLoading.value = false;
+      }
+    };
+
+    const getConversionQueue = async (): Promise<QueueInfo> => {
+      isLoading.value = true;
+      error.value = null;
+
+      try {
+        // Check if we should use real API calls for DocumentConverter
+        if (shouldUseRealApi("useRealDocumentConverterApi")) {
+          // Real API implementation with admin specific service
+          const response = await adminDocConverterService.getConversionQueue();
+
+          if (response.success && response.data) {
+            return response.data;
+          } else {
+            throw new Error(
+              response.message ||
+                "Fehler beim Abrufen der Konversionswarteschlange",
+            );
+          }
+        }
+
+        // Fallback to mock implementation if API is disabled or fails for development purposes
+        const mockQueue = [
+          {
+            id: "job1",
+            filename: "Quarterly Report.pdf",
+            userId: "user123",
+            status: "processing",
+            submittedAt: Date.now() - 10 * 60 * 1000, // 10 minutes ago
+            progress: 75,
+          },
+          {
+            id: "job2",
+            filename: "Employee Handbook.docx",
+            userId: "user456",
+            status: "waiting",
+            submittedAt: Date.now() - 25 * 60 * 1000, // 25 minutes ago
+          },
+          {
+            id: "job3",
+            filename: "Sales Data.xlsx",
+            userId: "user789",
+            status: "waiting",
+            submittedAt: Date.now() - 35 * 60 * 1000, // 35 minutes ago
+          },
+        ];
+
+        return {
+          queue: mockQueue,
+          stats: {
+            activeJobs: 1,
+            waitingJobs: 2,
+            averageTime: 45, // 45 seconds
+          },
+          paused: false,
+        };
+      } catch (err: any) {
+        error.value = err.message || "Failed to get conversion queue";
+        console.error("Failed to get conversion queue:", err);
+        throw err;
+      } finally {
+        isLoading.value = false;
+      }
+    };
+
+    const getConverterSettings = async (): Promise<ConverterSettings> => {
+      isLoading.value = true;
+      error.value = null;
+
+      try {
+        // Check if we should use real API calls for DocumentConverter
+        if (shouldUseRealApi("useRealDocumentConverterApi")) {
+          // Real API implementation with admin specific service
+          const response =
+            await adminDocConverterService.getConverterSettings();
+
+          if (response.success && response.data) {
+            return response.data;
+          } else {
+            throw new Error(
+              response.message ||
+                "Fehler beim Abrufen der Konvertereinstellungen",
+            );
+          }
+        }
+
+        // Fallback to mock implementation if API is disabled or fails
+        return {
+          maxFileSize: 100, // MB
+          defaultFormat: "pdf",
+          enableThumbnails: true,
+          enableOCR: false,
+          ocrLanguage: "en",
+          enhancedOCR: false,
+          storageLimit: 10, // GB
+          retentionPeriod: 30, // days
+        };
+      } catch (err: any) {
+        error.value = err.message || "Failed to get converter settings";
+        console.error("Failed to get converter settings:", err);
+        throw err;
+      } finally {
+        isLoading.value = false;
+      }
+    };
+
+    const updateConverterSettings = async (
+      settings: ConverterSettings,
+    ): Promise<void> => {
+      isLoading.value = true;
+      error.value = null;
+
+      try {
+        // Check if we should use real API calls for DocumentConverter
+        if (shouldUseRealApi("useRealDocumentConverterApi")) {
+          // Real API implementation with admin specific service
+          const response =
+            await adminDocConverterService.updateConverterSettings(settings);
+
+          if (!response.success) {
+            throw new Error(
+              response.message ||
+                "Fehler beim Aktualisieren der Konvertereinstellungen",
+            );
+          }
+
+          return;
+        }
+
+        // Fallback to mock implementation if API is disabled or fails
+        console.log("Updating converter settings:", settings);
+        return Promise.resolve();
+      } catch (err: any) {
+        error.value = err.message || "Failed to update converter settings";
+        console.error("Failed to update converter settings:", err);
+        throw err;
+      } finally {
+        isLoading.value = false;
+      }
+    };
+
+    const prioritizeJob = async (id: string): Promise<void> => {
+      isLoading.value = true;
+      error.value = null;
+
+      try {
+        // Check if we should use real API calls for DocumentConverter
+        if (shouldUseRealApi("useRealDocumentConverterApi")) {
+          // Call the admin service method
+          const response = await adminDocConverterService.prioritizeJob(id);
+
+          if (!response.success) {
+            throw new Error(
+              response.message || `Fehler beim Priorisieren des Jobs ${id}`,
+            );
+          }
+
+          return;
+        }
+
+        // Mock implementation
+        console.log("Prioritizing job:", id);
+        return Promise.resolve();
+      } catch (err: any) {
+        error.value = err.message || "Failed to prioritize job";
+        console.error("Failed to prioritize job:", err);
+        throw err;
+      } finally {
+        isLoading.value = false;
+      }
+    };
+
+    const cancelJob = async (id: string): Promise<void> => {
+      isLoading.value = true;
+      error.value = null;
+
+      try {
+        // Check if we should use real API calls for DocumentConverter
+        if (shouldUseRealApi("useRealDocumentConverterApi")) {
+          // Call the admin service method
+          const response = await adminDocConverterService.cancelJob(id);
+
+          if (!response.success) {
+            throw new Error(
+              response.message || `Fehler beim Abbrechen des Jobs ${id}`,
+            );
+          }
+
+          return;
+        }
+
+        // Mock implementation
+        console.log("Canceling job:", id);
+        return Promise.resolve();
+      } catch (err: any) {
+        error.value = err.message || "Failed to cancel job";
+        console.error("Failed to cancel job:", err);
+        throw err;
+      } finally {
+        isLoading.value = false;
+      }
+    };
+
+    const pauseQueue = async (): Promise<void> => {
+      isLoading.value = true;
+      error.value = null;
+
+      try {
+        // Check if we should use real API calls for DocumentConverter
+        if (shouldUseRealApi("useRealDocumentConverterApi")) {
+          // Call the admin service method
+          const response = await adminDocConverterService.pauseQueue();
+
+          if (!response.success) {
+            throw new Error(
+              response.message || "Fehler beim Pausieren der Warteschlange",
+            );
+          }
+
+          return;
+        }
+
+        // Mock implementation
+        console.log("Pausing conversion queue");
+        return Promise.resolve();
+      } catch (err: any) {
+        error.value = err.message || "Failed to pause queue";
+        console.error("Failed to pause queue:", err);
+        throw err;
+      } finally {
+        isLoading.value = false;
+      }
+    };
+
+    const resumeQueue = async (): Promise<void> => {
+      isLoading.value = true;
+      error.value = null;
+
+      try {
+        // Check if we should use real API calls for DocumentConverter
+        if (shouldUseRealApi("useRealDocumentConverterApi")) {
+          // Call the admin service method
+          const response = await adminDocConverterService.resumeQueue();
+
+          if (!response.success) {
+            throw new Error(
+              response.message || "Fehler beim Fortsetzen der Warteschlange",
+            );
+          }
+
+          return;
+        }
+
+        // Mock implementation
+        console.log("Resuming conversion queue");
+        return Promise.resolve();
+      } catch (err: any) {
+        error.value = err.message || "Failed to resume queue";
+        console.error("Failed to resume queue:", err);
+        throw err;
+      } finally {
+        isLoading.value = false;
+      }
+    };
+
+    const clearQueue = async (): Promise<void> => {
+      isLoading.value = true;
+      error.value = null;
+
+      try {
+        // Check if we should use real API calls for DocumentConverter
+        if (shouldUseRealApi("useRealDocumentConverterApi")) {
+          // Call the admin service method
+          const response = await adminDocConverterService.clearQueue();
+
+          if (!response.success) {
+            throw new Error(
+              response.message || "Fehler beim Leeren der Warteschlange",
+            );
+          }
+
+          return;
+        }
+
+        // Mock implementation
+        console.log("Clearing conversion queue");
+        return Promise.resolve();
+      } catch (err: any) {
+        error.value = err.message || "Failed to clear queue";
+        console.error("Failed to clear queue:", err);
+        throw err;
+      } finally {
+        isLoading.value = false;
+      }
+    };
+
+    // Reset state function for store interactions
+    const resetState = () => {
+      documents.value = [];
+      selectedDocumentId.value = null;
+      currentView.value = "upload";
+      isLoading.value = false;
+      error.value = null;
+      conversionProgress.value = {
+        percentage: 0,
+        currentStep: "",
+        estimatedTimeRemaining: 0,
+      };
+      conversionSettings.value = {
+        preserveFormatting: true,
+        extractMetadata: true,
+        extractTables: true,
+        ocrEnabled: false,
+        ocrLanguage: "en",
+      };
+    };
+
+    // Mock action for completeness
+    const checkStatus = async () => {
+      console.log("Checking document converter status");
+      return true;
+    };
+
+    return {
+      // State
+      documents,
+      selectedDocumentId,
+      currentView,
+      isLoading,
+      error,
+      conversionProgress,
+      conversionSettings,
+
+      // Getters
+      getDocumentById,
+      selectedDocument,
+      documentsByFormat,
+      documentsByStatus,
+
+      // Actions
+      initialize,
+      uploadDocument,
+      convertDocument,
+      deleteDocument,
+      cancelConversion,
+      downloadDocument,
+      selectDocument,
+      setView,
+      refreshDocuments,
+      resetState,
+      checkStatus,
+
+      // Admin-specific functionality
+      getDocumentStatistics,
+      getRecentConversions,
+      getConversionQueue,
+      getConverterSettings,
+      updateConverterSettings,
+      prioritizeJob,
+      cancelJob,
+      pauseQueue,
+      resumeQueue,
+      clearQueue,
+    };
+  },
+);

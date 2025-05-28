@@ -66,6 +66,100 @@ class RAGEngine:
                 logger.error(f"Fehler bei der Initialisierung der RAG-Engine: {e}")
                 return False
     
+    async def stream_answer_chunks(self, question: str, session_id: Optional[int] = None, 
+                             use_simple_language: bool = False, stream_id: Optional[str] = None) -> AsyncGenerator[str, None]:
+        """
+        Gibt einen asynchronen Generator zurück, der Text-Chunks streamt - 
+        für die direkte Verwendung mit StreamingResponse
+        """
+        if not question:  # Sicherstellen, dass die Frage nicht leer ist
+            logger.error("Die Frage wurde nicht übergeben.")
+            yield json.dumps({"error": "Keine Frage übergeben."})
+            return
+
+        if not self.initialized:
+            logger.info("Lazy-Loading der RAG-Engine für Streaming...")
+            success = await self.initialize()
+            if not success:
+                yield json.dumps({"error": "System konnte nicht initialisiert werden"})
+                return
+
+        if len(question) > 2048:
+            logger.warning(f"Frage zu lang ({len(question)} Zeichen), wird gekürzt")
+            question = question[:2048]
+
+        # Stream-ID für Tracking verwenden, falls angegeben
+        if not stream_id:
+            stream_id = f"stream_{session_id}_{hash(question)}"
+        
+        logger.info(f"Stream-ID: {stream_id}")
+
+        try:
+            # Chunks suchen
+            relevant_chunks = self.embedding_manager.search(question, top_k=Config.TOP_K)
+            if not relevant_chunks:
+                logger.warning(f"Keine relevanten Chunks für Streaming-Frage gefunden: {question[:50]}...")
+                yield json.dumps({"error": "Keine relevanten Informationen gefunden"})
+                return
+
+            # Entferne Duplikate basierend auf der Datei
+            seen_sources = set()
+            unique_chunks = []
+            for chunk in relevant_chunks:
+                source = chunk.get('file', 'unknown')
+                # Füge nur hinzu, wenn die Quelle noch nicht gesehen wurde
+                if source not in seen_sources:
+                    seen_sources.add(source)
+                    unique_chunks.append(chunk)
+            
+            # Begrenze auf maximal 5 verschiedene Quellen
+            if len(unique_chunks) > 5:
+                unique_chunks = unique_chunks[:5]
+
+            # Prompt bauen mit Spracheinstellung
+            prompt = self._format_prompt(question, unique_chunks, use_simple_language)
+            logger.info(f"Starte Streaming für Frage: {question[:50]}... (Einfache Sprache: {use_simple_language})")
+
+            # Variable zur Nachverfolgung, ob Daten gesendet wurden
+            found_data = False
+            
+            # Buffer für die Gesamtantwort
+            complete_answer = ""
+            
+            # Debug-Logging für den Stream-Start
+            logger.debug("Stream-Generierung beginnt mit Prompt...")
+            
+            async for chunk in self.ollama_client.stream_generate(prompt, stream_id=stream_id):
+                # Auch leere Tokens werden berücksichtigt
+                found_data = True
+                # Füge zum Buffer hinzu 
+                complete_answer += chunk
+                
+                # Für StreamingResponse: Liefere JSON-Objekt
+                yield json.dumps({"content": chunk})
+                
+                # Kurze Pause einfügen, um dem Browser Zeit zum Rendern zu geben
+                await asyncio.sleep(0.01)
+
+            # Wenn keine Antwort empfangen wurde
+            if not found_data:
+                logger.warning("Keine Antwort vom Modell empfangen")
+                yield json.dumps({"error": "Das Modell hat keine Ausgabe erzeugt."})
+            else:
+                # Speichern der kompletten Antwort in der Chathistorie
+                if session_id and complete_answer.strip():
+                    logger.info(f"Speichere vollständige Antwort ({len(complete_answer)} Zeichen) in Session {session_id}")
+                    from ..session.chat_history import ChatHistoryManager
+                    chat_history = ChatHistoryManager()
+                    chat_history.add_message(session_id, complete_answer, is_user=False)
+
+            # Für Streaming-Abschluss
+            yield json.dumps({"done": True})
+            
+        except Exception as e:
+            logger.error(f"Fehler beim Streaming der Antwort: {e}", exc_info=True)
+            yield json.dumps({"error": f"Fehler beim Streaming: {str(e)}"})
+    
     async def stream_answer(self, question: str, session_id: Optional[int] = None, 
                            use_simple_language: bool = False, stream_id: Optional[str] = None) -> EventSourceResponse:
         """Streamt Antwort stückweise zurück – im Server-Sent-Events-Format"""

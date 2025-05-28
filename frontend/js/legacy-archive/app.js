@@ -4,21 +4,19 @@
  * Geplantes Entfernungsdatum: 2025-06-10
  */
 
-
 // Monitoring für Legacy-Code-Nutzung
 function trackLegacyUsage(componentName, action) {
-  if (typeof window.telemetry !== 'undefined') {
-    window.telemetry.trackEvent('legacy_code_usage', {
+  if (typeof window.telemetry !== "undefined") {
+    window.telemetry.trackEvent("legacy_code_usage", {
       component: componentName,
       action: action,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 }
 
 // Tracking bei Modulinitialisierung
-trackLegacyUsage('app', 'initialize');
-
+trackLegacyUsage("app", "initialize");
 
 import { setupChat } from "./chat.js";
 import { setupFeedback } from "./feedback.js";
@@ -263,10 +261,13 @@ createApp({
     // Erfasst die Dauer einer Sitzung für A/B Tests
     const trackSessionDuration = (sessionId) => {
       try {
-        const variant = window.abTesting?.getUserTestVariant('chat-interface-v2');
+        const variant =
+          window.abTesting?.getUserTestVariant("chat-interface-v2");
         if (!variant) return;
 
-        const startTimeStr = localStorage.getItem(`session_${sessionId}_start_time`);
+        const startTimeStr = localStorage.getItem(
+          `session_${sessionId}_start_time`,
+        );
         if (startTimeStr) {
           const startTime = parseInt(startTimeStr, 10);
           const duration = Date.now() - startTime;
@@ -274,16 +275,23 @@ createApp({
           // Dauer in Sekunden messen
           const durationInSeconds = Math.floor(duration / 1000);
 
-          window.abTesting?.trackTestMetric('chat-interface-v2', 'sessionDuration', durationInSeconds, {
-            sessionId,
-            messagesCount: messages.value.length
-          });
+          window.abTesting?.trackTestMetric(
+            "chat-interface-v2",
+            "sessionDuration",
+            durationInSeconds,
+            {
+              sessionId,
+              messagesCount: messages.value.length,
+            },
+          );
 
-          console.log(`A/B Test - Session Dauer für ${sessionId} erfasst: ${durationInSeconds}s`);
+          console.log(
+            `A/B Test - Session Dauer für ${sessionId} erfasst: ${durationInSeconds}s`,
+          );
           localStorage.removeItem(`session_${sessionId}_start_time`);
         }
       } catch (e) {
-        console.error('Fehler beim Erfassen der Sitzungsdauer:', e);
+        console.error("Fehler beim Erfassen der Sitzungsdauer:", e);
       }
     };
 
@@ -299,11 +307,17 @@ createApp({
         console.log(`Lade Session ${sessionId}...`);
 
         // A/B Test: Startzeit für Sitzungsdauer messen
-        const chatVariant = window.abTesting?.getUserTestVariant('chat-interface-v2');
+        const chatVariant =
+          window.abTesting?.getUserTestVariant("chat-interface-v2");
         const sessionStartTime = Date.now();
         if (chatVariant) {
-          localStorage.setItem(`session_${sessionId}_start_time`, sessionStartTime.toString());
-          console.log(`A/B Test - Session Start Zeit für ${sessionId} erfasst: ${sessionStartTime}`);
+          localStorage.setItem(
+            `session_${sessionId}_start_time`,
+            sessionStartTime.toString(),
+          );
+          console.log(
+            `A/B Test - Session Start Zeit für ${sessionId} erfasst: ${sessionStartTime}`,
+          );
         }
 
         const response = await axios.get(`/api/session/${sessionId}`);
@@ -688,7 +702,7 @@ createApp({
       setupAxios();
 
       // Telemetrie-System initialisieren
-      if (window.telemetry && typeof window.telemetry.init === 'function') {
+      if (window.telemetry && typeof window.telemetry.init === "function") {
         window.telemetry.init();
         console.log("Telemetrie-System wurde initialisiert");
       }

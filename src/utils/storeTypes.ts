@@ -1,12 +1,18 @@
 /**
  * Store-bezogene Utility-Typen
- * 
+ *
  * Diese Datei enthält Utility-Typen für die Store-Implementierungen,
  * die Typisierung von Store-Zuständen und -Aktionen erleichtern.
  */
 
-import type { StoreDefinition, StateTree, _GettersTree, _ActionsTree, PiniaCustomStateProperties } from 'pinia';
-import { DeepReadonly, DeepPartial, Immutable } from './types';
+import type {
+  StoreDefinition,
+  StateTree,
+  _GettersTree,
+  _ActionsTree,
+  PiniaCustomStateProperties,
+} from "pinia";
+import { DeepReadonly, DeepPartial, Immutable } from "./types";
 
 /**
  * Typ-Extraktion für Store-Definitionen
@@ -15,43 +21,27 @@ import { DeepReadonly, DeepPartial, Immutable } from './types';
 /**
  * Extrahiert den State-Typ aus einer Store-Definition
  */
-export type ExtractState<Store> = Store extends StoreDefinition<
-  string,
-  infer S,
-  any,
-  any
->
-  ? S
-  : never;
+export type ExtractState<Store> =
+  Store extends StoreDefinition<string, infer S, any, any> ? S : never;
 
 /**
  * Extrahiert den Getters-Typ aus einer Store-Definition
  */
-export type ExtractGetters<Store> = Store extends StoreDefinition<
-  string,
-  any,
-  infer G,
-  any
->
-  ? G
-  : never;
+export type ExtractGetters<Store> =
+  Store extends StoreDefinition<string, any, infer G, any> ? G : never;
 
 /**
  * Extrahiert den Actions-Typ aus einer Store-Definition
  */
-export type ExtractActions<Store> = Store extends StoreDefinition<
-  string,
-  any,
-  any,
-  infer A
->
-  ? A
-  : never;
+export type ExtractActions<Store> =
+  Store extends StoreDefinition<string, any, any, infer A> ? A : never;
 
 /**
  * Extrahiert den kompletten Store-Rückgabetyp
  */
-export type ExtractStoreReturn<Store> = Store extends (...args: any[]) => infer R
+export type ExtractStoreReturn<Store> = Store extends (
+  ...args: any[]
+) => infer R
   ? R
   : never;
 
@@ -73,7 +63,8 @@ export interface StoreActions extends _ActionsTree {}
 /**
  * OptimizedStoreState - Basistyp für optimierte Store-Zustände mit Readonly-Eigenschaften
  */
-export type OptimizedStoreState<S extends StoreState = StoreState> = Immutable<S>;
+export type OptimizedStoreState<S extends StoreState = StoreState> =
+  Immutable<S>;
 
 /**
  * StoreInstance - Basistyp für Store-Instanzen, der State, Getters und Actions kombiniert
@@ -81,7 +72,7 @@ export type OptimizedStoreState<S extends StoreState = StoreState> = Immutable<S
 export type StoreInstance<
   S extends StoreState = StoreState,
   G = StoreGetters,
-  A = StoreActions
+  A = StoreActions,
 > = S & G & A & PiniaCustomStateProperties<S>;
 
 /**
@@ -90,7 +81,7 @@ export type StoreInstance<
 export type OptimizedStoreInstance<
   S extends StoreState = StoreState,
   G = StoreGetters,
-  A = StoreActions
+  A = StoreActions,
 > = OptimizedStoreState<S> & G & A & PiniaCustomStateProperties<S>;
 
 /**
@@ -101,7 +92,7 @@ export interface MutationOptions {
    * Löst Store-Abonnements auch aus, wenn der Wert unverändert bleibt
    */
   forceNotify?: boolean;
-  
+
   /**
    * Wenn true, werden optimierte Stores den State direkt mutieren, anstatt immutable zu arbeiten
    */
@@ -113,7 +104,7 @@ export interface MutationOptions {
  */
 export type StorePatchFunction<S extends StoreState = StoreState> = (
   stateOrMutator: DeepPartial<S> | ((state: S) => void),
-  options?: MutationOptions
+  options?: MutationOptions,
 ) => void;
 
 /**
@@ -123,7 +114,7 @@ export interface StoreActionContext<
   Id extends string,
   S extends StoreState,
   G = StoreGetters,
-  A = StoreActions
+  A = StoreActions,
 > {
   store: StoreInstance<S, G, A>;
   pinia: any;
@@ -136,11 +127,11 @@ export interface StoreActionContext<
  */
 export type SubscriptionCallback<S = StoreState> = (
   mutation: {
-    type: 'direct' | 'patch object' | 'patch function';
+    type: "direct" | "patch object" | "patch function";
     storeId: string;
     events: SubscriptionEvent<S>[];
   },
-  state: S
+  state: S,
 ) => void;
 
 /**
@@ -165,7 +156,7 @@ export interface StoreLifecycleHooks<S = StoreState> {
    * Hook, der vor der Store-Initialisierung ausgeführt wird
    */
   beforeCreate?: () => void;
-  
+
   /**
    * Hook, der nach der Store-Initialisierung ausgeführt wird
    */
@@ -180,17 +171,17 @@ export interface StoreOptimizationOptions {
    * Getter-Cache aktivieren
    */
   enableGetterCache?: boolean;
-  
+
   /**
    * Immutable State aktivieren
    */
   enableImmutableState?: boolean;
-  
+
   /**
    * Debounce-Zeit für gebündelte State-Updates (in ms)
    */
   batchUpdateDebounce?: number;
-  
+
   /**
    * Abonnements in einen Mikro-Task umhüllen
    */
@@ -211,15 +202,15 @@ export interface TypedDefineStore {
       state: () => S;
       getters?: G;
       actions?: A;
-    }
+    },
   ): StoreDefinition<Id, S, G, A>;
-  
+
   /**
    * Definiert einen Store mit Composition API (Setup-Funktion)
    */
   <Id extends string, SS>(
     id: Id,
-    setup: () => SS
+    setup: () => SS,
   ): StoreDefinition<Id, any, any, any>;
 }
 
@@ -230,15 +221,17 @@ export interface TypedDefineStore {
 /**
  * Erstellt eine Kopie eines Store-Zustands ohne Pinia-Metadaten
  */
-export function extractPureState<S extends StoreState>(store: StoreInstance<S>): S {
+export function extractPureState<S extends StoreState>(
+  store: StoreInstance<S>,
+): S {
   const result: Record<string, any> = {};
-  
+
   for (const key in store.$state) {
     if (Object.prototype.hasOwnProperty.call(store.$state, key)) {
       result[key] = store.$state[key];
     }
   }
-  
+
   return result as S;
 }
 
@@ -252,21 +245,28 @@ export function deepCopyState<S extends StoreState>(state: S): S {
 /**
  * Vergleicht zwei Store-Zustände oberflächlich
  */
-export function shallowCompareStates<S extends StoreState>(stateA: S, stateB: S): boolean {
+export function shallowCompareStates<S extends StoreState>(
+  stateA: S,
+  stateB: S,
+): boolean {
   const keysA = Object.keys(stateA);
   const keysB = Object.keys(stateB);
-  
+
   if (keysA.length !== keysB.length) {
     return false;
   }
-  
-  return keysA.every(key => stateA[key as keyof S] === stateB[key as keyof S]);
+
+  return keysA.every(
+    (key) => stateA[key as keyof S] === stateB[key as keyof S],
+  );
 }
 
 /**
  * Erstellt eine Readonly-Version eines Store-Zustands
  */
-export function createReadonlyState<S extends StoreState>(state: S): DeepReadonly<S> {
+export function createReadonlyState<S extends StoreState>(
+  state: S,
+): DeepReadonly<S> {
   // Implementierung basiert auf den DeepReadonly-Typ
   return state as DeepReadonly<S>;
 }
@@ -276,17 +276,17 @@ export function createReadonlyState<S extends StoreState>(state: S): DeepReadonl
  */
 export function createMemoizedGetter<T, Args extends any[] = any[]>(
   fn: (...args: Args) => T,
-  keyFn: (...args: Args) => string = (...args) => JSON.stringify(args)
+  keyFn: (...args: Args) => string = (...args) => JSON.stringify(args),
 ): (...args: Args) => T {
   const cache = new Map<string, T>();
-  
+
   return (...args: Args): T => {
     const key = keyFn(...args);
-    
+
     if (cache.has(key)) {
       return cache.get(key)!;
     }
-    
+
     const result = fn(...args);
     cache.set(key, result);
     return result;

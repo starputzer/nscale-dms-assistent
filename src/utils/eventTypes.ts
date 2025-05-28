@@ -1,11 +1,11 @@
 /**
  * Event-bezogene Utility-Typen
- * 
+ *
  * Diese Datei enthält spezifische Utility-Typen für das Event-System der Anwendung,
  * einschließlich Event-Typdefinitionen, Listener und Bus-Interfaces.
  */
 
-import { TypedEventEmitter } from './types';
+import { TypedEventEmitter } from "./types";
 
 /**
  * EventPayload - Basis-Interface für Event-Daten
@@ -21,59 +21,59 @@ export interface EventPayload {
  */
 export interface EventMap {
   // Basis-System-Events
-  'system:initialized': EventPayload;
-  'system:error': ErrorEvent;
-  'system:warning': WarningEvent;
-  'system:info': InfoEvent;
-  
+  "system:initialized": EventPayload;
+  "system:error": ErrorEvent;
+  "system:warning": WarningEvent;
+  "system:info": InfoEvent;
+
   // Authentifizierungsevents
-  'auth:login': AuthEvent;
-  'auth:logout': EventPayload;
-  'auth:sessionExpired': EventPayload;
-  
+  "auth:login": AuthEvent;
+  "auth:logout": EventPayload;
+  "auth:sessionExpired": EventPayload;
+
   // Session-bezogene Events
-  'session:created': SessionEvent;
-  'session:selected': SessionEvent;
-  'session:updated': SessionUpdateEvent;
-  'session:archived': SessionEvent;
-  'session:deleted': SessionEvent;
-  
+  "session:created": SessionEvent;
+  "session:selected": SessionEvent;
+  "session:updated": SessionUpdateEvent;
+  "session:archived": SessionEvent;
+  "session:deleted": SessionEvent;
+
   // Nachrichten-Events
-  'message:sent': MessageEvent;
-  'message:received': MessageEvent;
-  'message:updated': MessageUpdateEvent;
-  'message:deleted': MessageDeleteEvent;
-  'message:streaming': StreamingEvent;
-  
+  "message:sent": MessageEvent;
+  "message:received": MessageEvent;
+  "message:updated": MessageUpdateEvent;
+  "message:deleted": MessageDeleteEvent;
+  "message:streaming": StreamingEvent;
+
   // UI-Events
-  'ui:themeChanged': ThemeEvent;
-  'ui:layoutChanged': LayoutEvent;
-  'ui:viewportChanged': ViewportEvent;
-  'ui:dialogOpened': DialogEvent;
-  'ui:dialogClosed': DialogEvent;
-  'ui:notification': NotificationEvent;
-  
+  "ui:themeChanged": ThemeEvent;
+  "ui:layoutChanged": LayoutEvent;
+  "ui:viewportChanged": ViewportEvent;
+  "ui:dialogOpened": DialogEvent;
+  "ui:dialogClosed": DialogEvent;
+  "ui:notification": NotificationEvent;
+
   // Dokumentenkonverter-Events
-  'document:uploading': DocumentEvent;
-  'document:uploaded': DocumentEvent;
-  'document:processing': DocumentProcessingEvent;
-  'document:processed': DocumentEvent;
-  'document:error': DocumentErrorEvent;
-  
+  "document:uploading": DocumentEvent;
+  "document:uploaded": DocumentEvent;
+  "document:processing": DocumentProcessingEvent;
+  "document:processed": DocumentEvent;
+  "document:error": DocumentErrorEvent;
+
   // Netzwerk-Events
-  'network:online': EventPayload;
-  'network:offline': EventPayload;
-  'network:slow': NetworkPerformanceEvent;
-  
+  "network:online": EventPayload;
+  "network:offline": EventPayload;
+  "network:slow": NetworkPerformanceEvent;
+
   // Leistungs-Events
-  'performance:measure': PerformanceEvent;
-  'performance:slowOperation': PerformanceEvent;
-  
+  "performance:measure": PerformanceEvent;
+  "performance:slowOperation": PerformanceEvent;
+
   // Telemetrie- und Analyse-Events
-  'telemetry:event': TelemetryEvent;
-  'analytics:pageView': AnalyticsEvent;
-  'analytics:action': AnalyticsActionEvent;
-  
+  "telemetry:event": TelemetryEvent;
+  "analytics:pageView": AnalyticsEvent;
+  "analytics:action": AnalyticsActionEvent;
+
   // Erweiterbar für benutzerdefinierte Events
   [key: `custom:${string}`]: EventPayload;
 }
@@ -158,7 +158,7 @@ export interface MessageEvent extends EventPayload {
   messageId: string;
   sessionId: string;
   content: string;
-  role: 'user' | 'assistant' | 'system';
+  role: "user" | "assistant" | "system";
   metadata?: Record<string, any>;
 }
 
@@ -196,7 +196,7 @@ export interface StreamingEvent extends EventPayload {
  * Theme-Event-Payload
  */
 export interface ThemeEvent extends EventPayload {
-  theme: 'light' | 'dark' | 'system' | string;
+  theme: "light" | "dark" | "system" | string;
   previous?: string;
 }
 
@@ -204,7 +204,7 @@ export interface ThemeEvent extends EventPayload {
  * Layout-Event-Payload
  */
 export interface LayoutEvent extends EventPayload {
-  layout: 'default' | 'compact' | 'expanded' | string;
+  layout: "default" | "compact" | "expanded" | string;
   previous?: string;
 }
 
@@ -224,7 +224,7 @@ export interface ViewportEvent extends EventPayload {
  */
 export interface DialogEvent extends EventPayload {
   dialogId: string;
-  type: 'modal' | 'notification' | 'confirm' | 'prompt';
+  type: "modal" | "notification" | "confirm" | "prompt";
   title?: string;
   message?: string;
   data?: any;
@@ -235,7 +235,7 @@ export interface DialogEvent extends EventPayload {
  */
 export interface NotificationEvent extends EventPayload {
   id: string;
-  type: 'info' | 'success' | 'warning' | 'error';
+  type: "info" | "success" | "warning" | "error";
   title?: string;
   message: string;
   duration?: number;
@@ -263,7 +263,7 @@ export interface DocumentEvent extends EventPayload {
  */
 export interface DocumentProcessingEvent extends DocumentEvent {
   progress: number;
-  stage: 'upload' | 'scan' | 'convert' | 'process' | 'complete';
+  stage: "upload" | "scan" | "convert" | "process" | "complete";
   estimatedTimeRemaining?: number;
 }
 
@@ -272,7 +272,7 @@ export interface DocumentProcessingEvent extends DocumentEvent {
  */
 export interface DocumentErrorEvent extends DocumentEvent {
   error: ErrorEvent;
-  stage: 'upload' | 'scan' | 'convert' | 'process';
+  stage: "upload" | "scan" | "convert" | "process";
 }
 
 /**
@@ -301,7 +301,7 @@ export interface PerformanceEvent extends EventPayload {
  */
 export interface TelemetryEvent extends EventPayload {
   eventName: string;
-  category: 'error' | 'performance' | 'usage' | 'business' | string;
+  category: "error" | "performance" | "usage" | "business" | string;
   data: Record<string, any>;
   sessionId?: string;
   userId?: string;
@@ -337,7 +337,9 @@ export interface AnalyticsActionEvent extends EventPayload {
 /**
  * EventHandler - Typ für Event-Handler-Funktionen
  */
-export type EventHandler<T extends keyof EventMap> = (data: EventMap[T]) => void;
+export type EventHandler<T extends keyof EventMap> = (
+  data: EventMap[T],
+) => void;
 
 /**
  * GenericEventHandler - Typ für Event-Handler ohne bekannten Event-Typ
@@ -357,27 +359,27 @@ export interface EventEmitterOptions {
    * Fehler in Event-Handlern abfangen und protokollieren
    */
   catchErrors?: boolean;
-  
+
   /**
    * Event-Protokollierung aktivieren
    */
   enableLogging?: boolean;
-  
+
   /**
    * Maximale Anzahl von Listenern pro Event
    */
   maxListeners?: number;
-  
+
   /**
    * Ereignisse asynchron in einem Mikrotask ausführen
    */
   asyncEvents?: boolean;
-  
+
   /**
    * Ereignisse in einem Batching-Modus ausführen
    */
   batchEvents?: boolean;
-  
+
   /**
    * Verzögerung für Event-Batching in ms
    */
@@ -394,63 +396,69 @@ export interface IEventBus {
    * @param handler Event-Handler-Funktion
    * @returns Unsubscribe-Funktion
    */
-  on<T extends keyof EventMap>(eventName: T, handler: EventHandler<T>): EventUnsubscribe;
-  
+  on<T extends keyof EventMap>(
+    eventName: T,
+    handler: EventHandler<T>,
+  ): EventUnsubscribe;
+
   /**
    * Registriert einen Handler für alle Events
    * @param handler Event-Handler-Funktion
    * @returns Unsubscribe-Funktion
    */
   onAny(handler: GenericEventHandler): EventUnsubscribe;
-  
+
   /**
    * Registriert einen einmaligen Handler für ein Event
    * @param eventName Name des Events
    * @param handler Event-Handler-Funktion
    * @returns Unsubscribe-Funktion
    */
-  once<T extends keyof EventMap>(eventName: T, handler: EventHandler<T>): EventUnsubscribe;
-  
+  once<T extends keyof EventMap>(
+    eventName: T,
+    handler: EventHandler<T>,
+  ): EventUnsubscribe;
+
   /**
    * Entfernt einen Handler für ein Event
    * @param eventName Name des Events
    * @param handler Event-Handler-Funktion
    */
   off<T extends keyof EventMap>(eventName: T, handler: EventHandler<T>): void;
-  
+
   /**
    * Entfernt alle Handler für ein Event
    * @param eventName Name des Events
    */
   offAll<T extends keyof EventMap>(eventName: T): void;
-  
+
   /**
    * Löst ein Event aus
    * @param eventName Name des Events
    * @param data Event-Daten
    */
   emit<T extends keyof EventMap>(eventName: T, data: EventMap[T]): void;
-  
+
   /**
    * Prüft, ob ein Event aktive Listener hat
    * @param eventName Name des Events
    * @returns true, wenn aktive Listener vorhanden sind
    */
   hasListeners<T extends keyof EventMap>(eventName: T): boolean;
-  
+
   /**
    * Gibt die Anzahl der Listener für ein Event zurück
    * @param eventName Name des Events
    * @returns Anzahl der Listener
    */
   listenerCount<T extends keyof EventMap>(eventName: T): number;
-  
+
   /**
    * Gibt alle Event-Namen mit aktiven Listenern zurück
    * @returns Array von Event-Namen
    */
   eventNames(): Array<keyof EventMap>;
-  
+
   /**
    * Entfernt alle Event-Listener
    */
@@ -461,7 +469,7 @@ export interface IEventBus {
  * Basis-Implementierung einer Event-Emitter-Factory
  */
 export function createTypedEventEmitter<T extends keyof EventMap>(
-  eventName: T
+  eventName: T,
 ): TypedEventEmitter<EventMap[T]> {
   return new TypedEventEmitter<EventMap[T]>();
 }
@@ -471,18 +479,18 @@ export function createTypedEventEmitter<T extends keyof EventMap>(
  */
 export function isValidEventPayload<T extends keyof EventMap>(
   eventName: T,
-  payload: any
+  payload: any,
 ): payload is EventMap[T] {
-  if (!payload || typeof payload !== 'object') {
+  if (!payload || typeof payload !== "object") {
     return false;
   }
-  
+
   // Minimale Validierung für alle Event-Typen
-  if ('timestamp' in payload && typeof payload.timestamp !== 'number') {
+  if ("timestamp" in payload && typeof payload.timestamp !== "number") {
     return false;
   }
-  
+
   // Spezifische Validierung je nach Event-Typ könnte hier hinzugefügt werden
-  
+
   return true;
 }

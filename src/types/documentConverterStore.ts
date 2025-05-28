@@ -2,13 +2,13 @@
  * Typdefinitionen für den Document Converter Store
  */
 
-import type { IBaseStore } from './stores';
-import type { 
-  ConversionResult, 
-  ConversionSettings, 
+import type { IBaseStore } from "./stores";
+import type {
+  ConversionResult,
+  ConversionSettings,
   DocumentMetadata,
-  SupportedFormat
-} from './documentConverter';
+  SupportedFormat,
+} from "./documentConverter";
 
 /**
  * Interface für den DocumentConverter-Store
@@ -53,8 +53,12 @@ export interface IDocumentConverterStore extends IBaseStore {
   uploadDocument(file: File): Promise<string | null>;
   convertDocument(
     documentId: string,
-    progressCallback?: (progress: number, step: string, timeRemaining: number | null) => void,
-    settings?: Partial<ConversionSettings>
+    progressCallback?: (
+      progress: number,
+      step: string,
+      timeRemaining: number | null,
+    ) => void,
+    settings?: Partial<ConversionSettings>,
   ): Promise<boolean>;
   deleteDocument(documentId: string): Promise<boolean>;
   cancelConversion(documentId: string): Promise<void>;

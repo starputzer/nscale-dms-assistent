@@ -11,21 +11,19 @@
  * robuster Fehlerbehandlung, Self-Healing-Mechanismen und benutzerfreundlichen Meldungen.
  */
 
-
 // Monitoring für Legacy-Code-Nutzung
 function trackLegacyUsage(componentName, action) {
-  if (typeof window.telemetry !== 'undefined') {
-    window.telemetry.trackEvent('legacy_code_usage', {
+  if (typeof window.telemetry !== "undefined") {
+    window.telemetry.trackEvent("legacy_code_usage", {
       component: componentName,
       action: action,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 }
 
 // Tracking bei Modulinitialisierung
-trackLegacyUsage('enhanced-chat', 'initialize');
-
+trackLegacyUsage("enhanced-chat", "initialize");
 
 import apiClient from "./api-client.js";
 import errorHandler, { ErrorCategory, ErrorSeverity } from "./error-handler.js";

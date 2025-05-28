@@ -1,88 +1,92 @@
 <template>
   <div class="settings-dialog" v-if="isVisible">
     <div class="settings-dialog-backdrop" @click="closeDialog"></div>
-    
+
     <div class="settings-dialog-container">
       <div class="settings-dialog-header">
         <h2 class="settings-dialog-title">{{ title }}</h2>
-        <button class="settings-dialog-close" @click="closeDialog" aria-label="Schließen">
+        <button
+          class="settings-dialog-close"
+          @click="closeDialog"
+          aria-label="Schließen"
+        >
           <span class="icon">×</span>
         </button>
       </div>
-      
+
       <div class="settings-dialog-content">
         <div class="settings-tabs">
-          <button 
-            v-for="tab in tabs" 
-            :key="tab.id" 
+          <button
+            v-for="tab in tabs"
+            :key="tab.id"
             :class="['settings-tab', { active: activeTab === tab.id }]"
             @click="setActiveTab(tab.id)"
           >
             {{ tab.label }}
           </button>
         </div>
-        
+
         <div class="settings-panel">
           <!-- Erscheinungsbild-Einstellungen -->
           <div v-if="activeTab === 'appearance'" class="settings-section">
             <h3 class="settings-section-title">Erscheinungsbild</h3>
-            
+
             <div class="settings-form-group">
               <label class="settings-label">Theme</label>
               <div class="settings-option-group">
                 <label class="settings-radio">
-                  <input 
-                    type="radio" 
-                    name="theme" 
-                    value="light" 
-                    v-model="settings.theme" 
+                  <input
+                    type="radio"
+                    name="theme"
+                    value="light"
+                    v-model="settings.theme"
                     @change="updateSettings"
                   />
                   <span class="settings-radio-label">Hell</span>
                 </label>
-                
+
                 <label class="settings-radio">
-                  <input 
-                    type="radio" 
-                    name="theme" 
-                    value="dark" 
-                    v-model="settings.theme" 
+                  <input
+                    type="radio"
+                    name="theme"
+                    value="dark"
+                    v-model="settings.theme"
                     @change="updateSettings"
                   />
                   <span class="settings-radio-label">Dunkel</span>
                 </label>
-                
+
                 <label class="settings-radio">
-                  <input 
-                    type="radio" 
-                    name="theme" 
-                    value="system" 
-                    v-model="settings.theme" 
+                  <input
+                    type="radio"
+                    name="theme"
+                    value="system"
+                    v-model="settings.theme"
                     @change="updateSettings"
                   />
                   <span class="settings-radio-label">Systemeinstellung</span>
                 </label>
               </div>
             </div>
-            
+
             <div class="settings-form-group">
               <label class="settings-label">Schriftgröße</label>
               <div class="font-size-slider">
-                <input 
-                  type="range" 
-                  min="80" 
-                  max="120" 
-                  step="5" 
+                <input
+                  type="range"
+                  min="80"
+                  max="120"
+                  step="5"
                   v-model.number="settings.fontSize"
                   @change="updateSettings"
                 />
                 <span class="font-size-value">{{ settings.fontSize }}%</span>
               </div>
             </div>
-            
+
             <div class="settings-form-group">
               <label class="settings-label">Zeilenabstand</label>
-              <select 
+              <select
                 v-model="settings.lineHeight"
                 @change="updateSettings"
                 class="settings-select"
@@ -94,17 +98,19 @@
               </select>
             </div>
           </div>
-          
+
           <!-- Benachrichtigungen-Einstellungen -->
           <div v-if="activeTab === 'notifications'" class="settings-section">
             <h3 class="settings-section-title">Benachrichtigungen</h3>
-            
+
             <div class="settings-form-group">
               <label class="settings-toggle">
-                <span class="settings-toggle-label">Desktop-Benachrichtigungen</span>
+                <span class="settings-toggle-label"
+                  >Desktop-Benachrichtigungen</span
+                >
                 <div class="toggle-control">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     v-model="settings.notifications.desktop"
                     @change="updateSettings"
                   />
@@ -112,16 +118,19 @@
                 </div>
               </label>
               <p class="settings-description">
-                Erhalten Sie Benachrichtigungen, wenn neue Antworten verfügbar sind
+                Erhalten Sie Benachrichtigungen, wenn neue Antworten verfügbar
+                sind
               </p>
             </div>
-            
+
             <div class="settings-form-group">
               <label class="settings-toggle">
-                <span class="settings-toggle-label">Sound-Benachrichtigungen</span>
+                <span class="settings-toggle-label"
+                  >Sound-Benachrichtigungen</span
+                >
                 <div class="toggle-control">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     v-model="settings.notifications.sound"
                     @change="updateSettings"
                   />
@@ -132,10 +141,10 @@
                 Spielen Sie einen Ton ab, wenn neue Antworten verfügbar sind
               </p>
             </div>
-            
+
             <div class="settings-form-group">
               <label class="settings-label">Benachrichtigungston</label>
-              <select 
+              <select
                 v-model="settings.notifications.soundType"
                 @change="updateSettings"
                 class="settings-select"
@@ -146,26 +155,26 @@
                 <option value="bell">Bell</option>
                 <option value="notification">Notification</option>
               </select>
-              <button 
-                class="settings-btn-small" 
-                @click="playSound" 
+              <button
+                class="settings-btn-small"
+                @click="playSound"
                 :disabled="!settings.notifications.sound"
               >
                 Test
               </button>
             </div>
           </div>
-          
+
           <!-- Datenschutz-Einstellungen -->
           <div v-if="activeTab === 'privacy'" class="settings-section">
             <h3 class="settings-section-title">Datenschutz</h3>
-            
+
             <div class="settings-form-group">
               <label class="settings-toggle">
                 <span class="settings-toggle-label">Verlauf speichern</span>
                 <div class="toggle-control">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     v-model="settings.privacy.saveHistory"
                     @change="updateSettings"
                   />
@@ -173,16 +182,19 @@
                 </div>
               </label>
               <p class="settings-description">
-                Wenn aktiviert, werden Ihre Konversationen für zukünftige Sitzungen gespeichert
+                Wenn aktiviert, werden Ihre Konversationen für zukünftige
+                Sitzungen gespeichert
               </p>
             </div>
-            
+
             <div class="settings-form-group">
               <label class="settings-toggle">
-                <span class="settings-toggle-label">Lokale Datenspeicherung</span>
+                <span class="settings-toggle-label"
+                  >Lokale Datenspeicherung</span
+                >
                 <div class="toggle-control">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     v-model="settings.privacy.localStorageEnabled"
                     @change="updateSettings"
                   />
@@ -190,16 +202,19 @@
                 </div>
               </label>
               <p class="settings-description">
-                Wenn deaktiviert, werden keine Daten lokal im Browser gespeichert
+                Wenn deaktiviert, werden keine Daten lokal im Browser
+                gespeichert
               </p>
             </div>
-            
+
             <div class="settings-form-group">
               <label class="settings-toggle">
-                <span class="settings-toggle-label">Telemetrie-Daten senden</span>
+                <span class="settings-toggle-label"
+                  >Telemetrie-Daten senden</span
+                >
                 <div class="toggle-control">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     v-model="settings.privacy.sendTelemetry"
                     @change="updateSettings"
                   />
@@ -207,45 +222,53 @@
                 </div>
               </label>
               <p class="settings-description">
-                Anonymisierte Nutzungsdaten senden, um den DMS Assistant zu verbessern
+                Anonymisierte Nutzungsdaten senden, um den DMS Assistant zu
+                verbessern
               </p>
             </div>
-            
+
             <div class="danger-zone">
               <h4>Gefahrenzone</h4>
               <button class="settings-btn-danger" @click="confirmClearData">
                 Alle lokalen Daten löschen
               </button>
               <p class="settings-description">
-                Löscht alle lokal gespeicherten Konversationen und Einstellungen. Diese Aktion kann nicht rückgängig gemacht werden.
+                Löscht alle lokal gespeicherten Konversationen und
+                Einstellungen. Diese Aktion kann nicht rückgängig gemacht
+                werden.
               </p>
             </div>
           </div>
-          
+
           <!-- Über-Abschnitt -->
           <div v-if="activeTab === 'about'" class="settings-section">
             <h3 class="settings-section-title">Über</h3>
-            
+
             <div class="about-info">
-              <img src="/assets/images/senmvku-logo.png" alt="nscale Logo" class="about-logo">
+              <img
+                src="/assets/images/senmvku-logo.png"
+                alt="nscale Logo"
+                class="about-logo"
+              />
               <h2>nscale DMS Assistant</h2>
               <p class="about-version">Version {{ version }}</p>
               <p class="about-build">Build {{ buildDate }}</p>
-              
+
               <div class="about-links">
                 <a href="#" @click.prevent="openDocumentation">Dokumentation</a>
                 <a href="#" @click.prevent="openHelp">Hilfe</a>
                 <a href="#" @click.prevent="openPrivacyPolicy">Datenschutz</a>
               </div>
-              
+
               <p class="about-copyright">
-                © {{ currentYear }} OPTIMAL SYSTEMS GmbH. Alle Rechte vorbehalten.
+                © {{ currentYear }} OPTIMAL SYSTEMS GmbH. Alle Rechte
+                vorbehalten.
               </p>
             </div>
           </div>
         </div>
       </div>
-      
+
       <div class="settings-dialog-footer">
         <button class="settings-btn-secondary" @click="closeDialog">
           Schließen
@@ -255,19 +278,23 @@
         </button>
       </div>
     </div>
-    
+
     <!-- Bestätigungsdialog für das Löschen aller Daten -->
     <div class="confirm-dialog" v-if="showConfirmDialog">
       <div class="confirm-dialog-backdrop" @click="cancelClearData"></div>
       <div class="confirm-dialog-container">
         <h3>Alle Daten löschen?</h3>
         <p>
-          Sind Sie sicher, dass Sie alle lokal gespeicherten Daten löschen möchten? 
-          Diese Aktion kann nicht rückgängig gemacht werden.
+          Sind Sie sicher, dass Sie alle lokal gespeicherten Daten löschen
+          möchten? Diese Aktion kann nicht rückgängig gemacht werden.
         </p>
         <div class="confirm-dialog-actions">
-          <button class="settings-btn-secondary" @click="cancelClearData">Abbrechen</button>
-          <button class="settings-btn-danger" @click="clearAllData">Alle Daten löschen</button>
+          <button class="settings-btn-secondary" @click="cancelClearData">
+            Abbrechen
+          </button>
+          <button class="settings-btn-danger" @click="clearAllData">
+            Alle Daten löschen
+          </button>
         </div>
       </div>
     </div>
@@ -275,166 +302,172 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
-import { useSettings } from '@/composables/useSettings'
-import { useLocalStorage } from '@/composables/useLocalStorage'
+import { ref, computed, watch, onMounted } from "vue";
+import { useSettings } from "@/composables/useSettings";
+import { useLocalStorage } from "@/composables/useLocalStorage";
 
 // Props
 const props = defineProps({
   isVisible: {
     type: Boolean,
-    default: false
-  }
-})
+    default: false,
+  },
+});
 
 // Emits
-const emit = defineEmits(['close', 'update'])
+const emit = defineEmits(["close", "update"]);
 
 // Hooks
-const { getSettings, saveSettings: saveSettingsToStore } = useSettings()
-const { removeItem, clear } = useLocalStorage()
+const { getSettings, saveSettings: saveSettingsToStore } = useSettings();
+const { removeItem, clear } = useLocalStorage();
 
 // State
-const title = ref('Einstellungen')
-const activeTab = ref('appearance')
+const title = ref("Einstellungen");
+const activeTab = ref("appearance");
 const settings = ref({
-  theme: 'system',
+  theme: "system",
   fontSize: 100,
-  lineHeight: '1.5',
+  lineHeight: "1.5",
   notifications: {
     desktop: true,
     sound: true,
-    soundType: 'notification'
+    soundType: "notification",
   },
   privacy: {
     saveHistory: true,
     localStorageEnabled: true,
-    sendTelemetry: true
-  }
-})
+    sendTelemetry: true,
+  },
+});
 const tabs = [
-  { id: 'appearance', label: 'Erscheinungsbild' },
-  { id: 'notifications', label: 'Benachrichtigungen' },
-  { id: 'privacy', label: 'Datenschutz' },
-  { id: 'about', label: 'Über' }
-]
-const showConfirmDialog = ref(false)
-const version = ref('1.0.0')
-const buildDate = ref('20250511')
-const currentYear = computed(() => new Date().getFullYear())
+  { id: "appearance", label: "Erscheinungsbild" },
+  { id: "notifications", label: "Benachrichtigungen" },
+  { id: "privacy", label: "Datenschutz" },
+  { id: "about", label: "Über" },
+];
+const showConfirmDialog = ref(false);
+const version = ref("1.0.0");
+const buildDate = ref("20250511");
+const currentYear = computed(() => new Date().getFullYear());
 
 // Methoden
 const closeDialog = () => {
-  emit('close')
-}
+  emit("close");
+};
 
 const setActiveTab = (tabId) => {
-  activeTab.value = tabId
-}
+  activeTab.value = tabId;
+};
 
 const updateSettings = () => {
-  applySettings(settings.value)
-}
+  applySettings(settings.value);
+};
 
 const saveSettings = () => {
-  saveSettingsToStore(settings.value)
-  emit('update', settings.value)
-  closeDialog()
-}
+  saveSettingsToStore(settings.value);
+  emit("update", settings.value);
+  closeDialog();
+};
 
 const applySettings = (newSettings) => {
   // Theme anwenden
-  const theme = newSettings.theme === 'system'
-    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-    : newSettings.theme
-  
-  document.documentElement.classList.remove('theme-light', 'theme-dark')
-  document.documentElement.classList.add(`theme-${theme}`)
-  
+  const theme =
+    newSettings.theme === "system"
+      ? window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light"
+      : newSettings.theme;
+
+  document.documentElement.classList.remove("theme-light", "theme-dark");
+  document.documentElement.classList.add(`theme-${theme}`);
+
   // Schriftgröße anwenden
-  document.documentElement.style.fontSize = `${newSettings.fontSize}%`
-  
+  document.documentElement.style.fontSize = `${newSettings.fontSize}%`;
+
   // Zeilenabstand anwenden
-  document.body.style.lineHeight = newSettings.lineHeight
-}
+  document.body.style.lineHeight = newSettings.lineHeight;
+};
 
 const playSound = () => {
-  const soundType = settings.value.notifications.soundType
-  const audio = new Audio(`/assets/sounds/${soundType}.mp3`)
-  audio.play().catch(error => {
-    console.error('Fehler beim Abspielen des Sounds:', error)
-  })
-}
+  const soundType = settings.value.notifications.soundType;
+  const audio = new Audio(`/assets/sounds/${soundType}.mp3`);
+  audio.play().catch((error) => {
+    console.error("Fehler beim Abspielen des Sounds:", error);
+  });
+};
 
 const confirmClearData = () => {
-  showConfirmDialog.value = true
-}
+  showConfirmDialog.value = true;
+};
 
 const cancelClearData = () => {
-  showConfirmDialog.value = false
-}
+  showConfirmDialog.value = false;
+};
 
 const clearAllData = () => {
   // Lokalen Speicher leeren
-  clear()
-  
+  clear();
+
   // Einstellungen zurücksetzen
   settings.value = {
-    theme: 'system',
+    theme: "system",
     fontSize: 100,
-    lineHeight: '1.5',
+    lineHeight: "1.5",
     notifications: {
       desktop: true,
       sound: true,
-      soundType: 'notification'
+      soundType: "notification",
     },
     privacy: {
       saveHistory: true,
       localStorageEnabled: true,
-      sendTelemetry: true
-    }
-  }
-  
+      sendTelemetry: true,
+    },
+  };
+
   // Einstellungen anwenden
-  applySettings(settings.value)
-  
+  applySettings(settings.value);
+
   // Dialog schließen
-  showConfirmDialog.value = false
-  
+  showConfirmDialog.value = false;
+
   // Benachrichtigung anzeigen (in einer realen Anwendung)
-  alert('Alle lokalen Daten wurden gelöscht.')
-}
+  alert("Alle lokalen Daten wurden gelöscht.");
+};
 
 const openDocumentation = () => {
-  window.open('/documentation', '_blank')
-}
+  window.open("/documentation", "_blank");
+};
 
 const openHelp = () => {
-  window.open('/help', '_blank')
-}
+  window.open("/help", "_blank");
+};
 
 const openPrivacyPolicy = () => {
-  window.open('/privacy', '_blank')
-}
+  window.open("/privacy", "_blank");
+};
 
 // Beim Öffnen die aktuellen Einstellungen laden
-watch(() => props.isVisible, (newValue) => {
-  if (newValue) {
-    settings.value = { ...getSettings() }
-  }
-})
+watch(
+  () => props.isVisible,
+  (newValue) => {
+    if (newValue) {
+      settings.value = { ...getSettings() };
+    }
+  },
+);
 
 onMounted(() => {
   // Version und Build-Informationen aus Konfiguration laden
   if (window.APP_CONFIG) {
     if (window.APP_CONFIG.buildVersion) {
-      version.value = window.APP_CONFIG.buildVersion
+      version.value = window.APP_CONFIG.buildVersion;
     }
     if (window.APP_CONFIG.buildTimestamp) {
-      buildDate.value = window.APP_CONFIG.buildTimestamp
+      buildDate.value = window.APP_CONFIG.buildTimestamp;
     }
   }
-})
+});
 </script>
 
 <style scoped>
@@ -562,7 +595,7 @@ onMounted(() => {
 }
 
 .settings-tab.active::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 0;
@@ -661,7 +694,7 @@ onMounted(() => {
   right: 0;
   bottom: 0;
   background-color: #ccc;
-  transition: .3s;
+  transition: 0.3s;
   border-radius: 24px;
 }
 
@@ -673,7 +706,7 @@ onMounted(() => {
   left: 3px;
   bottom: 3px;
   background-color: white;
-  transition: .3s;
+  transition: 0.3s;
   border-radius: 50%;
 }
 
@@ -898,19 +931,19 @@ input:checked + .toggle-switch:before {
   .settings-dialog-content {
     flex-direction: column;
   }
-  
+
   .settings-tabs {
     width: 100%;
     flex-direction: row;
     overflow-x: auto;
     padding: 0;
   }
-  
+
   .settings-tab {
     padding: 12px 15px;
     white-space: nowrap;
   }
-  
+
   .settings-tab.active::before {
     left: 0;
     right: 0;
@@ -919,16 +952,16 @@ input:checked + .toggle-switch:before {
     width: auto;
     height: 3px;
   }
-  
+
   .settings-option-group {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .settings-dialog-footer {
     flex-direction: column-reverse;
   }
-  
+
   .settings-btn-primary,
   .settings-btn-secondary {
     width: 100%;

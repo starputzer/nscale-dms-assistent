@@ -1,14 +1,14 @@
 /**
  * Composable für Route-Fallback-System
- * 
+ *
  * Behandelt fehlgeschlagene Navigationen und stellt
  * automatische Wiederherstellung bei 404-Fehlern bereit.
  */
 
-import { ref, watch, onMounted } from 'vue';
-import { useRouter, useRoute, RouteLocationNormalized } from 'vue-router';
-import { useLogger } from '@/composables/useLogger';
-import { domErrorDetector } from '@/utils/domErrorDiagnostics';
+import { ref, watch, onMounted } from "vue";
+import { useRouter, useRoute, RouteLocationNormalized } from "vue-router";
+import { useLogger } from "@/composables/useLogger";
+import { domErrorDetector } from "@/utils/domErrorDiagnostics";
 
 export interface RouteFallbackOptions {
   enabled?: boolean;
@@ -24,9 +24,9 @@ export function useRouteFallback(options: RouteFallbackOptions = {}) {
     enabled = true,
     maxRetries = 3,
     retryDelay = 1000,
-    fallbackPath = '/',
+    fallbackPath = "/",
     preserveQueryParams = true,
-    autoRecovery = true
+    autoRecovery = true,
   } = options;
 
   const router = useRouter();
@@ -43,14 +43,17 @@ export function useRouteFallback(options: RouteFallbackOptions = {}) {
    * Speichert eine funktionierende Route
    */
   const saveWorkingRoute = (route: RouteLocationNormalized) => {
-    if (route.path !== '/error' && !route.path.includes('404')) {
+    if (route.path !== "/error" && !route.path.includes("404")) {
       lastWorkingRoute.value = route;
-      localStorage.setItem('lastWorkingRoute', JSON.stringify({
-        path: route.path,
-        query: route.query,
-        params: route.params,
-        name: route.name
-      }));
+      localStorage.setItem(
+        "lastWorkingRoute",
+        JSON.stringify({
+          path: route.path,
+          query: route.query,
+          params: route.params,
+          name: route.name,
+        }),
+      );
     }
   };
 
@@ -59,12 +62,12 @@ export function useRouteFallback(options: RouteFallbackOptions = {}) {
    */
   const loadLastWorkingRoute = (): RouteLocationNormalized | null => {
     try {
-      const stored = localStorage.getItem('lastWorkingRoute');
+      const stored = localStorage.getItem("lastWorkingRoute");
       if (stored) {
         return JSON.parse(stored);
       }
     } catch (error) {
-      logger.error('Fehler beim Laden der letzten Route:', error);
+      logger.error("Fehler beim Laden der letzten Route:", error);
     }
     return null;
   };
@@ -72,7 +75,7 @@ export function useRouteFallback(options: RouteFallbackOptions = {}) {
   /**
    * Navigiert zur Fallback-Route
    */
-  const navigateToFallback = async (reason: string = 'unknown') => {
+  const navigateToFallback = async (reason: string = "unknown") => {
     if (!enabled || isRecovering.value) return;
 
     isRecovering.value = true;
@@ -81,25 +84,27 @@ export function useRouteFallback(options: RouteFallbackOptions = {}) {
     try {
       // Versuche zuerst die letzte funktionierende Route
       const lastWorking = lastWorkingRoute.value || loadLastWorkingRoute();
-      
+
       if (lastWorking && lastWorking.path !== route.path) {
         try {
           await router.push({
             path: lastWorking.path,
-            query: preserveQueryParams ? lastWorking.query : undefined
+            query: preserveQueryParams ? lastWorking.query : undefined,
           });
-          logger.info('Erfolgreich zur letzten funktionierenden Route navigiert');
+          logger.info(
+            "Erfolgreich zur letzten funktionierenden Route navigiert",
+          );
           return;
         } catch (error) {
-          logger.warn('Fehler bei Navigation zur letzten Route:', error);
+          logger.warn("Fehler bei Navigation zur letzten Route:", error);
         }
       }
 
       // Fallback zur Standard-Route
       await router.push(fallbackPath);
-      logger.info('Erfolgreich zur Fallback-Route navigiert');
+      logger.info("Erfolgreich zur Fallback-Route navigiert");
     } catch (error) {
-      logger.error('Kritischer Fehler bei Fallback-Navigation:', error);
+      logger.error("Kritischer Fehler bei Fallback-Navigation:", error);
       // Als letzter Ausweg: Hard Reload
       window.location.href = fallbackPath;
     } finally {
@@ -116,32 +121,37 @@ export function useRouteFallback(options: RouteFallbackOptions = {}) {
 
     if (retryCount >= maxRetries) {
       logger.warn(`Maximale Wiederholungsversuche für ${currentPath} erreicht`);
-      await navigateToFallback('max_retries_exceeded');
+      await navigateToFallback("max_retries_exceeded");
       return;
     }
 
     failedNavigations.value.set(currentPath, retryCount + 1);
 
     if (autoRecovery) {
-      logger.info(`Automatische Wiederherstellung für ${currentPath} (Versuch ${retryCount + 1})`);
-      
-      setTimeout(async () => {
-        try {
-          // Prüfe DOM-Status
-          const diagnostics = domErrorDetector.detectErrorState();
-          
-          if (diagnostics.has404Page) {
-            // Wenn immer noch 404, zur Fallback-Route
-            await navigateToFallback('persistent_404');
-          } else {
-            // Fehler scheint behoben, Route neu laden
-            await router.replace(route.fullPath);
+      logger.info(
+        `Automatische Wiederherstellung für ${currentPath} (Versuch ${retryCount + 1})`,
+      );
+
+      setTimeout(
+        async () => {
+          try {
+            // Prüfe DOM-Status
+            const diagnostics = domErrorDetector.detectErrorState();
+
+            if (diagnostics.has404Page) {
+              // Wenn immer noch 404, zur Fallback-Route
+              await navigateToFallback("persistent_404");
+            } else {
+              // Fehler scheint behoben, Route neu laden
+              await router.replace(route.fullPath);
+            }
+          } catch (error) {
+            logger.error("Fehler bei automatischer Wiederherstellung:", error);
+            await navigateToFallback("recovery_failed");
           }
-        } catch (error) {
-          logger.error('Fehler bei automatischer Wiederherstellung:', error);
-          await navigateToFallback('recovery_failed');
-        }
-      }, retryDelay * (retryCount + 1));
+        },
+        retryDelay * (retryCount + 1),
+      );
     }
   };
 
@@ -149,24 +159,27 @@ export function useRouteFallback(options: RouteFallbackOptions = {}) {
    * Überwacht Route-Änderungen
    */
   const setupRouteWatcher = () => {
-    watch(() => route.path, async (newPath, oldPath) => {
-      // Speichere Navigation in History
-      navigationHistory.value.push(newPath);
-      if (navigationHistory.value.length > 10) {
-        navigationHistory.value.shift();
-      }
+    watch(
+      () => route.path,
+      async (newPath, oldPath) => {
+        // Speichere Navigation in History
+        navigationHistory.value.push(newPath);
+        if (navigationHistory.value.length > 10) {
+          navigationHistory.value.shift();
+        }
 
-      // Prüfe auf 404 oder Fehlerseiten
-      if (route.name === 'NotFound' || newPath.includes('404')) {
-        await handle404Error();
-      } else {
-        // Erfolgreiche Navigation - speichere als funktionierende Route
-        saveWorkingRoute(route);
-        
-        // Entferne aus Failed-Liste
-        failedNavigations.value.delete(newPath);
-      }
-    });
+        // Prüfe auf 404 oder Fehlerseiten
+        if (route.name === "NotFound" || newPath.includes("404")) {
+          await handle404Error();
+        } else {
+          // Erfolgreiche Navigation - speichere als funktionierende Route
+          saveWorkingRoute(route);
+
+          // Entferne aus Failed-Liste
+          failedNavigations.value.delete(newPath);
+        }
+      },
+    );
   };
 
   /**
@@ -175,14 +188,16 @@ export function useRouteFallback(options: RouteFallbackOptions = {}) {
   const installNavigationGuards = () => {
     router.beforeEach((to, from, next) => {
       // Skip für Fehler- und Recovery-Routen
-      if (to.path === '/error' || isRecovering.value) {
+      if (to.path === "/error" || isRecovering.value) {
         return next();
       }
 
       // Prüfe auf bekannte fehlerhafte Routen
       const failCount = failedNavigations.value.get(to.path) || 0;
       if (failCount >= maxRetries) {
-        logger.warn(`Route ${to.path} hat maximale Fehleranzahl erreicht, leite um`);
+        logger.warn(
+          `Route ${to.path} hat maximale Fehleranzahl erreicht, leite um`,
+        );
         return next(fallbackPath);
       }
 
@@ -191,11 +206,13 @@ export function useRouteFallback(options: RouteFallbackOptions = {}) {
 
     router.afterEach((to, from, failure) => {
       if (failure) {
-        logger.error('Navigation fehlgeschlagen:', failure);
-        
+        logger.error("Navigation fehlgeschlagen:", failure);
+
         // Bei bestimmten Fehlertypen sofort Fallback
-        if (failure.type === 4 /* NAVIGATION_ABORTED */ || 
-            failure.type === 16 /* NAVIGATION_DUPLICATED */) {
+        if (
+          failure.type === 4 /* NAVIGATION_ABORTED */ ||
+          failure.type === 16 /* NAVIGATION_DUPLICATED */
+        ) {
           return;
         }
 
@@ -205,7 +222,7 @@ export function useRouteFallback(options: RouteFallbackOptions = {}) {
 
         // Fallback nach Verzögerung
         setTimeout(() => {
-          navigateToFallback('navigation_failure');
+          navigateToFallback("navigation_failure");
         }, retryDelay);
       }
     });
@@ -224,16 +241,16 @@ export function useRouteFallback(options: RouteFallbackOptions = {}) {
    * Manueller Wiederherstellungsversuch
    */
   const attemptManualRecovery = async () => {
-    logger.info('Manueller Wiederherstellungsversuch gestartet');
-    
+    logger.info("Manueller Wiederherstellungsversuch gestartet");
+
     // Cache leeren
-    if ('caches' in window) {
+    if ("caches" in window) {
       try {
         const cacheNames = await caches.keys();
-        await Promise.all(cacheNames.map(name => caches.delete(name)));
-        logger.info('Browser-Cache geleert');
+        await Promise.all(cacheNames.map((name) => caches.delete(name)));
+        logger.info("Browser-Cache geleert");
       } catch (error) {
-        logger.error('Fehler beim Cache-Leeren:', error);
+        logger.error("Fehler beim Cache-Leeren:", error);
       }
     }
 
@@ -241,7 +258,7 @@ export function useRouteFallback(options: RouteFallbackOptions = {}) {
     reset();
 
     // Zur Startseite navigieren
-    await navigateToFallback('manual_recovery');
+    await navigateToFallback("manual_recovery");
   };
 
   // Lifecycle
@@ -249,9 +266,9 @@ export function useRouteFallback(options: RouteFallbackOptions = {}) {
     if (enabled) {
       setupRouteWatcher();
       installNavigationGuards();
-      
+
       // Initiale Route speichern
-      if (route.path !== '/error' && !route.path.includes('404')) {
+      if (route.path !== "/error" && !route.path.includes("404")) {
         saveWorkingRoute(route);
       }
     }
@@ -265,6 +282,6 @@ export function useRouteFallback(options: RouteFallbackOptions = {}) {
     navigateToFallback,
     handle404Error,
     reset,
-    attemptManualRecovery
+    attemptManualRecovery,
   };
 }

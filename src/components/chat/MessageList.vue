@@ -737,7 +737,7 @@ function observeItemSizes() {
 }
 
 // Logo-Handling
-const logoSrc = ref('/assets/images/senmvku-logo.png');
+const logoSrc = ref("/assets/images/senmvku-logo.png");
 
 function checkIfImageExists(url: string): boolean {
   try {
@@ -745,60 +745,64 @@ function checkIfImageExists(url: string): boolean {
     // Diese Funktion ist nicht perfekt, aber ein guter Fallback
     return true;
   } catch (error) {
-    console.error('[MessageList] Error checking if image exists:', error);
+    console.error("[MessageList] Error checking if image exists:", error);
     return false;
   }
 }
 
 function handleImageError(event: Event) {
   const img = event.target as HTMLImageElement;
-  
+
   // Wenn bereits alle Versuche durchgeführt wurden, beenden
   if (img.dataset.failedPaths) {
     const failedPaths = JSON.parse(img.dataset.failedPaths) as string[];
     if (failedPaths.length >= 4) {
-      console.error('[MessageList] All image paths failed, giving up');
+      console.error("[MessageList] All image paths failed, giving up");
       // Entferne den error handler um weitere Fehler zu vermeiden
       img.onerror = null;
       return;
     }
   }
-  
-  console.warn('[MessageList] Image failed to load, trying fallback paths');
-  
+
+  console.warn("[MessageList] Image failed to load, trying fallback paths");
+
   // Fallback-Pfade in der Reihenfolge der Wahrscheinlichkeit
   const fallbackPaths = [
-    '/assets/images/senmvku-logo.png',
-    './assets/images/senmvku-logo.png',
-    '/frontend/assets/images/senmvku-logo.png',
-    'https://via.placeholder.com/150x150?text=nscale+DMS+Assistant'
+    "/assets/images/senmvku-logo.png",
+    "./assets/images/senmvku-logo.png",
+    "/frontend/assets/images/senmvku-logo.png",
+    "https://via.placeholder.com/150x150?text=nscale+DMS+Assistant",
   ];
-  
+
   // Verfolge bereits versuchte Pfade
-  const failedPaths = img.dataset.failedPaths ? JSON.parse(img.dataset.failedPaths) : [];
+  const failedPaths = img.dataset.failedPaths
+    ? JSON.parse(img.dataset.failedPaths)
+    : [];
   const currentPath = img.src;
-  
+
   // Füge den aktuellen Pfad zu den fehlgeschlagenen hinzu
   if (!failedPaths.includes(currentPath)) {
     failedPaths.push(currentPath);
   }
-  
+
   // Finde den nächsten noch nicht versuchten Pfad
-  const nextPath = fallbackPaths.find(path => {
+  const nextPath = fallbackPaths.find((path) => {
     const absolutePath = new URL(path, window.location.origin).href;
-    return !failedPaths.some(failed => failed.includes(path) || failed === absolutePath);
+    return !failedPaths.some(
+      (failed) => failed.includes(path) || failed === absolutePath,
+    );
   });
-  
+
   if (nextPath) {
     console.log(`[MessageList] Trying fallback image path: ${nextPath}`);
     img.dataset.failedPaths = JSON.stringify(failedPaths);
     img.src = nextPath;
   } else {
-    console.error('[MessageList] All image paths failed');
+    console.error("[MessageList] All image paths failed");
     // Entferne den error handler um weitere Fehler zu vermeiden
     img.onerror = null;
     // Verstecke das Bild
-    img.style.display = 'none';
+    img.style.display = "none";
   }
 }
 

@@ -1,6 +1,6 @@
 /**
  * Form Validation Utilities
- * 
+ *
  * This module provides validation functions for forms that are used in both
  * Vue 3 SFC and Vanilla JS implementations.
  */
@@ -22,43 +22,46 @@ export function validateEmail(email: string): boolean {
  * @returns {boolean} True if the password is valid
  */
 export function validatePassword(
-  password: string, 
-  options: { 
-    minLength?: number, 
-    requireUppercase?: boolean,
-    requireLowercase?: boolean,
-    requireNumbers?: boolean,
-    requireSpecial?: boolean
-  } = {}
+  password: string,
+  options: {
+    minLength?: number;
+    requireUppercase?: boolean;
+    requireLowercase?: boolean;
+    requireNumbers?: boolean;
+    requireSpecial?: boolean;
+  } = {},
 ): boolean {
   const {
     minLength = 8,
     requireUppercase = true,
     requireLowercase = true,
     requireNumbers = true,
-    requireSpecial = false
+    requireSpecial = false,
   } = options;
-  
+
   if (password.length < minLength) {
     return false;
   }
-  
+
   if (requireUppercase && !/[A-Z]/.test(password)) {
     return false;
   }
-  
+
   if (requireLowercase && !/[a-z]/.test(password)) {
     return false;
   }
-  
+
   if (requireNumbers && !/[0-9]/.test(password)) {
     return false;
   }
-  
-  if (requireSpecial && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+
+  if (
+    requireSpecial &&
+    !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+  ) {
     return false;
   }
-  
+
   return true;
 }
 
@@ -71,15 +74,15 @@ export function validateRequired(value: any): boolean {
   if (value === null || value === undefined) {
     return false;
   }
-  
-  if (typeof value === 'string') {
+
+  if (typeof value === "string") {
     return value.trim().length > 0;
   }
-  
+
   if (Array.isArray(value)) {
     return value.length > 0;
   }
-  
+
   return true;
 }
 
@@ -104,7 +107,7 @@ export const FormValidation = {
   validateEmail,
   validatePassword,
   validateRequired,
-  validateUrl
+  validateUrl,
 };
 
 export default FormValidation;

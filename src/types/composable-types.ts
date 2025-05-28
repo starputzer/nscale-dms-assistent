@@ -1,13 +1,19 @@
 /**
  * Typdefinitionen für Vue 3 Composables
- * 
+ *
  * Diese Datei enthält Typen, die für die Verwendung von Vue Composition API-Funktionen
  * (Composables) spezifisch sind und stellt sicher, dass diese korrekt typisiert sind.
  */
 
-import type { Ref, ComputedRef, WatchSource, WatchOptions, WatchStopHandle } from 'vue';
-import type { InjectionKey } from 'vue';
-import type { RouteLocationNormalizedLoaded } from 'vue-router';
+import type {
+  Ref,
+  ComputedRef,
+  WatchSource,
+  WatchOptions,
+  WatchStopHandle,
+} from "vue";
+import type { InjectionKey } from "vue";
+import type { RouteLocationNormalizedLoaded } from "vue-router";
 
 /**
  * Reaktive Zustandstypen
@@ -17,7 +23,7 @@ export type MaybeComputed<T> = T | ComputedRef<T>;
 export type MaybeReactive<T> = T | MaybeRef<T> | MaybeComputed<T>;
 
 /**
- * Typ für kompositionsfähige Funktionen 
+ * Typ für kompositionsfähige Funktionen
  */
 export type Composable<ReturnType> = (...args: any[]) => ReturnType;
 
@@ -53,30 +59,30 @@ export type LifecycleHook = () => void | (() => void);
  */
 export interface EnhancedWatchOptions<T = any> extends WatchOptions {
   /**
-   * Eine Funktion, die ausgeführt wird, bevor der Watch-Callback ausgeführt wird 
+   * Eine Funktion, die ausgeführt wird, bevor der Watch-Callback ausgeführt wird
    */
   before?: (newValue: T, oldValue: T) => void;
-  
+
   /**
    * Eine Funktion, die ausgeführt wird, nachdem der Watch-Callback ausgeführt wurde
    */
   after?: (newValue: T, oldValue: T) => void;
-  
+
   /**
    * Ob versucht werden soll, den Watch-Callback sofort nach dem Setup auszuführen
    */
   immediate?: boolean;
-  
+
   /**
    * Ob auf Änderungen in verschachtelten Objekten überwacht werden soll
    */
   deep?: boolean;
-  
+
   /**
    * Wann der Callback ausgeführt werden soll
    */
-  flush?: 'pre' | 'post' | 'sync';
-  
+  flush?: "pre" | "post" | "sync";
+
   /**
    * Fehlerbehandlung für den Watch
    */
@@ -87,8 +93,24 @@ export interface EnhancedWatchOptions<T = any> extends WatchOptions {
  * Erweiterte Watch-Funktion mit Typsicherheit
  */
 export interface EnhancedWatch {
-  <T>(source: WatchSource<T>, callback: (value: T, oldValue: T, onCleanup: (cleanupFn: () => void) => void) => void, options?: EnhancedWatchOptions<T>): WatchStopHandle;
-  <T>(source: WatchSource<T>[], callback: (values: T[], oldValues: T[], onCleanup: (cleanupFn: () => void) => void) => void, options?: EnhancedWatchOptions<T[]>): WatchStopHandle;
+  <T>(
+    source: WatchSource<T>,
+    callback: (
+      value: T,
+      oldValue: T,
+      onCleanup: (cleanupFn: () => void) => void,
+    ) => void,
+    options?: EnhancedWatchOptions<T>,
+  ): WatchStopHandle;
+  <T>(
+    source: WatchSource<T>[],
+    callback: (
+      values: T[],
+      oldValues: T[],
+      onCleanup: (cleanupFn: () => void) => void,
+    ) => void,
+    options?: EnhancedWatchOptions<T[]>,
+  ): WatchStopHandle;
 }
 
 /**
@@ -104,7 +126,9 @@ export interface UseErrorHandling extends ComposableReturn {
   setError(error: Error | string): void;
   clearError(): void;
   handleError<T>(promise: Promise<T>): Promise<T>;
-  withErrorHandling<T extends (...args: any[]) => any>(fn: T): (...args: Parameters<T>) => ReturnType<T>;
+  withErrorHandling<T extends (...args: any[]) => any>(
+    fn: T,
+  ): (...args: Parameters<T>) => ReturnType<T>;
 }
 
 /**
@@ -132,7 +156,8 @@ export interface UseLocalStorage<T> extends ComposableReturn {
 /**
  * Formularkomposable
  */
-export interface UseForm<T extends Record<string, any>> extends ComposableReturn {
+export interface UseForm<T extends Record<string, any>>
+  extends ComposableReturn {
   values: Ref<T>;
   errors: Ref<Record<keyof T, string | null>>;
   touched: Ref<Record<keyof T, boolean>>;
@@ -141,7 +166,9 @@ export interface UseForm<T extends Record<string, any>> extends ComposableReturn
   isSubmitting: Ref<boolean>;
   resetForm(): void;
   setValues(newValues: Partial<T>): void;
-  handleSubmit(onSubmit: (values: T) => void | Promise<void>): (e?: Event) => Promise<void>;
+  handleSubmit(
+    onSubmit: (values: T) => void | Promise<void>,
+  ): (e?: Event) => Promise<void>;
   setFieldValue<K extends keyof T>(field: K, value: T[K]): void;
   setFieldError<K extends keyof T>(field: K, error: string | null): void;
   touchField<K extends keyof T>(field: K): void;
@@ -170,7 +197,11 @@ export interface UseRouterUtils extends ComposableReturn {
   isExactRoute(name: string): boolean;
   getParam(name: string): string | null;
   getQuery(name: string): string | null;
-  goTo(name: string, params?: Record<string, string>, query?: Record<string, string>): void;
+  goTo(
+    name: string,
+    params?: Record<string, string>,
+    query?: Record<string, string>,
+  ): void;
   goBack(): void;
   refresh(): void;
 }
@@ -178,7 +209,8 @@ export interface UseRouterUtils extends ComposableReturn {
 /**
  * Element-Größekomposable
  */
-export interface UseElementSize<T extends HTMLElement = HTMLElement> extends ComposableReturn {
+export interface UseElementSize<T extends HTMLElement = HTMLElement>
+  extends ComposableReturn {
   element: Ref<T | null>;
   width: Ref<number>;
   height: Ref<number>;
@@ -200,13 +232,14 @@ export interface UseWindowSize extends ComposableReturn {
   isMobile: ComputedRef<boolean>;
   isTablet: ComputedRef<boolean>;
   isDesktop: ComputedRef<boolean>;
-  breakpoint: ComputedRef<'xs' | 'sm' | 'md' | 'lg' | 'xl'>;
+  breakpoint: ComputedRef<"xs" | "sm" | "md" | "lg" | "xl">;
 }
 
 /**
  * Click-Outside-Composable
  */
-export interface UseClickOutside<T extends HTMLElement = HTMLElement> extends ComposableReturn {
+export interface UseClickOutside<T extends HTMLElement = HTMLElement>
+  extends ComposableReturn {
   element: Ref<T | null>;
   isOutside: Ref<boolean>;
   onClickOutside(callback: (event: MouseEvent) => void): void;
@@ -216,14 +249,22 @@ export interface UseClickOutside<T extends HTMLElement = HTMLElement> extends Co
  * Toast-Notification-Composable
  */
 export interface UseToast extends ComposableReturn {
-  toasts: Ref<Array<{
-    id: string;
-    type: 'success' | 'info' | 'warning' | 'error';
-    message: string;
-    duration: number;
-    timestamp: number;
-  }>>;
-  showToast(message: string, options?: { type?: 'success' | 'info' | 'warning' | 'error'; duration?: number }): string;
+  toasts: Ref<
+    Array<{
+      id: string;
+      type: "success" | "info" | "warning" | "error";
+      message: string;
+      duration: number;
+      timestamp: number;
+    }>
+  >;
+  showToast(
+    message: string,
+    options?: {
+      type?: "success" | "info" | "warning" | "error";
+      duration?: number;
+    },
+  ): string;
   showSuccess(message: string, duration?: number): string;
   showError(message: string, duration?: number): string;
   showWarning(message: string, duration?: number): string;
@@ -240,9 +281,23 @@ export interface UseDialog extends ComposableReturn {
   open(): void;
   close(): void;
   toggle(): void;
-  confirm(message: string, options?: { title?: string; confirmText?: string; cancelText?: string }): Promise<boolean>;
-  prompt(message: string, options?: { title?: string; defaultValue?: string; confirmText?: string; cancelText?: string }): Promise<string | null>;
-  alert(message: string, options?: { title?: string; confirmText?: string }): Promise<void>;
+  confirm(
+    message: string,
+    options?: { title?: string; confirmText?: string; cancelText?: string },
+  ): Promise<boolean>;
+  prompt(
+    message: string,
+    options?: {
+      title?: string;
+      defaultValue?: string;
+      confirmText?: string;
+      cancelText?: string;
+    },
+  ): Promise<string | null>;
+  alert(
+    message: string,
+    options?: { title?: string; confirmText?: string },
+  ): Promise<void>;
 }
 
 /**
@@ -283,7 +338,8 @@ export interface UseClipboard extends ComposableReturn {
 /**
  * useFocusTrap-Composable
  */
-export interface UseFocusTrap<T extends HTMLElement = HTMLElement> extends ComposableReturn {
+export interface UseFocusTrap<T extends HTMLElement = HTMLElement>
+  extends ComposableReturn {
   element: Ref<T | null>;
   activate(): void;
   deactivate(): void;
@@ -292,8 +348,9 @@ export interface UseFocusTrap<T extends HTMLElement = HTMLElement> extends Compo
 }
 
 // Gängige Typen für Provide/Inject
-export const ToastInjectionKey: InjectionKey<UseToast> = Symbol('toast');
-export const DialogInjectionKey: InjectionKey<UseDialog> = Symbol('dialog');
-export const ThemeInjectionKey: InjectionKey<UseTheme> = Symbol('theme');
-export const LoadingInjectionKey: InjectionKey<UseLoading> = Symbol('loading');
-export const ErrorHandlingInjectionKey: InjectionKey<UseErrorHandling> = Symbol('error-handling');
+export const ToastInjectionKey: InjectionKey<UseToast> = Symbol("toast");
+export const DialogInjectionKey: InjectionKey<UseDialog> = Symbol("dialog");
+export const ThemeInjectionKey: InjectionKey<UseTheme> = Symbol("theme");
+export const LoadingInjectionKey: InjectionKey<UseLoading> = Symbol("loading");
+export const ErrorHandlingInjectionKey: InjectionKey<UseErrorHandling> =
+  Symbol("error-handling");

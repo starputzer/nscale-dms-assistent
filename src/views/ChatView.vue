@@ -644,7 +644,8 @@ import MessageInput from "@/components/chat/MessageInput.vue";
 import SessionList from "@/components/session/SessionList.vue";
 
 // Diagnostics Setup
-const { captureError, trackDataLoad, trackLifecycle, exportToConsole } = useUIDiagnostics('ChatView');
+const { captureError, trackDataLoad, trackLifecycle, exportToConsole } =
+  useUIDiagnostics("ChatView");
 
 // Router und Stores
 const route = useRoute();
@@ -697,19 +698,29 @@ const userRoleLabel = computed<string>(() => {
 
 // Sessions store state
 const sessions = computed<ChatSession[]>(() => sessionsStore.sessions);
-const currentSessionId = computed<string | null>(() => sessionsStore.currentSessionId);
-const currentSession = computed<ChatSession | null>(() => sessionsStore.currentSession);
-const currentMessages = computed<ChatMessage[]>(() => sessionsStore.allCurrentMessages);
+const currentSessionId = computed<string | null>(
+  () => sessionsStore.currentSessionId,
+);
+const currentSession = computed<ChatSession | null>(
+  () => sessionsStore.currentSession,
+);
+const currentMessages = computed<ChatMessage[]>(
+  () => sessionsStore.allCurrentMessages,
+);
 const isStreaming = computed<boolean>(() => sessionsStore.isStreaming);
 const isLoadingMessages = computed<boolean>(() => sessionsStore.isLoading);
 const isSendingMessage = computed<boolean>(() => isStreaming.value);
 const isLoadingSessions = computed<boolean>(() => sessionsStore.isLoading);
 const availableTags = computed<SessionTag[]>(() => sessionsStore.availableTags);
-const availableCategories = computed<SessionCategory[]>(() => sessionsStore.availableCategories);
+const availableCategories = computed<SessionCategory[]>(
+  () => sessionsStore.availableCategories,
+);
 const isAuthenticated = computed<boolean>(() => authStore.isAuthenticated);
 
 // Sortierte Sessions basierend auf dem Store-Getter
-const sortedSessions = computed<ChatSession[]>(() => sessionsStore.sortedSessions);
+const sortedSessions = computed<ChatSession[]>(
+  () => sessionsStore.sortedSessions,
+);
 
 // Anzahl der Nachrichten in der aktuellen Sitzung
 const currentMessageCount = computed<number>(() => {
@@ -871,7 +882,11 @@ function handleReorderSessions(reorderedSessions: ChatSession[]) {
   console.log("Sessions neu angeordnet:", reorderedSessions);
 }
 
-function handleBulkAction(action: string, sessionIds: string[], data?: any): void {
+function handleBulkAction(
+  action: string,
+  sessionIds: string[],
+  data?: any,
+): void {
   switch (action) {
     case "delete":
       // Bestätigung anfordern
@@ -899,7 +914,8 @@ function handleBulkAction(action: string, sessionIds: string[], data?: any): voi
       break;
 
     case "tag":
-      const tagId: string = data || prompt("Welchen Tag möchten Sie hinzufügen?");
+      const tagId: string =
+        data || prompt("Welchen Tag möchten Sie hinzufügen?");
       if (!tagId) return;
 
       sessionIds.forEach((id: string) => {
@@ -910,13 +926,19 @@ function handleBulkAction(action: string, sessionIds: string[], data?: any): voi
       break;
 
     case "categorize":
-      const categoryId: string = data || prompt("Welche Kategorie möchten Sie setzen?");
+      const categoryId: string =
+        data || prompt("Welche Kategorie möchten Sie setzen?");
       if (!categoryId) return;
 
       sessionIds.forEach((id: string) => {
-        sessionsStore.setCategoryForSession(id, categoryId).catch((error: Error) => {
-          console.error(`Fehler beim Kategorisieren der Session ${id}:`, error);
-        });
+        sessionsStore
+          .setCategoryForSession(id, categoryId)
+          .catch((error: Error) => {
+            console.error(
+              `Fehler beim Kategorisieren der Session ${id}:`,
+              error,
+            );
+          });
       });
       break;
   }
@@ -978,7 +1000,9 @@ function handleViewSources(payload: { messageId: string }): void {
   if (!currentSessionId.value) return;
 
   // Nachricht finden
-  const message = currentMessages.value.find((m: ChatMessage) => m.id === payload.messageId);
+  const message = currentMessages.value.find(
+    (m: ChatMessage) => m.id === payload.messageId,
+  );
   if (!message) return;
 
   // Quellen aus den Metadaten extrahieren
@@ -1152,23 +1176,26 @@ function checkScreenSize(): void {
 // Lifecycle-Hooks
 onMounted(async () => {
   try {
-    trackLifecycle('mounted');
-    
+    trackLifecycle("mounted");
+
     // Event-Listener für Bildschirmgrößenänderungen hinzufügen
     window.addEventListener("resize", checkScreenSize);
-    
+
     // Auth status sync first
     authSyncFixed.checkAuthConsistency();
 
     // Sessions laden mit Fehlerbehandlung
     try {
-      trackDataLoad('sessions-sync', 'start');
+      trackDataLoad("sessions-sync", "start");
       await sessionsStore.synchronizeSessions();
-      trackDataLoad('sessions-sync', 'success');
+      trackDataLoad("sessions-sync", "success");
     } catch (syncError) {
-      console.warn('Session sync failed, continuing without sessions:', syncError);
-      trackDataLoad('sessions-sync', 'error', { error: syncError });
-      captureError(syncError as Error, 'mounted');
+      console.warn(
+        "Session sync failed, continuing without sessions:",
+        syncError,
+      );
+      trackDataLoad("sessions-sync", "error", { error: syncError });
+      captureError(syncError as Error, "mounted");
       // Fahre fort ohne Sessions
     }
 
@@ -1180,8 +1207,8 @@ onMounted(async () => {
       try {
         await sessionsStore.setCurrentSession(sessionIdFromRoute);
       } catch (loadError) {
-        console.warn('Failed to load session from route:', loadError);
-        captureError(loadError as Error, 'mounted');
+        console.warn("Failed to load session from route:", loadError);
+        captureError(loadError as Error, "mounted");
         // Ignorieren und neue Session erstellen
       }
     } else {
@@ -1195,9 +1222,9 @@ onMounted(async () => {
       }
     }
   } catch (error) {
-    console.error('Error in ChatView mounted:', error);
-    captureError(error as Error, 'mounted');
-    uiStore.showError('Fehler beim Laden der Chat-Ansicht');
+    console.error("Error in ChatView mounted:", error);
+    captureError(error as Error, "mounted");
+    uiStore.showError("Fehler beim Laden der Chat-Ansicht");
   }
 });
 
@@ -1213,9 +1240,9 @@ onBeforeUnmount(() => {
 
 // Error Capture Hook
 onErrorCaptured((err, instance, info) => {
-  console.error('Error captured in ChatView:', err);
-  captureError(err, 'render', { instance, info });
-  
+  console.error("Error captured in ChatView:", err);
+  captureError(err, "render", { instance, info });
+
   // Prevent the error from propagating
   return false;
 });
@@ -1229,8 +1256,8 @@ watch(
         // Zur neuen Session wechseln
         await sessionsStore.setCurrentSession(newSessionId as string);
       } catch (error) {
-        console.error('Error switching session:', error);
-        captureError(error as Error, 'render');
+        console.error("Error switching session:", error);
+        captureError(error as Error, "render");
       }
     }
   },
@@ -1243,7 +1270,7 @@ if (import.meta.env.DEV) {
     exportReport: exportToConsole,
     sessionsStore,
     authStore,
-    uiStore
+    uiStore,
   };
 }
 </script>
@@ -1922,7 +1949,7 @@ if (import.meta.env.DEV) {
   .n-chat-mobile-toggle {
     display: flex;
   }
-  
+
   .n-chat-sidebar-toggle {
     display: none;
   }
@@ -2129,15 +2156,18 @@ if (import.meta.env.DEV) {
     border-color: var(--nscale-dark-border-color, #333333);
     color: var(--nscale-dark-text-color, #e2e8f0);
   }
-  
+
   .n-chat-sidebar-toggle {
     background-color: var(--nscale-dark-surface-color, #1e1e1e);
     border-color: var(--nscale-dark-border-color, #333333);
     color: var(--nscale-dark-primary, #00d06a);
   }
-  
+
   .n-chat-sidebar-toggle:hover {
-    background-color: var(--nscale-dark-primary-ultra-light, rgba(0, 165, 80, 0.1));
+    background-color: var(
+      --nscale-dark-primary-ultra-light,
+      rgba(0, 165, 80, 0.1)
+    );
     border-color: var(--nscale-dark-primary, #00d06a);
   }
 }

@@ -7,13 +7,13 @@
  */
 interface ImportMetaEnv {
   /** The mode the app is running in */
-  readonly MODE: 'development' | 'production' | 'test';
+  readonly MODE: "development" | "production" | "test";
   /** The base URL the app is being served from */
   readonly BASE_URL: string;
   /** Application version from package.json */
   readonly VITE_APP_VERSION: string;
   /** Application environment (dev, staging, production) */
-  readonly VITE_APP_ENV: 'development' | 'staging' | 'production';
+  readonly VITE_APP_ENV: "development" | "staging" | "production";
   /** API base URL */
   readonly VITE_API_BASE: string;
   /** Whether to enable debug logging */
@@ -68,7 +68,11 @@ interface Window {
   telemetry: {
     trackEvent: (name: string, props?: Record<string, any>) => void;
     trackError: (error: Error | unknown, props?: Record<string, any>) => void;
-    trackPerformance: (name: string, duration: number, props?: Record<string, any>) => void;
+    trackPerformance: (
+      name: string,
+      duration: number,
+      props?: Record<string, any>,
+    ) => void;
   };
 
   // Source references feature
@@ -84,7 +88,10 @@ interface Window {
   __BRIDGE_INITIALIZED: boolean;
   __BRIDGE_EVENTS: Record<string, any[]>;
   __dispatchBridgeEvent: (eventName: string, data: any) => void;
-  __registerBridgeHandler: (eventName: string, handler: (data: any) => void) => void;
+  __registerBridgeHandler: (
+    eventName: string,
+    handler: (data: any) => void,
+  ) => void;
 
   // Feature flags
   __FEATURE_FLAGS: Record<string, boolean>;
@@ -97,7 +104,7 @@ interface Window {
 interface NodeJS {
   process: {
     env: {
-      NODE_ENV: 'development' | 'production' | 'test';
-    }
-  }
+      NODE_ENV: "development" | "production" | "test";
+    };
+  };
 }

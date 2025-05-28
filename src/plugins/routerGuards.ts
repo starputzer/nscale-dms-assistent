@@ -1,14 +1,18 @@
 /**
  * Router Guards Plugin
- * 
+ *
  * Initialisiert Router Guards für sichere Navigation und 404-Fehlerbehandlung
  */
 
-import { Router, NavigationGuardNext, RouteLocationNormalized } from 'vue-router';
-import { routerService } from '@/services/router/RouterServiceFixed';
-import { useLogger } from '@/composables/useLogger';
-import { useAuthStore } from '@/stores/auth';
-import { useFeatureTogglesStore } from '@/stores/featureToggles';
+import {
+  Router,
+  NavigationGuardNext,
+  RouteLocationNormalized,
+} from "vue-router";
+import { routerService } from "@/services/router/RouterServiceFixed";
+import { useLogger } from "@/composables/useLogger";
+import { useAuthStore } from "@/stores/auth";
+import { useFeatureTogglesStore } from "@/stores/featureToggles";
 
 export interface RouterGuardOptions {
   enableLogging?: boolean;
@@ -20,12 +24,15 @@ export interface RouterGuardOptions {
 /**
  * Installiert Router Guards
  */
-export function installRouterGuards(router: Router, options: RouterGuardOptions = {}) {
+export function installRouterGuards(
+  router: Router,
+  options: RouterGuardOptions = {},
+) {
   const {
     enableLogging = true,
     enableFeatureChecks = true,
     enableAuthChecks = true,
-    problematicRoutes = ['/chat/:id', '/session/:id']
+    problematicRoutes = ["/chat/:id", "/session/:id"],
   } = options;
 
   const logger = useLogger();
@@ -41,25 +48,25 @@ export function installRouterGuards(router: Router, options: RouterGuardOptions 
 
     // Prüfe Router-Initialisierung
     const routerState = routerService.getState();
-    
+
     if (!routerState.isInitialized) {
-      logger.warn('Router noch nicht initialisiert, warte...');
-      
+      logger.warn("Router noch nicht initialisiert, warte...");
+
       // Versuche Router zu initialisieren
       const initialized = await routerService.initialize(router);
-      
+
       if (!initialized) {
-        logger.error('Router-Initialisierung fehlgeschlagen');
-        return next('/error?code=router_init_failed');
+        logger.error("Router-Initialisierung fehlgeschlagen");
+        return next("/error?code=router_init_failed");
       }
     }
 
     // Prüfe auf bereits navigierende Anfragen
     if (routerState.isNavigating && to.path !== from.path) {
-      logger.warn('Navigation bereits im Gange, warte...');
-      
+      logger.warn("Navigation bereits im Gange, warte...");
+
       // Warte kurz und versuche erneut
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     next();
@@ -73,14 +80,14 @@ export function installRouterGuards(router: Router, options: RouterGuardOptions 
     // Spezielle Behandlung für problematische Routen
     if (isProblematicRoute(to.path, problematicRoutes)) {
       logger.info(`Problematische Route erkannt: ${to.path}`);
-      
+
       // Validiere Route-Parameter
-      if (to.path.startsWith('/chat/') || to.path.startsWith('/session/')) {
+      if (to.path.startsWith("/chat/") || to.path.startsWith("/session/")) {
         const id = to.params.id as string;
-        
+
         if (!isValidSessionId(id)) {
           logger.warn(`Ungültige Session-ID: ${id}`);
-          return next('/error?code=invalid_session_id');
+          return next("/error?code=invalid_session_id");
         }
       }
     }
@@ -104,7 +111,7 @@ export function installRouterGuards(router: Router, options: RouterGuardOptions 
 
       if (featureFlag && !featureToggles.isEnabled(featureFlag)) {
         logger.warn(`Feature ${featureFlag} ist deaktiviert`);
-        return next('/');
+        return next("/");
       }
 
       next();
@@ -118,23 +125,23 @@ export function installRouterGuards(router: Router, options: RouterGuardOptions 
   if (enableAuthChecks) {
     router.beforeEach(async (to, from, next) => {
       // Skip für öffentliche Routen
-      if (to.meta.guest || to.path === '/login' || to.path === '/error') {
+      if (to.meta.guest || to.path === "/login" || to.path === "/error") {
         return next();
       }
 
       const authStore = useAuthStore();
 
       if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-        logger.info('Authentifizierung erforderlich');
+        logger.info("Authentifizierung erforderlich");
         return next({
-          path: '/login',
-          query: { redirect: to.fullPath }
+          path: "/login",
+          query: { redirect: to.fullPath },
         });
       }
 
       if (to.meta.adminOnly && !authStore.isAdmin) {
-        logger.warn('Admin-Rechte erforderlich');
-        return next('/error?code=unauthorized');
+        logger.warn("Admin-Rechte erforderlich");
+        return next("/error?code=unauthorized");
       }
 
       next();
@@ -148,31 +155,36 @@ export function installRouterGuards(router: Router, options: RouterGuardOptions 
   router.afterEach((to, from, failure) => {
     if (failure) {
       // Spezielle Behandlung für bestimmte Fehlertypen
-      if (failure.type === 32 /* isNavigationFailure(failure, NavigationFailureType.duplicated) */) {
+      if (
+        failure.type ===
+        32 /* isNavigationFailure(failure, NavigationFailureType.duplicated) */
+      ) {
         // Ignoriere duplizierte Navigationen - das ist kein Fehler
         if (enableLogging) {
-          logger.debug('Duplizierte Navigation ignoriert:', failure.message);
+          logger.debug("Duplizierte Navigation ignoriert:", failure.message);
         }
         return;
       }
 
       // Nur echte Fehler loggen und behandeln
-      logger.error('Navigation fehlgeschlagen', failure);
+      logger.error("Navigation fehlgeschlagen", failure);
 
       // Navigiere zur Fehlerseite
-      router.push({
-        path: '/error',
-        query: {
-          code: 'navigation_failed',
-          from: from.path,
-          to: to.path,
-          message: failure.message
-        }
-      }).catch(err => {
-        logger.error('Fehler beim Navigieren zur Fehlerseite', err);
-        // Als letztes Mittel: Hard Reload
-        window.location.href = '/error';
-      });
+      router
+        .push({
+          path: "/error",
+          query: {
+            code: "navigation_failed",
+            from: from.path,
+            to: to.path,
+            message: failure.message,
+          },
+        })
+        .catch((err) => {
+          logger.error("Fehler beim Navigieren zur Fehlerseite", err);
+          // Als letztes Mittel: Hard Reload
+          window.location.href = "/error";
+        });
     }
   });
 
@@ -186,8 +198,8 @@ export function installRouterGuards(router: Router, options: RouterGuardOptions 
     }
 
     // Speichere erfolgreiche Route
-    if (to.path !== '/error' && !to.path.includes('404')) {
-      localStorage.setItem('lastSuccessfulRoute', to.path);
+    if (to.path !== "/error" && !to.path.includes("404")) {
+      localStorage.setItem("lastSuccessfulRoute", to.path);
     }
   });
 
@@ -196,17 +208,17 @@ export function installRouterGuards(router: Router, options: RouterGuardOptions 
    * Fängt Router-bezogene Fehler ab
    */
   router.onError((error) => {
-    logger.error('Router Error', error);
+    logger.error("Router Error", error);
 
     // Spezielle Behandlung für "Cannot read properties of undefined"
-    if (error.message.includes('Cannot read properties of undefined')) {
-      if (error.message.includes('currentRoute')) {
-        logger.error('currentRoute-Fehler erkannt, Router-Reset...');
-        
+    if (error.message.includes("Cannot read properties of undefined")) {
+      if (error.message.includes("currentRoute")) {
+        logger.error("currentRoute-Fehler erkannt, Router-Reset...");
+
         // Versuche Router-Reset
         setTimeout(() => {
-          router.replace('/').catch(() => {
-            window.location.href = '/';
+          router.replace("/").catch(() => {
+            window.location.href = "/";
           });
         }, 100);
       }
@@ -218,8 +230,8 @@ export function installRouterGuards(router: Router, options: RouterGuardOptions 
  * Prüft ob eine Route als problematisch gilt
  */
 function isProblematicRoute(path: string, patterns: string[]): boolean {
-  return patterns.some(pattern => {
-    const regex = new RegExp(pattern.replace(':id', '[^/]+'));
+  return patterns.some((pattern) => {
+    const regex = new RegExp(pattern.replace(":id", "[^/]+"));
     return regex.test(path);
   });
 }
@@ -228,8 +240,8 @@ function isProblematicRoute(path: string, patterns: string[]): boolean {
  * Prüft ob eine Route kritisch ist (sollte immer erreichbar sein)
  */
 function isCriticalRoute(path: string): boolean {
-  const criticalPaths = ['/', '/login', '/error', '/404'];
-  return criticalPaths.includes(path) || path.startsWith('/error');
+  const criticalPaths = ["/", "/login", "/error", "/404"];
+  return criticalPaths.includes(path) || path.startsWith("/error");
 }
 
 /**
@@ -237,13 +249,14 @@ function isCriticalRoute(path: string): boolean {
  */
 function isValidSessionId(id: string): boolean {
   if (!id) return false;
-  
+
   // UUID v4 Format
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
   // Legacy ID Format (falls verwendet)
   const legacyRegex = /^[a-zA-Z0-9_-]{8,}$/;
-  
+
   return uuidRegex.test(id) || legacyRegex.test(id);
 }
 
@@ -255,9 +268,11 @@ export function isNavigationError(error: any): boolean {
 }
 
 export function isRouterNotReadyError(error: any): boolean {
-  return error && error.message && (
-    error.message.includes('Router not installed') ||
-    error.message.includes('Cannot read properties of undefined') ||
-    error.message.includes('currentRoute')
+  return (
+    error &&
+    error.message &&
+    (error.message.includes("Router not installed") ||
+      error.message.includes("Cannot read properties of undefined") ||
+      error.message.includes("currentRoute"))
   );
 }

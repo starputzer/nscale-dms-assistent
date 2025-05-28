@@ -4,13 +4,54 @@
   >
     <div class="nscale-card max-w-md w-full p-8">
       <div class="nscale-logo text-center mb-6">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="logo-icon mx-auto mb-4">
-          <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
-          <line x1="8" y1="8" x2="16" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <line x1="8" y1="16" x2="11" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <svg
+          width="64"
+          height="64"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          class="logo-icon mx-auto mb-4"
+        >
+          <rect
+            x="3"
+            y="3"
+            width="18"
+            height="18"
+            rx="2"
+            stroke="currentColor"
+            stroke-width="2"
+          />
+          <line
+            x1="8"
+            y1="8"
+            x2="16"
+            y2="8"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+          <line
+            x1="8"
+            y1="12"
+            x2="16"
+            y2="12"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+          <line
+            x1="8"
+            y1="16"
+            x2="11"
+            y2="16"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
         </svg>
-        <h1 class="text-2xl font-bold text-gray-900">Digitale Akte Assistent</h1>
+        <h1 class="text-2xl font-bold text-gray-900">
+          Digitale Akte Assistent
+        </h1>
       </div>
 
       <div class="flex border-b mb-6">
@@ -129,7 +170,7 @@
           <div class="font-bold">Fehler:</div>
           {{ errorMessage }}
         </div>
-        
+
         <!-- Success Message (after successful login) -->
         <div v-if="loginSuccess" class="success-message">
           Login erfolgreich! Sie werden weitergeleitet...
@@ -144,9 +185,10 @@
           "
         >
           <span v-if="isLoading">Wird angemeldet...</span>
-          <span v-else>{{ activeTab === "login" ? "Anmelden" : "Registrieren" }}</span>
+          <span v-else>{{
+            activeTab === "login" ? "Anmelden" : "Registrieren"
+          }}</span>
         </button>
-        
 
         <!-- Password Requirements (Register) -->
         <div v-if="activeTab === 'register'" class="text-sm text-gray-600 mt-4">
@@ -199,21 +241,24 @@ const errorMessage = ref<string | null>(null);
 let logger: any = console;
 onMounted(async () => {
   try {
-    const { LogService } = await import('@/services/log/LogService');
-    logger = new LogService('LoginView');
-    logger.info('LoginView geladen und Logger initialisiert');
+    const { LogService } = await import("@/services/log/LogService");
+    logger = new LogService("LoginView");
+    logger.info("LoginView geladen und Logger initialisiert");
   } catch (err) {
-    console.warn('LogService konnte nicht geladen werden, verwende console', err);
+    console.warn(
+      "LogService konnte nicht geladen werden, verwende console",
+      err,
+    );
   }
 });
 
 // Formular-State
 const activeTab = ref("login");
 const formData = reactive({
-  email: "martin@danglefeet.com",  // Default für Testzwecke
+  email: "martin@danglefeet.com", // Default für Testzwecke
   username: "",
   displayName: "",
-  password: "123",  // Default für Testzwecke
+  password: "123", // Default für Testzwecke
   passwordConfirm: "",
   rememberMe: false,
 });
@@ -286,35 +331,36 @@ async function handleLogin() {
   isLoading.value = true;
   loginSuccess.value = false;
   errorMessage.value = null;
-  
+
   try {
     const success = await authStore.login({
       email: formData.email,
       password: formData.password,
-      remember: formData.rememberMe
+      remember: formData.rememberMe,
     });
-    
-    console.log('Login result:', success);
-    
+
+    console.log("Login result:", success);
+
     if (success) {
       loginSuccess.value = true;
-      console.log('Login successful, redirecting to chat...');
-      
+      console.log("Login successful, redirecting to chat...");
+
       // Direct navigation without timeout
       try {
-        await router.push('/chat');
-        console.log('Navigation to /chat completed');
+        await router.push("/chat");
+        console.log("Navigation to /chat completed");
       } catch (navError) {
-        console.error('Navigation error:', navError);
+        console.error("Navigation error:", navError);
         // Fallback to location.href
-        window.location.href = '/chat';
+        window.location.href = "/chat";
       }
     } else {
-      errorMessage.value = authStore.error || 'Anmeldung fehlgeschlagen';
+      errorMessage.value = authStore.error || "Anmeldung fehlgeschlagen";
     }
   } catch (error: any) {
-    logger.error('Login-Fehler:', error);
-    errorMessage.value = error.message || 'Ein unerwarteter Fehler ist aufgetreten';
+    logger.error("Login-Fehler:", error);
+    errorMessage.value =
+      error.message || "Ein unerwarteter Fehler ist aufgetreten";
   } finally {
     isLoading.value = false;
   }
@@ -323,7 +369,7 @@ async function handleLogin() {
 async function handleRegister() {
   isLoading.value = true;
   errorMessage.value = null;
-  
+
   try {
     // Prüfen, ob Passwörter übereinstimmen
     if (formData.password !== formData.passwordConfirm) {
@@ -335,21 +381,21 @@ async function handleRegister() {
       email: formData.email,
       username: formData.username || formData.email,
       password: formData.password,
-      displayName: formData.displayName
+      displayName: formData.displayName,
     });
 
     if (success) {
       loginSuccess.value = true;
       // Weiterleitung zur Chat-Seite
       setTimeout(() => {
-        router.push('/chat');
+        router.push("/chat");
       }, 1000);
     } else {
-      errorMessage.value = authStore.error || 'Registrierung fehlgeschlagen';
+      errorMessage.value = authStore.error || "Registrierung fehlgeschlagen";
     }
   } catch (error: any) {
-    logger.error('Registrierung fehlgeschlagen:', error);
-    errorMessage.value = error.message || 'Registrierung fehlgeschlagen';
+    logger.error("Registrierung fehlgeschlagen:", error);
+    errorMessage.value = error.message || "Registrierung fehlgeschlagen";
   } finally {
     isLoading.value = false;
   }

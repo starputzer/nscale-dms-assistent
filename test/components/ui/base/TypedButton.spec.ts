@@ -2,14 +2,19 @@ import { describe, it, expect, vi } from "vitest";
 import {
   typedMount,
   createTypedMock,
-  mockStoreAction
+  mockStoreAction,
 } from "../../../utils/typescript-test-utils";
 import TypedButton from "@/components/examples/TypedButton.vue";
-import { BUTTON_VARIANTS, BUTTON_SIZES, ButtonVariant, ButtonSize } from "@/components/examples/TypedButton.vue";
+import {
+  BUTTON_VARIANTS,
+  BUTTON_SIZES,
+  ButtonVariant,
+  ButtonSize,
+} from "@/components/examples/TypedButton.vue";
 
 /**
  * Tests für die TypedButton Komponente
- * 
+ *
  * Dieser Test nutzt die verbesserten TypeScript-Funktionen für bessere Typprüfung und Fehlererkennung.
  */
 describe("TypedButton.vue", () => {
@@ -23,7 +28,7 @@ describe("TypedButton.vue", () => {
     fullWidth: false,
     iconOnly: false,
     iconLeft: null as any,
-    iconRight: null as any
+    iconRight: null as any,
   };
 
   // Typsichere Mount-Funktion mit DefaultProps-Typunterstützung
@@ -105,7 +110,7 @@ describe("TypedButton.vue", () => {
     it("renders left icon when provided", () => {
       // Mock icon component
       const IconComponent = {
-        template: '<div class="test-icon"></div>'
+        template: '<div class="test-icon"></div>',
       };
 
       const wrapper = createWrapper({
@@ -119,7 +124,7 @@ describe("TypedButton.vue", () => {
     it("renders right icon when provided", () => {
       // Mock icon component
       const IconComponent = {
-        template: '<div class="test-icon"></div>'
+        template: '<div class="test-icon"></div>',
       };
 
       const wrapper = createWrapper({
@@ -141,7 +146,7 @@ describe("TypedButton.vue", () => {
       // Typsicher: Wir prüfen auf den exakten Event-Namen
       expect(wrapper.emitted()).toHaveProperty("click");
       expect(wrapper.emitted("click")).toHaveLength(1);
-      
+
       // Prüfen, ob der Event mit dem korrekten Event-Objekt emittiert wurde
       const clickEvent = wrapper.emitted("click")?.[0]?.[0];
       expect(clickEvent).toBeDefined();
@@ -211,7 +216,7 @@ describe("TypedButton.vue", () => {
       const wrapper = typedMount(TypedButton, {
         props: defaultProps,
         slots: {
-          default: '<strong>Bold</strong> and <em>italic</em>',
+          default: "<strong>Bold</strong> and <em>italic</em>",
         },
       });
 
@@ -223,7 +228,7 @@ describe("TypedButton.vue", () => {
 
   // Props Validation
   describe("Props Validation", () => {
-    // TypeScript würde diese Tests unnötig machen, da ungültige Props 
+    // TypeScript würde diese Tests unnötig machen, da ungültige Props
     // bereits zur Kompilierungszeit erkannt werden würden, aber wir können
     // trotzdem die Validierung testen
 
@@ -258,7 +263,7 @@ describe("TypedButton.vue", () => {
 
     it("makes icons have aria-hidden", () => {
       const IconComponent = {
-        template: '<div class="test-icon"></div>'
+        template: '<div class="test-icon"></div>',
       };
 
       const wrapper = createWrapper({
@@ -266,8 +271,12 @@ describe("TypedButton.vue", () => {
         iconRight: IconComponent,
       });
 
-      expect(wrapper.find(".n-button__icon--left").attributes("aria-hidden")).toBe("true");
-      expect(wrapper.find(".n-button__icon--right").attributes("aria-hidden")).toBe("true");
+      expect(
+        wrapper.find(".n-button__icon--left").attributes("aria-hidden"),
+      ).toBe("true");
+      expect(
+        wrapper.find(".n-button__icon--right").attributes("aria-hidden"),
+      ).toBe("true");
     });
   });
 });

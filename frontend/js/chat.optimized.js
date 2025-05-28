@@ -11,21 +11,19 @@
  * verbessertem DOM-Rendering, Datenbatching und Netzwerkoptimierungen.
  */
 
-
 // Monitoring für Legacy-Code-Nutzung
 function trackLegacyUsage(componentName, action) {
-  if (typeof window.telemetry !== 'undefined') {
-    window.telemetry.trackEvent('legacy_code_usage', {
+  if (typeof window.telemetry !== "undefined") {
+    window.telemetry.trackEvent("legacy_code_usage", {
       component: componentName,
       action: action,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 }
 
 // Tracking bei Modulinitialisierung
-trackLegacyUsage('chat.optimized', 'initialize');
-
+trackLegacyUsage("chat.optimized", "initialize");
 
 import { DOMBatch } from "./dom-batch.js";
 import { DataOptimization } from "./data-optimization.js";

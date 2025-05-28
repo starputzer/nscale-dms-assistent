@@ -1,14 +1,14 @@
 /**
  * Typdefinitionen für Tests
- * 
+ *
  * Diese Datei enthält Typen, die speziell für Tests benötigt werden,
  * einschließlich Mock-Daten-Typen und Test-Konfigurationen.
  */
 
-import { User, TokenStatus } from '@/types/auth';
-import { ChatSession, ChatMessage } from '@/types/session';
-import { DocumentState } from '@/types/documentConverter';
-import { Feature } from '@/config/featureFlags';
+import { User, TokenStatus } from "@/types/auth";
+import { ChatSession, ChatMessage } from "@/types/session";
+import { DocumentState } from "@/types/documentConverter";
+import { Feature } from "@/config/featureFlags";
 
 /**
  * Standard-Benutzer für Tests
@@ -35,7 +35,7 @@ export interface TestSession extends ChatSession {
  * Erweiterte Nachricht für Tests
  */
 export interface TestMessage extends ChatMessage {
-  status: 'pending' | 'sent' | 'delivered' | 'error';
+  status: "pending" | "sent" | "delivered" | "error";
   timestamp: string;
 }
 
@@ -110,7 +110,7 @@ export interface ExpectedEmits {
  * Konfiguration für Mock eines HTTP-Aufrufs
  */
 export interface MockHttpConfig {
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
   url: string;
   status: number;
   responseData?: any;
@@ -213,44 +213,46 @@ export type TestMockFunctions = {
 
 // Export von Fabrik-Funktionen für Test-Daten
 export const createDefaultTestUser = (): TestUser => ({
-  id: 'test-user-1',
-  email: 'user@example.com',
-  username: 'testuser',
-  displayName: 'Test User',
+  id: "test-user-1",
+  email: "user@example.com",
+  username: "testuser",
+  displayName: "Test User",
   lastLogin: new Date().toISOString(),
-  roles: ['user'],
-  permissions: ['docs:read', 'docs:write'],
+  roles: ["user"],
+  permissions: ["docs:read", "docs:write"],
   preferences: {
-    theme: 'light',
-    language: 'de'
-  }
+    theme: "light",
+    language: "de",
+  },
 });
 
 export const createDefaultTestSession = (): TestSession => ({
-  id: 'test-session-1',
-  title: 'Test Session',
-  userId: 'test-user-1',
+  id: "test-session-1",
+  title: "Test Session",
+  userId: "test-user-1",
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   messages: [],
-  isPinned: false
+  isPinned: false,
 });
 
-export const createDefaultTestMessage = (role: 'user' | 'assistant' = 'user'): TestMessage => ({
+export const createDefaultTestMessage = (
+  role: "user" | "assistant" = "user",
+): TestMessage => ({
   id: `msg-${Date.now()}`,
-  sessionId: 'test-session-1',
-  content: role === 'user' ? 'Test user message' : 'Test assistant response',
+  sessionId: "test-session-1",
+  content: role === "user" ? "Test user message" : "Test assistant response",
   role,
   timestamp: new Date().toISOString(),
-  status: 'sent'
+  status: "sent",
 });
 
 export const createDefaultTestDocument = (): TestDocument => ({
-  id: 'doc-1',
-  name: 'test-document.pdf',
+  id: "doc-1",
+  name: "test-document.pdf",
   size: 1024,
-  type: 'application/pdf',
-  status: 'converted',
-  userId: 'test-user-1',
-  createdAt: new Date().toISOString()
+  type: "application/pdf",
+  status: "converted",
+  userId: "test-user-1",
+  createdAt: new Date().toISOString(),
 });

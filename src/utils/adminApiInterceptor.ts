@@ -23,7 +23,10 @@ export function setupAdminApiInterceptors(): void {
   const interceptorId = axios.interceptors.request.use(
     (config) => {
       // Check if this is an admin API request (with or without /api prefix)
-      if (config.url?.includes("/admin/") || config.url?.includes("/api/admin/")) {
+      if (
+        config.url?.includes("/admin/") ||
+        config.url?.includes("/api/admin/")
+      ) {
         logger.debug("Admin API request detected:", config.url);
 
         // Check for development mode and mock auth
@@ -82,7 +85,10 @@ export function setupAdminApiInterceptors(): void {
   axios.interceptors.response.use(
     (response) => {
       // Log admin-related responses
-      if (response.config.url?.includes("/admin/") || response.config.url?.includes("/api/admin/")) {
+      if (
+        response.config.url?.includes("/admin/") ||
+        response.config.url?.includes("/api/admin/")
+      ) {
         logger.debug("Admin API response:", {
           url: response.config.url,
           status: response.status,
@@ -93,7 +99,10 @@ export function setupAdminApiInterceptors(): void {
     },
     (error) => {
       // Special handling for admin API errors
-      if (error.config?.url?.includes("/admin/") || error.config?.url?.includes("/api/admin/")) {
+      if (
+        error.config?.url?.includes("/admin/") ||
+        error.config?.url?.includes("/api/admin/")
+      ) {
         const status = error.response?.status;
 
         // Check for auth errors (401/403)

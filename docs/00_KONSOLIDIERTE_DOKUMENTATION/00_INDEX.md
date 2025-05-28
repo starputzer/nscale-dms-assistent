@@ -56,6 +56,7 @@ Die Dokumentation folgt einer klaren hierarchischen Struktur, die alle Aspekte d
 - [09_feedback_komponenten.md](./02_KOMPONENTEN/09_feedback_komponenten.md) - Feedback System
 - [10_composables.md](./02_KOMPONENTEN/10_composables.md) - Vue 3 Composables
 - [11_source_references_fix.md](./02_KOMPONENTEN/11_source_references_fix.md) - Source References Fix
+- [99_admin_interface_komplett.md](./02_KOMPONENTEN/99_ADMIN_INTERFACE_KOMPLETT.md) - Admin-Interface (Vollständig)
 
 ### 03_ARCHITEKTUR - Systemarchitektur
 
@@ -68,6 +69,7 @@ Die Dokumentation folgt einer klaren hierarchischen Struktur, die alle Aspekte d
 - [07_ab_testing_system.md](./03_ARCHITEKTUR/07_AB_TESTING_SYSTEM.md) - A/B Testing
 - [08_asset_pfad_konfiguration.md](./03_ARCHITEKTUR/08_ASSET_PFAD_KONFIGURATION.md) - Asset Management
 - [09_pure_vue_mode.md](./03_ARCHITEKTUR/09_PURE_VUE_MODE.md) - Pure Vue Mode
+- [10_admin_bereich_architektur.md](./03_ARCHITEKTUR/10_ADMIN_BEREICH_ARCHITEKTUR.md) - Admin-Bereich Architektur
 
 ### 04_ENTWICKLUNG - Entwicklungsrichtlinien
 

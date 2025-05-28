@@ -22,15 +22,15 @@ export function createLogger(component: string): BridgeLogger {
   const componentLogger = new EnhancedBridgeLogger();
   return {
     setLevel: (level: LogLevel) => componentLogger.setLevel(level),
-    debug: (message: string, data?: any) => 
+    debug: (message: string, data?: any) =>
       componentLogger.debug(`[${component}] ${message}`, data),
-    info: (message: string, data?: any) => 
+    info: (message: string, data?: any) =>
       componentLogger.info(`[${component}] ${message}`, data),
-    warn: (message: string, data?: any) => 
+    warn: (message: string, data?: any) =>
       componentLogger.warn(`[${component}] ${message}`, data),
-    error: (message: string, data?: any) => 
+    error: (message: string, data?: any) =>
       componentLogger.error(`[${component}] ${message}`, data),
     getLogs: (level?: LogLevel) => componentLogger.getLogs(level),
-    clearLogs: () => componentLogger.clearLogs()
+    clearLogs: () => componentLogger.clearLogs(),
   };
 }

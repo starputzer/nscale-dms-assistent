@@ -9,21 +9,19 @@
  * Werkzeug zur Messung und Protokollierung der Leistung der Vanilla-JS-Komponenten
  */
 
-
 // Monitoring für Legacy-Code-Nutzung
 function trackLegacyUsage(componentName, action) {
-  if (typeof window.telemetry !== 'undefined') {
-    window.telemetry.trackEvent('legacy_code_usage', {
+  if (typeof window.telemetry !== "undefined") {
+    window.telemetry.trackEvent("legacy_code_usage", {
       component: componentName,
       action: action,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 }
 
 // Tracking bei Modulinitialisierung
-trackLegacyUsage('performance-metrics', 'initialize');
-
+trackLegacyUsage("performance-metrics", "initialize");
 
 const PerformanceMetrics = (function () {
   // Speicherung der Messergebnisse

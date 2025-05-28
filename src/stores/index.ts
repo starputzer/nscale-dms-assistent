@@ -13,32 +13,32 @@ import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
  * Hauptanwendungs-Stores
  * Diese Stores verwalten den Kernzustand der Anwendung
  */
-export * from "./auth";          // Authentifizierung und Benutzerinfos
-export * from "./sessions";      // Chat-Sitzungen und Nachrichten
-export * from "./ui";            // UI-Zustand (Themes, Modals, etc.)
-export * from "./settings";      // Benutzereinstellungen
+export * from "./auth"; // Authentifizierung und Benutzerinfos
+export * from "./sessions"; // Chat-Sitzungen und Nachrichten
+export * from "./ui"; // UI-Zustand (Themes, Modals, etc.)
+export * from "./settings"; // Benutzereinstellungen
 
 /**
  * Feature-spezifische Stores
  * Diese Stores sind für bestimmte Funktionen der Anwendung zuständig
  */
-export * from "./documentConverter";  // Dokumentenkonvertierung
-export * from "./featureToggles";     // Feature-Flags
-export * from "./monitoringStore";    // Anwendungstelemetrie
-export * from "./statistics";         // Nutzungsstatistiken
-export * from "./sources";            // Quellenverwaltung
+export * from "./documentConverter"; // Dokumentenkonvertierung
+export * from "./featureToggles"; // Feature-Flags
+export * from "./monitoringStore"; // Anwendungstelemetrie
+export * from "./statistics"; // Nutzungsstatistiken
+export * from "./sources"; // Quellenverwaltung
 
 /**
  * Admin-Bereich Stores
  * Diese Stores verwalten den Zustand des Admin-Bereichs
  */
-export * from "./admin/index";   // Zentraler Admin-Store
-export * from "./admin/users";   // Benutzerverwaltung
-export * from "./admin/system";  // Systemkonfiguration
+export * from "./admin/index"; // Zentraler Admin-Store
+export * from "./admin/users"; // Benutzerverwaltung
+export * from "./admin/system"; // Systemkonfiguration
 export * from "./admin/settings"; // Systemeinstellungen
-export * from "./admin/motd";    // Message of the Day
+export * from "./admin/motd"; // Message of the Day
 export * from "./admin/feedback"; // Feedback-Verwaltung
-export * from "./admin/logs";    // Systemlogs
+export * from "./admin/logs"; // Systemlogs
 
 /**
  * Optimierte Store-Implementierungen

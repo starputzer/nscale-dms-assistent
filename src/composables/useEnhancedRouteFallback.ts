@@ -1,13 +1,13 @@
 /**
  * Enhanced Route Fallback Composable
- * 
+ *
  * Bietet robuste Fehlerbehandlung und Fallback-Mechanismen für Router-Operationen
  */
 
-import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
-import { useRouter, useRoute, RouteLocationNormalized } from 'vue-router';
-import { useLogger } from '@/composables/useLogger';
-import { routerService } from '@/services/router/RouterServiceFixed';
+import { ref, watch, onMounted, onBeforeUnmount } from "vue";
+import { useRouter, useRoute, RouteLocationNormalized } from "vue-router";
+import { useLogger } from "@/composables/useLogger";
+import { routerService } from "@/services/router/RouterServiceFixed";
 // import { domErrorDetector } from '@/utils/domErrorDiagnostics'; // DEAKTIVIERT wegen Endlosschleife
 
 export interface EnhancedRouteFallbackOptions {
@@ -26,13 +26,15 @@ export interface RouteHealthStatus {
   repairAttempts: number;
 }
 
-export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions = {}) {
+export function useEnhancedRouteFallback(
+  options: EnhancedRouteFallbackOptions = {},
+) {
   const {
     enabled = true,
     maxConsecutiveFailures = 3,
     errorDetectionInterval = 2000,
     autoRepairEnabled = true,
-    debugMode = import.meta.env.DEV
+    debugMode = import.meta.env.DEV,
   } = options;
 
   const router = useRouter();
@@ -44,7 +46,7 @@ export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions =
   const routeHealth = ref<RouteHealthStatus>({
     healthy: true,
     consecutiveFailures: 0,
-    repairAttempts: 0
+    repairAttempts: 0,
   });
   const monitoringInterval = ref<number | null>(null);
   const navigationQueue = ref<Array<() => Promise<void>>>([]);
@@ -55,14 +57,14 @@ export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions =
   const initialize = async () => {
     if (!enabled) return;
 
-    logger.info('Enhanced Route Fallback: Initialisierung');
-    
+    logger.info("Enhanced Route Fallback: Initialisierung");
+
     // Router Service initialisieren
     try {
       routerService.setRouter(router);
-      logger.info('Router Service initialisiert');
+      logger.info("Router Service initialisiert");
     } catch (error) {
-      logger.error('Router Service konnte nicht initialisiert werden', error);
+      logger.error("Router Service konnte nicht initialisiert werden", error);
       return;
     }
 
@@ -79,7 +81,7 @@ export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions =
     if (isMonitoring.value) return;
 
     isMonitoring.value = true;
-    logger.info('Route-Überwachung gestartet');
+    logger.info("Route-Überwachung gestartet");
 
     monitoringInterval.value = window.setInterval(() => {
       checkRouteHealth();
@@ -93,13 +95,13 @@ export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions =
     if (!isMonitoring.value) return;
 
     isMonitoring.value = false;
-    
+
     if (monitoringInterval.value) {
       clearInterval(monitoringInterval.value);
       monitoringInterval.value = null;
     }
 
-    logger.info('Route-Überwachung gestoppt');
+    logger.info("Route-Überwachung gestoppt");
   };
 
   /**
@@ -109,7 +111,7 @@ export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions =
     try {
       // Prüfe DOM auf Fehler - DEAKTIVIERT wegen Endlosschleife
       // const domDiagnostics = domErrorDetector.detectErrorState();
-      
+
       // if (domDiagnostics.has404Page || domDiagnostics.hasErrorScreen) {
       //   handleRouteError(new Error(`DOM-Fehler erkannt: ${domDiagnostics.errorType}`));
       //   return;
@@ -117,20 +119,20 @@ export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions =
 
       // Prüfe Router-Zustand
       const currentRoute = routerService.getCurrentRoute();
-      
+
       if (!currentRoute) {
-        handleRouteError(new Error('Keine aktuelle Route verfügbar'));
+        handleRouteError(new Error("Keine aktuelle Route verfügbar"));
         return;
       }
 
       // Route ist gesund
       if (!routeHealth.value.healthy) {
-        logger.info('Route wiederhergestellt');
+        logger.info("Route wiederhergestellt");
         routeHealth.value = {
           healthy: true,
           consecutiveFailures: 0,
           lastSuccessfulNavigation: new Date(),
-          repairAttempts: 0
+          repairAttempts: 0,
         };
       }
     } catch (error) {
@@ -142,7 +144,7 @@ export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions =
    * Behandelt Route-Fehler
    */
   const handleRouteError = async (error: Error) => {
-    logger.error('Route-Fehler erkannt', error);
+    logger.error("Route-Fehler erkannt", error);
 
     routeHealth.value.consecutiveFailures++;
     routeHealth.value.lastError = error;
@@ -150,12 +152,12 @@ export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions =
 
     // Prüfe auf kritische Fehleranzahl
     if (routeHealth.value.consecutiveFailures >= maxConsecutiveFailures) {
-      logger.warn('Kritische Anzahl von Route-Fehlern erreicht');
-      
+      logger.warn("Kritische Anzahl von Route-Fehlern erreicht");
+
       if (autoRepairEnabled) {
         await attemptAutoRepair();
       } else {
-        await navigateToFallback('Kritische Fehleranzahl');
+        await navigateToFallback("Kritische Fehleranzahl");
       }
     }
   };
@@ -185,15 +187,15 @@ export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions =
 
       // Strategie 4: Fallback
       if (routeHealth.value.repairAttempts > 3) {
-        await navigateToFallback('Auto-Reparatur fehlgeschlagen');
+        await navigateToFallback("Auto-Reparatur fehlgeschlagen");
       }
 
       // Erneute Prüfung nach Reparatur
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       await checkRouteHealth();
     } catch (error) {
-      logger.error('Auto-Reparatur fehlgeschlagen', error);
-      await navigateToFallback('Reparatur-Fehler');
+      logger.error("Auto-Reparatur fehlgeschlagen", error);
+      await navigateToFallback("Reparatur-Fehler");
     }
   };
 
@@ -201,17 +203,19 @@ export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions =
    * DOM-Bereinigung
    */
   const cleanupDom = async () => {
-    logger.info('DOM-Bereinigung...');
-    
+    logger.info("DOM-Bereinigung...");
+
     // Entferne Fehlerbildschirme
-    const errorElements = document.querySelectorAll('.error-view, .error-404, .critical-error');
-    errorElements.forEach(el => el.remove());
+    const errorElements = document.querySelectorAll(
+      ".error-view, .error-404, .critical-error",
+    );
+    errorElements.forEach((el) => el.remove());
 
     // Stelle App-Container sicher
-    const appElement = document.querySelector('#app');
+    const appElement = document.querySelector("#app");
     if (appElement) {
-      (appElement as HTMLElement).style.display = 'block';
-      (appElement as HTMLElement).style.visibility = 'visible';
+      (appElement as HTMLElement).style.display = "block";
+      (appElement as HTMLElement).style.visibility = "visible";
     }
   };
 
@@ -219,16 +223,16 @@ export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions =
    * Router-Reset
    */
   const resetRouter = async () => {
-    logger.info('Router-Reset...');
-    
+    logger.info("Router-Reset...");
+
     try {
       // Navigiere zur aktuellen Route neu
       const currentPath = route.fullPath;
-      await router.replace({ path: '/redirect' });
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await router.replace({ path: "/redirect" });
+      await new Promise((resolve) => setTimeout(resolve, 100));
       await router.replace(currentPath);
     } catch (error) {
-      logger.error('Router-Reset fehlgeschlagen', error);
+      logger.error("Router-Reset fehlgeschlagen", error);
     }
   };
 
@@ -236,26 +240,26 @@ export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions =
    * Cache-Bereinigung
    */
   const clearCaches = async () => {
-    logger.info('Cache-Bereinigung...');
-    
+    logger.info("Cache-Bereinigung...");
+
     try {
       // Service Worker deregistrieren
-      if ('serviceWorker' in navigator) {
+      if ("serviceWorker" in navigator) {
         const registrations = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(registrations.map(reg => reg.unregister()));
+        await Promise.all(registrations.map((reg) => reg.unregister()));
       }
 
       // Browser-Cache leeren
-      if ('caches' in window) {
+      if ("caches" in window) {
         const cacheNames = await caches.keys();
-        await Promise.all(cacheNames.map(name => caches.delete(name)));
+        await Promise.all(cacheNames.map((name) => caches.delete(name)));
       }
 
       // Lokalen Speicher bereinigen (selektiv)
-      const keysToKeep = ['token', 'userId', 'userRole', 'lastWorkingRoute'];
+      const keysToKeep = ["token", "userId", "userRole", "lastWorkingRoute"];
       const savedValues: Record<string, string> = {};
-      
-      keysToKeep.forEach(key => {
+
+      keysToKeep.forEach((key) => {
         const value = localStorage.getItem(key);
         if (value) savedValues[key] = value;
       });
@@ -266,7 +270,7 @@ export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions =
         localStorage.setItem(key, value);
       });
     } catch (error) {
-      logger.error('Cache-Bereinigung fehlgeschlagen', error);
+      logger.error("Cache-Bereinigung fehlgeschlagen", error);
     }
   };
 
@@ -276,17 +280,19 @@ export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions =
   const safeNavigate = async (path: string | RouteLocationNormalized) => {
     const navigationFn = async () => {
       const result = await routerService.navigate(path);
-      
+
       if (!result.success) {
-        handleRouteError(result.error || new Error('Navigation fehlgeschlagen'));
+        handleRouteError(
+          result.error || new Error("Navigation fehlgeschlagen"),
+        );
       }
-      
+
       return result;
     };
 
     // Füge zur Queue hinzu
     navigationQueue.value.push(navigationFn);
-    
+
     // Verarbeite Queue
     if (navigationQueue.value.length === 1) {
       await processNavigationQueue();
@@ -303,7 +309,7 @@ export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions =
         try {
           await navigationFn();
         } catch (error) {
-          logger.error('Queue-Navigation fehlgeschlagen', error);
+          logger.error("Queue-Navigation fehlgeschlagen", error);
         }
       }
     }
@@ -315,11 +321,11 @@ export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions =
   const navigateToFallback = async (reason: string) => {
     logger.warn(`Navigiere zur Fallback-Route: ${reason}`);
     const result = await routerService.navigateToFallback(reason);
-    
+
     if (!result.success) {
-      logger.error('Fallback-Navigation fehlgeschlagen, Hard Reload...');
+      logger.error("Fallback-Navigation fehlgeschlagen, Hard Reload...");
       setTimeout(() => {
-        window.location.href = '/';
+        window.location.href = "/";
       }, 1000);
     }
   };
@@ -329,20 +335,23 @@ export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions =
    */
   const setupWatchers = () => {
     // Überwache Route-Änderungen
-    watch(() => route.fullPath, (newPath, oldPath) => {
-      if (debugMode) {
-        logger.debug(`Route-Änderung: ${oldPath} -> ${newPath}`);
-      }
+    watch(
+      () => route.fullPath,
+      (newPath, oldPath) => {
+        if (debugMode) {
+          logger.debug(`Route-Änderung: ${oldPath} -> ${newPath}`);
+        }
 
-      // Reset bei erfolgreicher Navigation
-      if (routeHealth.value.consecutiveFailures > 0) {
-        routeHealth.value.consecutiveFailures = 0;
-      }
-    });
+        // Reset bei erfolgreicher Navigation
+        if (routeHealth.value.consecutiveFailures > 0) {
+          routeHealth.value.consecutiveFailures = 0;
+        }
+      },
+    );
 
     // Überwache Router-Fehler
     router.onError((error) => {
-      logger.error('Router-Fehler', error);
+      logger.error("Router-Fehler", error);
       handleRouteError(error);
     });
   };
@@ -353,29 +362,35 @@ export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions =
   const setupErrorHandlers = () => {
     // Window Error Handler
     const originalErrorHandler = window.onerror;
-    
+
     window.onerror = (message, source, lineno, colno, error) => {
-      if (error && error.message.includes('Cannot read properties of undefined')) {
-        if (error.message.includes('currentRoute')) {
-          logger.error('CurrentRoute Fehler abgefangen', error);
+      if (
+        error &&
+        error.message.includes("Cannot read properties of undefined")
+      ) {
+        if (error.message.includes("currentRoute")) {
+          logger.error("CurrentRoute Fehler abgefangen", error);
           handleRouteError(error);
           return true; // Verhindere Standard-Fehlerbehandlung
         }
       }
-      
+
       // Rufe originalen Handler auf
       if (originalErrorHandler) {
         return originalErrorHandler(message, source, lineno, colno, error);
       }
-      
+
       return false;
     };
 
     // Unhandled Promise Rejection Handler
-    window.addEventListener('unhandledrejection', (event) => {
+    window.addEventListener("unhandledrejection", (event) => {
       if (event.reason && event.reason.message) {
-        if (event.reason.message.includes('currentRoute')) {
-          logger.error('Unhandled Promise Rejection: currentRoute', event.reason);
+        if (event.reason.message.includes("currentRoute")) {
+          logger.error(
+            "Unhandled Promise Rejection: currentRoute",
+            event.reason,
+          );
           handleRouteError(event.reason);
           event.preventDefault();
         }
@@ -414,6 +429,6 @@ export function useEnhancedRouteFallback(options: EnhancedRouteFallbackOptions =
     getDiagnostics,
     startMonitoring,
     stopMonitoring,
-    checkRouteHealth
+    checkRouteHealth,
   };
 }

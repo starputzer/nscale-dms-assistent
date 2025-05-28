@@ -1,6 +1,6 @@
 /**
  * TypeScript-Definitionen für ES2021-Funktionen
- * 
+ *
  * Diese Datei stellt Typdefinitionen für WeakRef und FinalizationRegistry bereit,
  * falls die TypeScript-Version diese noch nicht enthält.
  */

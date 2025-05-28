@@ -6,9 +6,15 @@
         <div class="auth-header">
           <img v-if="logoUrl" :src="logoUrl" alt="Logo" class="auth-logo" />
           <h1 class="auth-title">nscale DMS Assistent</h1>
-          <p class="auth-subtitle">{{ activeTab === 'login' ? 'Willkommen zurück!' : 'Jetzt registrieren' }}</p>
+          <p class="auth-subtitle">
+            {{
+              activeTab === "login"
+                ? "Willkommen zurück!"
+                : "Jetzt registrieren"
+            }}
+          </p>
         </div>
-        
+
         <!-- Tab-Navigation für Login/Register -->
         <div class="auth-tabs">
           <button
@@ -26,18 +32,18 @@
             Registrieren
           </button>
         </div>
-        
+
         <!-- Feedback-Bereich (Fehler und Erfolgsmeldungen) -->
         <div v-if="authError || formError" class="auth-error">
           <span class="error-icon">⚠️</span>
           <p>{{ authError || formError }}</p>
         </div>
-        
+
         <div v-if="loginSuccess" class="auth-success">
           <span class="success-icon">✅</span>
           <p>Anmeldung erfolgreich! Sie werden weitergeleitet...</p>
         </div>
-        
+
         <!-- Formular -->
         <form @submit.prevent="submitForm" class="auth-form">
           <!-- Email-Feld (für beide Tabs) -->
@@ -60,7 +66,7 @@
               </span>
             </div>
           </div>
-          
+
           <!-- Benutzername (nur für Registrierung) -->
           <div v-if="activeTab === 'register'" class="form-group">
             <label for="username">Benutzername</label>
@@ -79,7 +85,7 @@
               </span>
             </div>
           </div>
-          
+
           <!-- Anzeigename (nur für Registrierung) -->
           <div v-if="activeTab === 'register'" class="form-group">
             <label for="displayName">Anzeigename (optional)</label>
@@ -92,7 +98,7 @@
               :disabled="isLoading"
             />
           </div>
-          
+
           <!-- Passwort-Feld -->
           <div class="form-group">
             <label for="password">Passwort</label>
@@ -112,9 +118,11 @@
                 type="button"
                 class="password-toggle"
                 @click="togglePasswordVisibility"
-                :aria-label="showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'"
+                :aria-label="
+                  showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'
+                "
               >
-                {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+                {{ showPassword ? "👁️" : "👁️‍🗨️" }}
               </button>
             </div>
             <div v-if="v$.password.$error" class="form-error">
@@ -123,7 +131,7 @@
               </span>
             </div>
           </div>
-          
+
           <!-- Passwort bestätigen (nur für Registrierung) -->
           <div v-if="activeTab === 'register'" class="form-group">
             <label for="passwordConfirm">Passwort bestätigen</label>
@@ -137,20 +145,28 @@
               @blur="v$.passwordConfirm?.$touch"
             />
             <div v-if="v$.passwordConfirm?.$error" class="form-error">
-              <span v-for="error in v$.passwordConfirm.$errors" :key="error.$uid">
+              <span
+                v-for="error in v$.passwordConfirm.$errors"
+                :key="error.$uid"
+              >
                 {{ error.$message }}
               </span>
             </div>
           </div>
-          
+
           <!-- Passwort-Stärke-Anzeige (nur für Registrierung) -->
-          <div v-if="activeTab === 'register' && formData.password" class="password-strength">
+          <div
+            v-if="activeTab === 'register' && formData.password"
+            class="password-strength"
+          >
             <div class="strength-indicator">
-              <div :class="['strength-bar', `strength-${passwordStrength.score}`]"></div>
+              <div
+                :class="['strength-bar', `strength-${passwordStrength.score}`]"
+              ></div>
             </div>
             <span class="strength-label">{{ passwordStrengthLabel }}</span>
           </div>
-          
+
           <!-- Remember Me (nur für Login) -->
           <div v-if="activeTab === 'login'" class="form-group checkbox-group">
             <label>
@@ -163,7 +179,7 @@
               Angemeldet bleiben
             </label>
           </div>
-          
+
           <!-- Submit-Button -->
           <button
             type="submit"
@@ -173,19 +189,22 @@
             <span v-if="isLoading" class="loading-spinner"></span>
             {{ activeTab === "login" ? "Anmelden" : "Registrieren" }}
           </button>
-          
         </form>
-        
+
         <!-- Passwort vergessen (nur für Login) -->
         <div v-if="activeTab === 'login'" class="forgot-password">
-          <a href="#" @click.prevent="handleForgotPassword">Passwort vergessen?</a>
+          <a href="#" @click.prevent="handleForgotPassword"
+            >Passwort vergessen?</a
+          >
         </div>
-        
+
         <!-- Footer mit Rechtlichem -->
         <div class="auth-footer">
           <p>© {{ currentYear }} nscale DMS Assistent</p>
           <div class="legal-links">
-            <a href="#" @click.prevent="showLegal('datenschutz')">Datenschutz</a>
+            <a href="#" @click.prevent="showLegal('datenschutz')"
+              >Datenschutz</a
+            >
             <a href="#" @click.prevent="showLegal('impressum')">Impressum</a>
           </div>
         </div>
@@ -195,101 +214,124 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
-import { useVuelidate } from '@vuelidate/core'
-import { required, email, minLength, sameAs, helpers } from '@vuelidate/validators'
-import { useAuthentication } from '@/composables/useAuthentication'
-import { useErrorReporting } from '@/composables/useErrorReporting'
-import { useToast } from '@/composables/useToast'
+import {
+  ref,
+  reactive,
+  computed,
+  onMounted,
+  onBeforeUnmount,
+  watch,
+  nextTick,
+} from "vue";
+import { useRouter } from "vue-router";
+import { useVuelidate } from "@vuelidate/core";
+import {
+  required,
+  email,
+  minLength,
+  sameAs,
+  helpers,
+} from "@vuelidate/validators";
+import { useAuthentication } from "@/composables/useAuthentication";
+import { useErrorReporting } from "@/composables/useErrorReporting";
+import { useToast } from "@/composables/useToast";
 
 // Router und Services einbinden
-const router = useRouter()
-const toast = useToast()
+const router = useRouter();
+const toast = useToast();
 
 // Auth-Composable mit reactive state und Methoden
-const { 
-  login, 
-  register, 
-  demoLogin, 
-  isLoading, 
-  isAuthenticated, 
-  authError, 
-  resetError 
-} = useAuthentication()
+const {
+  login,
+  register,
+  demoLogin,
+  isLoading,
+  isAuthenticated,
+  authError,
+  resetError,
+} = useAuthentication();
 
 // Lokaler reaktiver State
-const activeTab = ref<'login' | 'register'>('login')
-const loginSuccess = ref(false)
-const showPassword = ref(false)
-const formError = ref<string | null>(null)
+const activeTab = ref<"login" | "register">("login");
+const loginSuccess = ref(false);
+const showPassword = ref(false);
+const formError = ref<string | null>(null);
 
 // Das aktuelle Jahr für das Copyright
-const currentYear = new Date().getFullYear()
+const currentYear = new Date().getFullYear();
 
 // Formulardaten
 const formData = reactive({
-  email: '',
-  username: '',
-  password: '',
-  passwordConfirm: '',
-  displayName: '',
+  email: "",
+  username: "",
+  password: "",
+  passwordConfirm: "",
+  displayName: "",
   rememberMe: false,
-})
+});
 
 // Logo URL (optional, kann angepasst werden)
-const logoUrl = computed(() => '/assets/images/senmvku-logo.png')
+const logoUrl = computed(() => "/assets/images/senmvku-logo.png");
 
 // Validierungsregeln
 const rules = computed(() => {
   const baseRules = {
-    email: { 
-      required: helpers.withMessage('E-Mail ist erforderlich', required),
-      email: helpers.withMessage('Bitte geben Sie eine gültige E-Mail-Adresse ein', email) 
+    email: {
+      required: helpers.withMessage("E-Mail ist erforderlich", required),
+      email: helpers.withMessage(
+        "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+        email,
+      ),
     },
-    password: { 
-      required: helpers.withMessage('Passwort ist erforderlich', required) 
-    }
-  }
-  
+    password: {
+      required: helpers.withMessage("Passwort ist erforderlich", required),
+    },
+  };
+
   // Zusätzliche Regeln für Registrierung
-  if (activeTab.value === 'register') {
+  if (activeTab.value === "register") {
     return {
       ...baseRules,
-      username: { 
-        required: helpers.withMessage('Benutzername ist erforderlich', required),
+      username: {
+        required: helpers.withMessage(
+          "Benutzername ist erforderlich",
+          required,
+        ),
         minLength: helpers.withMessage(
-          'Benutzername muss mindestens 3 Zeichen haben',
-          minLength(3)
-        )
+          "Benutzername muss mindestens 3 Zeichen haben",
+          minLength(3),
+        ),
       },
       password: {
         ...baseRules.password,
         minLength: helpers.withMessage(
-          'Passwort muss mindestens 8 Zeichen haben',
-          minLength(8)
-        )
+          "Passwort muss mindestens 8 Zeichen haben",
+          minLength(8),
+        ),
       },
       passwordConfirm: {
-        required: helpers.withMessage('Passwortbestätigung ist erforderlich', required),
+        required: helpers.withMessage(
+          "Passwortbestätigung ist erforderlich",
+          required,
+        ),
         sameAsPassword: helpers.withMessage(
-          'Passwörter stimmen nicht überein',
-          sameAs(formData.password)
-        )
-      }
-    }
+          "Passwörter stimmen nicht überein",
+          sameAs(formData.password),
+        ),
+      },
+    };
   }
-  
-  return baseRules
-})
+
+  return baseRules;
+});
 
 // Vuelidate initialisieren
-const v$ = useVuelidate(rules, formData)
+const v$ = useVuelidate(rules, formData);
 
 // Passwort-Stärke berechnen
 const passwordStrength = computed(() => {
-  const password = formData.password || ''
-  
+  const password = formData.password || "";
+
   return {
     length: password.length >= 8,
     hasLower: /[a-z]/.test(password),
@@ -297,96 +339,97 @@ const passwordStrength = computed(() => {
     hasNumber: /[0-9]/.test(password),
     hasSpecial: /[^A-Za-z0-9]/.test(password),
     score: calculatePasswordScore(password),
-  }
-})
+  };
+});
 
 const passwordStrengthLabel = computed(() => {
-  const score = passwordStrength.value.score
-  if (score === 0) return 'Sehr schwach'
-  if (score === 1) return 'Schwach'
-  if (score === 2) return 'Mittel'
-  if (score === 3) return 'Stark'
-  return 'Sehr stark'
-})
+  const score = passwordStrength.value.score;
+  if (score === 0) return "Sehr schwach";
+  if (score === 1) return "Schwach";
+  if (score === 2) return "Mittel";
+  if (score === 3) return "Stark";
+  return "Sehr stark";
+});
 
 // Submit-Button deaktivieren, wenn Formular ungültig oder lädt
-const isSubmitDisabled = computed(() => isLoading.value || v$.value.$invalid)
+const isSubmitDisabled = computed(() => isLoading.value || v$.value.$invalid);
 
 // Aktiven Tab setzen
-function setActiveTab(tab: 'login' | 'register') {
-  activeTab.value = tab
-  resetError()
-  formError.value = null
-  loginSuccess.value = false
-  
+function setActiveTab(tab: "login" | "register") {
+  activeTab.value = tab;
+  resetError();
+  formError.value = null;
+  loginSuccess.value = false;
+
   nextTick(() => {
-    v$.value.$reset()
-  })
+    v$.value.$reset();
+  });
 }
 
 // Passwortsichtbarkeit umschalten
 function togglePasswordVisibility() {
-  showPassword.value = !showPassword.value
+  showPassword.value = !showPassword.value;
 }
 
 // Passwort-Stärke bewerten (0-4)
 function calculatePasswordScore(password: string): number {
-  if (!password) return 0
-  
-  let score = 0
-  if (password.length >= 8) score++
-  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++
-  if (/[0-9]/.test(password)) score++
-  if (/[^A-Za-z0-9]/.test(password)) score++
-  
-  return score
+  if (!password) return 0;
+
+  let score = 0;
+  if (password.length >= 8) score++;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+
+  return score;
 }
 
 // Formular absenden
 async function submitForm() {
   try {
-    resetError()
-    formError.value = null
-    
-    const isFormValid = await v$.value.$validate()
+    resetError();
+    formError.value = null;
+
+    const isFormValid = await v$.value.$validate();
     if (!isFormValid) {
-      return
+      return;
     }
-    
-    if (activeTab.value === 'login') {
-      await handleLogin()
+
+    if (activeTab.value === "login") {
+      await handleLogin();
     } else {
-      await handleRegister()
+      await handleRegister();
     }
   } catch (error) {
-    console.error('Fehler beim Absenden des Formulars:', error)
-    formError.value = 'Ein unerwarteter Fehler ist aufgetreten.'
-    toast.error('Ein unerwarteter Fehler ist aufgetreten')
+    console.error("Fehler beim Absenden des Formulars:", error);
+    formError.value = "Ein unerwarteter Fehler ist aufgetreten.";
+    toast.error("Ein unerwarteter Fehler ist aufgetreten");
   }
 }
 
 // Login-Handler
 async function handleLogin() {
   try {
-    console.log('handleLogin aufgerufen')
+    console.log("handleLogin aufgerufen");
     const success = await login({
       email: formData.email,
       password: formData.password,
-      rememberMe: formData.rememberMe
-    })
-    
+      rememberMe: formData.rememberMe,
+    });
+
     if (success) {
-      loginSuccess.value = true
-      toast.success('Login erfolgreich!')
-      
+      loginSuccess.value = true;
+      toast.success("Login erfolgreich!");
+
       // Kurze Verzögerung, dann weiterleiten
       setTimeout(() => {
-        const redirect = router.currentRoute.value.query.redirect as string || '/chat'
-        router.push(redirect)
-      }, 500)
+        const redirect =
+          (router.currentRoute.value.query.redirect as string) || "/chat";
+        router.push(redirect);
+      }, 500);
     }
   } catch (error) {
-    console.error('Login fehlgeschlagen:', error)
+    console.error("Login fehlgeschlagen:", error);
   }
 }
 
@@ -397,68 +440,70 @@ async function handleRegister() {
       email: formData.email,
       username: formData.username,
       password: formData.password,
-      displayName: formData.displayName
-    })
-    
+      displayName: formData.displayName,
+    });
+
     if (success) {
-      loginSuccess.value = true
-      toast.success('Registrierung erfolgreich! Sie werden weitergeleitet...')
-      
+      loginSuccess.value = true;
+      toast.success("Registrierung erfolgreich! Sie werden weitergeleitet...");
+
       setTimeout(() => {
-        router.push('/chat')
-      }, 1500)
+        router.push("/chat");
+      }, 1500);
     }
   } catch (error) {
-    console.error('Registrierung fehlgeschlagen:', error)
+    console.error("Registrierung fehlgeschlagen:", error);
   }
 }
 
 // Demo-Login-Handler
 async function handleDemoLogin() {
   try {
-    console.log('Demo-Login wird ausgeführt')
-    const success = await demoLogin()
-    
+    console.log("Demo-Login wird ausgeführt");
+    const success = await demoLogin();
+
     if (success) {
-      loginSuccess.value = true
-      toast.success('Demo-Login erfolgreich!')
-      
+      loginSuccess.value = true;
+      toast.success("Demo-Login erfolgreich!");
+
       setTimeout(() => {
-        router.push('/chat')
-      }, 500)
+        router.push("/chat");
+      }, 500);
     }
   } catch (error) {
-    console.error('Demo-Login fehlgeschlagen:', error)
+    console.error("Demo-Login fehlgeschlagen:", error);
   }
 }
 
 // Passwort vergessen Handler
 function handleForgotPassword() {
-  toast.info('Passwort-Wiederherstellung ist aktuell nicht verfügbar.')
+  toast.info("Passwort-Wiederherstellung ist aktuell nicht verfügbar.");
 }
 
 // Rechtliche Informationen anzeigen
-function showLegal(type: 'datenschutz' | 'impressum') {
-  toast.info(`${type === 'datenschutz' ? 'Datenschutz' : 'Impressum'} wird geladen...`)
+function showLegal(type: "datenschutz" | "impressum") {
+  toast.info(
+    `${type === "datenschutz" ? "Datenschutz" : "Impressum"} wird geladen...`,
+  );
 }
 
 // beforeunload Event Handler
 function handleBeforeUnload(event: BeforeUnloadEvent) {
   if ((formData.email || formData.password) && !loginSuccess.value) {
-    event.preventDefault()
-    event.returnValue = ''
+    event.preventDefault();
+    event.returnValue = "";
   }
 }
 
 // KEINE automatischen Weiterleitungen in onMounted oder watch!
 onMounted(() => {
-  window.addEventListener('beforeunload', handleBeforeUnload)
-})
+  window.addEventListener("beforeunload", handleBeforeUnload);
+});
 
 // Aufräumen
 onBeforeUnmount(() => {
-  window.removeEventListener('beforeunload', handleBeforeUnload)
-})
+  window.removeEventListener("beforeunload", handleBeforeUnload);
+});
 </script>
 
 <style scoped>
@@ -540,7 +585,7 @@ onBeforeUnmount(() => {
 }
 
 .auth-tab.active::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -2px;
   left: 0;
@@ -663,7 +708,9 @@ onBeforeUnmount(() => {
 .strength-bar {
   height: 100%;
   width: 0;
-  transition: width 0.3s ease, background-color 0.3s ease;
+  transition:
+    width 0.3s ease,
+    background-color 0.3s ease;
 }
 
 .strength-bar.strength-0 {
@@ -836,15 +883,15 @@ onBeforeUnmount(() => {
   .auth-content {
     padding: 1.5rem;
   }
-  
+
   .auth-title {
     font-size: 1.5rem;
   }
-  
+
   .auth-tabs {
     gap: 0.25rem;
   }
-  
+
   .auth-tab {
     padding: 0.5rem 0.75rem;
     font-size: 0.9rem;

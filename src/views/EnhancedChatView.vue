@@ -135,7 +135,7 @@ onMounted(() => {
 
   bridge.on("session:updated", () => {
     // Session-Liste aktualisieren, wenn sie von außen geändert wurde
-    if (typeof sessionStore.synchronizeSessions === 'function') {
+    if (typeof sessionStore.synchronizeSessions === "function") {
       sessionStore.synchronizeSessions();
     }
   });
@@ -156,7 +156,13 @@ watch(
   () => route.params.id,
   (newId: string | string[] | undefined) => {
     if (newId) {
-      loadSessionMessages(typeof newId === 'string' ? newId : Array.isArray(newId) ? newId[0] : '');
+      loadSessionMessages(
+        typeof newId === "string"
+          ? newId
+          : Array.isArray(newId)
+            ? newId[0]
+            : "",
+      );
     }
   },
   { immediate: true },
@@ -197,9 +203,9 @@ async function handleSessionCreate() {
   try {
     // Handle both API styles for creating a session
     let sessionId;
-    if (typeof sessionStore.createSession === 'function') {
+    if (typeof sessionStore.createSession === "function") {
       const session = await sessionStore.createSession();
-      sessionId = typeof session === 'string' ? session : session.id;
+      sessionId = typeof session === "string" ? session : session.id;
     } else {
       sessionId = await sessionStore.createSession();
     }
@@ -217,9 +223,9 @@ async function handleSessionCreate() {
 async function handleSessionDelete(sessionId: string) {
   try {
     // Handle both API styles for deleting a session
-    if (typeof sessionStore.deleteSession === 'function') {
+    if (typeof sessionStore.deleteSession === "function") {
       await sessionStore.deleteSession(sessionId);
-    } else if (typeof sessionStore.archiveSession === 'function') {
+    } else if (typeof sessionStore.archiveSession === "function") {
       await sessionStore.archiveSession(sessionId);
     }
 
@@ -239,9 +245,9 @@ async function handleSessionDelete(sessionId: string) {
 async function handleSessionRename(sessionId: string, newTitle: string) {
   try {
     // Handle both API styles for renaming a session
-    if (typeof sessionStore.renameSession === 'function') {
+    if (typeof sessionStore.renameSession === "function") {
       await sessionStore.renameSession(sessionId, newTitle);
-    } else if (typeof sessionStore.updateSessionTitle === 'function') {
+    } else if (typeof sessionStore.updateSessionTitle === "function") {
       await sessionStore.updateSessionTitle(sessionId, newTitle);
     }
 
@@ -256,12 +262,12 @@ async function handleSessionRename(sessionId: string, newTitle: string) {
 async function handleSessionPin(sessionId: string, isPinned: boolean) {
   try {
     // Handle both API styles for updating a session
-    if (typeof sessionStore.updateSession === 'function') {
+    if (typeof sessionStore.updateSession === "function") {
       await sessionStore.updateSession(sessionId, { isPinned });
-    } else if (typeof sessionStore.togglePinSession === 'function') {
+    } else if (typeof sessionStore.togglePinSession === "function") {
       // If current pin status doesn't match desired status, toggle it
-      const session = sessions.value.find(s => s.id === sessionId);
-      if (session && (session.isPinned !== isPinned)) {
+      const session = sessions.value.find((s) => s.id === sessionId);
+      if (session && session.isPinned !== isPinned) {
         await sessionStore.togglePinSession(sessionId);
       }
     }
@@ -293,17 +299,17 @@ async function handleSendMessage(content: string, targetSessionId?: string) {
       // Bridge-Event auslösen
       bridge.emit("chat:messageEdited", {
         sessionId,
-        messageId: editingMessageId.value || '',
+        messageId: editingMessageId.value || "",
         content,
       });
     } else {
       // Neue Nachricht senden (mit korrekter Typisierung)
-      if (typeof sendMessage === 'function') {
+      if (typeof sendMessage === "function") {
         // Wenn sendMessage ein Objekt erwartet
         if (sendMessage.length === 1) {
           await sendMessage({
             sessionId,
-            content
+            content,
           });
         } else {
           // Ältere API erwartet direkte Parameter
@@ -363,7 +369,7 @@ async function handleRetryMessage(messageId: string) {
 
   try {
     // Prüfe auf unterschiedliche Funktionssignaturen
-    if (typeof retryMessage === 'function') {
+    if (typeof retryMessage === "function") {
       try {
         // Try with just messageId first
         await retryMessage(messageId);
@@ -408,7 +414,7 @@ async function loadSessionMessages(sessionId: string) {
     await sessionStore.setCurrentSession(sessionId);
 
     // Dann die Nachrichten laden, falls erforderlich
-    if (typeof loadMessages === 'function') {
+    if (typeof loadMessages === "function") {
       if (loadMessages.length === 0) {
         // Keine Parameter
         await loadMessages();

@@ -1,11 +1,11 @@
 /**
  * Zentrale Typdefinitionen für Datenmodelle
- * 
+ *
  * Diese Datei enthält gemeinsame Interfaces für Datenmodelle,
  * die in der gesamten Anwendung verwendet werden.
  */
 
-import type { Dict, Nullable, JSONValue } from './utilities';
+import type { Dict, Nullable, JSONValue } from "./utilities";
 
 /**
  * Basisinterface für alle Entitäten mit einer ID
@@ -78,8 +78,8 @@ export interface ChatSession extends UserOwnedEntity {
   sharedWith?: string[];
   customData?: Dict<any>;
   expiresAt?: string;
-  retentionPolicy?: 'default' | 'keep' | 'auto-delete';
-  status?: 'active' | 'archived' | 'deleted';
+  retentionPolicy?: "default" | "keep" | "auto-delete";
+  status?: "active" | "archived" | "deleted";
   aiModel?: string;
   viewCount?: number;
 }
@@ -90,17 +90,17 @@ export interface ChatSession extends UserOwnedEntity {
 export interface ChatMessage extends Entity {
   sessionId: string;
   content: string;
-  role: 'user' | 'assistant' | 'system' | 'function';
+  role: "user" | "assistant" | "system" | "function";
   timestamp: string;
   isStreaming?: boolean;
-  status?: 'pending' | 'sent' | 'error' | 'censored';
+  status?: "pending" | "sent" | "error" | "censored";
   editedAt?: string;
   isEdited?: boolean;
   metadata?: ChatMessageMetadata;
   repliedToId?: string;
   attachments?: Attachment[];
-  contentType?: 'text' | 'markdown' | 'html' | 'json';
-  rating?: 'positive' | 'negative' | null;
+  contentType?: "text" | "markdown" | "html" | "json";
+  rating?: "positive" | "negative" | null;
   feedback?: string;
 }
 
@@ -135,10 +135,10 @@ export interface SourceReference extends Entity {
   pageNumber?: number;
   documentId?: string;
   chunkId?: string;
-  highlightRanges?: {start: number, end: number}[];
+  highlightRanges?: { start: number; end: number }[];
   retrievalStrategy?: string;
   confidence?: number;
-  type?: 'document' | 'database' | 'api' | 'web' | 'knowledge-base';
+  type?: "document" | "database" | "api" | "web" | "knowledge-base";
 }
 
 /**
@@ -151,7 +151,7 @@ export interface Attachment extends Entity {
   url?: string;
   thumbnailUrl?: string;
   metadata?: Dict<any>;
-  uploadStatus?: 'pending' | 'uploading' | 'complete' | 'error';
+  uploadStatus?: "pending" | "uploading" | "complete" | "error";
   uploadProgress?: number;
   errorMessage?: string;
 }
@@ -196,9 +196,9 @@ export interface Statistics {
     min: number;
     max: number;
   };
-  topCategories: Array<{id: string, name: string, count: number}>;
-  topTags: Array<{id: string, name: string, count: number}>;
-  dailyActivity: Array<{date: string, sessions: number, messages: number}>;
+  topCategories: Array<{ id: string; name: string; count: number }>;
+  topTags: Array<{ id: string; name: string; count: number }>;
+  dailyActivity: Array<{ date: string; sessions: number; messages: number }>;
   tokensUsed: {
     prompt: number;
     completion: number;
@@ -216,17 +216,17 @@ export interface Statistics {
  */
 export interface Settings {
   theme: {
-    mode: 'light' | 'dark' | 'system';
+    mode: "light" | "dark" | "system";
     primaryColor?: string;
     secondaryColor?: string;
     accentColor?: string;
     customTheme?: Dict<string>;
   };
   appearance: {
-    fontSize: 'small' | 'medium' | 'large' | 'x-large';
+    fontSize: "small" | "medium" | "large" | "x-large";
     fontFamily?: string;
     lineHeight?: number;
-    contentWidth?: 'narrow' | 'medium' | 'wide' | 'full';
+    contentWidth?: "narrow" | "medium" | "wide" | "full";
     showTimestamps?: boolean;
     showAvatars?: boolean;
     compactMode?: boolean;
@@ -245,7 +245,7 @@ export interface Settings {
     sound: boolean;
     desktop: boolean;
     email: boolean;
-    emailDigest?: 'none' | 'daily' | 'weekly';
+    emailDigest?: "none" | "daily" | "weekly";
   };
   accessibility: {
     highContrast?: boolean;
@@ -271,7 +271,7 @@ export interface Settings {
     enableExperimental?: boolean;
     maxConnectionRetries?: number;
     connectionTimeoutMs?: number;
-    cacheStrategy?: 'memory' | 'local' | 'none';
+    cacheStrategy?: "memory" | "local" | "none";
     cacheTTLMs?: number;
   };
   [key: string]: any;
@@ -289,14 +289,17 @@ export interface PaginationParams {
 
 export interface SortParams {
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 export interface FilterParams {
   [key: string]: any;
 }
 
-export interface QueryParams extends PaginationParams, SortParams, FilterParams {}
+export interface QueryParams
+  extends PaginationParams,
+    SortParams,
+    FilterParams {}
 
 export interface PaginatedResponse<T> {
   data: T[];
@@ -336,7 +339,7 @@ export interface WorkflowStep {
   id: string;
   name: string;
   description?: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'skipped';
+  status: "pending" | "in_progress" | "completed" | "failed" | "skipped";
   startedAt?: string;
   completedAt?: string;
   error?: string;
@@ -348,7 +351,7 @@ export interface WorkflowStep {
 export interface Workflow extends Entity {
   name: string;
   description?: string;
-  status: 'draft' | 'active' | 'completed' | 'failed' | 'cancelled';
+  status: "draft" | "active" | "completed" | "failed" | "cancelled";
   steps: WorkflowStep[];
   currentStep?: string;
   startedAt?: string;
@@ -379,7 +382,7 @@ export interface FeatureToggle extends Entity {
 export interface ABTest extends Entity {
   name: string;
   description?: string;
-  status: 'draft' | 'active' | 'completed' | 'cancelled';
+  status: "draft" | "active" | "completed" | "cancelled";
   variants: ABTestVariant[];
   targetUserPercentage?: number;
   targetUserRoles?: string[];
@@ -407,7 +410,7 @@ export interface Integration extends Entity {
   name: string;
   type: string;
   config: Dict<any>;
-  status: 'active' | 'disabled' | 'error';
+  status: "active" | "disabled" | "error";
   lastSyncAt?: string;
   errorMessage?: string;
   metadata?: Dict<any>;
@@ -423,7 +426,7 @@ export interface Document extends Entity {
   size: number;
   uploadedAt: string;
   uploadedBy: string;
-  processingStatus: 'pending' | 'processing' | 'completed' | 'error';
+  processingStatus: "pending" | "processing" | "completed" | "error";
   processingError?: string;
   metadata?: Dict<any>;
   url?: string;
@@ -443,8 +446,8 @@ export type User = UserProfile;
 export type Role = UserRole;
 export type Metadata = Dict<JSONValue>;
 export type ResourceId = string;
-export type MessageRole = 'user' | 'assistant' | 'system' | 'function';
-export type MessageStatus = 'pending' | 'sent' | 'error' | 'censored';
-export type ThemeMode = 'light' | 'dark' | 'system';
-export type EntityStatus = 'active' | 'archived' | 'deleted';
-export type MessageRating = 'positive' | 'negative' | null;
+export type MessageRole = "user" | "assistant" | "system" | "function";
+export type MessageStatus = "pending" | "sent" | "error" | "censored";
+export type ThemeMode = "light" | "dark" | "system";
+export type EntityStatus = "active" | "archived" | "deleted";
+export type MessageRating = "positive" | "negative" | null;

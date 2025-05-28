@@ -723,7 +723,7 @@ export class OptimizedEventBus implements EventBus {
 
     // Create stats for each pattern
     // Use Array.from to avoid compatibility issues with Set iterators
-    Array.from(patterns).forEach(pattern => {
+    Array.from(patterns).forEach((pattern) => {
       const emitCount = this.eventStats.emitCount.get(pattern) || 0;
       const batchCount = this.eventStats.batchCount.get(pattern) || 0;
       const listenerCallCount =
@@ -953,7 +953,7 @@ export class OptimizedEventBus implements EventBus {
    */
   flushAllBatches(): void {
     // Use Array.from to avoid compatibility issues with Map iterators
-    Array.from(this.batchQueues.keys()).forEach(eventName => {
+    Array.from(this.batchQueues.keys()).forEach((eventName) => {
       this.processBatch(eventName);
     });
   }

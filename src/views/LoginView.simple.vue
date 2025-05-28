@@ -2,77 +2,90 @@
   <div class="login-container">
     <div class="login-card">
       <div class="logo-container">
-        <img src="@/assets/images/senmvku-logo.png" alt="nscale DMS Assistent" class="logo" />
+        <img
+          src="@/assets/images/senmvku-logo.png"
+          alt="nscale DMS Assistent"
+          class="logo"
+        />
         <h1>nscale DMS Assistent</h1>
       </div>
-      
+
       <div class="tab-container">
-        <button class="tab-button" :class="{ active: activeTab === 'login' }" @click="activeTab = 'login'">
+        <button
+          class="tab-button"
+          :class="{ active: activeTab === 'login' }"
+          @click="activeTab = 'login'"
+        >
           Anmelden
         </button>
-        <button class="tab-button" :class="{ active: activeTab === 'register' }" @click="activeTab = 'register'">
+        <button
+          class="tab-button"
+          :class="{ active: activeTab === 'register' }"
+          @click="activeTab = 'register'"
+        >
           Registrieren
         </button>
       </div>
-      
+
       <form @submit.prevent="submitForm" class="form">
         <div class="form-group">
           <label for="email">E-Mail</label>
-          <input 
-            id="email" 
-            v-model="formData.email" 
-            type="email" 
-            required 
+          <input
+            id="email"
+            v-model="formData.email"
+            type="email"
+            required
             placeholder="name@example.de"
             :disabled="isLoading"
           />
         </div>
-        
+
         <div v-if="activeTab === 'register'" class="form-group">
           <label for="username">Benutzername</label>
-          <input 
-            id="username" 
-            v-model="formData.username" 
-            type="text" 
-            required 
+          <input
+            id="username"
+            v-model="formData.username"
+            type="text"
+            required
             placeholder="Benutzername"
             :disabled="isLoading"
           />
         </div>
-        
+
         <div class="form-group">
           <label for="password">Passwort</label>
-          <input 
-            id="password" 
-            v-model="formData.password" 
-            type="password" 
-            required 
+          <input
+            id="password"
+            v-model="formData.password"
+            type="password"
+            required
             placeholder="••••••••"
             :disabled="isLoading"
           />
-          <div class="password-hint">Hinweis: Verwende "123" als Test-Passwort.</div>
+          <div class="password-hint">
+            Hinweis: Verwende "123" als Test-Passwort.
+          </div>
         </div>
-        
+
         <div v-if="authError" class="error-message">
           <strong>Fehler:</strong> {{ authError }}
         </div>
-        
+
         <div v-if="loginSuccess" class="success-message">
           Login erfolgreich! Sie werden weitergeleitet...
         </div>
-        
+
         <button type="submit" class="primary-button" :disabled="isLoading">
           {{ activeTab === "login" ? "Anmelden" : "Registrieren" }}
         </button>
-        
       </form>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, reactive } from "vue";
+import { useRouter } from "vue-router";
 
 // Store-Mock für die einfache Implementierung
 const authError = ref(null);
@@ -81,24 +94,24 @@ const isLoading = ref(false);
 const router = useRouter();
 
 // Form state
-const activeTab = ref('login');
+const activeTab = ref("login");
 const formData = reactive({
-  email: '',
-  username: '',
-  password: '',
-  rememberMe: false
+  email: "",
+  username: "",
+  password: "",
+  rememberMe: false,
 });
 
 // Demo-Login Funktion
 async function loginWithTestUser() {
-  formData.email = 'martin@danglefeet.com';
-  formData.password = '123';
+  formData.email = "martin@danglefeet.com";
+  formData.password = "123";
   await handleLogin();
 }
 
 // Form submit handler
 async function submitForm() {
-  if (activeTab.value === 'login') {
+  if (activeTab.value === "login") {
     await handleLogin();
   } else {
     await handleRegister();
@@ -111,19 +124,20 @@ async function handleLogin() {
     isLoading.value = true;
     loginSuccess.value = false;
     authError.value = null;
-    
+
     // Simulierter Login-Erfolg
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
     // Erfolgreichen Login simulieren
     loginSuccess.value = true;
-    
+
     // Zur Hauptseite weiterleiten
     setTimeout(() => {
-      router.push('/');
+      router.push("/");
     }, 1000);
   } catch (error) {
-    authError.value = "Login fehlgeschlagen. Bitte versuchen Sie es später erneut.";
+    authError.value =
+      "Login fehlgeschlagen. Bitte versuchen Sie es später erneut.";
   } finally {
     isLoading.value = false;
   }
@@ -134,19 +148,20 @@ async function handleRegister() {
   try {
     isLoading.value = true;
     authError.value = null;
-    
+
     // Simulierter Registrierungserfolg
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
     // Erfolgreiche Registrierung simulieren
     loginSuccess.value = true;
-    
+
     // Zur Hauptseite weiterleiten
     setTimeout(() => {
-      router.push('/');
+      router.push("/");
     }, 1000);
   } catch (error) {
-    authError.value = "Registrierung fehlgeschlagen. Bitte versuchen Sie es später erneut.";
+    authError.value =
+      "Registrierung fehlgeschlagen. Bitte versuchen Sie es später erneut.";
   } finally {
     isLoading.value = false;
   }

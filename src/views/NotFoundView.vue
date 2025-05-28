@@ -4,19 +4,21 @@
       <h1>404</h1>
       <h2>Seite nicht gefunden</h2>
       <p>Die angeforderte Seite konnte nicht gefunden werden.</p>
-      <router-link to="/" class="back-button">Zurück zur Startseite</router-link>
+      <router-link to="/" class="back-button"
+        >Zurück zur Startseite</router-link
+      >
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent } from "vue";
 
 export default defineComponent({
-  name: 'NotFoundView',
+  name: "NotFoundView",
   metaInfo: {
-    title: 'Seite nicht gefunden'
-  }
+    title: "Seite nicht gefunden",
+  },
 });
 </script>
 

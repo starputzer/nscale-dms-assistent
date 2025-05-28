@@ -15,7 +15,7 @@ Um die Umstellung von Mock-Daten zu realen API-Calls erfolgreich durchzuführen,
 - [x] Zentralen Export über adminServices.ts erstellen
 - [x] Feature-Flags in api-flags.ts konfigurieren
 
-### Phase 2: Store-Integration ⚙️
+### Phase 2: Store-Integration ✓
 
 - [x] **useMotdStore** aktualisieren (motd.ts)
 - [x] **useAdminUsersStore** aktualisieren (users.ts)
@@ -27,8 +27,16 @@ Um die Umstellung von Mock-Daten zu realen API-Calls erfolgreich durchzuführen,
 - [x] **useAdminSystemStore** aktualisieren (system.ts)
   - Ersetzen von direkten adminApi-Aufrufen durch adminSystemService
   - Implementieren der fetchStats-Methode mit dem Service
-  - Hinzufügen von Systemprüfungen und Cache-Verwaltung
-  - Erweitern der Fehlerbehandlung
+  - Hinzufügen von Systemprüfungen und Cache-Verwaltung 
+  - Erweitern der Fehlerbehandlung mit verbesserten Fallback-Mechanismen
+  - Implementieren der folgenden Methoden mit AdminSystemService:
+    - clearCache
+    - clearEmbeddingCache
+    - performSystemCheck
+    - reindexDocuments
+    - fetchAvailableActions
+  - Implementierung eines Retry-Mechanismus für robustere API-Kommunikation
+  - Verbesserte Fehlerbehandlung mit detailliertem Logging
 
 - [x] **useFeatureTogglesStore** aktualisieren (featureToggles.ts)
   - Ersetzen von direkten adminApi-Aufrufen durch adminFeatureTogglesService
@@ -54,10 +62,13 @@ Um die Umstellung von Mock-Daten zu realen API-Calls erfolgreich durchzuführen,
   - Verbesserte Fehlerbehandlung und Benutzer-Feedback
   - Erweiterte Filterungs- und Sortieroptionen
 
-- [ ] **AdminSystem.vue** aktualisieren
-  - Zustandsanzeigen für Systemoperationen
-  - Bestätigungsdialoge für kritische Aktionen
-  - Verbesserte Fehler- und Erfolgsmeldungen
+- [x] **AdminSystem.enhanced.vue** aktualisieren
+  - Zustandsanzeigen für Systemoperationen implementiert
+  - Bestätigungsdialoge für kritische Aktionen optimiert
+  - Verbesserte Fehler- und Erfolgsmeldungen durch Toast-Integration
+  - API-Integration-Banner zur Information der Benutzer
+  - Robuste Fehlerbehandlung bei Aktionen mit detailliertem Logging
+  - Verbesserte Initialisierung und automatische Datenaktualisierung
 
 - [x] **AdminFeedback.enhanced.vue** aktualisieren
   - Zustandsanzeigen für Lade- und Fehlerzustände hinzugefügt

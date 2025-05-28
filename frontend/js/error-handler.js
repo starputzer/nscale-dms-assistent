@@ -19,18 +19,17 @@
 
 // Monitoring für Legacy-Code-Nutzung
 function trackLegacyUsage(componentName, action) {
-  if (typeof window.telemetry !== 'undefined') {
-    window.telemetry.trackEvent('legacy_code_usage', {
+  if (typeof window.telemetry !== "undefined") {
+    window.telemetry.trackEvent("legacy_code_usage", {
       component: componentName,
       action: action,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 }
 
 // Tracking bei Modulinitialisierung
-trackLegacyUsage('error-handler', 'initialize');
-
+trackLegacyUsage("error-handler", "initialize");
 
 export const ErrorCategory = {
   // Netzwerkfehler: Verbindungsprobleme, Timeouts, etc.

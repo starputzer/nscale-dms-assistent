@@ -60,27 +60,37 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { PropType, withDefaultProp, requiredProp } from "@/utils/componentTypes";
+import {
+  PropType,
+  withDefaultProp,
+  requiredProp,
+} from "@/utils/componentTypes";
 import { isOneOf } from "@/utils/propValidators";
 
 // Typische Button-Varianten als Konstante definieren
-export const BUTTON_VARIANTS = ["primary", "secondary", "tertiary", "danger", "ghost"] as const;
-export type ButtonVariant = typeof BUTTON_VARIANTS[number];
+export const BUTTON_VARIANTS = [
+  "primary",
+  "secondary",
+  "tertiary",
+  "danger",
+  "ghost",
+] as const;
+export type ButtonVariant = (typeof BUTTON_VARIANTS)[number];
 
 // Typische Button-Größen als Konstante definieren
 export const BUTTON_SIZES = ["small", "medium", "large"] as const;
-export type ButtonSize = typeof BUTTON_SIZES[number];
+export type ButtonSize = (typeof BUTTON_SIZES)[number];
 
 // Button-Typen als HTML-Attribute
 export const BUTTON_TYPES = ["button", "submit", "reset"] as const;
-export type ButtonType = typeof BUTTON_TYPES[number];
+export type ButtonType = (typeof BUTTON_TYPES)[number];
 
 /**
  * Stark typisierte Button-Komponente mit umfassender Validierung
- * 
+ *
  * @example
  * ```vue
- * <TypedButton 
+ * <TypedButton
  *   variant="primary"
  *   size="medium"
  *   type="button"
@@ -101,54 +111,62 @@ const props = defineProps({
   variant: {
     type: String as PropType<ButtonVariant>,
     default: "primary",
-    validator: isOneOf(BUTTON_VARIANTS)
+    validator: isOneOf(BUTTON_VARIANTS),
   },
-  
+
   /**
    * Button-Größe
    */
-  size: withDefaultProp(String as PropType<ButtonSize>, "medium", isOneOf(BUTTON_SIZES)),
-  
+  size: withDefaultProp(
+    String as PropType<ButtonSize>,
+    "medium",
+    isOneOf(BUTTON_SIZES),
+  ),
+
   /**
    * Button HTML Typ-Attribut
    */
-  type: withDefaultProp(String as PropType<ButtonType>, "button", isOneOf(BUTTON_TYPES)),
-  
+  type: withDefaultProp(
+    String as PropType<ButtonType>,
+    "button",
+    isOneOf(BUTTON_TYPES),
+  ),
+
   /**
    * Gibt an, ob der Button deaktiviert ist
    */
   disabled: withDefaultProp(Boolean, false),
-  
+
   /**
    * Gibt an, ob der Button im Lade-Zustand ist
    */
   loading: withDefaultProp(Boolean, false),
-  
+
   /**
    * Gibt an, ob der Button die gesamte Breite des Containers einnehmen soll
    */
   fullWidth: withDefaultProp(Boolean, false),
-  
+
   /**
    * Icon-Komponente zur Anzeige auf der linken Seite
    */
   iconLeft: {
     type: [Object, Function],
-    default: null
+    default: null,
   },
-  
+
   /**
    * Icon-Komponente zur Anzeige auf der rechten Seite
    */
   iconRight: {
     type: [Object, Function],
-    default: null
+    default: null,
   },
-  
+
   /**
    * Gibt an, ob der Button nur ein Icon enthält (kein Text)
    */
-  iconOnly: withDefaultProp(Boolean, false)
+  iconOnly: withDefaultProp(Boolean, false),
 });
 
 // Stark typisierte Event-Definitionen
@@ -158,13 +176,13 @@ const emit = defineEmits<{
    * @param event Das ursprüngliche Maus- oder Tastatur-Event
    */
   (e: "click", event: MouseEvent | KeyboardEvent): void;
-  
+
   /**
    * Wird ausgelöst, wenn der Button fokussiert wird
    * @param event Das ursprüngliche FocusEvent
    */
   (e: "focus", event: FocusEvent): void;
-  
+
   /**
    * Wird ausgelöst, wenn der Button den Fokus verliert
    * @param event Das ursprüngliche FocusEvent

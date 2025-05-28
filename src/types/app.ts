@@ -1,6 +1,6 @@
 /**
  * Type definitions for the application
- * 
+ *
  * This file provides TypeScript type definitions for the nscale DMS Assistant
  * and exports the interfaces defined in app.d.ts for use in other files.
  */
@@ -37,7 +37,7 @@ export interface MotdConfig {
   display?: {
     showInChat: boolean;
     showOnStartup: boolean;
-  }
+  };
 }
 
 export interface FeedbackData {

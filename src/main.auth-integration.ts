@@ -1,26 +1,26 @@
 /**
  * Auth-Integration für main.ts
- * 
- * Diese Anweisungen sollten in die main.ts Datei integriert werden, um die 
+ *
+ * Diese Anweisungen sollten in die main.ts Datei integriert werden, um die
  * neuen Auth-Komponenten und Services zu aktivieren.
  */
 
 // Importiere Auth-Plugin und AuthService
-import AuthPlugin from '@/plugins/auth'
-import AuthService from '@/services/auth/AuthService'
-import { authRoutes } from '@/router/auth-routes'
+import AuthPlugin from "@/plugins/auth";
+import AuthService from "@/services/auth/AuthService";
+import { authRoutes } from "@/router/auth-routes";
 
 /**
  * Auth-Integration in main.ts
- * 
+ *
  * 1. Füge diese Importe zur main.ts hinzu:
  *    import AuthPlugin from '@/plugins/auth'
  *    import { authRoutes } from '@/router/auth-routes'
- * 
+ *
  * 2. Füge die Auth-Routen zum Router hinzu:
  *    // Im router/index.ts nach den bestehenden Routen
  *    ...authRoutes,
- * 
+ *
  * 3. Registriere das Auth-Plugin direkt vor der App-Montierung:
  */
 
@@ -30,34 +30,39 @@ app.use(AuthPlugin, {
   autoLogout: true,
   sessionTimeout: 30 * 60 * 1000, // 30 Minuten
   refreshInterval: 15 * 60 * 1000, // 15 Minuten
-  enableErrorReporting: true
-})
+  enableErrorReporting: true,
+});
 
-/** 
+/**
  * 4. Globaler Error-Handler mit Auth-Fehlerbehandlung
  *    Ersetze den bestehenden app.config.errorHandler mit:
  */
 app.config.errorHandler = (err, vm, info) => {
-  console.error('Vue error:', err, info)
+  console.error("Vue error:", err, info);
 
   // Typ-Prüfung für Auth-Fehler
-  if (err && typeof err === 'object' && 'type' in err) {
-    const authErr = err as any
-    if (authErr.type && ['token_expired', 'token_invalid', 'account_locked'].includes(authErr.type)) {
-      console.warn('Auth error detected, redirecting to login', authErr)
-      
+  if (err && typeof err === "object" && "type" in err) {
+    const authErr = err as any;
+    if (
+      authErr.type &&
+      ["token_expired", "token_invalid", "account_locked"].includes(
+        authErr.type,
+      )
+    ) {
+      console.warn("Auth error detected, redirecting to login", authErr);
+
       // Zur Login-Seite umleiten
-      router.push({ 
-        name: 'Login',
-        query: { 
+      router.push({
+        name: "Login",
+        query: {
           error: authErr.type,
-          message: authErr.message || 'Authentifizierungsfehler'
-        }
-      })
-      return
+          message: authErr.message || "Authentifizierungsfehler",
+        },
+      });
+      return;
     }
   }
-  
+
   // Fehler an Fehlerberichtssystem senden
   if (errorReporting) {
     try {
@@ -65,14 +70,14 @@ app.config.errorHandler = (err, vm, info) => {
         err instanceof Error ? err : new Error(String(err)),
         {
           source: {
-            type: 'component',
-            name: vm?.$options?.name || 'unknown'
+            type: "component",
+            name: vm?.$options?.name || "unknown",
           },
-          context: { info }
-        }
-      )
+          context: { info },
+        },
+      );
     } catch (reportError) {
-      console.error('Error reporting failed:', reportError)
+      console.error("Error reporting failed:", reportError);
     }
   }
 
@@ -81,13 +86,13 @@ app.config.errorHandler = (err, vm, info) => {
     try {
       window.telemetry.trackError(
         err instanceof Error ? err : new Error(String(err)),
-        { component: vm?.$options?.name || 'unknown', info }
-      )
+        { component: vm?.$options?.name || "unknown", info },
+      );
     } catch (telemetryError) {
-      console.error('Telemetry error tracking failed:', telemetryError)
+      console.error("Telemetry error tracking failed:", telemetryError);
     }
   }
-}
+};
 
 /**
  * 5. Auth-Status prüfen beim App-Start
@@ -95,24 +100,24 @@ app.config.errorHandler = (err, vm, info) => {
  */
 // Auth-Status prüfen beim App-Start
 if (AuthService.isAuthenticated()) {
-  console.log('User is authenticated, validating session...')
-  
+  console.log("User is authenticated, validating session...");
+
   // Initial session validation
   AuthService.validateToken()
-    .then(isValid => {
-      console.log('Session validation result:', isValid)
-      
+    .then((isValid) => {
+      console.log("Session validation result:", isValid);
+
       if (!isValid) {
-        console.warn('Session is invalid, redirecting to login')
-        
+        console.warn("Session is invalid, redirecting to login");
+
         // Zur Login-Seite umleiten
         router.push({
-          name: 'Login',
-          query: { error: 'session_expired' }
-        })
+          name: "Login",
+          query: { error: "session_expired" },
+        });
       }
     })
-    .catch(error => {
-      console.error('Session validation error:', error)
-    })
+    .catch((error) => {
+      console.error("Session validation error:", error);
+    });
 }

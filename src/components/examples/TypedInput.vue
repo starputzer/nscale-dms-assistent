@@ -15,12 +15,12 @@
       {{ label }}
       <span v-if="required" class="n-input__required-mark">*</span>
     </label>
-    
+
     <div class="n-input__container">
       <div v-if="$slots.prefix" class="n-input__prefix">
         <slot name="prefix"></slot>
       </div>
-      
+
       <input
         :id="inputId"
         ref="inputRef"
@@ -39,7 +39,7 @@
         @blur="onBlur"
         @keydown="onKeydown"
       />
-      
+
       <div class="n-input__suffix">
         <button
           v-if="clearable && modelValue && !disabled && !readonly"
@@ -54,19 +54,19 @@
             />
           </svg>
         </button>
-        
+
         <slot name="suffix"></slot>
       </div>
     </div>
-    
+
     <div v-if="maxlength" class="n-input__character-count">
       {{ modelValue?.length || 0 }}/{{ maxlength }}
     </div>
-    
+
     <div v-if="error" class="n-input__error-message">
       {{ error }}
     </div>
-    
+
     <div v-else-if="hint" class="n-input__hint">
       {{ hint }}
     </div>
@@ -95,7 +95,7 @@ export const INPUT_TYPES = [
   "week",
   "color",
 ] as const;
-export type InputType = typeof INPUT_TYPES[number];
+export type InputType = (typeof INPUT_TYPES)[number];
 
 /**
  * V-Model Props Definition
@@ -107,67 +107,67 @@ export interface InputProps extends VModelProps<InputModelValueType> {
    * Eindeutige ID für das Input-Element
    */
   id?: string;
-  
+
   /**
    * Label für das Input-Element
    */
   label?: string;
-  
+
   /**
    * Platzhaltertext, der angezeigt wird, wenn kein Wert eingegeben wurde
    */
   placeholder?: string;
-  
+
   /**
    * Typ des Input-Elements
    */
   type?: InputType;
-  
+
   /**
    * Gibt an, ob das Input-Element deaktiviert ist
    */
   disabled?: boolean;
-  
+
   /**
    * Gibt an, ob das Input-Element schreibgeschützt ist
    */
   readonly?: boolean;
-  
+
   /**
    * Gibt an, ob das Input-Element erforderlich ist
    */
   required?: boolean;
-  
+
   /**
    * Fehlermeldung, die angezeigt wird, wenn das Input-Element ungültig ist
    */
   error?: string;
-  
+
   /**
    * Gibt an, ob das Input-Element einen gültigen Wert hat
    */
   success?: boolean;
-  
+
   /**
    * Hinweistext, der unter dem Input-Element angezeigt wird
    */
   hint?: string;
-  
+
   /**
    * Gibt an, ob eine Schaltfläche zum Löschen des Wertes angezeigt werden soll
    */
   clearable?: boolean;
-  
+
   /**
    * Maximale Anzahl von Zeichen, die eingegeben werden können
    */
   maxlength?: number;
-  
+
   /**
    * Gibt an, ob ein Zähler für die Anzahl der eingegebenen Zeichen angezeigt werden soll
    */
   showCharCount?: boolean;
-  
+
   /**
    * Gibt an, ob der Fokus beim Mounten des Elements gesetzt werden soll
    */
@@ -181,32 +181,32 @@ export type InputEmits = VModelEmits<InputModelValueType> & {
   /**
    * Wird ausgelöst, wenn der Input-Wert geändert wurde
    */
-  'change': [InputModelValueType];
-  
+  change: [InputModelValueType];
+
   /**
    * Wird ausgelöst, wenn das Input-Element den Fokus erhält
    */
-  'focus': [FocusEvent];
-  
+  focus: [FocusEvent];
+
   /**
    * Wird ausgelöst, wenn das Input-Element den Fokus verliert
    */
-  'blur': [FocusEvent];
-  
+  blur: [FocusEvent];
+
   /**
    * Wird ausgelöst, wenn eine Taste gedrückt wird
    */
-  'keydown': [KeyboardEvent];
-  
+  keydown: [KeyboardEvent];
+
   /**
    * Wird ausgelöst, wenn der Wert gelöscht wird
    */
-  'clear': [];
+  clear: [];
 };
 
 /**
  * Stark typisierte Input-Komponente mit v-model Unterstützung
- * 
+ *
  * @example
  * ```vue
  * <TypedInput
@@ -230,7 +230,7 @@ const props = withDefaults(defineProps<InputProps>(), {
   success: false,
   clearable: false,
   showCharCount: false,
-  autofocus: false
+  autofocus: false,
 });
 
 // Event-Emitter mit Typsicherheit
@@ -248,24 +248,24 @@ const inputId = computed(() => props.id || `input-${Date.now()}`);
 function onInput(event: Event) {
   const target = event.target as HTMLInputElement;
   let value: InputModelValueType = target.value;
-  
+
   // Bei number-Eingabefeldern in number konvertieren
   if (props.type === "number" && value !== "") {
     value = parseFloat(value);
   }
-  
+
   emit("update:modelValue", value);
 }
 
 function onChange(event: Event) {
   const target = event.target as HTMLInputElement;
   let value: InputModelValueType = target.value;
-  
+
   // Bei number-Eingabefeldern in number konvertieren
   if (props.type === "number" && value !== "") {
     value = parseFloat(value);
   }
-  
+
   emit("change", value);
 }
 
@@ -286,7 +286,7 @@ function onKeydown(event: KeyboardEvent) {
 function onClear() {
   emit("update:modelValue", "");
   emit("clear");
-  
+
   // Fokus zurück auf das Eingabefeld setzen
   inputRef.value?.focus();
 }
@@ -355,7 +355,8 @@ onMounted(() => {
 }
 
 /* Prefix & Suffix Container */
-.n-input__prefix, .n-input__suffix {
+.n-input__prefix,
+.n-input__suffix {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -482,34 +483,34 @@ input[type="week"].n-input__field {
   .n-input__label {
     color: var(--n-dark-label-color, #e2e8f0);
   }
-  
+
   .n-input__container {
     background-color: var(--n-dark-input-bg, #2d3748);
     border-color: var(--n-dark-border-color, #4a5568);
   }
-  
+
   .n-input__field {
     color: var(--n-dark-text-color, #e2e8f0);
   }
-  
+
   .n-input__field::-webkit-input-placeholder {
     color: var(--n-dark-placeholder-color, #718096);
   }
-  
+
   .n-input__field::-moz-placeholder {
     color: var(--n-dark-placeholder-color, #718096);
   }
-  
+
   .n-input--disabled .n-input__container {
     background-color: var(--n-dark-disabled-bg, #1a202c);
     border-color: var(--n-dark-disabled-border, #4a5568);
   }
-  
+
   .n-input--disabled .n-input__field,
   .n-input--readonly .n-input__field {
     color: var(--n-dark-disabled-text, #718096);
   }
-  
+
   .n-input__hint,
   .n-input__character-count {
     color: var(--n-dark-hint-color, #a0aec0);

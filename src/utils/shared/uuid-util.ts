@@ -1,6 +1,6 @@
 /**
  * UUID Utility
- * 
+ *
  * This module provides functions for generating UUIDs that are used in both
  * Vue 3 SFC and Vanilla JS implementations.
  */
@@ -10,9 +10,9 @@
  * @returns {string} A randomly generated UUID
  */
 export function v4(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }
@@ -26,19 +26,21 @@ export function v4(): string {
 export function namespaced(namespace: string, name?: string): string {
   // Simple hash function for demonstration purposes
   // In production, use a more robust hashing algorithm
-  const str = `${namespace}:${name || ''}`;
+  const str = `${namespace}:${name || ""}`;
   let hash = 0;
-  
+
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32bit integer
   }
-  
+
   // Convert hash to hex string with UUID format
-  const hex = Math.abs(hash).toString(16).padStart(8, '0');
-  return `${hex.slice(0, 8)}-${hex.slice(0, 4)}-4${hex.slice(0, 3)}-${
-    (parseInt(hex.slice(0, 1), 16) & 0x3 | 0x8).toString(16)}${hex.slice(1, 4)}-${hex.slice(0, 12)}`;
+  const hex = Math.abs(hash).toString(16).padStart(8, "0");
+  return `${hex.slice(0, 8)}-${hex.slice(0, 4)}-4${hex.slice(0, 3)}-${(
+    (parseInt(hex.slice(0, 1), 16) & 0x3) |
+    0x8
+  ).toString(16)}${hex.slice(1, 4)}-${hex.slice(0, 12)}`;
 }
 
 /**
@@ -47,7 +49,8 @@ export function namespaced(namespace: string, name?: string): string {
  * @returns {boolean} True if the string is a valid UUID
  */
 export function isValid(uuid: string): boolean {
-  const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const regex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return regex.test(uuid);
 }
 
@@ -55,5 +58,5 @@ export function isValid(uuid: string): boolean {
 export default {
   v4,
   namespaced,
-  isValid
+  isValid,
 };

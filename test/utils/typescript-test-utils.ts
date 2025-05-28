@@ -1,22 +1,22 @@
 /**
  * TypeScript Test Utilities
- * 
+ *
  * Diese Datei enthält Hilfsfunktionen und -typen, die speziell für TypeScript-Tests entwickelt wurden.
  * Sie bietet Typsicherheit für Mock-Daten, Assertions und Test-Utilities.
  */
 
-import { Ref, ComputedRef, Component } from 'vue';
-import { mount, MountingOptions, VueWrapper } from '@vue/test-utils';
-import { vi, type MockInstance } from 'vitest';
-import { StoreDefinition } from 'pinia';
-import { APIResponse, APIError } from '@/utils/apiTypes';
-import { Result } from '@/utils/types';
+import { Ref, ComputedRef, Component } from "vue";
+import { mount, MountingOptions, VueWrapper } from "@vue/test-utils";
+import { vi, type MockInstance } from "vitest";
+import { StoreDefinition } from "pinia";
+import { APIResponse, APIError } from "@/utils/apiTypes";
+import { Result } from "@/utils/types";
 
 // ---------- Mock-Daten Typen ----------
 
 /**
  * Typisierter Mock für alle Mock-Daten
- * 
+ *
  * @template T Der Typ der Mock-Daten
  * @param overrides Überschreibungen für Standardwerte
  * @param defaults Standardwerte
@@ -24,17 +24,17 @@ import { Result } from '@/utils/types';
  */
 export function createTypedMock<T extends Record<string, any>>(
   overrides: Partial<T> = {},
-  defaults: T
+  defaults: T,
 ): T {
   return {
     ...defaults,
-    ...overrides
+    ...overrides,
   };
 }
 
 /**
  * API-Antwort Mock mit Typsicherheit
- * 
+ *
  * @template T Der Typ der Antwortdaten
  * @param data Die Antwortdaten
  * @param success Ob die Anfrage erfolgreich war
@@ -44,20 +44,20 @@ export function createTypedMock<T extends Record<string, any>>(
 export function createMockApiResponse<T = any>(
   data: T,
   success = true,
-  statusCode = 200
+  statusCode = 200,
 ): APIResponse<T> {
   return {
     success,
     data,
     statusCode,
-    message: success ? 'Success' : 'Error',
-    timestamp: new Date().toISOString()
+    message: success ? "Success" : "Error",
+    timestamp: new Date().toISOString(),
   };
 }
 
 /**
  * API-Fehler Mock mit Typsicherheit
- * 
+ *
  * @param code Fehlercode
  * @param message Fehlermeldung
  * @param statusCode HTTP-Statuscode
@@ -66,19 +66,19 @@ export function createMockApiResponse<T = any>(
 export function createMockApiError(
   code: string,
   message: string,
-  statusCode: number = 500
+  statusCode: number = 500,
 ): APIError {
   return {
     code,
     message,
     statusCode,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 }
 
 /**
  * Result-Typ Mock für Erfolgsfall
- * 
+ *
  * @template T Der Typ der Erfolgsdaten
  * @param data Die Erfolgsdaten
  * @returns Typisiertes Result-Objekt für Erfolg
@@ -86,13 +86,13 @@ export function createMockApiError(
 export function createSuccessResult<T>(data: T): Result<T, APIError> {
   return {
     success: true,
-    data
+    data,
   };
 }
 
 /**
  * Result-Typ Mock für Fehlerfall
- * 
+ *
  * @template E Der Typ des Fehlers
  * @param error Der Fehler
  * @returns Typisiertes Result-Objekt für Fehler
@@ -100,7 +100,7 @@ export function createSuccessResult<T>(data: T): Result<T, APIError> {
 export function createErrorResult<E = APIError>(error: E): Result<any, E> {
   return {
     success: false,
-    error
+    error,
   };
 }
 
@@ -108,7 +108,7 @@ export function createErrorResult<E = APIError>(error: E): Result<any, E> {
 
 /**
  * Typsicherere Mount-Funktion für Vue-Komponenten
- * 
+ *
  * @template TComponent Der Typ der zu mountenden Komponente
  * @template TProps Der Typ der Props der Komponente
  * @param component Die zu mountende Komponente
@@ -117,29 +117,31 @@ export function createErrorResult<E = APIError>(error: E): Result<any, E> {
  */
 export function typedMount<
   TComponent extends Component,
-  TProps = ComponentProps<TComponent>
+  TProps = ComponentProps<TComponent>,
 >(
   component: TComponent,
-  options?: MountingOptions<TProps>
+  options?: MountingOptions<TProps>,
 ): VueWrapper<InstanceType<TComponent>> {
-  return mount(component, options as any) as VueWrapper<InstanceType<TComponent>>;
+  return mount(component, options as any) as VueWrapper<
+    InstanceType<TComponent>
+  >;
 }
 
 /**
  * Extrahiert Prop-Typen aus einer Komponente
  */
-export type ComponentProps<C extends Component> = InstanceType<C>['$props'];
+export type ComponentProps<C extends Component> = InstanceType<C>["$props"];
 
 /**
  * Extrahiert Emit-Typen aus einer Komponente
  */
-export type ComponentEmits<C extends Component> = InstanceType<C>['$emit'];
+export type ComponentEmits<C extends Component> = InstanceType<C>["$emit"];
 
 // ---------- Store-spezifische Test-Utilities ----------
 
 /**
  * Typisierte Mock-Funktion für Store-Actions
- * 
+ *
  * @template TStore Der Typ des Stores
  * @template TAction Der Name der zu mockenden Action
  * @param store Die Store-Instanz
@@ -149,18 +151,20 @@ export type ComponentEmits<C extends Component> = InstanceType<C>['$emit'];
  */
 export function mockStoreAction<
   TStore extends Record<string, any>,
-  TAction extends keyof TStore
+  TAction extends keyof TStore,
 >(
-  store: TStore, 
+  store: TStore,
   action: TAction,
-  implementation?: (...args: any[]) => any
+  implementation?: (...args: any[]) => any,
 ): MockInstance {
-  return vi.spyOn(store, action as any).mockImplementation(implementation || vi.fn());
+  return vi
+    .spyOn(store, action as any)
+    .mockImplementation(implementation || vi.fn());
 }
 
 /**
  * Typisierte Mock-Funktion für Store-Getters
- * 
+ *
  * @template TStore Der Typ des Stores
  * @template TGetter Der Name des zu mockenden Getters
  * @param store Die Store-Instanz
@@ -169,15 +173,11 @@ export function mockStoreAction<
  */
 export function mockStoreGetter<
   TStore extends Record<string, any>,
-  TGetter extends keyof TStore
->(
-  store: TStore, 
-  getter: TGetter,
-  value: any
-): void {
+  TGetter extends keyof TStore,
+>(store: TStore, getter: TGetter, value: any): void {
   Object.defineProperty(store, getter, {
     get: () => value,
-    configurable: true
+    configurable: true,
   });
 }
 
@@ -185,27 +185,27 @@ export function mockStoreGetter<
 
 /**
  * Erstellt ein typisiertes, reaktives Ref für Tests
- * 
+ *
  * @template T Der Typ des Ref-Werts
  * @param initialValue Der Initialwert
  * @returns Ref-Objekt
  */
 export function createTestRef<T>(initialValue: T): Ref<T> {
   return {
-    value: initialValue
+    value: initialValue,
   } as Ref<T>;
 }
 
 /**
  * Erstellt ein typisiertes, berechnetes Ref für Tests
- * 
+ *
  * @template T Der Typ des ComputedRef-Werts
  * @param value Der Wert
  * @returns ComputedRef-Objekt
  */
 export function createTestComputedRef<T>(value: T): ComputedRef<T> {
   return {
-    value
+    value,
   } as ComputedRef<T>;
 }
 
@@ -213,7 +213,7 @@ export function createTestComputedRef<T>(value: T): ComputedRef<T> {
 
 /**
  * Überprüft zur Kompilierzeit, ob ein Typ einem anderen Typ entspricht
- * 
+ *
  * @template T Der zu überprüfende Typ
  * @template U Der erwartete Typ
  */
@@ -221,7 +221,7 @@ export type AssertType<T extends U, U> = T;
 
 /**
  * Überprüft, ob ein Objekt dem erwarteten Typ entspricht (zur Laufzeit)
- * 
+ *
  * @template T Der erwartete Typ
  * @param value Das zu überprüfende Objekt
  * @param validator Eine optionale Validierungsfunktion
@@ -229,7 +229,7 @@ export type AssertType<T extends U, U> = T;
  */
 export function assertType<T>(
   value: unknown,
-  validator?: (value: unknown) => boolean
+  validator?: (value: unknown) => boolean,
 ): T {
   if (validator && !validator(value)) {
     throw new Error(`Value does not match expected type: ${value}`);
@@ -239,7 +239,7 @@ export function assertType<T>(
 
 /**
  * Überprüft, ob ein Objekt ein bestimmtes Property hat
- * 
+ *
  * @template T Der Typ des Objekts
  * @template K Der Property-Name
  * @param obj Das zu überprüfende Objekt
@@ -252,7 +252,7 @@ export function hasProperty<T, K extends keyof T>(obj: T, prop: K): boolean {
 
 /**
  * Überprüft, ob eine Funktion mit bestimmten Parametern aufgerufen wurde
- * 
+ *
  * @template T Der Typ der Funktion
  * @param mockFn Die gemockte Funktion
  * @param params Die erwarteten Parameter
@@ -263,13 +263,12 @@ export function wasCalledWith<T extends (...args: any[]) => any>(
   ...params: Parameters<T>
 ): boolean {
   return mockFn.mock.calls.some(
-    call => call.length === params.length && call.every((arg, i) => arg === params[i])
+    (call) =>
+      call.length === params.length &&
+      call.every((arg, i) => arg === params[i]),
   );
 }
 
 // ---------- Exportieren ----------
 
-export {
-  vi,
-  mount
-};
+export { vi, mount };

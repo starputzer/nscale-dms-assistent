@@ -61,8 +61,8 @@ export function installBridge(
       modules: {
         auth: { enabled: BRIDGE_CONFIG.AUTH_ENABLED },
         sessions: { enabled: BRIDGE_CONFIG.SESSIONS_ENABLED },
-        ui: { enabled: BRIDGE_CONFIG.UI_ENABLED }
-      }
+        ui: { enabled: BRIDGE_CONFIG.UI_ENABLED },
+      },
     });
 
     if (BRIDGE_CONFIG.DEBUG) {

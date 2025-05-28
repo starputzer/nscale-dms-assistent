@@ -1,6 +1,6 @@
 /**
  * Globale Typdefinitionen für nscale DMS Assistenten
- * 
+ *
  * Diese Datei enthält Typdeklarationen für globale Objekte, Funktionen und
  * Erweiterungen, die im gesamten Projekt verfügbar sein sollen.
  */
@@ -12,7 +12,7 @@ interface ImportMetaEnv {
   /** API-Basis-URL */
   readonly VITE_API_BASE_URL: string;
   /** Umgebung (development, staging, production) */
-  readonly VITE_APP_ENV: 'development' | 'staging' | 'production';
+  readonly VITE_APP_ENV: "development" | "staging" | "production";
   /** App-Version aus package.json */
   readonly VITE_APP_VERSION: string;
   /** Debug-Modus aktivieren */
@@ -53,7 +53,7 @@ interface Window {
    * Logger-Instanz
    */
   logger?: Logger;
-  
+
   /**
    * Telemetrie-System für Fehler- und Performance-Tracking
    */
@@ -63,13 +63,17 @@ interface Window {
     /** Event aufzeichnen */
     trackEvent: (eventName: string, properties?: Record<string, any>) => void;
     /** Performance-Metrik aufzeichnen */
-    trackPerformance: (metricName: string, durationMs: number, properties?: Record<string, any>) => void;
+    trackPerformance: (
+      metricName: string,
+      durationMs: number,
+      properties?: Record<string, any>,
+    ) => void;
     /** Benutzersitzung starten */
     startSession: (userId?: string) => void;
     /** Benutzersitzung beenden */
     endSession: () => void;
   };
-  
+
   /**
    * Debug-Utility-Funktionen
    */
@@ -85,7 +89,7 @@ interface Window {
     /** Aktiviert oder deaktiviert Performance-Monitoring */
     monitorPerformance: (enabled?: boolean) => void;
   };
-  
+
   /**
    * Feature-Flag-System
    */
@@ -99,7 +103,7 @@ interface Window {
     /** Gibt alle aktiven Features zurück */
     getEnabledFeatures: () => string[];
   };
-  
+
   /**
    * Utility-Funktionen
    */
@@ -113,7 +117,7 @@ interface Window {
     /** Escape HTML */
     escapeHtml: (html: string) => string;
   };
-  
+
   /**
    * Bridge-System für Legacy-Integration
    */
@@ -121,7 +125,10 @@ interface Window {
     /** Sendet ein Ereignis an Legacy-Code */
     sendEvent: (eventName: string, payload?: any) => void;
     /** Registriert einen Handler für Legacy-Ereignisse */
-    onEvent: (eventName: string, handler: (payload?: any) => void) => () => void;
+    onEvent: (
+      eventName: string,
+      handler: (payload?: any) => void,
+    ) => () => void;
     /** Legacy-Services */
     services: Record<string, any>;
     /** Initialisierungsstatus */
@@ -145,33 +152,33 @@ interface Console {
 declare namespace Types {
   /** Typ für ID-Werte */
   export type ID = string;
-  
+
   /** Typ für eine Funktion ohne Parameter und Rückgabe */
   export type Callback = () => void;
-  
+
   /** Typ für eine Funktion mit generischen Parametern und Rückgabe */
   export type Handler<T = any, R = void> = (value: T) => R;
-  
+
   /** Typ für eine asynchrone Funktion mit generischen Parametern und Rückgabe */
   export type AsyncHandler<T = any, R = void> = (value: T) => Promise<R>;
-  
+
   /** Typ für eine Funktion zur Datenmapper-Transformation */
   export type Mapper<From, To> = (from: From) => To;
-  
+
   /** Typ für eine Validierungsfunktion */
   export type Validator<T> = (value: T) => boolean | string;
-  
+
   /** Utility-Typ für Deep Partial */
   export type DeepPartial<T> = {
     [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
   };
-  
+
   /** Utility-Typ für Record mit String-Keys */
   export type StringRecord<T = any> = Record<string, T>;
-  
+
   /** Utility-Typ für einen nullable Wert */
   export type Nullable<T> = T | null;
-  
+
   /** Utility-Typ für einen optional undefined Wert */
   export type Optional<T> = T | undefined;
 }
@@ -181,7 +188,9 @@ declare namespace Types {
  */
 interface Array<T> {
   /** Gibt das erste Element zurück, das die Bedingung erfüllt, oder null */
-  findOrNull(predicate: (value: T, index: number, obj: T[]) => boolean): T | null;
+  findOrNull(
+    predicate: (value: T, index: number, obj: T[]) => boolean,
+  ): T | null;
   /** Entfernt Duplikate aus dem Array (für primitive Typen) */
   distinct(): T[];
   /** Gruppiert Elemente nach einem Schlüssel */

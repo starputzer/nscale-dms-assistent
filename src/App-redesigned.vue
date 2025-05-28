@@ -8,11 +8,11 @@ Inspiriert vom Claude UI-Design
     <div v-if="isGuestRoute" class="guest-layout">
       <router-view />
     </div>
-    
+
     <!-- Main Layout with Header and Sidebar for authenticated routes -->
     <MainLayout v-else>
       <template #header>
-        <Header 
+        <Header
           title="Digitale Akte Assistent"
           :fixed="false"
           :bordered="true"
@@ -29,11 +29,49 @@ Inspiriert vom Claude UI-Design
         >
           <template #logo>
             <div class="app-logo">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
-                <line x1="8" y1="8" x2="16" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <line x1="8" y1="16" x2="11" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect
+                  x="3"
+                  y="3"
+                  width="18"
+                  height="18"
+                  rx="2"
+                  stroke="currentColor"
+                  stroke-width="2"
+                />
+                <line
+                  x1="8"
+                  y1="8"
+                  x2="16"
+                  y2="8"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+                <line
+                  x1="8"
+                  y1="12"
+                  x2="16"
+                  y2="12"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+                <line
+                  x1="8"
+                  y1="16"
+                  x2="11"
+                  y2="16"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
               </svg>
             </div>
           </template>
@@ -41,7 +79,7 @@ Inspiriert vom Claude UI-Design
       </template>
 
       <template #sidebar>
-        <Sidebar 
+        <Sidebar
           :theme="effectiveTheme"
           :collapsed="uiStore.sidebarCollapsed"
           @navigate="handleNavigation"
@@ -55,99 +93,98 @@ Inspiriert vom Claude UI-Design
     </MainLayout>
 
     <!-- Settings Modal -->
-    <SettingsModal 
-      v-if="showSettings"
-      @close="showSettings = false"
-    />
+    <SettingsModal v-if="showSettings" @close="showSettings = false" />
 
     <!-- Admin Panel Modal -->
-    <AdminPanel 
-      v-if="showAdminPanel"
-      @close="showAdminPanel = false"
-    />
+    <AdminPanel v-if="showAdminPanel" @close="showAdminPanel = false" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-import { useUIStore } from '@/stores/ui'
-import { useThemeStore } from '@/stores/theme'
-import MainLayout from '@/components/layout/MainLayout.vue'
-import Header from '@/components/layout/Header-redesigned.vue'
-import Sidebar from '@/components/layout/Sidebar-redesigned.vue'
-import SettingsModal from '@/components/settings/SettingsModal.vue'
-import AdminPanel from '@/components/admin/AdminPanel-redesigned.vue'
+import { ref, computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
+import { useUIStore } from "@/stores/ui";
+import { useThemeStore } from "@/stores/theme";
+import MainLayout from "@/components/layout/MainLayout.vue";
+import Header from "@/components/layout/Header-redesigned.vue";
+import Sidebar from "@/components/layout/Sidebar-redesigned.vue";
+import SettingsModal from "@/components/settings/SettingsModal.vue";
+import AdminPanel from "@/components/admin/AdminPanel-redesigned.vue";
 
-const route = useRoute()
-const router = useRouter()
-const authStore = useAuthStore()
-const uiStore = useUIStore()
-const themeStore = useThemeStore()
+const route = useRoute();
+const router = useRouter();
+const authStore = useAuthStore();
+const uiStore = useUIStore();
+const themeStore = useThemeStore();
 
 // State
-const showSettings = ref(false)
-const showAdminPanel = ref(false)
+const showSettings = ref(false);
+const showAdminPanel = ref(false);
 
 // Computed
-const user = computed(() => authStore.user)
-const hasAdminAccess = computed(() => authStore.hasRole('admin'))
-const effectiveTheme = computed(() => themeStore.effectiveTheme)
+const user = computed(() => authStore.user);
+const hasAdminAccess = computed(() => authStore.hasRole("admin"));
+const effectiveTheme = computed(() => themeStore.effectiveTheme);
 
 // Check if current route is a guest route
 const isGuestRoute = computed(() => {
-  const guestPaths = ['/login', '/register', '/forgot-password', '/reset-password']
-  return guestPaths.some(path => route.path.startsWith(path))
-})
+  const guestPaths = [
+    "/login",
+    "/register",
+    "/forgot-password",
+    "/reset-password",
+  ];
+  return guestPaths.some((path) => route.path.startsWith(path));
+});
 
 // Methods
 const handleSidebarToggle = () => {
-  uiStore.toggleSidebar()
-}
+  uiStore.toggleSidebar();
+};
 
 const handleLogout = async () => {
   try {
-    await authStore.logout()
-    router.push('/login')
+    await authStore.logout();
+    router.push("/login");
   } catch (error) {
-    console.error('Logout error:', error)
+    console.error("Logout error:", error);
   }
-}
+};
 
 const handleSettings = () => {
-  showSettings.value = true
-}
+  showSettings.value = true;
+};
 
 const handleAdminAccess = () => {
-  showAdminPanel.value = true
-}
+  showAdminPanel.value = true;
+};
 
 const handleNavigation = (itemId: string) => {
   switch (itemId) {
-    case 'chat':
-      router.push('/chat')
-      break
-    case 'documents':
-      router.push('/documents')
-      break
-    case 'settings':
-      showSettings.value = true
-      break
-    case 'admin':
-      showAdminPanel.value = true
-      break
-    case 'help':
-      router.push('/help')
-      break
+    case "chat":
+      router.push("/chat");
+      break;
+    case "documents":
+      router.push("/documents");
+      break;
+    case "settings":
+      showSettings.value = true;
+      break;
+    case "admin":
+      showAdminPanel.value = true;
+      break;
+    case "help":
+      router.push("/help");
+      break;
   }
-}
+};
 
 // Lifecycle
 onMounted(() => {
   // Initialize app
-  console.log('Digitale Akte Assistent loaded')
-})
+  console.log("Digitale Akte Assistent loaded");
+});
 </script>
 
 <style scoped>
@@ -157,7 +194,8 @@ onMounted(() => {
   overflow: hidden;
   background: var(--background);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .app-logo {
@@ -180,7 +218,6 @@ onMounted(() => {
   background-color: var(--background);
   padding: 20px;
 }
-
 
 /* Theme variables */
 :root {

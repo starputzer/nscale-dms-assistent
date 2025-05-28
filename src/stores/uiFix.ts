@@ -50,7 +50,7 @@ export const useUIStore = defineStore(
         // Viewport check
         checkViewport();
         window.addEventListener("resize", checkViewport);
-        
+
         // Dunkelmodus aus localStorage laden
         const savedDarkMode = localStorage.getItem("ui:darkMode");
         if (savedDarkMode !== null) {
@@ -63,11 +63,13 @@ export const useUIStore = defineStore(
         }
 
         // System-Präferenz für Dark Mode
-        const prefersDarkMode = window.matchMedia("(prefers-color-scheme: dark)");
+        const prefersDarkMode = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        );
         if (savedDarkMode === null && prefersDarkMode.matches) {
           darkMode.value = true;
         }
-        
+
         // Änderungen der System-Präferenz beobachten
         prefersDarkMode.addEventListener("change", (e) => {
           if (localStorage.getItem("ui:darkMode") === null) {
@@ -101,12 +103,12 @@ export const useUIStore = defineStore(
         document.documentElement.classList.remove("dark");
         document.documentElement.setAttribute("data-theme", "light");
       }
-      
+
       // Custom Event auslösen
       window.dispatchEvent(
         new CustomEvent("nscale:ui:darkModeChanged", {
           detail: { darkMode: darkMode.value },
-        })
+        }),
       );
     }
 
@@ -144,5 +146,5 @@ export const useUIStore = defineStore(
   {
     // Vereinfachte Persistenz ohne komplexe Hydration
     persist: false,
-  }
+  },
 );

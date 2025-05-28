@@ -1,16 +1,27 @@
 /**
  * Optimized Bridge System - Exports
- * 
+ *
  * This file exports all optimized bridge components and provides
  * convenient initialization functions for using the optimized bridge.
  */
 
-import { deepDiff, applyDiff, DiffOperation, DiffOperationType } from './DeepDiff';
-import { OptimizedStateManager, createDebouncedStateManager } from './StateManager';
-import { BatchedEventEmitter } from './BatchedEventEmitter';
-import { MemoryManager } from './MemoryManager';
-import { OptimizedChatBridge } from './OptimizedChatBridge';
-import { PerformanceMonitor, PerformanceMetricType } from './PerformanceMonitor';
+import {
+  deepDiff,
+  applyDiff,
+  DiffOperation,
+  DiffOperationType,
+} from "./DeepDiff";
+import {
+  OptimizedStateManager,
+  createDebouncedStateManager,
+} from "./StateManager";
+import { BatchedEventEmitter } from "./BatchedEventEmitter";
+import { MemoryManager } from "./MemoryManager";
+import { OptimizedChatBridge } from "./OptimizedChatBridge";
+import {
+  PerformanceMonitor,
+  PerformanceMetricType,
+} from "./PerformanceMonitor";
 
 // Create singleton instances
 const memoryManager = new MemoryManager();
@@ -21,45 +32,49 @@ const optimizedChatBridge = new OptimizedChatBridge();
  * Initialize all optimization components
  * @param options Configuration options
  */
-export function initializeOptimizedBridge(options: {
-  enableDiagnostics?: boolean;
-  enablePerformanceMonitoring?: boolean;
-  enableMemoryManagement?: boolean;
-  enableSelectiveSync?: boolean;
-  enableEventBatching?: boolean;
-  enableSelfHealing?: boolean;
-} = {}): void {
+export function initializeOptimizedBridge(
+  options: {
+    enableDiagnostics?: boolean;
+    enablePerformanceMonitoring?: boolean;
+    enableMemoryManagement?: boolean;
+    enableSelectiveSync?: boolean;
+    enableEventBatching?: boolean;
+    enableSelfHealing?: boolean;
+  } = {},
+): void {
   const {
     enableDiagnostics = true,
     enablePerformanceMonitoring = true,
     enableMemoryManagement = true,
     enableSelectiveSync = true,
     enableEventBatching = true,
-    enableSelfHealing = true
+    enableSelfHealing = true,
   } = options;
-  
+
   if (enableDiagnostics) {
     optimizedChatBridge.setDiagnostics(true);
   }
-  
+
   if (enablePerformanceMonitoring) {
     performanceMonitor.setEnabled(true);
   }
-  
+
   optimizedChatBridge.initialize();
 }
 
 /**
  * Get a performance-optimized chat bridge instance
  */
-export async function getOptimizedBridge(options: {
-  enableDiagnostics?: boolean;
-  enablePerformanceMonitoring?: boolean;
-  enableMemoryManagement?: boolean;
-  enableSelectiveSync?: boolean;
-  enableEventBatching?: boolean;
-  enableSelfHealing?: boolean;
-} = {}): Promise<OptimizedChatBridge> {
+export async function getOptimizedBridge(
+  options: {
+    enableDiagnostics?: boolean;
+    enablePerformanceMonitoring?: boolean;
+    enableMemoryManagement?: boolean;
+    enableSelectiveSync?: boolean;
+    enableEventBatching?: boolean;
+    enableSelfHealing?: boolean;
+  } = {},
+): Promise<OptimizedChatBridge> {
   initializeOptimizedBridge(options);
   return optimizedChatBridge;
 }
@@ -81,7 +96,9 @@ export function getPerformanceMonitor(): PerformanceMonitor {
 /**
  * Create a new optimized state manager
  */
-export function createOptimizedStateManager(debounceTime?: number): OptimizedStateManager {
+export function createOptimizedStateManager(
+  debounceTime?: number,
+): OptimizedStateManager {
   return createDebouncedStateManager(debounceTime);
 }
 
@@ -103,7 +120,7 @@ export {
   MemoryManager,
   OptimizedChatBridge,
   PerformanceMonitor,
-  PerformanceMetricType
+  PerformanceMetricType,
 };
 
 /**
@@ -113,13 +130,13 @@ export const OptimizedBridgePlugin = {
   install(app: any, options: any = {}) {
     // Initialize the bridge
     const bridge = getOptimizedBridge(options);
-    
+
     // Provide the bridge to all components
-    app.provide('optimizedBridge', bridge);
-    
+    app.provide("optimizedBridge", bridge);
+
     // Register global properties
     app.config.globalProperties.$bridge = bridge;
-  }
+  },
 };
 
 // Export default object for convenient access
@@ -130,5 +147,5 @@ export default {
   createOptimizedStateManager,
   createBatchedEventEmitter,
   initializeOptimizedBridge,
-  OptimizedBridgePlugin
+  OptimizedBridgePlugin,
 };

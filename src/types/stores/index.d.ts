@@ -1,7 +1,7 @@
 // Type declaration file for the Vue application's store imports
 // This file enables TypeScript to understand the module imports
 
-declare module '@/stores/auth' {
+declare module "@/stores/auth" {
   export function useAuthStore(): {
     isAuthenticated: boolean;
     token: string | null;
@@ -11,9 +11,9 @@ declare module '@/stores/auth' {
   };
 }
 
-declare module '@/stores/sessions' {
-  import type { ChatSession, ChatMessage } from '@/types/session';
-  
+declare module "@/stores/sessions" {
+  import type { ChatSession, ChatMessage } from "@/types/session";
+
   export function useSessionsStore(): {
     sessions: ChatSession[];
     currentSession: ChatSession | null;
@@ -28,7 +28,7 @@ declare module '@/stores/sessions' {
   };
 }
 
-declare module '@/stores/settings' {
+declare module "@/stores/settings" {
   export function useSettingsStore(): {
     fontSizeLevel: number;
     contrastMode: string;
@@ -44,19 +44,19 @@ declare module '@/stores/settings' {
   };
 }
 
-declare module '@/stores/ui' {
+declare module "@/stores/ui" {
   export function useUIStore(): {
     activeView: string;
     settingsVisible: boolean;
     setActiveView(view: string): void;
     toggleSettings(): void;
-    showToast(toast: {type: string, message: string}): void;
+    showToast(toast: { type: string; message: string }): void;
   };
 }
 
-declare module '@/stores/admin/motd' {
-  import type { MotdConfig } from '@/types/admin';
-  
+declare module "@/stores/admin/motd" {
+  import type { MotdConfig } from "@/types/admin";
+
   export function useMotdStore(): {
     config: MotdConfig;
     editConfig: MotdConfig;
@@ -66,7 +66,7 @@ declare module '@/stores/admin/motd' {
   };
 }
 
-declare module '@/stores/admin/feedback' {
+declare module "@/stores/admin/feedback" {
   export function useFeedbackStore(): {
     submitFeedback(feedback: {
       messageId: string | null;
@@ -77,7 +77,7 @@ declare module '@/stores/admin/feedback' {
   };
 }
 
-declare module '@/stores/abTests' {
+declare module "@/stores/abTests" {
   export function useABTestStore(): {
     tests: any[];
     loadTests(): Promise<void>;
@@ -85,62 +85,62 @@ declare module '@/stores/abTests' {
 }
 
 // Component declarations
-declare module '@/views/AuthView.vue' {
-  import { DefineComponent } from 'vue';
+declare module "@/views/AuthView.vue" {
+  import { DefineComponent } from "vue";
   const component: DefineComponent<{}, {}, any>;
   export default component;
 }
 
-declare module '@/views/ChatView.vue' {
-  import { DefineComponent } from 'vue';
+declare module "@/views/ChatView.vue" {
+  import { DefineComponent } from "vue";
   const component: DefineComponent<{}, {}, any>;
   export default component;
 }
 
-declare module '@/views/AdminView.vue' {
-  import { DefineComponent } from 'vue';
+declare module "@/views/AdminView.vue" {
+  import { DefineComponent } from "vue";
   const component: DefineComponent<{}, {}, any>;
   export default component;
 }
 
-declare module '@/components/layout/Header.vue' {
-  import { DefineComponent } from 'vue';
+declare module "@/components/layout/Header.vue" {
+  import { DefineComponent } from "vue";
   const component: DefineComponent<{}, {}, any>;
   export default component;
 }
 
-declare module '@/components/ui/Motd.vue' {
-  import { DefineComponent } from 'vue';
+declare module "@/components/ui/Motd.vue" {
+  import { DefineComponent } from "vue";
   const component: DefineComponent<{}, {}, any>;
   export default component;
 }
 
-declare module '@/components/ui/ToastContainer.vue' {
-  import { DefineComponent } from 'vue';
+declare module "@/components/ui/ToastContainer.vue" {
+  import { DefineComponent } from "vue";
   const component: DefineComponent<{}, {}, any>;
   export default component;
 }
 
-declare module '@/components/dialog/FeedbackDialog.vue' {
-  import { DefineComponent } from 'vue';
+declare module "@/components/dialog/FeedbackDialog.vue" {
+  import { DefineComponent } from "vue";
   const component: DefineComponent<{}, {}, any>;
   export default component;
 }
 
-declare module '@/components/dialog/SettingsDialog.vue' {
-  import { DefineComponent } from 'vue';
+declare module "@/components/dialog/SettingsDialog.vue" {
+  import { DefineComponent } from "vue";
   const component: DefineComponent<{}, {}, any>;
   export default component;
 }
 
-declare module '@/components/shared/ErrorBoundary.vue' {
-  import { DefineComponent } from 'vue';
+declare module "@/components/shared/ErrorBoundary.vue" {
+  import { DefineComponent } from "vue";
   const component: DefineComponent<{}, {}, any>;
   export default component;
 }
 
-declare module '@/components/shared/CriticalError.vue' {
-  import { DefineComponent } from 'vue';
+declare module "@/components/shared/CriticalError.vue" {
+  import { DefineComponent } from "vue";
   const component: DefineComponent<{}, {}, any>;
   export default component;
 }

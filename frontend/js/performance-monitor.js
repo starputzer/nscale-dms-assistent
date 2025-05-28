@@ -11,21 +11,19 @@
  * sammelt Metriken für DOM-Operationen, Netzwerkanfragen und Rendering.
  */
 
-
 // Monitoring für Legacy-Code-Nutzung
 function trackLegacyUsage(componentName, action) {
-  if (typeof window.telemetry !== 'undefined') {
-    window.telemetry.trackEvent('legacy_code_usage', {
+  if (typeof window.telemetry !== "undefined") {
+    window.telemetry.trackEvent("legacy_code_usage", {
       component: componentName,
       action: action,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 }
 
 // Tracking bei Modulinitialisierung
-trackLegacyUsage('performance-monitor', 'initialize');
-
+trackLegacyUsage("performance-monitor", "initialize");
 
 (function () {
   // Konfiguration

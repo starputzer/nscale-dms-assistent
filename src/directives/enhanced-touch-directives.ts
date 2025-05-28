@@ -422,11 +422,11 @@ export const EnhancedTouchPlugin = {
 };
 
 // Export the directives needed by index.ts
-export const enhancedSwipe = { name: 'enhancedSwipe' };
-export const enhancedTap = { name: 'enhancedTap' };
-export const enhancedLongPress = { name: 'enhancedLongPress' };
-export const enhancedPan = { name: 'enhancedPan' };
-export const enhancedPinch = { name: 'enhancedPinch' };
+export const enhancedSwipe = { name: "enhancedSwipe" };
+export const enhancedTap = { name: "enhancedTap" };
+export const enhancedLongPress = { name: "enhancedLongPress" };
+export const enhancedPan = { name: "enhancedPan" };
+export const enhancedPinch = { name: "enhancedPinch" };
 
 // Type declaration for TypeScript
 declare global {

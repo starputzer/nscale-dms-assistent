@@ -1,9 +1,21 @@
-import type { Ref, ComputedRef } from 'vue';
-import type { Result, Nullable, Optional } from './types';
-import type { APIResponse, APIError } from './apiTypes';
-import type { ChatSession, ChatMessage } from '../types/session';
-import type { LoginCredentials, RegisterCredentials, User, Role, TokenStatus, PermissionCheck } from '../types/auth';
-import type { FeatureToggleError, FeatureToggleStatus, FeatureConfig, FeatureToggleRole } from '../stores/featureToggles';
+import type { Ref, ComputedRef } from "vue";
+import type { Result, Nullable, Optional } from "./types";
+import type { APIResponse, APIError } from "./apiTypes";
+import type { ChatSession, ChatMessage } from "../types/session";
+import type {
+  LoginCredentials,
+  RegisterCredentials,
+  User,
+  Role,
+  TokenStatus,
+  PermissionCheck,
+} from "../types/auth";
+import type {
+  FeatureToggleError,
+  FeatureToggleStatus,
+  FeatureConfig,
+  FeatureToggleRole,
+} from "../stores/featureToggles";
 
 /**
  * Generische Typdefinitionen für Composables
@@ -12,7 +24,10 @@ import type { FeatureToggleError, FeatureToggleStatus, FeatureConfig, FeatureTog
 /**
  * Basistyp für alle Composables, die einen Zustand und Methoden zurückgeben
  */
-export interface ComposableReturn<State = Record<string, any>, Methods = Record<string, (...args: any[]) => any>> {
+export interface ComposableReturn<
+  State = Record<string, any>,
+  Methods = Record<string, (...args: any[]) => any>,
+> {
   // Zustand (typischerweise reactive refs oder computed properties)
   [key: string]: any;
 }
@@ -144,24 +159,24 @@ export interface UseApiCacheReturn {
   cachedRequest: <T = any>(
     key: string,
     fetcher: () => Promise<T>,
-    options?: { ttl?: number; force?: boolean }
+    options?: { ttl?: number; force?: boolean },
   ) => Promise<T>;
-  
+
   /** Gibt an, ob ein Cache-Eintrag existiert */
   hasCache: (key: string) => boolean;
-  
+
   /** Gibt einen Cache-Eintrag zurück */
   getCache: <T = any>(key: string) => T | null;
-  
+
   /** Löscht einen Cache-Eintrag */
   invalidateCache: (key: string) => void;
-  
+
   /** Löscht alle Cache-Einträge, die einem Muster entsprechen */
   invalidateCachePattern: (pattern: string | RegExp) => void;
-  
+
   /** Löscht alle Cache-Einträge */
   clearCache: () => void;
-  
+
   /** Aktuellen Cache-Status */
   cacheStatus: ComputedRef<{
     size: number;
@@ -293,11 +308,17 @@ export interface ToastOptions {
   /** Gibt an, wie lange der Toast angezeigt werden soll (in Millisekunden) */
   duration?: number;
   /** Gibt an, welcher Typ der Toast ist */
-  type?: 'info' | 'success' | 'warning' | 'error';
+  type?: "info" | "success" | "warning" | "error";
   /** Gibt an, ob der Toast ein Schließen-Symbol haben soll */
   closable?: boolean;
   /** Position des Toasts */
-  position?: 'top' | 'top-right' | 'top-left' | 'bottom' | 'bottom-right' | 'bottom-left';
+  position?:
+    | "top"
+    | "top-right"
+    | "top-left"
+    | "bottom"
+    | "bottom-right"
+    | "bottom-left";
 }
 
 /**
@@ -307,13 +328,13 @@ export interface UseToastReturn {
   /** Zeigt einen Toast mit dem angegebenen Text an */
   show: (message: string, options?: ToastOptions) => void;
   /** Zeigt einen Erfolgs-Toast an */
-  success: (message: string, options?: Omit<ToastOptions, 'type'>) => void;
+  success: (message: string, options?: Omit<ToastOptions, "type">) => void;
   /** Zeigt einen Info-Toast an */
-  info: (message: string, options?: Omit<ToastOptions, 'type'>) => void;
+  info: (message: string, options?: Omit<ToastOptions, "type">) => void;
   /** Zeigt einen Warnungs-Toast an */
-  warning: (message: string, options?: Omit<ToastOptions, 'type'>) => void;
+  warning: (message: string, options?: Omit<ToastOptions, "type">) => void;
   /** Zeigt einen Fehler-Toast an */
-  error: (message: string, options?: Omit<ToastOptions, 'type'>) => void;
+  error: (message: string, options?: Omit<ToastOptions, "type">) => void;
   /** Schließt alle aktuell angezeigten Toasts */
   clearAll: () => void;
 }
@@ -323,7 +344,7 @@ export interface UseToastReturn {
  */
 export interface UseThemeReturn {
   /** Aktuelles Theme */
-  theme: Ref<'light' | 'dark' | 'system'>;
+  theme: Ref<"light" | "dark" | "system">;
   /** Wechselt zwischen Light und Dark Mode */
   toggleTheme: () => void;
   /** Setzt das Theme auf Light Mode */
@@ -352,7 +373,7 @@ export interface UseSettingsReturn {
   isLoading: ComputedRef<boolean>;
   /** Fehler beim Laden oder Speichern der Einstellungen */
   error: ComputedRef<Nullable<string>>;
-  
+
   /** Lädt die Einstellungen */
   loadSettings: () => Promise<void>;
   /** Speichert eine Einstellung */

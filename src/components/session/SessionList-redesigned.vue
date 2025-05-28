@@ -2,12 +2,17 @@
   <div class="session-list">
     <div class="session-list__header">
       <h2 class="session-list__title">Unterhaltungen</h2>
-      <button 
+      <button
         class="session-list__new"
         @click="createNewSession"
         title="Neue Unterhaltung"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
@@ -15,7 +20,7 @@
     </div>
 
     <div class="session-list__content">
-      <div 
+      <div
         v-for="session in sessions"
         :key="session.id"
         class="session-item"
@@ -24,27 +29,35 @@
       >
         <div class="session-item__content">
           <h3 class="session-item__title">{{ session.title }}</h3>
-          <p class="session-item__preview">{{ session.lastMessage || 'Noch keine Nachrichten' }}</p>
-          <span class="session-item__time">{{ formatTime(session.updatedAt) }}</span>
+          <p class="session-item__preview">
+            {{ session.lastMessage || "Noch keine Nachrichten" }}
+          </p>
+          <span class="session-item__time">{{
+            formatTime(session.updatedAt)
+          }}</span>
         </div>
-        <button 
+        <button
           class="session-item__delete"
           @click.stop="deleteSession(session.id)"
           title="Löschen"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <polyline points="3 6 5 6 21 6"></polyline>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            <path
+              d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+            ></path>
           </svg>
         </button>
       </div>
 
       <div v-if="sessions.length === 0" class="session-list__empty">
         <p>Noch keine Unterhaltungen vorhanden.</p>
-        <button 
-          class="session-list__empty-button"
-          @click="createNewSession"
-        >
+        <button class="session-list__empty-button" @click="createNewSession">
           Neue Unterhaltung starten
         </button>
       </div>
@@ -53,49 +66,49 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useSessionsStore } from '@/stores/sessions'
-import { formatDistanceToNow } from 'date-fns'
-import { de } from 'date-fns/locale'
+import { computed } from "vue";
+import { useRouter } from "vue-router";
+import { useSessionsStore } from "@/stores/sessions";
+import { formatDistanceToNow } from "date-fns";
+import { de } from "date-fns/locale";
 
-const router = useRouter()
-const sessionsStore = useSessionsStore()
+const router = useRouter();
+const sessionsStore = useSessionsStore();
 
-const sessions = computed(() => sessionsStore.sessions)
-const activeSessionId = computed(() => sessionsStore.currentSessionId)
+const sessions = computed(() => sessionsStore.sessions);
+const activeSessionId = computed(() => sessionsStore.currentSessionId);
 
 const createNewSession = async () => {
-  const sessionId = await sessionsStore.createSession('Neue Unterhaltung')
-  router.push(`/chat/${sessionId}`)
-}
+  const sessionId = await sessionsStore.createSession("Neue Unterhaltung");
+  router.push(`/chat/${sessionId}`);
+};
 
 const selectSession = (sessionId: string) => {
-  sessionsStore.setCurrentSession(sessionId)
-  router.push(`/chat/${sessionId}`)
-}
+  sessionsStore.setCurrentSession(sessionId);
+  router.push(`/chat/${sessionId}`);
+};
 
 const deleteSession = async (sessionId: string) => {
-  if (confirm('Möchten Sie diese Unterhaltung wirklich löschen?')) {
-    await sessionsStore.deleteSession(sessionId)
+  if (confirm("Möchten Sie diese Unterhaltung wirklich löschen?")) {
+    await sessionsStore.deleteSession(sessionId);
     if (sessionId === activeSessionId.value) {
-      const remainingSessions = sessions.value
+      const remainingSessions = sessions.value;
       if (remainingSessions.length > 0) {
-        selectSession(remainingSessions[0].id)
+        selectSession(remainingSessions[0].id);
       } else {
-        router.push('/chat')
+        router.push("/chat");
       }
     }
   }
-}
+};
 
 const formatTime = (date: string): string => {
   try {
-    return formatDistanceToNow(new Date(date), { addSuffix: true, locale: de })
+    return formatDistanceToNow(new Date(date), { addSuffix: true, locale: de });
   } catch {
-    return ''
+    return "";
   }
-}
+};
 </script>
 
 <style scoped>

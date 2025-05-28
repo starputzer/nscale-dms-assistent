@@ -1,5 +1,8 @@
 import { ref } from "vue";
-import type { ClipboardOptions, UseClipboardReturn } from "../utils/composableTypes";
+import type {
+  ClipboardOptions,
+  UseClipboardReturn,
+} from "../utils/composableTypes";
 
 /**
  * Composable for interacting with the clipboard
@@ -31,7 +34,9 @@ import type { ClipboardOptions, UseClipboardReturn } from "../utils/composableTy
  *   }
  * }
  */
-export function useClipboard(options: ClipboardOptions = { successDuration: 1500 }): UseClipboardReturn & {
+export function useClipboard(
+  options: ClipboardOptions = { successDuration: 1500 },
+): UseClipboardReturn & {
   copyFromElement: (element: HTMLElement) => Promise<void>;
   paste: () => Promise<string>;
   text: Ref<string>;

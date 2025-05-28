@@ -1,13 +1,13 @@
 /**
  * Navigation Controller
- * 
+ *
  * Zentraler Controller für alle Navigationsoperationen mit erweiterter Fehlerbehandlung
  */
 
-import { RouteLocationNormalized } from 'vue-router';
-import { routerService } from '@/services/router/RouterServiceFixed';
-import type { Logger } from '@/composables/useLogger';
-import type { Toast } from '@/composables/useToast';
+import { RouteLocationNormalized } from "vue-router";
+import { routerService } from "@/services/router/RouterServiceFixed";
+import type { Logger } from "@/composables/useLogger";
+import type { Toast } from "@/composables/useToast";
 
 export interface NavigationOptions {
   force?: boolean;
@@ -29,19 +29,19 @@ export class NavigationController {
   private static instance: NavigationController;
   private logger: Logger | null = null;
   private toast: Toast | null = null;
-  
+
   // Navigation Queue
   private navigationQueue: NavigationQueueItem[] = [];
   private isProcessingQueue = false;
   private currentNavigation: NavigationQueueItem | null = null;
-  
+
   // Configuration
   private readonly config = {
     maxQueueSize: 10,
     queueTimeout: 30000, // 30 seconds
     defaultRetries: 3,
     retryDelay: 1000,
-    showToastOnError: true
+    showToastOnError: true,
   };
 
   // Statistics
@@ -50,7 +50,7 @@ export class NavigationController {
     successfulNavigations: 0,
     failedNavigations: 0,
     queuedNavigations: 0,
-    averageNavigationTime: 0
+    averageNavigationTime: 0,
   };
 
   private constructor() {
@@ -74,19 +74,19 @@ export class NavigationController {
   private async initializeServices(): Promise<void> {
     if (!this.logger) {
       try {
-        const { useLogger } = await import('@/composables/useLogger');
+        const { useLogger } = await import("@/composables/useLogger");
         this.logger = useLogger();
       } catch (error) {
-        console.error('Logger konnte nicht initialisiert werden:', error);
+        console.error("Logger konnte nicht initialisiert werden:", error);
       }
     }
 
     if (!this.toast) {
       try {
-        const { useToast } = await import('@/composables/useToast');
+        const { useToast } = await import("@/composables/useToast");
         this.toast = useToast();
       } catch (error) {
-        console.warn('Toast Service nicht verfügbar:', error);
+        console.warn("Toast Service nicht verfügbar:", error);
       }
     }
   }
@@ -96,11 +96,11 @@ export class NavigationController {
    */
   public async navigate(
     target: string | RouteLocationNormalized,
-    options: NavigationOptions = {}
+    options: NavigationOptions = {},
   ): Promise<boolean> {
     await this.initializeServices();
     const navigationId = this.generateNavigationId();
-    
+
     return new Promise((resolve) => {
       const queueItem: NavigationQueueItem = {
         id: navigationId,
@@ -109,11 +109,11 @@ export class NavigationController {
           force: options.force || false,
           retries: options.retries || this.config.defaultRetries,
           showToast: options.showToast !== false,
-          fallbackOnError: options.fallbackOnError !== false
+          fallbackOnError: options.fallbackOnError !== false,
         },
         timestamp: Date.now(),
         priority: options.force ? 1 : 0,
-        callback: resolve
+        callback: resolve,
       };
 
       this.addToQueue(queueItem);
@@ -125,11 +125,11 @@ export class NavigationController {
    */
   public async navigateUrgent(
     target: string | RouteLocationNormalized,
-    options: NavigationOptions = {}
+    options: NavigationOptions = {},
   ): Promise<boolean> {
     return this.navigate(target, {
       ...options,
-      force: true
+      force: true,
     });
   }
 
@@ -137,10 +137,10 @@ export class NavigationController {
    * Navigiert zur Startseite
    */
   public async navigateHome(options: NavigationOptions = {}): Promise<boolean> {
-    this.log('info', 'Navigation zur Startseite');
-    return this.navigate('/', {
+    this.log("info", "Navigation zur Startseite");
+    return this.navigate("/", {
       ...options,
-      fallbackOnError: false // Startseite ist der letzte Fallback
+      fallbackOnError: false, // Startseite ist der letzte Fallback
     });
   }
 
@@ -148,8 +148,8 @@ export class NavigationController {
    * Navigiert zurück
    */
   public async navigateBack(options: NavigationOptions = {}): Promise<boolean> {
-    this.log('info', 'Navigation zurück');
-    
+    this.log("info", "Navigation zurück");
+
     try {
       if (window.history.length > 1) {
         window.history.back();
@@ -158,7 +158,7 @@ export class NavigationController {
         return this.navigateHome(options);
       }
     } catch (error) {
-      this.log('error', 'Fehler beim Zurücknavigieren', error);
+      this.log("error", "Fehler beim Zurücknavigieren", error);
       return this.navigateHome(options);
     }
   }
@@ -166,14 +166,16 @@ export class NavigationController {
   /**
    * Navigiert zur letzten funktionierenden Route
    */
-  public async navigateToLastWorking(options: NavigationOptions = {}): Promise<boolean> {
-    this.log('info', 'Navigation zur letzten funktionierenden Route');
-    
+  public async navigateToLastWorking(
+    options: NavigationOptions = {},
+  ): Promise<boolean> {
+    this.log("info", "Navigation zur letzten funktionierenden Route");
+
     try {
       const result = await routerService.navigateToLastWorking();
       return result.success;
     } catch (error) {
-      this.log('error', 'Fehler bei Navigation zur letzten Route', error);
+      this.log("error", "Fehler bei Navigation zur letzten Route", error);
       return this.navigateHome(options);
     }
   }
@@ -184,13 +186,16 @@ export class NavigationController {
   private addToQueue(item: NavigationQueueItem): void {
     // Queue-Größe prüfen
     if (this.navigationQueue.length >= this.config.maxQueueSize) {
-      this.log('warn', 'Navigation Queue voll, älteste Einträge werden entfernt');
+      this.log(
+        "warn",
+        "Navigation Queue voll, älteste Einträge werden entfernt",
+      );
       this.cleanupQueue();
     }
 
     // Nach Priorität sortiert einfügen
     const insertIndex = this.navigationQueue.findIndex(
-      existing => existing.priority < item.priority
+      (existing) => existing.priority < item.priority,
     );
 
     if (insertIndex === -1) {
@@ -220,20 +225,20 @@ export class NavigationController {
 
         // Timeout prüfen
         if (Date.now() - item.timestamp > this.config.queueTimeout) {
-          this.log('warn', `Navigation ${item.id} timeout`);
+          this.log("warn", `Navigation ${item.id} timeout`);
           if (item.callback) item.callback(false);
           continue;
         }
 
         this.currentNavigation = item;
         const success = await this.executeNavigation(item);
-        
+
         if (item.callback) {
           item.callback(success);
         }
 
         // Kurze Pause zwischen Navigationen
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
     } finally {
       this.isProcessingQueue = false;
@@ -249,28 +254,33 @@ export class NavigationController {
     this.stats.totalNavigations++;
 
     try {
-      this.log('info', `Navigation ${item.id} gestartet`, { target: item.target });
+      this.log("info", `Navigation ${item.id} gestartet`, {
+        target: item.target,
+      });
 
       const result = await routerService.navigate(item.target, {
         retries: item.options.retries,
-        force: item.options.force
+        force: item.options.force,
       });
 
       if (result.success) {
         this.stats.successfulNavigations++;
         this.updateAverageTime(Date.now() - startTime);
-        this.log('info', `Navigation ${item.id} erfolgreich`);
+        this.log("info", `Navigation ${item.id} erfolgreich`);
         return true;
       } else {
-        throw result.error || new Error('Navigation fehlgeschlagen');
+        throw result.error || new Error("Navigation fehlgeschlagen");
       }
     } catch (error) {
       this.stats.failedNavigations++;
-      this.log('error', `Navigation ${item.id} fehlgeschlagen`, error);
+      this.log("error", `Navigation ${item.id} fehlgeschlagen`, error);
 
       // Error Toast anzeigen
       if (item.options.showToast && this.config.showToastOnError) {
-        this.showToast('error', 'Navigation fehlgeschlagen. Versuche Alternative...');
+        this.showToast(
+          "error",
+          "Navigation fehlgeschlagen. Versuche Alternative...",
+        );
       }
 
       // Fallback versuchen
@@ -286,37 +296,40 @@ export class NavigationController {
    * Versucht Fallback-Navigation
    */
   private async attemptFallback(item: NavigationQueueItem): Promise<boolean> {
-    this.log('info', `Fallback für Navigation ${item.id}`);
+    this.log("info", `Fallback für Navigation ${item.id}`);
 
     try {
       // Versuche letzte funktionierende Route
       const lastWorkingResult = await routerService.navigateToLastWorking();
-      
+
       if (lastWorkingResult.success) {
         if (item.options.showToast) {
-          this.showToast('info', 'Alternative Route geladen');
+          this.showToast("info", "Alternative Route geladen");
         }
         return true;
       }
 
       // Als letztes Mittel: Startseite
-      const homeResult = await routerService.navigate('/', { force: true });
-      
+      const homeResult = await routerService.navigate("/", { force: true });
+
       if (homeResult.success) {
         if (item.options.showToast) {
-          this.showToast('info', 'Zur Startseite umgeleitet');
+          this.showToast("info", "Zur Startseite umgeleitet");
         }
         return true;
       }
 
-      throw new Error('Alle Fallback-Optionen fehlgeschlagen');
+      throw new Error("Alle Fallback-Optionen fehlgeschlagen");
     } catch (error) {
-      this.log('error', 'Fallback fehlgeschlagen', error);
-      
+      this.log("error", "Fallback fehlgeschlagen", error);
+
       if (item.options.showToast) {
-        this.showToast('error', 'Navigation nicht möglich. Bitte Seite neu laden.');
+        this.showToast(
+          "error",
+          "Navigation nicht möglich. Bitte Seite neu laden.",
+        );
       }
-      
+
       return false;
     }
   }
@@ -326,9 +339,9 @@ export class NavigationController {
    */
   private cleanupQueue(): void {
     const now = Date.now();
-    
+
     // Entferne alte Einträge
-    this.navigationQueue = this.navigationQueue.filter(item => {
+    this.navigationQueue = this.navigationQueue.filter((item) => {
       if (now - item.timestamp > this.config.queueTimeout) {
         if (item.callback) item.callback(false);
         return false;
@@ -338,8 +351,10 @@ export class NavigationController {
 
     // Wenn immer noch zu voll, entferne niedrig-priorisierte Einträge
     if (this.navigationQueue.length >= this.config.maxQueueSize) {
-      const toRemove = this.navigationQueue.length - Math.floor(this.config.maxQueueSize * 0.8);
-      
+      const toRemove =
+        this.navigationQueue.length -
+        Math.floor(this.config.maxQueueSize * 0.8);
+
       for (let i = 0; i < toRemove; i++) {
         const item = this.navigationQueue.pop();
         if (item?.callback) item.callback(false);
@@ -370,8 +385,9 @@ export class NavigationController {
   private updateAverageTime(duration: number): void {
     const total = this.stats.successfulNavigations;
     const currentAvg = this.stats.averageNavigationTime;
-    
-    this.stats.averageNavigationTime = ((currentAvg * (total - 1)) + duration) / total;
+
+    this.stats.averageNavigationTime =
+      (currentAvg * (total - 1) + duration) / total;
   }
 
   /**
@@ -385,18 +401,18 @@ export class NavigationController {
    * Stoppt alle laufenden Navigationen
    */
   public cancelAll(): void {
-    this.log('warn', 'Alle Navigationen werden abgebrochen');
-    
+    this.log("warn", "Alle Navigationen werden abgebrochen");
+
     // Aktuelle Navigation abbrechen
     if (this.currentNavigation?.callback) {
       this.currentNavigation.callback(false);
     }
-    
+
     // Queue leeren
-    this.navigationQueue.forEach(item => {
+    this.navigationQueue.forEach((item) => {
       if (item.callback) item.callback(false);
     });
-    
+
     this.navigationQueue = [];
     this.isProcessingQueue = false;
     this.currentNavigation = null;
@@ -405,7 +421,11 @@ export class NavigationController {
   /**
    * Logging-Helper
    */
-  private log(level: 'info' | 'warn' | 'error' | 'debug', message: string, ...args: any[]): void {
+  private log(
+    level: "info" | "warn" | "error" | "debug",
+    message: string,
+    ...args: any[]
+  ): void {
     if (this.logger) {
       this.logger[level](message, ...args);
     } else {
@@ -416,7 +436,10 @@ export class NavigationController {
   /**
    * Toast-Helper
    */
-  private showToast(type: 'success' | 'error' | 'info' | 'warning', message: string): void {
+  private showToast(
+    type: "success" | "error" | "info" | "warning",
+    message: string,
+  ): void {
     if (this.toast) {
       this.toast[type](message);
     } else {
@@ -432,7 +455,7 @@ export class NavigationController {
       ...this.stats,
       queueLength: this.navigationQueue.length,
       isProcessing: this.isProcessingQueue,
-      currentNavigation: this.currentNavigation?.target
+      currentNavigation: this.currentNavigation?.target,
     };
   }
 
@@ -442,13 +465,13 @@ export class NavigationController {
   public getDebugInfo() {
     return {
       stats: this.getStats(),
-      queue: this.navigationQueue.map(item => ({
+      queue: this.navigationQueue.map((item) => ({
         id: item.id,
         target: item.target,
         priority: item.priority,
-        age: Date.now() - item.timestamp
+        age: Date.now() - item.timestamp,
       })),
-      config: this.config
+      config: this.config,
     };
   }
 }

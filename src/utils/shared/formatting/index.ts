@@ -14,7 +14,7 @@
 export function formatDate(
   date: Date | string | number,
   locales?: string | string[],
-  options?: Intl.DateTimeFormatOptions
+  options?: Intl.DateTimeFormatOptions,
 ): string {
   const dateObject = date instanceof Date ? date : new Date(date);
   return new Intl.DateTimeFormat(locales, options).format(dateObject);
@@ -29,12 +29,12 @@ export function formatDate(
  */
 export function formatCurrency(
   value: number,
-  currency: string = 'EUR',
-  locale?: string
+  currency: string = "EUR",
+  locale?: string,
 ): string {
   return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency
+    style: "currency",
+    currency,
   }).format(value);
 }
 
@@ -48,7 +48,7 @@ export function formatCurrency(
 export function formatNumber(
   value: number,
   locale?: string,
-  options?: Intl.NumberFormatOptions
+  options?: Intl.NumberFormatOptions,
 ): string {
   return new Intl.NumberFormat(locale, options).format(value);
 }
@@ -60,13 +60,15 @@ export function formatNumber(
  * @returns Human-readable file size string
  */
 export function formatFileSize(bytes: number, decimals: number = 2): string {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) return "0 Bytes";
 
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
+  return (
+    parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + " " + sizes[i]
+  );
 }
 
 /**
@@ -76,7 +78,11 @@ export function formatFileSize(bytes: number, decimals: number = 2): string {
  * @param ellipsis The ellipsis to use
  * @returns Truncated text
  */
-export function truncate(text: string, maxLength: number, ellipsis: string = '...'): string {
+export function truncate(
+  text: string,
+  maxLength: number,
+  ellipsis: string = "...",
+): string {
   if (!text || text.length <= maxLength) return text;
   return text.substring(0, maxLength - ellipsis.length) + ellipsis;
 }

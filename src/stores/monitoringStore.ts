@@ -734,11 +734,12 @@ export const useMonitoringStore = defineStore("monitoring", () => {
         break;
     }
 
-    return errors.value.filter(e => e.timestamp >= startTime).length;
+    return errors.value.filter((e) => e.timestamp >= startTime).length;
   }
 
   function getActiveFallbackCount() {
-    return errors.value.filter(e => e.fallbackTriggered && !e.resolved).length;
+    return errors.value.filter((e) => e.fallbackTriggered && !e.resolved)
+      .length;
   }
 
   function getUniqueUserCount(timeRange: "hour" | "day" | "week" | "month") {
@@ -764,8 +765,8 @@ export const useMonitoringStore = defineStore("monitoring", () => {
     // Count unique user agents as a proxy for unique users
     const uniqueUserAgents = new Set();
     usageStats.value
-      .filter(stat => stat.timestamp >= startTime)
-      .forEach(stat => {
+      .filter((stat) => stat.timestamp >= startTime)
+      .forEach((stat) => {
         if (stat.userAgent !== "disabled") {
           uniqueUserAgents.add(stat.userAgent);
         }
@@ -794,21 +795,27 @@ export const useMonitoringStore = defineStore("monitoring", () => {
     }
 
     // Get all errors in the time range
-    const timeRangeErrors = errors.value.filter(e => e.timestamp >= startTime);
+    const timeRangeErrors = errors.value.filter(
+      (e) => e.timestamp >= startTime,
+    );
 
     // Count errors by feature
     const errorsByFeature: Record<string, number> = {};
-    timeRangeErrors.forEach(error => {
-      errorsByFeature[error.featureId] = (errorsByFeature[error.featureId] || 0) + 1;
+    timeRangeErrors.forEach((error) => {
+      errorsByFeature[error.featureId] =
+        (errorsByFeature[error.featureId] || 0) + 1;
     });
 
     // Get all usages in the time range
-    const timeRangeUsage = usageStats.value.filter(s => s.timestamp >= startTime);
+    const timeRangeUsage = usageStats.value.filter(
+      (s) => s.timestamp >= startTime,
+    );
 
     // Count usage by feature
     const usageByFeature: Record<string, number> = {};
-    timeRangeUsage.forEach(stat => {
-      usageByFeature[stat.featureId] = (usageByFeature[stat.featureId] || 0) + 1;
+    timeRangeUsage.forEach((stat) => {
+      usageByFeature[stat.featureId] =
+        (usageByFeature[stat.featureId] || 0) + 1;
     });
 
     // Calculate error rates
@@ -848,19 +855,24 @@ export const useMonitoringStore = defineStore("monitoring", () => {
     }
 
     // Get all usages in the time range
-    const timeRangeUsage = usageStats.value.filter(s => s.timestamp >= startTime);
+    const timeRangeUsage = usageStats.value.filter(
+      (s) => s.timestamp >= startTime,
+    );
 
     // Count usage by feature
     const usageByFeature: Record<string, number> = {};
-    timeRangeUsage.forEach(stat => {
-      usageByFeature[stat.featureId] = (usageByFeature[stat.featureId] || 0) + 1;
+    timeRangeUsage.forEach((stat) => {
+      usageByFeature[stat.featureId] =
+        (usageByFeature[stat.featureId] || 0) + 1;
     });
 
     // Convert to array format
-    const usageData = Object.entries(usageByFeature).map(([feature, count]) => ({
-      feature,
-      count
-    }));
+    const usageData = Object.entries(usageByFeature).map(
+      ([feature, count]) => ({
+        feature,
+        count,
+      }),
+    );
 
     // Sort by usage count descending
     usageData.sort((a, b) => b.count - a.count);
@@ -888,12 +900,17 @@ export const useMonitoringStore = defineStore("monitoring", () => {
     }
 
     // Get all performance metrics in the time range
-    const timeRangeMetrics = performanceMetrics.value.filter(m => m.timestamp >= startTime);
+    const timeRangeMetrics = performanceMetrics.value.filter(
+      (m) => m.timestamp >= startTime,
+    );
 
     // Group metrics by feature and type
-    const metricsByFeatureAndType: Record<string, Record<string, number[]>> = {};
+    const metricsByFeatureAndType: Record<
+      string,
+      Record<string, number[]>
+    > = {};
 
-    timeRangeMetrics.forEach(metric => {
+    timeRangeMetrics.forEach((metric) => {
       if (!metricsByFeatureAndType[metric.featureId]) {
         metricsByFeatureAndType[metric.featureId] = {};
       }
@@ -906,17 +923,22 @@ export const useMonitoringStore = defineStore("monitoring", () => {
     });
 
     // Calculate averages
-    const performanceData: Array<{ feature: string; metric: string; value: number }> = [];
+    const performanceData: Array<{
+      feature: string;
+      metric: string;
+      value: number;
+    }> = [];
 
     for (const feature in metricsByFeatureAndType) {
       for (const metricType in metricsByFeatureAndType[feature]) {
         const values = metricsByFeatureAndType[feature][metricType];
-        const average = values.reduce((sum, value) => sum + value, 0) / values.length;
+        const average =
+          values.reduce((sum, value) => sum + value, 0) / values.length;
 
         performanceData.push({
           feature,
           metric: metricType,
-          value: Math.round(average * 100) / 100
+          value: Math.round(average * 100) / 100,
         });
       }
     }
@@ -944,12 +966,17 @@ export const useMonitoringStore = defineStore("monitoring", () => {
     }
 
     // Get all usage statistics in the time range
-    const timeRangeUsage = usageStats.value.filter(s => s.timestamp >= startTime);
+    const timeRangeUsage = usageStats.value.filter(
+      (s) => s.timestamp >= startTime,
+    );
 
     // Group by feature and action
-    const interactionsByFeatureAndAction: Record<string, Record<string, number>> = {};
+    const interactionsByFeatureAndAction: Record<
+      string,
+      Record<string, number>
+    > = {};
 
-    timeRangeUsage.forEach(stat => {
+    timeRangeUsage.forEach((stat) => {
       if (!interactionsByFeatureAndAction[stat.featureId]) {
         interactionsByFeatureAndAction[stat.featureId] = {};
       }
@@ -962,14 +989,18 @@ export const useMonitoringStore = defineStore("monitoring", () => {
     });
 
     // Convert to array format for heatmap
-    const interactionData: Array<{ feature: string; action: string; count: number }> = [];
+    const interactionData: Array<{
+      feature: string;
+      action: string;
+      count: number;
+    }> = [];
 
     for (const feature in interactionsByFeatureAndAction) {
       for (const action in interactionsByFeatureAndAction[feature]) {
         interactionData.push({
           feature,
           action,
-          count: interactionsByFeatureAndAction[feature][action]
+          count: interactionsByFeatureAndAction[feature][action],
         });
       }
     }
@@ -994,7 +1025,9 @@ export const useMonitoringStore = defineStore("monitoring", () => {
   }
   */
 
-  function getDetailedPerformanceMetrics(timeRange: "hour" | "day" | "week" | "month") {
+  function getDetailedPerformanceMetrics(
+    timeRange: "hour" | "day" | "week" | "month",
+  ) {
     const now = Date.now();
     let startTime = now;
 
@@ -1015,19 +1048,21 @@ export const useMonitoringStore = defineStore("monitoring", () => {
 
     // Get all performance metrics in the time range
     return performanceMetrics.value
-      .filter(m => m.timestamp >= startTime)
-      .map(metric => ({
+      .filter((m) => m.timestamp >= startTime)
+      .map((metric) => ({
         id: metric.id,
         feature: metric.featureId,
         component: metric.component,
         type: metric.type,
         value: metric.value,
         timestamp: new Date(metric.timestamp),
-        viewport: metric.viewport
+        viewport: metric.viewport,
       }));
   }
 
-  function getDetailedUsageStatistics(timeRange: "hour" | "day" | "week" | "month") {
+  function getDetailedUsageStatistics(
+    timeRange: "hour" | "day" | "week" | "month",
+  ) {
     const now = Date.now();
     let startTime = now;
 
@@ -1048,8 +1083,8 @@ export const useMonitoringStore = defineStore("monitoring", () => {
 
     // Get all usage stats in the time range
     return usageStats.value
-      .filter(s => s.timestamp >= startTime)
-      .map(stat => ({
+      .filter((s) => s.timestamp >= startTime)
+      .map((stat) => ({
         id: stat.id,
         feature: stat.featureId,
         component: stat.component,
@@ -1057,11 +1092,15 @@ export const useMonitoringStore = defineStore("monitoring", () => {
         timestamp: new Date(stat.timestamp),
         duration: stat.duration,
         successful: stat.successful,
-        feedback: stat.userFeedback
+        feedback: stat.userFeedback,
       }));
   }
 
-  function getFilteredErrors(options: { timeRange: "hour" | "day" | "week" | "month"; severity?: string; feature?: string }) {
+  function getFilteredErrors(options: {
+    timeRange: "hour" | "day" | "week" | "month";
+    severity?: string;
+    feature?: string;
+  }) {
     const now = Date.now();
     let startTime = now;
 
@@ -1080,19 +1119,23 @@ export const useMonitoringStore = defineStore("monitoring", () => {
         break;
     }
 
-    let filteredErrors = errors.value.filter(e => e.timestamp >= startTime);
+    let filteredErrors = errors.value.filter((e) => e.timestamp >= startTime);
 
     // Filter by severity if provided
     if (options.severity) {
-      filteredErrors = filteredErrors.filter(e => e.severity === options.severity);
+      filteredErrors = filteredErrors.filter(
+        (e) => e.severity === options.severity,
+      );
     }
 
     // Filter by feature if provided
     if (options.feature) {
-      filteredErrors = filteredErrors.filter(e => e.featureId === options.feature);
+      filteredErrors = filteredErrors.filter(
+        (e) => e.featureId === options.feature,
+      );
     }
 
-    return filteredErrors.map(error => ({
+    return filteredErrors.map((error) => ({
       id: error.id,
       feature: error.featureId,
       component: error.component,
@@ -1104,7 +1147,7 @@ export const useMonitoringStore = defineStore("monitoring", () => {
       userAction: error.userAction,
       fallbackTriggered: error.fallbackTriggered,
       count: error.count,
-      lastOccurrence: new Date(error.lastOccurrence)
+      lastOccurrence: new Date(error.lastOccurrence),
     }));
   }
 

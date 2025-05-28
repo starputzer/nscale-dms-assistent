@@ -12,21 +12,19 @@
  * progressives Laden von Inhalten.
  */
 
-
 // Monitoring für Legacy-Code-Nutzung
 function trackLegacyUsage(componentName, action) {
-  if (typeof window.telemetry !== 'undefined') {
-    window.telemetry.trackEvent('legacy_code_usage', {
+  if (typeof window.telemetry !== "undefined") {
+    window.telemetry.trackEvent("legacy_code_usage", {
       component: componentName,
       action: action,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 }
 
 // Tracking bei Modulinitialisierung
-trackLegacyUsage('async-optimization', 'initialize');
-
+trackLegacyUsage("async-optimization", "initialize");
 
 const AsyncOptimization = (function () {
   // Speicherung der Anfrage-Warteschlangen

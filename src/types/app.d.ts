@@ -32,7 +32,7 @@ interface MotdConfig {
   display?: {
     showInChat: boolean;
     showOnStartup: boolean;
-  }
+  };
 }
 
 interface FeedbackData {
@@ -66,7 +66,7 @@ declare global {
 }
 
 // Declare module augmentations for Vue
-declare module 'vue' {
+declare module "vue" {
   interface ComponentCustomProperties {
     $chatService: any;
     $sourceReferences: any;

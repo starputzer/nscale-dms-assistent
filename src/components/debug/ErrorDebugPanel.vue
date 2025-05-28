@@ -3,7 +3,7 @@
     <div
       v-if="isVisible"
       class="error-debug-panel"
-      :class="{ 'minimized': isMinimized }"
+      :class="{ minimized: isMinimized }"
     >
       <!-- Header -->
       <div class="debug-header" @click="toggleMinimize">
@@ -43,7 +43,9 @@
               </div>
               <div class="info-item">
                 <span class="label">Error Type:</span>
-                <span class="value" :class="errorTypeClass">{{ errorType || 'None' }}</span>
+                <span class="value" :class="errorTypeClass">{{
+                  errorType || "None"
+                }}</span>
               </div>
               <div class="info-item">
                 <span class="label">DOM Status:</span>
@@ -58,7 +60,7 @@
                     class="flag-item"
                     :class="{ enabled: value }"
                   >
-                    {{ key }}: {{ value ? '✓' : '✗' }}
+                    {{ key }}: {{ value ? "✓" : "✗" }}
                   </span>
                 </div>
               </div>
@@ -69,8 +71,12 @@
           <div v-if="activeTab === 'diagnostics'" class="diagnostics-panel">
             <h4>Error Diagnostics</h4>
             <div class="diagnostics-actions">
-              <Button size="small" @click="runDiagnostics">Run Diagnostics</Button>
-              <Button size="small" @click="runSelfHealing">Attempt Self-Healing</Button>
+              <Button size="small" @click="runDiagnostics"
+                >Run Diagnostics</Button
+              >
+              <Button size="small" @click="runSelfHealing"
+                >Attempt Self-Healing</Button
+              >
             </div>
             <div v-if="lastDiagnostics" class="diagnostics-result">
               <pre>{{ JSON.stringify(lastDiagnostics, null, 2) }}</pre>
@@ -112,7 +118,9 @@
               <Button @click="exportDebugInfo">Export Debug Info</Button>
             </div>
             <div v-if="actionResult" class="action-result">
-              <Alert :type="actionResult.type">{{ actionResult.message }}</Alert>
+              <Alert :type="actionResult.type">{{
+                actionResult.message
+              }}</Alert>
             </div>
           </div>
 
@@ -134,7 +142,9 @@
                 class="console-line"
                 :class="output.type"
               >
-                <span class="console-prefix">{{ output.type === 'input' ? '>' : '<' }}</span>
+                <span class="console-prefix">{{
+                  output.type === "input" ? ">" : "<"
+                }}</span>
                 <span class="console-text">{{ output.text }}</span>
               </div>
             </div>
@@ -147,38 +157,38 @@
         <span class="status-item">Memory: {{ memoryUsage }}MB</span>
         <span class="status-item">Errors: {{ errorCount }}</span>
         <span class="status-item">Uptime: {{ uptime }}</span>
-        <span class="status-item">Mode: {{ isDevMode ? 'Dev' : 'Prod' }}</span>
+        <span class="status-item">Mode: {{ isDevMode ? "Dev" : "Prod" }}</span>
       </div>
     </div>
   </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import { useLogger } from '@/composables/useLogger';
-import { domErrorDetector } from '@/utils/domErrorDiagnostics';
-import { selfHealingService } from '@/services/selfHealing/SelfHealingService';
-import { useFeatureTogglesStore } from '@/stores/featureToggles';
-import Button from '@/components/ui/base/Button.vue';
-import Input from '@/components/ui/base/Input.vue';
-import Alert from '@/components/ui/base/Alert.vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { useLogger } from "@/composables/useLogger";
+import { domErrorDetector } from "@/utils/domErrorDiagnostics";
+import { selfHealingService } from "@/services/selfHealing/SelfHealingService";
+import { useFeatureTogglesStore } from "@/stores/featureToggles";
+import Button from "@/components/ui/base/Button.vue";
+import Input from "@/components/ui/base/Input.vue";
+import Alert from "@/components/ui/base/Alert.vue";
 
 interface Props {
   enabled?: boolean;
   startMinimized?: boolean;
-  position?: 'top-right' | 'bottom-right' | 'top-left' | 'bottom-left';
+  position?: "top-right" | "bottom-right" | "top-left" | "bottom-left";
 }
 
 const props = withDefaults(defineProps<Props>(), {
   enabled: true,
   startMinimized: false,
-  position: 'bottom-right'
+  position: "bottom-right",
 });
 
 const emit = defineEmits<{
-  (e: 'close'): void;
-  (e: 'action', action: string, result: any): void;
+  (e: "close"): void;
+  (e: "action", action: string, result: any): void;
 }>();
 
 // Services
@@ -190,10 +200,10 @@ const featureToggles = useFeatureTogglesStore();
 // State
 const isVisible = ref(props.enabled);
 const isMinimized = ref(props.startMinimized);
-const activeTab = ref('state');
+const activeTab = ref("state");
 const lastDiagnostics = ref<any>(null);
 const errorHistory = ref<any[]>([]);
-const consoleCommand = ref('');
+const consoleCommand = ref("");
 const consoleOutput = ref<any[]>([]);
 const actionResult = ref<any>(null);
 const startTime = Date.now();
@@ -201,33 +211,35 @@ const startTime = Date.now();
 // Computed
 const currentRoute = computed(() => route.fullPath);
 const errorType = computed(() => lastDiagnostics.value?.errorType || null);
-const domStatus = computed(() => lastDiagnostics.value?.hasErrorScreen ? 'Error Detected' : 'Normal');
+const domStatus = computed(() =>
+  lastDiagnostics.value?.hasErrorScreen ? "Error Detected" : "Normal",
+);
 const featureFlags = computed(() => featureToggles.getAllToggles());
 const isDevMode = computed(() => import.meta.env.DEV);
 
 const tabs = computed(() => [
-  { id: 'state', label: 'State', count: null },
-  { id: 'diagnostics', label: 'Diagnostics', count: null },
-  { id: 'history', label: 'History', count: errorHistory.value.length },
-  { id: 'actions', label: 'Actions', count: null },
-  { id: 'console', label: 'Console', count: null }
+  { id: "state", label: "State", count: null },
+  { id: "diagnostics", label: "Diagnostics", count: null },
+  { id: "history", label: "History", count: errorHistory.value.length },
+  { id: "actions", label: "Actions", count: null },
+  { id: "console", label: "Console", count: null },
 ]);
 
 const errorCount = computed(() => errorHistory.value.length);
 
 const memoryUsage = computed(() => {
-  if ('memory' in performance) {
+  if ("memory" in performance) {
     const memory = (performance as any).memory;
     return Math.round(memory.usedJSHeapSize / 1048576);
   }
-  return 'N/A';
+  return "N/A";
 });
 
 const uptime = computed(() => {
   const seconds = Math.floor((Date.now() - startTime) / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
-  
+
   if (hours > 0) return `${hours}h ${minutes % 60}m`;
   if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
   return `${seconds}s`;
@@ -235,10 +247,10 @@ const uptime = computed(() => {
 
 const errorTypeClass = computed(() => {
   const type = errorType.value;
-  if (!type) return '';
-  if (type === 'critical') return 'error-critical';
-  if (type === 'notFound') return 'error-404';
-  return 'error-default';
+  if (!type) return "";
+  if (type === "critical") return "error-critical";
+  if (type === "notFound") return "error-404";
+  return "error-default";
 });
 
 // Methods
@@ -248,7 +260,7 @@ const toggleMinimize = () => {
 
 const close = () => {
   isVisible.value = false;
-  emit('close');
+  emit("close");
 };
 
 const clearLogs = () => {
@@ -264,7 +276,7 @@ const exportLogs = () => {
       route: currentRoute.value,
       errorType: errorType.value,
       domStatus: domStatus.value,
-      featureFlags: featureFlags.value
+      featureFlags: featureFlags.value,
     },
     diagnostics: lastDiagnostics.value,
     errorHistory: errorHistory.value,
@@ -274,79 +286,84 @@ const exportLogs = () => {
       uptime: uptime.value,
       userAgent: navigator.userAgent,
       screenSize: `${window.screen.width}x${window.screen.height}`,
-      viewport: `${window.innerWidth}x${window.innerHeight}`
-    }
+      viewport: `${window.innerWidth}x${window.innerHeight}`,
+    },
   };
 
-  const blob = new Blob([JSON.stringify(debugData, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(debugData, null, 2)], {
+    type: "application/json",
+  });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
   a.download = `error-debug-${Date.now()}.json`;
   a.click();
   URL.revokeObjectURL(url);
 
-  actionResult.value = { type: 'success', message: 'Debug data exported' };
+  actionResult.value = { type: "success", message: "Debug data exported" };
 };
 
 const runDiagnostics = () => {
   const diagnostics = domErrorDetector.detectErrorState();
   lastDiagnostics.value = diagnostics;
-  
+
   // Log to history
   if (diagnostics.hasErrorScreen) {
     errorHistory.value.push({
       timestamp: Date.now(),
       type: diagnostics.errorType,
       message: diagnostics.errorMessage,
-      severity: diagnostics.errorType === 'critical' ? 'critical' : 'normal',
-      diagnostics
+      severity: diagnostics.errorType === "critical" ? "critical" : "normal",
+      diagnostics,
     });
   }
 
   consoleOutput.value.push({
-    type: 'output',
-    text: `Diagnostics complete: ${diagnostics.hasErrorScreen ? 'Error detected' : 'No errors'}`
+    type: "output",
+    text: `Diagnostics complete: ${diagnostics.hasErrorScreen ? "Error detected" : "No errors"}`,
   });
 };
 
 const runSelfHealing = async () => {
   consoleOutput.value.push({
-    type: 'input',
-    text: 'Running self-healing...'
+    type: "input",
+    text: "Running self-healing...",
   });
 
   const result = await selfHealingService.heal();
-  
+
   consoleOutput.value.push({
-    type: result.success ? 'success' : 'error',
-    text: `Self-healing ${result.success ? 'successful' : 'failed'}: ${result.strategy}`
+    type: result.success ? "success" : "error",
+    text: `Self-healing ${result.success ? "successful" : "failed"}: ${result.strategy}`,
   });
 
   actionResult.value = {
-    type: result.success ? 'success' : 'error',
-    message: `Self-healing ${result.success ? 'completed' : 'failed'}`
+    type: result.success ? "success" : "error",
+    message: `Self-healing ${result.success ? "completed" : "failed"}`,
   };
 };
 
 const clearCache = async () => {
   try {
-    if ('caches' in window) {
+    if ("caches" in window) {
       const cacheNames = await caches.keys();
-      await Promise.all(cacheNames.map(name => caches.delete(name)));
+      await Promise.all(cacheNames.map((name) => caches.delete(name)));
     }
-    actionResult.value = { type: 'success', message: 'Cache cleared successfully' };
+    actionResult.value = {
+      type: "success",
+      message: "Cache cleared successfully",
+    };
   } catch (error) {
-    actionResult.value = { type: 'error', message: 'Failed to clear cache' };
+    actionResult.value = { type: "error", message: "Failed to clear cache" };
   }
 };
 
 const resetRouter = async () => {
   try {
-    await router.push('/');
-    actionResult.value = { type: 'success', message: 'Router reset' };
+    await router.push("/");
+    actionResult.value = { type: "success", message: "Router reset" };
   } catch (error) {
-    actionResult.value = { type: 'error', message: 'Failed to reset router' };
+    actionResult.value = { type: "error", message: "Failed to reset router" };
   }
 };
 
@@ -356,67 +373,72 @@ const reloadPage = () => {
 
 const navigateHome = async () => {
   try {
-    await router.push('/');
-    actionResult.value = { type: 'success', message: 'Navigated to home' };
+    await router.push("/");
+    actionResult.value = { type: "success", message: "Navigated to home" };
   } catch (error) {
-    window.location.href = '/';
+    window.location.href = "/";
   }
 };
 
 const toggleFeatureFlags = () => {
-  const problematicFeatures = ['useSfcChat', 'useSfcDocConverter', 'useSfcAdmin'];
-  
-  problematicFeatures.forEach(feature => {
+  const problematicFeatures = [
+    "useSfcChat",
+    "useSfcDocConverter",
+    "useSfcAdmin",
+  ];
+
+  problematicFeatures.forEach((feature) => {
     const currentState = featureToggles.isEnabled(feature);
     featureToggles.setFallbackMode(feature, !currentState);
   });
 
-  actionResult.value = { type: 'info', message: 'Feature flags toggled' };
+  actionResult.value = { type: "info", message: "Feature flags toggled" };
 };
 
 const executeCommand = () => {
   if (!consoleCommand.value.trim()) return;
 
   consoleOutput.value.push({
-    type: 'input',
-    text: consoleCommand.value
+    type: "input",
+    text: consoleCommand.value,
   });
 
   try {
     // Security: Nur vordefinierte Befehle erlauben
     const commands: Record<string, () => any> = {
-      'help': () => 'Available commands: help, diagnostics, heal, clear, route, features',
-      'diagnostics': () => {
+      help: () =>
+        "Available commands: help, diagnostics, heal, clear, route, features",
+      diagnostics: () => {
         runDiagnostics();
-        return 'Running diagnostics...';
+        return "Running diagnostics...";
       },
-      'heal': () => {
+      heal: () => {
         runSelfHealing();
-        return 'Starting self-healing...';
+        return "Starting self-healing...";
       },
-      'clear': () => {
+      clear: () => {
         clearLogs();
-        return 'Logs cleared';
+        return "Logs cleared";
       },
-      'route': () => `Current route: ${currentRoute.value}`,
-      'features': () => JSON.stringify(featureFlags.value, null, 2)
+      route: () => `Current route: ${currentRoute.value}`,
+      features: () => JSON.stringify(featureFlags.value, null, 2),
     };
 
     const cmd = consoleCommand.value.trim().toLowerCase();
     const result = commands[cmd] ? commands[cmd]() : `Unknown command: ${cmd}`;
-    
+
     consoleOutput.value.push({
-      type: 'output',
-      text: String(result)
+      type: "output",
+      text: String(result),
     });
   } catch (error) {
     consoleOutput.value.push({
-      type: 'error',
-      text: `Error: ${error}`
+      type: "error",
+      text: `Error: ${error}`,
     });
   }
 
-  consoleCommand.value = '';
+  consoleCommand.value = "";
 };
 
 const formatTime = (timestamp: number) => {
@@ -430,24 +452,27 @@ onMounted(() => {
 
   // Keyboard shortcut
   const handleKeyPress = (e: KeyboardEvent) => {
-    if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+    if (e.ctrlKey && e.shiftKey && e.key === "D") {
       isVisible.value = !isVisible.value;
     }
   };
 
-  window.addEventListener('keydown', handleKeyPress);
+  window.addEventListener("keydown", handleKeyPress);
 
   onBeforeUnmount(() => {
-    window.removeEventListener('keydown', handleKeyPress);
+    window.removeEventListener("keydown", handleKeyPress);
   });
 });
 
 // Watch route changes
-watch(() => route.path, () => {
-  if (isVisible.value) {
-    runDiagnostics();
-  }
-});
+watch(
+  () => route.path,
+  () => {
+    if (isVisible.value) {
+      runDiagnostics();
+    }
+  },
+);
 </script>
 
 <style scoped>
@@ -527,7 +552,7 @@ watch(() => route.path, () => {
 }
 
 .tab-button.active::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -1px;
   left: 0;
@@ -668,7 +693,7 @@ watch(() => route.path, () => {
   padding: 10px;
   border-radius: 4px;
   overflow-y: auto;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
 }
 
 .console-line {

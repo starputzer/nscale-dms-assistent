@@ -4,12 +4,17 @@
     <div class="settings-modal__content">
       <div class="settings-modal__header">
         <h2 class="settings-modal__title">Einstellungen</h2>
-        <button 
+        <button
           class="settings-modal__close"
           @click="$emit('close')"
           aria-label="Schließen"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
@@ -42,8 +47,8 @@
           <div class="settings-option">
             <label class="settings-option__label">
               API-Schlüssel
-              <input 
-                type="password" 
+              <input
+                type="password"
                 v-model="apiKey"
                 class="settings-option__input"
                 placeholder="API-Schlüssel eingeben"
@@ -57,13 +62,13 @@
       </div>
 
       <div class="settings-modal__footer">
-        <button 
+        <button
           class="settings-modal__button settings-modal__button--secondary"
           @click="$emit('close')"
         >
           Abbrechen
         </button>
-        <button 
+        <button
           class="settings-modal__button settings-modal__button--primary"
           @click="saveSettings"
         >
@@ -75,25 +80,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useSettingsStore } from '@/stores/settings'
-import ThemeSelector from './ThemeSelector.vue'
+import { ref } from "vue";
+import { useSettingsStore } from "@/stores/settings";
+import ThemeSelector from "./ThemeSelector.vue";
 
 const emit = defineEmits<{
-  close: []
-}>()
+  close: [];
+}>();
 
-const settingsStore = useSettingsStore()
+const settingsStore = useSettingsStore();
 
-const language = ref(settingsStore.language)
-const apiKey = ref(settingsStore.apiKey)
+const language = ref(settingsStore.language);
+const apiKey = ref(settingsStore.apiKey);
 
 const saveSettings = () => {
   // Theme is saved automatically by the ThemeSelector component
-  settingsStore.setLanguage(language.value)
-  settingsStore.setApiKey(apiKey.value)
-  emit('close')
-}
+  settingsStore.setLanguage(language.value);
+  settingsStore.setApiKey(apiKey.value);
+  emit("close");
+};
 </script>
 
 <style scoped>

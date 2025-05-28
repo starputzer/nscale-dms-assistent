@@ -22,9 +22,9 @@ export interface TouchDirectiveOptions {
 }
 
 // Export the directives needed by index.ts
-export const touchSwipe = { name: 'touchSwipe' };
-export const touchTap = { name: 'touchTap' };
-export const touchLongPress = { name: 'touchLongPress' };
+export const touchSwipe = { name: "touchSwipe" };
+export const touchTap = { name: "touchTap" };
+export const touchLongPress = { name: "touchLongPress" };
 
 export const vTouch = {
   beforeMount(

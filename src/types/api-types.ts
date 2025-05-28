@@ -1,6 +1,6 @@
 /**
  * Konsolidierte API-Typdefinitionen für den nscale DMS Assistenten
- * 
+ *
  * Diese Datei bietet eine zentralisierte Definition aller API-Endpunkte
  * mit exakten Request- und Response-Typen für jeden Endpunkt.
  */
@@ -23,11 +23,11 @@ import type {
   CreateSessionRequest,
   SendMessageRequest,
   StreamingEvent,
-  Source
-} from './api';
+  Source,
+} from "./api";
 
 // Re-exportieren aller Basis-Typen für einfachen Import
-export * from './api';
+export * from "./api";
 
 /**
  * Namespace für API-Endpunkte mit Request/Response-Typdefinitionen
@@ -45,7 +45,7 @@ export namespace API {
       password: string;
       rememberMe?: boolean;
     }
-    
+
     export interface LoginResponse {
       accessToken: string;
       refreshToken: string;
@@ -53,46 +53,46 @@ export namespace API {
       expiresAt: string;
       user: User;
     }
-    
-    export const LOGIN_ENDPOINT = '/auth/login';
-    
+
+    export const LOGIN_ENDPOINT = "/auth/login";
+
     /**
      * Token-Refresh-Endpunkt
      */
     export interface RefreshRequest {
       refreshToken: string;
     }
-    
+
     export interface RefreshResponse {
       accessToken: string;
       refreshToken: string;
       expiresIn: number;
       expiresAt: string;
     }
-    
-    export const REFRESH_ENDPOINT = '/auth/refresh';
-    
+
+    export const REFRESH_ENDPOINT = "/auth/refresh";
+
     /**
      * Logout-Endpunkt
      */
     export interface LogoutRequest {
       refreshToken?: string;
     }
-    
+
     export interface LogoutResponse {
       success: boolean;
     }
-    
-    export const LOGOUT_ENDPOINT = '/auth/logout';
-    
+
+    export const LOGOUT_ENDPOINT = "/auth/logout";
+
     /**
      * Benutzerinfo-Endpunkt
      */
     export type MeResponse = User;
-    
-    export const ME_ENDPOINT = '/auth/me';
+
+    export const ME_ENDPOINT = "/auth/me";
   }
-  
+
   /**
    * Chat-Session-Endpunkte
    */
@@ -102,14 +102,14 @@ export namespace API {
      */
     export interface GetSessionsParams extends PaginationRequest {
       includeArchived?: boolean;
-      sortBy?: 'createdAt' | 'updatedAt' | 'title';
+      sortBy?: "createdAt" | "updatedAt" | "title";
       search?: string;
     }
-    
+
     export type GetSessionsResponse = PaginatedResponse<ChatSession>;
-    
-    export const SESSIONS_ENDPOINT = '/chat/sessions';
-    
+
+    export const SESSIONS_ENDPOINT = "/chat/sessions";
+
     /**
      * Neue Session erstellen
      */
@@ -119,20 +119,20 @@ export namespace API {
       tags?: string[];
       metadata?: Record<string, any>;
     }
-    
+
     export type CreateSessionResponse = ChatSession;
-    
+
     /**
      * Spezifische Session abrufen
      */
     export interface GetSessionParams {
       id: string;
     }
-    
+
     export type GetSessionResponse = ChatSession;
-    
+
     export const SESSION_ENDPOINT = (id: string) => `/chat/sessions/${id}`;
-    
+
     /**
      * Session aktualisieren
      */
@@ -143,9 +143,9 @@ export namespace API {
       tags?: string[];
       metadata?: Record<string, any>;
     }
-    
+
     export type UpdateSessionResponse = ChatSession;
-    
+
     /**
      * Session löschen
      */
@@ -154,7 +154,7 @@ export namespace API {
       id: string;
     }
   }
-  
+
   /**
    * Chat-Nachrichten-Endpunkte
    */
@@ -166,33 +166,34 @@ export namespace API {
       sessionId: string;
       includeMetadata?: boolean;
     }
-    
+
     export type GetMessagesResponse = PaginatedResponse<ChatMessage>;
-    
-    export const MESSAGES_ENDPOINT = (sessionId: string) => `/chat/sessions/${sessionId}/messages`;
-    
+
+    export const MESSAGES_ENDPOINT = (sessionId: string) =>
+      `/chat/sessions/${sessionId}/messages`;
+
     /**
      * Nachricht senden
      */
     export interface SendMessageRequest {
       sessionId: string;
       content: string;
-      role?: 'user' | 'system';
+      role?: "user" | "system";
       metadata?: Record<string, any>;
       stream?: boolean;
     }
-    
+
     export type SendMessageResponse = ChatMessage;
-    
-    export const SEND_MESSAGE_ENDPOINT = '/chat/messages';
-    
+
+    export const SEND_MESSAGE_ENDPOINT = "/chat/messages";
+
     /**
      * Nachricht streamen
      */
     export type StreamMessageResponse = StreamingEvent;
-    
-    export const STREAM_MESSAGE_ENDPOINT = '/chat/messages/stream';
-    
+
+    export const STREAM_MESSAGE_ENDPOINT = "/chat/messages/stream";
+
     /**
      * Nachricht löschen
      */
@@ -200,17 +201,19 @@ export namespace API {
       sessionId: string;
       messageId: string;
     }
-    
+
     export interface DeleteMessageResponse {
       success: boolean;
       sessionId: string;
       messageId: string;
     }
-    
-    export const DELETE_MESSAGE_ENDPOINT = (sessionId: string, messageId: string) => 
-      `/chat/sessions/${sessionId}/messages/${messageId}`;
+
+    export const DELETE_MESSAGE_ENDPOINT = (
+      sessionId: string,
+      messageId: string,
+    ) => `/chat/sessions/${sessionId}/messages/${messageId}`;
   }
-  
+
   /**
    * Dokument-Konverter-Endpunkte
    */
@@ -220,14 +223,14 @@ export namespace API {
      */
     export interface GetDocumentsParams extends PaginationRequest {
       type?: string;
-      status?: 'pending' | 'processing' | 'completed' | 'failed';
+      status?: "pending" | "processing" | "completed" | "failed";
       search?: string;
     }
-    
+
     export type GetDocumentsResponse = PaginatedResponse<Document>;
-    
-    export const DOCUMENTS_ENDPOINT = '/documents';
-    
+
+    export const DOCUMENTS_ENDPOINT = "/documents";
+
     /**
      * Dokument hochladen
      */
@@ -236,14 +239,14 @@ export namespace API {
       documentType?: string;
       metadata?: Record<string, any>;
     }
-    
+
     export interface UploadDocumentResponse {
       document: Document;
       taskId?: string;
     }
-    
-    export const UPLOAD_DOCUMENT_ENDPOINT = '/documents/upload';
-    
+
+    export const UPLOAD_DOCUMENT_ENDPOINT = "/documents/upload";
+
     /**
      * Dokument konvertieren
      */
@@ -252,49 +255,51 @@ export namespace API {
       targetFormat: string;
       options?: Record<string, any>;
     }
-    
+
     export interface ConvertDocumentResponse {
       taskId: string;
-      status: 'pending' | 'processing' | 'completed' | 'failed';
+      status: "pending" | "processing" | "completed" | "failed";
       document: Document;
     }
-    
-    export const CONVERT_DOCUMENT_ENDPOINT = '/documents/convert';
-    
+
+    export const CONVERT_DOCUMENT_ENDPOINT = "/documents/convert";
+
     /**
      * Konvertierungsstatus abrufen
      */
     export interface GetConversionStatusParams {
       taskId: string;
     }
-    
+
     export interface ConversionStatus {
       taskId: string;
-      status: 'pending' | 'processing' | 'completed' | 'failed';
+      status: "pending" | "processing" | "completed" | "failed";
       progress?: number;
       result?: Document;
       error?: string;
     }
-    
+
     export type GetConversionStatusResponse = ConversionStatus;
-    
-    export const CONVERSION_STATUS_ENDPOINT = (taskId: string) => `/documents/tasks/${taskId}`;
-    
+
+    export const CONVERSION_STATUS_ENDPOINT = (taskId: string) =>
+      `/documents/tasks/${taskId}`;
+
     /**
      * Dokument löschen
      */
     export interface DeleteDocumentParams {
       documentId: string;
     }
-    
+
     export interface DeleteDocumentResponse {
       success: boolean;
       documentId: string;
     }
-    
-    export const DELETE_DOCUMENT_ENDPOINT = (documentId: string) => `/documents/${documentId}`;
+
+    export const DELETE_DOCUMENT_ENDPOINT = (documentId: string) =>
+      `/documents/${documentId}`;
   }
-  
+
   /**
    * Admin-Endpunkte
    */
@@ -303,22 +308,22 @@ export namespace API {
      * Systeminfo abrufen
      */
     export type GetSystemInfoResponse = SystemInfo;
-    
-    export const SYSTEM_INFO_ENDPOINT = '/admin/system';
-    
+
+    export const SYSTEM_INFO_ENDPOINT = "/admin/system";
+
     /**
      * Benutzer auflisten
      */
     export interface GetUsersParams extends PaginationRequest {
       role?: string;
-      status?: 'active' | 'inactive';
+      status?: "active" | "inactive";
       search?: string;
     }
-    
+
     export type GetUsersResponse = PaginatedResponse<User>;
-    
-    export const USERS_ENDPOINT = '/admin/users';
-    
+
+    export const USERS_ENDPOINT = "/admin/users";
+
     /**
      * Benutzer erstellen
      */
@@ -329,9 +334,9 @@ export namespace API {
       roles: string[];
       metadata?: Record<string, any>;
     }
-    
+
     export type CreateUserResponse = User;
-    
+
     /**
      * Benutzer aktualisieren
      */
@@ -340,13 +345,13 @@ export namespace API {
       displayName?: string;
       roles?: string[];
       metadata?: Record<string, any>;
-      status?: 'active' | 'inactive';
+      status?: "active" | "inactive";
     }
-    
+
     export type UpdateUserResponse = User;
-    
+
     export const USER_ENDPOINT = (userId: string) => `/admin/users/${userId}`;
-    
+
     /**
      * Feedback auflisten
      */
@@ -356,12 +361,12 @@ export namespace API {
       startDate?: string;
       endDate?: string;
     }
-    
+
     export type GetFeedbackResponse = PaginatedResponse<Feedback>;
-    
-    export const FEEDBACK_ENDPOINT = '/admin/feedback';
+
+    export const FEEDBACK_ENDPOINT = "/admin/feedback";
   }
-  
+
   /**
    * Feedback-Endpunkte
    */
@@ -370,20 +375,20 @@ export namespace API {
      * Feedback senden
      */
     export interface SendFeedbackRequest {
-      category: 'bug' | 'feature' | 'performance' | 'other';
+      category: "bug" | "feature" | "performance" | "other";
       content: string;
       rating?: number;
       referenceId?: string;
-      referenceType?: 'session' | 'document' | 'feature';
+      referenceType?: "session" | "document" | "feature";
       context?: Record<string, any>;
     }
-    
+
     export interface SendFeedbackResponse {
       id: string;
       success: boolean;
     }
-    
-    export const SEND_FEEDBACK_ENDPOINT = '/feedback';
+
+    export const SEND_FEEDBACK_ENDPOINT = "/feedback";
   }
 }
 
@@ -397,42 +402,83 @@ export interface ApiClient {
   post<T>(url: string, data?: any): Promise<ApiResponse<T>>;
   put<T>(url: string, data?: any): Promise<ApiResponse<T>>;
   delete<T>(url: string): Promise<ApiResponse<T>>;
-  
+
   // Authentifizierung
   login(credentials: API.Auth.LoginRequest): Promise<API.Auth.LoginResponse>;
-  refreshToken(request: API.Auth.RefreshRequest): Promise<API.Auth.RefreshResponse>;
+  refreshToken(
+    request: API.Auth.RefreshRequest,
+  ): Promise<API.Auth.RefreshResponse>;
   logout(): Promise<API.Auth.LogoutResponse>;
   getProfile(): Promise<User>;
-  
+
   // Sessions
-  getSessions(params?: API.Sessions.GetSessionsParams): Promise<API.Sessions.GetSessionsResponse>;
-  createSession(request: API.Sessions.CreateSessionRequest): Promise<API.Sessions.CreateSessionResponse>;
+  getSessions(
+    params?: API.Sessions.GetSessionsParams,
+  ): Promise<API.Sessions.GetSessionsResponse>;
+  createSession(
+    request: API.Sessions.CreateSessionRequest,
+  ): Promise<API.Sessions.CreateSessionResponse>;
   getSession(id: string): Promise<API.Sessions.GetSessionResponse>;
-  updateSession(id: string, request: API.Sessions.UpdateSessionRequest): Promise<API.Sessions.UpdateSessionResponse>;
+  updateSession(
+    id: string,
+    request: API.Sessions.UpdateSessionRequest,
+  ): Promise<API.Sessions.UpdateSessionResponse>;
   deleteSession(id: string): Promise<API.Sessions.DeleteSessionResponse>;
-  
+
   // Nachrichten
-  getMessages(sessionId: string, params?: API.Messages.GetMessagesParams): Promise<API.Messages.GetMessagesResponse>;
-  sendMessage(request: API.Messages.SendMessageRequest): Promise<API.Messages.SendMessageResponse>;
-  streamMessage(request: API.Messages.SendMessageRequest, onChunk: (chunk: StreamingEvent) => void): Promise<void>;
-  deleteMessage(sessionId: string, messageId: string): Promise<API.Messages.DeleteMessageResponse>;
-  
+  getMessages(
+    sessionId: string,
+    params?: API.Messages.GetMessagesParams,
+  ): Promise<API.Messages.GetMessagesResponse>;
+  sendMessage(
+    request: API.Messages.SendMessageRequest,
+  ): Promise<API.Messages.SendMessageResponse>;
+  streamMessage(
+    request: API.Messages.SendMessageRequest,
+    onChunk: (chunk: StreamingEvent) => void,
+  ): Promise<void>;
+  deleteMessage(
+    sessionId: string,
+    messageId: string,
+  ): Promise<API.Messages.DeleteMessageResponse>;
+
   // Dokumente
-  getDocuments(params?: API.Documents.GetDocumentsParams): Promise<API.Documents.GetDocumentsResponse>;
-  uploadDocument(request: API.Documents.UploadDocumentRequest): Promise<API.Documents.UploadDocumentResponse>;
-  convertDocument(request: API.Documents.ConvertDocumentRequest): Promise<API.Documents.ConvertDocumentResponse>;
-  getConversionStatus(taskId: string): Promise<API.Documents.GetConversionStatusResponse>;
-  deleteDocument(documentId: string): Promise<API.Documents.DeleteDocumentResponse>;
-  
+  getDocuments(
+    params?: API.Documents.GetDocumentsParams,
+  ): Promise<API.Documents.GetDocumentsResponse>;
+  uploadDocument(
+    request: API.Documents.UploadDocumentRequest,
+  ): Promise<API.Documents.UploadDocumentResponse>;
+  convertDocument(
+    request: API.Documents.ConvertDocumentRequest,
+  ): Promise<API.Documents.ConvertDocumentResponse>;
+  getConversionStatus(
+    taskId: string,
+  ): Promise<API.Documents.GetConversionStatusResponse>;
+  deleteDocument(
+    documentId: string,
+  ): Promise<API.Documents.DeleteDocumentResponse>;
+
   // Admin
   getSystemInfo(): Promise<API.Admin.GetSystemInfoResponse>;
-  getUsers(params?: API.Admin.GetUsersParams): Promise<API.Admin.GetUsersResponse>;
-  createUser(request: API.Admin.CreateUserRequest): Promise<API.Admin.CreateUserResponse>;
-  updateUser(userId: string, request: API.Admin.UpdateUserRequest): Promise<API.Admin.UpdateUserResponse>;
-  getFeedback(params?: API.Admin.GetFeedbackParams): Promise<API.Admin.GetFeedbackResponse>;
-  
+  getUsers(
+    params?: API.Admin.GetUsersParams,
+  ): Promise<API.Admin.GetUsersResponse>;
+  createUser(
+    request: API.Admin.CreateUserRequest,
+  ): Promise<API.Admin.CreateUserResponse>;
+  updateUser(
+    userId: string,
+    request: API.Admin.UpdateUserRequest,
+  ): Promise<API.Admin.UpdateUserResponse>;
+  getFeedback(
+    params?: API.Admin.GetFeedbackParams,
+  ): Promise<API.Admin.GetFeedbackResponse>;
+
   // Feedback
-  sendFeedback(request: API.Feedback.SendFeedbackRequest): Promise<API.Feedback.SendFeedbackResponse>;
+  sendFeedback(
+    request: API.Feedback.SendFeedbackRequest,
+  ): Promise<API.Feedback.SendFeedbackResponse>;
 }
 
 /**
@@ -442,23 +488,25 @@ export class ApiError extends Error {
   code: string;
   status: number;
   details?: Record<string, any>;
-  
+
   constructor(error: ApiError) {
     super(error.message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
     this.code = error.code;
     this.status = error.status || 500;
     this.details = error.details;
-    
+
     // Für korrekte instanceof-Überprüfungen
     Object.setPrototypeOf(this, ApiError.prototype);
   }
-  
+
   static isApiError(error: any): error is ApiError {
-    return error instanceof ApiError ||
-      (typeof error === 'object' && 
-       error !== null &&
-       'code' in error &&
-       'message' in error);
+    return (
+      error instanceof ApiError ||
+      (typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        "message" in error)
+    );
   }
 }

@@ -7,7 +7,8 @@ import FeatureWrapper from "@/components/shared/FeatureWrapper.vue";
 // Mock components for testing
 const MockDocConverterContainer = {
   name: "MockDocConverterContainer",
-  template: '<div class="mock-doc-converter-container">Document Converter Container</div>',
+  template:
+    '<div class="mock-doc-converter-container">Document Converter Container</div>',
 };
 
 const MockFileUpload = {
@@ -93,8 +94,12 @@ describe("Document Converter Feature Tests", () => {
         },
       });
 
-      expect(wrapper.findComponent(MockDocConverterContainer).exists()).toBe(true);
-      expect(wrapper.findComponent(LegacyDocConverterContainer).exists()).toBe(false);
+      expect(wrapper.findComponent(MockDocConverterContainer).exists()).toBe(
+        true,
+      );
+      expect(wrapper.findComponent(LegacyDocConverterContainer).exists()).toBe(
+        false,
+      );
     });
 
     it("should render the legacy container when feature is disabled", () => {
@@ -118,8 +123,12 @@ describe("Document Converter Feature Tests", () => {
         },
       });
 
-      expect(wrapper.findComponent(LegacyDocConverterContainer).exists()).toBe(true);
-      expect(wrapper.findComponent(MockDocConverterContainer).exists()).toBe(false);
+      expect(wrapper.findComponent(LegacyDocConverterContainer).exists()).toBe(
+        true,
+      );
+      expect(wrapper.findComponent(MockDocConverterContainer).exists()).toBe(
+        false,
+      );
     });
 
     it("should fallback to legacy component on error", async () => {
@@ -149,16 +158,18 @@ describe("Document Converter Feature Tests", () => {
       });
 
       // Should show legacy component due to error fallback
-      expect(wrapper.findComponent(LegacyDocConverterContainer).exists()).toBe(true);
+      expect(wrapper.findComponent(LegacyDocConverterContainer).exists()).toBe(
+        true,
+      );
 
       // Should report error to feature toggles store
       const store = useFeatureTogglesStore();
       expect(store.reportFeatureError).toHaveBeenCalled();
-      
+
       errorSpy.mockRestore();
     });
   });
-  
+
   describe("Document Converter Sub-Components", () => {
     it("should respect dependencies between document converter components", () => {
       // Test with container disabled
@@ -166,8 +177,8 @@ describe("Document Converter Feature Tests", () => {
         props: {
           feature: "useSfcDocConverterFileUpload", // This depends on container
           newComponent: MockFileUpload,
-          legacyComponent: { 
-            template: "<div>Legacy Upload</div>" 
+          legacyComponent: {
+            template: "<div>Legacy Upload</div>",
           },
         },
         global: {
@@ -189,7 +200,7 @@ describe("Document Converter Feature Tests", () => {
       expect(wrapper.html()).toContain("Legacy Upload");
       expect(wrapper.html()).not.toContain("File Upload Component");
     });
-    
+
     it("should enable all document converter features with helper function", async () => {
       // Create store with initial state - all features disabled
       const wrapper = mount(FeatureWrapper, {
@@ -214,19 +225,19 @@ describe("Document Converter Feature Tests", () => {
           ],
         },
       });
-      
+
       // Get store
       const store = useFeatureTogglesStore();
-      
+
       // Use helper function to enable all document converter features
       store.enableAllDocConverterComponents();
-      
+
       // Manually trigger reactivity for the test
       await wrapper.vm.$nextTick();
-      
+
       // Now component should be visible
       expect(wrapper.html()).toContain("Document Converter Container");
-      
+
       // Verify store state
       expect(store.useSfcDocConverter).toBe(true);
       expect(store.useSfcDocConverterContainer).toBe(true);
@@ -234,7 +245,7 @@ describe("Document Converter Feature Tests", () => {
       expect(store.useSfcDocConverterBatchUpload).toBe(true);
     });
   });
-  
+
   describe("Complex Feature Interaction", () => {
     it("should correctly handle a complex feature activation scenario", async () => {
       // Create component with parent store
@@ -284,17 +295,17 @@ describe("Document Converter Feature Tests", () => {
       // Container and FileUpload should be visible
       expect(wrapper.html()).toContain("Document Converter Container");
       expect(wrapper.html()).toContain("File Upload Component");
-      
+
       // But BatchUpload should not be visible (disabled)
       expect(wrapper.html()).not.toContain("Batch Upload Component");
-      
+
       // Now enable BatchUpload
       const store = useFeatureTogglesStore();
       store.useSfcDocConverterBatchUpload = true;
-      
+
       // Wait for re-render
       await wrapper.vm.$nextTick();
-      
+
       // Now BatchUpload should also be visible
       expect(wrapper.html()).toContain("Batch Upload Component");
     });

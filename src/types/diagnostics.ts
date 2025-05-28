@@ -3,7 +3,7 @@
  */
 
 export interface RouterHealthMetrics {
-  initStatus: 'pending' | 'ready' | 'failed';
+  initStatus: "pending" | "ready" | "failed";
   currentRouteAvailable: boolean;
   piniaReady: boolean;
   navigationSuccessRate: number;
@@ -96,9 +96,9 @@ export interface RecoveryStep {
 }
 
 export interface RecoveryCondition {
-  type: 'error_count' | 'pattern' | 'time_based' | 'user_action';
+  type: "error_count" | "pattern" | "time_based" | "user_action";
   value: any;
-  operator: 'equals' | 'greater_than' | 'less_than' | 'contains' | 'matches';
+  operator: "equals" | "greater_than" | "less_than" | "contains" | "matches";
 }
 
 export interface RecoveryOption {
@@ -130,14 +130,14 @@ export interface DiagnosticOptions {
 }
 
 export enum RouterErrorCode {
-  INIT_FAILED = 'ROUTER_INIT_001',
-  CURRENT_ROUTE_UNDEFINED = 'ROUTER_STATE_001',
-  PINIA_NOT_READY = 'ROUTER_DEPS_001',
-  NAVIGATION_LOOP = 'ROUTER_NAV_001',
-  SESSION_NOT_FOUND = 'ROUTER_SESSION_001',
-  INVALID_ROUTE = 'ROUTER_ROUTE_001',
-  GUARD_ERROR = 'ROUTER_GUARD_001',
-  COMPONENT_LOAD_FAILED = 'ROUTER_COMP_001'
+  INIT_FAILED = "ROUTER_INIT_001",
+  CURRENT_ROUTE_UNDEFINED = "ROUTER_STATE_001",
+  PINIA_NOT_READY = "ROUTER_DEPS_001",
+  NAVIGATION_LOOP = "ROUTER_NAV_001",
+  SESSION_NOT_FOUND = "ROUTER_SESSION_001",
+  INVALID_ROUTE = "ROUTER_ROUTE_001",
+  GUARD_ERROR = "ROUTER_GUARD_001",
+  COMPONENT_LOAD_FAILED = "ROUTER_COMP_001",
 }
 
 export interface RouterError extends Error {
@@ -147,7 +147,7 @@ export interface RouterError extends Error {
 }
 
 export interface DiagnosticEvent {
-  type: 'error' | 'warning' | 'info' | 'success';
+  type: "error" | "warning" | "info" | "success";
   source: string;
   message: string;
   timestamp: number;
@@ -156,7 +156,7 @@ export interface DiagnosticEvent {
 }
 
 export interface MonitoringConfig {
-  position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  position: "top-left" | "top-right" | "bottom-left" | "bottom-right";
   startExpanded: boolean;
   autoHide: boolean;
   autoHideDelay: number;

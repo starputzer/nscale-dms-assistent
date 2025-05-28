@@ -2,7 +2,11 @@
  * Router Guards Fixed - Robuste Router-Überwachung mit Fehlerbehandlung
  */
 
-import type { Router, NavigationGuardNext, RouteLocationNormalized } from 'vue-router';
+import type {
+  Router,
+  NavigationGuardNext,
+  RouteLocationNormalized,
+} from "vue-router";
 
 export interface RouterGuardOptions {
   enableLogging?: boolean;
@@ -24,7 +28,7 @@ const state: GuardState = {
   lastNavigationTime: 0,
   navigationCount: 0,
   errorCount: 0,
-  lastError: null
+  lastError: null,
 };
 
 /**
@@ -32,10 +36,10 @@ const state: GuardState = {
  */
 export function installRouterGuards(
   router: Router,
-  options: RouterGuardOptions = {}
+  options: RouterGuardOptions = {},
 ): void {
   if (state.initialized) {
-    console.warn('[RouterGuards] Already initialized, skipping');
+    console.warn("[RouterGuards] Already initialized, skipping");
     return;
   }
 
@@ -43,7 +47,7 @@ export function installRouterGuards(
     enableLogging = true,
     enableFeatureChecks = true,
     enableAuthChecks = true,
-    fallbackRoute = '/'
+    fallbackRoute = "/",
   } = options;
 
   // Global before guard
@@ -57,7 +61,7 @@ export function installRouterGuards(
       }
 
       // Skip guard for special routes
-      const skipRoutes = ['/error', '/404', fallbackRoute];
+      const skipRoutes = ["/error", "/404", fallbackRoute];
       if (skipRoutes.includes(to.path)) {
         return next();
       }
@@ -65,49 +69,53 @@ export function installRouterGuards(
       // Auth check (if enabled)
       if (enableAuthChecks && to.meta.requiresAuth) {
         const isAuthenticated = await checkAuthentication();
-        
+
         if (!isAuthenticated) {
           if (enableLogging) {
-            console.log('[RouterGuards] Not authenticated, redirecting to login');
+            console.log(
+              "[RouterGuards] Not authenticated, redirecting to login",
+            );
           }
-          return next({ path: '/login', query: { redirect: to.fullPath } });
+          return next({ path: "/login", query: { redirect: to.fullPath } });
         }
       }
 
       // Feature toggle check (if enabled)
       if (enableFeatureChecks && to.meta.feature) {
         const isEnabled = await checkFeatureToggle(to.meta.feature as string);
-        
+
         if (!isEnabled) {
           if (enableLogging) {
             console.log(`[RouterGuards] Feature disabled: ${to.meta.feature}`);
           }
-          return next({ path: '/error', query: { reason: 'feature-disabled' } });
+          return next({
+            path: "/error",
+            query: { reason: "feature-disabled" },
+          });
         }
       }
 
       // Admin check (if enabled)
       if (to.meta.adminOnly) {
         const isAdmin = await checkAdminAccess();
-        
+
         if (!isAdmin) {
           if (enableLogging) {
-            console.log('[RouterGuards] Admin access required, redirecting');
+            console.log("[RouterGuards] Admin access required, redirecting");
           }
-          return next({ path: '/error', query: { reason: 'unauthorized' } });
+          return next({ path: "/error", query: { reason: "unauthorized" } });
         }
       }
 
       // All checks passed
       state.lastNavigationTime = Date.now() - guardStartTime;
       next();
-
     } catch (error) {
       state.errorCount++;
       state.lastError = error as Error;
-      
-      console.error('[RouterGuards] Error in navigation guard:', error);
-      
+
+      console.error("[RouterGuards] Error in navigation guard:", error);
+
       // Try fallback navigation
       if (to.path !== fallbackRoute) {
         next({ path: fallbackRoute });
@@ -121,12 +129,14 @@ export function installRouterGuards(
   // Global after guard
   router.afterEach((to, from) => {
     if (enableLogging) {
-      console.log(`[RouterGuards] Navigation completed: ${from.path} -> ${to.path}`);
+      console.log(
+        `[RouterGuards] Navigation completed: ${from.path} -> ${to.path}`,
+      );
     }
 
     // Check for navigation errors
     if (router.currentRoute.value.matched.length === 0) {
-      console.warn('[RouterGuards] No matched routes for:', to.path);
+      console.warn("[RouterGuards] No matched routes for:", to.path);
     }
   });
 
@@ -134,21 +144,21 @@ export function installRouterGuards(
   router.onError((error) => {
     state.errorCount++;
     state.lastError = error;
-    
-    console.error('[RouterGuards] Navigation error:', error);
-    
+
+    console.error("[RouterGuards] Navigation error:", error);
+
     // Attempt recovery
     if (router.currentRoute.value.path !== fallbackRoute) {
       router.push(fallbackRoute).catch(() => {
-        console.error('[RouterGuards] Failed to navigate to fallback route');
+        console.error("[RouterGuards] Failed to navigate to fallback route");
       });
     }
   });
 
   state.initialized = true;
-  
+
   if (enableLogging) {
-    console.log('[RouterGuards] Guards installed successfully', options);
+    console.log("[RouterGuards] Guards installed successfully", options);
   }
 }
 
@@ -158,11 +168,11 @@ export function installRouterGuards(
 async function checkAuthentication(): Promise<boolean> {
   try {
     // Lazy load auth store
-    const { useAuthStore } = await import('@/stores/auth');
+    const { useAuthStore } = await import("@/stores/auth");
     const authStore = useAuthStore();
     return authStore.isAuthenticated;
   } catch (error) {
-    console.error('[RouterGuards] Failed to check authentication:', error);
+    console.error("[RouterGuards] Failed to check authentication:", error);
     return false;
   }
 }
@@ -170,11 +180,11 @@ async function checkAuthentication(): Promise<boolean> {
 async function checkFeatureToggle(feature: string): Promise<boolean> {
   try {
     // Lazy load feature toggles store
-    const { useFeatureTogglesStore } = await import('@/stores/featureToggles');
+    const { useFeatureTogglesStore } = await import("@/stores/featureToggles");
     const featureStore = useFeatureTogglesStore();
     return featureStore.isEnabled(feature);
   } catch (error) {
-    console.error('[RouterGuards] Failed to check feature toggle:', error);
+    console.error("[RouterGuards] Failed to check feature toggle:", error);
     return true; // Default to enabled if check fails
   }
 }
@@ -182,11 +192,11 @@ async function checkFeatureToggle(feature: string): Promise<boolean> {
 async function checkAdminAccess(): Promise<boolean> {
   try {
     // Lazy load auth store
-    const { useAuthStore } = await import('@/stores/auth');
+    const { useAuthStore } = await import("@/stores/auth");
     const authStore = useAuthStore();
     return authStore.isAdmin;
   } catch (error) {
-    console.error('[RouterGuards] Failed to check admin access:', error);
+    console.error("[RouterGuards] Failed to check admin access:", error);
     return false;
   }
 }
@@ -200,7 +210,7 @@ export function getGuardStatistics() {
     navigationCount: state.navigationCount,
     errorCount: state.errorCount,
     lastNavigationTime: state.lastNavigationTime,
-    lastError: state.lastError?.message || null
+    lastError: state.lastError?.message || null,
   };
 }
 

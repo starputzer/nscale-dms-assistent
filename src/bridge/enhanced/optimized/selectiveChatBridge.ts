@@ -1203,18 +1203,18 @@ export class SelectiveChatBridge {
    */
   private generateId(): string {
     // Implementierung einer UUID v4-ähnlichen Funktion, die keine externen Abhängigkeiten erfordert
-    const hexChars = '0123456789abcdef';
-    let uuid = '';
+    const hexChars = "0123456789abcdef";
+    let uuid = "";
 
     for (let i = 0; i < 36; i++) {
       if (i === 8 || i === 13 || i === 18 || i === 23) {
-        uuid += '-';
+        uuid += "-";
       } else if (i === 14) {
-        uuid += '4'; // Version 4 UUID
+        uuid += "4"; // Version 4 UUID
       } else if (i === 19) {
-        uuid += hexChars[(Math.random() * 4 | 0) + 8]; // Variant bits
+        uuid += hexChars[((Math.random() * 4) | 0) + 8]; // Variant bits
       } else {
-        uuid += hexChars[Math.random() * 16 | 0];
+        uuid += hexChars[(Math.random() * 16) | 0];
       }
     }
 
@@ -1254,11 +1254,26 @@ export class SelectiveChatBridge {
     }
 
     // Event-Listener entfernen
-    this.eventBus.off("vueChat:messagesUpdated", this.handleMessagesUpdated.bind(this));
-    this.eventBus.off("vueChat:sessionCreated", this.handleSessionCreated.bind(this));
-    this.eventBus.off("vueChat:sessionDeleted", this.handleSessionDeleted.bind(this));
-    this.eventBus.off("vueChat:sessionsUpdated", this.handleSessionsUpdated.bind(this));
-    this.eventBus.off("vueChat:statusUpdated", this.handleStatusUpdated.bind(this));
+    this.eventBus.off(
+      "vueChat:messagesUpdated",
+      this.handleMessagesUpdated.bind(this),
+    );
+    this.eventBus.off(
+      "vueChat:sessionCreated",
+      this.handleSessionCreated.bind(this),
+    );
+    this.eventBus.off(
+      "vueChat:sessionDeleted",
+      this.handleSessionDeleted.bind(this),
+    );
+    this.eventBus.off(
+      "vueChat:sessionsUpdated",
+      this.handleSessionsUpdated.bind(this),
+    );
+    this.eventBus.off(
+      "vueChat:statusUpdated",
+      this.handleStatusUpdated.bind(this),
+    );
     this.eventBus.off("vueChat:error", this.handleVueError.bind(this));
     this.eventBus.off("vueChat:pingVanilla", this.handlePingRequest.bind(this));
 

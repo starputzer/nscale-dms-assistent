@@ -3,7 +3,7 @@
  * Ersetzt EventSource durch fetch() mit ReadableStream für bessere Header-Unterstützung
  */
 
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore } from "@/stores/auth";
 
 export interface StreamingOptions {
   question: string;
@@ -25,43 +25,45 @@ export class StreamingService {
     const token = authStore.token;
 
     if (!token) {
-      throw new Error('Nicht authentifiziert');
+      throw new Error("Nicht authentifiziert");
     }
 
     // Erstelle URL mit korrektem Encoding
     const params = new URLSearchParams({
       question: options.question,
       session_id: options.sessionId,
-      ...(options.simpleLanguage && { simple_language: 'true' })
+      ...(options.simpleLanguage && { simple_language: "true" }),
     });
 
     const url = `/api/question/stream?${params.toString()}`;
-    
+
     // Abbruch-Controller für Stream-Kontrolle
     this.controller = new AbortController();
 
     try {
       const response = await fetch(url, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'text/event-stream',
+          Authorization: `Bearer ${token}`,
+          Accept: "text/event-stream",
         },
         signal: this.controller.signal,
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP Fehler: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `HTTP Fehler: ${response.status} ${response.statusText}`,
+        );
       }
 
       // Verarbeite den Stream
       await this.processStream(response, options);
     } catch (error) {
       if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          console.log('Stream wurde abgebrochen');
+        if (error.name === "AbortError") {
+          console.log("Stream wurde abgebrochen");
         } else {
-          console.error('Stream-Fehler:', error);
+          console.error("Stream-Fehler:", error);
           options.onError?.(error);
         }
       }
@@ -71,19 +73,22 @@ export class StreamingService {
   /**
    * Verarbeitet den Response-Stream
    */
-  private async processStream(response: Response, options: StreamingOptions): Promise<void> {
+  private async processStream(
+    response: Response,
+    options: StreamingOptions,
+  ): Promise<void> {
     const reader = response.body?.getReader();
     const decoder = new TextDecoder();
-    let buffer = '';
+    let buffer = "";
 
     if (!reader) {
-      throw new Error('Kein Stream verfügbar');
+      throw new Error("Kein Stream verfügbar");
     }
 
     try {
       while (true) {
         const { done, value } = await reader.read();
-        
+
         if (done) {
           // Stream abgeschlossen
           options.onComplete?.();
@@ -92,10 +97,10 @@ export class StreamingService {
 
         // Dekodiere den Chunk
         buffer += decoder.decode(value, { stream: true });
-        
+
         // Verarbeite vollständige Zeilen
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || ''; // Behalte unvollständige Zeile im Buffer
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || ""; // Behalte unvollständige Zeile im Buffer
 
         for (const line of lines) {
           if (line.trim()) {
@@ -113,10 +118,10 @@ export class StreamingService {
    */
   private processLine(line: string, options: StreamingOptions): void {
     // SSE-Format: "data: {...}" oder "event: eventName"
-    if (line.startsWith('data: ')) {
+    if (line.startsWith("data: ")) {
       const data = line.slice(6); // Entferne "data: "
-      
-      if (data.trim() === '[DONE]') {
+
+      if (data.trim() === "[DONE]") {
         options.onComplete?.();
         return;
       }
@@ -124,7 +129,7 @@ export class StreamingService {
       try {
         // Versuche JSON zu parsen
         const parsed = JSON.parse(data);
-        
+
         if (parsed.content) {
           options.onMessage?.(parsed.content);
         } else if (parsed.error) {
@@ -134,9 +139,9 @@ export class StreamingService {
         // Wenn kein JSON, behandle als Text
         options.onMessage?.(data);
       }
-    } else if (line.startsWith('event: ')) {
+    } else if (line.startsWith("event: ")) {
       const event = line.slice(7);
-      if (event === 'done') {
+      if (event === "done") {
         options.onComplete?.();
       }
     }

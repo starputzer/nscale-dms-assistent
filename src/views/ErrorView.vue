@@ -16,9 +16,14 @@
         <h3>Details</h3>
         <pre v-if="errorDetails">{{ errorDetails }}</pre>
         <pre v-if="additionalDetails">{{ additionalDetails }}</pre>
-        <div v-if="isDevMode && router.currentRoute.value.query" class="dev-details">
+        <div
+          v-if="isDevMode && router.currentRoute.value.query"
+          class="dev-details"
+        >
           <h4>Debug-Informationen</h4>
-          <pre>{{ JSON.stringify(router.currentRoute.value.query, null, 2) }}</pre>
+          <pre>{{
+            JSON.stringify(router.currentRoute.value.query, null, 2)
+          }}</pre>
         </div>
       </div>
       <div class="error-toggle-details">
@@ -27,13 +32,13 @@
         </a>
       </div>
       <div class="error-help">
-        <p>
-          Wenn das Problem weiterhin besteht, versuchen Sie:
-        </p>
+        <p>Wenn das Problem weiterhin besteht, versuchen Sie:</p>
         <ul>
           <li>Browser-Cache leeren und Seite neu laden</li>
           <li>Überprüfen Sie Ihre Internetverbindung</li>
-          <li>Kontaktieren Sie den Support, falls das Problem bestehen bleibt</li>
+          <li>
+            Kontaktieren Sie den Support, falls das Problem bestehen bleibt
+          </li>
         </ul>
       </div>
     </div>
@@ -68,33 +73,34 @@ const props = defineProps({
 
 // Zusätzliche Fehlerinformationen aus der Route für bessere Diagnose
 const route = useRoute();
-const additionalDetails = ref('');
+const additionalDetails = ref("");
 const isDevMode = ref(import.meta.env.DEV);
 
 onMounted(() => {
   // Sammelt zusätzliche Diagnoseinformationen
   const details = [];
-  
+
   // Routeninformationen
   if (route.query.source) details.push(`Quelle: ${route.query.source}`);
-  if (route.query.component) details.push(`Komponente: ${route.query.component}`);
+  if (route.query.component)
+    details.push(`Komponente: ${route.query.component}`);
   if (route.query.ts) {
     const timestamp = new Date(parseInt(route.query.ts as string));
     details.push(`Zeitpunkt: ${timestamp.toLocaleString()}`);
   }
-  
+
   // Browser-Informationen für Diagnose
   details.push(`Browser: ${navigator.userAgent}`);
   details.push(`URL: ${window.location.href}`);
-  
+
   // Wenn in Entwicklungsumgebung, zeige zusätzliche Details an
   if (import.meta.env.DEV) {
     details.push(`Umgebung: Entwicklung`);
     // In der Produktion würden wir keine detaillierten Routen anzeigen
     details.push(`Route: ${JSON.stringify(route.fullPath)}`);
   }
-  
-  additionalDetails.value = details.join('\n');
+
+  additionalDetails.value = details.join("\n");
 });
 
 const router = useRouter();
@@ -112,15 +118,15 @@ const errorTitle = computed(() => {
     "404": "Seite nicht gefunden",
     "500": "Serverfehler",
     "503": "Dienst nicht verfügbar",
-    "offline": "Keine Verbindung",
+    offline: "Keine Verbindung",
     "feature-disabled": "Funktion deaktiviert",
-    "timeout": "Zeitüberschreitung",
-    "unknown": "Unbekannter Fehler",
-    "router_error": "Navigationsfehler",
-    "chunk_load_error": "Ladefehler",
-    "network_error": "Netzwerkproblem",
-    "component_load_error": "Komponentenfehler",
-    "module_not_found": "Modul nicht gefunden"
+    timeout: "Zeitüberschreitung",
+    unknown: "Unbekannter Fehler",
+    router_error: "Navigationsfehler",
+    chunk_load_error: "Ladefehler",
+    network_error: "Netzwerkproblem",
+    component_load_error: "Komponentenfehler",
+    module_not_found: "Modul nicht gefunden",
   };
   return titles[props.errorCode] || "Fehler";
 });
@@ -131,7 +137,7 @@ const goBack = () => {
 
 const goHome = () => {
   try {
-    router.push({ path: "/" }).catch(err => {
+    router.push({ path: "/" }).catch((err) => {
       console.error("Error navigating to home:", err);
       // Fallback für den Fall, dass der Router nicht funktioniert
       window.location.href = "/";
@@ -145,76 +151,82 @@ const goHome = () => {
 const retry = () => {
   try {
     // Bei 'critical=true' Parameter oder Chunk-Ladefehlern: Erst versuchen, die App zu reparieren
-    const isCritical = router.currentRoute.value.query.critical === 'true';
-    const isChunkError = router.currentRoute.value.query.code === 'chunk_load_error' || 
-                         (router.currentRoute.value.query.message as string || '').includes('chunk');
-    
+    const isCritical = router.currentRoute.value.query.critical === "true";
+    const isChunkError =
+      router.currentRoute.value.query.code === "chunk_load_error" ||
+      ((router.currentRoute.value.query.message as string) || "").includes(
+        "chunk",
+      );
+
     if (isCritical || isChunkError) {
       console.log("Versuche grundlegende App-Reparatur vor erneutem Laden...");
-      
+
       // Lösche Cache (anstatt nur zu aktualisieren)
       try {
         // Service Worker deregistrieren, falls vorhanden
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(registrations => {
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
             for (const registration of registrations) {
               registration.unregister();
             }
           });
         }
-        
+
         // Cache-Storage leeren
-        if ('caches' in window) {
-          caches.keys().then(keyList => {
-            return Promise.all(keyList.map(key => caches.delete(key)));
+        if ("caches" in window) {
+          caches.keys().then((keyList) => {
+            return Promise.all(keyList.map((key) => caches.delete(key)));
           });
         }
-        
+
         // Lokalen Storage für App-bezogene Daten leeren (aber User-Session beibehalten)
-        const keysToKeep = ['token', 'userId', 'userRole'];
+        const keysToKeep = ["token", "userId", "userRole"];
         const savedValues: Record<string, string> = {};
-        
+
         // Speichere wichtige Werte
-        keysToKeep.forEach(key => {
+        keysToKeep.forEach((key) => {
           const value = localStorage.getItem(key);
           if (value) savedValues[key] = value;
         });
-        
+
         // Lokalen Speicher leeren
         localStorage.clear();
-        
+
         // Wichtige Werte wiederherstellen
         Object.entries(savedValues).forEach(([key, value]) => {
           localStorage.setItem(key, value);
         });
-        
+
         // Hard Reload mit Cache-Invalidierung
         setTimeout(() => {
-          window.location.href = '/';
+          window.location.href = "/";
         }, 500);
-        
+
         return;
       } catch (cacheError) {
         console.error("Fehler beim Cache-Leeren:", cacheError);
       }
     }
-    
+
     // Erst versuchen, zu der Route zurückzukehren, von der wir kamen
     if (router.currentRoute.value.query.from) {
       const fromPath = router.currentRoute.value.query.from as string;
-      console.log(`Versuche Navigation zurück zur ursprünglichen Route: ${fromPath}`);
+      console.log(
+        `Versuche Navigation zurück zur ursprünglichen Route: ${fromPath}`,
+      );
       router.push(fromPath);
       return;
     }
-    
+
     // Wenn keine from-Route vorhanden ist, aber eine Ursprungs-Route
     if (router.currentRoute.value.query.originalRoute) {
-      const originalRoute = router.currentRoute.value.query.originalRoute as string;
+      const originalRoute = router.currentRoute.value.query
+        .originalRoute as string;
       console.log(`Versuche Navigation zur Original-Route: ${originalRoute}`);
       router.push(originalRoute);
       return;
     }
-    
+
     // Als letzten Ausweg, aktualisieren wir einfach die Seite
     // Wir nutzen ein kurzes Timeout, um mögliche Race-Conditions zu vermeiden
     console.log("Kein Navigationspfad gefunden, lade die Seite neu");
@@ -222,7 +234,7 @@ const retry = () => {
   } catch (error) {
     console.error("Fehler beim Wiederversuch:", error);
     // Fallback: Seite neu laden mit Cache-Invalidierung
-    window.location.href = '/?cache_bust=' + Date.now();
+    window.location.href = "/?cache_bust=" + Date.now();
   }
 };
 

@@ -336,8 +336,8 @@ export interface LegacyState {
   };
   ui: {
     darkMode: boolean;
-    sidebar: { 
-      isOpen: boolean; 
+    sidebar: {
+      isOpen: boolean;
       collapsed: boolean;
     };
     toasts: Array<any>;

@@ -16,6 +16,7 @@ import {
   DocumentMetadata,
   ConversionProgress,
   UploadProgress,
+  SupportedFormat
 } from "@/types/documentConverter";
 import { ApiResponse } from "@/types/api";
 import axios, { CancelTokenSource } from "axios";
@@ -686,20 +687,24 @@ class DocumentConverterService implements IDocumentConverterService {
   }
 
   /**
+   * Unterstützte Dateiformate
+   */
+  private supportedFormats: SupportedFormat[] = [
+    "pdf",
+    "docx",
+    "xlsx",
+    "pptx",
+    "html",
+    "txt",
+  ];
+
+  /**
    * Prüft, ob ein Dateiformat unterstützt wird
    * @param format Das zu prüfende Dateiformat
    * @returns true, wenn das Format unterstützt wird
    */
   public isFormatSupported(format: string): format is SupportedFormat {
-    const supportedFormats: SupportedFormat[] = [
-      "pdf",
-      "docx",
-      "xlsx",
-      "pptx",
-      "html",
-      "txt",
-    ];
-    return supportedFormats.includes(format as SupportedFormat);
+    return this.supportedFormats.includes(format as SupportedFormat);
   }
 }
 
@@ -1282,19 +1287,23 @@ class MockDocumentConverterService implements IDocumentConverterService {
 // Hilfsfunction zur sicheren Zugriff auf Umgebungsvariablen im Browser-Kontext
 const getEnvVar = (name: string, defaultValue: string): string => {
   // In Vite werden Umgebungsvariablen mit import.meta.env zur Verfügung gestellt
-  if (typeof import.meta !== 'undefined' && import.meta.env) {
+  if (typeof import.meta !== "undefined" && import.meta.env) {
     return (import.meta.env[name] as string) || defaultValue;
   }
   // Fallback für Node.js-Umgebung oder wenn import.meta nicht verfügbar ist
-  return typeof window !== 'undefined' ? defaultValue : ((process?.env?.[name] as string) || defaultValue);
+  return typeof window !== "undefined"
+    ? defaultValue
+    : (process?.env?.[name] as string) || defaultValue;
 };
 
 // Hilfsfunction zur Erkennung der aktuellen Umgebung
 const getNodeEnv = (): string => {
-  if (typeof import.meta !== 'undefined' && import.meta.env) {
-    return import.meta.env.MODE || 'development';
+  if (typeof import.meta !== "undefined" && import.meta.env) {
+    return import.meta.env.MODE || "development";
   }
-  return typeof window !== 'undefined' ? 'development' : (process?.env?.NODE_ENV || 'development');
+  return typeof window !== "undefined"
+    ? "development"
+    : process?.env?.NODE_ENV || "development";
 };
 
 // Bestimme die richtige Implementierung basierend auf der Umgebung
@@ -1302,7 +1311,8 @@ const isDevelopment = getNodeEnv() === "development";
 const isTest = getNodeEnv() === "test";
 const useMockService =
   (isDevelopment || isTest) &&
-  (getEnvVar('VITE_USE_MOCK_API', 'false') === "true" || !getEnvVar('VITE_API_BASE_URL', ''));
+  (getEnvVar("VITE_USE_MOCK_API", "false") === "true" ||
+    !getEnvVar("VITE_API_BASE_URL", ""));
 
 // Service-Instanz erstellen
 const documentConverterService: IDocumentConverterService = useMockService
@@ -1314,9 +1324,11 @@ if (useMockService) {
   console.log("Using MOCK DocumentConverterService for development/testing");
 }
 
+// Export both types and service instances
+export type { IDocumentConverterService };
 export {
-  IDocumentConverterService,
   DocumentConverterService,
   MockDocumentConverterService,
+  documentConverterService
 };
 export default documentConverterService;

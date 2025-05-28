@@ -328,20 +328,20 @@
   }
 }
 
-// Development Banner
-.admin-dev-info-banner {
+// Info Banner
+.admin-info-banner {
   display: flex;
   align-items: center;
   padding: var(--admin-spacing-md) var(--admin-spacing-lg);
   margin-bottom: var(--admin-spacing-lg);
-  background-color: var(--admin-warning-light);
-  border-left: 4px solid var(--admin-warning);
+  background-color: var(--admin-primary-light);
+  border-left: 4px solid var(--admin-primary);
   border-radius: var(--admin-radius);
   box-shadow: var(--admin-shadow-sm);
   
   i {
     font-size: 24px;
-    color: var(--admin-warning);
+    color: var(--admin-primary);
     margin-right: var(--admin-spacing-md);
     flex-shrink: 0;
   }
@@ -1063,7 +1063,7 @@
     font-size: var(--admin-font-size-md);
   }
   
-  .admin-dev-info-banner {
+  .admin-info-banner {
     padding: var(--admin-spacing-sm);
     margin-bottom: var(--admin-spacing-md);
     

@@ -70,8 +70,14 @@ export interface FeedbackStats {
   negative: number;
   positive_percent: number;
   with_comments: number;
-  feedback_rate: number; // Prozentsatz der Nachrichten mit Feedback
-  feedback_by_day: { date: string; positive: number; negative: number }[];
+  unresolved?: number; // Number of unresolved feedback entries
+  feedback_rate?: number; // Prozentsatz der Nachrichten mit Feedback
+  feedback_by_day: {
+    date: string;
+    positive: number;
+    negative: number;
+    count?: number;
+  }[];
 }
 
 export interface FeedbackEntry {
@@ -93,6 +99,15 @@ export interface FeedbackFilter {
   isPositive?: boolean;
   hasComment?: boolean;
   searchTerm?: string;
+}
+
+/**
+ * Optionen für den Export von Feedback-Daten
+ */
+export interface ExportOptions {
+  format: "csv" | "json" | "xlsx" | "pdf";
+  data: FeedbackEntry[];
+  fields: string[];
 }
 
 /**

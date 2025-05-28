@@ -1,0 +1,22 @@
+[
+  {
+    "timestamp": 1748412812.1674829,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1748412818.244826,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  }
+]

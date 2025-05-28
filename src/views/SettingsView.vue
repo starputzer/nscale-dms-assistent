@@ -3,13 +3,17 @@
     <div class="settings-header">
       <h1>Einstellungen</h1>
     </div>
-    
+
     <div class="settings-content">
       <div class="settings-section">
         <h2>Erscheinungsbild</h2>
         <div class="setting-item">
           <label for="theme-select">Theme</label>
-          <select id="theme-select" v-model="selectedTheme" @change="updateTheme">
+          <select
+            id="theme-select"
+            v-model="selectedTheme"
+            @change="updateTheme"
+          >
             <option value="light">Hell</option>
             <option value="dark">Dunkel</option>
             <option value="system">System</option>
@@ -31,11 +35,17 @@
         <h2>Konto</h2>
         <div class="setting-item">
           <label>E-Mail</label>
-          <div>{{ user?.email || 'Nicht verfügbar' }}</div>
+          <div>{{ user?.email || "Nicht verfügbar" }}</div>
         </div>
         <div class="setting-item">
           <label>Rolle</label>
-          <div>{{ user?.role === 'admin' ? 'Administrator' : (user?.role || 'Benutzer') }}</div>
+          <div>
+            {{
+              user?.role === "admin"
+                ? "Administrator"
+                : user?.role || "Benutzer"
+            }}
+          </div>
         </div>
       </div>
 
@@ -55,46 +65,52 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-import { useThemeStore } from '@/stores/theme'
+import { ref, computed, onMounted } from "vue";
+import { useAuthStore } from "@/stores/auth";
+import { useThemeStore } from "@/stores/theme";
 
-const authStore = useAuthStore()
-const themeStore = useThemeStore()
+const authStore = useAuthStore();
+const themeStore = useThemeStore();
 
-const selectedTheme = ref('system')
-const notifications = ref(false)
+const selectedTheme = ref("system");
+const notifications = ref(false);
 
-const user = computed(() => authStore.user)
+const user = computed(() => authStore.user);
 
 const browserInfo = computed(() => {
   if (typeof window === "undefined") return "Unknown";
   const userAgent = navigator.userAgent;
-  
+
   if (userAgent.indexOf("Firefox") > -1) {
     return "Mozilla Firefox";
-  } else if (userAgent.indexOf("Chrome") > -1 && userAgent.indexOf("Edg") === -1) {
+  } else if (
+    userAgent.indexOf("Chrome") > -1 &&
+    userAgent.indexOf("Edg") === -1
+  ) {
     return "Google Chrome";
-  } else if (userAgent.indexOf("Safari") > -1 && userAgent.indexOf("Chrome") === -1) {
+  } else if (
+    userAgent.indexOf("Safari") > -1 &&
+    userAgent.indexOf("Chrome") === -1
+  ) {
     return "Safari";
   } else if (userAgent.indexOf("Edg") > -1) {
     return "Microsoft Edge";
   }
-  
+
   return "Unknown";
-})
+});
 
 const updateTheme = () => {
   if (themeStore?.setTheme) {
-    themeStore.setTheme(selectedTheme.value)
+    themeStore.setTheme(selectedTheme.value);
   }
-}
+};
 
 onMounted(() => {
   if (themeStore?.theme) {
-    selectedTheme.value = themeStore.theme
+    selectedTheme.value = themeStore.theme;
   }
-})
+});
 </script>
 
 <style scoped>

@@ -1,13 +1,13 @@
 /**
  * Komponentenspezifische Typdefinitionen für Vue-Komponenten
- * 
+ *
  * Diese Datei enthält Typdefinitionen für Komponenten-Props, Emits und Slots,
  * um die Entwicklung von Vue-Komponenten mit TypeScript zu erleichtern.
  */
 
-import type { PropType, VNode, DefineComponent } from 'vue';
-import type { RouteLocationRaw } from 'vue-router';
-import type { ChatMessage, ChatSession, User } from './store-types';
+import type { PropType, VNode, DefineComponent } from "vue";
+import type { RouteLocationRaw } from "vue-router";
+import type { ChatMessage, ChatSession, User } from "./store-types";
 
 // ====================
 // Generische Komponententypen
@@ -26,8 +26,8 @@ export interface BaseProps {
  * Buttonkomponente
  */
 export interface ButtonProps extends BaseProps {
-  variant?: 'primary' | 'secondary' | 'tertiary' | 'text' | 'link' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: "primary" | "secondary" | "tertiary" | "text" | "link" | "danger";
+  size?: "sm" | "md" | "lg";
   disabled?: boolean;
   loading?: boolean;
   iconLeft?: string;
@@ -42,7 +42,7 @@ export interface ButtonProps extends BaseProps {
  */
 export interface InputProps extends BaseProps {
   modelValue?: string | number;
-  type?: 'text' | 'password' | 'email' | 'number' | 'tel' | 'url' | 'search';
+  type?: "text" | "password" | "email" | "number" | "tel" | "url" | "search";
   label?: string;
   placeholder?: string;
   disabled?: boolean;
@@ -50,7 +50,7 @@ export interface InputProps extends BaseProps {
   required?: boolean;
   error?: string;
   success?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   clearable?: boolean;
   prependIcon?: string;
   appendIcon?: string;
@@ -145,7 +145,7 @@ export interface MessageListProps extends BaseProps {
   showTypingIndicator?: boolean;
   showTimestamps?: boolean;
   showSenderAvatar?: boolean;
-  messageAlignment?: 'alternate' | 'left' | 'right';
+  messageAlignment?: "alternate" | "left" | "right";
   compactMode?: boolean;
   enableHighlighting?: boolean;
   enableSourceReferences?: boolean;
@@ -203,7 +203,7 @@ export interface AdminPanelProps extends BaseProps {
     icon?: string;
     badge?: number | string;
   }>;
-  tabPosition?: 'top' | 'left';
+  tabPosition?: "top" | "left";
 }
 
 export interface UserListProps extends BaseProps {
@@ -228,17 +228,23 @@ export interface ModalProps extends BaseProps {
   fullscreen?: boolean;
   width?: string | number;
   height?: string | number;
-  position?: 'center' | 'top' | 'right' | 'bottom' | 'left';
+  position?: "center" | "top" | "right" | "bottom" | "left";
   overlayClose?: boolean;
 }
 
 export interface ToastProps extends BaseProps {
-  type?: 'info' | 'success' | 'warning' | 'error';
+  type?: "info" | "success" | "warning" | "error";
   title?: string;
   message: string;
   duration?: number;
   closable?: boolean;
-  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'top' | 'bottom';
+  position?:
+    | "top-right"
+    | "top-left"
+    | "bottom-right"
+    | "bottom-left"
+    | "top"
+    | "bottom";
   showProgress?: boolean;
 }
 
@@ -254,7 +260,7 @@ export type ButtonEmits = {
 };
 
 export type InputEmits = {
-  'update:modelValue': [value: string | number];
+  "update:modelValue": [value: string | number];
   input: [value: string | number];
   change: [value: string | number];
   focus: [event: FocusEvent];
@@ -263,7 +269,7 @@ export type InputEmits = {
 };
 
 export type SelectEmits = {
-  'update:modelValue': [value: any];
+  "update:modelValue": [value: any];
   change: [value: any];
   focus: [event: FocusEvent];
   blur: [event: FocusEvent];
@@ -277,42 +283,42 @@ export type FormEmits = {
 };
 
 export type SidebarEmits = {
-  'update:open': [open: boolean];
-  'update:width': [width: number];
-  'item-click': [itemId: string];
+  "update:open": [open: boolean];
+  "update:width": [width: number];
+  "item-click": [itemId: string];
 };
 
 export type MessageListEmits = {
-  'message-click': [message: ChatMessage];
-  'source-click': [source: any, message: ChatMessage];
-  'load-more': [];
+  "message-click": [message: ChatMessage];
+  "source-click": [source: any, message: ChatMessage];
+  "load-more": [];
 };
 
 export type MessageInputEmits = {
-  'update:value': [value: string];
+  "update:value": [value: string];
   submit: [message: string];
   typing: [isTyping: boolean];
   attach: [];
 };
 
 export type SessionListEmits = {
-  'session-click': [session: ChatSession];
-  'new-session': [];
-  'delete-session': [sessionId: string];
-  'pin-session': [sessionId: string, pinned: boolean];
-  'select-session': [sessionId: string, selected: boolean];
-  'search': [query: string];
+  "session-click": [session: ChatSession];
+  "new-session": [];
+  "delete-session": [sessionId: string];
+  "pin-session": [sessionId: string, pinned: boolean];
+  "select-session": [sessionId: string, selected: boolean];
+  search: [query: string];
 };
 
 export type ChatViewEmits = {
-  'new-session': [];
-  'load-session': [sessionId: string];
-  'delete-session': [sessionId: string];
-  'send-message': [message: string];
+  "new-session": [];
+  "load-session": [sessionId: string];
+  "delete-session": [sessionId: string];
+  "send-message": [message: string];
 };
 
 export type ModalEmits = {
-  'update:open': [open: boolean];
+  "update:open": [open: boolean];
   close: [];
   afterClose: [];
   beforeClose: [done: () => void];
@@ -360,7 +366,11 @@ export interface TabSlotProps {
 /**
  * Hilfs-Typ-Helfer für Vue-Komponenten mit Generics
  */
-export type TypedComponent<Props = {}, Emits = {}, Slots = {}> = DefineComponent<
+export type TypedComponent<
+  Props = {},
+  Emits = {},
+  Slots = {},
+> = DefineComponent<
   Props extends Record<string, any> ? Props : {},
   {},
   {},

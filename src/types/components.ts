@@ -1,11 +1,11 @@
 /**
  * TypeScript-Definitionen für Komponenten
- * 
+ *
  * Strikte Typisierung für alle Vue-Komponenten
  */
 
-import type { Component, VNode } from 'vue';
-import type { RouteLocationRaw } from 'vue-router';
+import type { Component, VNode } from "vue";
+import type { RouteLocationRaw } from "vue-router";
 
 // Base Component Props
 export interface BaseComponentProps {
@@ -17,23 +17,30 @@ export interface BaseComponentProps {
 
 // Button Component
 export interface ButtonProps extends BaseComponentProps {
-  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'text';
-  size?: 'small' | 'medium' | 'large';
+  variant?:
+    | "primary"
+    | "secondary"
+    | "success"
+    | "danger"
+    | "warning"
+    | "info"
+    | "text";
+  size?: "small" | "medium" | "large";
   disabled?: boolean;
   loading?: boolean;
   icon?: string;
-  iconPosition?: 'left' | 'right';
+  iconPosition?: "left" | "right";
   fullWidth?: boolean;
-  type?: 'button' | 'submit' | 'reset';
+  type?: "button" | "submit" | "reset";
   to?: RouteLocationRaw;
   href?: string;
-  target?: '_blank' | '_self' | '_parent' | '_top';
+  target?: "_blank" | "_self" | "_parent" | "_top";
 }
 
 // Input Component
 export interface InputProps extends BaseComponentProps {
   modelValue: string | number;
-  type?: 'text' | 'password' | 'email' | 'number' | 'tel' | 'url' | 'search';
+  type?: "text" | "password" | "email" | "number" | "tel" | "url" | "search";
   placeholder?: string;
   disabled?: boolean;
   readonly?: boolean;
@@ -44,7 +51,7 @@ export interface InputProps extends BaseComponentProps {
   minlength?: number;
   pattern?: string;
   icon?: string;
-  iconPosition?: 'left' | 'right';
+  iconPosition?: "left" | "right";
   error?: string;
   hint?: string;
   label?: string;
@@ -84,7 +91,7 @@ export interface SelectProps extends BaseComponentProps {
 export interface ModalProps extends BaseComponentProps {
   modelValue: boolean;
   title?: string;
-  size?: 'small' | 'medium' | 'large' | 'fullscreen';
+  size?: "small" | "medium" | "large" | "fullscreen";
   closable?: boolean;
   closeOnEscape?: boolean;
   closeOnBackdrop?: boolean;
@@ -112,7 +119,7 @@ export interface CardProps extends BaseComponentProps {
   footer?: boolean;
   media?: string;
   mediaHeight?: string | number;
-  mediaPosition?: 'top' | 'bottom' | 'left' | 'right';
+  mediaPosition?: "top" | "bottom" | "left" | "right";
 }
 
 // Table Component
@@ -124,9 +131,9 @@ export interface TableColumn<T = any> {
   width?: string | number;
   minWidth?: string | number;
   maxWidth?: string | number;
-  align?: 'left' | 'center' | 'right';
-  headerAlign?: 'left' | 'center' | 'right';
-  fixed?: 'left' | 'right';
+  align?: "left" | "center" | "right";
+  headerAlign?: "left" | "center" | "right";
+  fixed?: "left" | "right";
   formatter?: (value: any, row: T, column: TableColumn<T>) => string | VNode;
   component?: Component;
   editable?: boolean;
@@ -151,7 +158,7 @@ export interface TableProps<T = any> extends BaseComponentProps {
   sortable?: boolean;
   defaultSort?: {
     key: string;
-    order: 'asc' | 'desc';
+    order: "asc" | "desc";
   };
   filterable?: boolean;
   filters?: Record<string, any>;
@@ -186,8 +193,8 @@ export interface TabItem {
 export interface TabsProps extends BaseComponentProps {
   modelValue: string;
   items: TabItem[];
-  type?: 'line' | 'card' | 'button';
-  position?: 'top' | 'bottom' | 'left' | 'right';
+  type?: "line" | "card" | "button";
+  position?: "top" | "bottom" | "left" | "right";
   closable?: boolean;
   addable?: boolean;
   draggable?: boolean;
@@ -213,8 +220,8 @@ export interface DropdownItem {
 
 export interface DropdownProps extends BaseComponentProps {
   items: DropdownItem[];
-  trigger?: 'click' | 'hover' | 'contextmenu';
-  placement?: 'top' | 'bottom' | 'left' | 'right' | 'auto';
+  trigger?: "click" | "hover" | "contextmenu";
+  placement?: "top" | "bottom" | "left" | "right" | "auto";
   offset?: [number, number];
   disabled?: boolean;
   hideOnClick?: boolean;
@@ -226,12 +233,18 @@ export interface DropdownProps extends BaseComponentProps {
 // Toast Component
 export interface ToastProps {
   id?: string;
-  type?: 'success' | 'info' | 'warning' | 'error';
+  type?: "success" | "info" | "warning" | "error";
   title: string;
   message?: string;
   duration?: number;
   closable?: boolean;
-  position?: 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
+  position?:
+    | "top-left"
+    | "top-center"
+    | "top-right"
+    | "bottom-left"
+    | "bottom-center"
+    | "bottom-right";
   offset?: [number, number];
   showIcon?: boolean;
   action?: {
@@ -245,8 +258,8 @@ export interface ToastProps {
 export interface LoadingProps extends BaseComponentProps {
   active: boolean;
   text?: string;
-  spinner?: 'circle' | 'dots' | 'bars' | 'pulse';
-  size?: 'small' | 'medium' | 'large';
+  spinner?: "circle" | "dots" | "bars" | "pulse";
+  size?: "small" | "medium" | "large";
   color?: string;
   background?: string;
   opacity?: number;
@@ -258,8 +271,8 @@ export interface LoadingProps extends BaseComponentProps {
 export interface AvatarProps extends BaseComponentProps {
   src?: string;
   alt?: string;
-  size?: 'small' | 'medium' | 'large' | number;
-  shape?: 'circle' | 'square';
+  size?: "small" | "medium" | "large" | number;
+  shape?: "circle" | "square";
   icon?: string;
   text?: string;
   backgroundColor?: string;
@@ -276,8 +289,8 @@ export interface BadgeProps extends BaseComponentProps {
   value?: string | number;
   max?: number;
   dot?: boolean;
-  type?: 'primary' | 'success' | 'warning' | 'danger' | 'info';
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  type?: "primary" | "success" | "warning" | "danger" | "info";
+  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
   offset?: [number, number];
   hidden?: boolean;
   showZero?: boolean;
@@ -287,8 +300,8 @@ export interface BadgeProps extends BaseComponentProps {
 export interface ProgressProps extends BaseComponentProps {
   value: number;
   max?: number;
-  type?: 'line' | 'circle' | 'dashboard';
-  status?: 'active' | 'success' | 'exception' | 'warning';
+  type?: "line" | "circle" | "dashboard";
+  status?: "active" | "success" | "exception" | "warning";
   color?: string | string[] | ((percentage: number) => string);
   textInside?: boolean;
   strokeWidth?: number;
@@ -301,7 +314,15 @@ export interface ProgressProps extends BaseComponentProps {
 // DatePicker Component
 export interface DatePickerProps extends BaseComponentProps {
   modelValue: Date | Date[] | null;
-  type?: 'date' | 'dates' | 'week' | 'month' | 'year' | 'daterange' | 'datetime' | 'datetimerange';
+  type?:
+    | "date"
+    | "dates"
+    | "week"
+    | "month"
+    | "year"
+    | "daterange"
+    | "datetime"
+    | "datetimerange";
   format?: string;
   valueFormat?: string;
   placeholder?: string;
@@ -311,7 +332,7 @@ export interface DatePickerProps extends BaseComponentProps {
   disabled?: boolean;
   readonly?: boolean;
   editable?: boolean;
-  size?: 'small' | 'medium' | 'large';
+  size?: "small" | "medium" | "large";
   popperClass?: string;
   rangeSeparator?: string;
   defaultValue?: Date | Date[];
@@ -343,10 +364,13 @@ export interface SliderProps extends BaseComponentProps {
   height?: string;
   label?: string;
   disabled?: boolean;
-  marks?: Record<number, string | { style?: Record<string, any>; label?: string }>;
+  marks?: Record<
+    number,
+    string | { style?: Record<string, any>; label?: string }
+  >;
   debounce?: number;
   tooltipClass?: string;
-  inputSize?: 'small' | 'medium' | 'large';
+  inputSize?: "small" | "medium" | "large";
 }
 
 // Upload Component
@@ -370,7 +394,7 @@ export interface UploadProps extends BaseComponentProps {
   beforeUpload?: (file: File) => boolean | Promise<File | Blob | boolean>;
   beforeRemove?: (file: File, fileList: File[]) => boolean | Promise<boolean>;
   fileList?: File[];
-  listType?: 'text' | 'picture' | 'picture-card';
+  listType?: "text" | "picture" | "picture-card";
   autoUpload?: boolean;
   httpRequest?: (options: any) => void;
   disabled?: boolean;
@@ -437,5 +461,9 @@ export interface TreeProps<T = any> extends BaseComponentProps {
   emptyText?: string;
   draggable?: boolean;
   allowDrag?: (node: TreeNode<T>) => boolean;
-  allowDrop?: (draggingNode: TreeNode<T>, dropNode: TreeNode<T>, type: 'prev' | 'inner' | 'next') => boolean;
+  allowDrop?: (
+    draggingNode: TreeNode<T>,
+    dropNode: TreeNode<T>,
+    type: "prev" | "inner" | "next",
+  ) => boolean;
 }

@@ -5,15 +5,15 @@
  * EventDefinitions basiert und dadurch typsichere Event-Emitting und -Listening ermöglicht.
  */
 
-import { BridgeLogger } from './types';
+import { BridgeLogger } from "./types";
 import {
   EventDefinitions,
   TypedEventBus,
   TypedEventListener,
   TypedEventOptions,
   TypedEventSubscription,
-  EventBusLegacyAdapter
-} from './eventTypes';
+  EventBusLegacyAdapter,
+} from "./eventTypes";
 
 // Helper-Typ für interne Event-Listener-Verwaltung
 type StoredListener<T extends keyof EventDefinitions> = {
@@ -26,12 +26,15 @@ type StoredListener<T extends keyof EventDefinitions> = {
 /**
  * Implementierung des typisierten EventBus
  */
-export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapter {
+export class EnhancedTypedEventBus
+  implements TypedEventBus, EventBusLegacyAdapter
+{
   private listeners: Map<string, Array<StoredListener<any>>> = new Map();
   private batchingEnabled = true;
   private batchSize = 10;
   private batchDelay = 50; // ms
-  private batchQueue: Map<string, { data: any[]; timer: number | null }> = new Map();
+  private batchQueue: Map<string, { data: any[]; timer: number | null }> =
+    new Map();
   private logger: BridgeLogger;
   private garbageCollectedCount = 0;
 
@@ -47,18 +50,18 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
    */
   private generateId(): string {
     // Implementierung einer UUID v4-ähnlichen Funktion, die keine externen Abhängigkeiten erfordert
-    const hexChars = '0123456789abcdef';
-    let uuid = '';
+    const hexChars = "0123456789abcdef";
+    let uuid = "";
 
     for (let i = 0; i < 36; i++) {
       if (i === 8 || i === 13 || i === 18 || i === 23) {
-        uuid += '-';
+        uuid += "-";
       } else if (i === 14) {
-        uuid += '4'; // Version 4 UUID
+        uuid += "4"; // Version 4 UUID
       } else if (i === 19) {
-        uuid += hexChars[(Math.random() * 4 | 0) + 8]; // Variant bits
+        uuid += hexChars[((Math.random() * 4) | 0) + 8]; // Variant bits
       } else {
-        uuid += hexChars[Math.random() * 16 | 0];
+        uuid += hexChars[(Math.random() * 16) | 0];
       }
     }
 
@@ -74,7 +77,7 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
   on<T extends keyof EventDefinitions>(
     eventName: T,
     listener: TypedEventListener<T>,
-    options: TypedEventOptions = {}
+    options: TypedEventOptions = {},
   ): TypedEventSubscription {
     if (!eventName) {
       this.logger.warn("Event-Name fehlt bei Registrierung eines Listeners");
@@ -82,7 +85,7 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
       return this.createDummySubscription();
     }
 
-    if (typeof listener !== 'function') {
+    if (typeof listener !== "function") {
       this.logger.warn(`Ungültiger Listener für Event '${String(eventName)}'`);
       return this.createDummySubscription();
     }
@@ -96,22 +99,22 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
     const id = options.id || this.generateId();
     const now = Date.now();
 
-    // Create listener object 
+    // Create listener object
     const listenerObj: StoredListener<T> = {
       callback: listener,
       options: { ...options, id },
       id,
-      createdAt: now
+      createdAt: now,
     };
 
     const listeners = this.listeners.get(String(eventName))!;
 
     // Insert based on priority if specified
     if (options.priority !== undefined) {
-      const index = listeners.findIndex(l => 
-        (l.options.priority || 0) < (options.priority || 0)
+      const index = listeners.findIndex(
+        (l) => (l.options.priority || 0) < (options.priority || 0),
       );
-      
+
       if (index >= 0) {
         listeners.splice(index, 0, listenerObj);
       } else {
@@ -121,11 +124,11 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
       listeners.push(listenerObj);
     }
 
-    this.logger.debug(`Listener registriert für Event '${String(eventName)}'`, { 
-      id, 
-      context: options.context || 'unknown',
+    this.logger.debug(`Listener registriert für Event '${String(eventName)}'`, {
+      id,
+      context: options.context || "unknown",
       priority: options.priority,
-      once: options.once
+      once: options.once,
     });
 
     // Create and return subscription object
@@ -133,7 +136,7 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
       unsubscribe: () => this.off(id),
       id,
       eventName: String(eventName),
-      createdAt: now
+      createdAt: now,
     };
 
     return subscription;
@@ -147,8 +150,8 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
     return {
       unsubscribe: () => {},
       id,
-      eventName: 'error',
-      createdAt: Date.now()
+      eventName: "error",
+      createdAt: Date.now(),
     };
   }
 
@@ -158,7 +161,7 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
   once<T extends keyof EventDefinitions>(
     eventName: T,
     listener: TypedEventListener<T>,
-    options: Omit<TypedEventOptions, 'once'> = {}
+    options: Omit<TypedEventOptions, "once"> = {},
   ): TypedEventSubscription {
     return this.on(eventName, listener, { ...options, once: true });
   }
@@ -169,18 +172,21 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
    */
   off(subscriptionOrId: TypedEventSubscription | string): void {
     // Extrahiere die ID aus dem Subscription-Objekt oder verwende direkt die übergebene ID
-    const id = typeof subscriptionOrId === 'string'
-      ? subscriptionOrId
-      : subscriptionOrId?.id ?? '';
+    const id =
+      typeof subscriptionOrId === "string"
+        ? subscriptionOrId
+        : (subscriptionOrId?.id ?? "");
 
     if (!id) {
-      this.logger.warn("Ungültige Subscription-ID beim Entfernen eines Listeners");
+      this.logger.warn(
+        "Ungültige Subscription-ID beim Entfernen eines Listeners",
+      );
       return;
     }
 
     // Überprüfe alle Event-Typen nach dieser Subscription-ID
     for (const [eventName, listeners] of this.listeners.entries()) {
-      const index = listeners.findIndex(l => l.id === id);
+      const index = listeners.findIndex((l) => l.id === id);
 
       if (index !== -1) {
         // Gefunden - entferne den Listener
@@ -208,7 +214,10 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
     if (this.listeners.has(String(eventName))) {
       const count = this.listeners.get(String(eventName))!.length;
       this.listeners.delete(String(eventName));
-      this.logger.debug(`Alle Listener entfernt für Event '${String(eventName)}'`, { count });
+      this.logger.debug(
+        `Alle Listener entfernt für Event '${String(eventName)}'`,
+        { count },
+      );
     }
   }
 
@@ -220,7 +229,7 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
     ...args: EventDefinitions[T] extends void | {} ? [] : [EventDefinitions[T]]
   ): void {
     const payload = args.length > 0 ? args[0] : undefined;
-    
+
     this.logger.debug(`Event ausgelöst: ${String(eventName)}`, payload);
 
     if (!this.batchingEnabled) {
@@ -250,7 +259,11 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
   /**
    * Sendet mehrere Events gleichzeitig
    */
-  emitMultiple(events: Array<[keyof EventDefinitions & string, any] | [keyof EventDefinitions & string]>): void {
+  emitMultiple(
+    events: Array<
+      [keyof EventDefinitions & string, any] | [keyof EventDefinitions & string]
+    >,
+  ): void {
     for (const event of events) {
       const eventName = event[0];
       // Ensure payload is properly typed with explicit check for array length
@@ -270,7 +283,7 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
     // Schedule batch processing
     for (const eventName of this.batchQueue.keys()) {
       const batch = this.batchQueue.get(eventName)!;
-      
+
       if (batch.data.length >= this.batchSize) {
         this.flushEventBatch(eventName);
       } else if (batch.timer === null && batch.data.length > 0) {
@@ -295,9 +308,9 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
 
     if (batch.data.length > 0) {
       this.logger.debug(`Batch-Event wird gesendet: ${eventName}`, {
-        count: batch.data.length
+        count: batch.data.length,
       });
-      
+
       // If only one item, send it directly
       if (batch.data.length === 1) {
         this.triggerEvent(eventName, batch.data[0]);
@@ -305,7 +318,7 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
         // Otherwise, send as array
         this.triggerEvent(eventName, batch.data);
       }
-      
+
       batch.data = [];
     }
   }
@@ -323,7 +336,7 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
     for (const listener of listeners) {
       try {
         const { callback, options } = listener;
-        
+
         // Handle timeout if specified
         if (options.timeout !== undefined && options.timeout > 0) {
           this.executeWithTimeout(callback, data, options.timeout);
@@ -341,7 +354,10 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
           onceListeners.push(listener.id);
         }
       } catch (error) {
-        this.logger.error(`Fehler beim Ausführen des Listeners für ${eventName}:`, error);
+        this.logger.error(
+          `Fehler beim Ausführen des Listeners für ${eventName}:`,
+          error,
+        );
       }
     }
 
@@ -357,14 +373,16 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
   private executeWithTimeout(
     callback: Function,
     data: any,
-    timeout: number
+    timeout: number,
   ): void {
     let hasTimedOut = false;
 
     // Start a timer for timeout
     const timeoutId = setTimeout(() => {
       hasTimedOut = true;
-      this.logger.warn(`Event-Listener-Ausführung hat das Timeout von ${timeout}ms überschritten`);
+      this.logger.warn(
+        `Event-Listener-Ausführung hat das Timeout von ${timeout}ms überschritten`,
+      );
     }, timeout);
 
     try {
@@ -388,7 +406,7 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
     eventName: T,
     priority: number,
     listener: TypedEventListener<T>,
-    options: Omit<TypedEventOptions, 'priority'> = {}
+    options: Omit<TypedEventOptions, "priority"> = {},
   ): TypedEventSubscription {
     return this.on(eventName, listener, { ...options, priority });
   }
@@ -453,19 +471,19 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
     return {
       listenerCount: totalListeners,
       eventTypes: [...this.listeners.keys()],
-      pendingEvents: [...this.batchQueue.keys()].filter(key => {
+      pendingEvents: [...this.batchQueue.keys()].filter((key) => {
         const batch = this.batchQueue.get(key)!;
         return batch.data.length > 0 || batch.timer !== null;
       }),
       batching: {
         enabled: this.batchingEnabled,
         queueSize: this.batchSize,
-        batchDelay: this.batchDelay
+        batchDelay: this.batchDelay,
       },
       memory: {
         trackedListeners: totalListeners,
-        gcCollected: this.garbageCollectedCount
-      }
+        gcCollected: this.garbageCollectedCount,
+      },
     };
   }
 
@@ -483,12 +501,12 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
    */
   disableBatching(): void {
     this.batchingEnabled = false;
-    
+
     // Flush all pending batches
     for (const eventName of this.batchQueue.keys()) {
       this.flushEventBatch(eventName);
     }
-    
+
     this.logger.debug("Event-Batching deaktiviert");
   }
 
@@ -507,22 +525,24 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
    * @returns Funktion zum Entfernen des Listeners
    */
   addEventListener(eventName: string, callback: Function): () => void {
-    if (!eventName || typeof callback !== 'function') {
-      this.logger.warn("Ungültiger Event-Name oder Callback in addEventListener");
+    if (!eventName || typeof callback !== "function") {
+      this.logger.warn(
+        "Ungültiger Event-Name oder Callback in addEventListener",
+      );
       return () => {}; // Dummy-Funktion zurückgeben
     }
 
     // Da wir in einer typisierten Umgebung sind, aber untypisierte Events erlauben müssen,
     // behandeln wir das Event als custom oder legacy Event
     const typedEventName =
-      eventName.startsWith('custom:') || eventName.startsWith('legacy:')
-        ? eventName as keyof EventDefinitions
-        : `legacy:${eventName}` as keyof EventDefinitions;
+      eventName.startsWith("custom:") || eventName.startsWith("legacy:")
+        ? (eventName as keyof EventDefinitions)
+        : (`legacy:${eventName}` as keyof EventDefinitions);
 
     const subscription = this.on(typedEventName, callback as any);
     return () => this.off(subscription);
   }
-  
+
   /**
    * Entfernt einen Event-Listener mit einfacherer Schnittstelle (Legacy-Adapter)
    * @param eventName Name des Events
@@ -538,7 +558,7 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
     const possibleEventNames = [
       eventName,
       `legacy:${eventName}`,
-      `custom:${eventName}`
+      `custom:${eventName}`,
     ];
 
     // Überprüfe alle möglichen Event-Namen
@@ -550,13 +570,15 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
         for (let i = listeners.length - 1; i >= 0; i--) {
           if (listeners[i].callback === callback) {
             this.off(listeners[i].id);
-            this.logger.debug(`Listener über removeEventListener entfernt für '${evName}'`);
+            this.logger.debug(
+              `Listener über removeEventListener entfernt für '${evName}'`,
+            );
           }
         }
       }
     }
   }
-  
+
   /**
    * Sendet ein Event mit einfacherer Schnittstelle (Legacy-Adapter)
    * @param eventName Name des Events
@@ -571,9 +593,9 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
     // Da wir in einer typisierten Umgebung sind, aber untypisierte Events erlauben müssen,
     // behandeln wir das Event als custom oder legacy Event
     const typedEventName =
-      eventName.startsWith('custom:') || eventName.startsWith('legacy:')
-        ? eventName as keyof EventDefinitions
-        : `legacy:${eventName}` as keyof EventDefinitions;
+      eventName.startsWith("custom:") || eventName.startsWith("legacy:")
+        ? (eventName as keyof EventDefinitions)
+        : (`legacy:${eventName}` as keyof EventDefinitions);
 
     // Emittiere das Event mit korrekter Typisierung für den EventBus
     if (data !== undefined) {
@@ -585,7 +607,9 @@ export class EnhancedTypedEventBus implements TypedEventBus, EventBusLegacyAdapt
 
     // Für maximale Kompatibilität emittieren wir auch das Original-Event, falls es anders ist
     if (typedEventName !== eventName) {
-      this.logger.debug(`Zusätzlich natives Event emittiert für Kompatibilität: ${eventName}`);
+      this.logger.debug(
+        `Zusätzlich natives Event emittiert für Kompatibilität: ${eventName}`,
+      );
       if (data !== undefined) {
         this.emit(eventName as keyof EventDefinitions, data);
       } else {

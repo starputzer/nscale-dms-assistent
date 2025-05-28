@@ -18,37 +18,37 @@ import { sessionContinuityService } from "../services/auth/SessionContinuityServ
 // Debug axios requests/responses for authentication
 axios.interceptors.request.use(
   (config) => {
-    if (config.url?.includes('/auth/')) {
-      console.log('Axios Request:', {
+    if (config.url?.includes("/auth/")) {
+      console.log("Axios Request:", {
         url: config.url,
         method: config.method,
         data: config.data,
-        headers: config.headers
+        headers: config.headers,
       });
     }
     return config;
   },
   (error) => {
-    console.error('Axios Request Error:', error);
+    console.error("Axios Request Error:", error);
     return Promise.reject(error);
-  }
+  },
 );
 
 axios.interceptors.response.use(
   (response) => {
-    if (response.config.url?.includes('/auth/')) {
-      console.log('Axios Response:', {
+    if (response.config.url?.includes("/auth/")) {
+      console.log("Axios Response:", {
         url: response.config.url,
         status: response.status,
-        data: response.data
+        data: response.data,
       });
     }
     return response;
   },
   (error) => {
-    console.error('Axios Response Error:', error);
+    console.error("Axios Response Error:", error);
     return Promise.reject(error);
-  }
+  },
 );
 import { jwtDecode } from "jwt-decode";
 
@@ -99,8 +99,11 @@ export const useAuthStore = defineStore(
       // Unterstütze sowohl 'role' (singular) als auch 'roles' (plural)
       console.log("DEBUG: isAdmin check - user.value:", user.value);
       console.log("DEBUG: isAdmin check - user.value?.role:", user.value?.role);
-      console.log("DEBUG: isAdmin check - user.value?.roles:", user.value?.roles);
-      
+      console.log(
+        "DEBUG: isAdmin check - user.value?.roles:",
+        user.value?.roles,
+      );
+
       if (user.value?.role === "admin") return true;
       if (user.value?.roles?.includes("admin")) return true;
       return false;
@@ -110,8 +113,9 @@ export const useAuthStore = defineStore(
     const userRole = computed(() => {
       // Return the first role or default to 'user'
       if (user.value?.role) return user.value.role;
-      if (user.value?.roles && user.value.roles.length > 0) return user.value.roles[0];
-      return 'user';
+      if (user.value?.roles && user.value.roles.length > 0)
+        return user.value.roles[0];
+      return "user";
     });
 
     const isExpired = computed(() => {
@@ -402,11 +406,11 @@ export const useAuthStore = defineStore(
             token.value = newToken;
             refreshToken.value =
               response.data.refreshToken || refreshToken.value;
-            
+
             // Token auch in localStorage speichern für ApiService mit korrektem Prefix
-            localStorage.setItem('nscale_access_token', newToken);
+            localStorage.setItem("nscale_access_token", newToken);
             if (refreshToken.value) {
-              localStorage.setItem('nscale_refresh_token', refreshToken.value);
+              localStorage.setItem("nscale_refresh_token", refreshToken.value);
             }
             console.log("Token nach Refresh in localStorage aktualisiert");
 
@@ -467,10 +471,10 @@ export const useAuthStore = defineStore(
      */
     async function initialize() {
       console.log("[AuthStore] Initialisiere mit Enhanced Token Recovery");
-      
+
       // Versuche zuerst Token aus verschiedenen Quellen wiederherzustellen
       const restored = await restoreAuthSession();
-      
+
       if (restored) {
         console.log("[AuthStore] Session erfolgreich wiederhergestellt");
         sessionContinuityService.setAuthenticatedState(true);
@@ -485,40 +489,49 @@ export const useAuthStore = defineStore(
         try {
           configureHttpClients(token.value);
         } catch (error) {
-          console.error("[AuthStore] Fehler beim Konfigurieren der HTTP-Clients:", error);
+          console.error(
+            "[AuthStore] Fehler beim Konfigurieren der HTTP-Clients:",
+            error,
+          );
         }
       } else {
-        console.log("[AuthStore] Kein Token während der Initialisierung vorhanden");
+        console.log(
+          "[AuthStore] Kein Token während der Initialisierung vorhanden",
+        );
       }
 
       // Automatischer Token-Refresh, wenn der Benutzer aktiv ist
       if (isAuthenticated.value) {
         console.log("Benutzer authentifiziert, richte Token-Refresh ein");
-        
+
         // Sofort prüfen, ob ein Token-Refresh nötig ist
-        refreshTokenIfNeeded().catch(err => {
+        refreshTokenIfNeeded().catch((err) => {
           console.error("Fehler beim initialen Token-Refresh:", err);
         });
 
         // Interval für regelmäßige Prüfungen setzen
         if (tokenRefreshInterval.value !== null) {
-          console.log("Bestehende Token-Refresh-Intervall gefunden, wird zurückgesetzt");
+          console.log(
+            "Bestehende Token-Refresh-Intervall gefunden, wird zurückgesetzt",
+          );
           clearInterval(tokenRefreshInterval.value);
         }
 
         console.log("Starte Token-Refresh-Intervall");
         tokenRefreshInterval.value = window.setInterval(() => {
-          refreshTokenIfNeeded().catch(err => {
+          refreshTokenIfNeeded().catch((err) => {
             console.error("Fehler beim periodischen Token-Refresh:", err);
           });
         }, 60000); // Alle 60 Sekunden prüfen
       } else {
-        console.log("Benutzer nicht authentifiziert, kein Token-Refresh eingerichtet");
+        console.log(
+          "Benutzer nicht authentifiziert, kein Token-Refresh eingerichtet",
+        );
       }
 
       // Wir verwenden keine onUnmounted in Stores, da Stores nicht an Komponenten gebunden sind
       // Stattdessen wird cleanup() bei Bedarf explizit aufgerufen
-      
+
       console.log("Auth-Store-Initialisierung abgeschlossen");
     }
 
@@ -527,26 +540,26 @@ export const useAuthStore = defineStore(
      */
     function cleanup() {
       console.log("Auth-Store Cleanup wird durchgeführt");
-      
+
       // Timer und Intervalle bereinigen
       if (tokenRefreshInterval.value !== null) {
         console.log("Token-Refresh-Intervall wird gestoppt");
         clearInterval(tokenRefreshInterval.value);
         tokenRefreshInterval.value = null;
       }
-      
+
       // HTTP-Interceptors entfernen
       try {
         removeHttpInterceptors();
       } catch (cleanupError) {
         console.error("Fehler bei HTTP-Client-Bereinigung:", cleanupError);
       }
-      
+
       // LocalStorage bereinigen mit korrektem Prefix
-      localStorage.removeItem('nscale_access_token');
-      localStorage.removeItem('nscale_refresh_token');
+      localStorage.removeItem("nscale_access_token");
+      localStorage.removeItem("nscale_refresh_token");
       console.log("LocalStorage bereinigt (mit nscale_ prefix)");
-      
+
       console.log("Auth-Store Cleanup abgeschlossen");
     }
 
@@ -564,7 +577,9 @@ export const useAuthStore = defineStore(
     /**
      * Login-Vorgang durchführen mit verbesserter Persistenz
      */
-    async function login(credentials: LoginCredentials | string): Promise<boolean> {
+    async function login(
+      credentials: LoginCredentials | string,
+    ): Promise<boolean> {
       console.log("[AuthStore] Login-Funktion aufgerufen");
       isLoading.value = true;
       error.value = null;
@@ -573,37 +588,48 @@ export const useAuthStore = defineStore(
         // Erst Cleanup durchführen, um alte Zustände zu bereinigen
         cleanup();
         authTokenManager.clearTokens();
-      
+
         // Ensure we have a proper credentials object
         let loginCredentials: any;
-        
-        if (typeof credentials === 'string') {
+
+        if (typeof credentials === "string") {
           // If it's a string, assume it's an email address
-          console.log("[AuthStore] String-Anmeldedaten werden in Objekt umgewandelt");
+          console.log(
+            "[AuthStore] String-Anmeldedaten werden in Objekt umgewandelt",
+          );
           loginCredentials = { email: credentials, password: "" };
         } else {
           loginCredentials = credentials;
         }
-        
-        console.log("[AuthStore] Login-Versuch mit E-Mail:", 
-          loginCredentials.email ? loginCredentials.email.substring(0, 2) + '...' : 'keine');
-        
+
+        console.log(
+          "[AuthStore] Login-Versuch mit E-Mail:",
+          loginCredentials.email
+            ? loginCredentials.email.substring(0, 2) + "..."
+            : "keine",
+        );
+
         try {
-          console.log("Sende Login-Anfrage an /api/auth/login mit Credentials:", 
-            { ...loginCredentials, password: '***' });
-            
+          console.log(
+            "Sende Login-Anfrage an /api/auth/login mit Credentials:",
+            { ...loginCredentials, password: "***" },
+          );
+
           // Lokaler Demo-Account für Testzwecke
           // Demo-Modus deaktiviert - verwende echtes Backend
-          console.log("Login wird über echtes Backend versucht für:", loginCredentials.email);
-            
+          console.log(
+            "Login wird über echtes Backend versucht für:",
+            loginCredentials.email,
+          );
+
           // Standard API-Anfrage
-          const response = await axios.post<{token: string}>(
+          const response = await axios.post<{ token: string }>(
             "/api/auth/login",
             loginCredentials,
           );
 
           console.log("Login-Antwort erhalten:", response.status);
-          
+
           // The server returns a simple { token: "jwt_token" } response
           if (response.data.token) {
             const newToken = response.data.token;
@@ -612,22 +638,36 @@ export const useAuthStore = defineStore(
             // Token validieren, bevor er gespeichert wird
             if (validateToken(newToken)) {
               console.log("Token ist gültig, wird gesetzt");
-              
+
               // Token und RefreshToken setzen
               token.value = newToken;
-              console.log("Token in auth store gesetzt. Token value:", token.value?.substring(0, 10) + "...");
-              
+              console.log(
+                "Token in auth store gesetzt. Token value:",
+                token.value?.substring(0, 10) + "...",
+              );
+
               // Token auch in localStorage speichern für ApiService
               // Die config verwendet bereits "nscale_access_token" als key
-              localStorage.setItem('nscale_access_token', newToken);
-              console.log("Token in localStorage gespeichert unter key:", 'nscale_access_token', "value:", newToken.substring(0, 10) + "...");
-              
+              localStorage.setItem("nscale_access_token", newToken);
+              console.log(
+                "Token in localStorage gespeichert unter key:",
+                "nscale_access_token",
+                "value:",
+                newToken.substring(0, 10) + "...",
+              );
+
               // Type assertion for refreshToken since it might not be in the response type
               refreshToken.value = (response.data as any).refreshToken || null; // Server might not provide refresh token
               if (refreshToken.value) {
-                localStorage.setItem('nscale_refresh_token', refreshToken.value);
+                localStorage.setItem(
+                  "nscale_refresh_token",
+                  refreshToken.value,
+                );
               }
-              console.log("RefreshToken gesetzt:", refreshToken.value ? "Ja" : "Nein");
+              console.log(
+                "RefreshToken gesetzt:",
+                refreshToken.value ? "Ja" : "Nein",
+              );
 
               // Extract user data from JWT token
               try {
@@ -636,19 +676,25 @@ export const useAuthStore = defineStore(
                 console.log("DEBUG: Full decoded token:", decodedToken);
                 console.log("DEBUG: Token role field:", decodedToken.role);
                 console.log("DEBUG: Token roles field:", decodedToken.roles);
-                
+
                 // Sicherstellen, dass user_id existiert, sonst Default verwenden
-                const userId = decodedToken.user_id || decodedToken.sub || '1';
-                
+                const userId = decodedToken.user_id || decodedToken.sub || "1";
+
                 // Create user object from token claims
                 const userObj = {
                   id: userId.toString(),
-                  username: decodedToken.email || decodedToken.name || 'default@example.com',
-                  email: decodedToken.email || decodedToken.name || 'default@example.com',
+                  username:
+                    decodedToken.email ||
+                    decodedToken.name ||
+                    "default@example.com",
+                  email:
+                    decodedToken.email ||
+                    decodedToken.name ||
+                    "default@example.com",
                   roles: [decodedToken.role || "user"],
-                  role: decodedToken.role || "user" // Support both 'role' and 'roles'
+                  role: decodedToken.role || "user", // Support both 'role' and 'roles'
                 };
-                
+
                 // Benutzer setzen
                 user.value = userObj;
                 console.log("Benutzer aus Token erstellt:", userObj);
@@ -657,21 +703,27 @@ export const useAuthStore = defineStore(
                 // Set token expiration time
                 if (decodedToken.exp) {
                   expiresAt.value = decodedToken.exp * 1000; // von Sekunden zu Millisekunden
-                  console.log("Token-Ablaufzeit aus Token gesetzt:", new Date(expiresAt.value).toISOString());
+                  console.log(
+                    "Token-Ablaufzeit aus Token gesetzt:",
+                    new Date(expiresAt.value).toISOString(),
+                  );
                 } else {
                   expiresAt.value = Date.now() + 24 * 60 * 60 * 1000; // 24 hours default
-                  console.log("Standard-Ablaufzeit gesetzt:", new Date(expiresAt.value).toISOString());
+                  console.log(
+                    "Standard-Ablaufzeit gesetzt:",
+                    new Date(expiresAt.value).toISOString(),
+                  );
                 }
               } catch (e) {
                 console.error("Fehler beim Dekodieren des Tokens:", e);
                 error.value = "Fehler beim Dekodieren des Tokens";
-                
+
                 // Fallback-Benutzer erstellen, wenn Dekodierung fehlschlägt
                 user.value = {
-                  id: '1',
-                  username: 'default@example.com',
-                  email: 'default@example.com',
-                  roles: ['user']
+                  id: "1",
+                  username: "default@example.com",
+                  email: "default@example.com",
+                  roles: ["user"],
                 };
                 expiresAt.value = Date.now() + 24 * 60 * 60 * 1000; // 24 Stunden
                 console.log("Fallback-Benutzer erstellt wegen Dekodierfehler");
@@ -683,26 +735,36 @@ export const useAuthStore = defineStore(
               // Berechtigungen aus Rollen extrahieren
               if (user.value && user.value.roles) {
                 extractPermissionsFromRoles(user.value.roles);
-                console.log("Berechtigungen extrahiert:", Array.from(permissions.value));
+                console.log(
+                  "Berechtigungen extrahiert:",
+                  Array.from(permissions.value),
+                );
               }
 
               // 5. Persistiere Auth-Daten mit dem neuen TokenManager
               persistAuthData();
-              
+
               // Session für Continuity Service markieren
               sessionContinuityService.setAuthenticatedState(true);
-              
+
               // 6. HTTP-Clients explizit konfigurieren mit dem neuen Token
               try {
-                console.log("[AuthStore] HTTP-Clients werden mit neuem Token konfiguriert");
+                console.log(
+                  "[AuthStore] HTTP-Clients werden mit neuem Token konfiguriert",
+                );
                 configureHttpClients(newToken);
               } catch (configError) {
-                console.error("[AuthStore] Fehler beim Konfigurieren der HTTP-Clients:", configError);
+                console.error(
+                  "[AuthStore] Fehler beim Konfigurieren der HTTP-Clients:",
+                  configError,
+                );
                 // Weiter fortfahren trotz Fehler
               }
 
               // 7. Initialisiere Token-Refresh-Mechanismus
-              console.log("[AuthStore] Initialisiere Token-Refresh nach erfolgreicher Anmeldung");
+              console.log(
+                "[AuthStore] Initialisiere Token-Refresh nach erfolgreicher Anmeldung",
+              );
               await initialize();
 
               console.log("[AuthStore] Login erfolgreich abgeschlossen");
@@ -718,8 +780,14 @@ export const useAuthStore = defineStore(
             return false;
           }
         } catch (axiosError: any) {
-          const errorMessage = axiosError.response?.data?.detail || "Netzwerkfehler beim Login";
-          console.error("Axios-Fehler beim Login:", axiosError.message, "Details:", errorMessage);
+          const errorMessage =
+            axiosError.response?.data?.detail || "Netzwerkfehler beim Login";
+          console.error(
+            "Axios-Fehler beim Login:",
+            axiosError.message,
+            "Details:",
+            errorMessage,
+          );
           error.value = errorMessage;
           return false;
         }
@@ -729,7 +797,9 @@ export const useAuthStore = defineStore(
         return false;
       } finally {
         isLoading.value = false;
-        console.log("Login-Verarbeitung abgeschlossen, isLoading zurückgesetzt");
+        console.log(
+          "Login-Verarbeitung abgeschlossen, isLoading zurückgesetzt",
+        );
       }
     }
 
@@ -746,16 +816,20 @@ export const useAuthStore = defineStore(
       try {
         // Erst Cleanup durchführen, um alte Zustände zu bereinigen
         cleanup();
-        
-        console.log("Registrierungsanfrage wird gesendet. E-Mail beginnt mit:", 
-          credentials.email ? credentials.email.substring(0, 2) + '...' : 'keine');
-          
+
+        console.log(
+          "Registrierungsanfrage wird gesendet. E-Mail beginnt mit:",
+          credentials.email
+            ? credentials.email.substring(0, 2) + "..."
+            : "keine",
+        );
+
         try {
           const response = await axios.post<LoginResponse>(
             "/api/auth/register",
             credentials,
           );
-          
+
           console.log("Registrierungsantwort erhalten:", response.status);
 
           if (response.data.success) {
@@ -765,20 +839,28 @@ export const useAuthStore = defineStore(
             // Token validieren, bevor er gespeichert wird
             if (validateToken(newToken)) {
               console.log("Token ist gültig, wird gesetzt");
-              
+
               // Token und RefreshToken setzen
               token.value = newToken;
               refreshToken.value = response.data.refreshToken || null;
-              
+
               // Token auch in localStorage speichern für ApiService mit korrektem Prefix
-              localStorage.setItem('nscale_access_token', newToken);
-              console.log("Token in localStorage gespeichert unter 'nscale_access_token'");
-              
+              localStorage.setItem("nscale_access_token", newToken);
+              console.log(
+                "Token in localStorage gespeichert unter 'nscale_access_token'",
+              );
+
               if (refreshToken.value) {
-                localStorage.setItem('nscale_refresh_token', refreshToken.value);
+                localStorage.setItem(
+                  "nscale_refresh_token",
+                  refreshToken.value,
+                );
               }
-              console.log("RefreshToken gesetzt:", refreshToken.value ? "Ja" : "Nein");
-              
+              console.log(
+                "RefreshToken gesetzt:",
+                refreshToken.value ? "Ja" : "Nein",
+              );
+
               // User-Objekt vom Server verwenden oder aus Token extrahieren
               if (response.data.user) {
                 user.value = response.data.user;
@@ -787,29 +869,46 @@ export const useAuthStore = defineStore(
                 // Aus Token extrahieren als Fallback
                 try {
                   const decodedToken: any = jwtDecode(newToken);
-                  console.log("Token dekodiert, da kein Benutzer in der Antwort enthalten war");
-                  
+                  console.log(
+                    "Token dekodiert, da kein Benutzer in der Antwort enthalten war",
+                  );
+
                   // Sicherstellen, dass user_id existiert, sonst Default verwenden
-                  const userId = decodedToken.user_id || decodedToken.sub || '1';
-                  
+                  const userId =
+                    decodedToken.user_id || decodedToken.sub || "1";
+
                   user.value = {
                     id: userId.toString(),
-                    username: credentials.email || decodedToken.email || 'default@example.com',
-                    email: credentials.email || decodedToken.email || 'default@example.com',
-                    roles: [decodedToken.role || "user"]
+                    username:
+                      credentials.email ||
+                      decodedToken.email ||
+                      "default@example.com",
+                    email:
+                      credentials.email ||
+                      decodedToken.email ||
+                      "default@example.com",
+                    roles: [decodedToken.role || "user"],
                   };
-                  console.log("Benutzer aus Token und Registrierungsdaten erstellt:", user.value);
+                  console.log(
+                    "Benutzer aus Token und Registrierungsdaten erstellt:",
+                    user.value,
+                  );
                 } catch (decodeErr) {
-                  console.error("Fehler beim Dekodieren des Tokens nach Registrierung:", decodeErr);
-                  
+                  console.error(
+                    "Fehler beim Dekodieren des Tokens nach Registrierung:",
+                    decodeErr,
+                  );
+
                   // Fallback: Mindestens einen Benutzer aus Registrierungsdaten erstellen
                   user.value = {
-                    id: '1',
-                    username: credentials.email || 'default@example.com',
-                    email: credentials.email || 'default@example.com',
-                    roles: ['user']
+                    id: "1",
+                    username: credentials.email || "default@example.com",
+                    email: credentials.email || "default@example.com",
+                    roles: ["user"],
                   };
-                  console.log("Fallback-Benutzer aus Registrierungsdaten erstellt");
+                  console.log(
+                    "Fallback-Benutzer aus Registrierungsdaten erstellt",
+                  );
                 }
               }
 
@@ -818,19 +917,28 @@ export const useAuthStore = defineStore(
                 const decodedToken: any = jwtDecode(newToken);
                 if (decodedToken.exp) {
                   expiresAt.value = decodedToken.exp * 1000; // von Sekunden zu Millisekunden
-                  console.log("Token-Ablaufzeit aus Token gesetzt:", new Date(expiresAt.value).toISOString());
+                  console.log(
+                    "Token-Ablaufzeit aus Token gesetzt:",
+                    new Date(expiresAt.value).toISOString(),
+                  );
                 } else {
                   // Fallback auf Server-gelieferte Zeit
                   expiresAt.value =
-                    Date.now() + (response.data.expiresIn || 24 * 60 * 60 * 1000);
-                  console.log("Ablaufzeit aus Serverantwort oder Default gesetzt:", 
-                    new Date(expiresAt.value).toISOString());
+                    Date.now() +
+                    (response.data.expiresIn || 24 * 60 * 60 * 1000);
+                  console.log(
+                    "Ablaufzeit aus Serverantwort oder Default gesetzt:",
+                    new Date(expiresAt.value).toISOString(),
+                  );
                 }
               } catch (e) {
                 // Fallback auf Server-gelieferte Zeit
                 expiresAt.value =
                   Date.now() + (response.data.expiresIn || 24 * 60 * 60 * 1000);
-                console.log("Ablaufzeit-Fallback gesetzt:", new Date(expiresAt.value).toISOString());
+                console.log(
+                  "Ablaufzeit-Fallback gesetzt:",
+                  new Date(expiresAt.value).toISOString(),
+                );
               }
 
               lastTokenRefresh.value = Date.now();
@@ -839,7 +947,10 @@ export const useAuthStore = defineStore(
               // Berechtigungen aus Rollen extrahieren
               if (user.value && user.value.roles) {
                 extractPermissionsFromRoles(user.value.roles);
-                console.log("Berechtigungen extrahiert:", Array.from(permissions.value));
+                console.log(
+                  "Berechtigungen extrahiert:",
+                  Array.from(permissions.value),
+                );
               }
 
               // HTTP-Clients explizit konfigurieren mit dem neuen Token
@@ -847,12 +958,17 @@ export const useAuthStore = defineStore(
                 console.log("HTTP-Clients werden mit neuem Token konfiguriert");
                 configureHttpClients(newToken);
               } catch (configError) {
-                console.error("Fehler beim Konfigurieren der HTTP-Clients:", configError);
+                console.error(
+                  "Fehler beim Konfigurieren der HTTP-Clients:",
+                  configError,
+                );
                 // Weiter fortfahren trotz Fehler
               }
 
               // Wenn der Benutzer angemeldet ist, initialisieren wir den Token-Refresh-Mechanismus
-              console.log("Initialisiere Auth-Store nach erfolgreicher Registrierung");
+              console.log(
+                "Initialisiere Auth-Store nach erfolgreicher Registrierung",
+              );
               initialize();
 
               console.log("Registrierung erfolgreich abgeschlossen");
@@ -863,13 +979,24 @@ export const useAuthStore = defineStore(
               return false;
             }
           } else {
-            console.error("Registrierung fehlgeschlagen:", response.data.message || "Kein Erfolg-Flag in der Antwort");
-            error.value = response.data.message || "Registrierung fehlgeschlagen";
+            console.error(
+              "Registrierung fehlgeschlagen:",
+              response.data.message || "Kein Erfolg-Flag in der Antwort",
+            );
+            error.value =
+              response.data.message || "Registrierung fehlgeschlagen";
             return false;
           }
         } catch (axiosError: any) {
-          const errorMessage = axiosError.response?.data?.message || "Netzwerkfehler bei der Registrierung";
-          console.error("Axios-Fehler bei Registrierung:", axiosError.message, "Details:", errorMessage);
+          const errorMessage =
+            axiosError.response?.data?.message ||
+            "Netzwerkfehler bei der Registrierung";
+          console.error(
+            "Axios-Fehler bei Registrierung:",
+            axiosError.message,
+            "Details:",
+            errorMessage,
+          );
           error.value = errorMessage;
           return false;
         }
@@ -879,7 +1006,9 @@ export const useAuthStore = defineStore(
         return false;
       } finally {
         isLoading.value = false;
-        console.log("Registrierungsverarbeitung abgeschlossen, isLoading zurückgesetzt");
+        console.log(
+          "Registrierungsverarbeitung abgeschlossen, isLoading zurückgesetzt",
+        );
       }
     }
 
@@ -894,40 +1023,43 @@ export const useAuthStore = defineStore(
         // Skip API call - just perform local cleanup
         console.log("Führe lokalen Logout durch");
       } finally {
-          // Lokalen State in einer bestimmten Reihenfolge zurücksetzen
+        // Lokalen State in einer bestimmten Reihenfolge zurücksetzen
         console.log("[AuthStore] Setze lokalen Auth-State zurück");
-        
+
         // Session-Status für Continuity Service zurücksetzen
         sessionContinuityService.setAuthenticatedState(false);
-        
+
         // Cleanup durchführen (entfernt Interceptors und cleared localStorage)
         cleanup();
-        
+
         // TokenManager bereinigen
         authTokenManager.clearTokens();
-        
+
         // Erst Tokens löschen
         token.value = null;
         refreshToken.value = null;
         console.log("[AuthStore] Tokens zurückgesetzt");
-        
+
         // Dann Benutzer- und Sitzungsdaten
         user.value = null;
         expiresAt.value = null;
         lastTokenRefresh.value = 0;
         console.log("[AuthStore] Benutzerdaten zurückgesetzt");
-        
+
         // Zuletzt Berechtigungen und Status
         try {
           permissions.value.clear();
           console.log("[AuthStore] Berechtigungen zurückgesetzt");
         } catch (e) {
-          console.error("[AuthStore] Fehler beim Zurücksetzen der Berechtigungen:", e);
+          console.error(
+            "[AuthStore] Fehler beim Zurücksetzen der Berechtigungen:",
+            e,
+          );
         }
-        
+
         // Version und Error behalten für Diagnose
         // error.value = null;
-        
+
         // Laden-Status am Ende zurücksetzen
         isLoading.value = false;
         console.log("[AuthStore] Logout abgeschlossen");
@@ -1081,91 +1213,112 @@ export const useAuthStore = defineStore(
     }
 
     // IDs der aktiven Interceptors mit Metadaten für die korrekte Entfernung
-    const activeInterceptors = ref<{id: number, type: 'global' | 'apiService', category: 'request' | 'response'}[]>([]);
-    
+    const activeInterceptors = ref<
+      {
+        id: number;
+        type: "global" | "apiService";
+        category: "request" | "response";
+      }[]
+    >([]);
+
     // Manuelle Initialisierung der HTTP-Clients statt Watch
     function configureHttpClients(newToken: string | null) {
       try {
         // Entferne alle bestehenden Interceptors
         removeHttpInterceptors();
-        
+
         // Nutze den zentralen Auth Manager
         if (newToken) {
-          console.log("Token gesetzt, konfiguriere HTTP-Clients mit Token:", newToken.substring(0, 10) + "...");
-          
-          import('@/services/auth/CentralAuthManager').then(module => {
-            const authManager = module.CentralAuthManager.getInstance()
-            authManager.updateAuthHeader(newToken)
-          }).catch(e => {
-            console.warn('Could not update auth header:', e)
-          })
+          console.log(
+            "Token gesetzt, konfiguriere HTTP-Clients mit Token:",
+            newToken.substring(0, 10) + "...",
+          );
+
+          import("@/services/auth/CentralAuthManager")
+            .then((module) => {
+              const authManager = module.CentralAuthManager.getInstance();
+              authManager.updateAuthHeader(newToken);
+            })
+            .catch((e) => {
+              console.warn("Could not update auth header:", e);
+            });
         }
       } catch (error) {
-        console.error('Error configuring HTTP clients:', error)
+        console.error("Error configuring HTTP clients:", error);
       }
     }
 
-    
     // Entfernt alle aktiven HTTP-Interceptors
     function removeHttpInterceptors() {
       try {
         // Alle aktiven Interceptors entfernen
         if (activeInterceptors.value.length > 0) {
-          console.log(`Entferne ${activeInterceptors.value.length} aktive HTTP-Interceptors`);
-          
+          console.log(
+            `Entferne ${activeInterceptors.value.length} aktive HTTP-Interceptors`,
+          );
+
           // Interceptors basierend auf Typ und Kategorie entfernen
-          activeInterceptors.value.forEach(interceptor => {
+          activeInterceptors.value.forEach((interceptor) => {
             try {
-              if (interceptor.type === 'global') {
-                if (interceptor.category === 'request') {
+              if (interceptor.type === "global") {
+                if (interceptor.category === "request") {
                   axios.interceptors.request.eject(interceptor.id);
                 } else {
                   axios.interceptors.response.eject(interceptor.id);
                 }
-              } else if (interceptor.type === 'apiService') {
-                if (interceptor.category === 'request') {
+              } else if (interceptor.type === "apiService") {
+                if (interceptor.category === "request") {
                   apiService.removeRequestInterceptor(interceptor.id);
                 } else {
                   apiService.removeResponseInterceptor(interceptor.id);
                 }
               }
             } catch (ejectError) {
-              console.warn(`Fehler beim Entfernen des Interceptors ${interceptor.id}:`, ejectError);
+              console.warn(
+                `Fehler beim Entfernen des Interceptors ${interceptor.id}:`,
+                ejectError,
+              );
             }
           });
-          
+
           // Liste leeren
           activeInterceptors.value = [];
           console.log("Alle HTTP-Interceptors wurden entfernt");
         } else {
           console.log("Keine aktiven HTTP-Interceptors zum Entfernen");
         }
-        
+
         // Legacy-IDs auch prüfen und entfernen
         if (requestInterceptorId.value !== null) {
           try {
             axios.interceptors.request.eject(requestInterceptorId.value);
             requestInterceptorId.value = null;
           } catch (e) {
-            console.warn("Fehler beim Entfernen des Legacy-Request-Interceptors:", e);
+            console.warn(
+              "Fehler beim Entfernen des Legacy-Request-Interceptors:",
+              e,
+            );
           }
         }
-        
+
         if (responseInterceptorId.value !== null) {
           try {
             axios.interceptors.response.eject(responseInterceptorId.value);
             responseInterceptorId.value = null;
           } catch (e) {
-            console.warn("Fehler beim Entfernen des Legacy-Response-Interceptors:", e);
+            console.warn(
+              "Fehler beim Entfernen des Legacy-Response-Interceptors:",
+              e,
+            );
           }
         }
       } catch (error) {
         console.error("Fehler beim Entfernen der HTTP-Interceptors:", error);
       }
     }
-    
+
     // Überprüfe auf inkonsistenten State beim Start
-    if ((!!token.value) !== (!!user.value)) {
+    if (!!token.value !== !!user.value) {
       console.warn("Inkonsistenter Auth-State erkannt, führe Cleanup durch");
       // Wenn Token ohne User oder User ohne Token vorhanden ist, state bereinigen
       token.value = null;
@@ -1174,116 +1327,144 @@ export const useAuthStore = defineStore(
       expiresAt.value = null;
       cleanup();
     }
-    
+
     // Aktivere HTTP-Client-Konfiguration sofort mit dem aktuellen Token
     if (token.value) {
-      console.log("Initial vorhandenes Token gefunden, konfiguriere HTTP-Clients");
+      console.log(
+        "Initial vorhandenes Token gefunden, konfiguriere HTTP-Clients",
+      );
       configureHttpClients(token.value);
     } else {
-      console.log("Kein initiales Token vorhanden, HTTP-Clients werden nicht konfiguriert");
+      console.log(
+        "Kein initiales Token vorhanden, HTTP-Clients werden nicht konfiguriert",
+      );
     }
 
     /**
      * Explizit Token setzen (für direkten Login-Zugriff)
      */
     async function setToken(newToken: string): Promise<boolean> {
-      console.log("setToken wird aufgerufen mit Token-Länge:", newToken?.length || 0);
-      
+      console.log(
+        "setToken wird aufgerufen mit Token-Länge:",
+        newToken?.length || 0,
+      );
+
       try {
         // 1. Token validieren
         if (!validateToken(newToken)) {
           console.error("Ungültiger Token-Format, Token wird nicht gesetzt");
           return false;
         }
-        
+
         // 2. Erst Cleanup durchführen, um alte Zustände zu bereinigen
         cleanup();
-        
+
         // 3. Token setzen
         token.value = newToken;
         console.log("Token wurde gesetzt");
-        
+
         // Token auch in localStorage speichern für ApiService mit korrektem Prefix
-        localStorage.setItem('nscale_access_token', newToken);
-        console.log("Token in localStorage gespeichert unter 'nscale_access_token'");
-        
+        localStorage.setItem("nscale_access_token", newToken);
+        console.log(
+          "Token in localStorage gespeichert unter 'nscale_access_token'",
+        );
+
         // 4. Benutzerdaten aus Token extrahieren
         try {
           // Token dekodieren und Inhalt zuerst loggen für Debugging
           const decodedToken: any = jwtDecode(newToken);
           console.log("Dekodierter Token:", decodedToken);
-          
+
           // Sicherstellen, dass user_id existiert, sonst Default verwenden
-          const userId = decodedToken.user_id || decodedToken.sub || '1';
-          
+          const userId = decodedToken.user_id || decodedToken.sub || "1";
+
           // Objekt zuerst erstellen, dann zuweisen um Race Conditions zu vermeiden
           const userObj = {
             id: userId.toString(),
-            username: decodedToken.email || decodedToken.name || 'user@example.com',
-            email: decodedToken.email || decodedToken.name || 'user@example.com',
-            roles: [decodedToken.role || "user"]
+            username:
+              decodedToken.email || decodedToken.name || "user@example.com",
+            email:
+              decodedToken.email || decodedToken.name || "user@example.com",
+            roles: [decodedToken.role || "user"],
           };
-          
+
           // Jetzt erst user.value setzen
           user.value = userObj;
           console.log("Benutzer aus Token erstellt:", userObj);
-          
+
           // Berechtigungen aus Rollen extrahieren wenn user.value existiert
           if (user.value && user.value.roles) {
             extractPermissionsFromRoles(user.value.roles);
-            console.log("Berechtigungen extrahiert:", Array.from(permissions.value));
+            console.log(
+              "Berechtigungen extrahiert:",
+              Array.from(permissions.value),
+            );
           }
-          
+
           // Ablaufzeit setzen
           if (decodedToken.exp) {
             expiresAt.value = decodedToken.exp * 1000; // von Sekunden zu Millisekunden
-            console.log("Token-Ablaufzeit aus Token gesetzt:", new Date(expiresAt.value).toISOString());
+            console.log(
+              "Token-Ablaufzeit aus Token gesetzt:",
+              new Date(expiresAt.value).toISOString(),
+            );
           } else {
             expiresAt.value = Date.now() + 24 * 60 * 60 * 1000; // 24 Stunden
-            console.log("Standard-Ablaufzeit gesetzt:", new Date(expiresAt.value).toISOString());
+            console.log(
+              "Standard-Ablaufzeit gesetzt:",
+              new Date(expiresAt.value).toISOString(),
+            );
           }
         } catch (e) {
           console.error("Fehler beim Dekodieren des Tokens:", e);
           // Als Fallback trotzdem einen Benutzer erstellen
           user.value = {
-            id: '1',
-            username: 'default@example.com',
-            email: 'default@example.com',
-            roles: ['user']
+            id: "1",
+            username: "default@example.com",
+            email: "default@example.com",
+            roles: ["user"],
           };
           expiresAt.value = Date.now() + 24 * 60 * 60 * 1000; // 24 Stunden
           console.log("Fallback-Benutzer erstellt wegen Dekodierfehler");
         }
-        
+
         // 5. HTTP-Clients explizit konfigurieren mit dem neuen Token
         try {
           console.log("HTTP-Clients werden mit neuem Token konfiguriert");
           configureHttpClients(newToken);
         } catch (configError) {
-          console.error("Fehler beim Konfigurieren der HTTP-Clients:", configError);
+          console.error(
+            "Fehler beim Konfigurieren der HTTP-Clients:",
+            configError,
+          );
           // Weiter fortfahren trotz Fehler
         }
-        
+
         // 6. Initialisieren - aber nur nach dem erfolgreichen Setzen von Benutzer und Token
         try {
           if (user.value && token.value) {
             console.log("Initialisiere Auth-Store nach Token-Setzen");
             initialize();
           } else {
-            console.warn("Auth-Store wird nicht initialisiert: Benutzer oder Token fehlt");
+            console.warn(
+              "Auth-Store wird nicht initialisiert: Benutzer oder Token fehlt",
+            );
           }
         } catch (initError) {
           console.error("Fehler bei der Initialisierung:", initError);
         }
-        
+
         // 7. Token als gültig zurückmelden
         return true;
       } catch (unexpectedError) {
-        console.error("Unerwarteter Fehler beim Setzen des Tokens:", unexpectedError);
+        console.error(
+          "Unerwarteter Fehler beim Setzen des Tokens:",
+          unexpectedError,
+        );
         return false;
       }
     }
-    
+
     /**
      * Fehler explizit setzen
      */
@@ -1296,49 +1477,53 @@ export const useAuthStore = defineStore(
      */
     async function restoreAuthSession(): Promise<boolean> {
       console.log("[AuthStore] Starte Session-Wiederherstellung");
-      
+
       try {
         // Verwende den neuen AuthTokenManager
         const storedData = authTokenManager.loadTokens();
-        
+
         if (!storedData) {
           console.log("[AuthStore] Keine gespeicherten Token gefunden");
           return false;
         }
-        
+
         // Validiere Token
         if (!authTokenManager.validateToken(storedData.token)) {
           console.log("[AuthStore] Gespeicherter Token ist ungültig");
           authTokenManager.clearTokens();
           return false;
         }
-        
+
         // Setze alle Auth-Daten
         token.value = storedData.token;
         refreshToken.value = storedData.refreshToken;
         expiresAt.value = storedData.expiresAt;
-        
+
         // Setze Benutzerdaten
         if (storedData.userInfo) {
           user.value = storedData.userInfo;
           extractPermissionsFromRoles(storedData.userInfo.roles);
         } else {
           // Extrahiere aus Token wenn keine gespeicherten Benutzerdaten
-          const extractedUser = authTokenManager.extractUserFromToken(storedData.token);
+          const extractedUser = authTokenManager.extractUserFromToken(
+            storedData.token,
+          );
           if (extractedUser) {
             user.value = extractedUser;
             extractPermissionsFromRoles(extractedUser.roles);
           }
         }
-        
+
         // Session für Continuity Service markieren
         sessionContinuityService.setAuthenticatedState(true);
-        
+
         console.log("[AuthStore] Session erfolgreich wiederhergestellt");
         return true;
-        
       } catch (error) {
-        console.error("[AuthStore] Fehler bei der Session-Wiederherstellung:", error);
+        console.error(
+          "[AuthStore] Fehler bei der Session-Wiederherstellung:",
+          error,
+        );
         return false;
       }
     }
@@ -1348,12 +1533,12 @@ export const useAuthStore = defineStore(
      */
     function persistAuthData(): void {
       if (!token.value || !user.value) return;
-      
+
       authTokenManager.saveTokens({
         token: token.value,
         refreshToken: refreshToken.value,
         expiresAt: expiresAt.value || Date.now() + 24 * 60 * 60 * 1000,
-        userInfo: user.value
+        userInfo: user.value,
       });
     }
 
@@ -1399,14 +1584,14 @@ export const useAuthStore = defineStore(
       setError,
       restoreAuthSession,
       persistAuthData,
-      
+
       // HTTP-Client-Management
       configureHttpClients,
       removeHttpInterceptors,
       cleanup,
-      
+
       // Pinia compatibility
-      $reset
+      $reset,
     };
   },
   // @ts-ignore - Pinia-Plugin-Persistedstate wird über Plugin eingebunden
@@ -1417,7 +1602,7 @@ export const useAuthStore = defineStore(
 
       // Selektives Speichern bestimmter State-Elemente
       paths: ["token", "refreshToken", "user", "expiresAt", "version"],
-      
+
       // Nach dem Wiederherstellen aus der Persistenz initialisieren
       afterRestore: () => {
         console.log("Auth-Store aus Persistenz wiederhergestellt");

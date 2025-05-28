@@ -1,16 +1,20 @@
 /**
  * UIStore - Spezialisierter Store für UI-Zustände
- * 
+ *
  * Diese Datei definiert einen generischen Store für UI-Zustände wie
  * Modals, Toasts, Sidebar, Dark-Mode, Viewport-Größe und andere
  * layoutbezogene Einstellungen mit standardisierten Methoden.
  */
 
-import { defineStore } from 'pinia';
-import { ref, computed, watch } from 'vue';
-import type { DeepPartial } from '@/types/utilities';
-import type { AppError, ErrorSeverity } from '@/types/errors';
-import { createBaseStore, BaseStoreOptions, BaseStoreReturn } from './BaseStore';
+import { defineStore } from "pinia";
+import { ref, computed, watch } from "vue";
+import type { DeepPartial } from "@/types/utilities";
+import type { AppError, ErrorSeverity } from "@/types/errors";
+import {
+  createBaseStore,
+  BaseStoreOptions,
+  BaseStoreReturn,
+} from "./BaseStore";
 
 /**
  * Interface für Modal-Konfiguration
@@ -21,8 +25,8 @@ export interface Modal {
   content?: string;
   component?: string;
   componentProps?: Record<string, any>;
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
-  position?: 'center' | 'top' | 'right' | 'bottom' | 'left';
+  size?: "sm" | "md" | "lg" | "xl" | "full";
+  position?: "center" | "top" | "right" | "bottom" | "left";
   closeOnEscape?: boolean;
   closeOnClickOutside?: boolean;
   persistent?: boolean;
@@ -30,7 +34,14 @@ export interface Modal {
   buttons?: Array<{
     id: string;
     label: string;
-    variant?: 'primary' | 'secondary' | 'tertiary' | 'danger' | 'success' | 'warning' | 'info';
+    variant?:
+      | "primary"
+      | "secondary"
+      | "tertiary"
+      | "danger"
+      | "success"
+      | "warning"
+      | "info";
     action?: () => void | Promise<void>;
   }>;
   onClose?: () => void;
@@ -42,7 +53,7 @@ export interface Modal {
  */
 export interface Toast {
   id: string;
-  type: 'info' | 'success' | 'warning' | 'error';
+  type: "info" | "success" | "warning" | "error";
   title?: string;
   message: string;
   timeout?: number;
@@ -52,7 +63,13 @@ export interface Toast {
     action: () => void;
   }>;
   dismissible?: boolean;
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'top-center' | 'bottom-center';
+  position?:
+    | "top-left"
+    | "top-right"
+    | "bottom-left"
+    | "bottom-right"
+    | "top-center"
+    | "bottom-center";
   icon?: string;
   onClose?: () => void;
 }
@@ -75,10 +92,10 @@ export interface SidebarConfig {
  * Interface für Layout-Konfiguration
  */
 export interface LayoutConfig {
-  contentWidth: 'fluid' | 'fixed' | 'wide' | 'narrow';
-  density: 'compact' | 'comfortable' | 'spacious';
-  navigationPosition: 'sidebar' | 'top' | 'both' | 'none';
-  sidebarPosition: 'left' | 'right';
+  contentWidth: "fluid" | "fixed" | "wide" | "narrow";
+  density: "compact" | "comfortable" | "spacious";
+  navigationPosition: "sidebar" | "top" | "both" | "none";
+  sidebarPosition: "left" | "right";
 }
 
 /**
@@ -87,11 +104,11 @@ export interface LayoutConfig {
 export interface ViewportInfo {
   width: number;
   height: number;
-  breakpoint: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
+  breakpoint: "xs" | "sm" | "md" | "lg" | "xl" | "xxl";
   isMobile: boolean;
   isTablet: boolean;
   isDesktop: boolean;
-  orientation: 'portrait' | 'landscape';
+  orientation: "portrait" | "landscape";
 }
 
 /**
@@ -100,7 +117,7 @@ export interface ViewportInfo {
 export interface DialogConfig {
   title?: string;
   message: string;
-  type?: 'info' | 'warning' | 'error' | 'success' | 'confirm' | 'prompt';
+  type?: "info" | "warning" | "error" | "success" | "confirm" | "prompt";
   confirmText?: string;
   cancelText?: string;
   inputType?: string;
@@ -128,47 +145,47 @@ export interface UIStoreState {
    * Dark-Mode aktiviert?
    */
   darkMode: boolean;
-  
+
   /**
    * Systemweiter Theme-Modus
    */
-  themeMode: 'light' | 'dark' | 'system';
-  
+  themeMode: "light" | "dark" | "system";
+
   /**
    * Aktive Modals
    */
   modals: Modal[];
-  
+
   /**
    * Aktive Toast-Benachrichtigungen
    */
   toasts: Toast[];
-  
+
   /**
    * Sidebar-Konfiguration
    */
   sidebar: SidebarConfig;
-  
+
   /**
    * Aktuelle Viewport-Informationen
    */
   viewport: ViewportInfo;
-  
+
   /**
    * Layout-Konfiguration
    */
   layout: LayoutConfig;
-  
+
   /**
    * Globaler Ladezustand
    */
   loading: LoadingIndicator;
-  
+
   /**
    * Läuft die Anwendung im Vollbildmodus?
    */
   isFullscreen: boolean;
-  
+
   /**
    * Letzte Fehler für UI-Anzeige
    */
@@ -177,7 +194,7 @@ export interface UIStoreState {
     code?: string;
     timestamp: number;
   } | null;
-  
+
   /**
    * Aktivierte Barrierefreiheitsoptionen
    */
@@ -187,7 +204,7 @@ export interface UIStoreState {
     largeText: boolean;
     focusVisible: boolean;
   };
-  
+
   /**
    * Benutzerdefinierte UI-Einstellungen
    */
@@ -202,32 +219,32 @@ export interface UIStoreOptions extends BaseStoreOptions<UIStoreState> {
    * Standardwert für Dark-Mode
    */
   defaultDarkMode?: boolean;
-  
+
   /**
    * Automatisch Dark-Mode basierend auf System-Präferenzen aktivieren
    */
   autoDetectDarkMode?: boolean;
-  
+
   /**
    * Standard-Sidebar-Konfiguration
    */
   defaultSidebarConfig?: Partial<SidebarConfig>;
-  
+
   /**
    * Standard-Layout-Konfiguration
    */
   defaultLayoutConfig?: Partial<LayoutConfig>;
-  
+
   /**
    * Automatische Viewport-Erkennung aktivieren
    */
   enableViewportDetection?: boolean;
-  
+
   /**
    * Toast-Standarddauer in Millisekunden
    */
   defaultToastDuration?: number;
-  
+
   /**
    * Viewport-Breakpoints
    */
@@ -243,7 +260,7 @@ export interface UIStoreOptions extends BaseStoreOptions<UIStoreState> {
 
 /**
  * Generischer UIStore für UI-Zustände
- * 
+ *
  * Bietet erweiterte Funktionen für:
  * - Dark-Mode-Management
  * - Modal-Management (öffnen, schließen, bestätigen)
@@ -253,9 +270,7 @@ export interface UIStoreOptions extends BaseStoreOptions<UIStoreState> {
  * - Layout-Anpassungen
  * - Barrierefreiheitsoptionen
  */
-export function createUIStore(
-  options: UIStoreOptions
-) {
+export function createUIStore(options: UIStoreOptions) {
   // Standardwerte für Optionen
   const defaultToastDuration = options.defaultToastDuration || 5000; // 5 Sekunden
   const breakpoints = options.breakpoints || {
@@ -266,13 +281,13 @@ export function createUIStore(
     xl: 1200,
     xxl: 1400,
   };
-  
+
   // Basisstore erstellen mit zugeordnetem Zustandstyp
   const baseStore = createBaseStore<UIStoreState>({
     ...options,
     initialState: {
       darkMode: options.defaultDarkMode || false,
-      themeMode: 'system',
+      themeMode: "system",
       modals: [],
       toasts: [],
       sidebar: {
@@ -287,24 +302,24 @@ export function createUIStore(
         ...options.defaultSidebarConfig,
       },
       viewport: {
-        width: typeof window !== 'undefined' ? window.innerWidth : 1024,
-        height: typeof window !== 'undefined' ? window.innerHeight : 768,
-        breakpoint: 'lg',
+        width: typeof window !== "undefined" ? window.innerWidth : 1024,
+        height: typeof window !== "undefined" ? window.innerHeight : 768,
+        breakpoint: "lg",
         isMobile: false,
         isTablet: false,
         isDesktop: true,
-        orientation: 'landscape',
+        orientation: "landscape",
       },
       layout: {
-        contentWidth: 'fluid',
-        density: 'comfortable',
-        navigationPosition: 'sidebar',
-        sidebarPosition: 'left',
+        contentWidth: "fluid",
+        density: "comfortable",
+        navigationPosition: "sidebar",
+        sidebarPosition: "left",
         ...options.defaultLayoutConfig,
       },
       loading: {
         active: false,
-        message: '',
+        message: "",
         progress: 0,
         cancelable: false,
       },
@@ -320,17 +335,17 @@ export function createUIStore(
       ...options.initialState,
     },
   });
-  
+
   return defineStore(`${options.name}-ui`, () => {
     // Basis-Store-Funktionalität initialisieren
     const base = baseStore();
-    
+
     // ResizeObserver für Viewport-Erkennung
     let resizeObserver: ResizeObserver | null = null;
-    
+
     // System-Farbschema-Media-Query
     let darkModeMediaQuery: MediaQueryList | null = null;
-    
+
     // Zustände aus Basis-Store
     const darkMode = computed(() => base.state.darkMode);
     const themeMode = computed(() => base.state.themeMode);
@@ -340,7 +355,7 @@ export function createUIStore(
     const viewport = computed(() => base.state.viewport);
     const layout = computed(() => base.state.layout);
     const loading = computed(() => base.state.loading);
-    
+
     // Abgeleitete Eigenschaften
     /**
      * Gibt es aktive Modals?
@@ -348,14 +363,16 @@ export function createUIStore(
     const hasActiveModals = computed((): boolean => {
       return modals.value.length > 0;
     });
-    
+
     /**
      * Aktuell aktives Modal (zuletzt geöffnetes)
      */
     const currentModal = computed((): Modal | null => {
-      return modals.value.length > 0 ? modals.value[modals.value.length - 1] : null;
+      return modals.value.length > 0
+        ? modals.value[modals.value.length - 1]
+        : null;
     });
-    
+
     /**
      * Dark-Mode aktivieren oder deaktivieren
      */
@@ -363,7 +380,7 @@ export function createUIStore(
       base.state.darkMode = !base.state.darkMode;
       applyTheme();
     }
-    
+
     /**
      * Forcierte Aktivierung des Dark-Mode
      */
@@ -371,7 +388,7 @@ export function createUIStore(
       base.state.darkMode = true;
       applyTheme();
     }
-    
+
     /**
      * Forcierte Deaktivierung des Dark-Mode
      */
@@ -379,96 +396,96 @@ export function createUIStore(
       base.state.darkMode = false;
       applyTheme();
     }
-    
+
     /**
      * Theme-Modus einstellen (light, dark, system)
      */
-    function setThemeMode(mode: 'light' | 'dark' | 'system'): void {
+    function setThemeMode(mode: "light" | "dark" | "system"): void {
       base.state.themeMode = mode;
-      
-      if (mode === 'system') {
+
+      if (mode === "system") {
         // System-Präferenz verwenden
         if (darkModeMediaQuery) {
           base.state.darkMode = darkModeMediaQuery.matches;
         }
       } else {
         // Expliziten Modus verwenden
-        base.state.darkMode = mode === 'dark';
+        base.state.darkMode = mode === "dark";
       }
-      
+
       applyTheme();
     }
-    
+
     /**
      * Theme auf das DOM anwenden
      */
     function applyTheme(): void {
-      if (typeof document !== 'undefined') {
+      if (typeof document !== "undefined") {
         if (base.state.darkMode) {
-          document.documentElement.classList.add('dark-mode');
-          document.documentElement.classList.remove('light-mode');
+          document.documentElement.classList.add("dark-mode");
+          document.documentElement.classList.remove("light-mode");
         } else {
-          document.documentElement.classList.add('light-mode');
-          document.documentElement.classList.remove('dark-mode');
+          document.documentElement.classList.add("light-mode");
+          document.documentElement.classList.remove("dark-mode");
         }
       }
     }
-    
+
     /**
      * Detektieren der System-Farbschema-Präferenz
      */
     function setupDarkModeDetection(): void {
-      if (typeof window !== 'undefined' && options.autoDetectDarkMode) {
-        darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        
+      if (typeof window !== "undefined" && options.autoDetectDarkMode) {
+        darkModeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
         // Initial setzen
-        if (base.state.themeMode === 'system') {
+        if (base.state.themeMode === "system") {
           base.state.darkMode = darkModeMediaQuery.matches;
           applyTheme();
         }
-        
+
         // Listener für Änderungen
         const darkModeChangeHandler = (e: MediaQueryListEvent) => {
-          if (base.state.themeMode === 'system') {
+          if (base.state.themeMode === "system") {
             base.state.darkMode = e.matches;
             applyTheme();
           }
         };
-        
+
         // Event-Listener hinzufügen
         if (darkModeMediaQuery.addEventListener) {
-          darkModeMediaQuery.addEventListener('change', darkModeChangeHandler);
-        } else if ('addListener' in darkModeMediaQuery) {
+          darkModeMediaQuery.addEventListener("change", darkModeChangeHandler);
+        } else if ("addListener" in darkModeMediaQuery) {
           // Fallback für ältere Browser
           (darkModeMediaQuery as any).addListener(darkModeChangeHandler);
         }
       }
     }
-    
+
     /**
      * Viewport-Informationen aktualisieren
      */
     function updateViewport(): void {
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         const width = window.innerWidth;
         const height = window.innerHeight;
-        
+
         // Breakpoint bestimmen
-        let breakpoint: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' = 'xs';
-        if (width >= breakpoints.xxl) breakpoint = 'xxl';
-        else if (width >= breakpoints.xl) breakpoint = 'xl';
-        else if (width >= breakpoints.lg) breakpoint = 'lg';
-        else if (width >= breakpoints.md) breakpoint = 'md';
-        else if (width >= breakpoints.sm) breakpoint = 'sm';
-        
+        let breakpoint: "xs" | "sm" | "md" | "lg" | "xl" | "xxl" = "xs";
+        if (width >= breakpoints.xxl) breakpoint = "xxl";
+        else if (width >= breakpoints.xl) breakpoint = "xl";
+        else if (width >= breakpoints.lg) breakpoint = "lg";
+        else if (width >= breakpoints.md) breakpoint = "md";
+        else if (width >= breakpoints.sm) breakpoint = "sm";
+
         // Gerätetyp bestimmen
         const isMobile = width < breakpoints.md;
         const isTablet = width >= breakpoints.md && width < breakpoints.lg;
         const isDesktop = width >= breakpoints.lg;
-        
+
         // Orientierung bestimmen
-        const orientation = width >= height ? 'landscape' : 'portrait';
-        
+        const orientation = width >= height ? "landscape" : "portrait";
+
         // Viewport-Informationen aktualisieren
         base.state.viewport = {
           width,
@@ -479,108 +496,115 @@ export function createUIStore(
           isDesktop,
           orientation,
         };
-        
+
         // Sidebar bei Mobilgeräten automatisch einklappen
-        if (isMobile && base.state.sidebar.isOpen && !base.state.sidebar.collapsed) {
+        if (
+          isMobile &&
+          base.state.sidebar.isOpen &&
+          !base.state.sidebar.collapsed
+        ) {
           base.state.sidebar.collapsed = true;
         }
       }
     }
-    
+
     /**
      * ResizeObserver für Viewport-Erkennung einrichten
      */
     function setupViewportDetection(): void {
-      if (typeof window !== 'undefined' && options.enableViewportDetection) {
+      if (typeof window !== "undefined" && options.enableViewportDetection) {
         // Initial aktualisieren
         updateViewport();
-        
+
         // ResizeObserver für kontinuierliche Aktualisierung
-        if ('ResizeObserver' in window) {
+        if ("ResizeObserver" in window) {
           resizeObserver = new ResizeObserver(updateViewport);
           resizeObserver.observe(document.documentElement);
         } else {
           // Fallback für ältere Browser
-          window.addEventListener('resize', updateViewport);
+          window.addEventListener("resize", updateViewport);
         }
       }
     }
-    
+
     /**
      * Modal öffnen
      */
-    function openModal(modal: Omit<Modal, 'id'>): string {
+    function openModal(modal: Omit<Modal, "id">): string {
       const id = modal.id || `modal-${Date.now()}`;
       const newModal: Modal = {
         ...modal,
         id,
       };
-      
+
       base.state.modals.push(newModal);
       return id;
     }
-    
+
     /**
      * Modal schließen
      */
     function closeModal(modalId: string): void {
-      const modalIndex = base.state.modals.findIndex(m => m.id === modalId);
-      
+      const modalIndex = base.state.modals.findIndex((m) => m.id === modalId);
+
       if (modalIndex !== -1) {
         const modal = base.state.modals[modalIndex];
-        
+
         // onClose-Callback aufrufen, falls vorhanden
         if (modal.onClose) {
           modal.onClose();
         }
-        
+
         // Modal entfernen
         base.state.modals.splice(modalIndex, 1);
       }
     }
-    
+
     /**
      * Alle Modals schließen
      */
     function closeAllModals(): void {
       // onClose-Callbacks aufrufen
-      base.state.modals.forEach(modal => {
+      base.state.modals.forEach((modal) => {
         if (modal.onClose) {
           modal.onClose();
         }
       });
-      
+
       // Alle Modals entfernen
       base.state.modals = [];
     }
-    
+
     /**
      * Bestätigungs-Dialog anzeigen
      */
-    function confirm(message: string, options: Partial<DialogConfig> = {}): Promise<boolean> {
-      return new Promise(resolve => {
+    function confirm(
+      message: string,
+      options: Partial<DialogConfig> = {},
+    ): Promise<boolean> {
+      return new Promise((resolve) => {
         const modalId = openModal({
-          title: options.title || 'Bestätigung',
+          title: options.title || "Bestätigung",
           content: message,
-          size: 'sm',
-          position: 'center',
+          size: "sm",
+          position: "center",
           closeOnEscape: false,
           closeOnClickOutside: false,
           persistent: true,
           buttons: [
             {
-              id: 'cancel',
-              label: options.cancelText || 'Abbrechen',
-              variant: 'secondary',
+              id: "cancel",
+              label: options.cancelText || "Abbrechen",
+              variant: "secondary",
               action: () => {
                 closeModal(modalId);
                 resolve(false);
               },
             },
             {
-              id: 'confirm',
-              label: options.confirmText || 'OK',
-              variant: 'primary',
+              id: "confirm",
+              label: options.confirmText || "OK",
+              variant: "primary",
               action: () => {
                 closeModal(modalId);
                 resolve(true);
@@ -593,56 +617,63 @@ export function createUIStore(
         });
       });
     }
-    
+
     /**
      * Eingabe-Dialog anzeigen
      */
-    function prompt(message: string, options: Partial<DialogConfig> = {}): Promise<string | null> {
-      return new Promise(resolve => {
-        let inputValue = options.inputValue || '';
-        
+    function prompt(
+      message: string,
+      options: Partial<DialogConfig> = {},
+    ): Promise<string | null> {
+      return new Promise((resolve) => {
+        let inputValue = options.inputValue || "";
+
         const modalId = openModal({
-          title: options.title || 'Eingabe',
+          title: options.title || "Eingabe",
           content: message,
-          component: 'PromptDialog',
+          component: "PromptDialog",
           componentProps: {
             message,
-            inputType: options.inputType || 'text',
-            inputPlaceholder: options.inputPlaceholder || '',
+            inputType: options.inputType || "text",
+            inputPlaceholder: options.inputPlaceholder || "",
             inputValue,
             onInput: (value: string) => {
               inputValue = value;
             },
           },
-          size: 'sm',
-          position: 'center',
+          size: "sm",
+          position: "center",
           closeOnEscape: false,
           closeOnClickOutside: false,
           persistent: true,
           buttons: [
             {
-              id: 'cancel',
-              label: options.cancelText || 'Abbrechen',
-              variant: 'secondary',
+              id: "cancel",
+              label: options.cancelText || "Abbrechen",
+              variant: "secondary",
               action: () => {
                 closeModal(modalId);
                 resolve(null);
               },
             },
             {
-              id: 'confirm',
-              label: options.confirmText || 'OK',
-              variant: 'primary',
+              id: "confirm",
+              label: options.confirmText || "OK",
+              variant: "primary",
               action: () => {
                 if (options.inputValidator) {
                   const validationResult = options.inputValidator(inputValue);
                   if (validationResult !== true) {
                     // Validierungsfehler
-                    showError(typeof validationResult === 'string' ? validationResult : 'Ungültige Eingabe');
+                    showError(
+                      typeof validationResult === "string"
+                        ? validationResult
+                        : "Ungültige Eingabe",
+                    );
                     return;
                   }
                 }
-                
+
                 closeModal(modalId);
                 resolve(inputValue);
               },
@@ -654,11 +685,11 @@ export function createUIStore(
         });
       });
     }
-    
+
     /**
      * Toast-Benachrichtigung anzeigen
      */
-    function showToast(toast: Omit<Toast, 'id'>): string {
+    function showToast(toast: Omit<Toast, "id">): string {
       const id = toast.id || `toast-${Date.now()}`;
       const newToast: Toast = {
         ...toast,
@@ -666,65 +697,68 @@ export function createUIStore(
         timeout: toast.timeout || defaultToastDuration,
         dismissible: toast.dismissible !== false,
       };
-      
+
       base.state.toasts.push(newToast);
-      
+
       // Automatisches Entfernen nach Timeout
       if (newToast.timeout && newToast.timeout > 0) {
         setTimeout(() => {
           dismissToast(id);
         }, newToast.timeout);
       }
-      
+
       return id;
     }
-    
+
     /**
      * Toast-Benachrichtigung entfernen
      */
     function dismissToast(toastId: string): void {
-      const toastIndex = base.state.toasts.findIndex(t => t.id === toastId);
-      
+      const toastIndex = base.state.toasts.findIndex((t) => t.id === toastId);
+
       if (toastIndex !== -1) {
         const toast = base.state.toasts[toastIndex];
-        
+
         // onClose-Callback aufrufen, falls vorhanden
         if (toast.onClose) {
           toast.onClose();
         }
-        
+
         // Toast entfernen
         base.state.toasts.splice(toastIndex, 1);
       }
     }
-    
+
     /**
      * Alle Toast-Benachrichtigungen entfernen
      */
     function clearToasts(): void {
       // onClose-Callbacks aufrufen
-      base.state.toasts.forEach(toast => {
+      base.state.toasts.forEach((toast) => {
         if (toast.onClose) {
           toast.onClose();
         }
       });
-      
+
       // Alle Toasts entfernen
       base.state.toasts = [];
     }
-    
+
     /**
      * Erfolgs-Toast anzeigen
      */
-    function showSuccess(message: string, options: Partial<Toast> = {}): string {
+    function showSuccess(
+      message: string,
+      options: Partial<Toast> = {},
+    ): string {
       return showToast({
-        type: 'success',
-        title: options.title || 'Erfolg',
+        type: "success",
+        title: options.title || "Erfolg",
         message,
         ...options,
       });
     }
-    
+
     /**
      * Fehler-Toast anzeigen
      */
@@ -735,60 +769,63 @@ export function createUIStore(
         code: options.id,
         timestamp: Date.now(),
       };
-      
+
       return showToast({
-        type: 'error',
-        title: options.title || 'Fehler',
+        type: "error",
+        title: options.title || "Fehler",
         message,
         ...options,
       });
     }
-    
+
     /**
      * Warn-Toast anzeigen
      */
-    function showWarning(message: string, options: Partial<Toast> = {}): string {
+    function showWarning(
+      message: string,
+      options: Partial<Toast> = {},
+    ): string {
       return showToast({
-        type: 'warning',
-        title: options.title || 'Warnung',
+        type: "warning",
+        title: options.title || "Warnung",
         message,
         ...options,
       });
     }
-    
+
     /**
      * Info-Toast anzeigen
      */
     function showInfo(message: string, options: Partial<Toast> = {}): string {
       return showToast({
-        type: 'info',
-        title: options.title || 'Information',
+        type: "info",
+        title: options.title || "Information",
         message,
         ...options,
       });
     }
-    
+
     /**
      * Sidebar öffnen
      */
     function openSidebar(): void {
       base.state.sidebar.isOpen = true;
     }
-    
+
     /**
      * Sidebar schließen
      */
     function closeSidebar(): void {
       base.state.sidebar.isOpen = false;
     }
-    
+
     /**
      * Sidebar-Status umschalten
      */
     function toggleSidebar(): void {
       base.state.sidebar.isOpen = !base.state.sidebar.isOpen;
     }
-    
+
     /**
      * Sidebar-Zusammenklappen umschalten
      */
@@ -797,7 +834,7 @@ export function createUIStore(
         base.state.sidebar.collapsed = !base.state.sidebar.collapsed;
       }
     }
-    
+
     /**
      * Sidebar-Breite ändern
      */
@@ -805,58 +842,74 @@ export function createUIStore(
       if (base.state.sidebar.resizable) {
         const minWidth = base.state.sidebar.minWidth || 220;
         const maxWidth = base.state.sidebar.maxWidth || 400;
-        
-        base.state.sidebar.width = Math.max(minWidth, Math.min(maxWidth, width));
+
+        base.state.sidebar.width = Math.max(
+          minWidth,
+          Math.min(maxWidth, width),
+        );
       }
     }
-    
+
     /**
      * Aktiven Sidebar-Tab festlegen
      */
     function setActiveSidebarTab(tabId: string | null): void {
       base.state.sidebar.activeTab = tabId;
-      
+
       // Wenn ein Tab aktiviert wird, Sidebar öffnen
       if (tabId !== null) {
         openSidebar();
       }
     }
-    
+
     /**
      * Layout-Dichte ändern
      */
-    function setLayoutDensity(density: 'compact' | 'comfortable' | 'spacious'): void {
+    function setLayoutDensity(
+      density: "compact" | "comfortable" | "spacious",
+    ): void {
       base.state.layout.density = density;
-      
+
       // CSS-Klasse auf dem Root-Element aktualisieren
-      if (typeof document !== 'undefined') {
-        document.documentElement.classList.remove('density-compact', 'density-comfortable', 'density-spacious');
+      if (typeof document !== "undefined") {
+        document.documentElement.classList.remove(
+          "density-compact",
+          "density-comfortable",
+          "density-spacious",
+        );
         document.documentElement.classList.add(`density-${density}`);
       }
     }
-    
+
     /**
      * Inhaltslayoutbreite ändern
      */
-    function setContentWidth(width: 'fluid' | 'fixed' | 'wide' | 'narrow'): void {
+    function setContentWidth(
+      width: "fluid" | "fixed" | "wide" | "narrow",
+    ): void {
       base.state.layout.contentWidth = width;
-      
+
       // CSS-Klasse auf dem Root-Element aktualisieren
-      if (typeof document !== 'undefined') {
-        document.documentElement.classList.remove('width-fluid', 'width-fixed', 'width-wide', 'width-narrow');
+      if (typeof document !== "undefined") {
+        document.documentElement.classList.remove(
+          "width-fluid",
+          "width-fixed",
+          "width-wide",
+          "width-narrow",
+        );
         document.documentElement.classList.add(`width-${width}`);
       }
     }
-    
+
     /**
      * Vollbildmodus umschalten
      */
     function toggleFullscreen(): void {
-      if (typeof document !== 'undefined') {
+      if (typeof document !== "undefined") {
         if (!base.state.isFullscreen) {
           // Vollbildmodus aktivieren
           const element = document.documentElement;
-          
+
           if (element.requestFullscreen) {
             element.requestFullscreen();
           } else if ((element as any).mozRequestFullScreen) {
@@ -866,7 +919,7 @@ export function createUIStore(
           } else if ((element as any).msRequestFullscreen) {
             (element as any).msRequestFullscreen();
           }
-          
+
           base.state.isFullscreen = true;
         } else {
           // Vollbildmodus beenden
@@ -879,39 +932,42 @@ export function createUIStore(
           } else if ((document as any).msExitFullscreen) {
             (document as any).msExitFullscreen();
           }
-          
+
           base.state.isFullscreen = false;
         }
       }
     }
-    
+
     /**
      * Vollbildmodus-Änderungen überwachen
      */
     function setupFullscreenDetection(): void {
-      if (typeof document !== 'undefined') {
-        document.addEventListener('fullscreenchange', () => {
+      if (typeof document !== "undefined") {
+        document.addEventListener("fullscreenchange", () => {
           base.state.isFullscreen = !!document.fullscreenElement;
         });
-        
-        document.addEventListener('mozfullscreenchange', () => {
+
+        document.addEventListener("mozfullscreenchange", () => {
           base.state.isFullscreen = !!(document as any).mozFullScreenElement;
         });
-        
-        document.addEventListener('webkitfullscreenchange', () => {
+
+        document.addEventListener("webkitfullscreenchange", () => {
           base.state.isFullscreen = !!(document as any).webkitFullscreenElement;
         });
-        
-        document.addEventListener('msfullscreenchange', () => {
+
+        document.addEventListener("msfullscreenchange", () => {
           base.state.isFullscreen = !!(document as any).msFullscreenElement;
         });
       }
     }
-    
+
     /**
      * Globalen Ladeindikator anzeigen
      */
-    function showLoading(message: string = '', options: Partial<LoadingIndicator> = {}): void {
+    function showLoading(
+      message: string = "",
+      options: Partial<LoadingIndicator> = {},
+    ): void {
       base.state.loading = {
         active: true,
         message,
@@ -920,7 +976,7 @@ export function createUIStore(
         onCancel: options.onCancel,
       };
     }
-    
+
     /**
      * Globalen Ladeindikator ausblenden
      */
@@ -930,7 +986,7 @@ export function createUIStore(
         active: false,
       };
     }
-    
+
     /**
      * Fortschritt des Ladeindikators aktualisieren
      */
@@ -939,86 +995,88 @@ export function createUIStore(
         base.state.loading.progress = progress;
       }
     }
-    
+
     /**
      * Barrierefreiheitseinstellungen aktualisieren
      */
-    function updateA11y(settings: Partial<UIStoreState['a11y']>): void {
+    function updateA11y(settings: Partial<UIStoreState["a11y"]>): void {
       base.state.a11y = {
         ...base.state.a11y,
         ...settings,
       };
-      
+
       // CSS-Klassen auf dem Root-Element aktualisieren
-      if (typeof document !== 'undefined') {
+      if (typeof document !== "undefined") {
         // Bewegungsreduzierung
         if (base.state.a11y.reduceMotion) {
-          document.documentElement.classList.add('reduce-motion');
+          document.documentElement.classList.add("reduce-motion");
         } else {
-          document.documentElement.classList.remove('reduce-motion');
+          document.documentElement.classList.remove("reduce-motion");
         }
-        
+
         // Hoher Kontrast
         if (base.state.a11y.highContrast) {
-          document.documentElement.classList.add('high-contrast');
+          document.documentElement.classList.add("high-contrast");
         } else {
-          document.documentElement.classList.remove('high-contrast');
+          document.documentElement.classList.remove("high-contrast");
         }
-        
+
         // Großer Text
         if (base.state.a11y.largeText) {
-          document.documentElement.classList.add('large-text');
+          document.documentElement.classList.add("large-text");
         } else {
-          document.documentElement.classList.remove('large-text');
+          document.documentElement.classList.remove("large-text");
         }
-        
+
         // Fokus-Outline
         if (base.state.a11y.focusVisible) {
-          document.documentElement.classList.add('focus-visible');
+          document.documentElement.classList.add("focus-visible");
         } else {
-          document.documentElement.classList.remove('focus-visible');
+          document.documentElement.classList.remove("focus-visible");
         }
       }
     }
-    
+
     /**
      * UI-Preferences aktualisieren
      */
-    function updatePreferences(preferences: Partial<Record<string, any>>): void {
+    function updatePreferences(
+      preferences: Partial<Record<string, any>>,
+    ): void {
       base.state.preferences = {
         ...base.state.preferences,
         ...preferences,
       };
     }
-    
+
     /**
      * Store initialisieren
      */
     async function initialize(): Promise<void> {
       await base.initialize();
-      
+
       // Theme anwenden
       applyTheme();
-      
+
       // System-Farbschema-Erkennung einrichten
       setupDarkModeDetection();
-      
+
       // Viewport-Erkennung einrichten
       if (options.enableViewportDetection) {
         setupViewportDetection();
       }
-      
+
       // Vollbildmodus-Erkennung einrichten
       setupFullscreenDetection();
-      
+
       // Layout-Einstellungen anwenden
       setLayoutDensity(base.state.layout.density);
       setContentWidth(base.state.layout.contentWidth);
-      
+
       // A11y-Einstellungen anwenden
       updateA11y(base.state.a11y);
     }
-    
+
     /**
      * Store aufräumen
      */
@@ -1027,39 +1085,39 @@ export function createUIStore(
       if (resizeObserver) {
         resizeObserver.disconnect();
         resizeObserver = null;
-      } else if (typeof window !== 'undefined') {
-        window.removeEventListener('resize', updateViewport);
+      } else if (typeof window !== "undefined") {
+        window.removeEventListener("resize", updateViewport);
       }
     }
-    
+
     /**
      * Reset-Methode überschreiben, um auch Cleanup durchzuführen
      */
     function reset(): void {
       // Basis-Reset aufrufen
       base.reset();
-      
+
       // Cleanup durchführen
       cleanup();
-      
+
       // Modals und Toasts löschen
       closeAllModals();
       clearToasts();
     }
-    
+
     // Cleanup bei Store-Deaktivierung
-    if (typeof window !== 'undefined') {
-      window.addEventListener('beforeunload', cleanup);
+    if (typeof window !== "undefined") {
+      window.addEventListener("beforeunload", cleanup);
     }
-    
+
     // Alle Funktionen aus Basis-Store und diesem Store zusammenführen
     return {
       ...base,
-      
+
       // Überschreibende Methoden
       initialize,
       reset,
-      
+
       // Zustands-Eigenschaften
       darkMode,
       themeMode,
@@ -1073,27 +1131,27 @@ export function createUIStore(
       lastError: computed(() => base.state.lastError),
       a11y: computed(() => base.state.a11y),
       preferences: computed(() => base.state.preferences),
-      
+
       // Abgeleitete Eigenschaften
       hasActiveModals,
       currentModal,
       isMobile: computed(() => base.state.viewport.isMobile),
       isTablet: computed(() => base.state.viewport.isTablet),
       isDesktop: computed(() => base.state.viewport.isDesktop),
-      
+
       // Theme-Methoden
       toggleDarkMode,
       enableDarkMode,
       disableDarkMode,
       setThemeMode,
-      
+
       // Modal-Methoden
       openModal,
       closeModal,
       closeAllModals,
       confirm,
       prompt,
-      
+
       // Toast-Methoden
       showToast,
       dismissToast,
@@ -1102,7 +1160,7 @@ export function createUIStore(
       showError,
       showWarning,
       showInfo,
-      
+
       // Sidebar-Methoden
       openSidebar,
       closeSidebar,
@@ -1110,23 +1168,23 @@ export function createUIStore(
       toggleSidebarCollapse,
       setSidebarWidth,
       setActiveSidebarTab,
-      
+
       // Layout-Methoden
       setLayoutDensity,
       setContentWidth,
       toggleFullscreen,
-      
+
       // Loading-Methoden
       showLoading,
       hideLoading,
       updateLoadingProgress,
-      
+
       // A11y-Methoden
       updateA11y,
-      
+
       // Preferences-Methoden
       updatePreferences,
-      
+
       // Cleanup
       cleanup,
     };
@@ -1139,7 +1197,7 @@ export function createUIStore(
 export type UIStoreReturn = BaseStoreReturn<UIStoreState> & {
   // Zustands-Eigenschaften
   darkMode: boolean;
-  themeMode: 'light' | 'dark' | 'system';
+  themeMode: "light" | "dark" | "system";
   modals: Modal[];
   toasts: Toast[];
   sidebar: SidebarConfig;
@@ -1159,36 +1217,42 @@ export type UIStoreReturn = BaseStoreReturn<UIStoreState> & {
     focusVisible: boolean;
   };
   preferences: Record<string, any>;
-  
+
   // Abgeleitete Eigenschaften
   hasActiveModals: boolean;
   currentModal: Modal | null;
   isMobile: boolean;
   isTablet: boolean;
   isDesktop: boolean;
-  
+
   // Theme-Methoden
   toggleDarkMode: () => void;
   enableDarkMode: () => void;
   disableDarkMode: () => void;
-  setThemeMode: (mode: 'light' | 'dark' | 'system') => void;
-  
+  setThemeMode: (mode: "light" | "dark" | "system") => void;
+
   // Modal-Methoden
-  openModal: (modal: Omit<Modal, 'id'>) => string;
+  openModal: (modal: Omit<Modal, "id">) => string;
   closeModal: (modalId: string) => void;
   closeAllModals: () => void;
-  confirm: (message: string, options?: Partial<DialogConfig>) => Promise<boolean>;
-  prompt: (message: string, options?: Partial<DialogConfig>) => Promise<string | null>;
-  
+  confirm: (
+    message: string,
+    options?: Partial<DialogConfig>,
+  ) => Promise<boolean>;
+  prompt: (
+    message: string,
+    options?: Partial<DialogConfig>,
+  ) => Promise<string | null>;
+
   // Toast-Methoden
-  showToast: (toast: Omit<Toast, 'id'>) => string;
+  showToast: (toast: Omit<Toast, "id">) => string;
   dismissToast: (toastId: string) => void;
   clearToasts: () => void;
   showSuccess: (message: string, options?: Partial<Toast>) => string;
   showError: (message: string, options?: Partial<Toast>) => string;
   showWarning: (message: string, options?: Partial<Toast>) => string;
   showInfo: (message: string, options?: Partial<Toast>) => string;
-  
+
   // Sidebar-Methoden
   openSidebar: () => void;
   closeSidebar: () => void;
@@ -1196,23 +1260,23 @@ export type UIStoreReturn = BaseStoreReturn<UIStoreState> & {
   toggleSidebarCollapse: () => void;
   setSidebarWidth: (width: number) => void;
   setActiveSidebarTab: (tabId: string | null) => void;
-  
+
   // Layout-Methoden
-  setLayoutDensity: (density: 'compact' | 'comfortable' | 'spacious') => void;
-  setContentWidth: (width: 'fluid' | 'fixed' | 'wide' | 'narrow') => void;
+  setLayoutDensity: (density: "compact" | "comfortable" | "spacious") => void;
+  setContentWidth: (width: "fluid" | "fixed" | "wide" | "narrow") => void;
   toggleFullscreen: () => void;
-  
+
   // Loading-Methoden
   showLoading: (message?: string, options?: Partial<LoadingIndicator>) => void;
   hideLoading: () => void;
   updateLoadingProgress: (progress: number) => void;
-  
+
   // A11y-Methoden
-  updateA11y: (settings: Partial<UIStoreState['a11y']>) => void;
-  
+  updateA11y: (settings: Partial<UIStoreState["a11y"]>) => void;
+
   // Preferences-Methoden
   updatePreferences: (preferences: Partial<Record<string, any>>) => void;
-  
+
   // Cleanup
   cleanup: () => void;
 };

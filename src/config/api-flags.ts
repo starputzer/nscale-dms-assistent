@@ -1,55 +1,15 @@
 /**
- * Konfigurationsflags für API-Integrationen
+ * Konfiguration für API-Integrationen
  *
- * Diese Datei definiert Feature-Flags für die schrittweise Migration
- * von Mock-Daten zu echten API-Calls.
+ * HINWEIS: Ab 20.05.2025 werden nur noch echte API-Daten verwendet.
+ * Die Feature-Flag-Funktion wurde deaktiviert, da sie nicht mehr benötigt wird.
  */
 
 const API_FLAGS = {
   /**
-   * Globales Flag für die Verwendung echter API-Calls
-   * Überschreibt die komponentenspezifischen Flags, wenn false
-   */
-  useRealApi: process.env.NODE_ENV === "production" || false,
-
-  /**
-   * Flags für spezifische Admin-Komponenten
-   * Diese Flags ermöglichen die stufenweise Migration pro Komponente
-   */
-  components: {
-    /**
-     * DocumentConverter-Tab: Verwendet echte API-Calls für den Dokumentenkonverter
-     */
-    useRealDocumentConverterApi: false,
-
-    /**
-     * Users-Tab: Verwendet echte API-Calls für die Benutzerverwaltung
-     */
-    useRealUsersApi: false,
-
-    /**
-     * Feedback-Tab: Verwendet echte API-Calls für Feedback-Funktionen
-     */
-    useRealFeedbackApi: true,
-
-    /**
-     * FeatureToggles-Tab: Verwendet echte API-Calls für Feature-Toggles
-     */
-    useRealFeatureTogglesApi: false,
-
-    /**
-     * System-Tab: Verwendet echte API-Calls für Systemeinstellungen und -statistiken
-     */
-    useRealSystemApi: false,
-
-    /**
-     * Motd-Tab: Verwendet echte API-Calls für Nachrichten des Tages
-     */
-    useRealMotdApi: false,
-  },
-
-  /**
    * Fallback-Konfiguration für die Verwendung von Mock-Daten bei API-Fehlern
+   * Dies ist die einzige verbleibende Konfiguration, da alle API-Integrationen
+   * immer aktiviert sind.
    */
   fallback: {
     /**
@@ -75,18 +35,48 @@ const API_FLAGS = {
 };
 
 /**
- * Prüft, ob für eine bestimmte Admin-Komponente echte API-Calls verwendet werden sollen
- * @param component Name der Komponente
- * @returns true, wenn echte API-Calls für die Komponente verwendet werden sollen
+ * Diese Funktion prüft, ob die echte API verwendet werden soll,
+ * oder ob auf Mock-Daten zurückgegriffen werden soll.
+ * 
+ * Die Komponente dient zur Unterscheidung, für welchen API-Teil die Prüfung erfolgt.
+ * Aktuell wird nur bei Entwicklung auf Mock-Daten zurückgegriffen, bzw. wenn kein Netzwerk verfügbar ist.
+ * 
+ * @param component Die Komponente, für die die API-Verwendung geprüft wird
+ * @returns true wenn echte API verwendet werden soll, false für Mock-Daten
  */
-export const shouldUseRealApi = (
-  component: keyof typeof API_FLAGS.components,
-): boolean => {
-  // Globales Flag hat Priorität - wenn es false ist, immer Mock-Daten verwenden
-  if (!API_FLAGS.useRealApi) return false;
-
-  // Komponentenspezifisches Flag überprüfen
-  return API_FLAGS.components[component] === true;
+export const shouldUseRealApi = (component: string): boolean => {
+  // Im Entwicklungsmodus mit speziellen URL-Parametern können wir Mock-Daten erzwingen
+  if (typeof window !== 'undefined') {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Bei forceMock=true immer Mock-Daten verwenden
+    if (urlParams.get('forceMock') === 'true') {
+      console.info(`[API-Flags] Verwende Mock-Daten für ${component} (via URL-Parameter)`);
+      return false;
+    }
+    
+    // Bei forceReal=true immer echte API verwenden
+    if (urlParams.get('forceReal') === 'true') {
+      console.info(`[API-Flags] Verwende echte API für ${component} (via URL-Parameter)`);
+      return true;
+    }
+  }
+  
+  // Im Entwicklungsmodus kann es sinnvoll sein, Mock-Daten zu verwenden,
+  // besonders wenn die API-Endpunkte noch nicht fertiggestellt sind
+  if (process.env.NODE_ENV === 'development') {
+    // Für bestimmte Komponenten immer Mock-Daten verwenden (bekannte Probleme)
+    if (component === 'useRealSystemApi' || 
+        component === 'useRealMotdApi' || 
+        component === 'useRealDocConverterApi' ||
+        component === 'useRealFeatureTogglesApi') {
+      console.info(`[API-Flags] Verwende Mock-Daten für ${component} (Entwicklungsmodus)`);
+      return false;
+    }
+  }
+  
+  // Standardmäßig echte API verwenden
+  return true;
 };
 
 export default API_FLAGS;

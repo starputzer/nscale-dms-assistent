@@ -1,6 +1,6 @@
-import { ref, computed } from 'vue';
-import axios from 'axios';
-import type { SourceReference } from '@/types/session';
+import { ref, computed } from "vue";
+import axios from "axios";
+import type { SourceReference } from "@/types/session";
 
 /**
  * Composable für die Verwaltung von Quellenreferenzen
@@ -10,9 +10,14 @@ export function useSourceReferences() {
   // Zustandsvariablen
   const visibleSourceReferences = ref<Record<string, boolean>>({});
   const openSourceDetails = ref<Record<string, boolean>>({});
-  const messageSourceReferences = ref<Record<string, { loading?: boolean, sources: SourceReference[], error?: boolean }>>({});
+  const messageSourceReferences = ref<
+    Record<
+      string,
+      { loading?: boolean; sources: SourceReference[]; error?: boolean }
+    >
+  >({});
   const isLoadingReferences = ref<Record<string, boolean>>({});
-  
+
   // Aktuelle Quellen-Popup-Daten
   const showSourcePopup = ref<boolean>(false);
   const sourcePopupContent = ref<{
@@ -37,7 +42,7 @@ export function useSourceReferences() {
   const showExplanationDialog = ref<boolean>(false);
   const currentExplanation = ref<any>(null);
   const explanationLoading = ref<boolean>(false);
-  
+
   /**
    * Prüft, ob eine Nachricht Quellenreferenzen enthält
    */
@@ -95,7 +100,7 @@ export function useSourceReferences() {
 
     openSourceDetails.value = {
       ...openSourceDetails.value,
-      [key]: !openSourceDetails.value[key]
+      [key]: !openSourceDetails.value[key],
     };
   }
 
@@ -111,7 +116,7 @@ export function useSourceReferences() {
     if (visibleSourceReferences.value[messageId]) {
       visibleSourceReferences.value = {
         ...visibleSourceReferences.value,
-        [messageId]: false
+        [messageId]: false,
       };
       return;
     }
@@ -119,7 +124,7 @@ export function useSourceReferences() {
     // Referenzen einblenden
     visibleSourceReferences.value = {
       ...visibleSourceReferences.value,
-      [messageId]: true
+      [messageId]: true,
     };
 
     // Wenn noch keine Quellen geladen wurden, diese jetzt laden
@@ -128,12 +133,12 @@ export function useSourceReferences() {
         // Ladezustand setzen
         isLoadingReferences.value = {
           ...isLoadingReferences.value,
-          [messageId]: true
+          [messageId]: true,
         };
-        
+
         messageSourceReferences.value = {
           ...messageSourceReferences.value,
-          [messageId]: { loading: true, sources: [] }
+          [messageId]: { loading: true, sources: [] },
         };
 
         // API-Aufruf zum Laden der Quellen
@@ -144,20 +149,20 @@ export function useSourceReferences() {
           ...messageSourceReferences.value,
           [messageId]: {
             loading: false,
-            sources: response.data.sources || []
-          }
+            sources: response.data.sources || [],
+          },
         };
       } catch (error) {
         console.error("Fehler beim Laden der Quellenreferenzen:", error);
         // Fehler-Status setzen, aber UI nicht blockieren
         messageSourceReferences.value = {
           ...messageSourceReferences.value,
-          [messageId]: { loading: false, sources: [], error: true }
+          [messageId]: { loading: false, sources: [], error: true },
         };
       } finally {
         isLoadingReferences.value = {
           ...isLoadingReferences.value,
-          [messageId]: false
+          [messageId]: false,
         };
       }
     }
@@ -166,7 +171,10 @@ export function useSourceReferences() {
   /**
    * Zeigt ein Popup mit Informationen zur angeklickten Quelle an
    */
-  async function showSourcePopupHandler(event: MouseEvent, sourceId: string): Promise<void> {
+  async function showSourcePopupHandler(
+    event: MouseEvent,
+    sourceId: string,
+  ): Promise<void> {
     // Popup-Position bestimmen
     if (event.target instanceof HTMLElement) {
       const rect = event.target.getBoundingClientRect();
@@ -187,7 +195,7 @@ export function useSourceReferences() {
     try {
       // Versuchen, Quelleninformationen zu laden
       const response = await axios.get(`/api/source-detail/${sourceId}`);
-      
+
       if (response.data && response.data.content) {
         sourcePopupContent.value = {
           title: response.data.title || `Quelle ${sourceId}`,
@@ -293,7 +301,7 @@ export function useSourceReferences() {
     showExplanationDialog,
     currentExplanation,
     explanationLoading,
-    
+
     // Funktionen
     hasSourceReferences,
     isSourceReferencesVisible,
@@ -306,6 +314,6 @@ export function useSourceReferences() {
     closeSourcePopup,
     loadExplanation,
     showSourcesDialog,
-    closeExplanationDialog
+    closeExplanationDialog,
   };
 }

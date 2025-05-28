@@ -1,6 +1,6 @@
 /**
  * Polyfills für ES2021-Features (WeakRef und FinalizationRegistry)
- * 
+ *
  * Diese Datei bietet alternative Implementierungen für Browser, die ES2021-Features
  * nicht unterstützen. Dies ist wichtig für die optimierte Bridge-Implementierung,
  * die diese Features verwendet.
@@ -10,19 +10,27 @@
  * Prüft, ob WeakRef vom Browser unterstützt wird
  */
 export function supportsWeakRef(): boolean {
-  return typeof window !== 'undefined' && 'WeakRef' in window && typeof (window as any).WeakRef === 'function';
+  return (
+    typeof window !== "undefined" &&
+    "WeakRef" in window &&
+    typeof (window as any).WeakRef === "function"
+  );
 }
 
 /**
  * Prüft, ob FinalizationRegistry vom Browser unterstützt wird
  */
 export function supportsFinalizationRegistry(): boolean {
-  return typeof window !== 'undefined' && 'FinalizationRegistry' in window && typeof (window as any).FinalizationRegistry === 'function';
+  return (
+    typeof window !== "undefined" &&
+    "FinalizationRegistry" in window &&
+    typeof (window as any).FinalizationRegistry === "function"
+  );
 }
 
 /**
  * Einfache Polyfill-Klasse für WeakRef
- * 
+ *
  * Hinweis: Diese Implementierung ist keine echte WeakRef und verhindert nicht
  * automatisches Garbage-Collection. Sie ist nur ein Fallback für Browser ohne
  * native Unterstützung.
@@ -48,12 +56,12 @@ export class PolyfillWeakRef<T extends object> {
 
 /**
  * Einfache Polyfill-Klasse für FinalizationRegistry
- * 
+ *
  * Hinweis: Diese Implementierung führt keine automatische Finalisierung durch.
  * Stattdessen müssen manuelle Aufrufe von cleanup() verwendet werden.
  */
 export class PolyfillFinalizationRegistry<T> {
-  private registry: Map<object, { value: T, unregisterToken?: object }>;
+  private registry: Map<object, { value: T; unregisterToken?: object }>;
   private callback: (heldValue: T) => void;
 
   constructor(callback: (heldValue: T) => void) {
@@ -109,7 +117,9 @@ export function getWeakRefConstructor(): any {
  * Stellt einen FinalizationRegistry-Konstruktor bereit, je nach Browser-Unterstützung
  */
 export function getFinalizationRegistryConstructor(): any {
-  return supportsFinalizationRegistry() ? (window as any).FinalizationRegistry : PolyfillFinalizationRegistry;
+  return supportsFinalizationRegistry()
+    ? (window as any).FinalizationRegistry
+    : PolyfillFinalizationRegistry;
 }
 
 // Globale Variable zum Überprüfen der Unterstützung, die in anderen Modulen verwendet werden kann

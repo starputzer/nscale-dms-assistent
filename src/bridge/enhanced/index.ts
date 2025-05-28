@@ -12,10 +12,7 @@ import type { ComponentPublicInstance } from "vue";
 // Bridge-Typen und Komponenten
 import { BridgeConfiguration, LogLevel } from "./types";
 import { EnhancedBridge } from "./bridgeCore";
-import {
-  createChatBridge,
-  ChatBridgeConfiguration,
-} from "./chatBridge";
+import { createChatBridge, ChatBridgeConfiguration } from "./chatBridge";
 
 /**
  * Erzeugt eine Bridge-Instanz mit den angegebenen Konfigurationsoptionen

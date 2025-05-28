@@ -114,15 +114,18 @@ export function dynamicImport(
   // Wir verwenden relative Pfade für better compatibility
   loader = () => {
     let importPath = normalizedPath;
-    
+
     // Konvertiere verschiedene Pfadformate
-    if (normalizedPath.startsWith('./src/')) {
-      importPath = normalizedPath.replace('./src/', '../');
-    } else if (!normalizedPath.startsWith('/') && !normalizedPath.startsWith('.')) {
+    if (normalizedPath.startsWith("./src/")) {
+      importPath = normalizedPath.replace("./src/", "../");
+    } else if (
+      !normalizedPath.startsWith("/") &&
+      !normalizedPath.startsWith(".")
+    ) {
       // Wenn kein führender Slash oder Punkt, füge '../' hinzu
-      importPath = '../' + normalizedPath;
+      importPath = "../" + normalizedPath;
     }
-    
+
     return import(/* @vite-ignore */ importPath);
   };
 
@@ -268,61 +271,65 @@ export function createRouterView(
 ) {
   // Initialisiere das Fehler-Tracking
   const errorTracking = setupRouterErrorTracking();
-  
+
   // Erzeugt den vollqualifizierten Pfad zur View-Komponente
   // Verwende korrekte relative Pfade für Vite
-  const fullPath = viewPath.endsWith('.vue') ? 
-    `../../views/${viewPath}` : 
-    `../../views/${viewPath}.vue`;
-  
+  const fullPath = viewPath.endsWith(".vue")
+    ? `../../views/${viewPath}`
+    : `../../views/${viewPath}.vue`;
+
   // Fallback-Komponente für Fehlerbehandlung (statt 404 oder leerer Seite)
-  const fallbackPath = options.errorComponent ? 
-    `../../views/${options.errorComponent}.vue` : 
-    '../../views/ErrorView.vue';
-  
+  const fallbackPath = options.errorComponent
+    ? `../../views/${options.errorComponent}.vue`
+    : "../../views/ErrorView.vue";
+
   // Wrapper-Funktion für das Laden und Tracking mit verbesserter Fehlerbehandlung
   return () => {
     // Lade-Performance messen
     const startTime = performance.now();
-    
+
     try {
       // Komponente direkt laden mit Vite-kompatiblem Import
       const loader = () => {
         // Für Vite verwenden wir relative Pfade aus src/router
-        if (viewPath === 'ChatView') return import('@/views/ChatView.vue');
-        if (viewPath === 'DocumentsView') return import('@/views/DocumentsView.vue');
-        if (viewPath === 'AdminView') return import('@/views/AdminView.vue');
-        if (viewPath === 'SettingsView') return import('@/views/SettingsView.vue');
-        if (viewPath === 'AuthView') return import('@/views/AuthView.vue');
-        if (viewPath === 'EnhancedChatView') return import('@/views/EnhancedChatView.vue');
-        if (viewPath === 'ErrorView') return import('@/views/ErrorView.vue');
-        if (viewPath === 'NotFoundView') return import('@/views/NotFoundView.vue');
+        if (viewPath === "ChatView") return import("@/views/ChatView.vue");
+        if (viewPath === "DocumentsView")
+          return import("@/views/DocumentsView.vue");
+        if (viewPath === "AdminView") return import("@/views/AdminView.vue");
+        if (viewPath === "SettingsView")
+          return import("@/views/SettingsView.vue");
+        if (viewPath === "AuthView") return import("@/views/AuthView.vue");
+        if (viewPath === "EnhancedChatView")
+          return import("@/views/EnhancedChatView.vue");
+        if (viewPath === "ErrorView") return import("@/views/ErrorView.vue");
+        if (viewPath === "NotFoundView")
+          return import("@/views/NotFoundView.vue");
         // Fallback
         return import(/* @vite-ignore */ fullPath);
       };
       const result = loader();
-      
+
       // Verbessertes Tracking und Fehlerbehandlung
       result
         .then(() => {
           const loadTime = performance.now() - startTime;
-          
+
           // Telemetrie-Daten an Analytics senden, wenn verfügbar
           if (window.trackComponentLoad) {
             window.trackComponentLoad({
               component: viewPath,
               loadTime,
               timestamp: new Date().toISOString(),
-              success: true
+              success: true,
             });
           }
         })
         .catch((error) => {
           // Erfasse den Fehler im Tracking-System
           const errorInfo = errorTracking.trackError(viewPath, error);
-          
+
           console.error(`Fehler beim Laden der Komponente ${viewPath}:`, error);
-          
+
           // Telemetrie für fehlgeschlagene Ladeversuche
           if (window.trackComponentLoad) {
             window.trackComponentLoad({
@@ -330,47 +337,63 @@ export function createRouterView(
               error: errorInfo.error,
               errorCount: errorInfo.count,
               timestamp: new Date().toISOString(),
-              success: false
+              success: false,
             });
           }
         });
-        
+
       return result;
     } catch (error) {
       // Erfasse den unmittelbaren Fehler (z.B. Syntaxfehler beim Importieren)
       errorTracking.trackError(viewPath, error);
-      console.error(`Kritischer Fehler beim Importieren von ${viewPath}:`, error);
-      
+      console.error(
+        `Kritischer Fehler beim Importieren von ${viewPath}:`,
+        error,
+      );
+
       // Fallback zur ErrorView im Fall von kritischen Fehlern
       try {
-        return import(/* @vite-ignore */ fallbackPath).then((module) => {
-          // Dynamisch Eigenschaften hinzufügen, um Fehlerdetails durchzureichen
-          const component = module.default;
-          component.props = {
-            ...component.props,
-            errorMessage: `Fehler beim Laden der Komponente "${viewPath}"`,
-            errorCode: "component_load_error",
-            errorDetails: error instanceof Error ? error.message : String(error),
-            canRetry: true
-          };
-          return module;
-        }).catch(() => {
-          // Wenn sogar die ErrorView nicht geladen werden kann, minimale Fehleranzeige
-          return {
-            render() {
-              return h('div', { style: { padding: '20px', color: 'red' } }, [
-                h('h2', 'Kritischer Ladefehler'),
-                h('p', `Die Komponente "${viewPath}" konnte nicht geladen werden.`),
-                h('button', { 
-                  onClick: () => window.location.reload() 
-                }, 'Seite neu laden')
-              ]);
-            }
-          };
-        });
+        return import(/* @vite-ignore */ fallbackPath)
+          .then((module) => {
+            // Dynamisch Eigenschaften hinzufügen, um Fehlerdetails durchzureichen
+            const component = module.default;
+            component.props = {
+              ...component.props,
+              errorMessage: `Fehler beim Laden der Komponente "${viewPath}"`,
+              errorCode: "component_load_error",
+              errorDetails:
+                error instanceof Error ? error.message : String(error),
+              canRetry: true,
+            };
+            return module;
+          })
+          .catch(() => {
+            // Wenn sogar die ErrorView nicht geladen werden kann, minimale Fehleranzeige
+            return {
+              render() {
+                return h("div", { style: { padding: "20px", color: "red" } }, [
+                  h("h2", "Kritischer Ladefehler"),
+                  h(
+                    "p",
+                    `Die Komponente "${viewPath}" konnte nicht geladen werden.`,
+                  ),
+                  h(
+                    "button",
+                    {
+                      onClick: () => window.location.reload(),
+                    },
+                    "Seite neu laden",
+                  ),
+                ]);
+              },
+            };
+          });
       } catch (fallbackError) {
         // Absolut minimale Notfallkomponente, wenn alles andere fehlschlägt
-        console.error('Kritischer Fehler beim Laden der Fallback-Komponente:', fallbackError);
+        console.error(
+          "Kritischer Fehler beim Laden der Fallback-Komponente:",
+          fallbackError,
+        );
         return {
           template: `
             <div style="padding: 20px; color: red; text-align: center;">
@@ -382,8 +405,8 @@ export function createRouterView(
           methods: {
             reload() {
               window.location.reload();
-            }
-          }
+            },
+          },
         };
       }
     }
@@ -396,7 +419,10 @@ export function createRouterView(
 declare global {
   interface Window {
     trackComponentLoad?: (data: any) => void;
-    __ROUTE_LOAD_ERRORS__?: Record<string, { count: number, lastError: string, timestamp: number }>;
+    __ROUTE_LOAD_ERRORS__?: Record<
+      string,
+      { count: number; lastError: string; timestamp: number }
+    >;
   }
 }
 
@@ -414,9 +440,10 @@ export function setupRouterErrorTracking() {
      * Fehler beim Laden einer Route erfassen
      */
     trackError: (routePath: string, error: any) => {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       const timestamp = Date.now();
-      
+
       // Fehlerinformationen aktualisieren
       if (window.__ROUTE_LOAD_ERRORS__![routePath]) {
         window.__ROUTE_LOAD_ERRORS__![routePath].count++;
@@ -426,34 +453,41 @@ export function setupRouterErrorTracking() {
         window.__ROUTE_LOAD_ERRORS__![routePath] = {
           count: 1,
           lastError: errorMessage,
-          timestamp: timestamp
+          timestamp: timestamp,
         };
       }
-      
+
       // Debug-Informationen protokollieren
-      console.error(`[RouterErrorTracking] Fehler beim Laden von Route "${routePath}":`, errorMessage);
-      
+      console.error(
+        `[RouterErrorTracking] Fehler beim Laden von Route "${routePath}":`,
+        errorMessage,
+      );
+
       return {
         routePath,
         error: errorMessage,
         count: window.__ROUTE_LOAD_ERRORS__![routePath].count,
-        timestamp
+        timestamp,
       };
     },
-    
+
     /**
      * Diagnoseinformationen für alle aufgetretenen Router-Fehler abrufen
      */
     getDiagnostics: () => {
       return {
         errors: { ...window.__ROUTE_LOAD_ERRORS__ },
-        totalErrors: Object.values(window.__ROUTE_LOAD_ERRORS__ || {}).reduce((sum, entry) => sum + entry.count, 0),
-        highestErrorRoute: Object.entries(window.__ROUTE_LOAD_ERRORS__ || {})
-          .sort((a, b) => b[1].count - a[1].count)
-          .map(([route, data]) => ({ route, ...data }))[0] || null
+        totalErrors: Object.values(window.__ROUTE_LOAD_ERRORS__ || {}).reduce(
+          (sum, entry) => sum + entry.count,
+          0,
+        ),
+        highestErrorRoute:
+          Object.entries(window.__ROUTE_LOAD_ERRORS__ || {})
+            .sort((a, b) => b[1].count - a[1].count)
+            .map(([route, data]) => ({ route, ...data }))[0] || null,
       };
     },
-    
+
     /**
      * Fehlerstatistiken für eine bestimmte Route zurücksetzen
      */
@@ -464,20 +498,20 @@ export function setupRouterErrorTracking() {
       }
       return false;
     },
-    
+
     /**
      * Alle Fehlerstatistiken zurücksetzen
      */
     resetAllErrors: () => {
       window.__ROUTE_LOAD_ERRORS__ = {};
     },
-    
+
     /**
      * Route-Update verarbeiten (für Router afterEach Hook)
      */
     updateRoute: (to: any, from: any) => {
       // Optional: Hier können Sie Route-Updates tracken
       // Derzeit ist dies ein Dummy, um den Fehler zu beheben
-    }
+    },
   };
 }

@@ -2,135 +2,147 @@
   <div class="auth-container">
     <div class="auth-card">
       <div class="auth-header">
-        <img src="/assets/images/senmvku-logo.png" alt="nscale Logo" class="auth-logo">
+        <img
+          src="/assets/images/senmvku-logo.png"
+          alt="nscale Logo"
+          class="auth-logo"
+        />
         <h1>nscale DMS Assistant</h1>
       </div>
-      
+
       <div class="auth-tabs">
-        <button 
-          :class="['auth-tab', { active: activeTab === 'login' }]" 
+        <button
+          :class="['auth-tab', { active: activeTab === 'login' }]"
           @click="activeTab = 'login'"
         >
           Anmelden
         </button>
-        <button 
-          :class="['auth-tab', { active: activeTab === 'register' }]" 
+        <button
+          :class="['auth-tab', { active: activeTab === 'register' }]"
           @click="activeTab = 'register'"
           v-if="showRegister"
         >
           Registrieren
         </button>
       </div>
-      
+
       <div v-if="activeTab === 'login'" class="auth-form">
         <form @submit.prevent="handleLogin">
           <div class="form-group">
             <label for="username">Benutzername</label>
-            <input 
-              type="text" 
-              id="username" 
-              v-model="loginForm.username" 
-              required 
+            <input
+              type="text"
+              id="username"
+              v-model="loginForm.username"
+              required
               :disabled="isLoading"
               autocomplete="username"
             />
           </div>
-          
+
           <div class="form-group">
             <label for="password">Passwort</label>
-            <input 
-              type="password" 
-              id="password" 
-              v-model="loginForm.password" 
-              required 
+            <input
+              type="password"
+              id="password"
+              v-model="loginForm.password"
+              required
               :disabled="isLoading"
               autocomplete="current-password"
             />
           </div>
-          
+
           <div class="form-options">
             <label>
-              <input type="checkbox" v-model="loginForm.rememberMe" :disabled="isLoading">
+              <input
+                type="checkbox"
+                v-model="loginForm.rememberMe"
+                :disabled="isLoading"
+              />
               Angemeldet bleiben
             </label>
-            
-            <a href="#" @click.prevent="showForgotPassword" class="forgot-password">
+
+            <a
+              href="#"
+              @click.prevent="showForgotPassword"
+              class="forgot-password"
+            >
               Passwort vergessen?
             </a>
           </div>
-          
+
           <div v-if="error" class="auth-error">
             {{ error }}
           </div>
-          
+
           <button type="submit" class="auth-button" :disabled="isLoading">
             <span v-if="isLoading">Anmelden...</span>
             <span v-else>Anmelden</span>
           </button>
         </form>
       </div>
-      
+
       <div v-if="activeTab === 'register'" class="auth-form">
         <form @submit.prevent="handleRegister">
           <div class="form-group">
             <label for="newUsername">Benutzername</label>
-            <input 
-              type="text" 
-              id="newUsername" 
-              v-model="registerForm.username" 
-              required 
+            <input
+              type="text"
+              id="newUsername"
+              v-model="registerForm.username"
+              required
               :disabled="isLoading"
               autocomplete="username"
             />
           </div>
-          
+
           <div class="form-group">
             <label for="email">E-Mail</label>
-            <input 
-              type="email" 
-              id="email" 
-              v-model="registerForm.email" 
-              required 
+            <input
+              type="email"
+              id="email"
+              v-model="registerForm.email"
+              required
               :disabled="isLoading"
               autocomplete="email"
             />
           </div>
-          
+
           <div class="form-group">
             <label for="newPassword">Passwort</label>
-            <input 
-              type="password" 
-              id="newPassword" 
-              v-model="registerForm.password" 
-              required 
+            <input
+              type="password"
+              id="newPassword"
+              v-model="registerForm.password"
+              required
               :disabled="isLoading"
               autocomplete="new-password"
             />
           </div>
-          
+
           <div class="form-group">
             <label for="confirmPassword">Passwort bestätigen</label>
-            <input 
-              type="password" 
-              id="confirmPassword" 
-              v-model="registerForm.confirmPassword" 
-              required 
+            <input
+              type="password"
+              id="confirmPassword"
+              v-model="registerForm.confirmPassword"
+              required
               :disabled="isLoading"
               autocomplete="new-password"
             />
           </div>
-          
+
           <div v-if="error" class="auth-error">
             {{ error }}
           </div>
-          
+
           <button type="submit" class="auth-button" :disabled="isLoading">
             <span v-if="isLoading">Registrieren...</span>
             <span v-else>Registrieren</span>
           </button>
         </form>
       </div>
-      
+
       <div class="auth-footer">
         <p>© {{ currentYear }} nscale DMS Assistant</p>
         <p>Version {{ version }}</p>
@@ -140,81 +152,87 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuth } from '@/composables/useAuth'
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useAuth } from "@/composables/useAuth";
 
 // Store und Router
-const router = useRouter()
-const { login, register, isLoading, error } = useAuth()
+const router = useRouter();
+const { login, register, isLoading, error } = useAuth();
 
 // Formulardaten
 const loginForm = ref({
-  username: '',
-  password: '',
-  rememberMe: false
-})
+  username: "",
+  password: "",
+  rememberMe: false,
+});
 
 const registerForm = ref({
-  username: '',
-  email: '',
-  password: '',
-  confirmPassword: ''
-})
+  username: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+});
 
 // UI-Zustand
-const activeTab = ref('login')
-const showRegister = ref(true)
-const version = ref('1.0.0')
-const currentYear = computed(() => new Date().getFullYear())
+const activeTab = ref("login");
+const showRegister = ref(true);
+const version = ref("1.0.0");
+const currentYear = computed(() => new Date().getFullYear());
 
 // Methoden
 const handleLogin = async () => {
   try {
-    await login(loginForm.value.username, loginForm.value.password, loginForm.value.rememberMe)
-    router.push('/')
+    await login(
+      loginForm.value.username,
+      loginForm.value.password,
+      loginForm.value.rememberMe,
+    );
+    router.push("/");
   } catch (err) {
-    console.error('Login fehlgeschlagen:', err)
+    console.error("Login fehlgeschlagen:", err);
   }
-}
+};
 
 const handleRegister = async () => {
   if (registerForm.value.password !== registerForm.value.confirmPassword) {
-    error.value = 'Die Passwörter stimmen nicht überein.'
-    return
+    error.value = "Die Passwörter stimmen nicht überein.";
+    return;
   }
-  
+
   try {
     await register(
       registerForm.value.username,
       registerForm.value.email,
-      registerForm.value.password
-    )
-    
+      registerForm.value.password,
+    );
+
     // Nach erfolgreicher Registrierung zum Login wechseln
-    activeTab.value = 'login'
-    loginForm.value.username = registerForm.value.username
+    activeTab.value = "login";
+    loginForm.value.username = registerForm.value.username;
   } catch (err) {
-    console.error('Registrierung fehlgeschlagen:', err)
+    console.error("Registrierung fehlgeschlagen:", err);
   }
-}
+};
 
 const showForgotPassword = () => {
-  // Funktion für "Passwort vergessen" 
-  alert('Bitte kontaktieren Sie den Administrator, um Ihr Passwort zurückzusetzen.')
-}
+  // Funktion für "Passwort vergessen"
+  alert(
+    "Bitte kontaktieren Sie den Administrator, um Ihr Passwort zurückzusetzen.",
+  );
+};
 
 onMounted(() => {
   // Automatische Weiterleitung, falls bereits angemeldet
-  if (localStorage.getItem('authToken')) {
-    router.push('/')
+  if (localStorage.getItem("authToken")) {
+    router.push("/");
   }
-  
+
   // Version aus der Konfiguration laden
   if (window.APP_CONFIG && window.APP_CONFIG.buildVersion) {
-    version.value = window.APP_CONFIG.buildVersion
+    version.value = window.APP_CONFIG.buildVersion;
   }
-})
+});
 </script>
 
 <style scoped>

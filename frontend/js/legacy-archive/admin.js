@@ -12,18 +12,17 @@
 
 // Monitoring für Legacy-Code-Nutzung
 function trackLegacyUsage(componentName, action) {
-  if (typeof window.telemetry !== 'undefined') {
-    window.telemetry.trackEvent('legacy_code_usage', {
+  if (typeof window.telemetry !== "undefined") {
+    window.telemetry.trackEvent("legacy_code_usage", {
       component: componentName,
       action: action,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 }
 
 // Tracking bei Modulinitialisierung
-trackLegacyUsage('admin', 'initialize');
-
+trackLegacyUsage("admin", "initialize");
 
 export function setupAdmin(options) {
   const { token, userRole, isLoading } = options;
@@ -567,9 +566,11 @@ export function setupAdmin(options) {
           const availableTests = window.abTesting.listAvailableTests();
 
           // Tests mit aktuellen Varianten anreichern
-          abTests.value = availableTests.map(test => ({
+          abTests.value = availableTests.map((test) => ({
             ...test,
-            currentVariant: window.abTesting.getUserTestVariant(test.id) || 'Nicht zugewiesen'
+            currentVariant:
+              window.abTesting.getUserTestVariant(test.id) ||
+              "Nicht zugewiesen",
           }));
 
           console.log("A/B-Tests geladen:", abTests.value);

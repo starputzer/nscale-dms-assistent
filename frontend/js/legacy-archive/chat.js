@@ -12,20 +12,19 @@
 
 // Monitoring für Legacy-Code-Nutzung
 function trackLegacyUsage(componentName, action) {
-  if (typeof window.telemetry !== 'undefined') {
-    window.telemetry.trackEvent('legacy_code_usage', {
+  if (typeof window.telemetry !== "undefined") {
+    window.telemetry.trackEvent("legacy_code_usage", {
       component: componentName,
       action: action,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 }
 
 // Tracking bei Modulinitialisierung
-trackLegacyUsage('chat', 'initialize');
+trackLegacyUsage("chat", "initialize");
 
-
-import { getUserTestVariant, trackTestMetric } from './ab-testing.js';
+import { getUserTestVariant, trackTestMetric } from "./ab-testing.js";
 
 export function setupChat(options) {
   const {
@@ -154,7 +153,7 @@ export function setupChat(options) {
     console.log("Starte sendQuestionStream mit:", question.value);
 
     // A/B Test Metrik: Aufzeichnen des Startpunkts für Antwortzeit-Messung
-    const chatVariant = getUserTestVariant('chat-interface-v2');
+    const chatVariant = getUserTestVariant("chat-interface-v2");
     const startTime = Date.now();
 
     // MOTD ausblenden, wenn eine Frage gestellt wird
@@ -351,12 +350,19 @@ export function setupChat(options) {
         if (chatVariant) {
           const responseTime = Date.now() - startTime;
           const messageLength = completeResponse.length;
-          trackTestMetric('chat-interface-v2', 'messageResponseTime', responseTime, {
-            messageLength,
-            tokensReceived: tokenCount,
-            streamRetries: currentStreamRetryCount
-          });
-          console.log(`A/B Test - Chat Interface: Antwortzeit erfasst (${responseTime}ms)`);
+          trackTestMetric(
+            "chat-interface-v2",
+            "messageResponseTime",
+            responseTime,
+            {
+              messageLength,
+              tokensReceived: tokenCount,
+              streamRetries: currentStreamRetryCount,
+            },
+          );
+          console.log(
+            `A/B Test - Chat Interface: Antwortzeit erfasst (${responseTime}ms)`,
+          );
         }
 
         // Prüfe, ob die Nachricht nicht leer ist

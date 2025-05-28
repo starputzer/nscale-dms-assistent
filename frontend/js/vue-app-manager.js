@@ -22,10 +22,12 @@ let initializationInProgress = false;
  */
 export function registerVueApp(mountSelector, appInstance) {
   if (vueInstances.has(mountSelector)) {
-    console.warn(`Es existiert bereits eine Vue-App unter dem Selektor: ${mountSelector}. Überspringe Registrierung.`);
+    console.warn(
+      `Es existiert bereits eine Vue-App unter dem Selektor: ${mountSelector}. Überspringe Registrierung.`,
+    );
     return false;
   }
-  
+
   vueInstances.set(mountSelector, appInstance);
   console.log(`Vue-App erfolgreich registriert unter: ${mountSelector}`);
   return true;
@@ -33,7 +35,7 @@ export function registerVueApp(mountSelector, appInstance) {
 
 /**
  * Überprüft, ob bereits eine Vue-App unter dem angegebenen Selektor initialisiert wurde
- * @param {string} mountSelector - Der CSS-Selektor des Mount-Punkts (z.B. "#app") 
+ * @param {string} mountSelector - Der CSS-Selektor des Mount-Punkts (z.B. "#app")
  * @returns {boolean} - True, wenn bereits eine App existiert
  */
 export function hasVueApp(mountSelector) {
@@ -49,64 +51,81 @@ export function hasVueApp(mountSelector) {
 export async function safeInitialize(mountSelector, initFunction) {
   // Prüfen, ob bereits eine Initialisierung läuft
   if (initializationInProgress) {
-    console.warn('Eine andere Vue-App-Initialisierung ist bereits im Gange. Bitte warten...');
-    
+    console.warn(
+      "Eine andere Vue-App-Initialisierung ist bereits im Gange. Bitte warten...",
+    );
+
     // Warte und versuche es erneut
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       setTimeout(async () => {
         resolve(await safeInitialize(mountSelector, initFunction));
       }, 100);
     });
   }
-  
+
   // Prüfen, ob bereits eine App unter diesem Selektor existiert
   if (hasVueApp(mountSelector)) {
-    console.warn(`Vue-App für ${mountSelector} wurde bereits initialisiert. Überspringe doppelte Initialisierung.`);
+    console.warn(
+      `Vue-App für ${mountSelector} wurde bereits initialisiert. Überspringe doppelte Initialisierung.`,
+    );
     return vueInstances.get(mountSelector);
   }
-  
+
   try {
     initializationInProgress = true;
-    
+
     // Mount-Element prüfen
     const mountElement = document.querySelector(mountSelector);
     if (!mountElement) {
-      console.error(`Mount-Element ${mountSelector} wurde nicht gefunden. App kann nicht initialisiert werden.`);
+      console.error(
+        `Mount-Element ${mountSelector} wurde nicht gefunden. App kann nicht initialisiert werden.`,
+      );
       return null;
     }
-    
+
     // Prüfen, ob das Element bereits Inhalte hat (könnte auf eine bereits gemountete App hindeuten)
     if (mountElement.hasChildNodes() && mountElement.children.length > 0) {
-      console.warn(`Element ${mountSelector} hat bereits Kindelemente. Möglicherweise wurde hier bereits eine App gemountet.`);
-      
+      console.warn(
+        `Element ${mountSelector} hat bereits Kindelemente. Möglicherweise wurde hier bereits eine App gemountet.`,
+      );
+
       // Überprüfen, ob es wirklich eine Vue-App ist, indem wir nach bekannten Vue-Attributen suchen
-      const hasVueAttrs = Array.from(mountElement.children).some(child => {
-        return child.hasAttribute('data-v-app') || 
-               child.className.includes('v-') || 
-               child.hasAttribute('data-v-');
+      const hasVueAttrs = Array.from(mountElement.children).some((child) => {
+        return (
+          child.hasAttribute("data-v-app") ||
+          child.className.includes("v-") ||
+          child.hasAttribute("data-v-")
+        );
       });
-      
+
       if (hasVueAttrs) {
-        console.error(`Element ${mountSelector} enthält bereits eine Vue-App. Vermeide das Mounting mehrerer Apps am selben Element!`);
+        console.error(
+          `Element ${mountSelector} enthält bereits eine Vue-App. Vermeide das Mounting mehrerer Apps am selben Element!`,
+        );
         return null;
       }
     }
-    
+
     // App initialisieren
     console.log(`Initialisiere Vue-App für ${mountSelector}...`);
     const appInstance = await initFunction(mountSelector);
-    
+
     if (appInstance) {
       // App registrieren
       registerVueApp(mountSelector, appInstance);
       console.log(`Vue-App für ${mountSelector} erfolgreich initialisiert.`);
       return appInstance;
     } else {
-      console.error(`Fehler beim Initialisieren der Vue-App für ${mountSelector}.`);
+      console.error(
+        `Fehler beim Initialisieren der Vue-App für ${mountSelector}.`,
+      );
       return null;
     }
   } catch (error) {
-    console.error(`Kritischer Fehler bei der App-Initialisierung für ${mountSelector}:`, error);
+    console.error(
+      `Kritischer Fehler bei der App-Initialisierung für ${mountSelector}:`,
+      error,
+    );
     return null;
   } finally {
     initializationInProgress = false;
@@ -115,21 +134,25 @@ export async function safeInitialize(mountSelector, initFunction) {
 
 /**
  * Beendet eine Vue-App sauber und entfernt sie aus der Registrierung
- * @param {string} mountSelector - Der CSS-Selektor des Mount-Punkts 
+ * @param {string} mountSelector - Der CSS-Selektor des Mount-Punkts
  * @returns {boolean} - True, wenn die App erfolgreich beendet wurde
  */
 export function unmountVueApp(mountSelector) {
   if (!hasVueApp(mountSelector)) {
-    console.warn(`Keine Vue-App unter ${mountSelector} registriert. Nichts zu beenden.`);
+    console.warn(
+      `Keine Vue-App unter ${mountSelector} registriert. Nichts zu beenden.`,
+    );
     return false;
   }
-  
+
   try {
     const app = vueInstances.get(mountSelector);
-    if (app && typeof app.unmount === 'function') {
+    if (app && typeof app.unmount === "function") {
       app.unmount();
       vueInstances.delete(mountSelector);
-      console.log(`Vue-App unter ${mountSelector} erfolgreich beendet und entfernt.`);
+      console.log(
+        `Vue-App unter ${mountSelector} erfolgreich beendet und entfernt.`,
+      );
       return true;
     } else {
       console.error(`Ungültige Vue-App-Instanz unter ${mountSelector}.`);
@@ -137,7 +160,10 @@ export function unmountVueApp(mountSelector) {
       return false;
     }
   } catch (error) {
-    console.error(`Fehler beim Beenden der Vue-App unter ${mountSelector}:`, error);
+    console.error(
+      `Fehler beim Beenden der Vue-App unter ${mountSelector}:`,
+      error,
+    );
     return false;
   }
 }
@@ -146,12 +172,12 @@ export function unmountVueApp(mountSelector) {
 window.VueAppManager = {
   safeInitialize,
   hasVueApp,
-  unmountVueApp
+  unmountVueApp,
 };
 
 export default {
   safeInitialize,
   hasVueApp,
   registerVueApp,
-  unmountVueApp
+  unmountVueApp,
 };

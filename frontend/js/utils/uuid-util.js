@@ -1,6 +1,6 @@
 /**
  * UUID-Generator-Hilfsfunktionen
- * 
+ *
  * Stellt Funktionen zur Generierung von UUIDs bereit.
  */
 
@@ -9,9 +9,9 @@
  * @returns {string} Eine UUID v4 im Format xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
  */
 export function v4() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }
@@ -32,7 +32,8 @@ export function simple() {
  * @returns {boolean} True, wenn die UUID gültig ist
  */
 export function isValid(uuid) {
-  const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const regex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return regex.test(uuid);
 }
 
@@ -44,24 +45,27 @@ export function isValid(uuid) {
 export function fromString(str) {
   let hash = 0;
   if (str.length === 0) return hash.toString();
-  
+
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32bit integer
   }
-  
+
   // Format as UUID
-  const hashStr = Math.abs(hash).toString(16).padStart(8, '0');
-  return `${hashStr.substr(0, 8)}-${hashStr.substr(0, 4)}-4${hashStr.substr(0, 3)}-8${hashStr.substr(0, 3)}-${'0'.repeat(12)}`.substr(0, 36);
+  const hashStr = Math.abs(hash).toString(16).padStart(8, "0");
+  return `${hashStr.substr(0, 8)}-${hashStr.substr(0, 4)}-4${hashStr.substr(0, 3)}-8${hashStr.substr(0, 3)}-${"0".repeat(12)}`.substr(
+    0,
+    36,
+  );
 }
 
 // Globaler Export
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   window.uuidUtil = {
     v4,
     simple,
     isValid,
-    fromString
+    fromString,
   };
 }

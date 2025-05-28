@@ -1,22 +1,28 @@
 /**
  * Typdefinitionen für externe Module
- * 
+ *
  * Diese Datei deklariert Typen für externe Bibliotheken und Module,
  * die keine eigenen TypeScript-Definitionen mitbringen oder bei denen
  * die vorhandenen Definitionen erweitert werden müssen.
  */
 
 // Vue-Draggable
-declare module 'vuedraggable' {
-  import { DefineComponent } from 'vue'
-  
+declare module "vuedraggable" {
+  import { DefineComponent } from "vue";
+
   interface DraggableProps {
     modelValue?: any[];
     itemKey?: string | ((item: any) => string);
     clone?: (original: any) => any;
     tag?: string;
     componentData?: Record<string, any>;
-    group?: string | { name: string; pull?: boolean | 'clone' | (() => string); put?: boolean | string[] | (() => boolean); };
+    group?:
+      | string
+      | {
+          name: string;
+          pull?: boolean | "clone" | (() => string);
+          put?: boolean | string[] | (() => boolean);
+        };
     animation?: number;
     disabled?: boolean;
     ghostClass?: string;
@@ -29,23 +35,39 @@ declare module 'vuedraggable' {
     move?: (event: any) => boolean | undefined;
     [key: string]: any;
   }
-  
-  const component: DefineComponent<DraggableProps>
-  export default component
+
+  const component: DefineComponent<DraggableProps>;
+  export default component;
 }
 
 // Date-fns
-declare module 'date-fns' {
-  export function format(date: Date | number, format: string, options?: { locale?: Locale }): string
-  export function formatDistanceToNow(date: Date | number, options?: { addSuffix?: boolean, locale?: Locale }): string
-  export function parseISO(dateString: string): Date
-  export function isValid(date: any): boolean
-  export function differenceInDays(dateLeft: Date | number, dateRight: Date | number): number
-  export function differenceInHours(dateLeft: Date | number, dateRight: Date | number): number
-  export function differenceInMinutes(dateLeft: Date | number, dateRight: Date | number): number
+declare module "date-fns" {
+  export function format(
+    date: Date | number,
+    format: string,
+    options?: { locale?: Locale },
+  ): string;
+  export function formatDistanceToNow(
+    date: Date | number,
+    options?: { addSuffix?: boolean; locale?: Locale },
+  ): string;
+  export function parseISO(dateString: string): Date;
+  export function isValid(date: any): boolean;
+  export function differenceInDays(
+    dateLeft: Date | number,
+    dateRight: Date | number,
+  ): number;
+  export function differenceInHours(
+    dateLeft: Date | number,
+    dateRight: Date | number,
+  ): number;
+  export function differenceInMinutes(
+    dateLeft: Date | number,
+    dateRight: Date | number,
+  ): number;
 }
 
-declare module 'date-fns/locale' {
+declare module "date-fns/locale" {
   export interface Locale {
     code: string;
     formatDistance: Function;
@@ -77,12 +99,12 @@ declare module 'date-fns/locale' {
     };
   }
 
-  export const de: Locale
-  export const enUS: Locale
+  export const de: Locale;
+  export const enUS: Locale;
 }
 
 // Highlight.js
-declare module 'highlight.js' {
+declare module "highlight.js" {
   export interface HighlightResult {
     language: string;
     relevance: number;
@@ -97,23 +119,29 @@ declare module 'highlight.js' {
     ignoreIllegals?: boolean;
   }
 
-  export function highlight(code: string, options: HighlightOptions): HighlightResult;
-  export function highlightAuto(code: string, languageSubset?: string[]): HighlightResult;
-  
+  export function highlight(
+    code: string,
+    options: HighlightOptions,
+  ): HighlightResult;
+  export function highlightAuto(
+    code: string,
+    languageSubset?: string[],
+  ): HighlightResult;
+
   export const languages: Record<string, any>;
-  
+
   interface HLJSApi {
     highlight: typeof highlight;
     highlightAuto: typeof highlightAuto;
     languages: typeof languages;
   }
-  
+
   const hljs: HLJSApi;
   export default hljs;
 }
 
 // DOMPurify
-declare module 'dompurify' {
+declare module "dompurify" {
   export interface DOMPurifyOptions {
     ADD_ATTR?: string[];
     ADD_DATA_URI_TAGS?: string[];
@@ -159,7 +187,7 @@ declare module 'dompurify' {
 }
 
 // Vuex für Legacy-Unterstützung
-declare module 'vuex' {
+declare module "vuex" {
   export interface Store<S> {
     state: S;
     getters: any;
@@ -168,7 +196,11 @@ declare module 'vuex' {
     subscribe(fn: (mutation: any, state: S) => void): () => void;
     subscribeAction(fn: (action: any, state: S) => void): () => void;
     replaceState(state: S): void;
-    watch<T>(getter: (state: S, getters: any) => T, cb: (newValue: T, oldValue: T) => void, options?: { immediate: boolean }): () => void;
+    watch<T>(
+      getter: (state: S, getters: any) => T,
+      cb: (newValue: T, oldValue: T) => void,
+      options?: { immediate: boolean },
+    ): () => void;
   }
 
   export function createStore<S>(options: any): Store<S>;
@@ -176,7 +208,7 @@ declare module 'vuex' {
 }
 
 // Marked für Markdown-Rendering
-declare module 'marked' {
+declare module "marked" {
   export interface MarkedOptions {
     baseUrl?: string;
     breaks?: boolean;
@@ -194,7 +226,11 @@ declare module 'marked' {
     tokenizer?: Record<string, Function>;
     walkTokens?: (token: any) => void;
     xhtml?: boolean;
-    highlight?: (code: string, lang: string, callback?: (error: any, result?: string) => void) => string | void;
+    highlight?: (
+      code: string,
+      lang: string,
+      callback?: (error: any, result?: string) => void,
+    ) => string | void;
   }
 
   export function marked(src: string, options?: MarkedOptions): string;
@@ -204,9 +240,12 @@ declare module 'marked' {
 }
 
 // uuid Bibliothek
-declare module 'uuid' {
+declare module "uuid" {
   export function v4(): string;
-  export function v5(name: string, namespace: string | ArrayLike<number>): string;
+  export function v5(
+    name: string,
+    namespace: string | ArrayLike<number>,
+  ): string;
   export function validate(uuid: string): boolean;
   export function version(uuid: string): number;
   export namespace v4 {
@@ -215,7 +254,7 @@ declare module 'uuid' {
 }
 
 // Axios für HTTP-Requests
-declare module 'axios' {
+declare module "axios" {
   export interface AxiosRequestConfig {
     url?: string;
     method?: string;
@@ -225,7 +264,13 @@ declare module 'axios' {
     data?: any;
     timeout?: number;
     withCredentials?: boolean;
-    responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
+    responseType?:
+      | "arraybuffer"
+      | "blob"
+      | "document"
+      | "json"
+      | "text"
+      | "stream";
     validateStatus?: (status: number) => boolean;
     maxRedirects?: number;
     maxContentLength?: number;
@@ -268,13 +313,37 @@ declare module 'axios' {
       request: any;
       response: any;
     };
-    get<T = any>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>>;
-    delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>>;
-    head<T = any>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>>;
-    options<T = any>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>>;
-    post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T>>;
-    put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T>>;
-    patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T>>;
+    get<T = any>(
+      url: string,
+      config?: AxiosRequestConfig,
+    ): Promise<AxiosResponse<T>>;
+    delete<T = any>(
+      url: string,
+      config?: AxiosRequestConfig,
+    ): Promise<AxiosResponse<T>>;
+    head<T = any>(
+      url: string,
+      config?: AxiosRequestConfig,
+    ): Promise<AxiosResponse<T>>;
+    options<T = any>(
+      url: string,
+      config?: AxiosRequestConfig,
+    ): Promise<AxiosResponse<T>>;
+    post<T = any>(
+      url: string,
+      data?: any,
+      config?: AxiosRequestConfig,
+    ): Promise<AxiosResponse<T>>;
+    put<T = any>(
+      url: string,
+      data?: any,
+      config?: AxiosRequestConfig,
+    ): Promise<AxiosResponse<T>>;
+    patch<T = any>(
+      url: string,
+      data?: any,
+      config?: AxiosRequestConfig,
+    ): Promise<AxiosResponse<T>>;
     create(config?: AxiosRequestConfig): AxiosStatic;
     CancelToken: any;
     Cancel: any;

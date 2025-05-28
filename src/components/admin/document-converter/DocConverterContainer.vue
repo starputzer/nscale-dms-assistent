@@ -93,7 +93,7 @@
         />
 
         <!-- Ergebnis der Konvertierung -->
-        <ConversionResult
+        <ConversionResultComponent
           v-if="conversionResult"
           :result="conversionResult"
           @close="clearConversionResult"
@@ -142,7 +142,7 @@ import { ConversionResult } from "@/types/documentConverter";
 import FileUpload from "./FileUpload.vue";
 import BatchUpload from "./BatchUpload.vue";
 import ConversionProgress from "./ConversionProgress.vue";
-import ConversionResult from "./ConversionResult.vue";
+import ConversionResultComponent from "./ConversionResult.vue";
 import DocumentList from "./DocumentList.vue";
 import ErrorDisplay from "./ErrorDisplay.vue";
 import FallbackConverter from "./FallbackConverter.vue";

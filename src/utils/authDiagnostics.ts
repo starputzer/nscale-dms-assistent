@@ -3,14 +3,20 @@
  * Provides detailed logging and debugging for auth flow
  */
 
-import { watch } from 'vue';
-import { useAuthStore } from '@/stores/auth';
-import { apiService } from '@/services/api/ApiService';
-import axios from 'axios';
+import { watch } from "vue";
+import { useAuthStore } from "@/stores/auth";
+import { apiService } from "@/services/api/ApiService";
+import axios from "axios";
 
 interface AuthDiagnosticEntry {
   timestamp: string;
-  type: 'login' | 'token_storage' | 'request' | 'response' | 'error' | 'interceptor';
+  type:
+    | "login"
+    | "token_storage"
+    | "request"
+    | "response"
+    | "error"
+    | "interceptor";
   action: string;
   details: any;
   stackTrace?: string;
@@ -32,92 +38,101 @@ class AuthDiagnostics {
 
   enable() {
     this.isEnabled = true;
-    this.log('diagnostics', 'Authentication diagnostics enabled');
-    
+    this.log("diagnostics", "Authentication diagnostics enabled");
+
     // Hook into auth store
     this.hookAuthStore();
-    
+
     // Hook into axios interceptors
     this.hookAxiosInterceptors();
-    
+
     // Hook into localStorage
     this.hookLocalStorage();
-    
+
     // Hook into console for additional context
     this.hookConsole();
-    
+
     // Monitor API service
     this.monitorApiService();
-    
-    console.log('🔍 Auth Diagnostics Enabled - Use window.authDiagnostics.report() to see the log');
+
+    console.log(
+      "🔍 Auth Diagnostics Enabled - Use window.authDiagnostics.report() to see the log",
+    );
   }
 
   disable() {
     this.isEnabled = false;
     this.unhookAll();
-    console.log('🔍 Auth Diagnostics Disabled');
+    console.log("🔍 Auth Diagnostics Disabled");
   }
 
-  private log(type: AuthDiagnosticEntry['type'], action: string, details?: any) {
+  private log(
+    type: AuthDiagnosticEntry["type"],
+    action: string,
+    details?: any,
+  ) {
     if (!this.isEnabled) return;
-    
+
     const entry: AuthDiagnosticEntry = {
       timestamp: new Date().toISOString(),
       type,
       action,
       details: details || {},
-      stackTrace: new Error().stack
+      stackTrace: new Error().stack,
     };
-    
+
     this.entries.push(entry);
-    
+
     // Also log to console for real-time monitoring
-    this.originalConsoleLog(`[AUTH-DIAG] ${type.toUpperCase()}: ${action}`, details);
+    this.originalConsoleLog(
+      `[AUTH-DIAG] ${type.toUpperCase()}: ${action}`,
+      details,
+    );
   }
 
   private hookAuthStore() {
     try {
       this.authStore = useAuthStore();
-      
+
       // Watch auth store state changes
-      const watchers = ['token', 'user', 'isAuthenticated', 'error'];
-      
-      watchers.forEach(key => {
+      const watchers = ["token", "user", "isAuthenticated", "error"];
+
+      watchers.forEach((key) => {
         watch(
           () => (this.authStore as any)[key],
           (newValue, oldValue) => {
-            this.log('token_storage', `Auth store ${key} changed`, {
+            this.log("token_storage", `Auth store ${key} changed`, {
               key,
               oldValue: this.sanitizeValue(oldValue),
               newValue: this.sanitizeValue(newValue),
-              location: 'Pinia store'
+              location: "Pinia store",
             });
           },
-          { immediate: true }
+          { immediate: true },
         );
       });
-      
+
       // Hook into auth methods
-      const methods = ['login', 'logout', 'refreshToken', 'setToken'];
-      methods.forEach(method => {
+      const methods = ["login", "logout", "refreshToken", "setToken"];
+      methods.forEach((method) => {
         const original = this.authStore[method];
         if (original) {
           this.authStore[method] = async (...args: any[]) => {
-            this.log('login', `Auth store ${method} called`, {
+            this.log("login", `Auth store ${method} called`, {
               method,
-              args: this.sanitizeValue(args)
+              args: this.sanitizeValue(args),
             });
             try {
               const result = await original.apply(this.authStore, args);
-              this.log('login', `Auth store ${method} completed`, {
+              this.log("login", `Auth store ${method} completed`, {
                 method,
-                result: this.sanitizeValue(result)
+                result: this.sanitizeValue(result),
               });
               return result;
             } catch (error) {
-              this.log('error', `Auth store ${method} failed`, {
+              this.log("error", `Auth store ${method} failed`, {
                 method,
-                error: error.message
+                error: error.message,
               });
               throw error;
             }
@@ -125,7 +140,7 @@ class AuthDiagnostics {
         }
       });
     } catch (error) {
-      this.log('error', 'Failed to hook auth store', { error: error.message });
+      this.log("error", "Failed to hook auth store", { error: error.message });
     }
   }
 
@@ -133,41 +148,41 @@ class AuthDiagnostics {
     // Add request interceptor
     this.axiosRequestInterceptor = axios.interceptors.request.use(
       (config) => {
-        this.log('request', 'Axios request intercepted', {
+        this.log("request", "Axios request intercepted", {
           url: config.url,
           method: config.method,
           headers: this.sanitizeHeaders(config.headers),
-          authHeader: config.headers?.Authorization
+          authHeader: config.headers?.Authorization,
         });
         return config;
       },
       (error) => {
-        this.log('error', 'Axios request error', { error: error.message });
+        this.log("error", "Axios request error", { error: error.message });
         return Promise.reject(error);
-      }
+      },
     );
-    
+
     // Add response interceptor
     this.axiosResponseInterceptor = axios.interceptors.response.use(
       (response) => {
-        this.log('response', 'Axios response received', {
+        this.log("response", "Axios response received", {
           url: response.config.url,
           status: response.status,
           headers: this.sanitizeHeaders(response.headers),
-          data: this.sanitizeValue(response.data)
+          data: this.sanitizeValue(response.data),
         });
         return response;
       },
       (error) => {
-        this.log('error', 'Axios response error', {
+        this.log("error", "Axios response error", {
           url: error.config?.url,
           status: error.response?.status,
           statusText: error.response?.statusText,
           data: error.response?.data,
-          message: error.message
+          message: error.message,
         });
         return Promise.reject(error);
-      }
+      },
     );
   }
 
@@ -175,34 +190,34 @@ class AuthDiagnostics {
     const originalSetItem = localStorage.setItem;
     const originalGetItem = localStorage.getItem;
     const originalRemoveItem = localStorage.removeItem;
-    
+
     localStorage.setItem = (key: string, value: string) => {
-      if (key.includes('token') || key.includes('auth')) {
-        this.log('token_storage', 'localStorage.setItem', {
+      if (key.includes("token") || key.includes("auth")) {
+        this.log("token_storage", "localStorage.setItem", {
           key,
           value: this.sanitizeValue(value),
-          valueLength: value?.length
+          valueLength: value?.length,
         });
       }
       return originalSetItem.call(localStorage, key, value);
     };
-    
+
     localStorage.getItem = (key: string) => {
       const value = originalGetItem.call(localStorage, key);
-      if (key.includes('token') || key.includes('auth')) {
-        this.log('token_storage', 'localStorage.getItem', {
+      if (key.includes("token") || key.includes("auth")) {
+        this.log("token_storage", "localStorage.getItem", {
           key,
           value: this.sanitizeValue(value),
           valueLength: value?.length,
-          found: value !== null
+          found: value !== null,
         });
       }
       return value;
     };
-    
+
     localStorage.removeItem = (key: string) => {
-      if (key.includes('token') || key.includes('auth')) {
-        this.log('token_storage', 'localStorage.removeItem', { key });
+      if (key.includes("token") || key.includes("auth")) {
+        this.log("token_storage", "localStorage.removeItem", { key });
       }
       return originalRemoveItem.call(localStorage, key);
     };
@@ -211,22 +226,26 @@ class AuthDiagnostics {
   private hookConsole() {
     console.log = (...args: any[]) => {
       const message = args[0];
-      if (typeof message === 'string' && 
-          (message.includes('token') || 
-           message.includes('auth') || 
-           message.includes('Authorization'))) {
-        this.log('interceptor', 'Console log', { message, args });
+      if (
+        typeof message === "string" &&
+        (message.includes("token") ||
+          message.includes("auth") ||
+          message.includes("Authorization"))
+      ) {
+        this.log("interceptor", "Console log", { message, args });
       }
       this.originalConsoleLog.apply(console, args);
     };
-    
+
     console.error = (...args: any[]) => {
       const message = args[0];
-      if (typeof message === 'string' && 
-          (message.includes('token') || 
-           message.includes('auth') || 
-           message.includes('401'))) {
-        this.log('error', 'Console error', { message, args });
+      if (
+        typeof message === "string" &&
+        (message.includes("token") ||
+          message.includes("auth") ||
+          message.includes("401"))
+      ) {
+        this.log("error", "Console error", { message, args });
       }
       this.originalConsoleError.apply(console, args);
     };
@@ -235,26 +254,26 @@ class AuthDiagnostics {
   private monitorApiService() {
     // Hook into API service methods if available
     try {
-      const methods = ['get', 'post', 'put', 'delete', 'customRequest'];
-      methods.forEach(method => {
+      const methods = ["get", "post", "put", "delete", "customRequest"];
+      methods.forEach((method) => {
         const original = (apiService as any)[method];
         if (original) {
           (apiService as any)[method] = async (...args: any[]) => {
-            this.log('request', `ApiService.${method} called`, {
+            this.log("request", `ApiService.${method} called`, {
               method,
-              args: this.sanitizeValue(args)
+              args: this.sanitizeValue(args),
             });
             try {
               const result = await original.apply(apiService, args);
-              this.log('response', `ApiService.${method} completed`, {
+              this.log("response", `ApiService.${method} completed`, {
                 method,
-                result: this.sanitizeValue(result)
+                result: this.sanitizeValue(result),
               });
               return result;
             } catch (error) {
-              this.log('error', `ApiService.${method} failed`, {
+              this.log("error", `ApiService.${method} failed`, {
                 method,
-                error: error.message
+                error: error.message,
               });
               throw error;
             }
@@ -262,24 +281,28 @@ class AuthDiagnostics {
         }
       });
     } catch (error) {
-      this.log('error', 'Failed to monitor API service', { error: error.message });
+      this.log("error", "Failed to monitor API service", {
+        error: error.message,
+      });
     }
   }
 
   private sanitizeValue(value: any): any {
     if (!value) return value;
-    
+
     // Handle tokens
-    if (typeof value === 'string' && value.length > 50) {
-      return value.substring(0, 20) + '...[TRUNCATED]';
+    if (typeof value === "string" && value.length > 50) {
+      return value.substring(0, 20) + "...[TRUNCATED]";
     }
-    
+
     // Handle objects with tokens
-    if (typeof value === 'object') {
+    if (typeof value === "object") {
       const sanitized: any = Array.isArray(value) ? [] : {};
       for (const key in value) {
-        if (key.toLowerCase().includes('token') || 
-            key.toLowerCase().includes('password')) {
+        if (
+          key.toLowerCase().includes("token") ||
+          key.toLowerCase().includes("password")
+        ) {
           sanitized[key] = this.sanitizeValue(value[key]);
         } else {
           sanitized[key] = value[key];
@@ -287,18 +310,18 @@ class AuthDiagnostics {
       }
       return sanitized;
     }
-    
+
     return value;
   }
 
   private sanitizeHeaders(headers: any): any {
     if (!headers) return headers;
-    
+
     const sanitized: any = {};
     for (const key in headers) {
-      if (key.toLowerCase() === 'authorization') {
+      if (key.toLowerCase() === "authorization") {
         const value = headers[key];
-        sanitized[key] = value ? value.substring(0, 30) + '...' : null;
+        sanitized[key] = value ? value.substring(0, 30) + "..." : null;
       } else {
         sanitized[key] = headers[key];
       }
@@ -310,7 +333,7 @@ class AuthDiagnostics {
     // Restore console
     console.log = this.originalConsoleLog;
     console.error = this.originalConsoleError;
-    
+
     // Remove axios interceptors
     if (this.axiosRequestInterceptor !== null) {
       axios.interceptors.request.eject(this.axiosRequestInterceptor);
@@ -318,49 +341,52 @@ class AuthDiagnostics {
     if (this.axiosResponseInterceptor !== null) {
       axios.interceptors.response.eject(this.axiosResponseInterceptor);
     }
-    
+
     // Note: Can't easily unhook localStorage and auth store methods
     // They would need to be reloaded
   }
 
   report(): void {
-    console.log('=== Authentication Diagnostics Report ===');
+    console.log("=== Authentication Diagnostics Report ===");
     console.log(`Total entries: ${this.entries.length}`);
-    console.log('');
-    
+    console.log("");
+
     // Group by type
-    const grouped = this.entries.reduce((acc, entry) => {
-      acc[entry.type] = acc[entry.type] || [];
-      acc[entry.type].push(entry);
-      return acc;
-    }, {} as Record<string, AuthDiagnosticEntry[]>);
-    
+    const grouped = this.entries.reduce(
+      (acc, entry) => {
+        acc[entry.type] = acc[entry.type] || [];
+        acc[entry.type].push(entry);
+        return acc;
+      },
+      {} as Record<string, AuthDiagnosticEntry[]>,
+    );
+
     // Display each type
-    Object.keys(grouped).forEach(type => {
+    Object.keys(grouped).forEach((type) => {
       console.log(`\n--- ${type.toUpperCase()} ---`);
-      grouped[type].forEach(entry => {
+      grouped[type].forEach((entry) => {
         console.log(`${entry.timestamp} - ${entry.action}`);
-        console.log('Details:', entry.details);
+        console.log("Details:", entry.details);
       });
     });
-    
+
     // Show current localStorage state
-    console.log('\n--- Current LocalStorage State ---');
-    const authKeys = Object.keys(localStorage).filter(key => 
-      key.includes('token') || key.includes('auth')
+    console.log("\n--- Current LocalStorage State ---");
+    const authKeys = Object.keys(localStorage).filter(
+      (key) => key.includes("token") || key.includes("auth"),
     );
-    authKeys.forEach(key => {
+    authKeys.forEach((key) => {
       const value = localStorage.getItem(key);
       console.log(`${key}: ${this.sanitizeValue(value)}`);
     });
-    
+
     // Show last errors
     const errors = grouped.error || [];
     if (errors.length > 0) {
-      console.log('\n--- Last Errors ---');
-      errors.slice(-5).forEach(entry => {
+      console.log("\n--- Last Errors ---");
+      errors.slice(-5).forEach((entry) => {
         console.log(`${entry.timestamp} - ${entry.action}`);
-        console.log('Details:', entry.details);
+        console.log("Details:", entry.details);
       });
     }
   }
@@ -371,7 +397,7 @@ class AuthDiagnostics {
 
   clear(): void {
     this.entries = [];
-    console.log('Diagnostic log cleared');
+    console.log("Diagnostic log cleared");
   }
 }
 
@@ -379,7 +405,7 @@ class AuthDiagnostics {
 export const authDiagnostics = new AuthDiagnostics();
 
 // Attach to window for easy access
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   (window as any).authDiagnostics = authDiagnostics;
 }
 
