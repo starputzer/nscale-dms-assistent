@@ -85,12 +85,12 @@
           </div>
           <div v-else-if="currentTabComponent" class="admin-tab-container">
             <!-- Development info banner -->
-            <div class="admin-dev-info-banner">
-              <i class="fas fa-info-circle"></i>
+            <div class="admin-info-banner admin-info-banner--dev">
+              <i class="fas fa-code"></i>
               <div>
-                <strong>Entwicklermodus:</strong> Diese Admin-Oberfläche
-                befindet sich in der Entwicklung und zeigt derzeit überwiegend
-                Mock-Daten an. Die Funktionalität ist eingeschränkt.
+                <strong>Entwicklungsmodus aktiv:</strong> Diese Admin-Oberfläche
+                verwendet Mock-Daten für die Entwicklung. Änderungen werden nicht
+                im System gespeichert. Die Schnittstelle entspricht der finalen Version.
               </div>
             </div>
 
@@ -360,12 +360,12 @@ const allTabs = [
   },
   {
     id: "statistics",
-    label: safeT("admin.tabs.statistics", "Statistiken"),
+    label: safeT("admin.tabs.statistics", "Statistik"),
     icon: "fas fa-chart-line",
   },
   {
     id: "settings",
-    label: safeT("admin.tabs.settings", "Einstellungen"),
+    label: safeT("admin.tabs.settings", "Systemeinstellungen"),
     icon: "fas fa-sliders-h",
   },
   {
@@ -449,20 +449,20 @@ async function loadTabComponent(tabId) {
   error.value = null;
 
   try {
-    // Map tab ID to component path
+    // Map tab ID to component path - using standard versions for compatibility
     const componentMap = {
       dashboard: () => import("@/components/admin/tabs/AdminDashboard.vue"),
       users: () => import("@/components/admin/tabs/AdminUsers.vue"),
-      feedback: () => import("@/components/admin/tabs/AdminFeedback.card.vue"),
-      motd: () => import("@/components/admin/tabs/AdminMotd.enhanced.vue"),
+      feedback: () => import("@/components/admin/tabs/AdminFeedback.vue"),
+      motd: () => import("@/components/admin/tabs/AdminMotd.vue"),
       docConverter: () =>
         import("@/components/admin/tabs/AdminDocConverter.vue"),
-      system: () => import("@/components/admin/tabs/AdminSystem.enhanced.vue"),
+      system: () => import("@/components/admin/tabs/AdminSystem.vue"),
       statistics: () => import("@/components/admin/tabs/AdminStatistics.vue"),
       settings: () => import("@/components/admin/tabs/AdminSystemSettings.vue"),
-      logs: () => import("@/components/admin/tabs/AdminLogViewerUpdated.vue"),
+      logs: () => import("@/components/admin/tabs/AdminLogViewer.vue"),
       featureToggles: () =>
-        import("@/components/admin/tabs/AdminFeatureToggles.enhanced.vue"),
+        import("@/components/admin/tabs/AdminFeatureToggles.vue"),
     };
 
     if (componentMap[tabId]) {
@@ -819,26 +819,35 @@ onMounted(() => {
   background-color: var(--n-color-primary-dark, #005a9e);
 }
 
-/* Admin development info banner */
-.admin-dev-info-banner {
+/* Admin info banner */
+.admin-info-banner {
   display: flex;
   align-items: center;
   padding: 12px 15px;
   margin-bottom: 20px;
-  background-color: #fff8e6;
-  border-left: 4px solid #ffb800;
+  background-color: #e6f7ef;
+  border-left: 4px solid #00a550;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.admin-dev-info-banner i {
+.admin-info-banner--dev {
+  background-color: #e6eef7;
+  border-left-color: #0078d4;
+}
+
+.admin-info-banner i {
   font-size: 24px;
-  color: #ffb800;
+  color: #00a550;
   margin-right: 15px;
   flex-shrink: 0;
 }
 
-.admin-dev-info-banner strong {
+.admin-info-banner--dev i {
+  color: #0078d4;
+}
+
+.admin-info-banner strong {
   font-weight: 600;
 }
 

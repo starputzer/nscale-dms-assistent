@@ -378,10 +378,18 @@ import { useAdminMotdStore } from "@/stores/admin/motd";
 import type { MotdConfig } from "@/types/admin";
 
 // UI Components
-import { Button, Input, Card, Alert, Toggle } from "@/components/ui/base";
+import {
+  Button,
+  Input,
+  Alert,
+  Toggle,
+  Select,
+  Card,
+} from "@/components/ui/base";
 
 // i18n
-const { t } = useI18n();
+const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
+console.log('[i18n] Component initialized with global scope and inheritance');
 
 // Store
 const motdStore = useAdminMotdStore();
@@ -611,6 +619,12 @@ watch(
 onMounted(async () => {
   await loadMotd();
 });
+
+// Log i18n initialization status
+console.log(`[AdminMotd] i18n initialized with locale: ${locale.value}`);
+
+// Log i18n initialization status
+console.log(`[AdminMotd] i18n initialized with locale: ${locale.value}`);
 </script>
 
 <style scoped>

@@ -996,8 +996,8 @@ const initCharts = () => {
   }
 };
 
-// API integration status
-const apiIntegrationEnabled = computed(() => shouldUseRealApi("useRealFeedbackApi"));
+// API integration status - wir erzwingen jetzt true, um nur echte Daten zu verwenden
+const apiIntegrationEnabled = computed(() => true);
 
 // Lifecycle
 onMounted(async () => {

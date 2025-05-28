@@ -1,11 +1,15 @@
 /**
  * Pinia Store für MOTD-Administration (Message of the Day)
  * Teil der Vue 3 SFC Migration (08.05.2025)
+ * Mit API-Integration über AdminMotdService
  */
 
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import type { MotdConfig } from "@/types/admin";
+import { marked } from "marked";
+import { adminMotdService } from "@/services/api/adminServices";
+import { shouldUseRealApi } from "@/config/api-flags";
 
 export const useMotdStore = defineStore("motd", () => {
   // State
@@ -30,6 +34,35 @@ export const useMotdStore = defineStore("motd", () => {
 
   const editConfig = ref<MotdConfig>(JSON.parse(JSON.stringify(config.value)));
   const dismissed = ref(false);
+  const loading = ref(false);
+  const error = ref<string | null>(null);
+  const previewMode = ref(false);
+
+  // For tracking unsaved changes
+  const savedConfigJSON = ref(JSON.stringify(config.value));
+
+  // Computed properties
+  const hasUnsavedChanges = computed(() => {
+    return JSON.stringify(config.value) !== savedConfigJSON.value;
+  });
+
+  const previewHtml = computed(() => {
+    const content = config.value.content || "";
+
+    if (config.value.format === "markdown") {
+      try {
+        return marked(content);
+      } catch (e) {
+        console.error("Markdown parsing error:", e);
+        return content;
+      }
+    } else if (config.value.format === "html") {
+      return content;
+    } else {
+      // Plain text - convert newlines to <br>
+      return content.replace(/\n/g, "<br>");
+    }
+  });
 
   // Funktionen
   function dismiss() {
@@ -40,63 +73,88 @@ export const useMotdStore = defineStore("motd", () => {
     dismissed.value = false;
   }
 
-  function saveConfig(newConfig: MotdConfig) {
+  async function saveConfig(newConfig: MotdConfig) {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      // Konfiguration aktualisieren über den AdminMotdService
+      if (shouldUseRealApi("useRealMotdApi")) {
+        console.log("[MotdStore] Speichere MOTD-Konfiguration über API");
+        const response = await adminMotdService.updateMotdConfig(newConfig);
+
+        if (!response.success) {
+          throw new Error(
+            response.message || "Fehler beim Speichern der MOTD-Konfiguration",
+          );
+        }
+      }
+
+      // Lokalen Zustand aktualisieren
+      config.value = {
+        ...newConfig,
+      };
+      editConfig.value = JSON.parse(JSON.stringify(config.value));
+      savedConfigJSON.value = JSON.stringify(config.value);
+
+      // Erfolgslog
+      console.log("[MotdStore] MOTD-Konfiguration erfolgreich gespeichert");
+
+      return true;
+    } catch (err: any) {
+      console.error(
+        "[MotdStore] Fehler beim Speichern der MOTD-Konfiguration:",
+        err,
+      );
+      error.value =
+        err.message || "Fehler beim Speichern der MOTD-Konfiguration";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  function updateConfig(newConfig: MotdConfig) {
     config.value = {
       ...newConfig,
     };
-    editConfig.value = JSON.parse(JSON.stringify(config.value));
+  }
+
+  function resetConfig() {
+    const savedConfig = JSON.parse(savedConfigJSON.value);
+    config.value = {
+      ...savedConfig,
+    };
+  }
+
+  function togglePreviewMode() {
+    previewMode.value = !previewMode.value;
   }
 
   // Implementierung der fetchConfig-Funktion für die Admin-MOTD-Komponente
-  // mit robuster Fehlerbehandlung und JSON-Parsing-Schutz
+  // mit robuster Fehlerbehandlung und fallback zu vorhandenen Daten
   async function fetchConfig() {
+    loading.value = true;
+    error.value = null;
+
     try {
-      // API-Aufruf über den adminApi-Service für konsistente Fehlerbehandlung
-      const response = await fetch("/api/motd");
+      console.log("[MotdStore] Lade MOTD-Konfiguration");
 
-      // Prüfen, ob die Anfrage erfolgreich war
-      if (!response.ok) {
-        // Versuchen, Fehlermeldung zu extrahieren, mit Fallback wenn das Parsen fehlschlägt
-        let errorMessage = "Fehler beim Laden der MOTD-Konfiguration";
+      // AdminMotdService für API-Kommunikation verwenden
+      const response = await adminMotdService.getMotdConfig();
+
+      if (response.success && response.data) {
+        console.log(
+          "[MotdStore] MOTD-Konfiguration erfolgreich geladen:",
+          response.data,
+        );
+
+        // Sicheres Update mit sauberer Fehlermeldung
         try {
-          const errorData = await response.json();
-          if (errorData && errorData.message) {
-            errorMessage = errorData.message;
-          }
-        } catch (parseError) {
-          console.warn("Konnte Fehlerantwort nicht parsen:", parseError);
-        }
-        throw new Error(errorMessage);
-      }
+          // Konfiguration aktualisieren
+          config.value = response.data;
 
-      // Versuchen, Antwort zu parsen, mit Fallback wenn das Parsen fehlschlägt
-      let data;
-      try {
-        const responseText = await response.text();
-
-        // Prüfen, ob die Antwort leer oder ungültig ist
-        if (!responseText || responseText.trim() === "") {
-          console.warn(
-            "Leere Antwort vom Server erhalten, verwende Standard-Konfiguration",
-          );
-          data = { config: config.value };
-        } else {
-          // Parsen der Antwort
-          data = JSON.parse(responseText);
-        }
-      } catch (parseError) {
-        console.error("Fehler beim Parsen der MOTD-Antwort:", parseError);
-        // Fallback auf aktuelle Konfiguration
-        data = { config: config.value };
-      }
-
-      // Konfiguration aktualisieren, wenn sie gültig ist
-      if (data && data.config) {
-        try {
-          // Sicheres Update mit Fallback
-          config.value = data.config;
-
-          // Tiefe Kopie der Konfiguration erstellen (sicherer als JSON.parse/stringify)
+          // Tiefe Kopie der Konfiguration erstellen
           editConfig.value = {
             enabled: config.value.enabled ?? true,
             format: config.value.format ?? "markdown",
@@ -114,24 +172,65 @@ export const useMotdStore = defineStore("motd", () => {
               showInChat: config.value.display?.showInChat ?? true,
             },
           };
+
+          savedConfigJSON.value = JSON.stringify(config.value);
         } catch (updateError) {
           console.error(
-            "Fehler beim Aktualisieren der MOTD-Konfiguration:",
+            "[MotdStore] Fehler beim Aktualisieren der MOTD-Konfiguration:",
             updateError,
           );
-          // Keine Änderung an der Konfiguration vornehmen, wenn ein Fehler auftritt
+          error.value = "Fehler beim Aktualisieren der MOTD-Konfiguration";
         }
       } else {
         console.warn(
-          "Ungültige MOTD-Konfiguration empfangen, keine Aktualisierung durchgeführt",
+          "[MotdStore] Fehler beim Laden der MOTD-Konfiguration:",
+          response.message || "Unbekannter Fehler",
         );
+        error.value =
+          response.message || "Fehler beim Laden der MOTD-Konfiguration";
       }
 
       return config.value;
     } catch (err: any) {
-      console.error("Fehler beim Laden der MOTD-Konfiguration:", err);
-      // Fehler werfen, aber keine Änderung an der aktuellen Konfiguration
+      console.error(
+        "[MotdStore] Fehler beim Laden der MOTD-Konfiguration:",
+        err,
+      );
+      error.value = err.message || "Fehler beim Laden der MOTD-Konfiguration";
       throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  // MOTD neu laden
+  async function reloadMotd() {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      console.log("[MotdStore] Lade MOTD neu");
+
+      // AdminMotdService für API-Kommunikation verwenden
+      const response = await adminMotdService.reloadMotd();
+
+      if (response.success) {
+        console.log("[MotdStore] MOTD erfolgreich neu geladen");
+
+        // Konfiguration nach dem Neuladen aktualisieren
+        await fetchConfig();
+
+        return true;
+      } else {
+        error.value = response.message || "Fehler beim Neuladen der MOTD";
+        return false;
+      }
+    } catch (err: any) {
+      console.error("[MotdStore] Fehler beim Neuladen der MOTD:", err);
+      error.value = err.message || "Fehler beim Neuladen der MOTD";
+      throw err;
+    } finally {
+      loading.value = false;
     }
   }
 
@@ -140,12 +239,23 @@ export const useMotdStore = defineStore("motd", () => {
     config,
     editConfig,
     dismissed,
+    loading,
+    error,
+    previewMode,
+
+    // Computed
+    hasUnsavedChanges,
+    previewHtml,
 
     // Funktionen
     dismiss,
     resetDismissed,
     saveConfig,
-    fetchConfig, // Neu hinzugefügt
+    updateConfig,
+    resetConfig,
+    togglePreviewMode,
+    fetchConfig,
+    reloadMotd, // Neue Funktion
   };
 });
 

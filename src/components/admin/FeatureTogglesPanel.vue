@@ -232,7 +232,11 @@ const emit = defineEmits<{
 }>();
 
 // Komposables
-const { t } = useI18n();
+const { t } = useI18n({
+  useScope: 'global',
+  inheritLocale: true
+});
+console.log('[i18n] Component initialized with global scope and inheritance');
 const dialog = useGlobalDialog();
 
 // Aktuelle Benutzerrolle
