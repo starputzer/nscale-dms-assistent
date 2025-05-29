@@ -652,7 +652,7 @@ import { useSessionsStore } from "@/stores/sessions";
 import { useAuthStore } from "@/stores/auth";
 import { useUIStore } from "@/stores/ui";
 import { useUIDiagnostics } from "@/utils/uiDiagnostics";
-import authSyncFixed from "@/utils/authStatusSyncFixed";
+import { authFixService } from "@/services/auth/AuthFixService";
 import type {
   ChatSession,
   ChatMessage,
