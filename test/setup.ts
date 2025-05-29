@@ -121,12 +121,32 @@ global.FormData = class {
 };
 
 // Mock für Timing-Funktionen
-global.setTimeout = vi.fn() as any;
-global.clearTimeout = vi.fn() as any;
-global.setInterval = vi.fn() as any;
-global.clearInterval = vi.fn() as any;
-global.requestAnimationFrame = vi.fn() as any;
-global.cancelAnimationFrame = vi.fn() as any;
+// Use vitest's timer mocks instead of manually mocking
+vi.useFakeTimers();
+
+// Ensure window.setTimeout and window.setInterval point to the mocked versions
+Object.defineProperty(window, 'setTimeout', {
+  writable: true,
+  value: setTimeout
+});
+
+Object.defineProperty(window, 'setInterval', {
+  writable: true,
+  value: setInterval
+});
+
+Object.defineProperty(window, 'clearTimeout', {
+  writable: true,
+  value: clearTimeout
+});
+
+Object.defineProperty(window, 'clearInterval', {
+  writable: true,
+  value: clearInterval
+});
+
+global.requestAnimationFrame = vi.fn().mockImplementation(cb => setTimeout(cb, 0));
+global.cancelAnimationFrame = vi.fn().mockImplementation(id => clearTimeout(id));
 
 // Mock für lokalen und Session Storage
 const mockStorage = () => {
@@ -246,9 +266,15 @@ vi.stubGlobal("EventSource", MockEventSource);
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  vi.clearAllTimers();
   vi.resetModules();
   localStorage.clear();
   sessionStorage.clear();
+});
+
+// Restore real timers after all tests
+afterAll(() => {
+  vi.useRealTimers();
 });
 
 // Testing Library: benutzerdefinierte Übereinstimmungen
@@ -299,8 +325,9 @@ class IntersectionObserverMock {
 window.IntersectionObserver = IntersectionObserverMock as any;
 
 // Hilfsfunktionen für Tests
-export function flushPromises() {
-  return new Promise((resolve) => setTimeout(resolve, 0));
+export async function flushPromises() {
+  await vi.runAllTimersAsync();
+  return new Promise((resolve) => setImmediate(resolve));
 }
 
 export function createMockAxiosResponse(

@@ -47,11 +47,7 @@ export default defineConfig({
         'src/main.optimized.ts'
       ]
     },
-    reporters: ['default', 'json', 'html'],
-    outputFile: {
-      json: './test-results/system-integrity/results.json',
-      html: './test-results/system-integrity/index.html'
-    }
+    reporters: ['default']
   },
   resolve: {
     alias: {

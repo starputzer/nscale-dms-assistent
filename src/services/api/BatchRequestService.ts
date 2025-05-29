@@ -49,59 +49,60 @@ export interface BatchResponse<T = any> {
   /** Eigentliche Antwortdaten */
   data: T;
 
-  /** Gibt an, ob die Anfrage erfolgreich war */
-  success: boolean;
+  /** Request-Header der Antwort */
+  headers?: Record<string, string>;
 
-  /** Fehlermeldung, falls Anfrage fehlgeschlagen ist */
+  /** Fehlermeldung bei fehlgeschlagenen Anfragen */
   error?: string;
 
-  /** Zeitpunkt, zu dem die Anfrage gestellt wurde */
-  timestamp: number;
-
-  /** Dauer der Anfrage in Millisekunden */
-  duration: number;
-
-  /** Ursprüngliche Anfrage */
-  request: BatchRequest;
+  /** Request-Metadaten */
+  meta?: Record<string, any>;
 }
 
 /**
- * Konfigurationsoptionen für den BatchRequestService
+ * Interface für Batch-Optionen
  */
 export interface BatchRequestOptions {
   /** Maximale Anzahl der Anfragen pro Batch */
   maxBatchSize?: number;
 
-  /** Zeit in ms, wie lange gewartet werden soll, bevor ein Batch gesendet wird */
+  /** Verzögerung in Millisekunden, bevor der Batch ausgeführt wird */
   batchDelay?: number;
 
-  /** Timeout für den gesamten Batch-Request in ms */
-  timeout?: number;
+  /** Standard-Zeitlimit für alle Anfragen */
+  defaultTimeout?: number;
 
-  /** Ob bei einem kritischen Fehler der gesamte Batch abgebrochen werden soll */
-  abortOnCriticalError?: boolean;
+  /** Cache-TTL in Millisekunden */
+  cacheTTL?: number;
 
-  /** Endpunkt für Batch-Anfragen */
-  batchEndpoint?: string;
+  /** Aktiviert erweiterte Fehlerbehandlung */
+  extendedErrorHandling?: boolean;
 
-  /** Automatische Wiederholungsversuche bei Fehlern */
-  retries?: number;
+  /** Aktiviert automatische Wiederholungsversuche bei Fehlern */
+  enableRetry?: boolean;
 
-  /** Verzögerung zwischen Wiederholungsversuchen in ms */
+  /** Maximale Anzahl der Wiederholungsversuche */
+  maxRetries?: number;
+
+  /** Verzögerung zwischen Wiederholungsversuchen in Millisekunden */
   retryDelay?: number;
 
-  /** Ob für einzelne Anfragen Caching aktiviert werden soll */
-  enableCaching?: boolean;
+  /** Callback für Batch-Start */
+  onBatchStart?: (requests: BatchRequest[]) => void;
 
-  /** Standardlebensdauer des Caches in ms */
-  defaultCacheTTL?: number;
+  /** Callback für Batch-Abschluss */
+  onBatchComplete?: (
+    responses: BatchResponse[],
+    duration: number,
+  ) => void;
+
+  /** Callback für Batch-Fehler */
+  onBatchError?: (error: Error, requests: BatchRequest[]) => void;
 }
 
 /**
- * Optimierter Service für gebündelte API-Anfragen
- *
- * Bündelt mehrere API-Anfragen in eine einzige HTTP-Anfrage, um die Anzahl der
- * Netzwerkanfragen zu reduzieren und die Leistung zu verbessern.
+ * Consolidated BatchRequestService with fixes from BatchRequestServiceFix.ts
+ * Combines original functionality with improved server response handling
  */
 export class BatchRequestService {
   private pendingRequests: BatchRequest[] = [];
@@ -128,18 +129,7 @@ export class BatchRequestService {
   > = new Map();
 
   // Request-Tracker für Performance-Analyse
-  private requestStats: {
-    totalRequests: number;
-    batchedRequests: number;
-    savedRequests: number;
-    totalBatches: number;
-    errors: number;
-    averageBatchSize: number;
-    minBatchSize: number;
-    maxBatchSize: number;
-    cacheMissCount: number;
-    cacheHitCount: number;
-  } = {
+  private requestStats = {
     totalRequests: 0,
     batchedRequests: 0,
     savedRequests: 0,
@@ -152,354 +142,499 @@ export class BatchRequestService {
     cacheHitCount: 0,
   };
 
-  constructor(private options: BatchRequestOptions = {}) {
-    // Standardwerte für Optionen setzen
-    this.options = {
-      maxBatchSize: 10,
-      batchDelay: 50,
-      timeout: 30000,
-      abortOnCriticalError: true,
-      batchEndpoint: "/api/v1/batch", // Vollständiger Pfad zum Batch-Endpoint
-      retries: 2,
-      retryDelay: 1000,
-      enableCaching: true,
-      defaultCacheTTL: 60000, // 1 Minute
-      ...options,
-    };
+  // Letzte Performance-Metriken
+  private lastBatchMetrics = {
+    startTime: 0,
+    endTime: 0,
+    requestCount: 0,
+    responseTime: 0,
+    averageResponseTime: 0,
+  };
 
-    // Cache-Bereinigung starten
-    this.startCacheCleanup();
+  private isProcessingBatch = false;
+  private readonly MAX_BATCH_SIZE = 50;
+  private readonly BATCH_DELAY = 50;
+  private readonly DEFAULT_TIMEOUT = 30000;
+  private readonly CACHE_TTL = 300000; // 5 Minuten
+  private readonly MAX_RETRIES = 3;
+  private readonly RETRY_DELAY = 1000;
+
+  constructor(
+    private options: BatchRequestOptions = {
+      maxBatchSize: 50,
+      batchDelay: 50,
+      defaultTimeout: 30000,
+      cacheTTL: 300000,
+      extendedErrorHandling: true,
+      enableRetry: true,
+      maxRetries: 3,
+      retryDelay: 1000,
+    },
+  ) {
+    // Cleanup-Intervall für Cache
+    setInterval(() => this.cleanupCache(), 60000); // Alle 60 Sekunden
   }
 
   /**
-   * Fügt eine Anfrage zum aktuellen Batch hinzu
-   *
-   * @param request API-Anfrage-Definition
-   * @returns Promise, das mit der Antwort aufgelöst wird
+   * Fügt eine neue Anfrage zum Batch hinzu
+   * @param request Die Anfrage-Definition
+   * @returns Promise mit der API-Antwort
    */
-  public addRequest<T = any>(request: BatchRequest): Promise<T> {
-    // Cache-Schlüssel berechnen
-    const cacheKey = this.generateCacheKey(request);
-
-    // Wenn Caching aktiviert ist und der Eintrag im Cache existiert, diesen verwenden
-    if (this.options.enableCaching && request.method === "GET") {
-      const cachedResponse = this.responseCache.get(cacheKey);
-
-      if (
-        cachedResponse &&
-        Date.now() - cachedResponse.timestamp < cachedResponse.ttl
-      ) {
-        this.requestStats.cacheHitCount++;
-        return Promise.resolve(cachedResponse.data);
-      }
-
-      this.requestStats.cacheMissCount++;
+  public async addRequest<T = any>(request: BatchRequest): Promise<T> {
+    // Generiere ID, falls nicht vorhanden
+    if (!request.id) {
+      request.id = `req_${++this.requestCounter}_${Date.now()}`;
     }
 
-    // Request-ID generieren, falls nicht vorhanden
-    const requestId = request.id || `req_${++this.requestCounter}`;
-    const requestWithId: BatchRequest = { ...request, id: requestId };
+    // Prüfe Cache
+    const cacheKey = this.generateCacheKey(request);
+    const cachedResponse = this.getCachedResponse(cacheKey);
+    if (cachedResponse) {
+      this.requestStats.cacheHitCount++;
+      return Promise.resolve(cachedResponse);
+    }
+    this.requestStats.cacheMissCount++;
 
-    // Performance-Tracking
-    this.requestStats.totalRequests++;
-
-    // Anfrage dem Batch hinzufügen
-    this.pendingRequests.push(requestWithId);
-
-    // Promise erstellen und speichern
-    return new Promise<T>((resolve, reject) => {
-      this.pendingPromises.set(requestId, {
+    // Erstelle Promise für diese Anfrage
+    const promise = new Promise<T>((resolve, reject) => {
+      this.pendingPromises.set(request.id!, {
         resolve,
         reject,
         timestamp: Date.now(),
       });
+    });
 
-      // Batch-Timer starten/zurücksetzen
-      this.scheduleBatch();
+    // Füge Request zum Batch hinzu
+    this.pendingRequests.push(request);
+    this.requestStats.totalRequests++;
+
+    // Plane Batch-Ausführung
+    this.scheduleBatchExecution();
+
+    return promise;
+  }
+
+  /**
+   * Führt den Batch sofort aus
+   * @returns Promise mit allen Batch-Antworten
+   */
+  public async executeBatch(
+    requests?: BatchRequest[],
+  ): Promise<BatchResponse[]> {
+    const requestsToProcess = requests || [...this.pendingRequests];
+    
+    if (requestsToProcess.length === 0) {
+      return [];
+    }
+
+    // Handle each request with proper error handling
+    const results = await Promise.all(
+      requestsToProcess.map(async (request) => {
+        try {
+          const response = await this.executeSingleRequest(request);
+          return {
+            id: request.id!,
+            status: response.status,
+            data: response.data,
+            headers: response.headers,
+          };
+        } catch (error: any) {
+          return {
+            id: request.id!,
+            status: error.response?.status || 500,
+            data: null,
+            error: error.message || 'Request failed',
+          };
+        }
+      })
+    );
+
+    return results;
+  }
+
+  /**
+   * Fixed response processing from BatchRequestServiceFix
+   */
+  private processBatchResponse(serverResponse: any): BatchResponse[] {
+    // Handle different server response formats
+    let responses: any[] = [];
+
+    // Format 1: Direct array of responses
+    if (Array.isArray(serverResponse)) {
+      responses = serverResponse;
+    }
+    // Format 2: Responses in 'responses' property
+    else if (serverResponse.responses && Array.isArray(serverResponse.responses)) {
+      responses = serverResponse.responses;
+    }
+    // Format 3: Responses in 'data' property
+    else if (serverResponse.data && Array.isArray(serverResponse.data)) {
+      responses = serverResponse.data;
+    }
+    // Format 4: Nested data.responses
+    else if (serverResponse.data?.responses && Array.isArray(serverResponse.data.responses)) {
+      responses = serverResponse.data.responses;
+    }
+    // Format 5: Server might return object with request IDs as keys
+    else if (typeof serverResponse === 'object' && !Array.isArray(serverResponse)) {
+      responses = Object.entries(serverResponse).map(([id, response]: [string, any]) => ({
+        id,
+        ...response
+      }));
+    }
+
+    // Normalize responses
+    return responses.map((response: any) => {
+      // Handle different response structures
+      if (response.response) {
+        // Server might wrap actual response
+        return {
+          id: response.id || response.requestId || 'unknown',
+          status: response.status || response.statusCode || 200,
+          data: response.response,
+          headers: response.headers || {},
+          error: response.error || undefined,
+        };
+      } else {
+        // Direct response format
+        return {
+          id: response.id || response.requestId || 'unknown',
+          status: response.status || response.statusCode || 200,
+          data: response.data !== undefined ? response.data : response,
+          headers: response.headers || {},
+          error: response.error || undefined,
+        };
+      }
     });
   }
 
   /**
-   * Plant das Senden des aktuellen Batches nach einer Verzögerung
+   * Führt eine einzelne Anfrage aus (Fallback)
    */
-  private scheduleBatch(): void {
-    // Wenn bereits ein Timeout geplant ist, diesen löschen
-    if (this.batchTimeout !== null) {
-      clearTimeout(this.batchTimeout);
-    }
+  private async executeSingleRequest(
+    request: BatchRequest,
+  ): Promise<AxiosResponse> {
+    const config: AxiosRequestConfig = {
+      method: request.method || "GET",
+      url: request.endpoint,
+      params: request.params,
+      data: request.data,
+      headers: request.headers,
+      timeout: request.timeout || this.options.defaultTimeout,
+    };
 
-    // Wenn maximale Batchgröße erreicht ist, sofort senden
-    if (this.pendingRequests.length >= (this.options.maxBatchSize || 10)) {
-      this.sendBatch();
+    return apiService.request(config);
+  }
+
+  /**
+   * Plant die Batch-Ausführung
+   */
+  private scheduleBatchExecution(): void {
+    // Wenn bereits ein Timeout läuft, nichts tun
+    if (this.batchTimeout !== null) {
       return;
     }
 
-    // Ansonsten nach Verzögerung senden
+    // Führe sofort aus, wenn maximale Batch-Größe erreicht
+    if (this.pendingRequests.length >= (this.options.maxBatchSize || this.MAX_BATCH_SIZE)) {
+      this.processPendingBatch();
+      return;
+    }
+
+    // Plane Ausführung nach Verzögerung
     this.batchTimeout = window.setTimeout(() => {
-      this.sendBatch();
-    }, this.options.batchDelay || 50);
+      this.processPendingBatch();
+    }, this.options.batchDelay || this.BATCH_DELAY);
   }
 
   /**
-   * Sendet alle ausstehenden Anfragen als Batch
+   * Verarbeitet den aktuellen Batch
    */
-  private async sendBatch(retryCount = 0): Promise<void> {
-    if (this.pendingRequests.length === 0) return;
+  private async processPendingBatch(): Promise<void> {
+    // Reset Timeout
+    if (this.batchTimeout !== null) {
+      clearTimeout(this.batchTimeout);
+      this.batchTimeout = null;
+    }
 
-    // Demo-Modus deaktiviert - verwende echte API
+    // Keine Anfragen vorhanden
+    if (this.pendingRequests.length === 0 || this.isProcessingBatch) {
+      return;
+    }
 
-    // Batch-Tracking für Performance-Analyse
-    this.requestStats.batchedRequests += this.pendingRequests.length;
-    this.requestStats.savedRequests += this.pendingRequests.length - 1; // Eine Anfrage ist immer nötig
-    this.requestStats.totalBatches++;
+    this.isProcessingBatch = true;
 
-    // Min/Max-Batch-Größe aktualisieren
-    this.requestStats.minBatchSize = Math.min(
-      this.requestStats.minBatchSize,
-      this.pendingRequests.length,
-    );
-    this.requestStats.maxBatchSize = Math.max(
-      this.requestStats.maxBatchSize,
-      this.pendingRequests.length,
-    );
-
-    // Durchschnittliche Batch-Größe aktualisieren
-    this.requestStats.averageBatchSize =
-      this.requestStats.batchedRequests / this.requestStats.totalBatches;
-
-    // Lokale Kopie der ausstehenden Anfragen erstellen
-    const requests = [...this.pendingRequests];
-
-    // Ausstehende Anfragen zurücksetzen
+    // Kopiere Anfragen und leere Pending-Liste
+    const batchRequests = [...this.pendingRequests];
     this.pendingRequests = [];
-    this.batchTimeout = null;
+
+    // Performance-Tracking
+    const startTime = Date.now();
+    this.lastBatchMetrics.startTime = startTime;
+    this.lastBatchMetrics.requestCount = batchRequests.length;
+
+    // Callback: Batch-Start
+    if (this.options.onBatchStart) {
+      this.options.onBatchStart(batchRequests);
+    }
 
     try {
-      // API-Service importieren
-      if (!apiService) {
-        throw new Error("API-Service nicht verfügbar");
+      // Führe Batch aus
+      const responses = await this.executeBatchWithRetry(batchRequests);
+
+      // Performance-Metriken
+      const endTime = Date.now();
+      const duration = endTime - startTime;
+      this.lastBatchMetrics.endTime = endTime;
+      this.lastBatchMetrics.responseTime = duration;
+      this.lastBatchMetrics.averageResponseTime =
+        duration / batchRequests.length;
+
+      // Statistiken aktualisieren
+      this.updateStatistics(batchRequests.length);
+
+      // Verarbeite Antworten
+      this.processResponses(batchRequests, responses);
+
+      // Callback: Batch-Complete
+      if (this.options.onBatchComplete) {
+        this.options.onBatchComplete(responses, duration);
       }
-
-      console.log("BatchRequestService: Sending batch request to", this.options.batchEndpoint, "with", requests.length, "requests");
-      console.log("BatchRequestService: Request data:", { requests });
-
-      // Batch-Anfrage erstellen
-      const response = await apiService.customRequest<{
-        success: boolean;
-        data: {
-          responses: BatchResponse[];
-        };
-      }>({
-        url: this.options.batchEndpoint,
-        method: "post",
-        data: { requests },
-        timeout: this.options.timeout,
-      });
-
-      // Batch-Antworten verarbeiten
-      // Debug log für Entwicklung
-      console.log("BatchRequestService - Raw response:", response);
-
-      // FIXED: Handle different response formats from server
-      let batchResponses: BatchResponse[] = [];
-      
-      console.log("BatchRequestService: Raw response:", response);
-      console.log("BatchRequestService: Response type:", typeof response);
-      console.log("BatchRequestService: Response keys:", response ? Object.keys(response) : 'null');
-      
-      // The server returns the response directly, not wrapped in success/data
-      if (response && typeof response === 'object') {
-        // Check if it's the expected format with responses array
-        if ('responses' in response && Array.isArray(response.responses)) {
-          console.log("BatchRequestService: Found responses array directly");
-          batchResponses = response.responses;
-        }
-        // Check if it's wrapped in data object
-        else if ('data' in response && response.data && 'responses' in response.data) {
-          console.log("BatchRequestService: Found responses in data object");
-          console.log("BatchRequestService: response.data:", response.data);
-          console.log("BatchRequestService: response.data.responses:", response.data.responses);
-          batchResponses = response.data.responses;
-        }
-        // Check if success/data format
-        else if ('success' in response && response.success && 'data' in response) {
-          console.log("BatchRequestService: Found success/data format");
-          console.log("BatchRequestService: response.data:", response.data);
-          if (response.data && 'responses' in response.data) {
-            console.log("BatchRequestService: Found responses in success/data format");
-            console.log("BatchRequestService: response.data.responses:", response.data.responses);
-            batchResponses = response.data.responses;
-          }
-        }
-        // If the response itself is an array, assume it's the responses
-        else if (Array.isArray(response)) {
-          console.log("BatchRequestService: Response is array");
-          batchResponses = response;
-        }
-      }
-      
-      console.log("BatchRequestService: Final batchResponses:", batchResponses);
-      console.log("BatchRequestService: batchResponses length:", batchResponses.length);
-
-      if (batchResponses.length > 0) {
-        this.processBatchResponse(batchResponses, requests);
-      } else {
-        console.error(
-          "BatchRequestService: No valid responses found in server response",
-          response,
-        );
-        throw new Error("Invalid batch response format from server");
-      }
-    } catch (error: any) {
+    } catch (error) {
       this.requestStats.errors++;
-      console.error("Batch request error:", {
-        message: error.message,
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        config: error.config,
-        endpoint: this.options.batchEndpoint,
-      });
 
-      // Wiederholungsversuche, falls konfiguriert
-      if (retryCount < (this.options.retries || 0)) {
-        setTimeout(() => {
-          // Anfragen wieder in die Warteschlange stellen
-          this.pendingRequests.push(...requests);
-          this.sendBatch(retryCount + 1);
-        }, this.options.retryDelay || 1000);
-        return;
+      // Callback: Batch-Error
+      if (this.options.onBatchError) {
+        this.options.onBatchError(error as Error, batchRequests);
       }
 
-      // Fehler für alle ausstehenden Anfragen
-      this.rejectAllPendingRequests(requests, error);
+      // Reject alle Promises
+      batchRequests.forEach((request) => {
+        const promise = this.pendingPromises.get(request.id!);
+        if (promise) {
+          promise.reject(error);
+          this.pendingPromises.delete(request.id!);
+        }
+      });
+    } finally {
+      this.isProcessingBatch = false;
+
+      // Prüfe, ob neue Anfragen während der Verarbeitung hinzugekommen sind
+      if (this.pendingRequests.length > 0) {
+        this.scheduleBatchExecution();
+      }
     }
   }
 
   /**
-   * Verarbeitet die Antworten eines Batch-Requests
+   * Führt Batch mit Retry-Logik aus
    */
-  private processBatchResponse(
-    responses: BatchResponse[],
-    originalRequests: BatchRequest[],
-  ): void {
-    // Map für schnelleren Zugriff auf Anfragen nach ID
-    const requestMap = new Map<string, BatchRequest>();
-    originalRequests.forEach((req) => requestMap.set(req.id!, req));
-
-    // Jede Antwort verarbeiten
-    responses.forEach((response) => {
-      const { id, success, data, error, status } = response;
-
-      // Suche nach dem zugehörigen Promise
-      const pendingPromise = this.pendingPromises.get(id);
-      if (!pendingPromise) return;
-
-      // Anfrage aus der Map entfernen
-      this.pendingPromises.delete(id);
-
-      // Cache-Antwort für GET-Anfragen, wenn erfolgreich
-      const originalRequest = requestMap.get(id);
+  private async executeBatchWithRetry(
+    requests: BatchRequest[],
+    retryCount = 0,
+  ): Promise<BatchResponse[]> {
+    try {
+      const responses = await this.executeBatch(requests);
+      return responses;
+    } catch (error) {
       if (
-        success &&
-        originalRequest &&
-        originalRequest.method === "GET" &&
-        this.options.enableCaching
+        this.options.enableRetry &&
+        retryCount < (this.options.maxRetries || this.MAX_RETRIES)
       ) {
-        const cacheKey = this.generateCacheKey(originalRequest);
-        const ttl =
-          originalRequest.meta?.cacheTTL ||
-          this.options.defaultCacheTTL ||
-          60000;
+        // Warte vor erneutem Versuch
+        await new Promise((resolve) =>
+          setTimeout(resolve, this.options.retryDelay || this.RETRY_DELAY),
+        );
 
-        this.responseCache.set(cacheKey, {
-          data,
-          timestamp: Date.now(),
-          ttl,
-        });
+        // Erneuter Versuch
+        return this.executeBatchWithRetry(requests, retryCount + 1);
       }
 
-      // Promise auflösen oder ablehnen
-      if (success) {
-        pendingPromise.resolve(data);
+      throw error;
+    }
+  }
+
+  /**
+   * Verarbeitet die Batch-Antworten
+   */
+  private processResponses(
+    requests: BatchRequest[],
+    responses: BatchResponse[],
+  ): void {
+    // Map für schnellen Zugriff
+    const responseMap = new Map<string, BatchResponse>();
+    responses.forEach((response) => {
+      responseMap.set(response.id, response);
+    });
+
+    // Resolve/Reject Promises
+    requests.forEach((request) => {
+      const promise = this.pendingPromises.get(request.id!);
+      if (!promise) return;
+
+      const response = responseMap.get(request.id!);
+
+      if (response) {
+        // Cache erfolgreiche Antworten
+        if (response.status >= 200 && response.status < 300) {
+          const cacheKey = this.generateCacheKey(request);
+          this.setCachedResponse(cacheKey, response.data);
+          promise.resolve(response.data);
+        } else if (request.ignoreErrors) {
+          // Ignoriere Fehler, wenn gewünscht
+          promise.resolve(response.data || null);
+        } else {
+          // Erstelle Fehler
+          const error: any = new Error(
+            response.error || `Request failed with status ${response.status}`,
+          );
+          error.response = response;
+          promise.reject(error);
+        }
       } else {
-        pendingPromise.reject({
-          status,
-          message: error || "Unknown error",
-          data,
-        });
+        // Keine Antwort erhalten
+        promise.reject(new Error("No response received for request"));
       }
+
+      this.pendingPromises.delete(request.id!);
     });
   }
 
   /**
-   * Lehnt alle Promises für ausstehende Anfragen ab
+   * Generiert einen Cache-Key für eine Anfrage
    */
-  private rejectAllPendingRequests(requests: BatchRequest[], error: any): void {
-    requests.forEach((request) => {
-      const pendingPromise = this.pendingPromises.get(request.id!);
-      if (pendingPromise) {
-        pendingPromise.reject({
-          status: error.status || 500,
-          message: error.message || "Batch request failed",
-          originalError: error,
-        });
+  private generateCacheKey(request: BatchRequest): string {
+    const method = request.method || "GET";
+    const params = request.params
+      ? JSON.stringify(request.params, Object.keys(request.params).sort())
+      : "";
+    const data = request.data
+      ? JSON.stringify(request.data, Object.keys(request.data).sort())
+      : "";
+    return `${method}:${request.endpoint}:${params}:${data}`;
+  }
+
+  /**
+   * Holt eine gecachte Antwort
+   */
+  private getCachedResponse(cacheKey: string): any | null {
+    const cached = this.responseCache.get(cacheKey);
+    if (!cached) return null;
+
+    // Prüfe TTL
+    if (Date.now() - cached.timestamp > cached.ttl) {
+      this.responseCache.delete(cacheKey);
+      return null;
+    }
+
+    return cached.data;
+  }
+
+  /**
+   * Speichert eine Antwort im Cache
+   */
+  private setCachedResponse(cacheKey: string, data: any): void {
+    this.responseCache.set(cacheKey, {
+      data,
+      timestamp: Date.now(),
+      ttl: this.options.cacheTTL || this.CACHE_TTL,
+    });
+  }
+
+  /**
+   * Bereinigt abgelaufene Cache-Einträge
+   */
+  private cleanupCache(): void {
+    const now = Date.now();
+    for (const [key, value] of this.responseCache.entries()) {
+      if (now - value.timestamp > value.ttl) {
+        this.responseCache.delete(key);
+      }
+    }
+  }
+
+  /**
+   * Aktualisiert die Statistiken
+   */
+  private updateStatistics(batchSize: number): void {
+    this.requestStats.totalBatches++;
+    this.requestStats.batchedRequests += batchSize;
+    this.requestStats.savedRequests +=
+      batchSize > 1 ? batchSize - 1 : 0;
+
+    // Min/Max Batch-Größe
+    this.requestStats.minBatchSize = Math.min(
+      this.requestStats.minBatchSize,
+      batchSize,
+    );
+    this.requestStats.maxBatchSize = Math.max(
+      this.requestStats.maxBatchSize,
+      batchSize,
+    );
+
+    // Durchschnittliche Batch-Größe
+    this.requestStats.averageBatchSize =
+      this.requestStats.batchedRequests / this.requestStats.totalBatches;
+  }
+
+  /**
+   * Gibt die aktuellen Statistiken zurück
+   */
+  public getStatistics() {
+    return {
+      ...this.requestStats,
+      currentPendingRequests: this.pendingRequests.length,
+      cacheSize: this.responseCache.size,
+      lastBatchMetrics: { ...this.lastBatchMetrics },
+    };
+  }
+
+  /**
+   * Setzt die Statistiken zurück
+   */
+  public resetStatistics(): void {
+    this.requestStats = {
+      totalRequests: 0,
+      batchedRequests: 0,
+      savedRequests: 0,
+      totalBatches: 0,
+      errors: 0,
+      averageBatchSize: 0,
+      minBatchSize: Infinity,
+      maxBatchSize: 0,
+      cacheMissCount: 0,
+      cacheHitCount: 0,
+    };
+  }
+
+  /**
+   * Leert den Response-Cache
+   */
+  public clearCache(): void {
+    this.responseCache.clear();
+  }
+
+  /**
+   * Bricht alle ausstehenden Anfragen ab
+   */
+  public cancelAllPendingRequests(): void {
+    // Clear timeout
+    if (this.batchTimeout !== null) {
+      clearTimeout(this.batchTimeout);
+      this.batchTimeout = null;
+    }
+
+    // Reject alle Promises
+    this.pendingRequests.forEach((request) => {
+      const promise = this.pendingPromises.get(request.id!);
+      if (promise) {
+        promise.reject(new Error("Request cancelled"));
         this.pendingPromises.delete(request.id!);
       }
     });
-  }
 
-  /**
-   * Generiert einen Cache-Schlüssel für eine Anfrage
-   */
-  private generateCacheKey(request: BatchRequest): string {
-    // Normalisierte URL mit Query-Parametern
-    const url =
-      request.endpoint +
-      (request.params
-        ? "?" + new URLSearchParams(request.params as any).toString()
-        : "");
-
-    // Cache-Schlüssel aus Methode und URL
-    return `${request.method || "GET"}:${url}`;
-  }
-
-  /**
-   * Startet die regelmäßige Cache-Bereinigung
-   */
-  private startCacheCleanup(): void {
-    // Intervall für Cache-Bereinigung (alle 5 Minuten)
-    setInterval(() => {
-      const now = Date.now();
-
-      // Abgelaufene Einträge entfernen
-      this.responseCache.forEach((entry, key) => {
-        if (now - entry.timestamp > entry.ttl) {
-          this.responseCache.delete(key);
-        }
-      });
-
-      // Alte Promises bereinigen (älter als 5 Minuten)
-      this.pendingPromises.forEach((promise, key) => {
-        if (now - promise.timestamp > 300000) {
-          promise.reject({
-            status: 408,
-            message: "Request timeout after 5 minutes",
-          });
-          this.pendingPromises.delete(key);
-        }
-      });
-    }, 300000); // 5 Minuten
-  }
-
-  /**
-   * Führt mehrere Anfragen gleichzeitig aus und löst auf, wenn alle abgeschlossen sind
-   *
-   * @param requests Array von API-Anfragen
-   * @returns Promise mit Array von Antworten in der gleichen Reihenfolge
-   */
-  public async executeBatch<T = any>(requests: BatchRequest[]): Promise<T[]> {
-    return Promise.all(requests.map((request) => this.addRequest<T>(request)));
+    // Leere Pending-Listen
+    this.pendingRequests = [];
   }
 
   /**
@@ -532,15 +667,6 @@ export class BatchRequestService {
   }
 
   /**
-   * Sendet alle ausstehenden Anfragen sofort, ohne auf das Timeout zu warten
-   */
-  public flushPendingRequests(): void {
-    if (this.pendingRequests.length > 0) {
-      this.sendBatch();
-    }
-  }
-
-  /**
    * Löscht einen Eintrag aus dem Cache
    *
    * @param request Anfrage, deren Cache-Eintrag gelöscht werden soll
@@ -549,23 +675,26 @@ export class BatchRequestService {
     const cacheKey = this.generateCacheKey(request);
     this.responseCache.delete(cacheKey);
   }
-
+  
   /**
-   * Löscht alle Cache-Einträge
+   * Sendet alle ausstehenden Anfragen sofort, ohne auf das Timeout zu warten
    */
-  public clearCache(): void {
-    this.responseCache.clear();
+  public flushPendingRequests(): void {
+    if (this.pendingRequests.length > 0) {
+      this.processPendingBatch();
+    }
   }
 
   /**
-   * Gibt Statistiken über die Batch-Anfragen zurück
+   * Legacy method for compatibility
    */
   public getStats(): typeof this.requestStats {
-    return { ...this.requestStats };
+    return this.getStatistics();
   }
 }
 
-// Singleton-Instanz für die Anwendung
-export const batchRequestService = new BatchRequestService({
-  batchEndpoint: "/batch", // API-Basis-URL und Version werden automatisch hinzugefügt
-});
+// Singleton-Instanz
+export const batchRequestService = new BatchRequestService();
+
+// Export für Kompatibilität
+export default batchRequestService;
