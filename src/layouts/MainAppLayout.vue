@@ -298,9 +298,23 @@ watch(
       currentView.value = "admin";
     } else if (newPath.startsWith("/chat")) {
       currentView.value = "chat";
+      // Sync conversation ID from route params
+      const id = route.params.id as string;
+      if (id) {
+        currentConversationId.value = id;
+      }
     } else if (newPath.startsWith("/help")) {
       currentView.value = "help";
     }
+  },
+  { immediate: true },
+);
+
+// Sync with sessions store
+watch(
+  () => sessionsStore.currentSessionId,
+  (newId) => {
+    currentConversationId.value = newId;
   },
   { immediate: true },
 );
@@ -388,8 +402,17 @@ const createNewChat = async () => {
   router.push(`/chat/${session.id}`);
 };
 
-const selectConversation = (id: string) => {
+const selectConversation = async (id: string) => {
+  // Prevent selecting the same conversation
+  if (currentConversationId.value === id) return;
+  
+  // Update local state immediately
   currentConversationId.value = id;
+  
+  // Set session in store first
+  await sessionsStore.setCurrentSession(id);
+  
+  // Then navigate to the route
   router.push(`/chat/${id}`);
 };
 

@@ -650,9 +650,21 @@ function sortBy(field: keyof User) {
 
 function formatDate(timestamp: number): string {
   try {
-    return format(new Date(timestamp), "dd.MM.yyyy HH:mm", { locale: de });
+    // Handle both seconds and milliseconds timestamps
+    // If timestamp is less than 10000000000, it's likely in seconds
+    const timestampMs = timestamp < 10000000000 ? timestamp * 1000 : timestamp;
+    
+    // Validate the timestamp is reasonable (after year 2000 and before year 2100)
+    const date = new Date(timestampMs);
+    const year = date.getFullYear();
+    if (year < 2000 || year > 2100) {
+      console.warn(`Invalid timestamp: ${timestamp}, resulting year: ${year}`);
+      return "Invalid date";
+    }
+    
+    return format(date, "dd.MM.yyyy HH:mm", { locale: de });
   } catch (error) {
-    console.error("Error formatting date:", error);
+    console.error("Error formatting date:", error, "timestamp:", timestamp);
     return "";
   }
 }

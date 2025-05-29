@@ -26,7 +26,7 @@ from api.routes_config import build_api_url, DOCUMENT_ROUTES
 
 # Initialize components
 config = Config()
-logger = LogManager().get_logger("documentation_api")
+logger = LogManager.setup_logging("documentation_api")
 user_manager = UserManager()
 
 # Create router

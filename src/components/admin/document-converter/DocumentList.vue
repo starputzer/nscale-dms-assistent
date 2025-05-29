@@ -363,7 +363,7 @@
           <button
             @click.stop="viewDocument(document)"
             class="document-list__action-btn"
-            :disabled="document.status !== 'success'"
+            :disabled="document.status !== 'success' && document.status !== 'completed'"
             :aria-label="
               $t(
                 'documentList.viewDocument',
@@ -386,7 +386,7 @@
           <button
             @click.stop="downloadDocument(document)"
             class="document-list__action-btn"
-            :disabled="document.status !== 'success'"
+            :disabled="document.status !== 'success' && document.status !== 'completed'"
             :aria-label="
               $t(
                 'documentList.downloadDocument',

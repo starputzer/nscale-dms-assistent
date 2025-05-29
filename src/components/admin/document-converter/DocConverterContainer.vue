@@ -325,7 +325,7 @@ function viewDocument(documentId: string) {
 
   const document = documents.value.find((doc) => doc.id === documentId);
 
-  if (document && document.status === "success") {
+  if (document && (document.status === "success" || document.status === "completed")) {
     conversionResult.value = document;
   }
 }

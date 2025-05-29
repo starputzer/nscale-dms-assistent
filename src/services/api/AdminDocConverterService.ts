@@ -301,8 +301,9 @@ class AdminDocConverterService implements IAdminDocConverterService {
       const sortedDocuments = [...documents]
         .sort((a, b) => {
           // Behandele undefined-Werte
-          const timeA = a.uploadedAt ? a.uploadedAt.getTime() : 0;
-          const timeB = b.uploadedAt ? b.uploadedAt.getTime() : 0;
+          // uploadedAt is already a timestamp (number), not a Date object
+          const timeA = a.uploadedAt || 0;
+          const timeB = b.uploadedAt || 0;
           return timeB - timeA;
         })
         .slice(0, limit);

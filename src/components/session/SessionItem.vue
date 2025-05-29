@@ -480,7 +480,10 @@ function handleContextMenu(event: MouseEvent) {
 }
 
 // Click-Handler mit Multi-Select-Unterstützung
-function handleItemClick() {
+function handleItemClick(event: Event) {
+  // Prevent event bubbling to avoid duplicate handlers
+  event.stopPropagation();
+  
   if (props.showCheckbox) {
     emit("toggle-select", props.session.id);
   } else {

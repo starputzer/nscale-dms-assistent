@@ -40,6 +40,32 @@
       class="n-message-list__welcome"
       role="status"
     >
+      <!-- MOTD anzeigen wenn aktiviert und keine Nachrichten vorhanden -->
+      <div v-if="motdStore.shouldShowInChat && !motdStore.dismissed" class="n-message-list__motd">
+        <div 
+          class="motd-display"
+          :style="{
+            backgroundColor: motdStore.config.style?.backgroundColor || '#d1ecf1',
+            borderColor: motdStore.config.style?.borderColor || '#bee5eb',
+            color: motdStore.config.style?.textColor || '#0c5460',
+            border: '1px solid',
+            borderRadius: '8px',
+            padding: '16px',
+            marginBottom: '24px'
+          }"
+        >
+          <div v-html="motdStore.previewHtml" class="motd-content"></div>
+          <button 
+            v-if="motdStore.config.display?.dismissible"
+            @click="motdStore.dismiss()"
+            class="motd-dismiss-btn"
+            style="margin-top: 12px; padding: 4px 12px; background: transparent; border: 1px solid currentColor; border-radius: 4px; cursor: pointer;"
+          >
+            Ausblenden
+          </button>
+        </div>
+      </div>
+      
       <img
         :src="logoUrl || '/assets/images/senmvku-logo.png'"
         alt="nscale DMS Assistent Logo"
@@ -207,6 +233,7 @@ import { useElementSize } from "@/composables/useElementSize";
 import { useThrottleFn } from "@/composables/useThrottleFn";
 import type { ChatMessage } from "@/types/session";
 import MessageItem from "./MessageItem.vue";
+import { useMotdStore } from "@/stores/admin/motd";
 
 // Typen für virtuelle Liste
 interface VirtualItem {
@@ -323,6 +350,9 @@ const props = withDefaults(defineProps<Props>(), {
   estimatedItemHeight: 100,
   showScrollToBottomButton: true,
 });
+
+// Initialize MOTD store
+const motdStore = useMotdStore();
 
 // Debug logging für messages
 watch(() => props.messages, (newMessages, oldMessages) => {

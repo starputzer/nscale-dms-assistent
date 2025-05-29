@@ -19,9 +19,13 @@ export interface ConversionResult {
   status: "pending" | "processing" | "completed" | "failed";
   uploadedAt: number; // timestamp
   convertedAt: number; // timestamp
+  duration?: number; // duration in milliseconds
   content?: string;
   metadata?: Record<string, any>;
   error?: string;
+  // Alternative property names that might come from API
+  originalName?: string;
+  originalFormat?: string;
 }
 
 export interface DocumentStatistics {

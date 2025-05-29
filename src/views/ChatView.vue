@@ -283,7 +283,7 @@
         :showMessageActions="true"
         :virtualized="false"
         :showScrollToBottomButton="true"
-        :key="`message-list-${currentSessionId}-${currentMessages.length}-${isStreaming}`"
+        :key="`message-list-${currentSessionId}`"
         @feedback="handleMessageFeedback"
         @view-sources="handleViewSources"
         @view-explanation="handleViewExplanation"
@@ -777,11 +777,15 @@ async function handleSessionSelect(sessionId: string) {
     closeMobileSidebar();
   }
 
-  // Zur gewählten Session navigieren und Nachrichten laden
+  // Clear old messages immediately to prevent flash of old content
+  messageInput.value = '';
+  
+  // Navigate first to update the URL
+  await router.push(`/chat/${sessionId}`);
+  
+  // Then set the current session which will trigger message loading
+  // This ensures the route param is already updated when the store reacts
   await sessionsStore.setCurrentSession(sessionId);
-
-  // URL aktualisieren, um die Session-ID zu reflektieren
-  router.push(`/chat/${sessionId}`);
 }
 
 async function handleCreateSession() {

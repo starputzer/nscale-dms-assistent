@@ -619,13 +619,18 @@ function handleStopGeneration(): void {
 }
 
 // Behandelt Feedback zu einer Nachricht
-function handleFeedback(payload: {
+async function handleFeedback(payload: {
   messageId: string;
   type: "positive" | "negative";
   feedback?: string;
-}): void {
-  // TODO: Implementieren der Feedback-Funktion
-  uiStore.showSuccess(`Vielen Dank für Ihr Feedback!`);
+}): Promise<void> {
+  try {
+    await sessionStore.sendFeedback(payload.messageId, payload.type, payload.feedback);
+    uiStore.showSuccess(`Vielen Dank für Ihr Feedback!`);
+  } catch (error) {
+    console.error('Failed to send feedback:', error);
+    uiStore.showError('Feedback konnte nicht gesendet werden. Bitte versuchen Sie es später erneut.');
+  }
 }
 
 // Öffnet den Dialog mit Quellenangaben

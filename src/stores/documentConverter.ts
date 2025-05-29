@@ -43,11 +43,14 @@ export const useDocumentConverterStore = defineStore(
           {
             id: "doc1",
             filename: "Annual Report 2024.pdf",
+            originalName: "Annual Report 2024.pdf", // Add alternative property name
             format: "pdf",
+            originalFormat: "pdf", // Add alternative property name
             size: 3145728, // 3MB
             status: "completed",
             uploadedAt: Date.now() - 7 * 24 * 60 * 60 * 1000, // 7 days ago
             convertedAt: Date.now() - 7 * 24 * 60 * 60 * 1000 + 35000, // 35 seconds later
+            duration: 35000, // 35 seconds
             content: "Lorem ipsum dolor sit amet...",
             metadata: {
               author: "Finance Department",
@@ -58,11 +61,14 @@ export const useDocumentConverterStore = defineStore(
           {
             id: "doc2",
             filename: "Product Specifications.docx",
+            originalName: "Product Specifications.docx", // Add alternative property name
             format: "docx",
+            originalFormat: "docx", // Add alternative property name
             size: 1572864, // 1.5MB
             status: "completed",
             uploadedAt: Date.now() - 3 * 24 * 60 * 60 * 1000, // 3 days ago
             convertedAt: Date.now() - 3 * 24 * 60 * 60 * 1000 + 28000, // 28 seconds later
+            duration: 28000, // 28 seconds
             content: "Product specifications for new release...",
             metadata: {
               author: "Product Team",
@@ -73,11 +79,14 @@ export const useDocumentConverterStore = defineStore(
           {
             id: "doc3",
             filename: "Financial Analysis.xlsx",
+            originalName: "Financial Analysis.xlsx", // Add alternative property name
             format: "xlsx",
+            originalFormat: "xlsx", // Add alternative property name
             size: 2097152, // 2MB
             status: "completed",
             uploadedAt: Date.now() - 1 * 24 * 60 * 60 * 1000, // 1 day ago
             convertedAt: Date.now() - 1 * 24 * 60 * 60 * 1000 + 42000, // 42 seconds later
+            duration: 42000, // 42 seconds
             content: "Financial analysis for Q1 2024...",
             metadata: {
               author: "Finance Team",
@@ -88,7 +97,9 @@ export const useDocumentConverterStore = defineStore(
           {
             id: "doc4",
             filename: "Marketing Strategy.pptx",
+            originalName: "Marketing Strategy.pptx", // Add alternative property name
             format: "pptx",
+            originalFormat: "pptx", // Add alternative property name
             size: 4194304, // 4MB
             status: "failed",
             error: "File format is not supported",
@@ -98,7 +109,9 @@ export const useDocumentConverterStore = defineStore(
           {
             id: "doc5",
             filename: "Customer Feedback.pdf",
+            originalName: "Customer Feedback.pdf", // Add alternative property name
             format: "pdf",
+            originalFormat: "pdf", // Add alternative property name
             size: 1048576, // 1MB
             status: "processing",
             uploadedAt: Date.now() - 1 * 60 * 60 * 1000, // 1 hour ago
@@ -161,8 +174,10 @@ export const useDocumentConverterStore = defineStore(
             // Map API response to store format
             documents.value = response.map((doc) => ({
               id: doc.id,
-              filename: doc.originalName || "Unknown",
-              format: doc.originalFormat || "unknown",
+              filename: doc.originalName || doc.filename || "Unknown",
+              originalName: doc.originalName || doc.filename || "Unknown", // Include both property names
+              format: doc.originalFormat || doc.format || "unknown",
+              originalFormat: doc.originalFormat || doc.format || "unknown", // Include both property names
               size: doc.size || 0,
               status:
                 doc.status === "success"
@@ -176,6 +191,7 @@ export const useDocumentConverterStore = defineStore(
               convertedAt: doc.convertedAt
                 ? new Date(doc.convertedAt).getTime()
                 : 0,
+              duration: doc.duration,
               content: doc.content,
               metadata: doc.metadata,
               error: doc.error,
@@ -352,6 +368,8 @@ export const useDocumentConverterStore = defineStore(
             } else {
               document.status = "completed";
               document.convertedAt = Date.now();
+              // Calculate duration
+              document.duration = document.convertedAt - document.uploadedAt;
               document.content = "Converted content for " + document.filename;
               document.metadata = {
                 author: "System",

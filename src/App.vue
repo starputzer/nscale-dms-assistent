@@ -8,7 +8,7 @@ Digitale Akte Assistent - Hauptkomponente mit Performance-Optimierungen
         <router-view v-slot="{ Component, route }">
           <transition :name="route.meta.transition || 'fade'" mode="out-in">
             <keep-alive :include="cachedViews">
-              <component :is="Component" :key="route.fullPath" />
+              <component :is="Component" :key="route.name" />
             </keep-alive>
           </transition>
         </router-view>

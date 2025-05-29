@@ -643,7 +643,14 @@ export const useSessionsStore = defineStore(
     async function setCurrentSession(sessionId: string): Promise<void> {
       if (currentSessionId.value === sessionId) return;
 
+      // Important: Set the new session ID first to prevent race conditions
+      const previousSessionId = currentSessionId.value;
       currentSessionId.value = sessionId;
+
+      // Cancel any ongoing streaming for the previous session
+      if (previousSessionId && streamingState.value.isStreaming) {
+        cancelStreaming();
+      }
 
       // Nachrichten laden, wenn sie noch nicht im Store sind
       if (
@@ -1028,8 +1035,19 @@ export const useSessionsStore = defineStore(
                     return;
                   }
 
-                  responseContent += data;
-                  console.log("Current response content:", responseContent);
+                  try {
+                    // Backend sendet JSON im Format: {"response": "token"}
+                    const parsed = JSON.parse(data);
+                    if (parsed.response) {
+                      responseContent += parsed.response;
+                      console.log("Streamed token:", parsed.response);
+                    } else if (parsed.error) {
+                      console.error("Streaming error from backend:", parsed.error);
+                    }
+                  } catch (e) {
+                    // Fallback für plain text
+                    responseContent += data;
+                  }
 
                   // Update the message
                   const msgIndex = messages.value[sessionId].findIndex(
@@ -1424,6 +1442,63 @@ export const useSessionsStore = defineStore(
     // Commented out to prevent API calls before authentication
     // The initialize will be called from the app after authentication
     // const cleanup = initialize();
+
+    /**
+     * Sendet Feedback für eine Nachricht
+     */
+    async function sendFeedback(
+      messageId: string,
+      feedbackType: 'positive' | 'negative',
+      feedbackText?: string
+    ): Promise<void> {
+      try {
+        // Finde die Nachricht
+        let foundMessage: ChatMessage | null = null;
+        let foundSessionId: string | null = null;
+        
+        for (const [sessionId, sessionMessages] of Object.entries(messages.value)) {
+          const message = sessionMessages.find(m => m.id === messageId);
+          if (message) {
+            foundMessage = message;
+            foundSessionId = sessionId;
+            break;
+          }
+        }
+        
+        if (!foundMessage || !foundSessionId) {
+          console.error('Message not found for feedback:', messageId);
+          return;
+        }
+        
+        // Sende Feedback an Backend
+        const response = await axios.post('/api/feedback', {
+          message_id: messageId,
+          session_id: foundSessionId,
+          feedback_type: feedbackType,
+          feedback_text: feedbackText || '',
+          timestamp: new Date().toISOString()
+        }, {
+          headers: {
+            Authorization: `Bearer ${authStore.token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        // Update lokale Message mit Feedback
+        const messageIndex = messages.value[foundSessionId].findIndex(m => m.id === messageId);
+        if (messageIndex !== -1) {
+          messages.value[foundSessionId][messageIndex] = {
+            ...messages.value[foundSessionId][messageIndex],
+            userFeedback: feedbackType
+          };
+        }
+        
+        console.log('Feedback sent successfully:', response.data);
+      } catch (error) {
+        console.error('Failed to send feedback:', error);
+        // Optional: Show error toast to user
+      }
+    }
 
     /**
      * Fügt einen Tag zu einer Session hinzu
@@ -1854,6 +1929,7 @@ export const useSessionsStore = defineStore(
       importData,
       cleanupStorage,
       loadOlderMessages,
+      sendFeedback,
 
       // Neue Actions für Tagging und Kategorisierung
       addTagToSession,

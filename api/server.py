@@ -433,6 +433,13 @@ async def get_users(admin_data: Dict[str, Any] = Depends(get_admin_user)):
     if users is None:
         raise HTTPException(status_code=500, detail="Fehler beim Laden der Benutzerliste")
     
+    # Convert Unix timestamps from seconds to milliseconds for frontend
+    for user in users:
+        if 'created_at' in user and user['created_at']:
+            user['created_at'] = user['created_at'] * 1000
+        if 'last_login' in user and user['last_login']:
+            user['last_login'] = user['last_login'] * 1000
+    
     return {"users": users}
 
 @app.post("/api/v1/admin/users")

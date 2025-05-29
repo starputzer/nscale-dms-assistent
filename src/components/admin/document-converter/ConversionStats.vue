@@ -209,8 +209,8 @@
             :key="doc.id"
             :class="{ 'conversion-stats__row--error': doc.status === 'error' }"
           >
-            <td>{{ doc.originalName }}</td>
-            <td>{{ doc.originalFormat.toUpperCase() }}</td>
+            <td>{{ doc.filename }}</td>
+            <td>{{ doc.format.toUpperCase() }}</td>
             <td>{{ formatFileSize(doc.size) }}</td>
             <td>
               <span
@@ -324,7 +324,7 @@ const filteredDocuments = computed(() => {
   }
 
   // Filter documents by date
-  return store.convertedDocuments.filter((doc) => {
+  return store.documents.filter((doc) => {
     const docDate = doc.uploadedAt ? new Date(doc.uploadedAt) : new Date();
     return docDate >= startDate && docDate <= endDate;
   });
@@ -334,11 +334,11 @@ const totalCount = computed(() => filteredDocuments.value.length);
 
 const successCount = computed(
   () =>
-    filteredDocuments.value.filter((doc) => doc.status === "success").length,
+    filteredDocuments.value.filter((doc) => doc.status === "completed" || doc.status === "success").length,
 );
 
 const errorCount = computed(
-  () => filteredDocuments.value.filter((doc) => doc.status === "error").length,
+  () => filteredDocuments.value.filter((doc) => doc.status === "failed" || doc.status === "error").length,
 );
 
 const pendingCount = computed(
@@ -432,8 +432,10 @@ function formatDuration(ms?: number): string {
 function getStatusClass(status: string): string {
   switch (status) {
     case "success":
+    case "completed":
       return "success";
     case "error":
+    case "failed":
       return "error";
     case "processing":
       return "processing";
@@ -447,8 +449,10 @@ function getStatusClass(status: string): string {
 function getStatusLabel(status: string): string {
   switch (status) {
     case "success":
+    case "completed":
       return t("documentConverter.stats.statusSuccess", "Erfolgreich");
     case "error":
+    case "failed":
       return t("documentConverter.stats.statusError", "Fehler");
     case "processing":
       return t("documentConverter.stats.statusProcessing", "In Bearbeitung");
@@ -501,7 +505,7 @@ function renderFormatChart() {
   const formatCounts: Record<string, number> = {};
 
   filteredDocuments.value.forEach((doc) => {
-    const format = doc.originalFormat?.toLowerCase() || "unknown";
+    const format = doc.format?.toLowerCase() || "unknown";
     formatCounts[format] = (formatCounts[format] || 0) + 1;
   });
 
@@ -752,16 +756,16 @@ function renderTrendChart() {
   const processingData: number[] = [];
 
   intervals.forEach((interval) => {
-    const intervalDocs = store.convertedDocuments.filter((doc) => {
+    const intervalDocs = store.documents.filter((doc) => {
       if (!doc.uploadedAt) return false;
       const docDate = new Date(doc.uploadedAt);
       return docDate >= interval.start && docDate <= interval.end;
     });
 
     successData.push(
-      intervalDocs.filter((doc) => doc.status === "success").length,
+      intervalDocs.filter((doc) => doc.status === "completed" || doc.status === "success").length,
     );
-    errorData.push(intervalDocs.filter((doc) => doc.status === "error").length);
+    errorData.push(intervalDocs.filter((doc) => doc.status === "failed" || doc.status === "error").length);
     processingData.push(
       intervalDocs.filter(
         (doc) => doc.status === "pending" || doc.status === "processing",
@@ -987,9 +991,8 @@ onMounted(async () => {
   await loadChartLibrary();
 
   // Initialize store if needed
-  if (!store.initialized) {
-    await store.initialize();
-  }
+  // Always initialize to ensure documents are loaded
+  await store.initialize();
 
   // Render charts
   renderFormatChart();
@@ -1032,7 +1035,7 @@ watch([timeRange, groupBy], () => {
 
 // Watch for store updates
 watch(
-  () => store.convertedDocuments.length,
+  () => store.documents.length,
   () => {
     renderFormatChart();
     renderStatusChart();

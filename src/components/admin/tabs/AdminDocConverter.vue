@@ -231,11 +231,28 @@ const refreshData = async () => {
 
 const loadStatistics = async () => {
   try {
-    // Mock API call, replace with actual API
+    // Call the async function from the store
     const response = await documentConverterStore.getDocumentStatistics();
-    statistics.value = response;
+    // Update the local statistics ref with the response
+    statistics.value = {
+      totalConversions: response.totalConversions || 0,
+      conversionsPastWeek: response.conversionsPastWeek || 0,
+      successRate: response.successRate || 0,
+      activeConversions: response.activeConversions || 0,
+      conversionsByFormat: response.conversionsByFormat || {},
+      conversionTrend: response.conversionTrend || [0, 0, 0, 0, 0, 0, 0],
+    };
   } catch (err: any) {
     console.error("Failed to load statistics:", err);
+    // Set default values to prevent NaN
+    statistics.value = {
+      totalConversions: 0,
+      conversionsPastWeek: 0,
+      successRate: 0,
+      activeConversions: 0,
+      conversionsByFormat: {},
+      conversionTrend: [0, 0, 0, 0, 0, 0, 0],
+    };
     throw new Error("Fehler beim Laden der Statistiken");
   }
 };
