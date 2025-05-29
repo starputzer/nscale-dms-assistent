@@ -53,19 +53,26 @@ const initializeStore = async (
   storeName: string,
   initFunction: () => Promise<any>,
 ): Promise<void> => {
-  const { reportError } = useErrorReporting();
-
   try {
     storeStatus.value[storeName] = "loading";
     await initFunction();
     storeStatus.value[storeName] = "success";
   } catch (error) {
     storeStatus.value[storeName] = "error";
-    reportError(
-      "STORE_INITIALIZATION_ERROR",
-      `Fehler bei der Initialisierung des ${storeName}-Stores`,
-      error,
-    );
+    console.error(`Fehler bei der Initialisierung des ${storeName}-Stores:`, error);
+
+    // Try to report error if service is available
+    try {
+      const { reportError } = useErrorReporting();
+      reportError(
+        "STORE_INITIALIZATION_ERROR",
+        `Fehler bei der Initialisierung des ${storeName}-Stores`,
+        error,
+      );
+    } catch (reportingError) {
+      // Ignore reporting errors during initialization
+      console.warn("Could not report error during store initialization:", reportingError);
+    }
 
     if (storeName === "auth" || storeName === "featureToggles") {
       // Kritische Stores - Initialisierung abbrechen
@@ -100,7 +107,6 @@ export const initializeStores = async (): Promise<void> => {
   const statisticsStore = useStatisticsStore();
   const adminStore = useAdminStore();
   const adminLogsStore = useAdminLogsStore();
-  const { reportError } = useErrorReporting();
 
   try {
     // 1. Auth und FeatureToggles zuerst initialisieren (kritische Stores)
@@ -118,7 +124,13 @@ export const initializeStores = async (): Promise<void> => {
 
     // 2. Einstellungen und UI initialisieren
     await initializeStore("settings", async () => {
-      await settingsStore.loadSettings();
+      // Settings store uses initialize() method
+      if (typeof settingsStore.initialize === 'function') {
+        await settingsStore.initialize();
+      } else if (typeof settingsStore.loadSettings === 'function') {
+        await settingsStore.loadSettings();
+      }
+      // If neither method exists, the store is already initialized
     });
 
     await initializeStore("ui", async () => {
@@ -206,11 +218,21 @@ export const initializeStores = async (): Promise<void> => {
 
     isInitialized.value = true;
   } catch (error) {
-    reportError(
-      "CRITICAL_STORE_INITIALIZATION_ERROR",
-      "Kritischer Fehler bei der Store-Initialisierung",
-      error,
-    );
+    console.error("Kritischer Fehler bei der Store-Initialisierung:", error);
+    
+    // Try to report error if service is available
+    try {
+      const { reportError } = useErrorReporting();
+      reportError(
+        "CRITICAL_STORE_INITIALIZATION_ERROR",
+        "Kritischer Fehler bei der Store-Initialisierung",
+        error,
+      );
+    } catch (reportingError) {
+      // Ignore reporting errors during initialization
+      console.warn("Could not report critical error:", reportingError);
+    }
+    
     throw error;
   }
 };

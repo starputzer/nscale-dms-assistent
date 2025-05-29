@@ -64,6 +64,11 @@ export const useMotdStore = defineStore("motd", () => {
     }
   });
 
+  // Check if MOTD should be shown in chat
+  const shouldShowInChat = computed(() => {
+    return config.value.enabled && config.value.display?.showInChat !== false;
+  });
+
   // Funktionen
   function dismiss() {
     dismissed.value = true;
@@ -246,6 +251,7 @@ export const useMotdStore = defineStore("motd", () => {
     // Computed
     hasUnsavedChanges,
     previewHtml,
+    shouldShowInChat,
 
     // Funktionen
     dismiss,

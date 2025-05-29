@@ -9,6 +9,34 @@
 
     <!-- Message Area -->
     <div class="message-area" ref="messageArea">
+      <!-- MOTD - shown when no messages and MOTD is enabled -->
+      <div v-if="!messages.length && !isLoading && motdStore.shouldShowInChat && !motdStore.dismissed" class="motd-container">
+        <div 
+          class="motd-display"
+          :style="{
+            backgroundColor: motdStore.config.style?.backgroundColor || '#fff3cd',
+            borderColor: motdStore.config.style?.borderColor || '#ffeeba',
+            color: motdStore.config.style?.textColor || '#856404',
+            border: '1px solid',
+            borderRadius: '8px',
+            padding: '16px',
+            marginBottom: '24px',
+            maxWidth: '600px',
+            margin: '0 auto 24px'
+          }"
+        >
+          <div v-html="motdStore.previewHtml" class="motd-content"></div>
+          <button 
+            v-if="motdStore.config.display?.dismissible"
+            @click="motdStore.dismiss()"
+            class="motd-dismiss-btn"
+            style="margin-top: 12px; padding: 6px 16px; background: transparent; border: 1px solid currentColor; border-radius: 4px; cursor: pointer; font-size: 14px;"
+          >
+            Ausblenden
+          </button>
+        </div>
+      </div>
+      
       <!-- Welcome Message - shown when no messages -->
       <div v-if="!messages.length && !isLoading" class="welcome-message">
         <div class="welcome-logo">
@@ -209,11 +237,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useSessionsStore } from "@/stores/sessions";
+import { useMotdStore } from "@/stores/admin/motd";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 import axios from "axios";
@@ -222,6 +251,7 @@ const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const sessionsStore = useSessionsStore();
+const motdStore = useMotdStore();
 
 // State
 const messageInput = ref("");
@@ -233,7 +263,7 @@ const currentSessionId = computed(
   () => (route.params.id as string) || sessionsStore.currentSessionId,
 );
 const currentSession = computed(() => sessionsStore.currentSession);
-const messages = computed(() => sessionsStore.allCurrentMessages);
+const messages = computed(() => sessionsStore.currentMessages);
 const isStreaming = computed(() => sessionsStore.isStreaming);
 const hasStreamingMessage = computed(() =>
   messages.value.some((msg) => msg.isStreaming),
@@ -277,6 +307,10 @@ const sendMessage = async () => {
   if (!sessionId) {
     try {
       sessionId = await sessionsStore.createSession();
+      // Navigate to the new session route
+      if (sessionId && !route.params.id) {
+        await router.push(`/chat/${sessionId}`);
+      }
     } catch (error) {
       console.error("Failed to create session:", error);
       return;
@@ -384,9 +418,8 @@ const scrollToBottom = async () => {
   }
 };
 
-// Watch for new messages to scroll to bottom
-import { watch } from "vue";
 
+// Watch for new messages to scroll to bottom
 watch(
   messages,
   () => {
@@ -402,8 +435,26 @@ watch(isStreaming, (newVal) => {
   }
 });
 
+// Watch for route changes to switch sessions
+watch(() => route.params.id, async (newId) => {
+  if (newId && newId !== sessionsStore.currentSessionId) {
+    await sessionsStore.setCurrentSession(newId as string);
+    await loadMessages();
+  } else if (!newId) {
+    // If no session ID in route, clear current session
+    sessionsStore.clearCurrentSession();
+  }
+}, { immediate: false });
+
 // Lifecycle
 onMounted(async () => {
+  // Load MOTD configuration
+  try {
+    await motdStore.fetchConfig();
+  } catch (error) {
+    console.error('Failed to load MOTD config:', error);
+  }
+  
   // Set current session from route or use persisted session
   if (route.params.id) {
     await sessionsStore.setCurrentSession(route.params.id as string);
@@ -469,6 +520,50 @@ onMounted(async () => {
 
 .welcome-message p {
   color: var(--nscale-text-secondary, #6c757d);
+}
+
+/* MOTD Styles */
+.motd-container {
+  margin-bottom: 24px;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.motd-content {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.motd-content h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.motd-content p {
+  margin: 8px 0;
+}
+
+.motd-content ul {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.motd-dismiss-btn {
+  transition: opacity 0.2s;
+}
+
+.motd-dismiss-btn:hover {
+  opacity: 0.8;
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(-10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
 }
 
 .messages {
