@@ -132,8 +132,12 @@ export const initializeStores = async (): Promise<void> => {
         if (featureTogglesStore.isFeatureEnabled("optimizedStores")) {
           const optimizedSessionsStore = useSessionsStoreOptimized();
           await optimizedSessionsStore.initialize();
+          // Make store globally available to avoid circular dependencies
+          (window as any).__sessionsStore = optimizedSessionsStore;
         } else {
           await sessionsStore.initialize();
+          // Make store globally available to avoid circular dependencies
+          (window as any).__sessionsStore = sessionsStore;
         }
       }),
 

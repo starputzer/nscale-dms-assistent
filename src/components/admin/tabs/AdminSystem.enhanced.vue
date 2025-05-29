@@ -811,7 +811,7 @@ console.log('[i18n] Component initialized with global scope and inheritance');
 
 // Store with proper reactive references
 const systemStore = useAdminSystemStore();
-const { stats, loading, error, apiIntegrationEnabled } = storeToRefs(systemStore);
+const { stats, loading, error, apiIntegrationEnabled, systemSettings } = storeToRefs(systemStore);
 
 // Toast
 const toast = useToast();
@@ -835,47 +835,6 @@ const confirmDialogWarning = ref("");
 const confirmDialogIcon = ref("fa-exclamation-triangle");
 const confirmDialogDanger = ref(false);
 const pendingActionCallback = ref<() => void>();
-
-// Settings
-const systemSettings = ref({
-  // General
-  appName: "Digitale Akte Assistent",
-  defaultLanguage: "de",
-  timezone: "Europe/Berlin",
-
-  // Model
-  defaultModel: "llama-7b",
-  maxTokensPerRequest: 4096,
-  enableModelSelection: true,
-
-  // Performance
-  enableCaching: true,
-  maxCacheSizeMB: 1000,
-  cacheTTLMinutes: 60,
-  maxCPUPercent: 80,
-  maxMemoryMB: 8192,
-  maxConnectionsPerUser: 10,
-
-  // Security
-  requireAuth: true,
-  sessionTimeoutMinutes: 60,
-  enableMFA: false,
-  enableRateLimit: true,
-  rateLimitPerMinute: 30,
-  enableIPWhitelist: false,
-
-  // Advanced
-  logLevel: "info",
-  enableAuditLog: true,
-  logRetentionDays: 30,
-  maintenanceMode: false,
-  maintenanceMessage: "",
-  autoBackup: true,
-  backupInterval: "daily",
-});
-
-// Charts
-let chartInstance: Chart | null = null;
 
 // Real-time data
 const cpuHistory = ref<number[]>([]);
@@ -1200,7 +1159,7 @@ async function refreshAll() {
     await systemStore.fetchStats();
     
     // Laden der Systemaktionen optional basierend auf dem Ergebnis von fetchStats
-    if (!systemStore.error.value) {
+    if (!systemStore.error) {
       // Auch Aktionen neu laden, wenn die Statistiken erfolgreich geladen wurden
       await systemStore.fetchAvailableActions();
       toast.success(t("admin.system.dataRefreshed", "Daten aktualisiert"));
@@ -1236,16 +1195,18 @@ function toggleEditMode() {
   }
 }
 
-function loadSettings() {
-  // In a real app, this would load settings from API
-  // For now we just use the default values
+async function loadSettings() {
+  try {
+    await systemStore.fetchSettings();
+  } catch (error) {
+    console.error("Fehler beim Laden der Einstellungen:", error);
+  }
 }
 
 async function saveSettings() {
   isSubmitting.value = true;
   try {
-    // Simulate API call for settings update
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await systemStore.saveSettings(systemSettings.value);
     toast.success(t("admin.system.settingsSaved", "Einstellungen gespeichert"));
     isEditMode.value = false;
   } catch (error) {
@@ -1419,6 +1380,7 @@ console.log(`[AdminSystem.enhanced] i18n initialized with locale: ${locale.value
 
 <style lang="scss">
 @import "@/assets/styles/admin-consolidated.scss";
+@import "@/assets/styles/admin-form-styles.scss";
 
 .admin-system-enhanced {
   display: flex;

@@ -31,6 +31,7 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
   });
 
   const negativeFeedback = ref<FeedbackEntry[]>([]);
+  const feedbackItems = ref<FeedbackEntry[]>([]);  // All feedback items
   const filter = ref<FeedbackFilter>({});
   const loading = ref(false);
   const error = ref<string | null>(null);
@@ -40,7 +41,7 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
 
   // Computed
   const filteredFeedback = computed(() => {
-    let filtered = [...negativeFeedback.value];
+    let filtered = [...feedbackItems.value];
 
     // Apply date filters
     if (filter.value.dateFrom) {
@@ -103,6 +104,42 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
     } catch (err) {
       logger.error("Fehler beim Laden der Feedback-Statistiken", err);
       error.value = err instanceof Error ? err.message : "Fehler beim Laden der Statistiken";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function fetchAllFeedback(limit: number = 1000) {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      logger.info("Lade alle Feedbacks", { limit, apiIntegration: apiIntegrationEnabled.value });
+
+      // Use the new getAllFeedback method from the service
+      const response = await adminFeedbackService.getAllFeedback(limit);
+
+      if (response.success && response.data) {
+        logger.info("Alle Feedbacks erfolgreich geladen", {
+          count: response.data.length
+        });
+        
+        // Store all feedback
+        feedbackItems.value = response.data;
+        
+        // Also update negative feedback for compatibility
+        negativeFeedback.value = response.data.filter(item => !item.is_positive);
+        
+        return feedbackItems.value;
+      } else {
+        logger.warn("Fehler beim Laden der Feedbacks", response.error);
+        error.value = response.message || "Fehler beim Laden der Feedbacks";
+        throw new Error(error.value);
+      }
+    } catch (err) {
+      logger.error("Fehler beim Laden der Feedbacks", err);
+      error.value = err instanceof Error ? err.message : "Fehler beim Laden der Feedbacks";
       throw err;
     } finally {
       loading.value = false;
@@ -483,6 +520,7 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
     // State
     stats,
     negativeFeedback,
+    feedbackItems,
     filter,
     loading,
     error,
@@ -493,6 +531,7 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
 
     // Actions
     fetchStats,
+    fetchAllFeedback,
     fetchNegativeFeedback,
     setFilter,
     resetFilter,

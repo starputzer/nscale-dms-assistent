@@ -314,7 +314,7 @@ const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
 console.log('[i18n] Component initialized with global scope and inheritance');
 const featureStore = useFeatureTogglesStore();
 const authStore = useAuthStore();
-const { enhancedFeatures, categories } = storeToRefs(featureStore);
+const { toggles: enhancedFeatures, categories } = storeToRefs(featureStore);
 const toast = useToast();
 
 // View state
@@ -370,7 +370,7 @@ const errorLogs = ref<FeatureErrorLog[]>([]);
 
 // Computed properties
 const filteredFeatures = computed(() => {
-  let result = [...enhancedFeatures.value];
+  let result = [...(enhancedFeatures.value || [])];
 
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
@@ -414,15 +414,15 @@ const groupedFeatures = computed(() => {
 });
 
 const enabledCount = computed(
-  () => enhancedFeatures.value.filter((f) => f.enabled).length,
+  () => (enhancedFeatures.value || []).filter((f) => f.enabled).length,
 );
 
 const disabledCount = computed(
-  () => enhancedFeatures.value.filter((f) => !f.enabled).length,
+  () => (enhancedFeatures.value || []).filter((f) => !f.enabled).length,
 );
 
 const categoryCount = computed(
-  () => new Set(enhancedFeatures.value.map((f) => f.category)).size,
+  () => new Set((enhancedFeatures.value || []).map((f) => f.category)).size,
 );
 
 const categoryOptions = computed(() => {
@@ -448,7 +448,7 @@ const statusOptions = computed(() => [
 ]);
 
 const dependencyOptions = computed(() => {
-  return enhancedFeatures.value
+  return (enhancedFeatures.value || [])
     .filter((f) => f.key !== editingFeature.value?.key)
     .map((f) => ({ value: f.key, label: f.name }));
 });
@@ -576,7 +576,7 @@ async function showHistory(feature: FeatureToggle) {
 
 async function exportFeatures() {
   try {
-    const exportData = JSON.stringify(enhancedFeatures.value, null, 2);
+    const exportData = JSON.stringify(enhancedFeatures.value || [], null, 2);
     const blob = new Blob([exportData], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -624,7 +624,7 @@ async function fetchUsageMetrics() {
       endDate: dateRange.value.end,
     });
 
-    metricsFeatures.value = enhancedFeatures.value.map((feature) => {
+    metricsFeatures.value = (enhancedFeatures.value || []).map((feature) => {
       const featureMetrics = metrics.features[feature.key];
       return {
         ...feature,

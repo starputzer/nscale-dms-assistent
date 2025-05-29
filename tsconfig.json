@@ -27,6 +27,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
+      "@/shared/*": ["shared/*"],
       "@components/*": ["src/components/*"],
       "@composables/*": ["src/composables/*"],
       "@stores/*": ["src/stores/*"],
@@ -46,7 +47,9 @@
     "src/**/*.ts",
     "src/**/*.d.ts",
     "src/**/*.tsx",
-    "src/**/*.vue"
+    "src/**/*.vue",
+    "shared/**/*.ts",
+    "shared/**/*.d.ts"
   ],
   "exclude": [
     "node_modules",

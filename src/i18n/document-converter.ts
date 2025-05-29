@@ -3,6 +3,7 @@ export default {
     admin: {
       docConverter: {
         title: "Document Converter",
+        description: "Configuration and monitoring of the document converter.",
         statistics: "Statistics",
         uploadDocuments: "Upload Documents",
         recentConversions: "Recent Conversions",
@@ -127,6 +128,7 @@ export default {
     admin: {
       docConverter: {
         title: "Dokumentenkonverter",
+        description: "Konfiguration und Überwachung des Dokumentenkonverters.",
         statistics: "Statistiken",
         uploadDocuments: "Dokumente hochladen",
         recentConversions: "Letzte Konvertierungen",

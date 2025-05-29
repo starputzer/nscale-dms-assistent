@@ -609,7 +609,7 @@ const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
 console.log('[i18n] Component initialized with global scope and inheritance');
 const featureStore = useFeatureTogglesStore();
 const authStore = useAuthStore();
-const { features, categories } = storeToRefs(featureStore);
+const { toggles: features, categories } = storeToRefs(featureStore);
 
 // View state
 const viewMode = ref<"management" | "monitoring">("management");
@@ -681,7 +681,7 @@ const expandedErrors = ref<number[]>([]);
 
 // Computed properties
 const filteredFeatures = computed(() => {
-  let result = [...features.value];
+  let result = [...(features.value || [])];
 
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
@@ -725,13 +725,13 @@ const groupedFeatures = computed(() => {
 });
 
 const enabledCount = computed(
-  () => features.value.filter((f) => f.enabled).length,
+  () => (features.value || []).filter((f) => f.enabled).length,
 );
 const disabledCount = computed(
-  () => features.value.filter((f) => !f.enabled).length,
+  () => (features.value || []).filter((f) => !f.enabled).length,
 );
 const categoryCount = computed(
-  () => new Set(features.value.map((f) => f.category)).size,
+  () => new Set((features.value || []).map((f) => f.category)).size,
 );
 
 const categoryOptions = computed(() => {
@@ -761,7 +761,7 @@ const statusOptions = computed(() => [
 ]);
 
 const dependencyOptions = computed(() => {
-  return features.value
+  return (features.value || [])
     .filter((f) => f.key !== editingFeature.value?.key) // Exclude current feature
     .map((f) => ({ value: f.key, label: f.name }));
 });
@@ -879,7 +879,7 @@ function isFeatureLocked(feature: FeatureToggle) {
 }
 
 function isFeatureEnabled(featureKey: string) {
-  const feature = features.value.find((f) => f.key === featureKey);
+  const feature = (features.value || []).find((f) => f.key === featureKey);
   return feature?.enabled || false;
 }
 
@@ -932,7 +932,7 @@ function formatPercentage(value?: number) {
 
 async function exportFeatures() {
   try {
-    const exportData = JSON.stringify(features.value, null, 2);
+    const exportData = JSON.stringify(features.value || [], null, 2);
     const blob = new Blob([exportData], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -977,7 +977,7 @@ async function fetchUsageMetrics() {
       endDate: dateRange.value.end,
     });
 
-    metricsFeatures.value = features.value.map((feature) => {
+    metricsFeatures.value = (features.value || []).map((feature) => {
       const featureMetrics = metrics.features[feature.key];
       return {
         ...feature,
@@ -1031,7 +1031,7 @@ function updateCharts(metrics: any) {
         type: "bar",
         data: {
           labels: topFeatures.map(([key]: any) => {
-            const feature = features.value.find((f) => f.key === key);
+            const feature = (features.value || []).find((f) => f.key === key);
             return feature?.name || key;
           }),
           datasets: [
@@ -1078,7 +1078,7 @@ function updateCharts(metrics: any) {
         type: "bar",
         data: {
           labels: topErrorFeatures.map(([key]: any) => {
-            const feature = features.value.find((f) => f.key === key);
+            const feature = (features.value || []).find((f) => f.key === key);
             return feature?.name || key;
           }),
           datasets: [

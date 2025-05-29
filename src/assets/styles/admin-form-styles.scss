@@ -1,0 +1,390 @@
+// Modern form styles for Admin Panel
+// Addresses the "altbacken" (outdated) look with modern, clean styling
+
+.admin-form-field {
+  margin-bottom: var(--admin-spacing-lg);
+
+  &__label {
+    display: block;
+    font-weight: 500;
+    color: var(--admin-color-text-primary);
+    margin-bottom: 8px;
+    font-size: 0.875rem;
+    letter-spacing: 0.01em;
+  }
+
+  &__input,
+  &__select,
+  &__textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--admin-color-border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.9375rem;
+    background-color: var(--admin-color-background);
+    color: var(--admin-color-text-primary);
+    transition: all 0.2s ease;
+    outline: none;
+
+    &:hover {
+      border-color: var(--admin-color-border-hover);
+      background-color: var(--admin-color-background-hover);
+    }
+
+    &:focus {
+      border-color: var(--admin-color-primary);
+      background-color: var(--admin-color-background);
+      box-shadow: 0 0 0 3px rgba(0, 165, 80, 0.1);
+    }
+
+    &:disabled {
+      background-color: var(--admin-color-background-disabled);
+      border-color: var(--admin-color-border);
+      color: var(--admin-color-text-disabled);
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+  }
+
+  &__select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M10.293 3.293L6 7.586 1.707 3.293A1 1 0 00.293 4.707l5 5a1 1 0 001.414 0l5-5a1 1 0 10-1.414-1.414z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 40px;
+  }
+
+  &__textarea {
+    resize: vertical;
+    min-height: 120px;
+    line-height: 1.5;
+  }
+
+  &__help {
+    margin-top: 6px;
+    font-size: 0.8125rem;
+    color: var(--admin-color-text-secondary);
+    line-height: 1.4;
+  }
+
+  &__error {
+    margin-top: 6px;
+    font-size: 0.8125rem;
+    color: var(--admin-color-danger);
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    &::before {
+      content: "⚠";
+      font-size: 1rem;
+    }
+  }
+
+  // Switch/Toggle variant
+  &--switch {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--admin-color-border-light);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .admin-form-field__switch-label {
+      flex: 1;
+      margin-bottom: 0;
+
+      label {
+        font-weight: 500;
+        color: var(--admin-color-text-primary);
+        margin-bottom: 4px;
+        display: block;
+      }
+
+      p {
+        margin: 0;
+        font-size: 0.8125rem;
+        color: var(--admin-color-text-secondary);
+        line-height: 1.4;
+      }
+    }
+  }
+}
+
+// Modern toggle switch
+.admin-toggle {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+
+    &:checked + .admin-toggle__slider {
+      background-color: var(--admin-color-primary);
+    }
+
+    &:focus + .admin-toggle__slider {
+      box-shadow: 0 0 0 3px rgba(0, 165, 80, 0.2);
+    }
+
+    &:checked + .admin-toggle__slider::before {
+      transform: translateX(24px);
+    }
+
+    &:disabled + .admin-toggle__slider {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  &__slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e0;
+    transition: all 0.3s ease;
+    border-radius: 28px;
+
+    &::before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: all 0.3s ease;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    &:hover {
+      background-color: #a0aec0;
+    }
+  }
+}
+
+// Modern button styles
+.admin-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  &:active::before {
+    width: 300px;
+    height: 300px;
+  }
+
+  &--primary {
+    background: linear-gradient(135deg, var(--admin-color-primary), var(--admin-color-primary-dark));
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 165, 80, 0.2);
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 165, 80, 0.3);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  &--secondary {
+    background: white;
+    color: var(--admin-color-text-primary);
+    border: 2px solid var(--admin-color-border);
+
+    &:hover {
+      background: var(--admin-color-background-alt);
+      border-color: var(--admin-color-primary);
+      color: var(--admin-color-primary);
+    }
+  }
+
+  &--danger {
+    background: linear-gradient(135deg, var(--admin-color-danger), #c82333);
+    color: white;
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+    }
+  }
+
+  &--small {
+    padding: 6px 12px;
+    font-size: 0.8125rem;
+  }
+
+  &--text {
+    background: transparent;
+    color: var(--admin-color-primary);
+    padding: 4px 8px;
+
+    &:hover {
+      background: var(--admin-color-primary-light);
+    }
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  i {
+    font-size: 1em;
+  }
+}
+
+// Fieldset styling
+fieldset {
+  border: 2px solid var(--admin-color-border-light);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  background: var(--admin-color-background);
+
+  legend {
+    padding: 0 12px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: var(--admin-color-text-primary);
+    background: var(--admin-color-background);
+  }
+}
+
+// CSS Variables for the new styles
+:root {
+  --admin-color-primary: #00a550;
+  --admin-color-primary-dark: #009046;
+  --admin-color-primary-light: #e8f7ef;
+  --admin-color-background: #ffffff;
+  --admin-color-background-alt: #f8f9fa;
+  --admin-color-background-hover: #f5f7fa;
+  --admin-color-background-disabled: #f3f4f6;
+  --admin-color-text-primary: #1f2937;
+  --admin-color-text-secondary: #6b7280;
+  --admin-color-text-disabled: #9ca3af;
+  --admin-color-border: #e5e7eb;
+  --admin-color-border-hover: #d1d5db;
+  --admin-color-border-light: #f3f4f6;
+  --admin-color-danger: #dc2626;
+  --admin-color-success: #10b981;
+  --admin-color-warning: #f59e0b;
+  --admin-font-weight-medium: 500;
+  --admin-font-weight-bold: 700;
+  --admin-spacing-xs: 4px;
+  --admin-spacing-sm: 8px;
+  --admin-spacing-md: 16px;
+  --admin-spacing-lg: 24px;
+  --admin-border-radius: 8px;
+  --admin-border-radius-sm: 4px;
+  --admin-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --admin-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+// Dark mode support
+.theme-dark {
+  --admin-color-background: #1a1a1a;
+  --admin-color-background-alt: #121212;
+  --admin-color-background-hover: #2a2a2a;
+  --admin-color-background-disabled: #0a0a0a;
+  --admin-color-text-primary: #ffffff;
+  --admin-color-text-secondary: #b0b0b0;
+  --admin-color-text-disabled: #6b6b6b;
+  --admin-color-border: #333333;
+  --admin-color-border-hover: #444444;
+  --admin-color-border-light: #202020;
+
+  .admin-form-field {
+    &__input,
+    &__select,
+    &__textarea {
+      background-color: #1a1a1a;
+      color: #ffffff;
+    }
+  }
+
+  .admin-toggle__slider {
+    background-color: #444444;
+  }
+
+  .admin-button--secondary {
+    background: #1a1a1a;
+    border-color: #333333;
+    color: #ffffff;
+
+    &:hover {
+      background: #2a2a2a;
+      border-color: var(--admin-color-primary);
+    }
+  }
+
+  fieldset {
+    background: #1a1a1a;
+    border-color: #333333;
+
+    legend {
+      background: #1a1a1a;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .admin-form-field {
+    &--switch {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+
+      .admin-form-field__switch-label {
+        margin-bottom: 8px;
+      }
+    }
+  }
+
+  .admin-button {
+    width: 100%;
+  }
+}

@@ -16,6 +16,7 @@ import { shouldUseRealApi } from "@/config/api-flags";
 
 export interface IAdminFeedbackService {
   getFeedbackStats(): Promise<ApiResponse<FeedbackStats>>;
+  getAllFeedback(limit?: number): Promise<ApiResponse<FeedbackEntry[]>>;
   getNegativeFeedback(limit?: number): Promise<ApiResponse<FeedbackEntry[]>>;
   updateFeedbackStatus(
     id: string,
@@ -60,20 +61,21 @@ export class AdminFeedbackService implements IAdminFeedbackService {
           refreshToken: true,
         };
 
-        // Verwende absolute Pfade ohne Präfix, da der Pfad bereits vollständig ist
-        const statsEndpoint = apiConfig.ENDPOINTS.ADMIN_FEEDBACK.STATS.startsWith("/api/v1/") 
-          ? apiConfig.ENDPOINTS.ADMIN_FEEDBACK.STATS.replace("/api/v1/", "/")
-          : apiConfig.ENDPOINTS.ADMIN_FEEDBACK.STATS;
-          
-        this.logger.info(`Verwende Endpunkt für Feedback-Statistiken: ${statsEndpoint}`);
-        
         const response = await cachedApiService.get<FeedbackStats>(
-          statsEndpoint || "/admin/feedback/stats",
+          apiConfig.ENDPOINTS.ADMIN_FEEDBACK.STATS || "/admin/feedback/stats",
           undefined,
           options,
         );
 
         if (response.success) {
+          // Check if stats are nested in response.data.stats
+          if (response.data && response.data.stats) {
+            return {
+              success: true,
+              data: response.data.stats,
+              message: "Feedback-Statistiken erfolgreich abgerufen",
+            };
+          }
           return response;
         } else {
           throw new Error(
@@ -112,6 +114,76 @@ export class AdminFeedbackService implements IAdminFeedbackService {
   }
 
   /**
+   * Alle Feedbacks abrufen
+   */
+  public async getAllFeedback(
+    limit: number = 1000,
+  ): Promise<ApiResponse<FeedbackEntry[]>> {
+    try {
+      // Prüfen, ob die echte API verwendet werden soll
+      if (shouldUseRealApi("useRealFeedbackApi")) {
+        this.logger.info("Verwende echte API für alle Feedbacks");
+
+        // Cache-Strategie: Kurzzeitiges Caching für Feedback-Einträge
+        const options = {
+          cache: true,
+          cacheTTL: this.feedbackCacheTTL,
+          refreshToken: true,
+        };
+
+        const response = await cachedApiService.get<FeedbackEntry[]>(
+          `${apiConfig.ENDPOINTS.ADMIN_FEEDBACK.LIST || "/admin/feedback"}?limit=${limit}`,
+          undefined,
+          options,
+        );
+
+        if (response.success) {
+          // Check if feedback is nested in response.data.feedback
+          if (response.data && response.data.feedback) {
+            return {
+              success: true,
+              data: response.data.feedback,
+              message: "Alle Feedbacks erfolgreich abgerufen",
+            };
+          }
+          return response;
+        } else {
+          throw new Error(
+            response.message || "Fehler beim Abrufen aller Feedbacks",
+          );
+        }
+      }
+
+      // Fallback zu adminApi mit Mock-Daten
+      this.logger.info(
+        "Verwende Mock-Daten über adminApi für alle Feedbacks",
+      );
+      const response = await adminApi.getNegativeFeedback();
+
+      return {
+        success: true,
+        data: response?.data?.feedback || response?.data,
+        message: "Alle Feedbacks erfolgreich abgerufen",
+      };
+    } catch (error) {
+      this.logger.error("Fehler beim Abrufen aller Feedbacks", error);
+
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Fehler beim Abrufen aller Feedbacks",
+        error: {
+          code: "ALL_FEEDBACK_ERROR",
+          message:
+            error instanceof Error ? error.message : "Unbekannter Fehler",
+        },
+      };
+    }
+  }
+
+  /**
    * Negatives Feedback abrufen
    */
   public async getNegativeFeedback(
@@ -129,20 +201,21 @@ export class AdminFeedbackService implements IAdminFeedbackService {
           refreshToken: true,
         };
 
-        // Verwende absolute Pfade ohne Präfix
-        const negativeEndpoint = apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE.startsWith("/api/v1/") 
-          ? apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE.replace("/api/v1/", "/")
-          : apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE;
-          
-        this.logger.info(`Verwende Endpunkt für negatives Feedback: ${negativeEndpoint}`);
-        
         const response = await cachedApiService.get<FeedbackEntry[]>(
-          `${negativeEndpoint || "/admin/feedback/negative"}?limit=${limit}`,
+          `${apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE || "/admin/feedback/negative"}?limit=${limit}`,
           undefined,
           options,
         );
 
         if (response.success) {
+          // Check if feedback is nested in response.data.feedback
+          if (response.data && response.data.feedback) {
+            return {
+              success: true,
+              data: response.data.feedback,
+              message: "Negatives Feedback erfolgreich abgerufen",
+            };
+          }
           return response;
         } else {
           throw new Error(
@@ -194,27 +267,15 @@ export class AdminFeedbackService implements IAdminFeedbackService {
           `Verwende echte API für Statusaktualisierung des Feedbacks ${id}`,
         );
 
-        // Verwende absolute Pfade ohne Präfix
-        const updateEndpoint = apiConfig.ENDPOINTS.ADMIN_FEEDBACK.UPDATE_STATUS.startsWith("/api/v1/") 
-          ? apiConfig.ENDPOINTS.ADMIN_FEEDBACK.UPDATE_STATUS.replace("/api/v1/", "/")
-          : apiConfig.ENDPOINTS.ADMIN_FEEDBACK.UPDATE_STATUS;
-          
-        this.logger.info(`Verwende Endpunkt für Statusaktualisierung: ${updateEndpoint}`);
-        
         const response = await apiService.patch<FeedbackEntry>(
-          `${updateEndpoint || "/admin/feedback"}/${id}/status`,
+          `${apiConfig.ENDPOINTS.ADMIN_FEEDBACK.UPDATE_STATUS || "/admin/feedback"}/${id}/status`,
           { status },
         );
 
         if (response.success) {
           // Cache für Feedback-Listen invalidieren
-          // Verwende konvertierten Pfad für die Cache-Invalidierung
-          const negativeEndpoint = apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE.startsWith("/api/v1/") 
-            ? apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE.replace("/api/v1/", "/")
-            : apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE;
-            
           cachedApiService.invalidate(
-            negativeEndpoint || "/admin/feedback/negative",
+            apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE || "/admin/feedback/negative",
           );
           return response;
         } else {
@@ -266,33 +327,17 @@ export class AdminFeedbackService implements IAdminFeedbackService {
       if (shouldUseRealApi("useRealFeedbackApi")) {
         this.logger.info(`Verwende echte API zum Löschen des Feedbacks ${id}`);
 
-        // Verwende absolute Pfade ohne Präfix
-        const deleteEndpoint = apiConfig.ENDPOINTS.ADMIN_FEEDBACK.DELETE.startsWith("/api/v1/") 
-          ? apiConfig.ENDPOINTS.ADMIN_FEEDBACK.DELETE.replace("/api/v1/", "/")
-          : apiConfig.ENDPOINTS.ADMIN_FEEDBACK.DELETE;
-          
-        this.logger.info(`Verwende Endpunkt für Löschen: ${deleteEndpoint}`);
-        
         const response = await apiService.delete<void>(
-          `${deleteEndpoint || "/admin/feedback"}/${id}`,
+          `${apiConfig.ENDPOINTS.ADMIN_FEEDBACK.DELETE || "/admin/feedback"}/${id}`,
         );
 
         if (response.success) {
           // Cache für Feedback-Listen und Stats invalidieren
-          // Verwende konvertierte Pfade für die Cache-Invalidierung
-          const negativeEndpoint = apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE.startsWith("/api/v1/") 
-            ? apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE.replace("/api/v1/", "/")
-            : apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE;
-            
-          const statsEndpoint = apiConfig.ENDPOINTS.ADMIN_FEEDBACK.STATS.startsWith("/api/v1/") 
-            ? apiConfig.ENDPOINTS.ADMIN_FEEDBACK.STATS.replace("/api/v1/", "/")
-            : apiConfig.ENDPOINTS.ADMIN_FEEDBACK.STATS;
-            
           cachedApiService.invalidate(
-            negativeEndpoint || "/admin/feedback/negative",
+            apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE || "/admin/feedback/negative",
           );
           cachedApiService.invalidate(
-            statsEndpoint || "/admin/feedback/stats",
+            apiConfig.ENDPOINTS.ADMIN_FEEDBACK.STATS || "/admin/feedback/stats",
           );
           return response;
         } else {
@@ -347,16 +392,9 @@ export class AdminFeedbackService implements IAdminFeedbackService {
           fields: options.fields.join(","),
         };
 
-        // Verwende absolute Pfade ohne Präfix
-        const exportEndpoint = apiConfig.ENDPOINTS.ADMIN_FEEDBACK.EXPORT.startsWith("/api/v1/") 
-          ? apiConfig.ENDPOINTS.ADMIN_FEEDBACK.EXPORT.replace("/api/v1/", "/")
-          : apiConfig.ENDPOINTS.ADMIN_FEEDBACK.EXPORT;
-          
-        this.logger.info(`Verwende Endpunkt für Export: ${exportEndpoint}`);
-        
         // Führe den Export mit Blob-Response durch
         const response = await apiService.get<Blob>(
-          exportEndpoint || "/admin/feedback/export",
+          apiConfig.ENDPOINTS.ADMIN_FEEDBACK.EXPORT || "/admin/feedback/export",
           params,
           { responseType: "blob" },
         );
@@ -417,15 +455,8 @@ export class AdminFeedbackService implements IAdminFeedbackService {
       if (shouldUseRealApi("useRealFeedbackApi")) {
         this.logger.info("Verwende echte API für Feedback-Filterung");
 
-        // Verwende absolute Pfade ohne Präfix
-        const filterEndpoint = apiConfig.ENDPOINTS.ADMIN_FEEDBACK.FILTER.startsWith("/api/v1/") 
-          ? apiConfig.ENDPOINTS.ADMIN_FEEDBACK.FILTER.replace("/api/v1/", "/")
-          : apiConfig.ENDPOINTS.ADMIN_FEEDBACK.FILTER;
-          
-        this.logger.info(`Verwende Endpunkt für Filterung: ${filterEndpoint}`);
-        
         const response = await apiService.post<FeedbackEntry[]>(
-          filterEndpoint || "/admin/feedback/filter",
+          apiConfig.ENDPOINTS.ADMIN_FEEDBACK.FILTER || "/admin/feedback/filter",
           filter,
         );
 

@@ -634,7 +634,7 @@
   </div>
   
   <!-- Streaming Debug Panel for Development -->
-  <StreamingDebugPanel v-if="import.meta.env.DEV" />
+  <StreamingDebugPanel v-if="isDevelopment" />
 </template>
 
 <script setup lang="ts">
@@ -738,6 +738,7 @@ const availableCategories = computed<SessionCategory[]>(
   () => sessionsStore.availableCategories,
 );
 const isAuthenticated = computed<boolean>(() => authStore.isAuthenticated);
+const isDevelopment = computed<boolean>(() => import.meta.env.DEV);
 
 // Sortierte Sessions basierend auf dem Store-Getter
 const sortedSessions = computed<ChatSession[]>(

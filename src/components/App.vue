@@ -167,7 +167,7 @@ onMounted(async () => {
 
   // Check if user is already authenticated
   if (isAuthenticated.value) {
-    await sessionsStore.fetchSessions();
+    await sessionsStore.synchronizeSessions();
   }
 });
 
@@ -176,7 +176,7 @@ watch(
   () => authStore.isAuthenticated,
   (newValue) => {
     if (newValue) {
-      sessionsStore.fetchSessions();
+      sessionsStore.synchronizeSessions();
     }
   },
 );
@@ -221,7 +221,7 @@ async function login() {
 
     if (success) {
       credentials.value.password = ""; // Clear password
-      await sessionsStore.fetchSessions();
+      await sessionsStore.synchronizeSessions();
 
       // Show welcome message
       addSystemMessage("success", "Erfolgreich angemeldet");

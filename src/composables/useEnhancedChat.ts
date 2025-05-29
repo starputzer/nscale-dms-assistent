@@ -1,7 +1,6 @@
 import { computed, ref, shallowRef, toRefs } from "vue";
 import { useSessionsStore } from "@/stores/sessions";
 import { useUIStore } from "@/stores/ui";
-import { storeToRefs } from "pinia";
 import type { ChatSession, ChatMessage } from "@/types/session";
 import {
   StreamingService,
@@ -29,8 +28,8 @@ export function useEnhancedChat() {
   const sessionsStore = useSessionsStore();
   const uiStore = useUIStore();
 
-  // Optimierung: Verwende storeToRefs für reaktive Store-Properties
-  // Dies verhindert unnötige Re-Renders, indem nur geänderte Props reaktiv werden
+  // Since the store already returns refs, we can destructure them directly
+  // No need for storeToRefs when the store returns refs
   const {
     isLoading,
     isStreaming,
@@ -39,7 +38,7 @@ export function useEnhancedChat() {
     currentSession,
     currentMessages,
     sortedSessions,
-  } = storeToRefs(sessionsStore);
+  } = sessionsStore;
 
   // Reaktiver Zustand - primitive Werte mit ref
   const inputText = ref("");
@@ -116,7 +115,7 @@ export function useEnhancedChat() {
    */
   const loadSessions = async (): Promise<void> => {
     try {
-      await sessionsStore.fetchSessions();
+      await sessionsStore.synchronizeSessions();
       resetCache();
     } catch (error) {
       handleError(error as Error, "Fehler beim Laden der Sitzungen");

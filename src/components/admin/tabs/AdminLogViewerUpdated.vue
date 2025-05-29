@@ -375,7 +375,7 @@ import { logService, type LogEntry } from "@/services/api/LogServiceWrapper";
 // i18n
 const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
 console.log('[i18n] Component initialized with global scope and inheritance');
-const { showToast } = useToast();
+const toast = useToast();
 const { showConfirmDialog } = useDialog();
 
 // State
@@ -497,7 +497,7 @@ async function refreshLogs() {
     currentPage.value = 1; // Zurück zur ersten Seite bei Aktualisierung
     await fetchLogs();
 
-    showToast({
+    toast.show({
       type: "success",
       title: t("admin.logViewer.toast.refreshSuccess", "Aktualisiert"),
       message: t(
@@ -508,7 +508,7 @@ async function refreshLogs() {
   } catch (error) {
     console.error("Error refreshing logs:", error);
 
-    showToast({
+    toast.show({
       type: "error",
       title: t("admin.logViewer.toast.refreshError", "Fehler"),
       message: t(
@@ -546,7 +546,7 @@ async function fetchLogs() {
     return response;
   } catch (error) {
     console.error("Error fetching logs:", error);
-    showToast({
+    toast.show({
       type: "error",
       title: t("admin.logViewer.toast.fetchError", "Fehler"),
       message:
@@ -591,7 +591,7 @@ async function clearLogs() {
     totalPages.value = 1;
     currentPage.value = 1;
 
-    showToast({
+    toast.show({
       type: "success",
       title: t("admin.logViewer.toast.clearSuccess", "Gelöscht"),
       message: t(
@@ -602,7 +602,7 @@ async function clearLogs() {
   } catch (error) {
     console.error("Error clearing logs:", error);
 
-    showToast({
+    toast.show({
       type: "error",
       title: t("admin.logViewer.toast.clearError", "Fehler"),
       message:
@@ -645,7 +645,7 @@ async function exportLogs() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    showToast({
+    toast.show({
       type: "success",
       title: t("admin.logViewer.toast.exportSuccess", "Exportiert"),
       message: t(
@@ -656,7 +656,7 @@ async function exportLogs() {
   } catch (error) {
     console.error("Error exporting logs:", error);
 
-    showToast({
+    toast.show({
       type: "error",
       title: t("admin.logViewer.toast.exportError", "Fehler"),
       message:
@@ -676,7 +676,7 @@ function copyToClipboard(log: LogEntry) {
     const text = `[${formatDate(log.timestamp)}] [${log.level.toUpperCase()}] [${log.component}] ${log.message}${log.details ? "\n" + log.details : ""}`;
     navigator.clipboard.writeText(text);
 
-    showToast({
+    toast.show({
       type: "success",
       title: t("admin.logViewer.toast.copySuccess", "Kopiert"),
       message: t(
@@ -687,7 +687,7 @@ function copyToClipboard(log: LogEntry) {
   } catch (error) {
     console.error("Error copying to clipboard:", error);
 
-    showToast({
+    toast.show({
       type: "error",
       title: t("admin.logViewer.toast.copyError", "Fehler"),
       message: t(

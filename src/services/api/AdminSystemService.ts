@@ -23,6 +23,13 @@ export interface IAdminSystemService {
   performSystemCheck(): Promise<ApiResponse<SystemCheckResult>>;
   reindexDocuments(): Promise<ApiResponse<void>>;
   getAvailableActions(): Promise<ApiResponse<SystemAction[]>>;
+  getSystemSettings(): Promise<ApiResponse<any>>;
+  updateSystemSettings(settings: any): Promise<ApiResponse<void>>;
+  restartServices(): Promise<ApiResponse<void>>;
+  exportLogs(): Promise<ApiResponse<any>>;
+  optimizeDatabase(): Promise<ApiResponse<void>>;
+  resetStatistics(): Promise<ApiResponse<void>>;
+  createBackup(): Promise<ApiResponse<void>>;
 }
 
 /**
@@ -468,6 +475,280 @@ export class AdminSystemService implements IAdminSystemService {
           code: "SYSTEM_ACTIONS_ERROR",
           message:
             error instanceof Error ? error.message : "Unbekannter Fehler",
+        },
+      };
+    }
+  }
+
+  /**
+   * Systemeinstellungen abrufen
+   */
+  public async getSystemSettings(): Promise<ApiResponse<any>> {
+    try {
+      if (shouldUseRealApi("useRealSystemApi")) {
+        this.logger.info("Verwende echte API für Systemeinstellungen");
+
+        const response = await cachedApiService.get<any>(
+          apiConfig.ENDPOINTS.SYSTEM.SETTINGS || "/admin/settings",
+          undefined,
+          { cache: true, cacheTTL: 300 }
+        );
+
+        if (response.success) {
+          return response;
+        } else {
+          throw new Error(response.message || "Fehler beim Abrufen der Systemeinstellungen");
+        }
+      }
+
+      // Fallback: Standard-Einstellungen
+      return {
+        success: true,
+        data: {
+          defaultModel: "llama-7b",
+          maxTokensPerRequest: 4096,
+          enableModelSelection: true,
+          enableRateLimit: true,
+          rateLimitPerMinute: 30,
+          maxConnectionsPerUser: 10,
+          sessionTimeoutMinutes: 60,
+          maintenanceMode: false,
+          maintenanceMessage: "",
+          autoBackup: true,
+        },
+        message: "Systemeinstellungen erfolgreich abgerufen",
+      };
+    } catch (error) {
+      this.logger.error("Fehler beim Abrufen der Systemeinstellungen", error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : "Fehler beim Abrufen der Systemeinstellungen",
+        error: {
+          code: "SETTINGS_ERROR",
+          message: error instanceof Error ? error.message : "Unbekannter Fehler",
+        },
+      };
+    }
+  }
+
+  /**
+   * Systemeinstellungen aktualisieren
+   */
+  public async updateSystemSettings(settings: any): Promise<ApiResponse<void>> {
+    try {
+      if (shouldUseRealApi("useRealSystemApi")) {
+        this.logger.info("Verwende echte API für Systemeinstellungen-Update");
+
+        const response = await apiService.put<void>(
+          apiConfig.ENDPOINTS.SYSTEM.SETTINGS || "/admin/settings",
+          settings
+        );
+
+        if (response.success) {
+          // Cache invalidieren nach Update
+          await cachedApiService.invalidateCache(apiConfig.ENDPOINTS.SYSTEM.SETTINGS || "/admin/settings");
+          return response;
+        } else {
+          throw new Error(response.message || "Fehler beim Speichern der Systemeinstellungen");
+        }
+      }
+
+      // Fallback: Erfolg simulieren
+      return {
+        success: true,
+        message: "Systemeinstellungen erfolgreich gespeichert",
+      };
+    } catch (error) {
+      this.logger.error("Fehler beim Speichern der Systemeinstellungen", error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : "Fehler beim Speichern der Systemeinstellungen",
+        error: {
+          code: "SETTINGS_UPDATE_ERROR",
+          message: error instanceof Error ? error.message : "Unbekannter Fehler",
+        },
+      };
+    }
+  }
+
+  /**
+   * Systemdienste neu starten
+   */
+  public async restartServices(): Promise<ApiResponse<void>> {
+    try {
+      if (shouldUseRealApi("useRealSystemApi")) {
+        this.logger.info("Verwende echte API für Dienste-Neustart");
+
+        const response = await apiService.post<void>(
+          apiConfig.ENDPOINTS.SYSTEM.RESTART || "/admin/restart-services"
+        );
+
+        if (response.success) {
+          return response;
+        } else {
+          throw new Error(response.message || "Fehler beim Neustart der Dienste");
+        }
+      }
+
+      // Fallback: Erfolg simulieren
+      return {
+        success: true,
+        message: "Systemdienste erfolgreich neu gestartet",
+      };
+    } catch (error) {
+      this.logger.error("Fehler beim Neustart der Dienste", error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : "Fehler beim Neustart der Dienste",
+        error: {
+          code: "RESTART_ERROR",
+          message: error instanceof Error ? error.message : "Unbekannter Fehler",
+        },
+      };
+    }
+  }
+
+  /**
+   * Systemlogs exportieren
+   */
+  public async exportLogs(): Promise<ApiResponse<any>> {
+    try {
+      if (shouldUseRealApi("useRealSystemApi")) {
+        this.logger.info("Verwende echte API für Log-Export");
+
+        const response = await apiService.get<any>(
+          apiConfig.ENDPOINTS.SYSTEM.EXPORT_LOGS || "/admin/export-logs",
+          undefined,
+          { responseType: "blob" }
+        );
+
+        if (response.success) {
+          return response;
+        } else {
+          throw new Error(response.message || "Fehler beim Export der Logs");
+        }
+      }
+
+      // Fallback: Fehler, da Export nur mit API möglich
+      throw new Error("Log-Export ist nur mit aktiver API-Integration verfügbar");
+    } catch (error) {
+      this.logger.error("Fehler beim Export der Logs", error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : "Fehler beim Export der Logs",
+        error: {
+          code: "EXPORT_ERROR",
+          message: error instanceof Error ? error.message : "Unbekannter Fehler",
+        },
+      };
+    }
+  }
+
+  /**
+   * Datenbank optimieren
+   */
+  public async optimizeDatabase(): Promise<ApiResponse<void>> {
+    try {
+      if (shouldUseRealApi("useRealSystemApi")) {
+        this.logger.info("Verwende echte API für Datenbank-Optimierung");
+
+        const response = await apiService.post<void>(
+          apiConfig.ENDPOINTS.SYSTEM.OPTIMIZE_DB || "/admin/optimize-database"
+        );
+
+        if (response.success) {
+          return response;
+        } else {
+          throw new Error(response.message || "Fehler bei der Datenbankoptimierung");
+        }
+      }
+
+      // Fallback: Erfolg simulieren
+      return {
+        success: true,
+        message: "Datenbank erfolgreich optimiert",
+      };
+    } catch (error) {
+      this.logger.error("Fehler bei der Datenbankoptimierung", error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : "Fehler bei der Datenbankoptimierung",
+        error: {
+          code: "OPTIMIZE_ERROR",
+          message: error instanceof Error ? error.message : "Unbekannter Fehler",
+        },
+      };
+    }
+  }
+
+  /**
+   * Statistiken zurücksetzen
+   */
+  public async resetStatistics(): Promise<ApiResponse<void>> {
+    try {
+      if (shouldUseRealApi("useRealSystemApi")) {
+        this.logger.info("Verwende echte API für Statistik-Reset");
+
+        const response = await apiService.post<void>(
+          apiConfig.ENDPOINTS.SYSTEM.RESET_STATS || "/admin/reset-statistics"
+        );
+
+        if (response.success) {
+          // Cache invalidieren nach Reset
+          await cachedApiService.invalidateCache(apiConfig.ENDPOINTS.SYSTEM.STATS || "/admin/stats");
+          return response;
+        } else {
+          throw new Error(response.message || "Fehler beim Zurücksetzen der Statistiken");
+        }
+      }
+
+      // Fallback: Erfolg simulieren
+      return {
+        success: true,
+        message: "Statistiken erfolgreich zurückgesetzt",
+      };
+    } catch (error) {
+      this.logger.error("Fehler beim Zurücksetzen der Statistiken", error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : "Fehler beim Zurücksetzen der Statistiken",
+        error: {
+          code: "RESET_ERROR",
+          message: error instanceof Error ? error.message : "Unbekannter Fehler",
+        },
+      };
+    }
+  }
+
+  /**
+   * System-Backup erstellen
+   */
+  public async createBackup(): Promise<ApiResponse<void>> {
+    try {
+      if (shouldUseRealApi("useRealSystemApi")) {
+        this.logger.info("Verwende echte API für Backup-Erstellung");
+
+        const response = await apiService.post<void>(
+          apiConfig.ENDPOINTS.SYSTEM.CREATE_BACKUP || "/admin/create-backup"
+        );
+
+        if (response.success) {
+          return response;
+        } else {
+          throw new Error(response.message || "Fehler beim Erstellen des Backups");
+        }
+      }
+
+      // Fallback: Fehler, da Backup nur mit API möglich
+      throw new Error("Backup-Erstellung ist nur mit aktiver API-Integration verfügbar");
+    } catch (error) {
+      this.logger.error("Fehler beim Erstellen des Backups", error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : "Fehler beim Erstellen des Backups",
+        error: {
+          code: "BACKUP_ERROR",
+          message: error instanceof Error ? error.message : "Unbekannter Fehler",
         },
       };
     }

@@ -1,0 +1,92 @@
+/* Admin Sidebar Final Fix - Force Text Visibility */
+
+/* Reset any potential issues and force text visibility */
+.admin-panel__nav-item {
+  /* Force text color with maximum specificity */
+  color: #333333 !important;
+  /* Ensure the button text inherits color */
+  -webkit-text-fill-color: #333333 !important;
+}
+
+.admin-panel__nav-label {
+  /* Force inline-block display */
+  display: inline-block !important;
+  /* Force text color */
+  color: #333333 !important;
+  -webkit-text-fill-color: #333333 !important;
+  /* Ensure visibility */
+  opacity: 1 !important;
+  visibility: visible !important;
+  /* Force minimum dimensions */
+  min-height: 1em !important;
+  line-height: 1.4 !important;
+  /* Prevent text from being hidden */
+  overflow: visible !important;
+  text-indent: 0 !important;
+  /* Reset any transforms */
+  transform: none !important;
+  /* Ensure z-index */
+  z-index: 1 !important;
+  position: relative !important;
+  /* Force font properties */
+  font-size: 0.95rem !important;
+  font-weight: 500 !important;
+  font-family: inherit !important;
+  /* Text rendering */
+  -webkit-font-smoothing: antialiased !important;
+  text-rendering: optimizeLegibility !important;
+}
+
+/* Active state */
+.admin-panel__nav-item--active {
+  color: #00a550 !important;
+  -webkit-text-fill-color: #00a550 !important;
+}
+
+.admin-panel__nav-item--active .admin-panel__nav-label {
+  color: #00a550 !important;
+  -webkit-text-fill-color: #00a550 !important;
+  font-weight: 600 !important;
+}
+
+/* Dark theme */
+.theme-dark .admin-panel__nav-item {
+  color: #f0f0f0 !important;
+  -webkit-text-fill-color: #f0f0f0 !important;
+}
+
+.theme-dark .admin-panel__nav-label {
+  color: #f0f0f0 !important;
+  -webkit-text-fill-color: #f0f0f0 !important;
+}
+
+.theme-dark .admin-panel__nav-item--active {
+  color: #00c060 !important;
+  -webkit-text-fill-color: #00c060 !important;
+}
+
+.theme-dark .admin-panel__nav-item--active .admin-panel__nav-label {
+  color: #00c060 !important;
+  -webkit-text-fill-color: #00c060 !important;
+}
+
+/* Force all text elements to be visible */
+.admin-panel__sidebar button {
+  color: inherit !important;
+  -webkit-text-fill-color: inherit !important;
+}
+
+/* Fallback: If labels are empty, show placeholder text */
+.admin-panel__nav-label:empty::before {
+  content: attr(data-fallback-label) !important;
+  color: inherit !important;
+  -webkit-text-fill-color: inherit !important;
+}
+
+/* Additional specificity for Vue dynamic content */
+[class*="admin-panel"] [class*="nav-label"] {
+  color: inherit !important;
+  -webkit-text-fill-color: inherit !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}

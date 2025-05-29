@@ -79,6 +79,12 @@ export class AdminUsersService implements IAdminUsersService {
               data: response.data.items,
               message: "Benutzer erfolgreich abgerufen",
             };
+          } else if (response.data && response.data.users) {
+            return {
+              success: true,
+              data: response.data.users,
+              message: "Benutzer erfolgreich abgerufen",
+            };
           } else {
             throw new Error("Unerwartetes Antwortformat vom Server");
           }

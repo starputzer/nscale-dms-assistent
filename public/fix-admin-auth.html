@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Auth Fix Tool</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .warning { background: #fff3cd; color: #856404; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Admin Authentication Debug & Fix Tool</h1>
+    
+    <div class="section">
+        <h2>1. Current Authentication Status</h2>
+        <div id="authStatus"></div>
+        <button onclick="checkAuthStatus()">Check Status</button>
+    </div>
+
+    <div class="section">
+        <h2>2. Login as Admin</h2>
+        <p>Login with martin@danglefeet.com / password: 123</p>
+        <button onclick="loginAsAdmin()">Login as Admin</button>
+        <div id="loginResult"></div>
+    </div>
+
+    <div class="section">
+        <h2>3. Test Admin Endpoints</h2>
+        <button onclick="testAdminEndpoints()">Test All Admin Endpoints</button>
+        <div id="testResults"></div>
+    </div>
+
+    <div class="section">
+        <h2>4. Manual Token Test</h2>
+        <input type="text" id="manualToken" placeholder="Paste token here" style="width: 400px; padding: 5px;">
+        <button onclick="testManualToken()">Test Token</button>
+        <div id="manualTestResult"></div>
+    </div>
+
+    <script>
+        // Helper function to display status
+        function showStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        // Check current authentication status
+        function checkAuthStatus() {
+            const token = localStorage.getItem('nscale_access_token');
+            const user = localStorage.getItem('nscale_user');
+            
+            let status = '<h3>Local Storage Status:</h3>';
+            status += '<pre>';
+            status += `Token: ${token ? token.substring(0, 50) + '...' : 'NOT FOUND'}\n`;
+            status += `User: ${user ? JSON.stringify(JSON.parse(user), null, 2) : 'NOT FOUND'}\n`;
+            
+            // Check all possible token locations
+            const tokenVariations = [
+                'nscale_access_token',
+                'access_token',
+                'auth_token',
+                'nscale_auth_token'
+            ];
+            
+            status += '\nAll possible tokens in localStorage:\n';
+            tokenVariations.forEach(key => {
+                const value = localStorage.getItem(key);
+                if (value) {
+                    status += `${key}: ${value.substring(0, 30)}...\n`;
+                }
+            });
+            
+            status += '</pre>';
+            
+            document.getElementById('authStatus').innerHTML = status;
+            
+            if (token) {
+                // Try to validate token
+                validateToken(token);
+            }
+        }
+
+        // Validate token with server
+        async function validateToken(token) {
+            try {
+                const response = await fetch('/api/auth/validate', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                let validationHtml = '<h3>Token Validation:</h3><pre>';
+                validationHtml += `Status: ${response.status}\n`;
+                validationHtml += `Valid: ${data.valid}\n`;
+                if (data.user) {
+                    validationHtml += `User: ${JSON.stringify(data.user, null, 2)}\n`;
+                }
+                validationHtml += '</pre>';
+                
+                document.getElementById('authStatus').innerHTML += validationHtml;
+            } catch (error) {
+                document.getElementById('authStatus').innerHTML += 
+                    `<div class="status error">Token validation failed: ${error.message}</div>`;
+            }
+        }
+
+        // Login as admin
+        async function loginAsAdmin() {
+            showStatus('loginResult', 'Logging in...', 'info');
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'martin@danglefeet.com',
+                        password: '123'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.access_token) {
+                    // Store token in all possible locations
+                    localStorage.setItem('nscale_access_token', data.access_token);
+                    localStorage.setItem('access_token', data.access_token);
+                    
+                    if (data.user) {
+                        localStorage.setItem('nscale_user', JSON.stringify(data.user));
+                    }
+                    
+                    showStatus('loginResult', 
+                        `✅ Login successful! Token: ${data.access_token.substring(0, 50)}...`, 
+                        'success');
+                    
+                    // Automatically check status after login
+                    setTimeout(checkAuthStatus, 500);
+                } else {
+                    showStatus('loginResult', 
+                        `❌ Login failed: ${data.detail || data.message || 'Unknown error'}`, 
+                        'error');
+                }
+            } catch (error) {
+                showStatus('loginResult', `❌ Login error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test admin endpoints
+        async function testAdminEndpoints() {
+            const token = localStorage.getItem('nscale_access_token');
+            
+            if (!token) {
+                showStatus('testResults', '❌ No token found. Please login first.', 'error');
+                return;
+            }
+
+            const endpoints = [
+                { name: 'Feature Toggles', url: '/api/v1/admin/feature-toggles' },
+                { name: 'System Actions', url: '/api/v1/admin/system-actions' },
+                { name: 'System Stats', url: '/api/v1/system/stats' },
+                { name: 'Users', url: '/api/v1/admin/users' },
+                { name: 'Feedback Stats', url: '/api/v1/admin/feedback/stats' }
+            ];
+
+            let results = '<h3>Admin Endpoint Tests:</h3>';
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(endpoint.url, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const statusClass = response.ok ? 'success' : 'error';
+                    const icon = response.ok ? '✅' : '❌';
+                    
+                    results += `<div class="status ${statusClass}">`;
+                    results += `${icon} ${endpoint.name}: ${response.status} ${response.statusText}`;
+                    
+                    if (!response.ok) {
+                        try {
+                            const errorData = await response.json();
+                            results += ` - ${errorData.detail || errorData.message || 'No error details'}`;
+                        } catch (e) {
+                            results += ` - Could not parse error response`;
+                        }
+                    }
+                    
+                    results += '</div>';
+                } catch (error) {
+                    results += `<div class="status error">❌ ${endpoint.name}: Network error - ${error.message}</div>`;
+                }
+            }
+            
+            document.getElementById('testResults').innerHTML = results;
+        }
+
+        // Test manual token
+        async function testManualToken() {
+            const token = document.getElementById('manualToken').value.trim();
+            
+            if (!token) {
+                showStatus('manualTestResult', 'Please enter a token', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/v1/admin/users', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showStatus('manualTestResult', 
+                        `✅ Token is valid! Response: ${JSON.stringify(data).substring(0, 100)}...`, 
+                        'success');
+                } else {
+                    showStatus('manualTestResult', 
+                        `❌ Token test failed: ${response.status} - ${data.detail || data.message}`, 
+                        'error');
+                }
+            } catch (error) {
+                showStatus('manualTestResult', `❌ Test error: ${error.message}`, 'error');
+            }
+        }
+
+        // Check status on page load
+        window.addEventListener('load', checkAuthStatus);
+    </script>
+</body>
+</html>

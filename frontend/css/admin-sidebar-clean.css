@@ -1,0 +1,41 @@
+/* Admin Sidebar Clean CSS - Final working version */
+
+/* Ensure admin navigation text is visible */
+.admin-panel__nav-label {
+  display: inline-block !important;
+  color: var(--admin-text, #333333) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  font-size: 0.95rem !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 160px !important;
+  -webkit-font-smoothing: antialiased !important;
+  text-rendering: optimizeLegibility !important;
+}
+
+/* Active state */
+.admin-panel__nav-item--active .admin-panel__nav-label {
+  color: #00a550 !important;
+  font-weight: 600 !important;
+}
+
+/* Dark theme support */
+.theme-dark .admin-panel__nav-label {
+  color: #f0f0f0 !important;
+}
+
+.theme-dark .admin-panel__nav-item--active .admin-panel__nav-label {
+  color: #00c060 !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .admin-panel__nav-label {
+    font-size: 0.8rem !important;
+    max-width: none !important;
+  }
+}

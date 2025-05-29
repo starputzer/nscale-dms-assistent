@@ -1798,33 +1798,40 @@ export const useSessionsStore = defineStore(
       }
     }
 
+    /**
+     * Löscht die aktuelle Session (setzt currentSessionId auf null)
+     */
+    function clearCurrentSession(): void {
+      currentSessionId.value = null;
+    }
+
     // Öffentliche API des Stores
     return {
-      // State
-      sessions: sessions.value,
-      currentSessionId: currentSessionId.value,
-      messages: messages.value,
-      streaming: streaming.value,
-      isLoading: isLoading.value,
-      error: error.value,
-      version: version.value,
-      pendingMessages: pendingMessages.value,
-      syncStatus: syncStatus.value,
-      availableTags: availableTags.value,
-      availableCategories: availableCategories.value,
-      selectedSessionIds: selectedSessionIds.value,
+      // State - return refs directly, not their values
+      sessions,
+      currentSessionId,
+      messages,
+      streaming,
+      isLoading,
+      error,
+      version,
+      pendingMessages,
+      syncStatus,
+      availableTags,
+      availableCategories,
+      selectedSessionIds,
 
-      // Getters
-      currentSession: currentSession.value,
-      currentMessages: currentMessages.value,
-      sortedSessions: sortedSessions.value,
-      isStreaming: isStreaming.value,
-      currentPendingMessages: currentPendingMessages.value,
-      allCurrentMessages: allCurrentMessages.value,
-      getSessionsByTag: getSessionsByTag.value,
-      getSessionsByCategory: getSessionsByCategory.value,
-      archivedSessions: archivedSessions.value,
-      activeSessions: activeSessions.value,
+      // Getters - return computed refs directly
+      currentSession,
+      currentMessages,
+      sortedSessions,
+      isStreaming,
+      currentPendingMessages,
+      allCurrentMessages,
+      getSessionsByTag,
+      getSessionsByCategory,
+      archivedSessions,
+      activeSessions,
 
       // Actions
       initialize,
@@ -1832,6 +1839,7 @@ export const useSessionsStore = defineStore(
       fetchMessages,
       createSession,
       setCurrentSession,
+      clearCurrentSession,
       updateSessionTitle,
       archiveSession,
       deleteSession,

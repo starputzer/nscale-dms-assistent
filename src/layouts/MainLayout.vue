@@ -15,21 +15,21 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { useStore } from "vuex";
+import { useAuthStore } from "@/stores/auth";
+import { useSessionsStore } from "@/stores/sessions";
 import HeaderComponent from "@/components/HeaderComponent.vue";
 import SidebarComponent from "@/components/SidebarComponent.vue";
 
-const store = useStore();
+const authStore = useAuthStore();
+const sessionsStore = useSessionsStore();
 const router = useRouter();
 
 onMounted(() => {
-  const isAuthenticated = store.getters["auth/isAuthenticated"];
-
-  if (!isAuthenticated) {
+  if (!authStore.isAuthenticated) {
     router.push("/login");
   } else {
     // Load sessions when layout is mounted
-    store.dispatch("sessions/fetchSessions");
+    sessionsStore.synchronizeSessions();
   }
 });
 </script>

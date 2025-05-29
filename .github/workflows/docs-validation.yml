@@ -1,0 +1,257 @@
+name: Documentation Validation
+
+on:
+  pull_request:
+    paths:
+      - '**.md'
+      - 'docs/**'
+      - '.github/workflows/docs-validation.yml'
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - '**.md'
+      - 'docs/**'
+      - '.github/workflows/docs-validation.yml'
+  workflow_dispatch:
+
+jobs:
+  validate-docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for proper file tracking
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      
+      - name: Create results directory
+        run: mkdir -p docs-validation-results
+      
+      - name: Check documentation metadata
+        id: check-metadata
+        run: |
+          echo "## 📋 Metadata Check Results" > docs-validation-results/metadata-report.md
+          echo "" >> docs-validation-results/metadata-report.md
+          
+          # Run metadata check and capture output
+          if python scripts/check_doc_metadata.py docs 2>&1 | tee -a docs-validation-results/metadata-check.log; then
+            echo "✅ All files have proper metadata headers!" >> docs-validation-results/metadata-report.md
+            echo "metadata_status=success" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Some files have metadata issues. See details below:" >> docs-validation-results/metadata-report.md
+            echo '```' >> docs-validation-results/metadata-report.md
+            grep -E "📄|   -" docs-validation-results/metadata-check.log >> docs-validation-results/metadata-report.md || true
+            echo '```' >> docs-validation-results/metadata-report.md
+            echo "metadata_status=failure" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Check internal links
+        id: check-links
+        run: |
+          echo "" >> docs-validation-results/metadata-report.md
+          echo "## 🔗 Link Check Results" >> docs-validation-results/metadata-report.md
+          echo "" >> docs-validation-results/metadata-report.md
+          
+          # Run link check and capture output
+          if python scripts/check_doc_links.py docs 2>&1 | tee -a docs-validation-results/link-check.log; then
+            echo "✅ All internal links are valid!" >> docs-validation-results/metadata-report.md
+            echo "links_status=success" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Some links are broken. See details below:" >> docs-validation-results/metadata-report.md
+            echo '```' >> docs-validation-results/metadata-report.md
+            grep -E "📄|Line [0-9]+:" docs-validation-results/link-check.log | head -20 >> docs-validation-results/metadata-report.md || true
+            
+            # Count total broken links
+            broken_count=$(grep -c "Broken link\\|Broken anchor" docs-validation-results/link-check.log || echo "0")
+            if [ $broken_count -gt 20 ]; then
+              echo "" >> docs-validation-results/metadata-report.md
+              echo "... and $((broken_count - 20)) more broken links" >> docs-validation-results/metadata-report.md
+            fi
+            echo '```' >> docs-validation-results/metadata-report.md
+            echo "links_status=failure" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Get changed files (PR only)
+        if: github.event_name == 'pull_request'
+        id: changed-files
+        run: |
+          # Get list of changed markdown files
+          echo "## 📝 Changed Files" >> docs-validation-results/metadata-report.md
+          echo "" >> docs-validation-results/metadata-report.md
+          
+          changed_files=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep '\.md$' || true)
+          
+          if [ -z "$changed_files" ]; then
+            echo "No markdown files changed in this PR." >> docs-validation-results/metadata-report.md
+          else
+            echo "The following markdown files were modified:" >> docs-validation-results/metadata-report.md
+            echo '```' >> docs-validation-results/metadata-report.md
+            echo "$changed_files" >> docs-validation-results/metadata-report.md
+            echo '```' >> docs-validation-results/metadata-report.md
+            
+            # Save for targeted validation
+            echo "$changed_files" > docs-validation-results/changed-files.txt
+          fi
+      
+      - name: Validate changed files specifically (PR only)
+        if: github.event_name == 'pull_request' && hashFiles('docs-validation-results/changed-files.txt') != ''
+        run: |
+          echo "" >> docs-validation-results/metadata-report.md
+          echo "## 🎯 Targeted Validation for Changed Files" >> docs-validation-results/metadata-report.md
+          echo "" >> docs-validation-results/metadata-report.md
+          
+          # Check each changed file
+          while IFS= read -r file; do
+            if [ -f "$file" ]; then
+              echo "### $file" >> docs-validation-results/metadata-report.md
+              
+              # Check metadata for this file
+              if python scripts/check_doc_metadata.py "$file" 2>&1 | grep -q "issues"; then
+                echo "❌ Metadata issues found" >> docs-validation-results/metadata-report.md
+              else
+                echo "✅ Metadata OK" >> docs-validation-results/metadata-report.md
+              fi
+              
+              # Check links in this file
+              if python scripts/check_doc_links.py "$file" 2>&1 | grep -q "broken"; then
+                echo "❌ Broken links found" >> docs-validation-results/metadata-report.md
+              else
+                echo "✅ Links OK" >> docs-validation-results/metadata-report.md
+              fi
+              
+              echo "" >> docs-validation-results/metadata-report.md
+            fi
+          done < docs-validation-results/changed-files.txt
+      
+      - name: Generate summary
+        run: |
+          echo "" >> docs-validation-results/metadata-report.md
+          echo "---" >> docs-validation-results/metadata-report.md
+          echo "" >> docs-validation-results/metadata-report.md
+          
+          # Add workflow run info
+          echo "🤖 *Generated by [Documentation Validation Workflow](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})*" >> docs-validation-results/metadata-report.md
+          echo "" >> docs-validation-results/metadata-report.md
+          
+          # Add help text
+          if [ "${{ steps.check-metadata.outputs.metadata_status }}" = "failure" ] || [ "${{ steps.check-links.outputs.links_status }}" = "failure" ]; then
+            echo "### 💡 How to fix these issues:" >> docs-validation-results/metadata-report.md
+            echo "" >> docs-validation-results/metadata-report.md
+            echo "**For metadata issues:**" >> docs-validation-results/metadata-report.md
+            echo "- Add a metadata header at the beginning of your markdown file" >> docs-validation-results/metadata-report.md
+            echo "- Include required fields: title, date, author, status" >> docs-validation-results/metadata-report.md
+            echo "- Use format: YAML frontmatter (---) or HTML comment (<!--)" >> docs-validation-results/metadata-report.md
+            echo "" >> docs-validation-results/metadata-report.md
+            echo "**For broken links:**" >> docs-validation-results/metadata-report.md
+            echo "- Check that linked files exist at the specified paths" >> docs-validation-results/metadata-report.md
+            echo "- Verify anchor links (e.g., #section) match actual headings" >> docs-validation-results/metadata-report.md
+            echo "- Use relative paths for internal documentation links" >> docs-validation-results/metadata-report.md
+          fi
+      
+      - name: Upload validation reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-validation-reports
+          path: docs-validation-results/
+          retention-days: 30
+      
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('docs-validation-results/metadata-report.md', 'utf8');
+            
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('## 📋 Metadata Check Results')
+            );
+            
+            const commentBody = `# 📚 Documentation Validation Report\n\n${report}`;
+            
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
+              });
+            }
+      
+      - name: Set job status
+        run: |
+          if [ "${{ steps.check-metadata.outputs.metadata_status }}" = "failure" ] || [ "${{ steps.check-links.outputs.links_status }}" = "failure" ]; then
+            echo "::error::Documentation validation failed. Please fix the issues reported above."
+            exit 1
+          else
+            echo "::notice::Documentation validation passed successfully!"
+          fi
+
+  check-markdown-lint:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run markdownlint
+        uses: DavidAnson/markdownlint-cli2-action@v16
+        with:
+          globs: |
+            **/*.md
+            !node_modules/**
+            !venv/**
+            !.github/**
+        continue-on-error: true
+        id: markdownlint
+      
+      - name: Comment lint results on PR
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const output = `## 📝 Markdown Linting Results
+            
+            ❌ Markdown linting found issues. Please review and fix them.
+            
+            For more details, check the [workflow logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+            
+            Common issues:
+            - Trailing spaces
+            - Inconsistent heading levels
+            - Missing blank lines around headings
+            - Line length exceeding limits
+            `;
+            
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: output
+            });

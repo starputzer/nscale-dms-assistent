@@ -9,8 +9,8 @@
 import { computed, ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-// Import simplified admin component with better error handling
-import AdminPanelSimplified from "@/components/admin/AdminPanel.simplified.vue";
+// Import production admin component
+import AdminPanelSimplified from "@/components/admin/AdminPanel.vue";
 
 const route = useRoute();
 const router = useRouter();

@@ -134,7 +134,7 @@ export function initSessionBridge() {
      * Lädt alle Sessions
      */
     loadSessions: async (): Promise<LegacySessionData[]> => {
-      await sessionsStore.fetchSessions();
+      await sessionsStore.synchronizeSessions();
       return sessionsStore.sessions.map(convertToLegacySession);
     },
 

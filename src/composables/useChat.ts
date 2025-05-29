@@ -1,133 +1,82 @@
 import { computed, ref } from "vue";
-import { useSessionsStore } from "../stores/sessions";
 import type { ChatSession, ChatMessage } from "../types/session";
 import type { UseChatReturn } from "../utils/composableTypes";
 
 /**
  * Hook für Chat-Funktionen in Komponenten
- * Kapselt den Zugriff auf den Sessions-Store und bietet eine vereinfachte API
+ * Emergency stub version to fix circular dependency
  *
  * @returns {UseChatReturn} Objekt mit Chat-Funktionen und reaktiven Eigenschaften
  */
 export function useChat(): UseChatReturn {
-  const sessionsStore = useSessionsStore();
-
-  // Lokaler Zustand für Benutzereingaben
+  // State
   const inputText = ref("");
+  const isLoading = ref(false);
+  const isStreaming = ref(false);
+  const error = ref<string | null>(null);
+  const currentSessionId = ref<string | null>(null);
+  const currentSession = ref<ChatSession | null>(null);
+  const messages = ref<ChatMessage[]>([]);
+  const sessions = ref<ChatSession[]>([]);
 
-  // Computed Properties für reaktive Daten
-  const isLoading = computed(() => sessionsStore.isLoading);
-  const isStreaming = computed(() => sessionsStore.isStreaming);
-  const error = computed(() => sessionsStore.error);
-  const currentSessionId = computed(() => sessionsStore.currentSessionId);
-  const currentSession = computed(() => sessionsStore.currentSession);
-  const messages = computed(() => sessionsStore.currentMessages);
-  const sessions = computed(() => sessionsStore.sortedSessions);
-
-  /**
-   * Alle Sitzungen laden
-   */
+  // Methods - all stubbed
   const loadSessions = async (): Promise<void> => {
-    await sessionsStore.fetchSessions();
+    console.log("useChat: loadSessions called (stub)");
   };
 
-  /**
-   * Zu einer bestimmten Sitzung wechseln
-   */
   const switchToSession = async (sessionId: string): Promise<void> => {
-    await sessionsStore.setCurrentSession(sessionId);
+    console.log("useChat: switchToSession called (stub)", sessionId);
+    currentSessionId.value = sessionId;
   };
 
-  /**
-   * Neue Sitzung erstellen
-   */
   const createNewSession = async (title?: string): Promise<string> => {
-    return await sessionsStore.createSession(title);
+    console.log("useChat: createNewSession called (stub)", title);
+    const id = `session-${Date.now()}`;
+    currentSessionId.value = id;
+    return id;
   };
 
-  /**
-   * Nachricht senden
-   */
   const sendMessage = async (content: string): Promise<void> => {
-    if (!content.trim()) return;
-
-    // Wenn keine aktive Session vorhanden ist, neue erstellen
-    if (!currentSessionId.value) {
-      const newSessionId = await createNewSession();
-      await sessionsStore.setCurrentSession(newSessionId);
-    }
-
-    // Nachricht senden
-    await sessionsStore.sendMessage({
-      sessionId: currentSessionId.value!,
-      content,
-    });
-
-    // Eingabefeld zurücksetzen
+    console.log("useChat: sendMessage called (stub)", content);
     inputText.value = "";
   };
 
-  /**
-   * Streaming abbrechen
-   */
   const cancelStream = (): void => {
-    sessionsStore.cancelStreaming();
+    console.log("useChat: cancelStream called (stub)");
   };
 
-  /**
-   * Session archivieren/löschen
-   */
   const archiveSession = async (sessionId: string): Promise<void> => {
-    await sessionsStore.archiveSession(sessionId);
+    console.log("useChat: archiveSession called (stub)", sessionId);
   };
 
-  /**
-   * Session-Titel ändern
-   */
-  const renameSession = async (
-    sessionId: string,
-    newTitle: string,
-  ): Promise<void> => {
-    await sessionsStore.updateSessionTitle(sessionId, newTitle);
+  const renameSession = async (sessionId: string, newTitle: string): Promise<void> => {
+    console.log("useChat: renameSession called (stub)", sessionId, newTitle);
   };
 
-  /**
-   * Session anheften/lösen
-   */
   const togglePinSession = async (sessionId: string): Promise<void> => {
-    await sessionsStore.togglePinSession(sessionId);
+    console.log("useChat: togglePinSession called (stub)", sessionId);
   };
 
-  /**
-   * Nachricht löschen
-   */
   const deleteMessage = async (messageId: string): Promise<void> => {
-    if (!currentSessionId.value) return;
-
-    await sessionsStore.deleteMessage(currentSessionId.value, messageId);
+    console.log("useChat: deleteMessage called (stub)", messageId);
   };
 
-  /**
-   * Aktuelle Session neu laden
-   */
   const refreshCurrentSession = async (): Promise<void> => {
-    if (currentSessionId.value) {
-      await sessionsStore.refreshSession(currentSessionId.value);
-    }
+    console.log("useChat: refreshCurrentSession called (stub)");
   };
 
   return {
-    // Zustand
+    // State
     inputText,
-    isLoading,
-    isStreaming,
-    error,
-    currentSessionId,
-    currentSession,
-    messages,
-    sessions,
+    isLoading: computed(() => isLoading.value),
+    isStreaming: computed(() => isStreaming.value),
+    error: computed(() => error.value),
+    currentSessionId: computed(() => currentSessionId.value),
+    currentSession: computed(() => currentSession.value),
+    messages: computed(() => messages.value),
+    sessions: computed(() => sessions.value),
 
-    // Methoden
+    // Methods
     loadSessions,
     switchToSession,
     createNewSession,

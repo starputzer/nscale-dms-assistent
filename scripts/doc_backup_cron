@@ -1,0 +1,19 @@
+# Documentation Backup and Version Control Cron Schedule
+# Copy this file to /etc/cron.d/doc_backup_cron or add these lines to your crontab
+
+# Environment variables
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+SCRIPT_DIR=/opt/nscale-assist/app/scripts
+
+# Daily operations at 3:00 AM
+0 3 * * * root cd $SCRIPT_DIR && ./doc_automation.sh daily >> /var/log/doc_automation.log 2>&1
+
+# Weekly full backup on Sunday at 2:00 AM
+0 2 * * 0 root cd $SCRIPT_DIR && ./doc_automation.sh weekly >> /var/log/doc_automation.log 2>&1
+
+# Health check every 6 hours
+0 */6 * * * root cd $SCRIPT_DIR && ./doc_automation.sh health >> /var/log/doc_automation.log 2>&1
+
+# Track changes every 30 minutes during business hours (8 AM - 6 PM on weekdays)
+*/30 8-18 * * 1-5 root cd $SCRIPT_DIR && python3 doc_version_control.py track --all --message "Automatic tracking" >> /var/log/doc_automation.log 2>&1

@@ -377,6 +377,7 @@ import { useI18n } from "vue-i18n";
 import { useToast } from "@/composables/useToast";
 import { useDialog } from "@/composables/useDialog";
 import { logService } from "@/services/api/LogServiceWrapper";
+import { adminApi } from "@/services/api/admin";
 
 // Define log entry type
 interface LogEntry {
@@ -393,7 +394,7 @@ interface LogEntry {
 // i18n
 const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
 console.log('[i18n] Component initialized with global scope and inheritance');
-const { showToast } = useToast();
+const toast = useToast();
 const { showConfirmDialog } = useDialog();
 
 // State
@@ -566,25 +567,27 @@ async function refreshLogs() {
     // For now, let's simulate it with sample data
     await fetchLogs();
 
-    showToast({
-      type: "success",
-      title: t("admin.logViewer.toast.refreshSuccess", "Aktualisiert"),
-      message: t(
+    toast.success(
+      t(
         "admin.logViewer.toast.refreshSuccessMessage",
         "Die Protokolle wurden erfolgreich aktualisiert",
       ),
-    });
+      {
+        title: t("admin.logViewer.toast.refreshSuccess", "Aktualisiert")
+      }
+    );
   } catch (error) {
     console.error("Error refreshing logs:", error);
 
-    showToast({
-      type: "error",
-      title: t("admin.logViewer.toast.refreshError", "Fehler"),
-      message: t(
+    toast.error(
+      t(
         "admin.logViewer.toast.refreshErrorMessage",
         "Fehler beim Aktualisieren der Protokolle",
       ),
-    });
+      {
+        title: t("admin.logViewer.toast.refreshError", "Fehler")
+      }
+    );
   } finally {
     isLoading.value = false;
   }
@@ -602,7 +605,7 @@ async function fetchLogs() {
       pageSize: itemsPerPage.value,
     };
 
-    const response = await adminService.getLogs(params);
+    const response = await logService.getLogs(params);
     logs.value = response.logs;
 
     // Aktualisiere Paginierungsdaten, wenn vom Server bereitgestellt
@@ -612,16 +615,16 @@ async function fetchLogs() {
     }
   } catch (error) {
     console.error("Error fetching logs:", error);
-    showToast({
-      type: "error",
-      title: t("admin.logViewer.toast.fetchError", "Fehler"),
-      message:
-        error.message ||
+    toast.error(
+      error.message ||
         t(
           "admin.logViewer.toast.fetchErrorMessage",
           "Fehler beim Laden der Protokolle",
         ),
-    });
+      {
+        title: t("admin.logViewer.toast.fetchError", "Fehler")
+      }
+    );
 
     // Leere Log-Liste anzeigen
     logs.value = [];
@@ -645,30 +648,31 @@ async function clearLogs() {
   isLoading.value = true;
 
   try {
-    await adminService.clearLogs();
+    await logService.clearLogs();
     logs.value = [];
 
-    showToast({
-      type: "success",
-      title: t("admin.logViewer.toast.clearSuccess", "Gelöscht"),
-      message: t(
+    toast.success(
+      t(
         "admin.logViewer.toast.clearSuccessMessage",
         "Die Protokolle wurden erfolgreich gelöscht",
       ),
-    });
+      {
+        title: t("admin.logViewer.toast.clearSuccess", "Gelöscht")
+      }
+    );
   } catch (error) {
     console.error("Error clearing logs:", error);
 
-    showToast({
-      type: "error",
-      title: t("admin.logViewer.toast.clearError", "Fehler"),
-      message:
-        error.message ||
+    toast.error(
+      error.message ||
         t(
           "admin.logViewer.toast.clearErrorMessage",
           "Fehler beim Löschen der Protokolle",
         ),
-    });
+      {
+        title: t("admin.logViewer.toast.clearError", "Fehler")
+      }
+    );
   } finally {
     isLoading.value = false;
   }
@@ -725,27 +729,28 @@ async function exportLogs() {
       URL.revokeObjectURL(url);
     }
 
-    showToast({
-      type: "success",
-      title: t("admin.logViewer.toast.exportSuccess", "Exportiert"),
-      message: t(
+    toast.success(
+      t(
         "admin.logViewer.toast.exportSuccessMessage",
         "Die Protokolle wurden erfolgreich exportiert",
       ),
-    });
+      {
+        title: t("admin.logViewer.toast.exportSuccess", "Exportiert")
+      }
+    );
   } catch (error) {
     console.error("Error exporting logs:", error);
 
-    showToast({
-      type: "error",
-      title: t("admin.logViewer.toast.exportError", "Fehler"),
-      message:
-        error.message ||
+    toast.error(
+      error.message ||
         t(
           "admin.logViewer.toast.exportErrorMessage",
           "Fehler beim Exportieren der Protokolle",
         ),
-    });
+      {
+        title: t("admin.logViewer.toast.exportError", "Fehler")
+      }
+    );
   } finally {
     isLoading.value = false;
   }
@@ -756,25 +761,27 @@ function copyToClipboard(log: LogEntry) {
     const text = `[${formatDate(log.timestamp)}] [${log.level.toUpperCase()}] [${log.component}] ${log.message}${log.details ? "\n" + log.details : ""}`;
     navigator.clipboard.writeText(text);
 
-    showToast({
-      type: "success",
-      title: t("admin.logViewer.toast.copySuccess", "Kopiert"),
-      message: t(
+    toast.success(
+      t(
         "admin.logViewer.toast.copySuccessMessage",
         "Der Protokolleintrag wurde in die Zwischenablage kopiert",
       ),
-    });
+      {
+        title: t("admin.logViewer.toast.copySuccess", "Kopiert")
+      }
+    );
   } catch (error) {
     console.error("Error copying to clipboard:", error);
 
-    showToast({
-      type: "error",
-      title: t("admin.logViewer.toast.copyError", "Fehler"),
-      message: t(
+    toast.error(
+      t(
         "admin.logViewer.toast.copyErrorMessage",
         "Fehler beim Kopieren in die Zwischenablage",
       ),
-    });
+      {
+        title: t("admin.logViewer.toast.copyError", "Fehler")
+      }
+    );
   }
 }
 

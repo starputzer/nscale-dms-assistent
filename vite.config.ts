@@ -291,7 +291,7 @@ export default defineConfig(({ mode }): UserConfig => {
       // Verbesserte Proxy-Konfiguration für API-Anfragen
       proxy: {
         "/api": {
-          target: env.VITE_API_URL || "http://localhost:5000",
+          target: env.VITE_API_URL || "http://localhost:8001",
           changeOrigin: true,
           secure: false,
           ws: true,

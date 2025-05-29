@@ -1,0 +1,97 @@
+/* Emergency fix for admin navigation text visibility */
+
+/* Force text to be visible with maximum specificity */
+#app .admin-panel .admin-panel__sidebar .admin-panel__nav .admin-panel__nav-item {
+  color: #333333 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+#app .admin-panel .admin-panel__sidebar .admin-panel__nav .admin-panel__nav-item .admin-panel__nav-label {
+  display: inline-block !important;
+  color: #333333 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  font-size: 0.95rem !important;
+  line-height: 1.4 !important;
+  font-weight: 500 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 160px !important;
+  /* Force text rendering */
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  text-rendering: optimizeLegibility !important;
+  /* Debug: Add background to see if element is there */
+  /* background-color: rgba(255, 0, 0, 0.1) !important; */
+}
+
+/* Active state */
+#app .admin-panel .admin-panel__sidebar .admin-panel__nav .admin-panel__nav-item--active {
+  color: #00a550 !important;
+  background-color: #e6f7ef !important;
+}
+
+#app .admin-panel .admin-panel__sidebar .admin-panel__nav .admin-panel__nav-item--active .admin-panel__nav-label {
+  color: #00a550 !important;
+  font-weight: 600 !important;
+}
+
+/* Dark theme support */
+#app .admin-panel.theme-dark .admin-panel__sidebar .admin-panel__nav .admin-panel__nav-item {
+  color: #f0f0f0 !important;
+}
+
+#app .admin-panel.theme-dark .admin-panel__sidebar .admin-panel__nav .admin-panel__nav-item .admin-panel__nav-label {
+  color: #f0f0f0 !important;
+}
+
+#app .admin-panel.theme-dark .admin-panel__sidebar .admin-panel__nav .admin-panel__nav-item--active {
+  color: #00c060 !important;
+  background-color: rgba(0, 192, 96, 0.1) !important;
+}
+
+#app .admin-panel.theme-dark .admin-panel__sidebar .admin-panel__nav .admin-panel__nav-item--active .admin-panel__nav-label {
+  color: #00c060 !important;
+}
+
+/* Icon visibility */
+#app .admin-panel .admin-panel__sidebar .admin-panel__nav .admin-panel__nav-item .admin-panel__nav-icon {
+  color: inherit !important;
+  opacity: 0.8 !important;
+}
+
+/* Hover state */
+#app .admin-panel .admin-panel__sidebar .admin-panel__nav .admin-panel__nav-item:hover {
+  background-color: #f5f7fa !important;
+}
+
+#app .admin-panel.theme-dark .admin-panel__sidebar .admin-panel__nav .admin-panel__nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Mobile fixes */
+@media (max-width: 768px) {
+  #app .admin-panel .admin-panel__sidebar .admin-panel__nav .admin-panel__nav-item .admin-panel__nav-label {
+    font-size: 0.8rem !important;
+    max-width: none !important;
+  }
+}
+
+/* Force inheritance from parent */
+.admin-panel__nav-item * {
+  color: inherit !important;
+}
+
+/* Debug: Ensure no color: transparent anywhere */
+.admin-panel * {
+  color: initial;
+}
+
+/* Ensure spans are not hidden */
+.admin-panel span {
+  display: inline !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}

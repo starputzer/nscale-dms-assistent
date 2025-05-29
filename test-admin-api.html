@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin API Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .test { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; }
+        .error { background-color: #f8d7da; }
+        pre { white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>Admin API Test</h1>
+    <button onclick="runTests()">Tests ausführen</button>
+    <div id="results"></div>
+
+    <script>
+        async function runTests() {
+            const results = document.getElementById('results');
+            results.innerHTML = '';
+
+            // Test 1: Login
+            const loginResult = await testEndpoint('POST', '/api/auth/login', {
+                email: 'martin@danglefeet.com',
+                password: '123'
+            });
+            
+            if (!loginResult.success || !loginResult.data.access_token) {
+                addResult('Login fehlgeschlagen', loginResult, false);
+                return;
+            }
+
+            const token = loginResult.data.access_token;
+            addResult('Login erfolgreich', loginResult, true);
+
+            // Test 2: Users
+            const usersResult = await testEndpoint('GET', '/api/v1/admin/users', null, token);
+            addResult('GET /api/v1/admin/users', usersResult, usersResult.success);
+
+            // Test 3: User Count
+            const countResult = await testEndpoint('GET', '/api/v1/admin/users/count', null, token);
+            addResult('GET /api/v1/admin/users/count', countResult, countResult.success);
+
+            // Test 4: User Stats
+            const statsResult = await testEndpoint('GET', '/api/v1/admin/users/stats', null, token);
+            addResult('GET /api/v1/admin/users/stats', statsResult, statsResult.success);
+
+            // Test 5: Feedback Stats
+            const feedbackResult = await testEndpoint('GET', '/api/v1/admin/feedback/stats', null, token);
+            addResult('GET /api/v1/admin/feedback/stats', feedbackResult, feedbackResult.success);
+        }
+
+        async function testEndpoint(method, endpoint, body, token) {
+            try {
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+
+                const options = {
+                    method: method,
+                    headers: headers
+                };
+
+                if (body) {
+                    options.body = JSON.stringify(body);
+                }
+
+                const response = await fetch(endpoint, options);
+                const data = await response.json();
+
+                return {
+                    success: response.ok,
+                    status: response.status,
+                    statusText: response.statusText,
+                    data: data,
+                    headers: Object.fromEntries(response.headers.entries())
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message,
+                    stack: error.stack
+                };
+            }
+        }
+
+        function addResult(title, result, success) {
+            const div = document.createElement('div');
+            div.className = `test ${success ? 'success' : 'error'}`;
+            div.innerHTML = `
+                <h3>${title}</h3>
+                <pre>${JSON.stringify(result, null, 2)}</pre>
+            `;
+            document.getElementById('results').appendChild(div);
+        }
+    </script>
+</body>
+</html>

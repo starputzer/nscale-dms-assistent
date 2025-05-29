@@ -159,7 +159,7 @@ export class BatchRequestService {
       batchDelay: 50,
       timeout: 30000,
       abortOnCriticalError: true,
-      batchEndpoint: "/batch", // API-Basis-URL und Version werden automatisch hinzugefügt
+      batchEndpoint: "/api/v1/batch", // Vollständiger Pfad zum Batch-Endpoint
       retries: 2,
       retryDelay: 1000,
       enableCaching: true,
@@ -280,6 +280,9 @@ export class BatchRequestService {
         throw new Error("API-Service nicht verfügbar");
       }
 
+      console.log("BatchRequestService: Sending batch request to", this.options.batchEndpoint, "with", requests.length, "requests");
+      console.log("BatchRequestService: Request data:", { requests });
+
       // Batch-Anfrage erstellen
       const response = await apiService.customRequest<{
         success: boolean;
@@ -294,32 +297,58 @@ export class BatchRequestService {
       });
 
       // Batch-Antworten verarbeiten
-      // Der Server sendet die Antworten in einem data-Objekt
-      // Debug log
-      console.log("BatchRequestService - Response structure:", {
-        hasResponse: !!response,
-        responseType: typeof response,
-        responseKeys: response ? Object.keys(response) : [],
-        hasSuccess: response ? "success" in response : false,
-        successValue: response ? response.success : undefined,
-        hasData: response ? !!response.data : false,
-        dataKeys: response && response.data ? Object.keys(response.data) : [],
-        hasResponses:
-          response && response.data ? !!response.data.responses : false,
-      });
+      // Debug log für Entwicklung
+      console.log("BatchRequestService - Raw response:", response);
 
-      // Der ApiService gibt die ApiResponse zurück, die bereits die success/data Struktur hat
-      // Vereinfachte Validierung - vertraue auf das Server-Format
-      if (response?.data?.responses && Array.isArray(response.data.responses)) {
-        this.processBatchResponse(response.data.responses, requests);
+      // FIXED: Handle different response formats from server
+      let batchResponses: BatchResponse[] = [];
+      
+      console.log("BatchRequestService: Raw response:", response);
+      console.log("BatchRequestService: Response type:", typeof response);
+      console.log("BatchRequestService: Response keys:", response ? Object.keys(response) : 'null');
+      
+      // The server returns the response directly, not wrapped in success/data
+      if (response && typeof response === 'object') {
+        // Check if it's the expected format with responses array
+        if ('responses' in response && Array.isArray(response.responses)) {
+          console.log("BatchRequestService: Found responses array directly");
+          batchResponses = response.responses;
+        }
+        // Check if it's wrapped in data object
+        else if ('data' in response && response.data && 'responses' in response.data) {
+          console.log("BatchRequestService: Found responses in data object");
+          console.log("BatchRequestService: response.data:", response.data);
+          console.log("BatchRequestService: response.data.responses:", response.data.responses);
+          batchResponses = response.data.responses;
+        }
+        // Check if success/data format
+        else if ('success' in response && response.success && 'data' in response) {
+          console.log("BatchRequestService: Found success/data format");
+          console.log("BatchRequestService: response.data:", response.data);
+          if (response.data && 'responses' in response.data) {
+            console.log("BatchRequestService: Found responses in success/data format");
+            console.log("BatchRequestService: response.data.responses:", response.data.responses);
+            batchResponses = response.data.responses;
+          }
+        }
+        // If the response itself is an array, assume it's the responses
+        else if (Array.isArray(response)) {
+          console.log("BatchRequestService: Response is array");
+          batchResponses = response;
+        }
+      }
+      
+      console.log("BatchRequestService: Final batchResponses:", batchResponses);
+      console.log("BatchRequestService: batchResponses length:", batchResponses.length);
+
+      if (batchResponses.length > 0) {
+        this.processBatchResponse(batchResponses, requests);
       } else {
         console.error(
-          "BatchRequestService: Unexpected response format",
+          "BatchRequestService: No valid responses found in server response",
           response,
         );
-        throw new Error(
-          "Ungültige Batch-Antwort vom Server: " + JSON.stringify(response),
-        );
+        throw new Error("Invalid batch response format from server");
       }
     } catch (error: any) {
       this.requestStats.errors++;

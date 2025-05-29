@@ -306,11 +306,82 @@ export interface IABTestsStore extends IBaseStore {
 }
 
 /**
- * Interface für den Store-Rückgabewert
+ * Interface für den Store-Rückgabewert mit Refs
  * Dies definiert, was vom Store-Hook zurückgegeben wird
  */
-export interface SessionsStoreReturn extends ISessionsStore {
-  // Dieses Interface kann in Zukunft um weitere store-spezifische Methoden erweitert werden
+export interface SessionsStoreReturn {
+  // State Properties as Refs
+  sessions: Ref<ChatSession[]>;
+  currentSessionId: Ref<string | null>;
+  messages: Ref<Record<string, ChatMessage[]>>;
+  streaming: Ref<StreamingStatus>;
+  isLoading: Ref<boolean>;
+  error: Ref<string | null>;
+  version: Ref<number>;
+  pendingMessages: Ref<Record<string, ChatMessage[]>>;
+  syncStatus: Ref<{
+    lastSyncTime: number;
+    isSyncing: boolean;
+    error: string | null;
+    pendingSessionIds?: Set<string>;
+  }>;
+  availableTags: Ref<SessionTag[]>;
+  availableCategories: Ref<SessionCategory[]>;
+  selectedSessionIds: Ref<string[]>;
+
+  // Getters as ComputedRefs
+  currentSession: ComputedRef<ChatSession | null>;
+  currentMessages: ComputedRef<ChatMessage[]>;
+  sortedSessions: ComputedRef<ChatSession[]>;
+  isStreaming: ComputedRef<boolean>;
+  currentPendingMessages: ComputedRef<ChatMessage[]>;
+  allCurrentMessages: ComputedRef<ChatMessage[]>;
+  getSessionsByTag: ComputedRef<(tagId: string) => ChatSession[]>;
+  getSessionsByCategory: ComputedRef<(categoryId: string) => ChatSession[]>;
+  archivedSessions: ComputedRef<ChatSession[]>;
+  activeSessions: ComputedRef<ChatSession[]>;
+
+  // Actions (same as ISessionsStore)
+  initialize(): Promise<void | (() => void)>;
+  synchronizeSessions(): Promise<void>;
+  fetchMessages(sessionId: string): Promise<ChatMessage[]>;
+  createSession(title?: string): Promise<string>;
+  setCurrentSession(sessionId: string): Promise<void>;
+  updateSessionTitle(sessionId: string, newTitle: string): Promise<void>;
+  archiveSession(sessionId: string): Promise<void>;
+  deleteSession(sessionId: string): Promise<void>;
+  togglePinSession(sessionId: string): Promise<void>;
+  sendMessage(params: SendMessageParams): Promise<void>;
+  cancelStreaming(): void;
+  deleteMessage(sessionId: string, messageId: string): Promise<void>;
+  refreshSession(sessionId: string): Promise<void>;
+  migrateFromLegacyStorage(): void;
+  syncPendingMessages(): Promise<void>;
+  exportData(): string;
+  importData(jsonData: string): boolean;
+  cleanupStorage(): void;
+  loadOlderMessages(sessionId: string): ChatMessage[];
+  addTagToSession(sessionId: string, tagId: string): Promise<void>;
+  removeTagFromSession(sessionId: string, tagId: string): Promise<void>;
+  setCategoryForSession(sessionId: string, categoryId: string): Promise<void>;
+  removeCategoryFromSession(sessionId: string): Promise<void>;
+  toggleArchiveSession(sessionId: string, archive?: boolean): Promise<void>;
+  updateSessionPreview(
+    sessionId: string,
+    previewText: string,
+    messageCount: number
+  ): void;
+  selectSession(sessionId: string): void;
+  deselectSession(sessionId: string): void;
+  toggleSessionSelection(sessionId: string): void;
+  clearSessionSelection(): void;
+  archiveMultipleSessions(sessionIds: string[]): Promise<void>;
+  deleteMultipleSessions(sessionIds: string[]): Promise<void>;
+  addTagToMultipleSessions(sessionIds: string[], tagId: string): Promise<void>;
+  setCategoryForMultipleSessions(
+    sessionIds: string[],
+    categoryId: string
+  ): Promise<void>;
 }
 
 export interface AuthStoreReturn extends IAuthStore {

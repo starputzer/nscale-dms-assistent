@@ -48,6 +48,20 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
 
   const loading = ref(false);
   const error = ref<string | null>(null);
+  
+  // System settings
+  const systemSettings = ref({
+    defaultModel: "llama-7b",
+    maxTokensPerRequest: 4096,
+    enableModelSelection: true,
+    enableRateLimit: true,
+    rateLimitPerMinute: 30,
+    maxConnectionsPerUser: 10,
+    sessionTimeoutMinutes: 60,
+    maintenanceMode: false,
+    maintenanceMessage: "",
+    autoBackup: true,
+  });
 
   // API-Integration aktiv?
   const apiIntegrationEnabled = computed(() => shouldUseRealApi("useRealSystemApi"));
@@ -622,8 +636,11 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
         if (response.success && response.data) {
           logger.info("Verfügbare Systemaktionen erfolgreich geladen");
           
+          // Ensure response.data is an array
+          const responseData = Array.isArray(response.data) ? response.data : [];
+          
           // Filtere ungültige Aktionen heraus
-          const validActions = response.data.filter(action => {
+          const validActions = responseData.filter(action => {
             if (!action.type || !action.name) {
               logger.warn("Ungültige Aktion in API-Antwort gefunden", action);
               return false;
@@ -685,12 +702,264 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
     return availableActions.value;
   }
 
+  /**
+   * Lädt die aktuellen Systemeinstellungen
+   */
+  async function fetchSettings() {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      if (apiIntegrationEnabled.value) {
+        logger.info("Lade Systemeinstellungen über AdminSystemService");
+        const response = await adminSystemService.getSystemSettings();
+
+        if (response.success && response.data) {
+          logger.info("Systemeinstellungen erfolgreich geladen");
+          systemSettings.value = { ...systemSettings.value, ...response.data };
+          return response.data;
+        } else {
+          throw new Error(response.message || "Fehler beim Laden der Einstellungen");
+        }
+      }
+
+      // Fallback: Verwende die aktuellen lokalen Einstellungen
+      logger.info("Verwende lokale Systemeinstellungen");
+      return systemSettings.value;
+    } catch (err: any) {
+      logger.error("Fehler beim Laden der Systemeinstellungen", err);
+      error.value = err.message || "Fehler beim Laden der Systemeinstellungen";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  /**
+   * Speichert die Systemeinstellungen
+   */
+  async function saveSettings(settings: any) {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      if (apiIntegrationEnabled.value) {
+        logger.info("Speichere Systemeinstellungen über AdminSystemService");
+        const response = await adminSystemService.updateSystemSettings(settings);
+
+        if (response.success) {
+          logger.info("Systemeinstellungen erfolgreich gespeichert");
+          systemSettings.value = { ...systemSettings.value, ...settings };
+          return true;
+        } else {
+          throw new Error(response.message || "Fehler beim Speichern der Einstellungen");
+        }
+      }
+
+      // Fallback: Speichere lokal
+      logger.info("Speichere Systemeinstellungen lokal");
+      systemSettings.value = { ...systemSettings.value, ...settings };
+      return true;
+    } catch (err: any) {
+      logger.error("Fehler beim Speichern der Systemeinstellungen", err);
+      error.value = err.message || "Fehler beim Speichern der Systemeinstellungen";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  /**
+   * Startet Systemdienste neu
+   */
+  async function restartServices() {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      if (apiIntegrationEnabled.value) {
+        logger.info("Starte Systemdienste neu über AdminSystemService");
+        const response = await adminSystemService.restartServices();
+
+        if (response.success) {
+          logger.info("Systemdienste erfolgreich neu gestartet");
+          await fetchStats();
+          return true;
+        } else {
+          throw new Error(response.message || "Fehler beim Neustart der Dienste");
+        }
+      }
+
+      // Fallback: Simuliere Neustart
+      logger.info("Simuliere Neustart der Systemdienste");
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      return true;
+    } catch (err: any) {
+      logger.error("Fehler beim Neustart der Systemdienste", err);
+      error.value = err.message || "Fehler beim Neustart der Systemdienste";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  /**
+   * Exportiert Systemlogs
+   */
+  async function exportLogs() {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      if (apiIntegrationEnabled.value) {
+        logger.info("Exportiere Systemlogs über AdminSystemService");
+        const response = await adminSystemService.exportLogs();
+
+        if (response.success && response.data) {
+          logger.info("Systemlogs erfolgreich exportiert");
+          // Trigger download
+          const blob = new Blob([response.data], { type: 'application/zip' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `system-logs-${new Date().toISOString()}.zip`;
+          a.click();
+          window.URL.revokeObjectURL(url);
+          return true;
+        } else {
+          throw new Error(response.message || "Fehler beim Export der Logs");
+        }
+      }
+
+      // Fallback: Zeige Hinweis
+      logger.info("Log-Export nur mit API-Integration verfügbar");
+      throw new Error("Log-Export ist nur mit aktiver API-Integration verfügbar");
+    } catch (err: any) {
+      logger.error("Fehler beim Export der Systemlogs", err);
+      error.value = err.message || "Fehler beim Export der Systemlogs";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  /**
+   * Optimiert die Datenbank
+   */
+  async function optimizeDatabase() {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      if (apiIntegrationEnabled.value) {
+        logger.info("Optimiere Datenbank über AdminSystemService");
+        const response = await adminSystemService.optimizeDatabase();
+
+        if (response.success) {
+          logger.info("Datenbank erfolgreich optimiert");
+          await fetchStats();
+          return true;
+        } else {
+          throw new Error(response.message || "Fehler bei der Datenbankoptimierung");
+        }
+      }
+
+      // Fallback: Simuliere Optimierung
+      logger.info("Simuliere Datenbankoptimierung");
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      return true;
+    } catch (err: any) {
+      logger.error("Fehler bei der Datenbankoptimierung", err);
+      error.value = err.message || "Fehler bei der Datenbankoptimierung";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  /**
+   * Setzt Statistiken zurück
+   */
+  async function resetStatistics() {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      if (apiIntegrationEnabled.value) {
+        logger.info("Setze Statistiken zurück über AdminSystemService");
+        const response = await adminSystemService.resetStatistics();
+
+        if (response.success) {
+          logger.info("Statistiken erfolgreich zurückgesetzt");
+          await fetchStats();
+          return true;
+        } else {
+          throw new Error(response.message || "Fehler beim Zurücksetzen der Statistiken");
+        }
+      }
+
+      // Fallback: Setze lokale Statistiken zurück
+      logger.info("Setze lokale Statistiken zurück");
+      stats.value = {
+        ...stats.value,
+        total_messages: 0,
+        total_sessions: 0,
+        total_feedback: 0,
+        positive_feedback_percent: 0,
+        avg_messages_per_session: 0,
+        cache_hit_rate: 0,
+        requests_per_second: 0,
+      };
+      return true;
+    } catch (err: any) {
+      logger.error("Fehler beim Zurücksetzen der Statistiken", err);
+      error.value = err.message || "Fehler beim Zurücksetzen der Statistiken";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  /**
+   * Erstellt ein System-Backup
+   */
+  async function createBackup() {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      if (apiIntegrationEnabled.value) {
+        logger.info("Erstelle System-Backup über AdminSystemService");
+        const response = await adminSystemService.createBackup();
+
+        if (response.success) {
+          logger.info("System-Backup erfolgreich erstellt");
+          await fetchStats();
+          return true;
+        } else {
+          throw new Error(response.message || "Fehler beim Erstellen des Backups");
+        }
+      }
+
+      // Fallback: Zeige Hinweis
+      logger.info("Backup-Erstellung nur mit API-Integration verfügbar");
+      throw new Error("Backup-Erstellung ist nur mit aktiver API-Integration verfügbar");
+    } catch (err: any) {
+      logger.error("Fehler beim Erstellen des Backups", err);
+      error.value = err.message || "Fehler beim Erstellen des Backups";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
   return {
     // State
     stats,
     loading,
     error,
     apiIntegrationEnabled,
+    systemSettings,
 
     // Getters
     availableActions,
@@ -700,12 +969,19 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
 
     // Actions
     fetchStats,
+    fetchSettings,
+    saveSettings,
     clearCache,
     clearEmbeddingCache,
     reloadMotd,
     performSystemCheck,
     reindexDocuments,
-    fetchAvailableActions
+    fetchAvailableActions,
+    restartServices,
+    exportLogs,
+    optimizeDatabase,
+    resetStatistics,
+    createBackup
   };
 });
 

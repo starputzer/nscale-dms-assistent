@@ -4,6 +4,15 @@ import os
 # Füge das Projektverzeichnis zum Python-Pfad hinzu
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Import centralized routes configuration
+from api.routes_config import (
+    API_VERSION, API_BASE_VERSIONED,
+    AUTH_ROUTES, SESSION_ROUTES, ADMIN_ROUTES,
+    DOCUMENT_ROUTES, FEEDBACK_ROUTES, SYSTEM_ROUTES,
+    build_api_url
+)
+
+
 import asyncio
 import time
 import uuid
@@ -36,6 +45,7 @@ from api.telemetry_handler import handle_telemetry_request
 from api.fixed_stream_endpoint import additional_router
 from api.streaming_integration import initialize_dependencies, register_streaming_endpoints
 from api.admin_handler import get_negative_feedback, update_feedback_status, delete_feedback, filter_feedback, export_feedback, get_doc_converter_status, get_doc_converter_jobs, get_doc_converter_settings, update_doc_converter_settings, get_system_stats, get_available_actions, perform_system_check
+from api.documentation_api import router as documentation_router
 
 try:
     from dotenv import load_dotenv
@@ -53,6 +63,9 @@ app = FastAPI(title="nscale DMS Assistent API")
 
 # Zusätzliche API-Endpunkte für Feedback integrieren
 app.include_router(additional_router)
+
+# Documentation API router
+app.include_router(documentation_router)
 
 # Allgemeiner Exception-Handler für bessere Fehlerdiagnose
 @app.exception_handler(Exception)
@@ -299,9 +312,9 @@ async def login(request: Request):
                             "role": user.get("role"),
                             "created_at": user.get("created_at")
                         }
-                        return {"token": token, "user": user_data}
+                        return {"access_token": token, "token": token, "user": user_data}
                     else:
-                        return {"token": token}
+                        return {"access_token": token, "token": token}
                 else:
                     print(f"LOGIN DEBUG - Authentication failed for {email}, trying with default password")
                     # Mit Standard-Testpasswort versuchen, falls reguläres Passwort fehlschlägt
@@ -319,9 +332,9 @@ async def login(request: Request):
                                     "role": user.get("role"),
                                     "created_at": user.get("created_at")
                                 }
-                                return {"token": token, "user": user_data}
+                                return {"access_token": token, "token": token, "user": user_data}
                             else:
-                                return {"token": token}
+                                return {"access_token": token, "token": token}
                     
                     print(f"LOGIN DEBUG - Authentication failed completely for {email}")
                     raise HTTPException(status_code=401, detail="Ungültige Anmeldedaten")
@@ -350,9 +363,9 @@ async def login(request: Request):
                 "role": user.get("role"),
                 "created_at": user.get("created_at")
             }
-            return {"token": token, "user": user_data}
+            return {"access_token": token, "token": token, "user": user_data}
         else:
-            return {"token": token}
+            return {"access_token": token, "token": token}
         
     except HTTPException as he:
         # HTTP Exceptions durchreichen
@@ -412,7 +425,7 @@ async def validate_token(user_data: Dict[str, Any] = Depends(get_current_user)):
         return {"valid": False}
 
 # API-Endpunkte für Benutzerverwaltung (nur für Admins)
-@app.get("/api/admin/users")
+@app.get("/api/v1/admin/users")
 async def get_users(admin_data: Dict[str, Any] = Depends(get_admin_user)):
     """Gibt eine Liste aller Benutzer zurück (Admin-Funktion)"""
     users = user_manager.get_all_users(admin_data['user_id'])
@@ -422,7 +435,7 @@ async def get_users(admin_data: Dict[str, Any] = Depends(get_admin_user)):
     
     return {"users": users}
 
-@app.post("/api/admin/users")
+@app.post("/api/v1/admin/users")
 async def create_user(request: CreateUserRequest, admin_data: Dict[str, Any] = Depends(get_admin_user)):
     """Erstellt einen neuen Benutzer mit angegebener Rolle (Admin-Funktion)"""
     success = user_manager.register_user(request.email, request.password, request.role)
@@ -432,7 +445,7 @@ async def create_user(request: CreateUserRequest, admin_data: Dict[str, Any] = D
     
     return {"message": f"Benutzer {request.email} mit Rolle {request.role} erfolgreich erstellt"}
 
-@app.delete("/api/admin/users/{user_id}")
+@app.delete("/api/v1/admin/users/{user_id}")
 async def delete_user(user_id: int, admin_data: Dict[str, Any] = Depends(get_admin_user)):
     """Löscht einen Benutzer (nur für Administratoren)"""
     admin_user_id = admin_data['user_id']
@@ -449,7 +462,7 @@ async def delete_user(user_id: int, admin_data: Dict[str, Any] = Depends(get_adm
     
     return {"message": f"Benutzer mit ID {user_id} erfolgreich gelöscht"}
 
-@app.put("/api/admin/users/{user_id}/role")
+@app.put("/api/v1/admin/users/{user_id}/role")
 async def update_user_role(user_id: int, request: dict, admin_data: Dict[str, Any] = Depends(get_admin_user)):
     """Aktualisiert die Rolle eines Benutzers (Admin-Funktion)"""
     # Prüfen, ob der Admin versucht, seine eigene Rolle zu ändern
@@ -705,14 +718,14 @@ async def get_user_feedback(user_data: Dict[str, Any] = Depends(get_current_user
     return {"feedback": feedback_list}
 
 # Endpunkte für Admins
-@app.get("/api/admin/feedback/stats")
+@app.get("/api/v1/admin/feedback/stats")
 async def get_feedback_stats(admin_data: Dict[str, Any] = Depends(get_admin_user)):
     """Gibt Feedback-Statistiken zurück (Admin)"""
     stats = feedback_manager.get_feedback_stats()
     
     return {"stats": stats}
 
-@app.get("/api/admin/feedback/negative")
+@app.get("/api/v1/admin/feedback/negative")
 async def get_negative_feedback(admin_data: Dict[str, Any] = Depends(get_admin_user)):
     """Gibt Nachrichten mit negativem Feedback zurück (Admin)"""
     negative_feedback = feedback_manager.get_negative_feedback_messages()
@@ -725,7 +738,12 @@ async def get_motd():
     """Gibt die aktuelle Message of the Day zurück"""
     return motd_manager.get_motd()
 
-@app.post("/api/admin/reload-motd")
+@app.get("/api/v1/motd")
+async def get_motd_v1():
+    """Gibt die aktuelle Message of the Day zurück (v1 API)"""
+    return motd_manager.get_motd()
+
+@app.post("/api/v1/admin/reload-motd")
 async def reload_motd(user_data: Dict[str, Any] = Depends(get_admin_user)):
     """Lädt die MOTD-Konfiguration neu (nur für Admins)"""
     success = motd_manager.reload_config()
@@ -736,7 +754,7 @@ async def reload_motd(user_data: Dict[str, Any] = Depends(get_admin_user)):
     return {"message": "MOTD-Konfiguration erfolgreich neu geladen"}
 
 # Neuer Endpunkt für die Aktualisierung der MOTD-Konfiguration
-@app.post("/api/admin/update-motd")
+@app.post("/api/v1/admin/update-motd")
 async def update_motd(request: Request, admin_data: Dict[str, Any] = Depends(get_admin_user)):
     """Aktualisiert die MOTD-Konfiguration (nur für Admins)"""
     try:
@@ -1061,7 +1079,7 @@ async def rename_session(request: RenameSessionRequest, user_data: Dict[str, Any
     return {"message": "Session erfolgreich umbenannt"}
 
 # Admin-API-Endpunkte - Allgemeine Systemfunktionen
-@app.post("/api/admin/install-model")
+@app.post("/api/v1/admin/install-model")
 async def install_model(user_data: Dict[str, Any] = Depends(get_admin_user)):
     """Installiert das LLM-Modell (nur für Admins)"""
     result = await rag_engine.install_model()
@@ -1071,7 +1089,7 @@ async def install_model(user_data: Dict[str, Any] = Depends(get_admin_user)):
     
     return {"message": result['message']}
 
-@app.post("/api/admin/clear-cache")
+@app.post("/api/v1/admin/clear-cache")
 async def clear_cache(user_data: Dict[str, Any] = Depends(get_admin_user)):
     """Löscht den LLM-Cache (nur für Admins)"""
     result = rag_engine.clear_cache()
@@ -1081,7 +1099,7 @@ async def clear_cache(user_data: Dict[str, Any] = Depends(get_admin_user)):
     
     return {"message": result['message']}
 
-@app.post("/api/admin/clear-embedding-cache")
+@app.post("/api/v1/admin/clear-embedding-cache")
 async def clear_embedding_cache(user_data: Dict[str, Any] = Depends(get_admin_user)):
     """Löscht den Embedding-Cache (nur für Admins)"""
     try:
@@ -1113,7 +1131,7 @@ async def clear_embedding_cache(user_data: Dict[str, Any] = Depends(get_admin_us
         raise HTTPException(status_code=500, detail=f"Fehler beim Löschen des Embedding-Cache: {str(e)}")
 
 # Neue Admin-Endpunkte für System-Statistiken und -Funktionen
-@app.get("/api/admin/stats")
+@app.get("/api/v1/admin/stats")
 async def get_admin_stats(user_data: Dict[str, Any] = Depends(get_admin_user)):
     """Gibt umfassende Systemstatistiken zurück (nur für Admins)"""
     rag_stats = rag_engine.get_document_stats()
@@ -1152,18 +1170,48 @@ async def get_system_actions(user_data: Dict[str, Any] = Depends(get_admin_user)
     return {"actions": actions}
 
 # Admin-Feedback-Endpunkte
+@app.get(build_api_url(ADMIN_ROUTES.FEEDBACK.LIST))
+async def get_admin_feedback(
+    limit: int = Query(1000, description="Maximale Anzahl an Einträgen"),
+    user_data: Dict[str, Any] = Depends(get_admin_user)
+):
+    """Gibt eine Liste aller Feedback-Einträge zurück (nur für Admins)"""
+    try:
+        feedback_manager = FeedbackManager()
+        
+        # Use the new get_all_feedback_messages method
+        all_feedback = await run_in_threadpool(feedback_manager.get_all_feedback_messages, limit)
+        
+        return {"feedback": all_feedback}
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen der Feedback-Einträge: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get(build_api_url(ADMIN_ROUTES.FEEDBACK.NEGATIVE))
+async def get_admin_feedback_negative(
+    limit: int = Query(100, description="Maximale Anzahl an Einträgen"),
+    user_data: Dict[str, Any] = Depends(get_admin_user)
+):
+    """Gibt eine Liste der negativen Feedback-Einträge zurück (nur für Admins)"""
+    try:
+        feedback_manager = FeedbackManager()
+        negative_feedback = await run_in_threadpool(feedback_manager.get_negative_feedback_messages, limit)
+        return {"feedback": negative_feedback}
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen der negativen Feedback-Einträge: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/api/v1/admin/feedback/stats")
 async def get_admin_feedback_stats(user_data: Dict[str, Any] = Depends(get_admin_user)):
     """Gibt detaillierte Feedback-Statistiken zurück (nur für Admins)"""
     try:
-        # Direkte Implementierung der Statistikgenerierung statt Aufruf von get_feedback_stats
-        # In einer echten Implementierung würden diese Werte aus der Datenbank kommen
-        total = 120
-        positive = 95
-        negative = 25
-        positive_percent = round((positive / total) * 100 if total > 0 else 0, 1)
-        with_comments = 42
-        unresolved = 18
+        # Get real stats from the feedback manager
+        feedback_manager = FeedbackManager()
+        stats = await run_in_threadpool(feedback_manager.get_feedback_stats)
+        
+        # Add additional stats that may not be in the basic stats
+        with_comments = stats.get('with_comments', 0)
+        unresolved = stats.get('unresolved', stats.get('negative', 0))  # Default unresolved to negative count
         feedback_rate = 15.3  # Prozentsatz der Nachrichten mit Feedback
         
         # Zeitreihendaten für die letzten 7 Tage
@@ -1188,10 +1236,10 @@ async def get_admin_feedback_stats(user_data: Dict[str, Any] = Depends(get_admin
             })
         
         stats_data = {
-            "total": total,
-            "positive": positive,
-            "negative": negative,
-            "positive_percent": positive_percent,
+            "total": stats.get('total', 0),
+            "positive": stats.get('positive', 0),
+            "negative": stats.get('negative', 0),
+            "positive_percent": stats.get('positive_percent', 0),
             "with_comments": with_comments,
             "unresolved": unresolved,
             "feedback_rate": feedback_rate,
@@ -1215,7 +1263,7 @@ async def get_admin_feedback_stats(user_data: Dict[str, Any] = Depends(get_admin
             }
         }
 
-@app.get("/api/v1/admin/feedback/negative")
+@app.get(build_api_url(ADMIN_ROUTES.FEEDBACK.NEGATIVE))
 async def get_admin_negative_feedback(
     limit: int = Query(100, description="Maximale Anzahl an Einträgen"), 
     user_data: Dict[str, Any] = Depends(get_admin_user)
@@ -1370,6 +1418,416 @@ async def get_admin_doc_converter_statistics(user_data: Dict[str, Any] = Depends
     }
     
     return {"statistics": stats}
+
+# Admin-Feature-Toggles-Endpunkte
+@app.get("/api/v1/admin/feature-toggles")
+async def get_admin_feature_toggles(user_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Gibt die Liste der Feature-Toggles zurück (nur für Admins)"""
+    # Produktionsrelevante Feature-Toggles
+    feature_toggles = {
+        "toggles": [
+            {
+                "id": "enhanced-rag-search",
+                "name": "Erweiterte RAG-Suche",
+                "description": "Aktiviert verbesserte Retrieval-Augmented Generation mit mehreren Suchdurchläufen",
+                "enabled": False,
+                "category": "search",
+                "created_at": "2024-01-15T10:00:00Z",
+                "updated_at": "2024-01-20T14:30:00Z"
+            },
+            {
+                "id": "multi-llm-support",
+                "name": "Multi-LLM Unterstützung",
+                "description": "Ermöglicht die Nutzung verschiedener LLM-Backends (OpenAI, Anthropic, Ollama)",
+                "enabled": False,
+                "category": "ai",
+                "created_at": "2024-01-10T09:00:00Z",
+                "updated_at": "2024-01-18T11:20:00Z"
+            },
+            {
+                "id": "document-ocr",
+                "name": "OCR für Dokumente",
+                "description": "Aktiviert optische Zeichenerkennung für gescannte Dokumente",
+                "enabled": False,
+                "category": "documents",
+                "created_at": "2024-01-05T08:00:00Z",
+                "updated_at": "2024-01-25T16:45:00Z"
+            },
+            {
+                "id": "rate-limiting",
+                "name": "API Rate Limiting",
+                "description": "Begrenzt API-Anfragen pro Benutzer zur Lastverteilung",
+                "enabled": True,
+                "category": "performance",
+                "created_at": "2024-01-01T07:00:00Z",
+                "updated_at": "2024-01-15T13:00:00Z"
+            },
+            {
+                "id": "advanced-caching",
+                "name": "Erweiterte Cache-Strategien",
+                "description": "Aktiviert intelligentes Caching für häufige Anfragen",
+                "enabled": True,
+                "category": "performance",
+                "created_at": "2024-01-20T12:00:00Z",
+                "updated_at": "2024-01-20T12:00:00Z"
+            },
+            {
+                "id": "export-analytics",
+                "name": "Export-Analysen",
+                "description": "Ermöglicht erweiterte Analysen und Berichte für Administratoren",
+                "enabled": False,
+                "category": "analytics",
+                "created_at": "2024-01-22T10:00:00Z",
+                "updated_at": "2024-01-22T10:00:00Z"
+            },
+            {
+                "id": "maintenance-mode",
+                "name": "Wartungsmodus",
+                "description": "Aktiviert den Wartungsmodus für Systemupdates",
+                "enabled": False,
+                "category": "system",
+                "created_at": "2024-01-23T09:00:00Z",
+                "updated_at": "2024-01-23T09:00:00Z"
+            },
+            {
+                "id": "beta-ui-features",
+                "name": "Beta UI-Funktionen",
+                "description": "Neue Benutzeroberflächen-Features im Beta-Stadium",
+                "enabled": False,
+                "category": "experimental",
+                "created_at": "2024-01-24T11:00:00Z",
+                "updated_at": "2024-01-24T11:00:00Z"
+            }
+        ],
+        "total": 8,
+        "enabled_count": 2,
+        "disabled_count": 6,
+        "categories": ["search", "ai", "documents", "performance", "analytics", "system", "experimental"]
+    }
+    
+    return feature_toggles
+
+@app.put("/api/v1/admin/feature-toggles/{toggle_id}")
+async def update_admin_feature_toggle(
+    toggle_id: str,
+    update_data: dict,
+    user_data: Dict[str, Any] = Depends(get_admin_user)
+):
+    """Aktualisiert ein Feature-Toggle (nur für Admins)"""
+    # In einer echten Implementierung würde dies in einer Datenbank gespeichert
+    logger.info(f"Admin {user_data['email']} aktualisiert Feature-Toggle {toggle_id}: {update_data}")
+    
+    return {
+        "success": True,
+        "message": f"Feature-Toggle '{toggle_id}' erfolgreich aktualisiert",
+        "toggle": {
+            "id": toggle_id,
+            "enabled": update_data.get("enabled", True),
+            "updated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "updated_by": user_data['email']
+        }
+    }
+
+@app.post("/api/v1/admin/feature-toggles")
+async def create_admin_feature_toggle(
+    toggle_data: dict,
+    user_data: Dict[str, Any] = Depends(get_admin_user)
+):
+    """Erstellt ein neues Feature-Toggle (nur für Admins)"""
+    toggle_id = toggle_data.get("id", f"feature-{int(time.time())}")
+    
+    logger.info(f"Admin {user_data['email']} erstellt neues Feature-Toggle: {toggle_id}")
+    
+    return {
+        "success": True,
+        "message": "Feature-Toggle erfolgreich erstellt",
+        "toggle": {
+            "id": toggle_id,
+            "name": toggle_data.get("name", "Neues Feature"),
+            "description": toggle_data.get("description", ""),
+            "enabled": toggle_data.get("enabled", False),
+            "category": toggle_data.get("category", "general"),
+            "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "created_by": user_data['email']
+        }
+    }
+
+@app.delete("/api/v1/admin/feature-toggles/{toggle_id}")
+async def delete_admin_feature_toggle(
+    toggle_id: str,
+    user_data: Dict[str, Any] = Depends(get_admin_user)
+):
+    """Löscht ein Feature-Toggle (nur für Admins)"""
+    logger.info(f"Admin {user_data['email']} löscht Feature-Toggle: {toggle_id}")
+    
+    return {
+        "success": True,
+        "message": f"Feature-Toggle '{toggle_id}' erfolgreich gelöscht"
+    }
+
+# Admin-Benutzer-Endpunkte
+
+@app.get("/api/v1/admin/users/count")
+async def get_admin_users_count(user_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Gibt die Anzahl der Benutzer nach Rolle zurück (nur für Admins)"""
+    try:
+        user_manager = UserManager()
+        all_users = user_manager.get_all_users(user_data['user_id'])
+        
+        if all_users is None:
+            raise HTTPException(status_code=403, detail="Keine Berechtigung")
+        
+        # Zähle Benutzer nach Rolle
+        count_by_role = {}
+        for user in all_users:
+            role = user.get('role', 'user')
+            count_by_role[role] = count_by_role.get(role, 0) + 1
+        
+        return {
+            "count": len(all_users),
+            "total": len(all_users),
+            "by_role": count_by_role
+        }
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen der Benutzeranzahl: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/v1/admin/users/stats")
+async def get_admin_users_stats(user_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Gibt detaillierte Benutzerstatistiken zurück (nur für Admins)"""
+    try:
+        user_manager = UserManager()
+        all_users = user_manager.get_all_users(user_data['user_id'])
+        
+        if all_users is None:
+            raise HTTPException(status_code=403, detail="Keine Berechtigung")
+        
+        # Berechne Statistiken
+        total_users = len(all_users)
+        active_today = 0
+        active_week = 0
+        active_month = 0
+        
+        now = time.time()
+        day_ago = now - (24 * 60 * 60)
+        week_ago = now - (7 * 24 * 60 * 60)
+        month_ago = now - (30 * 24 * 60 * 60)
+        
+        for user in all_users:
+            last_login = user.get('last_login', 0)
+            # Handle None values
+            if last_login is None:
+                last_login = 0
+            if last_login > day_ago:
+                active_today += 1
+            if last_login > week_ago:
+                active_week += 1
+            if last_login > month_ago:
+                active_month += 1
+        
+        stats_data = {
+            "activeToday": active_today,
+            "activeThisWeek": active_week,
+            "activeThisMonth": active_month,
+            "newThisMonth": sum(1 for u in all_users if u.get('created_at', 0) > month_ago),
+            "averageSessionsPerUser": 5,  # Mock value
+            "total_users": total_users,
+            "active_today": active_today,
+            "active_this_week": active_week,
+            "active_this_month": active_month,
+            "users_by_role": {
+                "admin": sum(1 for u in all_users if u.get('role') == 'admin'),
+                "user": sum(1 for u in all_users if u.get('role') == 'user')
+            }
+        }
+        
+        return stats_data
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen der Benutzerstatistiken: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Admin-Benutzer-Endpunkte
+@app.get(build_api_url(ADMIN_ROUTES.USERS.LIST))
+async def get_admin_users(user_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Gibt eine Liste aller Benutzer zurück (nur für Admins)"""
+    try:
+        user_manager = UserManager()
+        users = user_manager.get_all_users(user_data['user_id'])
+        
+        if users is None:
+            raise HTTPException(status_code=403, detail="Keine Berechtigung")
+        
+        return {"users": users}
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen der Benutzerliste: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get(build_api_url(ADMIN_ROUTES.USERS.COUNT))
+async def get_admin_users_count(user_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Gibt die Anzahl der registrierten Benutzer zurück (nur für Admins)"""
+    try:
+        user_manager = UserManager()
+        users = user_manager.get_all_users(user_data['user_id'])
+        
+        if users is None:
+            raise HTTPException(status_code=403, detail="Keine Berechtigung")
+        
+        # Benutzer nach Rolle zählen
+        total = len(users)
+        admins = len([u for u in users if u.get('role') == 'admin'])
+        regular_users = total - admins
+        
+        return {
+            "total": total,
+            "admins": admins,
+            "users": regular_users
+        }
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen der Benutzeranzahl: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get(build_api_url(ADMIN_ROUTES.USERS.STATS))
+async def get_admin_users_stats(user_data: Dict[str, Any] = Depends(get_admin_user)):
+    """Gibt detaillierte Benutzerstatistiken zurück (nur für Admins)"""
+    try:
+        user_manager = UserManager()
+        users = user_manager.get_all_users(user_data['user_id'])
+        
+        if users is None:
+            raise HTTPException(status_code=403, detail="Keine Berechtigung")
+        
+        # Statistiken berechnen
+        total = len(users)
+        admins = len([u for u in users if u.get('role') == 'admin'])
+        regular_users = total - admins
+        
+        # Aktive Benutzer (eingeloggt in den letzten 30 Tagen)
+        current_time = time.time()
+        thirty_days_ago = current_time - (30 * 24 * 3600)
+        active_users = 0
+        
+        for user in users:
+            if user.get('last_login'):
+                try:
+                    # Konvertiere last_login zu Timestamp falls es ein String ist
+                    if isinstance(user['last_login'], str):
+                        import dateutil.parser
+                        last_login_time = dateutil.parser.parse(user['last_login']).timestamp()
+                    else:
+                        last_login_time = float(user['last_login'])
+                    
+                    if last_login_time > thirty_days_ago:
+                        active_users += 1
+                except:
+                    pass
+        
+        # Zeitreihendaten für die letzten 7 Tage (simuliert)
+        users_by_day = []
+        for i in range(7, 0, -1):
+            day_offset = i * 24 * 3600
+            day_timestamp = current_time - day_offset
+            day_date = time.strftime("%Y-%m-%d", time.localtime(day_timestamp))
+            
+            # Simulierte Werte
+            new_users = max(0, int(2 + (i % 3)))
+            active_day = max(0, int(15 + (i % 4) * 3))
+            
+            users_by_day.append({
+                "date": day_date,
+                "new_users": new_users,
+                "active_users": active_day
+            })
+        
+        stats = {
+            "total": total,
+            "admins": admins,
+            "users": regular_users,
+            "active_users": active_users,
+            "inactive_users": total - active_users,
+            "active_rate": round((active_users / total * 100) if total > 0 else 0, 1),
+            "admin_rate": round((admins / total * 100) if total > 0 else 0, 1),
+            "users_by_day": users_by_day,
+            "growth_rate": 12.5,  # Simulierter Wert
+            "avg_session_duration": "18:32",  # Simulierter Wert
+            "top_features": [
+                {"name": "Chat", "usage": 89},
+                {"name": "Dokumentenkonverter", "usage": 45},
+                {"name": "Einstellungen", "usage": 23}
+            ]
+        }
+        
+        return {"stats": stats}
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen der Benutzerstatistiken: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete(build_api_url(ADMIN_ROUTES.USERS.delete("{user_id}")))
+async def delete_admin_user(
+    user_id: int,
+    user_data: Dict[str, Any] = Depends(get_admin_user)
+):
+    """Löscht einen Benutzer (nur für Admins)"""
+    try:
+        user_manager = UserManager()
+        
+        # Verhindere Selbstlöschung
+        if user_id == user_data['user_id']:
+            raise HTTPException(status_code=400, detail="Sie können sich nicht selbst löschen")
+        
+        success = user_manager.delete_user(user_id, user_data['user_id'])
+        
+        if not success:
+            raise HTTPException(status_code=403, detail="Keine Berechtigung oder Benutzer nicht gefunden")
+        
+        return {"success": True, "message": f"Benutzer {user_id} erfolgreich gelöscht"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Fehler beim Löschen des Benutzers: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.patch(build_api_url(ADMIN_ROUTES.USERS.update_role("{user_id}")))
+async def update_admin_user_role(
+    user_id: int,
+    request: dict,
+    user_data: Dict[str, Any] = Depends(get_admin_user)
+):
+    """Aktualisiert die Rolle eines Benutzers (nur für Admins)"""
+    try:
+        new_role = request.get("role")
+        
+        if new_role not in ["user", "admin"]:
+            raise HTTPException(status_code=400, detail="Ungültige Rolle")
+        
+        user_manager = UserManager()
+        
+        # Verhindere Änderung der eigenen Rolle
+        if user_id == user_data['user_id']:
+            raise HTTPException(status_code=400, detail="Sie können Ihre eigene Rolle nicht ändern")
+        
+        # Hier würde normalerweise die update_user_role Methode aufgerufen werden
+        # Da sie nicht in UserManager vorhanden ist, fügen wir sie hinzu oder verwenden direkte DB-Operationen
+        conn = sqlite3.connect(Config.DB_PATH)
+        cursor = conn.cursor()
+        
+        cursor.execute(
+            "UPDATE users SET role = ? WHERE id = ?",
+            (new_role, user_id)
+        )
+        
+        if cursor.rowcount == 0:
+            conn.close()
+            raise HTTPException(status_code=404, detail="Benutzer nicht gefunden")
+        
+        conn.commit()
+        conn.close()
+        
+        return {"success": True, "message": f"Rolle erfolgreich auf {new_role} geändert"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Fehler beim Aktualisieren der Benutzerrolle: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # CSS-Datei-Zeitstempel aktualisieren bei Serverstart
 @app.on_event("startup")

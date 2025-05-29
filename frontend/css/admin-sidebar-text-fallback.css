@@ -1,0 +1,51 @@
+/* Admin Sidebar Text Fallback CSS */
+
+/* Add data attributes to nav items for CSS fallback */
+.admin-panel__nav-item[data-tab-id="dashboard"] .admin-panel__nav-label:empty::after {
+  content: "Dashboard";
+}
+
+.admin-panel__nav-item[data-tab-id="users"] .admin-panel__nav-label:empty::after {
+  content: "Benutzer";
+}
+
+.admin-panel__nav-item[data-tab-id="feedback"] .admin-panel__nav-label:empty::after {
+  content: "Feedback";
+}
+
+.admin-panel__nav-item[data-tab-id="motd"] .admin-panel__nav-label:empty::after {
+  content: "Nachrichten";
+}
+
+.admin-panel__nav-item[data-tab-id="docConverter"] .admin-panel__nav-label:empty::after {
+  content: "Dokumentenkonverter";
+}
+
+.admin-panel__nav-item[data-tab-id="system"] .admin-panel__nav-label:empty::after {
+  content: "System";
+}
+
+.admin-panel__nav-item[data-tab-id="statistics"] .admin-panel__nav-label:empty::after {
+  content: "Statistiken";
+}
+
+.admin-panel__nav-item[data-tab-id="settings"] .admin-panel__nav-label:empty::after {
+  content: "Einstellungen";
+}
+
+.admin-panel__nav-item[data-tab-id="logs"] .admin-panel__nav-label:empty::after {
+  content: "Protokolle";
+}
+
+.admin-panel__nav-item[data-tab-id="featureToggles"] .admin-panel__nav-label:empty::after {
+  content: "Feature-Toggles";
+}
+
+/* Force all labels to be visible */
+.admin-panel__nav-label {
+  color: var(--admin-text, #333333) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: inline-block !important;
+  min-height: 1.2em !important;
+}

@@ -396,8 +396,33 @@ const motdStore = useAdminMotdStore();
 const { config, loading, error, previewMode, hasUnsavedChanges, previewHtml } =
   storeToRefs(motdStore);
 
+// Default MOTD config structure
+const defaultMotdConfig: MotdConfig = {
+  enabled: false,
+  messages: {
+    de: "",
+    en: ""
+  },
+  format: "markdown",
+  style: {
+    backgroundColor: "#f0f9ff",
+    textColor: "#1e40af",
+    borderColor: "#3b82f6",
+    iconClass: "info-circle"
+  },
+  display: {
+    position: "top",
+    dismissible: true,
+    showIcon: true
+  },
+  priority: 5
+};
+
 // Local state for the component
-const motdConfig = ref<MotdConfig>({ ...config.value });
+const motdConfig = ref<MotdConfig>({ 
+  ...defaultMotdConfig,
+  ...(config.value || {})
+});
 const scheduling = ref({
   enabled: false,
   startDate: new Date().toISOString().slice(0, 16),
@@ -610,7 +635,12 @@ function restoreVersion(version: {
 watch(
   () => config.value,
   (newValue) => {
-    motdConfig.value = { ...newValue };
+    if (newValue) {
+      motdConfig.value = { 
+        ...defaultMotdConfig,
+        ...newValue 
+      };
+    }
   },
   { deep: true },
 );

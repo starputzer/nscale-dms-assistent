@@ -68,9 +68,95 @@ Thumbs.db
 
 # Log-Dateien
 *.log
+logs/
+server.log
+api_server.log
+vite-dev.log
+vite_server*.log
+server-prod.log
+serve-prod.log
 
 # Build-Dateien
 /dist/
 /.cache/
 /.output/
 /.vite/
+
+# Backup-Dateien und -Verzeichnisse
+*.backup
+*.backup-*
+*.bak
+*.old
+backup*/
+backups/
+BACKUP*/
+backup-*/
+*.final-fix-backup
+*.improved-fix-backup
+*.syntax-fix-backup
+*.access-fix-backup
+*.cdn-backup
+
+# Temporäre Dateien
+temp/
+tmp/
+*.tmp
+*.temp
+
+# Test-Ergebnisse und Reports
+e2e-test-results/
+typecheck-reports/
+coverage/
+.coverage
+htmlcov/
+*.cover
+.pytest_cache/
+junit/
+
+# Datenbank-Dateien
+*.db
+*.sqlite
+*.sqlite3
+data/db/
+
+# Dokumentations-Build-Artefakte
+docs/_build/
+docs/.doctrees/
+docs/00_KONSOLIDIERTE_DOKUMENTATION/BACKUP*/
+
+# Anwendungsspezifische Dateien
+working_auth_config.json
+token.txt
+removed-scripts.json
+build-log.txt
+
+# Editor-spezifische Dateien
+*~
+*.sublime-project
+*.sublime-workspace
+
+# OS-spezifische Dateien
+desktop.ini
+.directory
+.Spotlight-V100
+.Trashes
+
+# Frontend-spezifische Ignores
+.cdn-backup
+public/index.html.backup-*
+
+# Python-spezifische Erweiterungen
+*.pyd
+.Python
+*.py[cod]
+*$py.class
+.hypothesis/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Lokale Konfigurationsdateien
+.env.local
+.env.*.local
+config.local.py
+settings.local.json

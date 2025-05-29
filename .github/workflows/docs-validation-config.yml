@@ -1,0 +1,47 @@
+# Documentation Validation Configuration
+# This file contains configuration for the docs-validation workflow
+
+# Paths to check for documentation
+documentation_paths:
+  - docs/
+  - README.md
+  - CONTRIBUTING.md
+  - CHANGELOG.md
+  - SECURITY.md
+
+# Paths to exclude from validation
+exclude_paths:
+  - node_modules/
+  - venv/
+  - .github/
+  - dist/
+  - build/
+  - worktrees/
+
+# Required metadata fields for documentation
+required_metadata:
+  - title
+  - date
+  - author
+  - status
+
+# Valid status values
+valid_statuses:
+  - draft
+  - review
+  - final
+  - deprecated
+  - archived
+
+# Maximum number of issues to report in PR comments
+max_issues_in_comment: 20
+
+# Fail the workflow if these thresholds are exceeded
+failure_thresholds:
+  broken_links: 0      # Fail if any broken links found
+  metadata_issues: 0   # Fail if any metadata issues found
+  
+# Warning thresholds (will not fail, but will add warning)
+warning_thresholds:
+  external_links: 50   # Warn if too many external links
+  file_size_kb: 100    # Warn if markdown file exceeds this size

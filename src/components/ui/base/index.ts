@@ -15,17 +15,25 @@ export { default as Tabs } from "./Tabs.vue";
 export { default as Stepper } from "./Stepper.vue";
 export { default as Select } from "./Select.vue";
 
+// Import components first to ensure they're available
+import InputComponent from "./Input.vue";
+import TextAreaComponent from "./TextArea.vue";
+import ToggleComponent from "./Toggle.vue";
+import BadgeComponent from "./Badge.vue";
+
 // Workaround exports for missing components 
 // This ensures that components referenced in admin panels are available
-export const RadioGroup = Input; // Temporary workaround
-export const RichTextEditor = TextArea; // Temporary workaround
-export const DateTimePicker = Input; // Temporary workaround
-export const DateRangePicker = Input; // Temporary workaround
-export const ColorPicker = Input; // Temporary workaround
-export const IconPicker = Input; // Temporary workaround
-export const NumberInput = Input; // Temporary workaround
-export const TimeSlotPicker = Input; // Temporary workaround
-export const Icon = Badge; // Temporary workaround
-export const Checkbox = Toggle; // Temporary workaround
-export const Label = Badge; // Temporary workaround
-export const FormGroup = Card; // Temporary workaround
+export const RadioGroup = InputComponent; // Temporary workaround
+export const RichTextEditor = TextAreaComponent; // Temporary workaround
+export const DateTimePicker = InputComponent; // Temporary workaround
+export const DateRangePicker = InputComponent; // Temporary workaround
+export const ColorPicker = InputComponent; // Temporary workaround
+export const IconPicker = InputComponent; // Temporary workaround
+export const NumberInput = InputComponent; // Temporary workaround
+export const TimeSlotPicker = InputComponent; // Temporary workaround
+export const Icon = BadgeComponent; // Temporary workaround
+export const Checkbox = ToggleComponent; // Temporary workaround
+export const Label = BadgeComponent; // Temporary workaround
+
+import CardComponent from "./Card.vue";
+export const FormGroup = CardComponent; // Temporary workaround

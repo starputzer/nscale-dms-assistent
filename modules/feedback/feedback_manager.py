@@ -239,6 +239,45 @@ class FeedbackManager:
                 'positive_percent': 0
             }
     
+    def get_all_feedback_messages(self, limit: int = 1000) -> List[Dict[str, Any]]:
+        """Gibt alle Feedback-Nachrichten zurück (für Admins)"""
+        try:
+            conn = sqlite3.connect(Config.DB_PATH)
+            cursor = conn.cursor()
+            
+            cursor.execute(
+                """SELECT f.id, f.message_id, f.session_id, f.user_id, f.is_positive, f.comment, 
+                         f.created_at, f.question, f.answer, u.email 
+                   FROM message_feedback f
+                   JOIN users u ON f.user_id = u.id
+                   ORDER BY f.created_at DESC
+                   LIMIT ?""",
+                (limit,)
+            )
+            
+            feedback_list = []
+            for row in cursor.fetchall():
+                feedback_list.append({
+                    'id': row[0],
+                    'message_id': row[1],
+                    'session_id': row[2],
+                    'user_id': row[3],
+                    'is_positive': bool(row[4]),
+                    'comment': row[5],
+                    'created_at': row[6],
+                    'question': row[7],
+                    'answer': row[8],
+                    'user_email': row[9],
+                    'status': 'resolved' if row[4] else 'unresolved'  # Mock status based on feedback type
+                })
+            
+            conn.close()
+            return feedback_list
+        
+        except Exception as e:
+            logger.error(f"Fehler beim Abrufen aller Feedbacks: {e}")
+            return []
+    
     def get_negative_feedback_messages(self, limit: int = 10) -> List[Dict[str, Any]]:
         """Gibt die Nachrichten mit negativem Feedback zurück (für Admins)"""
         try:

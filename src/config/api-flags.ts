@@ -62,20 +62,8 @@ export const shouldUseRealApi = (component: string): boolean => {
     }
   }
   
-  // Im Entwicklungsmodus kann es sinnvoll sein, Mock-Daten zu verwenden,
-  // besonders wenn die API-Endpunkte noch nicht fertiggestellt sind
-  if (process.env.NODE_ENV === 'development') {
-    // Für bestimmte Komponenten immer Mock-Daten verwenden (bekannte Probleme)
-    if (component === 'useRealSystemApi' || 
-        component === 'useRealMotdApi' || 
-        component === 'useRealDocConverterApi' ||
-        component === 'useRealFeatureTogglesApi') {
-      console.info(`[API-Flags] Verwende Mock-Daten für ${component} (Entwicklungsmodus)`);
-      return false;
-    }
-  }
-  
-  // Standardmäßig echte API verwenden
+  // IMMER echte API verwenden - keine Mock-Daten mehr!
+  console.info(`[API-Flags] Verwende echte API für ${component} (Produktivmodus)`);
   return true;
 };
 

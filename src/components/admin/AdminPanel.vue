@@ -28,12 +28,13 @@
             :aria-current="activeTab === tab.id ? 'page' : undefined"
             @click="setActiveTab(tab.id)"
             :aria-label="tab.label"
+            :data-tab-id="tab.id"
           >
             <i
               :class="['admin-panel__nav-icon', tab.icon]"
               aria-hidden="true"
             ></i>
-            <span class="admin-panel__nav-label">{{ tab.label }}</span>
+            <span class="admin-panel__nav-label">{{ tab.label || tab.id }}</span>
           </button>
         </nav>
 
@@ -84,16 +85,6 @@
             </button>
           </div>
           <div v-else-if="currentTabComponent" class="admin-tab-container">
-            <!-- API integration info banner -->
-            <div class="admin-info-banner">
-              <i class="fas fa-check-circle"></i>
-              <div>
-                <strong>API-Integration aktiv:</strong> Diese Admin-Oberfläche
-                kommuniziert jetzt direkt mit dem Backend-System. Es werden echte Daten
-                angezeigt und Änderungen werden im System gespeichert.
-              </div>
-            </div>
-
             <component
               :is="currentTabComponent"
               @action="handleAction"
@@ -302,6 +293,10 @@ const useRealApiGlobal = ref(true);
 // Use forceTab prop if provided, otherwise use activeTabState
 const activeTab = computed(() => {
   if (props.forceTab) {
+    // When forceTab is provided, sync it to activeTabState
+    if (props.forceTab !== activeTabState.value) {
+      activeTabState.value = props.forceTab;
+    }
     return props.forceTab;
   }
 
@@ -318,8 +313,8 @@ const themeClass = computed(() => {
   return `theme-${theme.value || "light"}`;
 });
 
-// Simplified tab definitions
-const allTabs = [
+// Simplified tab definitions - use computed to ensure i18n is ready
+const allTabs = computed(() => [
   {
     id: "dashboard",
     label: t("admin.tabs.dashboard", "Dashboard"),
@@ -370,30 +365,44 @@ const allTabs = [
     label: t("admin.tabs.featureToggles", "Feature-Toggles"),
     icon: "fas fa-toggle-on",
   },
-];
+]);
 
 // In simplified version, all tabs are available
-const availableTabs = computed(() => allTabs);
+const availableTabs = computed(() => allTabs.value);
 
 // Current tab component (using dynamic import for safety)
 const currentTabComponent = shallowRef(null);
 
+// Watch for activeTab changes to load the appropriate component
+watch(activeTab, async (newTab) => {
+  if (newTab) {
+    await loadTabComponent(newTab);
+  }
+});
+
 // Methods
 async function setActiveTab(tabId) {
   if (availableTabs.value.some((tab) => tab.id === tabId)) {
-    activeTabState.value = tabId;
-    localStorage.setItem("admin_active_tab", tabId);
-
-    // Load the tab component safely
-    await loadTabComponent(tabId);
-
-    // Update URL if router is available
-    if (router) {
-      const adminPath = `/admin/${tabId}`;
-      router.push(adminPath).catch((err) => {
-        console.error("[AdminPanel] Navigation error:", err);
-      });
+    // Don't do navigation if we're controlled by forceTab prop
+    if (props.forceTab) {
+      // When controlled by prop, just update URL without reloading
+      if (router) {
+        const adminPath = `/admin/${tabId}`;
+        // Use replace to avoid adding to history
+        if (router.currentRoute.value.path !== adminPath) {
+          router.replace(adminPath).catch((err) => {
+            console.error("[AdminPanel] Navigation error:", err);
+          });
+        }
+      }
+    } else {
+      // When not controlled by prop, update local state
+      activeTabState.value = tabId;
+      localStorage.setItem("admin_active_tab", tabId);
     }
+
+    // Always load the tab component
+    await loadTabComponent(tabId);
   }
 }
 

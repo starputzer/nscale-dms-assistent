@@ -1,0 +1,45 @@
+{
+  "version_dir": "/opt/nscale-assist/versions",
+  "tracked_dirs": [
+    "/opt/nscale-assist/docs",
+    "/opt/nscale-assist/app/docs",
+    "/opt/nscale-assist/data/txt"
+  ],
+  "max_versions_per_file": 50,
+  "auto_commit_threshold_kb": 10,
+  "track_file_patterns": [
+    "*.md",
+    "*.txt",
+    "*.rst",
+    "*.adoc",
+    "*.json",
+    "*.xml",
+    "*.yaml",
+    "*.yml"
+  ],
+  "ignore_patterns": [
+    "*.tmp",
+    "*.swp",
+    ".git/*",
+    "__pycache__/*",
+    "*.pyc",
+    ".DS_Store",
+    "node_modules/*",
+    "venv/*",
+    "*.log",
+    "*.bak",
+    "*.backup"
+  ],
+  "enable_compression": true,
+  "auto_tracking": {
+    "enabled": true,
+    "check_interval_minutes": 30,
+    "commit_on_change": true
+  },
+  "notifications": {
+    "enabled": false,
+    "on_rollback": true,
+    "on_major_change": true,
+    "major_change_threshold_percent": 25
+  }
+}

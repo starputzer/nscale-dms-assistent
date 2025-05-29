@@ -191,6 +191,14 @@ export class ApiService {
         if (!token) {
           token = localStorage.getItem("nscale_access_token");
         }
+        
+        // Additional fallback for token without prefix
+        if (!token) {
+          token = localStorage.getItem("access_token");
+        }
+        if (!token) {
+          token = localStorage.getItem("nscale_access_token");
+        }
 
         // Debug logging for all requests
         if (apiConfig.DEBUG.LOG_REQUESTS || config.url?.includes("batch")) {
@@ -650,9 +658,15 @@ export class ApiService {
 
       // Führe die Anfrage aus
       const response =
-        await this.axiosInstance.request<ApiResponse<T>>(options);
+        await this.axiosInstance.request<T>(options);
 
-      return response.data;
+      // Wrap the response in ApiResponse format
+      // The backend returns data directly, not wrapped in success/data structure
+      return {
+        success: true,
+        data: response.data as T,
+        message: "Request successful"
+      };
     } catch (error) {
       // Fehler formatieren und weiterwerfen
       if (error instanceof Error) {

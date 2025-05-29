@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin API Test mit Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .login-form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            max-width: 400px;
+        }
+        .test-result {
+            background: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        .info { border-left: 4px solid #17a2b8; }
+        .response-data {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0 15px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #00a550;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #009046;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        h1 { color: #333; }
+        h3 { margin-top: 0; }
+        .expected {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        #loginStatus {
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .logged-in {
+            background: #d4edda;
+            color: #155724;
+        }
+        .logged-out {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>Admin API Test mit Login</h1>
+    
+    <div id="loginStatus" class="logged-out">
+        Nicht eingeloggt
+    </div>
+    
+    <div id="loginForm" class="login-form">
+        <h3>Admin Login</h3>
+        <input type="email" id="email" placeholder="E-Mail" value="admin@example.com">
+        <input type="password" id="password" placeholder="Passwort" value="admin123">
+        <button onclick="login()">Einloggen</button>
+    </div>
+    
+    <div id="testSection" style="display: none;">
+        <button onclick="runTests()">Test alle Admin Endpoints</button>
+        <button onclick="logout()" style="background: #dc3545;">Ausloggen</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        function updateLoginStatus() {
+            const token = localStorage.getItem('auth_token');
+            const userRole = localStorage.getItem('user_role');
+            const statusDiv = document.getElementById('loginStatus');
+            const loginForm = document.getElementById('loginForm');
+            const testSection = document.getElementById('testSection');
+            
+            if (token) {
+                statusDiv.className = 'logged-in';
+                statusDiv.textContent = `Eingeloggt als ${userRole || 'Benutzer'}`;
+                loginForm.style.display = 'none';
+                testSection.style.display = 'block';
+            } else {
+                statusDiv.className = 'logged-out';
+                statusDiv.textContent = 'Nicht eingeloggt';
+                loginForm.style.display = 'block';
+                testSection.style.display = 'none';
+            }
+        }
+        
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && (data.access_token || data.token)) {
+                    localStorage.setItem('auth_token', data.access_token || data.token);
+                    localStorage.setItem('user_role', data.user?.role || 'user');
+                    
+                    resultsDiv.innerHTML = '<div class="test-result success"><h3>Login erfolgreich!</h3></div>';
+                    updateLoginStatus();
+                } else {
+                    resultsDiv.innerHTML = `<div class="test-result error"><h3>Login fehlgeschlagen</h3>${data.detail || 'Ungültige Anmeldedaten'}</div>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="test-result error"><h3>Netzwerkfehler</h3>${error.message}</div>`;
+            }
+        }
+        
+        function logout() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_role');
+            document.getElementById('results').innerHTML = '<div class="test-result info"><h3>Ausgeloggt</h3></div>';
+            updateLoginStatus();
+        }
+        
+        async function runTests() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+            
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                resultsDiv.innerHTML = '<div class="test-result error"><h3>Fehler</h3>Kein Auth Token gefunden!</div>';
+                return;
+            }
+            
+            const endpoints = [
+                {
+                    name: 'Users List',
+                    url: '/api/v1/admin/users',
+                    expectedPaths: ['users', 'data.users', 'data'],
+                    description: 'Frontend erwartet: response.data.users (Array)'
+                },
+                {
+                    name: 'User Count',
+                    url: '/api/v1/admin/users/count',
+                    expectedPaths: ['count', 'data.count'],
+                    description: 'Frontend erwartet: response.data.count (Number)'
+                },
+                {
+                    name: 'User Stats',
+                    url: '/api/v1/admin/users/stats',
+                    expectedPaths: ['activeToday', 'data.activeToday'],
+                    description: 'Frontend erwartet: response.data mit stats properties'
+                },
+                {
+                    name: 'Feedback Stats',
+                    url: '/api/v1/admin/feedback/stats',
+                    expectedPaths: ['stats', 'data.stats'],
+                    description: 'Frontend erwartet: response.data.stats (Object)'
+                },
+                {
+                    name: 'Negative Feedback',
+                    url: '/api/v1/admin/feedback/negative',
+                    expectedPaths: ['feedback', 'data.feedback'],
+                    description: 'Frontend erwartet: response.data.feedback (Array)'
+                }
+            ];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(endpoint.url, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    let resultHtml = `<div class="test-result ${response.ok ? 'success' : 'error'}">`;
+                    resultHtml += `<h3>${endpoint.name}</h3>`;
+                    resultHtml += `<div>Status: ${response.status}</div>`;
+                    resultHtml += `<div class="expected">${endpoint.description}</div>`;
+                    
+                    if (response.ok) {
+                        // Check which path contains the expected data
+                        const foundPaths = [];
+                        for (const path of endpoint.expectedPaths) {
+                            const value = getValueByPath(data, path);
+                            if (value !== undefined) {
+                                foundPaths.push(`✓ Gefunden in: ${path}`);
+                            }
+                        }
+                        
+                        if (foundPaths.length > 0) {
+                            resultHtml += `<div style="color: green; margin-top: 10px;">${foundPaths.join('<br>')}</div>`;
+                        } else {
+                            resultHtml += `<div style="color: red; margin-top: 10px;">❌ Daten nicht in erwarteten Pfaden gefunden!</div>`;
+                        }
+                        
+                        // Show actual response structure
+                        resultHtml += `<div class="response-data">Response: ${JSON.stringify(data, null, 2)}</div>`;
+                    } else {
+                        resultHtml += `<div style="color: red;">Fehler: ${data.detail || 'Unbekannter Fehler'}</div>`;
+                    }
+                    
+                    resultHtml += '</div>';
+                    resultsDiv.innerHTML += resultHtml;
+                    
+                } catch (error) {
+                    resultsDiv.innerHTML += `
+                        <div class="test-result error">
+                            <h3>${endpoint.name}</h3>
+                            <div>Netzwerkfehler: ${error.message}</div>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        function getValueByPath(obj, path) {
+            const parts = path.split('.');
+            let current = obj;
+            
+            for (const part of parts) {
+                if (current && typeof current === 'object' && part in current) {
+                    current = current[part];
+                } else {
+                    return undefined;
+                }
+            }
+            
+            return current;
+        }
+        
+        // Check login status on load
+        window.onload = () => {
+            updateLoginStatus();
+        };
+        
+        // Allow Enter key in password field
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('password').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    login();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

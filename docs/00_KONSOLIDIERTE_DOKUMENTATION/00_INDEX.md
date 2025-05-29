@@ -1,10 +1,10 @@
 ---
 title: "Dokumentations-Index - Digitale Akte Assistent"
-version: "3.0.0"
-date: "16.05.2025"
-lastUpdate: "16.05.2025"
+version: "3.1.0"
+date: "2025-05-16"
+lastUpdate: "2025-05-29"
 author: "Original: Martin Heinrich, Aktualisiert: Claude"
-status: "Aktiv"
+status: "final"
 priority: "Hoch"
 category: "Index"
 tags: ["Dokumentation", "Index", "Übersicht", "Konsolidierung", "Digitale Akte", "Assistent"]
@@ -12,7 +12,7 @@ tags: ["Dokumentation", "Index", "Übersicht", "Konsolidierung", "Digitale Akte"
 
 # Digitale Akte Assistent - Konsolidierte Dokumentation
 
-> **Letzte Aktualisierung:** 16.05.2025 | **Version:** 3.0.0 | **Status:** Aktiv
+> **Letzte Aktualisierung:** 2025-05-29 | **Version:** 3.1.0 | **Status:** final
 
 ## Übersicht
 
@@ -22,83 +22,68 @@ Die Dokumentation folgt einer klaren hierarchischen Struktur, die alle Aspekte d
 
 ## Inhaltsverzeichnis
 
-### 00_PROJEKT - Projektübersicht und Planung
+### 01_PROJEKT - Projektübersicht und Planung
 
-- [00_status.md](./00_PROJEKT/00_status.md) - Aktueller Projektstatus
-- [01_projektueberblick.md](./00_PROJEKT/01_projektueberblick.md) - Hauptprojektdokumentation
-- [02_roadmap.md](./00_PROJEKT/02_roadmap.md) - Entwicklungsfahrplan und Meilensteine
+- [00_INDEX.md](./01_PROJEKT/00_INDEX.md) - Projektbereichs-Index
+- [00_status.md](./01_PROJEKT/01_aktueller_status.md) - Aktueller Projektstatus
+- [01_projektueberblick.md](./01_PROJEKT/02_projekt_uebersicht.md) - Hauptprojektdokumentation
+- [02_roadmap.md](./01_PROJEKT/03_entwicklungs_roadmap.md) - Entwicklungsfahrplan und Meilensteine
 
-### 01_MIGRATION - Vue 3 Migration (Abgeschlossen)
+### 02_ARCHITEKTUR - Systemarchitektur
 
-- [01_migrationsstatus_und_planung.md](./01_MIGRATION/01_MIGRATIONSSTATUS_UND_PLANUNG.md) - Status und Planung
-- [02_legacy_code_deaktivierung.md](./01_MIGRATION/02_LEGACY_CODE_DEAKTIVIERUNG.md) - Legacy-Code-Entfernung
-- [03_vue3_composition_api.md](./01_MIGRATION/03_VUE3_COMPOSITION_API.md) - Vue 3 Composition API
-- [04_duplicate_code_cleanup.md](./01_MIGRATION/04_DUPLICATE_CODE_CLEANUP.md) - Code-Bereinigung
-- [05_finale_vue3_migration.md](./01_MIGRATION/05_FINALE_VUE3_MIGRATION.md) - Finale Migration
-- [06_pinia_store_bridge.md](./01_MIGRATION/06_PINIA_STORE_BRIDGE.md) - Store-Bridge-System
-- [07_quellreferenzen_migration.md](./01_MIGRATION/07_QUELLREFERENZEN_MIGRATION.md) - Source References
-- [08_vue3_vite_browser_kompatibilitaet.md](./01_MIGRATION/08_VUE3_VITE_BROWSER_KOMPATIBILITAET.md) - Browser-Kompatibilität
-- [09_feedback_migration.md](./01_MIGRATION/09_FEEDBACK_MIGRATION.md) - Feedback-System
-- [10_settings_migration.md](./01_MIGRATION/10_SETTINGS_MIGRATION.md) - Einstellungen
-- [11_admin_migration.md](./01_MIGRATION/11_ADMIN_MIGRATION.md) - Admin-Bereich
-- [12_chat_migration.md](./01_MIGRATION/12_CHAT_MIGRATION.md) - Chat-Interface
+- [00_INDEX.md](./02_ARCHITEKTUR/00_INDEX.md) - Architekturbereichs-Index
+- [01_FEATURE_TOGGLE_SYSTEM.md](./02_ARCHITEKTUR/12_feature_toggle_system.md) - Feature Toggles
+- [02_DIALOG_SYSTEM.md](./02_ARCHITEKTUR/13_dialog_system.md) - Dialog System
+- [03_BRIDGE_SYSTEM.md](./02_ARCHITEKTUR/11_bridge_system.md) - Bridge System
+- [04_FRONTEND_STRUKTUR_UND_OPTIMIERUNG.md](./02_ARCHITEKTUR/02_frontend_architektur.md) - Frontend-Struktur
+- [05_DATENPERSISTENZ_UND_API_INTEGRATION.md](./02_ARCHITEKTUR/03_backend_api_architektur.md) - API & Persistenz
+- [06_SYSTEMARCHITEKTUR.md](./02_ARCHITEKTUR/01_system_architektur.md) - Gesamtarchitektur
+- [07_AB_TESTING_SYSTEM.md](./02_ARCHITEKTUR/14_ab_testing_system.md) - A/B Testing
+- [08_ASSET_PFAD_KONFIGURATION.md](./02_ARCHITEKTUR/30_asset_management.md) - Asset Management
+- [09_PURE_VUE_MODE.md](./02_ARCHITEKTUR/31_pure_vue_mode.md) - Pure Vue Mode
+- [10_ADMIN_BEREICH_ARCHITEKTUR.md](./02_ARCHITEKTUR/20_admin_bereich_architektur.md) - Admin-Bereich Architektur
 
-### 02_KOMPONENTEN - Komponentendokumentation
+### 03_KOMPONENTEN - Komponentendokumentation
 
-- [01_dokumentenkonverter.md](./02_KOMPONENTEN/01_dokumentenkonverter.md) - Document Converter
-- [02_ui_basiskomponenten.md](./02_KOMPONENTEN/02_ui_basiskomponenten.md) - Basis-UI-Komponenten
-- [03_chat_interface.md](./02_KOMPONENTEN/03_chat_interface.md) - Chat-Interface
-- [04_admin_komponenten.md](./02_KOMPONENTEN/04_admin_komponenten.md) - Admin-Dashboard
-- [05_css_design_system_und_komponenten_bibliothek.md](./02_KOMPONENTEN/05_css_design_system_und_komponenten_bibliothek.md) - Design System
-- [06_dokumentenkonverter_komplett.md](./02_KOMPONENTEN/06_dokumentenkonverter_komplett.md) - Dokumentenkonverter (Komplett)
-- [07_chat_und_session_management.md](./02_KOMPONENTEN/07_chat_und_session_management.md) - Session Management
-- [08_fehlermeldungen_und_benachrichtigungen.md](./02_KOMPONENTEN/08_fehlermeldungen_und_benachrichtigungen.md) - Notifications
-- [09_feedback_komponenten.md](./02_KOMPONENTEN/09_feedback_komponenten.md) - Feedback System
-- [10_composables.md](./02_KOMPONENTEN/10_composables.md) - Vue 3 Composables
-- [11_source_references_fix.md](./02_KOMPONENTEN/11_source_references_fix.md) - Source References Fix
-- [99_admin_interface_komplett.md](./02_KOMPONENTEN/99_ADMIN_INTERFACE_KOMPLETT.md) - Admin-Interface (Vollständig)
-
-### 03_ARCHITEKTUR - Systemarchitektur
-
-- [01_feature_toggle_system.md](./03_ARCHITEKTUR/01_FEATURE_TOGGLE_SYSTEM.md) - Feature Toggles
-- [02_dialog_system.md](./03_ARCHITEKTUR/02_DIALOG_SYSTEM.md) - Dialog System
-- [03_bridge_system.md](./03_ARCHITEKTUR/03_BRIDGE_SYSTEM.md) - Bridge System
-- [04_frontend_struktur_und_optimierung.md](./03_ARCHITEKTUR/04_FRONTEND_STRUKTUR_UND_OPTIMIERUNG.md) - Frontend-Struktur
-- [05_datenpersistenz_und_api_integration.md](./03_ARCHITEKTUR/05_DATENPERSISTENZ_UND_API_INTEGRATION.md) - API & Persistenz
-- [06_systemarchitektur.md](./03_ARCHITEKTUR/06_SYSTEMARCHITEKTUR.md) - Gesamtarchitektur
-- [07_ab_testing_system.md](./03_ARCHITEKTUR/07_AB_TESTING_SYSTEM.md) - A/B Testing
-- [08_asset_pfad_konfiguration.md](./03_ARCHITEKTUR/08_ASSET_PFAD_KONFIGURATION.md) - Asset Management
-- [09_pure_vue_mode.md](./03_ARCHITEKTUR/09_PURE_VUE_MODE.md) - Pure Vue Mode
-- [10_admin_bereich_architektur.md](./03_ARCHITEKTUR/10_ADMIN_BEREICH_ARCHITEKTUR.md) - Admin-Bereich Architektur
+- [00_INDEX.md](./03_KOMPONENTEN/00_INDEX.md) - Komponentenbereichs-Index
+- [01_DOKUMENTENKONVERTER.md](./03_KOMPONENTEN/03_dokumenten_konverter.md) - Document Converter
+- [02_UI_BASISKOMPONENTEN.md](./03_KOMPONENTEN/01_basis_komponenten.md) - Basis-UI-Komponenten
+- [03_CHAT_INTERFACE.md](./03_KOMPONENTEN/02_chat_interface.md) - Chat-Interface
+- [04_admin_komponenten_komplett.md](./03_KOMPONENTEN/10_admin_dashboard.md) - Admin-Dashboard
+- [05_CSS_DESIGN_SYSTEM_UND_KOMPONENTEN_BIBLIOTHEK.md](./03_KOMPONENTEN/30_design_system.md) - Design System
+- [06_DOKUMENTENKONVERTER_KOMPLETT.md](./03_KOMPONENTEN/03_dokumenten_konverter.md) - Dokumentenkonverter (Komplett)
+- [07_CHAT_UND_SESSION_MANAGEMENT.md](./03_KOMPONENTEN/11_session_management.md) - Session Management
+- [08_FEHLERMELDUNGEN_UND_BENACHRICHTIGUNGEN.md](./03_KOMPONENTEN/20_benachrichtigungen.md) - Notifications
+- [09_FEEDBACK_KOMPONENTEN.md](./03_KOMPONENTEN/21_feedback_system.md) - Feedback System
+- [10_COMPOSABLES.md](./03_KOMPONENTEN/12_vue_composables.md) - Vue 3 Composables
+- [11_SOURCE_REFERENCES_FIX.md](./06_ARCHIV/70_source_references_fix.md) - Source References Fix
 
 ### 04_ENTWICKLUNG - Entwicklungsrichtlinien
 
-- [01_fehlerbehandlung_und_fallbacks.md](./04_ENTWICKLUNG/01_fehlerbehandlung_und_fallbacks.md) - Error Handling
-- [03_mobile_optimierung.md](./04_ENTWICKLUNG/03_mobile_optimierung.md) - Mobile Optimization
-- [04_barrierefreiheit.md](./04_ENTWICKLUNG/04_barrierefreiheit.md) - Accessibility
-- [05_BEITRAGEN.md](./04_ENTWICKLUNG/05_BEITRAGEN.md) - Contributing Guidelines
-- [06_edge_cases_und_grenzfaelle.md](./04_ENTWICKLUNG/06_EDGE_CASES_UND_GRENZFAELLE.md) - Edge Cases
-- [07_diagnostics_system_integration.md](./04_ENTWICKLUNG/07_DIAGNOSTICS_SYSTEM_INTEGRATION.md) - Diagnose-System
+- [00_INDEX.md](./04_ENTWICKLUNG/00_INDEX.md) - Entwicklungsbereichs-Index
+- [01_FEHLERBEHANDLUNG_UND_FALLBACKS.md](./04_ENTWICKLUNG/10_error_handling.md) - Error Handling
+- [03_MOBILE_OPTIMIERUNG.md](./04_ENTWICKLUNG/20_mobile_optimierung.md) - Mobile Optimization
+- [04_BARRIEREFREIHEIT.md](./04_ENTWICKLUNG/21_barrierefreiheit.md) - Accessibility
+- [05_BEITRAGEN.md](./04_ENTWICKLUNG/01_contributing_guide.md) - Contributing Guidelines
+- [06_EDGE_CASES_UND_GRENZFAELLE.md](./04_ENTWICKLUNG/30_edge_cases.md) - Edge Cases
+- [07_DIAGNOSTICS_SYSTEM_INTEGRATION.md](./04_ENTWICKLUNG/12_diagnostics_system.md) - Diagnose-System
 
 ### 05_BETRIEB - Betriebsdokumentation
 
-- [01_performance_optimierung.md](./05_BETRIEB/01_PERFORMANCE_OPTIMIERUNG.md) - Performance
-- [02_fehlerbehebung.md](./05_BETRIEB/02_FEHLERBEHEBUNG.md) - Troubleshooting
-- [03_cleanup_liste.md](./05_BETRIEB/03_CLEANUP_LISTE.md) - Aufräum-Liste
+- [00_INDEX.md](./05_BETRIEB/00_INDEX.md) - Betriebsbereichs-Index
+- [01_PERFORMANCE_OPTIMIERUNG.md](./05_BETRIEB/01_performance_guide.md) - Performance
+- [02_FEHLERBEHEBUNG.md](./05_BETRIEB/02_troubleshooting.md) - Troubleshooting
+- [03_CLEANUP_LISTE.md](./05_BETRIEB/20_cleanup_tasks.md) - Aufräum-Liste
 
+### 06_ARCHIV - Archivierte Dokumente
 
-### 06_REFERENZEN - Technische Referenzen
+- [00_INDEX.md](./06_ARCHIV/00_INDEX.md) - Archivbereichs-Index
+- Vue 3 Migration (abgeschlossen) - siehe [06_ARCHIV/MIGRATION/](./06_ARCHIV/MIGRATION/)
 
-- [01_typescript_typsystem.md](./06_REFERENZEN/01_TYPESCRIPT_TYPSYSTEM.md) - TypeScript Types
-- [02_state_management.md](./06_REFERENZEN/02_STATE_MANAGEMENT.md) - State Management
-- [03_teststrategie.md](./06_REFERENZEN/03_TESTSTRATEGIE.md) - Umfassende Test-Dokumentation
-- [04_pinia_store_testing.md](./06_REFERENZEN/04_PINIA_STORE_TESTING.md) - Store Testing
-- [05_auth_debugging_guide.md](./06_REFERENZEN/05_AUTH_DEBUGGING_GUIDE.md) - Authentication Debugging
-- [06_dependency_analysis.md](./06_REFERENZEN/06_DEPENDENCY_ANALYSIS.md) - Abhängigkeitsanalyse
+### 07_WARTUNG - Wartung und Fixes
 
-### 07_FIXES - Bugfixes und Problemlösungen
-
-- [01_streaming_422_error_fix.md](./07_FIXES/01_STREAMING_422_ERROR_FIX.md) - Fix für 422 Error beim Streaming
+- [00_INDEX.md](./07_WARTUNG/00_INDEX.md) - Wartungsbereichs-Index
+- [01_STREAMING_KOMPLETT.md](./07_WARTUNG/01_streaming_system.md) - Streaming-Funktionalität (Komplett)
 
 ## Migrationsstatus
 
@@ -150,22 +135,22 @@ tags: ["Tag1", "Tag2"]
 ## Verwendung dieser Dokumentation
 
 ### Für Entwickler
-- [Projektübersicht](./00_PROJEKT/01_projektueberblick.md)
+- [Projektübersicht](./01_PROJEKT/02_projekt_uebersicht.md)
 - [Entwicklungsrichtlinien](./04_ENTWICKLUNG/)
-- [Komponenten-Referenz](./02_KOMPONENTEN/)
-- [TypeScript-Referenz](./05_REFERENZEN/01_typescript_typsystem.md)
+- [Komponenten-Referenz](./03_KOMPONENTEN/)
+- [TypeScript-Referenz](./04_ENTWICKLUNG/02_typescript_guide.md)
 
 ### Für Projektmanager
-- [Roadmap](./00_PROJEKT/02_roadmap.md)
-- [Systemarchitektur](./03_ARCHITEKTUR/07_systemarchitektur.md)
+- [Roadmap](./01_PROJEKT/03_entwicklungs_roadmap.md)
+- [Systemarchitektur](./02_ARCHITEKTUR/01_system_architektur.md)
 
 ### Für neue Teammitglieder
-- [Projektübersicht](./00_PROJEKT/01_projektueberblick.md)
-- [Contributing Guidelines](./04_ENTWICKLUNG/05_BEITRAGEN.md)
+- [Projektübersicht](./01_PROJEKT/02_projekt_uebersicht.md)
+- [Contributing Guidelines](./04_ENTWICKLUNG/01_contributing_guide.md)
 
 ## Mitwirkung
 
-Beiträge zur Verbesserung dieser Dokumentation sind willkommen. Bitte folgen Sie den [Contributing Guidelines](./04_ENTWICKLUNG/05_BEITRAGEN.md).
+Beiträge zur Verbesserung dieser Dokumentation sind willkommen. Bitte folgen Sie den [Contributing Guidelines](./04_ENTWICKLUNG/01_contributing_guide.md).
 
 ## Aktuelle Hinweise
 
@@ -181,12 +166,12 @@ Das Projekt wurde erfolgreich von "nscale DMS Assistent" zu "Digitale Akte Assis
 
 Die folgenden Dokumente beschreiben den Konsolidierungsprozess:
 
-- [INVENTAR.md](./INVENTAR.md) - Vollständiges Dokumenteninventar
-- [KONSOLIDIERUNG_ZUSAMMENFASSUNG.md](./KONSOLIDIERUNG_ZUSAMMENFASSUNG.md) - Zusammenfassung der Konsolidierung
-- [KONSOLIDIERUNG_BERICHT.md](./KONSOLIDIERUNG_BERICHT.md) - Detaillierter Abschlussbericht
-- [STRUKTUR_BEREINIGUNG.md](./STRUKTUR_BEREINIGUNG.md) - Dokumentation der Strukturbereinigung
-- [LINK_VALIDIERUNG.md](./LINK_VALIDIERUNG.md) - Validierung aller Links nach Strukturbereinigung
+- [INVENTAR.md](./ARCHIV_KONSOLIDIERUNG/INVENTAR.md) - Vollständiges Dokumenteninventar
+- [KONSOLIDIERUNG_ZUSAMMENFASSUNG.md](./ARCHIV_KONSOLIDIERUNG/KONSOLIDIERUNG_ZUSAMMENFASSUNG.md) - Zusammenfassung der Konsolidierung
+- [KONSOLIDIERUNG_BERICHT.md](./ARCHIV_KONSOLIDIERUNG/KONSOLIDIERUNG_BERICHT.md) - Detaillierter Abschlussbericht
+- [STRUKTUR_BEREINIGUNG.md](./ARCHIV_KONSOLIDIERUNG/STRUKTUR_BEREINIGUNG.md) - Dokumentation der Strukturbereinigung
+- [LINK_VALIDIERUNG.md](./ARCHIV_KONSOLIDIERUNG/LINK_VALIDIERUNG.md) - Validierung aller Links nach Strukturbereinigung
 
 ---
 
-*Zuletzt aktualisiert: 16.05.2025*
+*Zuletzt aktualisiert: 2025-05-29*

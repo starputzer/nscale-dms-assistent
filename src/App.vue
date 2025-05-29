@@ -22,6 +22,9 @@ Digitale Akte Assistent - Hauptkomponente mit Performance-Optimierungen
 
     <!-- Toast Container für Benachrichtigungen -->
     <ToastContainer />
+    
+    <!-- Quick Login Component -->
+    <QuickLogin />
   </div>
 </template>
 
@@ -31,6 +34,7 @@ import { useThemeStore } from "@/stores/theme";
 import { useRouter } from "vue-router";
 import LoadingSpinner from "@/components/common/LoadingSpinner.vue";
 import ToastContainer from "@/components/ui/ToastContainer.vue";
+import QuickLogin from "@/components/QuickLogin.vue";
 import { setupIntelligentPreloading } from "@/services/lazy-loading";
 
 const themeStore = useThemeStore();
