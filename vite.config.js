@@ -64,6 +64,29 @@ export default defineConfig({
         secure: false,
         // Bei Fehlern Mock-Daten zurückgeben
         configure: (proxy, options) => {
+          // Handle streaming endpoints - disable buffering
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            if (req.url.includes('/api/question/stream')) {
+              console.log("Configuring streaming endpoint:", req.url);
+              // Disable buffering for streaming
+              proxyReq.setHeader('X-Accel-Buffering', 'no');
+              proxyReq.setHeader('Cache-Control', 'no-cache');
+            }
+          });
+          
+          proxy.on('proxyRes', (proxyRes, req, res) => {
+            if (req.url.includes('/api/question/stream')) {
+              console.log("Streaming response headers:", proxyRes.headers);
+              // Ensure streaming headers are set
+              proxyRes.headers['cache-control'] = 'no-cache';
+              proxyRes.headers['x-accel-buffering'] = 'no';
+              // Don't override content-type if it's already set correctly by backend
+              if (!proxyRes.headers['content-type'] || !proxyRes.headers['content-type'].includes('event-stream')) {
+                proxyRes.headers['content-type'] = 'text/event-stream';
+              }
+            }
+          });
+
           proxy.on("error", (err, req, res) => {
             console.log("Proxy-Fehler:", err);
 

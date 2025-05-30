@@ -648,7 +648,7 @@ export const useSessionsStore = defineStore(
       currentSessionId.value = sessionId;
 
       // Cancel any ongoing streaming for the previous session
-      if (previousSessionId && streamingState.value.isStreaming) {
+      if (previousSessionId && streaming.value.isStreaming) {
         cancelStreaming();
       }
 
@@ -993,6 +993,7 @@ export const useSessionsStore = defineStore(
 
           const url = `/api/question/stream?${params.toString()}`;
           console.log("Streaming URL:", url);
+          console.log("Auth token present:", !!authToken);
 
           // Ersetze EventSource durch fetch mit Headers
           let responseContent = "";
@@ -1003,6 +1004,13 @@ export const useSessionsStore = defineStore(
                 Authorization: `Bearer ${authToken}`,
                 Accept: "text/event-stream",
               },
+            });
+
+            console.log("Streaming response status:", response.status);
+            console.log("Streaming response headers:", {
+              contentType: response.headers.get('content-type'),
+              cacheControl: response.headers.get('cache-control'),
+              xAccelBuffering: response.headers.get('x-accel-buffering')
             });
 
             if (!response.ok) {
@@ -1019,18 +1027,29 @@ export const useSessionsStore = defineStore(
             }
 
             // Stream verarbeiten
+            let chunkCount = 0;
             while (true) {
               const { done, value } = await reader.read();
-              if (done) break;
+              if (done) {
+                console.log("Stream reading done, total chunks:", chunkCount);
+                break;
+              }
 
               const chunk = decoder.decode(value, { stream: true });
+              chunkCount++;
+              console.log(`Chunk ${chunkCount} received, length: ${chunk.length}, content:`, chunk.substring(0, 100));
 
               // SSE-Format parsen
               const lines = chunk.split("\n");
+              console.log("Lines in chunk:", lines.length, lines);
+              
               for (const line of lines) {
                 if (line.startsWith("data: ")) {
                   const data = line.slice(6);
+                  console.log("Parsed data:", data);
+                  
                   if (data === "[DONE]") {
+                    console.log("Received [DONE] signal");
                     finishStreaming();
                     return;
                   }
@@ -1065,6 +1084,15 @@ export const useSessionsStore = defineStore(
                       ...messages.value,
                       [sessionId]: updatedMessages,
                     };
+                  }
+                } else if (line.startsWith("event: ")) {
+                  const event = line.slice(7);
+                  console.log("Parsed event:", event);
+                  
+                  if (event === "done") {
+                    console.log("Received done event");
+                    finishStreaming();
+                    return;
                   }
                 }
               }
