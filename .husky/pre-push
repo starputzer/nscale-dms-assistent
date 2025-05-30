@@ -1,0 +1,45 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Dead Code Detection Pre-Push Hook
+# Runs quick dead code checks before pushing
+
+echo "🔍 Running dead code detection..."
+
+# Quick checks only (not full analysis)
+echo "Checking for common dead code patterns..."
+
+# Check for console.logs in production code
+CONSOLE_LOGS=$(grep -r "console\." src --include="*.ts" --include="*.tsx" --exclude="*.spec.ts" --exclude="*.test.ts" | grep -v "// eslint-disable" | wc -l)
+
+if [ "$CONSOLE_LOGS" -gt "50" ]; then
+  echo "⚠️  Warning: Found $CONSOLE_LOGS console statements in production code"
+  echo "   Consider removing or using proper logging service"
+fi
+
+# Check for TODO/FIXME comments
+TODOS=$(grep -r "TODO\|FIXME" src --include="*.ts" --include="*.tsx" | wc -l)
+
+if [ "$TODOS" -gt "20" ]; then
+  echo "⚠️  Warning: Found $TODOS TODO/FIXME comments"
+  echo "   Consider creating issues for these items"
+fi
+
+# Check for commented out code blocks
+COMMENTED_CODE=$(grep -r "^[[:space:]]*//.*{$\|^[[:space:]]*//.*}$" src --include="*.ts" --include="*.tsx" | wc -l)
+
+if [ "$COMMENTED_CODE" -gt "30" ]; then
+  echo "⚠️  Warning: Found potential commented-out code blocks"
+  echo "   Consider removing commented code"
+fi
+
+# Run quick TypeScript check
+echo "Running TypeScript compiler check..."
+npx tsc --noEmit --skipLibCheck || {
+  echo "❌ TypeScript errors found. Please fix before pushing."
+  exit 1
+}
+
+echo "✅ Pre-push dead code checks passed!"
+echo ""
+echo "💡 Tip: Run 'npm run detect:dead-code' for full analysis"

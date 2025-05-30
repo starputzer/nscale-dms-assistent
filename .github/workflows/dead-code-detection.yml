@@ -1,0 +1,213 @@
+name: Dead Code Detection
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run weekly on Mondays at 2 AM UTC
+    - cron: '0 2 * * 1'
+  workflow_dispatch:
+
+jobs:
+  dead-code-analysis:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for better analysis
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run TypeScript Compiler Check
+      run: |
+        echo "🔍 Checking for TypeScript errors and unused exports..."
+        npx tsc --noEmit --listFiles | tee typescript-files.log
+      continue-on-error: true
+
+    - name: Analyze Unused Exports
+      run: |
+        echo "🔍 Analyzing unused exports with ts-prune..."
+        npx ts-prune --error | tee unused-exports.log || true
+        
+        # Count unused exports
+        UNUSED_COUNT=$(grep -c "is not used" unused-exports.log || echo "0")
+        echo "Found $UNUSED_COUNT unused exports"
+        echo "UNUSED_EXPORTS_COUNT=$UNUSED_COUNT" >> $GITHUB_ENV
+
+    - name: Find Unused Dependencies
+      run: |
+        echo "🔍 Checking for unused dependencies..."
+        npx depcheck --json > depcheck-results.json || true
+        
+        # Parse results
+        UNUSED_DEPS=$(jq -r '.dependencies[]' depcheck-results.json 2>/dev/null | wc -l || echo "0")
+        UNUSED_DEV_DEPS=$(jq -r '.devDependencies[]' depcheck-results.json 2>/dev/null | wc -l || echo "0")
+        
+        echo "Unused dependencies: $UNUSED_DEPS"
+        echo "Unused devDependencies: $UNUSED_DEV_DEPS"
+        echo "UNUSED_DEPS=$UNUSED_DEPS" >> $GITHUB_ENV
+        echo "UNUSED_DEV_DEPS=$UNUSED_DEV_DEPS" >> $GITHUB_ENV
+
+    - name: Find Unreachable Code
+      run: |
+        echo "🔍 Analyzing code coverage for dead code..."
+        
+        # Run tests with coverage
+        npm run test:coverage || true
+        
+        # Check for files with 0% coverage (potential dead code)
+        if [ -f coverage/coverage-summary.json ]; then
+          ZERO_COVERAGE_FILES=$(jq -r 'to_entries | map(select(.value.lines.pct == 0)) | length' coverage/coverage-summary.json)
+          echo "Files with 0% coverage: $ZERO_COVERAGE_FILES"
+          echo "ZERO_COVERAGE_FILES=$ZERO_COVERAGE_FILES" >> $GITHUB_ENV
+        fi
+
+    - name: Detect Duplicate Code
+      run: |
+        echo "🔍 Detecting duplicate code with jscpd..."
+        npx jscpd src \
+          --ignore "**/*.spec.ts,**/*.test.ts,**/*.mock.ts" \
+          --reporters "json,console" \
+          --output "./" || true
+        
+        # Parse results
+        if [ -f jscpd-report.json ]; then
+          DUPLICATES=$(jq '.statistics.clones' jscpd-report.json)
+          echo "Duplicate code blocks found: $DUPLICATES"
+          echo "DUPLICATE_BLOCKS=$DUPLICATES" >> $GITHUB_ENV
+        fi
+
+    - name: Analyze Bundle Size
+      run: |
+        echo "📦 Analyzing bundle size..."
+        npm run build
+        
+        # Use webpack-bundle-analyzer or similar
+        if [ -f dist/stats.json ]; then
+          npx webpack-bundle-analyzer dist/stats.json dist -m json -r bundle-report.json || true
+        fi
+
+    - name: Generate Dead Code Report
+      run: |
+        echo "# Dead Code Detection Report" > dead-code-report.md
+        echo "" >> dead-code-report.md
+        echo "Generated on: $(date)" >> dead-code-report.md
+        echo "" >> dead-code-report.md
+        
+        echo "## Summary" >> dead-code-report.md
+        echo "- Unused exports: ${UNUSED_EXPORTS_COUNT:-0}" >> dead-code-report.md
+        echo "- Unused dependencies: ${UNUSED_DEPS:-0}" >> dead-code-report.md
+        echo "- Unused devDependencies: ${UNUSED_DEV_DEPS:-0}" >> dead-code-report.md
+        echo "- Files with 0% test coverage: ${ZERO_COVERAGE_FILES:-0}" >> dead-code-report.md
+        echo "- Duplicate code blocks: ${DUPLICATE_BLOCKS:-0}" >> dead-code-report.md
+        echo "" >> dead-code-report.md
+        
+        if [ -f unused-exports.log ]; then
+          echo "## Unused Exports" >> dead-code-report.md
+          echo '```' >> dead-code-report.md
+          head -20 unused-exports.log >> dead-code-report.md
+          echo '```' >> dead-code-report.md
+          echo "" >> dead-code-report.md
+        fi
+        
+        if [ -f depcheck-results.json ]; then
+          echo "## Unused Dependencies" >> dead-code-report.md
+          echo '```json' >> dead-code-report.md
+          jq '.dependencies' depcheck-results.json >> dead-code-report.md || true
+          echo '```' >> dead-code-report.md
+          echo "" >> dead-code-report.md
+        fi
+
+    - name: Upload Dead Code Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: dead-code-report
+        path: |
+          dead-code-report.md
+          unused-exports.log
+          depcheck-results.json
+          jscpd-report.json
+          bundle-report.json
+        retention-days: 30
+
+    - name: Comment PR (if applicable)
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const report = fs.readFileSync('dead-code-report.md', 'utf8');
+          
+          // Find existing comment
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+          
+          const botComment = comments.find(comment => 
+            comment.user.type === 'Bot' && 
+            comment.body.includes('Dead Code Detection Report')
+          );
+          
+          const body = `## 🔍 Dead Code Detection Report\n\n${report}`;
+          
+          if (botComment) {
+            // Update existing comment
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: body
+            });
+          } else {
+            // Create new comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+          }
+
+    - name: Fail if too much dead code
+      run: |
+        # Define thresholds
+        MAX_UNUSED_EXPORTS=50
+        MAX_UNUSED_DEPS=10
+        MAX_DUPLICATES=20
+        
+        FAILED=false
+        
+        if [ "${UNUSED_EXPORTS_COUNT:-0}" -gt "$MAX_UNUSED_EXPORTS" ]; then
+          echo "❌ Too many unused exports: ${UNUSED_EXPORTS_COUNT} (max: $MAX_UNUSED_EXPORTS)"
+          FAILED=true
+        fi
+        
+        if [ "${UNUSED_DEPS:-0}" -gt "$MAX_UNUSED_DEPS" ]; then
+          echo "❌ Too many unused dependencies: ${UNUSED_DEPS} (max: $MAX_UNUSED_DEPS)"
+          FAILED=true
+        fi
+        
+        if [ "${DUPLICATE_BLOCKS:-0}" -gt "$MAX_DUPLICATES" ]; then
+          echo "❌ Too many duplicate code blocks: ${DUPLICATE_BLOCKS} (max: $MAX_DUPLICATES)"
+          FAILED=true
+        fi
+        
+        if [ "$FAILED" = true ]; then
+          echo "🚫 Dead code detection failed. Please clean up the code."
+          exit 1
+        else
+          echo "✅ Dead code check passed!"
+        fi
