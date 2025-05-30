@@ -372,8 +372,8 @@ async function initializeApp() {
     }
 
     // Auth-Fix initialisieren
-    const { authenticationFix } = await import("@/utils/authenticationFix");
-    await authenticationFix.initialize();
+    const { AuthFixService } = await import("@/services/auth/AuthFixService");
+    await AuthFixService.getInstance().initialize();
 
     // Import Error Reporting
     const { useErrorReporting } = await import("@/utils/errorReportingService");

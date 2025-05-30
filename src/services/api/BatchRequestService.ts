@@ -2,6 +2,18 @@ import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import apiService from "./ApiService";
 
 /**
+ * Debug information for batch responses
+ */
+export interface BatchResponseDebugInfo {
+  rawResponse: any;
+  processedResponse: any;
+  expectedFormat: string;
+  actualFormat: string;
+  issues: string[];
+  timestamp: Date;
+}
+
+/**
  * Interface für API-Request-Definitionen
  */
 export interface BatchRequest {
@@ -159,6 +171,10 @@ export class BatchRequestService {
   private readonly MAX_RETRIES = 3;
   private readonly RETRY_DELAY = 1000;
 
+  // Debug functionality from batchResponseFix
+  private debugMode = false;
+  private responseHistory: BatchResponseDebugInfo[] = [];
+
   constructor(
     private options: BatchRequestOptions = {
       maxBatchSize: 50,
@@ -256,6 +272,11 @@ export class BatchRequestService {
    * Fixed response processing from BatchRequestServiceFix
    */
   private processBatchResponse(serverResponse: any): BatchResponse[] {
+    // Analyze response in debug mode
+    if (this.debugMode) {
+      this.analyzeResponse(serverResponse);
+    }
+
     // Handle different server response formats
     let responses: any[] = [];
 
@@ -690,6 +711,94 @@ export class BatchRequestService {
    */
   public getStats(): typeof this.requestStats {
     return this.getStatistics();
+  }
+
+  // Debug methods from batchResponseFix
+  /**
+   * Enable debug mode
+   */
+  public enableDebug(): void {
+    this.debugMode = true;
+    console.log("🔍 Batch response debugging enabled");
+  }
+
+  /**
+   * Disable debug mode
+   */
+  public disableDebug(): void {
+    this.debugMode = false;
+  }
+
+  /**
+   * Analyze batch response structure
+   */
+  private analyzeResponse(response: any): BatchResponseDebugInfo {
+    const debugInfo: BatchResponseDebugInfo = {
+      rawResponse: response,
+      processedResponse: null,
+      expectedFormat: "ApiResponse<{responses: BatchResponse[]}>",
+      actualFormat: "",
+      issues: [],
+      timestamp: new Date(),
+    };
+
+    // Analyze structure
+    if (!response) {
+      debugInfo.actualFormat = "null/undefined";
+      debugInfo.issues.push("Response is null or undefined");
+    } else if (typeof response !== "object") {
+      debugInfo.actualFormat = typeof response;
+      debugInfo.issues.push(`Response is not an object: ${typeof response}`);
+    } else {
+      // Check for expected structure
+      const hasSuccess = "success" in response;
+      const hasData = "data" in response;
+      const hasResponses =
+        hasData && response.data && "responses" in response.data;
+      const isResponsesArray =
+        hasResponses && Array.isArray(response.data.responses);
+
+      debugInfo.actualFormat = `{${Object.keys(response).join(", ")}}`;
+
+      if (!hasSuccess) debugInfo.issues.push('Missing "success" field');
+      if (!hasData) debugInfo.issues.push('Missing "data" field');
+      if (!hasResponses)
+        debugInfo.issues.push('Missing "data.responses" field');
+      if (!isResponsesArray)
+        debugInfo.issues.push("data.responses is not an array");
+
+      // Process if valid
+      if (hasResponses && isResponsesArray) {
+        debugInfo.processedResponse = response.data.responses;
+      }
+    }
+
+    // Store in history
+    this.responseHistory.push(debugInfo);
+    if (this.responseHistory.length > 10) {
+      this.responseHistory.shift(); // Keep only last 10
+    }
+
+    if (this.debugMode) {
+      console.log("🔍 Batch response analysis:", debugInfo);
+    }
+
+    return debugInfo;
+  }
+
+  /**
+   * Get response history
+   */
+  public getResponseHistory(): BatchResponseDebugInfo[] {
+    return this.responseHistory;
+  }
+
+  /**
+   * Clear response history
+   */
+  public clearResponseHistory(): void {
+    this.responseHistory = [];
+    console.log("🗑️ Response history cleared");
   }
 }
 
