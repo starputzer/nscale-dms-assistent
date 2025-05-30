@@ -21,7 +21,7 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 
 import aiohttp
-from flask import current_app, g, request as flask_request
+from fastapi import Request, HTTPException
 
 logger = logging.getLogger(__name__)
 
@@ -200,90 +200,56 @@ class EnhancedBatchProcessor:
         start_time = time.time()
         
         try:
-            # Request ausführen basierend auf der aktuellen Flask-App
-            from api.server import app
-            
-            # Erstelle Test-Request-Context
-            with app.test_request_context(
-                path=req.endpoint,
-                method=req.method,
-                json=req.data,
-                query_string=req.params,
-                headers=req.headers
-            ):
-                # Importiere Request-Handler dynamisch
-                endpoint_parts = req.endpoint.strip('/').split('/')
+            # Verwende aiohttp für interne API-Aufrufe
+            async with aiohttp.ClientSession() as session:
+                # Baue vollständige URL
+                base_url = "http://localhost:3001"  # Interner API-Aufruf
+                url = f"{base_url}{req.endpoint}"
                 
-                # Finde passenden Handler
-                if endpoint_parts[0] == 'api':
-                    endpoint_parts = endpoint_parts[1:]
+                # Bereite Request vor
+                kwargs = {
+                    'method': req.method,
+                    'headers': req.headers or {},
+                    'timeout': aiohttp.ClientTimeout(total=req.timeout)
+                }
                 
-                # Route zu Handler-Funktion
-                response_data = None
-                status_code = 404
+                if req.method.upper() == 'GET' and req.params:
+                    kwargs['params'] = req.params
+                elif req.data:
+                    kwargs['json'] = req.data
                 
-                # Sessions-Endpoints
-                if endpoint_parts[0] == 'sessions':
-                    if req.method == 'GET' and len(endpoint_parts) == 1:
-                        # GET /api/sessions
-                        from api.server import get_sessions
-                        response_data = await asyncio.get_event_loop().run_in_executor(
-                            self.executor, get_sessions
-                        )
-                        status_code = 200
-                    elif len(endpoint_parts) > 1:
-                        session_id = endpoint_parts[1]
-                        if len(endpoint_parts) == 3 and endpoint_parts[2] == 'messages':
-                            # GET /api/sessions/{id}/messages
-                            from api.server import get_session_messages
-                            response_data = await asyncio.get_event_loop().run_in_executor(
-                                self.executor, get_session_messages, session_id
-                            )
-                            status_code = 200
-                
-                # Auth-Endpoints
-                elif endpoint_parts[0] == 'auth':
-                    if endpoint_parts[1] == 'validate':
-                        # GET /api/auth/validate
-                        from modules.auth.user_model import UserModel
-                        user_model = UserModel()
-                        # Mock implementation
-                        response_data = {'valid': True, 'user': g.get('user')}
-                        status_code = 200
-                
-                # Feedback-Endpoint
-                elif endpoint_parts[0] == 'feedback' and req.method == 'GET':
-                    # GET /api/feedback
-                    response_data = {'feedback': []}  # Mock
-                    status_code = 200
-                
-                # Stats-Endpoints
-                elif len(endpoint_parts) >= 2 and endpoint_parts[1] == 'stats':
-                    response_data = {
-                        'total_sessions': 0,
-                        'total_messages': 0,
-                        'active_sessions': 0
-                    }
-                    status_code = 200
-                
-                duration = time.time() - start_time
-                
-                if status_code == 404:
+                # Führe Request aus
+                async with session.request(url=url, **kwargs) as response:
+                    status_code = response.status
+                    
+                    # Parse Response
+                    try:
+                        response_data = await response.json()
+                    except:
+                        response_data = await response.text()
+                    
+                    duration = time.time() - start_time
+                    
                     return BatchResponse(
                         id=req.id,
-                        status=404,
-                        success=False,
-                        error=f"Endpoint {req.endpoint} not found",
+                        status=status_code,
+                        success=200 <= status_code < 300,
+                        data=response_data,
+                        error=None if 200 <= status_code < 300 else f"HTTP {status_code}",
                         duration=duration
                     )
                 
-                return BatchResponse(
-                    id=req.id,
-                    status=status_code,
-                    success=True,
-                    data=response_data,
-                    duration=duration
-                )
+        except asyncio.TimeoutError:
+            logger.error(f"Timeout for request {req.id}: {req.endpoint}")
+            duration = time.time() - start_time
+            
+            return BatchResponse(
+                id=req.id,
+                status=504,
+                success=False,
+                error="Request timeout",
+                duration=duration
+            )
                 
         except Exception as e:
             logger.error(f"Error executing request {req.id}: {str(e)}")

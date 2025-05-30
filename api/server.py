@@ -21,6 +21,7 @@ import re  # Für reguläre Ausdrücke
 import sqlite3  # Fehlender Import hinzugefügt
 from pathlib import Path
 from typing import Dict, Any, Optional, List
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, Request, Query
 from fastapi.responses import JSONResponse, FileResponse, Response
 from sse_starlette.sse import EventSourceResponse
@@ -59,7 +60,17 @@ except ImportError:
 motd_manager = MOTDManager()
 logger = LogManager.setup_logging()
 feedback_manager = FeedbackManager()
-app = FastAPI(title="nscale DMS Assistent API")
+# Lifespan context manager für Startup/Shutdown Events
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    await startup_event()
+    await update_css_timestamps()
+    yield
+    # Shutdown
+    # Hier können Shutdown-Tasks hinzugefügt werden
+
+app = FastAPI(title="nscale DMS Assistent API", lifespan=lifespan)
 
 # Zusätzliche API-Endpunkte für Feedback integrieren
 app.include_router(additional_router)
@@ -1834,7 +1845,6 @@ async def update_admin_user_role(
         raise HTTPException(status_code=500, detail=str(e))
 
 # CSS-Datei-Zeitstempel aktualisieren bei Serverstart
-@app.on_event("startup")
 async def update_css_timestamps():
     """Aktualisiert die Zeitstempel aller CSS-Dateien beim Server-Start"""
     import os
@@ -1856,7 +1866,6 @@ async def update_css_timestamps():
         logger.info(f"Insgesamt {count} CSS-Dateien aktualisiert")
 
 # Initialisierung
-@app.on_event("startup")
 async def startup_event():
     """Initialisiert das System beim Start"""
     Config.init_directories()
@@ -2054,7 +2063,8 @@ async def get_sessions_stats(user_data: Dict[str, Any] = Depends(get_current_use
     }
 
 # Import Enhanced Batch Handler
-from api.batch_handler_enhanced import handle_batch_request as enhanced_batch_handler
+# from api.batch_handler_enhanced import handle_batch_request as enhanced_batch_handler
+from api.batch_handler_simple import handle_batch_request as enhanced_batch_handler
 
 # Batch API-Endpunkt - unterstützt beide Pfade für Kompatibilität
 @app.post("/api/batch")
