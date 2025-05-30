@@ -896,7 +896,7 @@ export const useSessionsStore = defineStore(
 
       try {
         const authToken = authStore.token;
-        const streamingEnabled = true; // Wieder aktivieren
+        const streamingEnabled = false; // Temporär deaktiviert bis Server-SSE funktioniert
 
         if (streamingEnabled) {
           // Streaming mit EventSource
@@ -975,6 +975,7 @@ export const useSessionsStore = defineStore(
           // NICHT token in die URL - sollte im Header sein!
           // params.append('token', authToken); // Token als URL-Parameter
 
+          // Verwende den neuen API-Endpoint aus der Config
           const url = `/api/question/stream?${params.toString()}`;
           console.log("Streaming URL:", url);
           console.log("Auth token present:", !!authToken);
@@ -1154,6 +1155,18 @@ export const useSessionsStore = defineStore(
           if (/^\d+$/.test(sessionId)) {
             requestData.session_id = parseInt(sessionId);
           }
+
+          // Erstelle eine initiale Assistant-Nachricht
+          const initialAssistantMessage: ChatMessage = {
+            id: assistantTempId,
+            sessionId,
+            content: "...", // Lade-Indikator
+            role: "assistant",
+            timestamp: new Date().toISOString(),
+            isStreaming: false,
+            status: "pending",
+          };
+          messages.value[sessionId].push(initialAssistantMessage);
 
           try {
             const response = await axios.post("/api/question", requestData, {
