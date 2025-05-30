@@ -1,0 +1,280 @@
+name: Dead Code Detection
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Läuft jeden Montag um 9:00 Uhr UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+    inputs:
+      verbose:
+        description: 'Enable verbose output'
+        required: false
+        default: 'false'
+
+jobs:
+  detect-dead-code:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for better analysis
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: |
+        npm ci
+        # Install analysis tools globally
+        npm install -g ts-prune depcheck jscpd
+    
+    - name: Run TypeScript compilation check
+      run: npm run typecheck || true
+      continue-on-error: true
+    
+    - name: Detect unused TypeScript exports
+      id: ts-prune
+      run: |
+        echo "### 🔍 Unused TypeScript Exports" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        npx ts-prune --error 2>&1 | tee ts-prune-output.txt || true
+        cat ts-prune-output.txt >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        
+        # Count unused exports
+        UNUSED_COUNT=$(grep -c "is not used" ts-prune-output.txt || echo "0")
+        echo "unused_exports=$UNUSED_COUNT" >> $GITHUB_OUTPUT
+        
+        if [ "$UNUSED_COUNT" -gt "0" ]; then
+          echo "⚠️ Found $UNUSED_COUNT unused exports" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "✅ No unused exports found" >> $GITHUB_STEP_SUMMARY
+        fi
+    
+    - name: Detect unused dependencies
+      id: depcheck
+      run: |
+        echo "### 📦 Unused Dependencies" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        npx depcheck --json > depcheck-output.json || true
+        
+        # Parse JSON and format output
+        node -e "
+          const fs = require('fs');
+          const result = JSON.parse(fs.readFileSync('depcheck-output.json', 'utf8'));
+          
+          console.log('Unused dependencies:', result.dependencies || []);
+          console.log('Unused devDependencies:', result.devDependencies || []);
+          console.log('Missing dependencies:', Object.keys(result.missing || {}));
+          
+          const unusedCount = (result.dependencies?.length || 0) + (result.devDependencies?.length || 0);
+          fs.writeFileSync('unused-deps-count.txt', unusedCount.toString());
+        " | tee -a $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        
+        UNUSED_DEPS=$(cat unused-deps-count.txt)
+        echo "unused_dependencies=$UNUSED_DEPS" >> $GITHUB_OUTPUT
+        
+        if [ "$UNUSED_DEPS" -gt "0" ]; then
+          echo "⚠️ Found $UNUSED_DEPS unused dependencies" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "✅ No unused dependencies found" >> $GITHUB_STEP_SUMMARY
+        fi
+    
+    - name: Detect duplicate code
+      id: jscpd
+      run: |
+        echo "### 🔄 Duplicate Code Detection" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        
+        # Create config for jscpd
+        cat > .jscpd.json << EOF
+        {
+          "threshold": 0,
+          "reporters": ["console", "json"],
+          "ignore": ["**/*.test.*", "**/node_modules/**", "**/dist/**", "**/build/**", "**/*.min.js"],
+          "format": ["javascript", "typescript", "jsx", "tsx", "vue"],
+          "absolute": true
+        }
+        EOF
+        
+        npx jscpd . --output jscpd-report.json || true
+        
+        # Parse and display results
+        node -e "
+          const fs = require('fs');
+          try {
+            const report = JSON.parse(fs.readFileSync('jscpd-report.json', 'utf8'));
+            const stats = report.statistics || {};
+            console.log('Total lines:', stats.total?.lines || 0);
+            console.log('Duplicate lines:', stats.total?.duplicatedLines || 0);
+            console.log('Duplication %:', ((stats.total?.percentage || 0) * 100).toFixed(2) + '%');
+            console.log('Clones found:', stats.total?.clones || 0);
+            
+            fs.writeFileSync('duplication-percentage.txt', (stats.total?.percentage || 0).toString());
+          } catch (e) {
+            console.log('No duplicates found or error parsing report');
+            fs.writeFileSync('duplication-percentage.txt', '0');
+          }
+        " | tee -a $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        
+        DUPLICATION=$(cat duplication-percentage.txt)
+        echo "duplication_percentage=$DUPLICATION" >> $GITHUB_OUTPUT
+    
+    - name: Analyze file sizes
+      id: file-sizes
+      run: |
+        echo "### 📊 Large Files Analysis" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        
+        # Find large JavaScript/TypeScript files
+        find src -type f \( -name "*.js" -o -name "*.ts" -o -name "*.jsx" -o -name "*.tsx" -o -name "*.vue" \) -size +100k -exec ls -lh {} \; | tee large-files.txt || true
+        
+        if [ -s large-files.txt ]; then
+          cat large-files.txt >> $GITHUB_STEP_SUMMARY
+          LARGE_FILES=$(wc -l < large-files.txt)
+          echo "⚠️ Found $LARGE_FILES files larger than 100KB" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "✅ No files larger than 100KB" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo '```' >> $GITHUB_STEP_SUMMARY
+    
+    - name: Run custom dead code detection
+      id: custom-detection
+      run: |
+        if [ -f "scripts/detect-dead-code.js" ]; then
+          echo "### 🎯 Custom Dead Code Detection" >> $GITHUB_STEP_SUMMARY
+          node scripts/detect-dead-code.js --ci >> dead-code-report.md || true
+          cat dead-code-report.md >> $GITHUB_STEP_SUMMARY
+        fi
+    
+    - name: Generate summary report
+      id: summary
+      run: |
+        echo "## 📈 Dead Code Detection Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Metric | Count | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|--------|-------|--------|" >> $GITHUB_STEP_SUMMARY
+        
+        UNUSED_EXPORTS="${{ steps.ts-prune.outputs.unused_exports }}"
+        UNUSED_DEPS="${{ steps.depcheck.outputs.unused_dependencies }}"
+        DUPLICATION="${{ steps.jscpd.outputs.duplication_percentage }}"
+        
+        # Unused exports status
+        if [ "$UNUSED_EXPORTS" -eq "0" ]; then
+          echo "| Unused Exports | $UNUSED_EXPORTS | ✅ |" >> $GITHUB_STEP_SUMMARY
+        elif [ "$UNUSED_EXPORTS" -lt "10" ]; then
+          echo "| Unused Exports | $UNUSED_EXPORTS | ⚠️ |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| Unused Exports | $UNUSED_EXPORTS | ❌ |" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        # Unused dependencies status
+        if [ "$UNUSED_DEPS" -eq "0" ]; then
+          echo "| Unused Dependencies | $UNUSED_DEPS | ✅ |" >> $GITHUB_STEP_SUMMARY
+        elif [ "$UNUSED_DEPS" -lt "5" ]; then
+          echo "| Unused Dependencies | $UNUSED_DEPS | ⚠️ |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| Unused Dependencies | $UNUSED_DEPS | ❌ |" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        # Duplication status
+        DUP_PERCENT=$(echo "$DUPLICATION * 100" | bc -l | xargs printf "%.1f")
+        if (( $(echo "$DUP_PERCENT < 5" | bc -l) )); then
+          echo "| Code Duplication | ${DUP_PERCENT}% | ✅ |" >> $GITHUB_STEP_SUMMARY
+        elif (( $(echo "$DUP_PERCENT < 10" | bc -l) )); then
+          echo "| Code Duplication | ${DUP_PERCENT}% | ⚠️ |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| Code Duplication | ${DUP_PERCENT}% | ❌ |" >> $GITHUB_STEP_SUMMARY
+        fi
+    
+    - name: Comment on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          
+          // Read the summary
+          const summary = fs.readFileSync(process.env.GITHUB_STEP_SUMMARY, 'utf8');
+          
+          // Create comment
+          const comment = `## 🔍 Dead Code Detection Report
+          
+          ${summary}
+          
+          ---
+          <details>
+          <summary>💡 How to fix these issues</summary>
+          
+          ### Unused Exports
+          - Remove exports that are not imported anywhere
+          - Use \`npm run detect:dead-code\` locally to find them
+          
+          ### Unused Dependencies
+          - Run \`npm prune\` to remove unused packages
+          - Check if dependencies are actually used in code
+          
+          ### Code Duplication
+          - Extract duplicated code into shared functions/components
+          - Use the DRY (Don't Repeat Yourself) principle
+          </details>
+          
+          *Generated by Dead Code Detection workflow*`;
+          
+          // Post comment
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            body: comment
+          });
+    
+    - name: Upload reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: dead-code-reports
+        path: |
+          ts-prune-output.txt
+          depcheck-output.json
+          jscpd-report.json
+          dead-code-report.md
+          large-files.txt
+        retention-days: 30
+    
+    - name: Fail if too much dead code
+      run: |
+        UNUSED_EXPORTS="${{ steps.ts-prune.outputs.unused_exports }}"
+        UNUSED_DEPS="${{ steps.depcheck.outputs.unused_dependencies }}"
+        
+        # Konfigurierbare Schwellenwerte
+        MAX_UNUSED_EXPORTS=50
+        MAX_UNUSED_DEPS=10
+        
+        if [ "$UNUSED_EXPORTS" -gt "$MAX_UNUSED_EXPORTS" ]; then
+          echo "❌ Too many unused exports: $UNUSED_EXPORTS (max: $MAX_UNUSED_EXPORTS)"
+          exit 1
+        fi
+        
+        if [ "$UNUSED_DEPS" -gt "$MAX_UNUSED_DEPS" ]; then
+          echo "❌ Too many unused dependencies: $UNUSED_DEPS (max: $MAX_UNUSED_DEPS)"
+          exit 1
+        fi
+        
+        echo "✅ Dead code within acceptable limits"

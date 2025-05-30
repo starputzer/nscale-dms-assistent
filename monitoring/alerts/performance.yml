@@ -1,0 +1,115 @@
+groups:
+  - name: performance_alerts
+    interval: 30s
+    rules:
+      # FPS Alerts
+      - alert: LowFPS
+        expr: avg(nscale_fps) < 30
+        for: 2m
+        labels:
+          severity: warning
+          component: frontend
+        annotations:
+          summary: "Low FPS detected ({{ $value }} FPS)"
+          description: "Average FPS has been below 30 for more than 2 minutes. Current: {{ $value }} FPS"
+
+      - alert: CriticallyLowFPS
+        expr: avg(nscale_fps) < 15
+        for: 1m
+        labels:
+          severity: critical
+          component: frontend
+        annotations:
+          summary: "Critically low FPS ({{ $value }} FPS)"
+          description: "FPS has dropped below 15, indicating severe performance issues"
+
+      # Memory Alerts
+      - alert: HighMemoryUsage
+        expr: (avg(nscale_memory_used) / avg(nscale_memory_limit)) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          component: frontend
+        annotations:
+          summary: "High memory usage ({{ $value | humanizePercentage }})"
+          description: "Memory usage has exceeded 80% for more than 5 minutes"
+
+      - alert: CriticalMemoryUsage
+        expr: (avg(nscale_memory_used) / avg(nscale_memory_limit)) > 0.95
+        for: 2m
+        labels:
+          severity: critical
+          component: frontend
+        annotations:
+          summary: "Critical memory usage ({{ $value | humanizePercentage }})"
+          description: "Memory usage has exceeded 95%, application may crash soon"
+
+      # API Performance Alerts
+      - alert: HighAPILatency
+        expr: histogram_quantile(0.9, nscale_api_latency_bucket) > 1000
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "High API latency detected"
+          description: "P90 API latency is above 1000ms for endpoint {{ $labels.endpoint }}"
+
+      - alert: APITimeouts
+        expr: rate(nscale_api_errors_total{error_type="timeout"}[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "API timeouts detected"
+          description: "API timeout rate is {{ $value }} per second"
+
+      # Component Performance Alerts
+      - alert: SlowComponentRender
+        expr: avg(nscale_render_time) by (component) > 100
+        for: 5m
+        labels:
+          severity: warning
+          component: frontend
+        annotations:
+          summary: "Slow component render: {{ $labels.component }}"
+          description: "Component {{ $labels.component }} is taking {{ $value }}ms to render on average"
+
+      # Error Rate Alerts
+      - alert: HighErrorRate
+        expr: sum(rate(nscale_errors_total[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          component: general
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value }} errors per second"
+
+      - alert: CriticalErrors
+        expr: sum(rate(nscale_errors_total{severity="critical"}[5m])) > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: general
+        annotations:
+          summary: "Critical errors detected"
+          description: "{{ $value }} critical errors per second"
+
+      # Performance Degradation
+      - alert: PerformanceDegradation
+        expr: |
+          (
+            avg(nscale_fps) < avg_over_time(nscale_fps[1h] offset 1d) * 0.8
+          ) or (
+            histogram_quantile(0.9, nscale_api_latency_bucket) > 
+            histogram_quantile(0.9, nscale_api_latency_bucket offset 1d) * 1.5
+          )
+        for: 10m
+        labels:
+          severity: warning
+          component: performance
+        annotations:
+          summary: "Performance degradation detected"
+          description: "Performance metrics have degraded significantly compared to yesterday"

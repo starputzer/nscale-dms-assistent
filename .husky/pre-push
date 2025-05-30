@@ -1,0 +1,35 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🚀 Running pre-push checks..."
+
+# Run tests
+echo "🧪 Running tests..."
+npm run test:unit -- --passWithNoTests || {
+  echo "❌ Tests failed. Please fix them before pushing."
+  exit 1
+}
+
+# Check bundle size
+echo "📦 Checking bundle size..."
+npm run build:analyze -- --report-only || {
+  echo "⚠️  Bundle size check failed. Check if the build is too large."
+}
+
+# Run security audit
+echo "🔒 Running security audit..."
+npm audit --production --audit-level=high || {
+  echo "❌ High severity vulnerabilities found. Please fix them before pushing."
+  echo "   Run 'npm audit fix' to try automatic fixes."
+  exit 1
+}
+
+# Run dead code detection
+echo "🔍 Checking for dead code..."
+if [ -f "scripts/detect-dead-code.js" ]; then
+  node scripts/detect-dead-code.js --quiet || {
+    echo "⚠️  Dead code detected. Consider cleaning it up."
+  }
+fi
+
+echo "✅ Pre-push checks passed!"

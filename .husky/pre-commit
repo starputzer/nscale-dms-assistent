@@ -1,0 +1,33 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit checks..."
+
+# Run linting
+echo "📝 Checking code style..."
+npm run lint:fix
+
+# Run type checking
+echo "🔧 Checking TypeScript types..."
+npm run typecheck || {
+  echo "❌ TypeScript errors found. Please fix them before committing."
+  exit 1
+}
+
+# Check for console.log statements
+echo "🚫 Checking for console.log statements..."
+FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|js|vue)$' || true)
+if [ -n "$FILES" ]; then
+  for file in $FILES; do
+    if grep -q "console\.log" "$file"; then
+      echo "⚠️  Warning: console.log found in $file"
+      echo "   Consider using a proper logging service instead."
+    fi
+  done
+fi
+
+# Format staged files
+echo "💅 Formatting code..."
+npx lint-staged
+
+echo "✅ Pre-commit checks passed!"
