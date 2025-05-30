@@ -18,6 +18,7 @@ import {
   PaginationRequest,
 } from "@/types/api";
 import { DocumentConverterState } from "@/types/documentConverter";
+import { EventCallback, UnsubscribeFn } from "@/types/events";
 
 /**
  * Upload-Fortschritt-Callback

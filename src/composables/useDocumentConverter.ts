@@ -23,7 +23,7 @@ export function useDocumentConverter() {
   const selectedDocument = computed(() => {
     if (!selectedDocumentId.value) return null;
     return (
-      documents.value.find((doc) => doc.id === selectedDocumentId.value) || null
+      documents.value.find((doc: ConversionResult) => doc.id === selectedDocumentId.value) || null
     );
   });
 
@@ -60,7 +60,7 @@ export function useDocumentConverter() {
       // Upload mit Fortschrittsanzeige
       const documentId = await DocumentConverterService.uploadDocument(
         file,
-        (progress) => {
+        (progress: number) => {
           uploadProgress.value = progress;
         },
       );
@@ -71,7 +71,7 @@ export function useDocumentConverter() {
         originalName: file.name,
         originalFormat: file.name.split(".").pop()?.toLowerCase() || "unknown",
         size: file.size,
-        uploadedAt: new Date(),
+        uploadedAt: new Date().getTime(),
         status: "pending",
       });
 
@@ -101,7 +101,7 @@ export function useDocumentConverter() {
     try {
       // Status im Dokument aktualisieren
       const docIndex = documents.value.findIndex(
-        (doc) => doc.id === documentId,
+        (doc: ConversionResult) => doc.id === documentId,
       );
       if (docIndex !== -1) {
         documents.value[docIndex].status = "processing";
@@ -111,7 +111,7 @@ export function useDocumentConverter() {
       const result = await DocumentConverterService.convertDocument(
         documentId,
         settings,
-        (progress, step, timeRemaining) => {
+        (progress: number, step: string, timeRemaining: number) => {
           conversionProgress.value = progress;
           conversionStep.value = step;
           estimatedTimeRemaining.value = timeRemaining;
@@ -124,7 +124,7 @@ export function useDocumentConverter() {
           ...documents.value[docIndex],
           ...result,
           status: "success",
-          convertedAt: new Date(),
+          convertedAt: new Date().getTime(),
         };
       }
 
@@ -137,7 +137,7 @@ export function useDocumentConverter() {
 
       // Fehler im Dokument vermerken
       const docIndex = documents.value.findIndex(
-        (doc) => doc.id === documentId,
+        (doc: ConversionResult) => doc.id === documentId,
       );
       if (docIndex !== -1) {
         documents.value[docIndex].status = "error";

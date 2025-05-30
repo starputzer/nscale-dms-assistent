@@ -7,6 +7,7 @@
 
 import { defaultIndexedDBService } from "../storage/IndexedDBService";
 import { LogService } from "../log/LogService";
+import { EventCallback, UnsubscribeFn } from "@/types/events";
 
 /**
  * Synchronisations-Anfrage-Status

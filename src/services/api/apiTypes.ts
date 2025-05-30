@@ -22,6 +22,7 @@ import {
   SessionServiceInterface,
 } from "@/utils/serviceTypes";
 import { APIResponse, APIError } from "@/utils/apiTypes";
+import { EventCallback, UnsubscribeFn } from "@/types/events";
 
 /**
  * NScaleAxiosRequestConfig - Erweiterte Axios-Konfiguration mit nScale-spezifischen Optionen

@@ -57,9 +57,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, inject } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted, inject, defineEmits } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { useBridge } from "../bridge/enhanced";
+// Bridge system removed - use direct store communication instead
 import { useChatAdapter } from "../composables/adapters/useChatAdapter";
 import { useSessionsStoreCompat } from "../stores/adapters/sessionStoreAdapter";
 import {
@@ -68,12 +68,32 @@ import {
   SessionManager,
 } from "../components/chat/enhanced";
 import type { Session } from "../types/session";
-import type { BridgeAPI } from "../bridge/enhanced/types";
+// Bridge types removed
+
+// Event emitter for component communication
+import type { EventMap } from "../utils/eventTypes";
 
 // Diese spezielle Komponente ist immer aktiviert ohne Feature-Flag-Prüfung
 
-// Bridge API
-const bridge = inject<BridgeAPI>("bridge") || useBridge();
+// Direct store communication (bridge removed)
+// Using window event system for external communication if needed
+const emit = defineEmits<{
+  'chat:ready': [status: { status: string }];
+  'chat:sessionSelected': [data: { sessionId: string }];
+  'chat:sessionCreated': [data: { sessionId: string }];
+  'chat:sessionDeleted': [data: { sessionId: string }];
+  'chat:sessionRenamed': [data: { sessionId: string; title: string }];
+  'chat:sessionPinned': [data: { sessionId: string; isPinned: boolean }];
+  'chat:messageSent': [data: { sessionId: string; messageId: string; content: string }];
+  'chat:messageEdited': [data: { sessionId: string; messageId: string; content: string }];
+  'chat:messageRetried': [data: { sessionId: string; messageId: string }];
+  'chat:editingMessage': [data: { messageId: string; content: string }];
+  'chat:cancelEdit': [data: {}];
+  'chat:draftChanged': [data: { content: string }];
+  'chat:generationStopped': [data: {}];
+  'chat:sidebarToggled': [data: { collapsed: boolean }];
+  'sessions:updated': [data: { count: number; active: string }];
+}>();
 
 // Router und Route für Navigation
 const router = useRouter();
@@ -115,30 +135,31 @@ const activeSessionId = computed(
   () => sessionIdFromRoute.value || sessionStore.currentSessionId || "",
 );
 
-// Bridge-Events registrieren
-onMounted(() => {
-  // Bridge-Events für Chat-Aktionen
-  bridge.on(
-    "chat:sendMessage",
-    (data: { content: string; sessionId?: string }) => {
-      handleSendMessage(data.content, data.sessionId);
-    },
-  );
-
-  bridge.on("chat:selectSession", (data: { sessionId: string }) => {
-    handleSessionSelect(data.sessionId);
-  });
-
-  bridge.on("chat:createSession", () => {
+// Event handlers for external communication
+const eventHandlers = {
+  handleSendMessage: (event: CustomEvent<{ content: string; sessionId?: string }>) => {
+    handleSendMessage(event.detail.content, event.detail.sessionId);
+  },
+  handleSelectSession: (event: CustomEvent<{ sessionId: string }>) => {
+    handleSessionSelect(event.detail.sessionId);
+  },
+  handleCreateSession: () => {
     handleSessionCreate();
-  });
-
-  bridge.on("session:updated", () => {
+  },
+  handleSessionUpdate: () => {
     // Session-Liste aktualisieren, wenn sie von außen geändert wurde
     if (typeof sessionStore.synchronizeSessions === "function") {
       sessionStore.synchronizeSessions();
     }
-  });
+  }
+};
+
+onMounted(() => {
+  // Register global event listeners for external communication
+  window.addEventListener('chat:sendMessage', eventHandlers.handleSendMessage as EventListener);
+  window.addEventListener('chat:selectSession', eventHandlers.handleSelectSession as EventListener);
+  window.addEventListener('chat:createSession', eventHandlers.handleCreateSession);
+  window.addEventListener('session:updated', eventHandlers.handleSessionUpdate);
 
   // Initiale Sitzung laden
   if (activeSessionId.value) {
@@ -147,8 +168,18 @@ onMounted(() => {
     ensureActiveSession();
   }
 
-  // Status an Bridge melden
-  bridge.emit("enhancedChat:ready", { status: "ready" });
+  // Status melden
+  emit('chat:ready', { status: 'ready' });
+  // Also dispatch as window event for external listeners
+  window.dispatchEvent(new CustomEvent('enhancedChat:ready', { detail: { status: 'ready' } }));
+});
+
+// Cleanup event listeners
+onUnmounted(() => {
+  window.removeEventListener('chat:sendMessage', eventHandlers.handleSendMessage as EventListener);
+  window.removeEventListener('chat:selectSession', eventHandlers.handleSelectSession as EventListener);
+  window.removeEventListener('chat:createSession', eventHandlers.handleCreateSession);
+  window.removeEventListener('session:updated', eventHandlers.handleSessionUpdate);
 });
 
 // Route-Änderungen überwachen, um Nachrichten zu laden
@@ -172,11 +203,14 @@ watch(
 watch(
   sessions,
   (newSessions: Session[]) => {
-    // Sessions-Status an Bridge melden
-    bridge.emit("sessions:updated", {
+    // Sessions-Status melden
+    const updateData = {
       count: newSessions.length,
-      active: activeSessionId.value,
-    });
+      active: activeSessionId.value || '',
+    };
+    emit('sessions:updated', updateData);
+    // Also dispatch as window event for external listeners
+    window.dispatchEvent(new CustomEvent('sessions:updated', { detail: updateData }));
 
     // Wenn keine aktive Session vorhanden ist, erste Session aktivieren oder neue erstellen
     if (newSessions.length > 0 && !activeSessionId.value) {
@@ -194,8 +228,10 @@ function handleSessionSelect(sessionId: string) {
   sessionStore.setCurrentSession(sessionId);
   loadSessionMessages(sessionId);
 
-  // Bridge-Event auslösen
-  bridge.emit("chat:sessionSelected", { sessionId });
+  // Event auslösen
+  emit('chat:sessionSelected', { sessionId });
+  // Also dispatch as window event for external listeners
+  window.dispatchEvent(new CustomEvent('chat:sessionSelected', { detail: { sessionId } }));
 }
 
 // Neue Session erstellen
@@ -212,8 +248,10 @@ async function handleSessionCreate() {
 
     router.push(`/session/${sessionId}`);
 
-    // Bridge-Event auslösen
-    bridge.emit("chat:sessionCreated", { sessionId });
+    // Event auslösen
+    emit('chat:sessionCreated', { sessionId });
+    // Also dispatch as window event for external listeners
+    window.dispatchEvent(new CustomEvent('chat:sessionCreated', { detail: { sessionId } }));
   } catch (error) {
     console.error("Fehler beim Erstellen einer neuen Sitzung:", error);
   }
@@ -234,8 +272,10 @@ async function handleSessionDelete(sessionId: string) {
       ensureActiveSession();
     }
 
-    // Bridge-Event auslösen
-    bridge.emit("chat:sessionDeleted", { sessionId });
+    // Event auslösen
+    emit('chat:sessionDeleted', { sessionId });
+    // Also dispatch as window event for external listeners
+    window.dispatchEvent(new CustomEvent('chat:sessionDeleted', { detail: { sessionId } }));
   } catch (error) {
     console.error("Fehler beim Löschen der Sitzung:", error);
   }
@@ -251,8 +291,10 @@ async function handleSessionRename(sessionId: string, newTitle: string) {
       await sessionStore.updateSessionTitle(sessionId, newTitle);
     }
 
-    // Bridge-Event auslösen
-    bridge.emit("chat:sessionRenamed", { sessionId, title: newTitle });
+    // Event auslösen
+    emit('chat:sessionRenamed', { sessionId, title: newTitle });
+    // Also dispatch as window event for external listeners
+    window.dispatchEvent(new CustomEvent('chat:sessionRenamed', { detail: { sessionId, title: newTitle } }));
   } catch (error) {
     console.error("Fehler beim Umbenennen der Sitzung:", error);
   }
@@ -272,8 +314,10 @@ async function handleSessionPin(sessionId: string, isPinned: boolean) {
       }
     }
 
-    // Bridge-Event auslösen
-    bridge.emit("chat:sessionPinned", { sessionId, isPinned });
+    // Event auslösen
+    emit('chat:sessionPinned', { sessionId, isPinned });
+    // Also dispatch as window event for external listeners
+    window.dispatchEvent(new CustomEvent('chat:sessionPinned', { detail: { sessionId, isPinned } }));
   } catch (error) {
     console.error("Fehler beim Anpinnen/Lösen der Sitzung:", error);
   }
@@ -296,12 +340,11 @@ async function handleSendMessage(content: string, targetSessionId?: string) {
       isEditing.value = false;
       editingMessageId.value = null;
 
-      // Bridge-Event auslösen
-      bridge.emit("chat:messageEdited", {
-        sessionId,
-        messageId: editingMessageId.value || "",
-        content,
-      });
+      // Event auslösen
+      const messageId = editingMessageId.value || "";
+      emit('chat:messageEdited', { sessionId, messageId, content });
+      // Also dispatch as window event for external listeners
+      window.dispatchEvent(new CustomEvent('chat:messageEdited', { detail: { sessionId, messageId, content } }));
     } else {
       // Neue Nachricht senden (mit korrekter Typisierung)
       if (typeof sendMessage === "function") {
@@ -317,13 +360,11 @@ async function handleSendMessage(content: string, targetSessionId?: string) {
         }
       }
 
-      // Bridge-Event auslösen mit einer einfachen ID
-      const dummyMessageId = `msg-${Date.now()}`;
-      bridge.emit("chat:messageSent", {
-        sessionId,
-        messageId: dummyMessageId,
-        content,
-      });
+      // Event auslösen mit einer einfachen ID
+      const messageId = `msg-${Date.now()}`;
+      emit('chat:messageSent', { sessionId, messageId, content });
+      // Also dispatch as window event for external listeners
+      window.dispatchEvent(new CustomEvent('chat:messageSent', { detail: { sessionId, messageId, content } }));
     }
 
     // Nachrichtenentwurf zurücksetzen
@@ -340,8 +381,10 @@ function handleEditMessage(messageId: string, content: string) {
   messageDraft.value = content;
   highlightedMessageId.value = messageId;
 
-  // Bridge-Event auslösen
-  bridge.emit("chat:editingMessage", { messageId, content });
+  // Event auslösen
+  emit('chat:editingMessage', { messageId, content });
+  // Also dispatch as window event for external listeners
+  window.dispatchEvent(new CustomEvent('chat:editingMessage', { detail: { messageId, content } }));
 }
 
 // Nachrichtenbearbeitung abbrechen
@@ -351,16 +394,20 @@ function handleCancelEdit() {
   messageDraft.value = "";
   highlightedMessageId.value = null;
 
-  // Bridge-Event auslösen
-  bridge.emit("chat:cancelEdit", {});
+  // Event auslösen
+  emit('chat:cancelEdit', {});
+  // Also dispatch as window event for external listeners
+  window.dispatchEvent(new CustomEvent('chat:cancelEdit', { detail: {} }));
 }
 
 // Entwurf speichern
 function handleDraftChange(content: string) {
   messageDraft.value = content;
 
-  // Bridge-Event auslösen (z.B. für Synchronisierung mit anderen Editoren)
-  bridge.emit("chat:draftChanged", { content });
+  // Event auslösen (z.B. für Synchronisierung mit anderen Editoren)
+  emit('chat:draftChanged', { content });
+  // Also dispatch as window event for external listeners
+  window.dispatchEvent(new CustomEvent('chat:draftChanged', { detail: { content } }));
 }
 
 // Nachricht erneut senden
@@ -381,11 +428,15 @@ async function handleRetryMessage(messageId: string) {
       }
     }
 
-    // Bridge-Event auslösen
-    bridge.emit("chat:messageRetried", {
+    // Event auslösen
+    emit('chat:messageRetried', {
       sessionId: activeSessionId.value,
       messageId,
     });
+    // Also dispatch as window event for external listeners
+    window.dispatchEvent(new CustomEvent('chat:messageRetried', { 
+      detail: { sessionId: activeSessionId.value, messageId } 
+    }));
   } catch (error) {
     console.error("Fehler beim erneuten Senden der Nachricht:", error);
   }
@@ -395,16 +446,20 @@ async function handleRetryMessage(messageId: string) {
 function handleStopGeneration() {
   stopGeneration();
 
-  // Bridge-Event auslösen
-  bridge.emit("chat:generationStopped", {});
+  // Event auslösen
+  emit('chat:generationStopped', {});
+  // Also dispatch as window event for external listeners
+  window.dispatchEvent(new CustomEvent('chat:generationStopped', { detail: {} }));
 }
 
 // Seitenliste ein-/ausklappen
 function toggleSidebar() {
   isSidebarCollapsed.value = !isSidebarCollapsed.value;
 
-  // Bridge-Event auslösen
-  bridge.emit("chat:sidebarToggled", { collapsed: isSidebarCollapsed.value });
+  // Event auslösen
+  emit('chat:sidebarToggled', { collapsed: isSidebarCollapsed.value });
+  // Also dispatch as window event for external listeners
+  window.dispatchEvent(new CustomEvent('chat:sidebarToggled', { detail: { collapsed: isSidebarCollapsed.value } }));
 }
 
 // Nachrichten für eine Session laden

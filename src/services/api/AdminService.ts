@@ -19,6 +19,7 @@ import {
   Feedback,
   PaginatedResponse,
 } from "@/types/api";
+import { EventCallback, UnsubscribeFn } from "@/types/events";
 import { authService } from "./AuthService";
 
 /**

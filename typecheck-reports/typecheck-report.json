@@ -1,12 +1,8 @@
 {
-  "timestamp": "2025-05-11T21:02:32.245Z",
-  "totalErrors": 19,
+  "timestamp": "2025-05-30T18:38:42.105Z",
+  "totalErrors": 18,
   "directories": {
     "assets": {
-      "errorCount": 1,
-      "status": "❌ 1 TypeScript errors"
-    },
-    "bridge": {
       "errorCount": 1,
       "status": "❌ 1 TypeScript errors"
     },
@@ -22,11 +18,19 @@
       "errorCount": 1,
       "status": "❌ 1 TypeScript errors"
     },
-    "directives": {
+    "controllers": {
       "errorCount": 1,
       "status": "❌ 1 TypeScript errors"
     },
-    "examples": {
+    "css": {
+      "errorCount": 1,
+      "status": "❌ 1 TypeScript errors"
+    },
+    "diagnostics": {
+      "errorCount": 1,
+      "status": "❌ 1 TypeScript errors"
+    },
+    "directives": {
       "errorCount": 1,
       "status": "❌ 1 TypeScript errors"
     },
@@ -34,15 +38,7 @@
       "errorCount": 1,
       "status": "❌ 1 TypeScript errors"
     },
-    "js": {
-      "errorCount": 1,
-      "status": "❌ 1 TypeScript errors"
-    },
     "layouts": {
-      "errorCount": 1,
-      "status": "❌ 1 TypeScript errors"
-    },
-    "migration": {
       "errorCount": 1,
       "status": "❌ 1 TypeScript errors"
     },

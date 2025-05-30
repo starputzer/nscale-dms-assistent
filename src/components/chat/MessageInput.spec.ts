@@ -4,7 +4,7 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mount } from "@vue/test-utils";
-import { nextTick } from "vue";
+import { nextTick } from "@vue/runtime-core";
 import MessageInput from "./MessageInput.vue";
 
 describe("MessageInput", () => {

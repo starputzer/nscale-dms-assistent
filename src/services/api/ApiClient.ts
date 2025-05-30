@@ -29,14 +29,14 @@ export class ApiClient {
         }
         return config;
       },
-      (error) => Promise.reject(error)
+      (error: Error | unknown) => Promise.reject(error)
     );
 
     // Add response interceptor
     this.instance.interceptors.response.use(
       (response) => response,
-      (error) => {
-        if (error.response?.status === 401) {
+      (error: Error | unknown) => {
+        if ((error as any).response?.status === 401) {
           const authStore = useAuthStore();
           authStore.logout();
         }

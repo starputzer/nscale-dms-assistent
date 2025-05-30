@@ -30,7 +30,7 @@ export function createMonitoring(options: MonitoringOptions = {}) {
 
       // Global error handler
       if (errorTrackingEnabled) {
-        app.config.errorHandler = (error, instance, info) => {
+        app.config.errorHandler = (error: Error | unknown, instance, info) => {
           console.error('Vue Error:', error);
           
           telemetry.trackError(error as Error, {
@@ -160,8 +160,8 @@ export function createMonitoring(options: MonitoringOptions = {}) {
             config.metadata = { startTime: performance.now() };
             return config;
           },
-          (error) => {
-            telemetry.trackError(error, { phase: 'request' });
+          (error: Error | unknown) => {
+            telemetry.trackError(error as Error, { phase: 'request' });
             return Promise.reject(error);
           }
         );
@@ -177,14 +177,14 @@ export function createMonitoring(options: MonitoringOptions = {}) {
             
             return response;
           },
-          (error) => {
-            const duration = performance.now() - error.config?.metadata?.startTime;
-            const endpoint = error.config?.url || 'unknown';
-            const method = error.config?.method?.toUpperCase() || 'GET';
-            const status = error.response?.status || 0;
+          (error: Error | unknown) => {
+            const duration = performance.now() - (error as any).config?.metadata?.startTime;
+            const endpoint = (error as any).config?.url || 'unknown';
+            const method = (error as any).config?.method?.toUpperCase() || 'GET';
+            const status = (error as any).response?.status || 0;
             
             telemetry.trackApiCall(endpoint, duration, status, method);
-            telemetry.trackError(error, {
+            telemetry.trackError(error as Error, {
               phase: 'response',
               endpoint,
               status

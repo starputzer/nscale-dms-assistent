@@ -17,6 +17,7 @@ import {
   TokenStatus,
 } from "@/types/auth";
 import { ApiResponse } from "@/types/api";
+import { EventCallback, UnsubscribeFn } from "@/types/events";
 
 /**
  * AuthService-Klasse zur Verwaltung von Authentifizierung und Berechtigungen

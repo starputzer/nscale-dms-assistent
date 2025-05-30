@@ -37,7 +37,7 @@ app.use(AuthPlugin, {
  * 4. Globaler Error-Handler mit Auth-Fehlerbehandlung
  *    Ersetze den bestehenden app.config.errorHandler mit:
  */
-app.config.errorHandler = (err, vm, info) => {
+app.config.errorHandler = (err: Error | unknown, vm: any, info: string) => {
   console.error("Vue error:", err, info);
 
   // Typ-Prüfung für Auth-Fehler
@@ -104,7 +104,7 @@ if (AuthService.isAuthenticated()) {
 
   // Initial session validation
   AuthService.validateToken()
-    .then((isValid) => {
+    .then((isValid: boolean) => {
       console.log("Session validation result:", isValid);
 
       if (!isValid) {
@@ -117,7 +117,7 @@ if (AuthService.isAuthenticated()) {
         });
       }
     })
-    .catch((error) => {
+    .catch((error: Error) => {
       console.error("Session validation error:", error);
     });
 }

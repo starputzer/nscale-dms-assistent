@@ -9,6 +9,9 @@ import { ApiService } from "@/services/api/ApiService";
 import { BatchRequestService } from "@/services/api/BatchRequestService";
 import { useErrorReporting } from "@/composables/useErrorReporting";
 
+// Create a singleton instance of BatchRequestService
+const batchService = new BatchRequestService();
+
 export interface LogEntry {
   id: string;
   timestamp: string;
@@ -118,7 +121,7 @@ export const useAdminLogsStore = defineStore("adminLogs", () => {
         sortOrder: sortOrder.value,
       };
 
-      const response = await BatchRequestService.addRequest({
+      const response = await batchService.addRequest({
         endpoint,
         method: "GET",
         params,
@@ -131,7 +134,10 @@ export const useAdminLogsStore = defineStore("adminLogs", () => {
       totalLogs.value = response.data.total;
     } catch (err: any) {
       error.value = err.message || "Fehler beim Laden der Logs";
-      reportError("ADMIN_LOGS_FETCH_ERROR", "Fehler beim Laden der Logs", err);
+      reportError(err, {
+        feature: "ADMIN_LOGS_FETCH",
+        context: { message: "Fehler beim Laden der Logs" }
+      });
     } finally {
       loading.value = false;
     }
@@ -182,7 +188,7 @@ export const useAdminLogsStore = defineStore("adminLogs", () => {
 
     try {
       // Optimierte Version mit API-Batching
-      const response = await BatchRequestService.addRequest({
+      const response = await batchService.addRequest({
         endpoint: "/api/admin/logs/statistics",
         method: "GET",
         params: filter.value,
@@ -194,11 +200,10 @@ export const useAdminLogsStore = defineStore("adminLogs", () => {
       statistics.value = response.data;
     } catch (err: any) {
       error.value = err.message || "Fehler beim Laden der Log-Statistiken";
-      reportError(
-        "ADMIN_LOGS_STATS_ERROR",
-        "Fehler beim Laden der Log-Statistiken",
-        err,
-      );
+      reportError(err, {
+        feature: "ADMIN_LOGS_STATS",
+        context: { message: "Fehler beim Laden der Log-Statistiken" }
+      });
     } finally {
       loading.value = false;
     }
@@ -210,7 +215,7 @@ export const useAdminLogsStore = defineStore("adminLogs", () => {
   async function fetchLogSources() {
     try {
       // Optimierte Version mit API-Batching
-      const response = await BatchRequestService.addRequest({
+      const response = await batchService.addRequest({
         endpoint: "/api/admin/logs/sources",
         method: "GET",
         meta: {
@@ -220,11 +225,10 @@ export const useAdminLogsStore = defineStore("adminLogs", () => {
 
       sources.value = response.data.sources;
     } catch (err: any) {
-      reportError(
-        "ADMIN_LOGS_SOURCES_ERROR",
-        "Fehler beim Laden der Log-Quellen",
-        err,
-      );
+      reportError(err, {
+        feature: "ADMIN_LOGS_SOURCES",
+        context: { message: "Fehler beim Laden der Log-Quellen" }
+      });
     }
   }
 
@@ -274,7 +278,7 @@ export const useAdminLogsStore = defineStore("adminLogs", () => {
       }, 300);
 
       // Optimierte Version mit API-Batching
-      const response = await BatchRequestService.addRequest({
+      const response = await batchService.addRequest({
         endpoint: "/api/admin/logs/export",
         method: "POST",
         data: {
@@ -300,11 +304,10 @@ export const useAdminLogsStore = defineStore("adminLogs", () => {
       return downloadUrl;
     } catch (err: any) {
       error.value = err.message || "Fehler beim Exportieren der Logs";
-      reportError(
-        "ADMIN_LOGS_EXPORT_ERROR",
-        "Fehler beim Exportieren der Logs",
-        err,
-      );
+      reportError(err, {
+        feature: "ADMIN_LOGS_EXPORT",
+        context: { message: "Fehler beim Exportieren der Logs" }
+      });
     } finally {
       isExporting.value = false;
     }

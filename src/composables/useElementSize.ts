@@ -54,7 +54,7 @@ export function useElementSize(
   // Beobachte Änderungen am Ref-Objekt
   watch(
     () => elementRef.value,
-    (newValue) => {
+    (newValue: HTMLElement | null) => {
       if (resizeObserver) {
         resizeObserver.disconnect();
 

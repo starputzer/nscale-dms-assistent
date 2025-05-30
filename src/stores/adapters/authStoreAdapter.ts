@@ -29,9 +29,53 @@ export interface AuthStoreWithCompat extends IAuthStore {
 export function useAuthStoreCompat(): AuthStoreWithCompat {
   const store = useAuthStore();
 
-  // Erweitere den Store mit kompatiblen Methoden
+  // Erstelle ein kompatibles Store-Objekt
+  // Wir können nicht einfach den Store spreaden, da Pinia Stores reactive sind
   return {
-    ...store,
+    // State properties
+    get user() { return store.user; },
+    get token() { return store.token; },
+    get refreshToken() { return store.refreshToken; },
+    get expiresAt() { return store.expiresAt; },
+    get isLoading() { return store.isLoading; },
+    get error() { return store.error; },
+    get version() { return store.version; },
+    get permissions() { return store.permissions; },
+    get tokenRefreshInProgress() { return store.tokenRefreshInProgress; },
+    get lastTokenRefresh() { return store.lastTokenRefresh; },
+    
+    // Computed properties
+    get isAuthenticated() { return store.isAuthenticated; },
+    get isAdmin() { return store.isAdmin; },
+    get userRole() { return store.userRole; },
+    get isExpired() { return store.isExpired; },
+    get tokenExpiresIn() { return store.tokenExpiresIn; },
+    get tokenStatus() { return store.tokenStatus; },
+    
+    // Expose all the methods from the original store
+    logout: store.logout,
+    hasRole: store.hasRole,
+    hasAnyRole: store.hasAnyRole,
+    hasPermission: store.hasPermission,
+    hasAnyPermission: store.hasAnyPermission,
+    checkPermission: store.checkPermission,
+    refreshUserInfo: store.refreshUserInfo,
+    refreshTokenIfNeeded: store.refreshTokenIfNeeded,
+    validateCurrentToken: store.validateCurrentToken,
+    validateToken: store.validateToken,
+    createAuthHeaders: store.createAuthHeaders,
+    initialize: store.initialize,
+    migrateFromLegacyStorage: store.migrateFromLegacyStorage,
+    updateUserPreferences: store.updateUserPreferences,
+    extractPermissionsFromRoles: store.extractPermissionsFromRoles,
+    setToken: store.setToken,
+    setError: store.setError,
+    restoreAuthSession: store.restoreAuthSession,
+    persistAuthData: store.persistAuthData,
+    configureHttpClients: store.configureHttpClients,
+    removeHttpInterceptors: store.removeHttpInterceptors,
+    cleanup: store.cleanup,
+    $reset: store.$reset,
 
     // Kompatible login-Methode (unterstützt verschiedene Signaturen)
     async login(
@@ -45,7 +89,7 @@ export function useAuthStoreCompat(): AuthStoreWithCompat {
         actualCredentials = {
           email: credentials,
           password: password,
-          remember: false,
+          rememberMe: false,
         };
       } else if (typeof credentials === "object") {
         actualCredentials = credentials;
@@ -74,49 +118,26 @@ export function useAuthStoreCompat(): AuthStoreWithCompat {
       try {
         // Moderne register-Methode
         if (typeof store.register === "function") {
-          return await store.register({ username, password, role });
+          return await store.register({ 
+            username, 
+            email: username, // username könnte eine Email sein
+            password 
+          });
         }
 
         // Fallback für ältere Versionen
         if (typeof store.createUser === "function") {
-          return await store.createUser({ username, password, role });
+          return await store.createUser({ 
+            username, 
+            email: username,
+            password 
+          });
         }
 
         throw new Error("Register method not available");
       } catch (error) {
         console.error("Registration error:", error);
         return false;
-      }
-    },
-
-    // Kompatible error-Property (als Getter)
-    get error(): string | null {
-      return store.error || null;
-    },
-
-    // Kompatible setToken-Methode
-    async setToken(token: string): Promise<boolean> {
-      try {
-        if (typeof store.setToken === "function") {
-          return await store.setToken(token);
-        }
-
-        // Fallback: Direkt den Token setzen
-        store.token = token;
-        return true;
-      } catch (error) {
-        console.error("setToken error:", error);
-        return false;
-      }
-    },
-
-    // Kompatible setError-Methode
-    setError(message: string | null): void {
-      if (typeof store.setError === "function") {
-        store.setError(message);
-      } else if ("error" in store) {
-        // Fallback: Direkt die error-Property setzen
-        (store as any).error = message;
       }
     },
   };

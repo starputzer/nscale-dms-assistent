@@ -15,27 +15,27 @@ import { v4 as uuidv4 } from "@/utils/uuidUtil";
 const MOCK_FEEDBACK: FeedbackEntry[] = [
   {
     id: "1",
-    messageId: "msg-1",
-    sessionId: "session-1",
+    message_id: "msg-1",
+    session_id: "session-1",
     type: "positive",
     comment: "Sehr hilfreiche Antwort!",
-    timestamp: new Date(Date.now() - 3600000).toISOString(), // 1 Stunde zurück
+    created_at: new Date(Date.now() - 3600000).toISOString(), // 1 Stunde zurück
   },
   {
     id: "2",
-    messageId: "msg-2",
-    sessionId: "session-1",
+    message_id: "msg-2",
+    session_id: "session-1",
     type: "negative",
     comment: "Die Antwort war nicht hilfreich.",
-    timestamp: new Date(Date.now() - 7200000).toISOString(), // 2 Stunden zurück
+    created_at: new Date(Date.now() - 7200000).toISOString(), // 2 Stunden zurück
   },
   {
     id: "3",
-    messageId: "msg-3",
-    sessionId: "session-2",
+    message_id: "msg-3",
+    session_id: "session-2",
     type: "positive",
     comment: "",
-    timestamp: new Date(Date.now() - 86400000).toISOString(), // 1 Tag zurück
+    created_at: new Date(Date.now() - 86400000).toISOString(), // 1 Tag zurück
   },
 ];
 
@@ -89,7 +89,7 @@ export const useFeedbackStore = defineStore("admin-feedback", () => {
       })
       .sort(
         (a, b) =>
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
       );
   });
 
@@ -125,11 +125,11 @@ export const useFeedbackStore = defineStore("admin-feedback", () => {
 
       const newFeedback: FeedbackEntry = {
         id: uuidv4(),
-        messageId: feedbackData.messageId,
-        sessionId: feedbackData.sessionId,
+        message_id: feedbackData.messageId,
+        session_id: feedbackData.sessionId,
         type: feedbackData.type,
         comment: feedbackData.comment,
-        timestamp: new Date().toISOString(),
+        created_at: new Date().toISOString(),
       };
 
       // Füge das neue Feedback zu unserer Liste hinzu

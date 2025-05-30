@@ -37,8 +37,6 @@ export { useForm } from "./useForm";
 export { useLocalStorage } from "./useLocalStorage";
 
 // Specialized chat composables
-export { useEnhancedChat } from "./useEnhancedChat";
-export { useOptimizedChat } from "./useOptimizedChat";
 export { useSourceReferences } from "./useSourceReferences";
 
 // Logging and monitoring

@@ -18,7 +18,7 @@ console.log('[i18n] Loaded translation modules:', {
 });
 
 // Combine all translation resources with deep merge to avoid conflicts
-function deepMerge(target, source) {
+function deepMerge(target: any, source: any): any {
   const result = { ...target };
   
   for (const key in source) {

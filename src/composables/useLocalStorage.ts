@@ -65,7 +65,7 @@ export function useLocalStorage<T>(
     deleteIfNull = false,
   } = options;
 
-  const logger = useLogger("useLocalStorage");
+  const logger = useLogger();
   const storageKey = `${prefix}${key}`;
 
   // Create serializer functions
@@ -127,7 +127,7 @@ export function useLocalStorage<T>(
   if (watchValue) {
     watch(
       storedValue,
-      (newValue) => {
+      (newValue: T) => {
         updateStorage(newValue);
       },
       { deep: true },

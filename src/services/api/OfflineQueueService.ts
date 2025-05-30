@@ -11,6 +11,7 @@
 
 import { v4 as uuidv4 } from "uuid";
 import { useAuthStore } from "@/stores/auth";
+import { EventCallback, UnsubscribeFn } from "@/types/events";
 
 // Typen für die Offline-Warteschlange
 export enum OperationType {

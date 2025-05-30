@@ -243,7 +243,7 @@ export class ApiService {
 
         return config;
       },
-      (error) => {
+      (error: Error | unknown) => {
         this.logService.error("❌ Request Error", error);
         return Promise.reject(error);
       },

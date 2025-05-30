@@ -18,9 +18,5 @@ export { default as BaseAlert } from "./feedback/BaseAlert.vue";
 export { default as BaseLoader } from "./feedback/BaseLoader.vue";
 export { default as BaseToast } from "./feedback/BaseToast.vue";
 
-// Import types from components
-import type { SelectOption } from "./inputs/BaseSelect.vue";
-import type { TabItem } from "./layout/BaseTabs.vue";
-
-// Re-export types
-export type { SelectOption, TabItem };
+// Import and re-export types
+export * from "./types";

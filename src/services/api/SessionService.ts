@@ -23,6 +23,7 @@ import {
   ApiResponse,
   PaginationRequest,
 } from "@/types/api";
+import { EventCallback, UnsubscribeFn } from "@/types/events";
 
 /**
  * Optionen für StreamingMessage

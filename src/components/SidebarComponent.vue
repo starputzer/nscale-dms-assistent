@@ -76,30 +76,27 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { useStore } from "vuex";
+import { useSessionsStore } from "@/stores/sessions";
 import { useRouter } from "vue-router";
 
-const store = useStore();
+const sessionsStore = useSessionsStore();
 const router = useRouter();
 
 const isSidebarCollapsed = ref(false);
 const showDeleteConfirm = ref(false);
 const sessionToDelete = ref<string | null>(null);
 
-const sessions = computed(() => store.getters["sessions/allSessions"]);
-const isLoading = computed(() => store.getters["sessions/isLoading"]);
-const activeSessionId = computed(
-  () => store.getters["sessions/activeSessionId"],
-);
+const sessions = computed(() => sessionsStore.sortedSessions);
+const isLoading = computed(() => sessionsStore.isLoading);
+const activeSessionId = computed(() => sessionsStore.currentSessionId);
 
 function toggleSidebar() {
   isSidebarCollapsed.value = !isSidebarCollapsed.value;
 }
 
-function createNewSession() {
-  store.dispatch("sessions/createSession").then((sessionId: string) => {
-    router.push(`/session/${sessionId}`);
-  });
+async function createNewSession() {
+  const sessionId = await sessionsStore.createSession();
+  router.push(`/session/${sessionId}`);
 }
 
 function selectSession(sessionId: string) {
@@ -116,19 +113,18 @@ function cancelDelete() {
   showDeleteConfirm.value = false;
 }
 
-function deleteSession() {
+async function deleteSession() {
   if (sessionToDelete.value) {
-    store.dispatch("sessions/deleteSession", sessionToDelete.value).then(() => {
-      if (activeSessionId.value === sessionToDelete.value) {
-        // If we're deleting the active session, navigate to the first available session
-        // or to the home page if no sessions remain
-        if (sessions.value.length > 0) {
-          router.push(`/session/${sessions.value[0].id}`);
-        } else {
-          router.push("/");
-        }
+    await sessionsStore.deleteSession(sessionToDelete.value);
+    if (activeSessionId.value === sessionToDelete.value) {
+      // If we're deleting the active session, navigate to the first available session
+      // or to the home page if no sessions remain
+      if (sessions.value.length > 0) {
+        router.push(`/session/${sessions.value[0].id}`);
+      } else {
+        router.push("/");
       }
-    });
+    }
   }
 
   showDeleteConfirm.value = false;

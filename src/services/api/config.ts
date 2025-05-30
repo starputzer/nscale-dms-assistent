@@ -278,7 +278,7 @@ export function initializeApiServices(): void {
 
           return config;
         },
-        (error) => {
+        (error: Error | unknown) => {
           console.error("Axios-Request-Interceptor-Fehler:", error);
           return Promise.reject(error);
         },

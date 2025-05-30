@@ -7,7 +7,7 @@
 
 import { ref, Ref, ComputedRef } from "vue";
 import { useChat } from "@/composables/useChat";
-import type { Message } from "@/types/session";
+import type { ChatMessage as Message } from "@/types/session";
 
 // Interface für die Rückgabe des ursprünglichen useChat-Composables
 export interface UseChatReturn {
@@ -71,16 +71,9 @@ export function useChatAdapter(): EnhancedChatComposable {
             await originalChat.sendMessage(contentOrParams);
           } else {
             // Wenn ein Objekt übergeben wird (neue API)
-            const { sessionId, content } = contentOrParams;
-
-            // Je nach API-Version unterschiedlich aufrufen
-            if (originalChat.sendMessage.length === 1) {
-              // Erwartet ein Objekt
-              await originalChat.sendMessage({ sessionId, content });
-            } else {
-              // Erwartet separate Parameter
-              await originalChat.sendMessage(content, sessionId);
-            }
+            const { content } = contentOrParams;
+            // Immer nur den content String übergeben
+            await originalChat.sendMessage(content);
           }
         } else {
           console.warn("sendMessage nicht verfügbar");
@@ -91,14 +84,9 @@ export function useChatAdapter(): EnhancedChatComposable {
     },
 
     // Laden von Nachrichten mit optionalem Session-Parameter
-    loadMessages: async (sessionId?) => {
-      if (typeof originalChat.loadMessages === "function") {
-        if (originalChat.loadMessages.length === 0) {
-          return originalChat.loadMessages();
-        } else {
-          return originalChat.loadMessages(sessionId);
-        }
-      }
+    loadMessages: async (sessionId?: string) => {
+      // loadMessages ist nicht Teil des UseChatReturn Interface
+      // Diese Methode existiert nicht im aktuellen useChat
 
       // Fallback für fehlende Methode
       console.warn("loadMessages nicht verfügbar");
@@ -106,14 +94,9 @@ export function useChatAdapter(): EnhancedChatComposable {
     },
 
     // Bearbeiten einer Nachricht
-    editMessage: async (messageId, content, sessionId?) => {
-      if (typeof originalChat.editMessage === "function") {
-        if (originalChat.editMessage.length === 2) {
-          return originalChat.editMessage(messageId, content);
-        } else {
-          return originalChat.editMessage(messageId, content, sessionId);
-        }
-      }
+    editMessage: async (messageId: string, content: string, sessionId?: string) => {
+      // editMessage ist nicht Teil des UseChatReturn Interface
+      // Diese Methode existiert nicht im aktuellen useChat
 
       // Fallback für fehlende Methode
       console.log(`Editing message ${messageId} with content: ${content}`);
@@ -121,14 +104,9 @@ export function useChatAdapter(): EnhancedChatComposable {
     },
 
     // Wiederholung einer Nachricht
-    retryMessage: async (messageId, sessionId?) => {
-      if (typeof originalChat.retryMessage === "function") {
-        if (originalChat.retryMessage.length === 1) {
-          return originalChat.retryMessage(messageId);
-        } else if (sessionId) {
-          return originalChat.retryMessage(messageId, sessionId);
-        }
-      }
+    retryMessage: async (messageId: string, sessionId?: string) => {
+      // retryMessage ist nicht Teil des UseChatReturn Interface
+      // Diese Methode existiert nicht im aktuellen useChat
 
       // Fallback für fehlende Methode
       console.log(`Retrying message ${messageId}`);
@@ -137,8 +115,10 @@ export function useChatAdapter(): EnhancedChatComposable {
 
     // Stoppen der Nachrichtengenerierung
     stopGeneration: () => {
-      if (typeof originalChat.stopGeneration === "function") {
-        originalChat.stopGeneration();
+      // stopGeneration ist nicht Teil des UseChatReturn Interface
+      // Verwende cancelStream stattdessen
+      if (typeof originalChat.cancelStream === "function") {
+        originalChat.cancelStream();
       } else {
         console.log("Stopping message generation");
       }

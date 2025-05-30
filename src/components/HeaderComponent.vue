@@ -63,27 +63,29 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, inject } from "vue";
-import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 import { useAuth } from "@/composables/useAuth";
 import { useSettings } from "@/composables/useSettings";
+import { useAuthStore } from "@/stores/auth";
+import { useSessionsStore } from "@/stores/sessions";
 
-const store = useStore();
 const router = useRouter();
+const authStore = useAuthStore();
+const sessionsStore = useSessionsStore();
 const { logout: authLogout } = useAuth();
 const { toggleTheme } = useSettings();
 
 const isDarkTheme = inject("isDarkTheme") as unknown as boolean;
 
 const showSettingsMenu = ref(false);
-const isAdmin = computed(() => store.getters["auth/isAdmin"]);
+const isAdmin = computed(() => authStore.isAdmin);
 
 function toggleSettingsMenu() {
   showSettingsMenu.value = !showSettingsMenu.value;
 }
 
-function createNewSession() {
-  store.dispatch("sessions/createSession");
+async function createNewSession() {
+  await sessionsStore.createSession();
 }
 
 function navigateToAdmin() {

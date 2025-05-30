@@ -114,3 +114,34 @@ export interface FeatureTogglesState {
   error: string | null;
   metrics: Record<string, FeatureMetrics>;
 }
+
+/**
+ * Feature Toggle Error
+ */
+export interface FeatureToggleError {
+  code: string;
+  message: string;
+  feature?: string;
+  details?: any;
+}
+
+/**
+ * Feature Toggle Status
+ */
+export interface FeatureToggleStatus {
+  enabled: boolean;
+  available: boolean;
+  reason?: string;
+}
+
+/**
+ * Feature Config
+ */
+export interface FeatureConfig {
+  [key: string]: boolean | string | number | object;
+}
+
+/**
+ * Feature Toggle Role
+ */
+export type FeatureToggleRole = 'admin' | 'user' | 'developer' | 'guest';

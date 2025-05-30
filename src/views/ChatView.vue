@@ -634,7 +634,8 @@
   </div>
   
   <!-- Streaming Debug Panel for Development -->
-  <StreamingDebugPanel v-if="isDevelopment" />
+  <!-- StreamingDebugPanel removed - component not found -->
+  <!-- <StreamingDebugPanel v-if="isDevelopment" /> -->
 </template>
 
 <script setup lang="ts">
@@ -663,7 +664,7 @@ import type {
 import MessageList from "@/components/chat/MessageList.vue";
 import MessageInput from "@/components/chat/MessageInput.vue";
 import SessionList from "@/components/session/SessionList.vue";
-import StreamingDebugPanel from "@/components/debug/StreamingDebugPanel.vue";
+// import StreamingDebugPanel from "@/components/debug/StreamingDebugPanel.vue"; // Component not found
 
 // Diagnostics Setup
 const { captureError, trackDataLoad, trackLifecycle, exportToConsole } =

@@ -48,6 +48,7 @@
     "src/**/*.d.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
+    "src/types/global.d.ts",
     "shared/**/*.ts",
     "shared/**/*.d.ts"
   ],

@@ -763,10 +763,10 @@ class MockDocumentConverterService implements IDocumentConverterService {
         originalName: "Beispiel-Dokument.pdf",
         originalFormat: "pdf",
         size: 1024 * 1024 * 2.7, // 2.7 MB
-        uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 Tage alt
+        uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).getTime(), // 3 Tage alt
         convertedAt: new Date(
           Date.now() - 1000 * 60 * 60 * 24 * 3 + 1000 * 60 * 2,
-        ), // 2 Minuten nach Upload
+        ).getTime(), // 2 Minuten nach Upload
         status: "completed",
         content: "Dies ist der Inhalt des Beispiel-Dokuments...",
         metadata: {
@@ -782,8 +782,8 @@ class MockDocumentConverterService implements IDocumentConverterService {
         originalName: "Tabellendaten.xlsx",
         originalFormat: "xlsx",
         size: 1024 * 512, // 512 KB
-        uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 Tag alt
-        convertedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 + 1000 * 60 * 1), // 1 Minute nach Upload
+        uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24).getTime(), // 1 Tag alt
+        convertedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 + 1000 * 60 * 1).getTime(), // 1 Minute nach Upload
         status: "completed",
         content: "Extrahierte Tabellendaten...",
         metadata: {
@@ -807,7 +807,7 @@ class MockDocumentConverterService implements IDocumentConverterService {
         originalName: "Fehlerhaftes-Dokument.docx",
         originalFormat: "docx",
         size: 1024 * 1024 * 1.2, // 1.2 MB
-        uploadedAt: new Date(Date.now() - 1000 * 60 * 30), // 30 Minuten alt
+        uploadedAt: new Date(Date.now() - 1000 * 60 * 30).getTime(), // 30 Minuten alt
         status: "failed",
         error:
           "Das Dokument ist passwortgeschützt und konnte nicht konvertiert werden.",
@@ -817,7 +817,7 @@ class MockDocumentConverterService implements IDocumentConverterService {
         originalName: "Wird-gerade-verarbeitet.pptx",
         originalFormat: "pptx",
         size: 1024 * 1024 * 5.4, // 5.4 MB
-        uploadedAt: new Date(Date.now() - 1000 * 60 * 5), // 5 Minuten alt
+        uploadedAt: new Date(Date.now() - 1000 * 60 * 5).getTime(), // 5 Minuten alt
         status: "processing",
       },
     ];
@@ -884,7 +884,7 @@ class MockDocumentConverterService implements IDocumentConverterService {
       originalName: file.name,
       originalFormat: fileExtension,
       size: file.size,
-      uploadedAt: new Date(),
+      uploadedAt: new Date().getTime(),
       status: "pending",
     });
 
@@ -970,7 +970,7 @@ class MockDocumentConverterService implements IDocumentConverterService {
 
     // Erfolgreiche Konvertierung
     this.mockDocuments[docIndex].status = "completed";
-    this.mockDocuments[docIndex].convertedAt = new Date();
+    this.mockDocuments[docIndex].convertedAt = new Date().getTime();
     this.mockDocuments[docIndex].content =
       `Dies ist der konvertierte Inhalt des Dokuments ${this.mockDocuments[docIndex].originalName}...`;
 

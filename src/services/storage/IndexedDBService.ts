@@ -1132,25 +1132,25 @@ export const defaultIndexedDBService = new IndexedDBService({
       name: "sessions",
       keyPath: "id",
       indices: [
-        { name: "createdAt", _keyPath: "createdAt" },
-        { name: "updatedAt", _keyPath: "updatedAt" },
+        { name: "createdAt", keyPath: "createdAt" },
+        { name: "updatedAt", keyPath: "updatedAt" },
       ],
     },
     {
       name: "messages",
       keyPath: "id",
       indices: [
-        { name: "sessionId", _keyPath: "sessionId" },
-        { name: "sessionAndTimestamp", _keyPath: ["sessionId", "timestamp"] },
+        { name: "sessionId", keyPath: "sessionId" },
+        { name: "sessionAndTimestamp", keyPath: ["sessionId", "timestamp"] },
       ],
     },
     {
       name: "documents",
       keyPath: "id",
       indices: [
-        { name: "filename", _keyPath: "filename" },
-        { name: "uploadedAt", _keyPath: "uploadedAt" },
-        { name: "status", _keyPath: "status" },
+        { name: "filename", keyPath: "filename" },
+        { name: "uploadedAt", keyPath: "uploadedAt" },
+        { name: "status", keyPath: "status" },
       ],
     },
     {
@@ -1158,10 +1158,10 @@ export const defaultIndexedDBService = new IndexedDBService({
       keyPath: "id",
       autoIncrement: true,
       indices: [
-        { name: "timestamp", _keyPath: "timestamp" },
-        { name: "url", _keyPath: "url" },
-        { name: "method", _keyPath: "method" },
-        { name: "status", _keyPath: "status" },
+        { name: "timestamp", keyPath: "timestamp" },
+        { name: "url", keyPath: "url" },
+        { name: "method", keyPath: "method" },
+        { name: "status", keyPath: "status" },
       ],
     },
     {

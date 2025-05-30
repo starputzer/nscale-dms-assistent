@@ -265,7 +265,7 @@ export function initializeApiServices(): void {
 
           return config;
         },
-        (error) => {
+        (error: Error | unknown) => {
           console.error("Request interceptor error:", error);
           return Promise.reject(error);
         },

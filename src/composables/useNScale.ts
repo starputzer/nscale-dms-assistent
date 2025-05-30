@@ -3,7 +3,6 @@ import { useChat } from "./useChat";
 import { useUI } from "./useUI";
 import { useSettings } from "./useSettings";
 import { useFeatureToggles } from "./useFeatureToggles";
-import { useBridge } from "../bridge";
 
 /**
  * Hauptkomposable für nscale-Funktionalität
@@ -18,7 +17,6 @@ export function useNScale() {
   const ui = useUI();
   const settings = useSettings();
   const features = useFeatureToggles();
-  const { bus, isEnabled: bridgeEnabled } = useBridge();
 
   // Hilfsfunktion zur Prüfung, ob ein Feature aktiviert ist
   function isFeatureEnabled(featureName: string): boolean {
@@ -81,10 +79,6 @@ export function useNScale() {
     ui,
     settings,
     features,
-    bridge: {
-      bus,
-      enabled: bridgeEnabled,
-    },
 
     // Zusätzliche Hilfsfunktionen
     isFeatureEnabled,

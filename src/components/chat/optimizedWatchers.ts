@@ -3,10 +3,8 @@ import {
   watch,
   computed,
   ComputedRef,
-  WatchOptions,
-  WatchSource,
-  WatchStopHandle,
 } from "vue";
+import type { WatchOptions, WatchSource, WatchStopHandle } from "vue";
 import { debounce, throttle } from "./watchHelpers";
 
 /**
@@ -149,7 +147,7 @@ export function useSelectiveWatch<T extends Record<string, any>>(
   // Erstelle den Watcher mit einer Wrapper-Funktion, die nur bestimmte Pfade vergleicht
   const stopHandle = watch(
     source,
-    (newValue, oldValue) => {
+    (newValue: any, oldValue: any) => {
       if (!oldValue) {
         // Wenn es keinen alten Wert gibt (z.B. bei immediate: true),
         // rufe callback mit allen Pfaden auf
@@ -163,7 +161,7 @@ export function useSelectiveWatch<T extends Record<string, any>>(
       }
 
       // Finde die geänderten Pfade
-      const changedPaths = pathsToWatch.filter((path: any) => {
+      const changedPaths = pathsToWatch.filter((path) => {
         const pathParts = path.split(".");
         let newValueAtPath = newValue;
         let oldValueAtPath = oldValue;
@@ -243,10 +241,10 @@ export function useBatchWatch<T extends any[]>(
   const previousValues: any[] = [];
 
   // Erstelle separate Watcher für jede Quelle
-  const stopHandles = sources.map((source, index: any) => {
+  const stopHandles = sources.map((source, index) => {
     return watch(
       source,
-      (newValue, oldValue) => {
+      (newValue: any, oldValue: any) => {
         // Aktualisiere die aktuellen Werte
         latestValues[index] = newValue;
         previousValues[index] = oldValue;
@@ -284,7 +282,7 @@ export function useBatchWatch<T extends any[]>(
 
   // Kombinierte Stop-Funktion
   return () => {
-    stopHandles.forEach((stop: any) => stop());
+    stopHandles.forEach((stop) => stop());
     if (batchTimeout) {
       clearTimeout(batchTimeout);
     }
@@ -547,7 +545,7 @@ export function useMessageStreamingWatch<T extends Array<any>>(
     try {
       if (!oldMessages || oldMessages.length === 0) {
         // Initialer Aufruf, alle Nachrichten als hinzugefügt markieren
-        const changes = messages.map((item, index: any) => ({
+        const changes = messages.map((item, index) => ({
           type: "add" as const,
           index,
           item,
@@ -565,7 +563,7 @@ export function useMessageStreamingWatch<T extends Array<any>>(
       }[] = [];
 
       // Erkenne Hinzufügungen und Aktualisierungen
-      messages.forEach((item, index: any) => {
+      messages.forEach((item, index) => {
         if (index >= previousMessages.length) {
           // Neue Nachricht am Ende
           changes.push({ type: "add", index, item });
@@ -608,7 +606,7 @@ export function useMessageStreamingWatch<T extends Array<any>>(
   // Watcher mit intelligenter Steuerung
   const stopHandle = watch(
     messageSource,
-    (messages, oldMessages) => {
+    (messages: any, oldMessages: any) => {
       throttledCallback(messages, oldMessages as T);
     },
     { deep: true },
@@ -776,7 +774,7 @@ export function useLazyComputedWatch<S, R>(
   // Erstelle den Watcher
   const stopWatch = watch(
     source,
-    async (value) => {
+    async (value: any) => {
       sourceValue.value = value;
 
       // Entscheide, ob Berechnung ausgeführt werden soll
@@ -910,13 +908,13 @@ export function useSelfOptimizingWatch<T>(
     if (updateIntervals.length < 2) return;
 
     // Berechne Durchschnittsintervall und Varianz
-    const sum = updateIntervals.reduce((a: any, b) => a + b, 0);
+    const sum = updateIntervals.reduce((a, b) => a + b, 0);
     const avg = sum / updateIntervals.length;
 
     // Berechne Varianz zur Bestimmung der Regelmäßigkeit
     const variance =
       updateIntervals.reduce(
-        (acc: any, val) => acc + Math.pow(val - avg, 2),
+        (acc, val) => acc + Math.pow(val - avg, 2),
         0,
       ) / updateIntervals.length;
 
@@ -1079,7 +1077,7 @@ export function useSelfOptimizingWatch<T>(
   // Watcher mit adaptiver Strategie
   const stopHandle = watch(
     source,
-    (value, oldValue) => {
+    (value: any, oldValue: any) => {
       // Aktualisiere Timing-Informationen
       const now = Date.now();
       const interval = now - lastUpdateTime;
@@ -1134,17 +1132,18 @@ export function useAutoCleanupWatch<T>(
 
   const stopHandle = watch(
     source,
-    async (value, oldValue) => {
-      try {
-        // Erstelle eine neue Aufgabe
-        const task = Promise.resolve().then(() =>
-          callback(value, oldValue as T),
-        );
-        pendingTasks.add(task);
+    async (value: any, oldValue: any) => {
+      // Erstelle eine neue Aufgabe
+      const task = Promise.resolve().then(() =>
+        callback(value, oldValue as T),
+      );
+      pendingTasks.add(task);
 
-        // Warte auf Abschluss und entferne dann
+      try {
+        // Warte auf Abschluss
         await task;
       } finally {
+        // Entferne die Aufgabe aus der Liste
         pendingTasks.delete(task);
       }
     },

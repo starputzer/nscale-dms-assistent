@@ -149,8 +149,10 @@ export interface ISessionsStore extends IBaseStore<SessionsState> {
   // Session Management Actions
   createSession(title?: string): Promise<string>;
   setCurrentSession(sessionId: string): Promise<void>;
-  updateSessionTitle(sessionId: string, newTitle: string): Promise<void>;
+  clearCurrentSession(): void;
+  updateSessionTitle(sessionId: string, newTitle?: string): Promise<void>;
   archiveSession(sessionId: string): Promise<void>;
+  deleteSession(sessionId: string): Promise<void>;
   togglePinSession(sessionId: string): Promise<void>;
 
   // Message Actions
@@ -227,11 +229,15 @@ export interface IAuthStore extends IBaseStore<AuthState> {
   readonly expiresAt: number | null;
   readonly tokenRefreshInProgress: boolean;
   readonly lastTokenRefresh: number;
+  readonly permissions: Set<string>;
 
   // Computed
-  readonly userRole: UserRole;
+  readonly isAdmin: boolean;
+  readonly userRole: string;
   readonly username: string | null;
   readonly userId: string | null;
+  readonly isExpired: boolean;
+  readonly tokenExpiresIn: number;
   readonly tokenStatus:
     | "valid"
     | "expiring"
@@ -240,15 +246,31 @@ export interface IAuthStore extends IBaseStore<AuthState> {
     | "missing";
 
   // Methods
-  login(credentials: LoginCredentials): Promise<void>;
-  register(credentials: RegisterCredentials): Promise<void>;
-  logout(): void;
-  refreshToken(): Promise<void>;
-  updateUser(userData: Partial<User>): Promise<void>;
+  login(credentials: LoginCredentials | string): Promise<boolean>;
+  register(credentials: RegisterCredentials): Promise<boolean>;
+  logout(): Promise<void>;
+  refreshTokenIfNeeded(): Promise<boolean>;
+  refreshUserInfo(): Promise<boolean>;
+  updateUserPreferences(preferences: Record<string, any>): Promise<boolean>;
   hasPermission(permission: string): boolean;
-  hasRole(role: Role | Role[]): boolean;
-  validateToken(): Promise<boolean>;
-  getAuthHeader(): Record<string, string>;
+  hasAnyPermission(permissions: string[]): boolean;
+  hasRole(role: Role): boolean;
+  hasAnyRole(roles: Role[]): boolean;
+  checkPermission(permission: string): any;
+  validateToken(token: string): boolean;
+  validateCurrentToken(): Promise<boolean>;
+  createAuthHeaders(): Record<string, string>;
+  initialize(): Promise<void>;
+  cleanup(): void;
+  setToken(token: string): Promise<boolean>;
+  setError(error: string | null): void;
+  restoreAuthSession(): Promise<boolean>;
+  persistAuthData(): void;
+  migrateFromLegacyStorage(): void;
+  extractPermissionsFromRoles(roles: string[]): void;
+  configureHttpClients(token: string | null): void;
+  removeHttpInterceptors(): void;
+  $reset(): void;
 }
 
 // ====================

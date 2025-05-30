@@ -4,6 +4,22 @@
  * Diese Datei definiert globale Typen für die Anwendung
  */
 
+// Event types
+declare type EventCallback = (...args: any[]) => void | Promise<void>;
+declare type UnsubscribeFn = () => void;
+
+// Utility types
+declare type AnyFunction = (...args: any[]) => any;
+declare type AsyncFunction = (...args: any[]) => Promise<any>;
+
+// Common parameter types  
+declare type ErrorHandler = (error: Error | unknown) => void;
+declare type ValueOrGetter<T> = T | (() => T);
+
+// Index signature helpers
+declare type StringIndex<T = any> = { [key: string]: T };
+declare type NumberIndex<T = any> = { [key: number]: T };
+
 // Vue-spezifische Typen
 declare module "vue" {
   export interface GlobalProperties {

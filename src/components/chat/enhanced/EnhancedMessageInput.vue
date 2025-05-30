@@ -731,7 +731,8 @@ function togglePreview(): void {
         ".n-enhanced-message-input__preview-content",
       );
       if (previewElement) {
-        highlightCode(previewElement as HTMLElement);
+        // Use async highlighting
+        highlightCode(previewElement as HTMLElement).catch(console.error);
       }
     });
   }

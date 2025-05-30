@@ -1,9 +1,11 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import path from "path";
+import { optimizeImports } from "./vite-plugin-optimize-imports.js";
 
 export default defineConfig({
   plugins: [
+    optimizeImports(),
     vue(),
     {
       name: 'html-transform',
@@ -58,7 +60,7 @@ export default defineConfig({
             "@vuelidate/core",
             "@vuelidate/validators",
           ],
-          bridge: ["./src/bridge/index.ts"],
+          // bridge removed
           ui: ["./src/components/ui"],
         },
       },

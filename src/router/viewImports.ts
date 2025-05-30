@@ -11,7 +11,8 @@ export const viewImports = {
   AdminView: () => import("@/views/AdminView.vue"),
   SettingsView: () => import("@/views/SettingsView.vue"),
   AuthView: () => import("@/views/AuthView.vue"),
-  EnhancedChatView: () => import("@/views/EnhancedChatView.vue"),
+  // EnhancedChatView removed - use ChatView instead
+  EnhancedChatView: () => import("@/views/ChatView.vue"),
   EnhancedLoginView: () => import("@/views/EnhancedLoginView.vue"),
   LoginView: () => import("@/views/LoginView.vue"),
   ErrorView: () => import("@/views/ErrorView.vue"),
