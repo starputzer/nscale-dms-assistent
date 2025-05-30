@@ -40,11 +40,7 @@ export default defineConfig({
         '**/*.spec.ts',
         '**/*.test.ts',
         '**/types/**',
-        '**/*.d.ts',
-        'src/stores/sessions.optimized.ts',
-        'src/stores/settings.optimized.ts',
-        'src/main.simple.ts',
-        'src/main.optimized.ts'
+        '**/*.d.ts'
       ]
     },
     reporters: ['default']
