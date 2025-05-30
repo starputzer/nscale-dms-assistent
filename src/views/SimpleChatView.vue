@@ -243,8 +243,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useSessionsStore } from "@/stores/sessions";
 import { useMotdStore } from "@/stores/admin/motd";
-import { marked } from "marked";
-import DOMPurify from "dompurify";
+import { renderMarkdown } from "@/utils/markdownRenderer";
 import axios from "axios";
 
 const route = useRoute();
@@ -333,8 +332,15 @@ const sendMessage = async () => {
 
 const formatMessage = (text: string) => {
   if (!text) return "";
-  const html = marked(text);
-  return DOMPurify.sanitize(html);
+  // For now, use basic HTML formatting until async rendering is supported
+  // TODO: Implement async message rendering with renderMarkdown
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/\n/g, '<br>');
 };
 
 const formatTime = (timestamp: string) => {
