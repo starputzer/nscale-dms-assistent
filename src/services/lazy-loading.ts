@@ -42,6 +42,11 @@ const componentRegistry = {
     import("@/components/chat/enhanced/VirtualMessageList.vue"),
   RichEditor: () => import("@/components/ui/base/TextArea.vue"),
   ChartComponent: () => import("@/components/monitoring/charts/UsageChart.vue"),
+  
+  // UI base components that should be preloaded
+  Input: () => import("@/components/ui/base/Input.vue"),
+  Toast: () => import("@/components/ui/Toast.vue"),
+  Dialog: () => import("@/components/ui/Dialog.vue"),
 
   // Feature Komponenten (momentan auskommentiert, da sie nicht existieren)
   // 'UserProfile': () => import('@/components/features/UserProfile.vue'),
@@ -87,6 +92,7 @@ export function lazyLoadComponent(name: string): Component {
       } else {
         console.error(
           `Failed to load component ${name} after ${attempts} attempts`,
+          error, // Log the actual error to help debugging
         );
         fail();
       }
