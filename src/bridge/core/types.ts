@@ -55,6 +55,15 @@ export interface BridgeConfig {
 
   /** Diagnostics configuration */
   diagnostics?: DiagnosticsConfig;
+  
+  /** Enable fallback mechanisms */
+  FALLBACK_ENABLED?: boolean;
+  
+  /** Error tolerance level */
+  ERROR_TOLERANCE?: 'low' | 'medium' | 'high';
+  
+  /** Maximum retry attempts for failed operations */
+  MAX_RETRY_ATTEMPTS?: number;
 }
 
 /**

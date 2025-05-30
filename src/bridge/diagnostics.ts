@@ -10,7 +10,7 @@
  * - bridge/performance.ts
  */
 
-import { BridgeLogger } from "./core/logger";
+import { bridgeLogger } from "./core/logger";
 import type {
   DiagnosticsConfig,
   BridgeComponentStatus,
@@ -21,7 +21,7 @@ import type {
 import { success, failure } from "./core/results";
 
 // Create module-specific logger
-const logger = new BridgeLogger("diagnostics");
+const logger = bridgeLogger.namespace("diagnostics");
 
 /**
  * Diagnostics module state
@@ -139,7 +139,7 @@ export function initDiagnostics(
     ...config,
   };
 
-  logger.info("Initializing diagnostics module", mergedConfig);
+  logger.info("Initializing diagnostics module", JSON.stringify(mergedConfig));
 
   // Initialize state
   const state: DiagnosticsState = {
@@ -193,11 +193,11 @@ export function initDiagnostics(
           const newest = memory;
 
           if (newest - oldest > memoryIncreaseThreshold) {
-            logger.warn("Potential memory leak detected", {
+            logger.warn("Potential memory leak detected", JSON.stringify({
               oldestMB: Math.round(oldest / (1024 * 1024)),
               newestMB: Math.round(newest / (1024 * 1024)),
               diffMB: Math.round((newest - oldest) / (1024 * 1024)),
-            });
+            }));
 
             // Emit memory warning event
             eventBus.emit("bridge:memoryWarning", {
@@ -211,7 +211,7 @@ export function initDiagnostics(
 
       state.metrics.lastMemoryCheck = now;
     } catch (error) {
-      logger.error("Error during memory monitoring", error);
+      logger.error("Error during memory monitoring", error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -271,10 +271,10 @@ export function initDiagnostics(
             // Check for slow event processing
             if (processingTime > 50) {
               // 50ms threshold
-              logger.warn("Slow event processing detected", {
+              logger.warn("Slow event processing detected", JSON.stringify({
                 eventType: payload.type,
                 processingTime: processingTime,
-              });
+              }));
             }
           }
         }
@@ -308,10 +308,10 @@ export function initDiagnostics(
             // Check for slow state updates
             if (updateTime > 50) {
               // 50ms threshold
-              logger.warn("Slow state update detected", {
+              logger.warn("Slow state update detected", JSON.stringify({
                 storeName: payload.storeName,
                 updateTime: updateTime,
-              });
+              }));
             }
           }
         }
@@ -442,7 +442,7 @@ export function initDiagnostics(
       }
 
       // Log error
-      logger.error("Bridge error detected", error);
+      logger.error("Bridge error detected", error instanceof Error ? error.message : String(error));
     });
 
     state.subscriptions.push(errorSub);
@@ -583,7 +583,7 @@ export function initDiagnostics(
     };
 
     state.componentStatus.set(name, status);
-    logger.debug("Component registered", { name, status: status.status });
+    logger.debug("Component registered", JSON.stringify({ name, status: status.status }));
   }
 
   /**

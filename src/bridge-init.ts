@@ -158,19 +158,19 @@ function setupCriticalFunctions() {
 
     // Minimale Event-Bus-Implementierung
     if (!window.nscaleFallback.eventBus) {
-      const events = {};
+      const events: Record<string, Array<(data: any) => void>> = {};
 
       window.nscaleFallback.eventBus = {
-        on: (event, callback) => {
+        on: (event: string, callback: (data: any) => void) => {
           if (!events[event]) events[event] = [];
           events[event].push(callback);
           return () => {
             events[event] = events[event].filter((cb) => cb !== callback);
           };
         },
-        emit: (event, data) => {
+        emit: (event: string, data?: any) => {
           if (!events[event]) return;
-          events[event].forEach((callback) => {
+          events[event].forEach((callback: (data: any) => void) => {
             try {
               callback(data);
             } catch (e) {
