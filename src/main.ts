@@ -217,11 +217,12 @@ const initApp = async () => {
   }
 };
 
-// Mount app and then initialize
-app.mount("#app");
-
-// Initialize after mounting to ensure DOM is ready
-initApp().catch((error) => {
+// Initialize app before mounting
+initApp().then(() => {
+  // Mount app after initialization is complete
+  app.mount("#app");
+  console.log("App mounted successfully");
+}).catch((error) => {
   console.error("Critical initialization error:", error);
   // Show error to user in UI if possible
   const root = document.getElementById("app");

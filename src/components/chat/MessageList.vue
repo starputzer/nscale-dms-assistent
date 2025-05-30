@@ -1128,6 +1128,56 @@ defineExpose({
   padding: var(--nscale-space-8, 2rem);
 }
 
+/* MOTD Styling */
+.n-message-list__motd {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.motd-display {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.motd-content {
+  font-size: var(--nscale-font-size-sm, 0.875rem);
+  line-height: 1.5;
+}
+
+.motd-content h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.motd-content p {
+  margin: 0.5rem 0;
+}
+
+.motd-content ul {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.motd-dismiss-btn {
+  transition: all 0.2s ease;
+}
+
+.motd-dismiss-btn:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(-10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
 .n-message-list__logo {
   width: 80px;
   height: 80px;

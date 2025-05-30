@@ -3,7 +3,16 @@ import vue from "@vitejs/plugin-vue";
 import path from "path";
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    {
+      name: 'html-transform',
+      transformIndexHtml(html) {
+        return html;
+      }
+    }
+  ],
+  appType: 'spa',
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -56,7 +65,8 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000,
+    port: 5173,
+    middlewareMode: false,
     proxy: {
       "/api": {
         target: "http://localhost:8080",

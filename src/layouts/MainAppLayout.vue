@@ -300,8 +300,10 @@ watch(
       currentView.value = "chat";
       // Sync conversation ID from route params
       const id = route.params.id as string;
-      if (id) {
+      if (id && id !== currentConversationId.value) {
         currentConversationId.value = id;
+        // Also sync with store
+        sessionsStore.setCurrentSession(id);
       }
     } else if (newPath.startsWith("/help")) {
       currentView.value = "help";
@@ -397,9 +399,9 @@ const goToChat = () => {
 };
 
 const createNewChat = async () => {
-  const session = await sessionsStore.createSession();
-  currentConversationId.value = session.id;
-  router.push(`/chat/${session.id}`);
+  const sessionId = await sessionsStore.createSession();
+  currentConversationId.value = sessionId;
+  await router.push(`/chat/${sessionId}`);
 };
 
 const selectConversation = async (id: string) => {
@@ -413,7 +415,7 @@ const selectConversation = async (id: string) => {
   await sessionsStore.setCurrentSession(id);
   
   // Then navigate to the route
-  router.push(`/chat/${id}`);
+  await router.push(`/chat/${id}`);
 };
 
 const deleteConversation = async (id: string) => {
@@ -447,7 +449,7 @@ const handleClickOutside = (event: MouseEvent) => {
 onMounted(() => {
   document.addEventListener("click", handleClickOutside);
   // Load conversations
-  sessionsStore.synchronizeSessions();
+  // sessionsStore.synchronizeSessions();
 });
 
 onBeforeUnmount(() => {

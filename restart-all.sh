@@ -25,7 +25,7 @@ npm run dev &
 echo ""
 echo "All servers restarted!"
 echo ""
-echo "Backend running on: http://localhost:8000"
+echo "Backend running on: http://localhost:8080"
 echo "Frontend running on: http://localhost:5173"
 echo ""
 echo "Open http://localhost:5173 in your browser"

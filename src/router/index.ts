@@ -81,7 +81,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: "chat/:id",
-        name: "Chat", // Use same name to prevent remounting
+        name: "ChatWithId",
         component: SimpleChatView,
       },
 
