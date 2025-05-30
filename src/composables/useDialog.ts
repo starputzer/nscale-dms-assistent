@@ -1,4 +1,4 @@
-import { ref, shallowRef, markRaw } from "vue";
+import { ref, shallowRef } from "vue";
 
 export type DialogType =
   | "info"

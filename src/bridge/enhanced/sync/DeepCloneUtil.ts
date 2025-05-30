@@ -694,8 +694,8 @@ function equalRecursive(
 
   // Undefinierte Eigenschaften ignorieren, falls aktiviert
   if (options.ignoreUndefinedProperties) {
-    const filteredPropsA = propsA.filter((prop) => a[prop] !== undefined);
-    const filteredPropsB = propsB.filter((prop) => b[prop] !== undefined);
+    const filteredPropsA = propsA.filter((prop: any) => a[prop] !== undefined);
+    const filteredPropsB = propsB.filter((prop: any) => b[prop] !== undefined);
 
     // Aktualisierte Eigenschaftslisten verwenden
     propsA.length = 0;
@@ -833,7 +833,9 @@ function hashRecursive(
   // Arrays
   if (Array.isArray(value)) {
     const arrayHash = value
-      .map((item, index) => hashRecursive(item, visited, depth + 1, maxDepth))
+      .map((item, index: any) =>
+        hashRecursive(item, visited, depth + 1, maxDepth),
+      )
       .join(",");
 
     return `array:[${arrayHash}]`;
@@ -842,7 +844,7 @@ function hashRecursive(
   // Maps
   if (value instanceof Map) {
     const mapEntries = Array.from(value.entries())
-      .map(([k, v]) => {
+      .map(([k, v]: any) => {
         const keyHash = hashRecursive(k, visited, depth + 1, maxDepth);
         const valueHash = hashRecursive(v, visited, depth + 1, maxDepth);
         return `${keyHash}=>${valueHash}`;
@@ -855,7 +857,7 @@ function hashRecursive(
   // Sets
   if (value instanceof Set) {
     const setItems = Array.from(value)
-      .map((item) => hashRecursive(item, visited, depth + 1, maxDepth))
+      .map((item: any) => hashRecursive(item, visited, depth + 1, maxDepth))
       .join(",");
 
     return `set:{${setItems}}`;
@@ -865,7 +867,7 @@ function hashRecursive(
   const props = Object.keys(value).sort(); // Sortieren für Konsistenz
 
   const objHash = props
-    .map((prop) => {
+    .map((prop: any) => {
       try {
         const propValue = value[prop];
         const propHash = hashRecursive(propValue, visited, depth + 1, maxDepth);

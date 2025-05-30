@@ -75,7 +75,7 @@ export class PolyfillFinalizationRegistry<T> {
 
   unregister(unregisterToken: object): void {
     // Use Array.from to avoid compatibility issues with Map iterators
-    Array.from(this.registry.entries()).forEach(([key, entry]) => {
+    Array.from(this.registry.entries()).forEach(([key, entry]: any) => {
       if (entry.unregisterToken === unregisterToken) {
         this.registry.delete(key);
       }
@@ -99,7 +99,7 @@ export class PolyfillFinalizationRegistry<T> {
    */
   cleanupAll(): void {
     // Use Array.from to avoid compatibility issues with Map iterators
-    Array.from(this.registry.entries()).forEach(([target, entry]) => {
+    Array.from(this.registry.entries()).forEach(([target, entry]: any) => {
       this.callback(entry.value);
       this.registry.delete(target);
     });

@@ -537,7 +537,7 @@ export function useFeatureToggles(options: FeatureToggleOptions = {}) {
       experimentalFeatures: [],
     };
 
-    Object.entries(unref(featureConfigs)).forEach(([key, config]) => {
+    Object.entries(unref(featureConfigs)).forEach(([key, config]: any) => {
       const group = config.group || "experimentalFeatures";
       groups[group].push({
         ...config,

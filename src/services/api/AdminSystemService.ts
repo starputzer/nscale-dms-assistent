@@ -89,12 +89,12 @@ export class AdminSystemService implements IAdminSystemService {
       // Sicherstellen, dass wir gültige Daten haben, selbst wenn die Response unvollständig ist
       const mockData = await adminMockService.getMockResponse("/admin/stats");
       const data = response?.data?.stats || response?.data || mockData;
-      
+
       return {
         success: true,
         data: data,
         message: "Systemstatistiken erfolgreich abgerufen",
-        _isMockData: response?._isMockData || false
+        _isMockData: response?._isMockData || false,
       };
     } catch (error) {
       this.logger.error("Fehler beim Abrufen der Systemstatistiken", error);
@@ -102,9 +102,11 @@ export class AdminSystemService implements IAdminSystemService {
       // Fallback: Bei echten API-Fehlern trotzdem sinnvolle Daten liefern
       try {
         const mockData = await adminMockService.getMockResponse("/admin/stats");
-        
-        this.logger.info("Fallback zu Mock-Daten nach API-Fehler für Systemstatistiken");
-        
+
+        this.logger.info(
+          "Fallback zu Mock-Daten nach API-Fehler für Systemstatistiken",
+        );
+
         return {
           success: true, // Wir geben Erfolg zurück, um die UI nicht zu stören
           data: mockData,
@@ -113,13 +115,17 @@ export class AdminSystemService implements IAdminSystemService {
           _hadError: true,
           error: {
             code: "SYSTEM_STATS_ERROR",
-            message: error instanceof Error ? error.message : "Unbekannter Fehler",
+            message:
+              error instanceof Error ? error.message : "Unbekannter Fehler",
           },
         };
       } catch (fallbackError) {
         // Wenn sogar der Fallback fehlschlägt, geben wir den ursprünglichen Fehler zurück
-        this.logger.error("Auch Fallback zu Mock-Daten fehlgeschlagen", fallbackError);
-        
+        this.logger.error(
+          "Auch Fallback zu Mock-Daten fehlgeschlagen",
+          fallbackError,
+        );
+
         return {
           success: false,
           message:
@@ -491,13 +497,15 @@ export class AdminSystemService implements IAdminSystemService {
         const response = await cachedApiService.get<any>(
           apiConfig.ENDPOINTS.SYSTEM.SETTINGS || "/admin/settings",
           undefined,
-          { cache: true, cacheTTL: 300 }
+          { cache: true, cacheTTL: 300 },
         );
 
         if (response.success) {
           return response;
         } else {
-          throw new Error(response.message || "Fehler beim Abrufen der Systemeinstellungen");
+          throw new Error(
+            response.message || "Fehler beim Abrufen der Systemeinstellungen",
+          );
         }
       }
 
@@ -522,10 +530,14 @@ export class AdminSystemService implements IAdminSystemService {
       this.logger.error("Fehler beim Abrufen der Systemeinstellungen", error);
       return {
         success: false,
-        message: error instanceof Error ? error.message : "Fehler beim Abrufen der Systemeinstellungen",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Fehler beim Abrufen der Systemeinstellungen",
         error: {
           code: "SETTINGS_ERROR",
-          message: error instanceof Error ? error.message : "Unbekannter Fehler",
+          message:
+            error instanceof Error ? error.message : "Unbekannter Fehler",
         },
       };
     }
@@ -541,15 +553,19 @@ export class AdminSystemService implements IAdminSystemService {
 
         const response = await apiService.put<void>(
           apiConfig.ENDPOINTS.SYSTEM.SETTINGS || "/admin/settings",
-          settings
+          settings,
         );
 
         if (response.success) {
           // Cache invalidieren nach Update
-          await cachedApiService.invalidateCache(apiConfig.ENDPOINTS.SYSTEM.SETTINGS || "/admin/settings");
+          await cachedApiService.invalidateCache(
+            apiConfig.ENDPOINTS.SYSTEM.SETTINGS || "/admin/settings",
+          );
           return response;
         } else {
-          throw new Error(response.message || "Fehler beim Speichern der Systemeinstellungen");
+          throw new Error(
+            response.message || "Fehler beim Speichern der Systemeinstellungen",
+          );
         }
       }
 
@@ -562,10 +578,14 @@ export class AdminSystemService implements IAdminSystemService {
       this.logger.error("Fehler beim Speichern der Systemeinstellungen", error);
       return {
         success: false,
-        message: error instanceof Error ? error.message : "Fehler beim Speichern der Systemeinstellungen",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Fehler beim Speichern der Systemeinstellungen",
         error: {
           code: "SETTINGS_UPDATE_ERROR",
-          message: error instanceof Error ? error.message : "Unbekannter Fehler",
+          message:
+            error instanceof Error ? error.message : "Unbekannter Fehler",
         },
       };
     }
@@ -580,13 +600,15 @@ export class AdminSystemService implements IAdminSystemService {
         this.logger.info("Verwende echte API für Dienste-Neustart");
 
         const response = await apiService.post<void>(
-          apiConfig.ENDPOINTS.SYSTEM.RESTART || "/admin/restart-services"
+          apiConfig.ENDPOINTS.SYSTEM.RESTART || "/admin/restart-services",
         );
 
         if (response.success) {
           return response;
         } else {
-          throw new Error(response.message || "Fehler beim Neustart der Dienste");
+          throw new Error(
+            response.message || "Fehler beim Neustart der Dienste",
+          );
         }
       }
 
@@ -599,10 +621,14 @@ export class AdminSystemService implements IAdminSystemService {
       this.logger.error("Fehler beim Neustart der Dienste", error);
       return {
         success: false,
-        message: error instanceof Error ? error.message : "Fehler beim Neustart der Dienste",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Fehler beim Neustart der Dienste",
         error: {
           code: "RESTART_ERROR",
-          message: error instanceof Error ? error.message : "Unbekannter Fehler",
+          message:
+            error instanceof Error ? error.message : "Unbekannter Fehler",
         },
       };
     }
@@ -619,7 +645,7 @@ export class AdminSystemService implements IAdminSystemService {
         const response = await apiService.get<any>(
           apiConfig.ENDPOINTS.SYSTEM.EXPORT_LOGS || "/admin/export-logs",
           undefined,
-          { responseType: "blob" }
+          { responseType: "blob" },
         );
 
         if (response.success) {
@@ -630,15 +656,21 @@ export class AdminSystemService implements IAdminSystemService {
       }
 
       // Fallback: Fehler, da Export nur mit API möglich
-      throw new Error("Log-Export ist nur mit aktiver API-Integration verfügbar");
+      throw new Error(
+        "Log-Export ist nur mit aktiver API-Integration verfügbar",
+      );
     } catch (error) {
       this.logger.error("Fehler beim Export der Logs", error);
       return {
         success: false,
-        message: error instanceof Error ? error.message : "Fehler beim Export der Logs",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Fehler beim Export der Logs",
         error: {
           code: "EXPORT_ERROR",
-          message: error instanceof Error ? error.message : "Unbekannter Fehler",
+          message:
+            error instanceof Error ? error.message : "Unbekannter Fehler",
         },
       };
     }
@@ -653,13 +685,15 @@ export class AdminSystemService implements IAdminSystemService {
         this.logger.info("Verwende echte API für Datenbank-Optimierung");
 
         const response = await apiService.post<void>(
-          apiConfig.ENDPOINTS.SYSTEM.OPTIMIZE_DB || "/admin/optimize-database"
+          apiConfig.ENDPOINTS.SYSTEM.OPTIMIZE_DB || "/admin/optimize-database",
         );
 
         if (response.success) {
           return response;
         } else {
-          throw new Error(response.message || "Fehler bei der Datenbankoptimierung");
+          throw new Error(
+            response.message || "Fehler bei der Datenbankoptimierung",
+          );
         }
       }
 
@@ -672,10 +706,14 @@ export class AdminSystemService implements IAdminSystemService {
       this.logger.error("Fehler bei der Datenbankoptimierung", error);
       return {
         success: false,
-        message: error instanceof Error ? error.message : "Fehler bei der Datenbankoptimierung",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Fehler bei der Datenbankoptimierung",
         error: {
           code: "OPTIMIZE_ERROR",
-          message: error instanceof Error ? error.message : "Unbekannter Fehler",
+          message:
+            error instanceof Error ? error.message : "Unbekannter Fehler",
         },
       };
     }
@@ -690,15 +728,19 @@ export class AdminSystemService implements IAdminSystemService {
         this.logger.info("Verwende echte API für Statistik-Reset");
 
         const response = await apiService.post<void>(
-          apiConfig.ENDPOINTS.SYSTEM.RESET_STATS || "/admin/reset-statistics"
+          apiConfig.ENDPOINTS.SYSTEM.RESET_STATS || "/admin/reset-statistics",
         );
 
         if (response.success) {
           // Cache invalidieren nach Reset
-          await cachedApiService.invalidateCache(apiConfig.ENDPOINTS.SYSTEM.STATS || "/admin/stats");
+          await cachedApiService.invalidateCache(
+            apiConfig.ENDPOINTS.SYSTEM.STATS || "/admin/stats",
+          );
           return response;
         } else {
-          throw new Error(response.message || "Fehler beim Zurücksetzen der Statistiken");
+          throw new Error(
+            response.message || "Fehler beim Zurücksetzen der Statistiken",
+          );
         }
       }
 
@@ -711,10 +753,14 @@ export class AdminSystemService implements IAdminSystemService {
       this.logger.error("Fehler beim Zurücksetzen der Statistiken", error);
       return {
         success: false,
-        message: error instanceof Error ? error.message : "Fehler beim Zurücksetzen der Statistiken",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Fehler beim Zurücksetzen der Statistiken",
         error: {
           code: "RESET_ERROR",
-          message: error instanceof Error ? error.message : "Unbekannter Fehler",
+          message:
+            error instanceof Error ? error.message : "Unbekannter Fehler",
         },
       };
     }
@@ -729,26 +775,34 @@ export class AdminSystemService implements IAdminSystemService {
         this.logger.info("Verwende echte API für Backup-Erstellung");
 
         const response = await apiService.post<void>(
-          apiConfig.ENDPOINTS.SYSTEM.CREATE_BACKUP || "/admin/create-backup"
+          apiConfig.ENDPOINTS.SYSTEM.CREATE_BACKUP || "/admin/create-backup",
         );
 
         if (response.success) {
           return response;
         } else {
-          throw new Error(response.message || "Fehler beim Erstellen des Backups");
+          throw new Error(
+            response.message || "Fehler beim Erstellen des Backups",
+          );
         }
       }
 
       // Fallback: Fehler, da Backup nur mit API möglich
-      throw new Error("Backup-Erstellung ist nur mit aktiver API-Integration verfügbar");
+      throw new Error(
+        "Backup-Erstellung ist nur mit aktiver API-Integration verfügbar",
+      );
     } catch (error) {
       this.logger.error("Fehler beim Erstellen des Backups", error);
       return {
         success: false,
-        message: error instanceof Error ? error.message : "Fehler beim Erstellen des Backups",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Fehler beim Erstellen des Backups",
         error: {
           code: "BACKUP_ERROR",
-          message: error instanceof Error ? error.message : "Unbekannter Fehler",
+          message:
+            error instanceof Error ? error.message : "Unbekannter Fehler",
         },
       };
     }

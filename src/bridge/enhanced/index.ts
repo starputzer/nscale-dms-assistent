@@ -6,7 +6,7 @@
  */
 
 // Nur die benötigten Vue-Typen
-import type { Plugin } from "vue";
+import type { Plugin, App } from "vue";
 import type { ComponentPublicInstance } from "vue";
 
 // Bridge-Typen und Komponenten

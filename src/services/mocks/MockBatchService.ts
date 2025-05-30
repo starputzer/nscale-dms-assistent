@@ -13,7 +13,7 @@ export class MockBatchService {
     );
 
     // Return mock responses for each request
-    const responses = requests.map((request) => {
+    const responses = requests.map((request: any) => {
       const { endpoint, method } = request;
 
       console.log("[MockBatchService] Processing request:", {

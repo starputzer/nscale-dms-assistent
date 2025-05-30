@@ -1,9 +1,4 @@
-import {
-  deepDiff,
-  applyDiff,
-  DiffOperation,
-  DiffOperationType,
-} from "./DeepDiff";
+import { deepDiff, applyDiff, DiffOperation } from "./DeepDiff";
 import { StateManager as BaseStateManager } from "../types";
 import { createLogger } from "../logger/index";
 // import { debounce } from 'lodash-es';
@@ -142,7 +137,7 @@ export class OptimizedStateManager implements BaseStateManager {
     const callbacks = this.subscribers.get(stateKey);
     if (!callbacks) return;
 
-    callbacks.forEach((callback) => {
+    callbacks.forEach((callback: any) => {
       try {
         callback(newValue, oldValue);
       } catch (error) {
@@ -253,7 +248,7 @@ export class OptimizedStateManager implements BaseStateManager {
    */
   public flushPendingUpdates(): void {
     // Use Array.from to avoid compatibility issues with Map iterators
-    Array.from(this.pendingUpdates.keys()).forEach((stateKey) => {
+    Array.from(this.pendingUpdates.keys()).forEach((stateKey: any) => {
       this.processPendingUpdates(stateKey);
     });
     this.logger.debug("Flushed all pending state updates");
@@ -268,7 +263,7 @@ export class OptimizedStateManager implements BaseStateManager {
 
     // Clear all update timers
     // Use Array.from to avoid compatibility issues with Map iterators
-    Array.from(this.updateTimers.values()).forEach((timerId) => {
+    Array.from(this.updateTimers.values()).forEach((timerId: any) => {
       window.clearTimeout(timerId);
     });
     this.updateTimers.clear();

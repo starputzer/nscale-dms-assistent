@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page - nScale Assistant</title>
+</head>
+<body>
+    <div id="app">
+        <h1>Test Page</h1>
+        <p>If you can see this, the basic server is working.</p>
+        <div id="vue-test"></div>
+    </div>
+    
+    <script type="module">
+        // Test if modules can be loaded
+        console.log('Test page loaded');
+        
+        // Try to import Vue
+        import('vue').then(({ createApp }) => {
+            console.log('Vue loaded successfully');
+            
+            const testApp = createApp({
+                template: '<div>Vue is working!</div>'
+            });
+            
+            testApp.mount('#vue-test');
+        }).catch(err => {
+            console.error('Failed to load Vue:', err);
+        });
+    </script>
+</body>
+</html>

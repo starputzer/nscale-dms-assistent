@@ -54,7 +54,9 @@
   "exclude": [
     "node_modules",
     "dist",
-    "public"
+    "public",
+    "**/*.old.ts",
+    "**/*.old.tsx"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

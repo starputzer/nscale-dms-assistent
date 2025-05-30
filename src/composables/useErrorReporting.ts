@@ -10,7 +10,6 @@
 
 import {
   ref,
-  reactive,
   computed,
   onErrorCaptured,
   onUnmounted,
@@ -377,7 +376,7 @@ export function useErrorReporting(
     const allErrors = errorService.getErrors();
 
     // Nach lokalen Fehlern filtern
-    const filteredErrors = allErrors.filter((err) =>
+    const filteredErrors = allErrors.filter((err: any) =>
       localErrors.value.includes(err.id),
     );
 

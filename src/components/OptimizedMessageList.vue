@@ -1,16 +1,13 @@
 <template>
-  <div 
+  <div
     ref="containerRef"
     class="optimized-message-list"
     :style="containerStyle"
     @scroll="handleScroll"
   >
     <!-- Spacer for virtual scrolling -->
-    <div 
-      class="virtual-spacer-top" 
-      :style="{ height: `${spacerTop}px` }"
-    />
-    
+    <div class="virtual-spacer-top" :style="{ height: `${spacerTop}px` }" />
+
     <!-- Visible messages -->
     <div
       v-for="message in visibleMessages"
@@ -23,19 +20,21 @@
         <div class="message-content">
           <div class="message-header">
             <span class="message-role">{{ message.role }}</span>
-            <span class="message-time">{{ formatTime(message.timestamp) }}</span>
+            <span class="message-time">{{
+              formatTime(message.timestamp)
+            }}</span>
           </div>
           <div class="message-text" v-html="renderMarkdown(message.content)" />
         </div>
       </slot>
     </div>
-    
+
     <!-- Spacer for virtual scrolling -->
-    <div 
-      class="virtual-spacer-bottom" 
+    <div
+      class="virtual-spacer-bottom"
       :style="{ height: `${spacerBottom}px` }"
     />
-    
+
     <!-- Loading indicator for streaming -->
     <div v-if="isStreaming" class="streaming-indicator">
       <slot name="streaming">
@@ -50,32 +49,40 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted, nextTick, shallowRef } from 'vue';
-import { marked } from 'marked';
-import DOMPurify from 'dompurify';
-import { useThrottleFn } from '@vueuse/core';
-import { usePerformanceMonitor } from '@/utils/PerformanceMonitor';
-import type { ChatMessage } from '@/types/chat';
+import {
+  ref,
+  computed,
+  watch,
+  onMounted,
+  onUnmounted,
+  nextTick,
+  shallowRef,
+} from "vue";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
+import { useThrottleFn } from "@vueuse/core";
+import { usePerformanceMonitor } from "@/utils/PerformanceMonitor";
+import type { ChatMessage } from "@/types/chat";
 
 interface Props {
   messages: ChatMessage[];
   isStreaming?: boolean;
   itemHeight?: number;
   bufferSize?: number;
-  scrollBehavior?: 'auto' | 'smooth';
+  scrollBehavior?: "auto" | "smooth";
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isStreaming: false,
   itemHeight: 100,
   bufferSize: 5,
-  scrollBehavior: 'smooth'
+  scrollBehavior: "smooth",
 });
 
 const emit = defineEmits<{
-  'scroll': [event: Event];
-  'reach-top': [];
-  'reach-bottom': [];
+  scroll: [event: Event];
+  "reach-top": [];
+  "reach-bottom": [];
 }>();
 
 // Performance monitoring
@@ -92,37 +99,51 @@ const lastScrollTime = ref(0);
 const messagesShallow = shallowRef(props.messages);
 
 // Update shallow ref when props change
-watch(() => props.messages, (newMessages) => {
-  messagesShallow.value = newMessages;
-}, { immediate: true });
+watch(
+  () => props.messages,
+  (newMessages) => {
+    messagesShallow.value = newMessages;
+  },
+  { immediate: true },
+);
 
 // Virtual scrolling calculations
-const totalHeight = computed(() => messagesShallow.value.length * props.itemHeight);
+const totalHeight = computed(
+  () => messagesShallow.value.length * props.itemHeight,
+);
 
 const visibleRange = computed(() => {
-  const start = Math.max(0, Math.floor(scrollTop.value / props.itemHeight) - props.bufferSize);
-  const visibleCount = Math.ceil(containerHeight.value / props.itemHeight) + (props.bufferSize * 2);
+  const start = Math.max(
+    0,
+    Math.floor(scrollTop.value / props.itemHeight) - props.bufferSize,
+  );
+  const visibleCount =
+    Math.ceil(containerHeight.value / props.itemHeight) + props.bufferSize * 2;
   const end = Math.min(messagesShallow.value.length, start + visibleCount);
-  
+
   return { start, end };
 });
 
 const visibleMessages = computed(() => {
-  recordRender('OptimizedMessageList');
-  return messagesShallow.value.slice(visibleRange.value.start, visibleRange.value.end);
+  recordRender("OptimizedMessageList");
+  return messagesShallow.value.slice(
+    visibleRange.value.start,
+    visibleRange.value.end,
+  );
 });
 
 const spacerTop = computed(() => visibleRange.value.start * props.itemHeight);
-const spacerBottom = computed(() => 
-  (messagesShallow.value.length - visibleRange.value.end) * props.itemHeight
+const spacerBottom = computed(
+  () =>
+    (messagesShallow.value.length - visibleRange.value.end) * props.itemHeight,
 );
 
 const containerStyle = computed(() => ({
-  height: '100%',
-  overflow: 'auto',
-  position: 'relative',
-  contain: 'layout style paint',
-  willChange: 'scroll-position'
+  height: "100%",
+  overflow: "auto",
+  position: "relative",
+  contain: "layout style paint",
+  willChange: "scroll-position",
 }));
 
 // Throttled scroll handler
@@ -130,55 +151,62 @@ const handleScroll = useThrottleFn((event: Event) => {
   const target = event.target as HTMLElement;
   scrollTop.value = target.scrollTop;
   lastScrollTime.value = Date.now();
-  
+
   // Detect user scrolling
-  const isNearBottom = target.scrollHeight - target.scrollTop - target.clientHeight < 100;
+  const isNearBottom =
+    target.scrollHeight - target.scrollTop - target.clientHeight < 100;
   isUserScrolling.value = !isNearBottom;
-  
-  emit('scroll', event);
-  
+
+  emit("scroll", event);
+
   // Emit reach events
   if (target.scrollTop === 0) {
-    emit('reach-top');
+    emit("reach-top");
   } else if (isNearBottom) {
-    emit('reach-bottom');
+    emit("reach-bottom");
   }
 }, 16); // ~60 FPS
 
 // Auto-scroll to bottom when new messages arrive (if user is not scrolling)
-watch(() => messagesShallow.value.length, async (newLength, oldLength) => {
-  if (newLength > oldLength && !isUserScrolling.value) {
-    await nextTick();
-    scrollToBottom();
-  }
-});
+watch(
+  () => messagesShallow.value.length,
+  async (newLength, oldLength) => {
+    if (newLength > oldLength && !isUserScrolling.value) {
+      await nextTick();
+      scrollToBottom();
+    }
+  },
+);
 
 // Scroll to bottom when streaming starts
-watch(() => props.isStreaming, (isStreaming) => {
-  if (isStreaming && !isUserScrolling.value) {
-    scrollToBottom();
-  }
-});
+watch(
+  () => props.isStreaming,
+  (isStreaming) => {
+    if (isStreaming && !isUserScrolling.value) {
+      scrollToBottom();
+    }
+  },
+);
 
 // Utility functions
 const scrollToBottom = () => {
   if (!containerRef.value) return;
-  
+
   const behavior = props.scrollBehavior;
   containerRef.value.scrollTo({
     top: containerRef.value.scrollHeight,
-    behavior
+    behavior,
   });
 };
 
 const scrollToMessage = (messageId: string) => {
-  const index = messagesShallow.value.findIndex(m => m.id === messageId);
+  const index = messagesShallow.value.findIndex((m) => m.id === messageId);
   if (index === -1 || !containerRef.value) return;
-  
+
   const targetScrollTop = index * props.itemHeight;
   containerRef.value.scrollTo({
     top: targetScrollTop,
-    behavior: props.scrollBehavior
+    behavior: props.scrollBehavior,
   });
 };
 
@@ -186,18 +214,18 @@ const scrollToMessage = (messageId: string) => {
 const renderMarkdown = (content: string): string => {
   const html = marked(content, {
     breaks: true,
-    gfm: true
+    gfm: true,
   });
   return DOMPurify.sanitize(html as string);
 };
 
 // Time formatting
 const formatTime = (timestamp: string | undefined): string => {
-  if (!timestamp) return '';
+  if (!timestamp) return "";
   const date = new Date(timestamp);
-  return date.toLocaleTimeString('de-DE', { 
-    hour: '2-digit', 
-    minute: '2-digit' 
+  return date.toLocaleTimeString("de-DE", {
+    hour: "2-digit",
+    minute: "2-digit",
   });
 };
 
@@ -207,15 +235,15 @@ let resizeObserver: ResizeObserver | null = null;
 onMounted(() => {
   if (containerRef.value) {
     containerHeight.value = containerRef.value.clientHeight;
-    
+
     resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         containerHeight.value = entry.contentRect.height;
       }
     });
-    
+
     resizeObserver.observe(containerRef.value);
-    
+
     // Initial scroll to bottom
     if (!isUserScrolling.value) {
       scrollToBottom();
@@ -230,7 +258,7 @@ onUnmounted(() => {
 // Expose methods to parent
 defineExpose({
   scrollToBottom,
-  scrollToMessage
+  scrollToMessage,
 });
 </script>
 
@@ -337,7 +365,9 @@ defineExpose({
 }
 
 @keyframes streaming-pulse {
-  0%, 80%, 100% {
+  0%,
+  80%,
+  100% {
     opacity: 0.3;
     transform: scale(0.8);
   }
@@ -352,7 +382,7 @@ defineExpose({
   .message-item {
     padding: 8px 12px;
   }
-  
+
   .message-header {
     flex-direction: column;
     align-items: flex-start;

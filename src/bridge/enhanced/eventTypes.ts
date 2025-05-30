@@ -6,6 +6,8 @@
  * können Events typsicher definiert und verwendet werden.
  */
 
+import type { EventCallback, UnsubscribeFn } from "./commonTypes";
+
 /**
  * Definition der Event-Typen und ihrer Payload-Strukturen
  */
@@ -274,12 +276,12 @@ export interface EventBusLegacyAdapter {
   /**
    * Registriert einen Event-Listener mit einfacherer Schnittstelle
    */
-  addEventListener(eventName: string, callback: Function): () => void;
+  addEventListener(eventName: string, callback: EventCallback): UnsubscribeFn;
 
   /**
    * Entfernt einen Event-Listener mit einfacherer Schnittstelle
    */
-  removeEventListener(eventName: string, callback: Function): void;
+  removeEventListener(eventName: string, callback: EventCallback): void;
 
   /**
    * Sendet ein Event mit einfacherer Schnittstelle

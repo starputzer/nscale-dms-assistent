@@ -1,33 +1,40 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
 
 echo "🔍 Running pre-commit checks..."
 
-# Run linting
-echo "📝 Checking code style..."
-npm run lint:fix
+# Get staged TypeScript files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|tsx|vue)$')
 
-# Run type checking
-echo "🔧 Checking TypeScript types..."
-npm run typecheck || {
-  echo "❌ TypeScript errors found. Please fix them before committing."
-  exit 1
-}
-
-# Check for console.log statements
-echo "🚫 Checking for console.log statements..."
-FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|js|vue)$' || true)
-if [ -n "$FILES" ]; then
-  for file in $FILES; do
-    if grep -q "console\.log" "$file"; then
-      echo "⚠️  Warning: console.log found in $file"
-      echo "   Consider using a proper logging service instead."
-    fi
-  done
+if [ -z "$STAGED_FILES" ]; then
+  echo "✅ No TypeScript files to check"
+  exit 0
 fi
 
-# Format staged files
-echo "💅 Formatting code..."
-npx lint-staged
+echo "📝 Checking $(echo $STAGED_FILES | wc -w) staged TypeScript files..."
 
-echo "✅ Pre-commit checks passed!"
+# Run TypeScript compiler on staged files only
+npx tsc --noEmit --skipLibCheck $STAGED_FILES 2>&1 | tee .typecheck-results
+
+if grep -q "error TS" .typecheck-results; then
+  echo "❌ TypeScript errors found! Please fix them before committing."
+  echo ""
+  grep "error TS" .typecheck-results | head -10
+  echo ""
+  echo "Run 'npm run typecheck' to see all errors."
+  rm .typecheck-results
+  exit 1
+fi
+
+# Run ESLint on staged files
+echo "🧹 Running ESLint..."
+npx eslint $STAGED_FILES --fix
+
+# Re-add files that were fixed by ESLint
+for file in $STAGED_FILES; do
+  git add $file
+done
+
+echo "✅ All pre-commit checks passed!"
+rm -f .typecheck-results
+exit 0

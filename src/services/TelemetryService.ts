@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue';
-import type { PerformanceMetrics } from '@/utils/PerformanceMonitor';
+import type { PerformanceMetrics } from '@/utils/performanceMonitor';
 
 export interface TelemetryEvent {
   timestamp: number;
@@ -254,11 +254,11 @@ class TelemetryService {
   getApiPerformanceReport(): Record<string, { avg: number; p90: number; count: number }> {
     const report: Record<string, { avg: number; p90: number; count: number }> = {};
 
-    this.apiMetrics.forEach((latencies, endpoint) => {
+    this.apiMetrics.forEach((latencies, endpoint: any) => {
       if (latencies.length === 0) return;
 
       const sorted = [...latencies].sort((a, b) => a - b);
-      const avg = latencies.reduce((sum, val) => sum + val, 0) / latencies.length;
+      const avg = latencies.reduce((sum: any, val) => sum + val, 0) / latencies.length;
       const p90 = sorted[Math.floor(sorted.length * 0.9)] || 0;
 
       report[endpoint] = { avg, p90, count: latencies.length };

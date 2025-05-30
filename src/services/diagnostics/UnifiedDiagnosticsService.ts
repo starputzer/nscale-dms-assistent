@@ -1,10 +1,8 @@
 import { ref, computed } from "vue";
 import { router404Diagnostics } from "@/diagnostics/router404Diagnostics";
-import { authDiagnostics } from "@/utils/authDiagnostics";
 import { domErrorDetector } from "@/utils/domErrorDiagnostics";
 import { selfHealingService } from "@/services/selfHealing/SelfHealingService";
 import { routerService } from "@/services/router/RouterServiceFixed";
-import { useLogger } from "@/composables/useLogger";
 import type {
   RouterHealthMetrics,
   DiagnosticReport,

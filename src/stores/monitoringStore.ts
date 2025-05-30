@@ -509,7 +509,7 @@ export const useMonitoringStore = defineStore("monitoring", () => {
 
     // Calculate average historical value
     const avgValue =
-      historicalMetrics.reduce((sum, metric) => sum + metric.value, 0) /
+      historicalMetrics.reduce((sum: any, metric) => sum + metric.value, 0) /
       historicalMetrics.length;
 
     // Calculate percentage deviation
@@ -596,16 +596,16 @@ export const useMonitoringStore = defineStore("monitoring", () => {
   });
 
   const totalActiveErrors = computed(() => {
-    return errors.value.filter((e) => !e.resolved).length;
+    return errors.value.filter((e: any) => !e.resolved).length;
   });
 
   const totalCriticalErrors = computed(() => {
-    return errors.value.filter((e) => !e.resolved && e.severity === "critical")
+    return errors.value.filter((e: any) => !e.resolved && e.severity === "critical")
       .length;
   });
 
   const activeAlerts = computed(() => {
-    return alerts.value.filter((a) => !a.acknowledged);
+    return alerts.value.filter((a: any) => !a.acknowledged);
   });
 
   const featurePerformanceAverages = computed(() => {
@@ -734,11 +734,11 @@ export const useMonitoringStore = defineStore("monitoring", () => {
         break;
     }
 
-    return errors.value.filter((e) => e.timestamp >= startTime).length;
+    return errors.value.filter((e: any) => e.timestamp >= startTime).length;
   }
 
   function getActiveFallbackCount() {
-    return errors.value.filter((e) => e.fallbackTriggered && !e.resolved)
+    return errors.value.filter((e: any) => e.fallbackTriggered && !e.resolved)
       .length;
   }
 
@@ -765,8 +765,8 @@ export const useMonitoringStore = defineStore("monitoring", () => {
     // Count unique user agents as a proxy for unique users
     const uniqueUserAgents = new Set();
     usageStats.value
-      .filter((stat) => stat.timestamp >= startTime)
-      .forEach((stat) => {
+      .filter((stat: any) => stat.timestamp >= startTime)
+      .forEach((stat: any) => {
         if (stat.userAgent !== "disabled") {
           uniqueUserAgents.add(stat.userAgent);
         }
@@ -801,7 +801,7 @@ export const useMonitoringStore = defineStore("monitoring", () => {
 
     // Count errors by feature
     const errorsByFeature: Record<string, number> = {};
-    timeRangeErrors.forEach((error) => {
+    timeRangeErrors.forEach((error: any) => {
       errorsByFeature[error.featureId] =
         (errorsByFeature[error.featureId] || 0) + 1;
     });
@@ -813,7 +813,7 @@ export const useMonitoringStore = defineStore("monitoring", () => {
 
     // Count usage by feature
     const usageByFeature: Record<string, number> = {};
-    timeRangeUsage.forEach((stat) => {
+    timeRangeUsage.forEach((stat: any) => {
       usageByFeature[stat.featureId] =
         (usageByFeature[stat.featureId] || 0) + 1;
     });
@@ -861,7 +861,7 @@ export const useMonitoringStore = defineStore("monitoring", () => {
 
     // Count usage by feature
     const usageByFeature: Record<string, number> = {};
-    timeRangeUsage.forEach((stat) => {
+    timeRangeUsage.forEach((stat: any) => {
       usageByFeature[stat.featureId] =
         (usageByFeature[stat.featureId] || 0) + 1;
     });
@@ -910,7 +910,7 @@ export const useMonitoringStore = defineStore("monitoring", () => {
       Record<string, number[]>
     > = {};
 
-    timeRangeMetrics.forEach((metric) => {
+    timeRangeMetrics.forEach((metric: any) => {
       if (!metricsByFeatureAndType[metric.featureId]) {
         metricsByFeatureAndType[metric.featureId] = {};
       }
@@ -933,7 +933,7 @@ export const useMonitoringStore = defineStore("monitoring", () => {
       for (const metricType in metricsByFeatureAndType[feature]) {
         const values = metricsByFeatureAndType[feature][metricType];
         const average =
-          values.reduce((sum, value) => sum + value, 0) / values.length;
+          values.reduce((sum: any, value) => sum + value, 0) / values.length;
 
         performanceData.push({
           feature,
@@ -976,7 +976,7 @@ export const useMonitoringStore = defineStore("monitoring", () => {
       Record<string, number>
     > = {};
 
-    timeRangeUsage.forEach((stat) => {
+    timeRangeUsage.forEach((stat: any) => {
       if (!interactionsByFeatureAndAction[stat.featureId]) {
         interactionsByFeatureAndAction[stat.featureId] = {};
       }
@@ -1048,8 +1048,8 @@ export const useMonitoringStore = defineStore("monitoring", () => {
 
     // Get all performance metrics in the time range
     return performanceMetrics.value
-      .filter((m) => m.timestamp >= startTime)
-      .map((metric) => ({
+      .filter((m: any) => m.timestamp >= startTime)
+      .map((metric: any) => ({
         id: metric.id,
         feature: metric.featureId,
         component: metric.component,
@@ -1083,8 +1083,8 @@ export const useMonitoringStore = defineStore("monitoring", () => {
 
     // Get all usage stats in the time range
     return usageStats.value
-      .filter((s) => s.timestamp >= startTime)
-      .map((stat) => ({
+      .filter((s: any) => s.timestamp >= startTime)
+      .map((stat: any) => ({
         id: stat.id,
         feature: stat.featureId,
         component: stat.component,
@@ -1119,7 +1119,7 @@ export const useMonitoringStore = defineStore("monitoring", () => {
         break;
     }
 
-    let filteredErrors = errors.value.filter((e) => e.timestamp >= startTime);
+    let filteredErrors = errors.value.filter((e: any) => e.timestamp >= startTime);
 
     // Filter by severity if provided
     if (options.severity) {
@@ -1135,7 +1135,7 @@ export const useMonitoringStore = defineStore("monitoring", () => {
       );
     }
 
-    return filteredErrors.map((error) => ({
+    return filteredErrors.map((error: any) => ({
       id: error.id,
       feature: error.featureId,
       component: error.component,

@@ -287,7 +287,7 @@ export class RequestQueue {
     );
 
     // Alle Timeouts löschen und Promises ablehnen
-    this.queue.forEach((item) => {
+    this.queue.forEach((item: any) => {
       if (item.timeoutId) {
         clearTimeout(item.timeoutId);
       }

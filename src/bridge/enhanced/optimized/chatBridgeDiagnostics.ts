@@ -6,10 +6,10 @@
  */
 
 import { createLogger, LogLevel } from "../logger/index";
-import { PerformanceMonitor } from "./performanceMonitor";
+import { PerformanceMonitor } from "./PerformanceMonitor";
 import { SelectiveChatBridge } from "./selectiveChatBridge";
 import { EventListenerManager } from "./eventListenerManager";
-import { BatchedEventEmitter } from "./batchedEventEmitter";
+import { BatchedEventEmitter } from "./BatchedEventEmitter";
 import { BridgeStatusManager } from "../statusManager";
 import { BridgeErrorState } from "../types";
 
@@ -387,7 +387,7 @@ export class ChatBridgeDiagnostics {
       }
 
       const avgLatency =
-        latencies.reduce((sum, val) => sum + val, 0) / latencies.length;
+        latencies.reduce((sum: any, val) => sum + val, 0) / latencies.length;
       const maxLatency = Math.max(...latencies);
 
       // P95 berechnen
@@ -563,7 +563,7 @@ export class ChatBridgeDiagnostics {
     ) {
       // Vorherige Messung finden
       const previousMetrics = this.metrics
-        .filter((m) => m.name === metric.name && m.timestamp < metric.timestamp)
+        .filter((m: any) => m.name === metric.name && m.timestamp < metric.timestamp)
         .sort((a, b) => b.timestamp - a.timestamp);
 
       if (previousMetrics.length > 0) {
@@ -630,7 +630,7 @@ export class ChatBridgeDiagnostics {
       const latencies =
         this.pingPongLatencies.length > 0 ? this.pingPongLatencies : [0];
       const avgLatency =
-        latencies.reduce((sum, val) => sum + val, 0) / latencies.length;
+        latencies.reduce((sum: any, val) => sum + val, 0) / latencies.length;
       const maxLatency = Math.max(...latencies);
       const sortedLatencies = [...latencies].sort((a, b) => a - b);
       const p95Index = Math.floor(sortedLatencies.length * 0.95);
@@ -657,13 +657,13 @@ export class ChatBridgeDiagnostics {
 
       const messageProcessingTimeAvg =
         messageProcessingMetrics.length > 0
-          ? messageProcessingMetrics.reduce((sum, m) => sum + m.value, 0) /
+          ? messageProcessingMetrics.reduce((sum: any, m) => sum + m.value, 0) /
             messageProcessingMetrics.length
           : 0;
 
       const batchProcessingTimeAvg =
         batchProcessingMetrics.length > 0
-          ? batchProcessingMetrics.reduce((sum, m) => sum + m.value, 0) /
+          ? batchProcessingMetrics.reduce((sum: any, m) => sum + m.value, 0) /
             batchProcessingMetrics.length
           : 0;
 
@@ -674,7 +674,7 @@ export class ChatBridgeDiagnostics {
       const errorRate = syncOpCount > 0 ? this.errorCounts / syncOpCount : 0;
 
       // Aktive Warnungen sammeln
-      const activeAlerts = this.alerts.filter((a) => !a.resolved);
+      const activeAlerts = this.alerts.filter((a: any) => !a.resolved);
 
       // Empfehlungen generieren
       const recommendations: string[] = [];
@@ -933,7 +933,7 @@ export class ChatBridgeDiagnostics {
           connectionStatus:
             (this.chatBridge as any).connectionStatus?.value || "unknown",
           metrics: this.getLatestMetrics(),
-          alerts: this.alerts.filter((a) => !a.resolved),
+          alerts: this.alerts.filter((a: any) => !a.resolved),
         };
       },
 
@@ -1119,8 +1119,8 @@ export class ChatBridgeDiagnostics {
           
           <div>
             ${
-              this.alerts.filter((a) => !a.resolved).length > 0
-                ? `<span style="color: #F44336">${this.alerts.filter((a) => !a.resolved).length} Warnungen</span>`
+              this.alerts.filter((a: any) => !a.resolved).length > 0
+                ? `<span style="color: #F44336">${this.alerts.filter((a: any) => !a.resolved).length} Warnungen</span>`
                 : '<span style="color: #4CAF50">Keine Warnungen</span>'
             }
             

@@ -174,7 +174,7 @@ export class SelectiveStateManager implements StateManager {
    * Disconnect and clean up watchers
    */
   disconnect(): void {
-    this.watchers.forEach((unwatch) => unwatch());
+    this.watchers.forEach((unwatch: any) => unwatch());
     this.watchers = [];
     this.subscribers.clear();
     this.pendingUpdates.clear();
@@ -206,7 +206,7 @@ export class SelectiveStateManager implements StateManager {
       // Set up watching at the high level but don't go deeper
       const watcher = watch(
         () => obj,
-        (newValue) => {
+        (newValue: any) => {
           this.queueUpdate({
             path,
             value: newValue,
@@ -243,7 +243,7 @@ export class SelectiveStateManager implements StateManager {
     if (depth >= this.config.maxWatchDepth) {
       const deepWatcher = watch(
         () => obj,
-        (newValue) => {
+        (newValue: any) => {
           this.queueUpdate({
             path,
             value: newValue,
@@ -283,7 +283,7 @@ export class SelectiveStateManager implements StateManager {
       try {
         const propWatcher = watch(
           () => obj[key],
-          (newVal, oldVal) => {
+          (newVal: any, oldVal: any) => {
             // Skip if identical by deep comparison
             if (deepCompare(newVal, oldVal)) {
               return;
@@ -345,7 +345,7 @@ export class SelectiveStateManager implements StateManager {
 
         // Watch the array for structural changes
         const structureWatcher = watch(
-          () => array.map((item) => item?.[idField]),
+          () => array.map((item: any) => item?.[idField]),
           (newIds, oldIds) => {
             // If array structure changed, queue update
             if (!deepCompare(newIds, oldIds)) {
@@ -900,7 +900,7 @@ export class SelectiveStateManager implements StateManager {
   private notifySubscribers(path: string, value: any): void {
     // Exact path subscribers
     if (this.subscribers.has(path)) {
-      this.subscribers.get(path)!.forEach((callback) => {
+      this.subscribers.get(path)!.forEach((callback: any) => {
         try {
           callback(value, undefined);
         } catch (error) {
@@ -913,7 +913,7 @@ export class SelectiveStateManager implements StateManager {
     for (const subscribedPath of this.subscribers.keys()) {
       if (path.startsWith(subscribedPath + ".")) {
         const subValue = this.getState(subscribedPath);
-        this.subscribers.get(subscribedPath)!.forEach((callback) => {
+        this.subscribers.get(subscribedPath)!.forEach((callback: any) => {
           try {
             callback(subValue, undefined);
           } catch (error) {
@@ -1141,5 +1141,44 @@ export class SelectiveStateManager implements StateManager {
       cacheSize: this.lastValueCache.size,
       config: this.config,
     };
+  }
+
+  /**
+   * Update a specific state key with a value
+   * @param key The state key to update
+   * @param value The new value
+   */
+  public updateState(key: string, value: any): void {
+    // Apply update to Vue stores
+    if (this.vueStores[key]) {
+      this.vueStores[key].$patch(value);
+    }
+
+    // Apply update to legacy state
+    this.legacyState[key] = value;
+
+    // Create an update operation
+    const operation: UpdateOperation = {
+      type: "update",
+      path: key,
+      value: value,
+      oldValue: this.lastValueCache.get(key),
+      timestamp: Date.now(),
+    };
+
+    // Process the update
+    this.applyUpdate(operation);
+
+    // Notify subscribers
+    const subscribers = this.subscribers.get(key);
+    if (subscribers) {
+      subscribers.forEach((callback) => {
+        try {
+          callback(value, operation.oldValue);
+        } catch (error) {
+          this.logger.error(`Error in subscriber for ${key}:`, error);
+        }
+      });
+    }
   }
 }

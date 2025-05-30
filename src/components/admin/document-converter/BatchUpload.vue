@@ -586,7 +586,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useDocumentConverterStore } from "@/stores/documentConverter";
 import { useGlobalDialog } from "@/composables/useDialog";
 import { useI18n } from "@/composables/useI18n";

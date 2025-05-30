@@ -87,7 +87,7 @@ export class SelfHealingBridge implements SelfHealing {
     }
 
     try {
-      const results = this.healthChecks.map((check, index) => {
+      const results = this.healthChecks.map((check, index: any) => {
         try {
           return {
             index,
@@ -103,7 +103,7 @@ export class SelfHealingBridge implements SelfHealing {
         }
       });
 
-      const unhealthyChecks = results.filter((result) => !result.healthy);
+      const unhealthyChecks = results.filter((result: any) => !result.healthy);
 
       if (unhealthyChecks.length > 0) {
         this.logger.warn(

@@ -176,7 +176,7 @@ export const useSessionStore = defineStore("sessions", () => {
       await new Promise((resolve) => setTimeout(resolve, 300));
 
       // Session aus Liste entfernen
-      sessions.value = sessions.value.filter((s) => s.id !== sessionId);
+      sessions.value = sessions.value.filter((s: any) => s.id !== sessionId);
 
       // Nachrichten entfernen
       if (messages.value[sessionId]) {

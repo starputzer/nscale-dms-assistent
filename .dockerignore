@@ -1,0 +1,90 @@
+# Dependencies
+node_modules/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# Development files
+.git/
+.gitignore
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Test files
+e2e-test-results/
+playwright-report/
+test-results/
+*.spec.ts
+*.spec.js
+*.test.ts
+*.test.js
+
+# Documentation
+docs/
+*.md
+!README.md
+!CHANGELOG.md
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+tmp/
+temp/
+cache/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Docker files (avoid recursion)
+Dockerfile*
+docker-compose*.yml
+!Dockerfile
+!docker-compose.yml
+
+# Backup files
+*.backup
+*.bak
+backup*/
+worktrees/
+
+# Large files
+*.mp4
+*.mov
+*.avi
+*.zip
+*.tar.gz
+*.rar

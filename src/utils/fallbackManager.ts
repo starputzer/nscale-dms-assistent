@@ -264,7 +264,7 @@ export class FallbackManager {
    * Initialisiert Standard-Konfigurationen für bekannte Features
    */
   private initializeDefaultConfigs(): void {
-    Object.entries(DEFAULT_FEATURE_CONFIGS).forEach(([feature, config]) => {
+    Object.entries(DEFAULT_FEATURE_CONFIGS).forEach(([feature, config]: any) => {
       this.configureFeature(feature, config);
     });
   }

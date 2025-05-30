@@ -840,21 +840,13 @@
 </template>
 
 <script setup lang="ts">
-import {
-  ref,
-  computed,
-  onMounted,
-  onBeforeUnmount,
-  watch,
-  nextTick,
-} from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useSessionsStore } from "@/stores/sessions";
 import type { ChatSession } from "@/types/session";
 // import draggable from 'vuedraggable'; // temporarily disabled
 import { RecycleScroller } from "vue-virtual-scroller";
 import "vue-virtual-scroller/dist/vue-virtual-scroller.css";
 import SessionItem from "./SessionItem.vue";
-import NewSessionButton from "./NewSessionButton.vue";
 
 interface Props {
   /** Array der anzuzeigenden Sessions */

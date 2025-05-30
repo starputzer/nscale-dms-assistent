@@ -5,6 +5,7 @@
  * zusammenführt und koordiniert.
  */
 
+import type { EventCallback, UnsubscribeFn, EventHandler } from "./commonTypes";
 import { watch, onBeforeUnmount, getCurrentInstance } from "vue";
 import {
   BridgeConfiguration,
@@ -23,7 +24,7 @@ import {
 } from "./types";
 
 // Nur die tatsächlich verwendeten Typen importieren
-import type { BridgeErrorState, BridgeStatusInfo } from "./types";
+// import type { BridgeErrorState, BridgeStatusInfo } from "./types"; // Currently unused
 
 // Logger und State-Management-Importe, die in der Klasse verwendet werden
 import { EnhancedBridgeLogger } from "./logger";
@@ -819,16 +820,16 @@ export class EnhancedBridge {
       getState: (path: string) => this.stateManager.getState(path),
       setState: (path: string, value: any) =>
         this.stateManager.setState(path, value),
-      subscribe: (path: string, callback: Function) =>
+      subscribe: (path: string, callback: EventCallback | UnsubscribeFn) =>
         this.stateManager.subscribe(path, callback as any),
 
       // Event-Handling
       emit: (event: string, data?: any) => this.eventBus.emit(event, data),
-      on: (event: string, callback: Function, options?: EventOptions) =>
+      on: (event: string, callback: EventCallback | UnsubscribeFn, options?: EventOptions) =>
         this.eventBus.on(event, callback, options),
       off: (
         event: string,
-        callbackOrSubscription: Function | EventSubscription,
+        callbackOrSubscription: EventCallback | UnsubscribeFn | EventSubscription,
       ) => this.eventBus.off(event, callbackOrSubscription as any),
 
       // Logging mit Überladungen für verschiedene Aufrufmuster
@@ -895,7 +896,7 @@ export class EnhancedBridge {
    */
   disconnect(): void {
     // Store-Watchers aufräumen
-    this.cleanupFunctions.forEach((cleanup) => cleanup());
+    this.cleanupFunctions.forEach((cleanup: any) => cleanup());
     this.cleanupFunctions = [];
 
     // State-Manager trennen

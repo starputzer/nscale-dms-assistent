@@ -73,7 +73,7 @@ export const useUIStore = defineStore("ui", () => {
   }
 
   function removeToast(id: string) {
-    toasts.value = toasts.value.filter((toast) => toast.id !== id);
+    toasts.value = toasts.value.filter((toast: any) => toast.id !== id);
   }
 
   return {

@@ -67,14 +67,7 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  ref,
-  computed,
-  watch,
-  onMounted,
-  PropType,
-} from "vue";
+import { defineComponent, ref, computed, watch, PropType } from "vue";
 import CloseIcon from "@/components/icons/CloseIcon.vue";
 import ErrorIcon from "@/components/icons/ErrorIcon.vue";
 import { DegradationLevel } from "@/config/edge-cases";

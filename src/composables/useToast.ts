@@ -1,7 +1,7 @@
-import { readonly } from "vue";
 import { useUIStore } from "@/stores/ui";
-import toastService, { type ToastOptions as ServiceToastOptions } from "@/services/ui/ToastService";
-import type { Toast as ToastMessage } from "@/types/ui";
+import toastService, {
+  type ToastOptions as ServiceToastOptions,
+} from "@/services/ui/ToastService";
 
 /**
  * Toast-Nachrichtentypen
@@ -64,7 +64,7 @@ export interface ToastShowConfig {
  */
 function convertToServiceOptions(options?: ToastOptions): ServiceToastOptions {
   if (!options) return {};
-  
+
   return {
     title: options.title,
     duration: options.duration,
@@ -87,11 +87,11 @@ export function useToast() {
    */
   function show(config: ToastShowConfig): string {
     const { message, type = "info", title, duration } = config;
-    
+
     // Primär den Toast-Service verwenden
     return toastService.show(message, type, {
-      title, 
-      duration
+      title,
+      duration,
     });
   }
 

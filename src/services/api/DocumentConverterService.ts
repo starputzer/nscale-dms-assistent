@@ -15,10 +15,8 @@ import {
   ConversionSettings,
   DocumentMetadata,
   ConversionProgress,
-  UploadProgress,
-  SupportedFormat
+  SupportedFormat,
 } from "@/types/documentConverter";
-import { ApiResponse } from "@/types/api";
 import axios, { CancelTokenSource } from "axios";
 import { LogService } from "../log/LogService";
 
@@ -33,7 +31,7 @@ interface DocumentResponse {
   content?: string;
   uploadedAt: string;
   convertedAt?: string;
-  status: "pending" | "processing" | "success" | "error";
+  status: "pending" | "processing" | "completed" | "failed";
   error?: string;
   metadata?: DocumentMetadata;
 }
@@ -42,7 +40,7 @@ interface DocumentResponse {
  * API-Response-Format für Konvertierungsstatus
  */
 interface ConversionStatusResponse {
-  status: "pending" | "processing" | "success" | "error";
+  status: "pending" | "processing" | "completed" | "failed";
   progress: number;
   step: string;
   estimatedTimeRemaining?: number;
@@ -344,13 +342,13 @@ class DocumentConverterService implements IDocumentConverterService {
       const document = await this.getDocument(documentId);
 
       // Prüfen, ob die Konvertierung abgeschlossen ist
-      if (document.status === "success") {
+      if (document.status === "completed") {
         this.stopPollingConversionProgress(documentId);
         return document;
       }
 
       // Bei Fehler abbrechen
-      if (document.status === "error") {
+      if (document.status === "failed") {
         this.stopPollingConversionProgress(documentId);
         throw new Error(document.error || "Konvertierung fehlgeschlagen");
       }
@@ -449,7 +447,7 @@ class DocumentConverterService implements IDocumentConverterService {
       }
 
       // API-Antwort in ConversionResult-Objekte umwandeln
-      return response.data.map((doc) => this.mapDocumentResponse(doc));
+      return response.data.map((doc: any) => this.mapDocumentResponse(doc));
     } catch (error) {
       this.logService.error("Fehler beim Abrufen der Dokumentenliste", error);
       throw error;
@@ -769,7 +767,7 @@ class MockDocumentConverterService implements IDocumentConverterService {
         convertedAt: new Date(
           Date.now() - 1000 * 60 * 60 * 24 * 3 + 1000 * 60 * 2,
         ), // 2 Minuten nach Upload
-        status: "success",
+        status: "completed",
         content: "Dies ist der Inhalt des Beispiel-Dokuments...",
         metadata: {
           title: "Beispiel-Dokument",
@@ -786,7 +784,7 @@ class MockDocumentConverterService implements IDocumentConverterService {
         size: 1024 * 512, // 512 KB
         uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 Tag alt
         convertedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 + 1000 * 60 * 1), // 1 Minute nach Upload
-        status: "success",
+        status: "completed",
         content: "Extrahierte Tabellendaten...",
         metadata: {
           title: "Tabellendaten",
@@ -810,7 +808,7 @@ class MockDocumentConverterService implements IDocumentConverterService {
         originalFormat: "docx",
         size: 1024 * 1024 * 1.2, // 1.2 MB
         uploadedAt: new Date(Date.now() - 1000 * 60 * 30), // 30 Minuten alt
-        status: "error",
+        status: "failed",
         error:
           "Das Dokument ist passwortgeschützt und konnte nicht konvertiert werden.",
       },
@@ -964,14 +962,14 @@ class MockDocumentConverterService implements IDocumentConverterService {
 
     // 5% Wahrscheinlichkeit für Fehler
     if (Math.random() < 0.05) {
-      this.mockDocuments[docIndex].status = "error";
+      this.mockDocuments[docIndex].status = "failed";
       this.mockDocuments[docIndex].error =
         "Bei der Konvertierung ist ein Fehler aufgetreten.";
       throw new Error("Bei der Konvertierung ist ein Fehler aufgetreten.");
     }
 
     // Erfolgreiche Konvertierung
-    this.mockDocuments[docIndex].status = "success";
+    this.mockDocuments[docIndex].status = "completed";
     this.mockDocuments[docIndex].convertedAt = new Date();
     this.mockDocuments[docIndex].content =
       `Dies ist der konvertierte Inhalt des Dokuments ${this.mockDocuments[docIndex].originalName}...`;
@@ -1146,7 +1144,7 @@ class MockDocumentConverterService implements IDocumentConverterService {
     }
 
     // Prüfen, ob Dokument erfolgreich konvertiert wurde
-    if (document.status !== "success") {
+    if (document.status !== "completed") {
       throw new Error(
         `Dokument ${documentId} ist nicht verfügbar für Download (Status: ${document.status})`,
       );
@@ -1234,14 +1232,14 @@ class MockDocumentConverterService implements IDocumentConverterService {
           ],
           estimatedTimeRemaining: 60,
         };
-      case "success":
+      case "completed":
         return {
           documentId,
           progress: 100,
           step: "Konvertierung abgeschlossen",
           estimatedTimeRemaining: 0,
         };
-      case "error":
+      case "failed":
         return {
           documentId,
           progress: 0,
@@ -1277,7 +1275,7 @@ class MockDocumentConverterService implements IDocumentConverterService {
       (doc) => doc.id === documentId,
     );
     if (docIndex !== -1) {
-      this.mockDocuments[docIndex].status = "error";
+      this.mockDocuments[docIndex].status = "failed";
       this.mockDocuments[docIndex].error =
         "Konvertierung wurde vom Benutzer abgebrochen";
     }
@@ -1329,6 +1327,6 @@ export type { IDocumentConverterService };
 export {
   DocumentConverterService,
   MockDocumentConverterService,
-  documentConverterService
+  documentConverterService,
 };
 export default documentConverterService;

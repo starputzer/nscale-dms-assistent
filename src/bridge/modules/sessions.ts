@@ -202,11 +202,11 @@ export function initSessionsBridge(
           const updatedSessions = sessionsStore.sessions;
           // We would need to determine which sessions changed
           // For simplicity, we'll mark all as dirty and let the sync logic handle it
-          updatedSessions.forEach((session) => markSessionDirty(session.id));
+          updatedSessions.forEach((session: any) => markSessionDirty(session.id));
 
           // Emit sessions list updated event
           eventBus.emit("session:listUpdated", {
-            sessions: updatedSessions.map((s) => ({
+            sessions: updatedSessions.map((s: any) => ({
               id: s.id,
               title: s.title,
               updatedAt: s.updatedAt,
@@ -226,10 +226,10 @@ export function initSessionsBridge(
         if (mutation.payload && "messages" in mutation.payload) {
           // This is more complex as we need to determine which session's messages changed
           // For simplicity, we'll compare the keys in the messages object
-          Object.keys(sessionsStore.messages).forEach((sessionId) => {
+          Object.keys(sessionsStore.messages).forEach((sessionId: any) => {
             if (sessionsStore.messages[sessionId]?.length > 0) {
               // Mark this session's messages as dirty
-              sessionsStore.messages[sessionId].forEach((message) => {
+              sessionsStore.messages[sessionId].forEach((message: any) => {
                 markMessageDirty(sessionId, message.id);
               });
 
@@ -521,7 +521,7 @@ export function initSessionsBridge(
     });
 
     // Synchronize dirty sessions
-    state.dirtySessionIds.forEach((sessionId) => {
+    state.dirtySessionIds.forEach((sessionId: any) => {
       const session = sessionsStore.sessions.find((s) => s.id === sessionId);
       if (session) {
         // Emit session updated event
@@ -533,11 +533,11 @@ export function initSessionsBridge(
     });
 
     // Synchronize dirty messages
-    state.dirtyMessageIds.forEach((messageIds, sessionId) => {
+    state.dirtyMessageIds.forEach((messageIds, sessionId: any) => {
       const sessionMessages = sessionsStore.messages[sessionId] || [];
 
       // Collect messages to synchronize
-      const messagesToSync = sessionMessages.filter((m) =>
+      const messagesToSync = sessionMessages.filter((m: any) =>
         messageIds.has(m.id),
       );
 
@@ -577,7 +577,7 @@ export function initSessionsBridge(
     const initialSessions = sessionsStore.sessions;
     if (initialSessions.length > 0) {
       eventBus.emit("session:listUpdated", {
-        sessions: initialSessions.map((s) => ({
+        sessions: initialSessions.map((s: any) => ({
           id: s.id,
           title: s.title,
           updatedAt: s.updatedAt,
@@ -605,7 +605,7 @@ export function initSessionsBridge(
     logger.debug("Disposing sessions bridge resources");
 
     // Unsubscribe from all events
-    state.subscriptions.forEach((subscription) => {
+    state.subscriptions.forEach((subscription: any) => {
       subscription.unsubscribe();
     });
 

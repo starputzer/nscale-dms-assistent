@@ -1,19 +1,13 @@
 import {
   ref,
   watch,
-  watchEffect,
   computed,
   ComputedRef,
   WatchOptions,
   WatchSource,
   WatchStopHandle,
 } from "vue";
-import {
-  debounce,
-  throttle,
-  rafThrottle,
-  adaptiveRateLimiter,
-} from "./watchHelpers";
+import { debounce, throttle } from "./watchHelpers";
 
 /**
  * Optimierte Watcher-Funktionen zur Verbesserung der Performance
@@ -169,7 +163,7 @@ export function useSelectiveWatch<T extends Record<string, any>>(
       }
 
       // Finde die geänderten Pfade
-      const changedPaths = pathsToWatch.filter((path) => {
+      const changedPaths = pathsToWatch.filter((path: any) => {
         const pathParts = path.split(".");
         let newValueAtPath = newValue;
         let oldValueAtPath = oldValue;
@@ -249,7 +243,7 @@ export function useBatchWatch<T extends any[]>(
   const previousValues: any[] = [];
 
   // Erstelle separate Watcher für jede Quelle
-  const stopHandles = sources.map((source, index) => {
+  const stopHandles = sources.map((source, index: any) => {
     return watch(
       source,
       (newValue, oldValue) => {
@@ -290,7 +284,7 @@ export function useBatchWatch<T extends any[]>(
 
   // Kombinierte Stop-Funktion
   return () => {
-    stopHandles.forEach((stop) => stop());
+    stopHandles.forEach((stop: any) => stop());
     if (batchTimeout) {
       clearTimeout(batchTimeout);
     }
@@ -553,7 +547,7 @@ export function useMessageStreamingWatch<T extends Array<any>>(
     try {
       if (!oldMessages || oldMessages.length === 0) {
         // Initialer Aufruf, alle Nachrichten als hinzugefügt markieren
-        const changes = messages.map((item, index) => ({
+        const changes = messages.map((item, index: any) => ({
           type: "add" as const,
           index,
           item,
@@ -571,7 +565,7 @@ export function useMessageStreamingWatch<T extends Array<any>>(
       }[] = [];
 
       // Erkenne Hinzufügungen und Aktualisierungen
-      messages.forEach((item, index) => {
+      messages.forEach((item, index: any) => {
         if (index >= previousMessages.length) {
           // Neue Nachricht am Ende
           changes.push({ type: "add", index, item });
@@ -916,13 +910,15 @@ export function useSelfOptimizingWatch<T>(
     if (updateIntervals.length < 2) return;
 
     // Berechne Durchschnittsintervall und Varianz
-    const sum = updateIntervals.reduce((a, b) => a + b, 0);
+    const sum = updateIntervals.reduce((a: any, b) => a + b, 0);
     const avg = sum / updateIntervals.length;
 
     // Berechne Varianz zur Bestimmung der Regelmäßigkeit
     const variance =
-      updateIntervals.reduce((acc, val) => acc + Math.pow(val - avg, 2), 0) /
-      updateIntervals.length;
+      updateIntervals.reduce(
+        (acc: any, val) => acc + Math.pow(val - avg, 2),
+        0,
+      ) / updateIntervals.length;
 
     // Normalisierte Regelmäßigkeit (0-1)
     updateRegularity = 1 / (1 + variance / (avg * avg));

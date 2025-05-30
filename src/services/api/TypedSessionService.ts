@@ -12,13 +12,7 @@ import {
   createStreamingConnection,
   StreamingService,
 } from "./StreamingService";
-import {
-  Result,
-  APIError,
-  CachePolicy,
-  catchAsync,
-  AsyncAPIResult,
-} from "@/utils/apiTypes";
+import { Result, APIError, CachePolicy } from "@/utils/apiTypes";
 
 import type {
   ChatSession,
@@ -960,8 +954,8 @@ export class TypedSessionService extends BaseApiService<
       );
 
       if (completedRequests.length > 0) {
-        const ids = completedRequests.map((req) => req.id);
-        await defaultIndexedDBService.deleteBulk("offlineRequests", ids);
+        const ids = completedRequests.map((req: any) => req.id);
+        await defaultIndexedDBService.deleteBulk("offlineRequests", _ids);
         this.logger.debug(
           `${completedRequests.length} abgeschlossene Anfragen aus der Queue entfernt`,
         );
@@ -1030,7 +1024,7 @@ export class TypedSessionService extends BaseApiService<
     if (this.eventHandlers.has(event)) {
       const handlers = this.eventHandlers.get(event);
       if (handlers) {
-        handlers.forEach((handler) => {
+        handlers.forEach((handler: any) => {
           try {
             handler(data);
           } catch (error) {

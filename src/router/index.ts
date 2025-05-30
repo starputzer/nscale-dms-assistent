@@ -45,6 +45,12 @@ const AdminView = () =>
     "@/views/AdminView.vue"
   );
 
+const PerformanceDashboard = () =>
+  import(
+    /* webpackChunkName: "view-performance" */
+    "@/views/PerformanceDashboard.vue"
+  );
+
 // We're using AdminView directly, so no need for the loader
 
 const routes: RouteRecordRaw[] = [
@@ -123,6 +129,13 @@ const routes: RouteRecordRaw[] = [
             component: AdminView,
           },
         ],
+      },
+
+      // Performance Dashboard
+      {
+        path: "performance",
+        name: "Performance",
+        component: PerformanceDashboard,
       },
     ],
   },

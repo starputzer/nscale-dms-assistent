@@ -1,9 +1,16 @@
 <template>
   <div class="admin-doc-converter">
     <h2>{{ t("admin.docConverter.title", "Dokumentenkonverter") }}</h2>
-    
+
     <div class="section-header">
-      <p>{{ t("admin.docConverter.description", "Konfiguration und Überwachung des Dokumentenkonverters.") }}</p>
+      <p>
+        {{
+          t(
+            "admin.docConverter.description",
+            "Konfiguration und Überwachung des Dokumentenkonverters.",
+          )
+        }}
+      </p>
     </div>
 
     <div class="doc-converter-integration">
@@ -13,9 +20,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useI18n } from 'vue-i18n';
-import DocConverterContainer from '../document-converter/DocConverterContainer.vue';
+import { ref, onMounted } from "vue";
+import { useI18n } from "vue-i18n";
+import DocConverterContainer from "../document-converter/DocConverterContainer.vue";
 
 // i18n
 const { t } = useI18n();

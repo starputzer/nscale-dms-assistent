@@ -25,10 +25,12 @@ import {
 
 // i18n with global scope and composition disabled to fix the "Not available in legacy mode" error
 const { t } = useI18n({
-  useScope: 'global',
-  inheritLocale: true
+  useScope: "global",
+  inheritLocale: true,
 });
-console.log('[AdminPanelLoader] i18n initialized with global scope and inheritance');
+console.log(
+  "[AdminPanelLoader] i18n initialized with global scope and inheritance",
+);
 
 // Props
 const props = defineProps({

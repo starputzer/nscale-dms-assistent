@@ -515,7 +515,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, defineEmits } from "vue";
+import { ref, computed, watch, defineEmits } from "vue";
 import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
 import { useAdminUsersStore } from "@/stores/admin/users";
@@ -529,8 +529,8 @@ import type { User, NewUser, UserRole } from "@/types/admin";
 const emit = defineEmits(["error", "auth-error", "reload"]);
 
 // i18n
-const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
-console.log('[i18n] Component initialized with global scope and inheritance');
+const { t, locale } = useI18n({ useScope: "global", inheritLocale: true });
+console.log("[i18n] Component initialized with global scope and inheritance");
 
 // Stores
 const adminUsersStore = useAdminUsersStore();
@@ -653,7 +653,7 @@ function formatDate(timestamp: number): string {
     // Handle both seconds and milliseconds timestamps
     // If timestamp is less than 10000000000, it's likely in seconds
     const timestampMs = timestamp < 10000000000 ? timestamp * 1000 : timestamp;
-    
+
     // Validate the timestamp is reasonable (after year 2000 and before year 2100)
     const date = new Date(timestampMs);
     const year = date.getFullYear();
@@ -661,7 +661,7 @@ function formatDate(timestamp: number): string {
       console.warn(`Invalid timestamp: ${timestamp}, resulting year: ${year}`);
       return "Invalid date";
     }
-    
+
     return format(date, "dd.MM.yyyy HH:mm", { locale: de });
   } catch (error) {
     console.error("Error formatting date:", error, "timestamp:", timestamp);
@@ -964,10 +964,14 @@ watch(storeError, (newError) => {
 });
 
 // Log i18n initialization status
-console.log(`[AdminUsers.enhanced] i18n initialized with locale: ${locale.value}`);
+console.log(
+  `[AdminUsers.enhanced] i18n initialized with locale: ${locale.value}`,
+);
 
 // Log i18n initialization status
-console.log(`[AdminUsers.enhanced] i18n initialized with locale: ${locale.value}`);
+console.log(
+  `[AdminUsers.enhanced] i18n initialized with locale: ${locale.value}`,
+);
 </script>
 
 <style scoped>

@@ -39,7 +39,7 @@ export function useAdminComponentSafeAccess(componentName: string) {
     );
 
     // Run all cleanup functions in reverse order
-    [...cleanupRegistry].reverse().forEach((cleanupFn) => {
+    [...cleanupRegistry].reverse().forEach((cleanupFn: any) => {
       try {
         cleanupFn();
       } catch (error) {

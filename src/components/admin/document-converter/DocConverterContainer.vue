@@ -131,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useDocumentConverter } from "@/composables/useDocumentConverter";
 import { useFeatureToggles } from "@/composables/useFeatureToggles";
 import { useGlobalDialog } from "@/composables/useDialog";
@@ -325,7 +325,10 @@ function viewDocument(documentId: string) {
 
   const document = documents.value.find((doc) => doc.id === documentId);
 
-  if (document && (document.status === "success" || document.status === "completed")) {
+  if (
+    document &&
+    (document.status === "success" || document.status === "completed")
+  ) {
     conversionResult.value = document;
   }
 }

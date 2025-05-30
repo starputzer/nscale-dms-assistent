@@ -85,6 +85,25 @@ npm run typecheck   # TypeScript-Prüfung
 npm run format      # Code formatieren
 ```
 
+### Security & Performance
+```bash
+npm run security:audit      # Security-Audit durchführen
+npm run security:audit:fix  # Vulnerabilities automatisch beheben
+npm run build:analyze       # Bundle-Analyse
+```
+
+### Neue Features (Mai 2025)
+
+#### Performance Monitoring
+- **Development Widget**: Automatisch sichtbar im Development-Modus (unten rechts)
+- **Metriken**: Response Times, Error Rate, Web Vitals, Memory Usage
+- **API**: `performanceMonitor` Service für custom Tracking
+
+#### CI/CD Integration
+- **GitHub Actions**: Automatische TypeScript- und Lint-Checks
+- **Pre-Commit Hooks**: Lokale Validierung vor Commits
+- **Performance Baseline**: Definierte Schwellwerte für Build und Runtime
+
 ## Projektstruktur
 
 ```

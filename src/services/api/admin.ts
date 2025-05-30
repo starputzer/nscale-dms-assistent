@@ -24,29 +24,43 @@ const handleApiRequest = async (
 ) => {
   // Check if we should use mock data directly (based on environment or flags)
   if (adminMockService.shouldUseMock(mockEndpoint)) {
-    console.info(`Using mock data for ${mockEndpoint} (forced by configuration)`);
+    console.info(
+      `Using mock data for ${mockEndpoint} (forced by configuration)`,
+    );
     return {
       data: await adminMockService.getMockResponse(mockEndpoint, mockParams),
     };
   }
-  
+
   try {
     // Attempt the real API call
     return await apiCall();
   } catch (error: any) {
-    console.warn(`API call failed for ${mockEndpoint}:`, error.message || 'Unknown error');
-    
+    console.warn(
+      `API call failed for ${mockEndpoint}:`,
+      error.message || "Unknown error",
+    );
+
     // Log additional error details if available
     if (error.response) {
-      console.warn(`Status: ${error.response.status}, Data:`, error.response.data);
+      console.warn(
+        `Status: ${error.response.status}, Data:`,
+        error.response.data,
+      );
     }
 
     // Always fallback to mock data in development mode
-    if (process.env.NODE_ENV === 'development' || error.response?.status >= 500 || error.response?.status === 401) {
-      console.info(`Falling back to mock data for ${mockEndpoint} due to error`);
+    if (
+      process.env.NODE_ENV === "development" ||
+      error.response?.status >= 500 ||
+      error.response?.status === 401
+    ) {
+      console.info(
+        `Falling back to mock data for ${mockEndpoint} due to error`,
+      );
       return {
         data: await adminMockService.getMockResponse(mockEndpoint, mockParams),
-        _isMockData: true,  // Flag to identify mock responses
+        _isMockData: true, // Flag to identify mock responses
       };
     }
 
@@ -130,7 +144,7 @@ export const adminApi = {
         axios.get("/admin/feedback/export", {
           params: {
             format: options?.format,
-            fields: options?.fields?.join(",")
+            fields: options?.fields?.join(","),
           },
           responseType: "blob",
         }),

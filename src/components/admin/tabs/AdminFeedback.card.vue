@@ -721,8 +721,8 @@ import { de } from "date-fns/locale";
 import AdminCard from "@/components/admin/shared/AdminCard.vue";
 
 // Composables
-const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
-console.log('[i18n] Component initialized with global scope and inheritance');
+const { t, locale } = useI18n({ useScope: "global", inheritLocale: true });
+console.log("[i18n] Component initialized with global scope and inheritance");
 const toast = useToast();
 const feedbackStore = useAdminFeedbackStore();
 
@@ -1096,10 +1096,14 @@ onUnmounted(() => {
 });
 
 // Log i18n initialization status
-console.log(`[AdminFeedback.card] i18n initialized with locale: ${locale.value}`);
+console.log(
+  `[AdminFeedback.card] i18n initialized with locale: ${locale.value}`,
+);
 
 // Log i18n initialization status
-console.log(`[AdminFeedback.card] i18n initialized with locale: ${locale.value}`);
+console.log(
+  `[AdminFeedback.card] i18n initialized with locale: ${locale.value}`,
+);
 </script>
 
 <style lang="scss" scoped>

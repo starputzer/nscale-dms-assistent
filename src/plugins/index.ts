@@ -42,7 +42,7 @@ export const globalPlugins: PluginRegistration[] = [
  * Registriert alle globalen Plugins in einer Vue-Instanz
  */
 export function registerGlobalPlugins(app: App): void {
-  globalPlugins.forEach((pluginRegistration) => {
+  globalPlugins.forEach((pluginRegistration: any) => {
     app.use(pluginRegistration.plugin, pluginRegistration.options);
   });
 }

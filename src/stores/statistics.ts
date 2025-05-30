@@ -339,7 +339,7 @@ export const useStatisticsStore = defineStore("statistics", () => {
     > = {};
 
     // Metriken aus dem Puffer kopieren
-    metricsBuffer.value.forEach((values, name) => {
+    metricsBuffer.value.forEach((values, name: any) => {
       metricsToSync[name] = [...values];
     });
 
@@ -363,7 +363,7 @@ export const useStatisticsStore = defineStore("statistics", () => {
       );
 
       // Fehlgeschlagene Synchronisierung: Metriken zurück in den Puffer legen
-      Object.entries(metricsToSync).forEach(([name, values]) => {
+      Object.entries(metricsToSync).forEach(([name, values]: any) => {
         if (!metricsBuffer.value.has(name)) {
           metricsBuffer.value.set(name, []);
         }

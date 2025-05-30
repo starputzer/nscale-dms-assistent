@@ -110,17 +110,16 @@ export function createBatchedEventEmitter(): BatchedEventEmitter {
 }
 
 // Export all types and classes
+export { deepDiff, applyDiff };
+
+export type { DiffOperation, DiffOperationType, PerformanceMetricType };
+
 export {
-  deepDiff,
-  applyDiff,
-  DiffOperation,
-  DiffOperationType,
   OptimizedStateManager,
   BatchedEventEmitter,
   MemoryManager,
   OptimizedChatBridge,
   PerformanceMonitor,
-  PerformanceMetricType,
 };
 
 /**

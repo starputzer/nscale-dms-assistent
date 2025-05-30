@@ -300,7 +300,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from "vue";
+import { ref, computed } from "vue";
 import { useGlobalDialog } from "@/composables/useDialog";
 import { useI18n } from "@/composables/useI18n";
 

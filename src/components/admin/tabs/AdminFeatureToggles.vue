@@ -304,14 +304,13 @@ import AdminFeatureMetrics from "@/components/admin/AdminFeatureMetrics.vue";
 // Types
 import type {
   FeatureToggle,
-  FeatureCategory,
   FeatureMetrics,
   FeatureHistoryEntry,
   FeatureErrorLog,
 } from "@/types/featureToggles";
 
-const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
-console.log('[i18n] Component initialized with global scope and inheritance');
+const { t, locale } = useI18n({ useScope: "global", inheritLocale: true });
+console.log("[i18n] Component initialized with global scope and inheritance");
 const featureStore = useFeatureTogglesStore();
 const authStore = useAuthStore();
 const { toggles: enhancedFeatures, categories } = storeToRefs(featureStore);
@@ -673,10 +672,14 @@ watch(viewMode, async (newMode) => {
 });
 
 // Log i18n initialization status
-console.log(`[AdminFeatureToggles] i18n initialized with locale: ${locale.value}`);
+console.log(
+  `[AdminFeatureToggles] i18n initialized with locale: ${locale.value}`,
+);
 
 // Log i18n initialization status
-console.log(`[AdminFeatureToggles] i18n initialized with locale: ${locale.value}`);
+console.log(
+  `[AdminFeatureToggles] i18n initialized with locale: ${locale.value}`,
+);
 </script>
 
 <style lang="scss">

@@ -30,7 +30,11 @@ describe("UI Store", () => {
   beforeEach(() => {
     // Mock für document.documentElement.style
     documentSpy = {
-      style: {},
+      style: {
+        setProperty: vi.fn(),
+        getPropertyValue: vi.fn(),
+        removeProperty: vi.fn(),
+      },
     };
 
     // Mock für document.documentElement.classList
@@ -47,16 +51,21 @@ describe("UI Store", () => {
       removeEventListener: vi.fn(),
     };
 
-    // Mocks für DOM-APIs
-    vi.spyOn(document, "documentElement", "get").mockReturnValue(
-      documentSpy as any,
-    );
-    vi.spyOn(document.documentElement, "classList", "get").mockReturnValue(
-      documentClassListSpy as any,
-    );
-    vi.spyOn(document.documentElement, "setAttribute").mockImplementation(
-      (attr, value) => {},
-    );
+    // Setup a complete mock for document.documentElement
+    const mockDocumentElement = {
+      style: documentSpy.style,
+      classList: documentClassListSpy,
+      getAttribute: vi.fn(),
+      setAttribute: vi.fn(),
+      requestFullscreen: vi.fn().mockResolvedValue(undefined),
+    };
+
+    // Mock document.documentElement getter
+    Object.defineProperty(document, 'documentElement', {
+      configurable: true,
+      get: () => mockDocumentElement,
+    });
+
     vi.spyOn(window, "matchMedia").mockReturnValue(mediaQueryListSpy as any);
 
     // Zurücksetzen der lokalen Speicher zwischen Tests
@@ -67,6 +76,9 @@ describe("UI Store", () => {
 
     // Die Standardgröße des Viewports setzen (nicht mobil)
     window.innerWidth = 1024;
+
+    // Setup Pinia for each test
+    setActivePinia(createPinia());
   });
 
   afterEach(() => {

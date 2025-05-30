@@ -106,14 +106,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  computed,
-  ref,
-  watch,
-  onMounted,
-  getCurrentInstance,
-  inject,
-} from "vue";
+import { computed, onMounted, inject } from "vue";
 import { useFeatureToggles } from "@/composables/useFeatureToggles";
 import { useLogger } from "@/composables/useLogger";
 import ErrorBoundary, {

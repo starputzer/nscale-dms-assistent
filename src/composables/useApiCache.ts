@@ -1,4 +1,4 @@
-import { ref, reactive, computed, watch } from "vue";
+import { reactive, computed } from "vue";
 import { useFeatureToggles } from "./useFeatureToggles";
 import { useOfflineDetection } from "./useOfflineDetection";
 import { useLogger } from "./useLogger";

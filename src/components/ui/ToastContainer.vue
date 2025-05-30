@@ -1,7 +1,7 @@
 <template>
-  <Toast 
-    :position="position" 
-    :offset="16" 
+  <Toast
+    :position="position"
+    :offset="16"
     :limit="maxToasts"
     :z-index="9999"
     pause-on-hover
@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import Toast from './Toast.vue';
+import Toast from "./Toast.vue";
 
 /**
  * Toast-Container Props
@@ -36,5 +36,4 @@ const props = withDefaults(defineProps<ToastContainerProps>(), {
   position: "bottom-right",
   maxToasts: 6,
 });
-
 </script>

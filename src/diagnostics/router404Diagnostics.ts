@@ -192,7 +192,7 @@ export class Router404Diagnostics {
         from: from,
         to: to,
         additionalInfo: {
-          matched: to.matched.map((r) => r.path),
+          matched: to.matched.map((r: any) => r.path),
           redirectedFrom: to.redirectedFrom,
         },
       });
@@ -219,14 +219,14 @@ export class Router404Diagnostics {
     const recommendations = this.generateRecommendations(issues);
 
     const report: RouterHealthReport = {
-      healthy: issues.filter((i) => i.severity === "critical").length === 0,
+      healthy: issues.filter((i: any) => i.severity === "critical").length === 0,
       events: this.events,
       issues,
       recommendations,
       timing: {
         firstNavigation: this.findFirstNavigation(),
         lastError: this.lastError
-          ? this.events.filter((e) => e.type === "error").slice(-1)[0]
+          ? this.events.filter((e: any) => e.type === "error").slice(-1)[0]
               ?.timestamp
           : undefined,
         totalErrors: this.errorCount,

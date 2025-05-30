@@ -202,7 +202,7 @@ export class LogServiceWrapper {
 
     if (filter) {
       if (filter.level) {
-        filteredLogs = filteredLogs.filter((log) => log.level === filter.level);
+        filteredLogs = filteredLogs.filter((log: any) => log.level === filter.level);
       }
 
       if (filter.component) {

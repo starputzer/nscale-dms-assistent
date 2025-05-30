@@ -12,31 +12,44 @@
           )
         }}
       </p>
-      
+
       <!-- API-Integration-Banner -->
-      <div v-if="systemStore.apiIntegrationEnabled" class="admin-info-banner admin-info-banner--success">
+      <div
+        v-if="systemStore.apiIntegrationEnabled"
+        class="admin-info-banner admin-info-banner--success"
+      >
         <i class="fas fa-check-circle"></i>
         <div>
-          <strong>{{ t("admin.system.apiActive.title", "API-Integration aktiv:") }}</strong>
-          {{ t("admin.system.apiActive.description", "Diese Oberfläche kommuniziert direkt mit dem Backend-System. Es werden echte Daten angezeigt und Änderungen werden im System gespeichert.") }}
+          <strong>{{
+            t("admin.system.apiActive.title", "API-Integration aktiv:")
+          }}</strong>
+          {{
+            t(
+              "admin.system.apiActive.description",
+              "Diese Oberfläche kommuniziert direkt mit dem Backend-System. Es werden echte Daten angezeigt und Änderungen werden im System gespeichert.",
+            )
+          }}
         </div>
       </div>
-      
+
       <!-- Error-Banner anzeigen wenn Fehler aufgetreten ist -->
-      <div v-if="systemStore.error" class="admin-info-banner admin-info-banner--error">
+      <div
+        v-if="systemStore.error"
+        class="admin-info-banner admin-info-banner--error"
+      >
         <i class="fas fa-exclamation-triangle"></i>
         <div>
           <strong>{{ t("admin.system.error.title", "Fehler:") }}</strong>
           {{ systemStore.error }}
-          <button 
-            class="admin-button admin-button--small admin-button--text" 
+          <button
+            class="admin-button admin-button--small admin-button--text"
             @click="refreshAll"
           >
             {{ t("admin.system.error.retry", "Erneut versuchen") }}
           </button>
         </div>
       </div>
-      
+
       <div class="admin-system-enhanced__actions">
         <button
           class="admin-button admin-button--secondary"
@@ -45,9 +58,11 @@
         >
           <i v-if="systemStore.loading" class="fas fa-spinner fa-spin"></i>
           <i v-else class="fas fa-sync-alt"></i>
-          {{ systemStore.loading 
-            ? t("admin.system.loading", "Wird geladen...") 
-            : t("admin.system.refresh", "Aktualisieren") }}
+          {{
+            systemStore.loading
+              ? t("admin.system.loading", "Wird geladen...")
+              : t("admin.system.refresh", "Aktualisieren")
+          }}
         </button>
       </div>
     </div>
@@ -795,7 +810,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
 import { useAdminSystemStore } from "@/stores/admin/system";
@@ -806,12 +821,13 @@ import Chart from "chart.js/auto";
 import AdminCard from "@/components/admin/shared/AdminCard.vue";
 
 // i18n
-const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
-console.log('[i18n] Component initialized with global scope and inheritance');
+const { t, locale } = useI18n({ useScope: "global", inheritLocale: true });
+console.log("[i18n] Component initialized with global scope and inheritance");
 
 // Store with proper reactive references
 const systemStore = useAdminSystemStore();
-const { stats, loading, error, apiIntegrationEnabled, systemSettings } = storeToRefs(systemStore);
+const { stats, loading, error, apiIntegrationEnabled, systemSettings } =
+  storeToRefs(systemStore);
 
 // Toast
 const toast = useToast();
@@ -1157,7 +1173,7 @@ async function refreshAll() {
   try {
     // Wir verwenden das loading state aus dem Store
     await systemStore.fetchStats();
-    
+
     // Laden der Systemaktionen optional basierend auf dem Ergebnis von fetchStats
     if (!systemStore.error) {
       // Auch Aktionen neu laden, wenn die Statistiken erfolgreich geladen wurden
@@ -1166,19 +1182,22 @@ async function refreshAll() {
     }
   } catch (error: any) {
     console.error("Fehler beim Aktualisieren der Systemstatistiken:", error);
-    
+
     // Verbesserte Fehlermeldung mit mehr Kontext
-    let errorMessage = t("admin.system.refreshError", "Fehler beim Aktualisieren");
-    
+    let errorMessage = t(
+      "admin.system.refreshError",
+      "Fehler beim Aktualisieren",
+    );
+
     // Zusätzliche Details für Entwickler in der Konsole
     if (error.code) {
       console.error(`Fehlercode: ${error.code}`);
     }
-    
+
     if (error.details) {
       console.error("Fehlerdetails:", error.details);
     }
-    
+
     // Anzeige des Fehlers mit Toast
     toast.error(errorMessage);
   } finally {
@@ -1291,32 +1310,37 @@ async function confirmAction() {
     closeConfirmDialog();
     return;
   }
-  
+
   isActionPending.value = true;
-  
+
   try {
     // Ausführen der Aktion mit besserer Fehlerbehandlung
     await pendingActionCallback.value();
     closeConfirmDialog();
-    
+
     // Feedback für den Benutzer
-    toast.success(t("admin.system.actionSuccess", "Aktion erfolgreich ausgeführt"));
-    
+    toast.success(
+      t("admin.system.actionSuccess", "Aktion erfolgreich ausgeführt"),
+    );
+
     // Aktualisieren der Daten nach erfolgreicher Aktion
     refreshAll();
   } catch (error: any) {
     console.error("Fehler beim Ausführen der Aktion:", error);
-    
+
     // Verbesserte Fehlermeldung mit mehr Kontext
-    let errorMessage = t("admin.system.actionError", "Fehler bei der Ausführung der Aktion");
-    
+    let errorMessage = t(
+      "admin.system.actionError",
+      "Fehler bei der Ausführung der Aktion",
+    );
+
     if (error.message) {
       errorMessage = error.message;
     }
-    
+
     // Anzeige des Fehlers mit Toast
     toast.error(errorMessage);
-    
+
     // Dialog trotzdem schließen
     closeConfirmDialog();
   } finally {
@@ -1337,7 +1361,7 @@ onMounted(async () => {
   // Versuche, Daten zu laden und behandle Fehler angemessen
   try {
     await refreshAll();
-    
+
     // Wenn wir API-Integration verwenden, auch Systemaktionen laden
     if (apiIntegrationEnabled.value) {
       await systemStore.fetchAvailableActions();
@@ -1356,9 +1380,11 @@ onMounted(async () => {
   refreshInterval = window.setInterval(() => {
     refreshAll();
   }, 45000);
-  
+
   // Logge erweiterte Diagnoseinformationen
-  console.log(`[AdminSystem] Komponente initialisiert, API-Integration: ${apiIntegrationEnabled.value}`);
+  console.log(
+    `[AdminSystem] Komponente initialisiert, API-Integration: ${apiIntegrationEnabled.value}`,
+  );
 });
 
 onUnmounted(() => {
@@ -1372,10 +1398,14 @@ onUnmounted(() => {
 });
 
 // Log i18n initialization status
-console.log(`[AdminSystem.enhanced] i18n initialized with locale: ${locale.value}`);
+console.log(
+  `[AdminSystem.enhanced] i18n initialized with locale: ${locale.value}`,
+);
 
 // Log i18n initialization status
-console.log(`[AdminSystem.enhanced] i18n initialized with locale: ${locale.value}`);
+console.log(
+  `[AdminSystem.enhanced] i18n initialized with locale: ${locale.value}`,
+);
 </script>
 
 <style lang="scss">

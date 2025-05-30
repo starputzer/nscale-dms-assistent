@@ -9,11 +9,24 @@
       'n-message-item--streaming': message.isStreaming,
     }"
     :data-message-id="message.id"
-    style="position: relative;"
+    style="position: relative"
   >
     <!-- Debug overlay - hidden in production -->
-    <div style="position: absolute; top: 0; right: 0; background: rgba(0,0,0,0.7); color: #0f0; padding: 2px 4px; font-size: 8px; border-radius: 2px; z-index: 999;">
-      [{{ message.role }}] ID: {{ message.id.substring(0,8) }} | Len: {{ message.content.length }} | Stream: {{ message.isStreaming }}
+    <div
+      style="
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.7);
+        color: #0f0;
+        padding: 2px 4px;
+        font-size: 8px;
+        border-radius: 2px;
+        z-index: 999;
+      "
+    >
+      [{{ message.role }}] ID: {{ message.id.substring(0, 8) }} | Len:
+      {{ message.content.length }} | Stream: {{ message.isStreaming }}
     </div>
     <div class="n-message-item__content">
       <div class="n-message-item__header">
@@ -34,13 +47,17 @@
       </div>
 
       <!-- Debug text to verify content length -->
-      <div class="n-message-debug-text" style="font-size: 10px; color: #666; margin-bottom: 5px;">
-        Content length: {{ message.content.length }} chars | isStreaming: {{ message.isStreaming }}
+      <div
+        class="n-message-debug-text"
+        style="font-size: 10px; color: #666; margin-bottom: 5px"
+      >
+        Content length: {{ message.content.length }} chars | isStreaming:
+        {{ message.isStreaming }}
       </div>
-      
+
       <!-- Display raw content when streaming to eliminate Markdown processing issues -->
-      <div 
-        v-if="message.isStreaming" 
+      <div
+        v-if="message.isStreaming"
         ref="streamingContentElement"
         class="n-message-item__text n-message-item__text--streaming"
         :data-content-length="message.content.length"
@@ -49,7 +66,7 @@
       >
         {{ message.content }}
       </div>
-      
+
       <!-- Normal formatted content for non-streaming messages -->
       <div
         v-else
@@ -183,11 +200,8 @@ import DOMPurify from "dompurify";
 import hljs from "highlight.js";
 import { useUIStore } from "@/stores/ui";
 import { useSourceReferences } from "@/composables/useSourceReferences";
-import type { ChatMessage, SourceReference } from "@/types/session";
-import {
-  highlightCode,
-  linkifySourceReferences,
-} from "@/utils/messageFormatter";
+import type { ChatMessage } from "@/types/session";
+import { linkifySourceReferences } from "@/utils/messageFormatter";
 
 // Konfiguration für marked (Markdown-Parser)
 marked.setOptions({
@@ -263,19 +277,27 @@ const uiStore = useUIStore();
 const sourceRefs = useSourceReferences();
 
 // Debug: Watch message content changes
-watch(() => props.message.content, (newContent, oldContent) => {
-  if (newContent !== oldContent) {
-    console.log(`[MessageItem] Content changed for ${props.message.id}: ${oldContent?.length || 0} -> ${newContent.length} chars`);
-    console.log(`[MessageItem] isStreaming: ${props.message.isStreaming}`);
-    
-    // Force update the DOM
-    if (props.message.isStreaming) {
-      nextTick(() => {
-        console.log(`[MessageItem] DOM update triggered for streaming message ${props.message.id}`);
-      });
+watch(
+  () => props.message.content,
+  (newContent, oldContent) => {
+    if (newContent !== oldContent) {
+      console.log(
+        `[MessageItem] Content changed for ${props.message.id}: ${oldContent?.length || 0} -> ${newContent.length} chars`,
+      );
+      console.log(`[MessageItem] isStreaming: ${props.message.isStreaming}`);
+
+      // Force update the DOM
+      if (props.message.isStreaming) {
+        nextTick(() => {
+          console.log(
+            `[MessageItem] DOM update triggered for streaming message ${props.message.id}`,
+          );
+        });
+      }
     }
-  }
-}, { immediate: true, deep: false });
+  },
+  { immediate: true, deep: false },
+);
 
 // Quellenreferenzen in der Nachricht finden
 const hasSourceReferences = computed(() => {
@@ -290,16 +312,18 @@ const hasSourceReferences = computed(() => {
 // Formatiert den Nachrichteninhalt mit Markdown und Syntax-Highlighting
 const formattedContent = computed(() => {
   let content = props.message.content || "";
-  
+
   // Debug log for streaming
   if (props.message.isStreaming) {
-    console.log(`[MessageItem] Formatting streaming content: ${content.length} chars, id: ${props.message.id}`);
+    console.log(
+      `[MessageItem] Formatting streaming content: ${content.length} chars, id: ${props.message.id}`,
+    );
   }
 
   // Skip Markdown processing for streaming messages to improve performance
   if (props.message.isStreaming) {
     // Simple text with line breaks for streaming
-    content = content.replace(/\n/g, '<br>');
+    content = content.replace(/\n/g, "<br>");
   } else {
     // Markdown zu HTML konvertieren
     content = marked(content, { breaks: true });
@@ -646,29 +670,40 @@ const streamingContentElement = ref<HTMLElement | null>(null);
 function setupMessageUpdateListener() {
   const handleMessageUpdate = (event: CustomEvent) => {
     const { messageId, content, isStreaming } = event.detail;
-    
+
     // Only respond to events for this message
     if (messageId === props.message.id) {
-      console.log(`[MessageItem] Received update event for message ${messageId}`, { 
-        contentLength: content.length, 
-        isStreaming 
-      });
-      
+      console.log(
+        `[MessageItem] Received update event for message ${messageId}`,
+        {
+          contentLength: content.length,
+          isStreaming,
+        },
+      );
+
       // Manually update the DOM if the streaming element is available
       if (isStreaming && streamingContentElement.value) {
         // Direct DOM update as a fallback for reactivity issues
         streamingContentElement.value.textContent = content;
-        streamingContentElement.value.dataset.contentLength = String(content.length);
+        streamingContentElement.value.dataset.contentLength = String(
+          content.length,
+        );
       }
     }
   };
-  
+
   // Add event listener
-  window.addEventListener('message-content-updated', handleMessageUpdate as EventListener);
-  
+  window.addEventListener(
+    "message-content-updated",
+    handleMessageUpdate as EventListener,
+  );
+
   // Return cleanup function
   return () => {
-    window.removeEventListener('message-content-updated', handleMessageUpdate as EventListener);
+    window.removeEventListener(
+      "message-content-updated",
+      handleMessageUpdate as EventListener,
+    );
   };
 }
 
@@ -682,10 +717,10 @@ onMounted(() => {
 
     setupSourceReferenceClicks();
   });
-  
+
   // Set up message update listener
   const cleanup = setupMessageUpdateListener();
-  
+
   // Clean up listener on unmount
   onBeforeUnmount(cleanup);
 });
@@ -696,9 +731,11 @@ watch(
   (newContent, oldContent) => {
     // Log content changes
     if (props.message.isStreaming) {
-      console.log(`[MessageItem] Content changed for streaming message ${props.message.id}: ${oldContent?.length || 0} -> ${newContent.length} chars`);
+      console.log(
+        `[MessageItem] Content changed for streaming message ${props.message.id}: ${oldContent?.length || 0} -> ${newContent.length} chars`,
+      );
     }
-    
+
     // Update DOM on next tick
     nextTick(() => {
       if (props.highlightCodeBlocks && !props.message.isStreaming) {
@@ -706,7 +743,7 @@ watch(
       }
 
       setupSourceReferenceClicks();
-      
+
       // For streaming messages, ensure content is updated in DOM
       if (props.message.isStreaming && streamingContentElement.value) {
         streamingContentElement.value.textContent = newContent;
@@ -1130,14 +1167,20 @@ watch(
   white-space: pre-wrap;
   color: #333;
   line-height: 1.5;
-  
+
   /* Pulsating effect for streaming content */
   animation: pulse-border 1.5s infinite;
 }
 
 @keyframes pulse-border {
-  0% { border-left-color: rgba(255, 193, 7, 0.3); }
-  50% { border-left-color: rgba(255, 193, 7, 0.9); }
-  100% { border-left-color: rgba(255, 193, 7, 0.3); }
+  0% {
+    border-left-color: rgba(255, 193, 7, 0.3);
+  }
+  50% {
+    border-left-color: rgba(255, 193, 7, 0.9);
+  }
+  100% {
+    border-left-color: rgba(255, 193, 7, 0.3);
+  }
 }
 </style>

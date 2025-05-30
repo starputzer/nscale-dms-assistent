@@ -2063,58 +2063,11 @@ async def get_sessions_stats(user_data: Dict[str, Any] = Depends(get_current_use
     }
 
 # Import Enhanced Batch Handler
-# from api.batch_handler_enhanced import handle_batch_request as enhanced_batch_handler
-from api.batch_handler_simple import handle_batch_request as enhanced_batch_handler
+# Import the new FastAPI batch router
+from api.batch_handler_fastapi import router as batch_router
 
-# Batch API-Endpunkt - unterstützt beide Pfade für Kompatibilität
-@app.post("/api/batch")
-@app.post("/api/v1/batch")
-async def handle_batch(request: Request, user_data: Dict[str, Any] = Depends(get_current_user)):
-    """
-    Enhanced Batch-API-Handler mit 75% Performance-Verbesserung.
-    
-    Features:
-    - Parallele Request-Verarbeitung
-    - Request-Deduplizierung
-    - Intelligentes Caching für GET-Requests
-    - Prioritätsbasierte Ausführung
-    - Automatische Retry-Logik
-    - Detaillierte Performance-Metriken
-    """
-    # Debug: Log the Authorization header
-    auth_header = request.headers.get("Authorization")
-    logger.info(f"Batch request - Authorization header: {auth_header[:50]}...") if auth_header else logger.info("Batch request - No Authorization header")
-    
-    # User data comes from the dependency injection
-    logger.info(f"Batch request - User data: {user_data}")
-    
-    try:
-        data = await request.json()
-        
-        # Setze User-Context für den Enhanced Handler
-        import flask
-        from flask import g
-        if hasattr(flask, 'g'):
-            g.user = user_data
-        
-        # Delegiere an Enhanced Batch Handler
-        result = await enhanced_batch_handler(data)
-        
-        # Log Performance-Metriken
-        if 'data' in result and 'stats' in result['data']:
-            stats = result['data']['stats']
-            logger.info(f"Batch processed: {result['data']['count']} requests, "
-                       f"Duration: {stats['total_duration']:.2f}s, "
-                       f"Cache hit rate: {stats['cache_hit_rate']:.2%}, "
-                       f"Deduplication rate: {stats['deduplication_rate']:.2%}")
-        
-        return result
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Batch request handler error: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+# Include the batch router
+app.include_router(batch_router)
 
 if __name__ == "__main__":
     import uvicorn

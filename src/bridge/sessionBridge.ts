@@ -71,7 +71,7 @@ export function initSessionBridge() {
     handler: (event: CustomEvent<LegacySessionEvent>) => void,
   ) {
     if (eventHandlers[type]) {
-      eventHandlers[type] = eventHandlers[type].filter((h) => h !== handler);
+      eventHandlers[type] = eventHandlers[type].filter((h: any) => h !== handler);
     }
   }
 
@@ -87,7 +87,7 @@ export function initSessionBridge() {
 
     // Lokale Handler aufrufen
     if (eventHandlers[type]) {
-      eventHandlers[type].forEach((handler) =>
+      eventHandlers[type].forEach((handler: any) =>
         handler(new CustomEvent<LegacySessionEvent>("", { detail })),
       );
     }

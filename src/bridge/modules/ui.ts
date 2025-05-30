@@ -237,7 +237,7 @@ export function initUIBridge(
           );
 
           if (closedModalIds.length > 0) {
-            closedModalIds.forEach((id) => {
+            closedModalIds.forEach((id: any) => {
               state.bridgeCreatedModals.delete(id);
               eventBus.emit("ui:modalClosed", { modalId: id });
             });
@@ -435,7 +435,7 @@ export function initUIBridge(
     logger.debug("Disposing UI bridge resources");
 
     // Unsubscribe from all events
-    state.subscriptions.forEach((subscription) => {
+    state.subscriptions.forEach((subscription: any) => {
       subscription.unsubscribe();
     });
 

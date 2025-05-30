@@ -12,11 +12,19 @@
           Performance Monitor
         </h3>
         <div class="dashboard__controls">
-          <button @click.stop="resetMetrics" class="dashboard__btn" title="Reset">
+          <button
+            @click.stop="resetMetrics"
+            class="dashboard__btn"
+            title="Reset"
+          >
             🔄
           </button>
-          <button @click.stop="toggleMinimize" class="dashboard__btn" title="Minimize">
-            {{ isMinimized ? '🔼' : '🔽' }}
+          <button
+            @click.stop="toggleMinimize"
+            class="dashboard__btn"
+            title="Minimize"
+          >
+            {{ isMinimized ? "🔼" : "🔽" }}
           </button>
           <button @click.stop="close" class="dashboard__btn" title="Close">
             ✕
@@ -32,8 +40,8 @@
             <div class="metric-value">{{ metrics.fps }}</div>
             <div class="metric-label">FPS</div>
             <div class="metric-bar">
-              <div 
-                class="metric-bar__fill" 
+              <div
+                class="metric-bar__fill"
                 :style="{ width: `${(metrics.fps / 60) * 100}%` }"
               />
             </div>
@@ -43,19 +51,23 @@
             <div class="metric-value">{{ metrics.frameTime.toFixed(1) }}ms</div>
             <div class="metric-label">Frame Time</div>
             <div class="metric-bar">
-              <div 
-                class="metric-bar__fill" 
-                :style="{ width: `${Math.min((16.67 / metrics.frameTime) * 100, 100)}%` }"
+              <div
+                class="metric-bar__fill"
+                :style="{
+                  width: `${Math.min((16.67 / metrics.frameTime) * 100, 100)}%`,
+                }"
               />
             </div>
           </div>
 
           <div class="metric-card" :class="getMemoryClass(memoryPercentage)">
-            <div class="metric-value">{{ metrics.memoryUsed.toFixed(1) }}MB</div>
+            <div class="metric-value">
+              {{ metrics.memoryUsed.toFixed(1) }}MB
+            </div>
             <div class="metric-label">Memory ({{ memoryPercentage }}%)</div>
             <div class="metric-bar">
-              <div 
-                class="metric-bar__fill" 
+              <div
+                class="metric-bar__fill"
                 :style="{ width: `${memoryPercentage}%` }"
               />
             </div>
@@ -77,7 +89,9 @@
               class="component-item"
             >
               <span class="component-name">{{ comp.name }}</span>
-              <span class="component-time">{{ comp.averageRenderTime.toFixed(2) }}ms</span>
+              <span class="component-time"
+                >{{ comp.averageRenderTime.toFixed(2) }}ms</span
+              >
               <span class="component-count">({{ comp.renderCount }}x)</span>
             </div>
           </div>
@@ -103,7 +117,10 @@
         </div>
 
         <!-- Feature Usage -->
-        <div v-if="Object.keys(featureUsage).length > 0" class="feature-section">
+        <div
+          v-if="Object.keys(featureUsage).length > 0"
+          class="feature-section"
+        >
           <h4 class="section-title">Feature Usage</h4>
           <div class="feature-list">
             <div
@@ -119,17 +136,23 @@
 
         <!-- Health Status -->
         <div class="health-section">
-          <div class="health-status" :class="isHealthy ? 'health--good' : 'health--bad'">
-            <span class="health-icon">{{ isHealthy ? '✅' : '⚠️' }}</span>
-            <span class="health-text">{{ isHealthy ? 'Healthy' : 'Performance Issues Detected' }}</span>
+          <div
+            class="health-status"
+            :class="isHealthy ? 'health--good' : 'health--bad'"
+          >
+            <span class="health-icon">{{ isHealthy ? "✅" : "⚠️" }}</span>
+            <span class="health-text">{{
+              isHealthy ? "Healthy" : "Performance Issues Detected"
+            }}</span>
           </div>
-          
+
           <div v-if="!isHealthy" class="health-issues">
             <div v-if="metrics.fps < 30" class="issue-item">
               Low FPS: {{ metrics.fps }} (target: 30+)
             </div>
             <div v-if="metrics.frameTime > 33" class="issue-item">
-              High frame time: {{ metrics.frameTime.toFixed(1) }}ms (target: <33ms)
+              High frame time: {{ metrics.frameTime.toFixed(1) }}ms (target:
+              <33ms)
             </div>
             <div v-if="memoryPercentage > 90" class="issue-item">
               High memory usage: {{ memoryPercentage }}% (target: <90%)
@@ -155,20 +178,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { usePerformanceMonitor } from '@/utils/PerformanceMonitor';
-import { useTelemetry } from '@/services/TelemetryService';
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { usePerformanceMonitor } from "@/utils/PerformanceMonitor";
+import { useTelemetry } from "@/services/TelemetryService";
 
-const props = withDefaults(defineProps<{
-  visible?: boolean;
-  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
-}>(), {
-  visible: true,
-  position: 'bottom-right'
-});
+const props = withDefaults(
+  defineProps<{
+    visible?: boolean;
+    position?: "top-right" | "top-left" | "bottom-right" | "bottom-left";
+  }>(),
+  {
+    visible: true,
+    position: "bottom-right",
+  },
+);
 
 const emit = defineEmits<{
-  'update:visible': [value: boolean];
+  "update:visible": [value: boolean];
 }>();
 
 // State
@@ -176,22 +202,27 @@ const isMinimized = ref(false);
 const isDevelopment = import.meta.env.DEV;
 
 // Performance monitoring
-const { metrics, componentPerformance, isHealthy, reset } = usePerformanceMonitor();
+const { metrics, componentPerformance, isHealthy, reset } =
+  usePerformanceMonitor();
 const telemetry = useTelemetry();
 
 // Telemetry data
-const apiPerformance = ref<Record<string, { avg: number; p90: number; count: number }>>({});
+const apiPerformance = ref<
+  Record<string, { avg: number; p90: number; count: number }>
+>({});
 const featureUsage = ref<Record<string, number>>({});
 
 // Computed
 const isVisible = computed({
   get: () => props.visible,
-  set: (value) => emit('update:visible', value)
+  set: (value) => emit("update:visible", value),
 });
 
 const memoryPercentage = computed(() => {
   if (metrics.value.memoryLimit === 0) return 0;
-  return Math.round((metrics.value.memoryUsed / metrics.value.memoryLimit) * 100);
+  return Math.round(
+    (metrics.value.memoryUsed / metrics.value.memoryLimit) * 100,
+  );
 });
 
 const sortedFeatureUsage = computed(() => {
@@ -203,22 +234,22 @@ const sortedFeatureUsage = computed(() => {
 
 // Methods
 function getFpsClass(fps: number): string {
-  if (fps >= 55) return 'metric--good';
-  if (fps >= 30) return 'metric--warning';
-  return 'metric--bad';
+  if (fps >= 55) return "metric--good";
+  if (fps >= 30) return "metric--warning";
+  return "metric--bad";
 }
 
 function getMemoryClass(percentage: number): string {
-  if (percentage <= 70) return 'metric--good';
-  if (percentage <= 90) return 'metric--warning';
-  return 'metric--bad';
+  if (percentage <= 70) return "metric--good";
+  if (percentage <= 90) return "metric--warning";
+  return "metric--bad";
 }
 
 function formatEndpoint(endpoint: string): string {
   // Remove base URL and query params
-  const path = endpoint.replace(/^https?:\/\/[^\/]+/, '').split('?')[0];
+  const path = endpoint.replace(/^https?:\/\/[^\/]+/, "").split("?")[0];
   // Truncate long paths
-  return path.length > 30 ? '...' + path.slice(-27) : path;
+  return path.length > 30 ? "..." + path.slice(-27) : path;
 }
 
 function toggleMinimize(): void {
@@ -242,12 +273,14 @@ function exportMetrics(): void {
     components: componentPerformance.value,
     api: apiPerformance.value,
     features: featureUsage.value,
-    baseline: telemetry.calculateBaseline()
+    baseline: telemetry.calculateBaseline(),
   };
 
-  const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(report, null, 2)], {
+    type: "application/json",
+  });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
   a.download = `performance-report-${Date.now()}.json`;
   a.click();
@@ -256,13 +289,14 @@ function exportMetrics(): void {
 
 function calculateBaseline(): void {
   const baseline = telemetry.calculateBaseline();
-  console.log('Performance Baseline:', baseline);
-  
+  console.log("Performance Baseline:", baseline);
+
   // Show baseline in a nice format
-  alert(`Performance Baseline Calculated:\n\n` +
-    `FPS: p50=${baseline.fps.p50}, p90=${baseline.fps.p90}\n` +
-    `API Latency: p50=${baseline.apiLatency.p50}ms, p90=${baseline.apiLatency.p90}ms\n` +
-    `Initial Load: ${baseline.initialLoadTime}ms`
+  alert(
+    `Performance Baseline Calculated:\n\n` +
+      `FPS: p50=${baseline.fps.p50}, p90=${baseline.fps.p90}\n` +
+      `API Latency: p50=${baseline.apiLatency.p50}ms, p90=${baseline.apiLatency.p90}ms\n` +
+      `Initial Load: ${baseline.initialLoadTime}ms`,
   );
 }
 
@@ -271,19 +305,19 @@ function shareReport(): void {
     fps: metrics.value.fps,
     memory: `${metrics.value.memoryUsed.toFixed(1)}MB (${memoryPercentage.value}%)`,
     renders: metrics.value.renderCount,
-    healthy: isHealthy.value
+    healthy: isHealthy.value,
   };
 
-  const text = `Performance Report:\nFPS: ${report.fps}\nMemory: ${report.memory}\nRenders: ${report.renders}\nStatus: ${report.healthy ? '✅ Healthy' : '⚠️ Issues'}`;
-  
+  const text = `Performance Report:\nFPS: ${report.fps}\nMemory: ${report.memory}\nRenders: ${report.renders}\nStatus: ${report.healthy ? "✅ Healthy" : "⚠️ Issues"}`;
+
   if (navigator.share) {
     navigator.share({
-      title: 'nscale Performance Report',
-      text
+      title: "nscale Performance Report",
+      text,
     });
   } else {
     navigator.clipboard.writeText(text);
-    alert('Report copied to clipboard!');
+    alert("Report copied to clipboard!");
   }
 }
 
@@ -305,13 +339,13 @@ onUnmounted(() => {
 
 // Save minimized state
 watch(isMinimized, (value) => {
-  localStorage.setItem('performance-dashboard-minimized', String(value));
+  localStorage.setItem("performance-dashboard-minimized", String(value));
 });
 
 // Restore minimized state
 onMounted(() => {
-  const saved = localStorage.getItem('performance-dashboard-minimized');
-  if (saved === 'true') {
+  const saved = localStorage.getItem("performance-dashboard-minimized");
+  if (saved === "true") {
     isMinimized.value = true;
   }
 });
@@ -327,8 +361,10 @@ onMounted(() => {
   backdrop-filter: blur(10px);
   color: white;
   border-radius: 0.75rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  font-family: "SF Mono", Monaco, "Cascadia Code", monospace;
   font-size: 0.875rem;
   z-index: 9999;
   transition: all 0.3s ease;

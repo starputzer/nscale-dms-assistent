@@ -123,12 +123,12 @@ export class AuthTokenManager {
     console.log("[AuthTokenManager] Lösche alle Token");
 
     // LocalStorage
-    Object.values(this.TOKEN_KEYS).forEach((key) => {
+    Object.values(this.TOKEN_KEYS).forEach((key: any) => {
       localStorage.removeItem(key);
     });
 
     // SessionStorage
-    Object.values(this.SESSION_KEYS).forEach((key) => {
+    Object.values(this.SESSION_KEYS).forEach((key: any) => {
       sessionStorage.removeItem(key);
     });
 

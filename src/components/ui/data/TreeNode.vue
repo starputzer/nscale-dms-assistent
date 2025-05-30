@@ -214,7 +214,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, inject, nextTick } from "vue";
+import { computed, ref, inject } from "vue";
 import type { Component } from "vue";
 
 export interface TreeNodeProps {

@@ -410,8 +410,8 @@ export class SessionService {
         );
 
         if (messages.length > 0) {
-          const messageIds = messages.map((message) => message.id);
-          await defaultIndexedDBService.deleteBulk("messages", messageIds);
+          const messageIds = messages.map((message: any) => message.id);
+          await defaultIndexedDBService.deleteBulk("messages", _messageIds);
         }
 
         // Event auslösen
@@ -442,8 +442,8 @@ export class SessionService {
         );
 
         if (messages.length > 0) {
-          const messageIds = messages.map((message) => message.id);
-          await defaultIndexedDBService.deleteBulk("messages", messageIds);
+          const messageIds = messages.map((message: any) => message.id);
+          await defaultIndexedDBService.deleteBulk("messages", _messageIds);
         }
 
         // Aktuelle Session-ID zurücksetzen, wenn es die aktuelle war
@@ -1166,8 +1166,8 @@ export class SessionService {
       );
 
       if (completedRequests.length > 0) {
-        const ids = completedRequests.map((req) => req.id);
-        await defaultIndexedDBService.deleteBulk("offlineRequests", ids);
+        const ids = completedRequests.map((req: any) => req.id);
+        await defaultIndexedDBService.deleteBulk("offlineRequests", _ids);
         this.logger.debug(
           `${completedRequests.length} abgeschlossene Anfragen aus der Queue entfernt`,
         );
@@ -1184,7 +1184,7 @@ export class SessionService {
   /**
    * Registriert einen Event-Handler
    */
-  public on(event: string, handler: Function): void {
+  public on(event: string, handler: EventCallback | UnsubscribeFn): void {
     if (!this.eventHandlers.has(event)) {
       this.eventHandlers.set(event, new Set());
     }
@@ -1195,7 +1195,7 @@ export class SessionService {
   /**
    * Entfernt einen Event-Handler
    */
-  public off(event: string, handler: Function): void {
+  public off(event: string, handler: EventCallback | UnsubscribeFn): void {
     if (this.eventHandlers.has(event)) {
       this.eventHandlers.get(event)?.delete(handler);
     }
@@ -1206,7 +1206,7 @@ export class SessionService {
    */
   private emitEvent(event: string, data?: any): void {
     if (this.eventHandlers.has(event)) {
-      this.eventHandlers.get(event)?.forEach((handler) => {
+      this.eventHandlers.get(event)?.forEach((handler: any) => {
         try {
           handler(data);
         } catch (error) {

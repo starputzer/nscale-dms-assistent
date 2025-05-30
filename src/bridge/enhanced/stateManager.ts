@@ -6,12 +6,7 @@
  */
 
 import { watch } from "vue";
-import {
-  StateManager,
-  BridgeLogger,
-  UpdateOperation,
-  BridgeErrorState,
-} from "./types";
+import { StateManager, BridgeLogger, UpdateOperation } from "./types";
 
 /**
  * Klasse für atomare Transaktionen
@@ -214,7 +209,7 @@ export class EnhancedStateManager implements StateManager {
     this.atomicState = new AtomicStateManager();
     this.conflictResolver = new ConflictResolver(logger);
     this.selectiveUpdates = new SelectiveUpdateManager(logger, (paths) => {
-      paths.forEach((path) => this.notifySubscribers(path));
+      paths.forEach((path: any) => this.notifySubscribers(path));
     });
 
     this.logger.info("StateManager initialisiert");
@@ -266,7 +261,7 @@ export class EnhancedStateManager implements StateManager {
    * Trennt die Verbindung und bereinigt alle Watcher
    */
   disconnect(): void {
-    this.watchers.forEach((unwatch) => unwatch());
+    this.watchers.forEach((unwatch: any) => unwatch());
     this.watchers = [];
     this.subscribers.clear();
     this.logger.info("StateManager-Verbindung getrennt");
@@ -314,7 +309,7 @@ export class EnhancedStateManager implements StateManager {
             () => obj[key],
             (newVal, oldVal) => {
               if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
-                this.handleStateChange(currentPath, newVal, sourceType);
+                this.handleStateChange(currentPath, newVal, _sourceType);
               }
             },
             { deep: true },
@@ -334,7 +329,7 @@ export class EnhancedStateManager implements StateManager {
     watchObject(source, basePath);
 
     // Funktion zum Aufräumen aller erstellten Watcher zurückgeben
-    return () => watchers.forEach((unwatch) => unwatch());
+    return () => watchers.forEach((unwatch: any) => unwatch());
   }
 
   /**
@@ -650,7 +645,7 @@ export class EnhancedStateManager implements StateManager {
 
     // Exakte Pfad-Subscriber
     if (this.subscribers.has(path)) {
-      this.subscribers.get(path)!.forEach((callback) => {
+      this.subscribers.get(path)!.forEach((callback: any) => {
         try {
           callback(value, undefined);
         } catch (error) {
@@ -663,7 +658,7 @@ export class EnhancedStateManager implements StateManager {
     for (const subscribedPath of this.subscribers.keys()) {
       if (path.startsWith(subscribedPath + ".")) {
         const subValue = this.getState(subscribedPath);
-        this.subscribers.get(subscribedPath)!.forEach((callback) => {
+        this.subscribers.get(subscribedPath)!.forEach((callback: any) => {
           try {
             callback(subValue, undefined);
           } catch (error) {

@@ -32,7 +32,7 @@ export const useABTestStore = defineStore("abTests", {
       return state.tests.find((test) => test.id === id);
     },
     activeTests: (state) => {
-      return state.tests.filter((test) => test.isActive);
+      return state.tests.filter((test: any) => test.isActive);
     },
   },
 

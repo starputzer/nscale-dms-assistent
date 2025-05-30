@@ -336,7 +336,7 @@ export class LogService {
 
     // Für Arrays rekursiv jedes Element bereinigen
     if (Array.isArray(data)) {
-      return data.map((item) => this.sanitizeData(item));
+      return data.map((item: any) => this.sanitizeData(item));
     }
 
     // Für Objekte klonen und bereinigen

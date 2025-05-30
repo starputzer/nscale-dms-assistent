@@ -21,7 +21,7 @@ export function useFocusTrap(containerRef: Ref<HTMLElement | null>) {
       containerRef.value.querySelectorAll<HTMLElement>(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
       ),
-    ).filter((el) => !el.hasAttribute("disabled"));
+    ).filter((el: any) => !el.hasAttribute("disabled"));
   };
 
   /**

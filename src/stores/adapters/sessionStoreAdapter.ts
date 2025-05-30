@@ -6,7 +6,7 @@
  */
 
 import { useSessionsStore } from "../sessions";
-import type { ChatSession, ChatMessage } from "@/types/session";
+import type { ChatSession } from "@/types/session";
 import type { ISessionsStore } from "@/types/stores";
 
 // Store-Interface mit zurückkompatiblen Methoden

@@ -75,12 +75,12 @@ initializeFeatureFlags();
 setupNetworkMonitoring();
 
 // Direktiven registrieren
-globalDirectives.forEach((directive) => {
+globalDirectives.forEach((directive: any) => {
   app.directive(directive.name, directive.definition);
 });
 
 // Plugins registrieren
-globalPlugins.forEach((plugin) => {
+globalPlugins.forEach((plugin: any) => {
   app.use(plugin.plugin, plugin.options);
 });
 
@@ -120,9 +120,9 @@ window.toggleSourceReferences = () => {
   }
 };
 
-window.showSourceReferencesForMessage = (messageId, sources) => {
+window.showSourceReferencesForMessage = (messageId, _sources) => {
   const event = new CustomEvent("show-source-references", {
-    detail: { messageId, sources },
+    detail: { messageId, _sources },
   });
   document.dispatchEvent(event);
 };

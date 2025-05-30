@@ -184,7 +184,7 @@ export class AdminServiceWrapper {
           );
         }
         if (filter.hasComment !== undefined) {
-          feedback = feedback.filter((entry) =>
+          feedback = feedback.filter((entry: any) =>
             filter.hasComment ? !!entry.comment : !entry.comment,
           );
         }

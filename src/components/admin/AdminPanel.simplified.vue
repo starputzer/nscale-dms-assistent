@@ -33,7 +33,9 @@
               :class="['admin-panel__nav-icon', tab.icon]"
               aria-hidden="true"
             ></i>
-            <span class="admin-panel__nav-label">{{ tab.label || tab.id }}</span>
+            <span class="admin-panel__nav-label">{{
+              tab.label || tab.id
+            }}</span>
           </button>
         </nav>
 
@@ -89,8 +91,9 @@
               <i class="fas fa-code"></i>
               <div>
                 <strong>Entwicklungsmodus aktiv:</strong> Diese Admin-Oberfläche
-                verwendet Mock-Daten für die Entwicklung. Änderungen werden nicht
-                im System gespeichert. Die Schnittstelle entspricht der finalen Version.
+                verwendet Mock-Daten für die Entwicklung. Änderungen werden
+                nicht im System gespeichert. Die Schnittstelle entspricht der
+                finalen Version.
               </div>
             </div>
 
@@ -130,14 +133,12 @@
 import {
   ref,
   computed,
-  watch,
   onMounted,
   shallowRef,
   defineProps,
   defineEmits,
 } from "vue";
 import { useI18n } from "vue-i18n";
-import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { useAdminStyles } from "./import-styles";
 
@@ -211,10 +212,12 @@ const emit = defineEmits(["auth-error"]);
 
 // i18n with global scope and composition disabled to fix the "Not available in legacy mode" error
 const { t } = useI18n({
-  useScope: 'global',
-  inheritLocale: true
+  useScope: "global",
+  inheritLocale: true,
 });
-console.log('[AdminPanel.simplified] i18n initialized with global scope and inheritance');
+console.log(
+  "[AdminPanel.simplified] i18n initialized with global scope and inheritance",
+);
 
 // Implement a safer t function that always provides a fallback
 function safeT(key, fallback) {
@@ -381,13 +384,15 @@ const allTabs = [
 ];
 
 // In simplified version, all tabs are available
-const availableTabs = computed(() => allTabs.map(tab => ({
-  ...tab,
-  // Use fallback text to ensure labels are always shown
-  label: tab.label || tab.id.charAt(0).toUpperCase() + tab.id.slice(1),
-  // Ensure icon is set
-  icon: tab.icon || 'fas fa-circle',
-})));
+const availableTabs = computed(() =>
+  allTabs.map((tab) => ({
+    ...tab,
+    // Use fallback text to ensure labels are always shown
+    label: tab.label || tab.id.charAt(0).toUpperCase() + tab.id.slice(1),
+    // Ensure icon is set
+    icon: tab.icon || "fas fa-circle",
+  })),
+);
 
 // Current tab component (using dynamic import for safety)
 const currentTabComponent = shallowRef(null);
@@ -910,11 +915,11 @@ onMounted(() => {
   .admin-panel__content {
     padding: 1rem;
   }
-  
+
   .admin-panel__header {
     padding: 1rem;
   }
-  
+
   .admin-panel__title {
     font-size: 1.1rem;
   }

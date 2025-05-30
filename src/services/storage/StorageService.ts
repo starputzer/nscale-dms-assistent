@@ -171,7 +171,7 @@ export class StorageService {
       }
 
       // Aus localStorage entfernen
-      localStorageKeys.forEach((key) => localStorage.removeItem(key));
+      localStorageKeys.forEach((key: any) => localStorage.removeItem(key));
 
       // Suche alle Schlüssel mit dem Präfix in sessionStorage
       const sessionStorageKeys = [];
@@ -183,7 +183,7 @@ export class StorageService {
       }
 
       // Aus sessionStorage entfernen
-      sessionStorageKeys.forEach((key) => sessionStorage.removeItem(key));
+      sessionStorageKeys.forEach((key: any) => sessionStorage.removeItem(key));
 
       // In-Memory-Speicher leeren
       this.memoryStorage.clear();

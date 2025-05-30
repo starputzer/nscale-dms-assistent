@@ -7,13 +7,13 @@
 
 import { BridgeLogger, BridgeErrorState, BridgeStatusInfo } from "../types";
 import { BridgeStatusManager } from "../statusManager";
-import { PerformanceMonitor } from "./performanceMonitor";
-import { MemoryManager } from "./memoryManager";
+import { ExtendedPerformanceMonitor as PerformanceMonitor } from "./ExtendedPerformanceMonitor";
+import { ExtendedMemoryManager as MemoryManager } from "./ExtendedMemoryManager";
 import { EnhancedSelfHealing } from "./enhancedSelfHealing";
 import { OptimizedEventBus } from "./enhancedEventBus";
 import { SelectiveStateManager } from "./selectiveStateManager";
 import { EnhancedSerializer } from "./enhancedSerializer";
-import { OptimizedChatBridge } from "./optimizedChatBridge";
+import { ExtendedOptimizedChatBridge as OptimizedChatBridge } from "./ExtendedOptimizedChatBridge";
 
 /**
  * Configuration for DiagnosticTools
@@ -259,7 +259,7 @@ export class DiagnosticTools {
       this.originalConsoleError!.apply(console, args);
 
       // Capture the error
-      const message = args.map((arg) => this.stringifyArg(arg)).join(" ");
+      const message = args.map((arg: any) => this.stringifyArg(arg)).join(" ");
       this.logError("console", message);
     };
 
@@ -269,7 +269,7 @@ export class DiagnosticTools {
       this.originalConsoleWarn!.apply(console, args);
 
       // Capture the warning
-      const message = args.map((arg) => this.stringifyArg(arg)).join(" ");
+      const message = args.map((arg: any) => this.stringifyArg(arg)).join(" ");
       this.logWarning("console", message);
     };
   }
@@ -471,7 +471,7 @@ export class DiagnosticTools {
 
     // Update tab styling
     const tabs = this.uiContainer.querySelectorAll("[data-tab-id]");
-    tabs.forEach((tab) => {
+    tabs.forEach((tab: any) => {
       const isActive = (tab as HTMLElement).dataset.tabId === tabId;
       (tab as HTMLElement).style.borderBottom = isActive
         ? "2px solid #4CAF50"
@@ -536,7 +536,7 @@ export class DiagnosticTools {
     componentList.style.listStyleType = "none";
     componentList.style.padding = "0";
 
-    Object.entries(components).forEach(([name, status]) => {
+    Object.entries(components).forEach(([name, status]: any) => {
       const item = document.createElement("li");
       item.style.marginBottom = "5px";
       item.style.padding = "5px";
@@ -618,9 +618,9 @@ export class DiagnosticTools {
     performanceSection.innerHTML = `
       <h3>Performance Overview</h3>
       <div>Metrics Count: ${overview.metrics.count}</div>
-      <div>Issues: ${overview.issues.current} (${overview.issues.critical} critical, ${overview.issues.high} high)</div>
+      <div>Issues: ${overview.issues?.current || 0} (${overview.issues?.critical || 0} critical, ${overview.issues?.high || 0} high)</div>
       <div>Memory: ${overview.memory.usedFormatted} / ${overview.memory.totalFormatted}</div>
-      <div>Frame Rate: ${overview.frameRate.average.toFixed(1)} fps</div>
+      <div>Frame Rate: ${overview.frameRate?.average?.toFixed(1) || "N/A"} fps</div>
     `;
 
     container.appendChild(performanceSection);
@@ -636,7 +636,7 @@ export class DiagnosticTools {
       issuesList.style.listStyleType = "none";
       issuesList.style.padding = "0";
 
-      issues.forEach((issue) => {
+      issues.forEach((issue: any) => {
         const item = document.createElement("li");
         item.style.marginBottom = "5px";
         item.style.padding = "5px";
@@ -685,10 +685,10 @@ export class DiagnosticTools {
     const memorySection = document.createElement("div");
     memorySection.innerHTML = `
       <h3>Memory Usage</h3>
-      <div>Current: ${memoryStats.current.formatted}</div>
-      <div>Peak: ${memoryStats.peak.formatted}</div>
-      <div>Growth: ${memoryStats.growth.formatted} (${memoryStats.growth.percentage})</div>
-      <div>Growth Rate: ${memoryStats.growthRate.formatted}</div>
+      <div>Current: ${memoryStats.current?.formatted || "N/A"}</div>
+      <div>Peak: ${memoryStats.peak?.formatted || "N/A"}</div>
+      <div>Growth: ${memoryStats.growth?.formatted || "N/A"} (${memoryStats.growth?.percentage || "N/A"})</div>
+      <div>Growth Rate: ${memoryStats.growthRate?.formatted || "N/A"}</div>
     `;
 
     container.appendChild(memorySection);
@@ -714,7 +714,7 @@ export class DiagnosticTools {
       leaksList.style.listStyleType = "none";
       leaksList.style.padding = "0";
 
-      leaks.forEach((leak) => {
+      leaks.forEach((leak: any) => {
         const item = document.createElement("li");
         item.style.marginBottom = "5px";
         item.style.padding = "5px";
@@ -782,10 +782,10 @@ export class DiagnosticTools {
 
     // Get unique components
     const components = new Set<string>();
-    this.logs.forEach((log) => components.add(log.component));
+    this.logs.forEach((log: any) => components.add(log.component));
 
     // Add component options
-    components.forEach((component) => {
+    components.forEach((component: any) => {
       const option = document.createElement("option");
       option.value = component;
       option.textContent = component;
@@ -836,7 +836,7 @@ export class DiagnosticTools {
       };
 
       const selectedLevels = levels[levelValue as keyof typeof levels] || [];
-      filteredLogs = filteredLogs.filter((log) =>
+      filteredLogs = filteredLogs.filter((log: any) =>
         selectedLevels.includes(log.level),
       );
     }
@@ -853,7 +853,7 @@ export class DiagnosticTools {
     filteredLogs.sort((a, b) => b.timestamp - a.timestamp);
 
     // Build log entries
-    filteredLogs.forEach((log) => {
+    filteredLogs.forEach((log: any) => {
       const logEntry = document.createElement("div");
       logEntry.style.marginBottom = "5px";
       logEntry.style.borderBottom = "1px solid rgba(255, 255, 255, 0.1)";
@@ -953,7 +953,7 @@ export class DiagnosticTools {
         (a, b) => b.timestamp - a.timestamp,
       );
 
-      sortedReports.forEach((report, index) => {
+      sortedReports.forEach((report, index: any) => {
         const reportItem = document.createElement("div");
         reportItem.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
         reportItem.style.padding = "10px";
@@ -1392,7 +1392,7 @@ export class DiagnosticTools {
 
       // Get errors (last 50)
       const errors = this.logs
-        .filter((log) => log.level === "error")
+        .filter((log: any) => log.level === "error")
         .sort((a, b) => b.timestamp - a.timestamp)
         .slice(0, 50);
 
@@ -1405,7 +1405,7 @@ export class DiagnosticTools {
       }
 
       // Add recommendations based on component status
-      Object.entries(componentStatus).forEach(([component, status]) => {
+      Object.entries(componentStatus).forEach(([component, status]: any) => {
         if (status.status !== "healthy") {
           recommendations.push(`Check ${component}: ${status.details}`);
         }
@@ -1423,7 +1423,7 @@ export class DiagnosticTools {
         const leaks = this.memoryManager.getDetectedLeaks();
         if (leaks.length > 0) {
           recommendations.push(
-            `Fix ${leaks.length} potential memory leaks in ${[...new Set(leaks.map((l) => l.component))].join(", ")}`,
+            `Fix ${leaks.length} potential memory leaks in ${[...new Set(leaks.map((l: any) => l.component))].join(", ")}`,
           );
         }
       }

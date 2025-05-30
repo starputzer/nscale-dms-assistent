@@ -491,7 +491,7 @@ export class MobileMemoryManager {
     // Clear image caches if available
     if ("caches" in window) {
       caches.keys().then((cacheNames) => {
-        cacheNames.forEach((cacheName) => {
+        cacheNames.forEach((cacheName: any) => {
           if (cacheName.includes("image")) {
             caches.delete(cacheName);
           }
@@ -514,7 +514,7 @@ export class MobileMemoryManager {
     const objectURLs = document.querySelectorAll(
       'img[src^="blob:"], source[src^="blob:"]',
     );
-    objectURLs.forEach((element) => {
+    objectURLs.forEach((element: any) => {
       const src = element.getAttribute("src");
       if (src && src.startsWith("blob:")) {
         URL.revokeObjectURL(src);

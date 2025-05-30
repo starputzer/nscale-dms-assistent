@@ -184,7 +184,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { computed } from "vue";
 import { useSettingsStore } from "../stores/settings";
 
 export interface NavigationBarProps {

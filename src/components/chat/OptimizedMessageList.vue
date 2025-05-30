@@ -21,11 +21,7 @@
     </div>
 
     <!-- Virtual List Container -->
-    <div
-      v-else
-      class="virtual-container"
-      :style="virtualContainerStyle"
-    >
+    <div v-else class="virtual-container" :style="virtualContainerStyle">
       <!-- Visible Messages Only -->
       <MessageItem
         v-for="item in visibleItems"
@@ -60,11 +56,11 @@ import {
   onBeforeUnmount,
   shallowRef,
   nextTick,
-} from 'vue';
-import { useThrottleFn } from '@vueuse/core';
-import type { ChatMessage } from '@/types/session';
-import MessageItem from './MessageItem.vue';
-import { performanceMonitor } from '@/utils/PerformanceMonitor';
+} from "vue";
+import { useThrottleFn } from "@vueuse/core";
+import type { ChatMessage } from "@/types/session";
+import MessageItem from "./MessageItem.vue";
+import { performanceMonitor } from "@/utils/PerformanceMonitor";
 
 // Props
 interface Props {
@@ -79,8 +75,8 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   isLoading: false,
-  welcomeTitle: 'Welcome to nscale Assistant',
-  welcomeMessage: 'How can I help you today?',
+  welcomeTitle: "Welcome to nscale Assistant",
+  welcomeMessage: "How can I help you today?",
   itemHeight: 100,
   overscan: 5,
   scrollThreshold: 100,
@@ -88,8 +84,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 // Emits
 const emit = defineEmits<{
-  feedback: [payload: { messageId: string; type: 'positive' | 'negative' }];
-  loadMore: [direction: 'up' | 'down'];
+  feedback: [payload: { messageId: string; type: "positive" | "negative" }];
+  loadMore: [direction: "up" | "down"];
 }>();
 
 // Refs
@@ -104,7 +100,7 @@ const totalHeight = computed(() => props.messages.length * props.itemHeight);
 
 // Item positioning with shallow ref for performance
 const itemPositions = shallowRef<Map<string, { top: number; height: number }>>(
-  new Map()
+  new Map(),
 );
 
 // Calculate visible range with memoization
@@ -122,7 +118,7 @@ const visibleRange = computed(() => {
 // Get visible items
 const visibleItems = computed(() => {
   const { start, end } = visibleRange.value;
-  
+
   return props.messages.slice(start, end).map((message, index) => ({
     id: message.id,
     index: start + index,
@@ -135,18 +131,18 @@ const visibleItems = computed(() => {
 // Virtual container style
 const virtualContainerStyle = computed(() => ({
   height: `${totalHeight.value}px`,
-  position: 'relative',
+  position: "relative",
 }));
 
 // Get item style for absolute positioning
-function getItemStyle(item: typeof visibleItems.value[0]) {
+function getItemStyle(item: (typeof visibleItems.value)[0]) {
   return {
-    position: 'absolute',
+    position: "absolute",
     top: `${item.top}px`,
     left: 0,
     right: 0,
     height: `${item.height}px`,
-    contain: 'layout style paint',
+    contain: "layout style paint",
   };
 }
 
@@ -156,19 +152,20 @@ const handleScroll = useThrottleFn((event: Event) => {
 
   const container = scrollContainer.value;
   scrollTop.value = container.scrollTop;
-  
+
   // Check if at bottom
   const scrollBottom = container.scrollTop + container.clientHeight;
-  const isNearBottom = container.scrollHeight - scrollBottom < props.scrollThreshold;
-  
+  const isNearBottom =
+    container.scrollHeight - scrollBottom < props.scrollThreshold;
+
   isAtBottom.value = isNearBottom;
   showScrollButton.value = !isNearBottom && container.scrollTop > 500;
 
   // Emit load more events
   if (container.scrollTop < props.scrollThreshold) {
-    emit('loadMore', 'up');
+    emit("loadMore", "up");
   } else if (isNearBottom) {
-    emit('loadMore', 'down');
+    emit("loadMore", "down");
   }
 }, 16); // ~60fps
 
@@ -178,14 +175,14 @@ function scrollToBottom(smooth = true) {
 
   scrollContainer.value.scrollTo({
     top: scrollContainer.value.scrollHeight,
-    behavior: smooth ? 'smooth' : 'auto',
+    behavior: smooth ? "smooth" : "auto",
   });
 }
 
 // Update container dimensions
 function updateContainerDimensions() {
   if (!scrollContainer.value) return;
-  
+
   containerHeight.value = scrollContainer.value.clientHeight;
 }
 
@@ -201,7 +198,7 @@ watch(
         scrollToBottom();
       });
     }
-  }
+  },
 );
 
 // Watch for streaming messages
@@ -214,13 +211,13 @@ watch(
         scrollToBottom(false);
       });
     }
-  }
+  },
 );
 
 // Lifecycle
 onMounted(() => {
   updateContainerDimensions();
-  
+
   // Setup resize observer
   if (scrollContainer.value) {
     resizeObserver = new ResizeObserver(() => {
@@ -242,9 +239,9 @@ onBeforeUnmount(() => {
 });
 
 // Performance tracking
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === "development") {
   watch(visibleItems, () => {
-    performanceMonitor.measureComponentRender('OptimizedMessageList', () => {
+    performanceMonitor.measureComponentRender("OptimizedMessageList", () => {
       // Render measurement happens automatically
     });
   });
@@ -364,7 +361,7 @@ if (process.env.NODE_ENV === 'development') {
   .optimized-message-list {
     scroll-behavior: auto;
   }
-  
+
   .scroll-button {
     transition: none;
   }
@@ -375,11 +372,11 @@ if (process.env.NODE_ENV === 'development') {
   .optimized-message-list {
     /* Enable momentum scrolling on iOS */
     -webkit-overflow-scrolling: touch;
-    
+
     /* Prevent rubber-band scrolling */
     overscroll-behavior-y: contain;
   }
-  
+
   .scroll-button {
     bottom: 1rem;
     right: 1rem;

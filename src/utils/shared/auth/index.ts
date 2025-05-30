@@ -98,7 +98,7 @@ export function isTokenExpired(
     const jsonPayload = decodeURIComponent(
       atob(base64)
         .split("")
-        .map((c) => {
+        .map((c: any) => {
           return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
         })
         .join(""),

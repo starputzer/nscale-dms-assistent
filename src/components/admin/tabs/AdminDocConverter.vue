@@ -2,7 +2,12 @@
   <div class="admin-doc-converter">
     <div class="doc-converter-header">
       <h2>{{ $t("admin.docConverter.title") || "Dokumentenkonverter" }}</h2>
-      <p class="description">{{ $t("admin.docConverter.description") || "Verwaltung von Dokumentkonvertierungen und Einstellungen" }}</p>
+      <p class="description">
+        {{
+          $t("admin.docConverter.description") ||
+          "Verwaltung von Dokumentkonvertierungen und Einstellungen"
+        }}
+      </p>
       <div class="admin-card-actions">
         <button
           class="btn btn-primary"
@@ -22,7 +27,9 @@
         <div class="stat-content">
           <div class="stat-value">{{ statistics.totalConversions }}</div>
           <div class="stat-label">
-            {{ $t("admin.docConverter.totalDocuments") || "Dokumente insgesamt" }}
+            {{
+              $t("admin.docConverter.totalDocuments") || "Dokumente insgesamt"
+            }}
           </div>
         </div>
       </div>
@@ -30,9 +37,18 @@
       <div class="stat-card">
         <i class="fas fa-check-circle stat-icon success"></i>
         <div class="stat-content">
-          <div class="stat-value">{{ Math.floor(statistics.totalConversions * statistics.successRate / 100) }}</div>
+          <div class="stat-value">
+            {{
+              Math.floor(
+                (statistics.totalConversions * statistics.successRate) / 100,
+              )
+            }}
+          </div>
           <div class="stat-label">
-            {{ $t("admin.docConverter.successfulConversions") || "Erfolgreiche Konvertierungen" }}
+            {{
+              $t("admin.docConverter.successfulConversions") ||
+              "Erfolgreiche Konvertierungen"
+            }}
           </div>
         </div>
       </div>
@@ -40,9 +56,19 @@
       <div class="stat-card">
         <i class="fas fa-exclamation-circle stat-icon error"></i>
         <div class="stat-content">
-          <div class="stat-value">{{ Math.floor(statistics.totalConversions * (100 - statistics.successRate) / 100) }}</div>
+          <div class="stat-value">
+            {{
+              Math.floor(
+                (statistics.totalConversions * (100 - statistics.successRate)) /
+                  100,
+              )
+            }}
+          </div>
           <div class="stat-label">
-            {{ $t("admin.docConverter.failedConversions") || "Fehlgeschlagene Konvertierungen" }}
+            {{
+              $t("admin.docConverter.failedConversions") ||
+              "Fehlgeschlagene Konvertierungen"
+            }}
           </div>
         </div>
       </div>
@@ -52,7 +78,10 @@
         <div class="stat-content">
           <div class="stat-value">{{ statistics.activeConversions }}</div>
           <div class="stat-label">
-            {{ $t("admin.docConverter.activeConversions") || "Aktive Konvertierungen" }}
+            {{
+              $t("admin.docConverter.activeConversions") ||
+              "Aktive Konvertierungen"
+            }}
           </div>
         </div>
       </div>
@@ -93,31 +122,58 @@
       <!-- Statistics -->
       <div v-if="activeTab === 'statistics'" class="converter-statistics">
         <h3>{{ $t("admin.docConverter.statistics") || "Statistiken" }}</h3>
-        <p>{{ $t("admin.docConverter.statisticsDescription") || "Hier werden Statistiken zur Dokumentenkonvertierung angezeigt." }}</p>
+        <p>
+          {{
+            $t("admin.docConverter.statisticsDescription") ||
+            "Hier werden Statistiken zur Dokumentenkonvertierung angezeigt."
+          }}
+        </p>
       </div>
 
       <!-- Document Upload Tab -->
       <div v-else-if="activeTab === 'upload'" class="document-upload">
         <h3>{{ $t("admin.docConverter.upload") || "Dokumente hochladen" }}</h3>
-        <p>{{ $t("admin.docConverter.uploadDescription") || "Hier können Sie Dokumente hochladen." }}</p>
+        <p>
+          {{
+            $t("admin.docConverter.uploadDescription") ||
+            "Hier können Sie Dokumente hochladen."
+          }}
+        </p>
       </div>
 
       <!-- Recent conversions -->
       <div v-else-if="activeTab === 'recent'" class="recent-conversions">
-        <h3>{{ $t("admin.docConverter.recent") || "Letzte Konvertierungen" }}</h3>
-        <p>{{ $t("admin.docConverter.recentDescription") || "Hier werden die letzten Konvertierungen angezeigt." }}</p>
+        <h3>
+          {{ $t("admin.docConverter.recent") || "Letzte Konvertierungen" }}
+        </h3>
+        <p>
+          {{
+            $t("admin.docConverter.recentDescription") ||
+            "Hier werden die letzten Konvertierungen angezeigt."
+          }}
+        </p>
       </div>
 
       <!-- Settings -->
       <div v-else-if="activeTab === 'settings'" class="converter-settings">
         <h3>{{ $t("admin.docConverter.settings") || "Einstellungen" }}</h3>
-        <p>{{ $t("admin.docConverter.settingsDescription") || "Hier können Sie die Einstellungen für den Dokumentenkonverter anpassen." }}</p>
+        <p>
+          {{
+            $t("admin.docConverter.settingsDescription") ||
+            "Hier können Sie die Einstellungen für den Dokumentenkonverter anpassen."
+          }}
+        </p>
       </div>
 
       <!-- Queue -->
       <div v-else-if="activeTab === 'queue'" class="conversion-queue">
         <h3>{{ $t("admin.docConverter.queue") || "Warteschlange" }}</h3>
-        <p>{{ $t("admin.docConverter.queueDescription") || "Hier können Sie die Warteschlange der Konvertierungen verwalten." }}</p>
+        <p>
+          {{
+            $t("admin.docConverter.queueDescription") ||
+            "Hier können Sie die Warteschlange der Konvertierungen verwalten."
+          }}
+        </p>
       </div>
     </div>
 
@@ -144,18 +200,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import { useDocumentConverterStore } from "@/stores/documentConverter";
 import { useI18n } from "vue-i18n";
 import { useToast } from "@/composables/useToast";
-import BaseFileUpload from "@/components/base/BaseFileUpload.vue";
 
-const { t, locale } = useI18n({ useScope: 'global' });
+const { t, locale } = useI18n({ useScope: "global" });
 const documentConverterStore = useDocumentConverterStore();
 const toast = useToast();
 
 // Logging to check i18n initialization
-console.log(`[AdminDocConverter] i18n initialized with locale: ${locale.value}`);
+console.log(
+  `[AdminDocConverter] i18n initialized with locale: ${locale.value}`,
+);
 
 // Data
 const isLoading = ref(false);

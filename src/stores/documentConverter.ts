@@ -139,7 +139,7 @@ export const useDocumentConverterStore = defineStore(
     const documentsByFormat = computed(() => {
       const result: Record<string, ConversionResult[]> = {};
 
-      documents.value.forEach((doc) => {
+      documents.value.forEach((doc: any) => {
         if (!result[doc.format]) {
           result[doc.format] = [];
         }
@@ -151,11 +151,11 @@ export const useDocumentConverterStore = defineStore(
 
     const documentsByStatus = computed(() => {
       return {
-        completed: documents.value.filter((doc) => doc.status === "completed"),
+        completed: documents.value.filter((doc: any) => doc.status === "completed"),
         processing: documents.value.filter(
           (doc) => doc.status === "processing",
         ),
-        failed: documents.value.filter((doc) => doc.status === "failed"),
+        failed: documents.value.filter((doc: any) => doc.status === "failed"),
       };
     });
 
@@ -172,7 +172,7 @@ export const useDocumentConverterStore = defineStore(
 
           if (response && response.length > 0) {
             // Map API response to store format
-            documents.value = response.map((doc) => ({
+            documents.value = response.map((doc: any) => ({
               id: doc.id,
               filename: doc.originalName || doc.filename || "Unknown",
               originalName: doc.originalName || doc.filename || "Unknown", // Include both property names
@@ -558,7 +558,7 @@ export const useDocumentConverterStore = defineStore(
 
         // Count by format
         const conversionsByFormat: Record<string, number> = {};
-        documents.value.forEach((doc) => {
+        documents.value.forEach((doc: any) => {
           if (!conversionsByFormat[doc.format]) {
             conversionsByFormat[doc.format] = 0;
           }

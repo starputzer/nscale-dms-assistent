@@ -247,7 +247,7 @@ export function useRouteFallback(options: RouteFallbackOptions = {}) {
     if ("caches" in window) {
       try {
         const cacheNames = await caches.keys();
-        await Promise.all(cacheNames.map((name) => caches.delete(name)));
+        await Promise.all(cacheNames.map((name: any) => caches.delete(name)));
         logger.info("Browser-Cache geleert");
       } catch (error) {
         logger.error("Fehler beim Cache-Leeren:", error);

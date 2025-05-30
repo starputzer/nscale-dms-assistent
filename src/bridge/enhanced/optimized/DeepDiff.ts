@@ -94,7 +94,7 @@ export function deepDiff(oldObj: any, newObj: any): DiffOperation[] {
 
         // Pfade der verschachtelten Diffs aktualisieren
         operations.push(
-          ...nestedDiffs.map((diff) => ({
+          ...nestedDiffs.map((diff: any) => ({
             ...diff,
             path: [key, ...diff.path],
           })),
@@ -209,7 +209,7 @@ function diffArrays(oldArray: any[], newArray: any[]): DiffOperation[] {
 
       // Wenn es spezifische Änderungen gibt, diese mit korrektem Pfad zurückgeben
       if (nestedDiffs.length > 0) {
-        return nestedDiffs.map((diff) => ({
+        return nestedDiffs.map((diff: any) => ({
           ...diff,
           path: [oldArray.length - 1, ...diff.path],
         }));

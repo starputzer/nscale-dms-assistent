@@ -18,7 +18,6 @@ import {
   processBatchResponse,
   extractBatchResponseData,
   validateSessionsResponse,
-  validateMessagesResponse,
 } from "./sessionsResponseFix";
 
 /**
@@ -109,7 +108,7 @@ export const useSessionsStore = defineStore(
               const parsedMessages = JSON.parse(legacyMessages);
 
               // Nachrichten konvertieren
-              Object.keys(parsedMessages).forEach((sessionId) => {
+              Object.keys(parsedMessages).forEach((sessionId: any) => {
                 messages.value[sessionId] = parsedMessages[sessionId].map(
                   (msg: any) => ({
                     ...msg,
@@ -119,7 +118,6 @@ export const useSessionsStore = defineStore(
                 );
               });
             }
-
           } catch (e) {
             console.error("Fehler beim Parsen der Legacy-Session-Daten", e);
           }
@@ -135,7 +133,7 @@ export const useSessionsStore = defineStore(
       // sessions.value = [];
       // currentSessionId.value = null;
       // messages.value = {};
-      
+
       migrateFromLegacyStorage();
 
       // Only sync sessions if user is authenticated
@@ -153,7 +151,6 @@ export const useSessionsStore = defineStore(
           if (isAuthenticated) {
             // Initial sync when becoming authenticated
             // synchronizeSessions();
-
             // Temporarily disable periodic sync
             /*
             if (syncInterval === null) {
@@ -221,7 +218,7 @@ export const useSessionsStore = defineStore(
 
     // Sessions mit Tags filtern
     const getSessionsByTag = computed(() => (tagId: string) => {
-      return sessions.value.filter((session) =>
+      return sessions.value.filter((session: any) =>
         session.tags?.some((tag) => tag.id === tagId),
       );
     });
@@ -235,12 +232,12 @@ export const useSessionsStore = defineStore(
 
     // Archivierte Sessions
     const archivedSessions = computed(() => {
-      return sessions.value.filter((session) => session.isArchived);
+      return sessions.value.filter((session: any) => session.isArchived);
     });
 
     // Aktive (nicht-archivierte) Sessions
     const activeSessions = computed(() => {
-      return sessions.value.filter((session) => !session.isArchived);
+      return sessions.value.filter((session: any) => !session.isArchived);
     });
 
     const isStreaming = computed(() => streaming.value.isActive);
@@ -275,7 +272,6 @@ export const useSessionsStore = defineStore(
      * - Intelligente Erkennung von Änderungen minimiert unnötige Updates
      */
     async function synchronizeSessions(): Promise<void> {
-
       // Early exit if not authenticated - prevent any API calls
       if (!authStore.isAuthenticated || !authStore.token) {
         return;
@@ -360,12 +356,11 @@ export const useSessionsStore = defineStore(
           return;
         }
 
-
         // Optimierte Sessions-Verarbeitung mit Map für schnelleren Zugriff
         if (serverSessions && serverSessions.length > 0) {
           // Lokale Sessions für schnellen Lookup in Map konvertieren
           const localSessionsMap = new Map(
-            sessions.value.map((session) => [session.id, session]),
+            sessions.value.map((session: any) => [session.id, session]),
           );
 
           // Neue oder aktualisierte Sessions verarbeiten
@@ -407,7 +402,7 @@ export const useSessionsStore = defineStore(
 
           // Lokale Sessions hinzufügen, die nicht vom Server kamen
           // (nur solche, die als isLocal markiert sind - andere wurden gelöscht)
-          localSessionsMap.forEach((session) => {
+          localSessionsMap.forEach((session: any) => {
             // if ((session as any).isLocal) { // isLocal check entfernt
             updatedSessions.push(session);
             // }
@@ -415,7 +410,6 @@ export const useSessionsStore = defineStore(
 
           // Sessions aktualisieren
           sessions.value = updatedSessions;
-          
         }
 
         syncStatus.value.lastSyncTime = Date.now();
@@ -451,7 +445,6 @@ export const useSessionsStore = defineStore(
      * Optimierte Version mit API-Batching und Cache-Control
      */
     async function fetchMessages(sessionId: string): Promise<ChatMessage[]> {
-
       if (!sessionId || !authStore.isAuthenticated) return [];
 
       isLoading.value = true;
@@ -472,16 +465,22 @@ export const useSessionsStore = defineStore(
 
         // Direct API call instead of batch request
         // The batch service seems to have issues with the server response format
-        const response = await axios.get(`/api/sessions/${sessionId}/messages`, {
-          headers: authHeaders,
-        });
+        const response = await axios.get(
+          `/api/sessions/${sessionId}/messages`,
+          {
+            headers: authHeaders,
+          },
+        );
 
         // Extract messages from response
         let validMessages: ChatMessage[] = [];
         if (response.data) {
           if (Array.isArray(response.data)) {
             validMessages = response.data;
-          } else if (response.data.messages && Array.isArray(response.data.messages)) {
+          } else if (
+            response.data.messages &&
+            Array.isArray(response.data.messages)
+          ) {
             validMessages = response.data.messages;
           } else if (response.data.data && Array.isArray(response.data.data)) {
             validMessages = response.data.data;
@@ -595,7 +594,6 @@ export const useSessionsStore = defineStore(
     async function setCurrentSession(sessionId: string): Promise<void> {
       if (currentSessionId.value === sessionId) return;
 
-      
       // Important: Set the new session ID first to prevent race conditions
       const previousSessionId = currentSessionId.value;
       currentSessionId.value = sessionId;
@@ -671,7 +669,7 @@ export const useSessionsStore = defineStore(
       const sessionsBefore = [...sessions.value];
       const messagesBackup = { ...messages.value };
 
-      sessions.value = sessions.value.filter((s) => s.id !== sessionId);
+      sessions.value = sessions.value.filter((s: any) => s.id !== sessionId);
 
       // Nachrichten aus dem Store entfernen
       if (messages.value[sessionId]) {
@@ -775,7 +773,7 @@ export const useSessionsStore = defineStore(
               // Nachricht aus den ausstehenden entfernen
               pendingMessages.value[sessionId] = pendingMessages.value[
                 sessionId
-              ].filter((m) => m.id !== message.id);
+              ].filter((m: any) => m.id !== message.id);
 
               // Nachricht mit Server-generierter ID zu normalen Nachrichten hinzufügen
               if (!messages.value[sessionId]) {
@@ -839,7 +837,6 @@ export const useSessionsStore = defineStore(
         ...userMessage,
         status: "sent", // Status sofort auf "sent" setzen
       });
-      
 
       // Sitzung aktualisieren
       const sessionIndex = sessions.value.findIndex((s) => s.id === sessionId);
@@ -849,11 +846,12 @@ export const useSessionsStore = defineStore(
           updatedAt: timestamp,
         };
       }
-      
+
       // Check if this is the first message in the session and update title
       const isFirstMessage = messages.value[sessionId].length === 1;
-      const currentSession = sessions.value.find(s => s.id === sessionId);
-      const needsTitleUpdate = isFirstMessage && currentSession?.title === "Neue Unterhaltung";
+      const currentSession = sessions.value.find((s) => s.id === sessionId);
+      const needsTitleUpdate =
+        isFirstMessage && currentSession?.title === "Neue Unterhaltung";
 
       // Streaming-Status setzen
       streaming.value = {
@@ -938,23 +936,31 @@ export const useSessionsStore = defineStore(
               progress: 100,
               currentSessionId: null,
             };
-            
+
             // Update session title if this was the first message
             if (needsTitleUpdate) {
               // Temporarily disabled due to 422 error
               // updateSessionTitle(sessionId);
-              
+
               // Update title locally based on message content
-              const firstUserMessage = messages.value[sessionId].find(m => m.role === 'user');
+              const firstUserMessage = messages.value[sessionId].find(
+                (m) => m.role === "user",
+              );
               if (firstUserMessage) {
-                const words = firstUserMessage.content.split(' ').slice(0, 3);
-                const newTitle = words.join(' ') + (words.length < firstUserMessage.content.split(' ').length ? '...' : '');
-                
-                const sessionIdx = sessions.value.findIndex(s => s.id === sessionId);
+                const words = firstUserMessage.content.split(" ").slice(0, 3);
+                const newTitle =
+                  words.join(" ") +
+                  (words.length < firstUserMessage.content.split(" ").length
+                    ? "..."
+                    : "");
+
+                const sessionIdx = sessions.value.findIndex(
+                  (s) => s.id === sessionId,
+                );
                 if (sessionIdx !== -1) {
                   sessions.value[sessionIdx] = {
                     ...sessions.value[sessionIdx],
-                    title: newTitle || 'Neue Unterhaltung'
+                    title: newTitle || "Neue Unterhaltung",
                   };
                 }
               }
@@ -986,9 +992,9 @@ export const useSessionsStore = defineStore(
 
             console.log("Streaming response status:", response.status);
             console.log("Streaming response headers:", {
-              contentType: response.headers.get('content-type'),
-              cacheControl: response.headers.get('cache-control'),
-              xAccelBuffering: response.headers.get('x-accel-buffering')
+              contentType: response.headers.get("content-type"),
+              cacheControl: response.headers.get("cache-control"),
+              xAccelBuffering: response.headers.get("x-accel-buffering"),
             });
 
             if (!response.ok) {
@@ -1015,17 +1021,20 @@ export const useSessionsStore = defineStore(
 
               const chunk = decoder.decode(value, { stream: true });
               chunkCount++;
-              console.log(`Chunk ${chunkCount} received, length: ${chunk.length}, content:`, chunk.substring(0, 100));
+              console.log(
+                `Chunk ${chunkCount} received, length: ${chunk.length}, content:`,
+                chunk.substring(0, 100),
+              );
 
               // SSE-Format parsen
               const lines = chunk.split("\n");
               console.log("Lines in chunk:", lines.length, lines);
-              
+
               for (const line of lines) {
                 if (line.startsWith("data: ")) {
                   const data = line.slice(6);
                   console.log("Parsed data:", data);
-                  
+
                   if (data === "[DONE]") {
                     console.log("Received [DONE] signal");
                     finishStreaming();
@@ -1038,7 +1047,10 @@ export const useSessionsStore = defineStore(
                     if (parsed.response) {
                       responseContent += parsed.response;
                     } else if (parsed.error) {
-                      console.error("Streaming error from backend:", parsed.error);
+                      console.error(
+                        "Streaming error from backend:",
+                        parsed.error,
+                      );
                     }
                   } catch (e) {
                     // Fallback für plain text
@@ -1065,7 +1077,7 @@ export const useSessionsStore = defineStore(
                 } else if (line.startsWith("event: ")) {
                   const event = line.slice(7);
                   console.log("Parsed event:", event);
-                  
+
                   if (event === "done") {
                     console.log("Received done event");
                     finishStreaming();
@@ -1357,7 +1369,7 @@ export const useSessionsStore = defineStore(
       const messageLimit = 50;
 
       // Für jede Session
-      Object.keys(messages.value).forEach((sessionId) => {
+      Object.keys(messages.value).forEach((sessionId: any) => {
         const sessionMessages = messages.value[sessionId];
 
         // Wenn mehr Nachrichten als das Limit
@@ -1451,53 +1463,60 @@ export const useSessionsStore = defineStore(
      */
     async function sendFeedback(
       messageId: string,
-      feedbackType: 'positive' | 'negative',
-      feedbackText?: string
+      feedbackType: "positive" | "negative",
+      feedbackText?: string,
     ): Promise<void> {
       try {
         // Finde die Nachricht
         let foundMessage: ChatMessage | null = null;
         let foundSessionId: string | null = null;
-        
-        for (const [sessionId, sessionMessages] of Object.entries(messages.value)) {
-          const message = sessionMessages.find(m => m.id === messageId);
+
+        for (const [sessionId, sessionMessages] of Object.entries(
+          messages.value,
+        )) {
+          const message = sessionMessages.find((m) => m.id === messageId);
           if (message) {
             foundMessage = message;
             foundSessionId = sessionId;
             break;
           }
         }
-        
+
         if (!foundMessage || !foundSessionId) {
-          console.error('Message not found for feedback:', messageId);
+          console.error("Message not found for feedback:", messageId);
           return;
         }
-        
+
         // Sende Feedback an Backend
-        const response = await axios.post('/api/feedback', {
-          message_id: messageId,
-          session_id: foundSessionId,
-          feedback_type: feedbackType,
-          feedback_text: feedbackText || '',
-          timestamp: new Date().toISOString()
-        }, {
-          headers: {
-            Authorization: `Bearer ${authStore.token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
+        const response = await axios.post(
+          "/api/feedback",
+          {
+            message_id: messageId,
+            session_id: foundSessionId,
+            feedback_type: feedbackType,
+            feedback_text: feedbackText || "",
+            timestamp: new Date().toISOString(),
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${authStore.token}`,
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
         // Update lokale Message mit Feedback
-        const messageIndex = messages.value[foundSessionId].findIndex(m => m.id === messageId);
+        const messageIndex = messages.value[foundSessionId].findIndex(
+          (m) => m.id === messageId,
+        );
         if (messageIndex !== -1) {
           messages.value[foundSessionId][messageIndex] = {
             ...messages.value[foundSessionId][messageIndex],
-            userFeedback: feedbackType
+            userFeedback: feedbackType,
           };
         }
-        
       } catch (error) {
-        console.error('Failed to send feedback:', error);
+        console.error("Failed to send feedback:", error);
         // Optional: Show error toast to user
       }
     }
@@ -1566,7 +1585,7 @@ export const useSessionsStore = defineStore(
       // Tag entfernen
       sessions.value[sessionIndex].tags = sessions.value[
         sessionIndex
-      ].tags!.filter((t) => t.id !== tagId);
+      ].tags!.filter((t: any) => t.id !== tagId);
       sessions.value[sessionIndex].updatedAt = new Date().toISOString();
 
       // Mit dem Server synchronisieren, wenn angemeldet
@@ -1842,7 +1861,7 @@ export const useSessionsStore = defineStore(
       const sessionsBefore = [...sessions.value];
       const messagesBackup = { ...messages.value };
 
-      sessions.value = sessions.value.filter((s) => s.id !== sessionId);
+      sessions.value = sessions.value.filter((s: any) => s.id !== sessionId);
 
       // Nachrichten aus dem Store entfernen
       if (messages.value[sessionId]) {
@@ -1893,16 +1912,18 @@ export const useSessionsStore = defineStore(
           {},
           {
             headers: authStore.createAuthHeaders(),
-          }
+          },
         );
-        
+
         if (response.data && response.data.new_title) {
           // Update local session title
-          const sessionIdx = sessions.value.findIndex(s => s.id === sessionId);
+          const sessionIdx = sessions.value.findIndex(
+            (s) => s.id === sessionId,
+          );
           if (sessionIdx !== -1) {
             sessions.value[sessionIdx] = {
               ...sessions.value[sessionIdx],
-              title: response.data.new_title
+              title: response.data.new_title,
             };
           }
         }

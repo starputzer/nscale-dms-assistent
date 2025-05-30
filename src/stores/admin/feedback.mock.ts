@@ -48,8 +48,8 @@ export const useFeedbackStore = defineStore("admin-feedback", () => {
   // Computed
   const stats = computed<FeedbackStats>(() => {
     const total = feedback.value.length;
-    const positive = feedback.value.filter((f) => f.type === "positive").length;
-    const negative = feedback.value.filter((f) => f.type === "negative").length;
+    const positive = feedback.value.filter((f: any) => f.type === "positive").length;
+    const negative = feedback.value.filter((f: any) => f.type === "negative").length;
     const withComments = feedback.value.filter(
       (f) => f.comment && f.comment.trim() !== "",
     ).length;
@@ -67,7 +67,7 @@ export const useFeedbackStore = defineStore("admin-feedback", () => {
 
   const filteredFeedback = computed(() => {
     return feedback.value
-      .filter((f) => {
+      .filter((f: any) => {
         if (currentFilter.value.hasComment !== undefined) {
           const hasComment = f.comment && f.comment.trim() !== "";
           if (currentFilter.value.hasComment !== hasComment) return false;

@@ -431,13 +431,13 @@ export interface OfflineManagerInterface extends BaseService {
   /** Event-Listener für Online/Offline-Events */
   on(
     event: "online" | "offline" | "synchronizing" | "synchronized" | "error",
-    handler: Function,
+    handler: EventCallback | UnsubscribeFn,
   ): void;
 
   /** Event-Listener entfernen */
   off(
     event: "online" | "offline" | "synchronizing" | "synchronized" | "error",
-    handler: Function,
+    handler: EventCallback | UnsubscribeFn,
   ): void;
 }
 
@@ -473,10 +473,10 @@ export interface SessionServiceInterface extends BaseService {
   cancelStream(): void;
 
   /** Event-Listener registrieren */
-  on(event: string, handler: Function): void;
+  on(event: string, handler: EventCallback | UnsubscribeFn): void;
 
   /** Event-Listener entfernen */
-  off(event: string, handler: Function): void;
+  off(event: string, handler: EventCallback | UnsubscribeFn): void;
 }
 
 /**
@@ -496,10 +496,10 @@ export interface StreamingServiceInterface {
   isActive: boolean;
 
   /** Event-Listener registrieren */
-  on(event: string, handler: Function): void;
+  on(event: string, handler: EventCallback | UnsubscribeFn): void;
 
   /** Event-Listener entfernen */
-  off(event: string, handler: Function): void;
+  off(event: string, handler: EventCallback | UnsubscribeFn): void;
 }
 
 /**

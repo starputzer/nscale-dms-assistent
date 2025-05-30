@@ -51,7 +51,7 @@ export class EndpointValidator {
    * Fix batch requests by removing invalid endpoints
    */
   static fixBatchRequests(requests: any[]): any[] {
-    return requests.filter((request) => {
+    return requests.filter((request: any) => {
       const endpoint = request.endpoint || request.path;
       if (!endpoint) return true; // Let the server handle it
 

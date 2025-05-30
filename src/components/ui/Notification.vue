@@ -341,7 +341,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
 import Dialog from "./Dialog.vue";
 import CloseIcon from "../icons/CloseIcon.vue";

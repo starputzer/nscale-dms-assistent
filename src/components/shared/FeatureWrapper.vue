@@ -7,13 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  computed,
-  ref,
-  onErrorCaptured,
-  onMounted,
-  getCurrentInstance,
-} from "vue";
+import { computed, ref, onErrorCaptured, onMounted } from "vue";
 import { useFeatureToggles } from "@/composables/useFeatureToggles";
 
 /**

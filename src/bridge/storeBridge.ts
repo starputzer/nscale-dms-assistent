@@ -148,8 +148,8 @@ class EventBus {
 
   clear(): void {
     // Alle Event-Listener entfernen
-    this.listeners.forEach((listenerMap, event) => {
-      listenerMap.forEach((eventListener) => {
+    this.listeners.forEach((listenerMap, event: any) => {
+      listenerMap.forEach((eventListener: any) => {
         window.removeEventListener(`nscale:${event}`, eventListener);
       });
     });
@@ -579,7 +579,7 @@ export function setupStoreBridge(): BridgeAPI {
    * Bereinigt alle Event-Listener
    */
   function cleanup() {
-    cleanupFunctions.forEach((fn) => fn());
+    cleanupFunctions.forEach((fn: any) => fn());
     cleanupFunctions.length = 0;
     bus.clear();
   }

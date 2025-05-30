@@ -78,12 +78,12 @@ export class AdminMotdService implements IAdminMotdService {
       // Sicherstellen, dass wir gültige Daten haben, selbst wenn die Response unvollständig ist
       const mockData = await adminMockService.getMockResponse("/api/motd");
       const data = response?.data?.config || response?.data || mockData;
-      
+
       return {
         success: true,
         data: data,
         message: "MOTD-Konfiguration erfolgreich abgerufen",
-        _isMockData: response?._isMockData || false
+        _isMockData: response?._isMockData || false,
       };
     } catch (error) {
       this.logger.error("Fehler beim Abrufen der MOTD-Konfiguration", error);
@@ -91,9 +91,11 @@ export class AdminMotdService implements IAdminMotdService {
       // Fallback: Bei echten API-Fehlern trotzdem sinnvolle Daten liefern
       try {
         const mockData = await adminMockService.getMockResponse("/api/motd");
-        
-        this.logger.info("Fallback zu Mock-Daten nach API-Fehler für MOTD-Konfiguration");
-        
+
+        this.logger.info(
+          "Fallback zu Mock-Daten nach API-Fehler für MOTD-Konfiguration",
+        );
+
         return {
           success: true, // Wir geben Erfolg zurück, um die UI nicht zu stören
           data: mockData,
@@ -102,13 +104,17 @@ export class AdminMotdService implements IAdminMotdService {
           _hadError: true,
           error: {
             code: "MOTD_CONFIG_ERROR",
-            message: error instanceof Error ? error.message : "Unbekannter Fehler",
+            message:
+              error instanceof Error ? error.message : "Unbekannter Fehler",
           },
         };
       } catch (fallbackError) {
         // Wenn sogar der Fallback fehlschlägt, geben wir den ursprünglichen Fehler zurück
-        this.logger.error("Auch Fallback zu Mock-Daten fehlgeschlagen", fallbackError);
-        
+        this.logger.error(
+          "Auch Fallback zu Mock-Daten fehlgeschlagen",
+          fallbackError,
+        );
+
         // In diesem Format zurückgeben, um mit dem Store konform zu sein
         return {
           success: false,

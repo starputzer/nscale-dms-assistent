@@ -287,13 +287,13 @@ export const toastService = {
     // Wenn gruppierte Toasts ersetzt werden sollen und die Gruppe existiert
     if (group && replaceGroupToasts) {
       // Toasts in der gleichen Gruppe entfernen (sowohl aus der Warteschlange als auch aus den aktiven Toasts)
-      state.queue = state.queue.filter((t) => t.group !== group);
+      state.queue = state.queue.filter((t: any) => t.group !== group);
 
       // Aktive Toasts in der gleichen Gruppe entfernen
       const toastsToRemove = state.toasts
-        .filter((t) => t.group === group)
-        .map((t) => t.id);
-      toastsToRemove.forEach((id) => removeToast(id));
+        .filter((t: any) => t.group === group)
+        .map((t: any) => t.id);
+      toastsToRemove.forEach((id: any) => removeToast(id));
     }
 
     // Callback ausführen, wenn vorhanden

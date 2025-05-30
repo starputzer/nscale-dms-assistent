@@ -147,15 +147,17 @@ export class AdminFeatureTogglesService implements IAdminFeatureTogglesService {
 
         const stats: FeatureToggleStats = {
           total: toggles.length,
-          enabled: toggles.filter((t) => t.enabled).length,
+          enabled: toggles.filter((t: any) => t.enabled).length,
           enabledPercent: Math.round(
-            (toggles.filter((t) => t.enabled).length / toggles.length) * 100,
+            (toggles.filter((t: any) => t.enabled).length / toggles.length) *
+              100,
           ),
           categories: {
-            UI: toggles.filter((t) => t.category === "UI").length,
-            API: toggles.filter((t) => t.category === "API").length,
-            Feature: toggles.filter((t) => t.category === "Feature").length,
-            System: toggles.filter((t) => t.category === "System").length,
+            UI: toggles.filter((t: any) => t.category === "UI").length,
+            API: toggles.filter((t: any) => t.category === "API").length,
+            Feature: toggles.filter((t: any) => t.category === "Feature")
+              .length,
+            System: toggles.filter((t: any) => t.category === "System").length,
             Other: toggles.filter(
               (t) =>
                 !t.category ||
@@ -201,7 +203,7 @@ export class AdminFeatureTogglesService implements IAdminFeatureTogglesService {
             },
             {
               date: new Date().toISOString().split("T")[0],
-              enabled: toggles.filter((t) => t.enabled).length,
+              enabled: toggles.filter((t: any) => t.enabled).length,
             },
           ],
         };

@@ -220,12 +220,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { useToast } from "@/composables/useToast";
 import { storeToRefs } from "pinia";
 import { useAdminSystemStore } from "@/stores/admin/system";
-import type { SystemStats, SystemAction } from "@/types/admin";
+import type { SystemAction } from "@/types/admin";
 
 interface LogEntry {
   id: string;

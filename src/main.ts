@@ -28,6 +28,10 @@ import { globalPlugins } from "@/plugins";
 import { initializeApiServices } from "@/services/api/config";
 import { initializeTelemetry } from "@/services/analytics/telemetry";
 import { useErrorReporting } from "@/utils/errorReportingService";
+import { performanceMonitor } from "@/utils/performanceMonitor";
+
+// Debug utilities (only in development)
+import { debugI18n } from "./debug-i18n";
 import { setupNetworkMonitoring } from "@/utils/networkMonitor";
 import { CentralAuthManager } from "@/services/auth/CentralAuthManager";
 
@@ -133,6 +137,9 @@ const initApp = async () => {
 
     // Initialize telemetry
     initializeTelemetry();
+    
+    // Track app initialization performance
+    performanceMonitor.track('app.initialization', performance.now());
 
     // Setup network monitoring
     setupNetworkMonitoring();

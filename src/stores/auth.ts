@@ -284,7 +284,7 @@ export const useAuthStore = defineStore(
       permissions.value.clear();
 
       // Standardberechtigungen basierend auf Rollen
-      roles.forEach((role) => {
+      roles.forEach((role: any) => {
         // Administratorrechte
         if (role === "admin") {
           permissions.value.add("user:create");
@@ -1258,7 +1258,7 @@ export const useAuthStore = defineStore(
           );
 
           // Interceptors basierend auf Typ und Kategorie entfernen
-          activeInterceptors.value.forEach((interceptor) => {
+          activeInterceptors.value.forEach((interceptor: any) => {
             try {
               if (interceptor.type === "global") {
                 if (interceptor.category === "request") {

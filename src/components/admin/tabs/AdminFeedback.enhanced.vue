@@ -614,14 +614,13 @@ import { storeToRefs } from "pinia";
 import { useI18n } from "@/composables/useI18n";
 import { useToast } from "@/composables/useToast";
 import { useAdminFeedbackStore } from "@/stores/admin/feedback";
-import { shouldUseRealApi } from "@/config/api-flags";
 import { Chart } from "chart.js/auto";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
 // Composables
-const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
-console.log('[i18n] Component initialized with global scope and inheritance');
+const { t, locale } = useI18n({ useScope: "global", inheritLocale: true });
+console.log("[i18n] Component initialized with global scope and inheritance");
 const toast = useToast();
 const feedbackStore = useAdminFeedbackStore();
 
@@ -749,25 +748,23 @@ const paginatedFeedback = computed(() => {
 const refreshData = async () => {
   try {
     // Show loading toast for better user feedback
-    toast.info(
-      t("admin.feedback.loading", "Lade Feedback-Daten...")
-    );
-    
+    toast.info(t("admin.feedback.loading", "Lade Feedback-Daten..."));
+
     await Promise.all([
       feedbackStore.fetchNegativeFeedback(),
-      feedbackStore.fetchStats()
+      feedbackStore.fetchStats(),
     ]);
-    
+
     // Show success message
     toast.success(
-      t("admin.feedback.loadSuccess", "Feedback-Daten erfolgreich geladen")
+      t("admin.feedback.loadSuccess", "Feedback-Daten erfolgreich geladen"),
     );
-    
+
     updateCharts();
   } catch (err) {
     // Show error message when loading fails
     toast.error(
-      t("admin.feedback.loadError", "Fehler beim Laden der Feedback-Daten")
+      t("admin.feedback.loadError", "Fehler beim Laden der Feedback-Daten"),
     );
     console.error("Error loading feedback data:", err);
   }
@@ -1005,11 +1002,11 @@ onMounted(async () => {
   await refreshData();
   await nextTick();
   initCharts();
-  
+
   // Show API integration status
   if (apiIntegrationEnabled.value) {
     toast.info(
-      t("admin.feedback.apiEnabled", "Feedback-API Integration ist aktiviert")
+      t("admin.feedback.apiEnabled", "Feedback-API Integration ist aktiviert"),
     );
   }
 });
@@ -1027,10 +1024,14 @@ onUnmounted(() => {
 });
 
 // Log i18n initialization status
-console.log(`[AdminFeedback.enhanced] i18n initialized with locale: ${locale.value}`);
+console.log(
+  `[AdminFeedback.enhanced] i18n initialized with locale: ${locale.value}`,
+);
 
 // Log i18n initialization status
-console.log(`[AdminFeedback.enhanced] i18n initialized with locale: ${locale.value}`);
+console.log(
+  `[AdminFeedback.enhanced] i18n initialized with locale: ${locale.value}`,
+);
 </script>
 
 <style lang="scss" scoped>
@@ -1261,7 +1262,7 @@ console.log(`[AdminFeedback.enhanced] i18n initialized with locale: ${locale.val
 .api-status {
   margin-top: 12px;
   font-size: 14px;
-  
+
   .api-badge {
     background-color: var(--nscale-info-light);
     color: var(--nscale-info);

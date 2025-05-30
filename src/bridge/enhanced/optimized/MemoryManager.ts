@@ -77,7 +77,7 @@ export class MemoryManager {
     let executedCount = 0;
 
     // Execute all cleanup functions - use Array.from to avoid Set iterator compatibility issues
-    Array.from(cleanupFns).forEach((cleanupFn) => {
+    Array.from(cleanupFns).forEach((cleanupFn: any) => {
       try {
         cleanupFn();
         executedCount++;
@@ -181,7 +181,7 @@ export class MemoryManager {
         let oldestTime = Date.now();
 
         // Use Array.from to avoid compatibility issues with Map iterators
-        Array.from(cache.entries()).forEach(([entryKey, entry]) => {
+        Array.from(cache.entries()).forEach(([entryKey, entry]: any) => {
           if (entry.timestamp < oldestTime) {
             oldestTime = entry.timestamp;
             oldestKey = entryKey;

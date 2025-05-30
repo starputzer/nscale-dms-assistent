@@ -45,7 +45,7 @@ export class RouterInitializationTester {
       { name: "navigation", dependencies: ["services", "router"] },
     ];
 
-    stageConfigs.forEach((config) => {
+    stageConfigs.forEach((config: any) => {
       this.stages.set(config.name, {
         name: config.name,
         timestamp: 0,
@@ -130,7 +130,7 @@ export class RouterInitializationTester {
 
     const missingDeps: string[] = [];
 
-    stage.dependencies.forEach((dep) => {
+    stage.dependencies.forEach((dep: any) => {
       const depStage = this.stages.get(dep);
       if (!depStage || depStage.status !== "success") {
         missingDeps.push(dep);
@@ -174,7 +174,7 @@ export class RouterInitializationTester {
     }
 
     // Prüfe auf hängende Initialisierungen
-    this.stages.forEach((stage, name) => {
+    this.stages.forEach((stage, name: any) => {
       if (
         stage.status === "initializing" &&
         stage.timestamp &&
@@ -316,13 +316,13 @@ export class RouterInitializationTester {
 
     // Sortiere Stages nach Timestamp
     const sortedStages = Array.from(this.stages.entries())
-      .filter(([_, stage]) => stage.timestamp > 0)
+      .filter(([_, stage]: any) => stage.timestamp > 0)
       .sort((a, b) => a[1].timestamp - b[1].timestamp)
-      .map(([name]) => name);
+      .map(([name]: any) => name);
 
     // Vergleiche mit erwarteter Reihenfolge
     let isCorrect = true;
-    expectedOrder.forEach((stage, index) => {
+    expectedOrder.forEach((stage, index: any) => {
       if (sortedStages[index] !== stage) {
         this.warnings.push(
           `Falsche Reihenfolge: ${stage} erwartet an Position ${index}, gefunden: ${sortedStages[index]}`,

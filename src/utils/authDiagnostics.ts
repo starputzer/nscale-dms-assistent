@@ -97,7 +97,7 @@ class AuthDiagnostics {
       // Watch auth store state changes
       const watchers = ["token", "user", "isAuthenticated", "error"];
 
-      watchers.forEach((key) => {
+      watchers.forEach((key: any) => {
         watch(
           () => (this.authStore as any)[key],
           (newValue, oldValue) => {
@@ -114,7 +114,7 @@ class AuthDiagnostics {
 
       // Hook into auth methods
       const methods = ["login", "logout", "refreshToken", "setToken"];
-      methods.forEach((method) => {
+      methods.forEach((method: any) => {
         const original = this.authStore[method];
         if (original) {
           this.authStore[method] = async (...args: any[]) => {
@@ -255,7 +255,7 @@ class AuthDiagnostics {
     // Hook into API service methods if available
     try {
       const methods = ["get", "post", "put", "delete", "customRequest"];
-      methods.forEach((method) => {
+      methods.forEach((method: any) => {
         const original = (apiService as any)[method];
         if (original) {
           (apiService as any)[method] = async (...args: any[]) => {
@@ -362,9 +362,9 @@ class AuthDiagnostics {
     );
 
     // Display each type
-    Object.keys(grouped).forEach((type) => {
+    Object.keys(grouped).forEach((type: any) => {
       console.log(`\n--- ${type.toUpperCase()} ---`);
-      grouped[type].forEach((entry) => {
+      grouped[type].forEach((entry: any) => {
         console.log(`${entry.timestamp} - ${entry.action}`);
         console.log("Details:", entry.details);
       });
@@ -375,7 +375,7 @@ class AuthDiagnostics {
     const authKeys = Object.keys(localStorage).filter(
       (key) => key.includes("token") || key.includes("auth"),
     );
-    authKeys.forEach((key) => {
+    authKeys.forEach((key: any) => {
       const value = localStorage.getItem(key);
       console.log(`${key}: ${this.sanitizeValue(value)}`);
     });
@@ -384,7 +384,7 @@ class AuthDiagnostics {
     const errors = grouped.error || [];
     if (errors.length > 0) {
       console.log("\n--- Last Errors ---");
-      errors.slice(-5).forEach((entry) => {
+      errors.slice(-5).forEach((entry: any) => {
         console.log(`${entry.timestamp} - ${entry.action}`);
         console.log("Details:", entry.details);
       });

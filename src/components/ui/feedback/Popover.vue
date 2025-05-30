@@ -73,7 +73,6 @@ import {
   watch,
   nextTick,
 } from "vue";
-import { useElementSize } from "@/composables/useElementSize";
 
 /**
  * Popover component for displaying contextual information or content

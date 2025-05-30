@@ -5,6 +5,7 @@
  * Priorisierung und erweiterte Fehlerbehandlung unterstützt.
  */
 
+import type { EventCallback, UnsubscribeFn, EventHandler } from "./commonTypes";
 import {
   EventBus,
   EventOptions,
@@ -19,7 +20,7 @@ export class EnhancedEventBus implements EventBus {
   private listeners: Map<
     string,
     Array<{
-      callback: Function;
+      callback: EventCallback | UnsubscribeFn;
       options: EventOptions;
       id: string;
     }>
@@ -131,7 +132,7 @@ export class EnhancedEventBus implements EventBus {
    * Führt eine Callback-Funktion mit Timeout aus
    */
   private executeWithTimeout(
-    callback: Function,
+    callback: EventCallback | UnsubscribeFn,
     data: any,
     timeout: number,
   ): void {
@@ -161,7 +162,7 @@ export class EnhancedEventBus implements EventBus {
    */
   on(
     eventName: string,
-    callback: Function,
+    callback: EventCallback | UnsubscribeFn,
     options: EventOptions = {},
   ): EventSubscription {
     if (!this.listeners.has(eventName)) {
@@ -208,7 +209,7 @@ export class EnhancedEventBus implements EventBus {
    */
   once(
     eventName: string,
-    callback: Function,
+    callback: EventCallback | UnsubscribeFn,
     options: Omit<EventOptions, "once"> = {},
   ): EventSubscription {
     return this.on(eventName, callback, { ...options, once: true });
@@ -220,7 +221,7 @@ export class EnhancedEventBus implements EventBus {
   priority(
     eventName: string,
     priority: number,
-    callback: Function,
+    callback: EventCallback | UnsubscribeFn,
     options: Omit<EventOptions, "priority"> = {},
   ): EventSubscription {
     return this.on(eventName, callback, { ...options, priority });
@@ -233,7 +234,7 @@ export class EnhancedEventBus implements EventBus {
     this.listeners.clear();
 
     // Alle ausstehenden Batches leeren
-    this.batchQueue.forEach((batch) => {
+    this.batchQueue.forEach((batch: any) => {
       if (batch.timer !== null) {
         clearTimeout(batch.timer);
       }
@@ -290,7 +291,7 @@ export class EnhancedEventBus implements EventBus {
 
     // Alle ausstehenden Batches sofort senden, wenn Batching deaktiviert wird
     if (!enabled) {
-      this.batchQueue.forEach((_, eventName) => {
+      this.batchQueue.forEach((_, eventName: any) => {
         this.flushEventBatch(eventName);
       });
     }

@@ -136,7 +136,7 @@ export class EnhancedEventSource {
     
     // Register custom event handlers
     if (this.options.eventHandlers) {
-      Object.entries(this.options.eventHandlers).forEach(([eventType, handler]) => {
+      Object.entries(this.options.eventHandlers).forEach(([eventType, handler]: any) => {
         this.eventSource!.addEventListener(eventType, handler);
       });
     }

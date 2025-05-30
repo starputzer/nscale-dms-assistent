@@ -133,9 +133,9 @@ export class DomErrorDetector {
 
       let removedCount = 0;
 
-      selectors.forEach((selector) => {
+      selectors.forEach((selector: any) => {
         const elements = document.querySelectorAll(selector);
-        elements.forEach((element) => {
+        elements.forEach((element: any) => {
           element.remove();
           removedCount++;
         });
@@ -258,7 +258,7 @@ export class DomErrorDetector {
           );
         }
 
-        Array.from(element.children).forEach((child) => {
+        Array.from(element.children).forEach((child: any) => {
           traverse(child, depth + 1);
         });
       };
@@ -279,7 +279,7 @@ export class DomErrorDetector {
       const criticalElements = document.querySelectorAll("#app > *");
       const snapshot: string[] = [];
 
-      criticalElements.forEach((element) => {
+      criticalElements.forEach((element: any) => {
         snapshot.push(`${element.tagName}.${element.className}`);
       });
 

@@ -70,28 +70,28 @@ declare module "date-fns" {
 declare module "date-fns/locale" {
   export interface Locale {
     code: string;
-    formatDistance: Function;
-    formatRelative: Function;
+    formatDistance: EventCallback | UnsubscribeFn;
+    formatRelative: EventCallback | UnsubscribeFn;
     localize: {
-      ordinalNumber: Function;
-      era: Function;
-      quarter: Function;
-      month: Function;
-      day: Function;
-      dayPeriod: Function;
+      ordinalNumber: EventCallback | UnsubscribeFn;
+      era: EventCallback | UnsubscribeFn;
+      quarter: EventCallback | UnsubscribeFn;
+      month: EventCallback | UnsubscribeFn;
+      day: EventCallback | UnsubscribeFn;
+      dayPeriod: EventCallback | UnsubscribeFn;
     };
     formatLong: {
-      date: Function;
-      time: Function;
-      dateTime: Function;
+      date: EventCallback | UnsubscribeFn;
+      time: EventCallback | UnsubscribeFn;
+      dateTime: EventCallback | UnsubscribeFn;
     };
     match: {
-      ordinalNumber: Function;
-      era: Function;
-      quarter: Function;
-      month: Function;
-      day: Function;
-      dayPeriod: Function;
+      ordinalNumber: EventCallback | UnsubscribeFn;
+      era: EventCallback | UnsubscribeFn;
+      quarter: EventCallback | UnsubscribeFn;
+      month: EventCallback | UnsubscribeFn;
+      day: EventCallback | UnsubscribeFn;
+      dayPeriod: EventCallback | UnsubscribeFn;
     };
     options?: {
       weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -172,7 +172,7 @@ declare module "dompurify" {
 
   export interface DOMPurify {
     sanitize(html: string | Node, options?: DOMPurifyOptions): string;
-    addHook(hook: string, callback: Function): DOMPurify;
+    addHook(hook: string, callback: EventCallback | UnsubscribeFn): DOMPurify;
     removeHook(hook: string): DOMPurify;
     removeHooks(hook: string): DOMPurify;
     removeAllHooks(): DOMPurify;

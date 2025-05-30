@@ -9,16 +9,11 @@ import { v4 as uuidv4 } from "uuid";
 import {
   ChatSession,
   ChatMessage,
-  SendMessageRequest,
   CreateSessionRequest,
   ApiResponse,
-  StreamingEvent,
 } from "@/types/api";
 
-import {
-  ChatMessageOptions,
-  StreamCallbacks,
-} from "@/services/api/ChatService";
+import { ChatMessageOptions } from "@/services/api/ChatService";
 
 // Mock-Daten für Chat-Sessions
 const MOCK_SESSIONS: ChatSession[] = [

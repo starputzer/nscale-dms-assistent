@@ -255,7 +255,7 @@ export function preloadComponentGroup(
   }
 
   // Sequentielles Laden mit zeitlicher Verzögerung zwischen Komponenten
-  paths.forEach((path, index) => {
+  paths.forEach((path, index: any) => {
     setTimeout(() => {
       dynamicImport(path, { ...options, preload: true });
     }, index * 100); // Staggered loading mit 100ms Abstand
@@ -484,7 +484,7 @@ export function setupRouterErrorTracking() {
         highestErrorRoute:
           Object.entries(window.__ROUTE_LOAD_ERRORS__ || {})
             .sort((a, b) => b[1].count - a[1].count)
-            .map(([route, data]) => ({ route, ...data }))[0] || null,
+            .map(([route, data]: any) => ({ route, ...data }))[0] || null,
       };
     },
 

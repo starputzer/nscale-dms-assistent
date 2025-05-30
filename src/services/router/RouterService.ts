@@ -6,7 +6,7 @@
  */
 
 import { Router, RouteLocationNormalized, NavigationFailure } from "vue-router";
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import type { Logger } from "@/composables/useLogger";
 import type { FeatureTogglesStore } from "@/stores/featureToggles";
 

@@ -121,7 +121,7 @@ function handleKeyDown(event: KeyboardEvent): void {
     (event.target as HTMLElement)?.isContentEditable;
 
   // Find matching shortcuts
-  const matchingShortcuts = registeredShortcuts.value.filter((shortcut) => {
+  const matchingShortcuts = registeredShortcuts.value.filter((shortcut: any) => {
     // Skip if shortcut doesn't work in inputs
     if (isInputElement && !shortcut.worksInInputs) {
       return false;
@@ -141,7 +141,7 @@ function handleKeyDown(event: KeyboardEvent): void {
     event.preventDefault();
 
     // Execute all matching shortcuts (usually just one)
-    matchingShortcuts.forEach((shortcut) => {
+    matchingShortcuts.forEach((shortcut: any) => {
       shortcut.handler();
     });
   }

@@ -449,10 +449,10 @@ export class OfflineManager {
       }
 
       // IDs extrahieren
-      const ids = completedRequests.map((req) => req.id);
+      const ids = completedRequests.map((req: any) => req.id);
 
       // Bulk-Löschung
-      await defaultIndexedDBService.deleteBulk("offlineRequests", ids);
+      await defaultIndexedDBService.deleteBulk("offlineRequests", _ids);
 
       this.logger.debug(
         `${completedRequests.length} abgeschlossene Anfragen entfernt`,
@@ -487,7 +487,7 @@ export class OfflineManager {
   /**
    * Registriert einen Event-Handler
    */
-  public on(event: string, handler: Function): void {
+  public on(event: string, handler: EventCallback | UnsubscribeFn): void {
     if (!this.eventHandlers.has(event)) {
       this.eventHandlers.set(event, new Set());
     }
@@ -498,7 +498,7 @@ export class OfflineManager {
   /**
    * Entfernt einen Event-Handler
    */
-  public off(event: string, handler: Function): void {
+  public off(event: string, handler: EventCallback | UnsubscribeFn): void {
     if (this.eventHandlers.has(event)) {
       this.eventHandlers.get(event)?.delete(handler);
     }
@@ -509,7 +509,7 @@ export class OfflineManager {
    */
   private emitEvent(event: string, data?: any): void {
     if (this.eventHandlers.has(event)) {
-      this.eventHandlers.get(event)?.forEach((handler) => {
+      this.eventHandlers.get(event)?.forEach((handler: any) => {
         try {
           handler(data);
         } catch (error) {

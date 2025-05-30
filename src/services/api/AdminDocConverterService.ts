@@ -214,14 +214,16 @@ class AdminDocConverterService implements IAdminDocConverterService {
       const completed = documents.filter(
         (doc) => doc.status === "success",
       ).length;
-      const failed = documents.filter((doc) => doc.status === "error").length;
+      const failed = documents.filter(
+        (doc: any) => doc.status === "error",
+      ).length;
       const processing = documents.filter(
         (doc) => doc.status === "processing",
       ).length;
 
       // Erstelle Statistiken nach Format
       const formatCounts: Record<string, number> = {};
-      documents.forEach((doc) => {
+      documents.forEach((doc: any) => {
         const format = doc.originalFormat || "unknown";
         formatCounts[format] = (formatCounts[format] || 0) + 1;
       });
@@ -234,7 +236,10 @@ class AdminDocConverterService implements IAdminDocConverterService {
       // Erstelle Mock-Statistiken
       const stats: DocumentStatistics = {
         totalConversions: completed + failed,
-        conversionsPastWeek: trendData.reduce((sum, value) => sum + value, 0),
+        conversionsPastWeek: trendData.reduce(
+          (sum: any, value) => sum + value,
+          0,
+        ),
         successRate:
           completed > 0
             ? Math.round((completed / (completed + failed)) * 100)
@@ -367,16 +372,18 @@ class AdminDocConverterService implements IAdminDocConverterService {
       );
 
       const queueInfo: QueueInfo = {
-        activeJobs: queuedDocuments.filter((doc) => doc.status === "processing")
-          .length,
-        queuedJobs: queuedDocuments.filter((doc) => doc.status === "pending")
-          .length,
+        activeJobs: queuedDocuments.filter(
+          (doc: any) => doc.status === "processing",
+        ).length,
+        queuedJobs: queuedDocuments.filter(
+          (doc: any) => doc.status === "pending",
+        ).length,
         isPaused: false,
         averageWaitTime: Math.floor(Math.random() * 60) + 30, // 30-90 Sekunden
         estimatedCompletionTime: new Date(
           Date.now() + 1000 * 60 * (Math.floor(Math.random() * 30) + 15),
         ),
-        jobs: queuedDocuments.map((doc) => ({
+        jobs: queuedDocuments.map((doc: any) => ({
           id: doc.id,
           fileName: doc.originalName,
           submittedAt: doc.uploadedAt || new Date(),

@@ -487,8 +487,8 @@ import {
 } from "@/components/ui/base";
 
 // i18n
-const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
-console.log('[i18n] Component initialized with global scope and inheritance');
+const { t, locale } = useI18n({ useScope: "global", inheritLocale: true });
+console.log("[i18n] Component initialized with global scope and inheritance");
 
 // Store
 const logsStore = useAdminLogsStore();
@@ -1078,10 +1078,14 @@ const exportLogs = () => {
 };
 
 // Log i18n initialization status
-console.log(`[AdminLogs.enhanced] i18n initialized with locale: ${locale.value}`);
+console.log(
+  `[AdminLogs.enhanced] i18n initialized with locale: ${locale.value}`,
+);
 
 // Log i18n initialization status
-console.log(`[AdminLogs.enhanced] i18n initialized with locale: ${locale.value}`);
+console.log(
+  `[AdminLogs.enhanced] i18n initialized with locale: ${locale.value}`,
+);
 </script>
 
 <style scoped>

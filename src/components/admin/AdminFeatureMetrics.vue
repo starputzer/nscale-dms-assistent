@@ -197,10 +197,10 @@ import type {
 } from "@/types/featureToggles";
 
 const { t } = useI18n({
-  useScope: 'global',
-  inheritLocale: true
+  useScope: "global",
+  inheritLocale: true,
 });
-console.log('[i18n] Component initialized with global scope and inheritance');
+console.log("[i18n] Component initialized with global scope and inheritance");
 
 interface Props {
   features: (FeatureToggle & { metrics?: FeatureMetrics })[];

@@ -10,7 +10,7 @@
  * - bridge/performance.ts
  */
 
-import { bridgeLogger } from "./core/logger";
+import { logger as bridgeLogger } from "./core/logger";
 import type {
   DiagnosticsConfig,
   BridgeComponentStatus,
@@ -18,7 +18,7 @@ import type {
   BridgeSubscription,
   TypedEventEmitter,
 } from "./core/types";
-import { success, failure } from "./core/results";
+// import { success, failure } from "./core/results"; // Not used in this file
 
 // Create module-specific logger
 const logger = bridgeLogger.namespace("diagnostics");
@@ -129,7 +129,7 @@ const DEFAULT_DIAGNOSTICS_CONFIG: Required<DiagnosticsConfig> = {
  * @returns Diagnostics API
  */
 export function initDiagnostics(
-  bridge: BridgeAPI,
+  _bridge: BridgeAPI, // Currently unused but kept for API compatibility
   eventBus: TypedEventEmitter,
   config: DiagnosticsConfig = {},
 ): DiagnosticsAPI {
@@ -398,7 +398,7 @@ export function initDiagnostics(
   function calculateAverage(values: number[]): number {
     if (values.length === 0) return 0;
 
-    const sum = values.reduce((a, b) => a + b, 0);
+    const sum = values.reduce((a: any, b) => a + b, 0);
     return sum / values.length;
   }
 
@@ -423,11 +423,13 @@ export function initDiagnostics(
     });
 
     // Setup error handling
-    const errorSub = eventBus.on("bridge:error", (error) => {
+    const errorSub = eventBus.on("bridge:error", (error: any) => {
       // Update affected component status if available
       if (
         error &&
-        error.component &&
+        typeof error === "object" &&
+        "component" in error &&
+        typeof error.component === "string" &&
         state.componentStatus.has(error.component)
       ) {
         updateComponentStatus(error.component, {
@@ -458,7 +460,7 @@ export function initDiagnostics(
     logger.debug("Disposing diagnostics module resources");
 
     // Unsubscribe from all events
-    state.subscriptions.forEach((subscription) => {
+    state.subscriptions.forEach((subscription: any) => {
       subscription.unsubscribe();
     });
 
@@ -562,7 +564,7 @@ export function initDiagnostics(
   function getStatus(): Record<string, BridgeComponentStatus> {
     const result: Record<string, BridgeComponentStatus> = {};
 
-    state.componentStatus.forEach((status, name) => {
+    state.componentStatus.forEach((status, name: any) => {
       result[name] = { ...status };
     });
 
@@ -663,7 +665,7 @@ export function initDiagnostics(
   function countEventTypes(): Record<string, number> {
     const counts: Record<string, number> = {};
 
-    state.eventHistory.forEach((event) => {
+    state.eventHistory.forEach((event: any) => {
       if (!counts[event.type]) {
         counts[event.type] = 0;
       }

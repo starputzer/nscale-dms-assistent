@@ -140,14 +140,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  ref,
-  computed,
-  watch,
-  onMounted,
-  onBeforeUnmount,
-  nextTick,
-} from "vue";
+import { ref, computed, watch, onBeforeUnmount, nextTick } from "vue";
 import { uniqueId } from "lodash";
 
 type SelectOptionValue = string | number | boolean | null;

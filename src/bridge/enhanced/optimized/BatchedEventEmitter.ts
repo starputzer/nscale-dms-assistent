@@ -110,7 +110,7 @@ export class BatchedEventEmitter {
         this.registry.register(callback, event);
 
         // Return unsubscribe function
-        return () => {
+        return async () => {
           const result = await this.off(event, callback);
           if (!result.success) {
             this.logger.warn(
@@ -192,13 +192,13 @@ export class BatchedEventEmitter {
         }
 
         if (immediate) {
-          const processResult = await this.processEvent(event, args);
-          if (!processResult.success) {
-            throw new Error(
-              `Failed to process event ${event}: ${processResult.error.message}`,
-            );
-          }
-          return;
+          return this.processEvent(event, args).then((processResult) => {
+            if (!processResult.success) {
+              throw new Error(
+                `Failed to process event ${event}: ${processResult.error.message}`,
+              );
+            }
+          });
         }
 
         // Add to pending events
@@ -261,7 +261,7 @@ export class BatchedEventEmitter {
 
     this.microtaskScheduled = true;
 
-    queueMicrotask(() => {
+    queueMicrotask(async () => {
       this.microtaskScheduled = false;
       const result = await this.processPendingEvents();
       if (!result.success) {
@@ -428,9 +428,11 @@ export class BatchedEventEmitter {
         const byEvent: Record<string, number> = {};
 
         // Use Array.from to avoid Map iterator compatibility issues
-        Array.from(this.listeners.entries()).forEach(([event, listeners]) => {
-          byEvent[event] = listeners.length;
-        });
+        Array.from(this.listeners.entries()).forEach(
+          ([event, listeners]: any) => {
+            byEvent[event] = listeners.length;
+          },
+        );
 
         return {
           total: this.listenerCount,

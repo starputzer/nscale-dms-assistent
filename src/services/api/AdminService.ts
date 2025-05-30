@@ -56,7 +56,7 @@ export class AdminService {
 
     // Get the current user directly
     // Try accessing it from different properties
-    const currentUser = authService.user || authService.currentUser;
+    const currentUser = (authService as any).user || (authService as any).currentUser;
 
     // Get the current user from local storage as a fallback
     let userFromStorage = null;
@@ -68,7 +68,7 @@ export class AdminService {
       if (userJson) {
         userFromStorage = JSON.parse(userJson);
       } else if (userJson2) {
-        userFromStorage = JSON.parse(userJson2);
+        userFromStorage = JSON.parse(userJson2 || '{}');
       }
     } catch (e) {
       console.error("Error parsing user from storage", e);
@@ -900,9 +900,9 @@ export class AdminService {
         } else {
           // Check if data has expected stats properties
           if (
-            response.data.total !== undefined ||
-            response.data.positive !== undefined ||
-            response.data.negative !== undefined
+            (response.data as any).total !== undefined ||
+            (response.data as any).positive !== undefined ||
+            (response.data as any).negative !== undefined
           ) {
             // Create compatible response structure
             return {
@@ -1063,7 +1063,7 @@ export class AdminService {
   /**
    * Registriert einen Event-Handler
    */
-  public on(event: string, handler: Function): void {
+  public on(event: string, handler: EventCallback | UnsubscribeFn): void {
     if (!this.eventHandlers.has(event)) {
       this.eventHandlers.set(event, new Set());
     }
@@ -1074,7 +1074,7 @@ export class AdminService {
   /**
    * Entfernt einen Event-Handler
    */
-  public off(event: string, handler: Function): void {
+  public off(event: string, handler: EventCallback | UnsubscribeFn): void {
     if (this.eventHandlers.has(event)) {
       this.eventHandlers.get(event)?.delete(handler);
     }
@@ -1085,7 +1085,7 @@ export class AdminService {
    */
   private emitEvent(event: string, data?: any): void {
     if (this.eventHandlers.has(event)) {
-      this.eventHandlers.get(event)?.forEach((handler) => {
+      this.eventHandlers.get(event)?.forEach((handler: any) => {
         try {
           handler(data);
         } catch (error) {

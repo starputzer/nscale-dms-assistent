@@ -301,7 +301,7 @@ export class UnifiedDiagnosticsServiceFixed {
         // Entferne Error-Elemente aus dem DOM
         document
           .querySelectorAll(".error-boundary-fallback")
-          .forEach((el) => el.remove());
+          .forEach((el: any) => el.remove());
         break;
 
       case "forceRerender":

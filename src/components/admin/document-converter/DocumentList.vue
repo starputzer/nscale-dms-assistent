@@ -363,7 +363,9 @@
           <button
             @click.stop="viewDocument(document)"
             class="document-list__action-btn"
-            :disabled="document.status !== 'success' && document.status !== 'completed'"
+            :disabled="
+              document.status !== 'success' && document.status !== 'completed'
+            "
             :aria-label="
               $t(
                 'documentList.viewDocument',
@@ -386,7 +388,9 @@
           <button
             @click.stop="downloadDocument(document)"
             class="document-list__action-btn"
-            :disabled="document.status !== 'success' && document.status !== 'completed'"
+            :disabled="
+              document.status !== 'success' && document.status !== 'completed'
+            "
             :aria-label="
               $t(
                 'documentList.downloadDocument',
@@ -489,7 +493,6 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { ConversionResult, SupportedFormat } from "@/types/documentConverter";
 import { useGlobalDialog } from "@/composables/useDialog";
-import { useToast } from "@/composables/useToast";
 import { vTouch } from "@/directives/touch-directives";
 
 // State for mobile touch gestures

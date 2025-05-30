@@ -28,7 +28,7 @@ export interface IBaseStore {
   reset?(): void;
   $dispose?(): void;
   $patch?(partialStateOrMutator: any): void;
-  $subscribe?(callback: Function, options?: any): () => void;
+  $subscribe?(callback: EventCallback | UnsubscribeFn, options?: any): () => void;
 }
 
 /**

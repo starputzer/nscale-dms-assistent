@@ -82,7 +82,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, reactive } from "vue";
+import { computed, watch, reactive } from "vue";
 import { useI18n } from "vue-i18n";
 import BaseButton from "@/components/base/BaseButton.vue";
 import BaseInput from "@/components/base/BaseInput.vue";
@@ -93,10 +93,10 @@ import BaseTextarea from "@/components/base/BaseTextarea.vue";
 import type { FeatureToggle, FeatureCategory } from "@/types/featureToggles";
 
 const { t } = useI18n({
-  useScope: 'global',
-  inheritLocale: true
+  useScope: "global",
+  inheritLocale: true,
 });
-console.log('[i18n] Component initialized with global scope and inheritance');
+console.log("[i18n] Component initialized with global scope and inheritance");
 
 interface Props {
   feature?: FeatureToggle | null;

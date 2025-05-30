@@ -217,7 +217,7 @@ export class PerformanceMonitor {
     const metrics = this.getMetricsByType(type, name);
     if (metrics.length === 0) return null;
 
-    return this.calculateStats(metrics.map((m) => m.duration));
+    return this.calculateStats(metrics.map((m: any) => m.duration));
   }
 
   /**
@@ -231,7 +231,7 @@ export class PerformanceMonitor {
     const sorted = [...durations].sort((a, b) => a - b);
     const min = sorted[0];
     const max = sorted[sorted.length - 1];
-    const total = sorted.reduce((sum, val) => sum + val, 0);
+    const total = sorted.reduce((sum: any, val) => sum + val, 0);
     const avg = total / sorted.length;
 
     // Calculate 95th percentile
@@ -274,7 +274,7 @@ export class PerformanceMonitor {
 
     // Calculate stats for each key
     // Use Array.from to avoid compatibility issues with Map iterators
-    Array.from(metricsByKey.entries()).forEach(([key, durations]) => {
+    Array.from(metricsByKey.entries()).forEach(([key, durations]: any) => {
       this.aggregatedStats.set(key, this.calculateStats(durations));
     });
   }
@@ -288,7 +288,7 @@ export class PerformanceMonitor {
 
     const result: Record<string, PerformanceStats> = {};
     // Use Array.from to avoid compatibility issues with Map iterators
-    Array.from(this.aggregatedStats.entries()).forEach(([key, stats]) => {
+    Array.from(this.aggregatedStats.entries()).forEach(([key, stats]: any) => {
       result[key] = stats;
     });
 
@@ -332,7 +332,7 @@ export class PerformanceMonitor {
 
     // Look for slow operations
     // Use Array.from to avoid compatibility issues with Map iterators
-    Array.from(this.aggregatedStats.entries()).forEach(([key, stats]) => {
+    Array.from(this.aggregatedStats.entries()).forEach(([key, stats]: any) => {
       // Different thresholds based on operation type
       let threshold = 16.67; // 60fps frame budget
 

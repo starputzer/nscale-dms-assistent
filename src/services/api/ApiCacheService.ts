@@ -162,7 +162,7 @@ export class ApiCacheService {
       // Parameter sortieren und als String formatieren
       const sortedParams = Object.entries(filteredParams)
         .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
-        .map(([key, value]) => `${key}=${JSON.stringify(value)}`)
+        .map(([key, value]: any) => `${key}=${JSON.stringify(value)}`)
         .join("&");
 
       if (sortedParams) {

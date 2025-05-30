@@ -5,6 +5,7 @@
  * EventDefinitions basiert und dadurch typsichere Event-Emitting und -Listening ermöglicht.
  */
 
+import type { EventCallback, UnsubscribeFn, EventHandler } from "./commonTypes";
 import { BridgeLogger } from "./types";
 import {
   EventDefinitions,
@@ -371,7 +372,7 @@ export class EnhancedTypedEventBus
    * Führt eine Callback-Funktion mit Timeout aus
    */
   private executeWithTimeout(
-    callback: Function,
+    callback: EventCallback | UnsubscribeFn,
     data: any,
     timeout: number,
   ): void {
@@ -471,7 +472,7 @@ export class EnhancedTypedEventBus
     return {
       listenerCount: totalListeners,
       eventTypes: [...this.listeners.keys()],
-      pendingEvents: [...this.batchQueue.keys()].filter((key) => {
+      pendingEvents: [...this.batchQueue.keys()].filter((key: any) => {
         const batch = this.batchQueue.get(key)!;
         return batch.data.length > 0 || batch.timer !== null;
       }),
@@ -524,7 +525,7 @@ export class EnhancedTypedEventBus
    * @param callback Callback-Funktion (untypisiert für Legacy-Kompatibilität)
    * @returns Funktion zum Entfernen des Listeners
    */
-  addEventListener(eventName: string, callback: Function): () => void {
+  addEventListener(eventName: string, callback: EventCallback | UnsubscribeFn): () => void {
     if (!eventName || typeof callback !== "function") {
       this.logger.warn(
         "Ungültiger Event-Name oder Callback in addEventListener",
@@ -548,7 +549,7 @@ export class EnhancedTypedEventBus
    * @param eventName Name des Events
    * @param callback Die zu entfernende Callback-Funktion
    */
-  removeEventListener(eventName: string, callback: Function): void {
+  removeEventListener(eventName: string, callback: EventCallback | UnsubscribeFn): void {
     if (!eventName) {
       this.logger.warn("Ungültiger Event-Name in removeEventListener");
       return;

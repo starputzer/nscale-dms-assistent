@@ -5,6 +5,8 @@
  * and performance optimization for the bridge event system.
  */
 
+import type { EventCallback, UnsubscribeFn } from "../commonTypes";
+import { throttle } from "../commonTypes";
 import {
   EventBus,
   EventOptions,
@@ -13,7 +15,7 @@ import {
   BridgeErrorState,
 } from "../types";
 import { BridgeStatusManager } from "../statusManager";
-import { debounce, throttle } from "./utils";
+// import { debounce, throttle } from "./utils";
 
 /**
  * Configuration for OptimizedEventBus
@@ -185,7 +187,7 @@ interface EventQueueEntry {
  * Event listener entry
  */
 interface EventListenerEntry {
-  callback: Function;
+  callback: EventCallback | UnsubscribeFn;
   options: EventOptions;
   id: string;
   timeRegistered: number;
@@ -394,7 +396,7 @@ export class OptimizedEventBus implements EventBus {
       // For multiple events, send as batch
       this.dispatchEvent(
         eventName,
-        events.map((e) => e.data),
+        events.map((e: any) => e.data),
       );
     }
   }
@@ -413,15 +415,20 @@ export class OptimizedEventBus implements EventBus {
       const wildcardListeners: EventListenerEntry[] = [];
 
       // Use Array.from to avoid compatibility issues with Map iterators
-      Array.from(this.listeners.entries()).forEach(([pattern, listeners]) => {
-        if (pattern !== eventName && this.matchesWildcard(eventName, pattern)) {
-          wildcardListeners.push(...listeners);
-        }
-      });
+      Array.from(this.listeners.entries()).forEach(
+        ([pattern, listeners]: any) => {
+          if (
+            pattern !== eventName &&
+            this.matchesWildcard(eventName, pattern)
+          ) {
+            wildcardListeners.push(...listeners);
+          }
+        },
+      );
 
       // Combine and sort by priority
       const allListeners = [...directListeners, ...wildcardListeners]
-        .filter((listener) => listener.active)
+        .filter((listener: any) => listener.active)
         .sort((a, b) => (b.options.priority || 0) - (a.options.priority || 0));
 
       // Update event stats
@@ -478,7 +485,7 @@ export class OptimizedEventBus implements EventBus {
    * Executes a callback with a timeout
    */
   private executeWithTimeout(
-    callback: Function,
+    callback: EventCallback | UnsubscribeFn,
     data: any,
     timeout: number,
   ): void {
@@ -506,7 +513,7 @@ export class OptimizedEventBus implements EventBus {
    */
   on(
     eventName: string,
-    callback: Function,
+    callback: EventCallback | UnsubscribeFn,
     options: EventOptions = {},
   ): EventSubscription {
     // Initialize listener list if it doesn't exist
@@ -590,7 +597,9 @@ export class OptimizedEventBus implements EventBus {
     if (!this.listeners.has(eventName)) return;
 
     const listeners = this.listeners.get(eventName)!;
-    const activeListeners = listeners.filter((listener) => listener.active);
+    const activeListeners = listeners.filter(
+      (listener: any) => listener.active,
+    );
 
     if (activeListeners.length !== listeners.length) {
       this.listeners.set(eventName, activeListeners);
@@ -607,7 +616,7 @@ export class OptimizedEventBus implements EventBus {
    */
   once(
     eventName: string,
-    callback: Function,
+    callback: EventCallback | UnsubscribeFn,
     options: Omit<EventOptions, "once"> = {},
   ): EventSubscription {
     return this.on(eventName, callback, { ...options, once: true });
@@ -619,7 +628,7 @@ export class OptimizedEventBus implements EventBus {
   priority(
     eventName: string,
     priority: number,
-    callback: Function,
+    callback: EventCallback | UnsubscribeFn,
     options: Omit<EventOptions, "priority"> = {},
   ): EventSubscription {
     return this.on(eventName, callback, { ...options, priority });
@@ -631,7 +640,7 @@ export class OptimizedEventBus implements EventBus {
   priorityLevel(
     eventName: string,
     priorityLevel: keyof typeof DEFAULT_CONFIG.priorityLevels,
-    callback: Function,
+    callback: EventCallback | UnsubscribeFn,
     options: Omit<EventOptions, "priority"> = {},
   ): EventSubscription {
     const priority =
@@ -649,7 +658,7 @@ export class OptimizedEventBus implements EventBus {
     this.listeners.clear();
 
     // Clear all batch queues
-    this.batchQueues.forEach((batch, eventName) => {
+    this.batchQueues.forEach((batch, eventName: any) => {
       if (batch.timer !== null) {
         clearTimeout(batch.timer);
       }
@@ -657,7 +666,7 @@ export class OptimizedEventBus implements EventBus {
     this.batchQueues.clear();
 
     // Clear throttled emitters
-    this.throttledEmitters.forEach((throttled) => {
+    this.throttledEmitters.forEach((throttled: any) => {
       if (typeof (throttled.fn as any).cancel === "function") {
         (throttled.fn as any).cancel();
       }
@@ -723,7 +732,7 @@ export class OptimizedEventBus implements EventBus {
 
     // Create stats for each pattern
     // Use Array.from to avoid compatibility issues with Set iterators
-    Array.from(patterns).forEach((pattern) => {
+    Array.from(patterns).forEach((pattern: any) => {
       const emitCount = this.eventStats.emitCount.get(pattern) || 0;
       const batchCount = this.eventStats.batchCount.get(pattern) || 0;
       const listenerCallCount =
@@ -733,7 +742,7 @@ export class OptimizedEventBus implements EventBus {
 
       const avgProcessingTime =
         processingTimes.length > 0
-          ? processingTimes.reduce((sum, time) => sum + time, 0) /
+          ? processingTimes.reduce((sum: any, time) => sum + time, 0) /
             processingTimes.length
           : 0;
 
@@ -752,7 +761,7 @@ export class OptimizedEventBus implements EventBus {
           : null,
         avgProcessingTime,
         listenerCount: listeners.length,
-        activeListenerCount: listeners.filter((l) => l.active).length,
+        activeListenerCount: listeners.filter((l: any) => l.active).length,
         category,
       };
     });
@@ -764,7 +773,8 @@ export class OptimizedEventBus implements EventBus {
         0,
       ),
       activeListenerCount: Array.from(this.listeners.entries()).reduce(
-        (sum, [_, listeners]) => sum + listeners.filter((l) => l.active).length,
+        (sum, [_, listeners]) =>
+          sum + listeners.filter((l: any) => l.active).length,
         0,
       ),
       eventPatternCount: this.listeners.size,
@@ -803,35 +813,37 @@ export class OptimizedEventBus implements EventBus {
     let totalCleaned = 0;
 
     // Use Array.from to avoid compatibility issues with Map iterators
-    Array.from(this.listeners.entries()).forEach(([eventName, listeners]) => {
-      // Find inactive listeners and old listeners that were never called
-      const toKeep = listeners.filter((listener) => {
-        // Keep active listeners
-        if (listener.active) return true;
+    Array.from(this.listeners.entries()).forEach(
+      ([eventName, listeners]: any) => {
+        // Find inactive listeners and old listeners that were never called
+        const toKeep = listeners.filter((listener: any) => {
+          // Keep active listeners
+          if (listener.active) return true;
 
-        // Keep recently registered listeners
-        const age = now - listener.timeRegistered;
-        if (age < orphanedTimeout) return true;
+          // Keep recently registered listeners
+          const age = now - listener.timeRegistered;
+          if (age < orphanedTimeout) return true;
 
-        // Remove old inactive listeners or never called listeners
-        return false;
-      });
+          // Remove old inactive listeners or never called listeners
+          return false;
+        });
 
-      const cleaned = listeners.length - toKeep.length;
-      totalCleaned += cleaned;
+        const cleaned = listeners.length - toKeep.length;
+        totalCleaned += cleaned;
 
-      if (cleaned > 0) {
-        this.listeners.set(eventName, toKeep);
+        if (cleaned > 0) {
+          this.listeners.set(eventName, toKeep);
 
-        if (toKeep.length === 0) {
-          this.listeners.delete(eventName);
+          if (toKeep.length === 0) {
+            this.listeners.delete(eventName);
+          }
+
+          this.logger.debug(
+            `Cleaned up ${cleaned} orphaned listeners for ${eventName}`,
+          );
         }
-
-        this.logger.debug(
-          `Cleaned up ${cleaned} orphaned listeners for ${eventName}`,
-        );
-      }
-    });
+      },
+    );
 
     if (totalCleaned > 0) {
       this.logger.info(`Cleaned up ${totalCleaned} total orphaned listeners`);
@@ -953,7 +965,7 @@ export class OptimizedEventBus implements EventBus {
    */
   flushAllBatches(): void {
     // Use Array.from to avoid compatibility issues with Map iterators
-    Array.from(this.batchQueues.keys()).forEach((eventName) => {
+    Array.from(this.batchQueues.keys()).forEach((eventName: any) => {
       this.processBatch(eventName);
     });
   }

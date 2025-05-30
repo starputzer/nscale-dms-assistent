@@ -341,7 +341,7 @@ export class NavigationController {
     const now = Date.now();
 
     // Entferne alte Einträge
-    this.navigationQueue = this.navigationQueue.filter((item) => {
+    this.navigationQueue = this.navigationQueue.filter((item: any) => {
       if (now - item.timestamp > this.config.queueTimeout) {
         if (item.callback) item.callback(false);
         return false;
@@ -409,7 +409,7 @@ export class NavigationController {
     }
 
     // Queue leeren
-    this.navigationQueue.forEach((item) => {
+    this.navigationQueue.forEach((item: any) => {
       if (item.callback) item.callback(false);
     });
 
@@ -465,7 +465,7 @@ export class NavigationController {
   public getDebugInfo() {
     return {
       stats: this.getStats(),
-      queue: this.navigationQueue.map((item) => ({
+      queue: this.navigationQueue.map((item: any) => ({
         id: item.id,
         target: item.target,
         priority: item.priority,

@@ -31,13 +31,15 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
   });
 
   const negativeFeedback = ref<FeedbackEntry[]>([]);
-  const feedbackItems = ref<FeedbackEntry[]>([]);  // All feedback items
+  const feedbackItems = ref<FeedbackEntry[]>([]); // All feedback items
   const filter = ref<FeedbackFilter>({});
   const loading = ref(false);
   const error = ref<string | null>(null);
 
   // API-Integration aktiv?
-  const apiIntegrationEnabled = computed(() => shouldUseRealApi("useRealFeedbackApi"));
+  const apiIntegrationEnabled = computed(() =>
+    shouldUseRealApi("useRealFeedbackApi"),
+  );
 
   // Computed
   const filteredFeedback = computed(() => {
@@ -58,7 +60,7 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
 
     // Apply comment filter
     if (filter.value.hasComment !== undefined) {
-      filtered = filtered.filter((f) =>
+      filtered = filtered.filter((f: any) =>
         filter.value.hasComment ? !!f.comment : !f.comment,
       );
     }
@@ -84,7 +86,9 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
     error.value = null;
 
     try {
-      logger.info("Lade Feedback-Statistiken", { apiIntegration: apiIntegrationEnabled.value });
+      logger.info("Lade Feedback-Statistiken", {
+        apiIntegration: apiIntegrationEnabled.value,
+      });
 
       const response = await adminFeedbackService.getFeedbackStats();
 
@@ -92,18 +96,24 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
         logger.info("Feedback-Statistiken erfolgreich geladen", {
           totalFeedback: response.data.total,
           negative: response.data.negative,
-          unresolved: response.data.unresolved
+          unresolved: response.data.unresolved,
         });
         stats.value = response.data;
         return response.data;
       } else {
-        logger.warn("Fehler beim Laden der Feedback-Statistiken", response.error);
+        logger.warn(
+          "Fehler beim Laden der Feedback-Statistiken",
+          response.error,
+        );
         error.value = response.message || "Fehler beim Laden der Statistiken";
         throw new Error(error.value);
       }
     } catch (err) {
       logger.error("Fehler beim Laden der Feedback-Statistiken", err);
-      error.value = err instanceof Error ? err.message : "Fehler beim Laden der Statistiken";
+      error.value =
+        err instanceof Error
+          ? err.message
+          : "Fehler beim Laden der Statistiken";
       throw err;
     } finally {
       loading.value = false;
@@ -115,22 +125,27 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
     error.value = null;
 
     try {
-      logger.info("Lade alle Feedbacks", { limit, apiIntegration: apiIntegrationEnabled.value });
+      logger.info("Lade alle Feedbacks", {
+        limit,
+        apiIntegration: apiIntegrationEnabled.value,
+      });
 
       // Use the new getAllFeedback method from the service
       const response = await adminFeedbackService.getAllFeedback(limit);
 
       if (response.success && response.data) {
         logger.info("Alle Feedbacks erfolgreich geladen", {
-          count: response.data.length
+          count: response.data.length,
         });
-        
+
         // Store all feedback
         feedbackItems.value = response.data;
-        
+
         // Also update negative feedback for compatibility
-        negativeFeedback.value = response.data.filter(item => !item.is_positive);
-        
+        negativeFeedback.value = response.data.filter(
+          (item) => !item.is_positive,
+        );
+
         return feedbackItems.value;
       } else {
         logger.warn("Fehler beim Laden der Feedbacks", response.error);
@@ -139,7 +154,8 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
       }
     } catch (err) {
       logger.error("Fehler beim Laden der Feedbacks", err);
-      error.value = err instanceof Error ? err.message : "Fehler beim Laden der Feedbacks";
+      error.value =
+        err instanceof Error ? err.message : "Fehler beim Laden der Feedbacks";
       throw err;
     } finally {
       loading.value = false;
@@ -151,24 +167,34 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
     error.value = null;
 
     try {
-      logger.info("Lade negatives Feedback", { limit, apiIntegration: apiIntegrationEnabled.value });
+      logger.info("Lade negatives Feedback", {
+        limit,
+        apiIntegration: apiIntegrationEnabled.value,
+      });
 
       const response = await adminFeedbackService.getNegativeFeedback(limit);
 
       if (response.success && response.data) {
         logger.info("Negatives Feedback erfolgreich geladen", {
-          count: response.data.length
+          count: response.data.length,
         });
         negativeFeedback.value = response.data;
         return response.data;
       } else {
-        logger.warn("Fehler beim Laden des negativen Feedbacks", response.error);
-        error.value = response.message || "Fehler beim Laden des negativen Feedbacks";
+        logger.warn(
+          "Fehler beim Laden des negativen Feedbacks",
+          response.error,
+        );
+        error.value =
+          response.message || "Fehler beim Laden des negativen Feedbacks";
         throw new Error(error.value);
       }
     } catch (err) {
       logger.error("Fehler beim Laden des negativen Feedbacks", err);
-      error.value = err instanceof Error ? err.message : "Fehler beim Laden des negativen Feedbacks";
+      error.value =
+        err instanceof Error
+          ? err.message
+          : "Fehler beim Laden des negativen Feedbacks";
       throw err;
     } finally {
       loading.value = false;
@@ -188,15 +214,22 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
     error.value = null;
 
     try {
-      logger.info("Aktualisiere Feedback-Status", { id, status, apiIntegration: apiIntegrationEnabled.value });
+      logger.info("Aktualisiere Feedback-Status", {
+        id,
+        status,
+        apiIntegration: apiIntegrationEnabled.value,
+      });
 
-      const response = await adminFeedbackService.updateFeedbackStatus(id, status);
+      const response = await adminFeedbackService.updateFeedbackStatus(
+        id,
+        status,
+      );
 
       if (response.success) {
         logger.info("Feedback-Status erfolgreich aktualisiert", { id, status });
-        
+
         // Aktualisiere den Status in der lokalen Liste
-        negativeFeedback.value = negativeFeedback.value.map((item) => {
+        negativeFeedback.value = negativeFeedback.value.map((item: any) => {
           if (item.id === id) {
             return { ...item, status };
           }
@@ -204,21 +237,28 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
         });
 
         // Aktualisiere unresolved-Zähler in den Statistiken
-        if (status === 'resolved') {
+        if (status === "resolved") {
           stats.value.unresolved = Math.max(0, stats.value.unresolved - 1);
-        } else if (status === 'unresolved') {
+        } else if (status === "unresolved") {
           stats.value.unresolved++;
         }
 
         return true;
       } else {
-        logger.warn("Fehler beim Aktualisieren des Feedback-Status", response.error);
-        error.value = response.message || "Fehler beim Aktualisieren des Feedback-Status";
+        logger.warn(
+          "Fehler beim Aktualisieren des Feedback-Status",
+          response.error,
+        );
+        error.value =
+          response.message || "Fehler beim Aktualisieren des Feedback-Status";
         throw new Error(error.value);
       }
     } catch (err) {
       logger.error("Fehler beim Aktualisieren des Feedback-Status", err);
-      error.value = err instanceof Error ? err.message : "Fehler beim Aktualisieren des Feedback-Status";
+      error.value =
+        err instanceof Error
+          ? err.message
+          : "Fehler beim Aktualisieren des Feedback-Status";
       throw err;
     } finally {
       loading.value = false;
@@ -230,16 +270,21 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
     error.value = null;
 
     try {
-      logger.info("Lösche Feedback", { id, apiIntegration: apiIntegrationEnabled.value });
+      logger.info("Lösche Feedback", {
+        id,
+        apiIntegration: apiIntegrationEnabled.value,
+      });
 
       const response = await adminFeedbackService.deleteFeedback(id);
 
       if (response.success) {
         logger.info("Feedback erfolgreich gelöscht", { id });
-        
+
         // Finde das gelöschte Feedback in der lokalen Liste
-        const deletedFeedback = negativeFeedback.value.find(item => item.id === id);
-        
+        const deletedFeedback = negativeFeedback.value.find(
+          (item) => item.id === id,
+        );
+
         // Entferne es aus der lokalen Liste
         negativeFeedback.value = negativeFeedback.value.filter(
           (item) => item.id !== id,
@@ -248,9 +293,9 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
         // Aktualisiere Statistiken
         stats.value.total = Math.max(0, stats.value.total - 1);
         stats.value.negative = Math.max(0, stats.value.negative - 1);
-        
+
         // Falls es unbearbeitet war, reduziere auch den unresolved-Zähler
-        if (deletedFeedback && deletedFeedback.status === 'unresolved') {
+        if (deletedFeedback && deletedFeedback.status === "unresolved") {
           stats.value.unresolved = Math.max(0, stats.value.unresolved - 1);
         }
 
@@ -271,7 +316,10 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
       }
     } catch (err) {
       logger.error("Fehler beim Löschen des Feedbacks", err);
-      error.value = err instanceof Error ? err.message : "Fehler beim Löschen des Feedbacks";
+      error.value =
+        err instanceof Error
+          ? err.message
+          : "Fehler beim Löschen des Feedbacks";
       throw err;
     } finally {
       loading.value = false;
@@ -283,25 +331,25 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
     error.value = null;
 
     try {
-      logger.info("Exportiere Feedback", { 
-        format: options.format, 
-        dataCount: options.data.length, 
+      logger.info("Exportiere Feedback", {
+        format: options.format,
+        dataCount: options.data.length,
         fields: options.fields.length,
-        apiIntegration: apiIntegrationEnabled.value 
+        apiIntegration: apiIntegrationEnabled.value,
       });
 
       const response = await adminFeedbackService.exportFeedback(options);
 
       if (response.success) {
         logger.info("Feedback erfolgreich exportiert");
-        
+
         // Wenn die API-Antwort ein Blob zurückgibt (Echte API-Integration)
         if (response.data instanceof Blob) {
           // Einen Download für die Datei erstellen
           const fileName = `feedback_export_${new Date().toISOString().slice(0, 10)}.${options.format}`;
           const url = window.URL.createObjectURL(response.data);
-          const a = document.createElement('a');
-          a.style.display = 'none';
+          const a = document.createElement("a");
+          a.style.display = "none";
           a.href = url;
           a.download = fileName;
           document.body.appendChild(a);
@@ -309,16 +357,20 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
           window.URL.revokeObjectURL(url);
           a.remove();
         }
-        
+
         return true;
       } else {
         logger.warn("Fehler beim Exportieren des Feedbacks", response.error);
-        error.value = response.message || "Fehler beim Exportieren des Feedbacks";
+        error.value =
+          response.message || "Fehler beim Exportieren des Feedbacks";
         throw new Error(error.value);
       }
     } catch (err) {
       logger.error("Fehler beim Exportieren des Feedbacks", err);
-      error.value = err instanceof Error ? err.message : "Fehler beim Exportieren des Feedbacks";
+      error.value =
+        err instanceof Error
+          ? err.message
+          : "Fehler beim Exportieren des Feedbacks";
       throw err;
     } finally {
       loading.value = false;
@@ -329,17 +381,23 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
     loading.value = true;
     error.value = null;
     setFilter(feedbackFilter);
-    
+
     try {
-      logger.info("Filtere Feedback", { filter: feedbackFilter, apiIntegration: apiIntegrationEnabled.value });
+      logger.info("Filtere Feedback", {
+        filter: feedbackFilter,
+        apiIntegration: apiIntegrationEnabled.value,
+      });
 
       // Bei aktiver API-Integration verwenden wir den Service für serverseitige Filterung
       if (apiIntegrationEnabled.value) {
-        const response = await adminFeedbackService.filterFeedback(feedbackFilter);
-        
+        const response =
+          await adminFeedbackService.filterFeedback(feedbackFilter);
+
         if (response.success && response.data) {
           logger.info("Feedback erfolgreich gefiltert", {
-            resultCount: Array.isArray(response.data) ? response.data.length : 0
+            resultCount: Array.isArray(response.data)
+              ? response.data.length
+              : 0,
           });
           negativeFeedback.value = response.data;
           return response.data;
@@ -355,7 +413,10 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
       return filteredFeedback.value;
     } catch (err) {
       logger.error("Fehler beim Filtern des Feedbacks", err);
-      error.value = err instanceof Error ? err.message : "Fehler beim Filtern des Feedbacks";
+      error.value =
+        err instanceof Error
+          ? err.message
+          : "Fehler beim Filtern des Feedbacks";
       // Im Fehlerfall verwenden wir trotzdem die lokale Filterung
       return filteredFeedback.value;
     } finally {
@@ -428,57 +489,89 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
     // Process the data to get top issues from the feedback
     // This would typically require natural language processing to identify topics
     // For demonstration purposes, we're using structured data extraction and counting
-    
+
     // Sammeln und Zählen der häufigsten Themen aus den Feedback-Fragen
     const topics = new Map<string, number>();
-    
+
     // Standardthemen, die wir immer miteinbeziehen
     topics.set("Dokumentkonvertierung", 0);
     topics.set("Suchergebnisse", 0);
     topics.set("Systemgeschwindigkeit", 0);
     topics.set("Benutzeroberfläche", 0);
     topics.set("Antwortqualität", 0);
-    
+
     // Analyse der Feedback-Daten
-    feedbackData.forEach(entry => {
-      const question = entry.question?.toLowerCase() || '';
-      const comment = entry.comment?.toLowerCase() || '';
-      
+    feedbackData.forEach((entry) => {
+      const question = entry.question?.toLowerCase() || "";
+      const comment = entry.comment?.toLowerCase() || "";
+
       // Suche nach Schlüsselwörtern in Fragen und Kommentaren
-      if (question.includes("konvert") || question.includes("dokument") || 
-          comment.includes("konvert") || comment.includes("dokument")) {
-        topics.set("Dokumentkonvertierung", (topics.get("Dokumentkonvertierung") || 0) + 1);
+      if (
+        question.includes("konvert") ||
+        question.includes("dokument") ||
+        comment.includes("konvert") ||
+        comment.includes("dokument")
+      ) {
+        topics.set(
+          "Dokumentkonvertierung",
+          (topics.get("Dokumentkonvertierung") || 0) + 1,
+        );
       }
-      
-      if (question.includes("such") || question.includes("find") || 
-          comment.includes("such") || comment.includes("find")) {
+
+      if (
+        question.includes("such") ||
+        question.includes("find") ||
+        comment.includes("such") ||
+        comment.includes("find")
+      ) {
         topics.set("Suchergebnisse", (topics.get("Suchergebnisse") || 0) + 1);
       }
-      
-      if (question.includes("langsam") || question.includes("schnell") || 
-          comment.includes("langsam") || comment.includes("schnell") ||
-          comment.includes("warten") || comment.includes("laden")) {
-        topics.set("Systemgeschwindigkeit", (topics.get("Systemgeschwindigkeit") || 0) + 1);
+
+      if (
+        question.includes("langsam") ||
+        question.includes("schnell") ||
+        comment.includes("langsam") ||
+        comment.includes("schnell") ||
+        comment.includes("warten") ||
+        comment.includes("laden")
+      ) {
+        topics.set(
+          "Systemgeschwindigkeit",
+          (topics.get("Systemgeschwindigkeit") || 0) + 1,
+        );
       }
-      
-      if (question.includes("bedien") || question.includes("oberfläche") || 
-          comment.includes("bedien") || comment.includes("oberfläche") ||
-          comment.includes("layout") || comment.includes("design")) {
-        topics.set("Benutzeroberfläche", (topics.get("Benutzeroberfläche") || 0) + 1);
+
+      if (
+        question.includes("bedien") ||
+        question.includes("oberfläche") ||
+        comment.includes("bedien") ||
+        comment.includes("oberfläche") ||
+        comment.includes("layout") ||
+        comment.includes("design")
+      ) {
+        topics.set(
+          "Benutzeroberfläche",
+          (topics.get("Benutzeroberfläche") || 0) + 1,
+        );
       }
-      
-      if (question.includes("antwort") || question.includes("qualität") || 
-          comment.includes("antwort") || comment.includes("qualität") ||
-          comment.includes("hilft nicht") || comment.includes("irrelevant")) {
+
+      if (
+        question.includes("antwort") ||
+        question.includes("qualität") ||
+        comment.includes("antwort") ||
+        comment.includes("qualität") ||
+        comment.includes("hilft nicht") ||
+        comment.includes("irrelevant")
+      ) {
         topics.set("Antwortqualität", (topics.get("Antwortqualität") || 0) + 1);
       }
     });
-    
+
     // Sortieren der Themen nach Häufigkeit (absteigend)
     const sortedTopics = [...topics.entries()]
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5); // Nur die Top 5 nehmen
-    
+
     // Wenn wir nicht genug reale Daten haben, auffüllen mit simulierten Werten
     if (feedbackData.length < 5) {
       return {
@@ -500,14 +593,14 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
         ],
       };
     }
-    
+
     // Sonst reale Daten verwenden
     return {
-      labels: sortedTopics.map(t => t[0]),
+      labels: sortedTopics.map((t) => t[0]),
       datasets: [
         {
           label: "Anzahl der Erwähnungen",
-          data: sortedTopics.map(t => t[1]),
+          data: sortedTopics.map((t) => t[1]),
           backgroundColor: "rgba(33, 150, 243, 0.8)",
           borderColor: "#2196f3",
           borderWidth: 1,

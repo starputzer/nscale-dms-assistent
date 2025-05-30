@@ -10,7 +10,6 @@ import { useStatisticsStore } from "./statistics";
 import { useAdminStore } from "./admin";
 import { useAdminLogsStore } from "./admin/logs";
 import { useErrorReporting } from "@/composables/useErrorReporting";
-import { useBridgeChat } from "@/composables/useBridgeChat";
 
 // Optimierte Store-Versionen wurden entfernt
 
@@ -57,7 +56,10 @@ const initializeStore = async (
     storeStatus.value[storeName] = "success";
   } catch (error) {
     storeStatus.value[storeName] = "error";
-    console.error(`Fehler bei der Initialisierung des ${storeName}-Stores:`, error);
+    console.error(
+      `Fehler bei der Initialisierung des ${storeName}-Stores:`,
+      error,
+    );
 
     // Try to report error if service is available
     try {
@@ -69,7 +71,10 @@ const initializeStore = async (
       );
     } catch (reportingError) {
       // Ignore reporting errors during initialization
-      console.warn("Could not report error during store initialization:", reportingError);
+      console.warn(
+        "Could not report error during store initialization:",
+        reportingError,
+      );
     }
 
     if (storeName === "auth" || storeName === "featureToggles") {
@@ -123,9 +128,9 @@ export const initializeStores = async (): Promise<void> => {
     // 2. Einstellungen und UI initialisieren
     await initializeStore("settings", async () => {
       // Settings store uses initialize() method
-      if (typeof settingsStore.initialize === 'function') {
+      if (typeof settingsStore.initialize === "function") {
         await settingsStore.initialize();
-      } else if (typeof settingsStore.loadSettings === 'function') {
+      } else if (typeof settingsStore.loadSettings === "function") {
         await settingsStore.loadSettings();
       }
       // If neither method exists, the store is already initialized
@@ -199,7 +204,7 @@ export const initializeStores = async (): Promise<void> => {
     isInitialized.value = true;
   } catch (error) {
     console.error("Kritischer Fehler bei der Store-Initialisierung:", error);
-    
+
     // Try to report error if service is available
     try {
       const { reportError } = useErrorReporting();
@@ -212,7 +217,7 @@ export const initializeStores = async (): Promise<void> => {
       // Ignore reporting errors during initialization
       console.warn("Could not report critical error:", reportingError);
     }
-    
+
     throw error;
   }
 };
@@ -228,7 +233,6 @@ function setupStoreInteractions(): void {
   const uiStore = useUIStore();
   const documentConverterStore = useDocumentConverterStore();
   const monitoringStore = useMonitoringStore();
-  const { setupChat } = useBridgeChat();
 
   // Auth-Store Interaktionen
   authStore.$onAction(({ name, after, onError }) => {

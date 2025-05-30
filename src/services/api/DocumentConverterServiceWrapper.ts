@@ -15,7 +15,6 @@ import {
   ConversionProgress,
 } from "@/types/documentConverter";
 import { LogService } from "../log/LogService";
-import { useDocumentConverterStore } from "@/stores/documentConverter";
 import { ErrorObject } from "@/components/admin/document-converter/ErrorDisplay.vue";
 
 /**

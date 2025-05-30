@@ -43,7 +43,7 @@ export function highlightCode(element: HTMLElement): void {
     // Alle pre>code Elemente finden
     const codeBlocks = element.querySelectorAll("pre code");
 
-    codeBlocks.forEach((block) => {
+    codeBlocks.forEach((block: any) => {
       hljs.highlightElement(block as HTMLElement);
     });
   } catch (error) {

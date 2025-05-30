@@ -159,7 +159,7 @@ export function useDocumentConverter() {
       await DocumentConverterService.deleteDocument(documentId);
 
       // Dokument aus der Liste entfernen
-      documents.value = documents.value.filter((doc) => doc.id !== documentId);
+      documents.value = documents.value.filter((doc: any) => doc.id !== documentId);
 
       // Wenn das gelöschte Dokument ausgewählt war, Auswahl zurücksetzen
       if (selectedDocumentId.value === documentId) {

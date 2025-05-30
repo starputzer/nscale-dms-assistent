@@ -10,22 +10,22 @@
 
     <!-- Controls -->
     <div class="streaming-controls">
-      <button 
-        @click="startDemo" 
+      <button
+        @click="startDemo"
         :disabled="isStreaming"
         class="btn btn-primary"
       >
         Start Streaming
       </button>
-      <button 
-        @click="stopStreaming" 
+      <button
+        @click="stopStreaming"
         :disabled="!isStreaming"
         class="btn btn-secondary"
       >
         Stop
       </button>
-      <button 
-        @click="reconnect" 
+      <button
+        @click="reconnect"
         :disabled="!canReconnect"
         class="btn btn-secondary"
       >
@@ -43,7 +43,7 @@
         </span>
       </div>
       <div class="progress-bar">
-        <div 
+        <div
           class="progress-fill"
           :style="{ width: `${progress.percentageComplete}%` }"
           :class="`confidence-${progress.confidence}`"
@@ -60,8 +60,8 @@
     <div v-if="metadata.length > 0" class="streaming-metadata">
       <h3>Stream Events</h3>
       <div class="metadata-list">
-        <div 
-          v-for="(meta, index) in recentMetadata" 
+        <div
+          v-for="(meta, index) in recentMetadata"
           :key="`meta-${index}`"
           class="metadata-item"
           :class="`type-${meta.type}`"
@@ -69,7 +69,7 @@
           <span class="meta-type">{{ meta.type }}</span>
           <span class="meta-time">{{ formatTimestamp(meta.timestamp) }}</span>
           <div v-if="meta.type === 'thinking'" class="meta-content">
-            {{ meta.data.message || 'Thinking...' }}
+            {{ meta.data.message || "Thinking..." }}
           </div>
           <div v-else-if="meta.type === 'tool_use'" class="meta-content">
             Using tool: {{ meta.data.tool }} ({{ meta.data.status }})
@@ -109,11 +109,15 @@
       <div class="stats-grid">
         <div class="stat-item">
           <span class="stat-label">Connection Attempts</span>
-          <span class="stat-value">{{ connectionStats.connectionAttempts }}</span>
+          <span class="stat-value">{{
+            connectionStats.connectionAttempts
+          }}</span>
         </div>
         <div class="stat-item">
           <span class="stat-label">Successful Connections</span>
-          <span class="stat-value">{{ connectionStats.successfulConnections }}</span>
+          <span class="stat-value">{{
+            connectionStats.successfulConnections
+          }}</span>
         </div>
         <div class="stat-item">
           <span class="stat-label">Total Messages</span>
@@ -121,7 +125,9 @@
         </div>
         <div class="stat-item">
           <span class="stat-label">Avg Reconnect Time</span>
-          <span class="stat-value">{{ Math.round(connectionStats.averageReconnectTime) }}ms</span>
+          <span class="stat-value"
+            >{{ Math.round(connectionStats.averageReconnectTime) }}ms</span
+          >
         </div>
       </div>
     </div>
@@ -129,7 +135,7 @@
     <!-- Debug Toggle -->
     <div class="debug-toggle">
       <label>
-        <input type="checkbox" v-model="showStats">
+        <input type="checkbox" v-model="showStats" />
         Show Connection Stats
       </label>
     </div>
@@ -137,8 +143,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
-import { useEnhancedStreaming } from '@/composables/useEnhancedStreaming';
+import { ref, computed, watch } from "vue";
+import { useEnhancedStreaming } from "@/composables/useEnhancedStreaming";
 
 // Demo configuration
 const showStats = ref(false);
@@ -168,23 +174,23 @@ const {
   maxReconnectAttempts: 3,
   debug: true,
   onMetadata: (meta) => {
-    console.log('Metadata received:', meta);
+    console.log("Metadata received:", meta);
   },
   onError: (err) => {
-    console.error('Streaming error:', err);
+    console.error("Streaming error:", err);
   },
 });
 
 // Computed properties
 const connectionStateLabel = computed(() => {
   const labels = {
-    idle: 'Not Connected',
-    connecting: 'Connecting...',
-    connected: 'Connected',
-    error: 'Connection Error',
-    disconnected: 'Disconnected',
+    idle: "Not Connected",
+    connecting: "Connecting...",
+    connected: "Connected",
+    error: "Connection Error",
+    disconnected: "Disconnected",
   };
-  return labels[connectionState.value] || 'Unknown';
+  return labels[connectionState.value] || "Unknown";
 });
 
 const recentMetadata = computed(() => {
@@ -196,13 +202,14 @@ const recentMetadata = computed(() => {
 const startDemo = async () => {
   // For demo purposes, use a mock endpoint
   // In real usage, this would be your actual streaming endpoint
-  const demoUrl = '/api/question/stream?question=Tell+me+about+streaming&session_id=demo';
-  
+  const demoUrl =
+    "/api/question/stream?question=Tell+me+about+streaming&session_id=demo";
+
   // You can pass headers if needed
   const headers = {
-    'Authorization': 'Bearer your-token-here',
+    Authorization: "Bearer your-token-here",
   };
-  
+
   await startStreaming(demoUrl, headers);
 };
 
@@ -228,7 +235,7 @@ watch(showStats, (show) => {
     };
     updateStats();
     const interval = setInterval(updateStats, 1000);
-    
+
     // Cleanup
     const stopWatcher = watch(showStats, (newShow) => {
       if (!newShow) {
@@ -271,11 +278,26 @@ watch(showStats, (show) => {
   background-color: currentColor;
 }
 
-.status-idle { color: #6b7280; background: #f3f4f6; }
-.status-connecting { color: #f59e0b; background: #fef3c7; }
-.status-connected { color: #10b981; background: #d1fae5; }
-.status-error { color: #ef4444; background: #fee2e2; }
-.status-disconnected { color: #6b7280; background: #f3f4f6; }
+.status-idle {
+  color: #6b7280;
+  background: #f3f4f6;
+}
+.status-connecting {
+  color: #f59e0b;
+  background: #fef3c7;
+}
+.status-connected {
+  color: #10b981;
+  background: #d1fae5;
+}
+.status-error {
+  color: #ef4444;
+  background: #fee2e2;
+}
+.status-disconnected {
+  color: #6b7280;
+  background: #f3f4f6;
+}
 
 .streaming-controls {
   display: flex;
@@ -345,9 +367,15 @@ watch(showStats, (show) => {
   transition: width 0.3s ease;
 }
 
-.confidence-low { background: #fbbf24; }
-.confidence-medium { background: #3b82f6; }
-.confidence-high { background: #10b981; }
+.confidence-low {
+  background: #fbbf24;
+}
+.confidence-medium {
+  background: #3b82f6;
+}
+.confidence-high {
+  background: #10b981;
+}
 
 .progress-stats {
   display: flex;
@@ -378,9 +406,15 @@ watch(showStats, (show) => {
   font-size: 14px;
 }
 
-.type-thinking { background: #dbeafe; }
-.type-tool_use { background: #fef3c7; }
-.type-progress { background: #e0e7ff; }
+.type-thinking {
+  background: #dbeafe;
+}
+.type-tool_use {
+  background: #fef3c7;
+}
+.type-progress {
+  background: #e0e7ff;
+}
 
 .meta-type {
   font-weight: 600;
@@ -430,8 +464,14 @@ watch(showStats, (show) => {
 }
 
 @keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
 }
 
 .streaming-error {

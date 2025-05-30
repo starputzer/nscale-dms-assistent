@@ -51,14 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  ref,
-  onMounted,
-  onBeforeUnmount,
-  computed,
-  watch,
-  nextTick,
-} from "vue";
+import { ref, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
 
 interface DialogProps {
   // Dialog grundlegende Texte

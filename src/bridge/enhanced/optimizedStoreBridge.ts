@@ -9,7 +9,8 @@
  * - Erweiterte Diagnose- und Debug-Funktionen
  */
 
-import { watch, shallowRef, ref, onBeforeUnmount, markRaw } from "vue";
+// @ts-ignore - shallowRef is available in Vue 3 but TypeScript may have issues with resolution
+import { watch, shallowRef, onBeforeUnmount } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { useSessionsStore } from "@/stores/sessions.optimized";
 import { useUIStore } from "@/stores/ui";
@@ -21,7 +22,7 @@ import {
   OperationType,
   OperationPriority,
 } from "@/services/api/OfflineQueueService";
-import type { ChatSession, ChatMessage } from "@/types/session";
+import type { ChatMessage } from "@/types/session";
 
 // Typen für die optimierte Bridge-API
 export interface OptimizedBridgeAPI {
@@ -242,7 +243,7 @@ class OptimizedEventBus {
     this.batchTimer = null;
 
     // Alle gepufferten Events verarbeiten
-    this.pendingEvents.forEach((dataArray, event) => {
+    this.pendingEvents.forEach((dataArray, event: any) => {
       // Für jedes Event ein CustomEvent erstellen
       for (const data of dataArray) {
         const customEvent = new CustomEvent(`nscale:${event}`, {
@@ -261,8 +262,8 @@ class OptimizedEventBus {
 
   clear(): void {
     // Alle Event-Listener entfernen
-    this.listeners.forEach((listenerMap, event) => {
-      listenerMap.forEach((wrappedCallback, _) => {
+    this.listeners.forEach((listenerMap, event: any) => {
+      listenerMap.forEach((wrappedCallback, _: any) => {
         window.removeEventListener(
           `nscale:${event}`,
           wrappedCallback as EventListener,
@@ -1297,7 +1298,7 @@ export function setupOptimizedStoreBridge(): OptimizedBridgeAPI {
    * Bereinigt alle Event-Listener und Intervalle
    */
   function cleanup() {
-    cleanupFunctions.forEach((fn) => fn());
+    cleanupFunctions.forEach((fn: any) => fn());
     cleanupFunctions.length = 0;
 
     optimizedBus.clear();

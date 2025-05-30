@@ -145,7 +145,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, defineEmits } from "vue";
+import { computed, ref, defineEmits } from "vue";
 import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
 import { useAdminSystemStore } from "@/stores/admin/system";
@@ -157,10 +157,10 @@ import AdminCard from "@/components/admin/shared/AdminCard.vue";
 
 // i18n with global scope, we need to grab the locale for date formatting
 const { t, locale } = useI18n({
-  useScope: 'global',
-  inheritLocale: true
+  useScope: "global",
+  inheritLocale: true,
 });
-console.log('[i18n] Component initialized with global scope and inheritance');
+console.log("[i18n] Component initialized with global scope and inheritance");
 
 // Define emits
 const emit = defineEmits(["error", "auth-error"]);

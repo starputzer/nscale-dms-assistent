@@ -6,17 +6,18 @@
  * konfiguriert und miteinander verbindet.
  */
 
+import type { EventCallback, UnsubscribeFn } from "./commonTypes";
 import { OptimizedEventBus } from "./enhancedEventBus";
-import { BatchedEventEmitter } from "./batchedEventEmitter";
-import { MemoryManager } from "./memoryManager";
-import { PerformanceMonitor } from "./performanceMonitor";
-import { EnhancedSelfHealing } from "./enhancedSelfHealing";
-import { SelectiveStateManager } from "./selectiveStateManager";
+import { ExtendedBatchedEventEmitter as BatchedEventEmitter } from "./ExtendedBatchedEventEmitter";
+import { ExtendedMemoryManager as MemoryManager } from "./ExtendedMemoryManager";
+import { ExtendedPerformanceMonitor as PerformanceMonitor } from "./ExtendedPerformanceMonitor";
+import { ExtendedEnhancedSelfHealing as EnhancedSelfHealing } from "./ExtendedEnhancedSelfHealing";
+import { ExtendedSelectiveStateManager as SelectiveStateManager } from "./ExtendedSelectiveStateManager";
 import { EventListenerManager } from "./eventListenerManager";
 import { SelectiveChatBridge } from "./selectiveChatBridge";
 import { ChatBridgeDiagnostics } from "./chatBridgeDiagnostics";
 import { BridgeStatusManager } from "../statusManager";
-import { LogLevel } from "../logger/index";
+import { createLogger } from "../logger/index";
 
 // Konfiguration für das optimierte Bridge-System
 export interface OptimizedBridgeConfig {
@@ -80,10 +81,10 @@ export interface OptimizedBridgeAPI {
   // Event-System
   on: (
     event: string,
-    handler: Function,
+    handler: EventCallback | UnsubscribeFn,
     component?: string,
   ) => { unsubscribe: () => void };
-  off: (event: string, handler: Function) => void;
+  off: (event: string, handler: EventCallback | UnsubscribeFn) => void;
   emit: (event: string, data: any) => void;
 
   // State-Management
@@ -141,17 +142,27 @@ export async function initializeOptimizedBridge(
   logger.info("Initialisiere optimiertes Bridge-System", mergedConfig);
 
   try {
+    // Create loggers for components
+    const statusLogger = createLogger("StatusManager");
+    const performanceLogger = createLogger("PerformanceMonitor");
+    const memoryLogger = createLogger("MemoryManager");
+
+    // Set log levels
+    statusLogger.setLevel(mergedConfig.logLevel);
+    performanceLogger.setLevel(mergedConfig.logLevel);
+    memoryLogger.setLevel(mergedConfig.logLevel);
+
     // Status-Manager erstellen
-    const statusManager = new BridgeStatusManager(mergedConfig.logLevel);
+    const statusManager = new BridgeStatusManager(statusLogger);
 
     // Performance-Monitor erstellen
     const performanceMonitor = mergedConfig.enablePerformanceMonitoring
-      ? new PerformanceMonitor(mergedConfig.logLevel)
+      ? new PerformanceMonitor(performanceLogger)
       : undefined;
 
     // Memory-Manager erstellen
     const memoryManager = mergedConfig.enableMemoryManagement
-      ? new MemoryManager(performanceMonitor, mergedConfig.logLevel)
+      ? new MemoryManager(performanceMonitor, memoryLogger)
       : undefined;
 
     // Event-Bus erstellen
@@ -169,7 +180,7 @@ export async function initializeOptimizedBridge(
     // Event-Batching erstellen
     const batchedEmitter = mergedConfig.enableEventBatching
       ? new BatchedEventEmitter(
-          (type, data, source) => eventBus.emit(type, data),
+          (type: any, data: any, source: any) => eventBus.emit(type, data),
           {
             enabled: true,
             maxBatchSize: 20,
@@ -402,7 +413,7 @@ function createBridgeAPI(
         );
 
         // Event-Handler registrieren
-        const unsubscribe = eventBus.on(event, (data) => {
+        const unsubscribe = eventBus.on(event, (data: any) => {
           // Aufruf zählen
           if (eventListenerManager) {
             eventListenerManager.trackHandlerCall(id);

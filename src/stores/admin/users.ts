@@ -43,12 +43,12 @@ export const useAdminUsersStore = defineStore("adminUsers", () => {
   // Getters
   const adminUsers = computed(() => {
     if (!users.value) return [];
-    return users.value.filter((user) => user.role === "admin");
+    return users.value.filter((user: any) => user.role === "admin");
   });
 
   const standardUsers = computed(() => {
     if (!users.value) return [];
-    return users.value.filter((user) => user.role === "user");
+    return users.value.filter((user: any) => user.role === "user");
   });
 
   const getUserById = computed(() => (id: string) => {
@@ -71,7 +71,7 @@ export const useAdminUsersStore = defineStore("adminUsers", () => {
     const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
 
     return users.value
-      .filter((user) => user.created_at > thirtyDaysAgo)
+      .filter((user: any) => user.created_at > thirtyDaysAgo)
       .sort((a, b) => b.created_at - a.created_at)
       .slice(0, 5);
   });
@@ -83,7 +83,7 @@ export const useAdminUsersStore = defineStore("adminUsers", () => {
     const oneDayAgo = now - 24 * 60 * 60 * 1000;
 
     return users.value
-      .filter((user) => user.last_login && user.last_login > oneDayAgo)
+      .filter((user: any) => user.last_login && user.last_login > oneDayAgo)
       .sort((a, b) => (b.last_login || 0) - (a.last_login || 0));
   });
 
@@ -328,7 +328,7 @@ export const useAdminUsersStore = defineStore("adminUsers", () => {
             "[UserStore] Benutzer erfolgreich über AdminUsersService gelöscht",
           );
           // Entferne den Benutzer aus der lokalen Liste
-          users.value = users.value.filter((user) => user.id !== userId);
+          users.value = users.value.filter((user: any) => user.id !== userId);
           return response.data;
         } else {
           throw new Error(
@@ -341,7 +341,7 @@ export const useAdminUsersStore = defineStore("adminUsers", () => {
       console.log(`[UserStore] Lösche Benutzer ${userId} über adminApi`);
       const response = await adminApi.deleteUser(userId);
       // Entferne den Benutzer aus der lokalen Liste
-      users.value = users.value.filter((user) => user.id !== userId);
+      users.value = users.value.filter((user: any) => user.id !== userId);
       return response.data;
     } catch (err: any) {
       console.error("[UserStore] Fehler beim Löschen des Benutzers:", err);
@@ -420,7 +420,7 @@ export const useAdminUsersStore = defineStore("adminUsers", () => {
         activeThisMonth: users.value.filter(
           (u) => u.last_login && u.last_login > oneMonthAgo,
         ).length,
-        newThisMonth: users.value.filter((u) => u.created_at > oneMonthAgo)
+        newThisMonth: users.value.filter((u: any) => u.created_at > oneMonthAgo)
           .length,
         // Mock-Wert für durchschnittliche Sitzungen pro Benutzer
         averageSessionsPerUser: Math.round(Math.random() * 10 + 5),
@@ -486,7 +486,7 @@ export const useAdminUsersStore = defineStore("adminUsers", () => {
 
     // Nach Rolle filtern
     if (role) {
-      result = result.filter((user) => user.role === role);
+      result = result.filter((user: any) => user.role === role);
     }
 
     // Nach Suchbegriff filtern

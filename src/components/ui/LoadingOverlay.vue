@@ -71,14 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  ref,
-  computed,
-  watch,
-  onMounted,
-  onUnmounted,
-  onBeforeUnmount,
-} from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useI18n } from "vue-i18n";
 import SpinnerIcon from "@/components/icons/SpinnerIcon.vue";
 import ProgressIndicator from "./ProgressIndicator.vue";

@@ -177,14 +177,14 @@ export function useTheme() {
       }
     };
 
-    document.addEventListener("keydown", keydownHandler);
+    document.addEventListener("keydown", _keydownHandler);
 
     // Aufräumen wenn die Komponente zerstört wird
     onUnmounted(() => {
       window
         .matchMedia("(prefers-color-scheme: dark)")
         .removeEventListener("change", handleSystemThemeChange);
-      document.removeEventListener("keydown", keydownHandler);
+      document.removeEventListener("keydown", _keydownHandler);
     });
   });
 

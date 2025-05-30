@@ -434,7 +434,7 @@ export interface BridgeEventBus {
  * Type Guard zur Prüfung von Bridge-Event-Payloads
  */
 export function isValidBridgeEvent<T extends keyof BridgeEventMap>(
-  _eventName: T,
+  eventName: T,
   payload: any,
 ): payload is BridgeEventMap[T] {
   if (!payload || typeof payload !== "object") {

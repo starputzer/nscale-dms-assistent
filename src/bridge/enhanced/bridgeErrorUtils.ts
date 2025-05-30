@@ -89,12 +89,15 @@ export function createBridgeError(
 
   // Fehler loggen (wenn nicht in einer Recovery-Operation)
   if (code !== BridgeErrorCode.RECOVERY_FAILED) {
+    const errorDetails = {
+      component: error.component,
+      operation: error.operation,
+      details: error.details,
+      originalError: error.originalError,
+    };
     logger.error(
       `Bridge error [${error.code}]: ${error.message}`,
-      error.component ? `Component: ${error.component}` : "",
-      error.operation ? `Operation: ${error.operation}` : "",
-      error.details || "",
-      error.originalError || "",
+      errorDetails,
     );
   }
 

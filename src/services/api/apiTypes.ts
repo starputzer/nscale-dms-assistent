@@ -8,32 +8,20 @@
 
 import {
   AxiosRequestConfig,
-  AxiosResponse,
-  AxiosError,
   CancelTokenSource as AxiosCancelTokenSource,
 } from "axios";
 import {
   ApiServiceInterface,
   RetryHandlerInterface,
-  RetryHandlerOptions,
   ApiRequestOptions,
-  ServiceEvent,
   PaginationParams,
-  CacheOptions,
   CacheEntry,
   OfflineRequestInterface,
   StreamingOptions,
   StreamingServiceInterface,
   SessionServiceInterface,
 } from "@/utils/serviceTypes";
-import {
-  APIResponse,
-  APIError,
-  HTTPMethod,
-  StatusCode,
-  AsyncAPIResult,
-} from "@/utils/apiTypes";
-import { Result, AsyncFunction, Optional, Nullable } from "@/utils/types";
+import { APIResponse, APIError } from "@/utils/apiTypes";
 
 /**
  * NScaleAxiosRequestConfig - Erweiterte Axios-Konfiguration mit nScale-spezifischen Optionen
@@ -318,11 +306,11 @@ export class NScaleSessionServiceAdapter implements SessionServiceInterface {
     this.originalService.cancelStream();
   }
 
-  on(event: string, handler: Function): void {
+  on(event: string, handler: EventCallback | UnsubscribeFn): void {
     this.originalService.on(event, handler);
   }
 
-  off(event: string, handler: Function): void {
+  off(event: string, handler: EventCallback | UnsubscribeFn): void {
     this.originalService.off(event, handler);
   }
 }
@@ -359,13 +347,13 @@ export class NScaleStreamingServiceAdapter
     this.originalService.close();
   }
 
-  on(event: string, handler: Function): void {
+  on(event: string, handler: EventCallback | UnsubscribeFn): void {
     if (typeof this.originalService.on === "function") {
       this.originalService.on(event, handler);
     }
   }
 
-  off(event: string, handler: Function): void {
+  off(event: string, handler: EventCallback | UnsubscribeFn): void {
     if (typeof this.originalService.off === "function") {
       this.originalService.off(event, handler);
     }

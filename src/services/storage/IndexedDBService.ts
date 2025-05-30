@@ -635,7 +635,7 @@ export class IndexedDBService {
   /**
    * Löscht mehrere Objekte anhand ihrer Schlüssel
    */
-  public async deleteBulk(storeName: string, keys: any[]): Promise<boolean> {
+  public async deleteBulk(storeName: string, _keys: any[]): Promise<boolean> {
     // Sicherstellen, dass die Datenbank initialisiert ist
     if (!this.initialized) {
       await this.init();
@@ -680,7 +680,7 @@ export class IndexedDBService {
           completed++;
 
           // Änderungshandler benachrichtigen
-          this.notifyChangeHandlers(storeName, "delete", keys[i]);
+          this.notifyChangeHandlers(storeName, "delete", _keys[i]);
 
           // Wenn alle Operationen abgeschlossen sind
           if (completed === keys.length) {
@@ -804,7 +804,7 @@ export class IndexedDBService {
       await this.init();
     }
 
-    return Promise.all(keys.map((key) => this.get<T>(storeName, key)));
+    return Promise.all(keys.map((key: any) => this.get<T>(storeName, key)));
   }
 
   /**
@@ -1132,25 +1132,25 @@ export const defaultIndexedDBService = new IndexedDBService({
       name: "sessions",
       keyPath: "id",
       indices: [
-        { name: "createdAt", keyPath: "createdAt" },
-        { name: "updatedAt", keyPath: "updatedAt" },
+        { name: "createdAt", _keyPath: "createdAt" },
+        { name: "updatedAt", _keyPath: "updatedAt" },
       ],
     },
     {
       name: "messages",
       keyPath: "id",
       indices: [
-        { name: "sessionId", keyPath: "sessionId" },
-        { name: "sessionAndTimestamp", keyPath: ["sessionId", "timestamp"] },
+        { name: "sessionId", _keyPath: "sessionId" },
+        { name: "sessionAndTimestamp", _keyPath: ["sessionId", "timestamp"] },
       ],
     },
     {
       name: "documents",
       keyPath: "id",
       indices: [
-        { name: "filename", keyPath: "filename" },
-        { name: "uploadedAt", keyPath: "uploadedAt" },
-        { name: "status", keyPath: "status" },
+        { name: "filename", _keyPath: "filename" },
+        { name: "uploadedAt", _keyPath: "uploadedAt" },
+        { name: "status", _keyPath: "status" },
       ],
     },
     {
@@ -1158,10 +1158,10 @@ export const defaultIndexedDBService = new IndexedDBService({
       keyPath: "id",
       autoIncrement: true,
       indices: [
-        { name: "timestamp", keyPath: "timestamp" },
-        { name: "url", keyPath: "url" },
-        { name: "method", keyPath: "method" },
-        { name: "status", keyPath: "status" },
+        { name: "timestamp", _keyPath: "timestamp" },
+        { name: "url", _keyPath: "url" },
+        { name: "method", _keyPath: "method" },
+        { name: "status", _keyPath: "status" },
       ],
     },
     {

@@ -35,7 +35,7 @@ export function onNetworkStatusChange(
  * Benachrichtigt alle registrierten Handler über eine Statusänderung
  */
 function notifyNetworkStatusHandlers(status: boolean): void {
-  networkStatusHandlers.forEach((handler) => handler(status));
+  networkStatusHandlers.forEach((handler: any) => handler(status));
 }
 
 /**

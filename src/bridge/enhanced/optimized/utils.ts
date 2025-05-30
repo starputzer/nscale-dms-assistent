@@ -327,7 +327,7 @@ export function memoize<T extends (...args: any[]) => any>(
       let oldestTime = Infinity;
 
       // Use Array.from to avoid compatibility issues with Map iterators
-      Array.from(cache.entries()).forEach(([k, v]) => {
+      Array.from(cache.entries()).forEach(([k, v]: any) => {
         if (v.lastAccessed < oldestTime) {
           oldestKey = k;
           oldestTime = v.lastAccessed;

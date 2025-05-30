@@ -132,7 +132,7 @@ export async function batchOperationByIds<T = any>(
   data?: Record<string, any>,
 ): Promise<T[]> {
   // Anfragen für alle IDs erstellen
-  const requests: BatchRequest[] = ids.map((id) => ({
+  const requests: BatchRequest[] = ids.map((id: any) => ({
     endpoint: `${endpoint}/${id}`,
     method,
     data: data?.[id], // Wenn Daten vorhanden, individuelle Daten pro ID verwenden
@@ -158,7 +158,7 @@ export async function loadEntityWithRelations<T = Record<string, any>>(
   const namedRequests: Record<string, BatchRequest> = {};
 
   // Hauptentität-Anfrage
-  Object.entries(relatedEndpoints).forEach(([name, path]) => {
+  Object.entries(relatedEndpoints).forEach(([name, path]: any) => {
     namedRequests[name] = {
       endpoint: `${baseEndpoint}/${path.replace(":id", entityId)}`,
       method: "GET",

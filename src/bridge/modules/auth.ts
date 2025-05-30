@@ -376,7 +376,7 @@ export function initAuthBridge(
     logger.debug("Disposing auth bridge resources");
 
     // Unsubscribe from all events
-    state.subscriptions.forEach((subscription) => {
+    state.subscriptions.forEach((subscription: any) => {
       subscription.unsubscribe();
     });
 

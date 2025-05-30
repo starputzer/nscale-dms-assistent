@@ -1,5 +1,5 @@
 import { getCurrentInstance } from "vue";
-import { isDevelopment, isProduction } from "@/utils/environmentUtils";
+import { isProduction } from "@/utils/environmentUtils";
 
 /**
  * Log-Level für die Anwendung

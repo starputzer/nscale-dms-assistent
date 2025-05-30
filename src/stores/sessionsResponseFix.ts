@@ -129,7 +129,7 @@ export function validateSessionsResponse(data: any) {
 
 export function validateMessagesResponse(data: any) {
   if (Array.isArray(data)) {
-    return { valid: true, messages: data };
+    return { valid: true, _messages: data };
   }
 
   if (
@@ -138,8 +138,8 @@ export function validateMessagesResponse(data: any) {
     "messages" in data &&
     Array.isArray(data.messages)
   ) {
-    return { valid: true, messages: data.messages };
+    return { valid: true, _messages: data.messages };
   }
 
-  return { valid: false, messages: [] };
+  return { valid: false, _messages: [] };
 }

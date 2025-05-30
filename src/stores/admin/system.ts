@@ -18,7 +18,6 @@ import { LogService } from "@/services/log/LogService";
 import type {
   SystemStats,
   SystemAction,
-  AdminSystemState,
   SystemCheckResult,
 } from "@/types/admin";
 
@@ -48,7 +47,7 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
 
   const loading = ref(false);
   const error = ref<string | null>(null);
-  
+
   // System settings
   const systemSettings = ref({
     defaultModel: "llama-7b",
@@ -64,51 +63,54 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
   });
 
   // API-Integration aktiv?
-  const apiIntegrationEnabled = computed(() => shouldUseRealApi("useRealSystemApi"));
-  
+  const apiIntegrationEnabled = computed(() =>
+    shouldUseRealApi("useRealSystemApi"),
+  );
+
   // Verfügbare Aktionen als reaktiver State
   const actions = ref<SystemAction[]>([]);
-  
+
   // Getters
   const availableActions = computed<SystemAction[]>(() => {
     // Wenn Aktionen vom Service geladen wurden, diese verwenden
     if (actions.value.length > 0) {
       return actions.value;
     }
-    
+
     // Ansonsten Standard-Aktionen zurückgeben
     return [
-    {
-      type: "clear-cache",
-      name: "Cache leeren",
-      description: "Leert den LLM-Cache und erzwingt neue Berechnungen",
-      requiresConfirmation: true,
-      confirmationMessage:
-        "Möchten Sie wirklich den Cache leeren? Dies kann zu langsameren Antwortzeiten führen, bis der Cache wieder aufgebaut ist.",
-    },
-    {
-      type: "clear-embedding-cache",
-      name: "Embedding-Cache leeren",
-      description: "Leert den Embedding-Cache und erzwingt eine Neuberechnung",
-      requiresConfirmation: true,
-      confirmationMessage:
-        "Möchten Sie wirklich den Embedding-Cache leeren? Dies kann zu längeren Verarbeitungszeiten führen, bis alle Einbettungen neu berechnet sind.",
-    },
-    {
-      type: "reload-motd",
-      name: "MOTD neu laden",
-      description:
-        "Lädt die Message of the Day aus der Konfigurationsdatei neu",
-      requiresConfirmation: false,
-    },
-    {
-      type: "reindex",
-      name: "Dokumente neu indizieren",
-      description: "Startet eine vollständige Neuindizierung aller Dokumente",
-      requiresConfirmation: true,
-      confirmationMessage:
-        "Möchten Sie wirklich alle Dokumente neu indizieren? Dieser Vorgang kann je nach Datenmenge einige Zeit in Anspruch nehmen.",
-    }
+      {
+        type: "clear-cache",
+        name: "Cache leeren",
+        description: "Leert den LLM-Cache und erzwingt neue Berechnungen",
+        requiresConfirmation: true,
+        confirmationMessage:
+          "Möchten Sie wirklich den Cache leeren? Dies kann zu langsameren Antwortzeiten führen, bis der Cache wieder aufgebaut ist.",
+      },
+      {
+        type: "clear-embedding-cache",
+        name: "Embedding-Cache leeren",
+        description:
+          "Leert den Embedding-Cache und erzwingt eine Neuberechnung",
+        requiresConfirmation: true,
+        confirmationMessage:
+          "Möchten Sie wirklich den Embedding-Cache leeren? Dies kann zu längeren Verarbeitungszeiten führen, bis alle Einbettungen neu berechnet sind.",
+      },
+      {
+        type: "reload-motd",
+        name: "MOTD neu laden",
+        description:
+          "Lädt die Message of the Day aus der Konfigurationsdatei neu",
+        requiresConfirmation: false,
+      },
+      {
+        type: "reindex",
+        name: "Dokumente neu indizieren",
+        description: "Startet eine vollständige Neuindizierung aller Dokumente",
+        requiresConfirmation: true,
+        confirmationMessage:
+          "Möchten Sie wirklich alle Dokumente neu indizieren? Dieser Vorgang kann je nach Datenmenge einige Zeit in Anspruch nehmen.",
+      },
     ];
   });
 
@@ -176,46 +178,60 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
       // Prüfen, ob die echte API verwendet werden soll
       if (apiIntegrationEnabled.value) {
         logger.info("Lade Systemstatistiken über AdminSystemService");
-        
+
         // Optimierte Implementierung: Verwende Promise.allSettled für robuste parallele API-Aufrufe
         // Dies erlaubt uns, auch dann fortzufahren, wenn einer der Aufrufe fehlschlägt
         const [statsResponse, actionsResponse] = await Promise.allSettled([
           adminSystemService.getSystemStats(),
-          adminSystemService.getAvailableActions()
+          adminSystemService.getAvailableActions(),
         ]);
 
         // Verarbeite Statistiken
-        if (statsResponse.status === 'fulfilled' && statsResponse.value.success && statsResponse.value.data) {
-          logger.info("Systemstatistiken erfolgreich über AdminSystemService geladen");
+        if (
+          statsResponse.status === "fulfilled" &&
+          statsResponse.value.success &&
+          statsResponse.value.data
+        ) {
+          logger.info(
+            "Systemstatistiken erfolgreich über AdminSystemService geladen",
+          );
           stats.value = statsResponse.value.data;
-          
+
           // Verarbeite verfügbare Aktionen
-          if (actionsResponse.status === 'fulfilled' && actionsResponse.value.success && actionsResponse.value.data) {
+          if (
+            actionsResponse.status === "fulfilled" &&
+            actionsResponse.value.success &&
+            actionsResponse.value.data
+          ) {
             logger.info("Verfügbare Aktionen erfolgreich geladen");
             actions.value = actionsResponse.value.data;
           } else {
-            logger.warn("Verfügbare Aktionen konnten nicht geladen werden, verwende Standard-Aktionen");
+            logger.warn(
+              "Verfügbare Aktionen konnten nicht geladen werden, verwende Standard-Aktionen",
+            );
             // Bei Fehlern erfolgt automatischer Fallback auf availableActions computed property
           }
-          
+
           return statsResponse.value.data;
         } else {
           // Detailliertere Fehlerbehandlung
           let errorMsg: string;
           let errorDetails: any = {};
-          
-          if (statsResponse.status === 'rejected') {
+
+          if (statsResponse.status === "rejected") {
             errorMsg = "Netzwerkfehler beim Laden der Systemstatistiken";
             errorDetails.rejected = true;
             errorDetails.reason = statsResponse.reason;
           } else {
-            errorMsg = statsResponse.value.message || "Fehler beim Laden der Systemstatistiken";
+            errorMsg =
+              statsResponse.value.message ||
+              "Fehler beim Laden der Systemstatistiken";
             errorDetails = statsResponse.value.error;
           }
-          
+
           logger.warn(
             "Fehler beim Laden der Systemstatistiken über AdminSystemService, verwende Fallback",
-            errorDetails
+            errorDetails,
           );
           throw new Error(errorMsg);
         }
@@ -277,12 +293,14 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
           await fetchStats();
           return true;
         } else {
-          logger.warn("Fehler beim Leeren des Caches", { error: response.error });
-          
+          logger.warn("Fehler beim Leeren des Caches", {
+            error: response.error,
+          });
+
           // Detaillierteres Fehler-Reporting
-          const errorCode = response.error?.code || 'UNKNOWN_ERROR';
+          const errorCode = response.error?.code || "UNKNOWN_ERROR";
           const errorMsg = response.message || "Fehler beim Leeren des Caches";
-          
+
           error.value = `${errorMsg} (${errorCode})`;
           throw new Error(errorMsg);
         }
@@ -291,25 +309,26 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
       // Fallback zur alten Implementierung
       logger.info("Leere Cache über adminApi");
       const response = await adminApi.clearModelCache();
-      
+
       // Nach erfolgreicher Ausführung Statistiken neu laden
       await fetchStats();
       return true;
     } catch (err: any) {
       logger.error("Fehler beim Leeren des Caches", err);
-      
+
       // Verbesserte Fehlerbehandlung mit mehr Kontext
-      const errorMessage = err.response?.data?.message || 
-                          err.message || 
-                          "Fehler beim Leeren des Caches";
-      
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        "Fehler beim Leeren des Caches";
+
       error.value = errorMessage;
-      
+
       // Werfe eine detailliertere Fehlerinformation, die für UI-Komponenten nützlich ist
       throw {
         message: errorMessage,
-        code: err.response?.data?.code || 'CACHE_CLEAR_ERROR',
-        details: err.response?.data || err
+        code: err.response?.data?.code || "CACHE_CLEAR_ERROR",
+        details: err.response?.data || err,
       };
     } finally {
       loading.value = false;
@@ -330,17 +349,22 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
         const response = await adminSystemService.clearEmbeddingCache();
 
         if (response.success) {
-          logger.info("Embedding-Cache erfolgreich über AdminSystemService geleert");
+          logger.info(
+            "Embedding-Cache erfolgreich über AdminSystemService geleert",
+          );
           // Nach erfolgreicher Ausführung Statistiken neu laden
           await fetchStats();
           return true;
         } else {
-          logger.warn("Fehler beim Leeren des Embedding-Caches", { error: response.error });
-          
+          logger.warn("Fehler beim Leeren des Embedding-Caches", {
+            error: response.error,
+          });
+
           // Detaillierteres Fehler-Reporting
-          const errorCode = response.error?.code || 'UNKNOWN_ERROR';
-          const errorMsg = response.message || "Fehler beim Leeren des Embedding-Caches";
-          
+          const errorCode = response.error?.code || "UNKNOWN_ERROR";
+          const errorMsg =
+            response.message || "Fehler beim Leeren des Embedding-Caches";
+
           error.value = `${errorMsg} (${errorCode})`;
           throw new Error(errorMsg);
         }
@@ -349,25 +373,26 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
       // Fallback zur alten Implementierung
       logger.info("Leere Embedding-Cache über adminApi");
       const response = await adminApi.clearEmbeddingCache();
-      
+
       // Nach erfolgreicher Ausführung Statistiken neu laden
       await fetchStats();
       return true;
     } catch (err: any) {
       logger.error("Fehler beim Leeren des Embedding-Caches", err);
-      
+
       // Verbesserte Fehlerbehandlung mit mehr Kontext
-      const errorMessage = err.response?.data?.message || 
-                          err.message || 
-                          "Fehler beim Leeren des Embedding-Caches";
-      
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        "Fehler beim Leeren des Embedding-Caches";
+
       error.value = errorMessage;
-      
+
       // Werfe eine detailliertere Fehlerinformation, die für UI-Komponenten nützlich ist
       throw {
         message: errorMessage,
-        code: err.response?.data?.code || 'EMBEDDING_CACHE_CLEAR_ERROR',
-        details: err.response?.data || err
+        code: err.response?.data?.code || "EMBEDDING_CACHE_CLEAR_ERROR",
+        details: err.response?.data || err,
       };
     } finally {
       loading.value = false;
@@ -417,15 +442,19 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
     try {
       if (apiIntegrationEnabled.value) {
         logger.info("Führe Systemprüfung über AdminSystemService durch");
-        
+
         try {
           const response = await adminSystemService.performSystemCheck();
 
           if (response.success && response.data) {
-            logger.info("Systemprüfung erfolgreich über AdminSystemService durchgeführt");
+            logger.info(
+              "Systemprüfung erfolgreich über AdminSystemService durchgeführt",
+            );
             return response.data;
           } else {
-            logger.warn("Fehler bei der Systemprüfung", { error: response.error });
+            logger.warn("Fehler bei der Systemprüfung", {
+              error: response.error,
+            });
             throw new Error(response.message || "Fehler bei der Systemprüfung");
           }
         } catch (serviceError: any) {
@@ -433,9 +462,9 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
           logger.error("Fehler im AdminSystemService bei performSystemCheck", {
             error: serviceError,
             message: serviceError.message,
-            stack: serviceError.stack
+            stack: serviceError.stack,
           });
-          
+
           // Werfe den Fehler weiter, um in den Fallback zu gelangen
           throw serviceError;
         }
@@ -448,7 +477,10 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
       try {
         await fetchStats();
       } catch (statsError) {
-        logger.warn("Konnte Statistiken nicht aktualisieren, verwende vorhandene Daten", statsError);
+        logger.warn(
+          "Konnte Statistiken nicht aktualisieren, verwende vorhandene Daten",
+          statsError,
+        );
         // Wir setzen hier kein throw, damit die Systemprüfung mit aktuellen Daten fortgesetzt werden kann
       }
 
@@ -476,27 +508,32 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
 
       // Füge weitere Prüfungen hinzu, wenn spezifische Werte im Stats-Objekt vorhanden sind
       if (stats.value.cache_hit_rate !== undefined) {
-        const cacheStatus = stats.value.cache_hit_rate < 50 ? "warning" : 
-                           stats.value.cache_hit_rate < 20 ? "critical" : "normal";
-        
+        const cacheStatus =
+          stats.value.cache_hit_rate < 50
+            ? "warning"
+            : stats.value.cache_hit_rate < 20
+              ? "critical"
+              : "normal";
+
         systemCheckResult.checks.push({
           name: "Cache-Trefferrate",
           status: cacheStatus,
-          value: stats.value.cache_hit_rate + "%"
+          value: stats.value.cache_hit_rate + "%",
         });
       }
 
       return systemCheckResult;
     } catch (err: any) {
       logger.error("Fehler bei der Systemprüfung", err);
-      
+
       // Verbesserte Fehlerbehandlung mit mehr Kontext
-      const errorMessage = err.response?.data?.message || 
-                          err.message || 
-                          "Fehler bei der Systemprüfung";
-      
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        "Fehler bei der Systemprüfung";
+
       error.value = errorMessage;
-      
+
       // Fallback zu einer einfachen Systemprüfung, die auf vorhandenen Daten basiert
       return {
         success: false,
@@ -504,16 +541,16 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
           {
             name: "Systemprüfung",
             status: "critical",
-            value: "Fehler"
+            value: "Fehler",
           },
           {
             name: "Details",
             status: "critical",
-            value: errorMessage
-          }
+            value: errorMessage,
+          },
         ],
         message: "Fehler bei der Systemprüfung",
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
     } finally {
       loading.value = false;
@@ -530,37 +567,42 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
 
     try {
       if (apiIntegrationEnabled.value) {
-        logger.info("Starte Neuindizierung der Dokumente über AdminSystemService");
-        
+        logger.info(
+          "Starte Neuindizierung der Dokumente über AdminSystemService",
+        );
+
         try {
           const response = await adminSystemService.reindexDocuments();
 
           if (response.success) {
             logger.info("Neuindizierung der Dokumente erfolgreich gestartet");
-            
+
             // Nach erfolgreicher Ausführung Statistiken neu laden, aber ignoriere Fehler
             try {
               await fetchStats();
             } catch (statErr) {
-              logger.warn("Statistiken konnten nach Neuindizierung nicht neu geladen werden", statErr);
+              logger.warn(
+                "Statistiken konnten nach Neuindizierung nicht neu geladen werden",
+                statErr,
+              );
               // Wir ignorieren diesen Fehler, da der Hauptvorgang erfolgreich war
             }
-            
+
             return {
               success: true,
               message: "Neuindizierung der Dokumente wurde gestartet",
-              timestamp: Date.now()
+              timestamp: Date.now(),
             };
           } else {
             // Verbesserte Fehlerbehandlung mit Klassifizierung
-            logger.warn("Fehler bei der Neuindizierung der Dokumente", { 
+            logger.warn("Fehler bei der Neuindizierung der Dokumente", {
               error: response.error,
               errorCode: response.error?.code,
-              errorType: response.error?.type || 'unknown'
+              errorType: response.error?.type || "unknown",
             });
-            
+
             throw new Error(
-              response.message || "Fehler bei der Neuindizierung der Dokumente"
+              response.message || "Fehler bei der Neuindizierung der Dokumente",
             );
           }
         } catch (serviceError: any) {
@@ -568,9 +610,9 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
           logger.error("Fehler im AdminSystemService bei reindexDocuments", {
             error: serviceError,
             message: serviceError.message,
-            stack: serviceError.stack
+            stack: serviceError.stack,
           });
-          
+
           // Werfe den Fehler weiter, um in den Fallback zu gelangen
           throw serviceError;
         }
@@ -578,34 +620,35 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
 
       // Fallback zur lokalen Implementierung mit mehr Feedback
       logger.info("Simuliere Neuindizierung der Dokumente");
-      
+
       // Warten, um eine Bearbeitung zu simulieren
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Simuliere eine erfolgreiche Antwort, die der API-Antwort ähnelt
       return {
         success: true,
         message: "Neuindizierung der Dokumente wurde gestartet",
         timestamp: Date.now(),
         estimatedCompletionTime: Date.now() + 15 * 60 * 1000, // 15 Minuten in der Zukunft
-        jobId: "mock-reindex-" + Math.floor(Math.random() * 10000)
+        jobId: "mock-reindex-" + Math.floor(Math.random() * 10000),
       };
     } catch (err: any) {
       logger.error("Fehler bei der Neuindizierung der Dokumente", err);
-      
+
       // Verbesserte Fehlerbehandlung mit mehr Kontext
-      const errorMessage = err.response?.data?.message || 
-                          err.message || 
-                          "Fehler bei der Neuindizierung der Dokumente";
-      
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        "Fehler bei der Neuindizierung der Dokumente";
+
       error.value = errorMessage;
-      
+
       // Werfe ein detailliertes Fehler-Objekt statt einer einfachen Fehlermeldung
       throw {
         message: errorMessage,
-        code: err.response?.data?.code || 'REINDEX_ERROR',
+        code: err.response?.data?.code || "REINDEX_ERROR",
         details: err.response?.data || err,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
     } finally {
       loading.value = false;
@@ -622,82 +665,96 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
       logger.info("API-Integration deaktiviert, verwende Standard-Aktionen");
       return availableActions.value;
     }
-    
+
     const maxRetries = 2; // Maximale Anzahl an Wiederholungsversuchen
     let retries = 0;
     let lastError = null;
-    
+
     // Retry-Schleife für robustere API-Kommunikation
     while (retries <= maxRetries) {
       try {
-        logger.info(`Lade verfügbare Systemaktionen (Versuch ${retries + 1}/${maxRetries + 1})`);
+        logger.info(
+          `Lade verfügbare Systemaktionen (Versuch ${retries + 1}/${maxRetries + 1})`,
+        );
         const response = await adminSystemService.getAvailableActions();
-        
+
         if (response.success && response.data) {
           logger.info("Verfügbare Systemaktionen erfolgreich geladen");
-          
+
           // Ensure response.data is an array
-          const responseData = Array.isArray(response.data) ? response.data : [];
-          
+          const responseData = Array.isArray(response.data)
+            ? response.data
+            : [];
+
           // Filtere ungültige Aktionen heraus
-          const validActions = responseData.filter(action => {
+          const validActions = responseData.filter((action) => {
             if (!action.type || !action.name) {
               logger.warn("Ungültige Aktion in API-Antwort gefunden", action);
               return false;
             }
             return true;
           });
-          
+
           // Aktualisiere Aktionen im Store
           actions.value = validActions;
           return validActions;
         } else {
-          lastError = response.error || new Error(response.message || "Unbekannter Fehler");
+          lastError =
+            response.error ||
+            new Error(response.message || "Unbekannter Fehler");
           logger.warn("Fehler beim Laden der verfügbaren Systemaktionen", {
             error: response.error,
             message: response.message,
-            attempt: retries + 1
+            attempt: retries + 1,
           });
-          
+
           // Bei diesen spezifischen Fehlern macht ein Retry keinen Sinn
-          if (response.error?.code === 'PERMISSION_DENIED' || 
-              response.error?.code === 'NOT_IMPLEMENTED') {
+          if (
+            response.error?.code === "PERMISSION_DENIED" ||
+            response.error?.code === "NOT_IMPLEMENTED"
+          ) {
             break;
           }
         }
       } catch (err: any) {
         lastError = err;
-        logger.error(`Fehler beim Laden der verfügbaren Systemaktionen (Versuch ${retries + 1})`, {
-          error: err,
-          message: err.message,
-          stack: err.stack
-        });
-        
+        logger.error(
+          `Fehler beim Laden der verfügbaren Systemaktionen (Versuch ${retries + 1})`,
+          {
+            error: err,
+            message: err.message,
+            stack: err.stack,
+          },
+        );
+
         // Bei Netzwerkfehlern kann ein Retry sinnvoll sein
-        if (err.name === 'NetworkError' || err.message?.includes('network')) {
+        if (err.name === "NetworkError" || err.message?.includes("network")) {
           logger.info("Netzwerkfehler erkannt, versuche erneut...");
         } else {
           // Bei anderen Fehlern macht ein Retry möglicherweise keinen Sinn
           break;
         }
       }
-      
+
       retries++;
-      
+
       // Warte kurz vor dem nächsten Versuch (exponentielles Backoff)
       if (retries <= maxRetries) {
         const delay = Math.min(1000 * Math.pow(2, retries - 1), 5000);
         logger.info(`Warte ${delay}ms vor dem nächsten Versuch...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
-    
+
     // Nach allen Versuchen, falls wir hier sind, ist etwas schief gelaufen
     if (lastError) {
-      logger.error("Alle Versuche, verfügbare Systemaktionen zu laden, sind fehlgeschlagen", lastError);
+      logger.error(
+        "Alle Versuche, verfügbare Systemaktionen zu laden, sind fehlgeschlagen",
+        lastError,
+      );
       // Im Fehlerfall wird kein throw verwendet, um die UI nicht zu blockieren
     }
-    
+
     // Fallback zu Standard-Aktionen
     return availableActions.value;
   }
@@ -719,7 +776,9 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
           systemSettings.value = { ...systemSettings.value, ...response.data };
           return response.data;
         } else {
-          throw new Error(response.message || "Fehler beim Laden der Einstellungen");
+          throw new Error(
+            response.message || "Fehler beim Laden der Einstellungen",
+          );
         }
       }
 
@@ -745,14 +804,17 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
     try {
       if (apiIntegrationEnabled.value) {
         logger.info("Speichere Systemeinstellungen über AdminSystemService");
-        const response = await adminSystemService.updateSystemSettings(settings);
+        const response =
+          await adminSystemService.updateSystemSettings(settings);
 
         if (response.success) {
           logger.info("Systemeinstellungen erfolgreich gespeichert");
           systemSettings.value = { ...systemSettings.value, ...settings };
           return true;
         } else {
-          throw new Error(response.message || "Fehler beim Speichern der Einstellungen");
+          throw new Error(
+            response.message || "Fehler beim Speichern der Einstellungen",
+          );
         }
       }
 
@@ -762,7 +824,8 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
       return true;
     } catch (err: any) {
       logger.error("Fehler beim Speichern der Systemeinstellungen", err);
-      error.value = err.message || "Fehler beim Speichern der Systemeinstellungen";
+      error.value =
+        err.message || "Fehler beim Speichern der Systemeinstellungen";
       throw err;
     } finally {
       loading.value = false;
@@ -786,13 +849,15 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
           await fetchStats();
           return true;
         } else {
-          throw new Error(response.message || "Fehler beim Neustart der Dienste");
+          throw new Error(
+            response.message || "Fehler beim Neustart der Dienste",
+          );
         }
       }
 
       // Fallback: Simuliere Neustart
       logger.info("Simuliere Neustart der Systemdienste");
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       return true;
     } catch (err: any) {
       logger.error("Fehler beim Neustart der Systemdienste", err);
@@ -818,9 +883,9 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
         if (response.success && response.data) {
           logger.info("Systemlogs erfolgreich exportiert");
           // Trigger download
-          const blob = new Blob([response.data], { type: 'application/zip' });
+          const blob = new Blob([response.data], { type: "application/zip" });
           const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
+          const a = document.createElement("a");
           a.href = url;
           a.download = `system-logs-${new Date().toISOString()}.zip`;
           a.click();
@@ -833,7 +898,9 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
 
       // Fallback: Zeige Hinweis
       logger.info("Log-Export nur mit API-Integration verfügbar");
-      throw new Error("Log-Export ist nur mit aktiver API-Integration verfügbar");
+      throw new Error(
+        "Log-Export ist nur mit aktiver API-Integration verfügbar",
+      );
     } catch (err: any) {
       logger.error("Fehler beim Export der Systemlogs", err);
       error.value = err.message || "Fehler beim Export der Systemlogs";
@@ -860,13 +927,15 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
           await fetchStats();
           return true;
         } else {
-          throw new Error(response.message || "Fehler bei der Datenbankoptimierung");
+          throw new Error(
+            response.message || "Fehler bei der Datenbankoptimierung",
+          );
         }
       }
 
       // Fallback: Simuliere Optimierung
       logger.info("Simuliere Datenbankoptimierung");
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      await new Promise((resolve) => setTimeout(resolve, 3000));
       return true;
     } catch (err: any) {
       logger.error("Fehler bei der Datenbankoptimierung", err);
@@ -894,7 +963,9 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
           await fetchStats();
           return true;
         } else {
-          throw new Error(response.message || "Fehler beim Zurücksetzen der Statistiken");
+          throw new Error(
+            response.message || "Fehler beim Zurücksetzen der Statistiken",
+          );
         }
       }
 
@@ -937,13 +1008,17 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
           await fetchStats();
           return true;
         } else {
-          throw new Error(response.message || "Fehler beim Erstellen des Backups");
+          throw new Error(
+            response.message || "Fehler beim Erstellen des Backups",
+          );
         }
       }
 
       // Fallback: Zeige Hinweis
       logger.info("Backup-Erstellung nur mit API-Integration verfügbar");
-      throw new Error("Backup-Erstellung ist nur mit aktiver API-Integration verfügbar");
+      throw new Error(
+        "Backup-Erstellung ist nur mit aktiver API-Integration verfügbar",
+      );
     } catch (err: any) {
       logger.error("Fehler beim Erstellen des Backups", err);
       error.value = err.message || "Fehler beim Erstellen des Backups";
@@ -981,7 +1056,7 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
     exportLogs,
     optimizeDatabase,
     resetStatistics,
-    createBackup
+    createBackup,
   };
 });
 

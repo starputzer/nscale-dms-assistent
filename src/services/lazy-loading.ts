@@ -111,7 +111,7 @@ export function lazyLoadComponent(name: string): Component {
 export async function preloadComponents(
   componentNames: string[],
 ): Promise<void> {
-  const promises = componentNames.map((name) => {
+  const promises = componentNames.map((name: any) => {
     const loader = componentRegistry[name as keyof typeof componentRegistry];
     if (loader) {
       return loader().catch((err) => {

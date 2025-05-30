@@ -3,44 +3,48 @@
  * Entwickelt für die Nutzung während der Entwicklung oder wenn Backend-Dienste nicht verfügbar sind
  */
 
-import { random } from "lodash-es";
-
 // Mock data generator and store
 export const adminMockService = {
   // Configuration - can be set via environment variables
   shouldAlwaysUseMock: process.env.NODE_ENV === "development" || false,
-  
+
   // Helper to determine whether to use mock data
   shouldUseMock(endpoint: string): boolean {
     // Check for URL parameters
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
-      
+
       // Force mock data if URL parameter is set
-      if (urlParams.get('forceMock') === 'true') {
-        console.info(`[adminMockService] Verwende Mock-Daten für ${endpoint} (via URL-Parameter)`);
+      if (urlParams.get("forceMock") === "true") {
+        console.info(
+          `[adminMockService] Verwende Mock-Daten für ${endpoint} (via URL-Parameter)`,
+        );
         return true;
       }
-      
+
       // Force real API if URL parameter is set
-      if (urlParams.get('forceReal') === 'true') {
-        console.info(`[adminMockService] Verwende echte API für ${endpoint} (via URL-Parameter)`);
+      if (urlParams.get("forceReal") === "true") {
+        console.info(
+          `[adminMockService] Verwende echte API für ${endpoint} (via URL-Parameter)`,
+        );
         return false;
       }
     }
-    
+
     // Always use mock data in development (safer option)
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       // Specific endpoints that are known to have issues
-      if (endpoint.includes('/admin/system') || 
-          endpoint.includes('/admin/stats') || 
-          endpoint.includes('/api/motd') ||
-          endpoint.includes('/admin/feature-toggles') ||
-          endpoint.includes('/admin/doc-converter')) {
+      if (
+        endpoint.includes("/admin/system") ||
+        endpoint.includes("/admin/stats") ||
+        endpoint.includes("/api/motd") ||
+        endpoint.includes("/admin/feature-toggles") ||
+        endpoint.includes("/admin/doc-converter")
+      ) {
         return true;
       }
     }
-    
+
     return this.shouldAlwaysUseMock;
   },
 

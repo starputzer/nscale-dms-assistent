@@ -60,11 +60,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import {
-  PropType,
-  withDefaultProp,
-  requiredProp,
-} from "@/utils/componentTypes";
+import { PropType, withDefaultProp } from "@/utils/componentTypes";
 import { isOneOf } from "@/utils/propValidators";
 
 // Typische Button-Varianten als Konstante definieren

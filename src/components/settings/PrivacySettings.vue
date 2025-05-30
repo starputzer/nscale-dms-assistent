@@ -207,7 +207,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, onMounted, watch } from "vue";
+import { reactive, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { useToast } from "@/composables/useToast";
 import { useDialog } from "@/composables/useDialog";

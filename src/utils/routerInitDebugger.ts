@@ -282,7 +282,7 @@ export class RouterInitDebugger {
         console.log(`Root Cause: ${report.combinedAnalysis.rootCause}`);
         console.log(`Solution: ${report.combinedAnalysis.solution}`);
         console.log("\nCode:");
-        report.combinedAnalysis.codeChanges.forEach((line) =>
+        report.combinedAnalysis.codeChanges.forEach((line: any) =>
           console.log(line),
         );
         console.log("================================");
@@ -291,7 +291,7 @@ export class RouterInitDebugger {
       testInitOrder: () => {
         console.log("=== Test Initialisierungsreihenfolge ===");
         const stages = ["pinia", "stores", "router", "app"];
-        stages.forEach((stage, index) => {
+        stages.forEach((stage, index: any) => {
           setTimeout(() => {
             console.log(`${index + 1}. ${stage} wird initialisiert...`);
           }, index * 100);

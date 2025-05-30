@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import { AxiosRequestConfig, AxiosResponse } from "axios";
 import apiService from "./ApiService";
 
 /**
@@ -103,10 +103,7 @@ export interface BatchRequestOptions {
   onBatchStart?: (requests: BatchRequest[]) => void;
 
   /** Callback für Batch-Abschluss */
-  onBatchComplete?: (
-    responses: BatchResponse[],
-    duration: number,
-  ) => void;
+  onBatchComplete?: (responses: BatchResponse[], duration: number) => void;
 
   /** Callback für Batch-Fehler */
   onBatchError?: (error: Error, requests: BatchRequest[]) => void;
@@ -238,7 +235,7 @@ export class BatchRequestService {
     requests?: BatchRequest[],
   ): Promise<BatchResponse[]> {
     const requestsToProcess = requests || [...this.pendingRequests];
-    
+
     if (requestsToProcess.length === 0) {
       return [];
     }
@@ -259,10 +256,10 @@ export class BatchRequestService {
             id: request.id!,
             status: error.response?.status || 500,
             data: null,
-            error: error.message || 'Request failed',
+            error: error.message || "Request failed",
           };
         }
-      })
+      }),
     );
 
     return results;
@@ -285,7 +282,10 @@ export class BatchRequestService {
       responses = serverResponse;
     }
     // Format 2: Responses in 'responses' property
-    else if (serverResponse.responses && Array.isArray(serverResponse.responses)) {
+    else if (
+      serverResponse.responses &&
+      Array.isArray(serverResponse.responses)
+    ) {
       responses = serverResponse.responses;
     }
     // Format 3: Responses in 'data' property
@@ -293,15 +293,23 @@ export class BatchRequestService {
       responses = serverResponse.data;
     }
     // Format 4: Nested data.responses
-    else if (serverResponse.data?.responses && Array.isArray(serverResponse.data.responses)) {
+    else if (
+      serverResponse.data?.responses &&
+      Array.isArray(serverResponse.data.responses)
+    ) {
       responses = serverResponse.data.responses;
     }
     // Format 5: Server might return object with request IDs as keys
-    else if (typeof serverResponse === 'object' && !Array.isArray(serverResponse)) {
-      responses = Object.entries(serverResponse).map(([id, response]: [string, any]) => ({
-        id,
-        ...response
-      }));
+    else if (
+      typeof serverResponse === "object" &&
+      !Array.isArray(serverResponse)
+    ) {
+      responses = Object.entries(serverResponse).map(
+        ([id, response]: [string, any]) => ({
+          id,
+          ...response,
+        }),
+      );
     }
 
     // Normalize responses
@@ -310,7 +318,7 @@ export class BatchRequestService {
       if (response.response) {
         // Server might wrap actual response
         return {
-          id: response.id || response.requestId || 'unknown',
+          id: response.id || response.requestId || "unknown",
           status: response.status || response.statusCode || 200,
           data: response.response,
           headers: response.headers || {},
@@ -319,7 +327,7 @@ export class BatchRequestService {
       } else {
         // Direct response format
         return {
-          id: response.id || response.requestId || 'unknown',
+          id: response.id || response.requestId || "unknown",
           status: response.status || response.statusCode || 200,
           data: response.data !== undefined ? response.data : response,
           headers: response.headers || {},
@@ -357,7 +365,10 @@ export class BatchRequestService {
     }
 
     // Führe sofort aus, wenn maximale Batch-Größe erreicht
-    if (this.pendingRequests.length >= (this.options.maxBatchSize || this.MAX_BATCH_SIZE)) {
+    if (
+      this.pendingRequests.length >=
+      (this.options.maxBatchSize || this.MAX_BATCH_SIZE)
+    ) {
       this.processPendingBatch();
       return;
     }
@@ -430,7 +441,7 @@ export class BatchRequestService {
       }
 
       // Reject alle Promises
-      batchRequests.forEach((request) => {
+      batchRequests.forEach((request: any) => {
         const promise = this.pendingPromises.get(request.id!);
         if (promise) {
           promise.reject(error);
@@ -484,12 +495,12 @@ export class BatchRequestService {
   ): void {
     // Map für schnellen Zugriff
     const responseMap = new Map<string, BatchResponse>();
-    responses.forEach((response) => {
+    responses.forEach((response: any) => {
       responseMap.set(response.id, response);
     });
 
     // Resolve/Reject Promises
-    requests.forEach((request) => {
+    requests.forEach((request: any) => {
       const promise = this.pendingPromises.get(request.id!);
       if (!promise) return;
 
@@ -580,8 +591,7 @@ export class BatchRequestService {
   private updateStatistics(batchSize: number): void {
     this.requestStats.totalBatches++;
     this.requestStats.batchedRequests += batchSize;
-    this.requestStats.savedRequests +=
-      batchSize > 1 ? batchSize - 1 : 0;
+    this.requestStats.savedRequests += batchSize > 1 ? batchSize - 1 : 0;
 
     // Min/Max Batch-Größe
     this.requestStats.minBatchSize = Math.min(
@@ -646,7 +656,7 @@ export class BatchRequestService {
     }
 
     // Reject alle Promises
-    this.pendingRequests.forEach((request) => {
+    this.pendingRequests.forEach((request: any) => {
       const promise = this.pendingPromises.get(request.id!);
       if (promise) {
         promise.reject(new Error("Request cancelled"));
@@ -668,7 +678,7 @@ export class BatchRequestService {
     namedRequests: Record<string, BatchRequest>,
   ): Promise<Record<string, T>> {
     const requestEntries = Object.entries(namedRequests);
-    const requestPromises = requestEntries.map(([name, request]) => {
+    const requestPromises = requestEntries.map(([name, request]: any) => {
       return this.addRequest<T>(request).then((response) => ({
         name,
         response,
@@ -696,7 +706,7 @@ export class BatchRequestService {
     const cacheKey = this.generateCacheKey(request);
     this.responseCache.delete(cacheKey);
   }
-  
+
   /**
    * Sendet alle ausstehenden Anfragen sofort, ohne auf das Timeout zu warten
    */

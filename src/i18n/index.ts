@@ -40,6 +40,39 @@ const messages = {
       error: "Error",
       warning: "Warning",
       info: "Information",
+    },
+    common: {
+      refresh: "Refresh"
+    },
+    performance: {
+      title: 'Performance Dashboard',
+      baseline: {
+        title: 'Baseline Metrics'
+      },
+      realtime: {
+        title: 'Real-time Metrics'
+      },
+      score: {
+        title: 'Performance Score',
+        excellent: 'Excellent',
+        good: 'Good',
+        average: 'Average',
+        poor: 'Needs Improvement'
+      },
+      recommendations: {
+        title: 'Recommendations',
+        slowInitialLoad: 'Initial load time is high. Optimize bundle size and lazy loading.',
+        highMemory: 'Memory usage is high. Check for memory leaks.',
+        slowApi: 'API response times are slow. Optimize backend queries.'
+      },
+      initialLoad: 'Initial Load Time',
+      timeToInteractive: 'Time to Interactive',
+      memoryUsage: 'Memory Usage',
+      apiResponseTime: 'API Response Time',
+      renderTime: 'Render Time',
+      currentMemory: 'Current Memory',
+      fps: 'Frame Rate',
+      export: 'Export Metrics'
     }
   },
   de: {
@@ -48,6 +81,39 @@ const messages = {
       error: "Fehler",
       warning: "Warnung",
       info: "Information",
+    },
+    common: {
+      refresh: "Aktualisieren"
+    },
+    performance: {
+      title: 'Performance Dashboard',
+      baseline: {
+        title: 'Baseline-Metriken'
+      },
+      realtime: {
+        title: 'Echtzeit-Metriken'
+      },
+      score: {
+        title: 'Performance-Score',
+        excellent: 'Exzellent',
+        good: 'Gut',
+        average: 'Durchschnittlich',
+        poor: 'Verbesserungsbedürftig'
+      },
+      recommendations: {
+        title: 'Empfehlungen',
+        slowInitialLoad: 'Die initiale Ladezeit ist hoch. Optimieren Sie Bundle-Größe und Lazy Loading.',
+        highMemory: 'Der Speicherverbrauch ist hoch. Prüfen Sie auf Memory Leaks.',
+        slowApi: 'Die API-Antwortzeiten sind langsam. Optimieren Sie Backend-Queries.'
+      },
+      initialLoad: 'Initiale Ladezeit',
+      timeToInteractive: 'Zeit bis Interaktiv',
+      memoryUsage: 'Speichernutzung',
+      apiResponseTime: 'API-Antwortzeit',
+      renderTime: 'Render-Zeit',
+      currentMemory: 'Aktueller Speicher',
+      fps: 'Bildrate',
+      export: 'Metriken exportieren'
     }
   }
 };

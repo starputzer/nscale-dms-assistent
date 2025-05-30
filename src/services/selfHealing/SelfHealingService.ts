@@ -5,7 +5,7 @@
  * speziell das Problem mit dem "Schwerwiegender Fehler"-Bildschirm.
  */
 
-import { ref, watch } from "vue";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useLogger } from "@/composables/useLogger";
 import {
@@ -62,7 +62,7 @@ export class SelfHealingService {
               '.critical-error, .error-view, .schwerwiegender-fehler, [data-error="critical"]',
             );
 
-            errorElements.forEach((element) => {
+            errorElements.forEach((element: any) => {
               this.logger.info(
                 "Entferne Fehlerbildschirm-Element:",
                 element.className,
@@ -136,13 +136,17 @@ export class SelfHealingService {
             if ("serviceWorker" in navigator) {
               const registrations =
                 await navigator.serviceWorker.getRegistrations();
-              await Promise.all(registrations.map((reg) => reg.unregister()));
+              await Promise.all(
+                registrations.map((reg: any) => reg.unregister()),
+              );
             }
 
             // Cache leeren
             if ("caches" in window) {
               const cacheNames = await caches.keys();
-              await Promise.all(cacheNames.map((name) => caches.delete(name)));
+              await Promise.all(
+                cacheNames.map((name: any) => caches.delete(name)),
+              );
             }
 
             // Lokalen Speicher teilweise leeren (wichtige Daten behalten)
@@ -154,14 +158,14 @@ export class SelfHealingService {
             ];
             const savedData: Record<string, string> = {};
 
-            keysToKeep.forEach((key) => {
+            keysToKeep.forEach((key: any) => {
               const value = localStorage.getItem(key);
               if (value) savedData[key] = value;
             });
 
             localStorage.clear();
 
-            Object.entries(savedData).forEach(([key, value]) => {
+            Object.entries(savedData).forEach(([key, value]: any) => {
               localStorage.setItem(key, value);
             });
 
@@ -196,7 +200,7 @@ export class SelfHealingService {
               "useSfcAdmin",
             ];
 
-            problematicFeatures.forEach((feature) => {
+            problematicFeatures.forEach((feature: any) => {
               if (featureToggles.isEnabled(feature)) {
                 featureToggles.setFallbackMode(feature, true);
                 this.logger.info(`Fallback aktiviert für Feature: ${feature}`);

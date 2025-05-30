@@ -1,16 +1,15 @@
 /**
  * Updated API Configuration using centralized routes
- * 
+ *
  * This configuration uses the shared route definitions to ensure
  * consistency between frontend and backend.
  */
 
-import { 
+import {
   API_BASE_VERSIONED,
   API_ROUTES,
   buildApiUrl,
-  buildFullUrl
-} from '@/shared/api-routes';
+} from "@/shared/api-routes";
 
 /**
  * Helper function for environment variables
@@ -109,9 +108,7 @@ export const API_CONFIG = {
       retry: 3000,
     },
     CONNECTION_TIMEOUT: 10000,
-    STREAMING_ENDPOINTS: [
-      API_ROUTES.SESSION.STREAM(':sessionId'),
-    ],
+    STREAMING_ENDPOINTS: [API_ROUTES.SESSION.STREAM(":sessionId")],
   },
 
   // Use centralized route definitions
@@ -148,7 +145,7 @@ export const API_CONFIG = {
       // User management
       USERS: API_ROUTES.ADMIN.USERS.LIST,
       USER: (id: string) => API_ROUTES.ADMIN.USERS.GET(id),
-      
+
       // System
       SYSTEM: API_ROUTES.ADMIN.SYSTEM.INFO,
       STATS: API_ROUTES.ADMIN.SYSTEM.STATS,
@@ -271,7 +268,7 @@ export function initializeApiServices(): void {
         (error) => {
           console.error("Request interceptor error:", error);
           return Promise.reject(error);
-        }
+        },
       );
 
       console.log("API services initialized successfully");

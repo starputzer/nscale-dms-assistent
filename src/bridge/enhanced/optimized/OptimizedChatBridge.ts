@@ -2,7 +2,7 @@ import { BatchedEventEmitter } from "./BatchedEventEmitter";
 import { OptimizedStateManager } from "./StateManager";
 import { MemoryManager } from "./MemoryManager";
 import { createLogger } from "../logger/index";
-import { LogLevel } from "../types";
+// import { LogLevel } // TS6133: unused from "../types";
 
 /**
  * OptimizedChatBridge provides an optimized integration between Vue 3
@@ -46,7 +46,8 @@ export class OptimizedChatBridge {
         return {
           isHealthy: this.status !== "ERROR",
           metrics: {
-            eventListenerCount: this.eventEmitter.listenerStats().total,
+            eventListenerCount:
+              (this.eventEmitter.listenerStats() as any).total || 0,
             trackedComponents: Object.keys(this.componentRefs).length,
           },
         };
@@ -213,12 +214,12 @@ export class OptimizedChatBridge {
    * @param component Component that owns this subscription
    * @param options Event subscription options
    */
-  public subscribeToEvent(
+  public async subscribeToEvent(
     event: string,
     callback: (...args: any[]) => void,
     component: object,
     options: { once?: boolean; priority?: number } = {},
-  ): () => void {
+  ): Promise<() => void> {
     if (!this.isInitialized) {
       this.initialize();
     }
@@ -227,7 +228,19 @@ export class OptimizedChatBridge {
     const startTime = this.diagnosticsEnabled ? performance.now() : 0;
 
     // Create subscription
-    const unsubscribe = this.eventEmitter.on(event, callback, options);
+    const unsubscribeResult = await this.eventEmitter.on(
+      event,
+      callback,
+      options,
+    );
+
+    // Extract the unsubscribe function from the result
+    const unsubscribe =
+      unsubscribeResult.success && unsubscribeResult.data
+        ? unsubscribeResult.data
+        : () => {
+            console.warn("Failed to create subscription");
+          };
 
     // Track for automatic cleanup
     if (component) {
@@ -383,21 +396,23 @@ export class OptimizedChatBridge {
 
     // Calculate averages for performance metrics
     // Use Array.from to avoid compatibility issues with Map iterators
-    Array.from(this.performanceMetrics.entries()).forEach(([key, values]) => {
-      if (values.length > 0) {
-        const sum = values.reduce((a, b) => a + b, 0);
-        const avg = sum / values.length;
-        const max = Math.max(...values);
-        const min = Math.min(...values);
+    Array.from(this.performanceMetrics.entries()).forEach(
+      ([key, values]: any) => {
+        if (values.length > 0) {
+          const sum = values.reduce((a: any, b) => a + b, 0);
+          const avg = sum / values.length;
+          const max = Math.max(...values);
+          const min = Math.min(...values);
 
-        metrics.performanceMetrics[key] = {
-          avg,
-          max,
-          min,
-          samples: values.length,
-        };
-      }
-    });
+          metrics.performanceMetrics[key] = {
+            avg,
+            max,
+            min,
+            samples: values.length,
+          };
+        }
+      },
+    );
 
     return metrics;
   }

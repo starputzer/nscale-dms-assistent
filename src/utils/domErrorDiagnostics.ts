@@ -165,7 +165,7 @@ export class DomErrorDetector {
       }
 
       const childrenStr = Array.from(node.children)
-        .map((child) => simplifyNode(child as Element, depth + 1))
+        .map((child: any) => simplifyNode(child as Element, depth + 1))
         .filter(Boolean)
         .join("\n");
 

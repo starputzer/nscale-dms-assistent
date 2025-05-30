@@ -599,14 +599,13 @@ import BaseConfirmDialog from "@/components/base/BaseConfirmDialog.vue";
 import BaseDateRangePicker from "@/components/base/BaseDateRangePicker.vue";
 import type {
   FeatureToggle,
-  FeatureCategory,
   FeatureMetrics,
   FeatureHistoryEntry,
   FeatureErrorLog,
 } from "@/types/featureToggles";
 
-const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
-console.log('[i18n] Component initialized with global scope and inheritance');
+const { t, locale } = useI18n({ useScope: "global", inheritLocale: true });
+console.log("[i18n] Component initialized with global scope and inheritance");
 const featureStore = useFeatureTogglesStore();
 const authStore = useAuthStore();
 const { toggles: features, categories } = storeToRefs(featureStore);
@@ -1205,10 +1204,14 @@ watch(
 );
 
 // Log i18n initialization status
-console.log(`[AdminFeatureToggles.enhanced] i18n initialized with locale: ${locale.value}`);
+console.log(
+  `[AdminFeatureToggles.enhanced] i18n initialized with locale: ${locale.value}`,
+);
 
 // Log i18n initialization status
-console.log(`[AdminFeatureToggles.enhanced] i18n initialized with locale: ${locale.value}`);
+console.log(
+  `[AdminFeatureToggles.enhanced] i18n initialized with locale: ${locale.value}`,
+);
 </script>
 
 <style lang="scss">

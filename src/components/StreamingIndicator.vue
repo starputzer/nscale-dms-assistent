@@ -9,9 +9,11 @@
         <span v-else-if="connectionState === 'error'">⚠</span>
         <span v-else>○</span>
       </div>
-      
+
       <div class="status-text">
-        <span v-if="connectionState === 'connected' && !isStreaming">Verbunden</span>
+        <span v-if="connectionState === 'connected' && !isStreaming"
+          >Verbunden</span
+        >
         <span v-else-if="connectionState === 'connecting'">Verbinde...</span>
         <span v-else-if="connectionState === 'reconnecting'">
           Erneut verbinden ({{ reconnectAttempt }}/{{ maxReconnectAttempts }})
@@ -26,10 +28,7 @@
     <!-- Progress Bar -->
     <div v-if="showProgress && isStreaming" class="streaming-progress">
       <div class="progress-bar">
-        <div 
-          class="progress-fill" 
-          :style="{ width: `${progress}%` }"
-        />
+        <div class="progress-fill" :style="{ width: `${progress}%` }" />
       </div>
       <div class="progress-info">
         <span class="progress-percent">{{ Math.round(progress) }}%</span>
@@ -45,9 +44,12 @@
         <span class="metadata-label">Model:</span>
         <span class="metadata-value">{{ metadata.model }}</span>
       </div>
-      <div v-if="metadata.tools && metadata.tools.length > 0" class="metadata-item">
+      <div
+        v-if="metadata.tools && metadata.tools.length > 0"
+        class="metadata-item"
+      >
         <span class="metadata-label">Tools:</span>
-        <span class="metadata-value">{{ metadata.tools.join(', ') }}</span>
+        <span class="metadata-value">{{ metadata.tools.join(", ") }}</span>
       </div>
       <div v-if="tokenCount > 0" class="metadata-item">
         <span class="metadata-label">Tokens:</span>
@@ -67,7 +69,10 @@
     </div>
 
     <!-- Thinking Animation -->
-    <div v-if="isStreaming && showThinking && !hasTokens" class="thinking-animation">
+    <div
+      v-if="isStreaming && showThinking && !hasTokens"
+      class="thinking-animation"
+    >
       <div class="thinking-dot"></div>
       <div class="thinking-dot"></div>
       <div class="thinking-dot"></div>
@@ -75,7 +80,7 @@
 
     <!-- Actions -->
     <div v-if="showActions" class="streaming-actions">
-      <button 
+      <button
         v-if="connectionState === 'error' || connectionState === 'disconnected'"
         @click="$emit('retry')"
         class="action-btn retry-btn"
@@ -83,7 +88,7 @@
       >
         ↻
       </button>
-      <button 
+      <button
         v-if="isStreaming"
         @click="$emit('stop')"
         class="action-btn stop-btn"
@@ -96,18 +101,23 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { StreamingMetadata } from '@/services/EnhancedEventSource';
+import { computed } from "vue";
+import type { StreamingMetadata } from "@/services/EnhancedEventSource";
 
 interface Props {
   visible?: boolean;
   isStreaming?: boolean;
-  connectionState?: 'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'error';
+  connectionState?:
+    | "disconnected"
+    | "connecting"
+    | "connected"
+    | "reconnecting"
+    | "error";
   progress?: number;
   estimatedTime?: string;
   metadata?: StreamingMetadata | null;
   tokenCount?: number;
-  connectionQuality?: 'excellent' | 'good' | 'poor' | 'disconnected';
+  connectionQuality?: "excellent" | "good" | "poor" | "disconnected";
   reconnectAttempt?: number;
   maxReconnectAttempts?: number;
   showProgress?: boolean;
@@ -121,12 +131,12 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   visible: true,
   isStreaming: false,
-  connectionState: 'disconnected',
+  connectionState: "disconnected",
   progress: 0,
-  estimatedTime: '',
+  estimatedTime: "",
   metadata: null,
   tokenCount: 0,
-  connectionQuality: 'disconnected',
+  connectionQuality: "disconnected",
   reconnectAttempt: 0,
   maxReconnectAttempts: 5,
   showProgress: true,
@@ -134,38 +144,44 @@ const props = withDefaults(defineProps<Props>(), {
   showQuality: false,
   showActions: true,
   showThinking: true,
-  hasTokens: false
+  hasTokens: false,
 });
 
 const emit = defineEmits<{
-  'retry': [];
-  'stop': [];
+  retry: [];
+  stop: [];
 }>();
 
 // Computed
 const indicatorClass = computed(() => ({
-  'streaming-indicator--connected': props.connectionState === 'connected',
-  'streaming-indicator--error': props.connectionState === 'error',
-  'streaming-indicator--streaming': props.isStreaming
+  "streaming-indicator--connected": props.connectionState === "connected",
+  "streaming-indicator--error": props.connectionState === "error",
+  "streaming-indicator--streaming": props.isStreaming,
 }));
 
 const statusIconClass = computed(() => ({
-  'status-icon--connected': props.connectionState === 'connected',
-  'status-icon--connecting': props.connectionState === 'connecting',
-  'status-icon--error': props.connectionState === 'error',
-  'status-icon--animated': props.connectionState === 'connecting' || props.connectionState === 'reconnecting'
+  "status-icon--connected": props.connectionState === "connected",
+  "status-icon--connecting": props.connectionState === "connecting",
+  "status-icon--error": props.connectionState === "error",
+  "status-icon--animated":
+    props.connectionState === "connecting" ||
+    props.connectionState === "reconnecting",
 }));
 
 const estimatedTimeRemaining = computed(() => {
-  return props.estimatedTime || '—';
+  return props.estimatedTime || "—";
 });
 
 const qualityText = computed(() => {
   switch (props.connectionQuality) {
-    case 'excellent': return 'Excellent';
-    case 'good': return 'Gut';
-    case 'poor': return 'Schlecht';
-    default: return 'Offline';
+    case "excellent":
+      return "Excellent";
+    case "good":
+      return "Gut";
+    case "poor":
+      return "Schlecht";
+    default:
+      return "Offline";
   }
 });
 </script>
@@ -292,10 +308,18 @@ const qualityText = computed(() => {
   background: var(--quality-bar, #d1d5db);
   transition: all 0.3s ease;
 
-  &:nth-child(1) { height: 6px; }
-  &:nth-child(2) { height: 9px; }
-  &:nth-child(3) { height: 12px; }
-  &:nth-child(4) { height: 15px; }
+  &:nth-child(1) {
+    height: 6px;
+  }
+  &:nth-child(2) {
+    height: 9px;
+  }
+  &:nth-child(3) {
+    height: 12px;
+  }
+  &:nth-child(4) {
+    height: 15px;
+  }
 }
 
 .quality--excellent .quality-bar {
@@ -335,8 +359,12 @@ const qualityText = computed(() => {
   border-radius: 50%;
   animation: thinking-pulse 1.4s ease-in-out infinite;
 
-  &:nth-child(2) { animation-delay: 0.2s; }
-  &:nth-child(3) { animation-delay: 0.4s; }
+  &:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  &:nth-child(3) {
+    animation-delay: 0.4s;
+  }
 }
 
 // Actions
@@ -370,7 +398,8 @@ const qualityText = computed(() => {
 
 // Animations
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -388,7 +417,9 @@ const qualityText = computed(() => {
 }
 
 @keyframes thinking-pulse {
-  0%, 80%, 100% {
+  0%,
+  80%,
+  100% {
     opacity: 0.3;
     transform: scale(0.8);
   }

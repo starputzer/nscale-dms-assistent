@@ -30,14 +30,14 @@ export const useAdminFeatureTogglesStore = defineStore(
 
     // Computed
     const stableToggles = computed(() => {
-      return toggles.value.filter((toggle) => {
+      return toggles.value.filter((toggle: any) => {
         const featureConfig = featureToggleStore.allFeatureConfigs[toggle.id];
         return featureConfig?.status.isStable || false;
       });
     });
 
     const experimentalToggles = computed(() => {
-      return toggles.value.filter((toggle) => {
+      return toggles.value.filter((toggle: any) => {
         const featureConfig = featureToggleStore.allFeatureConfigs[toggle.id];
         return !featureConfig?.status.isStable || false;
       });
@@ -123,7 +123,7 @@ export const useAdminFeatureTogglesStore = defineStore(
     // Private helper methods
     const syncWithFeatureToggleStore = () => {
       // Update main store with any toggles from admin API
-      toggles.value.forEach((toggle) => {
+      toggles.value.forEach((toggle: any) => {
         syncToggleWithFeatureToggleStore(toggle.id, toggle.enabled);
       });
     };
@@ -139,7 +139,7 @@ export const useAdminFeatureTogglesStore = defineStore(
       // Create toggles array from main feature toggle store
       const mainStoreFeatures = featureToggleStore.enhancedFeatures;
 
-      toggles.value = mainStoreFeatures.map((feature) => ({
+      toggles.value = mainStoreFeatures.map((feature: any) => ({
         id: feature.key,
         name: feature.name,
         description: feature.description || "",

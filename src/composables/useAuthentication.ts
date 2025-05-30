@@ -12,7 +12,6 @@ import AuthService, {
   AuthError,
   LoginCredentials,
   RegisterCredentials,
-  AuthResponse,
 } from "@/services/auth/AuthService";
 import { useLocalStorage } from "@/composables/useLocalStorage";
 import { useErrorReporting } from "@/composables/useErrorReporting";
@@ -387,13 +386,8 @@ export function useAuthentication(): UseAuthenticationReturn {
     setStoredUser(userData);
     lastActivity.value = Date.now();
 
-    // Auch den Auth Store aktualisieren
-    const authStore = useAuthStore();
-    authStore.user = userData;
-    if (authService.getToken()) {
-      authStore.token = authService.getToken()!;
-      authStore.expiresAt = Date.now() + 24 * 60 * 60 * 1000; // 24 Stunden default
-    }
+    // Auth Store wird automatisch durch den Auth Service aktualisiert
+    // Keine direkte Manipulation der Store-Properties nötig
   }
 
   /**
@@ -409,11 +403,9 @@ export function useAuthentication(): UseAuthenticationReturn {
       sessionTimeoutId.value = null;
     }
 
-    // Auch den Auth Store zurücksetzen
+    // Auth Store zurücksetzen über die logout Methode
     const authStore = useAuthStore();
-    authStore.user = null;
-    authStore.token = null;
-    authStore.expiresAt = null;
+    authStore.logout();
   }
 
   /**

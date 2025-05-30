@@ -309,6 +309,25 @@ export class CachedApiService {
   }
 
   /**
+   * Invalidiert Cache für eine bestimmte URL oder ein Pattern
+   */
+  public invalidate(urlPattern: string | RegExp): void {
+    apiCacheService.invalidateByPattern(urlPattern);
+  }
+
+  /**
+   * Invalidiert verwandte Caches basierend auf URL und Daten
+   */
+  private invalidateRelatedCaches(url: string, data?: any): void {
+    // Extract resource type from URL
+    const resourceMatch = url.match(/\/api\/(\w+)/);
+    if (resourceMatch) {
+      const resourceType = resourceMatch[1];
+      apiCacheService.invalidateEndpointType(resourceType);
+    }
+  }
+
+  /**
    * Hintergrundaktualisierung für Stale-While-Revalidate
    */
   private async backgroundRefresh<T>(
@@ -353,7 +372,7 @@ export class CachedApiService {
   private invalidateRelatedCaches(url: string, data?: any): void {
     try {
       // Ressourcentyp aus URL extrahieren
-      const urlParts = url.split("/").filter((part) => part.length > 0);
+      const urlParts = url.split("/").filter((part: any) => part.length > 0);
 
       if (urlParts.length > 0) {
         // Ressourcentyp identifizieren (z.B. 'sessions', 'documents', etc.)

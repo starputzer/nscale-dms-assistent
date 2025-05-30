@@ -1,23 +1,27 @@
-import { defineStore } from 'pinia';
-import { computed, ref, shallowRef, markRaw, triggerRef } from 'vue';
-import { v4 as uuidv4 } from 'uuid';
-import axios from 'axios';
+import { defineStore } from "pinia";
+import { computed, ref, shallowRef, markRaw } from "vue";
+import { v4 as uuidv4 } from "uuid";
+import axios from "axios";
 import type {
   ChatSession,
   ChatMessage,
   StreamingStatus,
   SendMessageParams,
-  SessionTag,
-  SessionCategory,
-} from '../types/session';
-import { useAuthStore } from './auth';
-import { useShallowReactivity, useShallowMap } from '@/composables/useShallowReactivity';
-import { BatchUpdateManager, createStreamingUpdate } from '@/utils/BatchUpdateManager';
-import { performanceMonitor } from '@/utils/PerformanceMonitor';
+} from "../types/session";
+import { useAuthStore } from "./auth";
+import {
+  useShallowReactivity,
+  useShallowMap,
+} from "@/composables/useShallowReactivity";
+import {
+  BatchUpdateManager,
+  createStreamingUpdate,
+} from "@/utils/BatchUpdateManager";
+import { performanceMonitor } from "@/utils/PerformanceMonitor";
 
 /**
  * Performance-optimized Sessions Store
- * 
+ *
  * Key optimizations:
  * - Shallow reactivity for message collections
  * - Batch updates for streaming messages
@@ -25,19 +29,19 @@ import { performanceMonitor } from '@/utils/PerformanceMonitor';
  * - Memoized computed properties
  * - Minimal re-renders
  */
-export const useSessionsStore = defineStore('sessions-performance', () => {
+export const useSessionsStore = defineStore("sessions-performance", () => {
   const authStore = useAuthStore();
 
   // ===== Shallow Reactive State =====
-  
+
   // Sessions use shallow reactivity for better performance
-  const { 
-    data: sessions, 
+  const {
+    data: sessions,
     updateItem: updateSession,
     append: appendSession,
     remove: removeSession,
     clear: clearSessions,
-    metrics: sessionMetrics 
+    metrics: sessionMetrics,
   } = useShallowReactivity<ChatSession[]>([], {
     trackPerformance: true,
     maxItems: 1000,
@@ -45,10 +49,10 @@ export const useSessionsStore = defineStore('sessions-performance', () => {
 
   // Messages stored in a shallow map for efficient access
   const messagesMap = useShallowMap<string, ChatMessage[]>();
-  
+
   // Current session ID
   const currentSessionId = ref<string | null>(null);
-  
+
   // Streaming status
   const streaming = shallowRef<StreamingStatus>({
     isActive: false,
@@ -65,8 +69,8 @@ export const useSessionsStore = defineStore('sessions-performance', () => {
     async (updates) => {
       // Group updates by session
       const updatesBySession = new Map<string, ChatMessage[]>();
-      
-      updates.forEach(update => {
+
+      updates.forEach((update) => {
         const sessionId = update.data.sessionId;
         if (!updatesBySession.has(sessionId)) {
           updatesBySession.set(sessionId, []);
@@ -75,12 +79,12 @@ export const useSessionsStore = defineStore('sessions-performance', () => {
       });
 
       // Apply updates to each session
-      updatesBySession.forEach((messages, sessionId) => {
+      updatesBySession.forEach((messages, sessionId: any) => {
         const currentMessages = messagesMap.get(sessionId) || [];
-        const messageMap = new Map(currentMessages.map(m => [m.id, m]));
-        
+        const messageMap = new Map(currentMessages.map((m) => [m.id, m]));
+
         // Update or add messages
-        messages.forEach(msg => {
+        messages.forEach((msg) => {
           messageMap.set(msg.id, markRaw(msg));
         });
 
@@ -95,11 +99,11 @@ export const useSessionsStore = defineStore('sessions-performance', () => {
       adaptiveThrottling: true,
       trackPerformance: true,
       onMetrics: (metrics) => {
-        if (process.env.NODE_ENV === 'development') {
-          console.debug('Batch update metrics:', metrics);
+        if (process.env.NODE_ENV === "development") {
+          console.debug("Batch update metrics:", metrics);
         }
-      }
-    }
+      },
+    },
   );
 
   // ===== Memoized Getters =====
@@ -125,11 +129,13 @@ export const useSessionsStore = defineStore('sessions-performance', () => {
   // Current session getter with caching
   const currentSession = computed(() => {
     if (!currentSessionId.value) return null;
-    
+
     return getCachedComputed(`session-${currentSessionId.value}`, () => {
-      return (sessions.value as ChatSession[]).find(
-        s => s.id === currentSessionId.value
-      ) || null;
+      return (
+        (sessions.value as ChatSession[]).find(
+          (s) => s.id === currentSessionId.value,
+        ) || null
+      );
     });
   });
 
@@ -141,25 +147,27 @@ export const useSessionsStore = defineStore('sessions-performance', () => {
 
   // Sorted sessions with shallow comparison
   const sortedSessions = computed(() => {
-    return getCachedComputed('sorted-sessions', () => {
+    return getCachedComputed("sorted-sessions", () => {
       const sessionsCopy = [...(sessions.value as ChatSession[])];
-      
+
       return sessionsCopy.sort((a, b) => {
         // Pinned first
         if (a.isPinned !== b.isPinned) {
           return a.isPinned ? -1 : 1;
         }
-        
+
         // Then by date
-        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+        return (
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        );
       });
     });
   });
 
   // Active sessions (not archived)
   const activeSessions = computed(() => {
-    return getCachedComputed('active-sessions', () => {
-      return (sessions.value as ChatSession[]).filter(s => !s.isArchived);
+    return getCachedComputed("active-sessions", () => {
+      return (sessions.value as ChatSession[]).filter((s) => !s.isArchived);
     });
   });
 
@@ -168,35 +176,35 @@ export const useSessionsStore = defineStore('sessions-performance', () => {
   /**
    * Create a new session
    */
-  async function createSession(title = 'Neue Unterhaltung'): Promise<string> {
+  async function createSession(title = "Neue Unterhaltung"): Promise<string> {
     const sessionId = uuidv4();
     const now = new Date().toISOString();
 
     const newSession: ChatSession = markRaw({
       id: sessionId,
       title,
-      userId: authStore.user?.id || 'anonymous',
+      userId: authStore.user?.id || "anonymous",
       createdAt: now,
       updatedAt: now,
     });
 
     // Add session
     appendSession(newSession);
-    
+
     // Initialize empty messages
     messagesMap.set(sessionId, []);
-    
+
     // Set as current
     currentSessionId.value = sessionId;
 
     // Sync with server if authenticated
     if (authStore.isAuthenticated) {
       try {
-        await axios.post('/api/sessions', newSession, {
+        await axios.post("/api/sessions", newSession, {
           headers: authStore.createAuthHeaders(),
         });
       } catch (err) {
-        console.error('Failed to sync session:', err);
+        console.error("Failed to sync session:", err);
       }
     }
 
@@ -209,7 +217,7 @@ export const useSessionsStore = defineStore('sessions-performance', () => {
   async function setCurrentSession(sessionId: string): Promise<void> {
     if (currentSessionId.value === sessionId) return;
 
-    performanceMonitor.measureComponentRender('setCurrentSession', () => {
+    performanceMonitor.measureComponentRender("setCurrentSession", () => {
       currentSessionId.value = sessionId;
     });
 
@@ -230,17 +238,18 @@ export const useSessionsStore = defineStore('sessions-performance', () => {
 
     try {
       const response = await performanceMonitor.measureAsync(
-        'fetchMessages',
-        () => axios.get(`/api/sessions/${sessionId}/messages`, {
-          headers: authStore.createAuthHeaders(),
-        })
+        "fetchMessages",
+        () =>
+          axios.get(`/api/sessions/${sessionId}/messages`, {
+            headers: authStore.createAuthHeaders(),
+          }),
       );
 
       // Store messages with shallow reactivity
       const messages = response.data.map((msg: ChatMessage) => markRaw(msg));
-      messagesMap.set(sessionId, messages);
+      messagesMap.set(sessionId, _messages);
     } catch (err: any) {
-      console.error('Failed to fetch messages:', err);
+      console.error("Failed to fetch messages:", err);
       error.value = err.message;
     } finally {
       isLoading.value = false;
@@ -251,8 +260,8 @@ export const useSessionsStore = defineStore('sessions-performance', () => {
    * Send a message with optimized streaming
    */
   async function sendMessage(params: SendMessageParams): Promise<void> {
-    const { sessionId, content, role = 'user' } = params;
-    
+    const { sessionId, content, role = "user" } = params;
+
     if (!sessionId || !content) return;
 
     // Create user message
@@ -262,7 +271,7 @@ export const useSessionsStore = defineStore('sessions-performance', () => {
       content,
       role,
       timestamp: new Date().toISOString(),
-      status: 'sent',
+      status: "sent",
     });
 
     // Add message immediately
@@ -282,10 +291,10 @@ export const useSessionsStore = defineStore('sessions-performance', () => {
       const assistantMessage: ChatMessage = markRaw({
         id: assistantId,
         sessionId,
-        content: '',
-        role: 'assistant',
+        content: "",
+        role: "assistant",
         timestamp: new Date().toISOString(),
-        status: 'pending',
+        status: "pending",
         isStreaming: true,
       });
 
@@ -300,26 +309,26 @@ export const useSessionsStore = defineStore('sessions-performance', () => {
           headers: {
             Authorization: `Bearer ${authStore.token}`,
           },
-        } as any
+        } as any,
       );
 
-      let accumulatedContent = '';
+      let accumulatedContent = "";
 
       eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        
-        if (data.type === 'content') {
+
+        if (data.type === "content") {
           accumulatedContent += data.content;
-          
+
           // Queue batch update
           batchManager.add(
             createStreamingUpdate(assistantId, {
               ...assistantMessage,
               content: accumulatedContent,
               isStreaming: true,
-            })
+            }),
           );
-          
+
           // Update progress
           streaming.value = {
             ...streaming.value,
@@ -328,18 +337,18 @@ export const useSessionsStore = defineStore('sessions-performance', () => {
         }
       };
 
-      eventSource.addEventListener('done', () => {
+      eventSource.addEventListener("done", () => {
         // Final update
         const finalMessage: ChatMessage = {
           ...assistantMessage,
           content: accumulatedContent,
           isStreaming: false,
-          status: 'sent',
+          status: "sent",
         };
 
         // Force immediate update
         batchManager.add(
-          createStreamingUpdate(assistantId, finalMessage, true)
+          createStreamingUpdate(assistantId, finalMessage, true),
         );
         batchManager.flush();
 
@@ -354,9 +363,9 @@ export const useSessionsStore = defineStore('sessions-performance', () => {
       });
 
       eventSource.onerror = (error) => {
-        console.error('Streaming error:', error);
+        console.error("Streaming error:", error);
         eventSource.close();
-        
+
         streaming.value = {
           isActive: false,
           progress: 0,
@@ -364,9 +373,9 @@ export const useSessionsStore = defineStore('sessions-performance', () => {
         };
       };
     } catch (err: any) {
-      console.error('Failed to send message:', err);
+      console.error("Failed to send message:", err);
       error.value = err.message;
-      
+
       streaming.value = {
         isActive: false,
         progress: 0,
@@ -381,10 +390,10 @@ export const useSessionsStore = defineStore('sessions-performance', () => {
   async function deleteSession(sessionId: string): Promise<void> {
     // Remove from sessions
     removeSession((s) => s.id === sessionId);
-    
+
     // Remove messages
     messagesMap.remove(sessionId);
-    
+
     // Clear current if deleted
     if (currentSessionId.value === sessionId) {
       currentSessionId.value = null;
@@ -397,7 +406,7 @@ export const useSessionsStore = defineStore('sessions-performance', () => {
           headers: authStore.createAuthHeaders(),
         });
       } catch (err) {
-        console.error('Failed to delete session:', err);
+        console.error("Failed to delete session:", err);
       }
     }
   }
@@ -420,8 +429,10 @@ export const useSessionsStore = defineStore('sessions-performance', () => {
       sessionMetrics: sessionMetrics.value,
       batchMetrics: batchManager.getMetrics(),
       cacheSize: computedCache.size,
-      messageCount: Array.from(messagesMap.map.value.values())
-        .reduce((sum, messages) => sum + messages.length, 0),
+      messageCount: Array.from(messagesMap.map.value.values()).reduce(
+        (sum: any, _messages) => sum + messages.length,
+        0,
+      ),
     };
   }
 

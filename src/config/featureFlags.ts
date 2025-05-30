@@ -54,8 +54,8 @@ export function isFeatureEnabled(
  */
 export function getEnabledFeatures(): string[] {
   return Object.entries(FEATURE_FLAGS)
-    .filter(([_, enabled]) => enabled)
-    .map(([feature]) => feature);
+    .filter(([_, enabled]: any) => enabled)
+    .map(([feature]: any) => feature);
 }
 
 /**
@@ -93,7 +93,7 @@ export function initializeFeatureFlags(): string[] {
   const urlParams = new URLSearchParams(window.location.search);
 
   // Feature-Flags aus URL-Parametern extrahieren
-  Array.from(urlParams.entries()).forEach(([key, value]) => {
+  Array.from(urlParams.entries()).forEach(([key, value]: any) => {
     if (key.startsWith("feature_")) {
       const featureName = key.replace("feature_", "").toUpperCase();
       const fullFeatureName = `ENABLE_${featureName}`;
@@ -113,7 +113,7 @@ export function initializeFeatureFlags(): string[] {
     const storedFeatures = localStorage.getItem("nscale_feature_flags");
     if (storedFeatures) {
       const features = JSON.parse(storedFeatures);
-      Object.entries(features).forEach(([feature, enabled]) => {
+      Object.entries(features).forEach(([feature, enabled]: any) => {
         if (feature in FEATURE_FLAGS) {
           setFeatureEnabled(
             feature as keyof typeof FEATURE_FLAGS,

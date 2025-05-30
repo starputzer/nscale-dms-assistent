@@ -84,7 +84,7 @@ class PerformanceMonitorImpl {
   }
 
   getComponentPerformance(): ComponentPerformance[] {
-    return Array.from(this.componentRenderTimes.entries()).map(([name, data]) => ({
+    return Array.from(this.componentRenderTimes.entries()).map(([name, data]: any) => ({
       name,
       renderTime: data.total,
       renderCount: data.count,

@@ -311,11 +311,11 @@ export class TypedEventEmitter<T = void> implements TypedEvent<T> {
   }
 
   public off(handler: (data: T) => void): void {
-    this.handlers = this.handlers.filter((h) => h !== handler);
+    this.handlers = this.handlers.filter((h: any) => h !== handler);
   }
 
   public emit(data: T): void {
-    this.handlers.slice().forEach((h) => h(data));
+    this.handlers.slice().forEach((h: any) => h(data));
   }
 
   public clear(): void {

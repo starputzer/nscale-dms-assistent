@@ -8,7 +8,7 @@
  * - LRU (Least Recently Used) Verdrängungsmechanismus
  */
 
-import type { ChatMessage, ChatSession } from "@/types/session";
+import type { ChatMessage } from "@/types/session";
 
 // Interface für Speicher-Metadaten
 interface StorageMetadata {
@@ -120,7 +120,7 @@ export class ChatStorageService {
   /**
    * Fügt eine Session zum LRU-Cache hinzu oder aktualisiert sie
    */
-  private addToLRUCache(sessionId: string, messageCount: number): void {
+  private addToLRUCache(sessionId: string, _messageCount: number): void {
     // Prüfen, ob die Session bereits im Cache ist
     if (this.lruMap.has(sessionId)) {
       // Vorhandene Node aktualisieren und nach vorne bewegen
@@ -267,7 +267,7 @@ export class ChatStorageService {
 
     try {
       // Aktualisiere den LRU-Cache
-      this.addToLRUCache(sessionId, messages.length);
+      this.addToLRUCache(sessionId, _messages.length);
 
       // Wenn keepLatest aktiviert ist, behalten wir nur die älteren Nachrichten
       // Die neuesten MESSAGE_LIMIT_PER_SESSION Nachrichten bleiben im Hauptspeicher
@@ -311,7 +311,7 @@ export class ChatStorageService {
 
       // Geschätzte Größe für alle Chunks
       const totalChunksJson = chunks
-        .map((chunk) => JSON.stringify(chunk))
+        .map((chunk: any) => JSON.stringify(chunk))
         .join("");
       const estimatedSize = metaJson.length + totalChunksJson.length;
 
@@ -560,7 +560,7 @@ export class ChatStorageService {
       this.clearSessionStorage(sessionId);
 
       // Neu speichern mit optimaler Chunking-Strategie
-      this.storeSessionMessages(sessionId, messages, false);
+      this.storeSessionMessages(sessionId, _messages, false);
 
       return true;
     } catch (error) {
@@ -585,7 +585,7 @@ export class ChatStorageService {
     let totalMessages = 0;
 
     // Alle Sessions im LRU-Cache durchgehen
-    this.lruMap.forEach((node) => {
+    this.lruMap.forEach((node: any) => {
       totalMessages += node.messageCount;
     });
 

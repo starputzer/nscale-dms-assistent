@@ -430,7 +430,7 @@ export function makePausable<T>(
       error: result?.success ? undefined : result?.error,
     };
 
-    statusHandlers.forEach((handler) => {
+    statusHandlers.forEach((handler: any) => {
       try {
         handler(status);
       } catch (error) {

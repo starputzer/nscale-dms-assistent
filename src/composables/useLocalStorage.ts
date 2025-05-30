@@ -1,4 +1,4 @@
-import { ref, watch, Ref } from "vue";
+import { ref, watch } from "vue";
 import { useLogger } from "./useLogger";
 import type { UseLocalStorageReturn } from "../utils/composableTypes";
 

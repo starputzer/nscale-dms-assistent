@@ -388,15 +388,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
 import { useAdminFeedbackStore } from "@/stores/admin/feedback";
-import type { FeedbackEntry, FeedbackFilter } from "@/types/admin";
+import type { FeedbackEntry } from "@/types/admin";
 
 // i18n
-const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
-console.log('[i18n] Component initialized with global scope and inheritance');
+const { t, locale } = useI18n({ useScope: "global", inheritLocale: true });
+console.log("[i18n] Component initialized with global scope and inheritance");
 
 // Store
 const feedbackStore = useAdminFeedbackStore();

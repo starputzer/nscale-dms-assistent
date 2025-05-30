@@ -477,7 +477,8 @@ export class AdminUsersService implements IAdminUsersService {
           activeThisMonth: users.filter(
             (u) => u.last_login && u.last_login > oneMonthAgo,
           ).length,
-          newThisMonth: users.filter((u) => u.created_at > oneMonthAgo).length,
+          newThisMonth: users.filter((u: any) => u.created_at > oneMonthAgo)
+            .length,
           // Mockwert für durchschnittliche Sitzungen
           averageSessionsPerUser: Math.round(Math.random() * 10 + 5),
         };
@@ -540,7 +541,7 @@ export class AdminUsersService implements IAdminUsersService {
         const oneDayAgo = now - 24 * 60 * 60 * 1000;
 
         const activeUsers = usersResponse.data
-          .filter((user) => user.last_login && user.last_login > oneDayAgo)
+          .filter((user: any) => user.last_login && user.last_login > oneDayAgo)
           .sort((a, b) => (b.last_login || 0) - (a.last_login || 0));
 
         return {

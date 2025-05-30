@@ -4,7 +4,22 @@ import { config } from "@vue/test-utils";
 import "@testing-library/jest-dom";
 import { cleanup } from "@testing-library/vue";
 
+// i18n mock setup
+import { createI18n } from 'vue-i18n';
+
+const i18n = createI18n({
+  legacy: false,
+  locale: 'de',
+  fallbackLocale: 'en',
+  messages: {
+    de: {},
+    en: {}
+  }
+});
+
 // Vue Test Utils Globale Konfiguration
+config.global.plugins = [i18n];
+
 config.global.mocks = {
   $t: (key: string) => key, // Mock für i18n
   $router: {

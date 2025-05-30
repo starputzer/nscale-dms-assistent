@@ -230,7 +230,7 @@ export class StreamingService {
   private emit(eventType: StreamingEventType, ...args: any[]): void {
     const handlers = this.eventHandlers.get(eventType);
     if (handlers) {
-      handlers.forEach((handler) => {
+      handlers.forEach((handler: any) => {
         try {
           handler(...args);
         } catch (error) {

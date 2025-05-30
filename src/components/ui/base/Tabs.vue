@@ -94,7 +94,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, useSlots, watch, nextTick } from "vue";
+import { ref, computed, useSlots, watch, nextTick } from "vue";
 import { Badge } from "./";
 
 /**

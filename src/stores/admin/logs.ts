@@ -84,7 +84,7 @@ export const useAdminLogsStore = defineStore("adminLogs", () => {
   const hasSelectedLogs = computed(() => selectedLogIds.value.length > 0);
 
   const selectedLogs = computed(() =>
-    logs.value.filter((log) => selectedLogIds.value.includes(log.id)),
+    logs.value.filter((log: any) => selectedLogIds.value.includes(log.id)),
   );
 
   const totalPages = computed(() =>
@@ -244,7 +244,7 @@ export const useAdminLogsStore = defineStore("adminLogs", () => {
    * Wählt alle Logs auf der aktuellen Seite aus
    */
   function selectAllOnPage() {
-    const pageIds = logs.value.map((log) => log.id);
+    const pageIds = logs.value.map((log: any) => log.id);
     selectedLogIds.value = pageIds;
   }
 

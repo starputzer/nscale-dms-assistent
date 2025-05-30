@@ -74,10 +74,8 @@
 </template>
 
 <script setup lang="ts">
-import { PropType, VModelProps, VModelEmits } from "@/utils/componentTypes";
-import { ref, computed, useAttrs, toRef, watch, onMounted } from "vue";
-import { withDefaultProp, requiredProp } from "@/utils/componentTypes";
-import { isOneOf } from "@/utils/propValidators";
+import { VModelProps, VModelEmits } from "@/utils/componentTypes";
+import { ref, computed, useAttrs, onMounted } from "vue";
 
 // Input-Typen als Konstante definieren
 export const INPUT_TYPES = [

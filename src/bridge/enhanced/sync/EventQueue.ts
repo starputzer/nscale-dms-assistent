@@ -413,7 +413,7 @@ export class EventQueue {
       }
 
       // Events verarbeiten
-      const processingPromises = eventsToProcess.map((event) =>
+      const processingPromises = eventsToProcess.map((event: any) =>
         this.processEvent(event),
       );
 
@@ -470,7 +470,7 @@ export class EventQueue {
         event.status = EventStatus.COMPLETED;
       } else {
         // Handler aufrufen
-        const handlerPromises = handlers.map((handler) => {
+        const handlerPromises = handlers.map((handler: any) => {
           try {
             return Promise.resolve(handler(event));
           } catch (error) {

@@ -143,7 +143,7 @@ export function logMigrationStatus(): void {
     (key) => !key.startsWith("useSfc"),
   ).length;
 
-  const sfcFeatures = Object.keys(DEFAULT_FEATURE_TOGGLES).filter((key) =>
+  const sfcFeatures = Object.keys(DEFAULT_FEATURE_TOGGLES).filter((key: any) =>
     key.startsWith("useSfc"),
   ).length;
 

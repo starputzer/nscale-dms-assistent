@@ -329,11 +329,7 @@ import { useSessionsStore } from "@/stores/sessions";
 import { useUIStore } from "@/stores/ui";
 import { useChat } from "@/composables/useChat";
 import { useWindowSize } from "@/composables/useWindowSize";
-import type {
-  ChatMessage,
-  ChatSession,
-  SourceReference,
-} from "@/types/session";
+import type { ChatMessage, SourceReference } from "@/types/session";
 import { vTouch } from "@/directives/touch-directives";
 import MessageList from "./MessageList.vue";
 import MessageInput from "./MessageInput.vue";
@@ -625,11 +621,17 @@ async function handleFeedback(payload: {
   feedback?: string;
 }): Promise<void> {
   try {
-    await sessionStore.sendFeedback(payload.messageId, payload.type, payload.feedback);
+    await sessionStore.sendFeedback(
+      payload.messageId,
+      payload.type,
+      payload.feedback,
+    );
     uiStore.showSuccess(`Vielen Dank für Ihr Feedback!`);
   } catch (error) {
-    console.error('Failed to send feedback:', error);
-    uiStore.showError('Feedback konnte nicht gesendet werden. Bitte versuchen Sie es später erneut.');
+    console.error("Failed to send feedback:", error);
+    uiStore.showError(
+      "Feedback konnte nicht gesendet werden. Bitte versuchen Sie es später erneut.",
+    );
   }
 }
 

@@ -919,7 +919,7 @@ export class ErrorReportingService {
    */
   public clearAllErrors(): void {
     this.errors.splice(0, this.errors.length);
-    Object.keys(this.errorLookup).forEach((key) => {
+    Object.keys(this.errorLookup).forEach((key: any) => {
       delete this.errorLookup[key];
     });
   }

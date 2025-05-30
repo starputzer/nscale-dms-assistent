@@ -158,7 +158,7 @@ export class UIDiagnostics {
       this.logger.debug(`Data load started: ${dataType}`);
     } else {
       this.state.value.pendingDataLoads =
-        this.state.value.pendingDataLoads.filter((load) => load !== dataType);
+        this.state.value.pendingDataLoads.filter((load: any) => load !== dataType);
       this.logger.debug(`Data load ${status}: ${dataType}`, details);
     }
   }
@@ -198,7 +198,7 @@ export class UIDiagnostics {
   private summarizeErrors(): Record<string, number> {
     const summary: Record<string, number> = {};
 
-    this.errors.forEach((error) => {
+    this.errors.forEach((error: any) => {
       const key = `${error.component}-${error.phase}`;
       summary[key] = (summary[key] || 0) + 1;
     });

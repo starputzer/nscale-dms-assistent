@@ -12,17 +12,37 @@
     :aria-live="isLoading ? 'off' : 'polite'"
   >
     <!-- DEBUG SECTION -->
-    <div style="position: fixed; top: 60px; right: 10px; background: rgba(0,0,0,0.9); color: white; padding: 10px; z-index: 9999; font-size: 12px; max-width: 300px;">
-      <h4 style="margin: 0 0 10px 0;">MessageList Debug</h4>
+    <div
+      style="
+        position: fixed;
+        top: 60px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.9);
+        color: white;
+        padding: 10px;
+        z-index: 9999;
+        font-size: 12px;
+        max-width: 300px;
+      "
+    >
+      <h4 style="margin: 0 0 10px 0">MessageList Debug</h4>
       <div>Props messages: {{ messages.length }}</div>
       <div>isLoading: {{ isLoading }}</div>
       <div>isStreaming: {{ isStreaming }}</div>
       <div>isVirtualized: {{ isVirtualized }}</div>
       <div>Messages:</div>
-      <div v-for="(msg, idx) in messages.slice(0, 5)" :key="`debug-${idx}`" style="margin-left: 10px; font-size: 11px;">
-        {{ idx }}: [{{ msg.role }}] {{ msg.content.substring(0, 30) }}... ({{ msg.id }})
+      <div
+        v-for="(msg, idx) in messages.slice(0, 5)"
+        :key="`debug-${idx}`"
+        style="margin-left: 10px; font-size: 11px"
+      >
+        {{ idx }}: [{{ msg.role }}] {{ msg.content.substring(0, 30) }}... ({{
+          msg.id
+        }})
       </div>
-      <div v-if="messages.length > 5">... and {{ messages.length - 5 }} more</div>
+      <div v-if="messages.length > 5">
+        ... and {{ messages.length - 5 }} more
+      </div>
     </div>
     <!-- Ladezustand -->
     <div
@@ -41,31 +61,42 @@
       role="status"
     >
       <!-- MOTD anzeigen wenn aktiviert und keine Nachrichten vorhanden -->
-      <div v-if="motdStore.shouldShowInChat && !motdStore.dismissed" class="n-message-list__motd">
-        <div 
+      <div
+        v-if="motdStore.shouldShowInChat && !motdStore.dismissed"
+        class="n-message-list__motd"
+      >
+        <div
           class="motd-display"
           :style="{
-            backgroundColor: motdStore.config.style?.backgroundColor || '#d1ecf1',
+            backgroundColor:
+              motdStore.config.style?.backgroundColor || '#d1ecf1',
             borderColor: motdStore.config.style?.borderColor || '#bee5eb',
             color: motdStore.config.style?.textColor || '#0c5460',
             border: '1px solid',
             borderRadius: '8px',
             padding: '16px',
-            marginBottom: '24px'
+            marginBottom: '24px',
           }"
         >
           <div v-html="motdStore.previewHtml" class="motd-content"></div>
-          <button 
+          <button
             v-if="motdStore.config.display?.dismissible"
             @click="motdStore.dismiss()"
             class="motd-dismiss-btn"
-            style="margin-top: 12px; padding: 4px 12px; background: transparent; border: 1px solid currentColor; border-radius: 4px; cursor: pointer;"
+            style="
+              margin-top: 12px;
+              padding: 4px 12px;
+              background: transparent;
+              border: 1px solid currentColor;
+              border-radius: 4px;
+              cursor: pointer;
+            "
           >
             Ausblenden
           </button>
         </div>
       </div>
-      
+
       <img
         :src="logoUrl || '/assets/images/senmvku-logo.png'"
         alt="nscale DMS Assistent Logo"
@@ -103,18 +134,31 @@
       </div>
 
       <!-- Non-virtualized list for debugging (FIXED) -->
-      <div v-if="!isVirtualized"
+      <div
+        v-if="!isVirtualized"
         class="n-message-list__simple-container"
-        style="min-height: 200px;"
+        style="min-height: 200px"
         :data-message-count="messages.length"
       >
         <!-- Debug empty message list indicator -->
-        <div v-if="messages.length === 0" style="padding: 20px; background: #ffdddd; margin: 10px; border-radius: 8px;">
-          <strong>MessageList Debug:</strong> No messages to display (messages array is empty)
+        <div
+          v-if="messages.length === 0"
+          style="
+            padding: 20px;
+            background: #ffdddd;
+            margin: 10px;
+            border-radius: 8px;
+          "
+        >
+          <strong>MessageList Debug:</strong> No messages to display (messages
+          array is empty)
         </div>
-        
+
         <!-- Explicit non-virtualized message rendering with direct v-for binding -->
-        <template v-for="(message, index) in messages" :key="`msg-direct-${message.id}-${index}`">
+        <template
+          v-for="(message, index) in messages"
+          :key="`msg-direct-${message.id}-${index}`"
+        >
           <div
             class="n-message-list__message-wrapper n-message-direct"
             :data-message-id="message.id"
@@ -122,8 +166,17 @@
             :data-content-length="message.content.length"
             :data-streaming="String(!!message.isStreaming)"
           >
-            <div class="n-debug-message-info" style="padding: 4px; font-size: 10px; color: #666; border-bottom: 1px solid #eee;">
-              Message #{{ index }} (ID: {{ message.id.substring(0,8) }}...) {{ message.isStreaming ? '⚡ STREAMING' : '' }}
+            <div
+              class="n-debug-message-info"
+              style="
+                padding: 4px;
+                font-size: 10px;
+                color: #666;
+                border-bottom: 1px solid #eee;
+              "
+            >
+              Message #{{ index }} (ID: {{ message.id.substring(0, 8) }}...)
+              {{ message.isStreaming ? "⚡ STREAMING" : "" }}
             </div>
             <MessageItem
               :message="message"
@@ -136,15 +189,26 @@
             />
           </div>
         </template>
-        
+
         <!-- Force render empty container for visual debugging -->
-        <div v-if="messages.length === 0" style="height: 200px; border: 1px dashed red; margin: 20px; display: flex; align-items: center; justify-content: center;">
+        <div
+          v-if="messages.length === 0"
+          style="
+            height: 200px;
+            border: 1px dashed red;
+            margin: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          "
+        >
           <span>No messages in this conversation yet</span>
         </div>
       </div>
-      
+
       <!-- Container für virtuelle Liste -->
-      <div v-else
+      <div
+        v-else
         class="n-message-list__virtual-container"
         :style="virtualContainerStyle"
       >
@@ -355,45 +419,59 @@ const props = withDefaults(defineProps<Props>(), {
 const motdStore = useMotdStore();
 
 // Debug logging für messages
-watch(() => props.messages, (newMessages, oldMessages) => {
-  console.log(`[MessageList] Messages changed: ${oldMessages?.length || 0} -> ${newMessages.length} messages`);
-  newMessages.forEach((msg, idx) => {
-    console.log(`[MessageList] Message ${idx}:`, {
-      id: msg.id,
-      role: msg.role,
-      contentLength: msg.content.length,
-      isStreaming: msg.isStreaming,
-      status: msg.status,
-      content: msg.content.substring(0, 50) + "..."
+watch(
+  () => props.messages,
+  (newMessages, oldMessages) => {
+    console.log(
+      `[MessageList] Messages changed: ${oldMessages?.length || 0} -> ${newMessages.length} messages`,
+    );
+    newMessages.forEach((msg, idx) => {
+      console.log(`[MessageList] Message ${idx}:`, {
+        id: msg.id,
+        role: msg.role,
+        contentLength: msg.content.length,
+        isStreaming: msg.isStreaming,
+        status: msg.status,
+        content: msg.content.substring(0, 50) + "...",
+      });
     });
-  });
-  
-  // Force update virtual items when messages change
-  if (isVirtualized.value) {
-    console.log(`[MessageList] Forcing virtual items update`);
-    updateVirtualItems();
-  }
-}, { deep: true, immediate: true });
+
+    // Force update virtual items when messages change
+    if (isVirtualized.value) {
+      console.log(`[MessageList] Forcing virtual items update`);
+      updateVirtualItems();
+    }
+  },
+  { deep: true, immediate: true },
+);
 
 // Watch individual message updates for streaming
-watch(() => props.messages.map(msg => ({ id: msg.id, content: msg.content })), (newContents, oldContents) => {
-  if (!oldContents) return;
-  
-  newContents.forEach((newContent, idx) => {
-    if (oldContents[idx] && newContent.content !== oldContents[idx].content) {
-      console.log(`[MessageList] Message content changed for ${newContent.id}: ${oldContents[idx].content.length} -> ${newContent.content.length} chars`);
-      
-      // Force immediate update for streaming messages
-      if (props.messages[idx].isStreaming) {
-        console.log(`[MessageList] Streaming message detected, forcing update`);
-        nextTick(() => {
-          updateVirtualItems();
-          updateVisibleRange();
-        });
+watch(
+  () => props.messages.map((msg) => ({ id: msg.id, content: msg.content })),
+  (newContents, oldContents) => {
+    if (!oldContents) return;
+
+    newContents.forEach((newContent, idx) => {
+      if (oldContents[idx] && newContent.content !== oldContents[idx].content) {
+        console.log(
+          `[MessageList] Message content changed for ${newContent.id}: ${oldContents[idx].content.length} -> ${newContent.content.length} chars`,
+        );
+
+        // Force immediate update for streaming messages
+        if (props.messages[idx].isStreaming) {
+          console.log(
+            `[MessageList] Streaming message detected, forcing update`,
+          );
+          nextTick(() => {
+            updateVirtualItems();
+            updateVisibleRange();
+          });
+        }
       }
-    }
-  });
-}, { deep: true });
+    });
+  },
+  { deep: true },
+);
 
 // Refs für DOM-Elemente
 const scrollContainer = ref<HTMLElement | null>(null);
@@ -1168,13 +1246,13 @@ defineExpose({
 }
 
 @keyframes fadeIn {
-  from { 
-    opacity: 0; 
-    transform: translateY(-10px); 
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
   }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

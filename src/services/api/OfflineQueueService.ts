@@ -10,7 +10,6 @@
  */
 
 import { v4 as uuidv4 } from "uuid";
-import type { ChatMessage } from "@/types/session";
 import { useAuthStore } from "@/stores/auth";
 
 // Typen für die Offline-Warteschlange
@@ -134,7 +133,7 @@ export class OfflineQueueService {
         this.queue = JSON.parse(queueJson);
 
         // Bereinige veraltete oder ungültige Einträge
-        this.queue = this.queue.filter((op) => {
+        this.queue = this.queue.filter((op: any) => {
           // Entferne abgeschlossene Operationen
           if (op.status === OperationStatus.COMPLETED) {
             return false;
@@ -293,7 +292,7 @@ export class OfflineQueueService {
           this.emit("operation-completed", { operation });
 
           // Entferne die abgeschlossene Operation aus der Warteschlange
-          this.queue = this.queue.filter((op) => op.id !== operation.id);
+          this.queue = this.queue.filter((op: any) => op.id !== operation.id);
         } catch (error: any) {
           console.error(`Error executing operation ${operation.id}:`, error);
 
@@ -363,8 +362,8 @@ export class OfflineQueueService {
     const maxRetries = Math.max(
       0,
       ...this.queue
-        .filter((op) => op.status === OperationStatus.PENDING)
-        .map((op) => op.retryCount),
+        .filter((op: any) => op.status === OperationStatus.PENDING)
+        .map((op: any) => op.retryCount),
     );
 
     // Exponentieller Backoff mit Jitter
@@ -597,7 +596,7 @@ export class OfflineQueueService {
    * Gibt alle Operationen für eine bestimmte Session zurück
    */
   public getOperationsForSession(sessionId: string): QueuedOperation[] {
-    return this.queue.filter((op) => op.sessionId === sessionId);
+    return this.queue.filter((op: any) => op.sessionId === sessionId);
   }
 
   /**
@@ -614,7 +613,7 @@ export class OfflineQueueService {
           (op.status === OperationStatus.PENDING ||
             op.status === OperationStatus.RETRYING),
       )
-      .map((op) => ({
+      .map((op: any) => ({
         id: op.id,
         content: op.data.content,
         timestamp: op.timestamp,
@@ -624,7 +623,10 @@ export class OfflineQueueService {
   /**
    * Fügt einen Event-Listener hinzu
    */
-  public on(event: string, callback: Function): () => void {
+  public on(
+    event: string,
+    callback: EventCallback | UnsubscribeFn,
+  ): () => void {
     if (!this.handlers.has(event)) {
       this.handlers.set(event, new Set());
     }
@@ -640,7 +642,7 @@ export class OfflineQueueService {
   /**
    * Entfernt einen Event-Listener
    */
-  public off(event: string, callback: Function): void {
+  public off(event: string, callback: EventCallback | UnsubscribeFn): void {
     if (this.handlers.has(event)) {
       this.handlers.get(event)!.delete(callback);
 
@@ -655,7 +657,7 @@ export class OfflineQueueService {
    */
   private emit(event: string, data?: any): void {
     if (this.handlers.has(event)) {
-      this.handlers.get(event)!.forEach((callback) => {
+      this.handlers.get(event)!.forEach((callback: any) => {
         try {
           callback(data);
         } catch (error) {
@@ -678,7 +680,7 @@ export class OfflineQueueService {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    this.queue = this.queue.filter((op) => {
+    this.queue = this.queue.filter((op: any) => {
       // Behalte alle nicht abgeschlossenen und neueren Operationen
       if (
         op.status !== OperationStatus.COMPLETED &&
@@ -709,7 +711,7 @@ export class OfflineQueueService {
   public clearSessionOperations(sessionId: string): number {
     const initialLength = this.queue.length;
 
-    this.queue = this.queue.filter((op) => op.sessionId !== sessionId);
+    this.queue = this.queue.filter((op: any) => op.sessionId !== sessionId);
 
     const removedCount = initialLength - this.queue.length;
 

@@ -55,7 +55,7 @@ export const globalDirectives: DirectiveRegistration[] = [
  * Registriert alle globalen Direktiven in einer Vue-Instanz
  */
 export function registerGlobalDirectives(app: any): void {
-  globalDirectives.forEach((directive) => {
+  globalDirectives.forEach((directive: any) => {
     app.directive(directive.name, directive.definition);
   });
 }

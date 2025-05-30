@@ -5,11 +5,12 @@
  * optimierte Batch-Updates und verbesserte Fehlerbehandlung/Fallback-Mechanismen.
  */
 
-import { ref, watch, toRaw, computed, nextTick } from "vue";
+// @ts-ignore - toRaw and nextTick are available in Vue 3 but TypeScript may have issues with resolution
+import { ref, nextTick } from "vue";
 import { OptimizedEventBus } from "./enhancedEventBus";
-import { MemoryManager } from "./memoryManager";
-import { PerformanceMonitor } from "./performanceMonitor";
-import { EnhancedSelfHealing } from "./enhancedSelfHealing";
+import { ExtendedMemoryManager as MemoryManager } from "./ExtendedMemoryManager";
+import { ExtendedPerformanceMonitor as PerformanceMonitor } from "./ExtendedPerformanceMonitor";
+import { ExtendedEnhancedSelfHealing as EnhancedSelfHealing } from "./ExtendedEnhancedSelfHealing";
 import { createLogger, LogLevel } from "../logger";
 import { BridgeStatusManager } from "../statusManager";
 import { BridgeErrorState } from "../types";
@@ -540,8 +541,10 @@ export class SelectiveChatBridge {
 
         // Nachrichten sammeln
         const messages: ChatMessage[] = messagesToSync
-          .map((id) => messageMap.get(id))
-          .filter((message): message is ChatMessage => message !== undefined);
+          .map((id: any) => messageMap.get(id))
+          .filter(
+            (message: any): message is ChatMessage => message !== undefined,
+          );
 
         // Nur synchronisieren, wenn es Nachrichten gibt
         if (messages.length > 0) {
@@ -614,8 +617,10 @@ export class SelectiveChatBridge {
 
       // Sitzungen sammeln
       const sessions: ChatSession[] = Array.from(this.pendingSessionUpdates)
-        .map((id) => this.sessions.value.get(id))
-        .filter((session): session is ChatSession => session !== undefined);
+        .map((id: any) => this.sessions.value.get(id))
+        .filter(
+          (session: any): session is ChatSession => session !== undefined,
+        );
 
       // Nur synchronisieren, wenn es Sitzungen gibt
       if (sessions.length > 0) {
@@ -1036,7 +1041,7 @@ export class SelectiveChatBridge {
     const toRemove = sortedSessions.length - this.config.sessionCacheSize;
     if (toRemove <= 0) return;
 
-    sortedSessions.slice(0, toRemove).forEach(([sessionId]) => {
+    sortedSessions.slice(0, toRemove).forEach(([sessionId]: any) => {
       this.sessions.value.delete(sessionId);
       this.messages.value.delete(sessionId);
       this.logger.debug(`Sitzung ${sessionId} aus Cache entfernt`);

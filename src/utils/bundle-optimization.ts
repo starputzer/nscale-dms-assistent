@@ -96,7 +96,7 @@ export const loadIcon = async (name: string) => {
 
 // Optimierte Event-Handler mit Debouncing
 let debounceTimer: NodeJS.Timeout | null = null;
-export const optimizedDebounce = (fn: Function, delay: number) => {
+export const optimizedDebounce = (fn: EventCallback | UnsubscribeFn, delay: number) => {
   return (...args: any[]) => {
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => fn(...args), delay);
@@ -116,7 +116,7 @@ export const lazyLoadObserver = (
   }
 
   const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
+    entries.forEach((entry: any) => {
       if (entry.isIntersecting) {
         callback();
         observer.unobserve(element);
@@ -131,6 +131,6 @@ export const lazyLoadObserver = (
 
 // Cleanup-Funktion für Observers
 export const cleanupObservers = () => {
-  observers.forEach((observer) => observer.disconnect());
+  observers.forEach((observer: any) => observer.disconnect());
   observers.clear();
 };

@@ -141,7 +141,7 @@ export function initializeSourceReferenceAdapter() {
           (window as any).__sourceReferencesState.visibleSourceReferences || {};
 
         // Synchronisieren: Aus global nach lokal
-        Object.keys(globalVisibleRefs).forEach((messageId) => {
+        Object.keys(globalVisibleRefs).forEach((messageId: any) => {
           if (globalVisibleRefs[messageId] && visibleSourceReferences.value) {
             visibleSourceReferences.value[messageId] =
               globalVisibleRefs[messageId];
@@ -243,7 +243,7 @@ export function initializeSourceReferenceAdapter() {
             message,
             sourceIndex,
           );
-          return isSourceDetailOpen(message, sourceIndex);
+          return isSourceDetailOpen(message, _sourceIndex);
         };
       }
 
@@ -257,7 +257,7 @@ export function initializeSourceReferenceAdapter() {
             message,
             sourceIndex,
           );
-          toggleSourceDetail(message, sourceIndex);
+          toggleSourceDetail(message, _sourceIndex);
         };
       }
 
@@ -312,7 +312,7 @@ export function initializeSourceReferenceAdapter() {
       "toggleSourceReferences",
     ];
 
-    functionsToTrack.forEach((key) => {
+    functionsToTrack.forEach((key: any) => {
       const originalFunction = (window as any)[key];
       // Nur wenn die Funktion existiert und nicht bereits getracked wird
       if (
@@ -334,7 +334,7 @@ export function initializeSourceReferenceAdapter() {
 
     // Debug-Info ausgeben
     const functionStatus: Record<string, boolean> = {};
-    functionsToTrack.forEach((fn) => {
+    functionsToTrack.forEach((fn: any) => {
       functionStatus[fn] = typeof (window as any)[fn] === "function";
     });
     console.log(

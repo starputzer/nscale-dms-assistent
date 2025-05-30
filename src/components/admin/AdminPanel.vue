@@ -34,7 +34,9 @@
               :class="['admin-panel__nav-icon', tab.icon]"
               aria-hidden="true"
             ></i>
-            <span class="admin-panel__nav-label">{{ tab.label || tab.id }}</span>
+            <span class="admin-panel__nav-label">{{
+              tab.label || tab.id
+            }}</span>
           </button>
         </nav>
 
@@ -128,7 +130,6 @@ import {
   defineEmits,
 } from "vue";
 import { useI18n } from "vue-i18n";
-import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
 // Stores with safe imports
@@ -204,10 +205,10 @@ const emit = defineEmits(["auth-error"]);
 
 // i18n with global scope and composition disabled to fix the "Not available in legacy mode" error
 const { t } = useI18n({
-  useScope: 'global',
-  inheritLocale: true
+  useScope: "global",
+  inheritLocale: true,
 });
-console.log('[AdminPanel] i18n initialized with global scope and inheritance');
+console.log("[AdminPanel] i18n initialized with global scope and inheritance");
 
 // Router
 const router = useRouter();
@@ -448,7 +449,8 @@ async function loadTabComponent(tabId) {
     const componentMap = {
       dashboard: () => import("@/components/admin/tabs/AdminDashboard.vue"),
       users: () => import("@/components/admin/tabs/AdminUsers.enhanced.vue"),
-      feedback: () => import("@/components/admin/tabs/AdminFeedback.enhanced.vue"),
+      feedback: () =>
+        import("@/components/admin/tabs/AdminFeedback.enhanced.vue"),
       motd: () => import("@/components/admin/tabs/AdminMotd.enhanced.vue"),
       docConverter: () =>
         import("@/components/admin/tabs/AdminDocConverter.vue"),

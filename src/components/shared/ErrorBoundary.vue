@@ -24,8 +24,6 @@ import {
   computed,
   onErrorCaptured,
   provide,
-  watch,
-  onMounted,
   onBeforeUnmount,
 } from "vue";
 import { useFeatureTogglesStore } from "@/stores/featureToggles";

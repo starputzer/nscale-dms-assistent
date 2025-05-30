@@ -51,7 +51,7 @@ export function generateSecureUUID(): string {
     buffer[8] = (buffer[8] & 0x3f) | 0x80; // Variante 1
 
     // In UUID-String konvertieren
-    const hexValues = Array.from(buffer).map((b) =>
+    const hexValues = Array.from(buffer).map((b: any) =>
       b.toString(16).padStart(2, "0"),
     );
     return [

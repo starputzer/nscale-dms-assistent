@@ -5,7 +5,7 @@
  * und deterministischer Navigation - Ohne Composables außerhalb von Komponenten
  */
 
-import { Router, RouteLocationNormalized, NavigationFailure } from "vue-router";
+import { Router, RouteLocationNormalized } from "vue-router";
 import { ref, computed } from "vue";
 
 export interface NavigationResult {

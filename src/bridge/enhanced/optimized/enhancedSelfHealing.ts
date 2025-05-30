@@ -12,7 +12,7 @@ import {
   BridgeStatusInfo,
 } from "../types";
 import { BridgeStatusManager } from "../statusManager";
-import { debounce } from "./utils";
+// import { debounce } from "./utils";
 
 /**
  * Health check function type
@@ -416,7 +416,7 @@ export class EnhancedSelfHealing implements SelfHealing {
       }
 
       // Determine if recovery is needed
-      const unhealthyChecks = results.filter((r) => !r.healthy);
+      const unhealthyChecks = results.filter((r: any) => !r.healthy);
 
       if (unhealthyChecks.length > 0) {
         this.logger.warn(
@@ -437,9 +437,9 @@ export class EnhancedSelfHealing implements SelfHealing {
           state: errorState,
           message:
             criticalFailures.length > 0
-              ? `Critical health checks failed: ${criticalFailures.map((f) => f.name).join(", ")}`
+              ? `Critical health checks failed: ${criticalFailures.map((f: any) => f.name).join(", ")}`
               : `Health check: ${healthPercentage.toFixed(1)}% healthy`,
-          affectedComponents: unhealthyChecks.map((c) => c.component),
+          affectedComponents: unhealthyChecks.map((c: any) => c.component),
         });
 
         // Attempt recovery if configured
@@ -493,7 +493,7 @@ export class EnhancedSelfHealing implements SelfHealing {
       this.statusManager.updateStatus({
         state: BridgeErrorState.CRITICAL_FAILURE,
         message: "Recovery failed after maximum attempts",
-        affectedComponents: failedChecks.map((c) => c.component),
+        affectedComponents: failedChecks.map((c: any) => c.component),
       });
 
       return false;
@@ -530,7 +530,7 @@ export class EnhancedSelfHealing implements SelfHealing {
 
       // Check if recovery was successful
       const allSuccessful = results.every((r) => r.success);
-      const criticalFailures = results.filter((r) => {
+      const criticalFailures = results.filter((r: any) => {
         const strategy = this.recoveryStrategies.get(r.id);
         return !r.success && strategy && strategy.critical;
       });
@@ -542,12 +542,12 @@ export class EnhancedSelfHealing implements SelfHealing {
         );
       } else if (criticalFailures.length > 0) {
         this.logger.error("Recovery failed: Critical strategies failed", {
-          criticalFailures: criticalFailures.map((f) => f.strategyName),
+          criticalFailures: criticalFailures.map((f: any) => f.strategyName),
         });
       } else {
         this.logger.warn("Recovery partially successful", {
-          successful: results.filter((r) => r.success).length,
-          failed: results.filter((r) => !r.success).length,
+          successful: results.filter((r: any) => r.success).length,
+          failed: results.filter((r: any) => !r.success).length,
         });
       }
 
@@ -607,9 +607,9 @@ export class EnhancedSelfHealing implements SelfHealing {
     failedChecks: HealthCheckResult[],
   ): RecoveryStrategy[] {
     const selectedStrategies: RecoveryStrategy[] = [];
-    const failedCheckIds = failedChecks.map((check) => check.id);
+    const failedCheckIds = failedChecks.map((check: any) => check.id);
     const failedComponents = new Set(
-      failedChecks.map((check) => check.component),
+      failedChecks.map((check: any) => check.component),
     );
 
     // First select strategies that directly target failed health checks
@@ -665,7 +665,7 @@ export class EnhancedSelfHealing implements SelfHealing {
 
     // Initialize graph
     for (const strategy of strategies) {
-      graph[strategy.id] = strategy.dependencies.filter((dep) =>
+      graph[strategy.id] = strategy.dependencies.filter((dep: any) =>
         strategies.some((s) => s.id === dep),
       );
     }
@@ -726,7 +726,7 @@ export class EnhancedSelfHealing implements SelfHealing {
     // Execute in parallel or sequentially based on configuration
     if (this.config.strategyExecution.parallel) {
       // Parallel execution
-      const promises = strategies.map((strategy) =>
+      const promises = strategies.map((strategy: any) =>
         this.executeRecoveryStrategy(strategy),
       );
 
@@ -934,7 +934,7 @@ export class EnhancedSelfHealing implements SelfHealing {
         results,
         healthPercentage,
         healthy: results.every((r) => r.healthy),
-        unhealthyCount: results.filter((r) => !r.healthy).length,
+        unhealthyCount: results.filter((r: any) => !r.healthy).length,
       },
     });
 
@@ -1065,8 +1065,9 @@ export class EnhancedSelfHealing implements SelfHealing {
       unknown: Array.from(this.healthChecks.values()).filter(
         (c) => c.lastResult === null,
       ).length,
-      critical: Array.from(this.healthChecks.values()).filter((c) => c.critical)
-        .length,
+      critical: Array.from(this.healthChecks.values()).filter(
+        (c: any) => c.critical,
+      ).length,
       healthPercentage,
       byComponent: checksByComponent,
       byCategory: checksByCategory,
@@ -1125,7 +1126,7 @@ export class EnhancedSelfHealing implements SelfHealing {
 
     // Get failed checks from most recent health check history
     const recentChecks = this.healthCheckHistory
-      .filter((check) => check.timestamp > Date.now() - 60000) // Last minute
+      .filter((check: any) => check.timestamp > Date.now() - 60000) // Last minute
       .sort((a, b) => b.timestamp - a.timestamp); // Most recent first
 
     const uniqueCheckIds = new Set<string>();
@@ -1139,7 +1140,7 @@ export class EnhancedSelfHealing implements SelfHealing {
       }
     }
 
-    const failedChecks = latestChecks.filter((check) => !check.healthy);
+    const failedChecks = latestChecks.filter((check: any) => !check.healthy);
 
     if (failedChecks.length === 0) {
       this.logger.warn("No failed health checks found to guide recovery");

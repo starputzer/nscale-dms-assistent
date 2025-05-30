@@ -286,7 +286,7 @@ function loadStoredNotifications(): void {
 
       if (Array.isArray(parsedData)) {
         // Wandle Strings in Dates um
-        const notifications = parsedData.map((notification) => ({
+        const notifications = parsedData.map((notification: any) => ({
           ...notification,
           timestamp: new Date(notification.timestamp),
         }));
@@ -333,14 +333,14 @@ function updateGroups(): void {
   const groupIds = new Set<string>();
 
   // Füge alle expliziten Gruppen-IDs hinzu
-  state.notifications.forEach((notification) => {
+  state.notifications.forEach((notification: any) => {
     if (notification.groupId) {
       groupIds.add(notification.groupId);
     }
   });
 
   // Implizite Gruppierung nach Typ, wenn keine Gruppe definiert
-  state.notifications.forEach((notification) => {
+  state.notifications.forEach((notification: any) => {
     if (!notification.groupId) {
       const implicitGroupId = `type:${notification.type || "info"}`;
       groupIds.add(implicitGroupId);
@@ -348,20 +348,22 @@ function updateGroups(): void {
   });
 
   // Für jede Gruppen-ID
-  groupIds.forEach((groupId) => {
+  groupIds.forEach((groupId: any) => {
     // Finde alle Benachrichtigungen dieser Gruppe
-    const groupNotifications = state.notifications.filter((notification) => {
-      // Explizite Gruppe
-      if (notification.groupId === groupId) return true;
+    const groupNotifications = state.notifications.filter(
+      (notification: any) => {
+        // Explizite Gruppe
+        if (notification.groupId === groupId) return true;
 
-      // Implizite Gruppe nach Typ
-      if (!notification.groupId && groupId.startsWith("type:")) {
-        const typeFromGroupId = groupId.replace("type:", "");
-        return notification.type === typeFromGroupId;
-      }
+        // Implizite Gruppe nach Typ
+        if (!notification.groupId && groupId.startsWith("type:")) {
+          const typeFromGroupId = groupId.replace("type:", "");
+          return notification.type === typeFromGroupId;
+        }
 
-      return false;
-    });
+        return false;
+      },
+    );
 
     // Wenn Benachrichtigungen in dieser Gruppe
     if (groupNotifications.length > 0) {
@@ -415,7 +417,7 @@ function removeExpiredNotifications(): void {
   const initialLength = state.notifications.length;
 
   // Filtere abgelaufene Benachrichtigungen
-  state.notifications = state.notifications.filter((notification) => {
+  state.notifications = state.notifications.filter((notification: any) => {
     if (notification.expires && notification.expires > 0) {
       const expirationTime = new Date(
         notification.timestamp.getTime() + notification.expires,
@@ -683,7 +685,7 @@ export const notificationService = {
     let changed = false;
 
     // Markiere alle als gelesen
-    state.notifications.forEach((notification) => {
+    state.notifications.forEach((notification: any) => {
       if (!notification.read) {
         notification.read = true;
         changed = true;
@@ -715,7 +717,7 @@ export const notificationService = {
     let changed = false;
 
     // Markiere alle als gelesen
-    group.notificationIds.forEach((id) => {
+    group.notificationIds.forEach((id: any) => {
       const notification = state.notifications.find((n) => n.id === id);
       if (notification && !notification.read) {
         notification.read = true;
@@ -744,7 +746,7 @@ export const notificationService = {
     if (state.notifications.length === 0) return;
 
     // Callbacks auslösen
-    state.notifications.forEach((notification) => {
+    state.notifications.forEach((notification: any) => {
       if (notification.onClose) {
         notification.onClose(notification);
       }
@@ -772,7 +774,7 @@ export const notificationService = {
     const idsToRemove = new Set(group.notificationIds);
 
     // Entferne alle Benachrichtigungen der Gruppe
-    state.notifications = state.notifications.filter((notification) => {
+    state.notifications = state.notifications.filter((notification: any) => {
       if (idsToRemove.has(notification.id)) {
         // Callback auslösen
         if (notification.onClose) {
@@ -873,7 +875,7 @@ export const notificationService = {
    * Gibt die Anzahl ungelesener Benachrichtigungen zurück
    */
   get unreadCount() {
-    return state.notifications.filter((notification) => !notification.read)
+    return state.notifications.filter((notification: any) => !notification.read)
       .length;
   },
 

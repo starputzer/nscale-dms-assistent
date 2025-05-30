@@ -160,7 +160,7 @@ class BannerService {
    * Hide all banners
    */
   hideAll(): void {
-    Object.keys(banners).forEach((id) => {
+    Object.keys(banners).forEach((id: any) => {
       this.hide(id);
     });
   }

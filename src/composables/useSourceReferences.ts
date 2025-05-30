@@ -1,4 +1,4 @@
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import axios from "axios";
 import type { SourceReference } from "@/types/session";
 
@@ -86,7 +86,7 @@ export function useSourceReferences() {
   /**
    * Überprüft, ob ein Quellendetail für eine bestimmte Nachricht geöffnet ist
    */
-  function isSourceDetailOpen(message: any, sourceIndex: number): boolean {
+  function isSourceDetailOpen(message: any, _sourceIndex: number): boolean {
     if (!message || !message.id) return false;
     return !!openSourceDetails.value[`${message.id}-${sourceIndex}`];
   }
@@ -94,7 +94,7 @@ export function useSourceReferences() {
   /**
    * Ändert den Zustand (offen/geschlossen) eines Quellendetails
    */
-  function toggleSourceDetail(message: any, sourceIndex: number): void {
+  function toggleSourceDetail(message: any, _sourceIndex: number): void {
     if (!message || !message.id) return;
     const key = `${message.id}-${sourceIndex}`;
 
@@ -138,7 +138,7 @@ export function useSourceReferences() {
 
         messageSourceReferences.value = {
           ...messageSourceReferences.value,
-          [messageId]: { loading: true, sources: [] },
+          [messageId]: { loading: true, _sources: [] },
         };
 
         // API-Aufruf zum Laden der Quellen
@@ -157,7 +157,7 @@ export function useSourceReferences() {
         // Fehler-Status setzen, aber UI nicht blockieren
         messageSourceReferences.value = {
           ...messageSourceReferences.value,
-          [messageId]: { loading: false, sources: [], error: true },
+          [messageId]: { loading: false, _sources: [], error: true },
         };
       } finally {
         isLoadingReferences.value = {

@@ -86,7 +86,6 @@ import {
 } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useLogger } from "@/composables/useLogger";
-import { useEnhancedRouteFallback } from "@/composables/useEnhancedRouteFallback";
 import { routerService } from "@/services/router/RouterServiceFixed";
 import { domErrorDetector } from "@/utils/domErrorDiagnostics";
 import { selfHealingService } from "@/services/selfHealing/SelfHealingService";

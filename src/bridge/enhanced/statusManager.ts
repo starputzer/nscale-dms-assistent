@@ -94,7 +94,9 @@ export class BridgeStatusManager {
   onStatusChanged(listener: (status: BridgeStatusInfo) => void): () => void {
     this.statusListeners.push(listener);
     return () => {
-      this.statusListeners = this.statusListeners.filter((l) => l !== listener);
+      this.statusListeners = this.statusListeners.filter(
+        (l: any) => l !== listener,
+      );
     };
   }
 
@@ -102,7 +104,7 @@ export class BridgeStatusManager {
    * Benachrichtigt alle Status-Listener
    */
   private notifyListeners(): void {
-    this.statusListeners.forEach((listener) => {
+    this.statusListeners.forEach((listener: any) => {
       try {
         listener(this.currentStatus);
       } catch (error) {

@@ -69,8 +69,8 @@ export default defineConfig({
     outputFile: "./test-results/results.json",
 
     // Timeouts
-    testTimeout: 60000, // Increased to 60 seconds to accommodate performance tests
-    hookTimeout: 20000,
+    testTimeout: 10000, // 10 seconds for normal tests
+    hookTimeout: 5000,
 
     // Debugging-Unterstützung
     onConsoleLog(log, type) {

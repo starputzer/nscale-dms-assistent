@@ -1,4 +1,4 @@
-import { ref, shallowRef, readonly } from "vue";
+import { ref, readonly } from "vue";
 import { v4 as uuidv4 } from "uuid";
 import { i18n } from "@/composables/useI18n";
 
@@ -901,7 +901,7 @@ export const dialogService = {
    */
   closeAll(): void {
     const dialogsToClose = [...state.value.dialogs];
-    dialogsToClose.forEach((dialog) => {
+    dialogsToClose.forEach((dialog: any) => {
       closeDialog(dialog.id, { trigger: "api" });
     });
   },

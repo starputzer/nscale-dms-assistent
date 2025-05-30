@@ -9,7 +9,6 @@
 import transactionManager, {
   TransactionManager,
   TransactionStatus,
-  Transaction,
 } from "./TransactionManager";
 import eventQueue, {
   EventQueue,

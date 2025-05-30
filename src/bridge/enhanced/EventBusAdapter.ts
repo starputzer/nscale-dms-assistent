@@ -5,6 +5,7 @@
  * Interface zu verwenden, um Kompatibilität mit bestehendem Code zu gewährleisten.
  */
 
+import type { EventCallback, UnsubscribeFn, EventHandler } from "./commonTypes";
 import {
   EventBus,
   EventSubscription,
@@ -36,7 +37,7 @@ export class EventBusAdapter implements EventBus {
    */
   on(
     eventName: string,
-    callback: Function,
+    callback: EventCallback | UnsubscribeFn,
     options?: EventOptions,
   ): EventSubscription {
     const subscription = this.typedEventBus.on(
@@ -68,7 +69,7 @@ export class EventBusAdapter implements EventBus {
    */
   once(
     eventName: string,
-    callback: Function,
+    callback: EventCallback | UnsubscribeFn,
     options?: Omit<EventOptions, "once">,
   ): EventSubscription {
     const subscription = this.typedEventBus.once(
@@ -89,7 +90,7 @@ export class EventBusAdapter implements EventBus {
   priority(
     eventName: string,
     priority: number,
-    callback: Function,
+    callback: EventCallback | UnsubscribeFn,
     options?: Omit<EventOptions, "priority">,
   ): EventSubscription {
     const subscription = this.typedEventBus.priority(

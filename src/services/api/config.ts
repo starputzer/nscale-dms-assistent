@@ -25,7 +25,7 @@ const getNodeEnv = (): string => {
 export const API_CONFIG = {
   BASE_URL: getEnvVar("VITE_API_BASE_URL", "/api/v1"),
   API_VERSION: getEnvVar("VITE_API_VERSION", ""),
-  
+
   AUTH: {
     TOKEN_PREFIX: "Bearer",
     STORAGE_KEYS: {
@@ -56,6 +56,7 @@ export const API_CONFIG = {
     MAX_QUEUE_SIZE: 100,
     PRIORITIES: {
       AUTH: 100,
+      ADMIN: 90,
       USER_ACTION: 80,
       FETCH: 50,
       BACKGROUND: 20,
@@ -88,7 +89,7 @@ export const API_CONFIG = {
   ENDPOINTS: {
     AUTH: {
       LOGIN: "/auth/login",
-      LOGOUT: "/auth/logout", 
+      LOGOUT: "/auth/logout",
       REFRESH: "/auth/refresh",
       USER: "/auth/user",
     },
@@ -175,12 +176,10 @@ export const getEnvironmentConfig = () => {
     config.DEBUG.VERBOSE = false;
     config.DEBUG.LOG_REQUESTS = false;
     config.RETRY.MAX_RETRIES = 2;
-  }
-  else if (nodeEnv === "test") {
+  } else if (nodeEnv === "test") {
     config.TIMEOUTS.DEFAULT = 5000;
     config.BASE_URL = "mock://api";
-  }
-  else {
+  } else {
     config.DEBUG.VERBOSE = true;
     config.DEBUG.LOG_REQUESTS = true;
     config.TIMEOUTS.DEFAULT = 60000;

@@ -20,7 +20,6 @@ export * from "./errorReportingService";
 export * from "./es2021-polyfills";
 export * from "./eventTypes";
 export * from "./fallbackManager";
-export * from "./globalFunctionsBridge";
 export * from "./keyboardShortcutsManager";
 export * from "./messageFormatter";
 export * from "./mobileFocusManager";

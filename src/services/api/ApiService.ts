@@ -19,7 +19,6 @@ import {
   ApiError,
   LoginRequest,
   LoginResponse,
-  TokenRefreshRequest,
   PaginationRequest,
 } from "@/types/api";
 import { RequestQueue } from "./RequestQueue";
@@ -191,7 +190,7 @@ export class ApiService {
         if (!token) {
           token = localStorage.getItem("nscale_access_token");
         }
-        
+
         // Additional fallback for token without prefix
         if (!token) {
           token = localStorage.getItem("access_token");
@@ -550,7 +549,9 @@ export class ApiService {
         );
 
         // Löse alle wartenden Anfragen auf
-        this.tokenRefreshQueue.forEach(({ resolve }) => resolve(accessToken));
+        this.tokenRefreshQueue.forEach(({ resolve }: any) =>
+          resolve(accessToken),
+        );
         this.tokenRefreshQueue = [];
 
         resolve(accessToken);
@@ -559,7 +560,7 @@ export class ApiService {
         this.clearAuthData();
 
         // Alle wartenden Anfragen ablehnen
-        this.tokenRefreshQueue.forEach(({ reject }) => reject(error));
+        this.tokenRefreshQueue.forEach(({ reject }: any) => reject(error));
         this.tokenRefreshQueue = [];
 
         reject(error);
@@ -657,15 +658,14 @@ export class ApiService {
       }
 
       // Führe die Anfrage aus
-      const response =
-        await this.axiosInstance.request<T>(options);
+      const response = await this.axiosInstance.request<T>(options);
 
       // Wrap the response in ApiResponse format
       // The backend returns data directly, not wrapped in success/data structure
       return {
         success: true,
         data: response.data as T,
-        message: "Request successful"
+        message: "Request successful",
       };
     } catch (error) {
       // Fehler formatieren und weiterwerfen

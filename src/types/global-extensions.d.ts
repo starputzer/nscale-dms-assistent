@@ -58,8 +58,8 @@ interface Window {
   isSourceReferencesVisible: (message: any) => boolean;
   isLoadingSourceReferences?: (message: any) => boolean;
   getSourceReferences: () => any[];
-  isSourceDetailOpen?: (message: any, sourceIndex: number) => boolean;
-  toggleSourceDetail?: (message: any, sourceIndex: number) => void;
+  isSourceDetailOpen?: (message: any, _sourceIndex: number) => boolean;
+  toggleSourceDetail?: (message: any, _sourceIndex: number) => void;
   toggleSourceReferences: () => void | Promise<void>;
   hasSourceReferences?: (content: string) => boolean;
   showSourcePopupHandler?: (
@@ -183,8 +183,8 @@ interface SourceReferencesComposable {
   isSourceReferencesVisible: (message: any) => boolean;
   isLoadingSourceReferences: (message: any) => boolean;
   getSourceReferences: (message: any) => any[];
-  isSourceDetailOpen: (message: any, sourceIndex: number) => boolean;
-  toggleSourceDetail: (message: any, sourceIndex: number) => void;
+  isSourceDetailOpen: (message: any, _sourceIndex: number) => boolean;
+  toggleSourceDetail: (message: any, _sourceIndex: number) => void;
   toggleSourceReferences: (message: any) => Promise<void>;
   showSourcePopupHandler: (
     event: MouseEvent,

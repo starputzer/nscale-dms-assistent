@@ -1,5 +1,5 @@
-import { computed, ref, watchEffect, ComputedRef, Ref } from 'vue';
-import type { WatchSource } from 'vue';
+import { computed, ref, watchEffect, ComputedRef, Ref } from "vue";
+import type { WatchSource } from "vue";
 
 export interface MemoizedOptions {
   maxCacheSize?: number;
@@ -13,10 +13,10 @@ export interface MemoizedOptions {
 export function useMemoizedComputed<T>(
   getter: () => T,
   dependencies?: WatchSource[],
-  options: MemoizedOptions = {}
+  options: MemoizedOptions = {},
 ): ComputedRef<T> {
   const { ttl = 0 } = options;
-  
+
   const cache = ref<{ value: T; timestamp: number } | null>(null);
   const isStale = ref(true);
 
@@ -24,8 +24,8 @@ export function useMemoizedComputed<T>(
   if (dependencies && dependencies.length > 0) {
     watchEffect(() => {
       // Access all dependencies to track them
-      dependencies.forEach(dep => {
-        if (typeof dep === 'function') {
+      dependencies.forEach((dep) => {
+        if (typeof dep === "function") {
           dep();
         } else {
           // Access ref value to track
@@ -39,7 +39,7 @@ export function useMemoizedComputed<T>(
 
   return computed(() => {
     const now = Date.now();
-    
+
     // Check if cache is valid
     if (
       !isStale.value &&
@@ -53,7 +53,7 @@ export function useMemoizedComputed<T>(
     const newValue = getter();
     cache.value = { value: newValue, timestamp: now };
     isStale.value = false;
-    
+
     return newValue;
   });
 }
@@ -63,12 +63,12 @@ export function useMemoizedComputed<T>(
  */
 export function useMemoizedFunction<TArgs extends any[], TResult>(
   fn: (...args: TArgs) => TResult,
-  options: MemoizedOptions = {}
+  options: MemoizedOptions = {},
 ): (...args: TArgs) => TResult {
   const {
     maxCacheSize = 100,
     ttl = 0,
-    keyGenerator = (...args: any[]) => JSON.stringify(args)
+    keyGenerator = (...args: any[]) => JSON.stringify(args),
   } = options;
 
   const cache = new Map<string, { value: TResult; timestamp: number }>();
@@ -92,7 +92,7 @@ export function useMemoizedFunction<TArgs extends any[], TResult>(
 
     // Compute new value
     const result = fn(...args);
-    
+
     // Add to cache
     cache.set(key, { value: result, timestamp: now });
     accessOrder.push(key);
@@ -117,30 +117,34 @@ export function useBatchMemoized<TKey, TResult>(
     batchDelay?: number;
     ttl?: number;
     keyToString?: (key: TKey) => string;
-  } = {}
+  } = {},
 ): (key: TKey) => Promise<TResult> {
   const {
     batchSize = 100,
     batchDelay = 10,
     ttl = 60000, // 1 minute default
-    keyToString = (key: TKey) => String(key)
+    keyToString = (key: TKey) => String(key),
   } = options;
 
   const cache = new Map<string, { value: TResult; timestamp: number }>();
-  const pendingBatch: Array<{ key: TKey; resolve: (value: TResult) => void; reject: (error: any) => void }> = [];
+  const pendingBatch: Array<{
+    key: TKey;
+    resolve: (value: TResult) => void;
+    reject: (error: any) => void;
+  }> = [];
   let batchTimer: ReturnType<typeof setTimeout> | null = null;
 
   const processBatch = async () => {
     if (pendingBatch.length === 0) return;
 
     const batch = pendingBatch.splice(0, batchSize);
-    const keys = batch.map(item => item.key);
+    const keys = batch.map((item) => item.key);
 
     try {
       const results = await batchFn(keys);
       const now = Date.now();
 
-      batch.forEach(({ key, resolve }) => {
+      batch.forEach(({ key, resolve }: any) => {
         const result = results.get(key);
         if (result !== undefined) {
           const keyStr = keyToString(key);
@@ -151,7 +155,7 @@ export function useBatchMemoized<TKey, TResult>(
         }
       });
     } catch (error) {
-      batch.forEach(({ reject }) => reject(error));
+      batch.forEach(({ reject }: any) => reject(error));
     }
 
     // Process remaining items if any
@@ -191,19 +195,19 @@ export function useBatchMemoized<TKey, TResult>(
  */
 export function useStableComputed<T>(
   getter: () => T,
-  isEqual: (a: T, b: T) => boolean = (a, b) => a === b
+  isEqual: (a: T, b: T) => boolean = (a, b) => a === b,
 ): ComputedRef<T> {
   const lastValue = ref<T>();
   const hasValue = ref(false);
 
   return computed(() => {
     const newValue = getter();
-    
+
     if (!hasValue.value || !isEqual(newValue, lastValue.value as T)) {
       lastValue.value = newValue;
       hasValue.value = true;
     }
-    
+
     return lastValue.value as T;
   });
 }

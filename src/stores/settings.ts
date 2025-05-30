@@ -337,7 +337,7 @@ export const useSettingsStore = defineStore(
       }
 
       // CSS-Variablen für das Theme setzen
-      Object.entries(theme.colors).forEach(([key, value]) => {
+      Object.entries(theme.colors).forEach(([key, value]: any) => {
         document.documentElement.style.setProperty(`--color-${key}`, value);
       });
     }

@@ -5,8 +5,9 @@
  * Event-Listenern und Ressourcen in der Bridge-Kommunikation.
  */
 
-import { createLogger, LogLevel } from "../logger/index";
-import { PerformanceMonitor } from "./performanceMonitor";
+import type { EventCallback, UnsubscribeFn } from "./commonTypes";
+import { createLogger } from "../logger/index";
+import { PerformanceMonitor } from "./PerformanceMonitor";
 
 // Konfiguration
 interface EventListenerManagerConfig {
@@ -38,7 +39,7 @@ const DEFAULT_CONFIG: EventListenerManagerConfig = {
 interface ListenerInfo {
   id: string; // Eindeutige ID des Listeners
   eventType: string; // Ereignistyp
-  handler: Function; // Event-Handler-Funktion
+  handler: EventCallback | UnsubscribeFn; // Event-Handler-Funktion
   source: "vue" | "vanilla" | "system"; // Quelle des Ereignisses
   createdAt: number; // Erstellungszeitpunkt
   lastUsed: number; // Zeitpunkt der letzten Verwendung
@@ -133,7 +134,7 @@ export class EventListenerManager {
    */
   public registerListener(
     eventType: string,
-    handler: Function,
+    handler: EventCallback | UnsubscribeFn,
     component: string = "unknown",
     source: "vue" | "vanilla" | "system" = "system",
     unsubscribe?: () => void,

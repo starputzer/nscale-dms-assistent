@@ -1,12 +1,11 @@
 import { defineStore } from "pinia";
-import { computed, ref, watch, onUnmounted } from "vue";
+import { computed, ref, watch } from "vue";
 import { v4 as uuidv4 } from "uuid";
 import type {
   Modal,
   Toast,
   SidebarState,
   ViewMode,
-  UIState,
   LayoutConfig,
   NotificationOptions,
 } from "../types/ui";
@@ -146,7 +145,7 @@ export const useUIStore = defineStore(
       // Alle ausstehenden UI-Updates durchführen
       setTimeout(() => {
         // CSS-Variablen aktualisieren
-        Object.entries(cssVariables.value).forEach(([key, value]) => {
+        Object.entries(cssVariables.value).forEach(([key, value]: any) => {
           document.documentElement.style.setProperty(key, value);
         });
 
@@ -490,7 +489,9 @@ export const useUIStore = defineStore(
           toastElement.classList.add("toast-exit");
           // Animation abwarten, bevor Element entfernt wird
           setTimeout(() => {
-            toasts.value = toasts.value.filter((t) => t.id !== oldestToast.id);
+            toasts.value = toasts.value.filter(
+              (t: any) => t.id !== oldestToast.id,
+            );
           }, 300);
         }
       }
@@ -517,11 +518,15 @@ export const useUIStore = defineStore(
         toastElement.classList.add("toast-exit");
         // Animation abwarten, bevor Element entfernt wird
         setTimeout(() => {
-          toasts.value = toasts.value.filter((toast) => toast.id !== toastId);
+          toasts.value = toasts.value.filter(
+            (toast: any) => toast.id !== toastId,
+          );
         }, 300);
       } else {
         // Falls DOM-Element nicht gefunden, direkt entfernen
-        toasts.value = toasts.value.filter((toast) => toast.id !== toastId);
+        toasts.value = toasts.value.filter(
+          (toast: any) => toast.id !== toastId,
+        );
       }
     }
 
@@ -638,7 +643,7 @@ export const useUIStore = defineStore(
       window.addEventListener("resize", debouncedCheckViewport);
 
       // CSS-Variablen initialisieren
-      Object.entries(cssVariables.value).forEach(([key, value]) => {
+      Object.entries(cssVariables.value).forEach(([key, value]: any) => {
         document.documentElement.style.setProperty(key, value);
       });
 

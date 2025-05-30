@@ -1,4 +1,5 @@
 /**
+import type { BridgeComponentName } from "./types";
  * TypeScript-kompatible Diagnose-Tools für Bridge-Komponenten
  *
  * Diese Datei implementiert typsichere Diagnose-Tools für Bridge-Komponenten,
@@ -9,10 +10,7 @@ import { createLogger } from "./logger/index";
 import {
   BridgeErrorCode,
   BridgeResult,
-  BridgeError,
   executeBridgeOperation,
-  success,
-  failure,
 } from "./bridgeErrorUtils";
 import {
   BridgeEventMap,
@@ -76,6 +74,7 @@ export interface BridgeDiagnosticReport {
     stateUpdateTime?: number;
     memoryUsage?: number;
     gcCollections?: number;
+    diagnosticDuration?: number;
   };
   recommendations: string[];
 }
@@ -192,7 +191,7 @@ export class TypescriptDiagnosticTools {
 
         // Filtere Komponenten, falls gewünscht
         const componentsToCheck = options.componentFilter
-          ? Array.from(this.components.entries()).filter(([name]) =>
+          ? Array.from(this.components.entries()).filter(([name]: any) =>
               options.componentFilter!.includes(
                 name as BridgeComponentName | string,
               ),
@@ -343,16 +342,18 @@ export class TypescriptDiagnosticTools {
           const healthCheck: BridgeHealthCheckEvent = {
             timestamp: Date.now(),
             components: Object.fromEntries(
-              Object.entries(componentResults).map(([name, diagnostic]) => [
-                name,
-                {
-                  status: diagnostic.status,
-                  details:
-                    diagnostic.issues.length > 0
-                      ? diagnostic.issues[0]
-                      : undefined,
-                },
-              ]),
+              Object.entries(componentResults).map(
+                ([name, diagnostic]: any) => [
+                  name,
+                  {
+                    status: diagnostic.status,
+                    details:
+                      diagnostic.issues.length > 0
+                        ? diagnostic.issues[0]
+                        : undefined,
+                  },
+                ],
+              ),
             ),
             overall: overallStatus,
           };
@@ -492,7 +493,7 @@ export class TypescriptDiagnosticTools {
       return undefined;
     }
 
-    return values.reduce((sum, value) => sum + value, 0) / values.length;
+    return values.reduce((sum: any, value) => sum + value, 0) / values.length;
   }
 
   /**
@@ -521,7 +522,7 @@ export class TypescriptDiagnosticTools {
     }
 
     // Prüfe auf Memory-Probleme
-    const memoryIssues = issues.filter((issue) =>
+    const memoryIssues = issues.filter((issue: any) =>
       issue.includes("Speicherverbrauch"),
     );
 

@@ -11,7 +11,12 @@ import { apiConfig } from "./config";
 import { adminApi } from "./admin";
 import { LogService } from "../log/LogService";
 import { ApiResponse } from "@/types/api";
-import { FeedbackStats, FeedbackEntry, FeedbackFilter, ExportOptions } from "@/types/admin";
+import {
+  FeedbackStats,
+  FeedbackEntry,
+  FeedbackFilter,
+  ExportOptions,
+} from "@/types/admin";
 import { shouldUseRealApi } from "@/config/api-flags";
 
 export interface IAdminFeedbackService {
@@ -155,9 +160,7 @@ export class AdminFeedbackService implements IAdminFeedbackService {
       }
 
       // Fallback zu adminApi mit Mock-Daten
-      this.logger.info(
-        "Verwende Mock-Daten über adminApi für alle Feedbacks",
-      );
+      this.logger.info("Verwende Mock-Daten über adminApi für alle Feedbacks");
       const response = await adminApi.getNegativeFeedback();
 
       return {
@@ -275,7 +278,8 @@ export class AdminFeedbackService implements IAdminFeedbackService {
         if (response.success) {
           // Cache für Feedback-Listen invalidieren
           cachedApiService.invalidate(
-            apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE || "/admin/feedback/negative",
+            apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE ||
+              "/admin/feedback/negative",
           );
           return response;
         } else {
@@ -334,7 +338,8 @@ export class AdminFeedbackService implements IAdminFeedbackService {
         if (response.success) {
           // Cache für Feedback-Listen und Stats invalidieren
           cachedApiService.invalidate(
-            apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE || "/admin/feedback/negative",
+            apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE ||
+              "/admin/feedback/negative",
           );
           cachedApiService.invalidate(
             apiConfig.ENDPOINTS.ADMIN_FEEDBACK.STATS || "/admin/feedback/stats",
@@ -378,7 +383,9 @@ export class AdminFeedbackService implements IAdminFeedbackService {
   /**
    * Feedback exportieren
    */
-  public async exportFeedback(options: ExportOptions): Promise<ApiResponse<Blob | any>> {
+  public async exportFeedback(
+    options: ExportOptions,
+  ): Promise<ApiResponse<Blob | any>> {
     try {
       // Prüfen, ob die echte API verwendet werden soll
       if (shouldUseRealApi("useRealFeedbackApi")) {
@@ -491,7 +498,7 @@ export class AdminFeedbackService implements IAdminFeedbackService {
 
         // Filterung nach Kommentar
         if (filter.hasComment !== undefined) {
-          filtered = filtered.filter((f) =>
+          filtered = filtered.filter((f: any) =>
             filter.hasComment ? !!f.comment : !f.comment,
           );
         }

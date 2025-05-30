@@ -232,15 +232,15 @@ import { useAdminUsersStore } from "@/stores/admin/users";
 import { useAuthStore } from "@/stores/auth";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import type { User, UserRole } from "@/types/admin";
+import type { User } from "@/types/admin";
 import AdminCard from "@/components/admin/shared/AdminCard.vue";
 
 // Define emits
 const emit = defineEmits(["error", "auth-error", "reload"]);
 
 // i18n
-const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
-console.log('[i18n] Component initialized with global scope and inheritance');
+const { t, locale } = useI18n({ useScope: "global", inheritLocale: true });
+console.log("[i18n] Component initialized with global scope and inheritance");
 
 // Stores
 const adminUsersStore = useAdminUsersStore();

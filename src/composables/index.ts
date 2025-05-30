@@ -39,7 +39,6 @@ export { useLocalStorage } from "./useLocalStorage";
 // Specialized chat composables
 export { useEnhancedChat } from "./useEnhancedChat";
 export { useOptimizedChat } from "./useOptimizedChat";
-export { useBridgeChat } from "./useBridgeChat";
 export { useSourceReferences } from "./useSourceReferences";
 
 // Logging and monitoring
@@ -47,9 +46,5 @@ export { useErrorReporting } from "./useErrorReporting";
 export { useLogger } from "./useLogger";
 export { useMonitoring } from "./useMonitoring";
 
-// Check for i18n composable and add if available
-try {
-  export { useI18n } from "./useI18n";
-} catch (e) {
-  // I18n composable not available, ignore
-}
+// Internationalization
+export { useI18n } from "./useI18n";

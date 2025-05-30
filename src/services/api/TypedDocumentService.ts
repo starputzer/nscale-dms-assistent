@@ -404,7 +404,7 @@ export class TypedDocumentService extends BaseApiService<
     if (this.eventHandlers.has(event)) {
       const handlers = this.eventHandlers.get(event);
       if (handlers) {
-        handlers.forEach((handler) => {
+        handlers.forEach((handler: any) => {
           try {
             handler(data);
           } catch (error) {

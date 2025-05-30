@@ -5,7 +5,6 @@
  * indem er fehlende Methoden implementiert und API-Unterschiede ausgleicht.
  */
 
-import { ref, computed } from "vue";
 import { useDocumentConverterStore } from "../documentConverter";
 import type { IDocumentConverterStore } from "@/types/stores";
 

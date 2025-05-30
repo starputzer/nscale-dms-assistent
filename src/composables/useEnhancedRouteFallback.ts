@@ -209,7 +209,7 @@ export function useEnhancedRouteFallback(
     const errorElements = document.querySelectorAll(
       ".error-view, .error-404, .critical-error",
     );
-    errorElements.forEach((el) => el.remove());
+    errorElements.forEach((el: any) => el.remove());
 
     // Stelle App-Container sicher
     const appElement = document.querySelector("#app");
@@ -246,27 +246,27 @@ export function useEnhancedRouteFallback(
       // Service Worker deregistrieren
       if ("serviceWorker" in navigator) {
         const registrations = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(registrations.map((reg) => reg.unregister()));
+        await Promise.all(registrations.map((reg: any) => reg.unregister()));
       }
 
       // Browser-Cache leeren
       if ("caches" in window) {
         const cacheNames = await caches.keys();
-        await Promise.all(cacheNames.map((name) => caches.delete(name)));
+        await Promise.all(cacheNames.map((name: any) => caches.delete(name)));
       }
 
       // Lokalen Speicher bereinigen (selektiv)
       const keysToKeep = ["token", "userId", "userRole", "lastWorkingRoute"];
       const savedValues: Record<string, string> = {};
 
-      keysToKeep.forEach((key) => {
+      keysToKeep.forEach((key: any) => {
         const value = localStorage.getItem(key);
         if (value) savedValues[key] = value;
       });
 
       localStorage.clear();
 
-      Object.entries(savedValues).forEach(([key, value]) => {
+      Object.entries(savedValues).forEach(([key, value]: any) => {
         localStorage.setItem(key, value);
       });
     } catch (error) {

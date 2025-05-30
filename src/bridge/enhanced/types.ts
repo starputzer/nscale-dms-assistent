@@ -171,19 +171,19 @@ export interface EventBus {
   emit(eventName: string): void;
   on(
     eventName: string,
-    callback: Function,
+    callback: EventCallback | UnsubscribeFn,
     options?: EventOptions,
   ): EventSubscription;
   off(eventName: string, subscriptionOrId: EventSubscription | string): void;
   once(
     eventName: string,
-    callback: Function,
+    callback: EventCallback | UnsubscribeFn,
     options?: Omit<EventOptions, "once">,
   ): EventSubscription;
   priority(
     eventName: string,
     priority: number,
-    callback: Function,
+    callback: EventCallback | UnsubscribeFn,
     options?: Omit<EventOptions, "priority">,
   ): EventSubscription;
   clear(): void;
@@ -270,7 +270,7 @@ export interface BridgeAPI {
   features: FeatureToggleBridgeAPI;
   getState(path: string): any;
   setState(path: string, value: any): boolean;
-  subscribe(path: string, callback: Function): () => void;
+  subscribe(path: string, callback: EventCallback | UnsubscribeFn): () => void;
   /**
    * Emits an event with data
    * @param event Name of the event to emit
@@ -284,12 +284,12 @@ export interface BridgeAPI {
   emit(event: string): void;
   on(
     event: string,
-    callback: Function,
+    callback: EventCallback | UnsubscribeFn,
     options?: EventOptions,
   ): EventSubscription;
   off(
     event: string,
-    callbackOrSubscription: Function | EventSubscription,
+    callbackOrSubscription: EventCallback | UnsubscribeFn | EventSubscription,
   ): void;
   /**
    * Logs a message with specified log level

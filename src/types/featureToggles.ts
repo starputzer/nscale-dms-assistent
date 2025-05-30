@@ -87,6 +87,24 @@ export interface MetricsQuery {
 }
 
 /**
+ * Feature Toggle Statistics
+ */
+export interface FeatureToggleStats {
+  totalFeatures: number;
+  enabledFeatures: number;
+  disabledFeatures: number;
+  experimentalFeatures: number;
+  lockedFeatures: number;
+  categoryCounts: Record<string, number>;
+  mostUsedFeatures: Array<{
+    key: string;
+    name: string;
+    usageCount: number;
+  }>;
+  recentErrors: FeatureErrorLog[];
+}
+
+/**
  * Feature Toggles Store State
  */
 export interface FeatureTogglesState {

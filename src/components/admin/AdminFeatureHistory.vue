@@ -65,7 +65,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import type {
   FeatureToggle,
@@ -73,10 +72,10 @@ import type {
 } from "@/types/featureToggles";
 
 const { t } = useI18n({
-  useScope: 'global',
-  inheritLocale: true
+  useScope: "global",
+  inheritLocale: true,
 });
-console.log('[i18n] Component initialized with global scope and inheritance');
+console.log("[i18n] Component initialized with global scope and inheritance");
 
 interface Props {
   feature: FeatureToggle | null;

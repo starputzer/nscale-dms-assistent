@@ -74,7 +74,7 @@ const DEFAULT_CONFIG: EnhancedSerializerConfig = {
       Date: {
         check: (value) => value instanceof Date,
         serialize: (value) => ({ __type: "Date", value: value.toISOString() }),
-        deserialize: (data) => new Date(data.value),
+        deserialize: (data: any) => new Date(data.value),
       },
 
       // Regular expressions
@@ -85,7 +85,7 @@ const DEFAULT_CONFIG: EnhancedSerializerConfig = {
           source: value.source,
           flags: value.flags,
         }),
-        deserialize: (data) => new RegExp(data.source, data.flags),
+        deserialize: (data: any) => new RegExp(data.source, data.flags),
       },
 
       // Map objects
@@ -95,7 +95,7 @@ const DEFAULT_CONFIG: EnhancedSerializerConfig = {
           __type: "Map",
           entries: Array.from(value.entries()),
         }),
-        deserialize: (data) => new Map(data.entries),
+        deserialize: (data: any) => new Map(data.entries),
       },
 
       // Set objects
@@ -105,7 +105,7 @@ const DEFAULT_CONFIG: EnhancedSerializerConfig = {
           __type: "Set",
           values: Array.from(value.values()),
         }),
-        deserialize: (data) => new Set(data.values),
+        deserialize: (data: any) => new Set(data.values),
       },
 
       // Error objects
@@ -117,7 +117,7 @@ const DEFAULT_CONFIG: EnhancedSerializerConfig = {
           message: value.message,
           stack: value.stack,
         }),
-        deserialize: (data) => {
+        deserialize: (data: any) => {
           const error = new Error(data.message);
           error.name = data.name;
           error.stack = data.stack;
@@ -132,7 +132,7 @@ const DEFAULT_CONFIG: EnhancedSerializerConfig = {
           __type: "ObjectWithNullProto",
           value: { ...value },
         }),
-        deserialize: (data) =>
+        deserialize: (data: any) =>
           Object.create(null, Object.getOwnPropertyDescriptors(data.value)),
       },
     },
@@ -522,7 +522,7 @@ export class EnhancedSerializer {
 
     // Handle arrays
     if (Array.isArray(value)) {
-      return value.map((item, index) =>
+      return value.map((item, index: any) =>
         this.processValue(item, new Set(seen), depth + 1, `${path}[${index}]`),
       );
     }
@@ -575,7 +575,7 @@ export class EnhancedSerializer {
 
     // Handle arrays
     if (Array.isArray(value)) {
-      return value.map((item) => this.processDeserialized(item, refMap));
+      return value.map((item: any) => this.processDeserialized(item, refMap));
     }
 
     // Handle special markers
