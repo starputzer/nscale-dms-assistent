@@ -12,9 +12,7 @@ import { useAdminLogsStore } from "./admin/logs";
 import { useErrorReporting } from "@/composables/useErrorReporting";
 import { useBridgeChat } from "@/composables/useBridgeChat";
 
-// Optimierte Store-Versionen
-import { useSessionsStore as useSessionsStoreOptimized } from "./sessions.optimized";
-import { useAdminSettingsStoreOptimized } from "./admin/settings.optimized";
+// Optimierte Store-Versionen wurden entfernt
 
 /**
  * Status-Type für Store-Initialisierung
@@ -140,17 +138,9 @@ export const initializeStores = async (): Promise<void> => {
     // 3. Sessions, DocumentConverter, Monitoring, Statistics und Admin initialisieren
     const initPromises = [
       initializeStore("sessions", async () => {
-        // Wenn das Feature-Flag für optimierte Stores aktiviert ist, verwende den optimierten Store
-        if (featureTogglesStore.isFeatureEnabled("optimizedStores")) {
-          const optimizedSessionsStore = useSessionsStoreOptimized();
-          await optimizedSessionsStore.initialize();
-          // Make store globally available to avoid circular dependencies
-          (window as any).__sessionsStore = optimizedSessionsStore;
-        } else {
-          await sessionsStore.initialize();
-          // Make store globally available to avoid circular dependencies
-          (window as any).__sessionsStore = sessionsStore;
-        }
+        await sessionsStore.initialize();
+        // Make store globally available to avoid circular dependencies
+        (window as any).__sessionsStore = sessionsStore;
       }),
 
       initializeStore("documentConverter", async () => {
@@ -184,18 +174,8 @@ export const initializeStores = async (): Promise<void> => {
           (authStore.hasPermission("admin") ||
             authStore.hasPermission("adminView"))
         ) {
-          // Wenn Feature-Flag für optimierte Stores aktiviert ist, verwende optimierte Stores
-          if (
-            featureTogglesStore.isFeatureEnabled("optimizedStores") &&
-            featureTogglesStore.isFeatureEnabled("adminSettingsOptimized")
-          ) {
-            const optimizedAdminSettingsStore =
-              useAdminSettingsStoreOptimized();
-            await optimizedAdminSettingsStore.initialize();
-          } else {
-            // Standardmäßig nur das Admin-Dashboard laden, andere Tabs werden bei Bedarf geladen
-            await adminStore.loadDashboardData();
-          }
+          // Standardmäßig nur das Admin-Dashboard laden, andere Tabs werden bei Bedarf geladen
+          await adminStore.loadDashboardData();
         }
       }),
 
