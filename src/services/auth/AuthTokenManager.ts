@@ -87,7 +87,7 @@ export class AuthTokenManager {
     console.log("[AuthTokenManager] Lade Tokens aus Speicher");
 
     // Versuche zuerst aus localStorage
-    let data = this.loadFromLocalStorage();
+
 
     if (!data) {
       console.log(

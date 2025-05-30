@@ -102,7 +102,7 @@ const meta = {
     },
   },
   // Eventhandler für Live-Vorschau
-  render: (args) => ({
+  render: (args: any) => ({
     components: { SessionManager },
     setup() {
       return {

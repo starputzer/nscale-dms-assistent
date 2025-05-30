@@ -1,5 +1,5 @@
 import type { Ref, ComputedRef } from "vue";
-import type { Result, Nullable, Optional } from "./types";
+import type { Nullable } from "./types";
 import type { APIResponse, APIError } from "./apiTypes";
 import type { ChatSession, ChatMessage } from "../types/session";
 import type {

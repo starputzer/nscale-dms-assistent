@@ -481,7 +481,7 @@ export class RouterService {
 
     try {
       // Teste Router-Verfügbarkeit
-      const _ = this.router.currentRoute;
+
       return true;
     } catch (error) {
       this.log("error", "Router nicht verfügbar", error);

@@ -38,7 +38,7 @@ export function debounce<T extends AnyFunction>(
   let result: ReturnType<T>;
   let lastArgs: Parameters<T> | null = null;
   let lastThis: any = null;
-  const trailing = true;
+
 
   // Funktion, die den eigentlichen Aufruf durchführt
   function invokeFunc() {
@@ -74,9 +74,10 @@ export function debounce<T extends AnyFunction>(
     }
 
     // Timer für die verbleibende Zeit neu planen
+    const currentTime = Date.now();
     if (maxWait > 0) {
-      const timeSinceLastCall = time - lastCallTime;
-      const timeSinceLastInvoke = time - lastInvokeTime;
+      const timeSinceLastCall = currentTime - lastCallTime;
+      const timeSinceLastInvoke = currentTime - lastInvokeTime;
       const timeUntilDelayExpires = delay - timeSinceLastCall;
       const timeUntilMaxWaitExpires = maxWait - timeSinceLastInvoke;
 
@@ -155,6 +156,7 @@ export function throttle<T extends AnyFunction>(
   const leading = options.leading !== false;
   const trailing = options.trailing !== false;
 
+
   // Funktion, die den eigentlichen Aufruf durchführt
   function invokeFunc() {
     const time = Date.now();
@@ -194,11 +196,12 @@ export function throttle<T extends AnyFunction>(
     lastThis = this;
 
     if (isInvoking) {
-      lastCallTime = time;
+      lastCallTime = Date.now();
       return result;
     }
 
-    const timeSinceLastCall = time - lastCallTime;
+    const currentTime = Date.now();
+    const timeSinceLastCall = currentTime - lastCallTime;
 
     if (timeSinceLastCall >= delay) {
       // Zeit ist abgelaufen, sofort ausführen
@@ -334,11 +337,11 @@ export function adaptiveRateLimiter<T extends AnyFunction>(
   // Je nach Modus unterschiedlichen Limiter erstellen
   const limiter =
     mode === "throttle"
-      ? throttle(wrappedFn, () => currentDelay, {
+      ? throttle(wrappedFn, currentDelay, {
           leading: true,
           trailing: true,
         })
-      : debounce(wrappedFn, () => currentDelay, { maxWait: maxDelay * 2 });
+      : debounce(wrappedFn, currentDelay, { maxWait: maxDelay * 2 });
 
   // Die adaptiv limitierte Funktion
   function adaptiveFunction(this: any, ...args: Parameters<T>) {

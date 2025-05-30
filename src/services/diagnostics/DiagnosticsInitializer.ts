@@ -166,7 +166,7 @@ export class DiagnosticsInitializer {
           (window as any)?.$router || (window as any)?.app?.$router;
 
         if (router) {
-          router.beforeEach((to, from, next) => {
+          router.beforeEach((to: any, from: any, next: any) => {
             // Update diagnostics on route change
             this.services.unifiedDiagnosticsService.updateRouterHealth(true);
             next();
@@ -211,7 +211,7 @@ export class DiagnosticsInitializer {
       // Use window router if available
       const router = (window as any)?.$router || (window as any)?.app?.$router;
       if (router) {
-        router.push("/").catch((err) => {
+        router.push("/").catch((err: any) => {
           console.error("Router navigation failed:", err);
           window.location.href = "/";
         });

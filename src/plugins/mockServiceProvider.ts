@@ -8,6 +8,7 @@
 import { App, reactive } from "vue";
 import { mockServiceFactory } from "@/services/mocks/MockServiceFactory";
 // Import des Mock Session Stores wenn mockApi=true
+
 const useMockApi =
   new URLSearchParams(window.location.search).get("mockApi") === "true";
 
@@ -58,11 +59,11 @@ export const mockServiceProvider = {
 
     // Ein minimales Composable für Source References
     const sourceRefsComposable = {
-      isSourceReferencesVisible: (message) => {
+      isSourceReferencesVisible: (message: any) => {
         if (!message || !message.id) return false;
         return sourceReferencesState.visibleReferences.has(message.id);
       },
-      toggleSourceReferences: (message) => {
+      toggleSourceReferences: (message: any) => {
         if (!message || !message.id) return;
         const messageId = message.id;
         if (sourceReferencesState.visibleReferences.has(messageId)) {
@@ -71,11 +72,11 @@ export const mockServiceProvider = {
           sourceReferencesState.visibleReferences.set(messageId, true);
         }
       },
-      getSourceReferences: (message) => {
+      getSourceReferences: (message: any) => {
         if (!message || !message.id) return [];
         return sourceReferencesState.referenceDetails.get(message.id) || [];
       },
-      hasSourceReferences: (content) => {
+      hasSourceReferences: (content: any) => {
         if (!content) return false;
         return (
           /\(Quelle-\d+\)/.test(content) ||
@@ -97,12 +98,12 @@ export const mockServiceProvider = {
       return sourceRefsComposable.isSourceReferencesVisible(message);
     };
 
-    window.toggleSourceReferences = (message) => {
+    window.toggleSourceReferences = (message: any) => {
       console.log("[Mock] toggleSourceReferences called", message);
       return sourceRefsComposable.toggleSourceReferences(message);
     };
 
-    window.getSourceReferences = (message) => {
+    window.getSourceReferences = (message: any) => {
       console.log("[Mock] getSourceReferences called", message);
       return sourceRefsComposable.getSourceReferences(message);
     };

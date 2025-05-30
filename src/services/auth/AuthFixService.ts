@@ -116,14 +116,14 @@ export class AuthFixService {
 
     // Request interceptor
     apiService.axiosInstance.interceptors.request.use(
-      (config) => {
+      (config: any) => {
         const token = this.getValidToken();
         if (token && !this.shouldSkipAuth(config)) {
           config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
       },
-      (error) => {
+      (error: any) => {
         this.logger.error("Request interceptor error:", error);
         return Promise.reject(error);
       }
@@ -131,8 +131,8 @@ export class AuthFixService {
 
     // Response interceptor for handling auth errors
     apiService.axiosInstance.interceptors.response.use(
-      (response) => response,
-      async (error) => {
+      (response: any) => response,
+      async (error: any) => {
         if (error.response?.status === 401) {
           await this.handleUnauthorized();
         }
@@ -196,7 +196,7 @@ export class AuthFixService {
 
     // Add request transformer for auth endpoints
     apiService.axiosInstance.interceptors.request.use(
-      (config) => {
+      (config: any) => {
         if (this.isAuthEndpoint(config.url)) {
           config = this.formatAuthRequest(config);
         }

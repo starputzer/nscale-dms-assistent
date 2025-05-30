@@ -14,7 +14,7 @@ export function setupAuthInterceptor() {
 
   // Add request interceptor to include authorization header
   axios.interceptors.request.use(
-    (config) => {
+    (config: any) => {
       // Skip auth header for login requests
       if (config.url?.includes("/auth/login")) {
         return config;
@@ -35,7 +35,7 @@ export function setupAuthInterceptor() {
 
       return config;
     },
-    (error) => {
+    (error: any) => {
       console.error("Request interceptor error:", error);
       return Promise.reject(error);
     },
@@ -43,8 +43,8 @@ export function setupAuthInterceptor() {
 
   // Add response interceptor for 401 handling
   axios.interceptors.response.use(
-    (response) => response,
-    async (error) => {
+    (response: any) => response,
+    async (error: any) => {
       if (
         error.response?.status === 401 &&
         !error.config.url?.includes("/auth/")

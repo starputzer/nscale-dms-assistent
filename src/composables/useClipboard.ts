@@ -1,4 +1,4 @@
-import { ref } from "vue";
+import { ref, type Ref } from "vue";
 import type {
   ClipboardOptions,
   UseClipboardReturn,
@@ -85,9 +85,9 @@ export function useClipboard(
   /**
    * Copy text to clipboard
    * @param value - Text to copy
-   * @returns Promise that resolves when copying is complete
+   * @returns Promise that resolves with success status
    */
-  const copy = async (value: string): Promise<void> => {
+  const copy = async (value: string): Promise<boolean> => {
     reset();
 
     try {
@@ -117,8 +117,10 @@ export function useClipboard(
       }
 
       handleSuccess(value);
+      return true;
     } catch (err) {
       handleError(err instanceof Error ? err : new Error(String(err)));
+      return false;
     }
   };
 
@@ -163,10 +165,13 @@ export function useClipboard(
     copy,
     copyFromElement,
     paste,
-    copied,
-    text,
+    isSuccess: copied,
+    copiedText: text,
+    isLoading: ref(false),
     error,
+    text,
     reset,
+    copied,
   };
 }
 

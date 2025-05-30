@@ -1,4 +1,4 @@
-import { ref, computed, reactive } from "vue";
+import { ref, computed } from "vue";
 
 // Default i18n translations
 const translations = {

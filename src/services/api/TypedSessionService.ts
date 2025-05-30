@@ -164,7 +164,7 @@ export class TypedSessionService extends BaseApiService<
     params?: SessionFilterParams,
   ): Promise<Result<ChatSession[], APIError>> {
     try {
-      const page = params?.page || 1;
+
       const pageSize = params?.pageSize || 20;
       const sortBy = params?.sortBy || "updatedAt";
       const sortDirection = params?.sortDirection || "desc";
@@ -466,7 +466,7 @@ export class TypedSessionService extends BaseApiService<
     pagination?: PaginationParams,
   ): Promise<Result<ChatMessage[], APIError>> {
     try {
-      const page = pagination?.page || 1;
+
       const pageSize = pagination?.pageSize || 50;
 
       // Aus IndexedDB laden
@@ -954,7 +954,7 @@ export class TypedSessionService extends BaseApiService<
       );
 
       if (completedRequests.length > 0) {
-        const ids = completedRequests.map((req: any) => req.id);
+
         await defaultIndexedDBService.deleteBulk("offlineRequests", _ids);
         this.logger.debug(
           `${completedRequests.length} abgeschlossene Anfragen aus der Queue entfernt`,

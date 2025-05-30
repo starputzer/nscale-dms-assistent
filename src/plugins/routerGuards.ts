@@ -53,7 +53,7 @@ export function installRouterGuards(
       logger.warn("Router noch nicht initialisiert, warte...");
 
       // Versuche Router zu initialisieren
-      const initialized = await routerService.initialize(router);
+      const initialized = await routerService.isInitialized(router);
 
       if (!initialized) {
         logger.error("Router-Initialisierung fehlgeschlagen");

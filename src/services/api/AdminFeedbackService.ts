@@ -66,7 +66,7 @@ export class AdminFeedbackService implements IAdminFeedbackService {
           refreshToken: true,
         };
 
-        const response = await cachedApiService.get<FeedbackStats>(
+        const response = await apiService.get<FeedbackStats>(
           apiConfig.ENDPOINTS.ADMIN_FEEDBACK.STATS || "/admin/feedback/stats",
           undefined,
           options,
@@ -93,8 +93,8 @@ export class AdminFeedbackService implements IAdminFeedbackService {
       this.logger.info(
         "Verwende Mock-Daten über adminApi für Feedback-Statistiken",
       );
-      const response = await adminApi.getFeedbackStats();
 
+      const response = await adminApi.getFeedbackStats();
       return {
         success: true,
         data: response?.data?.stats || response?.data,
@@ -136,7 +136,7 @@ export class AdminFeedbackService implements IAdminFeedbackService {
           refreshToken: true,
         };
 
-        const response = await cachedApiService.get<FeedbackEntry[]>(
+        const response = await apiService.get<FeedbackEntry[]>(
           `${apiConfig.ENDPOINTS.ADMIN_FEEDBACK.LIST || "/admin/feedback"}?limit=${limit}`,
           undefined,
           options,
@@ -161,8 +161,8 @@ export class AdminFeedbackService implements IAdminFeedbackService {
 
       // Fallback zu adminApi mit Mock-Daten
       this.logger.info("Verwende Mock-Daten über adminApi für alle Feedbacks");
-      const response = await adminApi.getNegativeFeedback();
 
+      const response = await adminApi.getAllFeedback(limit);
       return {
         success: true,
         data: response?.data?.feedback || response?.data,
@@ -204,7 +204,7 @@ export class AdminFeedbackService implements IAdminFeedbackService {
           refreshToken: true,
         };
 
-        const response = await cachedApiService.get<FeedbackEntry[]>(
+        const response = await apiService.get<FeedbackEntry[]>(
           `${apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE || "/admin/feedback/negative"}?limit=${limit}`,
           undefined,
           options,
@@ -231,8 +231,8 @@ export class AdminFeedbackService implements IAdminFeedbackService {
       this.logger.info(
         "Verwende Mock-Daten über adminApi für negatives Feedback",
       );
-      const response = await adminApi.getNegativeFeedback();
 
+      const response = await adminApi.getNegativeFeedback(limit);
       return {
         success: true,
         data: response?.data?.feedback || response?.data,
@@ -270,7 +270,7 @@ export class AdminFeedbackService implements IAdminFeedbackService {
           `Verwende echte API für Statusaktualisierung des Feedbacks ${id}`,
         );
 
-        const response = await apiService.patch<FeedbackEntry>(
+        const response = await apiService.put<FeedbackEntry>(
           `${apiConfig.ENDPOINTS.ADMIN_FEEDBACK.UPDATE_STATUS || "/admin/feedback"}/${id}/status`,
           { status },
         );
@@ -294,8 +294,8 @@ export class AdminFeedbackService implements IAdminFeedbackService {
       this.logger.info(
         `Verwende Mock-Daten über adminApi für Statusaktualisierung des Feedbacks ${id}`,
       );
-      const response = await adminApi.updateFeedbackStatus(id, status);
 
+      const response = await adminApi.updateFeedbackStatus(id, status);
       return {
         success: true,
         data: response?.data,
@@ -356,8 +356,8 @@ export class AdminFeedbackService implements IAdminFeedbackService {
       this.logger.info(
         `Verwende Mock-Daten über adminApi zum Löschen des Feedbacks ${id}`,
       );
-      const response = await adminApi.deleteFeedback(id);
 
+      await adminApi.deleteFeedback(id);
       return {
         success: true,
         message: "Feedback erfolgreich gelöscht",

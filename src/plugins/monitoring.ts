@@ -42,7 +42,7 @@ export function createMonitoring(options: MonitoringOptions = {}) {
 
         // Track warnings in development
         if (import.meta.env.DEV) {
-          app.config.warnHandler = (msg, instance, trace) => {
+          app.config.warnHandler = (msg: any, instance: any, trace: any) => {
             console.warn('Vue Warning:', msg);
             
             telemetry.track({
@@ -140,12 +140,12 @@ export function createMonitoring(options: MonitoringOptions = {}) {
         };
 
         // Start tracking when app is mounted
-        app.onMount = () => {
+        app.mount = () => {
           startPerformanceTracking();
         };
 
         // Cleanup on unmount
-        app.onUnmount = () => {
+        app.unmount = () => {
           if (performanceInterval) {
             clearInterval(performanceInterval);
           }
@@ -156,7 +156,7 @@ export function createMonitoring(options: MonitoringOptions = {}) {
       if (apiTrackingEnabled && window.axios) {
         // Request interceptor
         window.axios.interceptors.request.use(
-          (config) => {
+          (config: any) => {
             config.metadata = { startTime: performance.now() };
             return config;
           },
@@ -168,7 +168,7 @@ export function createMonitoring(options: MonitoringOptions = {}) {
 
         // Response interceptor
         window.axios.interceptors.response.use(
-          (response) => {
+          (response: any) => {
             const duration = performance.now() - response.config.metadata?.startTime;
             const endpoint = response.config.url || 'unknown';
             const method = response.config.method?.toUpperCase() || 'GET';

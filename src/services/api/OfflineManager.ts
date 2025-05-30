@@ -450,7 +450,7 @@ export class OfflineManager {
       }
 
       // IDs extrahieren
-      const ids = completedRequests.map((req: any) => req.id);
+
 
       // Bulk-Löschung
       await defaultIndexedDBService.deleteBulk("offlineRequests", _ids);

@@ -116,7 +116,7 @@ export class SessionService {
       };
 
       // Über den Cached-API-Service anfragen
-      const response = await cachedApiService.getPaginated<ChatSession[]>(
+      const response = await cachedApiService.get<ChatSession[]>(
         apiConfig.ENDPOINTS.CHAT.SESSIONS,
         pagination || { page: 1, pageSize: 20 },
         options,
@@ -164,7 +164,7 @@ export class SessionService {
     pagination?: PaginationRequest,
   ): Promise<ApiResponse<ChatSession[]>> {
     try {
-      const page = pagination?.page || 1;
+
       const pageSize = pagination?.pageSize || 20;
       const sortBy = pagination?.sortBy || "updatedAt";
       const sortDirection = pagination?.sortDirection || "desc";
@@ -411,8 +411,8 @@ export class SessionService {
         );
 
         if (messages.length > 0) {
-          const messageIds = messages.map((message: any) => message.id);
-          await defaultIndexedDBService.deleteBulk("messages", _messageIds);
+          const messageIds = messages.map((msg) => msg.id);
+          await defaultIndexedDBService.deleteBulk("messages", messageIds);
         }
 
         // Event auslösen
@@ -425,7 +425,7 @@ export class SessionService {
       }
 
       // Über API löschen
-      const response = await apiService.delete(
+      const response = await apiService.delete<void>(
         apiConfig.ENDPOINTS.CHAT.SESSION(sessionId),
       );
 
@@ -443,8 +443,8 @@ export class SessionService {
         );
 
         if (messages.length > 0) {
-          const messageIds = messages.map((message: any) => message.id);
-          await defaultIndexedDBService.deleteBulk("messages", _messageIds);
+          const messageIds = messages.map((msg) => msg.id);
+          await defaultIndexedDBService.deleteBulk("messages", messageIds);
         }
 
         // Aktuelle Session-ID zurücksetzen, wenn es die aktuelle war
@@ -647,7 +647,7 @@ export class SessionService {
       };
 
       // Über den Cached-API-Service anfragen
-      const response = await cachedApiService.getPaginated<ChatMessage[]>(
+      const response = await cachedApiService.get<ChatMessage[]>(
         apiConfig.ENDPOINTS.CHAT.MESSAGES(sessionId),
         pagination || { page: 1, pageSize: 50 },
         options,
@@ -697,7 +697,7 @@ export class SessionService {
     pagination?: PaginationRequest,
   ): Promise<ApiResponse<ChatMessage[]>> {
     try {
-      const page = pagination?.page || 1;
+
       const pageSize = pagination?.pageSize || 50;
 
       // Aus IndexedDB laden
@@ -1167,8 +1167,8 @@ export class SessionService {
       );
 
       if (completedRequests.length > 0) {
-        const ids = completedRequests.map((req: any) => req.id);
-        await defaultIndexedDBService.deleteBulk("offlineRequests", _ids);
+        const requestIds = completedRequests.map((req: any) => req.id);
+        await defaultIndexedDBService.deleteBulk("offlineRequests", requestIds);
         this.logger.debug(
           `${completedRequests.length} abgeschlossene Anfragen aus der Queue entfernt`,
         );

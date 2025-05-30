@@ -8,14 +8,14 @@
 // Importiere Auth-Plugin und AuthService
 import AuthPlugin from "@/plugins/auth";
 import AuthService from "@/services/auth/AuthService";
-import { authRoutes } from "@/router/auth-routes";
+
 
 /**
  * Auth-Integration in main.ts
  *
  * 1. Füge diese Importe zur main.ts hinzu:
  *    import AuthPlugin from '@/plugins/auth'
- *    import { authRoutes } from '@/router/auth-routes'
+
  *
  * 2. Füge die Auth-Routen zum Router hinzu:
  *    // Im router/index.ts nach den bestehenden Routen

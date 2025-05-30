@@ -1,5 +1,5 @@
 import { computed, onErrorCaptured, ref } from "vue";
-import type { WritableComputedRef, Ref } from "vue";
+import type { WritableComputedRef } from "vue";
 import { unref } from "@vue/runtime-core";
 import { useFeatureTogglesStore } from "../stores/featureToggles";
 import type {

@@ -224,7 +224,7 @@ export function initializeApiServices(): void {
       const axios = axiosModule.default;
 
       axios.interceptors.request.use(
-        (config) => {
+        (config: any) => {
           if (!config.url?.includes("/login")) {
             const token = localStorage.getItem("nscale_access_token");
             if (token) {

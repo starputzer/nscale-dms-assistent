@@ -7,8 +7,7 @@
  * @module sourceReferenceAdapter
  */
 
-import { reactive } from "vue";
-import { useSourcesStore } from "@/stores/sources";
+
 import { useSourceReferences } from "@/composables/useSourceReferences";
 
 /**

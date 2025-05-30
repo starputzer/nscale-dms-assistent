@@ -81,7 +81,7 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
       // Apply updates to each session
       updatesBySession.forEach((messages, sessionId: any) => {
         const currentMessages = messagesMap.get(sessionId) || [];
-        const messageMap = new Map(currentMessages.map((m) => [m.id, m]));
+        const messageMap = new Map(currentMessages.map((m: any) => [m.id, m]));
 
         // Update or add messages
         messages.forEach((msg) => {
@@ -98,7 +98,7 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
       maxBatchSize: 100,
       adaptiveThrottling: true,
       trackPerformance: true,
-      onMetrics: (metrics) => {
+      onMetrics: (metrics: any) => {
         if (process.env.NODE_ENV === "development") {
           console.debug("Batch update metrics:", metrics);
         }
@@ -246,7 +246,7 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
       );
 
       // Store messages with shallow reactivity
-      const messages = response.data.map((msg: ChatMessage) => markRaw(msg));
+
       messagesMap.set(sessionId, _messages);
     } catch (err: any) {
       console.error("Failed to fetch messages:", err);
@@ -275,7 +275,7 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
     });
 
     // Add message immediately
-    const messages = messagesMap.get(sessionId) || [];
+
     messagesMap.set(sessionId, [...messages, userMessage]);
 
     // Set streaming status
@@ -389,7 +389,7 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
    */
   async function deleteSession(sessionId: string): Promise<void> {
     // Remove from sessions
-    removeSession((s) => s.id === sessionId);
+    removeSession((s: any) => s.id === sessionId);
 
     // Remove messages
     messagesMap.remove(sessionId);

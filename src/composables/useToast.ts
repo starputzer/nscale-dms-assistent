@@ -80,7 +80,7 @@ function convertToServiceOptions(options?: ToastOptions): ServiceToastOptions {
  */
 export function useToast() {
   // UI Store für Fallback, falls Toast-Service nicht verfügbar
-  const uiStore = useUIStore();
+
 
   /**
    * Zeigt eine neue Toast-Nachricht an

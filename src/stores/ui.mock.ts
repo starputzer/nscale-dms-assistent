@@ -3,7 +3,7 @@
  */
 
 import { defineStore } from "pinia";
-import { ref, computed } from "vue";
+import { ref } from "vue";
 
 export const useUIStore = defineStore("ui", () => {
   // State

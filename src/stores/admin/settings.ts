@@ -5,7 +5,7 @@
 
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import { adminApi } from "@/services/api/admin";
+
 
 // Definition der Systemeinstellungen
 export interface SystemSettings {

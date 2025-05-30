@@ -17,7 +17,7 @@ import { authTokenManager } from "../services/auth/AuthTokenManager";
 import { sessionContinuityService } from "../services/auth/SessionContinuityService";
 // Debug axios requests/responses for authentication
 axios.interceptors.request.use(
-  (config) => {
+  (config: any) => {
     if (config.url?.includes("/auth/")) {
       console.log("Axios Request:", {
         url: config.url,
@@ -28,14 +28,14 @@ axios.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
+  (error: any) => {
     console.error("Axios Request Error:", error);
     return Promise.reject(error);
   },
 );
 
 axios.interceptors.response.use(
-  (response) => {
+  (response: any) => {
     if (response.config.url?.includes("/auth/")) {
       console.log("Axios Response:", {
         url: response.config.url,
@@ -45,7 +45,7 @@ axios.interceptors.response.use(
     }
     return response;
   },
-  (error) => {
+  (error: any) => {
     console.error("Axios Response Error:", error);
     return Promise.reject(error);
   },

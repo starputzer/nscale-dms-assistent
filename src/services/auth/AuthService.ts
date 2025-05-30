@@ -194,20 +194,20 @@ export class AuthService {
 
     // Request Interceptor zum Hinzufügen des Auth-Tokens
     this.client.interceptors.request.use(
-      (config) => {
+      (config: any) => {
         const token = this.getToken();
         if (token) {
           config.headers["Authorization"] = `Bearer ${token}`;
         }
         return config;
       },
-      (error) => Promise.reject(error),
+      (error: any) => Promise.reject(error),
     );
 
     // Response Interceptor für Fehlerbehandlung und Token-Refresh
     this.client.interceptors.response.use(
-      (response) => response,
-      async (error) => {
+      (response: any) => response,
+      async (error: any) => {
         // Nur Token-Refresh für 401-Fehler mit spezifischen Token-Problemen
         if (
           error.response?.status === 401 &&

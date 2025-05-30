@@ -1,5 +1,5 @@
 import { useFeatureTogglesStore } from "@/stores/featureToggles";
-import { reactive, ref, computed, watch } from "vue";
+import { reactive } from "vue";
 
 /**
  * Verschiedene Strategien für Fallbacks
@@ -423,7 +423,7 @@ export class FallbackManager {
    */
   private attemptRecovery(feature: string): void {
     const state = this.getFeatureState(feature);
-    const config = this.getFeatureConfig(feature);
+
 
     // Event auslösen
     this.addEvent("recoveryAttempt", feature, {
@@ -561,7 +561,7 @@ export class FallbackManager {
     errorInfo: Omit<FallbackError, "feature" | "timestamp">,
   ): boolean {
     // Konfiguration und Status holen
-    const config = this.getFeatureConfig(feature);
+
     const state = this.getFeatureState(feature);
 
     // Vollständigen Fehler erstellen
@@ -606,7 +606,7 @@ export class FallbackManager {
     feature: string,
     error: FallbackError,
   ): boolean {
-    const config = this.getFeatureConfig(feature);
+
     const state = this.getFeatureState(feature);
 
     // Wenn Fallback bereits aktiv ist, nicht erneut aktivieren
@@ -672,7 +672,7 @@ export class FallbackManager {
     this.store.setFallbackMode(feature, true);
 
     // Bei auto-recovery: nächsten Wiederherstellungsversuch planen
-    const config = this.getFeatureConfig(feature);
+
     if (config.autoRecovery) {
       state.nextRecoveryAttempt = new Date(Date.now() + config.recoveryTimeout);
     }

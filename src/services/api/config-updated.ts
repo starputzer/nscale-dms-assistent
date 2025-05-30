@@ -234,7 +234,7 @@ export function initializeApiServices(): void {
 
   const config = getEnvironmentConfig();
 
-  const defaultHeaders = {
+  const DEFAULT_HEADERS = {
     "Content-Type": "application/json",
     Accept: "application/json",
     "X-Client-Version": import.meta.env.VITE_APP_VERSION || "1.0.0",
@@ -252,7 +252,7 @@ export function initializeApiServices(): void {
       const axios = axiosModule.default;
 
       axios.interceptors.request.use(
-        (config) => {
+        (config: any) => {
           // Don't add auth header to login endpoint
           const loginPath = buildApiUrl(API_ROUTES.AUTH.LOGIN);
           if (!config.url?.includes(loginPath)) {

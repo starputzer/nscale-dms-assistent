@@ -263,10 +263,8 @@ function setupStoreInteractions(): void {
     // Bei Abmeldung
     if (name === "logout") {
       after(() => {
-        // Aktuelle Session beenden
-        if (sessionsStore.currentSession) {
-          sessionsStore.clearCurrentSession();
-        }
+        // Reset the entire sessions store (clears all sessions and messages)
+        sessionsStore.reset();
 
         // Zurücksetzen des Dokumentenkonverter-Stores
         documentConverterStore.resetState();

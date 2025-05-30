@@ -219,7 +219,7 @@ export const useThemeStore = defineStore("theme", () => {
   loadSavedTheme();
 
   // Watch for effective theme changes
-  watch(effectiveTheme, (newTheme) => {
+  watch(effectiveTheme, (newTheme: any) => {
     applyTheme(newTheme);
   });
 

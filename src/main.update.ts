@@ -120,14 +120,14 @@ window.toggleSourceReferences = () => {
   }
 };
 
-window.showSourceReferencesForMessage = (messageId, _sources) => {
+window.showSourceReferencesForMessage = (messageId: any, _sources: any) => {
   const event = new CustomEvent("show-source-references", {
     detail: { messageId, _sources },
   });
   document.dispatchEvent(event);
 };
 
-window.hideSourceReferences = () => {
+window.getSourceReferences = () => {
   const overlay = document.querySelector(".source-references-overlay");
   if (overlay) {
     overlay.classList.remove("visible");

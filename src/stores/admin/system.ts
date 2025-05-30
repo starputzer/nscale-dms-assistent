@@ -285,8 +285,8 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
     try {
       if (apiIntegrationEnabled.value) {
         logger.info("Leere Cache über AdminSystemService");
-        const response = await adminSystemService.clearCache();
 
+        const response = await adminSystemService.clearCache();
         if (response.success) {
           logger.info("Cache erfolgreich über AdminSystemService geleert");
           // Nach erfolgreicher Ausführung Statistiken neu laden
@@ -308,7 +308,7 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
 
       // Fallback zur alten Implementierung
       logger.info("Leere Cache über adminApi");
-      const response = await adminApi.clearModelCache();
+      await adminApi.clearCache();
 
       // Nach erfolgreicher Ausführung Statistiken neu laden
       await fetchStats();
@@ -346,8 +346,8 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
     try {
       if (apiIntegrationEnabled.value) {
         logger.info("Leere Embedding-Cache über AdminSystemService");
-        const response = await adminSystemService.clearEmbeddingCache();
 
+        const response = await adminSystemService.clearEmbeddingCache();
         if (response.success) {
           logger.info(
             "Embedding-Cache erfolgreich über AdminSystemService geleert",
@@ -372,7 +372,7 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
 
       // Fallback zur alten Implementierung
       logger.info("Leere Embedding-Cache über adminApi");
-      const response = await adminApi.clearEmbeddingCache();
+      await adminApi.clearEmbeddingCache();
 
       // Nach erfolgreicher Ausführung Statistiken neu laden
       await fetchStats();
@@ -676,8 +676,8 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
         logger.info(
           `Lade verfügbare Systemaktionen (Versuch ${retries + 1}/${maxRetries + 1})`,
         );
-        const response = await adminSystemService.getAvailableActions();
 
+        const response = await adminSystemService.getAvailableActions();
         if (response.success && response.data) {
           logger.info("Verfügbare Systemaktionen erfolgreich geladen");
 
@@ -769,8 +769,8 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
     try {
       if (apiIntegrationEnabled.value) {
         logger.info("Lade Systemeinstellungen über AdminSystemService");
-        const response = await adminSystemService.getSystemSettings();
 
+        const response = await adminSystemService.getSystemSettings();
         if (response.success && response.data) {
           logger.info("Systemeinstellungen erfolgreich geladen");
           systemSettings.value = { ...systemSettings.value, ...response.data };
@@ -804,8 +804,8 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
     try {
       if (apiIntegrationEnabled.value) {
         logger.info("Speichere Systemeinstellungen über AdminSystemService");
-        const response =
-          await adminSystemService.updateSystemSettings(settings);
+
+        const response = await adminSystemService.updateSystemSettings(settings);
 
         if (response.success) {
           logger.info("Systemeinstellungen erfolgreich gespeichert");
@@ -842,8 +842,8 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
     try {
       if (apiIntegrationEnabled.value) {
         logger.info("Starte Systemdienste neu über AdminSystemService");
-        const response = await adminSystemService.restartServices();
 
+        const response = await adminSystemService.restartServices();
         if (response.success) {
           logger.info("Systemdienste erfolgreich neu gestartet");
           await fetchStats();
@@ -878,8 +878,8 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
     try {
       if (apiIntegrationEnabled.value) {
         logger.info("Exportiere Systemlogs über AdminSystemService");
-        const response = await adminSystemService.exportLogs();
 
+        const response = await adminSystemService.exportLogs();
         if (response.success && response.data) {
           logger.info("Systemlogs erfolgreich exportiert");
           // Trigger download
@@ -920,8 +920,8 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
     try {
       if (apiIntegrationEnabled.value) {
         logger.info("Optimiere Datenbank über AdminSystemService");
-        const response = await adminSystemService.optimizeDatabase();
 
+        const response = await adminSystemService.optimizeDatabase();
         if (response.success) {
           logger.info("Datenbank erfolgreich optimiert");
           await fetchStats();
@@ -956,8 +956,8 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
     try {
       if (apiIntegrationEnabled.value) {
         logger.info("Setze Statistiken zurück über AdminSystemService");
-        const response = await adminSystemService.resetStatistics();
 
+        const response = await adminSystemService.resetStatistics();
         if (response.success) {
           logger.info("Statistiken erfolgreich zurückgesetzt");
           await fetchStats();
@@ -1001,8 +1001,8 @@ export const useAdminSystemStore = defineStore("adminSystem", () => {
     try {
       if (apiIntegrationEnabled.value) {
         logger.info("Erstelle System-Backup über AdminSystemService");
-        const response = await adminSystemService.createBackup();
 
+        const response = await adminSystemService.createBackup();
         if (response.success) {
           logger.info("System-Backup erfolgreich erstellt");
           await fetchStats();

@@ -5,7 +5,7 @@
  * um die Entwicklung von Vue-Komponenten mit TypeScript zu erleichtern.
  */
 
-import type { PropType, VNode, DefineComponent } from "vue";
+import type { DefineComponent } from "vue";
 import type { RouteLocationRaw } from "vue-router";
 import type { ChatMessage, ChatSession, User } from "./store-types";
 

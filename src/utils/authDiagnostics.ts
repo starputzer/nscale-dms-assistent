@@ -100,7 +100,7 @@ class AuthDiagnostics {
       watchers.forEach((key: any) => {
         watch(
           () => (this.authStore as any)[key],
-          (newValue, oldValue) => {
+          (newValue: any, oldValue: any) => {
             this.log("token_storage", `Auth store ${key} changed`, {
               key,
               oldValue: this.sanitizeValue(oldValue),
@@ -147,7 +147,7 @@ class AuthDiagnostics {
   private hookAxiosInterceptors() {
     // Add request interceptor
     this.axiosRequestInterceptor = axios.interceptors.request.use(
-      (config) => {
+      (config: any) => {
         this.log("request", "Axios request intercepted", {
           url: config.url,
           method: config.method,
@@ -156,7 +156,7 @@ class AuthDiagnostics {
         });
         return config;
       },
-      (error) => {
+      (error: any) => {
         this.log("error", "Axios request error", { error: error.message });
         return Promise.reject(error);
       },
@@ -164,7 +164,7 @@ class AuthDiagnostics {
 
     // Add response interceptor
     this.axiosResponseInterceptor = axios.interceptors.response.use(
-      (response) => {
+      (response: any) => {
         this.log("response", "Axios response received", {
           url: response.config.url,
           status: response.status,
@@ -173,7 +173,7 @@ class AuthDiagnostics {
         });
         return response;
       },
-      (error) => {
+      (error: any) => {
         this.log("error", "Axios response error", {
           url: error.config?.url,
           status: error.response?.status,

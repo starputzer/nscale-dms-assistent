@@ -262,7 +262,7 @@ export class UIDiagnostics {
 // Composable für Komponenten
 export function useUIDiagnostics(componentName: string) {
   const diagnostics = UIDiagnostics.getInstance();
-  const router = useRouter();
+
 
   onMounted(() => {
     diagnostics.trackLifecycle(componentName, "mounted");

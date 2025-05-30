@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref, computed, watch } from "vue";
-import { useFeatureTogglesStore } from "./featureToggles";
+
 import { StorageService } from "../services/storage/StorageService";
 import { LogService } from "../services/log/LogService";
 

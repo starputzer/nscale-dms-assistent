@@ -157,7 +157,7 @@ export class ApiService {
   private setupInterceptors(): void {
     // Request-Interceptor
     this.axiosInstance.interceptors.request.use(
-      (config) => {
+      (config: any) => {
         // Füge Request-ID für Tracking hinzu
         const requestId = uuidv4();
         config.headers = config.headers || {};
@@ -251,7 +251,7 @@ export class ApiService {
 
     // Response-Interceptor
     this.axiosInstance.interceptors.response.use(
-      (response) => {
+      (response: any) => {
         // Debug-Logging
         if (apiConfig.DEBUG.LOG_REQUESTS) {
           this.logService.debug(
@@ -887,7 +887,7 @@ export class ApiService {
         accessTokenPreview: accessToken.substring(0, 20) + "...",
         storageKeys: apiConfig.AUTH.STORAGE_KEYS,
         userEmail: user?.email,
-        userRole: user?.role,
+        userRole: user?.roles,
       });
 
       // Token und Benutzerdaten speichern

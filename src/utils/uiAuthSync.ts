@@ -19,7 +19,7 @@ export function setupUIAuthSync() {
     // Watch for changes
     watch(
       () => authStore.isAuthenticated,
-      (newValue) => {
+      (newValue: any) => {
         if (uiDiagnostics.state?.value) {
           uiDiagnostics.state.value.isAuthenticated = newValue;
           console.log(

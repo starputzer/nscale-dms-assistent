@@ -10,7 +10,7 @@ export function useMonitoring(featureId: string, componentName: string) {
 
   // Check if monitoring is enabled for this feature
   const feature = computed(() => {
-    return featureStore.features.find((f) => f.id === featureId);
+    return featureStore.features.find((f: any) => f.id === featureId);
   });
 
   const isMonitoringEnabled = computed(() => {

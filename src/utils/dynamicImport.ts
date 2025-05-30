@@ -152,7 +152,7 @@ export function dynamicImport(
     delay: loadingDelay,
     timeout,
     suspensible: true,
-    onError: (error, retry, fail, attempts) => {
+    onError: (error: any, retry: any, fail: any, attempts: any) => {
       console.error(
         `Fehler beim Laden der Komponente ${normalizedPath}:`,
         error,

@@ -558,7 +558,7 @@ export class AdminSystemService implements IAdminSystemService {
 
         if (response.success) {
           // Cache invalidieren nach Update
-          await cachedApiService.invalidateCache(
+          await cachedApiService.invalidate(
             apiConfig.ENDPOINTS.SYSTEM.SETTINGS || "/admin/settings",
           );
           return response;
@@ -733,7 +733,7 @@ export class AdminSystemService implements IAdminSystemService {
 
         if (response.success) {
           // Cache invalidieren nach Reset
-          await cachedApiService.invalidateCache(
+          await cachedApiService.invalidate(
             apiConfig.ENDPOINTS.SYSTEM.STATS || "/admin/stats",
           );
           return response;

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mount, VueWrapper } from "@vue/test-utils";
 import MainLayout from "../MainLayout.vue";
-import Header from "../Header.vue";
-import Sidebar from "../Sidebar.vue";
+
+
 import { createTestingPinia } from "@pinia/testing";
 
 // Mock für Header und Sidebar

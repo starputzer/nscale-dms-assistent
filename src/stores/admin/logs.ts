@@ -5,7 +5,7 @@
 
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import { ApiService } from "@/services/api/ApiService";
+
 import { BatchRequestService } from "@/services/api/BatchRequestService";
 import { useErrorReporting } from "@/composables/useErrorReporting";
 

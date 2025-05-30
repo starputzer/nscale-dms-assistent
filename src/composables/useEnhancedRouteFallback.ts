@@ -118,7 +118,7 @@ export function useEnhancedRouteFallback(
       // }
 
       // Prüfe Router-Zustand
-      const currentRoute = routerService.getCurrentRoute();
+      const currentRoute = routerService.currentRoute();
 
       if (!currentRoute) {
         handleRouteError(new Error("Keine aktuelle Route verfügbar"));
@@ -337,7 +337,7 @@ export function useEnhancedRouteFallback(
     // Überwache Route-Änderungen
     watch(
       () => route.fullPath,
-      (newPath, oldPath) => {
+      (newPath: any, oldPath: any) => {
         if (debugMode) {
           logger.debug(`Route-Änderung: ${oldPath} -> ${newPath}`);
         }
@@ -405,7 +405,7 @@ export function useEnhancedRouteFallback(
     return {
       routeHealth: routeHealth.value,
       routerState: routerService.getState(),
-      currentRoute: routerService.getCurrentRoute(),
+      currentRoute: routerService.currentRoute(),
       isMonitoring: isMonitoring.value,
       queueLength: navigationQueue.value.length,
       // domDiagnostics: domErrorDetector.detectErrorState() // DEAKTIVIERT wegen Endlosschleife

@@ -19,7 +19,7 @@ import {
   isAPIError,
   CachePolicy,
 } from "@/utils/apiTypes";
-import { Nullable, Optional, AsyncFunction, catchAsync } from "@/utils/types";
+import { AsyncFunction, catchAsync } from "@/utils/types";
 
 /**
  * Konfigurationsoptionen für BaseApiService

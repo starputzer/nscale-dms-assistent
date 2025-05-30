@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref, computed, watch } from "vue";
+import { ref, computed } from "vue";
 import { documentConverterService } from "@/services/api/DocumentConverterService";
 import { adminDocConverterService } from "@/services/api/AdminDocConverterService";
 import { shouldUseRealApi } from "@/config/api-flags";
@@ -488,12 +488,12 @@ export const useDocumentConverterStore = defineStore(
 
           // Create download link and trigger download
           const url = window.URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = document.filename;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
+          const downloadLink = window.document.createElement("a");
+          downloadLink.href = url;
+          downloadLink.download = document.filename;
+          window.document.body.appendChild(downloadLink);
+          downloadLink.click();
+          downloadLink.remove();
           window.URL.revokeObjectURL(url);
           return;
         }

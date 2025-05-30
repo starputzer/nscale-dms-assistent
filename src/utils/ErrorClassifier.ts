@@ -25,7 +25,7 @@ class ErrorClassifier {
 
     // Analysiere den Nachrichtentext und Stack
     const message = error.message?.toLowerCase() || "";
-    const stack = error.stack?.toLowerCase() || "";
+
     const name = error.name?.toLowerCase() || "";
 
     // Netzwerk-bezogene Fehler

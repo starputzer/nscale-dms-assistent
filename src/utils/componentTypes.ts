@@ -5,7 +5,7 @@
  * Sie bietet Typen für Props, Emits, Slots, Refs und andere komponentenspezifische Konzepte.
  */
 
-import { ComputedRef, Ref, UnwrapRef, SetupContext } from "vue";
+import { ComputedRef, Ref, SetupContext } from "vue";
 
 /**
  * DefineProps<T> - Hilfstyp für typsichere Props-Definitionen

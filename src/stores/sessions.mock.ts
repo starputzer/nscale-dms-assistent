@@ -81,7 +81,7 @@ export const useSessionStore = defineStore("sessions", () => {
   const isLoading = ref(false);
   const error = ref(null);
   const isStreaming = ref(false);
-  const streamedMessageId = ref(null);
+
 
   // Computed
   const currentSession = computed(() => {
@@ -146,7 +146,7 @@ export const useSessionStore = defineStore("sessions", () => {
     }
   }
 
-  async function loadSession(sessionId) {
+  async function loadSession(sessionId: any) {
     isLoading.value = true;
 
     try {
@@ -168,7 +168,7 @@ export const useSessionStore = defineStore("sessions", () => {
     }
   }
 
-  async function deleteSession(sessionId) {
+  async function deleteSession(sessionId: any) {
     isLoading.value = true;
 
     try {
@@ -196,7 +196,7 @@ export const useSessionStore = defineStore("sessions", () => {
     }
   }
 
-  function addMessage(messageObj) {
+  function addMessage(messageObj: any) {
     const sessionId = currentSessionId.value;
 
     if (!sessionId) {
@@ -222,7 +222,7 @@ export const useSessionStore = defineStore("sessions", () => {
     }
   }
 
-  function updateStreamedMessage(content) {
+  function updateStreamedMessage(content: any) {
     const sessionId = currentSessionId.value;
 
     if (!sessionId || !messages.value[sessionId]) {

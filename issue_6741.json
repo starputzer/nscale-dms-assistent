@@ -1,0 +1,6 @@
+{
+  "title": "[SECURITY] Upgrade Node.js from v18 to v20 LTS",
+  "body": "## Problem\nNode.js 18 reaches EOL in April 2025. We need to upgrade to v20 LTS.\n\n## Impact\n- Security vulnerabilities after EOL\n- Missing performance improvements\n- Incompatibility with newer packages\n\n## Tasks\n- [ ] Update .nvmrc to v20\n- [ ] Update GitHub Actions workflows\n- [ ] Update Docker base images\n- [ ] Test all dependencies compatibility\n- [ ] Update documentation\n\n## Acceptance Criteria\n- All CI/CD pipelines use Node.js 20\n- Local development uses Node.js 20\n- All tests pass\n- No npm warnings\n\n## Priority: HIGH\n## Effort: 5 story points",
+  "labels": ["security", "infrastructure", "dependencies"],
+  "milestone": 1
+}

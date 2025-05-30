@@ -6,7 +6,7 @@
  */
 
 import { authTokenManager, StoredTokenData } from "./AuthTokenManager";
-import { Router, RouteLocationNormalized } from "vue-router";
+import { RouteLocationNormalized } from "vue-router";
 
 export interface SessionState {
   isAuthenticated: boolean;

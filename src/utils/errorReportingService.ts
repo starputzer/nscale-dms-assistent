@@ -8,16 +8,16 @@
  * @date 08.05.2025
  */
 
-import { ref, reactive, computed, watch } from "vue";
+import { ref, reactive } from "vue";
 import {
   useFallbackManager,
   type FallbackError,
   type FallbackErrorSeverity,
 } from "./fallbackManager";
 // In der Pure Vue Version verwenden wir das Feature-Flags-System aus der Konfiguration
-import { isFeatureEnabled } from "@/config/featureFlags";
+
 import { useLogger } from "@/composables/useLogger";
-import { getNodeEnv, isDevelopment } from "./environmentUtils";
+import { isDevelopment } from "./environmentUtils";
 
 /**
  * Fehler-Quellen für die Kategorisierung

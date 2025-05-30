@@ -1,0 +1,6 @@
+{
+  "title": "[PERF] Optimize 947KB messageFormatter bundle",
+  "body": "## Problem\nmessageFormatter bundle is 947KB, accounting for ~40% of total bundle size.\n\n## Impact\n- Slow initial page load\n- Poor mobile performance\n- High bandwidth usage\n\n## Tasks\n- [ ] Analyze bundle with webpack-bundle-analyzer\n- [ ] Implement code splitting for formatter\n- [ ] Lazy load heavy dependencies\n- [ ] Consider lighter alternatives\n- [ ] Add bundle size budgets\n\n## Acceptance Criteria\n- Bundle size < 300KB\n- Maintains all functionality\n- Performance metrics improved\n- Bundle size CI checks added\n\n## Priority: HIGH\n## Effort: 8 story points",
+  "labels": ["performance", "frontend", "optimization"],
+  "milestone": 1
+}

@@ -13,8 +13,8 @@ export function debugI18n() {
   
   // Check available locales
   console.log('Available locales:', i18n.global.availableLocales);
-  console.log('Current locale:', i18n.global.locale.value);
-  console.log('Fallback locale:', i18n.global.fallbackLocale.value);
+  console.log('Current locale:', i18n.global.locale.valueOf);
+  console.log('Fallback locale:', i18n.global.fallbackLocale.valueOf);
   
   // Check if messages are loaded
   console.log('Messages loaded:');

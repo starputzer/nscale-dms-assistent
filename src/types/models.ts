@@ -5,7 +5,7 @@
  * die in der gesamten Anwendung verwendet werden.
  */
 
-import type { Dict, Nullable, JSONValue } from "./utilities";
+import type { Dict, JSONValue } from "./utilities";
 
 /**
  * Basisinterface für alle Entitäten mit einer ID

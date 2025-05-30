@@ -513,7 +513,7 @@ export class DocumentService {
     pagination?: PaginationRequest,
   ): Promise<ApiResponse<Document[]>> {
     try {
-      const page = pagination?.page || 1;
+
       const pageSize = pagination?.pageSize || 20;
       const sortBy = pagination?.sortBy || "uploadedAt";
       const sortDirection = pagination?.sortDirection || "desc";

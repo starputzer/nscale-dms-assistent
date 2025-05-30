@@ -150,7 +150,7 @@ export class RouterService {
 
     while (retries <= maxRetries) {
       try {
-        const result = await this.router!.push(to);
+
 
         // Cache successful navigation
         const currentRoute = this.router!.currentRoute.value;

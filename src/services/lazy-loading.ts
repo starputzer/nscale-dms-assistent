@@ -84,7 +84,7 @@ export function lazyLoadComponent(name: string): Component {
     delay: 200, // Zeige Loading nach 200ms
     timeout: 10000, // Timeout nach 10s
     suspensible: false,
-    onError(error, retry, fail, attempts) {
+    onError(error: any, retry: any, fail: any, attempts: any) {
       if (attempts <= 3) {
         // Retry bis zu 3 mal
         console.warn(`Retrying component load ${name}, attempt ${attempts}`);

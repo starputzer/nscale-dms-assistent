@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/stores/auth';
 
 export interface ApiClientConfig {
@@ -22,7 +22,7 @@ export class ApiClient {
 
     // Add auth interceptor
     this.instance.interceptors.request.use(
-      (config) => {
+      (config: any) => {
         const authStore = useAuthStore();
         if (authStore.token) {
           config.headers.Authorization = `Bearer ${authStore.token}`;
@@ -34,7 +34,7 @@ export class ApiClient {
 
     // Add response interceptor
     this.instance.interceptors.response.use(
-      (response) => response,
+      (response: any) => response,
       (error: Error | unknown) => {
         if ((error as any).response?.status === 401) {
           const authStore = useAuthStore();

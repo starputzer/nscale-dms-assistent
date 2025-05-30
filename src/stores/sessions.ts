@@ -178,7 +178,8 @@ export const useSessionsStore = defineStore(
         unwatchAuth();
       };
 
-      return cleanup();
+      // Return void instead of the cleanup function result
+      return;
     }
 
     // Getters
@@ -219,7 +220,7 @@ export const useSessionsStore = defineStore(
     // Sessions mit Tags filtern
     const getSessionsByTag = computed(() => (tagId: string) => {
       return sessions.value.filter((session: any) =>
-        session.tags?.some((tag) => tag.id === tagId),
+        session.tags?.some((tag: any) => tag.id === tagId),
       );
     });
 
@@ -762,7 +763,7 @@ export const useSessionsStore = defineStore(
           for (const message of pendingForSession) {
             try {
               // Nachricht an den Server senden
-              const response = await apiService.post(
+              const response = await apiService.post<ChatMessage>(
                 `/sessions/${sessionId}/messages`,
                 {
                   content: message.content,
@@ -1501,7 +1502,7 @@ export const useSessionsStore = defineStore(
         }
 
         // Sende Feedback an Backend
-        const response = await axios.post(
+        await axios.post(
           "/api/feedback",
           {
             message_id: messageId,
@@ -1914,6 +1915,56 @@ export const useSessionsStore = defineStore(
       currentSessionId.value = null;
     }
 
+    /**
+     * Reset the entire store state
+     * Used when logging out to clear all user-specific data
+     */
+    function reset(): void {
+      console.log("[SessionsStore] Resetting store state");
+      
+      // Clear all sessions and messages
+      sessions.value = [];
+      messages.value = {};
+      pendingMessages.value = {};
+      
+      // Clear current session
+      currentSessionId.value = null;
+      
+      // Clear streaming state
+      streaming.value = {};
+      
+      // Reset sync status
+      syncStatus.value = {
+        lastSyncTime: 0,
+        isSyncing: false,
+        pendingSyncCount: 0,
+      };
+      
+      // Clear selections
+      selectedSessionIds.value = [];
+      
+      // Clear tags and categories
+      availableTags.value = [];
+      availableCategories.value = [];
+      
+      // Clear error state
+      error.value = null;
+      isLoading.value = false;
+      
+      // Clear persisted data from localStorage
+      try {
+        localStorage.removeItem('nscale-sessions');
+        // Also remove any legacy storage keys
+        localStorage.removeItem('sessions');
+        localStorage.removeItem('chatMessages');
+        localStorage.removeItem('currentSessionId');
+      } catch (e) {
+        console.error("[SessionsStore] Error clearing localStorage:", e);
+      }
+      
+      console.log("[SessionsStore] Store state reset complete");
+    }
+
     // Öffentliche API des Stores
     /**
      * Update session title based on first message
@@ -1979,6 +2030,7 @@ export const useSessionsStore = defineStore(
       createSession,
       setCurrentSession,
       clearCurrentSession,
+      reset,
       updateSessionTitle,
       archiveSession,
       deleteSession,
@@ -2018,6 +2070,16 @@ export const useSessionsStore = defineStore(
   },
   {
     // @ts-ignore
-    persist: true,
+    persist: {
+      enabled: true,
+      strategies: [
+        {
+          key: 'nscale-sessions',
+          storage: localStorage,
+          // Only persist certain fields, not all session data
+          paths: ['currentSessionId', 'syncStatus.lastSyncTime']
+        }
+      ]
+    },
   },
 );

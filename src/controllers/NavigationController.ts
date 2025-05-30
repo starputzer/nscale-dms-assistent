@@ -172,7 +172,7 @@ export class NavigationController {
     this.log("info", "Navigation zur letzten funktionierenden Route");
 
     try {
-      const result = await routerService.navigateToLastWorking();
+      const result = await routerService.navigateToLogin();
       return result.success;
     } catch (error) {
       this.log("error", "Fehler bei Navigation zur letzten Route", error);
@@ -300,7 +300,7 @@ export class NavigationController {
 
     try {
       // Versuche letzte funktionierende Route
-      const lastWorkingResult = await routerService.navigateToLastWorking();
+      const lastWorkingResult = await routerService.navigateToLogin();
 
       if (lastWorkingResult.success) {
         if (item.options.showToast) {

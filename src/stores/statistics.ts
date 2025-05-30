@@ -103,7 +103,7 @@ export const useStatisticsStore = defineStore("statistics", () => {
   const { reportError } = useErrorReporting();
 
   // Optimierter API-Client für Statistiken mit Batching
-  const statsClient = createBatchedResourceClient("statistics", {
+  const statisticsApi = createBatchedResourceClient({
     cacheTTL: 300000, // 5 Minuten Cache für Statistiken
   });
 

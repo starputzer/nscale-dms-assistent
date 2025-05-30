@@ -163,7 +163,7 @@ export function useTheme() {
       .addEventListener("change", handleSystemThemeChange);
 
     // Event-Listener für Tastenkombinationen
-    const keydownHandler = (event: KeyboardEvent) => {
+    const _keydownHandler = (event: KeyboardEvent) => {
       // Alt+Shift+D für Dark Mode Toggle
       if (event.altKey && event.shiftKey && event.key === "D") {
         toggleTheme();

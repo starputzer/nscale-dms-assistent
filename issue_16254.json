@@ -1,0 +1,6 @@
+{
+  "title": "[DEVOPS] Add monitoring and APM integration",
+  "body": "## Problem\nNo Application Performance Monitoring or comprehensive observability.\n\n## Tasks\n- [ ] Evaluate APM solutions (Sentry/DataDog/New Relic)\n- [ ] Implement frontend RUM\n- [ ] Add backend APM\n- [ ] Configure error tracking\n- [ ] Set up dashboards\n- [ ] Create alerting rules\n\n## Acceptance Criteria\n- Full stack monitoring\n- Error tracking active\n- Performance dashboards\n- Alerting configured\n\n## Priority: MEDIUM\n## Effort: 13 story points",
+  "labels": ["devops", "monitoring", "infrastructure"],
+  "milestone": 2
+}

@@ -137,7 +137,7 @@ export function useErrorReporting(
 
   // Zugrundeliegende Services
   const errorService = useErrorReportingService(serviceOptions);
-  const fallbackManager = useFallbackManager();
+
   const featureToggles = useFeatureTogglesStore();
 
   // Komponenten-Kontext abrufen

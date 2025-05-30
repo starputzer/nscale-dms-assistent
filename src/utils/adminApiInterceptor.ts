@@ -21,7 +21,7 @@ export function setupAdminApiInterceptors(): void {
 
   // Request interceptor for all admin-related requests
   const interceptorId = axios.interceptors.request.use(
-    (config) => {
+    (config: any) => {
       // Check if this is an admin API request (with or without /api prefix)
       if (
         config.url?.includes("/admin/") ||
@@ -75,7 +75,7 @@ export function setupAdminApiInterceptors(): void {
 
       return config;
     },
-    (error) => {
+    (error: any) => {
       logger.error("Axios admin request interceptor error:", error);
       return Promise.reject(error);
     },
@@ -83,7 +83,7 @@ export function setupAdminApiInterceptors(): void {
 
   // Response interceptor for debugging auth responses
   axios.interceptors.response.use(
-    (response) => {
+    (response: any) => {
       // Log admin-related responses
       if (
         response.config.url?.includes("/admin/") ||
@@ -97,7 +97,7 @@ export function setupAdminApiInterceptors(): void {
       }
       return response;
     },
-    (error) => {
+    (error: any) => {
       // Special handling for admin API errors
       if (
         error.config?.url?.includes("/admin/") ||
@@ -122,7 +122,7 @@ export function setupAdminApiInterceptors(): void {
               logger.info(
                 "Attempting to refresh token due to admin API auth error",
               );
-              authStore.refreshAuthToken().catch((refreshError) => {
+              authStore.refreshAuthToken().catch((refreshError: any) => {
                 logger.error("Token refresh failed:", refreshError);
 
                 // If refresh fails and we're in development, use mock data

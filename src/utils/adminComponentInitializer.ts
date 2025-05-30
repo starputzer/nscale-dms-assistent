@@ -6,7 +6,7 @@
  * common lifecycle issues.
  */
 
-import { onMounted, onBeforeUnmount } from "vue";
+import { onMounted } from "vue";
 import { useAdminComponentSafeAccess } from "@/components/admin/shared/componentSafeAccessWrapper";
 import { handleAdminError } from "./adminErrorHandler";
 import { LogService } from "@/services/log/LogService";

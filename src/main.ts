@@ -27,11 +27,11 @@ import { globalPlugins } from "@/plugins";
 // Services und Utilities
 import { initializeApiServices } from "@/services/api/config";
 import { initializeTelemetry } from "@/services/analytics/telemetry";
-import { useErrorReporting } from "@/utils/errorReportingService";
+
 import { performanceMonitor } from "@/utils/performanceMonitor";
 
 // Debug utilities (only in development)
-import { debugI18n } from "./debug-i18n";
+
 import { setupNetworkMonitoring } from "@/utils/networkMonitor";
 import { CentralAuthManager } from "@/services/auth/CentralAuthManager";
 
@@ -118,7 +118,7 @@ const initApp = async () => {
   try {
     // Initialize stores - must be done after pinia is installed on app
     const authStore = useAuthStore(pinia);
-    const uiStore = useUIStore(pinia);
+
 
     // Initialize theme
     const { initializeTheme } = useTheme();

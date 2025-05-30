@@ -783,7 +783,7 @@ export const useUIStore = defineStore(
     }
 
     // Bei Dark Mode-Änderungen speichern
-    watch(darkMode, (newValue) => {
+    watch(darkMode, (newValue: any) => {
       localStorage.setItem("nscale_darkMode", String(newValue));
       requestUIUpdate("darkMode");
     });
@@ -973,10 +973,10 @@ export const useUIStore = defineStore(
           storage: localStorage,
           paths: ["darkMode", "viewMode", "sidebar", "layoutConfig", "version"],
           // Fehlerbehandlung bei der Hydration
-          beforeRestore: (context) => {
+          beforeRestore: (context: any) => {
             console.log("UI Store Hydration beginnt...");
           },
-          afterRestore: (context) => {
+          afterRestore: (context: any) => {
             console.log("UI Store Hydration abgeschlossen");
             // Sicherstellen, dass alle Werte initialisiert sind
             if (context.store.darkMode === undefined) {

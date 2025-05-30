@@ -3,7 +3,7 @@
  * Manages all authentication-related operations and axios interceptors
  */
 
-import axios, { AxiosInstance } from "axios";
+import axios from "axios";
 import { useAuthStore } from "@/stores/auth";
 
 export class CentralAuthManager {
@@ -31,7 +31,7 @@ export class CentralAuthManager {
 
     // Add request interceptor
     this.requestInterceptorId = axios.interceptors.request.use(
-      (config) => {
+      (config: any) => {
         // Skip auth header for login requests
         if (config.url?.includes("/auth/login")) {
           return config;
@@ -52,7 +52,7 @@ export class CentralAuthManager {
 
         return config;
       },
-      (error) => {
+      (error: any) => {
         console.error("Request interceptor error:", error);
         return Promise.reject(error);
       },
@@ -60,8 +60,8 @@ export class CentralAuthManager {
 
     // Add response interceptor
     this.responseInterceptorId = axios.interceptors.response.use(
-      (response) => response,
-      async (error) => {
+      (response: any) => response,
+      async (error: any) => {
         if (
           error.response?.status === 401 &&
           !error.config.url?.includes("/auth/")

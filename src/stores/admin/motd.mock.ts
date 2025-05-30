@@ -3,7 +3,7 @@
  */
 
 import { defineStore } from "pinia";
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import type { MotdConfig } from "@/types/admin";
 
 // Default-Konfiguration für Pure Vue Mode
