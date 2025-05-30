@@ -1,5 +1,8 @@
 /**
  * Batch Response Fix
+ * 
+ * @deprecated This functionality has been integrated into BatchRequestService.
+ * Use BatchRequestService.enableDebug() for debugging batch responses.
  *
  * Korrigiert Probleme mit der Verarbeitung von Batch-API-Antworten
  */

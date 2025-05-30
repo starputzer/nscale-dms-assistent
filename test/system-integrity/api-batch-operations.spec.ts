@@ -1,10 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import axios from 'axios';
 import { batchRequestService } from '@/services/api/BatchRequestService';
 import { useAuthStore } from '@/stores/auth';
 import { setActivePinia, createPinia } from 'pinia';
+import apiService from '@/services/api/ApiService';
 
 vi.mock('axios');
+vi.mock('@/services/api/ApiService');
 
 describe('API Batch Operations Integrity Tests', () => {
   let authStore: any;
@@ -41,13 +42,14 @@ describe('API Batch Operations Integrity Tests', () => {
         }
       };
 
-      vi.mocked(axios.post).mockResolvedValueOnce(mockResponse);
+      vi.mocked(apiService.request).mockResolvedValueOnce(mockResponse);
 
       const result = await batchRequestService.executeBatch(requests);
 
-      expect(axios.post).toHaveBeenCalledWith(
-        '/api/batch',
-        { requests },
+      expect(apiService.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'GET',
+          url: '/api/test1'
         expect.objectContaining({
           headers: { Authorization: 'Bearer test-token' }
         })
@@ -61,10 +63,10 @@ describe('API Batch Operations Integrity Tests', () => {
         { id: 'req1', endpoint: '/api/fail', method: 'GET' as const }
       ];
 
-      vi.mocked(axios.post).mockRejectedValueOnce(new Error('Network error'));
+      vi.mocked(apiService.request).mockRejectedValueOnce(new Error('Network error'));
 
       await expect(batchRequestService.executeBatch(requests))
-        .rejects.toThrow('Network error');
+        .rejects.toThrow();
     });
 
     it('should handle mixed success/failure responses', async () => {

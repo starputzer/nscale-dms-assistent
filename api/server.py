@@ -899,10 +899,13 @@ async def stream_question(
     question: str = Query(..., description="Die Frage des Benutzers"),
     session_id: str = Query(..., description="Die Session-ID"),
     simple_language: Optional[str] = Query(None),
-    auth_token: Optional[str] = Query(None),
     request: Request = None
 ):
-    """Streamt die Antwort auf eine Frage via Server-Sent Events (SSE)"""
+    """Streamt die Antwort auf eine Frage via Server-Sent Events (SSE)
+    
+    SICHERHEITSFIX: Token wird nur noch über Authorization-Header akzeptiert,
+    nicht mehr über URL-Parameter (verhindert Token-Leaks in Logs/History)
+    """
     # URL-Decode die Frage, falls nötig
     import urllib.parse
     decoded_question = urllib.parse.unquote_plus(question)
@@ -917,21 +920,15 @@ async def stream_question(
     if not question or not question.strip():
         raise HTTPException(status_code=422, detail="Frage darf nicht leer sein")
     
-    # Token-Verifizierung
-    if auth_token:
-        # Token aus URL-Parameter verwenden
-        user_data = user_manager.verify_token(auth_token)
-        logger.info(f"Authentifizierung über URL-Parameter: Token gültig={user_data is not None}")
-    else:
-        # Versuche, das Token aus dem Authorization-Header zu lesen
-        auth_header = request.headers.get("Authorization")
-        if not auth_header or not auth_header.startswith("Bearer "):
-            logger.warning("Fehlende oder ungültige Authorization im Header")
-            raise HTTPException(status_code=401, detail="Nicht authentifiziert")
-        
-        token = auth_header.split("Bearer ")[1]
-        user_data = user_manager.verify_token(token)
-        logger.info(f"Authentifizierung über Header: Token gültig={user_data is not None}")
+    # Token-Verifizierung - NUR über Authorization-Header
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        logger.warning("Fehlende oder ungültige Authorization im Header")
+        raise HTTPException(status_code=401, detail="Nicht authentifiziert - Bearer Token im Authorization-Header erforderlich")
+    
+    token = auth_header.split("Bearer ")[1]
+    user_data = user_manager.verify_token(token)
+    logger.info(f"Authentifizierung über Header: Token gültig={user_data is not None}")
     
     # Prüfen, ob Token gültig ist
     if not user_data:
