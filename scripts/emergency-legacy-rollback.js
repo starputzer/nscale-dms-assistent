@@ -29,6 +29,12 @@ function resetFeatureToggles() {
 function restoreFromArchive() {
   console.log("Stelle Legacy-Dateien aus dem Archiv wieder her...");
 
+  // Legacy-Archiv wurde nach erfolgreicher Vue 3 Migration entfernt
+  console.log("❌ Legacy-Archiv-Verzeichnis wurde entfernt (Vue 3 Migration abgeschlossen).");
+  console.log("Falls Legacy-Dateien benötigt werden:");
+  console.log("1. Verwenden Sie Git-History: git checkout [commit-before-cleanup] -- frontend/js/legacy-archive/");
+  console.log("2. Oder prüfen Sie Backup in: BACKUP_CLEANUP_20250516/legacy-frontend/");
+  
   const archiveDir = path.resolve(__dirname, "../frontend/js/legacy-archive");
   const targetDir = path.resolve(__dirname, "../frontend/js");
 
@@ -44,8 +50,6 @@ function restoreFromArchive() {
     }
 
     console.log("Alle Legacy-Dateien wurden wiederhergestellt.");
-  } else {
-    console.log("❌ Legacy-Archiv-Verzeichnis nicht gefunden.");
   }
 }
 
