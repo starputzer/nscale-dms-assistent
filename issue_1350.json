@@ -1,6 +1,0 @@
-{
-  "title": "[QUICK-WIN] Replace console.log with proper logging service",
-  "body": "## Problem\n132 files using console.log instead of the logging service.\n\n## Tasks\n- [ ] Create codemod script\n- [ ] Run replacement\n- [ ] Test changes\n- [ ] Update linting rules\n\n## Acceptance Criteria\n- No console.log in codebase\n- Logging service used\n- Lint rule prevents regression\n\n## Priority: LOW\n## Effort: 3 story points",
-  "labels": ["quick-win", "code-quality", "logging"],
-  "milestone": 1
-}

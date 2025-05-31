@@ -1,6 +1,0 @@
-{
-  "title": "[DEVOPS] Implement deployment smoke tests",
-  "body": "## Problem\nOnly basic HTTP checks after deployment. No functional validation.\n\n## Tasks\n- [ ] Define critical user journeys\n- [ ] Create smoke test suite\n- [ ] Integrate with deployment pipeline\n- [ ] Add rollback triggers\n- [ ] Document runbooks\n\n## Acceptance Criteria\n- Smoke tests < 5 minutes\n- Auto-rollback on failure\n- All critical paths tested\n- Runbooks complete\n\n## Priority: HIGH\n## Effort: 8 story points",
-  "labels": ["devops", "testing", "deployment"],
-  "milestone": 1
-}

@@ -1,6 +1,0 @@
-{
-  "title": "[QUICK-WIN] Configure ESLint and Prettier",
-  "body": "## Problem\nNo linting configuration despite having ESLint in dependencies.\n\n## Tasks\n- [ ] Create .eslintrc configuration\n- [ ] Create .prettierrc configuration\n- [ ] Add pre-commit hooks\n- [ ] Fix initial violations\n- [ ] Add to CI pipeline\n\n## Acceptance Criteria\n- Linting configured\n- Pre-commit hooks active\n- CI enforces linting\n- Documentation updated\n\n## Priority: MEDIUM\n## Effort: 5 story points",
-  "labels": ["quick-win", "code-quality", "tooling"],
-  "milestone": 1
-}

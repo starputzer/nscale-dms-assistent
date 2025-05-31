@@ -1,6 +1,0 @@
-{
-  "title": "[SECURITY] Fix overly permissive CORS configuration",
-  "body": "## Problem\nCORS is configured with allow_origins=['*'] which is a security risk.\n\n## Impact\n- Potential XSS attacks\n- Data exposure to unauthorized domains\n- Security audit failures\n\n## Tasks\n- [ ] Define allowed origins list\n- [ ] Implement environment-based CORS config\n- [ ] Add CORS tests\n- [ ] Update security documentation\n\n## Acceptance Criteria\n- CORS restricted to specific domains\n- Different configs for dev/staging/prod\n- Security tests pass\n\n## Priority: HIGH\n## Effort: 3 story points",
-  "labels": ["security", "backend", "api"],
-  "milestone": 1
-}

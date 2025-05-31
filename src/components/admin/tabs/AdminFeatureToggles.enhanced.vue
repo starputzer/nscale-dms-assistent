@@ -204,7 +204,7 @@
                   :disabled="
                     isFeatureLocked(feature) || !canEnableFeature(feature)
                   "
-                  @change="updateFeature(feature)"
+                  @change="updateFeatureToggle(feature)"
                 />
                 <div class="admin-feature-toggles-enhanced__feature-buttons">
                   <BaseButton
@@ -535,7 +535,7 @@
     <BaseModal
       v-model="showImportModal"
       :title="t('admin.featureToggles.importFeatures', 'Features importieren')"
-      @confirm="importFeatures"
+      @confirm="importFeaturesData"
     >
       <div class="admin-feature-toggles-enhanced__import-form">
         <BaseTextarea
@@ -575,7 +575,7 @@
           'Sind Sie sicher, dass Sie dieses Feature löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
         )
       "
-      @confirm="deleteFeature"
+      @confirm="deleteFeatureConfirmed"
     />
   </div>
 </template>
@@ -608,10 +608,20 @@ const { t, locale } = useI18n({ useScope: "global", inheritLocale: true });
 console.log("[i18n] Component initialized with global scope and inheritance");
 const featureStore = useFeatureTogglesStore();
 const authStore = useAuthStore();
-// Get features from store - development store doesn't have toggles property
+
+// Get features from store - transform feature configs to FeatureToggle format
 const features = computed(() => {
-  // Get all feature configs from the store
-  return Object.values(featureStore.allFeatureConfigs || {});
+  const configs = featureStore.allFeatureConfigs || {};
+  return Object.entries(configs).map(([key, config]) => ({
+    key,
+    name: config.name || key,
+    enabled: config.enabled || false,
+    category: config.group || 'General',
+    description: config.description || '',
+    dependencies: config.dependencies || [],
+    locked: config.requiredRole === 'admin',
+    experimental: config.group === 'experimentalFeatures'
+  } as FeatureToggle));
 });
 
 // Extract categories from features
@@ -814,7 +824,7 @@ function editFeature(feature: FeatureToggle) {
 async function saveFeature() {
   try {
     if (editingFeature.value) {
-      await featureStore.updateFeature({
+      await updateFeature({
         ...editingFeature.value,
         name: featureForm.value.name,
         description: featureForm.value.description,
@@ -825,7 +835,7 @@ async function saveFeature() {
         enabled: featureForm.value.enabled,
       });
     } else {
-      await featureStore.createFeature({
+      await createFeature({
         name: featureForm.value.name,
         key: featureForm.value.key,
         description: featureForm.value.description,
@@ -853,11 +863,11 @@ function confirmDeleteFeature(feature: FeatureToggle) {
   showDeleteConfirm.value = true;
 }
 
-async function deleteFeature() {
+async function deleteFeatureConfirmed() {
   if (!featureToDelete.value) return;
 
   try {
-    await featureStore.deleteFeature(featureToDelete.value.key);
+    await deleteFeature(featureToDelete.value.key);
     showDeleteConfirm.value = false;
     featureToDelete.value = null;
   } catch (error) {
@@ -866,9 +876,9 @@ async function deleteFeature() {
   }
 }
 
-async function updateFeature(feature: FeatureToggle) {
+async function updateFeatureToggle(feature: FeatureToggle) {
   try {
-    await featureStore.updateFeature(feature);
+    await updateFeature(feature);
   } catch (error) {
     console.error("Failed to update feature:", error);
     // Revert toggle state
@@ -878,7 +888,7 @@ async function updateFeature(feature: FeatureToggle) {
 
 async function toggleCategory(category: string, enabled: boolean) {
   try {
-    await featureStore.updateCategoryFeatures(category, enabled);
+    await updateCategoryFeatures(category, enabled);
   } catch (error) {
     console.error("Failed to toggle category:", error);
   }
@@ -909,7 +919,7 @@ async function showHistory(feature: FeatureToggle) {
   selectedFeature.value = feature;
 
   try {
-    featureHistory.value = await featureStore.getFeatureHistory(feature.key);
+    featureHistory.value = await getFeatureHistory(feature.key);
     showHistoryModal.value = true;
   } catch (error) {
     console.error("Failed to fetch feature history:", error);
@@ -964,7 +974,7 @@ function openImportModal() {
   showImportModal.value = true;
 }
 
-async function importFeatures() {
+async function importFeaturesData() {
   try {
     const data = JSON.parse(importData.value);
 
@@ -974,7 +984,7 @@ async function importFeatures() {
       );
     }
 
-    await featureStore.importFeatures(data, importOptions.value);
+    await importFeatures(data, importOptions.value);
     showImportModal.value = false;
   } catch (error) {
     console.error("Failed to import features:", error);
@@ -986,7 +996,7 @@ async function fetchUsageMetrics() {
   refreshingMetrics.value = true;
 
   try {
-    const metrics = await featureStore.getFeatureMetrics({
+    const metrics = await getFeatureMetrics({
       startDate: dateRange.value.start,
       endDate: dateRange.value.end,
     });
@@ -999,7 +1009,7 @@ async function fetchUsageMetrics() {
       };
     });
 
-    errorLogs.value = await featureStore.getFeatureErrors({
+    errorLogs.value = await getFeatureErrors({
       startDate: dateRange.value.start,
       endDate: dateRange.value.end,
       limit: 10,
@@ -1193,9 +1203,93 @@ function updateTrendCharts() {
   });
 }
 
+// Mock methods for development - add these after the other methods
+async function loadFeatures() {
+  // In development mode, features are already available
+  console.log('[AdminFeatureToggles] Features loaded from development store');
+}
+
+async function createFeature(feature: Partial<FeatureToggle>) {
+  console.log('[AdminFeatureToggles] Creating feature:', feature);
+  // In development mode, just toggle the feature
+  if (feature.key) {
+    featureStore.enableFeature(feature.key);
+  }
+}
+
+async function updateFeature(feature: FeatureToggle) {
+  console.log('[AdminFeatureToggles] Updating feature:', feature);
+  // In development mode, just toggle the feature state
+  if (feature.enabled) {
+    featureStore.enableFeature(feature.key);
+  } else {
+    featureStore.disableFeature(feature.key);
+  }
+}
+
+async function deleteFeature(key: string) {
+  console.log('[AdminFeatureToggles] Deleting feature:', key);
+  // In development mode, just disable the feature
+  featureStore.disableFeature(key);
+}
+
+async function updateCategoryFeatures(category: string, enabled: boolean) {
+  console.log('[AdminFeatureToggles] Updating category features:', category, enabled);
+  // Update all features in the category
+  features.value
+    .filter(f => f.category === category)
+    .forEach(f => {
+      if (enabled) {
+        featureStore.enableFeature(f.key);
+      } else {
+        featureStore.disableFeature(f.key);
+      }
+    });
+}
+
+async function getFeatureHistory(key: string): Promise<FeatureHistoryEntry[]> {
+  // Mock history for development
+  return [
+    {
+      timestamp: new Date().toISOString(),
+      user: 'Development User',
+      changes: {
+        enabled: { old: false, new: true }
+      }
+    }
+  ];
+}
+
+async function getFeatureMetrics(params: any): Promise<any> {
+  // Mock metrics for development
+  return {
+    features: Object.fromEntries(
+      features.value.map(f => [f.key, {
+        usageCount: Math.floor(Math.random() * 1000),
+        errorCount: Math.floor(Math.random() * 10),
+        errorRate: Math.random() * 0.1,
+        trend: Array.from({ length: 7 }, (_, i) => ({
+          date: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000).toISOString(),
+          count: Math.floor(Math.random() * 100)
+        }))
+      }])
+    )
+  };
+}
+
+async function getFeatureErrors(params: any): Promise<FeatureErrorLog[]> {
+  // Mock errors for development
+  return [];
+}
+
+async function importFeatures(data: any[], options: any) {
+  console.log('[AdminFeatureToggles] Importing features:', data, options);
+  // In development mode, just log the import
+}
+
 // Lifecycle hooks
 onMounted(async () => {
-  await featureStore.loadFeatures();
+  await loadFeatures();
 
   if (viewMode.value === "monitoring") {
     await fetchUsageMetrics();

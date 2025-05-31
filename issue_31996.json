@@ -1,6 +1,0 @@
-{
-  "title": "[REFACTOR] Standardize API calls through service layer",
-  "body": "## Problem\nMixed patterns between direct axios calls and service layer usage.\n\n## Tasks\n- [ ] Audit all API calls\n- [ ] Create consistent service interfaces\n- [ ] Migrate direct axios calls\n- [ ] Add request/response interceptors\n- [ ] Implement retry logic\n- [ ] Add comprehensive error handling\n\n## Acceptance Criteria\n- No direct axios imports in components\n- All API calls through services\n- Consistent error handling\n- Request retry logic\n\n## Priority: MEDIUM\n## Effort: 8 story points",
-  "labels": ["refactoring", "architecture", "api"],
-  "milestone": 2
-}

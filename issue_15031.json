@@ -1,6 +1,0 @@
-{
-  "title": "[CRITICAL] Fix TypeScript compilation errors blocking production build",
-  "body": "## Problem\nThe project currently has 70+ TypeScript errors that prevent clean builds.\n\n## Impact\n- Blocks production deployments\n- Reduces code reliability\n- Prevents enabling strict mode benefits\n\n## Tasks\n- [ ] Fix type errors in stores/featureToggles.old.ts\n- [ ] Resolve performanceMonitor.ts case sensitivity issues\n- [ ] Fix Vue file type errors in build process\n- [ ] Enable strict TypeScript checking\n\n## Acceptance Criteria\n- npm run typecheck passes with 0 errors\n- Build completes successfully\n- All tests pass\n\n## Priority: CRITICAL\n## Effort: 8 story points",
-  "labels": ["bug", "typescript", "critical", "blocking"],
-  "milestone": 1
-}

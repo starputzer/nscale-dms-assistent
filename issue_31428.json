@@ -1,6 +1,0 @@
-{
-  "title": "[REFACTOR] Split large auth store (1600+ lines) into modules",
-  "body": "## Problem\nThe auth store is a monolithic 1600+ line file handling too many responsibilities.\n\n## Tasks\n- [ ] Analyze current responsibilities\n- [ ] Design modular structure\n- [ ] Extract authentication module\n- [ ] Extract authorization module\n- [ ] Extract token management\n- [ ] Update all imports\n- [ ] Add comprehensive tests\n\n## Acceptance Criteria\n- No single module > 300 lines\n- Clear separation of concerns\n- All tests pass\n- No functionality regression\n\n## Priority: MEDIUM\n## Effort: 13 story points",
-  "labels": ["refactoring", "architecture", "frontend"],
-  "milestone": 2
-}

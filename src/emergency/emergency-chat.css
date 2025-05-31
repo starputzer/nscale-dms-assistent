@@ -1,0 +1,388 @@
+/**
+ * EMERGENCY CHAT CSS
+ * Provides styling for the emergency chat fallback system
+ */
+
+/* Container */
+.emergency-chat {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #f8f9fa;
+  color: #212529;
+  display: flex;
+  flex-direction: column;
+  z-index: 9999;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 
+    "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  border: 2px solid #ff6b6b;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .emergency-chat {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+    border-color: #ff6b6b;
+  }
+}
+
+/* Header */
+.emergency-header {
+  background-color: #ff6b6b;
+  color: white;
+  padding: 10px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 50px;
+}
+
+.emergency-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.emergency-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.emergency-controls button {
+  background-color: rgba(255, 255, 255, 0.2);
+  border: 1px solid white;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.emergency-controls button:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Messages Container */
+.emergency-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Individual Message */
+.emergency-message {
+  max-width: 80%;
+  padding: 10px 15px;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.2s ease-in-out;
+  overflow-wrap: break-word;
+}
+
+/* Message types */
+.emergency-message-user {
+  align-self: flex-end;
+  background-color: #e3f2fd;
+  border-top-right-radius: 0;
+}
+
+.emergency-message-assistant {
+  align-self: flex-start;
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-top-left-radius: 0;
+}
+
+.emergency-message-system {
+  align-self: center;
+  background-color: #f5f5f5;
+  font-style: italic;
+  max-width: 90%;
+}
+
+.emergency-message-error {
+  border: 1px solid #ffcdd2;
+  background-color: #fff5f5;
+}
+
+.emergency-message-streaming {
+  position: relative;
+}
+
+.emergency-message-streaming::after {
+  content: "|";
+  display: inline-block;
+  color: #0c64c1;
+  animation: blink 1s step-start infinite;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+
+/* Message Header */
+.emergency-message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+  font-size: 12px;
+}
+
+.emergency-message-role {
+  font-weight: bold;
+  color: #666;
+}
+
+.emergency-message-time {
+  color: #999;
+}
+
+/* Message Content */
+.emergency-message-content {
+  white-space: pre-wrap;
+}
+
+.emergency-message-content p {
+  margin: 0 0 10px 0;
+}
+
+.emergency-message-content p:last-child {
+  margin-bottom: 0;
+}
+
+.emergency-message-content code {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+/* Code Blocks */
+.emergency-code-block {
+  margin: 10px 0;
+  border-radius: 5px;
+  overflow: hidden;
+  background-color: #2d3748;
+  color: #e2e8f0;
+  font-family: monospace;
+}
+
+.emergency-code-lang {
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 3px 8px;
+  font-size: 11px;
+  text-align: right;
+}
+
+.emergency-code-block pre {
+  margin: 0;
+  padding: 10px;
+  overflow-x: auto;
+}
+
+/* Status Bar */
+.emergency-status {
+  background-color: #f5f5f5;
+  border-top: 1px solid #e0e0e0;
+  padding: 8px 15px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #666;
+}
+
+.emergency-status-text {
+  font-weight: bold;
+}
+
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+  .emergency-header {
+    background-color: #ff5252;
+  }
+  
+  .emergency-message-user {
+    background-color: #1e3a5f;
+    color: #e0e0e0;
+  }
+  
+  .emergency-message-assistant {
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    border-color: #444;
+  }
+  
+  .emergency-message-system {
+    background-color: #333;
+    color: #bbb;
+  }
+  
+  .emergency-message-error {
+    border-color: #6b2b2b;
+    background-color: #3a1f1f;
+  }
+  
+  .emergency-message-role {
+    color: #aaa;
+  }
+  
+  .emergency-message-time {
+    color: #777;
+  }
+  
+  .emergency-message-content code {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+  }
+  
+  .emergency-status {
+    background-color: #2a2a2a;
+    border-color: #444;
+    color: #aaa;
+  }
+  
+  /* Links in dark mode */
+  .emergency-message-content a {
+    color: #5e9eff;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Enhanced visibility fix for hide/display issues */
+.emergency-chat {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.emergency-message {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Message content visibility fixes */
+.emergency-message-content {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: static !important;
+}
+
+/* Fix for content that might be hidden with pseudo-elements */
+.emergency-message::before,
+.emergency-message::after,
+.emergency-message-content::before,
+.emergency-message-content::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* Fix for links */
+.emergency-message-content a {
+  color: #1976d2;
+  text-decoration: underline;
+  display: inline !important;
+  visibility: visible !important;
+}
+
+/* Improve visibility for dark backgrounds */
+.emergency-message-user {
+  background-color: #e3f2fd !important; /* Light blue */
+}
+
+/* Fix for code blocks */
+.emergency-code-block,
+.emergency-code-block pre,
+.emergency-code-block code {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  overflow-x: auto !important;
+}
+
+/* Fix for disabled UI elements */
+.emergency-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Fix for contrast issues */
+.emergency-message-role {
+  color: #333333 !important;
+  font-weight: bold !important;
+}
+
+/* Text visibility fix */
+.emergency-message * {
+  color: inherit !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Forced z-index to appear on top of any other elements */
+#emergency-chat-container {
+  z-index: 2147483647 !important; /* Maximum z-index value */
+}
+
+/* Media queries for mobile optimization */
+@media screen and (max-width: 768px) {
+  .emergency-message {
+    max-width: 90%;
+  }
+  
+  .emergency-header {
+    font-size: 14px;
+  }
+}
+
+/* Accessibility improvements */
+.emergency-message:focus,
+.emergency-controls button:focus {
+  outline: 2px solid #4285f4;
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  .emergency-chat {
+    position: relative;
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+  
+  .emergency-header,
+  .emergency-status,
+  .emergency-controls {
+    display: none;
+  }
+}

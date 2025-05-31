@@ -1,6 +1,0 @@
-{
-  "title": "[DEPS] Upgrade major dependencies for performance and security",
-  "body": "## Problem\nSeveral major dependencies have newer versions available.\n\n## Updates Needed\n- @types/node: 20.17.46 → 22.15.28\n- @vueuse/core: 10.11.1 → 13.3.0\n- marked: 9.1.6 → 15.0.12\n- uuid: 9.0.1 → 11.1.0\n- eslint: 8.57.1 → 9.27.0\n\n## Tasks\n- [ ] Review breaking changes for each package\n- [ ] Update packages incrementally\n- [ ] Fix any breaking changes\n- [ ] Run full test suite\n- [ ] Update documentation\n\n## Acceptance Criteria\n- All packages updated\n- No security vulnerabilities\n- All tests pass\n- Application functions correctly\n\n## Priority: MEDIUM\n## Effort: 13 story points",
-  "labels": ["dependencies", "maintenance", "security"],
-  "milestone": 2
-}

@@ -1,6 +1,0 @@
-{
-  "title": "[PERF] Implement proper database connection pooling",
-  "body": "## Problem\nDatabase connections not properly pooled, causing performance issues.\n\n## Tasks\n- [ ] Configure SQLAlchemy connection pool\n- [ ] Add connection monitoring\n- [ ] Implement connection recycling\n- [ ] Add performance tests\n- [ ] Document configuration\n\n## Acceptance Criteria\n- Connection pool configured\n- Performance improved by 20%+\n- No connection leaks\n- Monitoring in place\n\n## Priority: MEDIUM\n## Effort: 5 story points",
-  "labels": ["performance", "backend", "database"],
-  "milestone": 2
-}
