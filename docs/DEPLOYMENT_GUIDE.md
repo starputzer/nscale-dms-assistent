@@ -1,6 +1,8 @@
-# nScale DMS Assistant - Deployment Guide
+# Digitale Akte Assistent - Deployment Guide
 
-This guide covers deploying the nScale DMS Assistant in production environments.
+This guide covers deploying the Digitale Akte Assistent in production environments.
+
+**Last Updated:** May 30, 2025
 
 ## Table of Contents
 
@@ -19,7 +21,7 @@ This guide covers deploying the nScale DMS Assistant in production environments.
 - Docker 20.10+ and Docker Compose 2.0+ (for Docker deployment)
 - PostgreSQL 13+ (or SQLite for small deployments)
 - Redis 6+ for session management
-- Node.js 18+ (for manual deployment)
+- Node.js 22+ (for manual deployment)
 - Python 3.9+ (for manual deployment)
 - Minimum 2GB RAM, 2 CPU cores
 - SSL certificate for HTTPS

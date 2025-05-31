@@ -61,7 +61,7 @@
         }"
       >
         <i class="fas fa-edit"></i>
-        {{ t("admin.motd.contentTab", "Inhalt") }}
+        {{ t("admin.motd.content", "Inhalt") }}
       </button>
       <button
         @click="activeTab = 'settings'"
@@ -71,7 +71,7 @@
         }"
       >
         <i class="fas fa-cog"></i>
-        {{ t("admin.motd.settingsTab", "Einstellungen") }}
+        {{ t("admin.motd.settings", "Einstellungen") }}
       </button>
     </div>
 
@@ -188,7 +188,7 @@
           <div class="admin-motd-enhanced__field">
             <Toggle
               v-model="scheduling.enabled"
-              :label="t('admin.motd.schedulingEnabled', 'Zeitplan aktivieren')"
+              :label="t('admin.motd.enableSchedule', 'Zeitplan aktivieren')"
             />
           </div>
 
@@ -255,7 +255,7 @@
             class="admin-motd-enhanced__empty-history"
           >
             {{
-              t("admin.motd.noVersions", "Keine früheren Versionen vorhanden")
+              t("admin.motd.noVersionHistory", "Keine früheren Versionen vorhanden")
             }}
           </div>
 
@@ -279,7 +279,7 @@
                   v-if="version.active"
                   class="admin-motd-enhanced__version-status"
                 >
-                  {{ t("admin.motd.versionActive", "Aktiv") }}
+                  {{ t("admin.motd.active", "Aktiv") }}
                 </span>
               </div>
               <div class="admin-motd-enhanced__version-actions">
@@ -287,7 +287,7 @@
                   size="small"
                   variant="outline"
                   @click="previewVersion(version)"
-                  :title="t('admin.motd.previewVersion', 'Version anzeigen')"
+                  :title="t('admin.motd.viewVersion', 'Version anzeigen')"
                 >
                   <i class="fas fa-eye"></i>
                 </Button>
@@ -296,9 +296,7 @@
                   variant="outline"
                   @click="restoreVersion(version)"
                   :disabled="version.active"
-                  :title="
-                    t('admin.motd.restoreVersion', 'Version wiederherstellen')
-                  "
+                  :title="t('admin.motd.restoreVersion', 'Version wiederherstellen')"
                 >
                   <i class="fas fa-undo"></i>
                 </Button>
@@ -330,7 +328,7 @@
           <div class="admin-motd-enhanced__style-row">
             <div class="admin-motd-enhanced__field">
               <label class="admin-motd-enhanced__label">
-                {{ t("admin.motd.backgroundColor", "Hintergrund") }}
+                {{ t("admin.motd.background", "Hintergrund") }}
               </label>
               <div class="admin-motd-enhanced__color-picker">
                 <input
@@ -341,14 +339,14 @@
                 <Input
                   v-model="motdConfig.style.backgroundColor"
                   class="admin-motd-enhanced__color-value"
-                  placeholder="#FFFFFF"
+                  :placeholder="t('admin.motd.backgroundColorPlaceholder', '#FFFFFF')"
                 />
               </div>
             </div>
 
             <div class="admin-motd-enhanced__field">
               <label class="admin-motd-enhanced__label">
-                {{ t("admin.motd.borderColor", "Rahmen") }}
+                {{ t("admin.motd.border", "Rahmen") }}
               </label>
               <div class="admin-motd-enhanced__color-picker">
                 <input
@@ -359,14 +357,14 @@
                 <Input
                   v-model="motdConfig.style.borderColor"
                   class="admin-motd-enhanced__color-value"
-                  placeholder="#CCCCCC"
+                  :placeholder="t('admin.motd.borderColorPlaceholder', '#CCCCCC')"
                 />
               </div>
             </div>
 
             <div class="admin-motd-enhanced__field">
               <label class="admin-motd-enhanced__label">
-                {{ t("admin.motd.textColor", "Text") }}
+                {{ t("admin.motd.text", "Text") }}
               </label>
               <div class="admin-motd-enhanced__color-picker">
                 <input
@@ -377,7 +375,7 @@
                 <Input
                   v-model="motdConfig.style.textColor"
                   class="admin-motd-enhanced__color-value"
-                  placeholder="#000000"
+                  :placeholder="t('admin.motd.textColorPlaceholder', '#000000')"
                 />
               </div>
             </div>
@@ -419,21 +417,21 @@
             <button
               class="admin-motd-enhanced__toolbar-button"
               @click="insertEmoji"
-              title="Emoji einfügen"
+              :title="t('admin.motd.insertEmoji', 'Emoji einfügen')"
             >
               <i class="fas fa-smile"></i>
             </button>
             <button
               class="admin-motd-enhanced__toolbar-button"
               @click="insertLink"
-              title="Link einfügen"
+              :title="t('admin.motd.insertLink', 'Link einfügen')"
             >
               <i class="fas fa-link"></i>
             </button>
             <button
               class="admin-motd-enhanced__toolbar-button"
               @click="insertImage"
-              title="Bild einfügen"
+              :title="t('admin.motd.insertImage', 'Bild einfügen')"
             >
               <i class="fas fa-image"></i>
             </button>
@@ -523,7 +521,7 @@
     <div v-else class="admin-motd-enhanced__preview">
       <div class="admin-motd-enhanced__preview-header">
         <h3 class="admin-motd-enhanced__preview-title">
-          {{ t("admin.motd.previewTitle", "Vorschau") }}
+          {{ t("admin.motd.preview", "Vorschau") }}
         </h3>
         <div class="admin-motd-enhanced__preview-modes">
           <button
@@ -549,7 +547,7 @@
               "
               class="admin-motd-enhanced__preview-mode-badge"
             >
-              {{ t("admin.motd.currentDevice", "Aktuell") }}
+              {{ t("admin.motd.current", "Aktuell") }}
             </span>
           </button>
         </div>
@@ -670,7 +668,7 @@
             {{ formatDate(scheduling.endDate) }}
           </div>
           <div class="admin-motd-enhanced__preview-scheduling-item">
-            <strong>{{ t("admin.motd.targetAudience", "Zielgruppe") }}:</strong>
+            <strong>{{ t("admin.motd.audience", "Zielgruppe") }}:</strong>
             {{ getAudienceLabel(scheduling.audience) }}
           </div>
           <div
@@ -678,7 +676,7 @@
             class="admin-motd-enhanced__preview-scheduling-item"
           >
             <strong
-              >{{ t("admin.motd.recurringPattern", "Wiederholung") }}:</strong
+              >{{ t("admin.motd.recurrence", "Wiederholung") }}:</strong
             >
             {{ getRecurringPatternLabel(scheduling.recurringPattern) }}
           </div>
@@ -734,12 +732,12 @@
         >
           <Input
             v-model="linkText"
-            placeholder="Link Text"
+            :placeholder="t('admin.motd.linkTextPlaceholder', 'Link Text')"
             class="admin-motd-enhanced__link-input"
           />
           <Input
             v-model="linkUrl"
-            placeholder="https://example.com"
+            :placeholder="t('admin.motd.linkUrlPlaceholder', 'https://example.com')"
             class="admin-motd-enhanced__link-input"
           />
           <Button @click="insertLinkAtCursor" variant="primary">
@@ -754,12 +752,12 @@
         >
           <Input
             v-model="imageAlt"
-            placeholder="Alt Text"
+            :placeholder="t('admin.motd.altTextPlaceholder', 'Alt Text')"
             class="admin-motd-enhanced__image-input"
           />
           <Input
             v-model="imageUrl"
-            placeholder="https://example.com/image.jpg"
+            :placeholder="t('admin.motd.imageUrlPlaceholder', 'https://example.com/image.jpg')"
             class="admin-motd-enhanced__image-input"
           />
           <Button @click="insertImageAtCursor" variant="primary">
@@ -768,7 +766,7 @@
         </div>
 
         <Button @click="currentAction = null" variant="secondary">
-          {{ t("common.cancel", "Abbrechen") }}
+          {{ t("admin.motd.cancel", "Abbrechen") }}
         </Button>
       </div>
     </div>
@@ -777,8 +775,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
-import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
+import { useI18n } from "vue-i18n";
 import { useAdminMotdStore } from "@/stores/admin/motd";
 import { useToast } from "@/composables/useToast";
 import { useWindowSize } from "@/composables/useWindowSize";
@@ -797,9 +795,8 @@ import {
 // Marked for markdown parsing
 import { marked } from "marked";
 
-// i18n
-const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
-console.log('[i18n] Component initialized with global scope and inheritance');
+// Use i18n composable
+const { t } = useI18n();
 
 // Store
 const motdStore = useAdminMotdStore();
@@ -882,9 +879,9 @@ const previewHtml = computed(() => {
 const templates = [
   {
     id: "maintenance",
-    name: t("admin.motd.templateMaintenance", "Wartung"),
+    name: "Wartung",
     icon: "tools",
-    description: t("admin.motd.templateMaintenanceDesc", "Wartungsankündigung"),
+    description: "Wartungsankündigung",
     content:
       "## Geplante Wartungsarbeiten\n\nWir führen am **[DATUM]** von **[UHRZEIT]** Wartungsarbeiten durch.\n\nWährend dieser Zeit kann es zu kurzen Unterbrechungen kommen.\n\nVielen Dank für Ihr Verständnis.",
     style: {
@@ -897,12 +894,9 @@ const templates = [
   },
   {
     id: "new-feature",
-    name: t("admin.motd.templateNewFeature", "Neue Funktion"),
+    name: "Neue Funktion",
     icon: "sparkles",
-    description: t(
-      "admin.motd.templateNewFeatureDesc",
-      "Neue Funktion ankündigen",
-    ),
+    description: "Neue Funktion ankündigen",
     content:
       "## Neue Funktion verfügbar! 🎉\n\n**[FUNKTIONSNAME]** ist jetzt verfügbar!\n\n### Was ist neu?\n- [FEATURE 1]\n- [FEATURE 2]\n- [FEATURE 3]\n\n[Mehr erfahren →](link)",
     style: {
@@ -915,9 +909,9 @@ const templates = [
   },
   {
     id: "security",
-    name: t("admin.motd.templateSecurity", "Sicherheit"),
+    name: "Sicherheit",
     icon: "shield-alt",
-    description: t("admin.motd.templateSecurityDesc", "Sicherheitshinweis"),
+    description: "Sicherheitshinweis",
     content:
       "## Wichtiger Sicherheitshinweis\n\n**Bitte beachten Sie:**\n\n[SICHERHEITSHINWEIS]\n\n**Empfohlene Maßnahmen:**\n1. [MASSNAHME 1]\n2. [MASSNAHME 2]\n\nBei Fragen wenden Sie sich bitte an den Support.",
     style: {
@@ -930,9 +924,9 @@ const templates = [
   },
   {
     id: "info",
-    name: t("admin.motd.templateInfo", "Information"),
+    name: "Information",
     icon: "info-circle",
-    description: t("admin.motd.templateInfoDesc", "Allgemeine Information"),
+    description: "Allgemeine Information",
     content:
       "## Information\n\n[IHR TEXT HIER]\n\nWeitere Informationen finden Sie in unserer [Dokumentation](link).",
     style: {
@@ -945,9 +939,9 @@ const templates = [
   },
   {
     id: "success",
-    name: t("admin.motd.templateSuccess", "Erfolg"),
+    name: "Erfolg",
     icon: "check-circle",
-    description: t("admin.motd.templateSuccessDesc", "Erfolgsmeldung"),
+    description: "Erfolgsmeldung",
     content:
       "## Erfolgreich abgeschlossen ✅\n\n[ERFOLGSTEXT]\n\nVielen Dank für Ihre Unterstützung!",
     style: {
@@ -960,9 +954,9 @@ const templates = [
   },
   {
     id: "tip",
-    name: t("admin.motd.templateTip", "Tipp"),
+    name: "Tipp",
     icon: "lightbulb",
-    description: t("admin.motd.templateTipDesc", "Tipp oder Best Practice"),
+    description: "Tipp oder Best Practice",
     content:
       "## Tipp des Tages 💡\n\n**Wussten Sie schon?**\n\n[TIPP-TEXT]\n\n*Mehr Tipps in unserem [Help Center](link)*",
     style: {
@@ -977,73 +971,73 @@ const templates = [
 
 // Options
 const formatOptions = [
-  { value: "markdown", label: t("admin.motd.formatMarkdown", "Markdown") },
-  { value: "html", label: t("admin.motd.formatHtml", "HTML") },
-  { value: "text", label: t("admin.motd.formatText", "Text") },
+  { value: "markdown", label: "Markdown" },
+  { value: "html", label: "HTML" },
+  { value: "text", label: "Text" },
 ];
 
 const positionOptions = [
-  { value: "top", label: t("admin.motd.positionTop", "Oben") },
-  { value: "bottom", label: t("admin.motd.positionBottom", "Unten") },
+  { value: "top", label: "Oben" },
+  { value: "bottom", label: "Unten" },
 ];
 
 const priorityOptions = [
-  { value: "low", label: t("admin.motd.priorityLow", "Niedrig") },
-  { value: "medium", label: t("admin.motd.priorityMedium", "Mittel") },
-  { value: "high", label: t("admin.motd.priorityHigh", "Hoch") },
+  { value: "low", label: "Niedrig" },
+  { value: "medium", label: "Mittel" },
+  { value: "high", label: "Hoch" },
 ];
 
 const audienceOptions = [
-  { value: "all", label: t("admin.motd.audienceAll", "Alle Benutzer") },
+  { value: "all", label: "Alle Benutzer" },
   {
     value: "admins",
-    label: t("admin.motd.audienceAdmins", "Nur Administratoren"),
+    label: "Nur Administratoren",
   },
   {
     value: "users",
-    label: t("admin.motd.audienceUsers", "Nur Standardbenutzer"),
+    label: "Nur Standardbenutzer",
   },
 ];
 
 const recurringPatternOptions = [
-  { value: "daily", label: t("admin.motd.recurringDaily", "Täglich") },
-  { value: "weekly", label: t("admin.motd.recurringWeekly", "Wöchentlich") },
-  { value: "monthly", label: t("admin.motd.recurringMonthly", "Monatlich") },
+  { value: "daily", label: "Täglich" },
+  { value: "weekly", label: "Wöchentlich" },
+  { value: "monthly", label: "Monatlich" },
 ];
 
 const iconOptions = [
-  { value: "info-circle", label: t("admin.motd.iconInfo", "Information") },
+  { value: "info-circle", label: "Information" },
   {
     value: "exclamation-triangle",
-    label: t("admin.motd.iconWarning", "Warnung"),
+    label: "Warnung",
   },
-  { value: "check-circle", label: t("admin.motd.iconSuccess", "Erfolg") },
-  { value: "exclamation-circle", label: t("admin.motd.iconError", "Fehler") },
+  { value: "check-circle", label: "Erfolg" },
+  { value: "exclamation-circle", label: "Fehler" },
   {
     value: "bell",
-    label: t("admin.motd.iconNotification", "Benachrichtigung"),
+    label: "Benachrichtigung",
   },
-  { value: "lightbulb", label: t("admin.motd.iconTip", "Tipp") },
-  { value: "shield-alt", label: t("admin.motd.iconSecurity", "Sicherheit") },
-  { value: "tools", label: t("admin.motd.iconMaintenance", "Wartung") },
-  { value: "sparkles", label: t("admin.motd.iconNewFeature", "Neu") },
-  { value: "graduation-cap", label: t("admin.motd.iconEducation", "Schulung") },
+  { value: "lightbulb", label: "Tipp" },
+  { value: "shield-alt", label: "Sicherheit" },
+  { value: "tools", label: "Wartung" },
+  { value: "sparkles", label: "Neu" },
+  { value: "graduation-cap", label: "Schulung" },
 ];
 
 const previewModes = [
   {
     id: "desktop",
-    label: t("admin.motd.previewDesktop", "Desktop"),
+    label: "Desktop",
     icon: "desktop",
   },
   {
     id: "tablet",
-    label: t("admin.motd.previewTablet", "Tablet"),
+    label: "Tablet",
     icon: "tablet-alt",
   },
   {
     id: "mobile",
-    label: t("admin.motd.previewMobile", "Mobil"),
+    label: "Mobil",
     icon: "mobile-alt",
   },
 ];
@@ -1052,61 +1046,61 @@ const markdownTools = [
   {
     name: "bold",
     icon: "fa-bold",
-    title: t("admin.motd.toolBold", "Fett"),
+    title: "Fett",
     pattern: "**$selection$**",
   },
   {
     name: "italic",
     icon: "fa-italic",
-    title: t("admin.motd.toolItalic", "Kursiv"),
+    title: "Kursiv",
     pattern: "*$selection$*",
   },
   {
     name: "heading1",
     icon: "fa-heading",
-    title: t("admin.motd.toolHeading1", "Überschrift 1"),
+    title: "Überschrift 1",
     pattern: "# $selection$",
   },
   {
     name: "heading2",
     icon: "fa-font",
-    title: t("admin.motd.toolHeading2", "Überschrift 2"),
+    title: "Überschrift 2",
     pattern: "## $selection$",
   },
   {
     name: "list",
     icon: "fa-list-ul",
-    title: t("admin.motd.toolList", "Liste"),
+    title: "Liste",
     pattern: "- $selection$",
   },
   {
     name: "numberedList",
     icon: "fa-list-ol",
-    title: t("admin.motd.toolNumberedList", "Nummerierte Liste"),
+    title: "Nummerierte Liste",
     pattern: "1. $selection$",
   },
   {
     name: "code",
     icon: "fa-code",
-    title: t("admin.motd.toolCode", "Code"),
+    title: "Code",
     pattern: "`$selection$`",
   },
   {
     name: "codeBlock",
     icon: "fa-file-code",
-    title: t("admin.motd.toolCodeBlock", "Code-Block"),
+    title: "Code-Block",
     pattern: "```\n$selection$\n```",
   },
   {
     name: "quote",
     icon: "fa-quote-right",
-    title: t("admin.motd.toolQuote", "Zitat"),
+    title: "Zitat",
     pattern: "> $selection$",
   },
   {
     name: "hr",
     icon: "fa-minus",
-    title: t("admin.motd.toolHr", "Trennlinie"),
+    title: "Trennlinie",
     pattern: "---\n",
   },
 ];
@@ -1331,7 +1325,7 @@ async function loadMotd() {
   } catch (err) {
     console.error("Failed to load MOTD configuration", err);
     toast.error(
-      t("admin.motd.loadError", "Fehler beim Laden der Konfiguration"),
+      "Fehler beim Laden der Konfiguration",
     );
   }
 }
@@ -1424,12 +1418,6 @@ onMounted(async () => {
     activeTab.value = "content";
   }
 });
-
-// Log i18n initialization status
-console.log(`[AdminMotd.enhanced] i18n initialized with locale: ${locale.value}`);
-
-// Log i18n initialization status
-console.log(`[AdminMotd.enhanced] i18n initialized with locale: ${locale.value}`);
 </script>
 
 <style scoped>

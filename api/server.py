@@ -22,7 +22,7 @@ import sqlite3  # Fehlender Import hinzugefügt
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, Request, Query
+from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, Request, Query, Path as PathParam
 from fastapi.responses import JSONResponse, FileResponse, Response
 from sse_starlette.sse import EventSourceResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -70,7 +70,85 @@ async def lifespan(app: FastAPI):
     # Shutdown
     # Hier können Shutdown-Tasks hinzugefügt werden
 
-app = FastAPI(title="nscale DMS Assistent API", lifespan=lifespan)
+# Configure FastAPI with comprehensive metadata
+app = FastAPI(
+    title="Digitale AKte Assistent API",
+    description="""## Digitale AKte Assistent API
+
+This API provides intelligent document management assistance using AI-powered features including:
+
+- **Authentication & User Management**: Secure JWT-based authentication with role-based access control
+- **Chat & Streaming**: Real-time AI-powered chat with streaming responses
+- **Document Processing**: Advanced document conversion and analysis capabilities
+- **Administrative Functions**: Comprehensive admin panel with system monitoring
+- **Batch Processing**: Efficient parallel request processing for better performance
+
+### Key Features:
+- 🔐 **Secure Authentication**: JWT tokens with configurable expiration
+- 💬 **Real-time Chat**: SSE-based streaming for responsive AI interactions
+- 📄 **Document Intelligence**: RAG-based document understanding and Q&A
+- 🎯 **Batch Operations**: Process multiple requests efficiently
+- 📊 **System Monitoring**: Real-time stats and health checks
+- 🔧 **Admin Dashboard**: Complete system management interface
+
+### API Versioning
+The API uses versioned endpoints (e.g., `/api/v1/`) to ensure backward compatibility.
+
+### Rate Limiting
+API endpoints are rate-limited to ensure fair usage. Contact administrators for higher limits.
+""",
+    version="1.0.0",
+    terms_of_service="https://nscale.com/terms/",
+    contact={
+        "name": "nscale Support Team",
+        "url": "https://nscale.com/support",
+        "email": "support@nscale.com"
+    },
+    license_info={
+        "name": "Proprietary",
+        "url": "https://nscale.com/license"
+    },
+    servers=[
+        {"url": "/", "description": "Current server"},
+        {"url": "http://localhost:3001", "description": "Local development server"},
+        {"url": "https://api.nscale.com", "description": "Production server"}
+    ],
+    openapi_tags=[
+        {
+            "name": "auth",
+            "description": "Authentication and authorization operations"
+        },
+        {
+            "name": "chat",
+            "description": "AI-powered chat and question answering"
+        },
+        {
+            "name": "sessions",
+            "description": "Chat session management"
+        },
+        {
+            "name": "admin",
+            "description": "Administrative operations (requires admin role)"
+        },
+        {
+            "name": "feedback",
+            "description": "User feedback collection and management"
+        },
+        {
+            "name": "system",
+            "description": "System information and health checks"
+        },
+        {
+            "name": "batch",
+            "description": "Batch request processing"
+        },
+        {
+            "name": "documents",
+            "description": "Document conversion and processing"
+        }
+    ],
+    lifespan=lifespan
+)
 
 # Zusätzliche API-Endpunkte für Feedback integrieren
 app.include_router(additional_router)
@@ -204,48 +282,277 @@ user_manager = UserManager()
 rag_engine = RAGEngine()
 chat_history = ChatHistoryManager()
 
-# Datenmodelle für API-Anfragen und Antworten
+# Enhanced Pydantic models with comprehensive documentation
+from pydantic import Field, validator
+from datetime import datetime
+from enum import Enum
+
+# Enums for better validation
+class UserRole(str, Enum):
+    admin = "admin"
+    user = "user"
+
+class HTTPMethod(str, Enum):
+    GET = "GET"
+    POST = "POST"
+    PUT = "PUT"
+    DELETE = "DELETE"
+    PATCH = "PATCH"
+
+# Request Models
 class LoginRequest(BaseModel):
-    email: EmailStr
-    password: str
+    """Login request model for user authentication"""
+    email: EmailStr = Field(
+        ..., 
+        description="User's email address",
+        example="user@example.com"
+    )
+    password: str = Field(
+        ..., 
+        description="User's password",
+        min_length=1,
+        example="secure_password123"
+    )
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "email": "martin@danglefeet.com",
+                "password": "123"
+            }
+        }
 
 class RegisterRequest(BaseModel):
-    email: EmailStr
-    password: str
+    """User registration request model"""
+    email: EmailStr = Field(
+        ..., 
+        description="Email address for new user",
+        example="newuser@example.com"
+    )
+    password: str = Field(
+        ..., 
+        description="Password for new user (min 8 characters recommended)",
+        min_length=3,
+        example="secure_password123"
+    )
+    
+    @validator('password')
+    def validate_password(cls, v):
+        if len(v) < 3:
+            raise ValueError('Password must be at least 3 characters long')
+        return v
 
 class ResetPasswordRequest(BaseModel):
-    email: EmailStr
+    """Password reset request model"""
+    email: EmailStr = Field(
+        ..., 
+        description="Email address of the account to reset",
+        example="user@example.com"
+    )
 
 class SetPasswordRequest(BaseModel):
-    token: str
-    new_password: str
+    """Set new password with reset token"""
+    token: str = Field(
+        ..., 
+        description="Password reset token received via email",
+        min_length=1
+    )
+    new_password: str = Field(
+        ..., 
+        description="New password to set",
+        min_length=3
+    )
 
 class QuestionRequest(BaseModel):
-    question: str
-    session_id: Optional[int] = None
+    """Chat question request model"""
+    question: str = Field(
+        ...,
+        description="User's question or query",
+        min_length=1,
+        max_length=5000,
+        example="Wie kann ich Dokumente in nscale archivieren?"
+    )
+    session_id: Optional[int] = Field(
+        None,
+        description="Session ID to continue existing conversation",
+        ge=1
+    )
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "question": "Was ist nscale DMS?",
+                "session_id": 123
+            }
+        }
 
 class StartSessionRequest(BaseModel):
-    title: Optional[str] = "Neue Unterhaltung"
+    """Start new chat session request"""
+    title: Optional[str] = Field(
+        "Neue Unterhaltung",
+        description="Title for the new session",
+        max_length=200,
+        example="Fragen zur Dokumentenverwaltung"
+    )
 
 class RenameSessionRequest(BaseModel):
-    session_id: int
-    title: str
+    """Rename existing session request"""
+    session_id: int = Field(
+        ...,
+        description="ID of the session to rename",
+        ge=1
+    )
+    title: str = Field(
+        ...,
+        description="New title for the session",
+        min_length=1,
+        max_length=200
+    )
 
-# Neue Pydantic-Modelle für API-Anfragen
 class UserRoleUpdateRequest(BaseModel):
-    user_id: int
-    new_role: str
+    """Update user role request (admin only)"""
+    user_id: int = Field(
+        ...,
+        description="ID of the user to update",
+        ge=1
+    )
+    new_role: UserRole = Field(
+        ...,
+        description="New role to assign to the user"
+    )
 
 class CreateUserRequest(BaseModel):
-    email: EmailStr
-    password: str
-    role: str = "user"
+    """Create new user request (admin only)"""
+    email: EmailStr = Field(
+        ...,
+        description="Email address for the new user",
+        example="newuser@company.com"
+    )
+    password: str = Field(
+        ...,
+        description="Initial password for the new user",
+        min_length=3
+    )
+    role: UserRole = Field(
+        UserRole.user,
+        description="Role to assign to the new user"
+    )
 
 class FeedbackRequest(BaseModel):
-    message_id: int
-    session_id: int
-    is_positive: bool
-    comment: Optional[str] = None
+    """User feedback submission request"""
+    message_id: int = Field(
+        ...,
+        description="ID of the message being rated",
+        ge=1
+    )
+    session_id: int = Field(
+        ...,
+        description="ID of the chat session",
+        ge=1
+    )
+    is_positive: bool = Field(
+        ...,
+        description="Whether the feedback is positive (true) or negative (false)"
+    )
+    comment: Optional[str] = Field(
+        None,
+        description="Optional comment explaining the feedback",
+        max_length=1000
+    )
+
+# Response Models
+class UserInfo(BaseModel):
+    """User information model"""
+    id: int = Field(..., description="Unique user ID")
+    email: EmailStr = Field(..., description="User's email address")
+    username: Optional[str] = Field(None, description="Username (if different from email)")
+    role: UserRole = Field(..., description="User's role in the system")
+    created_at: Optional[int] = Field(None, description="Unix timestamp of account creation (milliseconds)")
+    last_login: Optional[int] = Field(None, description="Unix timestamp of last login (milliseconds)")
+
+class LoginResponse(BaseModel):
+    """Successful login response"""
+    access_token: str = Field(..., description="JWT access token for authentication")
+    token: str = Field(..., description="JWT token (legacy field, same as access_token)")
+    user: Optional[UserInfo] = Field(None, description="User information")
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                "user": {
+                    "id": 1,
+                    "email": "user@example.com",
+                    "role": "user",
+                    "created_at": 1640995200000
+                }
+            }
+        }
+
+class MessageResponse(BaseModel):
+    """Standard message response"""
+    message: str = Field(..., description="Response message")
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "message": "Operation completed successfully"
+            }
+        }
+
+class SessionInfo(BaseModel):
+    """Chat session information"""
+    id: int = Field(..., description="Unique session ID")
+    title: str = Field(..., description="Session title")
+    created_at: Optional[int] = Field(None, description="Creation timestamp (milliseconds)")
+    updated_at: Optional[int] = Field(None, description="Last update timestamp (milliseconds)")
+    message_count: Optional[int] = Field(0, description="Number of messages in session")
+
+class SessionResponse(BaseModel):
+    """Session creation response"""
+    session_id: int = Field(..., description="ID of the created session")
+    title: str = Field(..., description="Title of the session")
+
+class ChatMessage(BaseModel):
+    """Chat message model"""
+    id: int = Field(..., description="Message ID")
+    session_id: int = Field(..., description="Session ID")
+    message: str = Field(..., description="Message content")
+    is_user: bool = Field(..., description="Whether message is from user (true) or assistant (false)")
+    created_at: int = Field(..., description="Creation timestamp (milliseconds)")
+
+class SessionHistoryResponse(BaseModel):
+    """Session history response"""
+    session_id: int = Field(..., description="Session ID")
+    title: str = Field(..., description="Session title")
+    messages: List[ChatMessage] = Field(..., description="List of messages in the session")
+
+class ErrorResponse(BaseModel):
+    """Standard error response"""
+    detail: str = Field(..., description="Error message")
+    status_code: Optional[int] = Field(None, description="HTTP status code")
+    error_code: Optional[str] = Field(None, description="Application-specific error code")
+
+class SystemStats(BaseModel):
+    """System statistics model"""
+    total_users: int = Field(..., description="Total number of registered users")
+    active_sessions: int = Field(..., description="Number of active sessions")
+    total_messages: int = Field(..., description="Total messages processed")
+    system_uptime: int = Field(..., description="System uptime in seconds")
+    model_status: str = Field(..., description="LLM model status")
+    cache_size: Optional[int] = Field(None, description="Cache size in bytes")
+
+class AdminStats(BaseModel):
+    """Extended admin statistics"""
+    stats: Dict[str, Any] = Field(..., description="System statistics data")
+
+class FeedbackStats(BaseModel):
+    """Feedback statistics"""
+    total_feedback: int = Field(..., description="Total feedback entries")
+    positive_feedback: int = Field(..., description="Number of positive feedback")
+    negative_feedback: int = Field(..., description="Number of negative feedback")
+    unresolved_count: int = Field(..., description="Number of unresolved feedback items")
 
 # Helper-Funktion zur Überprüfung von Admin-Rechten
 async def get_admin_user(request: Request) -> Dict[str, Any]:
@@ -283,9 +590,49 @@ async def get_current_user(request: Request) -> Dict[str, Any]:
 
 
 # API-Endpunkte für Authentifizierung
-@app.post("/api/auth/login")
+@app.post(
+    "/api/auth/login",
+    response_model=LoginResponse,
+    tags=["auth"],
+    summary="User login",
+    description="""Authenticate a user with email and password to receive a JWT token.
+    
+    The token should be included in subsequent requests in the Authorization header as:
+    `Authorization: Bearer <token>`
+    
+    Default test credentials:
+    - Email: martin@danglefeet.com
+    - Password: 123
+    """,
+    responses={
+        200: {
+            "description": "Successful login",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                        "user": {
+                            "id": 1,
+                            "email": "martin@danglefeet.com",
+                            "role": "admin",
+                            "created_at": 1640995200000
+                        }
+                    }
+                }
+            }
+        },
+        401: {
+            "description": "Invalid credentials",
+            "model": ErrorResponse
+        },
+        500: {
+            "description": "Internal server error",
+            "model": ErrorResponse
+        }
+    }
+)
 async def login(request: Request):
-    """Authentifiziert einen Benutzer und gibt ein JWT-Token zurück"""
     try:
         # Erste Variante: Aus dem Request-Body lesen
         try:
@@ -386,9 +733,24 @@ async def login(request: Request):
         print(f"LOGIN DEBUG - Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
-@app.post("/api/auth/register")
+@app.post(
+    "/api/auth/register",
+    response_model=MessageResponse,
+    tags=["auth"],
+    summary="Register new user",
+    description="Create a new user account with email and password.",
+    responses={
+        200: {
+            "description": "User successfully registered",
+            "model": MessageResponse
+        },
+        400: {
+            "description": "User already exists or invalid data",
+            "model": ErrorResponse
+        }
+    }
+)
 async def register(request: RegisterRequest):
-    """Registriert einen neuen Benutzer"""
     success = user_manager.register_user(request.email, request.password)
     
     if not success:
@@ -396,9 +758,20 @@ async def register(request: RegisterRequest):
     
     return {"message": "Benutzer erfolgreich registriert"}
 
-@app.post("/api/auth/reset-password")
+@app.post(
+    "/api/auth/reset-password",
+    response_model=MessageResponse,
+    tags=["auth"],
+    summary="Request password reset",
+    description="Initiate password reset process. In production, this would send an email with a reset token.",
+    responses={
+        200: {
+            "description": "Password reset initiated (if email exists)",
+            "model": MessageResponse
+        }
+    }
+)
 async def reset_password(request: ResetPasswordRequest, background_tasks: BackgroundTasks):
-    """Initiiert den Passwort-Reset-Prozess"""
     token = user_manager.initiate_password_reset(request.email)
     
     if not token:
@@ -409,9 +782,24 @@ async def reset_password(request: ResetPasswordRequest, background_tasks: Backgr
     # Für dieses Beispiel geben wir den Token direkt zurück
     return {"message": "Passwort-Reset initiiert", "token": token}
 
-@app.post("/api/auth/set-password")
+@app.post(
+    "/api/auth/set-password",
+    response_model=MessageResponse,
+    tags=["auth"],
+    summary="Set new password",
+    description="Set a new password using a valid reset token.",
+    responses={
+        200: {
+            "description": "Password successfully reset",
+            "model": MessageResponse
+        },
+        400: {
+            "description": "Invalid or expired token",
+            "model": ErrorResponse
+        }
+    }
+)
 async def set_password(request: SetPasswordRequest):
-    """Setzt das Passwort mit einem gültigen Token zurück"""
     success = user_manager.reset_password(request.token, request.new_password)
     
     if not success:
@@ -419,9 +807,35 @@ async def set_password(request: SetPasswordRequest):
     
     return {"message": "Passwort erfolgreich zurückgesetzt"}
 
-@app.get("/api/auth/validate")
+@app.get(
+    "/api/auth/validate",
+    tags=["auth"],
+    summary="Validate authentication token",
+    description="Validate the current JWT token and return user information.",
+    responses={
+        200: {
+            "description": "Token is valid",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "valid": True,
+                        "user": {
+                            "id": 1,
+                            "email": "user@example.com",
+                            "role": "user",
+                            "created_at": 1640995200000
+                        }
+                    }
+                }
+            }
+        },
+        401: {
+            "description": "Invalid or expired token",
+            "model": ErrorResponse
+        }
+    }
+)
 async def validate_token(user_data: Dict[str, Any] = Depends(get_current_user)):
-    """Validiert das aktuelle Token und gibt Benutzerinformationen zurück"""
     user = user_manager.get_user_by_email(user_data['email'])
     if user:
         user_info = {
@@ -436,9 +850,44 @@ async def validate_token(user_data: Dict[str, Any] = Depends(get_current_user)):
         return {"valid": False}
 
 # API-Endpunkte für Benutzerverwaltung (nur für Admins)
-@app.get("/api/v1/admin/users")
+@app.get(
+    "/api/v1/admin/users",
+    tags=["admin"],
+    summary="List all users",
+    description="Get a list of all registered users. Requires admin privileges.",
+    responses={
+        200: {
+            "description": "List of users",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "users": [
+                            {
+                                "id": 1,
+                                "email": "admin@example.com",
+                                "role": "admin",
+                                "created_at": 1640995200000,
+                                "last_login": 1640995200000
+                            },
+                            {
+                                "id": 2,
+                                "email": "user@example.com",
+                                "role": "user",
+                                "created_at": 1640995200000,
+                                "last_login": None
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        403: {
+            "description": "Admin privileges required",
+            "model": ErrorResponse
+        }
+    }
+)
 async def get_users(admin_data: Dict[str, Any] = Depends(get_admin_user)):
-    """Gibt eine Liste aller Benutzer zurück (Admin-Funktion)"""
     users = user_manager.get_all_users(admin_data['user_id'])
     
     if users is None:
@@ -453,9 +902,28 @@ async def get_users(admin_data: Dict[str, Any] = Depends(get_admin_user)):
     
     return {"users": users}
 
-@app.post("/api/v1/admin/users")
+@app.post(
+    "/api/v1/admin/users",
+    response_model=MessageResponse,
+    tags=["admin"],
+    summary="Create new user",
+    description="Create a new user with specified role. Requires admin privileges.",
+    responses={
+        200: {
+            "description": "User successfully created",
+            "model": MessageResponse
+        },
+        400: {
+            "description": "User already exists or invalid data",
+            "model": ErrorResponse
+        },
+        403: {
+            "description": "Admin privileges required",
+            "model": ErrorResponse
+        }
+    }
+)
 async def create_user(request: CreateUserRequest, admin_data: Dict[str, Any] = Depends(get_admin_user)):
-    """Erstellt einen neuen Benutzer mit angegebener Rolle (Admin-Funktion)"""
     success = user_manager.register_user(request.email, request.password, request.role)
     
     if not success:
@@ -509,12 +977,47 @@ async def get_current_user_role(user_data: Dict[str, Any] = Depends(get_current_
         "user_id": user_data.get('user_id')
     }
 
-@app.get("/api/explain/{message_id}")
-async def explain_answer(message_id: int, user_data: Dict[str, Any] = Depends(get_current_user)):
-    """
-    Erklärt, wie eine bestimmte Antwort generiert wurde, inkl. genutzter Quellen
-    und Entscheidungsprozess.
-    """
+@app.get(
+    "/api/explain/{message_id}",
+    tags=["chat"],
+    summary="Explain AI answer",
+    description="""Get a detailed explanation of how a specific AI answer was generated,
+    including sources used and decision process.
+    
+    This endpoint helps users understand the reasoning behind AI responses.
+    """,
+    responses={
+        200: {
+            "description": "Explanation generated successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "original_question": "Was ist nscale?",
+                        "answer_summary": "nscale ist ein Enterprise Content Management System...",
+                        "source_references": [
+                            {
+                                "source_id": "1",
+                                "file_name": "nscale_overview.pdf",
+                                "relevance_score": 0.95,
+                                "usage_count": 3
+                            }
+                        ],
+                        "explanation_text": "Die Antwort basiert auf 3 relevanten Dokumenten..."
+                    }
+                }
+            }
+        },
+        403: {
+            "description": "Access denied",
+            "model": ErrorResponse
+        },
+        404: {
+            "description": "Message not found",
+            "model": ErrorResponse
+        }
+    }
+)
+async def explain_answer(message_id: int = PathParam(..., description="ID of the message to explain", ge=1), user_data: Dict[str, Any] = Depends(get_current_user)):
     try:
         # Hole die Nachricht aus der Datenbank
         conn = sqlite3.connect(Config.DB_PATH)
@@ -845,9 +1348,40 @@ async def update_session_title(session_id: int, user_data: Dict[str, Any] = Depe
         raise HTTPException(status_code=500, detail=str(e))
     
 # API-Endpunkte für RAG
-@app.post("/api/question")
+@app.post(
+    "/api/question",
+    tags=["chat"],
+    summary="Ask a question",
+    description="""Submit a question to the AI assistant. The response includes the answer and the message ID.
+    
+    For streaming responses, use the `/api/question/stream` endpoint instead.
+    """,
+    responses={
+        200: {
+            "description": "Question answered successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "answer": "nscale ist ein Enterprise Content Management System...",
+                        "message_id": 12345,
+                        "session_id": 67890,
+                        "sources": ["doc1.pdf", "doc2.pdf"],
+                        "cached": False
+                    }
+                }
+            }
+        },
+        401: {
+            "description": "Not authenticated",
+            "model": ErrorResponse
+        },
+        500: {
+            "description": "Error processing question",
+            "model": ErrorResponse
+        }
+    }
+)
 async def answer_question(request: QuestionRequest, request_obj: Request, user_data: Dict[str, Any] = Depends(get_current_user)):
-    """Beantwortet eine Frage mit dem RAG-System"""
     user_id = user_data['user_id']
     
     # Erstelle eine neue Session wenn nötig
@@ -905,18 +1439,67 @@ async def answer_question(request: QuestionRequest, request_obj: Request, user_d
     }
 
 
-@app.get("/api/question/stream")
+@app.get(
+    "/api/question/stream",
+    tags=["chat"],
+    summary="Stream answer via SSE",
+    description="""Stream an AI-generated answer using Server-Sent Events (SSE).
+    
+    **Security Note:** Authentication token must be provided in the Authorization header only.
+    
+    **SSE Event Format:**
+    - Regular message: `data: {"content": "text", "type": "content"}`
+    - Error: `data: {"error": "error message"}`
+    - End of stream: `event: done\ndata: `
+    
+    **Example usage with JavaScript:**
+    ```javascript
+    const eventSource = new EventSource(
+        '/api/question/stream?question=Your+question&session_id=123',
+        { headers: { 'Authorization': 'Bearer YOUR_TOKEN' } }
+    );
+    eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log(data.content);
+    };
+    eventSource.addEventListener('done', () => {
+        eventSource.close();
+    });
+    ```
+    """,
+    responses={
+        200: {
+            "description": "SSE stream of answer chunks",
+            "content": {
+                "text/event-stream": {
+                    "example": "data: {\"content\": \"Dies ist\", \"type\": \"content\"}\n\ndata: {\"content\": \" ein Beispiel\", \"type\": \"content\"}\n\nevent: done\ndata: \n\n"
+                }
+            }
+        },
+        401: {
+            "description": "Not authenticated",
+            "model": ErrorResponse
+        },
+        422: {
+            "description": "Invalid input - empty question",
+            "model": ErrorResponse
+        },
+        500: {
+            "description": "Streaming error",
+            "content": {
+                "text/event-stream": {
+                    "example": "data: {\"error\": \"Internal server error\"}\n\nevent: done\ndata: \n\n"
+                }
+            }
+        }
+    }
+)
 async def stream_question(
-    question: str = Query(..., description="Die Frage des Benutzers"),
-    session_id: str = Query(..., description="Die Session-ID"),
-    simple_language: Optional[str] = Query(None),
+    question: str = Query(..., description="The user's question"),
+    session_id: str = Query(..., description="Session ID for conversation continuity"),
+    simple_language: Optional[str] = Query(None, description="Use simplified language (true/false)"),
     request: Request = None
 ):
-    """Streamt die Antwort auf eine Frage via Server-Sent Events (SSE)
-    
-    SICHERHEITSFIX: Token wird nur noch über Authorization-Header akzeptiert,
-    nicht mehr über URL-Parameter (verhindert Token-Leaks in Logs/History)
-    """
     # URL-Decode die Frage, falls nötig
     import urllib.parse
     decoded_question = urllib.parse.unquote_plus(question)
@@ -1069,9 +1652,24 @@ async def start_session(request: StartSessionRequest, user_data: Dict[str, Any] 
     
     return {"session_id": session_id, "title": request.title}
 
-@app.delete("/api/session/{session_id}")
-async def delete_session(session_id: int, user_data: Dict[str, Any] = Depends(get_current_user)):
-    """Löscht eine Chat-Session"""
+@app.delete(
+    "/api/session/{session_id}",
+    response_model=MessageResponse,
+    tags=["sessions"],
+    summary="Delete chat session",
+    description="Delete a chat session and all its messages.",
+    responses={
+        200: {
+            "description": "Session deleted successfully",
+            "model": MessageResponse
+        },
+        403: {
+            "description": "Access denied - session belongs to another user",
+            "model": ErrorResponse
+        }
+    }
+)
+async def delete_session(session_id: int = PathParam(..., description="Session ID to delete", ge=1), user_data: Dict[str, Any] = Depends(get_current_user)):
     user_id = user_data['user_id']
     
     success = chat_history.delete_session(session_id, user_id)
@@ -1081,9 +1679,24 @@ async def delete_session(session_id: int, user_data: Dict[str, Any] = Depends(ge
     
     return {"message": "Session erfolgreich gelöscht"}
 
-@app.put("/api/session/rename")
+@app.put(
+    "/api/session/rename",
+    response_model=MessageResponse,
+    tags=["sessions"],
+    summary="Rename chat session",
+    description="Change the title of an existing chat session.",
+    responses={
+        200: {
+            "description": "Session renamed successfully",
+            "model": MessageResponse
+        },
+        403: {
+            "description": "Access denied - session belongs to another user",
+            "model": ErrorResponse
+        }
+    }
+)
 async def rename_session(request: RenameSessionRequest, user_data: Dict[str, Any] = Depends(get_current_user)):
-    """Benennt eine Chat-Session um"""
     user_id = user_data['user_id']
     
     success = chat_history.rename_session(request.session_id, user_id, request.title)
@@ -1094,9 +1707,30 @@ async def rename_session(request: RenameSessionRequest, user_data: Dict[str, Any
     return {"message": "Session erfolgreich umbenannt"}
 
 # Admin-API-Endpunkte - Allgemeine Systemfunktionen
-@app.post("/api/v1/admin/install-model")
+@app.post(
+    "/api/v1/admin/install-model",
+    response_model=MessageResponse,
+    tags=["admin"],
+    summary="Install LLM model",
+    description="""Install or update the Large Language Model used by the system.
+    This operation may take several minutes. Requires admin privileges.
+    """,
+    responses={
+        200: {
+            "description": "Model installed successfully",
+            "model": MessageResponse
+        },
+        500: {
+            "description": "Installation failed",
+            "model": ErrorResponse
+        },
+        403: {
+            "description": "Admin privileges required",
+            "model": ErrorResponse
+        }
+    }
+)
 async def install_model(user_data: Dict[str, Any] = Depends(get_admin_user)):
-    """Installiert das LLM-Modell (nur für Admins)"""
     result = await rag_engine.install_model()
     
     if not result['success']:
@@ -1104,9 +1738,28 @@ async def install_model(user_data: Dict[str, Any] = Depends(get_admin_user)):
     
     return {"message": result['message']}
 
-@app.post("/api/v1/admin/clear-cache")
+@app.post(
+    "/api/v1/admin/clear-cache",
+    response_model=MessageResponse,
+    tags=["admin"],
+    summary="Clear LLM cache",
+    description="Clear the Large Language Model response cache. Requires admin privileges.",
+    responses={
+        200: {
+            "description": "Cache cleared successfully",
+            "model": MessageResponse
+        },
+        500: {
+            "description": "Error clearing cache",
+            "model": ErrorResponse
+        },
+        403: {
+            "description": "Admin privileges required",
+            "model": ErrorResponse
+        }
+    }
+)
 async def clear_cache(user_data: Dict[str, Any] = Depends(get_admin_user)):
-    """Löscht den LLM-Cache (nur für Admins)"""
     result = rag_engine.clear_cache()
     
     if not result['success']:
@@ -1114,9 +1767,30 @@ async def clear_cache(user_data: Dict[str, Any] = Depends(get_admin_user)):
     
     return {"message": result['message']}
 
-@app.post("/api/v1/admin/clear-embedding-cache")
+@app.post(
+    "/api/v1/admin/clear-embedding-cache",
+    response_model=MessageResponse,
+    tags=["admin"],
+    summary="Clear embedding cache",
+    description="""Clear the document embedding cache. This will force re-generation
+    of embeddings on next use. Requires admin privileges.
+    """,
+    responses={
+        200: {
+            "description": "Embedding cache cleared successfully",
+            "model": MessageResponse
+        },
+        500: {
+            "description": "Error clearing embedding cache",
+            "model": ErrorResponse
+        },
+        403: {
+            "description": "Admin privileges required",
+            "model": ErrorResponse
+        }
+    }
+)
 async def clear_embedding_cache(user_data: Dict[str, Any] = Depends(get_admin_user)):
-    """Löscht den Embedding-Cache (nur für Admins)"""
     try:
         # Löschlogik für Embedding-Cache
         embedding_cache_path = Config.EMBED_CACHE_PATH
@@ -1146,9 +1820,39 @@ async def clear_embedding_cache(user_data: Dict[str, Any] = Depends(get_admin_us
         raise HTTPException(status_code=500, detail=f"Fehler beim Löschen des Embedding-Cache: {str(e)}")
 
 # Neue Admin-Endpunkte für System-Statistiken und -Funktionen
-@app.get("/api/v1/admin/stats")
+@app.get(
+    "/api/v1/admin/stats",
+    response_model=AdminStats,
+    tags=["admin"],
+    summary="Get comprehensive system statistics",
+    description="""Retrieve comprehensive system statistics including user counts,
+    document stats, cache information, and more. Requires admin privileges.
+    """,
+    responses={
+        200: {
+            "description": "System statistics retrieved",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "stats": {
+                            "total_users": 150,
+                            "active_sessions": 12,
+                            "total_documents": 5000,
+                            "cache_size_mb": 256,
+                            "model_status": "ready",
+                            "system_uptime": 864000
+                        }
+                    }
+                }
+            }
+        },
+        403: {
+            "description": "Admin privileges required",
+            "model": ErrorResponse
+        }
+    }
+)
 async def get_admin_stats(user_data: Dict[str, Any] = Depends(get_admin_user)):
-    """Gibt umfassende Systemstatistiken zurück (nur für Admins)"""
     rag_stats = rag_engine.get_document_stats()
     system_stats = get_system_stats()
     
@@ -2068,6 +2772,151 @@ from api.batch_handler_fastapi import router as batch_router
 
 # Include the batch router
 app.include_router(batch_router)
+
+# Custom OpenAPI schema configuration
+def custom_openapi():
+    """Generate custom OpenAPI schema with additional examples and documentation"""
+    if app.openapi_schema:
+        return app.openapi_schema
+    
+    from fastapi.openapi.utils import get_openapi
+    
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+        tags=app.openapi_tags,
+        servers=app.servers,
+        terms_of_service=app.terms_of_service,
+        contact=app.contact,
+        license_info=app.license_info,
+    )
+    
+    # Add security schemes
+    openapi_schema["components"]["securitySchemes"] = {
+        "bearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+            "description": "Enter the JWT token obtained from /api/auth/login"
+        }
+    }
+    
+    # Add global security requirement
+    openapi_schema["security"] = [{"bearerAuth": []}]
+    
+    # Add additional examples
+    if "paths" in openapi_schema:
+        # Add example for batch endpoint if it exists
+        if "/api/batch" in openapi_schema["paths"]:
+            if "post" in openapi_schema["paths"]["/api/batch"]:
+                openapi_schema["paths"]["/api/batch"]["post"]["requestBody"]["content"]["application/json"]["examples"] = {
+                    "multiple_requests": {
+                        "summary": "Multiple API requests",
+                        "value": {
+                            "requests": [
+                                {
+                                    "id": "req1",
+                                    "endpoint": "/api/v1/admin/users/count",
+                                    "method": "GET"
+                                },
+                                {
+                                    "id": "req2",
+                                    "endpoint": "/api/v1/admin/system",
+                                    "method": "GET"
+                                },
+                                {
+                                    "id": "req3",
+                                    "endpoint": "/api/sessions",
+                                    "method": "GET"
+                                }
+                            ]
+                        }
+                    },
+                    "create_session": {
+                        "summary": "Create session and ask question",
+                        "value": {
+                            "requests": [
+                                {
+                                    "id": "create_session",
+                                    "endpoint": "/api/session",
+                                    "method": "POST",
+                                    "data": {
+                                        "title": "New Chat Session"
+                                    }
+                                },
+                                {
+                                    "id": "ask_question",
+                                    "endpoint": "/api/question",
+                                    "method": "POST",
+                                    "data": {
+                                        "question": "What is nscale?",
+                                        "session_id": "{{create_session.session_id}}"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+    
+    # Add common error responses
+    openapi_schema["components"]["responses"] = {
+        "UnauthorizedError": {
+            "description": "Authentication token is missing or invalid",
+            "content": {
+                "application/json": {
+                    "schema": {"$ref": "#/components/schemas/ErrorResponse"},
+                    "example": {
+                        "detail": "Not authenticated",
+                        "status_code": 401
+                    }
+                }
+            }
+        },
+        "ForbiddenError": {
+            "description": "User does not have required permissions",
+            "content": {
+                "application/json": {
+                    "schema": {"$ref": "#/components/schemas/ErrorResponse"},
+                    "example": {
+                        "detail": "Admin privileges required",
+                        "status_code": 403
+                    }
+                }
+            }
+        },
+        "NotFoundError": {
+            "description": "Requested resource not found",
+            "content": {
+                "application/json": {
+                    "schema": {"$ref": "#/components/schemas/ErrorResponse"},
+                    "example": {
+                        "detail": "Resource not found",
+                        "status_code": 404
+                    }
+                }
+            }
+        },
+        "ServerError": {
+            "description": "Internal server error",
+            "content": {
+                "application/json": {
+                    "schema": {"$ref": "#/components/schemas/ErrorResponse"},
+                    "example": {
+                        "detail": "Internal server error",
+                        "status_code": 500
+                    }
+                }
+            }
+        }
+    }
+    
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+# Override the OpenAPI function
+app.openapi = custom_openapi
 
 if __name__ == "__main__":
     import uvicorn

@@ -1,10 +1,10 @@
 <template>
   <div class="admin-doc-converter">
     <div class="doc-converter-header">
-      <h2>{{ $t("admin.docConverter.title") || "Dokumentenkonverter" }}</h2>
+      <h2>{{ t("admin.docConverter.title") || "Dokumentenkonverter" }}</h2>
       <p class="description">
         {{
-          $t("admin.docConverter.description") ||
+          t("admin.docConverter.description") ||
           "Verwaltung von Dokumentkonvertierungen und Einstellungen"
         }}
       </p>
@@ -15,7 +15,7 @@
           :disabled="isLoading"
         >
           <i class="fas fa-sync-alt"></i>
-          {{ $t("admin.common.refresh") || "Aktualisieren" }}
+          {{ t("admin.common.refresh") || "Aktualisieren" }}
         </button>
       </div>
     </div>
@@ -28,7 +28,7 @@
           <div class="stat-value">{{ statistics.totalConversions }}</div>
           <div class="stat-label">
             {{
-              $t("admin.docConverter.totalDocuments") || "Dokumente insgesamt"
+              t("admin.docConverter.totalDocuments") || "Dokumente insgesamt"
             }}
           </div>
         </div>
@@ -46,7 +46,7 @@
           </div>
           <div class="stat-label">
             {{
-              $t("admin.docConverter.successfulConversions") ||
+              t("admin.docConverter.successfulConversions") ||
               "Erfolgreiche Konvertierungen"
             }}
           </div>
@@ -66,7 +66,7 @@
           </div>
           <div class="stat-label">
             {{
-              $t("admin.docConverter.failedConversions") ||
+              t("admin.docConverter.failedConversions") ||
               "Fehlgeschlagene Konvertierungen"
             }}
           </div>
@@ -79,7 +79,7 @@
           <div class="stat-value">{{ statistics.activeConversions }}</div>
           <div class="stat-label">
             {{
-              $t("admin.docConverter.activeConversions") ||
+              t("admin.docConverter.activeConversions") ||
               "Aktive Konvertierungen"
             }}
           </div>
@@ -89,7 +89,7 @@
 
     <div v-if="isLoading" class="admin-loading">
       <div class="spinner"></div>
-      <p>{{ $t("admin.common.loading") || "Wird geladen..." }}</p>
+      <p>{{ t("admin.common.loading") || "Wird geladen..." }}</p>
     </div>
 
     <div v-else-if="error" class="admin-error">
@@ -97,10 +97,10 @@
         <i class="fas fa-exclamation-triangle"></i>
       </div>
       <div class="error-content">
-        <h3>{{ $t("admin.common.error") || "Fehler" }}</h3>
+        <h3>{{ t("admin.common.error") || "Fehler" }}</h3>
         <p>{{ error }}</p>
         <button class="btn btn-secondary" @click="refreshData">
-          {{ $t("admin.common.retry") || "Erneut versuchen" }}
+          {{ t("admin.common.retry") || "Erneut versuchen" }}
         </button>
       </div>
     </div>
@@ -121,10 +121,10 @@
 
       <!-- Statistics -->
       <div v-if="activeTab === 'statistics'" class="converter-statistics">
-        <h3>{{ $t("admin.docConverter.statistics") || "Statistiken" }}</h3>
+        <h3>{{ t("admin.docConverter.statistics") || "Statistiken" }}</h3>
         <p>
           {{
-            $t("admin.docConverter.statisticsDescription") ||
+            t("admin.docConverter.statisticsDescription") ||
             "Hier werden Statistiken zur Dokumentenkonvertierung angezeigt."
           }}
         </p>
@@ -132,10 +132,10 @@
 
       <!-- Document Upload Tab -->
       <div v-else-if="activeTab === 'upload'" class="document-upload">
-        <h3>{{ $t("admin.docConverter.upload") || "Dokumente hochladen" }}</h3>
+        <h3>{{ t("admin.docConverter.upload") || "Dokumente hochladen" }}</h3>
         <p>
           {{
-            $t("admin.docConverter.uploadDescription") ||
+            t("admin.docConverter.uploadDescription") ||
             "Hier können Sie Dokumente hochladen."
           }}
         </p>
@@ -144,11 +144,11 @@
       <!-- Recent conversions -->
       <div v-else-if="activeTab === 'recent'" class="recent-conversions">
         <h3>
-          {{ $t("admin.docConverter.recent") || "Letzte Konvertierungen" }}
+          {{ t("admin.docConverter.recent") || "Letzte Konvertierungen" }}
         </h3>
         <p>
           {{
-            $t("admin.docConverter.recentDescription") ||
+            t("admin.docConverter.recentDescription") ||
             "Hier werden die letzten Konvertierungen angezeigt."
           }}
         </p>
@@ -156,10 +156,10 @@
 
       <!-- Settings -->
       <div v-else-if="activeTab === 'settings'" class="converter-settings">
-        <h3>{{ $t("admin.docConverter.settings") || "Einstellungen" }}</h3>
+        <h3>{{ t("admin.docConverter.settings") || "Einstellungen" }}</h3>
         <p>
           {{
-            $t("admin.docConverter.settingsDescription") ||
+            t("admin.docConverter.settingsDescription") ||
             "Hier können Sie die Einstellungen für den Dokumentenkonverter anpassen."
           }}
         </p>
@@ -167,10 +167,10 @@
 
       <!-- Queue -->
       <div v-else-if="activeTab === 'queue'" class="conversion-queue">
-        <h3>{{ $t("admin.docConverter.queue") || "Warteschlange" }}</h3>
+        <h3>{{ t("admin.docConverter.queue") || "Warteschlange" }}</h3>
         <p>
           {{
-            $t("admin.docConverter.queueDescription") ||
+            t("admin.docConverter.queueDescription") ||
             "Hier können Sie die Warteschlange der Konvertierungen verwalten."
           }}
         </p>
@@ -188,10 +188,10 @@
         <p>{{ confirmDialogMessage }}</p>
         <div class="dialog-actions">
           <button class="btn btn-secondary" @click="cancelDialog">
-            {{ $t("admin.common.cancel") }}
+            {{ t("admin.common.cancel") }}
           </button>
           <button class="btn btn-danger" @click="confirmAction">
-            {{ $t("admin.common.confirm") }}
+            {{ t("admin.common.confirm") }}
           </button>
         </div>
       </div>
@@ -201,18 +201,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { useDocumentConverterStore } from "@/stores/documentConverter";
 import { useI18n } from "vue-i18n";
+import { useDocumentConverterStore } from "@/stores/documentConverter";
 import { useToast } from "@/composables/useToast";
 
-const { t, locale } = useI18n({ useScope: "global" });
+const { t } = useI18n();
 const documentConverterStore = useDocumentConverterStore();
 const toast = useToast();
-
-// Logging to check i18n initialization
-console.log(
-  `[AdminDocConverter] i18n initialized with locale: ${locale.value}`,
-);
 
 // Data
 const isLoading = ref(false);

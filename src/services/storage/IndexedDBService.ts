@@ -151,7 +151,7 @@ export class IndexedDBService {
 
     // Prüfe, ob IndexedDB verfügbar ist
     if (!this.isIndexedDBAvailable()) {
-      this.logger.onerror("IndexedDB ist nicht verfügbar");
+      this.logger.error("IndexedDB ist nicht verfügbar");
       return false;
     }
 
@@ -255,21 +255,21 @@ export class IndexedDBService {
         // Fehlerhandler
         request.onerror = (event) => {
           const error = (event.target as IDBOpenDBRequest).onerror;
-          this.logger.onerror(
+          this.logger.error(
             `Fehler beim Öffnen der Datenbank '${this.dbName}'`,
             error,
           );
           reject(error);
         };
       } catch (error) {
-        this.logger.onerror(
+        this.logger.error(
           `Ausnahme beim Initialisieren der Datenbank '${this.dbName}'`,
           error,
         );
         reject(error);
       }
     }).catch((error) => {
-      this.logger.onerror(
+      this.logger.error(
         `Initialisierung der Datenbank '${this.dbName}' fehlgeschlagen`,
         error,
       );
@@ -308,7 +308,7 @@ export class IndexedDBService {
 
     // Fehler-Handler
     this.db.onerror = (event) => {
-      this.logger.onerror(
+      this.logger.error(
         `Datenbankfehler in '${this.dbName}'`,
         (event.target as IDBDatabase).onerror,
       );
@@ -362,7 +362,7 @@ export class IndexedDBService {
       };
 
       request.onerror = (event) => {
-        this.logger.onerror(
+        this.logger.error(
           `Fehler beim Löschen der Datenbank '${this.dbName}'`,
           (event.target as IDBOpenDBRequest).onerror,
         );
@@ -379,7 +379,7 @@ export class IndexedDBService {
     mode: IDBTransactionMode = "readonly",
   ): IDBTransaction | null {
     if (!this.db) {
-      this.logger.onerror(
+      this.logger.error(
         `Keine Datenbankverbindung für Transaktion in '${this.dbName}'`,
       );
       return null;
@@ -389,7 +389,7 @@ export class IndexedDBService {
       const transaction = this.db.transaction(storeNames, mode);
       return transaction;
     } catch (error) {
-      this.logger.onerror(
+      this.logger.error(
         `Fehler beim Erstellen der Transaktion in '${this.dbName}'`,
         {
           stores: storeNames,
@@ -438,7 +438,7 @@ export class IndexedDBService {
       };
 
       request.onerror = (event) => {
-        this.logger.onerror(
+        this.logger.error(
           `Fehler beim Hinzufügen des Objekts in '${storeName}'`,
           (event.target as IDBRequest).onerror,
         );
@@ -481,7 +481,7 @@ export class IndexedDBService {
       };
 
       transaction.onerror = (event) => {
-        this.logger.onerror(
+        this.logger.error(
           `Fehler beim Hinzufügen mehrerer Objekte in '${storeName}'`,
           (event.target as IDBTransaction).onerror,
         );
@@ -550,7 +550,7 @@ export class IndexedDBService {
       };
 
       request.onerror = (event) => {
-        this.logger.onerror(
+        this.logger.error(
           `Fehler beim Aktualisieren des Objekts in '${storeName}'`,
           (event.target as IDBRequest).onerror,
         );
@@ -623,7 +623,7 @@ export class IndexedDBService {
       };
 
       request.onerror = (event) => {
-        this.logger.onerror(
+        this.logger.error(
           `Fehler beim Löschen des Objekts aus '${storeName}'`,
           (event.target as IDBRequest).onerror,
         );
@@ -665,7 +665,7 @@ export class IndexedDBService {
       };
 
       transaction.onerror = (event) => {
-        this.logger.onerror(
+        this.logger.error(
           `Fehler beim Löschen mehrerer Objekte aus '${storeName}'`,
           (event.target as IDBTransaction).onerror,
         );
@@ -726,7 +726,7 @@ export class IndexedDBService {
       };
 
       request.onerror = (event) => {
-        this.logger.onerror(
+        this.logger.error(
           `Fehler beim Löschen aller Objekte aus '${storeName}'`,
           (event.target as IDBRequest).onerror,
         );
@@ -774,7 +774,7 @@ export class IndexedDBService {
       };
 
       request.onerror = (event) => {
-        this.logger.onerror(
+        this.logger.error(
           `Fehler beim Laden des Objekts aus '${storeName}'`,
           (event.target as IDBRequest).onerror,
         );
@@ -887,7 +887,7 @@ export class IndexedDBService {
       };
 
       request.onerror = (event) => {
-        this.logger.onerror(
+        this.logger.error(
           `Fehler beim Laden aller Objekte aus '${storeName}'`,
           (event.target as IDBRequest).onerror,
         );
@@ -943,7 +943,7 @@ export class IndexedDBService {
         try {
           handler({ type, key, value });
         } catch (error) {
-          this.logger.onerror(
+          this.logger.error(
             `Fehler beim Ausführen eines Änderungshandlers für '${storeName}'`,
             error,
           );
@@ -1024,7 +1024,7 @@ export class IndexedDBService {
       };
 
       request.onerror = (event) => {
-        this.logger.onerror(
+        this.logger.error(
           `Fehler beim Zählen der Objekte in '${storeName}'`,
           (event.target as IDBRequest).onerror,
         );
@@ -1104,7 +1104,7 @@ export class IndexedDBService {
       };
 
       request.onerror = (event) => {
-        this.logger.onerror(
+        this.logger.error(
           `Fehler bei der Abfrage in '${storeName}'`,
           (event.target as IDBRequest).onerror,
         );

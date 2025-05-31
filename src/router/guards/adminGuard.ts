@@ -6,7 +6,7 @@ import { useToast } from "@/composables/useToast";
  * Admin Route Guard
  * Schützt Admin-Routen und stellt sicher, dass nur autorisierte Benutzer Zugriff haben
  */
-export const adminGuard: NavigationGuard = async (to, from, next) => {
+export const adminGuard: NavigationGuard = async (to, _from, next) => {
   const authStore = useAuthStore();
   const toast = useToast();
 
@@ -91,7 +91,7 @@ export const adminGuard: NavigationGuard = async (to, from, next) => {
 export const createPermissionGuard = (
   requiredPermission: string,
 ): NavigationGuard => {
-  return async (to, from, next) => {
+  return async (to, _from, next) => {
     const authStore = useAuthStore();
     const toast = useToast();
 

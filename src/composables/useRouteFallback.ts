@@ -186,7 +186,7 @@ export function useRouteFallback(options: RouteFallbackOptions = {}) {
    * Installiert globale Navigation Guards
    */
   const installNavigationGuards = () => {
-    router.beforeEach((to, from, next) => {
+    router.beforeEach((to, _from, next) => {
       // Skip für Fehler- und Recovery-Routen
       if (to.path === "/error" || isRecovering.value) {
         return next();
@@ -204,7 +204,7 @@ export function useRouteFallback(options: RouteFallbackOptions = {}) {
       next();
     });
 
-    router.afterEach((to, from, failure) => {
+    router.afterEach((to, _from, failure) => {
       if (failure) {
         logger.error("Navigation fehlgeschlagen:", failure);
 

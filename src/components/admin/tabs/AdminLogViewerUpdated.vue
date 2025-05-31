@@ -167,7 +167,7 @@
         <button
           @click="exportLogs"
           class="admin-log-viewer__action-button admin-log-viewer__action-button--secondary"
-          :disabled="isLoading || logs.length === 0"
+          :disabled="isLoading || (logs.value?.length || 0) === 0"
         >
           <i class="fas fa-file-export" aria-hidden="true"></i>
           {{ t("admin.logViewer.actions.export", "Exportieren") }}
@@ -175,7 +175,7 @@
         <button
           @click="clearLogs"
           class="admin-log-viewer__action-button admin-log-viewer__action-button--danger"
-          :disabled="isLoading || logs.length === 0"
+          :disabled="isLoading || (logs.value?.length || 0) === 0"
         >
           <i class="fas fa-trash-alt" aria-hidden="true"></i>
           {{ t("admin.logViewer.actions.clear", "Löschen") }}
@@ -195,7 +195,7 @@
         </p>
       </div>
 
-      <div v-else-if="logs.length === 0" class="admin-log-viewer__empty">
+      <div v-else-if="(logs.value?.length || 0) === 0" class="admin-log-viewer__empty">
         <i
           class="fas fa-file-alt admin-log-viewer__empty-icon"
           aria-hidden="true"
@@ -266,7 +266,7 @@
           </thead>
           <tbody>
             <tr
-              v-for="log in logs"
+              v-for="log in logs.value || []"
               :key="log.id"
               :class="{
                 'log-error': log.level === 'error',
@@ -367,14 +367,13 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from "vue";
-import { useI18n } from "vue-i18n";
 import { useToast } from "@/composables/useToast";
 import { useDialog } from "@/composables/useDialog";
 import { logService, type LogEntry } from "@/services/api/LogServiceWrapper";
+import { useI18n } from "vue-i18n";
 
-// i18n
-const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
-console.log('[i18n] Component initialized with global scope and inheritance');
+// Use i18n composable
+const { t } = useI18n();
 const toast = useToast();
 const { showConfirmDialog } = useDialog();
 
@@ -397,6 +396,7 @@ const detailsVisible = ref<Record<string, boolean>>({});
 
 // Computed values
 const availableComponents = computed(() => {
+  if (!logs.value || !Array.isArray(logs.value)) return [];
   return [...new Set(logs.value.map((log) => log.component))];
 });
 
@@ -719,11 +719,7 @@ onMounted(async () => {
   await refreshLogs();
 });
 
-// Log i18n initialization status
-console.log(`[AdminLogViewerUpdated] i18n initialized with locale: ${locale.value}`);
-
-// Log i18n initialization status
-console.log(`[AdminLogViewerUpdated] i18n initialized with locale: ${locale.value}`);
+// Component ready
 </script>
 
 <style scoped>

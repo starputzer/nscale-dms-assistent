@@ -1,13 +1,13 @@
 <template>
   <div class="admin-motd-improved">
     <div class="motd-header">
-      <h2>{{ $t("admin.motd.title") }}</h2>
-      <p class="description">{{ $t("admin.motd.description") }}</p>
+      <h2>{{ t("admin.motd.title") }}</h2>
+      <p class="description">{{ t("admin.motd.description") }}</p>
     </div>
 
     <div v-if="loading.motd || storeLoading" class="loading-spinner">
       <i class="fas fa-spinner fa-spin"></i>
-      {{ $t("common.loading") }}
+      {{ t("common.loading") }}
     </div>
 
     <div v-else-if="error" class="error-message">
@@ -17,7 +17,7 @@
 
     <div v-else class="motd-content">
       <div class="motd-preview">
-        <h3>{{ $t("admin.motd.preview") }}</h3>
+        <h3>{{ t("admin.motd.preview") }}</h3>
         <div
           class="preview-box"
           :style="{
@@ -32,7 +32,7 @@
       </div>
 
       <div class="motd-editor">
-        <h3>{{ $t("admin.motd.editor") }}</h3>
+        <h3>{{ t("admin.motd.editor") }}</h3>
 
         <div class="enabled-toggle">
           <label>
@@ -41,38 +41,38 @@
               v-model="editConfig.enabled"
               @change="updateConfigField('enabled', $event.target.checked)"
             />
-            {{ $t("admin.motd.enabled") }}
+            {{ t("admin.motd.enabled") }}
           </label>
         </div>
 
         <div class="format-selector">
-          <label>{{ $t("admin.motd.format") }}:</label>
+          <label>{{ t("admin.motd.format") }}:</label>
           <select
             v-model="editConfig.format"
             @change="updateConfigField('format', $event.target.value)"
           >
             <option value="markdown">Markdown</option>
             <option value="html">HTML</option>
-            <option value="text">{{ $t("admin.motd.formats.text") }}</option>
+            <option value="text">{{ t("admin.motd.formats.text") }}</option>
           </select>
         </div>
 
         <div class="message-editor">
-          <label>{{ $t("admin.motd.content") }}:</label>
+          <label>{{ t("admin.motd.content") }}:</label>
           <textarea
             v-model="editConfig.content"
             @input="updateConfigField('content', $event.target.value)"
             rows="8"
-            :placeholder="$t('admin.motd.placeholder')"
+            :placeholder="t('admin.motd.placeholder')"
           ></textarea>
         </div>
 
         <div class="style-section">
-          <h4>{{ $t("admin.motd.styling") }}</h4>
+          <h4>{{ t("admin.motd.styling") }}</h4>
 
           <div class="style-grid">
             <div class="style-field">
-              <label>{{ $t("admin.motd.backgroundColor") }}:</label>
+              <label>{{ t("admin.motd.backgroundColor") }}:</label>
               <input
                 type="color"
                 :value="editConfig.style?.backgroundColor"
@@ -83,7 +83,7 @@
             </div>
 
             <div class="style-field">
-              <label>{{ $t("admin.motd.borderColor") }}:</label>
+              <label>{{ t("admin.motd.borderColor") }}:</label>
               <input
                 type="color"
                 :value="editConfig.style?.borderColor"
@@ -92,7 +92,7 @@
             </div>
 
             <div class="style-field">
-              <label>{{ $t("admin.motd.textColor") }}:</label>
+              <label>{{ t("admin.motd.textColor") }}:</label>
               <input
                 type="color"
                 :value="editConfig.style?.textColor"
@@ -101,7 +101,7 @@
             </div>
 
             <div class="style-field">
-              <label>{{ $t("admin.motd.iconClass") }}:</label>
+              <label>{{ t("admin.motd.iconClass") }}:</label>
               <input
                 type="text"
                 :value="editConfig.style?.iconClass"
@@ -112,20 +112,20 @@
         </div>
 
         <div class="display-section">
-          <h4>{{ $t("admin.motd.displayOptions") }}</h4>
+          <h4>{{ t("admin.motd.displayOptions") }}</h4>
 
           <div class="display-grid">
             <div class="display-field">
-              <label>{{ $t("admin.motd.position") }}:</label>
+              <label>{{ t("admin.motd.position") }}:</label>
               <select
                 :value="editConfig.display?.position"
                 @change="updateDisplayField('position', $event.target.value)"
               >
                 <option value="top">
-                  {{ $t("admin.motd.positions.top") }}
+                  {{ t("admin.motd.positions.top") }}
                 </option>
                 <option value="bottom">
-                  {{ $t("admin.motd.positions.bottom") }}
+                  {{ t("admin.motd.positions.bottom") }}
                 </option>
               </select>
             </div>
@@ -139,7 +139,7 @@
                     updateDisplayField('dismissible', $event.target.checked)
                   "
                 />
-                {{ $t("admin.motd.dismissible") }}
+                {{ t("admin.motd.dismissible") }}
               </label>
             </div>
 
@@ -152,7 +152,7 @@
                     updateDisplayField('showOnStartup', $event.target.checked)
                   "
                 />
-                {{ $t("admin.motd.showOnStartup") }}
+                {{ t("admin.motd.showOnStartup") }}
               </label>
             </div>
 
@@ -165,7 +165,7 @@
                     updateDisplayField('showInChat', $event.target.checked)
                   "
                 />
-                {{ $t("admin.motd.showInChat") }}
+                {{ t("admin.motd.showInChat") }}
               </label>
             </div>
           </div>
@@ -179,7 +179,7 @@
           >
             <i class="fas fa-save" v-if="!loading.save"></i>
             <i class="fas fa-spinner fa-spin" v-else></i>
-            {{ loading.save ? $t("common.saving") : $t("common.save") }}
+            {{ loading.save ? t("common.saving") : t("common.save") }}
           </button>
 
           <button
@@ -188,7 +188,7 @@
             class="btn btn-secondary"
           >
             <i class="fas fa-trash"></i>
-            {{ $t("admin.motd.clear") }}
+            {{ t("admin.motd.clear") }}
           </button>
 
           <button
@@ -197,15 +197,15 @@
             class="btn btn-tertiary"
           >
             <i class="fas fa-undo"></i>
-            {{ $t("admin.motd.reset") }}
+            {{ t("admin.motd.reset") }}
           </button>
         </div>
       </div>
 
       <div class="motd-history">
-        <h3>{{ $t("admin.motd.history") }}</h3>
+        <h3>{{ t("admin.motd.history") }}</h3>
         <div v-if="motdHistory.length === 0" class="no-history">
-          {{ $t("admin.motd.noHistory") }}
+          {{ t("admin.motd.noHistory") }}
         </div>
         <div v-else class="history-list">
           <div
@@ -225,7 +225,7 @@
             <button
               @click="restoreFromHistory(item)"
               class="btn btn-small"
-              :title="$t('admin.motd.restore')"
+              :title="t('admin.motd.restore')"
             >
               <i class="fas fa-undo"></i>
             </button>

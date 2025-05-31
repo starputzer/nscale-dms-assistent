@@ -1,8 +1,8 @@
 <template>
   <div class="admin-doc-converter-enhanced">
     <div class="doc-converter-header">
-      <h2>{{ $t("admin.documentConverter.title") }}</h2>
-      <p class="description">{{ $t("admin.documentConverter.description") }}</p>
+      <h2>{{ t("admin.documentConverter.title") }}</h2>
+      <p class="description">{{ t("admin.documentConverter.description") }}</p>
     </div>
 
     <!-- Statistics Overview -->
@@ -12,7 +12,7 @@
         <div class="stat-content">
           <div class="stat-value">{{ stats.total_documents }}</div>
           <div class="stat-label">
-            {{ $t("admin.documentConverter.totalDocuments") }}
+            {{ t("admin.documentConverter.totalDocuments") }}
           </div>
         </div>
       </div>
@@ -22,7 +22,7 @@
         <div class="stat-content">
           <div class="stat-value">{{ stats.successful_conversions }}</div>
           <div class="stat-label">
-            {{ $t("admin.documentConverter.successfulConversions") }}
+            {{ t("admin.documentConverter.successfulConversions") }}
           </div>
         </div>
       </div>
@@ -32,7 +32,7 @@
         <div class="stat-content">
           <div class="stat-value">{{ stats.failed_conversions }}</div>
           <div class="stat-label">
-            {{ $t("admin.documentConverter.failedConversions") }}
+            {{ t("admin.documentConverter.failedConversions") }}
           </div>
         </div>
       </div>
@@ -44,7 +44,7 @@
             {{ formatDuration(stats.avg_conversion_time) }}
           </div>
           <div class="stat-label">
-            {{ $t("admin.documentConverter.avgConversionTime") }}
+            {{ t("admin.documentConverter.avgConversionTime") }}
           </div>
         </div>
       </div>
@@ -52,11 +52,11 @@
 
     <!-- Conversion Settings -->
     <div class="conversion-settings">
-      <h3>{{ $t("admin.documentConverter.settings") }}</h3>
+      <h3>{{ t("admin.documentConverter.settings") }}</h3>
 
       <div class="settings-grid">
         <div class="setting-item">
-          <label>{{ $t("admin.documentConverter.maxFileSize") }}</label>
+          <label>{{ t("admin.documentConverter.maxFileSize") }}</label>
           <input
             type="number"
             v-model.number="settings.max_file_size_mb"
@@ -68,7 +68,7 @@
         </div>
 
         <div class="setting-item">
-          <label>{{ $t("admin.documentConverter.allowedFormats") }}</label>
+          <label>{{ t("admin.documentConverter.allowedFormats") }}</label>
           <div class="format-checkboxes">
             <label v-for="format in availableFormats" :key="format">
               <input
@@ -82,19 +82,19 @@
         </div>
 
         <div class="setting-item">
-          <label>{{ $t("admin.documentConverter.conversionQuality") }}</label>
+          <label>{{ t("admin.documentConverter.conversionQuality") }}</label>
           <select
             v-model="settings.conversion_quality"
             @change="updateSettings"
           >
             <option value="low">
-              {{ $t("admin.documentConverter.quality.low") }}
+              {{ t("admin.documentConverter.quality.low") }}
             </option>
             <option value="medium">
-              {{ $t("admin.documentConverter.quality.medium") }}
+              {{ t("admin.documentConverter.quality.medium") }}
             </option>
             <option value="high">
-              {{ $t("admin.documentConverter.quality.high") }}
+              {{ t("admin.documentConverter.quality.high") }}
             </option>
           </select>
         </div>
@@ -106,7 +106,7 @@
               v-model="settings.auto_delete_after_conversion"
               @change="updateSettings"
             />
-            {{ $t("admin.documentConverter.autoDeleteAfterConversion") }}
+            {{ t("admin.documentConverter.autoDeleteAfterConversion") }}
           </label>
         </div>
       </div>
@@ -114,11 +114,11 @@
 
     <!-- Recent Conversions -->
     <div class="recent-conversions">
-      <h3>{{ $t("admin.documentConverter.recentConversions") }}</h3>
+      <h3>{{ t("admin.documentConverter.recentConversions") }}</h3>
 
       <div v-if="loading.conversions" class="loading-spinner">
         <i class="fas fa-spinner fa-spin"></i>
-        {{ $t("common.loading") }}
+        {{ t("common.loading") }}
       </div>
 
       <div v-else-if="error" class="error-message">
@@ -130,13 +130,13 @@
         <table>
           <thead>
             <tr>
-              <th>{{ $t("admin.documentConverter.filename") }}</th>
-              <th>{{ $t("admin.documentConverter.user") }}</th>
-              <th>{{ $t("admin.documentConverter.status") }}</th>
-              <th>{{ $t("admin.documentConverter.conversionTime") }}</th>
-              <th>{{ $t("admin.documentConverter.fileSize") }}</th>
-              <th>{{ $t("admin.documentConverter.date") }}</th>
-              <th>{{ $t("admin.documentConverter.actions") }}</th>
+              <th>{{ t("admin.documentConverter.filename") }}</th>
+              <th>{{ t("admin.documentConverter.user") }}</th>
+              <th>{{ t("admin.documentConverter.status") }}</th>
+              <th>{{ t("admin.documentConverter.conversionTime") }}</th>
+              <th>{{ t("admin.documentConverter.fileSize") }}</th>
+              <th>{{ t("admin.documentConverter.date") }}</th>
+              <th>{{ t("admin.documentConverter.actions") }}</th>
             </tr>
           </thead>
           <tbody>
@@ -152,7 +152,7 @@
               <td>
                 <span :class="['status', conversion.status]">
                   {{
-                    $t(`admin.documentConverter.status.${conversion.status}`)
+                    t(`admin.documentConverter.status.${conversion.status}`)
                   }}
                 </span>
               </td>
@@ -189,7 +189,7 @@
         </table>
 
         <div v-if="conversions.length === 0" class="no-data">
-          {{ $t("admin.documentConverter.noConversions") }}
+          {{ t("admin.documentConverter.noConversions") }}
         </div>
       </div>
 
@@ -217,10 +217,10 @@
 
     <!-- Conversion Queue -->
     <div class="conversion-queue">
-      <h3>{{ $t("admin.documentConverter.conversionQueue") }}</h3>
+      <h3>{{ t("admin.documentConverter.conversionQueue") }}</h3>
 
       <div v-if="queue.length === 0" class="no-queue">
-        {{ $t("admin.documentConverter.noQueuedConversions") }}
+        {{ t("admin.documentConverter.noQueuedConversions") }}
       </div>
 
       <div v-else class="queue-list">

@@ -608,7 +608,22 @@ const { t, locale } = useI18n({ useScope: "global", inheritLocale: true });
 console.log("[i18n] Component initialized with global scope and inheritance");
 const featureStore = useFeatureTogglesStore();
 const authStore = useAuthStore();
-const { toggles: features, categories } = storeToRefs(featureStore);
+// Get features from store - development store doesn't have toggles property
+const features = computed(() => {
+  // Get all feature configs from the store
+  return Object.values(featureStore.allFeatureConfigs || {});
+});
+
+// Extract categories from features
+const categories = computed(() => {
+  const cats = new Set<string>();
+  features.value?.forEach((feature) => {
+    if (feature.category) {
+      cats.add(feature.category);
+    }
+  });
+  return Array.from(cats).sort();
+});
 
 // View state
 const viewMode = ref<"management" | "monitoring">("management");

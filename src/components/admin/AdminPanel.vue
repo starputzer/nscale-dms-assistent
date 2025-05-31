@@ -62,8 +62,8 @@
             ></i>
             <span>{{
               isDarkMode
-                ? t("admin.lightMode", "Hell")
-                : t("admin.darkMode", "Dunkel")
+                ? "Hell"
+                : "Dunkel"
             }}</span>
           </button>
         </div>
@@ -203,12 +203,8 @@ const props = defineProps({
 // Define emits
 const emit = defineEmits(["auth-error"]);
 
-// i18n with global scope and composition disabled to fix the "Not available in legacy mode" error
-const { t } = useI18n({
-  useScope: "global",
-  inheritLocale: true,
-});
-console.log("[AdminPanel] i18n initialized with global scope and inheritance");
+// i18n
+const { t } = useI18n();
 
 // Router
 const router = useRouter();
@@ -509,10 +505,7 @@ onMounted(() => {
       await loadTabComponent(activeTab.value);
     } catch (err) {
       console.error("[AdminPanel] Error initializing admin panel:", err);
-      error.value = t(
-        "admin.initError",
-        "Fehler bei der Initialisierung des Admin-Panels",
-      );
+      error.value = t("admin.initError", "Fehler bei der Initialisierung des Admin-Panels");
     } finally {
       isLoading.value = false;
     }

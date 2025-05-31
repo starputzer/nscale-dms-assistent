@@ -580,14 +580,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch, onUnmounted } from "vue";
-import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
+import { useI18n } from "vue-i18n";
 import { useAdminSystemStore } from "@/stores/admin/system";
 import { useToast } from "@/composables/useToast";
 
-// i18n
-const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
-console.log('[i18n] Component initialized with global scope and inheritance');
+// Use i18n composable
+const { t } = useI18n();
 
 // Stores
 const adminSystemStore = useAdminSystemStore();
@@ -1024,11 +1023,7 @@ watch(selectedTimeRange, () => {
   initCharts();
 });
 
-// Log i18n initialization status
-console.log(`[AdminStatistics] i18n initialized with locale: ${locale.value}`);
-
-// Log i18n initialization status
-console.log(`[AdminStatistics] i18n initialized with locale: ${locale.value}`);
+// Component ready
 </script>
 
 <style scoped>

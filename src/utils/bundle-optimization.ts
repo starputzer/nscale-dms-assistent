@@ -5,6 +5,8 @@
  * und Lazy-Loading von großen Bibliotheken
  */
 
+import type { EventCallback, UnsubscribeFn } from "@/types/stores";
+
 // Lazy-load marked für Markdown-Rendering
 export const loadMarkdownRenderer = async () => {
   const { marked } = await import("marked");
@@ -20,7 +22,7 @@ export const loadMarkdownRenderer = async () => {
 
 // Lazy-load highlight.js für Code-Highlighting
 export const loadCodeHighlighter = async () => {
-  const { default: hljs } = await import("highlight.js/lib/core");
+  const hljs = (await import("highlight.js/lib/core")).default as any;
 
   // Lade nur die benötigten Sprachen
   const [javascript, typescript, json, css, html, python, sql] =
@@ -96,7 +98,7 @@ export const loadIcon = async (name: string) => {
 
 // Optimierte Event-Handler mit Debouncing
 let debounceTimer: NodeJS.Timeout | null = null;
-export const optimizedDebounce = (fn: EventCallback | UnsubscribeFn, delay: number) => {
+export const optimizedDebounce = (fn: (...args: any[]) => void, delay: number) => {
   return (...args: any[]) => {
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => fn(...args), delay);

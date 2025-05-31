@@ -516,8 +516,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, defineEmits } from "vue";
-import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
+import { useI18n } from "vue-i18n";
 import { useAdminUsersStore } from "@/stores/admin/users";
 import { useAuthStore } from "@/stores/auth";
 import { useToast } from "@/composables/useToast";
@@ -528,9 +528,8 @@ import type { User, NewUser, UserRole } from "@/types/admin";
 // Define emits
 const emit = defineEmits(["error", "auth-error", "reload"]);
 
-// i18n
-const { t, locale } = useI18n({ useScope: "global", inheritLocale: true });
-console.log("[i18n] Component initialized with global scope and inheritance");
+// Use i18n composable
+const { t } = useI18n();
 
 // Stores
 const adminUsersStore = useAdminUsersStore();
@@ -963,15 +962,7 @@ watch(storeError, (newError) => {
   }
 });
 
-// Log i18n initialization status
-console.log(
-  `[AdminUsers.enhanced] i18n initialized with locale: ${locale.value}`,
-);
-
-// Log i18n initialization status
-console.log(
-  `[AdminUsers.enhanced] i18n initialized with locale: ${locale.value}`,
-);
+// Component ready
 </script>
 
 <style scoped>

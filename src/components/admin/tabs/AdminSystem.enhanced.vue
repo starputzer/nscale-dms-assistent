@@ -1105,7 +1105,7 @@ function getDiskStatus(percentage: number): string {
 }
 
 function initChart() {
-  if (performanceChart.value && !chartInstance) {
+  if (performanceChart.value && !chart) {
     const ctx = performanceChart.value.getContext("2d");
     if (!ctx) return;
 
@@ -1118,7 +1118,7 @@ function initChart() {
       Math.floor(Math.random() * 100),
     );
 
-    chartInstance = new Chart(ctx, {
+    chart = new Chart(ctx, {
       type: "line",
       data: {
         labels,
@@ -1392,8 +1392,8 @@ onUnmounted(() => {
     clearInterval(refreshInterval);
   }
 
-  if (chartInstance) {
-    chartInstance.destroy();
+  if (chart) {
+    chart.destroy();
   }
 });
 

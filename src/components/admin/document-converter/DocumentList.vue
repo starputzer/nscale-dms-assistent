@@ -7,18 +7,18 @@
     <div class="document-list__header">
       <div class="document-list__title-area">
         <h3 id="document-list-title">
-          {{ $t("documentList.title", "Konvertierte Dokumente") }}
+          {{ t("documentList.title", "Konvertierte Dokumente") }}
         </h3>
         <div class="document-list__stats">
           <span class="document-list__document-count"
             >{{ filteredDocuments.length }}
-            {{ $t("documentList.documentsFound", "Dokumente gefunden") }}</span
+            {{ t("documentList.documentsFound", "Dokumente gefunden") }}</span
           >
           <span
             v-if="selectedDocuments.length > 0"
             class="document-list__selected-count"
             >({{ selectedDocuments.length }}
-            {{ $t("documentList.selected", "ausgewählt") }})</span
+            {{ t("documentList.selected", "ausgewählt") }})</span
           >
         </div>
       </div>
@@ -26,7 +26,7 @@
       <div class="document-list__actions">
         <div class="document-list__filter-container">
           <label for="status-filter" class="sr-only">{{
-            $t("documentList.statusFilter", "Nach Status filtern")
+            t("documentList.statusFilter", "Nach Status filtern")
           }}</label>
           <select
             id="status-filter"
@@ -36,26 +36,26 @@
             data-testid="status-filter"
           >
             <option value="">
-              {{ $t("documentList.allStatuses", "Alle Status") }}
+              {{ t("documentList.allStatuses", "Alle Status") }}
             </option>
             <option value="success">
-              {{ $t("documentList.statusSuccess", "Erfolgreich") }}
+              {{ t("documentList.statusSuccess", "Erfolgreich") }}
             </option>
             <option value="error">
-              {{ $t("documentList.statusError", "Fehler") }}
+              {{ t("documentList.statusError", "Fehler") }}
             </option>
             <option value="pending">
-              {{ $t("documentList.statusPending", "Ausstehend") }}
+              {{ t("documentList.statusPending", "Ausstehend") }}
             </option>
             <option value="processing">
-              {{ $t("documentList.statusProcessing", "In Bearbeitung") }}
+              {{ t("documentList.statusProcessing", "In Bearbeitung") }}
             </option>
           </select>
         </div>
 
         <div class="document-list__filter-container">
           <label for="format-filter" class="sr-only">{{
-            $t("documentList.formatFilter", "Nach Format filtern")
+            t("documentList.formatFilter", "Nach Format filtern")
           }}</label>
           <select
             id="format-filter"
@@ -64,7 +64,7 @@
             aria-label="Format Filter"
           >
             <option value="">
-              {{ $t("documentList.allFormats", "Alle Formate") }}
+              {{ t("documentList.allFormats", "Alle Formate") }}
             </option>
             <option
               v-for="format in supportedFormats"
@@ -78,7 +78,7 @@
 
         <div class="document-list__sort-container">
           <label for="sort-by" class="sr-only">{{
-            $t("documentList.sortBy", "Sortieren nach")
+            t("documentList.sortBy", "Sortieren nach")
           }}</label>
           <select
             id="sort-by"
@@ -87,16 +87,16 @@
             aria-label="Sort By"
           >
             <option value="name">
-              {{ $t("documentList.sortByName", "Name") }}
+              {{ t("documentList.sortByName", "Name") }}
             </option>
             <option value="date">
-              {{ $t("documentList.sortByDate", "Datum") }}
+              {{ t("documentList.sortByDate", "Datum") }}
             </option>
             <option value="size">
-              {{ $t("documentList.sortBySize", "Größe") }}
+              {{ t("documentList.sortBySize", "Größe") }}
             </option>
             <option value="format">
-              {{ $t("documentList.sortByFormat", "Format") }}
+              {{ t("documentList.sortByFormat", "Format") }}
             </option>
           </select>
 
@@ -105,8 +105,8 @@
             class="document-list__sort-direction"
             :title="
               sortDirection === 'asc'
-                ? $t('documentList.sortAscending', 'Aufsteigend sortieren')
-                : $t('documentList.sortDescending', 'Absteigend sortieren')
+                ? t('documentList.sortAscending', 'Aufsteigend sortieren')
+                : t('documentList.sortDescending', 'Absteigend sortieren')
             "
             aria-label="Toggle Sort Direction"
           >
@@ -120,7 +120,7 @@
 
         <div class="document-list__search-container">
           <label for="search-input" class="sr-only">{{
-            $t("documentList.search", "Suchen")
+            t("documentList.search", "Suchen")
           }}</label>
           <div class="document-list__search-input-wrapper">
             <i class="fa fa-search document-list__search-icon"></i>
@@ -129,7 +129,7 @@
               type="text"
               v-model="searchQuery"
               :placeholder="
-                $t('documentList.searchPlaceholder', 'Dokumente durchsuchen...')
+                t('documentList.searchPlaceholder', 'Dokumente durchsuchen...')
               "
               class="document-list__search-input"
               aria-label="Search documents"
@@ -162,14 +162,14 @@
           :disabled="!hasSuccessfulSelected"
         >
           <i class="fa fa-download"></i>
-          {{ $t("documentList.downloadSelected", "Ausgewählte herunterladen") }}
+          {{ t("documentList.downloadSelected", "Ausgewählte herunterladen") }}
         </button>
         <button
           @click="confirmDeleteSelected"
           class="document-list__batch-action-btn document-list__batch-action-btn--danger"
         >
           <i class="fa fa-trash"></i>
-          {{ $t("documentList.deleteSelected", "Ausgewählte löschen") }}
+          {{ t("documentList.deleteSelected", "Ausgewählte löschen") }}
         </button>
       </div>
 
@@ -178,7 +178,7 @@
         class="document-list__clear-selection-btn"
       >
         <i class="fa fa-times"></i>
-        {{ $t("documentList.clearSelection", "Auswahl aufheben") }}
+        {{ t("documentList.clearSelection", "Auswahl aufheben") }}
       </button>
     </div>
 
@@ -190,7 +190,7 @@
       aria-live="polite"
     >
       <div class="document-list__spinner" aria-hidden="true"></div>
-      <p>{{ $t("documentList.loading", "Lade Dokumente...") }}</p>
+      <p>{{ t("documentList.loading", "Lade Dokumente...") }}</p>
     </div>
 
     <!-- Empty state -->
@@ -205,7 +205,7 @@
       </div>
       <p v-if="documents.length === 0" class="document-list__empty-message">
         {{
-          $t(
+          t(
             "documentList.noDocuments",
             "Keine Dokumente gefunden. Laden Sie Dokumente hoch, um sie zu konvertieren.",
           )
@@ -213,7 +213,7 @@
       </p>
       <p v-else class="document-list__empty-message">
         {{
-          $t(
+          t(
             "documentList.noMatchingDocuments",
             "Keine Dokumente entsprechen Ihren Filterkriterien.",
           )
@@ -225,7 +225,7 @@
         class="document-list__clear-filters-btn"
       >
         <i class="fa fa-filter-slash"></i>
-        {{ $t("documentList.clearFilters", "Filter zurücksetzen") }}
+        {{ t("documentList.clearFilters", "Filter zurücksetzen") }}
       </button>
     </div>
 
@@ -295,21 +295,21 @@
           <div class="document-list__meta">
             <span class="document-list__format">
               <span class="document-list__meta-label" aria-hidden="true"
-                >{{ $t("documentList.format", "Format") }}:</span
+                >{{ t("documentList.format", "Format") }}:</span
               >
               <span>{{ document.originalFormat.toUpperCase() }}</span>
             </span>
 
             <span class="document-list__size">
               <span class="document-list__meta-label" aria-hidden="true"
-                >{{ $t("documentList.size", "Größe") }}:</span
+                >{{ t("documentList.size", "Größe") }}:</span
               >
               <span>{{ formatFileSize(document.size) }}</span>
             </span>
 
             <span class="document-list__date">
               <span class="document-list__meta-label" aria-hidden="true"
-                >{{ $t("documentList.date", "Datum") }}:</span
+                >{{ t("documentList.date", "Datum") }}:</span
               >
               <span>{{
                 formatDate(document.convertedAt || document.uploadedAt)
@@ -367,14 +367,14 @@
               document.status !== 'success' && document.status !== 'completed'
             "
             :aria-label="
-              $t(
+              t(
                 'documentList.viewDocument',
                 { name: document.originalName },
                 `Dokument anzeigen: ${document.originalName}`,
               )
             "
             :title="
-              $t(
+              t(
                 'documentList.viewDocument',
                 { name: document.originalName },
                 `Dokument anzeigen: ${document.originalName}`,
@@ -392,14 +392,14 @@
               document.status !== 'success' && document.status !== 'completed'
             "
             :aria-label="
-              $t(
+              t(
                 'documentList.downloadDocument',
                 { name: document.originalName },
                 `Dokument herunterladen: ${document.originalName}`,
               )
             "
             :title="
-              $t(
+              t(
                 'documentList.downloadDocument',
                 { name: document.originalName },
                 `Dokument herunterladen: ${document.originalName}`,
@@ -431,7 +431,7 @@
                 data-testid="delete-document-btn"
               >
                 <i class="fa fa-trash" aria-hidden="true"></i>
-                {{ $t("documentList.delete", "Löschen") }}
+                {{ t("documentList.delete", "Löschen") }}
               </button>
 
               <button
@@ -441,7 +441,7 @@
                 data-testid="retry-conversion-btn"
               >
                 <i class="fa fa-redo" aria-hidden="true"></i>
-                {{ $t("documentList.retry", "Erneut versuchen") }}
+                {{ t("documentList.retry", "Erneut versuchen") }}
               </button>
             </div>
           </div>
@@ -463,12 +463,12 @@
         aria-label="Previous page"
       >
         <i class="fa fa-chevron-left" aria-hidden="true"></i>
-        <span>{{ $t("documentList.prevPage", "Zurück") }}</span>
+        <span>{{ t("documentList.prevPage", "Zurück") }}</span>
       </button>
 
       <span class="document-list__pagination-info" aria-live="polite">
         {{
-          $t(
+          t(
             "documentList.pageInfo",
             { current: currentPage, total: totalPages },
             `Seite ${currentPage} von ${totalPages}`,
@@ -482,7 +482,7 @@
         class="document-list__pagination-btn"
         aria-label="Next page"
       >
-        <span>{{ $t("documentList.nextPage", "Weiter") }}</span>
+        <span>{{ t("documentList.nextPage", "Weiter") }}</span>
         <i class="fa fa-chevron-right" aria-hidden="true"></i>
       </button>
     </div>
@@ -668,15 +668,15 @@ function downloadDocument(document: ConversionResult): void {
  */
 async function confirmDelete(document: ConversionResult): Promise<void> {
   const confirmed = await dialog.confirm({
-    title: $t("documentList.deleteConfirmTitle", "Dokument löschen"),
-    message: $t(
+    title: t("documentList.deleteConfirmTitle", "Dokument löschen"),
+    message: t(
       "documentList.deleteConfirmMessage",
       { name: document.originalName },
       `Sind Sie sicher, dass Sie das Dokument "${document.originalName}" löschen möchten?`,
     ),
     type: "warning",
-    confirmButtonText: $t("documentList.delete", "Löschen"),
-    cancelButtonText: $t("documentList.cancel", "Abbrechen"),
+    confirmButtonText: t("documentList.delete", "Löschen"),
+    cancelButtonText: t("documentList.cancel", "Abbrechen"),
   });
 
   if (confirmed) {
@@ -753,7 +753,7 @@ function downloadSelectedDocuments(): void {
 
   if (successDocs.length === 0) {
     toast.error(
-      $t(
+      t(
         "documentList.noSuccessfulDocuments",
         "Keine erfolgreich konvertierten Dokumente ausgewählt",
       ),
@@ -765,23 +765,23 @@ function downloadSelectedDocuments(): void {
   if (successDocs.length > 5) {
     dialog
       .confirm({
-        title: $t(
+        title: t(
           "documentList.bulkDownloadTitle",
           "Mehrere Dokumente herunterladen",
         ),
-        message: $t(
+        message: t(
           "documentList.bulkDownloadConfirm",
           { count: successDocs.length },
           `Möchten Sie ${successDocs.length} Dokumente herunterladen?`,
         ),
-        confirmButtonText: $t("documentList.download", "Herunterladen"),
-        cancelButtonText: $t("documentList.cancel", "Abbrechen"),
+        confirmButtonText: t("documentList.download", "Herunterladen"),
+        cancelButtonText: t("documentList.cancel", "Abbrechen"),
       })
       .then((confirmed) => {
         if (confirmed) {
           successDocs.forEach((doc) => emit("download", doc.id));
           toast.success(
-            $t(
+            t(
               "documentList.downloadStarted",
               { count: successDocs.length },
               `Download von ${successDocs.length} Dokumenten gestartet`,
@@ -792,7 +792,7 @@ function downloadSelectedDocuments(): void {
   } else {
     successDocs.forEach((doc) => emit("download", doc.id));
     toast.success(
-      $t(
+      t(
         "documentList.downloadStarted",
         { count: successDocs.length },
         `Download von ${successDocs.length} Dokumenten gestartet`,
@@ -808,15 +808,15 @@ async function confirmDeleteSelected(): Promise<void> {
   if (selectedDocuments.value.length === 0) return;
 
   const confirmed = await dialog.confirm({
-    title: $t("documentList.deleteMultipleTitle", "Mehrere Dokumente löschen"),
-    message: $t(
+    title: t("documentList.deleteMultipleTitle", "Mehrere Dokumente löschen"),
+    message: t(
       "documentList.deleteMultipleConfirm",
       { count: selectedDocuments.value.length },
       `Sind Sie sicher, dass Sie ${selectedDocuments.value.length} Dokumente löschen möchten?`,
     ),
     type: "warning",
-    confirmButtonText: $t("documentList.delete", "Löschen"),
-    cancelButtonText: $t("documentList.cancel", "Abbrechen"),
+    confirmButtonText: t("documentList.delete", "Löschen"),
+    cancelButtonText: t("documentList.cancel", "Abbrechen"),
   });
 
   if (confirmed) {
@@ -828,7 +828,7 @@ async function confirmDeleteSelected(): Promise<void> {
     }
 
     toast.success(
-      $t(
+      t(
         "documentList.documentsDeleted",
         { count: docsToDelete.length },
         `${docsToDelete.length} Dokumente wurden gelöscht`,
@@ -951,10 +951,10 @@ function formatDate(timestamp?: Date | string): string {
  */
 function getStatusText(status: string): string {
   const statusTexts: Record<string, string> = {
-    success: $t("documentList.statusSuccess", "Erfolgreich"),
-    error: $t("documentList.statusError", "Fehler"),
-    pending: $t("documentList.statusPending", "Ausstehend"),
-    processing: $t("documentList.statusProcessing", "In Bearbeitung"),
+    success: t("documentList.statusSuccess", "Erfolgreich"),
+    error: t("documentList.statusError", "Fehler"),
+    pending: t("documentList.statusPending", "Ausstehend"),
+    processing: t("documentList.statusProcessing", "In Bearbeitung"),
   };
 
   return statusTexts[status] || status;
@@ -996,7 +996,7 @@ const hasSuccessfulSelected = computed(() => {
 });
 
 // i18n Hilfsfunktion
-function $t(
+function t(
   key: string,
   params: Record<string, any> = {},
   fallback: string = key,
@@ -1059,7 +1059,7 @@ function handleSwipeLeft(document: ConversionResult): void {
 
       // Toast notification
       toast.success(
-        $t("documentList.downloadStarted", { count: 1 }, "Download gestartet"),
+        t("documentList.downloadStarted", { count: 1 }, "Download gestartet"),
       );
 
       // Reset swiping state after delay

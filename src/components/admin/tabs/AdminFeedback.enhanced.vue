@@ -611,16 +611,15 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { storeToRefs } from "pinia";
-import { useI18n } from "@/composables/useI18n";
+import { useI18n } from "vue-i18n";
 import { useToast } from "@/composables/useToast";
 import { useAdminFeedbackStore } from "@/stores/admin/feedback";
 import { Chart } from "chart.js/auto";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
-// Composables
-const { t, locale } = useI18n({ useScope: "global", inheritLocale: true });
-console.log("[i18n] Component initialized with global scope and inheritance");
+// Use i18n composable
+const { t } = useI18n();
 const toast = useToast();
 const feedbackStore = useAdminFeedbackStore();
 
@@ -1023,15 +1022,7 @@ onUnmounted(() => {
   topicsChart?.destroy();
 });
 
-// Log i18n initialization status
-console.log(
-  `[AdminFeedback.enhanced] i18n initialized with locale: ${locale.value}`,
-);
-
-// Log i18n initialization status
-console.log(
-  `[AdminFeedback.enhanced] i18n initialized with locale: ${locale.value}`,
-);
+// Component ready
 </script>
 
 <style lang="scss" scoped>

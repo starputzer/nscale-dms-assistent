@@ -940,31 +940,7 @@ export const useSessionsStore = defineStore(
 
             // Update session title if this was the first message
             if (needsTitleUpdate) {
-              // Temporarily disabled due to 422 error
-              // updateSessionTitle(sessionId);
-
-              // Update title locally based on message content
-              const firstUserMessage = messages.value[sessionId].find(
-                (m) => m.role === "user",
-              );
-              if (firstUserMessage) {
-                const words = firstUserMessage.content.split(" ").slice(0, 3);
-                const newTitle =
-                  words.join(" ") +
-                  (words.length < firstUserMessage.content.split(" ").length
-                    ? "..."
-                    : "");
-
-                const sessionIdx = sessions.value.findIndex(
-                  (s) => s.id === sessionId,
-                );
-                if (sessionIdx !== -1) {
-                  sessions.value[sessionIdx] = {
-                    ...sessions.value[sessionIdx],
-                    title: newTitle || "Neue Unterhaltung",
-                  };
-                }
-              }
+              await updateSessionTitle(sessionId);
             }
           };
 
@@ -1231,6 +1207,11 @@ export const useSessionsStore = defineStore(
           );
           if (userMessageIndex !== -1) {
             messages.value[sessionId][userMessageIndex].status = "sent";
+          }
+
+          // Update session title if this was the first message
+          if (needsTitleUpdate) {
+            await updateSessionTitle(sessionId);
           }
         }
 

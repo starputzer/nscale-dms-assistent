@@ -45,7 +45,7 @@
       <div class="document-converter__actions">
         <button @click="backToList" class="document-converter__back-btn">
           <i class="fa fa-arrow-left"></i>
-          {{ $t("documentConverter.backToList") }}
+          {{ t("documentConverter.backToList") }}
         </button>
       </div>
     </div>
@@ -66,7 +66,7 @@
       <div class="document-converter__actions">
         <button @click="goToUpload" class="document-converter__upload-new-btn">
           <i class="fa fa-upload"></i>
-          {{ $t("documentConverter.uploadNew") }}
+          {{ t("documentConverter.uploadNew") }}
         </button>
       </div>
     </div>
@@ -188,7 +188,7 @@ async function startConversion(documentId: string) {
 
     if (success) {
       addConversionLog("info", "Konvertierung erfolgreich abgeschlossen");
-      toast.success($t("documentConverter.conversionSuccess"));
+      toast.success(t("documentConverter.conversionSuccess"));
     } else {
       addConversionLog("error", "Konvertierung fehlgeschlagen");
     }
@@ -209,17 +209,17 @@ async function cancelConversion() {
   if (!convertingDocumentId.value) return;
 
   const confirmed = await dialog.confirm({
-    title: $t("documentConverter.cancelConfirmTitle"),
-    message: $t("documentConverter.cancelConfirmMessage"),
-    confirmButtonText: $t("documentConverter.confirm"),
-    cancelButtonText: $t("documentConverter.cancel"),
+    title: t("documentConverter.cancelConfirmTitle"),
+    message: t("documentConverter.cancelConfirmMessage"),
+    confirmButtonText: t("documentConverter.confirm"),
+    cancelButtonText: t("documentConverter.cancel"),
   });
 
   if (confirmed) {
     try {
       await store.cancelConversion(convertingDocumentId.value);
       addConversionLog("info", "Konvertierung abgebrochen");
-      toast.info($t("documentConverter.conversionCancelled"));
+      toast.info(t("documentConverter.conversionCancelled"));
     } catch (error) {
       addConversionLog(
         "error",
@@ -288,7 +288,7 @@ function retryOperation() {
  */
 function downloadDocument(documentId: string) {
   // Hier würde in einer echten Implementierung ein Download initiiert werden
-  toast.info($t("documentConverter.downloadStarted"));
+  toast.info(t("documentConverter.downloadStarted"));
   addConversionLog("info", `Download gestartet: ${documentId}`);
 }
 
@@ -329,27 +329,27 @@ async function confirmDeleteDocument(documentId: string) {
   if (!document) return;
 
   const confirmed = await dialog.confirm({
-    title: $t("documentConverter.deleteConfirmTitle"),
-    message: $t("documentConverter.deleteConfirmMessage", {
+    title: t("documentConverter.deleteConfirmTitle"),
+    message: t("documentConverter.deleteConfirmMessage", {
       name: document.originalName,
     }),
     type: "warning",
-    confirmButtonText: $t("documentConverter.delete"),
-    cancelButtonText: $t("documentConverter.cancel"),
+    confirmButtonText: t("documentConverter.delete"),
+    cancelButtonText: t("documentConverter.cancel"),
   });
 
   if (confirmed) {
     try {
       const success = await store.deleteDocument(documentId);
       if (success) {
-        toast.success($t("documentConverter.deleteSuccess"));
+        toast.success(t("documentConverter.deleteSuccess"));
         // Wenn das aktuelle Dokument gelöscht wurde, zur Listenansicht wechseln
         if (store.selectedDocumentId === documentId) {
           store.setView("list");
         }
       }
     } catch (error) {
-      toast.error($t("documentConverter.deleteError"));
+      toast.error(t("documentConverter.deleteError"));
     }
   }
 }
@@ -390,7 +390,7 @@ function addConversionLog(
 /**
  * Übersetzungsfunktion (Fallback)
  */
-function $t(key: string, params?: Record<string, any>) {
+function t(key: string, params?: Record<string, any>) {
   // Einfacher Fallback für Übersetzungen
   const translations: Record<string, string> = {
     "documentConverter.backToList": "Zurück zur Übersicht",

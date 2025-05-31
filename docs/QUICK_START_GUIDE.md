@@ -1,15 +1,15 @@
-# Quick Start Guide - nscale DMS Assistant
+# Quick Start Guide - Digitale Akte Assistent
 
 ## 🚀 In 5 Minuten startklar!
 
-Dieser Guide bringt dich schnell zum Laufen mit dem nscale DMS Assistant.
+Dieser Guide bringt dich schnell zum Laufen mit dem Digitale Akte Assistent.
 
 ## 📋 Voraussetzungen
 
 ```bash
 # Check Versionen
-node --version    # v18.0.0+
-npm --version     # v9.0.0+
+node --version    # v22.0.0+
+npm --version     # v10.0.0+
 python --version  # Python 3.9+
 ```
 
@@ -18,8 +18,8 @@ python --version  # Python 3.9+
 ### 1. Repository klonen
 
 ```bash
-git clone https://github.com/your-org/nscale-assist.git
-cd nscale-assist/app
+git clone https://github.com/starputzer/nscale-dms-assistent.git
+cd nscale-dms-assistent/app
 ```
 
 ### 2. Frontend Setup

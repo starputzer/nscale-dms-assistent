@@ -119,10 +119,12 @@ export interface FeatureTogglesState {
  * Feature Toggle Error
  */
 export interface FeatureToggleError {
-  code: string;
+  code?: string;
   message: string;
   feature?: string;
   details?: any;
+  timestamp?: Date;
+  fallbackActive?: boolean;
 }
 
 /**
@@ -130,15 +132,25 @@ export interface FeatureToggleError {
  */
 export interface FeatureToggleStatus {
   enabled: boolean;
-  available: boolean;
+  available?: boolean;
   reason?: string;
+  lastChecked?: Date;
+  errorCount?: number;
+  fallbackActive?: boolean;
 }
 
 /**
  * Feature Config
  */
 export interface FeatureConfig {
-  [key: string]: boolean | string | number | object;
+  name: string;
+  description: string;
+  enabled: boolean;
+  group?: string;
+  requiredRole?: FeatureToggleRole;
+  dependencies?: string[];
+  status?: FeatureToggleStatus;
+  [key: string]: any;
 }
 
 /**

@@ -86,7 +86,7 @@ export const authRoutes: RouteRecordRaw[] = [
  * Prüft, ob Routen nur für Gäste zugänglich sein sollten
  */
 export function setupAuthGuards(router: any) {
-  router.beforeEach((to: any, from: any, next: any) => {
+  router.beforeEach((to: any, _from: any, next: any) => {
     // Importiere auth store oder useAuthentication composable
     const auth = router.app.config.globalProperties.$auth;
 

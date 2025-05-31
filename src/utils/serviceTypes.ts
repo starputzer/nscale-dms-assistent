@@ -7,6 +7,7 @@
 
 import { APIResponse, APIError } from "./apiTypes";
 import { Result, Dictionary } from "./types";
+import type { EventCallback, UnsubscribeFn } from "@/types/stores";
 
 // Die folgenden Typen werden derzeit nicht direkt verwendet, könnten aber
 // in der Zukunft für Erweiterungen der Services nützlich sein:
@@ -431,13 +432,13 @@ export interface OfflineManagerInterface extends BaseService {
   /** Event-Listener für Online/Offline-Events */
   on(
     event: "online" | "offline" | "synchronizing" | "synchronized" | "error",
-    handler: EventCallback | UnsubscribeFn,
-  ): void;
+    handler: (data?: any) => void,
+  ): UnsubscribeFn;
 
   /** Event-Listener entfernen */
   off(
     event: "online" | "offline" | "synchronizing" | "synchronized" | "error",
-    handler: EventCallback | UnsubscribeFn,
+    handler: (data?: any) => void,
   ): void;
 }
 

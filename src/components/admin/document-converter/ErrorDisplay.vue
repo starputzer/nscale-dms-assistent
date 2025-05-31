@@ -44,8 +44,8 @@
           ></i>
           {{
             detailsVisible
-              ? $t("errorDisplay.hideDetails", "Details ausblenden")
-              : $t("errorDisplay.showDetails", "Details anzeigen")
+              ? t("errorDisplay.hideDetails", "Details ausblenden")
+              : t("errorDisplay.showDetails", "Details anzeigen")
           }}
         </button>
 
@@ -59,7 +59,7 @@
 
       <div class="error-display__resolution" v-if="errorResolution">
         <h4 class="error-display__resolution-title">
-          {{ $t("errorDisplay.resolutionTitle", "Lösungsvorschlag") }}
+          {{ t("errorDisplay.resolutionTitle", "Lösungsvorschlag") }}
         </h4>
         <p
           class="error-display__resolution-text"
@@ -69,7 +69,7 @@
 
       <div class="error-display__help-items" v-if="helpItems.length > 0">
         <h4 class="error-display__help-title">
-          {{ $t("errorDisplay.helpItemsTitle", "Mögliche Lösungsschritte") }}
+          {{ t("errorDisplay.helpItemsTitle", "Mögliche Lösungsschritte") }}
         </h4>
         <ul class="error-display__help-list">
           <li
@@ -87,10 +87,10 @@
           v-if="canRetry"
           @click="handleRetry"
           class="error-display__action-btn error-display__retry-btn"
-          :aria-label="$t('errorDisplay.retryAriaLabel', 'Erneut versuchen')"
+          :aria-label="t('errorDisplay.retryAriaLabel', 'Erneut versuchen')"
         >
           <i class="fa fa-redo" aria-hidden="true"></i>
-          {{ $t("errorDisplay.retry", "Erneut versuchen") }}
+          {{ t("errorDisplay.retry", "Erneut versuchen") }}
         </button>
 
         <button
@@ -98,11 +98,11 @@
           @click="handleContactSupport"
           class="error-display__action-btn error-display__support-btn"
           :aria-label="
-            $t('errorDisplay.contactSupportAriaLabel', 'Support kontaktieren')
+            t('errorDisplay.contactSupportAriaLabel', 'Support kontaktieren')
           "
         >
           <i class="fa fa-headset" aria-hidden="true"></i>
-          {{ $t("errorDisplay.contactSupport", "Support kontaktieren") }}
+          {{ t("errorDisplay.contactSupport", "Support kontaktieren") }}
         </button>
 
         <button
@@ -110,14 +110,14 @@
           @click="handleFallback"
           class="error-display__action-btn error-display__fallback-btn"
           :aria-label="
-            $t(
+            t(
               'errorDisplay.fallbackAriaLabel',
               'Alternative Version verwenden',
             )
           "
         >
           <i class="fa fa-file-alt" aria-hidden="true"></i>
-          {{ $t("errorDisplay.fallback", "Alternative Version verwenden") }}
+          {{ t("errorDisplay.fallback", "Alternative Version verwenden") }}
         </button>
       </div>
     </div>
@@ -332,37 +332,37 @@ const errorTitle = computed(() => {
     const code = props.error.code;
 
     if (code === "FILE_FORMAT_ERROR") {
-      return $t("errorDisplay.fileFormatError", "Fehler beim Dateiformat");
+      return t("errorDisplay.fileFormatError", "Fehler beim Dateiformat");
     }
     if (code === "SERVER_ERROR") {
-      return $t("errorDisplay.serverError", "Serverfehler");
+      return t("errorDisplay.serverError", "Serverfehler");
     }
     if (code === "NETWORK_ERROR") {
-      return $t("errorDisplay.networkError", "Netzwerkfehler");
+      return t("errorDisplay.networkError", "Netzwerkfehler");
     }
     if (code === "PERMISSION_ERROR") {
-      return $t("errorDisplay.permissionError", "Berechtigungsfehler");
+      return t("errorDisplay.permissionError", "Berechtigungsfehler");
     }
     if (code === "VALIDATION_ERROR") {
-      return $t("errorDisplay.validationError", "Validierungsfehler");
+      return t("errorDisplay.validationError", "Validierungsfehler");
     }
     if (code === "TIMEOUT_ERROR") {
-      return $t("errorDisplay.timeoutError", "Zeitüberschreitung");
+      return t("errorDisplay.timeoutError", "Zeitüberschreitung");
     }
     if (code === "CONVERSION_FAILED") {
-      return $t("errorDisplay.conversionError", "Konvertierungsfehler");
+      return t("errorDisplay.conversionError", "Konvertierungsfehler");
     }
   }
 
   // Fallback auf typenbasierte Titel
   const titleMap: Record<ErrorType, string> = {
-    network: $t("errorDisplay.networkProblem", "Netzwerkfehler"),
-    format: $t("errorDisplay.formatProblem", "Dateiformat-Fehler"),
-    server: $t("errorDisplay.serverProblem", "Serverfehler"),
-    permission: $t("errorDisplay.permissionProblem", "Berechtigungsfehler"),
-    validation: $t("errorDisplay.validationProblem", "Validierungsfehler"),
-    timeout: $t("errorDisplay.timeoutProblem", "Zeitüberschreitung"),
-    unknown: $t("errorDisplay.unknownProblem", "Fehler aufgetreten"),
+    network: t("errorDisplay.networkProblem", "Netzwerkfehler"),
+    format: t("errorDisplay.formatProblem", "Dateiformat-Fehler"),
+    server: t("errorDisplay.serverProblem", "Serverfehler"),
+    permission: t("errorDisplay.permissionProblem", "Berechtigungsfehler"),
+    validation: t("errorDisplay.validationProblem", "Validierungsfehler"),
+    timeout: t("errorDisplay.timeoutProblem", "Zeitüberschreitung"),
+    unknown: t("errorDisplay.unknownProblem", "Fehler aufgetreten"),
   };
 
   return titleMap[errorType.value];
@@ -386,7 +386,7 @@ function getErrorMessage(error: Error | ErrorObject | string): string {
   if (error instanceof Error) {
     return (
       error.message ||
-      $t(
+      t(
         "errorDisplay.defaultMessage",
         "Ein unerwarteter Fehler ist aufgetreten.",
       )
@@ -396,14 +396,14 @@ function getErrorMessage(error: Error | ErrorObject | string): string {
   if (typeof error === "object" && error !== null && "message" in error) {
     return (
       (error.message as string) ||
-      $t(
+      t(
         "errorDisplay.defaultMessage",
         "Ein unerwarteter Fehler ist aufgetreten.",
       )
     );
   }
 
-  return $t(
+  return t(
     "errorDisplay.defaultMessage",
     "Ein unerwarteter Fehler ist aufgetreten.",
   );
@@ -455,31 +455,31 @@ const errorResolution = computed((): string | null => {
 
   // Fallback auf typenbasierte Lösungsvorschläge
   const resolutionMap: Record<ErrorType, string> = {
-    network: $t(
+    network: t(
       "errorDisplay.networkResolution",
       "Überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut. Bei anhaltenden Problemen kontaktieren Sie bitte den Support.",
     ),
-    format: $t(
+    format: t(
       "errorDisplay.formatResolution",
       "Die hochgeladene Datei hat ein nicht unterstütztes Format oder ist beschädigt. Versuchen Sie, die Datei in einem anderen Format zu speichern oder eine andere Datei zu verwenden.",
     ),
-    server: $t(
+    server: t(
       "errorDisplay.serverResolution",
       "Der Server konnte die Anfrage nicht verarbeiten. Bitte versuchen Sie es später erneut oder wenden Sie sich an den Support, wenn das Problem bestehen bleibt.",
     ),
-    permission: $t(
+    permission: t(
       "errorDisplay.permissionResolution",
       "Sie haben nicht die erforderlichen Berechtigungen für diese Aktion. Wenden Sie sich an Ihren Administrator, um die entsprechenden Rechte zu erhalten.",
     ),
-    validation: $t(
+    validation: t(
       "errorDisplay.validationResolution",
       "Bitte überprüfen Sie die Eingabedaten auf Fehler und stellen Sie sicher, dass alle erforderlichen Felder ausgefüllt sind.",
     ),
-    timeout: $t(
+    timeout: t(
       "errorDisplay.timeoutResolution",
       "Die Operation hat zu lange gedauert und wurde abgebrochen. Bitte versuchen Sie es später erneut oder mit einer kleineren Datei.",
     ),
-    unknown: $t(
+    unknown: t(
       "errorDisplay.unknownResolution",
       "Bitte versuchen Sie es erneut oder wenden Sie sich an den Support, wenn das Problem bestehen bleibt.",
     ),
@@ -561,7 +561,7 @@ function handleClose(): void {
 /**
  * i18n-Hilfsfunktion
  */
-function $t(key: string, fallback: string): string {
+function t(key: string, fallback: string): string {
   return fallback;
 }
 

@@ -221,266 +221,113 @@ export function useFeatureToggles(options: FeatureToggleOptions = {}) {
     return false;
   });
 
-  // Computed Properties für Features
-  const piniaAuth: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.usePiniaAuth,
-    set: (value: boolean) => (featureStore.usePiniaAuth = value),
-  });
+  // Get computed properties directly from store
+  const piniaAuth = featureStore.usePiniaAuth;
 
-  const piniaSessions: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.usePiniaSessions,
-    set: (value: boolean) => (featureStore.usePiniaSessions = value),
-  });
+  const piniaSessions = featureStore.usePiniaSessions;
 
-  const piniaUI: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.usePiniaUI,
-    set: (value: boolean) => (featureStore.usePiniaUI = value),
-  });
+  const piniaUI = featureStore.usePiniaUI;
 
-  const piniaSettings: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.usePiniaSettings,
-    set: (value: boolean) => (featureStore.usePiniaSettings = value),
-  });
+  const piniaSettings = featureStore.usePiniaSettings;
 
-  const uiComponents: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useNewUIComponents,
-    set: (value: boolean) => (featureStore.useNewUIComponents = value),
-  });
+  const uiComponents = featureStore.useNewUIComponents;
 
-  const darkMode: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useDarkMode,
-    set: (value: boolean) => (featureStore.useDarkMode = value),
-  });
+  const darkMode = featureStore.useDarkMode;
 
-  const legacyBridge: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useLegacyBridge,
-    set: (value: boolean) => (featureStore.useLegacyBridge = value),
-  });
+  const legacyBridge = featureStore.useLegacyBridge;
 
-  const modernDocConverter: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useModernDocConverter,
-    set: (value: boolean) => (featureStore.useModernDocConverter = value),
-  });
+  const modernDocConverter = featureStore.useModernDocConverter;
 
   // SFC-Migration Feature-Properties
-  const sfcDocConverter: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcDocConverter,
-    set: (value: boolean) => (featureStore.useSfcDocConverter = value),
-  });
+  const sfcDocConverter = featureStore.useSfcDocConverter;
 
-  const sfcAdmin: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcAdmin,
-    set: (value: boolean) => (featureStore.useSfcAdmin = value),
-  });
+  const sfcAdmin = featureStore.useSfcAdmin;
 
-  const sfcChat: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcChat,
-    set: (value: boolean) => (featureStore.useSfcChat = value),
-  });
+  const sfcChat = featureStore.useSfcChat;
 
-  const sfcSettings: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcSettings,
-    set: (value: boolean) => (featureStore.useSfcSettings = value),
-  });
+  const sfcSettings = featureStore.useSfcSettings;
 
   // Chat-Komponenten Feature-Properties
-  const sfcChatMessageItem: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcChatMessageItem,
-    set: (value: boolean) => (featureStore.useSfcChatMessageItem = value),
-  });
+  const sfcChatMessageItem = featureStore.useSfcChatMessageItem;
 
-  const sfcChatMessageList: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcChatMessageList,
-    set: (value: boolean) => (featureStore.useSfcChatMessageList = value),
-  });
+  const sfcChatMessageList = featureStore.useSfcChatMessageList;
 
-  const sfcChatInput: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcChatInput,
-    set: (value: boolean) => (featureStore.useSfcChatInput = value),
-  });
+  const sfcChatInput = featureStore.useSfcChatInput;
 
-  const sfcChatMessageInput: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcChatMessageInput,
-    set: (value: boolean) => (featureStore.useSfcChatMessageInput = value),
-  });
+  const sfcChatMessageInput = featureStore.useSfcChatMessageInput;
 
-  const sfcSessionItem: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcSessionItem,
-    set: (value: boolean) => (featureStore.useSfcSessionItem = value),
-  });
+  const sfcSessionItem = featureStore.useSfcSessionItem;
 
-  const sfcSessionList: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcSessionList,
-    set: (value: boolean) => (featureStore.useSfcSessionList = value),
-  });
+  const sfcSessionList = featureStore.useSfcSessionList;
 
-  const sfcChatContainer: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcChatContainer,
-    set: (value: boolean) => (featureStore.useSfcChatContainer = value),
-  });
+  const sfcChatContainer = featureStore.useSfcChatContainer;
 
-  const sfcEnhancedChatContainer: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcEnhancedChatContainer,
-    set: (value: boolean) => (featureStore.useSfcEnhancedChatContainer = value),
-  });
+  const sfcEnhancedChatContainer = featureStore.useSfcEnhancedChatContainer;
 
   // Admin-Komponenten Feature-Properties
-  const sfcAdminPanel: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcAdminPanel,
-    set: (value: boolean) => (featureStore.useSfcAdminPanel = value),
-  });
+  const sfcAdminPanel = featureStore.useSfcAdminPanel;
 
   // Document Converter Komponenten Feature-Properties
-  const sfcDocConverterContainer: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcDocConverterContainer,
-    set: (value: boolean) => (featureStore.useSfcDocConverterContainer = value),
-  });
+  const sfcDocConverterContainer = featureStore.useSfcDocConverterContainer;
 
-  const sfcDocConverterFileUpload: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcDocConverterFileUpload,
-    set: (value: boolean) => (featureStore.useSfcDocConverterFileUpload = value),
-  });
+  const sfcDocConverterFileUpload = featureStore.useSfcDocConverterFileUpload;
 
-  const sfcDocConverterBatchUpload: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcDocConverterBatchUpload,
-    set: (value: boolean) => (featureStore.useSfcDocConverterBatchUpload = value),
-  });
+  const sfcDocConverterBatchUpload = featureStore.useSfcDocConverterBatchUpload;
 
-  const sfcDocConverterProgress: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcDocConverterProgress,
-    set: (value: boolean) => (featureStore.useSfcDocConverterProgress = value),
-  });
+  const sfcDocConverterProgress = featureStore.useSfcDocConverterProgress;
 
-  const sfcDocConverterResult: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcDocConverterResult,
-    set: (value: boolean) => (featureStore.useSfcDocConverterResult = value),
-  });
+  const sfcDocConverterResult = featureStore.useSfcDocConverterResult;
 
-  const sfcDocConverterList: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcDocConverterList,
-    set: (value: boolean) => (featureStore.useSfcDocConverterList = value),
-  });
+  const sfcDocConverterList = featureStore.useSfcDocConverterList;
 
-  const sfcDocConverterPreview: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcDocConverterPreview,
-    set: (value: boolean) => (featureStore.useSfcDocConverterPreview = value),
-  });
+  const sfcDocConverterPreview = featureStore.useSfcDocConverterPreview;
 
-  const sfcDocConverterStats: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcDocConverterStats,
-    set: (value: boolean) => (featureStore.useSfcDocConverterStats = value),
-  });
+  const sfcDocConverterStats = featureStore.useSfcDocConverterStats;
 
-  const sfcDocConverterErrorDisplay: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcDocConverterErrorDisplay,
-    set: (value: boolean) => (featureStore.useSfcDocConverterErrorDisplay = value),
-  });
+  const sfcDocConverterErrorDisplay = featureStore.useSfcDocConverterErrorDisplay;
 
-  const sfcAdminUsers: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcAdminUsers,
-    set: (value: boolean) => (featureStore.useSfcAdminUsers = value),
-  });
+  const sfcAdminUsers = featureStore.useSfcAdminUsers;
 
-  const sfcAdminFeedback: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcAdminFeedback,
-    set: (value: boolean) => (featureStore.useSfcAdminFeedback = value),
-  });
+  const sfcAdminFeedback = featureStore.useSfcAdminFeedback;
 
-  const sfcAdminMotd: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcAdminMotd,
-    set: (value: boolean) => (featureStore.useSfcAdminMotd = value),
-  });
+  const sfcAdminMotd = featureStore.useSfcAdminMotd;
 
-  const sfcAdminSystem: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcAdminSystem,
-    set: (value: boolean) => (featureStore.useSfcAdminSystem = value),
-  });
+  const sfcAdminSystem = featureStore.useSfcAdminSystem;
 
-  const sfcAdminStatistics: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcAdminStatistics,
-    set: (value: boolean) => (featureStore.useSfcAdminStatistics = value),
-  });
+  const sfcAdminStatistics = featureStore.useSfcAdminStatistics;
 
-  const sfcAdminSystemSettings: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcAdminSystemSettings,
-    set: (value: boolean) => (featureStore.useSfcAdminSystemSettings = value),
-  });
+  const sfcAdminSystemSettings = featureStore.useSfcAdminSystemSettings;
 
-  const sfcAdminFeatureToggles: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcAdminFeatureToggles,
-    set: (value: boolean) => (featureStore.useSfcAdminFeatureToggles = value),
-  });
+  const sfcAdminFeatureToggles = featureStore.useSfcAdminFeatureToggles;
 
-  const sfcAdminLogViewer: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcAdminLogViewer,
-    set: (value: boolean) => (featureStore.useSfcAdminLogViewer = value),
-  });
+  const sfcAdminLogViewer = featureStore.useSfcAdminLogViewer;
 
   // UI-Komponenten Feature-Properties
-  const sfcUIButton: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcUIButton,
-    set: (value: boolean) => (featureStore.useSfcUIButton = value),
-  });
+  const sfcUIButton = featureStore.useSfcUIButton;
 
-  const sfcUIInput: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcUIInput,
-    set: (value: boolean) => (featureStore.useSfcUIInput = value),
-  });
+  const sfcUIInput = featureStore.useSfcUIInput;
 
-  const sfcUIBadge: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcUIBadge,
-    set: (value: boolean) => (featureStore.useSfcUIBadge = value),
-  });
+  const sfcUIBadge = featureStore.useSfcUIBadge;
 
-  const sfcUITooltip: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcUITooltip,
-    set: (value: boolean) => (featureStore.useSfcUITooltip = value),
-  });
+  const sfcUITooltip = featureStore.useSfcUITooltip;
 
-  const sfcUICard: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcUICard,
-    set: (value: boolean) => (featureStore.useSfcUICard = value),
-  });
+  const sfcUICard = featureStore.useSfcUICard;
 
-  const sfcUIAlert: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcUIAlert,
-    set: (value: boolean) => (featureStore.useSfcUIAlert = value),
-  });
+  const sfcUIAlert = featureStore.useSfcUIAlert;
 
-  const sfcUIToggle: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcUIToggle,
-    set: (value: boolean) => (featureStore.useSfcUIToggle = value),
-  });
+  const sfcUIToggle = featureStore.useSfcUIToggle;
 
-  const sfcUITextArea: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcUITextArea,
-    set: (value: boolean) => (featureStore.useSfcUITextArea = value),
-  });
+  const sfcUITextArea = featureStore.useSfcUITextArea;
 
-  const sfcUIProgressBar: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcUIProgressBar,
-    set: (value: boolean) => (featureStore.useSfcUIProgressBar = value),
-  });
+  const sfcUIProgressBar = featureStore.useSfcUIProgressBar;
 
-  const sfcUICheckbox: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcUICheckbox,
-    set: (value: boolean) => (featureStore.useSfcUICheckbox = value),
-  });
+  const sfcUICheckbox = featureStore.useSfcUICheckbox;
 
-  const sfcUIRadio: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcUIRadio,
-    set: (value: boolean) => (featureStore.useSfcUIRadio = value),
-  });
+  const sfcUIRadio = featureStore.useSfcUIRadio;
 
-  const sfcUISelect: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcUISelect,
-    set: (value: boolean) => (featureStore.useSfcUISelect = value),
-  });
+  const sfcUISelect = featureStore.useSfcUISelect;
 
-  const sfcUIModal: WritableComputedRef<boolean> = computed({
-    get: () => featureStore.useSfcUIModal,
-    set: (value: boolean) => (featureStore.useSfcUIModal = value),
-  });
+  const sfcUIModal = featureStore.useSfcUIModal;
 
   // Status-Verknüpfungen mit Fehlerüberwachung
   /**

@@ -797,15 +797,14 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, onMounted, watch } from "vue";
-import { useI18n } from "vue-i18n";
 import { useToast } from "@/composables/useToast";
 import { useAdminSettingsStore } from "@/stores/admin/settings";
 import { useAdminSystemStore } from "@/stores/admin/system";
 import type { SystemSettings } from "@/stores/admin/settings";
+import { useI18n } from "vue-i18n";
 
-// i18n
-const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
-console.log('[i18n] Component initialized with global scope and inheritance');
+// Use global $t from Vue instance
+const { t } = useI18n();
 
 // Stores
 const settingsStore = useAdminSettingsStore();
@@ -1006,11 +1005,7 @@ watch(
   { deep: true },
 );
 
-// Log i18n initialization status
-console.log(`[AdminSystemSettings] i18n initialized with locale: ${locale.value}`);
-
-// Log i18n initialization status
-console.log(`[AdminSystemSettings] i18n initialized with locale: ${locale.value}`);
+// Component ready
 </script>
 
 <style scoped>

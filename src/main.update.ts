@@ -56,7 +56,7 @@ const router = createRouter({
 });
 
 // Guards für Router konfigurieren
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   // Hier könnte Auth-Logik implementiert werden
   next();
 });

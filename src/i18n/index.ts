@@ -133,15 +133,13 @@ console.log('[i18n] Merged translations sample:', {
   'admin.tabs.docConverter': messages.de.admin?.tabs?.docConverter
 });
 
-// Create the i18n instance with explicit legacy configuration settings
+// Create the i18n instance with composition API mode
 export const i18n = createI18n({
-  legacy: true, // Set to true to work with template syntax in components
-  globalInjection: true, // Make i18n available in template via $t globally
+  legacy: false, // Use composition API mode
+  globalInjection: false, // Don't inject $t globally
   locale: "de", // Default to German
   fallbackLocale: "en",
   messages,
-  // Enable component composition mode but only when explicitly requested
-  allowComposition: true, // This will allow composition API usage with useScope:'global'
   // Enable silentTranslationWarn in production to avoid console warnings
   silentTranslationWarn: process.env.NODE_ENV === 'production',
   // Ensure consistent pluralization across languages

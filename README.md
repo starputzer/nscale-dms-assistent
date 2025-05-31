@@ -32,7 +32,7 @@ Der Digitale Akte Assistent ist eine moderne Webanwendung, die Benutzern bei der
 ## Installation
 
 ### Voraussetzungen
-- Node.js 18+ 
+- Node.js 22+ 
 - Python 3.9+
 - Ollama
 
@@ -40,8 +40,8 @@ Der Digitale Akte Assistent ist eine moderne Webanwendung, die Benutzern bei der
 
 1. **Repository klonen**
    ```bash
-   git clone [repository-url]
-   cd digitale-akte-assistent
+   git clone https://github.com/starputzer/nscale-dms-assistent.git
+   cd nscale-dms-assistent
    ```
 
 2. **Backend einrichten**
@@ -145,4 +145,4 @@ Bei Fragen oder Problemen:
 
 ---
 
-**Version:** 3.0.0 | **Letzte Aktualisierung:** 16.05.2025
+**Version:** 1.0.0 | **Letzte Aktualisierung:** 30.05.2025

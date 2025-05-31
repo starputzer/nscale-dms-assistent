@@ -5,7 +5,8 @@
  * und cached sie für spätere Verwendung
  */
 
-import { Component, defineAsyncComponent } from "vue";
+import { Component, defineAsyncComponent, ref, readonly, onMounted } from "vue";
+import { useAuthStore } from "@/stores/auth";
 
 // Cache für geladene Komponenten
 const componentCache = new Map<string, Component>();

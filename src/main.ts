@@ -61,11 +61,11 @@ app.use(router);
 // Register i18n with enhanced debugging
 app.use(i18n);
 
-// Make sure we're explicitly in legacy mode with global injection
-if (i18n.mode === 'legacy') {
-  console.log(`[Main] i18n registered with app in legacy mode - this is correct`);
+// Make sure we're explicitly in composition mode
+if (i18n.mode === 'composition') {
+  console.log(`[Main] i18n registered with app in composition mode - this is correct`);
 } else {
-  console.error(`[Main] i18n NOT in legacy mode - this may cause errors`);
+  console.error(`[Main] i18n NOT in composition mode - expected composition mode`);
 }
 
 // Debug i18n configuration for diagnostics
@@ -117,8 +117,7 @@ for (const [name, directive] of Object.entries(globalDirectives)) {
 const initApp = async () => {
   try {
     // Initialize stores - must be done after pinia is installed on app
-    const authStore = useAuthStore(pinia);
-
+    const authStore = useAuthStore();
 
     // Initialize theme
     const { initializeTheme } = useTheme();

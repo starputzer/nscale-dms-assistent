@@ -29,7 +29,7 @@ export function setupAuthRouterGuards(router: Router): void {
   /**
    * Globaler Before-Each Guard mit Session-Wiederherstellung
    */
-  router.beforeEach(async (to, from, next) => {
+  router.beforeEach(async (to, _from, next) => {
     logger.debug(`[AuthGuard] Navigation: ${from.path} -> ${to.path}`);
 
     // Speichere aktuelle Route für authentifizierte Sessions

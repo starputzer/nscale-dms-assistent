@@ -76,7 +76,7 @@ export function installRouterGuards(
    * Guard: Route Validation
    * Validiert Routen vor der Navigation
    */
-  router.beforeEach(async (to, from, next) => {
+  router.beforeEach(async (to, _from, next) => {
     // Spezielle Behandlung für problematische Routen
     if (isProblematicRoute(to.path, problematicRoutes)) {
       logger.info(`Problematische Route erkannt: ${to.path}`);
@@ -100,7 +100,7 @@ export function installRouterGuards(
    * Prüft Feature-Flags für Routen
    */
   if (enableFeatureChecks) {
-    router.beforeEach((to, from, next) => {
+    router.beforeEach((to, _from, next) => {
       // Skip für kritische Routen
       if (isCriticalRoute(to.path)) {
         return next();
@@ -123,7 +123,7 @@ export function installRouterGuards(
    * Prüft Authentifizierung für geschützte Routen
    */
   if (enableAuthChecks) {
-    router.beforeEach(async (to, from, next) => {
+    router.beforeEach(async (to, _from, next) => {
       // Skip für öffentliche Routen
       if (to.meta.guest || to.path === "/login" || to.path === "/error") {
         return next();

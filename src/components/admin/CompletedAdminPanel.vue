@@ -136,7 +136,7 @@
           <div class="feature-toggles-container">
             <div v-if="loading.featureToggles" class="loading-spinner">
               <i class="fas fa-spinner fa-spin"></i>
-              {{ $t("common.loading") }}
+              {{ t("common.loading") }}
             </div>
             <div v-else-if="error" class="error-message">
               <i class="fas fa-exclamation-triangle"></i>

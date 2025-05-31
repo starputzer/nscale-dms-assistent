@@ -1,6 +1,6 @@
-# Entwicklungsrichtlinien für den nscale DMS Assistenten
+# Entwicklungsrichtlinien für den Digitale Akte Assistent
 
-Dieses Dokument bietet einen Leitfaden für die Entwicklung und Erweiterung des nscale DMS Assistenten, insbesondere im Hinblick auf die Verwendung von Vue 3 Single File Components (SFCs).
+Dieses Dokument bietet einen Leitfaden für die Entwicklung und Erweiterung des Digitale Akte Assistent, insbesondere im Hinblick auf die Verwendung von Vue 3 Single File Components (SFCs).
 
 ## Inhaltsverzeichnis
 

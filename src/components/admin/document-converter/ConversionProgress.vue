@@ -99,7 +99,7 @@
             class="conversion-progress__estimated-time"
           >
             {{
-              $t(
+              t(
                 "converter.estimatedTimeRemaining",
                 "Geschätzte Zeit verbleibend:",
               )
@@ -113,7 +113,7 @@
     <div class="conversion-progress__details">
       <div class="conversion-progress__current-operation">
         <span class="conversion-progress__operation-label">{{
-          $t("converter.currentOperation", "Aktuelle Operation:")
+          t("converter.currentOperation", "Aktuelle Operation:")
         }}</span>
         <span class="conversion-progress__operation-text">{{
           currentStep
@@ -123,7 +123,7 @@
       <div v-if="details" class="conversion-progress__additional-info">
         <div class="conversion-progress__info-header">
           <span>{{
-            $t("converter.processingDetails", "Verarbeitungsdetails")
+            t("converter.processingDetails", "Verarbeitungsdetails")
           }}</span>
           <button
             @click="toggleDetails"
@@ -154,7 +154,7 @@
         @click="handleCancel"
         :disabled="progress >= 100 || !cancelable"
       >
-        {{ $t("converter.cancelConversion", "Konvertierung abbrechen") }}
+        {{ t("converter.cancelConversion", "Konvertierung abbrechen") }}
       </button>
 
       <button
@@ -165,8 +165,8 @@
         <i class="fa fa-exclamation-triangle"></i>
         {{
           showWarnings
-            ? $t("converter.hideWarnings", "Warnungen ausblenden")
-            : $t("converter.showWarnings", "Warnungen anzeigen") +
+            ? t("converter.hideWarnings", "Warnungen ausblenden")
+            : t("converter.showWarnings", "Warnungen anzeigen") +
               ` (${warnings.length})`
         }}
       </button>

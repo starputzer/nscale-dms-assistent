@@ -1,6 +1,8 @@
-# Production Readiness Checklist - Mai 2025
+# Production Readiness Checklist - Digitale Akte Assistent
 
-## 🎯 Ziel: Produktionsreife des nscale DMS Assistant
+## 🎯 Ziel: Produktionsreife des Digitale Akte Assistent
+
+**Letzte Aktualisierung:** 30.05.2025
 
 ## ✅ Abgeschlossene Aufgaben:
 
@@ -26,7 +28,7 @@
 - [x] Test-Suite mit i18n-Support
 - [x] DOM-Mocking verbessert
 - [x] E2E-Tests mit Playwright
-- [ ] Test-Coverage > 80% (aktuell: ~65%)
+- [ ] Test-Coverage > 80% (aktuell: Frontend ~65%, Backend ~15%)
 
 ### Dokumentation:
 - [x] Umfassende technische Dokumentation

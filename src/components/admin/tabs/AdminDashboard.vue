@@ -146,8 +146,8 @@
 
 <script setup lang="ts">
 import { computed, ref, defineEmits } from "vue";
-import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
+import { useI18n } from "vue-i18n";
 import { useAdminSystemStore } from "@/stores/admin/system";
 import { useAdminUsersStore } from "@/stores/admin/users";
 import { useAdminFeedbackStore } from "@/stores/admin/feedback";
@@ -155,12 +155,8 @@ import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import AdminCard from "@/components/admin/shared/AdminCard.vue";
 
-// i18n with global scope, we need to grab the locale for date formatting
-const { t, locale } = useI18n({
-  useScope: "global",
-  inheritLocale: true,
-});
-console.log("[i18n] Component initialized with global scope and inheritance");
+// Use i18n composable
+const { t } = useI18n();
 
 // Define emits
 const emit = defineEmits(["error", "auth-error"]);
@@ -210,7 +206,7 @@ const { isMounted, safeMountedExecution } = initializeAdminComponent({
     }
   },
   emit,
-  errorMessage: "Fehler beim Laden der Dashboard-Daten",
+  errorMessage: t("admin.dashboard.loadError", "Fehler beim Laden der Dashboard-Daten"),
   context: { component: "AdminDashboard" },
 });
 
@@ -266,18 +262,18 @@ const systemStatusText = computed(() => {
     const cpuUsage = systemStats?.value?.cpu_usage_percent || 0;
 
     if (memoryUsage > 90 || cpuUsage > 90) {
-      return t("admin.dashboard.systemStatusCritical", "Kritisch");
+      return t("admin.dashboard.statusCritical", "Kritisch");
     } else if (memoryUsage > 70 || cpuUsage > 70) {
-      return t("admin.dashboard.systemStatusWarning", "Warnung");
+      return t("admin.dashboard.statusWarning", "Warnung");
     } else {
-      return t("admin.dashboard.systemStatusNormal", "Normal");
+      return t("admin.dashboard.statusNormal", "Normal");
     }
   } catch (error) {
     console.error(
       "[AdminDashboard] Error computing system status text:",
       error,
     );
-    return t("admin.dashboard.systemStatusNormal", "Normal");
+    return t("admin.dashboard.statusNormal", "Normal");
   }
 });
 
@@ -289,19 +285,19 @@ const statsCards = computed(() => {
 
     return [
       {
-        label: t("admin.dashboard.totalUsers", "Benutzer"),
+        label: t("admin.dashboard.users", "Benutzer"),
         value: userCount,
         icon: "fa-users",
         trend: 5, // Example: 5% growth
       },
       {
-        label: t("admin.dashboard.totalSessions", "Sitzungen"),
+        label: t("admin.dashboard.sessions", "Sitzungen"),
         value: systemStats?.value?.total_sessions || 128,
         icon: "fa-comments",
         trend: 12, // Example: 12% growth
       },
       {
-        label: t("admin.dashboard.totalMessages", "Nachrichten"),
+        label: t("admin.dashboard.messages", "Nachrichten"),
         value: systemStats?.value?.total_messages || 2354,
         icon: "fa-envelope",
         trend: 8, // Example: 8% growth
@@ -330,7 +326,7 @@ const statsCards = computed(() => {
     // Return simplified fallback stats in case of error
     return [
       {
-        label: t("admin.dashboard.totalUsers", "Benutzer"),
+        label: t("admin.dashboard.users", "Benutzer"),
         value: 5,
         icon: "fa-users",
         trend: 0,
@@ -356,25 +352,22 @@ const quickActions = computed(() => {
   return [
     {
       id: "clearCache",
-      label: t("admin.dashboard.actions.clearCache", "Cache leeren"),
+      label: t("admin.dashboard.clearCache", "Cache leeren"),
       icon: "fa-trash-alt",
     },
     {
       id: "reloadMotd",
-      label: t("admin.dashboard.actions.reloadMotd", "MOTD neu laden"),
+      label: t("admin.dashboard.reloadMotd", "MOTD neu laden"),
       icon: "fa-sync-alt",
     },
     {
       id: "exportStats",
-      label: t(
-        "admin.dashboard.actions.exportStats",
-        "Statistiken exportieren",
-      ),
+      label: t("admin.dashboard.exportStats", "Statistiken exportieren"),
       icon: "fa-file-export",
     },
     {
       id: "systemCheck",
-      label: t("admin.dashboard.actions.systemCheck", "Systemprüfung"),
+      label: t("admin.dashboard.systemCheck", "Systemprüfung"),
       icon: "fa-microscope",
     },
   ];
@@ -385,25 +378,19 @@ const recentActivity = ref([
   {
     type: "login",
     user: "admin",
-    text: t("admin.dashboard.activity.login", "hat sich angemeldet"),
+    text: t("admin.dashboard.activity.loggedIn", "hat sich angemeldet"),
     timestamp: Date.now() - 2 * 60 * 1000, // 2 minutes ago
   },
   {
     type: "settings",
     user: "admin",
-    text: t(
-      "admin.dashboard.activity.changedSettings",
-      "hat Systemeinstellungen geändert",
-    ),
+    text: t("admin.dashboard.activity.changedSettings", "hat Systemeinstellungen geändert"),
     timestamp: Date.now() - 25 * 60 * 1000, // 25 minutes ago
   },
   {
     type: "user",
     user: "admin",
-    text: t(
-      "admin.dashboard.activity.addedUser",
-      "hat einen neuen Benutzer hinzugefügt",
-    ),
+    text: t("admin.dashboard.activity.addedUser", "hat einen neuen Benutzer hinzugefügt"),
     timestamp: Date.now() - 3 * 60 * 60 * 1000, // 3 hours ago
   },
   {
@@ -451,7 +438,7 @@ async function executeAction(actionId: string) {
   } catch (error) {
     console.error(`Error executing action ${actionId}:`, error);
     emit("error", {
-      message: `Fehler bei der Ausführung von ${actionId}`,
+      message: t("admin.dashboard.actionError", `Fehler bei der Ausführung von ${actionId}`, { action: actionId }),
       error,
     });
   } finally {
@@ -492,9 +479,6 @@ function formatTime(timestamp: number): string {
     return "";
   }
 }
-
-// Log i18n initialization status
-console.log(`[AdminDashboard] i18n initialized with locale: ${locale.value}`);
 </script>
 
 <style lang="scss">

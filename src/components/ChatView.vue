@@ -202,7 +202,7 @@ import { useSessionsStore } from "../stores/sessions";
 import { useSettingsStore } from "../stores/settings";
 import { useUIStore } from "../stores/ui";
 import DOMPurify from "dompurify";
-import marked from "marked";
+import { marked } from "marked";
 
 // Stores
 const sessionsStore = useSessionsStore();

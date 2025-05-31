@@ -1,9 +1,9 @@
-# Prometheus configuration for nscale DMS Assistant
+# Prometheus configuration for Digitale Akte Assistent
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
   external_labels:
-    app: 'nscale-dms-assistant'
+    app: 'digitale-akte-assistent'
     environment: 'production'
 
 # Alertmanager configuration

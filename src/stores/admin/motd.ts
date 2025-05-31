@@ -7,7 +7,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import type { MotdConfig } from "@/types/admin";
-import { marked } from "marked";
+import { parseMarkdown } from "@/utils/markdown";
 import { adminMotdService } from "@/services/api/adminServices";
 import { shouldUseRealApi } from "@/config/api-flags";
 
@@ -50,12 +50,8 @@ export const useMotdStore = defineStore("motd", () => {
     const content = config.value.content || "";
 
     if (config.value.format === "markdown") {
-      try {
-        return marked(content);
-      } catch (e) {
-        console.error("Markdown parsing error:", e);
-        return content;
-      }
+      // Use markdown parser utility
+      return parseMarkdown(content);
     } else if (config.value.format === "html") {
       return content;
     } else {

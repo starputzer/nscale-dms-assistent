@@ -57,7 +57,7 @@
             class="n-toast__close"
             type="button"
             @click="() => dismissToast(toast.id)"
-            :aria-label="$t('toast.close')"
+            :aria-label="t('toast.close')"
           >
             <CloseIcon />
           </button>

@@ -19,6 +19,16 @@ import type { Ref, ComputedRef } from "vue";
 export type { Ref, ComputedRef } from "vue";
 
 /**
+ * Type for event callback functions
+ */
+export type EventCallback = (mutation: any, state: any) => void;
+
+/**
+ * Type for unsubscribe functions
+ */
+export type UnsubscribeFn = () => void;
+
+/**
  * Basis-Interface für alle Stores
  * Definiert gemeinsame Methoden, die jeder Store haben sollte
  */
@@ -28,7 +38,7 @@ export interface IBaseStore {
   reset?(): void;
   $dispose?(): void;
   $patch?(partialStateOrMutator: any): void;
-  $subscribe?(callback: EventCallback | UnsubscribeFn, options?: any): () => void;
+  $subscribe?(callback: EventCallback, options?: any): UnsubscribeFn;
 }
 
 /**

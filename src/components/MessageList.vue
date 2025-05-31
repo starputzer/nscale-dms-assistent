@@ -109,7 +109,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, nextTick } from "vue";
 import DOMPurify from "dompurify";
-import marked from "marked";
+import { marked } from "marked";
 
 // Replace Vuex with Pinia stores
 import { useSessionsStore } from "@/stores/sessions";

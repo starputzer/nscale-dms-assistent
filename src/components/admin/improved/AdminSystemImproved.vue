@@ -1,8 +1,8 @@
 <template>
   <div class="admin-system-improved">
     <div class="system-header">
-      <h2>{{ $t("admin.system.title") }}</h2>
-      <p class="description">{{ $t("admin.system.description") }}</p>
+      <h2>{{ t("admin.system.title") }}</h2>
+      <p class="description">{{ t("admin.system.description") }}</p>
     </div>
 
     <!-- System Health Overview -->
@@ -11,23 +11,23 @@
         <i class="fas fa-heartbeat health-icon"></i>
         <div class="health-content">
           <div class="health-status">
-            {{ $t(`admin.system.health.${systemHealthStatus}`) }}
+            {{ t(`admin.system.health.${systemHealthStatus}`) }}
           </div>
-          <div class="health-label">{{ $t("admin.system.systemHealth") }}</div>
+          <div class="health-label">{{ t("admin.system.systemHealth") }}</div>
         </div>
       </div>
 
       <div class="system-info">
         <div class="info-item">
-          <span class="info-label">{{ $t("admin.system.uptime") }}:</span>
+          <span class="info-label">{{ t("admin.system.uptime") }}:</span>
           <span class="info-value">{{ formatUptime(stats.uptime_days) }}</span>
         </div>
         <div class="info-item">
-          <span class="info-label">{{ $t("admin.system.startTime") }}:</span>
+          <span class="info-label">{{ t("admin.system.startTime") }}:</span>
           <span class="info-value">{{ formatDate(stats.start_time) }}</span>
         </div>
         <div class="info-item">
-          <span class="info-label">{{ $t("admin.system.activeModel") }}:</span>
+          <span class="info-label">{{ t("admin.system.activeModel") }}:</span>
           <span class="info-value">{{ stats.active_model || "N/A" }}</span>
         </div>
       </div>
@@ -36,11 +36,11 @@
     <!-- System Metrics -->
     <div class="metrics-grid">
       <div class="metric-card">
-        <h3>{{ $t("admin.system.resourceUsage") }}</h3>
+        <h3>{{ t("admin.system.resourceUsage") }}</h3>
 
         <div class="metric-item">
           <div class="metric-header">
-            <span>{{ $t("admin.system.cpuUsage") }}</span>
+            <span>{{ t("admin.system.cpuUsage") }}</span>
             <span class="metric-value">{{ stats.cpu_usage_percent }}%</span>
           </div>
           <div class="progress-bar">
@@ -54,7 +54,7 @@
 
         <div class="metric-item">
           <div class="metric-header">
-            <span>{{ $t("admin.system.memoryUsage") }}</span>
+            <span>{{ t("admin.system.memoryUsage") }}</span>
             <span class="metric-value">{{ stats.memory_usage_percent }}%</span>
           </div>
           <div class="progress-bar">
@@ -68,7 +68,7 @@
 
         <div class="metric-item">
           <div class="metric-header">
-            <span>{{ $t("admin.system.diskUsage") }}</span>
+            <span>{{ t("admin.system.diskUsage") }}</span>
             <span class="metric-value">{{
               formatFileSize(stats.database_size_mb * 1024 * 1024)
             }}</span>
@@ -77,11 +77,11 @@
       </div>
 
       <div class="metric-card">
-        <h3>{{ $t("admin.system.cacheMetrics") }}</h3>
+        <h3>{{ t("admin.system.cacheMetrics") }}</h3>
 
         <div class="metric-item">
           <div class="metric-header">
-            <span>{{ $t("admin.system.cacheSize") }}</span>
+            <span>{{ t("admin.system.cacheSize") }}</span>
             <span class="metric-value">{{
               formatFileSize(stats.cache_size_mb * 1024 * 1024)
             }}</span>
@@ -90,7 +90,7 @@
 
         <div class="metric-item">
           <div class="metric-header">
-            <span>{{ $t("admin.system.cacheHitRate") }}</span>
+            <span>{{ t("admin.system.cacheHitRate") }}</span>
             <span class="metric-value"
               >{{ stats.cache_hit_rate.toFixed(1) }}%</span
             >
@@ -105,7 +105,7 @@
       </div>
 
       <div class="metric-card">
-        <h3>{{ $t("admin.system.performanceMetrics") }}</h3>
+        <h3>{{ t("admin.system.performanceMetrics") }}</h3>
 
         <div class="metric-stats">
           <div class="stat-item">
@@ -113,7 +113,7 @@
             <div class="stat-content">
               <div class="stat-value">{{ stats.avg_response_time_ms }}ms</div>
               <div class="stat-label">
-                {{ $t("admin.system.avgResponseTime") }}
+                {{ t("admin.system.avgResponseTime") }}
               </div>
             </div>
           </div>
@@ -122,7 +122,7 @@
             <i class="fas fa-file-alt stat-icon"></i>
             <div class="stat-content">
               <div class="stat-value">{{ stats.document_count }}</div>
-              <div class="stat-label">{{ $t("admin.system.documents") }}</div>
+              <div class="stat-label">{{ t("admin.system.documents") }}</div>
             </div>
           </div>
 
@@ -130,7 +130,7 @@
             <i class="fas fa-comments stat-icon"></i>
             <div class="stat-content">
               <div class="stat-value">{{ stats.total_messages }}</div>
-              <div class="stat-label">{{ $t("admin.system.messages") }}</div>
+              <div class="stat-label">{{ t("admin.system.messages") }}</div>
             </div>
           </div>
 
@@ -141,7 +141,7 @@
                 {{ stats.avg_messages_per_session.toFixed(1) }}
               </div>
               <div class="stat-label">
-                {{ $t("admin.system.avgMessagesPerSession") }}
+                {{ t("admin.system.avgMessagesPerSession") }}
               </div>
             </div>
           </div>
@@ -151,7 +151,7 @@
 
     <!-- System Actions -->
     <div class="system-actions">
-      <h3>{{ $t("admin.system.actions") }}</h3>
+      <h3>{{ t("admin.system.actions") }}</h3>
 
       <div class="actions-grid">
         <div
@@ -168,7 +168,7 @@
           >
             <i class="fas fa-play" v-if="!loading.action"></i>
             <i class="fas fa-spinner fa-spin" v-else></i>
-            {{ $t("admin.system.execute") }}
+            {{ t("admin.system.execute") }}
           </button>
         </div>
       </div>
@@ -176,26 +176,26 @@
 
     <!-- System Logs -->
     <div class="system-logs">
-      <h3>{{ $t("admin.system.recentLogs") }}</h3>
+      <h3>{{ t("admin.system.recentLogs") }}</h3>
 
       <div class="log-filters">
         <select v-model="logLevel" @change="loadLogs">
-          <option value="">{{ $t("admin.system.allLevels") }}</option>
-          <option value="error">{{ $t("admin.system.error") }}</option>
-          <option value="warn">{{ $t("admin.system.warning") }}</option>
-          <option value="info">{{ $t("admin.system.info") }}</option>
-          <option value="debug">{{ $t("admin.system.debug") }}</option>
+          <option value="">{{ t("admin.system.allLevels") }}</option>
+          <option value="error">{{ t("admin.system.error") }}</option>
+          <option value="warn">{{ t("admin.system.warning") }}</option>
+          <option value="info">{{ t("admin.system.info") }}</option>
+          <option value="debug">{{ t("admin.system.debug") }}</option>
         </select>
 
         <button @click="refreshLogs" class="btn btn-small">
           <i class="fas fa-sync-alt"></i>
-          {{ $t("admin.system.refresh") }}
+          {{ t("admin.system.refresh") }}
         </button>
       </div>
 
       <div v-if="loading.logs" class="loading-spinner">
         <i class="fas fa-spinner fa-spin"></i>
-        {{ $t("common.loading") }}
+        {{ t("common.loading") }}
       </div>
 
       <div v-else class="log-entries">
@@ -212,7 +212,7 @@
         </div>
 
         <div v-if="logs.length === 0" class="no-logs">
-          {{ $t("admin.system.noLogs") }}
+          {{ t("admin.system.noLogs") }}
         </div>
       </div>
     </div>

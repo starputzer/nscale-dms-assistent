@@ -1,6 +1,6 @@
-# Development Status - Mai 2025
+# Development Status - Digitale Akte Assistent
 
-## 🎯 Zuletzt abgeschlossen (30.05.2025):
+## 🎯 Aktueller Status (30.05.2025):
 - **MD-Dateien Cleanup**: 20 temporäre .md Dateien nach docs/archive/2025-05-cleanup/ verschoben
 - **Dokumentations-Struktur**: Nur noch essenzielle .md Dateien im Hauptverzeichnis
 - **CI/CD Pipeline**: GitHub Actions vorbereitet und Husky Hooks installiert
@@ -13,6 +13,8 @@
 - **GitHub Issues**: Alle 11 Cleanup-Issues (#6-16) erfolgreich geschlossen
 - **Batch API**: Von Flask auf FastAPI migriert und produktionsbereit
 - **Test-Suite**: i18n-Setup repariert, DOM-Mocks verbessert
+- **Node.js Upgrade**: Erfolgreich auf Node.js 22.16.0 und npm 11.4.1 aktualisiert
+- **Python Dependencies**: Alle Pakete aktualisiert, pip auf 25.1.1 upgraded
 - **Performance-Monitoring**: 
   - Telemetry Service implementiert
   - Performance Dashboard erstellt (/performance)
