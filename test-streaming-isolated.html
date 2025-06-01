@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Streaming Test - Isolated</title>
+</head>
+<body>
+    <h1>Isolated Streaming Test</h1>
+    <button onclick="testEventSource()">Test EventSource</button>
+    <button onclick="testFetch()">Test Fetch</button>
+    <button onclick="testBoth()">Test Both</button>
+    <div id="output" style="border: 1px solid #ccc; padding: 10px; margin-top: 10px; min-height: 200px; white-space: pre-wrap;"></div>
+
+    <script>
+    const output = document.getElementById('output');
+    
+    function log(message) {
+        output.textContent += message + '\n';
+        console.log(message);
+    }
+    
+    async function testEventSource() {
+        output.textContent = 'Testing EventSource...\n';
+        const token = localStorage.getItem('authToken');
+        
+        try {
+            // EventSource doesn't support custom headers, so we need to add token to URL
+            const eventSource = new EventSource(`/api/question/stream?question=Test&session_id=test&token=${token}`);
+            
+            eventSource.onmessage = (event) => {
+                log('Message: ' + event.data);
+            };
+            
+            eventSource.addEventListener('done', () => {
+                log('Stream finished');
+                eventSource.close();
+            });
+            
+            eventSource.onerror = (error) => {
+                log('EventSource error: ' + JSON.stringify(error));
+                eventSource.close();
+            };
+            
+        } catch (error) {
+            log('Error: ' + error.message);
+        }
+    }
+    
+    async function testFetch() {
+        output.textContent = 'Testing Fetch...\n';
+        const token = localStorage.getItem('authToken');
+        
+        try {
+            const response = await fetch('/api/question/stream?question=Test&session_id=test', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'text/event-stream'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+                
+                for (const line of lines) {
+                    if (line.trim()) {
+                        log('Line: ' + line);
+                    }
+                }
+            }
+            
+            log('Fetch completed');
+            
+        } catch (error) {
+            log('Fetch error: ' + error.message);
+        }
+    }
+    
+    async function testBoth() {
+        await testEventSource();
+        log('\n--- Switching to Fetch ---\n');
+        setTimeout(() => testFetch(), 2000);
+    }
+    </script>
+</body>
+</html>

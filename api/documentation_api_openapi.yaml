@@ -1,0 +1,381 @@
+openapi: 3.0.0
+info:
+  title: nscale-assist Documentation API
+  description: REST API for documentation access and management
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: http://localhost:8000
+    description: Development server
+  - url: https://api.nscale-assist.com
+    description: Production server
+
+security:
+  - BearerAuth: []
+
+paths:
+  /api/docs/:
+    get:
+      summary: List all documents
+      tags:
+        - Documentation
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Filter by category
+        - name: tag
+          in: query
+          schema:
+            type: string
+          description: Filter by tag
+      responses:
+        '200':
+          description: List of documents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentMetadata'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /api/docs/search:
+    get:
+      summary: Search documents
+      tags:
+        - Documentation
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Search query
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Filter by category
+        - name: tags
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          description: Filter by tags
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+          description: Maximum results
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentMetadata'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/docs/stats:
+    get:
+      summary: Get documentation statistics
+      tags:
+        - Documentation
+      responses:
+        '200':
+          description: Documentation statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentStats'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/docs/health:
+    get:
+      summary: Check documentation system health
+      tags:
+        - Documentation
+      responses:
+        '200':
+          description: Health check result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, unhealthy]
+                  issues:
+                    type: array
+                    items:
+                      type: string
+                  checked_at:
+                    type: string
+                    format: date-time
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/docs/validate:
+    post:
+      summary: Validate document content
+      tags:
+        - Documentation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentValidation'
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/docs/graph:
+    get:
+      summary: Get document dependency graph
+      tags:
+        - Documentation
+      responses:
+        '200':
+          description: Document graph
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentGraph'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/docs/{path}:
+    get:
+      summary: Get specific document
+      tags:
+        - Documentation
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Document path
+      responses:
+        '200':
+          description: Document content
+          content:
+            text/markdown:
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/docs/cache/clear:
+    post:
+      summary: Clear documentation cache (admin only)
+      tags:
+        - Documentation
+        - Admin
+      responses:
+        '200':
+          description: Cache cleared
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    DocumentMetadata:
+      type: object
+      properties:
+        path:
+          type: string
+          description: Document path relative to docs directory
+        title:
+          type: string
+          description: Document title
+        size:
+          type: integer
+          description: File size in bytes
+        modified:
+          type: string
+          format: date-time
+          description: Last modification date
+        category:
+          type: string
+          nullable: true
+          description: Document category
+        tags:
+          type: array
+          items:
+            type: string
+          description: Document tags
+        hash:
+          type: string
+          nullable: true
+          description: Document content hash
+
+    DocumentStats:
+      type: object
+      properties:
+        total_documents:
+          type: integer
+        total_size:
+          type: integer
+        categories:
+          type: object
+          additionalProperties:
+            type: integer
+        last_updated:
+          type: string
+          format: date-time
+        most_recent_docs:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentMetadata'
+
+    DocumentValidation:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          description: Document content to validate
+        filename:
+          type: string
+          nullable: true
+          description: Optional filename for context
+
+    ValidationResult:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        errors:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+
+    DocumentNode:
+      type: object
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        category:
+          type: string
+        size:
+          type: integer
+
+    DocumentEdge:
+      type: object
+      properties:
+        source:
+          type: string
+        target:
+          type: string
+        weight:
+          type: integer
+
+    DocumentGraph:
+      type: object
+      properties:
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentNode'
+        edges:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentEdge'
+
+    Error:
+      type: object
+      properties:
+        detail:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    RateLimitExceeded:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

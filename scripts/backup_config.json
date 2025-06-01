@@ -1,0 +1,47 @@
+{
+  "backup_dir": "/opt/nscale-assist/backups",
+  "source_dirs": [
+    "/opt/nscale-assist/docs",
+    "/opt/nscale-assist/app/docs",
+    "/opt/nscale-assist/data/txt"
+  ],
+  "retention_policies": {
+    "daily": 7,
+    "weekly": 4,
+    "monthly": 12
+  },
+  "compression_level": 9,
+  "exclude_patterns": [
+    "*.tmp",
+    "*.swp",
+    ".git/*",
+    "__pycache__/*",
+    "*.pyc",
+    ".DS_Store",
+    "node_modules/*",
+    "venv/*",
+    "*.log"
+  ],
+  "checksum_algorithm": "sha256",
+  "max_backup_size_gb": 50,
+  "email_notifications": {
+    "enabled": false,
+    "smtp_server": "localhost",
+    "smtp_port": 25,
+    "from_address": "backup@nscale-assist.local",
+    "to_addresses": ["admin@nscale-assist.local"],
+    "on_failure": true,
+    "on_success": false
+  },
+  "scheduling": {
+    "full_backup": {
+      "frequency": "weekly",
+      "day": "sunday",
+      "time": "02:00"
+    },
+    "incremental_backup": {
+      "frequency": "daily",
+      "time": "03:00"
+    }
+  }
+}

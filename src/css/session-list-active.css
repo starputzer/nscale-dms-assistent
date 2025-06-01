@@ -1,0 +1,52 @@
+/* Aktive Session-Markierung */
+.n-session-item--active {
+  background-color: var(--nscale-active-bg, #f0f9ff);
+  border-color: var(--nscale-primary, #00a550);
+  box-shadow: inset 0 0 0 2px var(--nscale-primary, #00a550);
+}
+
+.n-session-item--active:hover {
+  background-color: var(--nscale-active-hover-bg, #e0f2fe);
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .n-session-item--active {
+    background-color: var(--nscale-dark-active-bg, #1e3a8a);
+    border-color: var(--nscale-dark-primary, #00d06a);
+    box-shadow: inset 0 0 0 2px var(--nscale-dark-primary, #00d06a);
+  }
+  
+  .n-session-item--active:hover {
+    background-color: var(--nscale-dark-active-hover-bg, #1e40af);
+  }
+}
+
+/* Session-Liste - Aktive Session hervorheben */
+.n-session-list__item--active {
+  position: relative;
+  background-color: var(--nscale-primary-ultra-light, rgba(0, 165, 80, 0.05));
+  border-color: var(--nscale-primary, #00a550);
+}
+
+.n-session-list__item--active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: var(--nscale-primary, #00a550);
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .n-session-list__item--active {
+    background-color: var(--nscale-dark-primary-ultra-light, rgba(0, 208, 106, 0.1));
+    border-color: var(--nscale-dark-primary, #00d06a);
+  }
+  
+  .n-session-list__item--active::before {
+    background-color: var(--nscale-dark-primary, #00d06a);
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "database_path": "/opt/nscale-assist/data/doc_metrics.db",
+  "watched_paths": [
+    "/opt/nscale-assist/docs",
+    "/opt/nscale-assist/app/docs"
+  ],
+  "file_patterns": [
+    "*.md",
+    "*.rst",
+    "*.txt"
+  ],
+  "docs_paths": [
+    "/opt/nscale-assist/docs",
+    "/opt/nscale-assist/app/docs"
+  ],
+  "thresholds": {
+    "min_word_count": 50,
+    "max_broken_links": 2,
+    "max_days_without_update": 180,
+    "min_readability_score": 40.0,
+    "max_file_size_mb": 10,
+    "max_duplicate_similarity": 0.8,
+    "max_broken_references": 2
+  },
+  "alert_settings": {
+    "email_enabled": false,
+    "email_recipients": [
+      "admin@example.com"
+    ],
+    "smtp_server": "localhost",
+    "smtp_port": 587,
+    "smtp_user": "",
+    "smtp_password": "",
+    "rate_limit_minutes": 60
+  },
+  "check_settings": {
+    "check_orphaned": true,
+    "check_duplicates": true,
+    "check_consistency": true,
+    "check_references": true,
+    "check_formatting": true
+  },
+  "health_thresholds": {
+    "max_days_without_update": 180,
+    "min_quality_score": 60,
+    "max_duplicate_similarity": 0.8,
+    "min_word_count": 50,
+    "max_broken_references": 2
+  },
+  "report_settings": {
+    "output_format": "html",
+    "output_path": "/opt/nscale-assist/logs/health_reports",
+    "keep_reports": 30
+  },
+  "metrics_retention_days": 90,
+  "monitoring": {
+    "check_interval_seconds": 300,
+    "batch_size": 50,
+    "parallel_workers": 4
+  },
+  "anomaly_detection": {
+    "enabled": true,
+    "min_history_days": 7,
+    "deviation_threshold": 0.5
+  },
+  "notifications": {
+    "slack_enabled": false,
+    "slack_webhook": "",
+    "discord_enabled": false,
+    "discord_webhook": "",
+    "teams_enabled": false,
+    "teams_webhook": ""
+  }
+}

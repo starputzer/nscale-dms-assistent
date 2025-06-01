@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Debug Admin API Calls</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .debug-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .log-entry {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .warning { background: #fff3cd; color: #856404; }
+        button {
+            background: #00a550;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #009046;
+        }
+        .code-block {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        h1, h2 { color: #333; }
+    </style>
+</head>
+<body>
+    <h1>Debug Admin API Calls</h1>
+    
+    <div class="debug-section">
+        <h2>API Configuration</h2>
+        <div id="configInfo"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Authentication Status</h2>
+        <div id="authStatus"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>API Call Logs</h2>
+        <button onclick="clearLogs()">Clear Logs</button>
+        <button onclick="testAdminAPIs()">Test Admin APIs</button>
+        <div id="logs"></div>
+    </div>
+
+    <script type="module">
+        // Import the application modules
+        import { apiService } from '/src/services/api/ApiService.ts';
+        import { cachedApiService } from '/src/services/api/CachedApiService.ts';
+        import { apiConfig } from '/src/services/api/config.ts';
+        import { shouldUseRealApi } from '/src/config/api-flags.ts';
+        
+        window.apiService = apiService;
+        window.cachedApiService = cachedApiService;
+        window.apiConfig = apiConfig;
+        window.shouldUseRealApi = shouldUseRealApi;
+        
+        // Display configuration
+        function displayConfig() {
+            const configDiv = document.getElementById('configInfo');
+            configDiv.innerHTML = `
+                <div class="code-block">
+                    <strong>API Base URL:</strong> ${apiConfig.BASE_URL}<br>
+                    <strong>API Version:</strong> ${apiConfig.API_VERSION || 'Not set'}<br>
+                    <strong>Auth Endpoints:</strong><br>
+                    - Login: ${apiConfig.ENDPOINTS.AUTH.LOGIN}<br>
+                    - User: ${apiConfig.ENDPOINTS.AUTH.USER}<br>
+                    <strong>Admin Endpoints:</strong><br>
+                    - Users List: ${apiConfig.ENDPOINTS.USERS.LIST}<br>
+                    - Users Count: ${apiConfig.ENDPOINTS.USERS.COUNT}<br>
+                    - Users Stats: ${apiConfig.ENDPOINTS.USERS.STATS}<br>
+                    <strong>Should Use Real API:</strong><br>
+                    - useRealUsersApi: ${shouldUseRealApi('useRealUsersApi')}<br>
+                    - useRealFeedbackApi: ${shouldUseRealApi('useRealFeedbackApi')}
+                </div>
+            `;
+        }
+        
+        // Check authentication
+        function checkAuth() {
+            const authDiv = document.getElementById('authStatus');
+            const token = localStorage.getItem('auth_token');
+            const userRole = localStorage.getItem('user_role');
+            
+            if (token) {
+                authDiv.innerHTML = `
+                    <div class="log-entry success">
+                        <strong>Authenticated</strong><br>
+                        Token: ${token.substring(0, 20)}...<br>
+                        Role: ${userRole || 'Unknown'}
+                    </div>
+                `;
+            } else {
+                authDiv.innerHTML = `
+                    <div class="log-entry error">
+                        <strong>Not Authenticated</strong><br>
+                        No auth token found in localStorage
+                    </div>
+                `;
+            }
+        }
+        
+        // Log function
+        function log(message, type = 'info', data = null) {
+            const logsDiv = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            let logEntry = `<div class="log-entry ${type}">`;
+            logEntry += `<strong>[${timestamp}]</strong> ${message}`;
+            
+            if (data) {
+                logEntry += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            }
+            
+            logEntry += '</div>';
+            logsDiv.innerHTML = logEntry + logsDiv.innerHTML;
+        }
+        
+        // Clear logs
+        window.clearLogs = function() {
+            document.getElementById('logs').innerHTML = '';
+        };
+        
+        // Test Admin APIs
+        window.testAdminAPIs = async function() {
+            log('Starting Admin API tests...', 'info');
+            
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                log('No auth token found. Please login first!', 'error');
+                return;
+            }
+            
+            // Test endpoints
+            const endpoints = [
+                {
+                    name: 'Users List',
+                    method: 'get',
+                    url: apiConfig.ENDPOINTS.USERS.LIST,
+                    service: cachedApiService
+                },
+                {
+                    name: 'Users Count',
+                    method: 'get',
+                    url: apiConfig.ENDPOINTS.USERS.COUNT,
+                    service: apiService
+                },
+                {
+                    name: 'Users Stats',
+                    method: 'get',
+                    url: apiConfig.ENDPOINTS.USERS.STATS,
+                    service: cachedApiService
+                }
+            ];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    log(`Testing ${endpoint.name}...`, 'info');
+                    
+                    // Build full URL
+                    const fullUrl = `${apiConfig.BASE_URL}${endpoint.url}`;
+                    log(`Full URL: ${fullUrl}`, 'info');
+                    
+                    // Make the request
+                    const response = await endpoint.service[endpoint.method](endpoint.url);
+                    
+                    if (response.success) {
+                        log(`${endpoint.name} - SUCCESS`, 'success', response.data);
+                    } else {
+                        log(`${endpoint.name} - FAILED`, 'error', response);
+                    }
+                } catch (error) {
+                    log(`${endpoint.name} - ERROR: ${error.message}`, 'error', {
+                        error: error.toString(),
+                        stack: error.stack,
+                        response: error.response?.data
+                    });
+                }
+            }
+            
+            log('Admin API tests completed', 'info');
+        };
+        
+        // Initialize on load
+        displayConfig();
+        checkAuth();
+        log('Debug page loaded and ready', 'success');
+        
+        // Add axios interceptor logging
+        if (window.apiService && window.apiService.axiosInstance) {
+            // Request interceptor
+            window.apiService.axiosInstance.interceptors.request.use(
+                (config) => {
+                    log(`API Request: ${config.method?.toUpperCase()} ${config.url}`, 'info', {
+                        headers: config.headers,
+                        data: config.data
+                    });
+                    return config;
+                },
+                (error) => {
+                    log('API Request Error', 'error', error);
+                    return Promise.reject(error);
+                }
+            );
+            
+            // Response interceptor
+            window.apiService.axiosInstance.interceptors.response.use(
+                (response) => {
+                    log(`API Response: ${response.status} ${response.config.url}`, 'success', {
+                        data: response.data,
+                        headers: response.headers
+                    });
+                    return response;
+                },
+                (error) => {
+                    log(`API Response Error: ${error.response?.status} ${error.config?.url}`, 'error', {
+                        message: error.message,
+                        response: error.response?.data,
+                        config: error.config
+                    });
+                    return Promise.reject(error);
+                }
+            );
+        }
+    </script>
+</body>
+</html>

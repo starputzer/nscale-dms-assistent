@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Admin API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .log-entry {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            background: #00a550;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #009046;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple Admin API Test</h1>
+    
+    <div class="section">
+        <h2>Test Controls</h2>
+        <button onclick="testAPIs()">Test Admin APIs with Fetch</button>
+        <button onclick="clearLogs()">Clear Logs</button>
+    </div>
+    
+    <div class="section">
+        <h2>API Logs</h2>
+        <div id="logs"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080';
+        
+        function log(message, type = 'info', data = null) {
+            const logsDiv = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            let entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            
+            if (data) {
+                const pre = document.createElement('pre');
+                pre.textContent = JSON.stringify(data, null, 2);
+                entry.appendChild(pre);
+            }
+            
+            logsDiv.insertBefore(entry, logsDiv.firstChild);
+        }
+        
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+            log('Logs cleared', 'info');
+        }
+        
+        async function testAPIs() {
+            log('Starting API tests...', 'info');
+            
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                log('No auth token found. Please login first!', 'error');
+                return;
+            }
+            
+            const endpoints = [
+                { name: 'Users List', url: '/api/v1/admin/users' },
+                { name: 'Users Count', url: '/api/v1/admin/users/count' },
+                { name: 'Users Stats', url: '/api/v1/admin/users/stats' },
+                { name: 'Feedback Stats', url: '/api/v1/admin/feedback/stats' },
+                { name: 'Negative Feedback', url: '/api/v1/admin/feedback/negative' }
+            ];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    log(`Testing ${endpoint.name}...`, 'info');
+                    
+                    const response = await fetch(`${API_BASE}${endpoint.url}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        log(`${endpoint.name} - SUCCESS (${response.status})`, 'success', data);
+                    } else {
+                        log(`${endpoint.name} - FAILED (${response.status})`, 'error', data);
+                    }
+                } catch (error) {
+                    log(`${endpoint.name} - ERROR: ${error.message}`, 'error');
+                }
+            }
+            
+            log('API tests completed', 'info');
+        }
+        
+        // Check auth status on load
+        window.onload = () => {
+            const token = localStorage.getItem('auth_token');
+            if (token) {
+                log(`Authenticated with token: ${token.substring(0, 20)}...`, 'success');
+            } else {
+                log('Not authenticated', 'error');
+            }
+        };
+    </script>
+</body>
+</html>

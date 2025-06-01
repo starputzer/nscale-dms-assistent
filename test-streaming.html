@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Streaming Test</title>
+</head>
+<body>
+    <h1>Streaming Test</h1>
+    <button onclick="testStreaming()">Test Streaming</button>
+    <div id="output" style="border: 1px solid #ccc; padding: 10px; margin-top: 10px; min-height: 200px; white-space: pre-wrap;"></div>
+
+    <script>
+    async function testStreaming() {
+        const output = document.getElementById('output');
+        output.textContent = 'Starting stream...\n';
+        
+        try {
+            // Get auth token from localStorage
+            const token = localStorage.getItem('authToken') || 'test-token';
+            
+            const response = await fetch('/api/question/stream?question=Was%20ist%20Vue.js%3F&session_id=test-123&simple_language=false', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'text/event-stream'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                
+                if (done) {
+                    output.textContent += '\n\nStream finished!';
+                    break;
+                }
+
+                const chunk = decoder.decode(value, { stream: true });
+                buffer += chunk;
+                
+                // Process complete lines
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+                
+                for (const line of lines) {
+                    if (line.trim() === '') continue;
+                    
+                    output.textContent += `Line: ${line}\n`;
+                    
+                    if (line.startsWith('data: ')) {
+                        const data = line.slice(6);
+                        try {
+                            const parsed = JSON.parse(data);
+                            if (parsed.response) {
+                                output.textContent += `Token: "${parsed.response}"\n`;
+                            }
+                        } catch (e) {
+                            output.textContent += `Raw data: ${data}\n`;
+                        }
+                    } else if (line.startsWith('event: ')) {
+                        output.textContent += `Event: ${line.slice(7)}\n`;
+                    }
+                }
+            }
+        } catch (error) {
+            output.textContent += `\nError: ${error.message}`;
+        }
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+# Prometheus configuration for Digitale Akte Assistent
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    app: 'digitale-akte-assistent'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - "alerts/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Frontend metrics from telemetry endpoint
+  - job_name: 'nscale-frontend'
+    metrics_path: '/api/metrics'
+    static_configs:
+      - targets: ['localhost:8000']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'frontend'
+
+  # Backend API metrics
+  - job_name: 'nscale-backend'
+    static_configs:
+      - targets: ['localhost:8000']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'backend'
+
+  # Node exporter for system metrics
+  - job_name: 'node'
+    static_configs:
+      - targets: ['localhost:9100']
+
+  # Custom telemetry exporter
+  - job_name: 'telemetry-exporter'
+    static_configs:
+      - targets: ['localhost:9091']
+    metric_relabel_configs:
+      # Performance metrics
+      - source_labels: [__name__]
+        regex: 'nscale_fps|nscale_frame_time|nscale_memory_.*|nscale_render_.*'
+        target_label: metric_group
+        replacement: 'performance'
+      
+      # API metrics
+      - source_labels: [__name__]
+        regex: 'nscale_api_.*'
+        target_label: metric_group
+        replacement: 'api'
+      
+      # Feature usage metrics
+      - source_labels: [__name__]
+        regex: 'nscale_feature_.*'
+        target_label: metric_group
+        replacement: 'features'
+      
+      # Error metrics
+      - source_labels: [__name__]
+        regex: 'nscale_error_.*'
+        target_label: metric_group
+        replacement: 'errors'

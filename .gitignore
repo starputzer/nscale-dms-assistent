@@ -1,0 +1,163 @@
+# Modell- und Datendateien
+/models/
+/data/
+/cache/
+/logs/
+
+# Falls diese Ordner relativ sind
+../models/
+../data/
+../cache/
+../logs/
+
+# Python-spezifische Ignores
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Node.js-spezifische Ignores
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+# package-lock.json should NOT be ignored - needed for CI/CD
+# package-lock.json
+.pnpm-lock.yaml
+.npm/
+
+# Virtuelle Umgebungen
+venv/
+ENV/
+
+# IDE-spezifische Dateien
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# SSH-Schlüssel
+id_*
+*.pem
+*.key
+*.pub
+github-laptop*
+
+# Umgebungsvariablen
+.env
+*.env
+
+# OS-spezifisch
+.DS_Store
+Thumbs.db
+
+# Log-Dateien
+*.log
+logs/
+server.log
+api_server.log
+vite-dev.log
+vite_server*.log
+server-prod.log
+serve-prod.log
+
+# Build-Dateien
+/dist/
+/.cache/
+/.output/
+/.vite/
+
+# Backup-Dateien und -Verzeichnisse
+*.backup
+*.backup-*
+*.bak
+*.old
+backup*/
+backups/
+BACKUP*/
+backup-*/
+*.final-fix-backup
+*.improved-fix-backup
+*.syntax-fix-backup
+*.access-fix-backup
+*.cdn-backup
+
+# Temporäre Dateien
+temp/
+tmp/
+*.tmp
+*.temp
+
+# Test-Ergebnisse und Reports
+e2e-test-results/
+typecheck-reports/
+coverage/
+.coverage
+htmlcov/
+*.cover
+.pytest_cache/
+junit/
+
+# Datenbank-Dateien
+*.db
+*.sqlite
+*.sqlite3
+data/db/
+
+# Dokumentations-Build-Artefakte
+docs/_build/
+docs/.doctrees/
+docs/00_KONSOLIDIERTE_DOKUMENTATION/BACKUP*/
+
+# Anwendungsspezifische Dateien
+working_auth_config.json
+token.txt
+removed-scripts.json
+build-log.txt
+
+# Editor-spezifische Dateien
+*~
+*.sublime-project
+*.sublime-workspace
+
+# OS-spezifische Dateien
+desktop.ini
+.directory
+.Spotlight-V100
+.Trashes
+
+# Frontend-spezifische Ignores
+.cdn-backup
+public/index.html.backup-*
+
+# Python-spezifische Erweiterungen
+*.pyd
+.Python
+*.py[cod]
+*$py.class
+.hypothesis/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Lokale Konfigurationsdateien
+.env.local
+.env.*.local
+config.local.py
+settings.local.json

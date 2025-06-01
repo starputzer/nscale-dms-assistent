@@ -1,0 +1,114 @@
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import { fileURLToPath, URL } from "url";
+import { resolve } from "path";
+
+// Basispfade definieren
+const projectRoot = resolve(__dirname);
+const srcDir = resolve(projectRoot, "src");
+const publicDir = resolve(projectRoot, "public");
+const distDir = resolve(projectRoot, "dist");
+const isProduction = process.env.NODE_ENV === "production";
+
+export default defineConfig({
+  // Plugins
+  plugins: [
+    vue({
+      // Vue-spezifische Optionen
+      template: {
+        compilerOptions: {
+          // Benutzerdefinierte Attribute für Legacy-Integration
+          isCustomElement: tag => tag.startsWith('legacy-') || tag.includes(':')
+        }
+      }
+    }),
+  ],
+  
+  // Optimierte Alias-Konfiguration
+  resolve: {
+    alias: {
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
+      "@assets": fileURLToPath(new URL("./src/assets", import.meta.url)),
+      "@components": fileURLToPath(new URL("./src/components", import.meta.url)),
+      "@services": fileURLToPath(new URL("./src/services", import.meta.url)),
+      "@stores": fileURLToPath(new URL("./src/stores", import.meta.url)),
+      "@utils": fileURLToPath(new URL("./src/utils", import.meta.url)),
+      "@legacy": fileURLToPath(new URL("./frontend/js", import.meta.url)),
+    },
+    extensions: [".js", ".ts", ".vue", ".json"],
+  },
+  
+  // CSS-Konfiguration
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: `@use "sass:math"; @import "@assets/styles/utilities/_mixins.scss";`
+      }
+    },
+    devSourcemap: true,
+  },
+  
+  // Build-Optimierungen
+  build: {
+    outDir: distDir,
+    assetsDir: "assets",
+    emptyOutDir: true,
+    sourcemap: !isProduction,
+    
+    // Optimierung für Produktion
+    minify: isProduction ? 'terser' : false,
+    terserOptions: isProduction ? {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      }
+    } : undefined,
+    
+    // Optimierte Chunks
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('vue')) return 'vendor-vue';
+            if (id.includes('pinia')) return 'vendor-pinia';
+            if (id.includes('router')) return 'vendor-router';
+            return 'vendor';
+          }
+          
+          // App-spezifische Chunks
+          if (id.includes('/components/admin/')) return 'admin';
+          if (id.includes('/components/chat/')) return 'chat';
+          if (id.includes('/components/document-converter/')) return 'document-converter';
+        }
+      }
+    }
+  },
+  
+  // Server-Konfiguration
+  server: {
+    port: 3000,
+    strictPort: false,
+    cors: true,
+    open: false,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path
+      }
+    }
+  },
+  
+  // Optimierungen für die Entwicklung
+  optimizeDeps: {
+    include: [
+      'vue',
+      'vue-router',
+      'pinia',
+      'pinia-plugin-persistedstate',
+      '@vueuse/core'
+    ],
+    exclude: []
+  }
+});

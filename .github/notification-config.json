@@ -1,0 +1,118 @@
+{
+  "notifications": {
+    "slack": {
+      "enabled": true,
+      "channels": {
+        "general": "test-notifications",
+        "critical": "test-alerts",
+        "performance": "performance-alerts"
+      },
+      "mentionUsers": ["@user1", "@user2"],
+      "mentionGroups": ["@testing-team"]
+    },
+    "email": {
+      "enabled": true,
+      "recipients": {
+        "general": ["team@example.com"],
+        "critical": ["manager@example.com", "lead@example.com"],
+        "performance": ["performance-team@example.com"]
+      },
+      "cc": ["dev-team@example.com"]
+    },
+    "github": {
+      "enabled": true,
+      "issueLabels": ["test-failure", "ci-failure", "regression"],
+      "assignees": ["username1", "username2"]
+    }
+  },
+  "alertThresholds": {
+    "testFailures": {
+      "critical": 10,
+      "warning": 5
+    },
+    "performance": {
+      "loading": {
+        "critical": 25,
+        "warning": 10
+      },
+      "response": {
+        "critical": 30,
+        "warning": 15
+      },
+      "memory": {
+        "critical": 20,
+        "warning": 10
+      }
+    },
+    "flaky": {
+      "maxAllowed": 5,
+      "minFlakiness": 10
+    }
+  },
+  "notificationRules": [
+    {
+      "name": "Critical test failures",
+      "condition": "failedTests >= alertThresholds.testFailures.critical",
+      "channel": "critical",
+      "message": "🚨 CRITICAL: {{failedTests}} tests are failing!",
+      "priority": "high"
+    },
+    {
+      "name": "Warning test failures",
+      "condition": "failedTests >= alertThresholds.testFailures.warning",
+      "channel": "general",
+      "message": "⚠️ WARNING: {{failedTests}} tests are failing.",
+      "priority": "medium"
+    },
+    {
+      "name": "Performance regression",
+      "condition": "performanceDegradation > alertThresholds.performance.loading.warning",
+      "channel": "performance",
+      "message": "📉 Performance regression detected: {{performanceDegradation}}% slower than baseline.",
+      "priority": "medium",
+      "createIssue": true
+    },
+    {
+      "name": "Memory usage increase",
+      "condition": "memoryIncrease > alertThresholds.performance.memory.warning",
+      "channel": "performance",
+      "message": "📈 Memory usage increased by {{memoryIncrease}}%.",
+      "priority": "medium"
+    },
+    {
+      "name": "Too many flaky tests",
+      "condition": "flakyTests.length > alertThresholds.flaky.maxAllowed",
+      "channel": "general",
+      "message": "🔄 {{flakyTests.length}} flaky tests detected.",
+      "priority": "low",
+      "createIssue": true
+    },
+    {
+      "name": "All tests passing",
+      "condition": "failedTests === 0",
+      "channel": "general",
+      "message": "✅ All tests passing! Total: {{totalTests}}",
+      "priority": "low",
+      "onlyOnChange": true
+    }
+  ],
+  "issueTemplates": {
+    "testFailure": {
+      "title": "CI: {{failedTests}} test(s) failing in {{branch}} branch",
+      "body": "## Test Failure Report\n\n{{failureDetails}}\n\n### Failed Tests\n\n{{failedTestsList}}\n\n### Build Information\n\nBranch: {{branch}}\nCommit: {{commitSha}}\nBuild URL: {{buildUrl}}"
+    },
+    "performanceRegression": {
+      "title": "Performance regression detected ({{performanceDegradation}}%)",
+      "body": "## Performance Regression Report\n\n{{performanceDetails}}\n\n### Affected Areas\n\n{{affectedAreas}}\n\n### Recommendations\n\n{{recommendations}}"
+    },
+    "flakyTests": {
+      "title": "{{flakyTests.length}} flaky tests detected",
+      "body": "## Flaky Test Report\n\n{{flakyDetails}}\n\n### Flaky Tests\n\n{{flakyTestsList}}\n\n### Recommendations\n\n{{recommendations}}"
+    }
+  },
+  "reportingFrequency": {
+    "slack": "immediate",
+    "email": "daily",
+    "github": "immediate"
+  }
+}

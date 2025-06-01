@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nscale DMS Assistent</title>
+    
+    <!-- Externe CDN-Abhängigkeiten - mit Cache-Busting-Parameter für zuverlässiges Laden -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css?v=20250508214949" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css?v=20250508214949">
+    
+    <!-- Vue und erforderliche Abhängigkeiten - Reihenfolge ist wichtig! -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@vueuse/shared@9.13.0/index.iife.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@vueuse/core@9.13.0/index.iife.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-demi@0.13.11/lib/index.iife.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pinia@2.0.33/dist/pinia.iife.js"></script>
+    
+    <!-- Weitere Hilfsbibliotheken -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- CSS direkt einbinden mit Cache-Busting - Hinweis: keine type="module" bei link-Tags -->
+    <link rel="stylesheet" href="/css/main.css?v=20250508214949">
+    <link rel="stylesheet" href="/css/themes.css?v=20250508214949">
+    <link rel="stylesheet" href="/css/improved-ui.css?v=20250508214949">
+    <link rel="stylesheet" href="/css/admin.css?v=20250508214949">
+    <link rel="stylesheet" href="/css/feedback.css?v=20250508214949">
+    <link rel="stylesheet" href="/css/message-actions.css?v=20250508214949">
+    <link rel="stylesheet" href="/css/settings.css?v=20250508214949">
+    <link rel="stylesheet" href="/css/source-references.css?v=20250508214949">
+    <link rel="stylesheet" href="/frontend/css/ab-tests.css?v=20250511">
+    <link rel="stylesheet" href="/css/admin-sidebar-clean.css?v=20250528">
+    <link rel="stylesheet" href="/frontend/css/motd-fix.css?v=20250529">
+    <!-- Unified nscale Theme System - konsolidierte Styling-Fixes -->
+    <link rel="stylesheet" href="/frontend/css/nscale-theme-system.css?v=20250511">
+    <!-- Haupt-JavaScript-Datei direkt einbinden - definitiv als Modul, aber ohne CSS-Importe -->
+    <script type="module" src="/js/main.js?v=20250508214949"></script>
+
+    <!-- Formular-Fix für korrekte Einreichung ohne Seitenneuladen -->
+    <script type="module" src="/frontend/js/form-fix.js?v=20250511"></script>
+
+    <!-- Vue-Legacy Bridge für verbesserte Integration zwischen Vue 3 SFCs und Legacy-Code -->
+    <script type="module" src="/frontend/js/vue-legacy-bridge.js?v=20250511"></script>
+
+    <!-- A/B Testing System -->
+    <script type="module" src="/frontend/js/utils/uuid-util.js?v=20250511"></script>
+    <script type="module" src="/frontend/js/telemetry.js?v=20250511"></script>
+    <script type="module" src="/frontend/js/ab-testing.js?v=20250511"></script>
+    
+    <!-- Debug Router (temporary) -->
+    <script src="/debug-router-auth.js"></script>
+
+    <!-- Fallback für ältere Browser oder fehlende ES-Module-Unterstützung -->
+    <script nomodule>
+        console.warn('Browser unterstützt keine ES-Module. Verwende Fallback.');
+        // Lade Legacy-Script synchron
+        const fallbackScript = document.createElement('script');
+        fallbackScript.src = '/js/app.js?v=20250508214949';
+        document.head.appendChild(fallbackScript);
+    </script>
+</head>
+<body class="min-h-screen bg-gray-50" :class="['activeView-' + activeView]">
+    <div id="app" class="h-screen flex flex-col">
+        <!-- Vue 3 Mount-Punkt -->
+        <div id="vue-dms-app"></div>
+        <!-- Login & Register -->
+        <div v-if="!token" class="flex items-center justify-center h-full bg-gray-50">
+            <div class="nscale-card max-w-md w-full p-8">
+                <div class="text-center mb-8">
+                    <div class="nscale-logo mx-auto">
+                        <img src="/images/senmvku-logo.png" alt="nscale Logo" class="h-12 mx-auto">
+                    </div>
+                    <p class="text-gray-500 mt-2">Ihr Digitalisierungspartner für DMS-Lösungen</p>
+                </div>
+                
+                <div v-if="authMode === 'login'">
+                    <h1 class="text-2xl font-bold mb-6 text-center">Anmelden</h1>
+                    
+                    <div v-if="successMessage" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+                        {{ successMessage }}
+                    </div>
+                    
+                    <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                        {{ errorMessage }}
+                    </div>
+                    
+                    <form @submit.prevent="login" class="space-y-4">
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700">E-Mail</label>
+                            <input type="email" id="email" v-model="email" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+
+                        <div>
+                            <label for="password" class="block text-sm font-medium text-gray-700">Passwort</label>
+                            <input type="password" id="password" v-model="password" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+
+                        
+                        <div class="flex justify-between">
+                            <div class="flex items-center">
+                                <input id="remember_me" type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                <label for="remember_me" class="ml-2 block text-sm text-gray-700">
+                                    Angemeldet bleiben
+                                </label>
+                            </div>
+                            
+                            <div class="text-sm">
+                                <a href="#" @click.prevent="authMode = 'reset-password'" class="font-medium text-nscale hover:text-nscale-dark">
+                                    Passwort vergessen?
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <button type="submit" :disabled="loading" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white nscale-btn-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                <span v-if="loading">Wird angemeldet...</span>
+                                <span v-else>Anmelden</span>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-6 text-center">
+                        <p class="text-sm text-gray-600">
+                            Noch kein Konto?
+                            <a href="#" @click.prevent="authMode = 'register'" class="font-medium text-nscale hover:text-nscale-dark">
+                                Registrieren
+                            </a>
+                        </p>
+                    </div>
+                </div>
+                
+                <div v-else-if="authMode === 'register'">
+                    <h1 class="text-2xl font-bold mb-6 text-center">Registrieren</h1>
+                    
+                    <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                        {{ errorMessage }}
+                    </div>
+                    
+                    <form @submit.prevent="register" class="space-y-4">
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700">E-Mail</label>
+                            <input type="email" id="email" v-model="email" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        
+                        <div>
+                            <label for="password" class="block text-sm font-medium text-gray-700">Passwort</label>
+                            <input type="password" id="password" v-model="password" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        
+                        <div>
+                            <button type="submit" :disabled="loading" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white nscale-btn-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                <span v-if="loading">Wird registriert...</span>
+                                <span v-else>Registrieren</span>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-6 text-center">
+                        <p class="text-sm text-gray-600">
+                            Bereits ein Konto?
+                            <a href="#" @click.prevent="authMode = 'login'" class="font-medium text-nscale hover:text-nscale-dark">
+                                Anmelden
+                            </a>
+                        </p>
+                    </div>
+                </div>
+                
+                <div v-else-if="authMode === 'reset-password'">
+                    <h1 class="text-2xl font-bold mb-6 text-center">Passwort zurücksetzen</h1>
+                    
+                    <div v-if="successMessage" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+                        {{ successMessage }}
+                    </div>
+                    
+                    <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                        {{ errorMessage }}
+                    </div>
+                    
+                    <form @submit.prevent="resetPassword" class="space-y-4">
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700">E-Mail</label>
+                            <input type="email" id="email" v-model="email" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        
+                        <div>
+                            <button type="submit" :disabled="loading" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white nscale-btn-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                <span v-if="loading">Wird zurückgesetzt...</span>
+                                <span v-else>Passwort zurücksetzen</span>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-6 text-center">
+                        <p class="text-sm text-gray-600">
+                            <a href="#" @click.prevent="authMode = 'login'" class="font-medium text-nscale hover:text-nscale-dark">
+                                Zurück zum Login
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Application (wenn eingeloggt) -->
+        <div v-else class="flex flex-col h-full">
+            <!-- Header -->
+            <header class="bg-white shadow-sm border-b border-gray-200">
+                <div class="flex justify-between items-center px-4 py-3">
+                    <div class="flex items-center space-x-2">
+                        <div class="nscale-logo">
+                            <img src="/images/senmvku-logo.png" alt="nscale Logo" class="h-8">
+                        </div>
+                        <h1 class="text-lg font-semibold">nscale DMS Assistent</h1>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <!-- Admin-Toggle (nur für Admins sichtbar) -->
+                        <button v-if="userRole === 'admin'" @click="toggleAdminView" class="text-nscale hover:text-nscale-dark">
+                            <i class="fas" :class="activeView === 'chat' ? 'fa-tools' : 'fa-comments'"></i>
+                            <span class="ml-1 hidden md:inline">{{ activeView === 'chat' ? 'Admin' : 'Chat' }}</span>
+                        </button>
+
+                        <!-- Einstellungen-Toggle -->
+                        <button @click="toggleView" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        
+                        <!-- Logout -->
+                        <button @click="logout" class="flex items-center text-red-600 hover:text-red-800">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span class="ml-1 hidden md:inline">Abmelden</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- MOTD (Message of the Day) -->
+            <div v-if="motd && motd.enabled"
+                 class="motd-container"
+                 :class="{ 'new-session': messages.length === 0 }"
+                 :data-show-in-chat="motd.display.showInChat"
+                 :data-show-on-startup="motd.display.showOnStartup"
+                 :data-dismissed="motdDismissed"
+                 :style="{
+                    backgroundColor: motd.style.backgroundColor || '#fff3cd',
+                    borderColor: motd.style.borderColor || '#ffeeba',
+                    color: motd.style.textColor || '#856404'
+                }">
+                <div class="motd-content">
+                    <div class="motd-icon" v-if="motd.style.iconClass">
+                        <i :class="'fas fa-' + motd.style.iconClass"></i>
+                    </div>
+                    <div class="motd-text" v-html="formatMotdContent(motd.content)"></div>
+                </div>
+                <button v-if="motd.display.dismissible" @click="dismissMotd" class="motd-dismiss">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Main Content Container -->
+            <main class="flex-1 flex overflow-hidden">
+                <!-- Chat View -->
+                <div v-if="activeView === 'chat'" class="flex flex-1 h-full">
+                    <!-- Sidebar mit Unterhaltungen -->
+                    <div class="w-64 bg-gray-50 border-r border-gray-200 flex flex-col h-full sessions-sidebar">
+                        <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                            <h2 class="font-medium text-gray-700">Unterhaltungen</h2>
+                            <button @click="startNewSession" class="text-nscale hover:text-nscale-dark" title="Neue Unterhaltung starten">
+                                <i class="fas fa-plus-circle"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="overflow-y-auto flex-1 p-2">
+                            <div v-if="sessions.length === 0" class="text-center text-gray-500 p-4">
+                                Keine Unterhaltungen vorhanden
+                            </div>
+                            
+                            <div v-for="session in sessions" :key="session.id"
+                                 @click="loadSession(session.id)"
+                                 class="nscale-session-item p-2 mb-1 rounded cursor-pointer flex justify-between items-center"
+                                 :class="{ 'active': currentSessionId === session.id }">
+                                <div class="truncate">
+                                    {{ session.title }}
+                                </div>
+                                <button @click.stop="deleteSession(session.id)" class="session-delete-button text-red-500 hover:text-red-700">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat-Bereich -->
+                    <div class="flex-1 flex flex-col h-full">
+                        <!-- Messages -->
+                        <div ref="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4">
+                            <div v-if="messages.length === 0" class="text-center text-gray-500 h-full flex flex-col justify-center items-center">
+                                <p class="mb-2">Starten Sie eine neue Unterhaltung</p>
+                                <p class="text-sm">Stellen Sie eine Frage zu nscale DMS</p>
+                            </div>
+                            
+                            <div v-for="(message, index) in messages" :key="index" class="message-container" :class="{ 'user-message': message.is_user, 'assistant-message': !message.is_user }">
+                                <!-- Benutzernachricht -->
+                                <div v-if="message.is_user" class="user-message-content">
+                                    <div class="message-header">
+                                        <div class="message-icon">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div class="message-info">
+                                            <span class="message-sender">Sie</span>
+                                            <span class="message-time" v-if="message.timestamp">{{ new Date(message.timestamp).toLocaleString() }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="message-text">
+                                        {{ message.text }}
+                                    </div>
+                                </div>
+                                
+                                <!-- Assistentennachricht -->
+                                <div v-else class="assistant-message-content">
+                                    <div class="message-header">
+                                        <div class="message-icon">
+                                            <i class="fas fa-robot"></i>
+                                        </div>
+                                        <div class="message-info">
+                                            <span class="message-sender">Assistent</span>
+                                            <span class="message-time" v-if="message.timestamp">{{ new Date(message.timestamp).toLocaleString() }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="message-text" v-html="formatMessageWithSources(message.text)"></div>
+                                    
+                                    <!-- Feedback für Assistentennachrichten -->
+                                    <div v-if="!message.is_user" class="message-actions">
+                                        <div class="message-feedback">
+                                            <button @click="showFeedbackDialog = true; feedbackMessage = message"
+                                                    class="feedback-button"
+                                                    :class="{ 'feedback-given': isFeedbackGiven && isFeedbackGiven(message) }">
+                                                <i class="fas fa-thumbs-up" v-if="getFeedbackType && getFeedbackType(message) === 'positive'"></i>
+                                                <i class="fas fa-thumbs-down" v-if="getFeedbackType && getFeedbackType(message) === 'negative'"></i>
+                                                <i class="far fa-thumbs-up" v-if="!(getFeedbackType && getFeedbackType(message))"></i>
+                                                Feedback
+                                            </button>
+                                            <button @click="toggleSourceReferences(message)" class="source-button">
+                                                <i class="fas fa-book"></i>
+                                                <span>Quellen</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Quellenreferenzen -->
+                                    <div v-if="isSourceReferencesVisible(message)" class="source-references">
+                                        <div class="source-header">
+                                            <h3>Quellenangaben</h3>
+                                            <button @click="toggleSourceReferences(message)" class="close-button">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <div class="source-content" v-if="!isLoadingSourceReferences(message)">
+                                            <div v-if="getSourceReferences(message).length > 0">
+                                                <div v-for="(source, idx) in getSourceReferences(message)" :key="idx" class="source-item">
+                                                    <div class="source-title" @click="toggleSourceDetail(message, idx)">
+                                                        <span>{{ source.title || 'Quelle ' + (idx + 1) }}</span>
+                                                        <i class="fas" :class="isSourceDetailOpen(message, idx) ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                                                    </div>
+                                                    <div v-if="isSourceDetailOpen(message, idx)" class="source-detail">
+                                                        <div class="source-metadata">
+                                                            <div><strong>Datei:</strong> {{ source.filename || 'Unbekannt' }}</div>
+                                                            <div><strong>Relevanz:</strong> {{ (source.score * 100).toFixed(1) }}%</div>
+                                                        </div>
+                                                        <div class="source-text" v-html="formatMessage(source.text || 'Kein Text verfügbar')"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div v-else class="no-sources">
+                                                Keine Quellenangaben verfügbar
+                                            </div>
+                                        </div>
+                                        <div v-else class="loading-sources">
+                                            <div class="loading-spinner"></div>
+                                            <span>Quellen werden geladen...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Lade-Animation für Streaming -->
+                            <div v-if="isStreaming" class="typing-indicator">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                        
+                        <!-- Input -->
+                        <div class="p-4 border-t border-gray-200">
+                            <form @submit.prevent="sendQuestionStream" class="flex space-x-2">
+                                <input type="text"
+                                       v-model="question"
+                                       :disabled="isLoading || isStreaming"
+                                       class="nscale-input flex-1 rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                       placeholder="Stellen Sie eine Frage zu nscale...">
+                                <button type="submit"
+                                        :disabled="isLoading || isStreaming || !question.trim()"
+                                        class="nscale-btn-primary rounded-md px-4 py-2 flex items-center justify-center">
+                                    <i class="fas fa-paper-plane" v-if="!isLoading && !isStreaming"></i>
+                                    <i class="fas fa-spinner fa-spin" v-else></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Admin Panel -->
+                <div v-if="activeView === 'admin'" class="flex flex-1 h-full">
+                    <!-- Admin Sidebar -->
+                    <div class="w-64 bg-gray-50 border-r border-gray-200 flex flex-col h-full">
+                        <div class="p-4 border-b border-gray-200">
+                            <h2 class="font-medium text-gray-700">Administration</h2>
+                        </div>
+                        
+                        <div class="overflow-y-auto flex-1">
+                            <div class="p-2">
+                                <button @click="adminTab = 'users'" class="admin-tab-button w-full" :class="{ active: adminTab === 'users' }">
+                                    <i class="fas fa-users"></i>
+                                    <span>Benutzer</span>
+                                </button>
+                                <button @click="adminTab = 'system'" class="admin-tab-button w-full" :class="{ active: adminTab === 'system' }">
+                                    <i class="fas fa-server"></i>
+                                    <span>System</span>
+                                </button>
+                                <button @click="adminTab = 'feedback'" class="admin-tab-button w-full" :class="{ active: adminTab === 'feedback' }">
+                                    <i class="fas fa-comments"></i>
+                                    <span>Feedback</span>
+                                </button>
+                                <button @click="adminTab = 'motd'" class="admin-tab-button w-full" :class="{ active: adminTab === 'motd' }">
+                                    <i class="fas fa-bullhorn"></i>
+                                    <span>MOTD</span>
+                                </button>
+                                <button @click="adminTab = 'doc-converter'" class="admin-tab-button w-full" :class="{ active: adminTab === 'doc-converter' }">
+                                    <i class="fas fa-file-alt"></i>
+                                    <span>Dokumente</span>
+                                </button>
+                                <button @click="adminTab = 'abtests'" class="admin-tab-button w-full" :class="{ active: adminTab === 'abtests' }">
+                                    <i class="fas fa-flask"></i>
+                                    <span>A/B-Tests</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Admin Content -->
+                    <div class="flex-1 flex flex-col h-full">
+                        <div class="p-4 border-b border-gray-200">
+                            <h1 class="text-xl font-medium text-gray-900">{{ getAdminTabTitle() }}</h1>
+                        </div>
+                        
+                        <div class="overflow-y-auto p-4 flex-1">
+                            <!-- Benutzer-Verwaltung -->
+                            <div v-if="adminTab === 'users'">
+                                <!-- Benutzer Tab Inhalt -->
+                                <div class="admin-content-area">
+                                    <h2 class="admin-section-header">Benutzerverwaltung</h2>
+                                    <div class="admin-table-container">
+                                        <table class="admin-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>E-Mail</th>
+                                                    <th>Rolle</th>
+                                                    <th>Status</th>
+                                                    <th>Aktionen</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="user in usersList" :key="user.id">
+                                                    <td>{{ user.id }}</td>
+                                                    <td>{{ user.email }}</td>
+                                                    <td>
+                                                        <span class="badge" :class="user.role">{{ user.role }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge" :class="user.is_active ? 'active' : 'inactive'">
+                                                            {{ user.is_active ? 'Aktiv' : 'Inaktiv' }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="actions">
+                                                        <button @click="toggleUserRole(user)" class="admin-btn admin-btn-primary" title="Rolle ändern">
+                                                            <i class="fas fa-user-shield"></i>
+                                                        </button>
+                                                        <button @click="toggleUserStatus(user)" class="admin-btn" :class="user.is_active ? 'admin-btn-danger' : 'admin-btn-secondary'" :title="user.is_active ? 'Deaktivieren' : 'Aktivieren'">
+                                                            <i class="fas" :class="user.is_active ? 'fa-user-slash' : 'fa-user-check'"></i>
+                                                        </button>
+                                                        <button @click="confirmDeleteUser(user)" class="admin-btn admin-btn-danger" title="Löschen">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- System-Überwachung -->
+                            <div v-else-if="adminTab === 'system'">
+                                <!-- System Tab Inhalt -->
+                                <div class="admin-content-area">
+                                    <h2 class="admin-section-header">System-Status</h2>
+                                    <div class="admin-cards-grid">
+                                        <div class="admin-card" v-for="(stat, index) in systemStats" :key="index">
+                                            <div class="stat-title">{{ stat.name }}</div>
+                                            <div class="stat-value" :class="stat.status">{{ stat.value }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="admin-content-area">
+                                    <h2 class="admin-section-header">Nutzungsstatistiken</h2>
+                                    <div class="stats-container">
+                                        <canvas id="usageChart" height="200"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Feedback-Analyse -->
+                            <div v-else-if="adminTab === 'feedback'">
+                                <!-- Feedback Tab Inhalt -->
+                                <div class="admin-content-area">
+                                    <h2 class="admin-section-header">Feedback-Übersicht</h2>
+                                    <div class="feedback-summary">
+                                        <div class="admin-cards-grid">
+                                            <div class="admin-card">
+                                                <div class="feedback-stat positive">
+                                                    <i class="fas fa-thumbs-up"></i>
+                                                    <div>
+                                                        <div class="stat-value">{{ feedbackStats.positive }}</div>
+                                                        <div class="stat-label">Positiv</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="admin-card">
+                                                <div class="feedback-stat negative">
+                                                    <i class="fas fa-thumbs-down"></i>
+                                                    <div>
+                                                        <div class="stat-value">{{ feedbackStats.negative }}</div>
+                                                        <div class="stat-label">Negativ</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="admin-card">
+                                                <div class="feedback-stat total">
+                                                    <i class="fas fa-comment"></i>
+                                                    <div>
+                                                        <div class="stat-value">{{ feedbackStats.total }}</div>
+                                                        <div class="stat-label">Insgesamt</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="admin-content-area">
+                                    <h2 class="admin-section-header">Neuestes Feedback</h2>
+                                    <div class="feedback-items">
+                                        <div v-for="(item, index) in recentFeedback" :key="index" class="feedback-item" :class="item.type">
+                                            <div class="feedback-header">
+                                                <div class="feedback-type">
+                                                    <i class="fas" :class="item.type === 'positive' ? 'fa-thumbs-up' : 'fa-thumbs-down'"></i>
+                                                    <span>{{ item.type === 'positive' ? 'Positiv' : 'Negativ' }}</span>
+                                                </div>
+                                                <div class="feedback-date">{{ new Date(item.timestamp).toLocaleString() }}</div>
+                                            </div>
+                                            <div class="feedback-content">
+                                                <div class="feedback-message">{{ item.message }}</div>
+                                                <div v-if="item.comment" class="feedback-comment">
+                                                    <strong>Kommentar:</strong> {{ item.comment }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- MOTD-Verwaltung -->
+                            <div v-else-if="adminTab === 'motd'">
+                                <!-- MOTD Tab Inhalt -->
+                                <div class="admin-panels">
+                                    <div class="admin-panel">
+                                        <h3 class="panel-title">MOTD-Einstellungen</h3>
+                                        <form @submit.prevent="saveMotd" class="motd-form">
+                                            <div class="form-group">
+                                                <label class="checkbox-container">
+                                                    <input type="checkbox" v-model="motdConfig.enabled">
+                                                    <span class="checkmark"></span>
+                                                    MOTD aktivieren
+                                                </label>
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label>Format:</label>
+                                                <select v-model="motdConfig.format" class="form-select">
+                                                    <option value="text">Einfacher Text</option>
+                                                    <option value="markdown">Markdown</option>
+                                                    <option value="html">HTML</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label>Inhalt:</label>
+                                                <textarea v-model="motdConfig.content" class="form-textarea" rows="6" placeholder="Geben Sie hier Ihre Nachricht ein..."></textarea>
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label>Farbschema:</label>
+                                                <select v-model="selectedColorTheme" class="form-select" @change="applyColorTheme">
+                                                    <option value="warning">Warnung (Gelb)</option>
+                                                    <option value="info">Info (Blau)</option>
+                                                    <option value="success">Erfolg (Grün)</option>
+                                                    <option value="danger">Gefahr (Rot)</option>
+                                                    <option value="neutral">Neutral (Grau)</option>
+                                                    <option value="custom">Benutzerdefiniert</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div v-if="selectedColorTheme === 'custom'" class="form-group color-group">
+                                                <div>
+                                                    <label>Hintergrundfarbe:</label>
+                                                    <input type="color" v-model="motdConfig.style.backgroundColor" class="form-color">
+                                                </div>
+                                                <div>
+                                                    <label>Randfarbe:</label>
+                                                    <input type="color" v-model="motdConfig.style.borderColor" class="form-color">
+                                                </div>
+                                                <div>
+                                                    <label>Textfarbe:</label>
+                                                    <input type="color" v-model="motdConfig.style.textColor" class="form-color">
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label>Icon:</label>
+                                                <select v-model="motdConfig.style.iconClass" class="form-select">
+                                                    <option value="">Kein Icon</option>
+                                                    <option value="info-circle">Info</option>
+                                                    <option value="exclamation-triangle">Warnung</option>
+                                                    <option value="check-circle">Erfolg</option>
+                                                    <option value="times-circle">Fehler</option>
+                                                    <option value="bell">Benachrichtigung</option>
+                                                    <option value="bullhorn">Ankündigung</option>
+                                                    <option value="calendar">Kalender</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <h4>Anzeige-Optionen:</h4>
+                                                <div class="checkbox-list">
+                                                    <label class="checkbox-container">
+                                                        <input type="checkbox" v-model="motdConfig.display.dismissible">
+                                                        <span class="checkmark"></span>
+                                                        Schließbar
+                                                    </label>
+                                                    <label class="checkbox-container">
+                                                        <input type="checkbox" v-model="motdConfig.display.showOnStartup">
+                                                        <span class="checkmark"></span>
+                                                        Beim Start anzeigen
+                                                    </label>
+                                                    <label class="checkbox-container">
+                                                        <input type="checkbox" v-model="motdConfig.display.showInChat">
+                                                        <span class="checkmark"></span>
+                                                        Im Chat anzeigen
+                                                    </label>
+                                                    <label class="checkbox-container">
+                                                        <input type="checkbox" v-model="motdConfig.display.showInEverySession">
+                                                        <span class="checkmark"></span>
+                                                        In jeder Sitzung
+                                                    </label>
+                                                    <label class="checkbox-container">
+                                                        <input type="checkbox" v-model="motdConfig.display.position" value="top">
+                                                        <span class="checkmark"></span>
+                                                        Am oberen Rand anzeigen
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="preview-section">
+                                                <h4>Vorschau:</h4>
+                                                <div class="motd-preview" :style="{
+                                                    backgroundColor: motdConfig.style.backgroundColor || '#fff3cd',
+                                                    borderColor: motdConfig.style.borderColor || '#ffeeba',
+                                                    color: motdConfig.style.textColor || '#856404'
+                                                }">
+                                                    <div class="motd-preview-content">
+                                                        <div class="motd-preview-icon" v-if="motdConfig.style.iconClass">
+                                                            <i :class="'fas fa-' + motdConfig.style.iconClass"></i>
+                                                        </div>
+                                                        <div class="motd-preview-text" v-html="formatMotdContent(motdConfig.content)"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="form-actions">
+                                                <button type="submit" class="btn primary">Speichern</button>
+                                                <button type="button" @click="resetMotdForm" class="btn">Zurücksetzen</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Dokument-Konverter -->
+                            <div v-else-if="adminTab === 'doc-converter'">
+                                <AdminDocConverterTab />
+                            </div>
+
+                            <!-- A/B-Tests -->
+                            <div v-else-if="adminTab === 'abtests'">
+                                <div class="admin-panels">
+                                    <div class="admin-panel">
+                                        <h3 class="panel-title">Aktive A/B-Tests</h3>
+                                        <div v-if="abTests && abTests.length > 0" class="grid grid-cols-1 gap-4 mt-4">
+                                            <div v-for="test in abTests" :key="test.id" class="border rounded-md p-4 hover:bg-gray-50">
+                                                <div class="flex justify-between items-start">
+                                                    <div>
+                                                        <h4 class="font-medium text-lg">{{ test.id }}</h4>
+                                                        <p class="text-sm text-gray-600 mt-1">{{ test.description }}</p>
+                                                    </div>
+                                                    <div class="bg-gray-100 rounded-md px-2 py-1 text-xs">
+                                                        Variante: {{ test.currentVariant }}
+                                                    </div>
+                                                </div>
+                                                <div class="mt-3">
+                                                    <div class="text-sm"><strong>Metriken:</strong> {{ test.metrics.join(', ') }}</div>
+                                                    <div class="text-sm mt-1"><strong>Varianten:</strong> {{ test.variants.join(', ') }}</div>
+                                                </div>
+                                                <div class="flex space-x-2 mt-4">
+                                                    <button
+                                                        class="px-3 py-1 text-sm rounded"
+                                                        :class="test.currentVariant === 'control' ? 'bg-green-500 text-white' : 'bg-gray-200 hover:bg-gray-300'"
+                                                        @click="window.abTesting?.assignUserToTest(test.id); window.location.reload();"
+                                                    >
+                                                        Control
+                                                    </button>
+                                                    <button
+                                                        class="px-3 py-1 text-sm rounded"
+                                                        :class="test.currentVariant === 'variant' ? 'bg-green-500 text-white' : 'bg-gray-200 hover:bg-gray-300'"
+                                                        @click="window.abTesting?.assignUserToTest(test.id); window.location.reload();"
+                                                    >
+                                                        Variant
+                                                    </button>
+                                                    <button
+                                                        class="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white rounded"
+                                                        @click="window.abTesting?.exitTest(test.id); loadABTests();"
+                                                    >
+                                                        Zurücksetzen
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div v-else class="text-center p-8 text-gray-500">
+                                            <i class="fas fa-flask text-4xl mb-3"></i>
+                                            <p>Keine aktiven A/B-Tests verfügbar</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <!-- Feedback Dialog -->
+        <div v-if="showFeedbackDialog" class="feedback-dialog-overlay">
+            <div class="feedback-dialog">
+                <div class="feedback-dialog-header">
+                    <h3>Feedback geben</h3>
+                    <button @click="showFeedbackDialog = false" class="close-button">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="feedback-dialog-content">
+                    <p>Wie bewerten Sie diese Antwort?</p>
+                    <div class="feedback-buttons">
+                        <button @click="submitFeedback('positive')" class="feedback-button positive" :class="{ 'selected': feedbackType === 'positive' }">
+                            <i class="fas fa-thumbs-up"></i>
+                            <span>Hilfreich</span>
+                        </button>
+                        <button @click="submitFeedback('negative')" class="feedback-button negative" :class="{ 'selected': feedbackType === 'negative' }">
+                            <i class="fas fa-thumbs-down"></i>
+                            <span>Nicht hilfreich</span>
+                        </button>
+                    </div>
+                    <div v-if="feedbackType" class="feedback-comment-section">
+                        <label for="feedback-comment">Kommentar (optional):</label>
+                        <textarea id="feedback-comment" v-model="feedbackComment" placeholder="Was hat Ihnen gefallen oder nicht gefallen?"></textarea>
+                        <div class="feedback-actions">
+                            <button @click="submitFeedbackWithComment" class="submit-button">
+                                <i class="fas fa-paper-plane"></i>
+                                <span>Absenden</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Dialog -->
+        <div v-if="settingsVisible" class="settings-dialog-overlay">
+            <div class="settings-dialog">
+                <div class="settings-dialog-header">
+                    <h3>Einstellungen</h3>
+                    <button @click="toggleSettings" class="close-button">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="settings-dialog-content">
+                    <div class="settings-sections">
+                        <div class="settings-section">
+                            <h4>Barrierefreiheit</h4>
+                            <div class="settings-options">
+                                <div class="settings-option">
+                                    <label for="font-size" class="settings-label">Schriftgröße</label>
+                                    <div class="settings-control">
+                                        <input type="range" id="font-size" v-model="fontSizeLevel" min="1" max="5" step="1">
+                                        <span class="settings-value">{{ fontSizeMap[fontSizeLevel] }}</span>
+                                    </div>
+                                </div>
+                                <div class="settings-option">
+                                    <label class="settings-label">Kontrast</label>
+                                    <div class="settings-control buttons">
+                                        <button @click="setContrastMode('normal')" class="settings-button" :class="{ active: contrastMode === 'normal' }">Normal</button>
+                                        <button @click="setContrastMode('high')" class="settings-button" :class="{ active: contrastMode === 'high' }">Hoch</button>
+                                    </div>
+                                </div>
+                                <div class="settings-option">
+                                    <label class="settings-label">Farbmodus</label>
+                                    <div class="settings-control buttons">
+                                        <button @click="setColorMode('light')" class="settings-button" :class="{ active: colorMode === 'light' }">
+                                            <i class="fas fa-sun"></i>
+                                            <span>Hell</span>
+                                        </button>
+                                        <button @click="setColorMode('dark')" class="settings-button" :class="{ active: colorMode === 'dark' }">
+                                            <i class="fas fa-moon"></i>
+                                            <span>Dunkel</span>
+                                        </button>
+                                        <button @click="setColorMode('auto')" class="settings-button" :class="{ active: colorMode === 'auto' }">
+                                            <i class="fas fa-magic"></i>
+                                            <span>Auto</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-section">
+                            <h4>Sprache</h4>
+                            <div class="settings-options">
+                                <div class="settings-option">
+                                    <label class="settings-label">Spracheinstellung</label>
+                                    <div class="settings-control">
+                                        <select v-model="language" class="settings-select">
+                                            <option value="de">Deutsch</option>
+                                            <option value="en">Englisch</option>
+                                            <option value="fr">Französisch</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-section">
+                            <h4>Modus</h4>
+                            <div class="settings-options">
+                                <div class="settings-option">
+                                    <label class="settings-label">Streaming-Modus</label>
+                                    <div class="settings-control toggle">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" v-model="streamingEnabled">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                        <span class="toggle-label">{{ streamingEnabled ? 'Aktiviert' : 'Deaktiviert' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-section">
+                            <h4>Systeminfo</h4>
+                            <div class="system-info">
+                                <div class="info-item">
+                                    <span class="info-label">Version:</span>
+                                    <span class="info-value">{{ systemInfo.version }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Build:</span>
+                                    <span class="info-value">{{ systemInfo.build }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">KI-Modell:</span>
+                                    <span class="info-value">{{ systemInfo.model }}</span>
+                                </div>
+                                <div v-if="userRole === 'admin'" class="info-item admin-only">
+                                    <span class="info-label">API-Endpunkt:</span>
+                                    <span class="info-value">{{ systemInfo.endpoint }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-actions">
+                        <button @click="resetSettings" class="settings-reset-button">
+                            <i class="fas fa-undo"></i>
+                            <span>Zurücksetzen</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</body>
+</html><link rel="stylesheet" href="/css/document-converter.css">

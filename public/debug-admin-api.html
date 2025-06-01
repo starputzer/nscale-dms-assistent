@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin API Debug</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .test { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; }
+        .error { background-color: #f8d7da; }
+        pre { white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>Admin API Debug - Response Structure</h1>
+    <button onclick="debugAPI()">Debug starten</button>
+    <div id="results"></div>
+
+    <script>
+        async function debugAPI() {
+            const results = document.getElementById('results');
+            results.innerHTML = '';
+
+            // Test mit der AdminUsersService Klasse
+            try {
+                // Simuliere was AdminUsersService macht
+                const response = await fetch('/api/v1/admin/users', {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+                    }
+                });
+
+                const rawText = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(rawText);
+                } catch (e) {
+                    addResult('Response ist kein JSON', { rawText, error: e.message }, false);
+                    return;
+                }
+
+                addResult('Raw Response', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: Object.fromEntries(response.headers.entries()),
+                    data: data
+                }, response.ok);
+
+                // Teste verschiedene Response-Strukturen
+                addResult('response.data check', {
+                    'hat response.data?': !!data.data,
+                    'ist response.data ein Array?': Array.isArray(data.data),
+                    'hat response.data.items?': !!(data.data && data.data.items),
+                    'hat response.data.users?': !!(data.data && data.data.users),
+                    'ist response.data.users ein Array?': Array.isArray(data.data && data.data.users),
+                    'hat response.users?': !!data.users,
+                    'ist response.users ein Array?': Array.isArray(data.users)
+                }, true);
+
+                // Zeige die tatsächliche Struktur
+                addResult('Tatsächliche Struktur', {
+                    'Erste Ebene Keys': Object.keys(data),
+                    'data Keys (falls vorhanden)': data.data ? Object.keys(data.data) : 'N/A',
+                    'users Feld': data.users || 'N/A',
+                    'data.users Feld': (data.data && data.data.users) || 'N/A'
+                }, true);
+
+            } catch (error) {
+                addResult('Fehler beim Debug', { error: error.message, stack: error.stack }, false);
+            }
+        }
+
+        function addResult(title, result, success) {
+            const div = document.createElement('div');
+            div.className = `test ${success ? 'success' : 'error'}`;
+            div.innerHTML = `
+                <h3>${title}</h3>
+                <pre>${JSON.stringify(result, null, 2)}</pre>
+            `;
+            document.getElementById('results').appendChild(div);
+        }
+
+        // Auto-Login für schnelleren Test
+        async function autoLogin() {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: 'martin@danglefeet.com', password: '123' })
+            });
+            const data = await response.json();
+            if (data.access_token) {
+                localStorage.setItem('access_token', data.access_token);
+                addResult('Auto-Login erfolgreich', { token: data.access_token.substring(0, 50) + '...' }, true);
+            }
+        }
+
+        // Login beim Laden
+        autoLogin();
+    </script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+/**
+ * Enhanced focus indicators for improved keyboard navigation
+ *
+ * These styles provide prominent visual focus indicators that are only visible 
+ * when navigating via keyboard, helping keyboard users track their position while
+ * not distracting mouse/touch users with unnecessary outlines.
+ */
+
+/* Only apply visible focus styles when using keyboard navigation */
+.using-keyboard :focus-visible {
+  outline: 3px solid var(--nscale-focus-ring, rgba(0, 165, 80, 0.6)) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1) !important;
+  transition: outline-color 0.15s ease !important;
+  z-index: 1;
+  position: relative;
+}
+
+/* Better focus indicators for buttons */
+.using-keyboard button:focus-visible,
+.using-keyboard .n-button:focus-visible,
+.using-keyboard [role="button"]:focus-visible {
+  outline-offset: 3px !important;
+}
+
+/* Improved link focus styling */
+.using-keyboard a:focus-visible {
+  outline-width: 2px !important;
+  text-decoration: underline !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 3px !important;
+}
+
+/* Form control focus styles */
+.using-keyboard input:focus-visible,
+.using-keyboard textarea:focus-visible,
+.using-keyboard select:focus-visible {
+  border-color: var(--nscale-primary, #00a550) !important;
+  outline-offset: 0 !important;
+  box-shadow: 0 0 0 3px rgba(0, 165, 80, 0.3) !important;
+}
+
+/* Skip navigation link - hidden by default, visible on focus */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  padding: 8px 12px;
+  background-color: var(--nscale-primary, #00a550);
+  color: white;
+  font-weight: 500;
+  z-index: 9999;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: none;
+}
+
+/* High contrast mode overrides */
+@media (prefers-contrast: high) {
+  .using-keyboard :focus-visible {
+    outline-color: black !important;
+    outline-style: solid !important;
+    outline-width: 3px !important;
+    background-color: yellow !important;
+    color: black !important;
+  }
+  
+  .using-keyboard a:focus-visible {
+    text-decoration-color: black !important;
+    text-decoration-style: double !important;
+  }
+}
+
+/* Dark mode focus styles */
+@media (prefers-color-scheme: dark) {
+  .using-keyboard :focus-visible {
+    outline-color: var(--nscale-primary-light, #34d399) !important;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.3) !important;
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .using-keyboard :focus-visible {
+    transition: none !important;
+  }
+  
+  .skip-link {
+    transition: none !important;
+  }
+}
+
+/* Skip to content links for keyboard users */
+#skip-to-main-content,
+#skip-to-navigation,
+#skip-to-search {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+#skip-to-main-content:focus,
+#skip-to-navigation:focus,
+#skip-to-search:focus {
+  clip: auto;
+  clip-path: none;
+  height: auto;
+  width: auto;
+  background-color: var(--nscale-primary, #00a550);
+  color: white;
+  font-weight: bold;
+  padding: 15px 23px;
+  z-index: 100;
+  text-decoration: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+/* Aria-selected styles */
+[aria-selected="true"] {
+  background-color: var(--nscale-primary-light, rgba(0, 165, 80, 0.15));
+  border-left: 3px solid var(--nscale-primary, #00a550);
+  font-weight: 500;
+}
+
+/* Optional: keyboard shortcut indicator styles for UI elements that have shortcuts */
+.has-keyboard-shortcut::after {
+  content: attr(data-shortcut);
+  font-size: 0.75rem;
+  background-color: rgba(0, 0, 0, 0.1);
+  color: var(--nscale-text-secondary, rgba(0, 0, 0, 0.6));
+  padding: 2px 5px;
+  border-radius: 3px;
+  margin-left: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.using-keyboard .has-keyboard-shortcut:hover::after {
+  opacity: 1;
+}

@@ -1,0 +1,73 @@
+/**
+ * Vue 3 Streaming Message Fixes
+ * 
+ * Diese CSS-Datei enthält spezifische Styles für die Darstellung
+ * von Streaming-Nachrichten in Vue 3 SFC-Komponenten.
+ */
+
+/* Allgemeine Fixes für Nachrichtendarstellung im MessageList */
+.n-message-list {
+  min-height: 300px !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.n-message-list__simple-container {
+  min-height: 200px !important;
+  display: block !important;
+}
+
+/* Styles für Streaming-Nachrichten */
+.n-message-item__text--streaming {
+  background-color: rgba(255, 255, 240, 0.9) !important;
+  border-left: 3px solid rgba(255, 193, 7, 0.7) !important;
+  padding: 10px !important;
+  font-family: monospace !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  line-height: 1.5 !important;
+  position: relative !important;
+}
+
+/* Pulsierender Effekt für aktives Streaming */
+@keyframes pulse-border {
+  0% { border-left-color: rgba(255, 193, 7, 0.3); }
+  50% { border-left-color: rgba(255, 193, 7, 0.9); }
+  100% { border-left-color: rgba(255, 193, 7, 0.3); }
+}
+
+.n-message-item__text--streaming {
+  animation: pulse-border 1.5s infinite;
+}
+
+/* Keine Animation für reduzierte Bewegung */
+@media (prefers-reduced-motion: reduce) {
+  .n-message-item__text--streaming {
+    animation: none;
+  }
+}
+
+/* Debug-Hervorhebungen für bessere Visualisierung */
+.n-message-direct {
+  margin: 10px 0 !important;
+  padding: 10px !important;
+  border: 1px solid rgba(0, 128, 0, 0.2) !important;
+  border-radius: 8px !important;
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  position: relative !important;
+  display: block !important;
+}
+
+/* Dunkles Theme Unterstützung */
+@media (prefers-color-scheme: dark) {
+  .n-message-item__text--streaming {
+    background-color: rgba(40, 40, 35, 0.9) !important;
+    color: rgba(240, 240, 220, 0.95) !important;
+  }
+  
+  .n-message-direct {
+    background-color: rgba(40, 40, 40, 0.9) !important;
+    border-color: rgba(0, 128, 0, 0.5) !important;
+  }
+}

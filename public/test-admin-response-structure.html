@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin API Response Structure Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-result {
+            background: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        .info { border-left: 4px solid #17a2b8; }
+        .response-data {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+        button {
+            background: #00a550;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background: #009046;
+        }
+        h1 { color: #333; }
+        h3 { margin-top: 0; }
+        .expected {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Admin API Response Structure Test</h1>
+    <button onclick="runTests()">Test alle Endpoints</button>
+    <div id="results"></div>
+
+    <script>
+        async function runTests() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+            
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                resultsDiv.innerHTML = '<div class="test-result error"><h3>Fehler</h3>Kein Auth Token gefunden. Bitte erst einloggen!</div>';
+                return;
+            }
+            
+            const endpoints = [
+                {
+                    name: 'Users List',
+                    url: '/api/v1/admin/users',
+                    expectedPaths: ['users', 'data.users', 'data'],
+                    description: 'Frontend erwartet: response.data.users (Array)'
+                },
+                {
+                    name: 'User Count',
+                    url: '/api/v1/admin/users/count',
+                    expectedPaths: ['count', 'data.count'],
+                    description: 'Frontend erwartet: response.data.count (Number)'
+                },
+                {
+                    name: 'User Stats',
+                    url: '/api/v1/admin/users/stats',
+                    expectedPaths: ['activeToday', 'data.activeToday'],
+                    description: 'Frontend erwartet: response.data mit stats properties'
+                },
+                {
+                    name: 'Feedback Stats',
+                    url: '/api/v1/admin/feedback/stats',
+                    expectedPaths: ['stats', 'data.stats'],
+                    description: 'Frontend erwartet: response.data.stats (Object)'
+                },
+                {
+                    name: 'Negative Feedback',
+                    url: '/api/v1/admin/feedback/negative',
+                    expectedPaths: ['feedback', 'data.feedback'],
+                    description: 'Frontend erwartet: response.data.feedback (Array)'
+                }
+            ];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(endpoint.url, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    let resultHtml = `<div class="test-result ${response.ok ? 'success' : 'error'}">`;
+                    resultHtml += `<h3>${endpoint.name}</h3>`;
+                    resultHtml += `<div>Status: ${response.status}</div>`;
+                    resultHtml += `<div class="expected">${endpoint.description}</div>`;
+                    
+                    if (response.ok) {
+                        // Check which path contains the expected data
+                        const foundPaths = [];
+                        for (const path of endpoint.expectedPaths) {
+                            const value = getValueByPath(data, path);
+                            if (value !== undefined) {
+                                foundPaths.push(`✓ Gefunden in: ${path}`);
+                            }
+                        }
+                        
+                        if (foundPaths.length > 0) {
+                            resultHtml += `<div style="color: green; margin-top: 10px;">${foundPaths.join('<br>')}</div>`;
+                        } else {
+                            resultHtml += `<div style="color: red; margin-top: 10px;">❌ Daten nicht in erwarteten Pfaden gefunden!</div>`;
+                        }
+                        
+                        resultHtml += `<div class="response-data">Response: ${JSON.stringify(data, null, 2)}</div>`;
+                    } else {
+                        resultHtml += `<div style="color: red;">Fehler: ${data.detail || 'Unbekannter Fehler'}</div>`;
+                    }
+                    
+                    resultHtml += '</div>';
+                    resultsDiv.innerHTML += resultHtml;
+                    
+                } catch (error) {
+                    resultsDiv.innerHTML += `
+                        <div class="test-result error">
+                            <h3>${endpoint.name}</h3>
+                            <div>Netzwerkfehler: ${error.message}</div>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        function getValueByPath(obj, path) {
+            const parts = path.split('.');
+            let current = obj;
+            
+            for (const part of parts) {
+                if (current && typeof current === 'object' && part in current) {
+                    current = current[part];
+                } else {
+                    return undefined;
+                }
+            }
+            
+            return current;
+        }
+        
+        // Auto-run tests on page load if logged in
+        window.onload = () => {
+            if (localStorage.getItem('auth_token')) {
+                document.getElementById('results').innerHTML = '<div class="test-result info"><h3>Info</h3>Klicke auf "Test alle Endpoints" um die API-Struktur zu testen.</div>';
+            }
+        };
+    </script>
+</body>
+</html>

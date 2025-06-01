@@ -1,0 +1,6 @@
+{
+  "title": "[TEST] Implement API contract testing",
+  "body": "## Problem\nNo contract testing between frontend and backend APIs.\n\n## Tasks\n- [ ] Choose contract testing tool (Pact/Postman)\n- [ ] Define API contracts\n- [ ] Implement contract tests\n- [ ] Add to CI pipeline\n- [ ] Document process\n\n## Acceptance Criteria\n- All endpoints have contracts\n- Contract tests in CI\n- Breaking changes detected\n- Documentation complete\n\n## Priority: MEDIUM\n## Effort: 8 story points",
+  "labels": ["testing", "api", "quality"],
+  "milestone": 2
+}

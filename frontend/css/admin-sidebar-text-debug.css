@@ -1,0 +1,61 @@
+/* Admin Sidebar Text Debug and Fix CSS */
+
+/* Debug: Add visible borders to identify elements */
+.admin-panel__sidebar {
+  border: 2px solid red !important;
+}
+
+.admin-panel__nav {
+  border: 2px solid blue !important;
+}
+
+.admin-panel__nav-item {
+  border: 1px solid green !important;
+  /* Force minimum height to ensure visibility */
+  min-height: 40px !important;
+}
+
+.admin-panel__nav-label {
+  border: 1px solid orange !important;
+  /* Force background to check if element exists */
+  background-color: rgba(255, 165, 0, 0.1) !important;
+}
+
+/* Force all text to be visible with contrasting colors */
+.admin-panel__nav-item {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+}
+
+.admin-panel__nav-label {
+  color: #000000 !important;
+  /* Force display and dimensions */
+  display: inline-block !important;
+  min-width: 100px !important;
+  min-height: 20px !important;
+  padding: 2px 4px !important;
+}
+
+/* Remove debug prefixes - text is now working */
+/* Debug prefixes removed - labels are displaying correctly */
+
+/* Check if Font Awesome icons are working */
+.admin-panel__nav-icon {
+  color: blue !important;
+  font-size: 20px !important;
+}
+
+/* Force all potential text containers to show */
+.admin-panel__sidebar * {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Add test content to empty elements */
+.admin-panel__nav-label:empty::after {
+  content: "[EMPTY LABEL]" !important;
+  color: red !important;
+  font-weight: bold !important;
+}
+
+/* Debug message removed - issue resolved */

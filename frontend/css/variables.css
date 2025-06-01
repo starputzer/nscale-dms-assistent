@@ -1,0 +1,30 @@
+/* CSS Variables */
+:root {
+  /* Colors */
+  --nscale-background: #ffffff;
+  --nscale-surface: #f8f9fa;
+  --nscale-text: #000000;
+  --nscale-text-secondary: #6c757d;
+  --nscale-primary: #0056b3;
+  --nscale-border: #dee2e6;
+  --nscale-button-hover: #e9ecef;
+  
+  /* Dark theme */
+  --nscale-background-dark: #121212;
+  --nscale-surface-dark: #1e1e1e;
+  --nscale-text-dark: #ffffff;
+  --nscale-text-secondary-dark: #adb5bd;
+  --nscale-primary-dark: #5a9fd4;
+  --nscale-border-dark: #343a40;
+  --nscale-button-hover-dark: #2b2b2b;
+}
+
+[data-theme="dark"] {
+  --nscale-background: var(--nscale-background-dark);
+  --nscale-surface: var(--nscale-surface-dark);
+  --nscale-text: var(--nscale-text-dark);
+  --nscale-text-secondary: var(--nscale-text-secondary-dark);
+  --nscale-primary: var(--nscale-primary-dark);
+  --nscale-border: var(--nscale-border-dark);
+  --nscale-button-hover: var(--nscale-button-hover-dark);
+}

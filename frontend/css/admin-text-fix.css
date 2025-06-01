@@ -1,0 +1,130 @@
+/* Admin Text Visibility Fix */
+
+/* Base text colors for admin panel */
+.admin-panel,
+.admin-panel__content,
+.admin-content,
+.admin-section {
+  color: var(--n-color-text-primary, #333333) !important;
+}
+
+/* Admin section titles and headings */
+.admin-section__title,
+.admin-section__description,
+.admin-card__header h3,
+.admin-metric__label,
+.admin-metric__value {
+  color: var(--n-color-text-primary, #333333) !important;
+}
+
+/* Admin tab buttons text */
+.admin-tab-button,
+.admin-nav-item {
+  color: var(--n-color-text-primary, #333333) !important;
+}
+
+.admin-tab-button.active,
+.admin-nav-item.active {
+  color: var(--n-color-primary, #00a550) !important;
+}
+
+/* Form labels and inputs */
+.admin-form-group label,
+.admin-label,
+.form-label,
+.users-search__input {
+  color: var(--n-color-text-primary, #333333) !important;
+}
+
+/* Table text */
+.admin-table th,
+.admin-table td {
+  color: var(--n-color-text-primary, #333333) !important;
+}
+
+/* Button text */
+.admin-button,
+.admin-btn {
+  color: inherit !important;
+}
+
+.admin-button--primary,
+.admin-btn-primary {
+  color: white !important;
+}
+
+/* Dark mode text fixes */
+.theme-dark .admin-panel,
+.theme-dark .admin-panel__content,
+.theme-dark .admin-content,
+.theme-dark .admin-section,
+.theme-dark .admin-section__title,
+.theme-dark .admin-section__description,
+.theme-dark .admin-card__header h3,
+.theme-dark .admin-metric__label,
+.theme-dark .admin-metric__value,
+.theme-dark .admin-form-group label,
+.theme-dark .admin-label,
+.theme-dark .form-label,
+.theme-dark .users-search__input,
+.theme-dark .admin-table th,
+.theme-dark .admin-table td {
+  color: #f0f0f0 !important;
+}
+
+.theme-dark .admin-tab-button,
+.theme-dark .admin-nav-item {
+  color: #e0e0e0 !important;
+}
+
+.theme-dark .admin-tab-button.active,
+.theme-dark .admin-nav-item.active {
+  color: #00c060 !important;
+}
+
+/* Contrast mode text fixes */
+.theme-contrast .admin-panel,
+.theme-contrast .admin-panel__content,
+.theme-contrast .admin-content,
+.theme-contrast .admin-section,
+.theme-contrast .admin-section__title,
+.theme-contrast .admin-section__description,
+.theme-contrast .admin-card__header h3,
+.theme-contrast .admin-metric__label,
+.theme-contrast .admin-metric__value,
+.theme-contrast .admin-form-group label,
+.theme-contrast .admin-label,
+.theme-contrast .form-label,
+.theme-contrast .admin-tab-button.active,
+.theme-contrast .admin-nav-item.active {
+  color: #ffeb3b !important;
+}
+
+.theme-contrast .admin-tab-button,
+.theme-contrast .admin-nav-item,
+.theme-contrast .users-search__input,
+.theme-contrast .admin-table td {
+  color: #ffffff !important;
+}
+
+.theme-contrast .admin-table th {
+  color: #ffeb3b !important;
+}
+
+/* Ensure all text elements have proper contrast */
+.admin-panel * {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Fix for specific Vue component text */
+.admin-section p,
+.admin-section span,
+.admin-section div:not(.admin-loading) {
+  color: inherit !important;
+}
+
+/* Loading spinner should remain visible */
+.admin-loading {
+  opacity: 1 !important;
+}

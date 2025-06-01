@@ -1,0 +1,6 @@
+{
+  "title": "[DOCS] Fix version inconsistencies and branding confusion",
+  "body": "## Problem\n- Different versions across files (1.0.0, 3.0.0, 1.1.0)\n- Mixed branding between 'nscale DMS Assistent' and 'Digitale Akte Assistent'\n\n## Tasks\n- [ ] Standardize version to 3.0.0\n- [ ] Update all references to new branding\n- [ ] Fix broken internal links\n- [ ] Update installation guides\n- [ ] Generate API documentation\n\n## Acceptance Criteria\n- Consistent versioning\n- Consistent branding\n- All links work\n- API fully documented\n\n## Priority: HIGH\n## Effort: 5 story points",
+  "labels": ["documentation", "maintenance"],
+  "milestone": 1
+}

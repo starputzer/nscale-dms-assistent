@@ -1,0 +1,5 @@
+src/bridge-init.ts:import { installBridge, configureBridge } from "./bridge/setup";
+src/composables/useNScale.ts:import { useBridge } from "../bridge";
+src/composables/useBridgeChat.ts:import { useBridge } from "@/bridge/enhanced";
+src/views/EnhancedChatView.vue:import { useBridge } from "../bridge/enhanced";
+src/views/EnhancedChatView.vue:import type { BridgeAPI } from "../bridge/enhanced/types";

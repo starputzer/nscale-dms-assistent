@@ -1,0 +1,2738 @@
+{
+  "CLEANUP_LIST.md": {
+    "file_path": "CLEANUP_LIST.md",
+    "last_modified": "2025-05-13T19:54:23.673178",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "bf987dd52eee6a596d7266738a490f1e",
+    "review_notes": []
+  },
+  "ADMIN_AUTHENTICATION_TROUBLESHOOTING.md": {
+    "file_path": "ADMIN_AUTHENTICATION_TROUBLESHOOTING.md",
+    "last_modified": "2025-05-28T09:09:39.584796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "59b10c3ed1a65d9e1bb8220b55367af6",
+    "review_notes": []
+  },
+  "DOCUMENTATION_STANDARDS.md": {
+    "file_path": "DOCUMENTATION_STANDARDS.md",
+    "last_modified": "2025-05-29T11:43:33.807734",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "bcbe31279313aba8e970c030581c54f2",
+    "review_notes": []
+  },
+  "STREAMING_FIX_EXPLANATION.md": {
+    "file_path": "STREAMING_FIX_EXPLANATION.md",
+    "last_modified": "2025-05-20T12:23:40.583267",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "38a1d4e1054da25efa00fe921cd2ae61",
+    "review_notes": []
+  },
+  "DOKUMENTATION_KONSOLIDIERUNG_PLAN.md": {
+    "file_path": "DOKUMENTATION_KONSOLIDIERUNG_PLAN.md",
+    "last_modified": "2025-05-29T10:35:51.362727",
+    "last_reviewed": null,
+    "priority": "low",
+    "assigned_to": null,
+    "content_hash": "3906ee3e6c627df655d7f452d1e28f2a",
+    "review_notes": []
+  },
+  "STREAMING_FIX_SUMMARY.md": {
+    "file_path": "STREAMING_FIX_SUMMARY.md",
+    "last_modified": "2025-05-20T12:23:40.583267",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "2872cce9185561858c9249989ebf69e3",
+    "review_notes": []
+  },
+  "CHAT_STREAMING_FIX_FINAL.md": {
+    "file_path": "CHAT_STREAMING_FIX_FINAL.md",
+    "last_modified": "2025-05-20T12:23:40.573267",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "7a2d556a5a8fc9afd2ef5930bf9f117c",
+    "review_notes": []
+  },
+  "DOCUMENTATION_REDUNDANCY_REPORT.md": {
+    "file_path": "DOCUMENTATION_REDUNDANCY_REPORT.md",
+    "last_modified": "2025-05-29T10:31:08.279280",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "973bdf5e8187d17c04e027550204ce2d",
+    "review_notes": []
+  },
+  "ADMIN_AUTHENTICATION_IMPROVEMENTS.md": {
+    "file_path": "ADMIN_AUTHENTICATION_IMPROVEMENTS.md",
+    "last_modified": "2025-05-28T09:09:39.584796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "32a61253a793f3887c67f899da4834d4",
+    "review_notes": []
+  },
+  "INTEGRATION_GUIDE.md": {
+    "file_path": "INTEGRATION_GUIDE.md",
+    "last_modified": "2025-05-20T12:23:40.573267",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "299c691b825b5818630fc0ebb62d37a0",
+    "review_notes": []
+  },
+  "ARCHIV/README.md": {
+    "file_path": "ARCHIV/README.md",
+    "last_modified": "2025-05-11T16:02:13.975618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "156cc4672d0443b9459e7255052b41ce",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/THEME_SYSTEM_SUMMARY.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/THEME_SYSTEM_SUMMARY.md",
+    "last_modified": "2025-05-16T15:20:23.892856",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "ac163dacd8881cae4b99b24e25301cfa",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/FINALE_MIGRATION_ANLEITUNG.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/FINALE_MIGRATION_ANLEITUNG.md",
+    "last_modified": "2025-05-11T16:50:55.416167",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "48581ce0b1a3d0bace4303297db3453e",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/ROUTER_SERVICE_FIX.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/ROUTER_SERVICE_FIX.md",
+    "last_modified": "2025-05-15T22:00:09.750718",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "fda036ae350d90146c6835f502f746a7",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/TEST_ANLEITUNG.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/TEST_ANLEITUNG.md",
+    "last_modified": "2025-05-13T19:46:55.862340",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "23a244fcd2d3d30878cf1fa04eafb96c",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/REBRAND_INTEGRATION_GUIDE.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/REBRAND_INTEGRATION_GUIDE.md",
+    "last_modified": "2025-05-16T15:08:37.663003",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "7fa4d2547cdc71b1654c60524cabae96",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/FEHLERBEHOBEN_ENDLOSSCHLEIFE.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/FEHLERBEHOBEN_ENDLOSSCHLEIFE.md",
+    "last_modified": "2025-05-15T21:55:46.410774",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "3bd13d28f4bc25d7ca8e08af6de6e801",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/dependency-analysis.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/dependency-analysis.md",
+    "last_modified": "2025-05-11T16:02:13.955618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "19f237b5c1ca77e8965be17b375ac50a",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/file-usage-analysis.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/file-usage-analysis.md",
+    "last_modified": "2025-05-16T20:21:26.819075",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "277ddec80af3cd9f5f01fcf65d993e69",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/README-REDESIGNED.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/README-REDESIGNED.md",
+    "last_modified": "2025-05-16T15:09:02.132999",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "cac4bbfac245fdfdeb3431eb220a5d91",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/PURE_VUE_DEBUGGING.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/PURE_VUE_DEBUGGING.md",
+    "last_modified": "2025-05-11T23:24:00.348630",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "160ed10d1f01af446ba077426277ab08",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/PURE_VUE_README.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/PURE_VUE_README.md",
+    "last_modified": "2025-05-11T23:32:43.041141",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "aba87a184633f17832a9e84b93bfa579",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/HOW_TO_ACCESS_REDESIGNED_VERSION.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/HOW_TO_ACCESS_REDESIGNED_VERSION.md",
+    "last_modified": "2025-05-16T15:22:44.692825",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "a7d7ddcba34f300bcac1249a550a49d5",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/SYSTEM_STATUS.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/SYSTEM_STATUS.md",
+    "last_modified": "2025-05-11T16:02:13.945618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "cfda361fdb16c5894b343d2b85ecc296",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/dependency-diagram.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/dependency-diagram.md",
+    "last_modified": "2025-05-11T16:02:13.955618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "f47ea9aaf268876eecbbc1cc168b9836",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/typescript-fixes-update.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/typescript-fixes-update.md",
+    "last_modified": "2025-05-12T19:37:07.950147",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "aeda13d4a531f22fbb5f3563ef9da046",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/OPTIMIERTE_PROJEKTSTRUKTUR.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/OPTIMIERTE_PROJEKTSTRUKTUR.md",
+    "last_modified": "2025-05-13T19:48:09.152480",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "3d5667b9f85d9ec992b102ef9bba497a",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/PURE_VUE_MODE.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/PURE_VUE_MODE.md",
+    "last_modified": "2025-05-11T23:20:05.967501",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "1e894a47115c0114a354de6e564f5e63",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/ENHANCED_ROUTE_FALLBACK_FIX.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/ENHANCED_ROUTE_FALLBACK_FIX.md",
+    "last_modified": "2025-05-15T22:02:46.520691",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "31ef562118d065b5a7c2c283d75daca9",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/typescript-fixes-summary.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/typescript-fixes-summary.md",
+    "last_modified": "2025-05-12T19:33:32.800231",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "9bfa68ee0070215dc1b4c75825f4517b",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/PURE_VUE_IMPLEMENTATION_SUMMARY.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/PURE_VUE_IMPLEMENTATION_SUMMARY.md",
+    "last_modified": "2025-05-11T23:20:27.937608",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "bd6a46ea32d5e10e5bdcd8108831ee5f",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/AB_TESTS_README.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/AB_TESTS_README.md",
+    "last_modified": "2025-05-11T16:02:13.945618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "d4bee1f9f67651e1f3dd816ad90dbf0a",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/PROJEKTSTRUKTUR_OPTIMIERUNG.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/PROJEKTSTRUKTUR_OPTIMIERUNG.md",
+    "last_modified": "2025-05-13T19:46:15.642263",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "5c334bc92c5422c090d101d0810a4a11",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/FEHLERANALYSE_LOESUNG.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/FEHLERANALYSE_LOESUNG.md",
+    "last_modified": "2025-05-15T21:47:28.110878",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "63f4e5984c41b4a3cdf4da83998ef0be",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/ROUTER_FIX_CHAT_SESSIONS.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/ROUTER_FIX_CHAT_SESSIONS.md",
+    "last_modified": "2025-05-15T21:51:01.790833",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "ee497145efdaf437ad9167bfc5f371dc",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_FIXES/INDEX_HTML_FIX.md": {
+    "file_path": "ARCHIV/MIGRATION_FIXES/INDEX_HTML_FIX.md",
+    "last_modified": "2025-05-11T19:04:22.433488",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "76a4e2864ddfa202835a15047ec34e16",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_REST/06_FEHLERBEHANDLUNG_OPTIMIERUNG.md": {
+    "file_path": "ARCHIV/MIGRATION_REST/06_FEHLERBEHANDLUNG_OPTIMIERUNG.md",
+    "last_modified": "2025-05-11T16:02:13.975618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "b928d577611cbed33b8b53473059f358",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION_REST/07_VANILLA_JS_PERFORMANCE.md": {
+    "file_path": "ARCHIV/MIGRATION_REST/07_VANILLA_JS_PERFORMANCE.md",
+    "last_modified": "2025-05-11T16:02:13.975618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "da314644dd44867e93f844d86c988fce",
+    "review_notes": []
+  },
+  "ARCHIV/ENTWICKLUNG/07_TEST_STRATEGIE.md": {
+    "file_path": "ARCHIV/ENTWICKLUNG/07_TEST_STRATEGIE.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "236adb1e0fdd0fda3225f6827a06bf44",
+    "review_notes": []
+  },
+  "ARCHIV/ENTWICKLUNG/E2E_TEST_ANLEITUNG.md": {
+    "file_path": "ARCHIV/ENTWICKLUNG/E2E_TEST_ANLEITUNG.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "b02e4db7c5518f61c04ee2807e1f9918",
+    "review_notes": []
+  },
+  "ARCHIV/ENTWICKLUNG/05_TESTEN.md": {
+    "file_path": "ARCHIV/ENTWICKLUNG/05_TESTEN.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "5cb5b679bc6f397563ccf2832bc47ce5",
+    "review_notes": []
+  },
+  "ARCHIV/ENTWICKLUNG/E2E_TEST_ANALYSE.md": {
+    "file_path": "ARCHIV/ENTWICKLUNG/E2E_TEST_ANALYSE.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "58df317a35a9331b3e72f2f2a8e79a4a",
+    "review_notes": []
+  },
+  "ARCHIV/ENTWICKLUNG/07_TEST_STRATEGIE_AKTUALISIERT.md": {
+    "file_path": "ARCHIV/ENTWICKLUNG/07_TEST_STRATEGIE_AKTUALISIERT.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "5747b9735578ad004f6c8ef8febbf2d7",
+    "review_notes": []
+  },
+  "ARCHIV/ENTWICKLUNG/JS_TESTS_README.md": {
+    "file_path": "ARCHIV/ENTWICKLUNG/JS_TESTS_README.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "b1a38483bb67a01f7c3306f5fd2d07c2",
+    "review_notes": []
+  },
+  "ARCHIV/ENTWICKLUNG/02_KOMPONENTEN_LEITFADEN.md": {
+    "file_path": "ARCHIV/ENTWICKLUNG/02_KOMPONENTEN_LEITFADEN.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "high",
+    "assigned_to": null,
+    "content_hash": "c62b25f87f82f7462aa76672b38639b7",
+    "review_notes": []
+  },
+  "ARCHIV/ENTWICKLUNG/03_API_INTEGRATION.md": {
+    "file_path": "ARCHIV/ENTWICKLUNG/03_API_INTEGRATION.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "critical",
+    "assigned_to": null,
+    "content_hash": "e629bc3f08895770c77ffde661d68a3e",
+    "review_notes": []
+  },
+  "ARCHIV/ENTWICKLUNG/04_ENTWICKLUNGSANLEITUNG.md": {
+    "file_path": "ARCHIV/ENTWICKLUNG/04_ENTWICKLUNGSANLEITUNG.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "6023676dc46a4ca7d30874d810ace78d",
+    "review_notes": []
+  },
+  "ARCHIV/ENTWICKLUNG/06_FEHLERANALYSE.md": {
+    "file_path": "ARCHIV/ENTWICKLUNG/06_FEHLERANALYSE.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "eb4592195daf432cfb45fec1df9c89de",
+    "review_notes": []
+  },
+  "ARCHIV/ENTWICKLUNG/08_PINIA_STORE_TESTING.md": {
+    "file_path": "ARCHIV/ENTWICKLUNG/08_PINIA_STORE_TESTING.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "76ee0432b7c4747179cf37dd97efd740",
+    "review_notes": []
+  },
+  "ARCHIV/ENTWICKLUNG/06_VITE_FEHLERBEHANDLUNG.md": {
+    "file_path": "ARCHIV/ENTWICKLUNG/06_VITE_FEHLERBEHANDLUNG.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "high",
+    "assigned_to": null,
+    "content_hash": "a2dd5693bd9f7951424dae69048c8242",
+    "review_notes": []
+  },
+  "ARCHIV/ENTWICKLUNG/01_SETUP.md": {
+    "file_path": "ARCHIV/ENTWICKLUNG/01_SETUP.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "critical",
+    "assigned_to": null,
+    "content_hash": "6123646602a035fee6589f175a548dda",
+    "review_notes": []
+  },
+  "ARCHIV/ENTWICKLUNG/03_FEHLERBEHANDLUNG.md": {
+    "file_path": "ARCHIV/ENTWICKLUNG/03_FEHLERBEHANDLUNG.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "high",
+    "assigned_to": null,
+    "content_hash": "e78292476b299cef5c4833776a29120d",
+    "review_notes": []
+  },
+  "ARCHIV/ENTWICKLUNG/07_FRONTEND_LADEPROBLEME.md": {
+    "file_path": "ARCHIV/ENTWICKLUNG/07_FRONTEND_LADEPROBLEME.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "65c77b9a4cfa5f28f0619dc7be565646",
+    "review_notes": []
+  },
+  "ARCHIV/ENTWICKLUNG/E2E_TESTSTRATEGIE.md": {
+    "file_path": "ARCHIV/ENTWICKLUNG/E2E_TESTSTRATEGIE.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "1404802aa20dd8610fa4f0f29d6bb1b6",
+    "review_notes": []
+  },
+  "ARCHIV/FEATURES_REST/02_ROLLENKONZEPT.md": {
+    "file_path": "ARCHIV/FEATURES_REST/02_ROLLENKONZEPT.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "b97d3f5e902824b0e1ddd2d27b6c2a42",
+    "review_notes": []
+  },
+  "ARCHIV/REFERENZEN/04_API_CLIENT.md": {
+    "file_path": "ARCHIV/REFERENZEN/04_API_CLIENT.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "097a0f217b5f9b41776616417e8672c3",
+    "review_notes": []
+  },
+  "ARCHIV/REFERENZEN/08_BUILD_DEPLOYMENT_KONFIGURATION.md": {
+    "file_path": "ARCHIV/REFERENZEN/08_BUILD_DEPLOYMENT_KONFIGURATION.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "84c68d34c1dd8f7ef0e38265a5d3c31f",
+    "review_notes": []
+  },
+  "ARCHIV/REFERENZEN/05_DATENPERSISTENZ.md": {
+    "file_path": "ARCHIV/REFERENZEN/05_DATENPERSISTENZ.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "da6091726b62a07d48a4b1318dcf0251",
+    "review_notes": []
+  },
+  "ARCHIV/SYSTEME_REST/13_CHAT_KOMPONENTEN.md": {
+    "file_path": "ARCHIV/SYSTEME_REST/13_CHAT_KOMPONENTEN.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "1e6cb144c7c5dff6004252857d3816d2",
+    "review_notes": []
+  },
+  "ARCHIV/SYSTEME_REST/17_KOMPONENTEN_BIBLIOTHEK.md": {
+    "file_path": "ARCHIV/SYSTEME_REST/17_KOMPONENTEN_BIBLIOTHEK.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "eabeb5363be33bea37a2c5f9aa9ba8a8",
+    "review_notes": []
+  },
+  "ARCHIV/SYSTEME_REST/19_PINIA_STORE_TESTING.md": {
+    "file_path": "ARCHIV/SYSTEME_REST/19_PINIA_STORE_TESTING.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "49cc0aed3e560f94118e169604f3f5f5",
+    "review_notes": []
+  },
+  "ARCHIV/SYSTEME_REST/10_BASIS_UI_KOMPONENTEN_UPDATED.md": {
+    "file_path": "ARCHIV/SYSTEME_REST/10_BASIS_UI_KOMPONENTEN_UPDATED.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "6330042320fd71204561879590857bd8",
+    "review_notes": []
+  },
+  "ARCHIV/SYSTEME_REST/16_CHAT_MIGRATION_ZUSAMMENFASSUNG.md": {
+    "file_path": "ARCHIV/SYSTEME_REST/16_CHAT_MIGRATION_ZUSAMMENFASSUNG.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "66cca5788cc0d03e8285ab614c757e0f",
+    "review_notes": []
+  },
+  "ARCHIV/SYSTEME_REST/16_DOKUMENTENKONVERTER_FINAL.md": {
+    "file_path": "ARCHIV/SYSTEME_REST/16_DOKUMENTENKONVERTER_FINAL.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "b3f3f32025e058e6670be71cc23b88c1",
+    "review_notes": []
+  },
+  "ARCHIV/SYSTEME_REST/15_CHAT_KOMPONENTEN_MIGRATION.md": {
+    "file_path": "ARCHIV/SYSTEME_REST/15_CHAT_KOMPONENTEN_MIGRATION.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "d7b78bb0a5e6767d9313ba15083c6033",
+    "review_notes": []
+  },
+  "ARCHIV/SYSTEME_REST/DOKUMENTENKONVERTER_README.md": {
+    "file_path": "ARCHIV/SYSTEME_REST/DOKUMENTENKONVERTER_README.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "43d93af7511d69b6dc8053ec71b2293a",
+    "review_notes": []
+  },
+  "ARCHIV/SYSTEME_REST/19_MOBILE_OPTIMIERUNG.md": {
+    "file_path": "ARCHIV/SYSTEME_REST/19_MOBILE_OPTIMIERUNG.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "ff9fd240f25f2dbf616404510dc6c9e1",
+    "review_notes": []
+  },
+  "ARCHIV/SYSTEME_REST/11_FRONTEND_STRUKTUR_BEREINIGUNG.md": {
+    "file_path": "ARCHIV/SYSTEME_REST/11_FRONTEND_STRUKTUR_BEREINIGUNG.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "3073b123203d8e42ec2c1426c2e46087",
+    "review_notes": []
+  },
+  "ARCHIV/SYSTEME_REST/14_SESSION_MANAGEMENT_KOMPONENTEN.md": {
+    "file_path": "ARCHIV/SYSTEME_REST/14_SESSION_MANAGEMENT_KOMPONENTEN.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "0a0d31293f04a7ab1cef200401b9f990",
+    "review_notes": []
+  },
+  "ARCHIV/SYSTEME_REST/12_CSS_DESIGN_SYSTEM_SCSS.md": {
+    "file_path": "ARCHIV/SYSTEME_REST/12_CSS_DESIGN_SYSTEM_SCSS.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "63343e22bee8bf78f6ef63f0d5d1c394",
+    "review_notes": []
+  },
+  "ARCHIV/SYSTEME_REST/20_CHAT_SYSTEM_DOKUMENTATION.md": {
+    "file_path": "ARCHIV/SYSTEME_REST/20_CHAT_SYSTEM_DOKUMENTATION.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "e092cd9cf7e03137765b11ce130bbd7d",
+    "review_notes": []
+  },
+  "ARCHIV/SYSTEME_REST/12_CSS_DESIGN_SYSTEM.md": {
+    "file_path": "ARCHIV/SYSTEME_REST/12_CSS_DESIGN_SYSTEM.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "0666f19696fe8153e0a4b926694be0df",
+    "review_notes": []
+  },
+  "ARCHIV/MIGRATION/05_VANILLA_JS_TEST_COVERAGE.md": {
+    "file_path": "ARCHIV/MIGRATION/05_VANILLA_JS_TEST_COVERAGE.md",
+    "last_modified": "2025-05-11T16:02:13.975618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "04d36d22358f2a380e1d38b9bfe9e12d",
+    "review_notes": []
+  },
+  "ARCHIV/ARCHITEKTUR/03_FEATURE_TOGGLE_SYSTEM.md": {
+    "file_path": "ARCHIV/ARCHITEKTUR/03_FEATURE_TOGGLE_SYSTEM.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "e900482c0d6ead0ed6feb7470ac63998",
+    "review_notes": []
+  },
+  "ARCHIV/ARCHITEKTUR/02_DOCUMENT_CONVERTER_STORE.md": {
+    "file_path": "ARCHIV/ARCHITEKTUR/02_DOCUMENT_CONVERTER_STORE.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "3dd542da7e80d3cc3e741cc47ab3d3e5",
+    "review_notes": []
+  },
+  "ARCHIV/ARCHITEKTUR/01_SYSTEM_ARCHITEKTUR.md": {
+    "file_path": "ARCHIV/ARCHITEKTUR/01_SYSTEM_ARCHITEKTUR.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "critical",
+    "assigned_to": null,
+    "content_hash": "8ea6b3e94824253c0c36437e2e6290b3",
+    "review_notes": []
+  },
+  "ARCHIV/ARCHITEKTUR/02_FRONTEND_ARCHITEKTUR.md": {
+    "file_path": "ARCHIV/ARCHITEKTUR/02_FRONTEND_ARCHITEKTUR.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "8b44f7c206148b82258d224ae6feb52a",
+    "review_notes": []
+  },
+  "ARCHIV/KOMPONENTEN/01_UI_BASIS_KOMPONENTEN.md": {
+    "file_path": "ARCHIV/KOMPONENTEN/01_UI_BASIS_KOMPONENTEN.md",
+    "last_modified": "2025-05-11T16:02:13.975618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "8aa6866045e228c1edc0aedf8372ad5c",
+    "review_notes": []
+  },
+  "ARCHIV/KOMPONENTEN/10_BASIS_UI_KOMPONENTEN.md": {
+    "file_path": "ARCHIV/KOMPONENTEN/10_BASIS_UI_KOMPONENTEN.md",
+    "last_modified": "2025-05-11T16:02:13.975618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "28dbfde30029f3eeb8b122a3e28c9ef6",
+    "review_notes": []
+  },
+  "ARCHIV/KOMPONENTEN/01_DIALOG_SYSTEM.md": {
+    "file_path": "ARCHIV/KOMPONENTEN/01_DIALOG_SYSTEM.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "f3e88d045ef470d23bb1661862a18335",
+    "review_notes": []
+  },
+  "ARCHIV/KOMPONENTEN/09_FEHLERMELDUNGEN_KOMPONENTE.md": {
+    "file_path": "ARCHIV/KOMPONENTEN/09_FEHLERMELDUNGEN_KOMPONENTE.md",
+    "last_modified": "2025-05-11T16:02:13.975618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "c6db04885fe0613d8f4a478d7611f9c4",
+    "review_notes": []
+  },
+  "ARCHIV/KOMPONENTEN/04_FILE_UPLOAD_COMPONENT.md": {
+    "file_path": "ARCHIV/KOMPONENTEN/04_FILE_UPLOAD_COMPONENT.md",
+    "last_modified": "2025-05-11T16:02:13.975618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "a23b25e39fbf61b491c2301482a08d51",
+    "review_notes": []
+  },
+  "ARCHIV/KOMPONENTEN/06_DOKUMENTENKONVERTER.md": {
+    "file_path": "ARCHIV/KOMPONENTEN/06_DOKUMENTENKONVERTER.md",
+    "last_modified": "2025-05-11T16:02:13.975618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "cc86f83907cae6bcf9c7519f7b2ae224",
+    "review_notes": []
+  },
+  "ARCHIV/KOMPONENTEN/07_KONVERSIONSPROGRESS_KOMPONENTE.md": {
+    "file_path": "ARCHIV/KOMPONENTEN/07_KONVERSIONSPROGRESS_KOMPONENTE.md",
+    "last_modified": "2025-05-11T16:02:13.975618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "a6faf1a0a00c34a6b9a89d6739c30db7",
+    "review_notes": []
+  },
+  "ARCHIV/KOMPONENTEN/03_KOMPONENTEN_STRUKTUR.md": {
+    "file_path": "ARCHIV/KOMPONENTEN/03_KOMPONENTEN_STRUKTUR.md",
+    "last_modified": "2025-05-11T16:02:13.975618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "6ef89edf25da890731157ea874c9319b",
+    "review_notes": []
+  },
+  "ARCHIV/KOMPONENTEN/06_VUE3_SFC_DOKUMENTENKONVERTER.md": {
+    "file_path": "ARCHIV/KOMPONENTEN/06_VUE3_SFC_DOKUMENTENKONVERTER.md",
+    "last_modified": "2025-05-11T16:02:13.975618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "75cb79c2881deee6dd077c4a4563fea8",
+    "review_notes": []
+  },
+  "ARCHIV/KOMPONENTEN/01_DOKUMENTENKONVERTER.md": {
+    "file_path": "ARCHIV/KOMPONENTEN/01_DOKUMENTENKONVERTER.md",
+    "last_modified": "2025-05-11T16:02:13.965618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "1fd7b823b8cb996137a58eb337ba8424",
+    "review_notes": []
+  },
+  "ARCHIV/KOMPONENTEN/08_DOKUMENTLISTE_KOMPONENTE.md": {
+    "file_path": "ARCHIV/KOMPONENTEN/08_DOKUMENTLISTE_KOMPONENTE.md",
+    "last_modified": "2025-05-11T16:02:13.975618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "30e8a88f8dd6e2458374a63bda61593a",
+    "review_notes": []
+  },
+  "ARCHIV/KOMPONENTEN/06_VUE3_SFC_DOKUMENTENKONVERTER_UPDATE.md": {
+    "file_path": "ARCHIV/KOMPONENTEN/06_VUE3_SFC_DOKUMENTENKONVERTER_UPDATE.md",
+    "last_modified": "2025-05-11T16:02:13.975618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "0be556950ef52467350600cd8a130cb0",
+    "review_notes": []
+  },
+  "ARCHIV/RESTLICHE_DOKUMENTE/ADMIN_COMPONENTS_DESIGN.md": {
+    "file_path": "ARCHIV/RESTLICHE_DOKUMENTE/ADMIN_COMPONENTS_DESIGN.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "a09b251c410bc268a8037f365e0cdaf5",
+    "review_notes": []
+  },
+  "ARCHIV/RESTLICHE_DOKUMENTE/component_hierarchy.md": {
+    "file_path": "ARCHIV/RESTLICHE_DOKUMENTE/component_hierarchy.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "d51e0b6b2fca94074a0137b7ca04e055",
+    "review_notes": []
+  },
+  "ARCHIV/RESTLICHE_DOKUMENTE/CHAT_SESSION_MANAGEMENT_KONSOLIDIERT.md": {
+    "file_path": "ARCHIV/RESTLICHE_DOKUMENTE/CHAT_SESSION_MANAGEMENT_KONSOLIDIERT.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "b5564aa1aa1dd78e05473c95a7548f80",
+    "review_notes": []
+  },
+  "ARCHIV/RESTLICHE_DOKUMENTE/00_DOKUMENTATION_UEBERSICHT.md": {
+    "file_path": "ARCHIV/RESTLICHE_DOKUMENTE/00_DOKUMENTATION_UEBERSICHT.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "8d4af2d7f6bbc32879310b9525e0e456",
+    "review_notes": []
+  },
+  "ARCHIV/RESTLICHE_DOKUMENTE/VITE_EISDIR_FIX.md": {
+    "file_path": "ARCHIV/RESTLICHE_DOKUMENTE/VITE_EISDIR_FIX.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "3d317c82a1c16d3ca5c05e62a4a46900",
+    "review_notes": []
+  },
+  "ARCHIV/RESTLICHE_DOKUMENTE/ERROR_HANDLING_FALLBACK.md": {
+    "file_path": "ARCHIV/RESTLICHE_DOKUMENTE/ERROR_HANDLING_FALLBACK.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "0796970eb63527de3908b384596b77d0",
+    "review_notes": []
+  },
+  "ARCHIV/RESTLICHE_DOKUMENTE/FRONTEND_FIXES.md": {
+    "file_path": "ARCHIV/RESTLICHE_DOKUMENTE/FRONTEND_FIXES.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "af299dcbeaff721ea8d247638218e78a",
+    "review_notes": []
+  },
+  "ARCHIV/RESTLICHE_DOKUMENTE/LAYOUT_COMPONENTS.md": {
+    "file_path": "ARCHIV/RESTLICHE_DOKUMENTE/LAYOUT_COMPONENTS.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "2c0c8db783422c8c1305579503b37546",
+    "review_notes": []
+  },
+  "ARCHIV/RESTLICHE_DOKUMENTE/COMPONENT_GUIDE.md": {
+    "file_path": "ARCHIV/RESTLICHE_DOKUMENTE/COMPONENT_GUIDE.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "08dcef4a1f43848a660316dafee2d7b1",
+    "review_notes": []
+  },
+  "ARCHIV/RESTLICHE_DOKUMENTE/README.md": {
+    "file_path": "ARCHIV/RESTLICHE_DOKUMENTE/README.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "78ed85c0d4d1f3a38a38d910b481f89a",
+    "review_notes": []
+  },
+  "ARCHIV/RESTLICHE_DOKUMENTE/FEATURE_TOGGLE_MONITORING.md": {
+    "file_path": "ARCHIV/RESTLICHE_DOKUMENTE/FEATURE_TOGGLE_MONITORING.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "bc98c464bcca99a3432afbb7627ead88",
+    "review_notes": []
+  },
+  "ARCHIV/RESTLICHE_DOKUMENTE/ADMIN_COMPONENTS_IMPLEMENTATION.md": {
+    "file_path": "ARCHIV/RESTLICHE_DOKUMENTE/ADMIN_COMPONENTS_IMPLEMENTATION.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "0eb340c59f5c36dcdda98633832bf470",
+    "review_notes": []
+  },
+  "ARCHIV/RESTLICHE_DOKUMENTE/FEEDBACK_COMPONENTS.md": {
+    "file_path": "ARCHIV/RESTLICHE_DOKUMENTE/FEEDBACK_COMPONENTS.md",
+    "last_modified": "2025-05-11T16:02:13.985618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "8292349074d313ae2505594ea7650a71",
+    "review_notes": []
+  },
+  "ARCHIV/PROJEKT_UND_ROADMAP/REVISED_MIGRATION_TIMELINE.md": {
+    "file_path": "ARCHIV/PROJEKT_UND_ROADMAP/REVISED_MIGRATION_TIMELINE.md",
+    "last_modified": "2025-05-11T16:02:13.975618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "5f756eca2ef8dd7fa8d15b291aaba651",
+    "review_notes": []
+  },
+  "ARCHIV/PROJEKT_UND_ROADMAP/00_ROADMAP.md": {
+    "file_path": "ARCHIV/PROJEKT_UND_ROADMAP/00_ROADMAP.md",
+    "last_modified": "2025-05-11T16:02:13.975618",
+    "last_reviewed": null,
+    "priority": "high",
+    "assigned_to": null,
+    "content_hash": "c4d8b9f252919f4cfba23a3180c63122",
+    "review_notes": []
+  },
+  "ARCHIV/PROJEKT_UND_ROADMAP/00_PROJEKT_UEBERBLICK.md": {
+    "file_path": "ARCHIV/PROJEKT_UND_ROADMAP/00_PROJEKT_UEBERBLICK.md",
+    "last_modified": "2025-05-11T16:02:13.975618",
+    "last_reviewed": null,
+    "priority": "low",
+    "assigned_to": null,
+    "content_hash": "d2391622fb42cd3018f32c68c5cf1bbb",
+    "review_notes": []
+  },
+  "ARCHIV/PROJEKT_UND_ROADMAP/MIGRATION_ANALYSIS.md": {
+    "file_path": "ARCHIV/PROJEKT_UND_ROADMAP/MIGRATION_ANALYSIS.md",
+    "last_modified": "2025-05-11T16:02:13.975618",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "375f1b434c614b4b6c2b37ec791b4d3e",
+    "review_notes": []
+  },
+  "ARCHIV/KONSOLIDIERUNG/TEST_ANLEITUNG.md": {
+    "file_path": "ARCHIV/KONSOLIDIERUNG/TEST_ANLEITUNG.md",
+    "last_modified": "2025-05-13T19:53:43.693100",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "3632747e182447eb89b07e37feb63011",
+    "review_notes": []
+  },
+  "ARCHIV/KONSOLIDIERUNG/DOKUMENTATION_KONSOLIDIERUNG_ABGESCHLOSSEN.md": {
+    "file_path": "ARCHIV/KONSOLIDIERUNG/DOKUMENTATION_KONSOLIDIERUNG_ABGESCHLOSSEN.md",
+    "last_modified": "2025-05-13T18:38:19.004470",
+    "last_reviewed": null,
+    "priority": "low",
+    "assigned_to": null,
+    "content_hash": "261ed35dc5eb0fd36670dc0b19f37a97",
+    "review_notes": []
+  },
+  "ARCHIV/KONSOLIDIERUNG/AUTH_DEBUGGING_GUIDE.md": {
+    "file_path": "ARCHIV/KONSOLIDIERUNG/AUTH_DEBUGGING_GUIDE.md",
+    "last_modified": "2025-05-16T23:42:50.256548",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "bc0e80c05f838351fe12da723d26761f",
+    "review_notes": []
+  },
+  "ARCHIV/KONSOLIDIERUNG/OPTIMIERUNG_ABSCHLUSS.md": {
+    "file_path": "ARCHIV/KONSOLIDIERUNG/OPTIMIERUNG_ABSCHLUSS.md",
+    "last_modified": "2025-05-13T19:55:40.263334",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "2788449d33f9b3a4be474cde40e40291",
+    "review_notes": []
+  },
+  "ARCHIV/KONSOLIDIERUNG/markdown-files-map.md": {
+    "file_path": "ARCHIV/KONSOLIDIERUNG/markdown-files-map.md",
+    "last_modified": "2025-05-13T06:08:07.388113",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "8eecaae913590acf697d24db38b9d0f0",
+    "review_notes": []
+  },
+  "ARCHIV/KONSOLIDIERUNG/THEME_SYSTEM_DOCUMENTATION.md": {
+    "file_path": "ARCHIV/KONSOLIDIERUNG/THEME_SYSTEM_DOCUMENTATION.md",
+    "last_modified": "2025-05-16T15:19:50.272862",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "02d7b950fc19243e6ec486a42c27af87",
+    "review_notes": []
+  },
+  "ARCHIV/KONSOLIDIERUNG/REDUNDANTE_DOKUMENTATION.md": {
+    "file_path": "ARCHIV/KONSOLIDIERUNG/REDUNDANTE_DOKUMENTATION.md",
+    "last_modified": "2025-05-13T18:35:20.094121",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "0c1888d6a493a5654965896236f175a2",
+    "review_notes": []
+  },
+  "ARCHIV/KONSOLIDIERUNG/LEGACY_REMOVAL_FEEDBACK.md": {
+    "file_path": "ARCHIV/KONSOLIDIERUNG/LEGACY_REMOVAL_FEEDBACK.md",
+    "last_modified": "2025-05-13T19:11:25.628263",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "f6c1536705a5a237330489558eb384c5",
+    "review_notes": []
+  },
+  "ARCHIV/KONSOLIDIERUNG/PROJEKTSTRUKTUR_OPTIMIERUNG.md": {
+    "file_path": "ARCHIV/KONSOLIDIERUNG/PROJEKTSTRUKTUR_OPTIMIERUNG.md",
+    "last_modified": "2025-05-13T19:53:09.093037",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "421ba9789757a639a75aef977cff9087",
+    "review_notes": []
+  },
+  "ARCHIV/KONSOLIDIERUNG/LEGACY_REMOVAL_SOURCE_REFERENCES.md": {
+    "file_path": "ARCHIV/KONSOLIDIERUNG/LEGACY_REMOVAL_SOURCE_REFERENCES.md",
+    "last_modified": "2025-05-13T19:08:11.507893",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "c836c89e16a6e1332aa41ae336e9a47d",
+    "review_notes": []
+  },
+  "ARCHIV/KONSOLIDIERUNG/02_TESTSTRATEGIE_v1.2.0.md": {
+    "file_path": "ARCHIV/KONSOLIDIERUNG/02_TESTSTRATEGIE_v1.2.0.md",
+    "last_modified": "2025-05-13T18:29:03.183408",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "582d9e4ec50731a232ade2ad0a1ea95b",
+    "review_notes": []
+  },
+  "ARCHIV/KONSOLIDIERUNG/DIAGNOSTICS_SYSTEM_INTEGRATION.md": {
+    "file_path": "ARCHIV/KONSOLIDIERUNG/DIAGNOSTICS_SYSTEM_INTEGRATION.md",
+    "last_modified": "2025-05-16T23:43:28.676540",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "0ddc6fd0ba8c045c3b02f8803b74dada",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/README.md": {
+    "file_path": "ARCHIV_BACKUP/README.md",
+    "last_modified": "2025-05-13T18:37:48.274389",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "4aef7a917ee03dbad334c4e3c25ed526",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/BRIDGE_SYSTEM/02_BRIDGE_ARCHITEKTUR.md": {
+    "file_path": "ARCHIV_BACKUP/BRIDGE_SYSTEM/02_BRIDGE_ARCHITEKTUR.md",
+    "last_modified": "2025-05-13T18:31:47.623719",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "ec0577b3a21e540f7b00a38561acea63",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/BRIDGE_SYSTEM/08_BRIDGE_IMPLEMENTIERUNG.md": {
+    "file_path": "ARCHIV_BACKUP/BRIDGE_SYSTEM/08_BRIDGE_IMPLEMENTIERUNG.md",
+    "last_modified": "2025-05-13T18:31:45.953716",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "656a79b4ff53ed51a3f13710cfe2d84d",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/BRIDGE_SYSTEM/01_BRIDGE_SYSTEM_OPTIMIERT.md": {
+    "file_path": "ARCHIV_BACKUP/BRIDGE_SYSTEM/01_BRIDGE_SYSTEM_OPTIMIERT.md",
+    "last_modified": "2025-05-13T18:31:35.023694",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "b063289d1833bc63db427e3278464530",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/BRIDGE_SYSTEM/bridge_uml_diagramme.md": {
+    "file_path": "ARCHIV_BACKUP/BRIDGE_SYSTEM/bridge_uml_diagramme.md",
+    "last_modified": "2025-05-13T18:31:47.163718",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "c3d6cfa0653d49970be3fc7609263570",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/BRIDGE_SYSTEM/01_BRIDGE_SYSTEM_UPDATE.md": {
+    "file_path": "ARCHIV_BACKUP/BRIDGE_SYSTEM/01_BRIDGE_SYSTEM_UPDATE.md",
+    "last_modified": "2025-05-13T18:31:35.723695",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "a81b47f628dd6c9c7f67dd76f3eb35f1",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/BRIDGE_SYSTEM/01_BRIDGE_SYSTEM_SYNCHRONISATION.md": {
+    "file_path": "ARCHIV_BACKUP/BRIDGE_SYSTEM/01_BRIDGE_SYSTEM_SYNCHRONISATION.md",
+    "last_modified": "2025-05-13T18:31:35.383695",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "811d672ce98ca73dc15afda07acfee72",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/BRIDGE_SYSTEM/01_BRIDGE_SYSTEM.md": {
+    "file_path": "ARCHIV_BACKUP/BRIDGE_SYSTEM/01_BRIDGE_SYSTEM.md",
+    "last_modified": "2025-05-13T18:31:34.253692",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "c4ada1fe36ddc12e7c91e29e3d0574c6",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/BRIDGE_SYSTEM/09_OPTIMIZED_BRIDGE_DOKUMENTATION.md": {
+    "file_path": "ARCHIV_BACKUP/BRIDGE_SYSTEM/09_OPTIMIZED_BRIDGE_DOKUMENTATION.md",
+    "last_modified": "2025-05-13T18:31:46.403717",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "1bee6cf67c55636d5544e87afcb35682",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/BRIDGE_SYSTEM/10_BRIDGE_DOKUMENTATION_INDEX.md": {
+    "file_path": "ARCHIV_BACKUP/BRIDGE_SYSTEM/10_BRIDGE_DOKUMENTATION_INDEX.md",
+    "last_modified": "2025-05-13T18:31:46.763718",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "418cf281bbca63af0f2126fc5a220cf2",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/TYPESCRIPT/TYPESCRIPT_GUIDELINES.md": {
+    "file_path": "ARCHIV_BACKUP/TYPESCRIPT/TYPESCRIPT_GUIDELINES.md",
+    "last_modified": "2025-05-13T18:33:00.513853",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "645bd8abd015902f54edb89826e7a526",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/TYPESCRIPT/TYPE_REDUNDANCY_MANAGEMENT.md": {
+    "file_path": "ARCHIV_BACKUP/TYPESCRIPT/TYPE_REDUNDANCY_MANAGEMENT.md",
+    "last_modified": "2025-05-13T18:33:07.543866",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "0c6ba3cfa0b54aa7534486863bddfc99",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/TYPESCRIPT/02_TYPESCRIPT_TYPEN.md": {
+    "file_path": "ARCHIV_BACKUP/TYPESCRIPT/02_TYPESCRIPT_TYPEN.md",
+    "last_modified": "2025-05-13T18:33:08.053867",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "edfd46ca6e84f5b42f52efdcbb3595f5",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/TYPESCRIPT/TYPESCRIPT_STRICTER_TYPES.md": {
+    "file_path": "ARCHIV_BACKUP/TYPESCRIPT/TYPESCRIPT_STRICTER_TYPES.md",
+    "last_modified": "2025-05-13T18:33:01.003854",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "4cd99cff0f398698964e755ac5e820c7",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/TYPESCRIPT/TYPESCRIPT_MIGRATION_GUIDE.md": {
+    "file_path": "ARCHIV_BACKUP/TYPESCRIPT/TYPESCRIPT_MIGRATION_GUIDE.md",
+    "last_modified": "2025-05-13T18:33:00.743853",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "0b40a6f7ec479ecf46fe10f8fffd2b8e",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/TYPESCRIPT/TYPESCRIPT_FIXES.md": {
+    "file_path": "ARCHIV_BACKUP/TYPESCRIPT/TYPESCRIPT_FIXES.md",
+    "last_modified": "2025-05-13T18:33:07.763867",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "775fd711020ad2d427e25f30585ada29",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/TYPESCRIPT/TYPE_CONSOLIDATION_EXAMPLE.md": {
+    "file_path": "ARCHIV_BACKUP/TYPESCRIPT/TYPE_CONSOLIDATION_EXAMPLE.md",
+    "last_modified": "2025-05-13T18:33:07.333866",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "9ddd79d53088624bc32cfd6b7b12e5a6",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/PERFORMANCE/PERFORMANCE_OPTIMIZATIONS.md": {
+    "file_path": "ARCHIV_BACKUP/PERFORMANCE/PERFORMANCE_OPTIMIZATIONS.md",
+    "last_modified": "2025-05-13T18:32:11.543766",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "3cb0dc4d629b0cdf372fa0ebe0137fce",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/PERFORMANCE/VUE3_LOADINGPROBLEM_FIX.md": {
+    "file_path": "ARCHIV_BACKUP/PERFORMANCE/VUE3_LOADINGPROBLEM_FIX.md",
+    "last_modified": "2025-05-13T18:32:18.753780",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "2794c4e7bb8169f6d7ec641c1107d764",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/PERFORMANCE/PERFORMANCE_TESTS_SUMMARY.md": {
+    "file_path": "ARCHIV_BACKUP/PERFORMANCE/PERFORMANCE_TESTS_SUMMARY.md",
+    "last_modified": "2025-05-13T18:32:11.763767",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "712eb8fb0246e67c3db48817545309d4",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/PERFORMANCE/08_PERFORMANCE_OPTIMIERUNGEN.md": {
+    "file_path": "ARCHIV_BACKUP/PERFORMANCE/08_PERFORMANCE_OPTIMIERUNGEN.md",
+    "last_modified": "2025-05-13T18:32:11.293766",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "0d0c9fec7b042907b37c96305e7f445d",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/PERFORMANCE/OPTIMIZED_WATCHERS.md": {
+    "file_path": "ARCHIV_BACKUP/PERFORMANCE/OPTIMIZED_WATCHERS.md",
+    "last_modified": "2025-05-13T18:32:11.973767",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "3e2364d10ba9b6b06378e137d6c4dc99",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/PERFORMANCE/LADEPROBLEME_ANALYSE.md": {
+    "file_path": "ARCHIV_BACKUP/PERFORMANCE/LADEPROBLEME_ANALYSE.md",
+    "last_modified": "2025-05-13T18:32:18.423779",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "e79c92b8f7a9f358b5556e7e4c509ab7",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/VUE3_MIGRATION/MIGRATION_PLAN_KOMPLETT.md": {
+    "file_path": "ARCHIV_BACKUP/VUE3_MIGRATION/MIGRATION_PLAN_KOMPLETT.md",
+    "last_modified": "2025-05-13T18:32:46.383832",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "3a33cd7c149a3e98af28cf56b85d2e0c",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/VUE3_MIGRATION/VUE3_SFC_LADEPROBLEME_LOESUNG.md": {
+    "file_path": "ARCHIV_BACKUP/VUE3_MIGRATION/VUE3_SFC_LADEPROBLEME_LOESUNG.md",
+    "last_modified": "2025-05-13T18:32:52.753842",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "82520590b35b36dfe191d1318b807e42",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/VUE3_MIGRATION/FINAL_MIGRATION_PLAN.md": {
+    "file_path": "ARCHIV_BACKUP/VUE3_MIGRATION/FINAL_MIGRATION_PLAN.md",
+    "last_modified": "2025-05-13T18:32:46.073832",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "557981730d4681c53e3bf1b9a8988710",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/VUE3_MIGRATION/VUE3_APPLICATION_STRUCTURE.md": {
+    "file_path": "ARCHIV_BACKUP/VUE3_MIGRATION/VUE3_APPLICATION_STRUCTURE.md",
+    "last_modified": "2025-05-13T18:32:46.923833",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "80f4da430996a8e12c399f3c909a119d",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/VUE3_MIGRATION/MIGRATION_COMPLETE.md": {
+    "file_path": "ARCHIV_BACKUP/VUE3_MIGRATION/MIGRATION_COMPLETE.md",
+    "last_modified": "2025-05-13T18:32:27.943798",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "d47ff253683340667cd579f922745b61",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/VUE3_MIGRATION/VUE3_MIGRATION_CHANGELOG.md": {
+    "file_path": "ARCHIV_BACKUP/VUE3_MIGRATION/VUE3_MIGRATION_CHANGELOG.md",
+    "last_modified": "2025-05-13T18:32:27.583797",
+    "last_reviewed": null,
+    "priority": "low",
+    "assigned_to": null,
+    "content_hash": "8c36551c5ff604f8ece75a386fc494c8",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/VUE3_MIGRATION/03_MIGRATIONS_ERKENNTNISSE.md": {
+    "file_path": "ARCHIV_BACKUP/VUE3_MIGRATION/03_MIGRATIONS_ERKENNTNISSE.md",
+    "last_modified": "2025-05-13T18:32:37.243815",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "8ff6eda2cb7e2bcf6d737c6950932ed9",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/VUE3_MIGRATION/MIGRATIONSLEITFADEN_VUE3.md": {
+    "file_path": "ARCHIV_BACKUP/VUE3_MIGRATION/MIGRATIONSLEITFADEN_VUE3.md",
+    "last_modified": "2025-05-13T18:32:26.913795",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "517a4a233f8b336c9fc74c9c60b9cef3",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/VUE3_MIGRATION/01_VUE3_MIGRATION_MASTERPLAN.md": {
+    "file_path": "ARCHIV_BACKUP/VUE3_MIGRATION/01_VUE3_MIGRATION_MASTERPLAN.md",
+    "last_modified": "2025-05-13T18:32:36.333814",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "26f27db8c268853a572b94702d847413",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/VUE3_MIGRATION/VUE3_SFC_MIGRATION_DOKUMENTATION.md": {
+    "file_path": "ARCHIV_BACKUP/VUE3_MIGRATION/VUE3_SFC_MIGRATION_DOKUMENTATION.md",
+    "last_modified": "2025-05-13T18:32:52.533842",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "dd165802e7ca2cd10fdd87cf91fb54ec",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/VUE3_MIGRATION/VUE3_MIGRATION_COMPLETE.md": {
+    "file_path": "ARCHIV_BACKUP/VUE3_MIGRATION/VUE3_MIGRATION_COMPLETE.md",
+    "last_modified": "2025-05-13T18:32:27.263796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "85513cbaf114583b17da2d801853f762",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/VUE3_MIGRATION/09_VOLLSTANDIGER_MIGRATIONSPLAN.md": {
+    "file_path": "ARCHIV_BACKUP/VUE3_MIGRATION/09_VOLLSTANDIGER_MIGRATIONSPLAN.md",
+    "last_modified": "2025-05-13T18:32:45.943832",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "daa2f9abce6524fde1c1f48bece16f96",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/VUE3_MIGRATION/04_MIGRATIONS_AKTIONSPLAN.md": {
+    "file_path": "ARCHIV_BACKUP/VUE3_MIGRATION/04_MIGRATIONS_AKTIONSPLAN.md",
+    "last_modified": "2025-05-13T18:32:37.623816",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "2ca3ab72c508bc35d89b1d5885103d37",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/VUE3_MIGRATION/01_VUE_SFC_STRATEGIE.md": {
+    "file_path": "ARCHIV_BACKUP/VUE3_MIGRATION/01_VUE_SFC_STRATEGIE.md",
+    "last_modified": "2025-05-13T18:32:36.563814",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "375ce61a6ffb08003f1960e1f3116216",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/VUE3_MIGRATION/VUE_MIGRATION_STATUS_REPORT.md": {
+    "file_path": "ARCHIV_BACKUP/VUE3_MIGRATION/VUE_MIGRATION_STATUS_REPORT.md",
+    "last_modified": "2025-05-13T18:32:46.693833",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "b0f98a11b693f919bc3675ce578156a2",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/VUE3_MIGRATION/02_VUE_SFC_STATUS.md": {
+    "file_path": "ARCHIV_BACKUP/VUE3_MIGRATION/02_VUE_SFC_STATUS.md",
+    "last_modified": "2025-05-13T18:32:36.873815",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "a15a61044ec31b4bbfe078be74fe9f47",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/LOOSE_DOCS/THEME_SYSTEM_UPDATE.md": {
+    "file_path": "ARCHIV_BACKUP/LOOSE_DOCS/THEME_SYSTEM_UPDATE.md",
+    "last_modified": "2025-05-13T18:37:30.354354",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "24ad5008ed29df8c1ccfc02338a5d0f7",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/LOOSE_DOCS/DOCUMENTATION_CONSOLIDATION_PLAN.md": {
+    "file_path": "ARCHIV_BACKUP/LOOSE_DOCS/DOCUMENTATION_CONSOLIDATION_PLAN.md",
+    "last_modified": "2025-05-13T18:37:25.224344",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "bf2aa73d4891a571f74f2b4f09b7e493",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/LOOSE_DOCS/LEGACY_DEACTIVATION_STATUS_2025-05-11.md": {
+    "file_path": "ARCHIV_BACKUP/LOOSE_DOCS/LEGACY_DEACTIVATION_STATUS_2025-05-11.md",
+    "last_modified": "2025-05-13T18:37:30.294353",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "008a73e702be7d9a621c3aa32f78d75c",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/LOOSE_DOCS/DOCUMENTATION_ACTION_PLAN.md": {
+    "file_path": "ARCHIV_BACKUP/LOOSE_DOCS/DOCUMENTATION_ACTION_PLAN.md",
+    "last_modified": "2025-05-13T18:37:25.174344",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "a3670782299badecdc8a0dc2bd83fde9",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/LOOSE_DOCS/DOKUMENTATION_ZUSAMMENFASSUNG.md": {
+    "file_path": "ARCHIV_BACKUP/LOOSE_DOCS/DOKUMENTATION_ZUSAMMENFASSUNG.md",
+    "last_modified": "2025-05-13T18:37:25.284344",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "b2cea7ea071218e9c17dde59cf862362",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/LOOSE_DOCS/README.md": {
+    "file_path": "ARCHIV_BACKUP/LOOSE_DOCS/README.md",
+    "last_modified": "2025-05-13T18:37:57.604426",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "927400447efbf0c0937017ad13ae8641",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/LOOSE_DOCS/FIXES_SUMMARY.md": {
+    "file_path": "ARCHIV_BACKUP/LOOSE_DOCS/FIXES_SUMMARY.md",
+    "last_modified": "2025-05-13T18:37:25.334344",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "6ad0d3fc7f5f8993be21037dd8db3e26",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/LOOSE_DOCS/99_KONSOLIDIERUNG_ABSCHLUSS.md": {
+    "file_path": "ARCHIV_BACKUP/LOOSE_DOCS/99_KONSOLIDIERUNG_ABSCHLUSS.md",
+    "last_modified": "2025-05-13T18:37:25.094344",
+    "last_reviewed": null,
+    "priority": "low",
+    "assigned_to": null,
+    "content_hash": "9d520a77eae3730aa2b42e6bb350485c",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/STORE/04_PINIA_STORE_ARCHITEKTUR.md": {
+    "file_path": "ARCHIV_BACKUP/STORE/04_PINIA_STORE_ARCHITEKTUR.md",
+    "last_modified": "2025-05-13T18:33:17.183879",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "576ab6c8c6edb99cf8c92e0f2f3948d5",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/STORE/18_PINIA_STORE_ARCHITEKTUR.md": {
+    "file_path": "ARCHIV_BACKUP/STORE/18_PINIA_STORE_ARCHITEKTUR.md",
+    "last_modified": "2025-05-13T18:33:17.643880",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "38792b4490d6d8b2ae97a937c0b347d7",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/STORE/05_STATE_FLOW_DIAGRAM.md": {
+    "file_path": "ARCHIV_BACKUP/STORE/05_STATE_FLOW_DIAGRAM.md",
+    "last_modified": "2025-05-13T18:33:22.143890",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "f7c545f78541d3a9aeb2190363346d00",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/STORE/01_STATE_MANAGEMENT.md": {
+    "file_path": "ARCHIV_BACKUP/STORE/01_STATE_MANAGEMENT.md",
+    "last_modified": "2025-05-13T18:33:17.913881",
+    "last_reviewed": null,
+    "priority": "high",
+    "assigned_to": null,
+    "content_hash": "65ebe6e41f50d74e9fd72cf777f1f633",
+    "review_notes": []
+  },
+  "ARCHIV_BACKUP/STORE/04_PINIA_STORE_ARCHITEKTUR_OPTIMIERT.md": {
+    "file_path": "ARCHIV_BACKUP/STORE/04_PINIA_STORE_ARCHITEKTUR_OPTIMIERT.md",
+    "last_modified": "2025-05-13T18:33:17.423880",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "7ab1b2ae142f45daa33d15852205625f",
+    "review_notes": []
+  },
+  "konsolidierte dokumentation/CHAT_INTERFACE_FIX.md": {
+    "file_path": "konsolidierte dokumentation/CHAT_INTERFACE_FIX.md",
+    "last_modified": "2025-05-17T21:57:00.883011",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "064aaeca8fc66bd6e0b1a15acbde7380",
+    "review_notes": []
+  },
+  "templates/COMPONENT_TEMPLATE.md": {
+    "file_path": "templates/COMPONENT_TEMPLATE.md",
+    "last_modified": "2025-05-29T11:44:29.118924",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "24e8bf59de896f9041794e172885ab4c",
+    "review_notes": []
+  },
+  "templates/ARCHITECTURE_TEMPLATE.md": {
+    "file_path": "templates/ARCHITECTURE_TEMPLATE.md",
+    "last_modified": "2025-05-29T11:45:31.130259",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "6dbd4b280de494d2bfc4627e765dcd48",
+    "review_notes": []
+  },
+  "templates/FEATURE_TEMPLATE.md": {
+    "file_path": "templates/FEATURE_TEMPLATE.md",
+    "last_modified": "2025-05-29T11:47:59.163442",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "121e835449b535ea74a0c5bd9fd64f30",
+    "review_notes": []
+  },
+  "templates/DOCUMENT_TEMPLATE.md": {
+    "file_path": "templates/DOCUMENT_TEMPLATE.md",
+    "last_modified": "2025-05-13T18:29:03.243408",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "18413c47077bd949881bf76313fe6913",
+    "review_notes": []
+  },
+  "templates/BUGFIX_TEMPLATE.md": {
+    "file_path": "templates/BUGFIX_TEMPLATE.md",
+    "last_modified": "2025-05-29T11:46:27.301467",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "70b17edc77a165b3c31cc3472b34a55a",
+    "review_notes": []
+  },
+  "templates/TYPESCRIPT_TEMPLATE.md": {
+    "file_path": "templates/TYPESCRIPT_TEMPLATE.md",
+    "last_modified": "2025-05-13T18:29:03.243408",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "0812922bcccfaa4659425c30d3cc40b9",
+    "review_notes": []
+  },
+  "admin/ADMIN_API_AUTH_SOLUTION.md": {
+    "file_path": "admin/ADMIN_API_AUTH_SOLUTION.md",
+    "last_modified": "2025-05-28T10:59:47.353414",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "f6ba6ccc82e68a6b694a2370a8189bf8",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/DOKUMENTATION_STATUS_2025.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/DOKUMENTATION_STATUS_2025.md",
+    "last_modified": "2025-05-29T11:35:49.737762",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "a6d715b79241d1b62a0c6d00ba2530ef",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/VUE2_REFERENCES_REPORT.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/VUE2_REFERENCES_REPORT.md",
+    "last_modified": "2025-05-29T11:30:55.150769",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "81359d329b56f50fa9c88fc9f627f396",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/KONSOLIDIERUNG_2025_FINAL.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/KONSOLIDIERUNG_2025_FINAL.md",
+    "last_modified": "2025-05-29T11:30:25.099862",
+    "last_reviewed": null,
+    "priority": "low",
+    "assigned_to": null,
+    "content_hash": "2b673ba84a1fc3d2d53bae1ae8e56d51",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/FINAL_CONSOLIDATION_METRICS.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/FINAL_CONSOLIDATION_METRICS.md",
+    "last_modified": "2025-05-29T11:30:40.260319",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "56ac58035b5cb8c33a74924a3632e837",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/00_INDEX.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/00_INDEX.md",
+    "last_modified": "2025-05-29T11:33:13.244404",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "914fe138ee15df1741f5cb46596a751b",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/08_FEHLERMELDUNGEN_UND_BENACHRICHTIGUNGEN.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/08_FEHLERMELDUNGEN_UND_BENACHRICHTIGUNGEN.md",
+    "last_modified": "2025-05-13T18:29:03.123407",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "11188dd9de2e2c65d24fb33b8297647d",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/06_DOKUMENTENKONVERTER_KOMPLETT.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/06_DOKUMENTENKONVERTER_KOMPLETT.md",
+    "last_modified": "2025-05-13T18:29:03.123407",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "59e3200e1cf6351b38a680284faceb5f",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/07_CHAT_UND_SESSION_MANAGEMENT.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/07_CHAT_UND_SESSION_MANAGEMENT.md",
+    "last_modified": "2025-05-13T18:29:03.133407",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "8716a277311766df2fbeb89f26c6c496",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/02_UI_BASISKOMPONENTEN.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/02_UI_BASISKOMPONENTEN.md",
+    "last_modified": "2025-05-13T18:29:03.133407",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "81012f3cce6573aad85fb0fff31bd6c9",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/05_CSS_DESIGN_SYSTEM_UND_KOMPONENTEN_BIBLIOTHEK.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/05_CSS_DESIGN_SYSTEM_UND_KOMPONENTEN_BIBLIOTHEK.md",
+    "last_modified": "2025-05-13T18:29:03.133407",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "286db77f9dfa2569e6af27deea40bba7",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/CSS_CONSOLIDATION.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/CSS_CONSOLIDATION.md",
+    "last_modified": "2025-05-28T09:09:39.574796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "37c7f419a7f2676764492593d6e5512b",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/11_SOURCE_REFERENCES_FIX.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/11_SOURCE_REFERENCES_FIX.md",
+    "last_modified": "2025-05-13T18:59:07.226848",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "72ca9748943f0ee6b0446b081180dfe6",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/04_admin_komponenten_komplett.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/04_admin_komponenten_komplett.md",
+    "last_modified": "2025-05-29T11:05:24.637508",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "9cb1d0cb723a4edfc384841bedfdfc67",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/03_CHAT_INTERFACE.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/03_CHAT_INTERFACE.md",
+    "last_modified": "2025-05-13T18:29:03.143407",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "e0d4957aa20c59bc3de473273e5d9318",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/09_FEEDBACK_KOMPONENTEN.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/09_FEEDBACK_KOMPONENTEN.md",
+    "last_modified": "2025-05-13T18:29:03.143407",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "c3535ac57a1b445d54738b4eb726742f",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/DOCUMENT_CONVERTER_IMPLEMENTATION.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/DOCUMENT_CONVERTER_IMPLEMENTATION.md",
+    "last_modified": "2025-05-28T09:09:39.574796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "41b2004f0d924509f4ee7034bb39f267",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/10_COMPOSABLES.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/10_COMPOSABLES.md",
+    "last_modified": "2025-05-13T18:29:03.143407",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "6bb51eb94e397d76c9fba7e2b704d1de",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/01_DOKUMENTENKONVERTER.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/01_DOKUMENTENKONVERTER.md",
+    "last_modified": "2025-05-13T18:29:03.143407",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "7b015cdd90427a3fcd56419e16aa4482",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/00_INDEX.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/00_INDEX.md",
+    "last_modified": "2025-05-29T11:06:31.630344",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "48885cd1bf64f92d37121ac6337b0eae",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_API_EXPORT_FIX.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_API_EXPORT_FIX.md",
+    "last_modified": "2025-05-28T09:09:39.564796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "ac9330728dd1b9bdb153e8848e782dd9",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_DOC_CONVERTER_FIX.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_DOC_CONVERTER_FIX.md",
+    "last_modified": "2025-05-28T09:09:39.564796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "b96d74ed7e28869f849ec046cbfadb98",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_API_ENDPOINTS_FIX.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_API_ENDPOINTS_FIX.md",
+    "last_modified": "2025-05-28T09:09:39.564796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "25e44655706e6aef19948a4c062b5ad9",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_SIDEBAR_CSS_FIXES.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_SIDEBAR_CSS_FIXES.md",
+    "last_modified": "2025-05-28T09:09:39.574796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "9dc19b3a595e53f016d9b89a233168c1",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_COMPONENT_MIGRATION.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_COMPONENT_MIGRATION.md",
+    "last_modified": "2025-05-18T12:05:34.745129",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "81601d19db00efb41a57043bab071406",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/99_ADMIN_INTERFACE_KOMPLETT.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/99_ADMIN_INTERFACE_KOMPLETT.md",
+    "last_modified": "2025-05-28T09:09:39.584796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "f5ea744fa26f7cb14401d7f8a6cc35d8",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/04_ADMIN_KOMPONENTEN_OLD.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/04_ADMIN_KOMPONENTEN_OLD.md",
+    "last_modified": "2025-05-13T18:29:03.103407",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "d5dc43520d6967ba4ecf182dbd4d3540",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_AUTHENTICATION_FIX.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_AUTHENTICATION_FIX.md",
+    "last_modified": "2025-05-28T09:09:39.564796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "7067295fb680de16d2ccdf9b4a87b3c5",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_I18N_FIX.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_I18N_FIX.md",
+    "last_modified": "2025-05-28T09:09:39.564796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "c729ccaa98d0c7a10da3471bf517afe8",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_FINAL_FIXES.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_FINAL_FIXES.md",
+    "last_modified": "2025-05-28T09:09:39.564796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "e07008eeee6cc3c634c5dc9e50ff4720",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_PANEL_IMPROVEMENTS.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_PANEL_IMPROVEMENTS.md",
+    "last_modified": "2025-05-28T09:09:39.574796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "1eac634fd5f28fb55234ae5ed107b2d9",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_API_REAL_DATA.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_API_REAL_DATA.md",
+    "last_modified": "2025-05-28T09:09:39.564796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "04883b9437338fea5c148aca33ee04e6",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_API_IMPLEMENTATION_COMPLETE.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_API_IMPLEMENTATION_COMPLETE.md",
+    "last_modified": "2025-05-28T09:09:39.564796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "0a3cd176793768bf43bb61c6610fc671",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_AUTH_FIX_COMPLETE.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_AUTH_FIX_COMPLETE.md",
+    "last_modified": "2025-05-28T10:30:31.963782",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "1db630fb9144fe0657a41d59fdb15f97",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/README.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/README.md",
+    "last_modified": "2025-05-29T11:07:00.811578",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "33d9a98c36eb13ab5b2a3dd42ac08a6a",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_FIXES_SUMMARY.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_FIXES_SUMMARY.md",
+    "last_modified": "2025-05-28T09:09:39.564796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "9cd1520c5780f96e28d99c61fb5685dd",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_API_INTEGRATION_COMPLETE.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_API_INTEGRATION_COMPLETE.md",
+    "last_modified": "2025-05-28T09:09:39.564796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "552de9e4a9f47ab4fe189ede296c0531",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_TEXT_AND_BATCH_FIX_SUMMARY.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_TEXT_AND_BATCH_FIX_SUMMARY.md",
+    "last_modified": "2025-05-28T23:16:36.183361",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "6c3cd748c78dd381f0a15b7a2075f0df",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_API_INTEGRATION_SUMMARY.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_API_INTEGRATION_SUMMARY.md",
+    "last_modified": "2025-05-28T09:09:39.564796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "59803c6f5a9d9e8a49e6dffeae2683b1",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_I18N_FIX_SUMMARY.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_I18N_FIX_SUMMARY.md",
+    "last_modified": "2025-05-28T09:09:39.574796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "fdafbb5010ee45ec7a22cc6dee4799c6",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_PANEL_LAZY_LOADING_FIX.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_PANEL_LAZY_LOADING_FIX.md",
+    "last_modified": "2025-05-28T09:09:39.574796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "080f290bcfd3d7c8b8e84a28193c1cb3",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_API_INTEGRATION_PLAN.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_API_INTEGRATION_PLAN.md",
+    "last_modified": "2025-05-28T09:09:39.564796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "3f9d863bdda49cee8fbecbef27345a0f",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_SYSTEM_INTEGRATION_SUMMARY.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_SYSTEM_INTEGRATION_SUMMARY.md",
+    "last_modified": "2025-05-28T09:09:39.574796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "b70d2ac4763b16986f83078a5db39193",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_INTEGRATION_PLAN.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_INTEGRATION_PLAN.md",
+    "last_modified": "2025-05-28T09:09:39.574796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "d0c1ea08b0d978b353753fd5569d5137",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_ROUTING_FIX.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/03_KOMPONENTEN/ARCHIV_ADMIN_FIXES/ADMIN_ROUTING_FIX.md",
+    "last_modified": "2025-05-28T09:09:39.574796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "c3866ab6b3f36cfad2c534dec6d138cc",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/DOCUMENT_CONVERTER_EXPORT_FIX.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/DOCUMENT_CONVERTER_EXPORT_FIX.md",
+    "last_modified": "2025-05-28T09:09:39.574796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "7a6e67160fa971ef0f84dd3e1a867aee",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/EMERGENCY_CHAT_FIX.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/EMERGENCY_CHAT_FIX.md",
+    "last_modified": "2025-05-18T00:21:18.341197",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "2180f905ab93adc9978b1d482201d438",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/SESSIONS_TS_FIX_SUMMARY.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/SESSIONS_TS_FIX_SUMMARY.md",
+    "last_modified": "2025-05-17T09:57:33.855543",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "273f9af6f43c13c8c0f88984a2249ad9",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/01_STREAMING_KOMPLETT.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/01_STREAMING_KOMPLETT.md",
+    "last_modified": "2025-05-29T11:10:19.069955",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "61b3617a5c6a20ec15b329bd76891b8f",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/EMERGENCY_CHAT_INTEGRATION.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/EMERGENCY_CHAT_INTEGRATION.md",
+    "last_modified": "2025-05-18T00:17:21.631249",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "b0c10badceb5cb439a3729444763d7b3",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/00_INDEX.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/00_INDEX.md",
+    "last_modified": "2025-05-29T11:11:24.742729",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "3883d47cb0019d3997d564cff70691c0",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/ARCHIV_STREAMING/FIX_422_ERROR.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/ARCHIV_STREAMING/FIX_422_ERROR.md",
+    "last_modified": "2025-05-17T09:24:58.445961",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "fe40ebb694e8288d4aea71182336253a",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/ARCHIV_STREAMING/STREAMING_DEBUGGING.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/ARCHIV_STREAMING/STREAMING_DEBUGGING.md",
+    "last_modified": "2025-05-18T00:03:37.971422",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "e9d5d4e860af224741282e72afffe599",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/ARCHIV_STREAMING/IMMEDIATE_FIX_422.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/ARCHIV_STREAMING/IMMEDIATE_FIX_422.md",
+    "last_modified": "2025-05-17T09:26:12.755947",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "629f54b5fb20d6fdb3a982ca4cd3744c",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/ARCHIV_STREAMING/STREAMING_FIX_EXPLANATION.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/ARCHIV_STREAMING/STREAMING_FIX_EXPLANATION.md",
+    "last_modified": "2025-05-17T22:54:37.922291",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "38f5fcd868536148aa88545c3cf3e090",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/ARCHIV_STREAMING/FIX_422_SUMMARY.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/ARCHIV_STREAMING/FIX_422_SUMMARY.md",
+    "last_modified": "2025-05-17T09:34:38.935841",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "bde84c4ff760f14551e8fd086d804f80",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/ARCHIV_STREAMING/STREAMING_CLIENT_FIX.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/ARCHIV_STREAMING/STREAMING_CLIENT_FIX.md",
+    "last_modified": "2025-05-18T00:05:48.051396",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "9037d68ebe339517cc93afffff4a8e06",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/ARCHIV_STREAMING/STREAMING_FIX_SUMMARY.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/ARCHIV_STREAMING/STREAMING_FIX_SUMMARY.md",
+    "last_modified": "2025-05-20T16:26:59.430194",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "e9fd165a75c5bdbdeec414ac244fc74c",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/ARCHIV_STREAMING/README.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/ARCHIV_STREAMING/README.md",
+    "last_modified": "2025-05-29T11:11:01.781760",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "5a1a9c1f7c2047fd7e1a8ad05a21179b",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/ARCHIV_STREAMING/STREAMING_IMPLEMENTATION_PLAN.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/07_WARTUNG/ARCHIV_STREAMING/STREAMING_IMPLEMENTATION_PLAN.md",
+    "last_modified": "2025-05-18T00:04:53.701404",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "39d786651269c0fa9e62f6fc5ed76af6",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/02_STATE_MANAGEMENT.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/02_STATE_MANAGEMENT.md",
+    "last_modified": "2025-05-13T18:29:03.183408",
+    "last_reviewed": null,
+    "priority": "high",
+    "assigned_to": null,
+    "content_hash": "5754ff66d0f337536aaae553d462c45a",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/07_AB_TESTING_SYSTEM.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/07_AB_TESTING_SYSTEM.md",
+    "last_modified": "2025-05-13T18:29:03.213408",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "f30cac83b309c8b695d18973d449f017",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/06_SYSTEMARCHITEKTUR.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/06_SYSTEMARCHITEKTUR.md",
+    "last_modified": "2025-05-13T18:29:03.213408",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "53f1138511c2ffd961ff1785d5aa9924",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/MIGRATION_TO_SHARED_ROUTES.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/MIGRATION_TO_SHARED_ROUTES.md",
+    "last_modified": "2025-05-28T10:51:24.233519",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "f89486f34fed4c8605d5bfab52cbb3f4",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/04_FRONTEND_STRUKTUR_UND_OPTIMIERUNG.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/04_FRONTEND_STRUKTUR_UND_OPTIMIERUNG.md",
+    "last_modified": "2025-05-13T18:29:03.203408",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "76909092a722c2bdfceb6ca095c7f270",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/06_DEPENDENCY_ANALYSIS.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/06_DEPENDENCY_ANALYSIS.md",
+    "last_modified": "2025-05-16T23:56:10.114543",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "3a01e4149e0bdf357a9f0d8af3824f0b",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/02_DIALOG_SYSTEM.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/02_DIALOG_SYSTEM.md",
+    "last_modified": "2025-05-13T18:29:03.193408",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "2f46525758b8f72ec8d44a7cd5bc2b8d",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/08_ASSET_PFAD_KONFIGURATION.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/08_ASSET_PFAD_KONFIGURATION.md",
+    "last_modified": "2025-05-13T19:55:07.313270",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "18ff6b9714535f4a266588c3f0f94643",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/09_PURE_VUE_MODE.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/09_PURE_VUE_MODE.md",
+    "last_modified": "2025-05-16T23:55:11.394552",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "49e4b144fe980132fecafab0ccfa99c2",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/API_ROUTES_BEST_PRACTICE.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/API_ROUTES_BEST_PRACTICE.md",
+    "last_modified": "2025-05-28T10:37:25.703692",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "aabc867652e0414bdbb8d9f0355f1191",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/10_ADMIN_BEREICH_ARCHITEKTUR.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/10_ADMIN_BEREICH_ARCHITEKTUR.md",
+    "last_modified": "2025-05-28T09:09:39.584796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "01b533bf59c1f6efae8b6c03653ac22a",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/05_DATENPERSISTENZ_UND_API_INTEGRATION.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/05_DATENPERSISTENZ_UND_API_INTEGRATION.md",
+    "last_modified": "2025-05-13T18:29:03.223408",
+    "last_reviewed": null,
+    "priority": "critical",
+    "assigned_to": null,
+    "content_hash": "0b01b67062610e13d00d702b874521d7",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/DIRECT_LOGIN_SOLUTION.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/DIRECT_LOGIN_SOLUTION.md",
+    "last_modified": "2025-05-28T11:51:42.342764",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "0300d4b7b67917c490c66375be7e6b5a",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/01_FEATURE_TOGGLE_SYSTEM.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/01_FEATURE_TOGGLE_SYSTEM.md",
+    "last_modified": "2025-05-13T18:29:03.203408",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "a222b39a4ab14da5068ed62089552c3c",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/03_BRIDGE_SYSTEM.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/03_BRIDGE_SYSTEM.md",
+    "last_modified": "2025-05-13T18:29:03.123407",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "eec93a902542d44d637dc86b8574f0f1",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/00_INDEX.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/02_ARCHITEKTUR/00_INDEX.md",
+    "last_modified": "2025-05-29T10:51:34.505811",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "a5effa59d6f087b642bc3fb114261cc9",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/01_PROJEKT/00_status.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/01_PROJEKT/00_status.md",
+    "last_modified": "2025-05-16T23:24:27.036779",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "8efdebff8e2fa217de54825f3d1b81bb",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/01_PROJEKT/GITHUB_ISSUES_TEMPLATE.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/01_PROJEKT/GITHUB_ISSUES_TEMPLATE.md",
+    "last_modified": "2025-05-17T00:14:24.764311",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "a2ba7067d39c34221b73424508fc1a49",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/01_PROJEKT/01_projektueberblick.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/01_PROJEKT/01_projektueberblick.md",
+    "last_modified": "2025-05-16T23:16:37.376874",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "f2ad51b90c0e8d85bf8b203afeab9c08",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/01_PROJEKT/02_roadmap.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/01_PROJEKT/02_roadmap.md",
+    "last_modified": "2025-05-13T18:29:03.113407",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "bb13a820879ecca9c7e9ec3f4e9d394a",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/01_PROJEKT/00_INDEX.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/01_PROJEKT/00_INDEX.md",
+    "last_modified": "2025-05-29T10:51:18.864885",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "4ac57d8d556ed94f0c9c2caea8692c36",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/05_BETRIEB/01_PERFORMANCE_OPTIMIERUNG.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/05_BETRIEB/01_PERFORMANCE_OPTIMIERUNG.md",
+    "last_modified": "2025-05-29T11:21:56.984517",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "7b6dc615ed32f428b24ae3131eac92c6",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/05_BETRIEB/03_CLEANUP_LISTE.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/05_BETRIEB/03_CLEANUP_LISTE.md",
+    "last_modified": "2025-05-13T19:47:34.382414",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "c10bab045b7785b41dbee7b548923c00",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/05_BETRIEB/02_FEHLERBEHEBUNG.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/05_BETRIEB/02_FEHLERBEHEBUNG.md",
+    "last_modified": "2025-05-29T11:21:20.663419",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "fd396bc0b9e111b3505b2de57712e2df",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/05_BETRIEB/00_INDEX.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/05_BETRIEB/00_INDEX.md",
+    "last_modified": "2025-05-29T10:52:28.469006",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "89036ae7592c571db4a58a8427ddeac1",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION_PLAN.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION_PLAN.md",
+    "last_modified": "2025-05-17T00:10:19.724362",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "67dd5e35f400f9540b1730c3ae181d6c",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MOTD_FIXES_SUMMARY.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MOTD_FIXES_SUMMARY.md",
+    "last_modified": "2025-05-28T09:09:39.574796",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "7f65d9d3a0ec0e8044353efcefe654a5",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/00_INDEX.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/00_INDEX.md",
+    "last_modified": "2025-05-29T10:52:42.919862",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "95d0e4028cfe6b02131271be9a732c49",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/06_PINIA_STORE_BRIDGE.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/06_PINIA_STORE_BRIDGE.md",
+    "last_modified": "2025-05-13T18:29:03.163408",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "99315426f9aa4df754d2e32c662654b3",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/07_QUELLREFERENZEN_MIGRATION.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/07_QUELLREFERENZEN_MIGRATION.md",
+    "last_modified": "2025-05-13T19:07:05.867767",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "9c784069a8007e9bc40717c06b335a9f",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/03_VUE3_COMPOSITION_API.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/03_VUE3_COMPOSITION_API.md",
+    "last_modified": "2025-05-13T18:29:03.153408",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "95b306835534a375a9563660244c7661",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/04_DUPLICATE_CODE_CLEANUP.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/04_DUPLICATE_CODE_CLEANUP.md",
+    "last_modified": "2025-05-13T18:29:03.163408",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "f125923118d03b67c8464a0ade8e4d2a",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/08_VUE3_VITE_BROWSER_KOMPATIBILITAET.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/08_VUE3_VITE_BROWSER_KOMPATIBILITAET.md",
+    "last_modified": "2025-05-13T18:29:03.153408",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "cf3d7c6fc3768a3bb341ca8a12f7b64f",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/12_CHAT_MIGRATION.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/12_CHAT_MIGRATION.md",
+    "last_modified": "2025-05-13T19:38:40.921391",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "451da63972cb5faafa94e90f67a7477e",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/05_FINALE_VUE3_MIGRATION.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/05_FINALE_VUE3_MIGRATION.md",
+    "last_modified": "2025-05-13T18:29:03.153408",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "2b81c0f33d022353c4f24f7717e8e3f2",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/11_ADMIN_MIGRATION.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/11_ADMIN_MIGRATION.md",
+    "last_modified": "2025-05-13T19:26:44.460027",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "3e0ac70a3e9792743ff9802c2e61bef3",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/10_SETTINGS_MIGRATION.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/10_SETTINGS_MIGRATION.md",
+    "last_modified": "2025-05-13T19:21:35.739429",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "cefb277622fb32c596afc286313b82f1",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/09_FEEDBACK_MIGRATION.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/09_FEEDBACK_MIGRATION.md",
+    "last_modified": "2025-05-13T19:10:37.708171",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "efff4fcc153287388fed6e64c1287fe9",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/02_LEGACY_CODE_DEAKTIVIERUNG.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/02_LEGACY_CODE_DEAKTIVIERUNG.md",
+    "last_modified": "2025-05-13T19:39:44.521512",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "589ed74e1ef7f4b97e9dd5b908e12f4f",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/01_MIGRATIONSSTATUS_UND_PLANUNG.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/06_ARCHIV/MIGRATION/01_MIGRATIONSSTATUS_UND_PLANUNG.md",
+    "last_modified": "2025-05-13T18:29:03.163408",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "3090876b2e38506f9497da2c63d50f8e",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/ARCHIV_KONSOLIDIERUNG/KONSOLIDIERUNG_BERICHT.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/ARCHIV_KONSOLIDIERUNG/KONSOLIDIERUNG_BERICHT.md",
+    "last_modified": "2025-05-16T23:38:12.436604",
+    "last_reviewed": null,
+    "priority": "low",
+    "assigned_to": null,
+    "content_hash": "59085a2e13f3f115887cb20d0a2772d9",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/ARCHIV_KONSOLIDIERUNG/PROPOSED_STRUCTURE.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/ARCHIV_KONSOLIDIERUNG/PROPOSED_STRUCTURE.md",
+    "last_modified": "2025-05-29T10:33:44.172193",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "0996a2998a892723a3c4096e7ed0780a",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/ARCHIV_KONSOLIDIERUNG/LINK_VALIDIERUNG.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/ARCHIV_KONSOLIDIERUNG/LINK_VALIDIERUNG.md",
+    "last_modified": "2025-05-16T23:32:09.206683",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "f8683a7e9b3e87dbf8c8816ae10b3eed",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/ARCHIV_KONSOLIDIERUNG/STRUKTUR_BEREINIGUNG.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/ARCHIV_KONSOLIDIERUNG/STRUKTUR_BEREINIGUNG.md",
+    "last_modified": "2025-05-16T23:36:50.706619",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "157b57c058926098de64d40e0df32271",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/ARCHIV_KONSOLIDIERUNG/ABSCHLIESENDE_STRUKTUR.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/ARCHIV_KONSOLIDIERUNG/ABSCHLIESENDE_STRUKTUR.md",
+    "last_modified": "2025-05-16T23:39:15.696587",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "7b4ae29151ba4f1f98f446282215ea58",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/ARCHIV_KONSOLIDIERUNG/KONSOLIDIERUNG_ABSCHLUSS.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/ARCHIV_KONSOLIDIERUNG/KONSOLIDIERUNG_ABSCHLUSS.md",
+    "last_modified": "2025-05-16T23:47:16.876495",
+    "last_reviewed": null,
+    "priority": "low",
+    "assigned_to": null,
+    "content_hash": "10df91d5fd37d311f3a1014afd2dc08a",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/ARCHIV_KONSOLIDIERUNG/README.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/ARCHIV_KONSOLIDIERUNG/README.md",
+    "last_modified": "2025-05-29T11:15:03.631982",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "0fe41d4808c81ff455f09ecaacb55db5",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/ARCHIV_KONSOLIDIERUNG/INVENTAR.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/ARCHIV_KONSOLIDIERUNG/INVENTAR.md",
+    "last_modified": "2025-05-16T23:15:11.666893",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "1a3b0a888b197a376b42fff1df3ae2d6",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/ARCHIV_KONSOLIDIERUNG/KONSOLIDIERUNG_ZUSAMMENFASSUNG.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/ARCHIV_KONSOLIDIERUNG/KONSOLIDIERUNG_ZUSAMMENFASSUNG.md",
+    "last_modified": "2025-05-16T23:22:13.956809",
+    "last_reviewed": null,
+    "priority": "low",
+    "assigned_to": null,
+    "content_hash": "90df555ccb26c7eb2f08e8b36f8fe9ea",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/ARCHIV_KONSOLIDIERUNG/KONSOLIDIERUNG_ABSCHLUSS_2025.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/ARCHIV_KONSOLIDIERUNG/KONSOLIDIERUNG_ABSCHLUSS_2025.md",
+    "last_modified": "2025-05-29T10:56:23.352919",
+    "last_reviewed": null,
+    "priority": "low",
+    "assigned_to": null,
+    "content_hash": "afcb773997e45becdee07858bdbd4d93",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/03_TESTSTRATEGIE.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/03_TESTSTRATEGIE.md",
+    "last_modified": "2025-05-16T23:35:33.456645",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "9c707e321b70d00f35858385b0b5a177",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/FEATURE_MAPPING_REPORT.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/FEATURE_MAPPING_REPORT.md",
+    "last_modified": "2025-05-17T00:07:12.704399",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "4229a506adda77c2aef70ba0060bcbd0",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/07_DIAGNOSTICS_SYSTEM_INTEGRATION.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/07_DIAGNOSTICS_SYSTEM_INTEGRATION.md",
+    "last_modified": "2025-05-16T23:43:34.136539",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "0ddc6fd0ba8c045c3b02f8803b74dada",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/FINAL_ISSUES_SUMMARY.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/FINAL_ISSUES_SUMMARY.md",
+    "last_modified": "2025-05-17T08:35:42.468019",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "2b92c31a173fa8f3ce29367b63a3d5ce",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/04_BARRIEREFREIHEIT.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/04_BARRIEREFREIHEIT.md",
+    "last_modified": "2025-05-13T18:29:03.173408",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "7303b4135ac3f55ef9dc6ffd90615f90",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/WORKTREE_OVERVIEW.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/WORKTREE_OVERVIEW.md",
+    "last_modified": "2025-05-28T09:09:54.324793",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "015b3da32377f43f6fcbd549a3f98a44",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/03_MOBILE_OPTIMIERUNG.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/03_MOBILE_OPTIMIERUNG.md",
+    "last_modified": "2025-05-13T18:29:03.173408",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "46b7af205dc99283b5564e55ef0a0064",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/01_FEHLERBEHANDLUNG_UND_FALLBACKS.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/01_FEHLERBEHANDLUNG_UND_FALLBACKS.md",
+    "last_modified": "2025-05-13T18:29:03.173408",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "d82f36a28b01718f278e8ec26e9441dd",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/05_AUTH_DEBUGGING_GUIDE.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/05_AUTH_DEBUGGING_GUIDE.md",
+    "last_modified": "2025-05-16T23:43:00.046546",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "17948cf1bf805768649bf8701f1f3a47",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/01_TYPESCRIPT_TYPSYSTEM.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/01_TYPESCRIPT_TYPSYSTEM.md",
+    "last_modified": "2025-05-13T18:29:03.193408",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "4e8c6aaeb64ca2fb113a6698244f5dc6",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/codebase-overview.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/codebase-overview.md",
+    "last_modified": "2025-05-17T00:04:02.284435",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "bc1f5274ea116b202f27c28cd45f670d",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/04_PINIA_STORE_TESTING.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/04_PINIA_STORE_TESTING.md",
+    "last_modified": "2025-05-13T18:29:03.193408",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "498e43993536281b0b63259f86e95634",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/06_EDGE_CASES_UND_GRENZFAELLE.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/06_EDGE_CASES_UND_GRENZFAELLE.md",
+    "last_modified": "2025-05-13T18:29:03.173408",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "5953749f03e08c6fe9ff870b384c7803",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/CREATED_ISSUES_SUMMARY.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/CREATED_ISSUES_SUMMARY.md",
+    "last_modified": "2025-05-17T08:31:25.038076",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "14908f0f942217dfd8581247dadef810",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/05_BEITRAGEN.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/05_BEITRAGEN.md",
+    "last_modified": "2025-05-13T18:29:03.113407",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "5823baf9e9959b4a9ee083a3be87682c",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/PLAN.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/PLAN.md",
+    "last_modified": "2025-05-16T20:27:19.209002",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "96abe78abbf0fdbabee0c30769d4b623",
+    "review_notes": []
+  },
+  "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/00_INDEX.md": {
+    "file_path": "00_KONSOLIDIERTE_DOKUMENTATION/04_ENTWICKLUNG/00_INDEX.md",
+    "last_modified": "2025-05-29T10:52:21.318583",
+    "last_reviewed": null,
+    "priority": "medium",
+    "assigned_to": null,
+    "content_hash": "b3a9f710473cbcd2ddbef1918d5e43f9",
+    "review_notes": []
+  }
+}

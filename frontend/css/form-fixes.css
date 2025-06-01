@@ -1,0 +1,96 @@
+/* Global Form Fixes to ensure nscale branding is used */
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  border-color: var(--nscale-green, #00a550) !important;
+  box-shadow: 0 0 0 2px rgba(0, 165, 80, 0.1) !important;
+  --tw-ring-color: var(--nscale-green, #00a550) !important;
+}
+
+/* Fix the focus rings for tailwind */
+.focus\:ring-indigo-500:focus {
+  --tw-ring-color: var(--nscale-green, #00a550) !important;
+}
+
+.focus\:border-indigo-500:focus {
+  border-color: var(--nscale-green, #00a550) !important;
+}
+
+/* Fix button styling */
+.bg-indigo-600 {
+  background-color: var(--nscale-green, #00a550) !important;
+}
+
+.bg-indigo-700, 
+.hover\:bg-indigo-700:hover {
+  background-color: var(--nscale-green-dark, #009046) !important;
+}
+
+/* Fix text styling */
+.text-indigo-600 {
+  color: var(--nscale-green, #00a550) !important;
+}
+
+.text-indigo-800, 
+.hover\:text-indigo-800:hover {
+  color: var(--nscale-green-dark, #009046) !important;
+}
+
+.hover\:text-indigo-500:hover {
+  color: var(--nscale-green-dark, #009046) !important;
+}
+
+/* Fix active state for session items */
+.bg-indigo-100 {
+  background-color: var(--nscale-light-green, #e8f7ef) !important;
+}
+
+/* Additional fixes for admin panel */
+.admin-tab.active {
+  color: var(--nscale-green, #00a550) !important;
+  border-bottom-color: var(--nscale-green, #00a550) !important;
+  font-weight: 500;
+}
+
+.admin-stat-value {
+  color: var(--nscale-green, #00a550) !important;
+}
+
+/* Dark mode */
+.theme-dark .text-indigo-600 {
+  color: #00c060 !important;
+}
+
+.theme-dark .hover\:text-indigo-500:hover, 
+.theme-dark .hover\:text-indigo-800:hover {
+  color: #00c060 !important;
+}
+
+.theme-dark .bg-indigo-100 {
+  background-color: #003320 !important;
+}
+
+.theme-dark .admin-tab.active {
+  color: #00c060 !important;
+  border-bottom-color: #00c060 !important;
+}
+
+.theme-dark .admin-stat-value {
+  color: #00c060 !important;
+}
+
+/* High contrast mode */
+.theme-contrast .text-indigo-600 {
+  color: #ffeb3b !important;
+}
+
+.theme-contrast .hover\:text-indigo-500:hover, 
+.theme-contrast .hover\:text-indigo-800:hover {
+  color: #ffd600 !important;
+}
+
+.theme-contrast .bg-indigo-100 {
+  background-color: #333300 !important;
+}

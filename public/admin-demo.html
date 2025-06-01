@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel Demo</title>
+    
+    <link rel="stylesheet" href="/assets/styles/base-components.css">
+    <link rel="stylesheet" href="/assets/styles/admin-consolidated.css">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #333333;
+            height: 100vh;
+        }
+        
+        /* Admin-Komponenten CSS-Variablen */
+        :root {
+          --admin-primary: #00a550;
+          --admin-primary-dark: #009046;
+          --admin-primary-light: #e8f7ef;
+          --admin-bg: #ffffff;
+          --admin-bg-alt: #f8f9fa;
+          --admin-text: #333333;
+          --admin-text-secondary: #666666;
+          --admin-border: #e5e5e5;
+          --admin-success: #28a745;
+          --admin-warning: #ffc107;
+          --admin-danger: #dc3545;
+          --admin-info: #17a2b8;
+          --admin-radius: 8px;
+        }
+        
+        #app {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .demo-panel {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+        }
+        
+        .demo-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--admin-primary);
+        }
+        
+        .component-container {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e5e5e5;
+            border-radius: 5px;
+        }
+        
+        .component-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--admin-text);
+        }
+        
+        .button-container, 
+        .input-container, 
+        .toggle-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .theme-switch {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .theme-button {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: #f5f5f5;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .theme-button.active {
+            background: var(--admin-primary);
+            color: white;
+        }
+        
+        /* Admin Panel Demo Styles */
+        .admin-panel {
+            display: flex;
+            flex-direction: column;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .admin-panel__header {
+            background: var(--admin-primary);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .admin-panel__title {
+            margin: 0;
+            font-size: 18px;
+        }
+        
+        .admin-panel__main {
+            display: flex;
+            min-height: 500px;
+        }
+        
+        .admin-panel__sidebar {
+            width: 250px;
+            background: var(--admin-bg-alt);
+            border-right: 1px solid var(--admin-border);
+            padding: 20px 0;
+        }
+        
+        .admin-panel__nav {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .admin-panel__nav-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            cursor: pointer;
+            color: var(--admin-text);
+            border-left: 3px solid transparent;
+        }
+        
+        .admin-panel__nav-item:hover {
+            background: rgba(0,0,0,0.05);
+        }
+        
+        .admin-panel__nav-item--active {
+            background-color: var(--admin-primary-light);
+            color: var(--admin-primary);
+            border-left-color: var(--admin-primary);
+        }
+        
+        .admin-panel__nav-icon {
+            width: 24px;
+            margin-right: 10px;
+            text-align: center;
+        }
+        
+        .admin-panel__content {
+            flex: 1;
+            padding: 20px;
+            background: var(--admin-bg);
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="demo-panel">
+            <h1 class="demo-title">Admin Panel Demo</h1>
+            
+            <div class="theme-switch">
+                <button class="theme-button active" data-theme="light">Light Theme</button>
+                <button class="theme-button" data-theme="dark">Dark Theme</button>
+                <button class="theme-button" data-theme="contrast">Contrast Theme</button>
+            </div>
+            
+            <div class="admin-panel">
+                <header class="admin-panel__header">
+                    <h1 class="admin-panel__title">nscale DMS Assistent Administration</h1>
+                    <div class="admin-panel__user-info">
+                        <span class="admin-panel__user-email">admin@example.com</span>
+                        <span class="admin-panel__role admin-panel__role--admin">Administrator</span>
+                    </div>
+                </header>
+                
+                <div class="admin-panel__main">
+                    <aside class="admin-panel__sidebar">
+                        <nav class="admin-panel__nav">
+                            <button class="admin-panel__nav-item admin-panel__nav-item--active">
+                                <i class="admin-panel__nav-icon fas fa-tachometer-alt"></i>
+                                <span class="admin-panel__nav-label">Dashboard</span>
+                            </button>
+                            <button class="admin-panel__nav-item">
+                                <i class="admin-panel__nav-icon fas fa-users"></i>
+                                <span class="admin-panel__nav-label">Benutzer</span>
+                            </button>
+                            <button class="admin-panel__nav-item">
+                                <i class="admin-panel__nav-icon fas fa-comment"></i>
+                                <span class="admin-panel__nav-label">Feedback</span>
+                            </button>
+                            <button class="admin-panel__nav-item">
+                                <i class="admin-panel__nav-icon fas fa-bullhorn"></i>
+                                <span class="admin-panel__nav-label">Nachrichten</span>
+                            </button>
+                            <button class="admin-panel__nav-item">
+                                <i class="admin-panel__nav-icon fas fa-file-alt"></i>
+                                <span class="admin-panel__nav-label">Dokumentenkonverter</span>
+                            </button>
+                            <button class="admin-panel__nav-item">
+                                <i class="admin-panel__nav-icon fas fa-cogs"></i>
+                                <span class="admin-panel__nav-label">System</span>
+                            </button>
+                            <button class="admin-panel__nav-item">
+                                <i class="admin-panel__nav-icon fas fa-toggle-on"></i>
+                                <span class="admin-panel__nav-label">Feature-Toggles</span>
+                            </button>
+                        </nav>
+                    </aside>
+                    
+                    <main class="admin-panel__content">
+                        <div class="admin-section">
+                            <h2 class="admin-section__title">Dashboard</h2>
+                            <p class="admin-section__description">Übersicht über das System und wichtige Metriken.</p>
+                            
+                            <div class="admin-grid admin-grid--3-columns">
+                                <div class="admin-metric">
+                                    <div class="admin-metric__icon">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div class="admin-metric__content">
+                                        <div class="admin-metric__value">157</div>
+                                        <div class="admin-metric__label">Benutzer</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="admin-metric">
+                                    <div class="admin-metric__icon admin-metric__icon--success">
+                                        <i class="fas fa-file-alt"></i>
+                                    </div>
+                                    <div class="admin-metric__content">
+                                        <div class="admin-metric__value">1,284</div>
+                                        <div class="admin-metric__label">Dokumente</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="admin-metric">
+                                    <div class="admin-metric__icon admin-metric__icon--info">
+                                        <i class="fas fa-comment"></i>
+                                    </div>
+                                    <div class="admin-metric__content">
+                                        <div class="admin-metric__value">72</div>
+                                        <div class="admin-metric__label">Feedback-Einträge</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="admin-card">
+                                <div class="admin-card__header">
+                                    <h3 class="admin-card__title">Neueste Aktivitäten</h3>
+                                </div>
+                                <div class="admin-card__body">
+                                    <table class="admin-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Benutzer</th>
+                                                <th>Aktion</th>
+                                                <th>Zeitpunkt</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>maria.schmidt@example.com</td>
+                                                <td>Dokument konvertiert</td>
+                                                <td>Vor 5 Minuten</td>
+                                            </tr>
+                                            <tr>
+                                                <td>thomas.mueller@example.com</td>
+                                                <td>Neuer Benutzer</td>
+                                                <td>Vor 27 Minuten</td>
+                                            </tr>
+                                            <tr>
+                                                <td>admin@example.com</td>
+                                                <td>Feature Toggle aktiviert</td>
+                                                <td>Vor 1 Stunde</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-panel">
+            <h2 class="demo-title">Base Components Demo</h2>
+            
+            <div class="component-container">
+                <h3 class="component-title">Buttons</h3>
+                <div class="button-container">
+                    <button class="admin-button admin-button--primary">Primary Button</button>
+                    <button class="admin-button admin-button--secondary">Secondary Button</button>
+                    <button class="admin-button admin-button--danger">Danger Button</button>
+                    <button class="admin-button admin-button--primary" disabled>Disabled</button>
+                </div>
+            </div>
+            
+            <div class="component-container">
+                <h3 class="component-title">Form Elements</h3>
+                
+                <div class="admin-form__group">
+                    <label class="admin-form__label">Text Input</label>
+                    <input type="text" class="admin-form__input" placeholder="Enter text here..." />
+                </div>
+                
+                <div class="admin-form__group">
+                    <label class="admin-form__label">Select</label>
+                    <select class="admin-form__select">
+                        <option>Option 1</option>
+                        <option>Option 2</option>
+                        <option>Option 3</option>
+                    </select>
+                </div>
+                
+                <div class="admin-form__group">
+                    <label class="admin-form__label">Textarea</label>
+                    <textarea class="admin-form__textarea" rows="3" placeholder="Enter longer text here..."></textarea>
+                </div>
+                
+                <div class="admin-toggle">
+                    <label class="admin-toggle__container">
+                        <input type="checkbox" class="admin-toggle__input" />
+                        <span class="admin-toggle__switch"></span>
+                        <span class="admin-toggle__label">Toggle Switch</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="component-container">
+                <h3 class="component-title">Tables</h3>
+                
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>John Doe</td>
+                            <td>john.doe@example.com</td>
+                            <td>Admin</td>
+                            <td>
+                                <button class="admin-button admin-button--icon">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="admin-button admin-button--icon">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Jane Smith</td>
+                            <td>jane.smith@example.com</td>
+                            <td>User</td>
+                            <td>
+                                <button class="admin-button admin-button--icon">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="admin-button admin-button--icon">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="component-container">
+                <h3 class="component-title">Cards</h3>
+                
+                <div class="admin-card">
+                    <div class="admin-card__header">
+                        <h3 class="admin-card__title">Card Title</h3>
+                    </div>
+                    <div class="admin-card__body">
+                        <p>This is a standard card with header and body content.</p>
+                    </div>
+                    <div class="admin-card__footer">
+                        <button class="admin-button admin-button--primary">Action</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Simple theme switcher
+        document.querySelectorAll('.theme-button').forEach(button => {
+            button.addEventListener('click', () => {
+                // Update active button
+                document.querySelectorAll('.theme-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                button.classList.add('active');
+                
+                // Apply theme
+                const theme = button.getAttribute('data-theme');
+                document.body.className = theme !== 'light' ? `theme-${theme}` : '';
+            });
+        });
+        
+        // Add FontAwesome for icons
+        const fontAwesome = document.createElement('link');
+        fontAwesome.rel = 'stylesheet';
+        fontAwesome.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
+        document.head.appendChild(fontAwesome);
+    </script>
+</body>
+</html>

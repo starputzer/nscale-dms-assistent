@@ -1,0 +1,6 @@
+{
+  "title": "[TEST] Expand backend Python test coverage",
+  "body": "## Problem\nOnly 7 Python test files for entire backend. Critical paths untested.\n\n## Tasks\n- [ ] Add unit tests for all services\n- [ ] Add integration tests for API endpoints\n- [ ] Add authentication/authorization tests\n- [ ] Add database migration tests\n- [ ] Configure pytest coverage reports\n- [ ] Add coverage to CI pipeline\n\n## Acceptance Criteria\n- Backend coverage > 70%\n- All critical paths tested\n- CI enforces coverage\n- Tests run in < 2 minutes\n\n## Priority: HIGH\n## Effort: 21 story points",
+  "labels": ["testing", "backend", "quality"],
+  "milestone": 1
+}

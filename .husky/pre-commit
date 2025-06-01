@@ -1,0 +1,40 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit checks..."
+
+# Get staged TypeScript files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|tsx|vue)$')
+
+if [ -z "$STAGED_FILES" ]; then
+  echo "✅ No TypeScript files to check"
+  exit 0
+fi
+
+echo "📝 Checking $(echo $STAGED_FILES | wc -w) staged TypeScript files..."
+
+# Run TypeScript compiler on staged files only
+npx tsc --noEmit --skipLibCheck $STAGED_FILES 2>&1 | tee .typecheck-results
+
+if grep -q "error TS" .typecheck-results; then
+  echo "❌ TypeScript errors found! Please fix them before committing."
+  echo ""
+  grep "error TS" .typecheck-results | head -10
+  echo ""
+  echo "Run 'npm run typecheck' to see all errors."
+  rm .typecheck-results
+  exit 1
+fi
+
+# Run ESLint on staged files
+echo "🧹 Running ESLint..."
+npx eslint $STAGED_FILES --fix
+
+# Re-add files that were fixed by ESLint
+for file in $STAGED_FILES; do
+  git add $file
+done
+
+echo "✅ All pre-commit checks passed!"
+rm -f .typecheck-results
+exit 0

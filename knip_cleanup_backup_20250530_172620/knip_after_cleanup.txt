@@ -1,0 +1,144 @@
+Unused files (123)
+src/assets/index.js
+src/assets/theme-switcher.js
+src/bridge/disable-bridge.ts
+src/bridge/enhanced/EventBusAdapter.ts
+src/bridge/enhanced/optimized/ExtendedBatchedEventEmitter.ts
+src/bridge/enhanced/optimized/ExtendedOptimizedChatBridge.ts
+src/bridge/enhanced/optimized/ExtendedSelectiveStateManager.ts
+src/bridge/enhanced/optimized/chatBridgeDiagnostics.ts
+src/bridge/enhanced/optimized/commonTypes.ts
+src/bridge/enhanced/optimized/diagnosticTools.ts
+src/bridge/enhanced/optimized/enhancedSerializer.ts
+src/bridge/enhanced/optimized/eventListenerManager.ts
+src/bridge/enhanced/optimized/index.ts
+src/bridge/enhanced/optimized/newIndex.ts
+src/bridge/enhanced/optimized/selectiveStateManager.ts
+src/bridge/enhanced/optimized/types.ts
+src/bridge/enhanced/optimized/utils.ts
+src/bridge/enhanced/optimizedStoreBridge.ts
+src/bridge/enhanced/sync/DeepCloneUtil.ts
+src/bridge/enhanced/sync/EventQueue.ts
+src/bridge/enhanced/sync/TimeoutRetry.ts
+src/bridge/enhanced/sync/index.ts
+src/bridge/sessionBridge.ts
+src/bridge/storeBridge.ts
+src/components/admin/rename-to-conventions.js
+src/components/admin/shared/index.ts
+src/components/admin/useLiveData.js
+src/components/base/index.ts
+src/components/layout/index.ts
+src/components/session/index.js
+src/components/shared/index.ts
+src/composables/index.ts
+src/composables/useEnhancedRouteFallback.ts
+src/composables/useMemoizedComputed.ts
+src/composables/useMonitoring.ts
+src/composables/useNScale.ts
+src/composables/useRouteFallback.ts
+src/composables/useUI.ts
+src/config/default-feature-toggles.ts
+src/i18n/documentConverter.ts
+src/js/bridge-integration.js
+src/main.update.ts
+src/plugins/monitoring.ts
+src/plugins/routerGuards.ts
+src/router/viewImports.ts
+src/services/api/AdminService.ts
+src/services/api/AdminServiceWrapper.ts
+src/services/api/AuthService.ts
+src/services/api/BaseApiService.ts
+src/services/api/BatchAdminService.ts
+src/services/api/DocumentConverterApi.ts
+src/services/api/DocumentService.ts
+src/services/api/OfflineManager.ts
+src/services/api/OfflineQueueService.ts
+src/services/api/ServiceAdapterFactory.ts
+src/services/api/SessionService.ts
+src/services/api/TypedDocumentService.ts
+src/services/api/TypedSessionService.ts
+src/services/api/apiTypes.ts
+src/services/api/config-updated.ts
+src/services/api/endpointValidator.ts
+src/services/api/sessionAwareBatchHandler.ts
+src/services/api/telemetry.ts
+src/services/diagnostics/DiagnosticsInitializer.ts
+src/services/diagnostics/UnifiedDiagnosticsService.ts
+src/services/mocks/MockBatchService.ts
+src/services/storage/ChatStorageService.ts
+src/services/storage/IndexedDBService.ts
+src/services/streamingService.ts
+src/services/ui/index.ts
+src/stores/abTests.ts
+src/stores/adapters/authStoreAdapter.ts
+src/stores/admin/adminFeatureToggles.ts
+src/stores/featureToggles.old.ts
+src/stores/featureToggles.production.ts
+src/stores/sessions.performance.ts
+src/stories/EnhancedChatView.stories.ts
+src/stories/EnhancedMessageInput.stories.ts
+src/stories/SessionManager.stories.ts
+src/stories/VirtualMessageList.stories.ts
+src/types/adapters.ts
+src/types/api-types.ts
+src/types/component-types.ts
+src/types/components.ts
+src/types/composable-types.ts
+src/types/documentConverterStore.ts
+src/types/errors.ts
+src/types/index.ts
+src/types/models.ts
+src/types/store-types.ts
+src/types/stores.d.ts
+src/types/utilities.ts
+src/utils/apiErrorUtils.ts
+src/utils/authDebug.ts
+src/utils/authDebugHelpers.ts
+src/utils/bundle-optimization.ts
+src/utils/componentLifecycle.ts
+src/utils/domErrorDiagnosticsFixed.ts
+src/utils/enhanced-event-source.ts
+src/utils/forceLogoutAndLogin.ts
+src/utils/imports.ts
+src/utils/index.ts
+src/utils/mobileFocusManager.ts
+src/utils/objectUtils.ts
+src/utils/serviceTypes.ts
+src/utils/sessionIdAdapter.ts
+src/utils/sessionOptimizer.ts
+src/utils/setupAuthInterceptor.ts
+src/utils/shared/api/index.ts
+src/utils/shared/auth/index.ts
+src/utils/shared/error/error-classifier.ts
+src/utils/shared/error/index.ts
+src/utils/shared/formatting/date-formatter.ts
+src/utils/shared/formatting/index.ts
+src/utils/shared/index.ts
+src/utils/shared/uuid-util.ts
+src/utils/shared/validation/form-validation.ts
+src/utils/shared/validation/index.ts
+src/utils/sse-parser.ts
+src/utils/storeHelper.ts
+src/utils/typeUtils.ts
+src/utils/uiAuthSync.ts
+src/utils/uiAuthSyncLazy.ts
+Unused devDependencies (1)
+node:internal/errors:496
+    ErrorCaptureStackTrace(err);
+    ^
+
+TypeError [ERR_INVALID_ARG_TYPE]: The "to" argument must be of type string. Received undefined
+    at new NodeError (node:internal/errors:405:5)
+    at validateString (node:internal/validators:162:11)
+    at Object.relative (node:path:1209:5)
+    at relative (file:///opt/nscale-assist/app/node_modules/knip/dist/util/path.js:12:52)
+    at getIssueLine (file:///opt/nscale-assist/app/node_modules/knip/dist/reporters/util.js:16:68)
+    at logIssueRecord (file:///opt/nscale-assist/app/node_modules/knip/dist/reporters/compact.js:10:21)
+    at default (file:///opt/nscale-assist/app/node_modules/knip/dist/reporters/compact.js:33:21)
+    at runReporters (file:///opt/nscale-assist/app/node_modules/knip/dist/util/reporter.js:17:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async run (file:///opt/nscale-assist/app/node_modules/knip/dist/cli.js:70:9) {
+  code: 'ERR_INVALID_ARG_TYPE'
+}
+
+Node.js v18.20.8

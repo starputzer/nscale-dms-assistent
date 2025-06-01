@@ -1,0 +1,301 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, develop, feature/*, bugfix/*]
+  pull_request:
+    branches: [main, master, develop]
+  workflow_dispatch:
+
+jobs:
+  # Verify dependencies are correctly set up
+  dependency-check:
+    name: Verify Dependencies Lock File
+    runs-on: ubuntu-latest
+    outputs:
+      lock-file-exists: ${{ steps.check-lock.outputs.exists }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check for package-lock.json
+        id: check-lock
+        run: |
+          if [ -f "package-lock.json" ]; then
+            echo "✅ package-lock.json found"
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Error: package-lock.json not found in repository root"
+            echo "Please run 'npm install' locally and commit the package-lock.json file"
+            echo "exists=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+      - name: Verify package files consistency
+        run: |
+          if [ ! -f "package.json" ]; then
+            echo "❌ Error: package.json not found"
+            exit 1
+          fi
+          echo "✅ Package files are present"
+          echo "📁 Current directory contents:"
+          ls -la
+          echo "📦 package.json location: $(pwd)/package.json"
+          echo "🔒 package-lock.json location: $(pwd)/package-lock.json"
+
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    needs: dependency-check
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+      - name: Debug working directory
+        run: |
+          echo "Current working directory: $(pwd)"
+          echo "Directory contents:"
+          ls -la
+      - name: Install dependencies
+        run: |
+          if [ -f "package-lock.json" ]; then
+            echo "Using npm ci for clean install"
+            npm ci
+          else
+            echo "Warning: package-lock.json not found, using npm install"
+            npm install
+          fi
+      - name: Run ESLint
+        run: npm run lint
+      - name: Run TypeScript check
+        run: npm run typecheck
+      - name: Run Vue TypeScript check
+        run: npm run check
+
+  system-integrity:
+    name: System Integrity Tests
+    runs-on: ubuntu-latest
+    needs: [dependency-check, lint]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+      - name: Install dependencies
+        run: |
+          if [ -f "package-lock.json" ]; then
+            npm ci
+          else
+            npm install
+          fi
+      - name: Run system integrity tests
+        run: npm run test:system-integrity
+      - name: Generate coverage report
+        run: npm run test:system-integrity:coverage
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: system-integrity-coverage
+          path: coverage/system-integrity/
+          retention-days: 14
+      - name: Check coverage thresholds
+        run: |
+          echo "Checking coverage thresholds..."
+          npx nyc check-coverage --lines 80 --functions 80 --branches 80 --statements 80
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: [dependency-check, lint, system-integrity]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+      - name: Install dependencies
+        run: |
+          if [ -f "package-lock.json" ]; then
+            npm ci
+          else
+            npm install
+          fi
+      - name: Run unit tests (Vue components)
+        run: npm run test
+      - name: Run vanilla JS tests
+        run: npm run test:vanilla
+      - name: Generate coverage report
+        run: npm run test:coverage
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 14
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ./coverage/
+          fail_ci_if_error: false
+
+  component-tests:
+    name: Component Tests
+    runs-on: ubuntu-latest
+    needs: [dependency-check, unit-tests]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+      - name: Install dependencies
+        run: |
+          if [ -f "package-lock.json" ]; then
+            npm ci
+          else
+            npm install
+          fi
+      - name: Run component tests (UI components)
+        run: npm run test -- --testNamePattern="components/ui"
+      - name: Run integration tests (store interactions)
+        run: npm run test -- --testNamePattern="integration"
+      - name: Upload component test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: component-test-results
+          path: test-results/html/
+          if-no-files-found: ignore
+
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: [dependency-check, component-tests]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+      - name: Install dependencies
+        run: |
+          if [ -f "package-lock.json" ]; then
+            npm ci
+          else
+            npm install
+          fi
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      - name: Set up test environment
+        run: |
+          mkdir -p data/db
+          touch data/db/users.test.db
+      - name: Start server
+        run: |
+          npm run dev &
+          echo $! > server.pid
+          sleep 10
+      - name: Run E2E tests
+        run: npm run test:e2e
+      - name: Kill server
+        if: always()
+        run: kill $(cat server.pid) || true
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report
+          path: e2e-test-results/html/
+          retention-days: 30
+
+  build:
+    name: Build Validation
+    runs-on: ubuntu-latest
+    needs: [dependency-check, unit-tests, component-tests]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+      - name: Install dependencies
+        run: |
+          if [ -f "package-lock.json" ]; then
+            npm ci
+          else
+            npm install
+          fi
+      - name: Build (Development)
+        run: npm run build -- --mode development
+      - name: Build (Production)
+        run: npm run build -- --mode production
+      - name: Analyze build output
+        run: ls -la dist
+      - name: Validate HTML structure
+        run: grep -q "<title>nscale DMS Assistent</title>" dist/index.html
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: production-build
+          path: dist/
+          retention-days: 7
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: [dependency-check, build]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+      - name: Install dependencies
+        run: |
+          if [ -f "package-lock.json" ]; then
+            npm ci
+          else
+            npm install
+          fi
+      - name: Run npm audit
+        run: npm audit --production
+      - name: Run OWASP Dependency-Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'nscale-dms-assistent'
+          path: '.'
+          format: 'HTML'
+          out: 'reports'
+          args: >-
+            --scan ./ 
+            --suppression ./owasp-suppressions.xml
+            --failOnCVSS 7
+      - name: Upload security report
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-report
+          path: reports/
+          retention-days: 14
+
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    needs: [lint, unit-tests, component-tests, e2e-tests, build, security-scan]
+    if: always()
+    steps:
+      - name: Build Result
+        run: echo "Build status is ${{ job.status }}"
+      - name: Notify on Slack
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,workflow
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
