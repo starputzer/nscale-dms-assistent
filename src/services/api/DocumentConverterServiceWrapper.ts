@@ -223,7 +223,7 @@ class DocumentConverterServiceWrapper {
   public async getDocumentContent(documentId: string): Promise<string> {
     try {
       this.logger.debug(`Rufe Dokumentinhalt für ${documentId} ab`);
-      return await this.service.getDocumentContent(documentId);
+      return await (this.service as any).getDocumentContent(documentId);
     } catch (error) {
       const convertedError = this.convertError(
         error,
@@ -346,7 +346,7 @@ class DocumentConverterServiceWrapper {
    * @returns true, wenn das Format unterstützt wird
    */
   public isFormatSupported(format: string): boolean {
-    return this.service.isFormatSupported(format);
+    return (this.service as any).isFormatSupported(format);
   }
 
   /**
@@ -432,12 +432,12 @@ class DocumentConverterServiceWrapper {
 
     return {
       code,
-      message: additional.message || message,
-      details: additional.details || details,
+      message: (additional as any).message || message,
+      details: (additional as any).details || details,
       type,
       timestamp: new Date(),
-      resolution: additional.resolution,
-      helpItems: additional.helpItems,
+      resolution: (additional as any).resolution,
+      helpItems: (additional as any).helpItems,
       documentId: additional.documentId,
       originalError: error instanceof Error ? error : undefined,
     };

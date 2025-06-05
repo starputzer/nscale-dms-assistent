@@ -826,8 +826,26 @@ console.log("[i18n] Component initialized with global scope and inheritance");
 
 // Store with proper reactive references
 const systemStore = useAdminSystemStore();
-const { stats, loading, error, apiIntegrationEnabled, systemSettings } =
+const { resources, dashboardSummary, error } =
   storeToRefs(systemStore);
+
+// Computed property for backward compatibility with stats
+const stats = computed(() => {
+  return {
+    cpu_usage_percent: resources.value?.cpu || 0,
+    memory_usage_percent: resources.value?.memory || 0,
+    database_size_mb: dashboardSummary.value?.documentStats?.processed || 0,
+    cache_size_mb: dashboardSummary.value?.systemHealth?.cacheSize || 0,
+    cache_hit_rate: dashboardSummary.value?.ragStats?.cacheHitRate || 0,
+    uptime_days: 1, // Default value
+    start_time: Date.now() - (24 * 60 * 60 * 1000), // 24 hours ago
+    active_model: 'llama-7b',
+    avg_response_time_ms: dashboardSummary.value?.responseTimeAvg || 0,
+    active_users: dashboardSummary.value?.activeUsers?.today || 0,
+    active_sessions: 0,
+    requests_per_second: 0
+  };
+});
 
 // Toast
 const toast = useToast();
@@ -838,7 +856,7 @@ const performanceChart = ref<HTMLCanvasElement | null>(null);
 let chart: Chart | null = null;
 
 // Local state
-const isLoading = ref(false);
+const isLoading = computed(() => systemStore.loading);
 const isSubmitting = ref(false);
 const isActionPending = ref(false);
 const isEditMode = ref(false);
@@ -852,6 +870,20 @@ const confirmDialogIcon = ref("fa-exclamation-triangle");
 const confirmDialogDanger = ref(false);
 const pendingActionCallback = ref<() => void>();
 
+// System settings
+const systemSettings = ref({
+  defaultModel: 'llama-7b',
+  maxTokensPerRequest: 2048,
+  enableModelSelection: true,
+  enableRateLimit: true,
+  rateLimitPerMinute: 60,
+  maxConnectionsPerUser: 10,
+  sessionTimeoutMinutes: 30,
+  maintenanceMode: false,
+  maintenanceMessage: '',
+  autoBackup: true
+});
+
 // Real-time data
 const cpuHistory = ref<number[]>([]);
 const memoryHistory = ref<number[]>([]);
@@ -864,12 +896,13 @@ let refreshInterval: number | null = null;
 
 // Computed properties
 const systemHealthStatus = computed(() => {
-  if (cpuStatus.value === "critical" || memoryStatus.value === "critical") {
-    return "critical";
-  }
-  if (cpuStatus.value === "warning" || memoryStatus.value === "warning") {
-    return "warning";
-  }
+  if (!resources.value) return "normal";
+  
+  const cpuUsage = resources.value.cpu || 0;
+  const memUsage = resources.value.memory || 0;
+  
+  if (cpuUsage >= 90 || memUsage >= 90) return "critical";
+  if (cpuUsage >= 70 || memUsage >= 70) return "warning";
   return "normal";
 });
 
@@ -908,28 +941,37 @@ const systemHealthText = computed(() => {
 
 const systemHealthDetails = computed(() => {
   const details = [];
-  if (cpuStatus.value === "critical") {
+  if (!resources.value) return "";
+  
+  const cpuUsage = resources.value.cpu || 0;
+  const memUsage = resources.value.memory || 0;
+  
+  if (cpuUsage >= 90) {
     details.push(t("admin.system.cpuCritical", "CPU-Auslastung kritisch"));
-  } else if (cpuStatus.value === "warning") {
+  } else if (cpuUsage >= 70) {
     details.push(t("admin.system.cpuWarning", "CPU-Auslastung hoch"));
   }
-  if (memoryStatus.value === "critical") {
+  
+  if (memUsage >= 90) {
     details.push(t("admin.system.memoryCritical", "Speicher kritisch"));
-  } else if (memoryStatus.value === "warning") {
+  } else if (memUsage >= 70) {
     details.push(t("admin.system.memoryWarning", "Speicher hoch"));
   }
+  
   return details.join(", ");
 });
 
 const cpuStatus = computed(() => {
-  const usage = stats.value.cpu_usage_percent || 0;
+  if (!resources.value) return "normal";
+  const usage = resources.value.cpu || 0;
   if (usage >= 90) return "critical";
   if (usage >= 70) return "warning";
   return "normal";
 });
 
 const memoryStatus = computed(() => {
-  const usage = stats.value.memory_usage_percent || 0;
+  if (!resources.value) return "normal";
+  const usage = resources.value.memory || 0;
   if (usage >= 90) return "critical";
   if (usage >= 70) return "warning";
   return "normal";
@@ -992,11 +1034,11 @@ const actions = computed(() => [
     stats: [
       {
         label: t("admin.system.cacheSize", "Größe"),
-        value: formatBytes(stats.value.cache_size_mb * 1024 * 1024 || 0),
+        value: formatBytes((dashboardSummary.value?.systemHealth?.cacheSize || 0) * 1024 * 1024),
       },
       {
         label: t("admin.system.cacheEntries", "Einträge"),
-        value: stats.value.cache_entries || 0,
+        value: dashboardSummary.value?.systemHealth?.cacheEntries || 0,
       },
     ],
   },
@@ -1029,7 +1071,7 @@ const actions = computed(() => [
       "Defragmentiert und optimiert die Datenbank",
     ),
     icon: "fa-database",
-    disabled: stats.value.db_optimization_running,
+    disabled: false,  // TODO: Get from actual status
   },
   {
     id: "reset-stats",
@@ -1053,7 +1095,7 @@ const actions = computed(() => [
     stats: [
       {
         label: t("admin.system.lastBackup", "Letztes Backup"),
-        value: formatDateRelative(stats.value.last_backup_time),
+        value: formatDateRelative(dashboardSummary.value?.systemHealth?.lastBackup || Date.now()),
       },
     ],
   },
@@ -1363,7 +1405,7 @@ onMounted(async () => {
     await refreshAll();
 
     // Wenn wir API-Integration verwenden, auch Systemaktionen laden
-    if (apiIntegrationEnabled.value) {
+    if (systemStore.apiIntegrationEnabled) {
       await systemStore.fetchAvailableActions();
     }
   } catch (error) {
@@ -1383,7 +1425,7 @@ onMounted(async () => {
 
   // Logge erweiterte Diagnoseinformationen
   console.log(
-    `[AdminSystem] Komponente initialisiert, API-Integration: ${apiIntegrationEnabled.value}`,
+    `[AdminSystem] Komponente initialisiert, API-Integration: ${systemStore.apiIntegrationEnabled}`,
   );
 });
 

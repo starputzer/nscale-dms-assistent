@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Call Monitor</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .error { color: red; }
+        .success { color: green; }
+        .pending { color: orange; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>API Call Monitor</h1>
+    <p>Monitoring network requests from the application...</p>
+    
+    <div id="summary"></div>
+    <table id="requests">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Method</th>
+                <th>URL</th>
+                <th>Status</th>
+                <th>Duration</th>
+                <th>Response</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        const requests = [];
+        const tbody = document.querySelector('#requests tbody');
+        const summary = document.getElementById('summary');
+        
+        // Override fetch
+        const originalFetch = window.fetch;
+        window.fetch = async function(...args) {
+            const startTime = Date.now();
+            const [url, options = {}] = args;
+            
+            const request = {
+                time: new Date().toLocaleTimeString(),
+                method: options.method || 'GET',
+                url: url.toString(),
+                status: 'pending',
+                duration: '...',
+                response: '...'
+            };
+            
+            requests.push(request);
+            updateDisplay();
+            
+            try {
+                const response = await originalFetch(...args);
+                const duration = Date.now() - startTime;
+                
+                request.status = response.status;
+                request.duration = `${duration}ms`;
+                
+                // Clone response to read body
+                const clone = response.clone();
+                try {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const data = await clone.json();
+                        request.response = JSON.stringify(data, null, 2).substring(0, 200) + '...';
+                    } else {
+                        request.response = await clone.text().then(t => t.substring(0, 200) + '...');
+                    }
+                } catch (e) {
+                    request.response = `Error reading response: ${e.message}`;
+                }
+                
+                updateDisplay();
+                return response;
+            } catch (error) {
+                request.status = 'error';
+                request.duration = `${Date.now() - startTime}ms`;
+                request.response = error.message;
+                updateDisplay();
+                throw error;
+            }
+        };
+        
+        // Monitor XMLHttpRequest
+        const originalXHR = window.XMLHttpRequest;
+        window.XMLHttpRequest = function() {
+            const xhr = new originalXHR();
+            const originalOpen = xhr.open;
+            const originalSend = xhr.send;
+            
+            let startTime;
+            let request;
+            
+            xhr.open = function(method, url, ...args) {
+                request = {
+                    time: new Date().toLocaleTimeString(),
+                    method: method,
+                    url: url,
+                    status: 'pending',
+                    duration: '...',
+                    response: '...'
+                };
+                requests.push(request);
+                updateDisplay();
+                
+                return originalOpen.call(this, method, url, ...args);
+            };
+            
+            xhr.send = function(...args) {
+                startTime = Date.now();
+                
+                xhr.addEventListener('load', function() {
+                    request.status = xhr.status;
+                    request.duration = `${Date.now() - startTime}ms`;
+                    try {
+                        request.response = xhr.responseText.substring(0, 200) + '...';
+                    } catch (e) {
+                        request.response = 'Unable to read response';
+                    }
+                    updateDisplay();
+                });
+                
+                xhr.addEventListener('error', function() {
+                    request.status = 'error';
+                    request.duration = `${Date.now() - startTime}ms`;
+                    request.response = 'Network error';
+                    updateDisplay();
+                });
+                
+                return originalSend.call(this, ...args);
+            };
+            
+            return xhr;
+        };
+        
+        function updateDisplay() {
+            // Update summary
+            const total = requests.length;
+            const errors = requests.filter(r => r.status === 'error' || r.status >= 400).length;
+            const pending = requests.filter(r => r.status === 'pending').length;
+            
+            summary.innerHTML = `
+                <h2>Summary</h2>
+                <p>Total requests: ${total} | Errors: ${errors} | Pending: ${pending}</p>
+            `;
+            
+            // Update table
+            tbody.innerHTML = requests.map(req => {
+                const statusClass = req.status === 'error' || req.status >= 400 ? 'error' : 
+                                  req.status === 'pending' ? 'pending' : 'success';
+                return `
+                    <tr>
+                        <td>${req.time}</td>
+                        <td>${req.method}</td>
+                        <td>${req.url}</td>
+                        <td class="${statusClass}">${req.status}</td>
+                        <td>${req.duration}</td>
+                        <td><pre style="margin:0; font-size:11px">${req.response}</pre></td>
+                    </tr>
+                `;
+            }).reverse().join('');
+        }
+        
+        // Load the app in an iframe
+        const iframe = document.createElement('iframe');
+        iframe.src = 'http://localhost:5174';
+        iframe.style.width = '100%';
+        iframe.style.height = '600px';
+        iframe.style.border = '1px solid #ccc';
+        iframe.style.marginTop = '20px';
+        document.body.appendChild(iframe);
+        
+        updateDisplay();
+    </script>
+</body>
+</html>

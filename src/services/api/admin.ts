@@ -72,12 +72,12 @@ const handleApiRequest = async (
 export const adminApi = {
   // User Management
   getUsers: () =>
-    handleApiRequest(() => axios.get("/admin/users"), "/admin/users"),
+    handleApiRequest(() => axios.get("/admin/users/"), "/admin/users/"),
 
   createUser: (userData: NewUser) =>
     handleApiRequest(
-      () => axios.post("/admin/users", userData),
-      "/admin/users",
+      () => axios.post("/admin/users/", userData),
+      "/admin/users/",
       userData,
     ),
 
@@ -153,7 +153,7 @@ export const adminApi = {
     ),
 
   // MOTD
-  getMotd: () => handleApiRequest(() => axios.get("/api/motd"), "/api/motd"),
+  getMotd: () => handleApiRequest(() => axios.get("/motd"), "/motd"),
 
   updateMotd: (motdConfig: MotdConfig) =>
     handleApiRequest(

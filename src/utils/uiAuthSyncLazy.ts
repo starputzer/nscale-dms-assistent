@@ -84,7 +84,7 @@ setTimeout(() => {
 
 // Also expose for manual initialization
 if (typeof window !== "undefined") {
-  window.initUIAuthSync = () => uiAuthSyncLazy.initialize();
+  (window as any).initUIAuthSync = () => uiAuthSyncLazy.initialize();
 }
 
 export default uiAuthSyncLazy;

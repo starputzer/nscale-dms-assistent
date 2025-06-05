@@ -35,7 +35,7 @@ export class StreamingService {
       ...(options.simpleLanguage && { simple_language: "true" }),
     });
 
-    const url = `/api/question/stream?${params.toString()}`;
+    const url = `/api/chat/message/stream?${params.toString()}`;
 
     // Abbruch-Controller für Stream-Kontrolle
     this.controller = new AbortController();

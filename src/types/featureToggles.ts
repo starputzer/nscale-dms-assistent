@@ -8,6 +8,7 @@
  */
 export interface FeatureToggle {
   key: string;
+  id?: string; // Add backwards compatibility with API
   name: string;
   description?: string;
   category: string;
@@ -15,6 +16,9 @@ export interface FeatureToggle {
   dependencies?: string[];
   locked?: boolean;
   experimental?: boolean;
+  created_at?: string;
+  updated_at?: string;
+  updated_by?: string;
 }
 
 /**
@@ -90,18 +94,27 @@ export interface MetricsQuery {
  * Feature Toggle Statistics
  */
 export interface FeatureToggleStats {
-  totalFeatures: number;
-  enabledFeatures: number;
-  disabledFeatures: number;
-  experimentalFeatures: number;
-  lockedFeatures: number;
-  categoryCounts: Record<string, number>;
-  mostUsedFeatures: Array<{
+  total?: number; // Add backwards compatibility
+  enabled?: number;
+  enabledPercent?: number;
+  categories?: Record<string, number>;
+  history?: Array<{
+    date: string;
+    enabled: number;
+  }>;
+  // Original fields
+  totalFeatures?: number;
+  enabledFeatures?: number;
+  disabledFeatures?: number;
+  experimentalFeatures?: number;
+  lockedFeatures?: number;
+  categoryCounts?: Record<string, number>;
+  mostUsedFeatures?: Array<{
     key: string;
     name: string;
     usageCount: number;
   }>;
-  recentErrors: FeatureErrorLog[];
+  recentErrors?: FeatureErrorLog[];
 }
 
 /**

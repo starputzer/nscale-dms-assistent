@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auto Login Helper</title>
+    <script>
+        async function autoLogin() {
+            try {
+                const response = await fetch('http://localhost:5173/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'martin@danglefeet.com',
+                        password: '123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.access_token) {
+                    // Store the token in localStorage with correct keys
+                    localStorage.setItem('nscale_access_token', data.access_token);
+                    localStorage.setItem('access_token', data.access_token);
+                    
+                    // Store user data
+                    if (data.user) {
+                        localStorage.setItem('nscale_user', JSON.stringify(data.user));
+                        localStorage.setItem('user', JSON.stringify(data.user));
+                    }
+                    
+                    document.getElementById('status').innerHTML = `
+                        <h2>✅ Login Successful!</h2>
+                        <p>You are now logged in as: <strong>${data.user?.email || 'Admin'}</strong></p>
+                        <p>Role: <strong>${data.user?.role || 'admin'}</strong></p>
+                        <hr>
+                        <p>You can now:</p>
+                        <ul>
+                            <li><a href="/" target="_blank">Go to the main application</a></li>
+                            <li><a href="/admin" target="_blank">Go to the admin panel</a></li>
+                        </ul>
+                        <hr>
+                        <button onclick="location.reload()">Refresh Status</button>
+                        <button onclick="logout()">Logout</button>
+                    `;
+                } else {
+                    throw new Error(data.detail || 'Login failed');
+                }
+            } catch (error) {
+                document.getElementById('status').innerHTML = `
+                    <h2>❌ Login Failed</h2>
+                    <p>Error: ${error.message}</p>
+                    <button onclick="autoLogin()">Try Again</button>
+                `;
+            }
+        }
+        
+        function logout() {
+            const keys = ['nscale_access_token', 'access_token', 'nscale_user', 'user'];
+            keys.forEach(key => localStorage.removeItem(key));
+            location.reload();
+        }
+        
+        function checkStatus() {
+            const token = localStorage.getItem('nscale_access_token') || localStorage.getItem('access_token');
+            const user = localStorage.getItem('nscale_user') || localStorage.getItem('user');
+            
+            if (token) {
+                const userData = user ? JSON.parse(user) : {};
+                document.getElementById('status').innerHTML = `
+                    <h2>✅ Already Logged In</h2>
+                    <p>User: <strong>${userData.email || 'Unknown'}</strong></p>
+                    <p>Role: <strong>${userData.role || 'Unknown'}</strong></p>
+                    <hr>
+                    <ul>
+                        <li><a href="/" target="_blank">Go to the main application</a></li>
+                        <li><a href="/admin" target="_blank">Go to the admin panel</a></li>
+                    </ul>
+                    <hr>
+                    <button onclick="logout()">Logout</button>
+                `;
+            } else {
+                document.getElementById('status').innerHTML = `
+                    <h2>Not Logged In</h2>
+                    <button onclick="autoLogin()" style="font-size: 18px; padding: 10px 20px;">Login as Admin</button>
+                `;
+            }
+        }
+        
+        window.onload = checkStatus;
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            margin: 5px;
+            padding: 5px 15px;
+            cursor: pointer;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Admin Login Helper</h1>
+    <div id="status">Checking status...</div>
+</body>
+</html>

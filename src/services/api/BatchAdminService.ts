@@ -42,28 +42,28 @@ export class BatchAdminService {
   async loadAdminDashboard(): Promise<AdminDashboardData> {
     const results = await batchRequestService.executeNamedBatch<any>({
       users: {
-        endpoint: "/api/v1/admin/users",
+        endpoint: "/api/admin/users",
         method: "GET",
         params: { limit: 10 }, // Get only recent users for dashboard
       },
       userStats: {
-        endpoint: "/api/v1/admin/users/stats",
+        endpoint: "/api/admin/users/stats",
         method: "GET",
       },
       feedbackStats: {
-        endpoint: "/api/v1/admin/feedback/stats",
+        endpoint: "/api/admin/feedback/stats",
         method: "GET",
       },
       systemInfo: {
-        endpoint: "/api/v1/admin/system",
+        endpoint: "/api/admin/system",
         method: "GET",
       },
       featureToggles: {
-        endpoint: "/api/v1/admin/feature-toggles",
+        endpoint: "/api/admin/feature-toggles",
         method: "GET",
       },
       recentFeedback: {
-        endpoint: "/api/v1/admin/feedback/negative",
+        endpoint: "/api/admin/feedback/negative",
         method: "GET",
         params: { limit: 5 },
       },
@@ -95,19 +95,19 @@ export class BatchAdminService {
   async loadUserManagementData() {
     const results = await batchRequestService.executeNamedBatch<any>({
       users: {
-        endpoint: "/api/v1/admin/users",
+        endpoint: "/api/admin/users",
         method: "GET",
       },
       count: {
-        endpoint: "/api/v1/admin/users/count",
+        endpoint: "/api/admin/users/count",
         method: "GET",
       },
       stats: {
-        endpoint: "/api/v1/admin/users/stats",
+        endpoint: "/api/admin/users/stats",
         method: "GET",
       },
       activeUsers: {
-        endpoint: "/api/v1/admin/users/active",
+        endpoint: "/api/admin/users/active",
         method: "GET",
       },
     });
@@ -121,15 +121,15 @@ export class BatchAdminService {
   async loadFeedbackData() {
     const results = await batchRequestService.executeNamedBatch<any>({
       allFeedback: {
-        endpoint: "/api/v1/admin/feedback",
+        endpoint: "/api/admin/feedback",
         method: "GET",
       },
       stats: {
-        endpoint: "/api/v1/admin/feedback/stats",
+        endpoint: "/api/admin/feedback/stats",
         method: "GET",
       },
       negativeFeedback: {
-        endpoint: "/api/v1/admin/feedback/negative",
+        endpoint: "/api/admin/feedback/negative",
         method: "GET",
       },
     });
@@ -154,7 +154,7 @@ export class BatchAdminService {
     if (operations.createUsers) {
       operations.createUsers.forEach((userData, _idx: any) => {
         requests[`create_${idx}`] = {
-          endpoint: "/api/v1/admin/users",
+          endpoint: "/api/admin/users",
           method: "POST",
           data: userData,
         };
@@ -166,7 +166,7 @@ export class BatchAdminService {
     if (operations.updateRoles) {
       operations.updateRoles.forEach((update, _idx: any) => {
         requests[`updateRole_${idx}`] = {
-          endpoint: `/api/v1/admin/users/${update.userId}/role`,
+          endpoint: `/api/admin/users/${update.userId}/role`,
           method: "PUT",
           data: { role: update.role },
         };
@@ -178,7 +178,7 @@ export class BatchAdminService {
     if (operations.deleteUsers) {
       operations.deleteUsers.forEach((userId, _idx: any) => {
         requests[`delete_${idx}`] = {
-          endpoint: `/api/v1/admin/users/${userId}`,
+          endpoint: `/api/admin/users/${userId}`,
           method: "DELETE",
         };
         requestIndex++;
@@ -189,7 +189,7 @@ export class BatchAdminService {
     if (operations.lockUsers) {
       operations.lockUsers.forEach((userId, _idx: any) => {
         requests[`lock_${idx}`] = {
-          endpoint: `/api/v1/admin/users/${userId}/lock`,
+          endpoint: `/api/admin/users/${userId}/lock`,
           method: "POST",
         };
         requestIndex++;
@@ -200,7 +200,7 @@ export class BatchAdminService {
     if (operations.unlockUsers) {
       operations.unlockUsers.forEach((userId, _idx: any) => {
         requests[`unlock_${idx}`] = {
-          endpoint: `/api/v1/admin/users/${userId}/unlock`,
+          endpoint: `/api/admin/users/${userId}/unlock`,
           method: "POST",
         };
         requestIndex++;
@@ -223,35 +223,35 @@ export class BatchAdminService {
 
     if (operations.clearCache) {
       requests.clearCache = {
-        endpoint: "/api/v1/admin/clear-cache",
+        endpoint: "/api/admin/clear-cache",
         method: "POST",
       };
     }
 
     if (operations.clearEmbeddingCache) {
       requests.clearEmbeddingCache = {
-        endpoint: "/api/v1/admin/clear-embedding-cache",
+        endpoint: "/api/admin/clear-embedding-cache",
         method: "POST",
       };
     }
 
     if (operations.reindex) {
       requests.reindex = {
-        endpoint: "/api/v1/admin/reindex",
+        endpoint: "/api/admin/reindex",
         method: "POST",
       };
     }
 
     if (operations.systemCheck) {
       requests.systemCheck = {
-        endpoint: "/api/v1/admin/system-check",
+        endpoint: "/api/admin/system-check",
         method: "POST",
       };
     }
 
     // Also get system stats after operations
     requests.systemStats = {
-      endpoint: "/api/v1/admin/system/stats",
+      endpoint: "/api/admin/system/stats",
       method: "GET",
     };
 
@@ -264,15 +264,15 @@ export class BatchAdminService {
   async loadDocumentConverterData() {
     const results = await batchRequestService.executeNamedBatch<any>({
       status: {
-        endpoint: "/api/v1/admin/doc-converter/status",
+        endpoint: "/api/admin/doc-converter/status",
         method: "GET",
       },
       jobs: {
-        endpoint: "/api/v1/admin/doc-converter/jobs",
+        endpoint: "/api/admin/doc-converter/jobs",
         method: "GET",
       },
       settings: {
-        endpoint: "/api/v1/admin/doc-converter/settings",
+        endpoint: "/api/admin/doc-converter/settings",
         method: "GET",
       },
     });
@@ -293,7 +293,7 @@ export class BatchAdminService {
 
     toggleUpdates.forEach((update, _idx: any) => {
       requests[`toggle_${idx}`] = {
-        endpoint: `/api/v1/admin/feature-toggles/${update.id}`,
+        endpoint: `/api/admin/feature-toggles/${update.id}`,
         method: "PUT",
         data: { enabled: update.enabled },
       };
@@ -301,7 +301,7 @@ export class BatchAdminService {
 
     // Also get updated stats
     requests.stats = {
-      endpoint: "/api/v1/admin/feature-toggles/stats",
+      endpoint: "/api/admin/feature-toggles/stats",
       method: "GET",
     };
 
@@ -322,7 +322,7 @@ export class BatchAdminService {
     if (operations.updateStatus) {
       operations.updateStatus.forEach((update, _idx: any) => {
         requests[`updateStatus_${idx}`] = {
-          endpoint: `/api/v1/admin/feedback/${update.feedbackId}/status`,
+          endpoint: `/api/admin/feedback/${update.feedbackId}/status`,
           method: "PATCH",
           data: { status: update.status },
         };
@@ -333,7 +333,7 @@ export class BatchAdminService {
     if (operations.deleteFeedback) {
       operations.deleteFeedback.forEach((feedbackId, _idx: any) => {
         requests[`delete_${idx}`] = {
-          endpoint: `/api/v1/admin/feedback/${feedbackId}`,
+          endpoint: `/api/admin/feedback/${feedbackId}`,
           method: "DELETE",
         };
       });
@@ -342,7 +342,7 @@ export class BatchAdminService {
     // Export feedback
     if (operations.exportFormat) {
       requests.export = {
-        endpoint: "/api/v1/admin/feedback/export",
+        endpoint: "/api/admin/feedback/export",
         method: "GET",
         params: { format: operations.exportFormat },
       };
@@ -350,7 +350,7 @@ export class BatchAdminService {
 
     // Get updated stats
     requests.stats = {
-      endpoint: "/api/v1/admin/feedback/stats",
+      endpoint: "/api/admin/feedback/stats",
       method: "GET",
     };
 
@@ -364,25 +364,25 @@ export class BatchAdminService {
     // Use lower priority for prefetching
     const requests: BatchRequest[] = [
       {
-        endpoint: "/api/v1/admin/users/count",
+        endpoint: "/api/admin/users/count",
         method: "GET",
         id: "userCount",
         priority: 10,
       },
       {
-        endpoint: "/api/v1/admin/feedback/stats",
+        endpoint: "/api/admin/feedback/stats",
         method: "GET",
         id: "feedbackStats",
         priority: 10,
       },
       {
-        endpoint: "/api/v1/admin/feature-toggles",
+        endpoint: "/api/admin/feature-toggles",
         method: "GET",
         id: "featureToggles",
         priority: 10,
       },
       {
-        endpoint: "/api/v1/admin/system/stats",
+        endpoint: "/api/admin/system/stats",
         method: "GET",
         id: "systemStats",
         priority: 10,
@@ -400,17 +400,17 @@ export class BatchAdminService {
     // Use cache for frequently requested data
     const results = await batchRequestService.executeNamedBatch<any>({
       activeUsers: {
-        endpoint: "/api/v1/admin/users/active",
+        endpoint: "/api/admin/users/active",
         method: "GET",
         timeout: 5000, // Quick timeout for real-time data
       },
       systemStats: {
-        endpoint: "/api/v1/admin/system/stats",
+        endpoint: "/api/admin/system/stats",
         method: "GET",
         timeout: 5000,
       },
       recentFeedback: {
-        endpoint: "/api/v1/admin/feedback",
+        endpoint: "/api/admin/feedback",
         method: "GET",
         params: { limit: 10, sort: "created_desc" },
         timeout: 5000,

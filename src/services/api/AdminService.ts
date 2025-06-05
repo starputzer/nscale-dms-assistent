@@ -57,7 +57,7 @@ export class AdminService {
 
     // Get the current user directly
     // Try accessing it from different properties
-    const currentUser = (authService as any).user || (authService as any).currentUser;
+    const currentUser = ((((authService as any).user || (authService as any).currentUser;
 
     // Get the current user from local storage as a fallback
     let userFromStorage = null;
@@ -67,7 +67,7 @@ export class AdminService {
       const userJson2 = localStorage.getItem("user");
 
       if (userJson) {
-        userFromStorage = JSON.parse(userJson);
+        userFromStorage = JSON.parse(userJson as any);
       } else if (userJson2) {
         userFromStorage = JSON.parse(userJson2 || '{}');
       }
@@ -80,7 +80,7 @@ export class AdminService {
     try {
       const userJson = sessionStorage.getItem("nscale_user");
       if (userJson) {
-        userFromSessionStorage = JSON.parse(userJson);
+        userFromSessionStorage = JSON.parse(userJson as any);
       }
     } catch (e) {
       console.error("Error parsing user from session storage", e);
@@ -955,7 +955,7 @@ export class AdminService {
    * Negative Feedback-Einträge abrufen
    */
   public async getNegativeFeedback(
-    limit: number = 100,
+    _limit: number = 100,
   ): Promise<ApiResponse<any>> {
     try {
       // Prüfen, ob Admin-Rechte vorhanden sind
@@ -1084,7 +1084,7 @@ export class AdminService {
   /**
    * Löst ein Event aus
    */
-  private emitEvent(event: string, data?: any): void {
+  private _emitEvent(event: string, data?: any): void {
     if (this.eventHandlers.has(event)) {
       this.eventHandlers.get(event)?.forEach((handler: any) => {
         try {

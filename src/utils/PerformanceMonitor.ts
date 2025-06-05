@@ -106,7 +106,7 @@ class PerformanceMonitorImpl {
 
     // Update FPS every second
     if (now - this.lastFPSUpdate >= 1000) {
-      this.fps = Math.round((this.frameCount * 1000) / (now - this.lastFPSUpdate));
+      this.fps = Math.round(this.frameCount * 1000) / (now - this.lastFPSUpdate));
       this.frameCount = 0;
       this.lastFPSUpdate = now;
       
@@ -176,7 +176,7 @@ export function usePerformanceMonitor() {
  * Performance measurement decorator for components
  */
 export function measurePerformance(componentName: string) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     
     descriptor.value = function (...args: any[]) {

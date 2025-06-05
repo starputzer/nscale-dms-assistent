@@ -26,6 +26,10 @@ export interface IAdminFeatureTogglesService {
     data: Partial<FeatureToggle>,
   ): Promise<ApiResponse<FeatureToggle>>;
   deleteFeatureToggle(id: string): Promise<ApiResponse<void>>;
+  getFeatureHistory(id: string): Promise<ApiResponse<any[]>>;
+  getFeatureMetrics(params?: { startDate?: Date; endDate?: Date }): Promise<ApiResponse<any>>;
+  getFeatureErrors(params?: { startDate?: Date; endDate?: Date; limit?: number }): Promise<ApiResponse<any[]>>;
+  importFeatures(features: any[], options: any): Promise<ApiResponse<any>>;
 }
 
 /**
@@ -436,6 +440,196 @@ export class AdminFeatureTogglesService implements IAdminFeatureTogglesService {
             : `Fehler beim Löschen des Feature-Toggles ${id}`,
         error: {
           code: "FEATURE_TOGGLE_DELETE_ERROR",
+          message:
+            error instanceof Error ? error.message : "Unbekannter Fehler",
+        },
+      };
+    }
+  }
+
+  /**
+   * Feature-Toggle-Historie abrufen
+   */
+  public async getFeatureHistory(id: string): Promise<ApiResponse<any[]>> {
+    try {
+      this.logger.info(`Abrufen der Historie für Feature-Toggle ${id}`);
+
+      const response = await apiService.get<any>(
+        `/admin/feature-toggles/${id}/history`,
+      );
+
+      if (response.success) {
+        return {
+          success: true,
+          data: response.data?.history || [],
+          message: "Feature-Toggle-Historie erfolgreich abgerufen",
+        };
+      } else {
+        throw new Error(
+          response.message || `Fehler beim Abrufen der Historie für ${id}`,
+        );
+      }
+    } catch (error) {
+      this.logger.error(`Fehler beim Abrufen der Feature-Toggle-Historie ${id}`, error);
+
+      return {
+        success: false,
+        data: [],
+        message:
+          error instanceof Error
+            ? error.message
+            : `Fehler beim Abrufen der Historie für ${id}`,
+        error: {
+          code: "FEATURE_HISTORY_ERROR",
+          message:
+            error instanceof Error ? error.message : "Unbekannter Fehler",
+        },
+      };
+    }
+  }
+
+  /**
+   * Feature-Toggle-Metriken abrufen
+   */
+  public async getFeatureMetrics(params?: { startDate?: Date; endDate?: Date }): Promise<ApiResponse<any>> {
+    try {
+      this.logger.info("Abrufen der Feature-Toggle-Metriken");
+
+      const queryParams: any = {};
+      if (params?.startDate) {
+        queryParams.start_date = params.startDate.toISOString();
+      }
+      if (params?.endDate) {
+        queryParams.end_date = params.endDate.toISOString();
+      }
+
+      const response = await apiService.get<any>(
+        "/admin/feature-toggles/metrics",
+        queryParams,
+      );
+
+      if (response.success) {
+        return {
+          success: true,
+          data: response.data,
+          message: "Feature-Toggle-Metriken erfolgreich abgerufen",
+        };
+      } else {
+        throw new Error(
+          response.message || "Fehler beim Abrufen der Feature-Toggle-Metriken",
+        );
+      }
+    } catch (error) {
+      this.logger.error("Fehler beim Abrufen der Feature-Toggle-Metriken", error);
+
+      return {
+        success: false,
+        data: { features: {} },
+        message:
+          error instanceof Error
+            ? error.message
+            : "Fehler beim Abrufen der Feature-Toggle-Metriken",
+        error: {
+          code: "FEATURE_METRICS_ERROR",
+          message:
+            error instanceof Error ? error.message : "Unbekannter Fehler",
+        },
+      };
+    }
+  }
+
+  /**
+   * Feature-Toggle-Fehler abrufen
+   */
+  public async getFeatureErrors(params?: { startDate?: Date; endDate?: Date; limit?: number }): Promise<ApiResponse<any[]>> {
+    try {
+      this.logger.info("Abrufen der Feature-Toggle-Fehler");
+
+      const queryParams: any = {};
+      if (params?.startDate) {
+        queryParams.start_date = params.startDate.toISOString();
+      }
+      if (params?.endDate) {
+        queryParams.end_date = params.endDate.toISOString();
+      }
+      if (params?.limit) {
+        queryParams.limit = params.limit;
+      }
+
+      const response = await apiService.get<any>(
+        "/admin/feature-toggles/errors",
+        queryParams,
+      );
+
+      if (response.success) {
+        return {
+          success: true,
+          data: response.data?.errors || [],
+          message: "Feature-Toggle-Fehler erfolgreich abgerufen",
+        };
+      } else {
+        throw new Error(
+          response.message || "Fehler beim Abrufen der Feature-Toggle-Fehler",
+        );
+      }
+    } catch (error) {
+      this.logger.error("Fehler beim Abrufen der Feature-Toggle-Fehler", error);
+
+      return {
+        success: false,
+        data: [],
+        message:
+          error instanceof Error
+            ? error.message
+            : "Fehler beim Abrufen der Feature-Toggle-Fehler",
+        error: {
+          code: "FEATURE_ERRORS_ERROR",
+          message:
+            error instanceof Error ? error.message : "Unbekannter Fehler",
+        },
+      };
+    }
+  }
+
+  /**
+   * Feature-Toggles importieren
+   */
+  public async importFeatures(features: any[], options: any): Promise<ApiResponse<any>> {
+    try {
+      this.logger.info(`Importiere ${features.length} Feature-Toggles`);
+
+      const response = await apiService.post<any>(
+        "/admin/feature-toggles/import",
+        { features, options },
+      );
+
+      if (response.success) {
+        // Cache für Feature-Toggle-Listen invalidieren
+        cachedApiService.invalidate(
+          apiConfig.ENDPOINTS.FEATURE_TOGGLES.LIST ||
+            "/admin/feature-toggles",
+        );
+        cachedApiService.invalidate(
+          apiConfig.ENDPOINTS.FEATURE_TOGGLES.STATS ||
+            "/admin/feature-toggles/stats",
+        );
+        return response;
+      } else {
+        throw new Error(
+          response.message || "Fehler beim Importieren der Feature-Toggles",
+        );
+      }
+    } catch (error) {
+      this.logger.error("Fehler beim Importieren der Feature-Toggles", error);
+
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Fehler beim Importieren der Feature-Toggles",
+        error: {
+          code: "FEATURE_IMPORT_ERROR",
           message:
             error instanceof Error ? error.message : "Unbekannter Fehler",
         },

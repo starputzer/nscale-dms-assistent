@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature Toggles Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+        h1 {
+            color: #2563eb;
+            text-align: center;
+        }
+        .test-section {
+            background-color: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        button {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #1d4ed8;
+        }
+        pre {
+            background-color: #f3f4f6;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Feature Toggles API Test</h1>
+    
+    <div class="test-section">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <input type="email" id="email" placeholder="Email" value="admin@example.com" required>
+            <input type="password" id="password" placeholder="Password" value="admin123" required>
+            <button type="submit">Login</button>
+        </form>
+        <div id="loginResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Feature Toggles Tests</h2>
+        <button onclick="testGetFeatureToggles()">Get Feature Toggles</button>
+        <button onclick="testGetStats()">Get Stats</button>
+        <button onclick="testUpdateToggle()">Update Toggle</button>
+        <button onclick="testCreateToggle()">Create Toggle</button>
+        <button onclick="testGetHistory()">Get History</button>
+        <button onclick="testGetMetrics()">Get Metrics</button>
+        <div id="testResults"></div>
+    </div>
+
+    <script>
+        let authToken = null;
+        const API_BASE = 'http://localhost:8000/api/v1';
+        
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    authToken = data.access_token;
+                    showResult('loginResult', 'Login successful!', 'success');
+                    console.log('Token:', authToken);
+                } else {
+                    showResult('loginResult', `Login failed: ${data.detail || data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('loginResult', `Error: ${error.message}`, 'error');
+            }
+        });
+        
+        function showResult(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+        
+        async function testGetFeatureToggles() {
+            if (!authToken) {
+                showResult('testResults', 'Please login first', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/feature-toggles`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    showResult('testResults', 
+                        `<h3>Feature Toggles</h3><pre>${JSON.stringify(data, null, 2)}</pre>`, 
+                        'success'
+                    );
+                } else {
+                    showResult('testResults', `Error: ${data.detail || data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('testResults', `Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testGetStats() {
+            if (!authToken) {
+                showResult('testResults', 'Please login first', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/feature-toggles/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    showResult('testResults', 
+                        `<h3>Feature Toggle Stats</h3><pre>${JSON.stringify(data, null, 2)}</pre>`, 
+                        'success'
+                    );
+                } else {
+                    showResult('testResults', `Error: ${data.detail || data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('testResults', `Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testUpdateToggle() {
+            if (!authToken) {
+                showResult('testResults', 'Please login first', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/feature-toggles/rate-limiting`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ enabled: false })
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    showResult('testResults', 
+                        `<h3>Update Result</h3><pre>${JSON.stringify(data, null, 2)}</pre>`, 
+                        'success'
+                    );
+                } else {
+                    showResult('testResults', `Error: ${data.detail || data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('testResults', `Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testCreateToggle() {
+            if (!authToken) {
+                showResult('testResults', 'Please login first', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/feature-toggles`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id: 'test-feature',
+                        name: 'Test Feature',
+                        description: 'A test feature toggle',
+                        enabled: false,
+                        category: 'experimental'
+                    })
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    showResult('testResults', 
+                        `<h3>Create Result</h3><pre>${JSON.stringify(data, null, 2)}</pre>`, 
+                        'success'
+                    );
+                } else {
+                    showResult('testResults', `Error: ${data.detail || data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('testResults', `Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testGetHistory() {
+            if (!authToken) {
+                showResult('testResults', 'Please login first', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/feature-toggles/rate-limiting/history`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    showResult('testResults', 
+                        `<h3>Feature History</h3><pre>${JSON.stringify(data, null, 2)}</pre>`, 
+                        'success'
+                    );
+                } else {
+                    showResult('testResults', `Error: ${data.detail || data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('testResults', `Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testGetMetrics() {
+            if (!authToken) {
+                showResult('testResults', 'Please login first', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/feature-toggles/metrics`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    showResult('testResults', 
+                        `<h3>Feature Metrics</h3><pre>${JSON.stringify(data, null, 2)}</pre>`, 
+                        'success'
+                    );
+                } else {
+                    showResult('testResults', `Error: ${data.detail || data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('testResults', `Error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

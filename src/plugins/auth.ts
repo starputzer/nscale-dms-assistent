@@ -72,7 +72,7 @@ const AuthPlugin: Plugin = {
       });
 
       // Globaler Error-Handler für Auth-Fehler
-      app.config.errorHandler = (err, vm, info) => {
+      app.config.errorHandler = (err, _vm, info) => {
         // Spezifische Behandlung für Auth-Fehler
         if (err instanceof AuthError) {
           console.error("Auth error in Vue component:", err);
@@ -148,7 +148,7 @@ const AuthPlugin: Plugin = {
       console.log("Auth plugin initialized with options:", options);
 
       // Globale Hilfsfunktionen für die Entwicklung
-      window.__auth = {
+      (window as any).__auth = {
         getAuthState: () => ({
           authenticated: authentication.isAuthenticated.value,
           user: authentication.user.value,

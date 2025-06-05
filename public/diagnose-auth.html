@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <title>Auth & API Diagnostics</title>
+    <style>
+        body {
+            font-family: monospace;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        .section {
+            background: #252526;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border: 1px solid #3e3e42;
+        }
+        h1, h2 {
+            color: #569cd6;
+        }
+        .success {
+            color: #4ec9b0;
+        }
+        .error {
+            color: #f44747;
+        }
+        .warning {
+            color: #dcdcaa;
+        }
+        .info {
+            color: #9cdcfe;
+        }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        button:hover {
+            background: #1177bb;
+        }
+        pre {
+            background: #1e1e1e;
+            padding: 10px;
+            overflow-x: auto;
+            border: 1px solid #3e3e42;
+            border-radius: 3px;
+        }
+        .request-log {
+            margin: 10px 0;
+            padding: 10px;
+            background: #1e1e1e;
+            border-left: 3px solid #569cd6;
+        }
+        .token-preview {
+            font-family: monospace;
+            background: #1e1e1e;
+            padding: 5px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Auth & API Diagnostics</h1>
+    
+    <div class="section">
+        <h2>1. Current Auth Status</h2>
+        <div id="authStatus"></div>
+    </div>
+    
+    <div class="section">
+        <h2>2. Token Analysis</h2>
+        <div id="tokenAnalysis"></div>
+    </div>
+    
+    <div class="section">
+        <h2>3. API Request Tests</h2>
+        <button onclick="runAllTests()">Run All Tests</button>
+        <button onclick="clearResults()">Clear Results</button>
+        <div id="testResults"></div>
+    </div>
+    
+    <div class="section">
+        <h2>4. Request Inspector</h2>
+        <button onclick="interceptRequests()">Start Intercepting</button>
+        <div id="requestLog"></div>
+    </div>
+
+    <script>
+        // Check auth status
+        function checkAuthStatus() {
+            const authDiv = document.getElementById('authStatus');
+            
+            // Check all possible token locations
+            const tokens = {
+                'localStorage.nscale_access_token': localStorage.getItem('nscale_access_token'),
+                'localStorage.access_token': localStorage.getItem('access_token'),
+                'sessionStorage.nscale_access_token': sessionStorage.getItem('nscale_access_token'),
+                'sessionStorage.access_token': sessionStorage.getItem('access_token')
+            };
+            
+            const users = {
+                'localStorage.nscale_user': localStorage.getItem('nscale_user'),
+                'localStorage.user': localStorage.getItem('user'),
+                'sessionStorage.nscale_user': sessionStorage.getItem('nscale_user'),
+                'sessionStorage.user': sessionStorage.getItem('user')
+            };
+            
+            let html = '<h3>Tokens:</h3>';
+            let foundToken = false;
+            
+            for (const [key, value] of Object.entries(tokens)) {
+                if (value) {
+                    foundToken = true;
+                    html += `<div class="success">✅ ${key}: ${value.substring(0, 50)}...</div>`;
+                } else {
+                    html += `<div class="error">❌ ${key}: null</div>`;
+                }
+            }
+            
+            html += '<h3>User Data:</h3>';
+            for (const [key, value] of Object.entries(users)) {
+                if (value) {
+                    try {
+                        const user = JSON.parse(value);
+                        html += `<div class="success">✅ ${key}: ${user.email} (${user.role})</div>`;
+                    } catch (e) {
+                        html += `<div class="warning">⚠️ ${key}: Invalid JSON</div>`;
+                    }
+                } else {
+                    html += `<div class="error">❌ ${key}: null</div>`;
+                }
+            }
+            
+            authDiv.innerHTML = html;
+            return foundToken;
+        }
+        
+        // Analyze JWT token
+        function analyzeToken() {
+            const tokenDiv = document.getElementById('tokenAnalysis');
+            const token = localStorage.getItem('nscale_access_token') || localStorage.getItem('access_token');
+            
+            if (!token) {
+                tokenDiv.innerHTML = '<div class="error">No token found!</div>';
+                return;
+            }
+            
+            try {
+                // Decode JWT without verification
+                const parts = token.split('.');
+                if (parts.length !== 3) {
+                    tokenDiv.innerHTML = '<div class="error">Invalid JWT format</div>';
+                    return;
+                }
+                
+                const header = JSON.parse(atob(parts[0]));
+                const payload = JSON.parse(atob(parts[1]));
+                
+                let html = '<h3>JWT Header:</h3>';
+                html += `<pre>${JSON.stringify(header, null, 2)}</pre>`;
+                
+                html += '<h3>JWT Payload:</h3>';
+                html += `<pre>${JSON.stringify(payload, null, 2)}</pre>`;
+                
+                // Check expiration
+                if (payload.exp) {
+                    const expDate = new Date(payload.exp * 1000);
+                    const now = new Date();
+                    if (expDate < now) {
+                        html += '<div class="error">⚠️ Token is EXPIRED!</div>';
+                    } else {
+                        html += `<div class="success">✅ Token valid until: ${expDate.toLocaleString()}</div>`;
+                    }
+                }
+                
+                // Check role
+                if (payload.role === 'admin') {
+                    html += '<div class="success">✅ User has admin role</div>';
+                } else {
+                    html += `<div class="error">❌ User role is: ${payload.role || 'undefined'}</div>`;
+                }
+                
+                tokenDiv.innerHTML = html;
+                
+            } catch (error) {
+                tokenDiv.innerHTML = `<div class="error">Error decoding token: ${error.message}</div>`;
+            }
+        }
+        
+        // Test API endpoints
+        async function runAllTests() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<div class="info">Running tests...</div>';
+            
+            const token = localStorage.getItem('nscale_access_token') || localStorage.getItem('access_token');
+            
+            const tests = [
+                // Basic endpoints
+                { name: 'Health Check (No Auth)', url: '/api/health', auth: false },
+                { name: 'Health Check (With Auth)', url: '/api/health', auth: true },
+                
+                // Auth endpoints
+                { name: 'Current User', url: '/api/auth/user', auth: true },
+                
+                // Admin endpoints from errors
+                { name: 'Admin Dashboard Summary', url: '/api/admin-dashboard/summary', auth: true },
+                { name: 'Admin Users', url: '/api/admin/users', auth: true },
+                { name: 'Admin Users (with slash)', url: '/api/admin/users/', auth: true },
+                { name: 'Admin Feedback Stats', url: '/api/admin/feedback/stats', auth: true },
+                
+                // System endpoints
+                { name: 'System Info', url: '/api/system/info', auth: true },
+                
+                // Test different ports
+                { name: 'Direct API Health (Port 8000)', url: 'http://localhost:8000/api/health', auth: false },
+                { name: 'Direct API Admin (Port 8000)', url: 'http://localhost:8000/api/admin/users/', auth: true }
+            ];
+            
+            let results = '';
+            
+            for (const test of tests) {
+                results += `<div class="request-log">`;
+                results += `<h4>${test.name}</h4>`;
+                results += `<div class="info">URL: ${test.url}</div>`;
+                
+                try {
+                    const headers = {
+                        'Content-Type': 'application/json'
+                    };
+                    
+                    if (test.auth && token) {
+                        headers['Authorization'] = `Bearer ${token}`;
+                        results += `<div class="info">Auth: Bearer ${token.substring(0, 20)}...</div>`;
+                    }
+                    
+                    const response = await fetch(test.url, {
+                        method: 'GET',
+                        headers
+                    });
+                    
+                    const contentType = response.headers.get('content-type');
+                    let data;
+                    
+                    if (contentType && contentType.includes('application/json')) {
+                        data = await response.json();
+                    } else {
+                        data = await response.text();
+                    }
+                    
+                    if (response.ok) {
+                        results += `<div class="success">✅ Status: ${response.status} ${response.statusText}</div>`;
+                        results += `<details><summary>Response Data</summary><pre>${JSON.stringify(data, null, 2)}</pre></details>`;
+                    } else {
+                        results += `<div class="error">❌ Status: ${response.status} ${response.statusText}</div>`;
+                        results += `<div class="error">Error: ${JSON.stringify(data, null, 2)}</div>`;
+                    }
+                    
+                } catch (error) {
+                    results += `<div class="error">❌ Network Error: ${error.message}</div>`;
+                }
+                
+                results += `</div>`;
+            }
+            
+            resultsDiv.innerHTML = results;
+        }
+        
+        function clearResults() {
+            document.getElementById('testResults').innerHTML = '';
+            document.getElementById('requestLog').innerHTML = '';
+        }
+        
+        // Intercept all XHR/Fetch requests
+        function interceptRequests() {
+            const logDiv = document.getElementById('requestLog');
+            logDiv.innerHTML = '<div class="info">Intercepting all API requests...</div>';
+            
+            // Intercept fetch
+            const originalFetch = window.fetch;
+            window.fetch = function(...args) {
+                const [url, options = {}] = args;
+                
+                const log = document.createElement('div');
+                log.className = 'request-log';
+                log.innerHTML = `
+                    <div class="info">FETCH: ${options.method || 'GET'} ${url}</div>
+                    <div>Headers: ${JSON.stringify(options.headers || {}, null, 2)}</div>
+                `;
+                logDiv.appendChild(log);
+                
+                return originalFetch.apply(this, args).then(response => {
+                    log.innerHTML += `<div class="${response.ok ? 'success' : 'error'}">Response: ${response.status} ${response.statusText}</div>`;
+                    return response;
+                });
+            };
+            
+            // Intercept XMLHttpRequest
+            const originalOpen = XMLHttpRequest.prototype.open;
+            const originalSend = XMLHttpRequest.prototype.send;
+            const originalSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
+            
+            XMLHttpRequest.prototype.open = function(method, url) {
+                this._method = method;
+                this._url = url;
+                this._headers = {};
+                return originalOpen.apply(this, arguments);
+            };
+            
+            XMLHttpRequest.prototype.setRequestHeader = function(header, value) {
+                this._headers[header] = value;
+                return originalSetRequestHeader.apply(this, arguments);
+            };
+            
+            XMLHttpRequest.prototype.send = function() {
+                const log = document.createElement('div');
+                log.className = 'request-log';
+                log.innerHTML = `
+                    <div class="info">XHR: ${this._method} ${this._url}</div>
+                    <div>Headers: ${JSON.stringify(this._headers, null, 2)}</div>
+                `;
+                logDiv.appendChild(log);
+                
+                this.addEventListener('load', function() {
+                    log.innerHTML += `<div class="${this.status >= 200 && this.status < 300 ? 'success' : 'error'}">Response: ${this.status} ${this.statusText}</div>`;
+                });
+                
+                return originalSend.apply(this, arguments);
+            };
+        }
+        
+        // Run checks on load
+        window.onload = function() {
+            checkAuthStatus();
+            analyzeToken();
+        };
+    </script>
+</body>
+</html>

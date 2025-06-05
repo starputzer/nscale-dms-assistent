@@ -371,7 +371,7 @@ function updateGroups(): void {
       let groupTitle = groupId;
       if (groupId.startsWith("type:")) {
         const type = groupId.replace("type:", "");
-        groupTitle = i18n.t(`notification.types.${type}`);
+        groupTitle = (i18n as any).t(`notification.types.${type}`);
       }
 
       // Bestimme höchste Priorität in der Gruppe
@@ -474,7 +474,7 @@ export const notificationService = {
    * @param options Optionen für die Benachrichtigung
    * @returns ID der erstellten Benachrichtigung
    */
-  add(message: string, options: NotificationOptions = {}): string {
+  add(_message: string, options: NotificationOptions = {}): string {
     // Nichts tun, wenn deaktiviert
     if (!state.enabled) return "";
 
@@ -525,7 +525,7 @@ export const notificationService = {
     return this.add(message, {
       ...options,
       type: "info",
-      title: options.title || i18n.t("notification.info"),
+      title: options.title || (i18n as any).t("notification.info"),
     });
   },
 
@@ -542,7 +542,7 @@ export const notificationService = {
     return this.add(message, {
       ...options,
       type: "success",
-      title: options.title || i18n.t("notification.success"),
+      title: options.title || (i18n as any).t("notification.success"),
     });
   },
 
@@ -559,7 +559,7 @@ export const notificationService = {
     return this.add(message, {
       ...options,
       type: "warning",
-      title: options.title || i18n.t("notification.warning"),
+      title: options.title || (i18n as any).t("notification.warning"),
     });
   },
 
@@ -577,7 +577,7 @@ export const notificationService = {
       ...options,
       type: "error",
       priority: options.priority || "high",
-      title: options.title || i18n.t("notification.error"),
+      title: options.title || (i18n as any).t("notification.error"),
     });
   },
 
@@ -595,7 +595,7 @@ export const notificationService = {
       ...options,
       type: "system",
       priority: options.priority || "high",
-      title: options.title || i18n.t("notification.system"),
+      title: options.title || (i18n as any).t("notification.system"),
     });
   },
 

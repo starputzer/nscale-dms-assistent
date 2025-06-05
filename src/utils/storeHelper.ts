@@ -239,7 +239,7 @@ export function getSafeSessionsStore(): ISessionsStore {
       // Action methods
       synchronizeSessions: async () => {},
       fetchMessages: async () => [],
-      createSession: async (title?: string) => "mock-session-id",
+      createSession: async (_title?: string) => "mock-session-id",
       setCurrentSession: async () => {},
       updateSessionTitle: async () => {},
       archiveSession: async () => {},
@@ -321,7 +321,7 @@ export function getSafeSessionsStore(): ISessionsStore {
       // Action methods
       synchronizeSessions: async () => {},
       fetchMessages: async () => [],
-      createSession: async (title?: string) => "mock-session-id",
+      createSession: async (_title?: string) => "mock-session-id",
       setCurrentSession: async () => {},
       updateSessionTitle: async () => {},
       archiveSession: async () => {},

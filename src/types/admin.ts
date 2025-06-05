@@ -263,3 +263,13 @@ export interface AdminTab {
   requiredRole?: string;
   featureFlag?: string;
 }
+
+
+export interface SystemCheckResult {
+  [key: string]: any;
+}
+
+
+export interface UserStats {
+  [key: string]: any;
+}

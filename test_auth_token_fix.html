@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Token Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Authentication Token Fix Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Login with Fixed Token Extraction</h2>
+        <button onclick="testLogin()">Test Login</button>
+        <div id="loginResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Backend Response</h2>
+        <pre id="backendResponse">Click "Test Login" to see the backend response</pre>
+    </div>
+
+    <div class="test-section">
+        <h2>Token Extraction</h2>
+        <pre id="tokenExtraction">Click "Test Login" to see token extraction details</pre>
+    </div>
+
+    <script>
+        async function testLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            const responseDiv = document.getElementById('backendResponse');
+            const extractionDiv = document.getElementById('tokenExtraction');
+            
+            resultDiv.innerHTML = 'Testing login...';
+            
+            try {
+                // Test the backend directly
+                const response = await fetch('http://localhost:8000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'martin@danglefeet.com',
+                        password: '123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Show the raw backend response
+                responseDiv.textContent = JSON.stringify(data, null, 2);
+                
+                if (!response.ok) {
+                    resultDiv.innerHTML = `<span class="error">Login failed: ${data.detail || 'Unknown error'}</span>`;
+                    return;
+                }
+                
+                // Check token extraction logic (mimicking the fixed auth.ts logic)
+                const token = data.token || data.access_token;
+                
+                extractionDiv.innerHTML = `
+Token field names in response: ${Object.keys(data).join(', ')}
+Looking for: data.token || data.access_token
+Found token: ${token ? 'YES' : 'NO'}
+Token value: ${token ? token.substring(0, 20) + '...' : 'N/A'}
+Token field used: ${data.token ? 'token' : data.access_token ? 'access_token' : 'none'}
+                `;
+                
+                if (token) {
+                    resultDiv.innerHTML = '<span class="success">✓ Login successful! Token extracted correctly.</span>';
+                    
+                    // Test authenticated request
+                    await testAuthenticatedRequest(token);
+                } else {
+                    resultDiv.innerHTML = '<span class="error">✗ No token found in response</span>';
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">Error: ${error.message}</span>`;
+                responseDiv.textContent = 'Error occurred - see console for details';
+                console.error('Login test error:', error);
+            }
+        }
+        
+        async function testAuthenticatedRequest(token) {
+            const resultDiv = document.getElementById('loginResult');
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML += '<br><span class="success">✓ Authenticated request successful!</span>';
+                    resultDiv.innerHTML += `<br>User: ${data.email} (${data.role})`;
+                } else {
+                    resultDiv.innerHTML += '<br><span class="error">✗ Authenticated request failed</span>';
+                }
+            } catch (error) {
+                console.error('Auth request error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

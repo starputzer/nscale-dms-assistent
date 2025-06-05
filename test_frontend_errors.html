@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Error Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            max-width: 1200px; 
+            margin: 0 auto;
+        }
+        .status { 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 5px; 
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        
+        #logs {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-left: 3px solid #ddd;
+        }
+        
+        .log-entry.error { border-left-color: #dc3545; background: #fee; }
+        .log-entry.warn { border-left-color: #ffc107; background: #fffbf0; }
+        .log-entry.info { border-left-color: #17a2b8; }
+        
+        #app-frame {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            margin-top: 20px;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Frontend Application Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="test-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Console Output</h2>
+        <button onclick="clearLogs()">Clear Logs</button>
+        <button onclick="runTests()">Re-run Tests</button>
+        <div id="logs"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Application Preview</h2>
+        <iframe id="app-frame" src="about:blank"></iframe>
+    </div>
+
+    <script>
+        const logs = [];
+        const testResults = {};
+        
+        function log(type, message, details = {}) {
+            const entry = {
+                type,
+                message,
+                timestamp: new Date().toISOString(),
+                ...details
+            };
+            logs.push(entry);
+            updateLogs();
+        }
+        
+        function updateLogs() {
+            const logsDiv = document.getElementById('logs');
+            logsDiv.innerHTML = logs.map(entry => `
+                <div class="log-entry ${entry.type}">
+                    <strong>[${new Date(entry.timestamp).toLocaleTimeString()}] ${entry.type.toUpperCase()}:</strong>
+                    ${escapeHtml(entry.message)}
+                    ${entry.details ? `<br><small>${escapeHtml(JSON.stringify(entry.details))}</small>` : ''}
+                </div>
+            `).reverse().join('');
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = String(text);
+            return div.innerHTML;
+        }
+        
+        function clearLogs() {
+            logs.length = 0;
+            updateLogs();
+        }
+        
+        function updateTestResults() {
+            const resultsDiv = document.getElementById('test-results');
+            const results = Object.entries(testResults).map(([test, result]) => {
+                const statusClass = result.success ? 'success' : 'error';
+                return `
+                    <div class="status ${statusClass}">
+                        <strong>${test}:</strong> ${result.message}
+                        ${result.details ? `<br><small>${result.details}</small>` : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            resultsDiv.innerHTML = results || '<div class="status info">Running tests...</div>';
+        }
+        
+        async function runTests() {
+            logs.length = 0;
+            testResults.length = 0;
+            updateTestResults();
+            
+            const iframe = document.getElementById('app-frame');
+            
+            log('info', 'Starting frontend tests...');
+            
+            // Test 1: Check if dev server is running
+            try {
+                const response = await fetch('http://localhost:5174');
+                testResults['Dev Server'] = {
+                    success: response.ok,
+                    message: response.ok ? 'Running on port 5174' : `Server returned ${response.status}`,
+                    details: `Status: ${response.status} ${response.statusText}`
+                };
+            } catch (error) {
+                testResults['Dev Server'] = {
+                    success: false,
+                    message: 'Not accessible',
+                    details: error.message
+                };
+            }
+            
+            // Test 2: Check API server
+            try {
+                const response = await fetch('http://localhost:8080/api/health');
+                testResults['API Server'] = {
+                    success: response.ok,
+                    message: response.ok ? 'Running on port 8080' : `Server returned ${response.status}`,
+                    details: `Status: ${response.status}`
+                };
+            } catch (error) {
+                testResults['API Server'] = {
+                    success: false,
+                    message: 'Not accessible',
+                    details: error.message
+                };
+            }
+            
+            updateTestResults();
+            
+            // Load the app in iframe and monitor it
+            iframe.src = 'http://localhost:5174';
+            
+            iframe.onload = async function() {
+                log('info', 'Application loaded in iframe');
+                
+                // Wait a bit for Vue to initialize
+                setTimeout(async () => {
+                    try {
+                        // Try to access iframe content
+                        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                        const iframeWin = iframe.contentWindow;
+                        
+                        // Check for Vue
+                        const hasVue = iframeWin.Vue || iframeWin.__VUE__ || iframeDoc.querySelector('#app')?.__vue_app__;
+                        testResults['Vue.js'] = {
+                            success: !!hasVue,
+                            message: hasVue ? 'Initialized' : 'Not found',
+                            details: hasVue ? 'Vue instance detected' : 'No Vue instance found'
+                        };
+                        
+                        // Check for app content
+                        const appContent = iframeDoc.querySelector('#app');
+                        const hasContent = appContent && appContent.innerHTML.trim().length > 0;
+                        testResults['App Content'] = {
+                            success: hasContent,
+                            message: hasContent ? 'Rendered' : 'Empty',
+                            details: hasContent ? `Content length: ${appContent.innerHTML.length} chars` : 'No content rendered'
+                        };
+                        
+                        // Check for router
+                        const hasRouter = iframeWin.$router || (iframeWin.app && iframeWin.app.config.globalProperties.$router);
+                        testResults['Vue Router'] = {
+                            success: !!hasRouter,
+                            message: hasRouter ? 'Initialized' : 'Not found'
+                        };
+                        
+                        // Check for i18n
+                        const hasI18n = iframeWin.$i18n || (iframeWin.app && iframeWin.app.config.globalProperties.$i18n);
+                        testResults['i18n'] = {
+                            success: !!hasI18n,
+                            message: hasI18n ? 'Initialized' : 'Not found'
+                        };
+                        
+                        // Monitor console for errors
+                        if (iframeWin.console) {
+                            const originalError = iframeWin.console.error;
+                            let errorCount = 0;
+                            
+                            iframeWin.console.error = function(...args) {
+                                errorCount++;
+                                log('error', args.join(' '));
+                                originalError.apply(iframeWin.console, args);
+                            };
+                            
+                            // Wait a bit then check
+                            setTimeout(() => {
+                                testResults['Console Errors'] = {
+                                    success: errorCount === 0,
+                                    message: errorCount === 0 ? 'No errors' : `${errorCount} errors found`,
+                                    details: errorCount > 0 ? 'Check console output above' : null
+                                };
+                                updateTestResults();
+                            }, 2000);
+                        }
+                        
+                    } catch (error) {
+                        log('warn', 'Cannot access iframe content (cross-origin)', { error: error.message });
+                        testResults['Iframe Access'] = {
+                            success: false,
+                            message: 'Cross-origin restriction',
+                            details: 'Running on same origin but access denied'
+                        };
+                    }
+                    
+                    updateTestResults();
+                }, 1000);
+            };
+            
+            iframe.onerror = function() {
+                log('error', 'Failed to load application');
+                testResults['Application Load'] = {
+                    success: false,
+                    message: 'Failed to load'
+                };
+                updateTestResults();
+            };
+        }
+        
+        // Run tests on load
+        window.onload = runTests;
+    </script>
+</body>
+</html>

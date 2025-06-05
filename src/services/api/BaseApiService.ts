@@ -10,7 +10,7 @@ import { cachedApiService } from "./CachedApiService";
 import { apiConfig } from "./config";
 import { LogService } from "../log/LogService";
 import {
-  APIRequest,
+  _APIRequest,
   APIResponse,
   APIError,
   PaginationParams,

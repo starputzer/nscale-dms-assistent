@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check Auth Status</title>
+    <script>
+        function checkAuth() {
+            const keys = ['nscale_access_token', 'access_token', 'token', 'nscale_token'];
+            const results = {};
+            
+            keys.forEach(key => {
+                const value = localStorage.getItem(key);
+                results[key] = value ? value.substring(0, 20) + '...' : 'not found';
+            });
+            
+            document.getElementById('results').innerHTML = `
+                <h2>LocalStorage Auth Tokens:</h2>
+                <pre>${JSON.stringify(results, null, 2)}</pre>
+                <h2>All LocalStorage Keys:</h2>
+                <pre>${JSON.stringify(Object.keys(localStorage), null, 2)}</pre>
+            `;
+        }
+        
+        window.onload = checkAuth;
+    </script>
+</head>
+<body>
+    <h1>Auth Status Check</h1>
+    <div id="results"></div>
+    <button onclick="checkAuth()">Refresh</button>
+</body>
+</html>

@@ -132,8 +132,8 @@ window.authDebug = {
       }
 
       // 3. API service
-      if (window.apiService?.axiosInstance) {
-        window.apiService.axiosInstance.defaults.headers.common[
+      if ((window as any).apiService?.axiosInstance) {
+        (window as any).apiService.axiosInstance.defaults.headers.common[
           "Authorization"
         ] = `Bearer ${token}`;
         console.log("✓ API service updated");

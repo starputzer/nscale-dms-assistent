@@ -165,7 +165,7 @@ export class TypedSessionService extends BaseApiService<
   ): Promise<Result<ChatSession[], APIError>> {
     try {
 
-      const pageSize = params?.pageSize || 20;
+      const pageSize = params? (response.data as any).pageSize || 20;
       const sortBy = params?.sortBy || "updatedAt";
       const sortDirection = params?.sortDirection || "desc";
 
@@ -508,7 +508,7 @@ export class TypedSessionService extends BaseApiService<
    * Synchronisiert Nachrichten in den Offline-Speicher
    */
   private async syncMessagesToOfflineStorage(
-    sessionId: string,
+    _sessionId: string,
     messages: ChatMessage[],
   ): Promise<void> {
     try {
@@ -570,7 +570,7 @@ export class TypedSessionService extends BaseApiService<
         );
 
         // Event auslösen
-        this.emitEvent("messageSent", result.data);
+        this.emitEvent("messageSent" as any, result.(data as any);
       }
 
       return result;
@@ -731,7 +731,7 @@ export class TypedSessionService extends BaseApiService<
               finalMessage = event.message;
             }
           },
-          onComplete: (response) => {
+          onComplete: (_response) => {
             // Stream beenden
             this.currentStream = null;
 
@@ -972,7 +972,7 @@ export class TypedSessionService extends BaseApiService<
   /**
    * Fügt eine Anfrage zur Synchronisationsqueue hinzu
    */
-  private async addToSyncQueue(request: {
+  private async _addToSyncQueue(request: {
     url: string;
     method: string;
     data?: any;

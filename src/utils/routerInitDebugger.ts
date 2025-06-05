@@ -30,7 +30,7 @@ export interface DebugReport {
 export class RouterInitDebugger {
   private initTester: RouterInitializationTester;
   private diagnostics: Router404Diagnostics;
-  private startTime: number = Date.now();
+  private _startTime: number = Date.now();
 
   constructor() {
     this.initTester = new RouterInitializationTester();

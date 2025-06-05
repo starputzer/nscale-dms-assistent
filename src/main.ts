@@ -17,7 +17,7 @@ import router from "./router";
 
 // Stores
 import { useAuthStore } from "./stores/auth";
-import { useUIStore } from "./stores/ui";
+// import { useUIStore } from "./stores/ui"; // Unused import
 import { useTheme } from "./composables/useTheme";
 
 // Direktiven und Composables
@@ -27,6 +27,7 @@ import { globalPlugins } from "@/plugins";
 // Services und Utilities
 import { initializeApiServices } from "@/services/api/config";
 import { initializeTelemetry } from "@/services/analytics/telemetry";
+import { fixAxiosBaseURL } from "@/utils/fixAxiosBaseURL";
 
 import { performanceMonitor } from "@/utils/performanceMonitor";
 
@@ -96,8 +97,8 @@ const deMessages = i18n.global.getLocaleMessage('de');
 const enMessages = i18n.global.getLocaleMessage('en');
 
 // Clear and reload messages to ensure clean state
-i18n.global.setLocaleMessage('de', {});
-i18n.global.setLocaleMessage('en', {});
+i18n.global.setLocaleMessage('de' as any, {} as any);
+i18n.global.setLocaleMessage('en' as any, {} as any);
 i18n.global.setLocaleMessage('de', deMessages);
 i18n.global.setLocaleMessage('en', enMessages);
 
@@ -126,6 +127,9 @@ const initApp = async () => {
     // Initialize stores using the storeInitializer
     const { initializeStores } = await import("./stores/storeInitializer");
     await initializeStores();
+
+    // Fix axios base URL before initializing services
+    fixAxiosBaseURL();
 
     // Initialize API services
     await initializeApiServices();

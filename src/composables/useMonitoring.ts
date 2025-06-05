@@ -63,7 +63,7 @@ export function useMonitoring(featureId: string, componentName: string) {
   }
 
   // Network time tracking for API calls
-  function trackNetworkTime(url: string, duration: number) {
+  function trackNetworkTime(_url: string, duration: number) {
     if (!isMonitoringEnabled.value) return;
 
     monitoringStore.trackPerformance(
@@ -98,7 +98,7 @@ export function useMonitoring(featureId: string, componentName: string) {
 
     // Also log to console in development mode
     if (isDevelopment()) {
-      LogService.error(
+      (LogService as any).error(
         `[${featureId}/${componentName}] ${errorMessage}`,
         error,
       );

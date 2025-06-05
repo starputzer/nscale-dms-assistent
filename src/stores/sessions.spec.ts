@@ -117,7 +117,7 @@ describe("Sessions Store", () => {
           mockUtils.createSession({ id: "session-2" }),
         ];
 
-        mockedAxios.get.mockResolvedValueOnce(
+        mockedAxios.(get as any).mockResolvedValueOnce(
           createMockAxiosResponse({ sessions, success: true }),
         );
 
@@ -129,7 +129,7 @@ describe("Sessions Store", () => {
       });
 
       it("handles error when loading sessions", async () => {
-        mockedAxios.get.mockRejectedValueOnce(
+        mockedAxios.(get as any).mockRejectedValueOnce(
           createMockAxiosError("Failed to load sessions"),
         );
 
@@ -147,7 +147,7 @@ describe("Sessions Store", () => {
           title: "New Chat",
         });
 
-        mockedAxios.post.mockResolvedValueOnce(
+        mockedAxios.(post as any).mockResolvedValueOnce(
           createMockAxiosResponse(newSession),
         );
 
@@ -192,7 +192,7 @@ describe("Sessions Store", () => {
         });
 
         // Mock non-streaming response
-        mockedAxios.post.mockResolvedValueOnce(
+        mockedAxios.(post as any).mockResolvedValueOnce(
           createMockAxiosResponse({
             response: "Hi there!",
             message_id: assistantMessage.id,
@@ -224,7 +224,7 @@ describe("Sessions Store", () => {
           removeEventListener: vi.fn(),
         };
 
-        global.EventSource = vi.fn(() => mockEventSource as any);
+        global.EventSource = vi.fn(() => (mockEventSource as any));
 
         await store.sendMessage({
           sessionId: store.currentSessionId!,
@@ -269,7 +269,7 @@ describe("Sessions Store", () => {
         store.sessions = [session];
         store.currentSessionId = session.id;
 
-        mockedAxios.delete.mockResolvedValueOnce(
+        mockedAxios.(delete as any).mockResolvedValueOnce(
           createMockAxiosResponse({ success: true }),
         );
 
@@ -284,7 +284,7 @@ describe("Sessions Store", () => {
         const session = mockUtils.createSession();
         store.sessions = [session];
 
-        mockedAxios.delete.mockRejectedValueOnce(
+        mockedAxios.(delete as any).mockRejectedValueOnce(
           createMockAxiosError("Failed to delete"),
         );
 
@@ -325,7 +325,7 @@ describe("Sessions Store", () => {
         const session = mockUtils.createSession({ isPinned: false });
         store.sessions = [session];
 
-        mockedAxios.patch.mockResolvedValueOnce(
+        mockedAxios.(patch as any).mockResolvedValueOnce(
           createMockAxiosResponse({ success: true }),
         );
 
@@ -359,7 +359,7 @@ describe("Sessions Store", () => {
           mockUtils.createMessage({ content: "Pending 2", status: "pending" }),
         ];
 
-        mockedAxios.post.mockResolvedValue(
+        mockedAxios.(post as any).mockResolvedValue(
           createMockAxiosResponse({ success: true }),
         );
 

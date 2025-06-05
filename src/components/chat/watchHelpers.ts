@@ -148,7 +148,7 @@ export function throttle<T extends AnyFunction>(
 ): TimerFunction<T> {
   let timeoutId: number | null = null;
   let lastCallTime = 0;
-  let lastInvokeTime = 0;
+  let _lastInvokeTime = 0;
   let result: ReturnType<T>;
   let lastArgs: Parameters<T> | null = null;
   let lastThis: any = null;
@@ -176,7 +176,7 @@ export function throttle<T extends AnyFunction>(
 
   // Timer-Funktion, die bei Ablauf des Timers aufgerufen wird
   function timerExpired() {
-    const time = Date.now();
+    const _time = Date.now();
     timeoutId = null;
 
     if (trailing && lastArgs) {

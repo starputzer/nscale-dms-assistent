@@ -18,7 +18,7 @@ export function linkifySourceReferences(content: string): string {
   // Beispiel: [[src:1]] wird zu <span class="source-reference" data-source-id="1">[1]</span>
   return content.replace(
     /\[\[src:([^\]]+)\]\]/g,
-    (match, sourceId) =>
+    (_match, sourceId) =>
       `<span class="source-reference" data-source-id="${sourceId}">[${sourceId}]</span>`,
   );
 }
@@ -44,7 +44,7 @@ export function highlightCode(element: HTMLElement): void {
     const codeBlocks = element.querySelectorAll("pre code");
 
     codeBlocks.forEach((block: any) => {
-      hljs.highlightElement(block as HTMLElement);
+      (hljs as any).highlightElement(block as HTMLElement);
     });
   } catch (error) {
     console.error("Fehler beim Syntax-Highlighting:", error);

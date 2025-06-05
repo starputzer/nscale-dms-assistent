@@ -8,7 +8,7 @@ import { useGlobalDialog } from "@/composables/useDialog";
  * Installiert den DialogProvider als globale Komponente und
  * fügt globale Dialoge zum Vue-Prototype hinzu.
  */
-export const createDialogPlugin = (options = {}) => {
+export const createDialogPlugin = (_options = {}) => {
   // Dialog-Plugin-Optionen verarbeiten und zurückgeben
   return dialogPlugin;
 };

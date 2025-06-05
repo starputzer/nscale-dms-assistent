@@ -1,0 +1,322 @@
+{
+  "timestamp": "2025-06-04T19:25:55.472295",
+  "total_tests": 45,
+  "passed": 15,
+  "results": [
+    {
+      "category": "Authentication",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "success": true,
+      "message": "Status: 200"
+    },
+    {
+      "category": "Authentication",
+      "method": "POST",
+      "path": "/api/auth/register",
+      "success": true,
+      "message": "Status: 200"
+    },
+    {
+      "category": "Authentication",
+      "method": "GET",
+      "path": "/api/auth/user",
+      "success": false,
+      "message": "Status: 404 - {'detail': 'Not Found'}"
+    },
+    {
+      "category": "Authentication",
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "success": false,
+      "message": "Status: 404 - {'detail': 'Not Found'}"
+    },
+    {
+      "category": "System",
+      "method": "GET",
+      "path": "/api/system/info",
+      "success": false,
+      "message": "Status: 404 - {'detail': 'Not Found'}"
+    },
+    {
+      "category": "System",
+      "method": "GET",
+      "path": "/api/system/health",
+      "success": false,
+      "message": "Status: 404 - {'detail': 'Not Found'}"
+    },
+    {
+      "category": "System",
+      "method": "GET",
+      "path": "/api/system/check",
+      "success": false,
+      "message": "Status: 404 - {'detail': 'Not Found'}"
+    },
+    {
+      "category": "System",
+      "method": "GET",
+      "path": "/api/admin/system/stats",
+      "success": false,
+      "message": "Status: 404 - {'detail': 'Not Found'}"
+    },
+    {
+      "category": "System",
+      "method": "GET",
+      "path": "/api/admin/system/health",
+      "success": false,
+      "message": "Status: 404 - {'detail': 'Not Found'}"
+    },
+    {
+      "category": "System",
+      "method": "POST",
+      "path": "/api/admin/system/cache/clear",
+      "success": false,
+      "message": "Status: 404 - {'detail': 'Not Found'}"
+    },
+    {
+      "category": "Sessions",
+      "method": "GET",
+      "path": "/api/sessions",
+      "success": true,
+      "message": "Status: 200"
+    },
+    {
+      "category": "Sessions",
+      "method": "POST",
+      "path": "/api/sessions",
+      "success": true,
+      "message": "Status: 200"
+    },
+    {
+      "category": "Sessions",
+      "method": "GET",
+      "path": "/api/sessions/1",
+      "success": true,
+      "message": "Status: 200"
+    },
+    {
+      "category": "Admin Users",
+      "method": "GET",
+      "path": "/api/admin/users",
+      "success": false,
+      "message": "Status: 500 - {'detail': 'no such table: users'}"
+    },
+    {
+      "category": "Admin Users",
+      "method": "GET",
+      "path": "/api/admin/users/count",
+      "success": false,
+      "message": "Status: 500 - {'detail': 'no such table: users'}"
+    },
+    {
+      "category": "Admin Users",
+      "method": "GET",
+      "path": "/api/admin/users/stats",
+      "success": false,
+      "message": "Status: 500 - {'detail': 'no such table: users'}"
+    },
+    {
+      "category": "Admin Users",
+      "method": "GET",
+      "path": "/api/admin/users/active",
+      "success": false,
+      "message": "Status: 500 - {'detail': 'no such table: users'}"
+    },
+    {
+      "category": "Admin Dashboard",
+      "method": "GET",
+      "path": "/api/admin/dashboard/summary",
+      "success": false,
+      "message": "Status: 404 - {'detail': 'Not Found'}"
+    },
+    {
+      "category": "Admin Dashboard",
+      "method": "POST",
+      "path": "/api/admin/dashboard/queue/pause",
+      "success": false,
+      "message": "Status: 404 - {'detail': 'Not Found'}"
+    },
+    {
+      "category": "Admin Dashboard",
+      "method": "POST",
+      "path": "/api/admin/dashboard/queue/resume",
+      "success": false,
+      "message": "Status: 404 - {'detail': 'Not Found'}"
+    },
+    {
+      "category": "Admin Statistics",
+      "method": "GET",
+      "path": "/api/admin/statistics/summary",
+      "success": false,
+      "message": "Status: 404 - {'detail': 'Not Found'}"
+    },
+    {
+      "category": "Admin Statistics",
+      "method": "GET",
+      "path": "/api/admin/statistics/usage-trend",
+      "success": false,
+      "message": "Status: 404 - {'detail': 'Not Found'}"
+    },
+    {
+      "category": "Admin Statistics",
+      "method": "GET",
+      "path": "/api/admin/statistics/user-segmentation",
+      "success": false,
+      "message": "Status: 404 - {'detail': 'Not Found'}"
+    },
+    {
+      "category": "Admin Statistics",
+      "method": "GET",
+      "path": "/api/admin/statistics/feedback-ratings",
+      "success": false,
+      "message": "Status: 404 - {'detail': 'Not Found'}"
+    },
+    {
+      "category": "Admin Statistics",
+      "method": "GET",
+      "path": "/api/admin/statistics/performance-metrics",
+      "success": false,
+      "message": "Status: 404 - {'detail': 'Not Found'}"
+    },
+    {
+      "category": "Admin Feedback",
+      "method": "GET",
+      "path": "/api/admin/feedback/stats",
+      "success": false,
+      "message": "Status: 500 - {'detail': 'no such table: feedback'}"
+    },
+    {
+      "category": "Admin Feedback",
+      "method": "GET",
+      "path": "/api/admin/feedback/negative",
+      "success": false,
+      "message": "Status: 500 - {'detail': 'Cannot operate on a closed database.'}"
+    },
+    {
+      "category": "Admin Feedback",
+      "method": "POST",
+      "path": "/api/admin/feedback/filter",
+      "success": false,
+      "message": "Status: 500 - {'detail': 'Cannot operate on a closed database.'}"
+    },
+    {
+      "category": "Document Converter",
+      "method": "GET",
+      "path": "/api/doc-converter/statistics",
+      "success": true,
+      "message": "Status: 200"
+    },
+    {
+      "category": "Document Converter",
+      "method": "GET",
+      "path": "/api/doc-converter/recent",
+      "success": true,
+      "message": "Status: 200"
+    },
+    {
+      "category": "Document Converter",
+      "method": "GET",
+      "path": "/api/doc-converter/queue/status",
+      "success": false,
+      "message": "Status: 405 - {'detail': 'Method Not Allowed'}"
+    },
+    {
+      "category": "RAG System",
+      "method": "GET",
+      "path": "/api/rag/status",
+      "success": false,
+      "message": "Status: 404 - {'detail': 'Not Found'}"
+    },
+    {
+      "category": "RAG System",
+      "method": "GET",
+      "path": "/api/rag/stats",
+      "success": false,
+      "message": "Status: 404 - {'detail': 'Not Found'}"
+    },
+    {
+      "category": "RAG System",
+      "method": "POST",
+      "path": "/api/rag/search",
+      "success": false,
+      "message": "Status: 404 - {'detail': 'Not Found'}"
+    },
+    {
+      "category": "Knowledge Manager",
+      "method": "GET",
+      "path": "/api/knowledge/documents",
+      "success": true,
+      "message": "Status: 401"
+    },
+    {
+      "category": "Knowledge Manager",
+      "method": "GET",
+      "path": "/api/knowledge/stats",
+      "success": false,
+      "message": "Status: 404 - {'detail': 'Not Found'}"
+    },
+    {
+      "category": "Knowledge Manager",
+      "method": "POST",
+      "path": "/api/knowledge/reindex",
+      "success": false,
+      "message": "Status: 404 - {'detail': 'Not Found'}"
+    },
+    {
+      "category": "Background Processing",
+      "method": "GET",
+      "path": "/api/background-processing/jobs",
+      "success": true,
+      "message": "Status: 401"
+    },
+    {
+      "category": "Background Processing",
+      "method": "GET",
+      "path": "/api/background-processing/stats",
+      "success": true,
+      "message": "Status: 401"
+    },
+    {
+      "category": "Advanced Documents",
+      "method": "GET",
+      "path": "/api/advanced-documents/ocr-status",
+      "success": true,
+      "message": "Status: 200"
+    },
+    {
+      "category": "Advanced Documents",
+      "method": "GET",
+      "path": "/api/advanced-documents/processing-stats",
+      "success": true,
+      "message": "Status: 200"
+    },
+    {
+      "category": "Miscellaneous",
+      "method": "GET",
+      "path": "/api/test/headers",
+      "success": true,
+      "message": "Status: 200"
+    },
+    {
+      "category": "Miscellaneous",
+      "method": "GET",
+      "path": "/api/test/auth-test",
+      "success": true,
+      "message": "Status: 200"
+    },
+    {
+      "category": "Miscellaneous",
+      "method": "GET",
+      "path": "/api/motd",
+      "success": true,
+      "message": "Status: 200"
+    },
+    {
+      "category": "Miscellaneous",
+      "method": "POST",
+      "path": "/api/feedback",
+      "success": false,
+      "message": "Status: 422 - {'detail': [{'type': 'missing', 'loc': ['body', 'message_id'], 'msg': 'Field required', 'input': {'question': 'Test question', 'answer': 'Test answer', 'is_positive': True, 'comment': 'Test comment'}}, {'type': 'missing', 'loc': ['body', 'session_id'], 'msg': 'Field required', 'input': {'question': 'Test question', 'answer': 'Test answer', 'is_positive': True, 'comment': 'Test comment'}}]}"
+    }
+  ]
+}

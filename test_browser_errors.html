@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser Console Error Check</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        #status { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        .error { color: red; }
+        .warning { color: orange; }
+        .info { color: blue; }
+        .log { color: gray; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Browser Console Error Check</h1>
+    <div id="status">Checking http://localhost:5174...</div>
+    <div id="results"></div>
+    
+    <script>
+        const resultsDiv = document.getElementById('results');
+        const statusDiv = document.getElementById('status');
+        
+        // Create iframe to load the app
+        const iframe = document.createElement('iframe');
+        iframe.style.width = '100%';
+        iframe.style.height = '600px';
+        iframe.style.border = '1px solid #ccc';
+        
+        // Capture messages from iframe
+        const messages = [];
+        
+        // Override console methods in iframe
+        iframe.onload = function() {
+            try {
+                const iframeWindow = iframe.contentWindow;
+                const originalConsole = {
+                    log: iframeWindow.console.log,
+                    error: iframeWindow.console.error,
+                    warn: iframeWindow.console.warn,
+                    info: iframeWindow.console.info
+                };
+                
+                // Intercept console methods
+                ['log', 'error', 'warn', 'info'].forEach(method => {
+                    iframeWindow.console[method] = function(...args) {
+                        messages.push({
+                            type: method,
+                            message: args.map(arg => {
+                                if (typeof arg === 'object') {
+                                    try {
+                                        return JSON.stringify(arg, null, 2);
+                                    } catch (e) {
+                                        return String(arg);
+                                    }
+                                }
+                                return String(arg);
+                            }).join(' '),
+                            timestamp: new Date().toISOString()
+                        });
+                        
+                        // Call original method
+                        originalConsole[method].apply(iframeWindow.console, args);
+                        
+                        // Update display
+                        updateDisplay();
+                    };
+                });
+                
+                // Capture unhandled errors
+                iframeWindow.addEventListener('error', (event) => {
+                    messages.push({
+                        type: 'error',
+                        message: `${event.message} at ${event.filename}:${event.lineno}:${event.colno}`,
+                        timestamp: new Date().toISOString()
+                    });
+                    updateDisplay();
+                });
+                
+                // Capture unhandled promise rejections
+                iframeWindow.addEventListener('unhandledrejection', (event) => {
+                    messages.push({
+                        type: 'error',
+                        message: `Unhandled Promise Rejection: ${event.reason}`,
+                        timestamp: new Date().toISOString()
+                    });
+                    updateDisplay();
+                });
+                
+                statusDiv.textContent = 'Page loaded. Monitoring console output...';
+            } catch (e) {
+                statusDiv.textContent = 'Error setting up monitoring: ' + e.message;
+            }
+        };
+        
+        function updateDisplay() {
+            const html = messages.map(msg => {
+                const className = msg.type;
+                return `<div class="${className}">[${msg.timestamp}] [${msg.type.toUpperCase()}] ${escapeHtml(msg.message)}</div>`;
+            }).join('');
+            
+            resultsDiv.innerHTML = `
+                <h2>Console Output (${messages.length} messages)</h2>
+                <div style="max-height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+                    ${html || '<em>No console messages yet</em>'}
+                </div>
+                <h3>Error Summary:</h3>
+                <ul>
+                    <li>Errors: ${messages.filter(m => m.type === 'error').length}</li>
+                    <li>Warnings: ${messages.filter(m => m.type === 'warn').length}</li>
+                    <li>Info: ${messages.filter(m => m.type === 'info').length}</li>
+                    <li>Logs: ${messages.filter(m => m.type === 'log').length}</li>
+                </ul>
+            `;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Load the app
+        iframe.src = 'http://localhost:5174';
+        document.body.appendChild(iframe);
+        
+        // Initial display
+        updateDisplay();
+    </script>
+</body>
+</html>

@@ -286,19 +286,23 @@ export class AuthService {
     try {
       const { data } = await this.client.post<any>("/auth/login", credentials);
 
-      if (!data.token) {
+      // Handle both 'token' and 'access_token' fields for compatibility
+      const token = data.token || data.access_token;
+
+      if (!token) {
+        console.error("Login response:", data);
         throw new AuthError(
-          "Server hat kein gültiges Token zurückgegeben",
+          "Kein Token in der Antwort vom Server",
           "unknown",
         );
       }
 
       // Token speichern
-      this.setToken(data.token);
+      this.setToken(token);
 
       // AuthResponse Format erstellen
       const response: AuthResponse = {
-        token: data.token,
+        token: token,
         user: data.user || {
           id: "1",
           email: credentials.email,
@@ -532,7 +536,7 @@ export class AuthService {
       const jsonPayload = decodeURIComponent(
         atob(base64)
           .split("")
-          .map(
+          .map((
             (c: any) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2),
           )
           .join(""),

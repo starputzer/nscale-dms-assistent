@@ -113,7 +113,7 @@ export class UnifiedDiagnosticsService {
       router404: await this.getRouter404Status(),
       domErrors: domErrorDetector.detectErrorState(),
       authStatus: this.getAuthStatus(),
-      selfHealingStatus: selfHealingService.getStatus(),
+      selfHealingStatus: (selfHealingService as any).getStatus(),
       healthMetrics: { ...this.healthMetrics.value },
     };
 
@@ -132,7 +132,7 @@ export class UnifiedDiagnosticsService {
    * Holt den Status von Router404Diagnostics
    */
   private async getRouter404Status() {
-    const analysis = router404Diagnostics.analyzeDiagnostics();
+    const analysis = (router404Diagnostics as any).analyzeDiagnostics();
     return {
       has404Issues: analysis.has404Issues,
       errorCount: analysis.totalErrors,
@@ -155,7 +155,7 @@ export class UnifiedDiagnosticsService {
   /**
    * Analysiert Trends in den Diagnose-Daten
    */
-  private analyzeTrends(report: DiagnosticReport) {
+  private analyzeTrends(_report: DiagnosticReport) {
     // Erkenne wiederkehrende Muster
     const recentReports = this.diagnosticsHistory.value.slice(-10);
 
@@ -255,7 +255,7 @@ export class UnifiedDiagnosticsService {
   private async executeRecoveryStep(action: string) {
     switch (action) {
       case "clearNavigationHistory":
-        routerService.clearNavigationQueue();
+        (routerService as any).clearNavigationQueue();
         break;
 
       case "resetRouterState":
@@ -263,11 +263,11 @@ export class UnifiedDiagnosticsService {
         break;
 
       case "navigateToHome":
-        await routerService.navigate({ name: "Home" });
+        await routerService.navigate({ name: "Home" } as any);
         break;
 
       case "cleanupErrorElements":
-        domErrorDetector.cleanupErrorElements();
+        (domErrorDetector as any).cleanupErrorElements();
         break;
 
       case "forceRerender":

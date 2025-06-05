@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Endpoints Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .endpoint {
+            font-family: monospace;
+            background: #e0e0e0;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chat Endpoints Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Login First</h2>
+        <button onclick="login()">Login</button>
+        <div id="loginResult"></div>
+        <pre id="token"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test MOTD Endpoint</h2>
+        <p>Endpoint: <span class="endpoint">GET /api/motd</span></p>
+        <button onclick="testMOTD()">Test MOTD</button>
+        <pre id="motdResult"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test Get Sessions</h2>
+        <p>Endpoint: <span class="endpoint">GET /api/chat/sessions?since=0</span></p>
+        <button onclick="testGetSessions()">Get Sessions</button>
+        <pre id="sessionsResult"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Test Create Session</h2>
+        <p>Endpoint: <span class="endpoint">POST /api/chat/sessions</span></p>
+        <button onclick="testCreateSession()">Create Session</button>
+        <pre id="createSessionResult"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Test Get Session Messages</h2>
+        <p>Endpoint: <span class="endpoint">GET /api/chat/sessions/{session_id}/messages</span></p>
+        <input type="text" id="sessionId" placeholder="Enter session ID" style="width: 300px; padding: 5px;">
+        <button onclick="testGetMessages()">Get Messages</button>
+        <pre id="messagesResult"></pre>
+    </div>
+
+    <script>
+        let authToken = null;
+
+        async function login() {
+            const resultDiv = document.getElementById('loginResult');
+            const tokenDiv = document.getElementById('token');
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'martin@danglefeet.com',
+                        password: '123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.access_token;
+                    resultDiv.innerHTML = '<span class="success">✓ Login successful!</span>';
+                    tokenDiv.textContent = `Token: ${authToken.substring(0, 50)}...`;
+                } else {
+                    resultDiv.innerHTML = `<span class="error">✗ Login failed: ${data.detail}</span>`;
+                    tokenDiv.textContent = '';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">✗ Error: ${error.message}</span>`;
+            }
+        }
+
+        async function testMOTD() {
+            const resultDiv = document.getElementById('motdResult');
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/motd');
+                const data = await response.json();
+                
+                resultDiv.textContent = JSON.stringify(data, null, 2);
+                
+                if (!response.ok) {
+                    resultDiv.innerHTML = `<span class="error">Error ${response.status}: ${JSON.stringify(data)}</span>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">Error: ${error.message}</span>`;
+            }
+        }
+
+        async function testGetSessions() {
+            const resultDiv = document.getElementById('sessionsResult');
+            
+            if (!authToken) {
+                resultDiv.innerHTML = '<span class="error">Please login first!</span>';
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/chat/sessions?since=0', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.textContent = JSON.stringify(data, null, 2);
+                
+                if (!response.ok) {
+                    resultDiv.innerHTML = `<span class="error">Error ${response.status}: ${JSON.stringify(data)}</span>`;
+                } else {
+                    // If we got sessions, populate the session ID field with the first one
+                    if (data.length > 0) {
+                        document.getElementById('sessionId').value = data[0].id;
+                    }
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">Error: ${error.message}</span>`;
+            }
+        }
+
+        async function testCreateSession() {
+            const resultDiv = document.getElementById('createSessionResult');
+            
+            if (!authToken) {
+                resultDiv.innerHTML = '<span class="error">Please login first!</span>';
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/chat/sessions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.textContent = JSON.stringify(data, null, 2);
+                
+                if (response.ok) {
+                    // Populate the session ID field with the new session
+                    document.getElementById('sessionId').value = data.id;
+                } else {
+                    resultDiv.innerHTML = `<span class="error">Error ${response.status}: ${JSON.stringify(data)}</span>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">Error: ${error.message}</span>`;
+            }
+        }
+
+        async function testGetMessages() {
+            const resultDiv = document.getElementById('messagesResult');
+            const sessionId = document.getElementById('sessionId').value;
+            
+            if (!authToken) {
+                resultDiv.innerHTML = '<span class="error">Please login first!</span>';
+                return;
+            }
+            
+            if (!sessionId) {
+                resultDiv.innerHTML = '<span class="error">Please enter a session ID!</span>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`http://localhost:8000/api/chat/sessions/${sessionId}/messages`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.textContent = JSON.stringify(data, null, 2);
+                
+                if (!response.ok) {
+                    resultDiv.innerHTML = `<span class="error">Error ${response.status}: ${JSON.stringify(data)}</span>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">Error: ${error.message}</span>`;
+            }
+        }
+    </script>
+</body>
+</html>

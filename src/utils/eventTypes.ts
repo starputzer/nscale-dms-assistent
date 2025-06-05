@@ -469,7 +469,7 @@ export interface IEventBus {
  * Basis-Implementierung einer Event-Emitter-Factory
  */
 export function createTypedEventEmitter<T extends keyof EventMap>(
-  eventName: T,
+  _eventName: T,
 ): TypedEventEmitter<EventMap[T]> {
   return new TypedEventEmitter<EventMap[T]>();
 }
@@ -478,7 +478,7 @@ export function createTypedEventEmitter<T extends keyof EventMap>(
  * Type Guard zur Prüfung von Event-Payloads
  */
 export function isValidEventPayload<T extends keyof EventMap>(
-  eventName: T,
+  _eventName: T,
   payload: any,
 ): payload is EventMap[T] {
   if (!payload || typeof payload !== "object") {

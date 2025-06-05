@@ -1,0 +1,298 @@
+{
+  "document_stats": {
+    "document_count": 6,
+    "chunk_count": 742,
+    "documents": {
+      "nscale-handbuch.md": {
+        "size": 807823,
+        "modified": "2025-04-20 21:54",
+        "chunks": 694,
+        "total_tokens": 88293
+      },
+      "nscale-berechtigungen.md": {
+        "size": 2761,
+        "modified": "2025-04-24 14:50",
+        "chunks": 7,
+        "total_tokens": 301
+      },
+      "nscale-installationsprobleme.md": {
+        "size": 7170,
+        "modified": "2025-04-24 14:50",
+        "chunks": 6,
+        "total_tokens": 892
+      },
+      "nscale-konfiguration.md": {
+        "size": 7132,
+        "modified": "2025-04-24 14:50",
+        "chunks": 10,
+        "total_tokens": 661
+      },
+      "nscale-addin-probleme.md": {
+        "size": 3175,
+        "modified": "2025-04-24 14:50",
+        "chunks": 4,
+        "total_tokens": 377
+      },
+      "nscale-anwendungsfragen.md": {
+        "size": 9355,
+        "modified": "2025-04-24 14:50",
+        "chunks": 21,
+        "total_tokens": 334
+      }
+    }
+  },
+  "chunking_analysis": {
+    "total_chunks": 742,
+    "chunk_types": {
+      "section": 742
+    },
+    "chunk_size_stats": {
+      "min": 51,
+      "max": 21733,
+      "mean": 937.2075471698113,
+      "median": 442.0,
+      "std_dev": 1599.8504737982432
+    },
+    "redundant_chunks": 6,
+    "load_time": 0.00945734977722168,
+    "configured_chunk_size": 750,
+    "configured_overlap": 100
+  },
+  "embedding_performance": {
+    "model_init_time": 4.787257194519043,
+    "chunk_processing_time": 5.628205299377441,
+    "chunks_per_second": 131.83598687881474,
+    "search_performance": {
+      "min_time": 0.03184700012207031,
+      "max_time": 0.06050705909729004,
+      "mean_time": 0.03865861892700195,
+      "queries_tested": 8,
+      "individual_results": [
+        {
+          "query": "Wie lege ich eine neue Akte an?",
+          "time": 0.06050705909729004,
+          "results_count": 10,
+          "top_score": 0.9494140625
+        },
+        {
+          "query": "Was ist nscale?",
+          "time": 0.03910040855407715,
+          "results_count": 10,
+          "top_score": 0.9611328125
+        },
+        {
+          "query": "Wie kann ich Dokumente suchen?",
+          "time": 0.03184700012207031,
+          "results_count": 10,
+          "top_score": 0.9103515625
+        },
+        {
+          "query": "Berechtigungen vergeben",
+          "time": 0.03187894821166992,
+          "results_count": 10,
+          "top_score": 0.9835182919078969
+        },
+        {
+          "query": "Installation von nscale",
+          "time": 0.03257107734680176,
+          "results_count": 10,
+          "top_score": 0.989453125
+        },
+        {
+          "query": "Fehler beim Login",
+          "time": 0.03931021690368652,
+          "results_count": 10,
+          "top_score": 0.9214773989258701
+        },
+        {
+          "query": "PDF Dokument hochladen",
+          "time": 0.04075765609741211,
+          "results_count": 10,
+          "top_score": 0.98408203125
+        },
+        {
+          "query": "Workflow erstellen",
+          "time": 0.03329658508300781,
+          "results_count": 10,
+          "top_score": 1.0001953125
+        }
+      ]
+    },
+    "embedding_model": "BAAI/bge-m3",
+    "device": "cuda",
+    "semantic_weight": 0.7
+  },
+  "retrieval_performance": {
+    "test_cases": 3,
+    "accuracy": 0.3333333333333333,
+    "average_position": 1,
+    "keyword_coverage": 0.7777777777777778,
+    "detailed_results": [
+      {
+        "query": "Wie erstelle ich eine neue Akte?",
+        "expected_file_found": true,
+        "expected_file_position": 1,
+        "keywords_coverage": 1.0,
+        "top_files": [
+          "nscale-handbuch.md",
+          "nscale-handbuch.md",
+          "nscale-konfiguration.md"
+        ]
+      },
+      {
+        "query": "Installation von nscale",
+        "expected_file_found": false,
+        "expected_file_position": -1,
+        "keywords_coverage": 0.3333333333333333,
+        "top_files": [
+          "nscale-addin-probleme.md",
+          "nscale-anwendungsfragen.md",
+          "nscale-anwendungsfragen.md"
+        ]
+      },
+      {
+        "query": "Berechtigungen und Rollen",
+        "expected_file_found": false,
+        "expected_file_position": -1,
+        "keywords_coverage": 1.0,
+        "top_files": [
+          "nscale-handbuch.md",
+          "nscale-handbuch.md",
+          "nscale-handbuch.md"
+        ]
+      }
+    ],
+    "top_k_configured": 10
+  },
+  "end_to_end_performance": {
+    "rag_init_time": 8.306185483932495,
+    "query_performance": {
+      "queries_tested": 5,
+      "success_rate": 1.0,
+      "average_response_time": 13.6423180103302,
+      "min_response_time": 6.238447189331055,
+      "max_response_time": 16.564160346984863,
+      "average_answer_length": 540.4,
+      "average_chunks_used": 3.6
+    },
+    "detailed_results": [
+      {
+        "query": "Was ist nscale?",
+        "type": "definition",
+        "response_time": 15.005239963531494,
+        "success": true,
+        "answer_length": 354,
+        "chunks_used": 4,
+        "sources": [
+          "nscale-handbuch.md",
+          "nscale-anwendungsfragen.md",
+          "nscale-installationsprobleme.md",
+          "nscale-konfiguration.md"
+        ]
+      },
+      {
+        "query": "Wie lege ich eine neue Akte an?",
+        "type": "how-to",
+        "response_time": 6.238447189331055,
+        "success": true,
+        "answer_length": 77,
+        "chunks_used": 2,
+        "sources": [
+          "nscale-handbuch.md",
+          "nscale-konfiguration.md"
+        ]
+      },
+      {
+        "query": "Welche Berechtigungen gibt es?",
+        "type": "list",
+        "response_time": 16.291318655014038,
+        "success": true,
+        "answer_length": 739,
+        "chunks_used": 4,
+        "sources": [
+          "nscale-handbuch.md",
+          "nscale-installationsprobleme.md",
+          "nscale-addin-probleme.md",
+          "nscale-anwendungsfragen.md"
+        ]
+      },
+      {
+        "query": "Fehler beim PDF Upload beheben",
+        "type": "troubleshooting",
+        "response_time": 14.11242389678955,
+        "success": true,
+        "answer_length": 733,
+        "chunks_used": 4,
+        "sources": [
+          "nscale-handbuch.md",
+          "nscale-berechtigungen.md",
+          "nscale-konfiguration.md",
+          "nscale-anwendungsfragen.md"
+        ]
+      },
+      {
+        "query": "Systemanforderungen für nscale",
+        "type": "technical",
+        "response_time": 16.564160346984863,
+        "success": true,
+        "answer_length": 799,
+        "chunks_used": 4,
+        "sources": [
+          "nscale-handbuch.md",
+          "nscale-anwendungsfragen.md",
+          "nscale-installationsprobleme.md",
+          "nscale-konfiguration.md"
+        ]
+      }
+    ],
+    "streaming_performance": {
+      "time_to_first_token": 15.862342357635498,
+      "total_streaming_time": 26.463102340698242,
+      "tokens_received": 69,
+      "tokens_per_second": 2.6074040417356223
+    },
+    "llm_config": {
+      "model": "llama3-nscale",
+      "context_size": 8192,
+      "max_tokens": 4096,
+      "timeout": 60.0
+    }
+  },
+  "optimization_recommendations": [
+    {
+      "category": "Chunking",
+      "issue": "High variance in chunk sizes",
+      "impact": "Inconsistent retrieval quality",
+      "recommendation": "Implement adaptive chunking based on document structure",
+      "priority": "High"
+    },
+    {
+      "category": "Chunking",
+      "issue": "6 redundant chunks detected",
+      "impact": "Wasted computation and storage",
+      "recommendation": "Implement deduplication in chunking process",
+      "priority": "Medium"
+    },
+    {
+      "category": "Retrieval",
+      "issue": "Low retrieval accuracy",
+      "impact": "Incorrect or irrelevant answers",
+      "recommendation": "Fine-tune embedding model or adjust semantic weight",
+      "priority": "Critical"
+    },
+    {
+      "category": "Performance",
+      "issue": "High average response time",
+      "impact": "Poor user experience",
+      "recommendation": "Implement response caching and query optimization",
+      "priority": "High"
+    },
+    {
+      "category": "Model",
+      "issue": "Using general-purpose model",
+      "impact": "Suboptimal domain-specific performance",
+      "recommendation": "Consider fine-tuning on nscale documentation",
+      "priority": "Medium"
+    }
+  ]
+}

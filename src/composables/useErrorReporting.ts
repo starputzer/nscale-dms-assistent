@@ -22,7 +22,7 @@ import {
   type ErrorReportingOptions,
 } from "@/utils/errorReportingService";
 import {
-  useFallbackManager,
+  _useFallbackManager,
   type FallbackErrorSeverity,
 } from "@/utils/fallbackManager";
 import { useFeatureTogglesStore } from "@/stores/featureToggles";
@@ -178,7 +178,7 @@ export function useErrorReporting(
       ...options,
       source: {
         type: "component",
-        name: options.source?.name || componentName,
+        name: (options as any).source?.name || componentName,
       },
     });
   }

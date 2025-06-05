@@ -77,7 +77,7 @@ const errorRate = computed(() => {
   if (requests.length === 0) return "0.0";
 
   const errors = requests.filter((m) => m.tags?.status === "error").length;
-  return ((errors / requests.length) * 100).toFixed(1);
+  return (errors / requests.length) * 100).toFixed(1);
 });
 
 const throughput = computed(() => {

@@ -407,7 +407,7 @@ export interface ComponentRenderContext<
  */
 export type SetupFn<
   Props = {},
-  Emit extends Record<string, any[]> = {},
+  _Emit extends Record<string, any[]> = {},
   Return = any,
 > = (props: Props, context: SetupContext<any>) => Return;
 

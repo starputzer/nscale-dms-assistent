@@ -12,7 +12,7 @@ export function enableStreamingDebug() {
     const [url, options] = args;
     
     // Check if this is a streaming request
-    if (typeof url === 'string' && url.includes('/api/question/stream')) {
+    if (typeof url === 'string' && url.includes('/api/chat/message/stream')) {
       console.log('🌊 Intercepted streaming request:', {
         url,
         headers: options?.headers,
@@ -30,7 +30,7 @@ export function enableStreamingDebug() {
         });
         
         // Clone the response so we can read it without consuming it
-        const clonedResponse = response.clone();
+        const _clonedResponse = response.clone();
         
         // Create a wrapper response that logs the stream
         const reader = response.body?.getReader();

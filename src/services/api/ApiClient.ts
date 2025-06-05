@@ -36,7 +36,7 @@ export class ApiClient {
     this.instance.interceptors.response.use(
       (response: any) => response,
       (error: Error | unknown) => {
-        if ((error as any).response?.status === 401) {
+        if (error as any).response?.status === 401) {
           const authStore = useAuthStore();
           authStore.logout();
         }

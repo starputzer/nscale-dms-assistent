@@ -234,7 +234,7 @@ export function initializeApiServices(): void {
 
   const config = getEnvironmentConfig();
 
-  const DEFAULT_HEADERS = {
+  const _DEFAULT_HEADERS = {
     "Content-Type": "application/json",
     Accept: "application/json",
     "X-Client-Version": import.meta.env.VITE_APP_VERSION || "1.0.0",

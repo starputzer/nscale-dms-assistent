@@ -57,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted, inject, defineEmits } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted, inject, } from "vue";
 import { useRouter, useRoute } from "vue-router";
 // Bridge system removed - use direct store communication instead
 import { useChatAdapter } from "../composables/adapters/useChatAdapter";

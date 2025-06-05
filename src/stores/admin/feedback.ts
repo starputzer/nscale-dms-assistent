@@ -295,7 +295,7 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
         stats.value.negative = Math.max(0, stats.value.negative - 1);
 
         // Falls es unbearbeitet war, reduziere auch den unresolved-Zähler
-        if (deletedFeedback && deletedFeedback.status === "unresolved") {
+        if (deletedFeedback && (deletedFeedback as any).status === "unresolved") {
           stats.value.unresolved = Math.max(0, stats.value.unresolved - 1);
         }
 
@@ -425,7 +425,7 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
   }
 
   // Helper methods for charts
-  function getFeedbackTimeData(feedbackData: FeedbackEntry[]) {
+  function getFeedbackTimeData(_feedbackData: FeedbackEntry[]) {
     // Process the data to get feedback over time
     const lastDays = 7;
     const labels = [];
@@ -470,7 +470,7 @@ export const useAdminFeedbackStore = defineStore("adminFeedback", () => {
     };
   }
 
-  function getFeedbackTypeData(feedbackData: FeedbackEntry[]) {
+  function getFeedbackTypeData(_feedbackData: FeedbackEntry[]) {
     // Process the data to get feedback by type (positive/negative)
     return {
       labels: ["Positiv", "Negativ"],

@@ -490,7 +490,7 @@ export const useUIStore = defineStore(
           // Animation abwarten, bevor Element entfernt wird
           setTimeout(() => {
             toasts.value = toasts.value.filter(
-              (t: any) => t.id !== oldestToast.id,
+              (t: any) => t.id !== oldestToast.id
             );
           }, 300);
         }
@@ -519,13 +519,13 @@ export const useUIStore = defineStore(
         // Animation abwarten, bevor Element entfernt wird
         setTimeout(() => {
           toasts.value = toasts.value.filter(
-            (toast: any) => toast.id !== toastId,
+            (toast: any) => toast.id !== toastId
           );
         }, 300);
       } else {
         // Falls DOM-Element nicht gefunden, direkt entfernen
         toasts.value = toasts.value.filter(
-          (toast: any) => toast.id !== toastId,
+          (toast: any) => toast.id !== toastId
         );
       }
     }
@@ -973,7 +973,7 @@ export const useUIStore = defineStore(
           storage: localStorage,
           paths: ["darkMode", "viewMode", "sidebar", "layoutConfig", "version"],
           // Fehlerbehandlung bei der Hydration
-          beforeRestore: (context: any) => {
+          beforeRestore: (_context: any) => {
             console.log("UI Store Hydration beginnt...");
           },
           afterRestore: (context: any) => {

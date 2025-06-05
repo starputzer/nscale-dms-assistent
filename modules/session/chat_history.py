@@ -392,3 +392,18 @@ class ChatHistoryManager:
         except Exception as e:
             logger.error(f"Fehler beim nachträglichen Aktualisieren des Session-Titels: {e}")
             return False
+    
+    def get_total_sessions(self) -> int:
+        """Gibt die Gesamtanzahl aller Sessions zurück"""
+        try:
+            conn = sqlite3.connect(Config.DB_PATH)
+            cursor = conn.cursor()
+            
+            cursor.execute("SELECT COUNT(*) FROM chat_sessions")
+            count = cursor.fetchone()[0]
+            
+            conn.close()
+            return count
+        except Exception as e:
+            logger.error(f"Fehler beim Abrufen der Gesamtanzahl der Sessions: {e}")
+            return 0

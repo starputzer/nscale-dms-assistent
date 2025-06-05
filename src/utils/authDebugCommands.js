@@ -60,7 +60,7 @@ window.authDebug = {
     console.log("🧪 Testing batch request...");
 
     try {
-      const response = await fetch("/api/v1/batch", {
+      const response = await fetch("/api/batch", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -71,7 +71,7 @@ window.authDebug = {
             {
               id: "test-1",
               method: "GET",
-              path: "/api/sessions/stats",
+              path: "/api/chat/sessions/stats",
             },
           ],
         }),

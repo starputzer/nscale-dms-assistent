@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Diagnostics</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .diagnostic {
+            background: #f5f5f5;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .error {
+            background: #ffe0e0;
+            color: #d00;
+        }
+        .success {
+            background: #e0ffe0;
+            color: #080;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        pre {
+            background: #333;
+            color: #fff;
+            padding: 10px;
+            overflow-x: auto;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        .endpoint-test {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>API Diagnostics</h1>
+    
+    <div class="diagnostic">
+        <h2>Current Configuration</h2>
+        <div id="config"></div>
+    </div>
+
+    <div class="diagnostic">
+        <h2>Authentication Status</h2>
+        <div id="auth-status"></div>
+    </div>
+
+    <div class="diagnostic">
+        <h2>Environment Variables</h2>
+        <div id="env-vars"></div>
+    </div>
+
+    <div class="diagnostic">
+        <h2>API Endpoint Tests</h2>
+        <button onclick="testAllEndpoints()">Test All Endpoints</button>
+        <button onclick="clearResults()">Clear Results</button>
+        <div id="endpoint-results"></div>
+    </div>
+
+    <script>
+        // Check current configuration
+        function checkConfig() {
+            const config = {
+                currentURL: window.location.href,
+                baseURL: window.location.origin,
+                vitePort: 5173,
+                apiPort: 8000,
+                // Check if we have any Vite env vars
+                viteEnv: typeof import !== 'undefined' && import.meta && import.meta.env ? import.meta.env : 'Not available'
+            };
+            
+            document.getElementById('config').innerHTML = `<pre>${JSON.stringify(config, null, 2)}</pre>`;
+        }
+
+        // Check authentication status
+        function checkAuthStatus() {
+            const tokens = {
+                'nscale_access_token': localStorage.getItem('nscale_access_token'),
+                'access_token': localStorage.getItem('access_token'),
+                'nscale_user': localStorage.getItem('nscale_user'),
+                'user': localStorage.getItem('user')
+            };
+            
+            let html = '<pre>' + JSON.stringify(tokens, (key, value) => {
+                if (key.includes('token') && value) {
+                    return value.substring(0, 20) + '...';
+                }
+                return value;
+            }, 2) + '</pre>';
+            
+            if (tokens.nscale_access_token || tokens.access_token) {
+                html = '<div class="success">✅ Authenticated</div>' + html;
+            } else {
+                html = '<div class="error">❌ Not Authenticated</div>' + html;
+            }
+            
+            document.getElementById('auth-status').innerHTML = html;
+        }
+
+        // Check environment variables
+        function checkEnvVars() {
+            const envVars = {};
+            
+            // Try to access window variables
+            if (window.VITE_API_URL) envVars.VITE_API_URL = window.VITE_API_URL;
+            if (window.VITE_API_BASE_URL) envVars.VITE_API_BASE_URL = window.VITE_API_BASE_URL;
+            
+            // Check localStorage for any API-related settings
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.toLowerCase().includes('api') || key.toLowerCase().includes('url')) {
+                    envVars[`localStorage.${key}`] = localStorage.getItem(key);
+                }
+            }
+            
+            document.getElementById('env-vars').innerHTML = Object.keys(envVars).length > 0 
+                ? `<pre>${JSON.stringify(envVars, null, 2)}</pre>`
+                : '<div class="warning">No API-related environment variables found</div>';
+        }
+
+        // Test API endpoints
+        async function testEndpoint(name, url, options = {}) {
+            const resultDiv = document.getElementById('endpoint-results');
+            const testDiv = document.createElement('div');
+            testDiv.className = 'endpoint-test';
+            
+            try {
+                const token = localStorage.getItem('nscale_access_token') || localStorage.getItem('access_token');
+                const headers = {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                };
+                
+                if (token && !url.includes('/login')) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                
+                const startTime = Date.now();
+                const response = await fetch(url, {
+                    method: options.method || 'GET',
+                    headers,
+                    body: options.body ? JSON.stringify(options.body) : undefined
+                });
+                const endTime = Date.now();
+                
+                const responseData = await response.text();
+                let jsonData;
+                try {
+                    jsonData = JSON.parse(responseData);
+                } catch (e) {
+                    jsonData = responseData;
+                }
+                
+                const statusClass = response.ok ? 'success' : 'error';
+                
+                testDiv.innerHTML = `
+                    <h3>${name}</h3>
+                    <div class="${statusClass}">
+                        Status: ${response.status} ${response.statusText} (${endTime - startTime}ms)
+                    </div>
+                    <div>URL: ${url}</div>
+                    <div>Method: ${options.method || 'GET'}</div>
+                    <details>
+                        <summary>Response Headers</summary>
+                        <pre>${JSON.stringify(Object.fromEntries(response.headers), null, 2)}</pre>
+                    </details>
+                    <details>
+                        <summary>Response Body</summary>
+                        <pre>${typeof jsonData === 'string' ? jsonData : JSON.stringify(jsonData, null, 2)}</pre>
+                    </details>
+                `;
+            } catch (error) {
+                testDiv.innerHTML = `
+                    <h3>${name}</h3>
+                    <div class="error">
+                        Error: ${error.message}
+                    </div>
+                    <div>URL: ${url}</div>
+                    <div>Method: ${options.method || 'GET'}</div>
+                `;
+            }
+            
+            resultDiv.appendChild(testDiv);
+        }
+
+        async function testAllEndpoints() {
+            document.getElementById('endpoint-results').innerHTML = '';
+            
+            // Test different URL patterns to see which ones work
+            const tests = [
+                // Port 5173 (Vite dev server with proxy)
+                { name: 'Vite Proxy - Health', url: 'http://localhost:5173/api/health' },
+                { name: 'Vite Proxy - Admin Users', url: 'http://localhost:5173/api/admin/users' },
+                { name: 'Vite Proxy - Admin Dashboard', url: 'http://localhost:5173/api/admin-dashboard/summary' },
+                
+                // Port 8000 (Direct API)
+                { name: 'Direct API - Health', url: 'http://localhost:8000/api/health' },
+                { name: 'Direct API - Admin Users', url: 'http://localhost:8000/api/admin/users' },
+                { name: 'Direct API - Admin Dashboard', url: 'http://localhost:8000/api/admin-dashboard/summary' },
+                
+                // Port 8080 (Check if anything is running here)
+                { name: 'Port 8080 - Health', url: 'http://localhost:8080/api/health' },
+                { name: 'Port 8080 - Admin Users', url: 'http://localhost:8080/api/admin/users' },
+                
+                // Relative URLs (should use current origin)
+                { name: 'Relative - Health', url: '/api/health' },
+                { name: 'Relative - Admin Users', url: '/api/admin/users' },
+                { name: 'Relative - Admin Dashboard', url: '/api/admin-dashboard/summary' },
+                
+                // Test authentication endpoint
+                { name: 'Auth - Login', url: '/api/auth/login', options: {
+                    method: 'POST',
+                    body: { email: 'martin@danglefeet.com', password: '123' }
+                }},
+            ];
+            
+            for (const test of tests) {
+                await testEndpoint(test.name, test.url, test.options);
+            }
+        }
+
+        function clearResults() {
+            document.getElementById('endpoint-results').innerHTML = '';
+        }
+
+        // Run checks on load
+        window.onload = function() {
+            checkConfig();
+            checkAuthStatus();
+            checkEnvVars();
+        }
+    </script>
+</body>
+</html>

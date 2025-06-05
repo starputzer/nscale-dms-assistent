@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <title>API Fix Summary & Test Guide</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1, h2, h3 {
+            color: #00a550;
+        }
+        .section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .fix-item {
+            background: #e8f7ef;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #00a550;
+        }
+        .code {
+            background: #333;
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .step {
+            background: #fff;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .warning {
+            background: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        button {
+            background: #00a550;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #009046;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 API Fix Summary & Test Guide</h1>
+    
+    <div class="section">
+        <h2>📋 Fixes Applied</h2>
+        
+        <div class="fix-item">
+            <h3>1. Double API Prefix Fix (/api/api/)</h3>
+            <p>Fixed hardcoded API paths in:</p>
+            <ul>
+                <li><span class="code">src/stores/auth.ts</span> - Login and register endpoints</li>
+                <li><span class="code">src/stores/sessions.ts</span> - All session-related endpoints</li>
+            </ul>
+            <p>Changed from hardcoded paths like <span class="code">/api/auth/login</span> to use configured endpoints from <span class="code">apiConfig</span></p>
+        </div>
+        
+        <div class="fix-item">
+            <h3>2. Port 8080 → 8000 Migration</h3>
+            <p>Updated configuration files:</p>
+            <ul>
+                <li><span class="code">.env</span> - VITE_API_URL changed to port 8000</li>
+                <li><span class="code">vite.config.ts</span> - Proxy target changed to port 8000</li>
+                <li><span class="code">src/utils/fixAxiosBaseURL.ts</span> - Added interceptor to fix any remaining 8080 URLs</li>
+            </ul>
+        </div>
+        
+        <div class="fix-item">
+            <h3>3. API Base URL Configuration</h3>
+            <p>Changed base URL from <span class="code">/api/v1</span> to <span class="code">/api</span> in:</p>
+            <ul>
+                <li><span class="code">src/services/api/config.ts</span></li>
+            </ul>
+        </div>
+        
+        <div class="fix-item">
+            <h3>4. Build Completed</h3>
+            <p>Application has been rebuilt with all fixes applied ✅</p>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>🚀 Testing Steps</h2>
+        
+        <div class="warning">
+            <strong>⚠️ Important:</strong> Clear your browser cache before testing to ensure all old configurations are removed!
+        </div>
+        
+        <div class="step">
+            <h3>Step 1: Clear Cache</h3>
+            <button onclick="window.open('/clear-cache.html', '_blank')">Open Cache Cleaner</button>
+            <p>Click the button above and clear all caches, then return here.</p>
+        </div>
+        
+        <div class="step">
+            <h3>Step 2: Login</h3>
+            <button onclick="window.open('/auto-login.html', '_blank')">Open Auto Login</button>
+            <p>Login as admin user (martin@danglefeet.com)</p>
+        </div>
+        
+        <div class="step">
+            <h3>Step 3: Test Admin Panel</h3>
+            <button onclick="window.open('/admin', '_blank')">Open Admin Panel</button>
+            <p>The admin panel should now load without errors.</p>
+        </div>
+        
+        <div class="step">
+            <h3>Step 4: Verify API Calls</h3>
+            <button onclick="window.open('/api-diagnostics.html', '_blank')">Open API Diagnostics</button>
+            <p>Run the diagnostics to verify all endpoints are working correctly.</p>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>🔍 Quick Check</h2>
+        <button onclick="checkStatus()">Check Current Status</button>
+        <div id="status"></div>
+    </div>
+    
+    <script>
+        async function checkStatus() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = '<div class="status">Checking...</div>';
+            
+            // Check authentication
+            const token = localStorage.getItem('nscale_access_token') || localStorage.getItem('access_token');
+            let authStatus = '';
+            if (token) {
+                authStatus = '<div class="status success">✅ Authenticated</div>';
+            } else {
+                authStatus = '<div class="status error">❌ Not authenticated - Please login first</div>';
+            }
+            
+            // Test a simple API call
+            let apiStatus = '';
+            try {
+                const response = await fetch('/api/health', {
+                    headers: token ? {'Authorization': `Bearer ${token}`} : {}
+                });
+                if (response.ok) {
+                    apiStatus = '<div class="status success">✅ API is reachable</div>';
+                } else {
+                    apiStatus = `<div class="status error">❌ API returned ${response.status}</div>`;
+                }
+            } catch (error) {
+                apiStatus = `<div class="status error">❌ API error: ${error.message}</div>`;
+            }
+            
+            // Check for service workers
+            let swStatus = '';
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                if (registrations.length > 0) {
+                    swStatus = `<div class="status warning">⚠️ ${registrations.length} service worker(s) found - Consider clearing cache</div>`;
+                } else {
+                    swStatus = '<div class="status success">✅ No service workers active</div>';
+                }
+            }
+            
+            statusDiv.innerHTML = authStatus + apiStatus + swStatus;
+        }
+    </script>
+</body>
+</html>

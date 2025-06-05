@@ -223,7 +223,7 @@ export class RouterInitializationTester {
    * Integrationshelfer für Vue/Pinia/Router
    */
   static injectMonitoring(
-    app: any,
+    _app: any,
     options: {
       onPiniaCreated?: () => void;
       onRouterCreated?: () => void;
@@ -312,7 +312,7 @@ export class RouterInitializationTester {
       "services",
       "navigation",
     ];
-    const actualOrder: string[] = [];
+    const _actualOrder: string[] = [];
 
     // Sortiere Stages nach Timestamp
     const sortedStages = Array.from(this.stages.entries())

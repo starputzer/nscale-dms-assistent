@@ -80,3 +80,13 @@ export interface DocumentMeta {
   title?: string;
   pages?: number;
 }
+
+
+export interface ConversionProgress {
+  [key: string]: any;
+}
+
+
+export interface DocumentConverterState {
+  [key: string]: any;
+}

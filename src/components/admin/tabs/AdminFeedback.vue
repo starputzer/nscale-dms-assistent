@@ -598,54 +598,77 @@ function truncateText(text: string, maxLength: number) {
   return text.substring(0, maxLength) + "...";
 }
 
-function exportFeedback() {
-  // Create CSV content
-  const headers = [
-    "Datum",
-    "Benutzer",
-    "Typ",
-    "Frage",
-    "Antwort",
-    "Kommentar",
-    "Sitzungs-ID",
-    "Nachrichten-ID",
-  ];
-
-  const csvRows = [headers.join(",")];
-
-  // Add data rows
-  filteredFeedback.value.forEach((feedback) => {
-    const row = [
-      `"${formatDate(feedback.created_at, true)}"`,
-      `"${feedback.user_email}"`,
-      `"${feedback.is_positive ? "Positiv" : "Negativ"}"`,
-      `"${feedback.question.replace(/"/g, '""')}"`,
-      `"${feedback.answer.replace(/"/g, '""')}"`,
-      `"${feedback.comment ? feedback.comment.replace(/"/g, '""') : ""}"`,
-      `"${feedback.session_id}"`,
-      `"${feedback.message_id}"`,
+async function exportFeedback() {
+  try {
+    // Use the feedback store's export functionality
+    const exportOptions = {
+      format: 'csv' as const,
+      fields: [
+        'created_at',
+        'user_email',
+        'is_positive',
+        'question',
+        'answer',
+        'comment',
+        'session_id',
+        'message_id'
+      ],
+      data: filteredFeedback.value
+    };
+    
+    await feedbackStore.exportFeedback(exportOptions);
+  } catch (error) {
+    console.error('Export failed:', error);
+    // Fallback to client-side export
+    
+    // Create CSV content
+    const headers = [
+      "Datum",
+      "Benutzer",
+      "Typ",
+      "Frage",
+      "Antwort",
+      "Kommentar",
+      "Sitzungs-ID",
+      "Nachrichten-ID",
     ];
 
-    csvRows.push(row.join(","));
-  });
+    const csvRows = [headers.join(",")];
 
-  const csvContent = csvRows.join("\n");
+    // Add data rows
+    filteredFeedback.value.forEach((feedback) => {
+      const row = [
+        `"${formatDate(feedback.created_at, true)}"`,
+        `"${feedback.user_email}"`,
+        `"${feedback.is_positive ? "Positiv" : "Negativ"}"`,
+        `"${feedback.question.replace(/"/g, '""')}"`,
+        `"${feedback.answer.replace(/"/g, '""')}"`,
+        `"${feedback.comment ? feedback.comment.replace(/"/g, '""') : ""}"`,
+        `"${feedback.session_id}"`,
+        `"${feedback.message_id}"`,
+      ];
 
-  // Create blob and download
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
+      csvRows.push(row.join(","));
+    });
 
-  link.setAttribute("href", url);
-  link.setAttribute(
-    "download",
-    `feedback-export-${new Date().toISOString().split("T")[0]}.csv`,
-  );
-  link.style.visibility = "hidden";
+    const csvContent = csvRows.join("\n");
 
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `feedback-export-${new Date().toISOString().split("T")[0]}.csv`,
+    );
+    link.style.visibility = "hidden";
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 }
 
 // Mock Chart.js implementation for testing
@@ -792,12 +815,14 @@ function updateCharts() {
 
 // Lifecycle hooks
 onMounted(async () => {
-  // Load initial data if not already loaded
-  if (!negativeFeedback.value.length || !stats.value.total) {
+  // Load initial data
+  try {
     await Promise.all([
       feedbackStore.fetchStats(),
-      feedbackStore.fetchNegativeFeedback(),
+      feedbackStore.fetchAllFeedback()  // Changed from fetchNegativeFeedback to get all feedback
     ]);
+  } catch (error) {
+    console.error("Error loading feedback data:", error);
   }
 
   // Initialize charts after data is loaded

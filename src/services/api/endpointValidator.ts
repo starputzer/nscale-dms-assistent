@@ -7,10 +7,10 @@
 export class EndpointValidator {
   // Known working endpoints
   private static validEndpoints = [
-    "/api/sessions",
-    "/api/sessions/stats",
-    "/api/sessions/:id",
-    "/api/sessions/:id/messages",
+    "/api/chat/sessions",
+    "/api/chat/sessions/stats",
+    "/api/chat/sessions/:id",
+    "/api/chat/sessions/:id/messages",
     "/api/chat",
     "/api/auth/login",
     "/api/auth/register",
@@ -19,9 +19,9 @@ export class EndpointValidator {
 
   // Known problematic endpoints
   private static problemEndpoints = [
-    "/api/sessions/:id/metadata",
-    "/api/sessions/:id/bookmarks",
-    "/api/sessions/:id/tags",
+    "/api/chat/sessions/:id/metadata",
+    "/api/chat/sessions/:id/bookmarks",
+    "/api/chat/sessions/:id/tags",
   ];
 
   /**

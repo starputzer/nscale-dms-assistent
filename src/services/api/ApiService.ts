@@ -84,7 +84,7 @@ export class ApiService {
   private logService: LogService;
 
   /** Flag für laufenden Token-Refresh */
-  private isRefreshingToken: boolean = false;
+  private _isRefreshingToken: boolean = false;
 
   /** Warteschlange für Anfragen, die auf Token-Refresh warten */
   private tokenRefreshQueue: Array<{
@@ -591,10 +591,33 @@ export class ApiService {
     url: string,
     options: ApiRequestOptions = {},
   ): Promise<ApiResponse<T>> {
+    // Check if this is an admin endpoint that doesn't use /v1
+    const adminEndpoints = [
+      '/admin-dashboard',
+      '/admin-statistics', 
+      '/admin-system-comprehensive',
+      '/admin-dashboard-standard',
+      '/admin-feedback',
+      '/admin-users',
+      '/knowledge-manager',
+      '/rag-settings',
+      '/system-monitor',
+      '/background-processing',
+      '/advanced-documents',
+      '/doc-converter-enhanced'
+    ];
+    
+    // If this is an admin endpoint, use /api instead of /api/v1
+    let adjustedUrl = url;
+    if (adminEndpoints.some(endpoint => url.startsWith(endpoint))) {
+      // Override base URL for admin endpoints
+      options.baseURL = '/api';
+    }
+    
     // Default-Optionen
     const defaultOptions: ApiRequestOptions = {
       method,
-      url,
+      url: adjustedUrl,
       retry: true,
       refreshToken: true,
       handleRateLimit: true,

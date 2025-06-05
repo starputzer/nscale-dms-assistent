@@ -71,31 +71,33 @@
 
       <!-- Main Content -->
       <main class="admin-panel__content">
-        <Transition name="fade" mode="out-in">
-          <div v-if="isLoading" class="admin-panel__loading">
-            <div class="admin-panel__spinner"></div>
-            <p>{{ t("admin.loading", "Lade Daten...") }}</p>
+        <!-- Loading state -->
+        <div v-if="isLoading" class="admin-panel__loading">
+          <div class="admin-panel__spinner"></div>
+          <p>{{ t("admin.loading", "Lade Daten...") }}</p>
+        </div>
+        <!-- Error state -->
+        <div v-else-if="error" class="admin-panel__error">
+          <div class="error-icon">
+            <i class="fas fa-exclamation-triangle"></i>
           </div>
-          <div v-else-if="error" class="admin-panel__error">
-            <div class="error-icon">
-              <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <h3>{{ t("admin.error.title", "Ein Fehler ist aufgetreten") }}</h3>
-            <p>{{ error }}</p>
-            <button class="btn btn-primary" @click="window.location.reload()">
-              {{ t("admin.error.refresh", "Seite neu laden") }}
-            </button>
-          </div>
-          <div v-else-if="currentTabComponent" class="admin-tab-container">
-            <component
-              :is="currentTabComponent"
-              @action="handleAction"
-            ></component>
-          </div>
-          <div v-else class="admin-panel__error">
-            <p>{{ t("admin.tabNotFound", "Tab nicht gefunden") }}</p>
-          </div>
-        </Transition>
+          <h3>{{ t("admin.error.title", "Ein Fehler ist aufgetreten") }}</h3>
+          <p>{{ error }}</p>
+          <button class="btn btn-primary" @click="window.location.reload()">
+            {{ t("admin.error.refresh", "Seite neu laden") }}
+          </button>
+        </div>
+        <!-- Tab content -->
+        <div v-else-if="currentTabComponent" class="admin-tab-container">
+          <component
+            :is="currentTabComponent"
+            @action="handleAction"
+          ></component>
+        </div>
+        <!-- Tab not found -->
+        <div v-else class="admin-panel__error">
+          <p>{{ t("admin.tabNotFound", "Tab nicht gefunden") }}</p>
+        </div>
       </main>
     </div>
   </div>
@@ -338,6 +340,16 @@ const allTabs = computed(() => [
     icon: "fas fa-file-alt",
   },
   {
+    id: "knowledgeManager",
+    label: t("admin.tabs.knowledgeManager", "Wissensdatenbank"),
+    icon: "fas fa-database",
+  },
+  {
+    id: "systemMonitor",
+    label: t("admin.tabs.systemMonitor", "System-Monitor"),
+    icon: "fas fa-heartbeat",
+  },
+  {
     id: "system",
     label: t("admin.tabs.system", "System"),
     icon: "fas fa-cogs",
@@ -346,6 +358,11 @@ const allTabs = computed(() => [
     id: "statistics",
     label: t("admin.tabs.statistics", "Statistiken"),
     icon: "fas fa-chart-line",
+  },
+  {
+    id: "ragSettings",
+    label: t("admin.tabs.ragSettings", "RAG-Einstellungen"),
+    icon: "fas fa-brain",
   },
   {
     id: "settings",
@@ -361,6 +378,11 @@ const allTabs = computed(() => [
     id: "featureToggles",
     label: t("admin.tabs.featureToggles", "Feature-Toggles"),
     icon: "fas fa-toggle-on",
+  },
+  {
+    id: "advancedDocuments",
+    label: t("admin.tabs.advancedDocuments", "Erweiterte Dokumentverarbeitung"),
+    icon: "fas fa-file-invoice",
   },
 ]);
 
@@ -443,19 +465,26 @@ async function loadTabComponent(tabId) {
   try {
     // Map tab ID to enhanced component path
     const componentMap = {
-      dashboard: () => import("@/components/admin/tabs/AdminDashboard.vue"),
+      dashboard: () => import("@/components/admin/tabs/AdminDashboard.enhanced.vue"),
       users: () => import("@/components/admin/tabs/AdminUsers.enhanced.vue"),
       feedback: () =>
         import("@/components/admin/tabs/AdminFeedback.enhanced.vue"),
       motd: () => import("@/components/admin/tabs/AdminMotd.enhanced.vue"),
       docConverter: () =>
-        import("@/components/admin/tabs/AdminDocConverter.vue"),
+        import("@/components/admin/tabs/AdminDocConverterEnhanced.vue"),
+      knowledgeManager: () =>
+        import("@/components/admin/tabs/AdminKnowledgeManager.vue"),
+      systemMonitor: () =>
+        import("@/components/admin/tabs/AdminSystemMonitor.vue"),
       system: () => import("@/components/admin/tabs/AdminSystem.enhanced.vue"),
       statistics: () => import("@/components/admin/tabs/AdminStatistics.vue"),
+      ragSettings: () => import("@/components/admin/tabs/AdminRAGSettings.vue"),
       settings: () => import("@/components/admin/tabs/AdminSystemSettings.vue"),
       logs: () => import("@/components/admin/tabs/AdminLogViewerUpdated.vue"),
       featureToggles: () =>
         import("@/components/admin/tabs/AdminFeatureToggles.enhanced.vue"),
+      advancedDocuments: () =>
+        import("@/components/admin/tabs/AdminAdvancedDocuments.vue"),
     };
 
     if (componentMap[tabId]) {

@@ -13,7 +13,7 @@ export interface MonitoringOptions {
 
 export function createMonitoring(options: MonitoringOptions = {}) {
   const {
-    telemetryEnabled = true,
+    _telemetryEnabled = true,
     performanceEnabled = true,
     errorTrackingEnabled = true,
     userTrackingEnabled = true,
@@ -42,7 +42,7 @@ export function createMonitoring(options: MonitoringOptions = {}) {
 
         // Track warnings in development
         if (import.meta.env.DEV) {
-          app.config.warnHandler = (msg: any, instance: any, trace: any) => {
+          app.(config as any).warnHandler = (msg: any, instance: any, trace: any) => {
             console.warn('Vue Warning:', msg);
             
             telemetry.track({
@@ -153,9 +153,9 @@ export function createMonitoring(options: MonitoringOptions = {}) {
       }
 
       // API tracking via axios interceptors
-      if (apiTrackingEnabled && window.axios) {
+      if (apiTrackingEnabled && (window as any).axios) {
         // Request interceptor
-        window.axios.interceptors.request.use(
+        (window as any).axios.interceptors.request.use(
           (config: any) => {
             config.metadata = { startTime: performance.now() };
             return config;
@@ -167,7 +167,7 @@ export function createMonitoring(options: MonitoringOptions = {}) {
         );
 
         // Response interceptor
-        window.axios.interceptors.response.use(
+        (window as any).axios.interceptors.response.use(
           (response: any) => {
             const duration = performance.now() - response.config.metadata?.startTime;
             const endpoint = response.config.url || 'unknown';
@@ -202,7 +202,7 @@ export function createMonitoring(options: MonitoringOptions = {}) {
       // Development tools
       if (import.meta.env.DEV) {
         // Expose monitoring tools in console
-        window.__MONITORING__ = {
+        (window as any).__MONITORING__ = {
           telemetry,
           performanceMonitor,
           getFeatureUsage: () => telemetry.getFeatureUsageReport(),

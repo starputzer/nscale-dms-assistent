@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <title>Force Refresh & Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #00a550;
+            text-align: center;
+        }
+        .step {
+            background: #e8f7ef;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #00a550;
+        }
+        .step h2 {
+            margin-top: 0;
+            color: #009046;
+        }
+        button {
+            background: #00a550;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #009046;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .console {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            font-family: monospace;
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Force Refresh & Authentication Fix</h1>
+        
+        <div id="console" class="console"></div>
+        
+        <div class="step">
+            <h2>Step 1: Clear Everything</h2>
+            <p>This will clear all caches, service workers, and stored data.</p>
+            <button onclick="clearEverything()" id="clearBtn">Clear All & Refresh</button>
+            <div id="clearStatus"></div>
+        </div>
+        
+        <div class="step">
+            <h2>Step 2: Login as Admin</h2>
+            <p>After clearing, you need to login again.</p>
+            <button onclick="autoLogin()" id="loginBtn" disabled>Login as Admin</button>
+            <div id="loginStatus"></div>
+        </div>
+        
+        <div class="step">
+            <h2>Step 3: Test Admin Access</h2>
+            <p>Verify that admin endpoints work correctly.</p>
+            <button onclick="testAdminAccess()" id="testBtn" disabled>Test Admin Access</button>
+            <div id="testStatus"></div>
+        </div>
+        
+        <div class="step">
+            <h2>Step 4: Open Admin Panel</h2>
+            <button onclick="openAdminPanel()" id="adminBtn" disabled>Open Admin Panel</button>
+        </div>
+    </div>
+
+    <script>
+        const log = (msg, type = 'info') => {
+            const console = document.getElementById('console');
+            const time = new Date().toLocaleTimeString();
+            const color = {
+                info: '#0f0',
+                error: '#f00',
+                warning: '#ff0',
+                success: '#0ff'
+            }[type] || '#fff';
+            console.innerHTML += `<div style="color: ${color}">[${time}] ${msg}</div>`;
+            console.scrollTop = console.scrollHeight;
+        };
+
+        async function clearEverything() {
+            const btn = document.getElementById('clearBtn');
+            const status = document.getElementById('clearStatus');
+            btn.disabled = true;
+            
+            try {
+                log('Starting complete cleanup...', 'info');
+                
+                // 1. Clear localStorage
+                const localKeys = Object.keys(localStorage);
+                localStorage.clear();
+                log(`Cleared ${localKeys.length} localStorage items`, 'success');
+                
+                // 2. Clear sessionStorage
+                const sessionKeys = Object.keys(sessionStorage);
+                sessionStorage.clear();
+                log(`Cleared ${sessionKeys.length} sessionStorage items`, 'success');
+                
+                // 3. Clear all caches
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    for (const name of cacheNames) {
+                        await caches.delete(name);
+                        log(`Deleted cache: ${name}`, 'success');
+                    }
+                }
+                
+                // 4. Unregister service workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (const registration of registrations) {
+                        await registration.unregister();
+                        log(`Unregistered service worker: ${registration.scope}`, 'success');
+                    }
+                }
+                
+                // 5. Clear cookies
+                document.cookie.split(";").forEach(c => {
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+                });
+                log('Cleared all cookies', 'success');
+                
+                // 6. Clear IndexedDB
+                if ('indexedDB' in window) {
+                    const databases = await indexedDB.databases();
+                    for (const db of databases) {
+                        indexedDB.deleteDatabase(db.name);
+                        log(`Deleted IndexedDB: ${db.name}`, 'success');
+                    }
+                }
+                
+                status.innerHTML = '<div class="status success">✅ Everything cleared! Refreshing in 3 seconds...</div>';
+                
+                // Enable login button
+                document.getElementById('loginBtn').disabled = false;
+                
+                // Hard reload after 3 seconds
+                setTimeout(() => {
+                    window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
+                }, 3000);
+                
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+                status.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+                btn.disabled = false;
+            }
+        }
+        
+        async function autoLogin() {
+            const btn = document.getElementById('loginBtn');
+            const status = document.getElementById('loginStatus');
+            btn.disabled = true;
+            
+            try {
+                log('Attempting login...', 'info');
+                
+                // Login request
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'martin@danglefeet.com',
+                        password: '123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.access_token) {
+                    // Store tokens
+                    localStorage.setItem('nscale_access_token', data.access_token);
+                    localStorage.setItem('access_token', data.access_token);
+                    
+                    if (data.user) {
+                        localStorage.setItem('nscale_user', JSON.stringify(data.user));
+                        localStorage.setItem('user', JSON.stringify(data.user));
+                    }
+                    
+                    log(`Login successful! User: ${data.user?.email}`, 'success');
+                    status.innerHTML = `
+                        <div class="status success">
+                            ✅ Logged in as ${data.user?.email} (${data.user?.role})
+                        </div>
+                    `;
+                    
+                    // Enable test button
+                    document.getElementById('testBtn').disabled = false;
+                    
+                } else {
+                    throw new Error(data.detail || 'Login failed');
+                }
+                
+            } catch (error) {
+                log(`Login error: ${error.message}`, 'error');
+                status.innerHTML = `<div class="status error">❌ ${error.message}</div>`;
+                btn.disabled = false;
+            }
+        }
+        
+        async function testAdminAccess() {
+            const btn = document.getElementById('testBtn');
+            const status = document.getElementById('testStatus');
+            btn.disabled = true;
+            
+            const token = localStorage.getItem('nscale_access_token');
+            if (!token) {
+                status.innerHTML = '<div class="status error">❌ No auth token found!</div>';
+                btn.disabled = false;
+                return;
+            }
+            
+            const tests = [
+                { name: 'Health Check', url: '/api/health' },
+                { name: 'Admin Users', url: '/api/admin/users' },
+                { name: 'Admin Dashboard', url: '/api/admin-dashboard/summary' },
+                { name: 'System Info', url: '/api/system/info' }
+            ];
+            
+            let results = [];
+            
+            for (const test of tests) {
+                try {
+                    log(`Testing ${test.name}...`, 'info');
+                    
+                    const response = await fetch(test.url, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        log(`✅ ${test.name}: ${response.status} OK`, 'success');
+                        results.push(`✅ ${test.name}`);
+                    } else {
+                        log(`❌ ${test.name}: ${response.status} ${response.statusText}`, 'error');
+                        results.push(`❌ ${test.name} (${response.status})`);
+                    }
+                    
+                } catch (error) {
+                    log(`❌ ${test.name}: ${error.message}`, 'error');
+                    results.push(`❌ ${test.name} (Error)`);
+                }
+            }
+            
+            status.innerHTML = `
+                <div class="status ${results.some(r => r.includes('✅')) ? 'success' : 'error'}">
+                    Test Results:<br>
+                    ${results.join('<br>')}
+                </div>
+            `;
+            
+            // Enable admin button if at least one test passed
+            if (results.some(r => r.includes('✅'))) {
+                document.getElementById('adminBtn').disabled = false;
+            }
+            
+            btn.disabled = false;
+        }
+        
+        function openAdminPanel() {
+            log('Opening admin panel...', 'info');
+            window.open('/admin', '_blank');
+        }
+        
+        // Check initial status
+        window.onload = () => {
+            log('Force Refresh Tool Ready', 'info');
+            
+            const token = localStorage.getItem('nscale_access_token');
+            if (token) {
+                log('Found existing auth token', 'warning');
+                log('Run "Clear All & Refresh" to start fresh', 'warning');
+            } else {
+                log('No auth token found - please clear and login', 'info');
+            }
+            
+            // Check for port 8080 in any stored values
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                if (value && value.includes('8080')) {
+                    log(`⚠️ Found port 8080 in localStorage.${key}`, 'warning');
+                }
+            }
+        };
+    </script>
+</body>
+</html>

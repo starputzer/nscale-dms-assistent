@@ -163,7 +163,7 @@ export class BatchRequestService {
   private isProcessingBatch = false;
   private readonly MAX_BATCH_SIZE = 50;
   private readonly BATCH_DELAY = 50;
-  private readonly DEFAULT_TIMEOUT = 30000;
+  private readonly _DEFAULT_TIMEOUT = 30000;
   private readonly CACHE_TTL = 300000; // 5 Minuten
   private readonly MAX_RETRIES = 3;
   private readonly RETRY_DELAY = 1000;
@@ -268,7 +268,7 @@ export class BatchRequestService {
   /**
    * Fixed response processing from BatchRequestServiceFix
    */
-  private processBatchResponse(serverResponse: any): BatchResponse[] {
+  private _processBatchResponse(serverResponse: any): BatchResponse[] {
     // Analyze response in debug mode
     if (this.debugMode) {
       this.analyzeResponse(serverResponse);

@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { computed, ref, watch } from "vue";
 import { apiService } from "@/services/api/ApiService";
+import { apiConfig } from "@/services/api/config";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import { safeParseSSEData } from "@/utils/sse-parser";
@@ -14,10 +15,10 @@ import type {
 } from "../types/session";
 import type { SessionsStoreReturn } from "../types/stores";
 import { useAuthStore } from "./auth";
-import { batchRequestService } from "@/services/api/BatchRequestService";
+// import { batchRequestService } from "@/services/api/BatchRequestService"; // Unused import
 import {
-  processBatchResponse,
-  extractBatchResponseData,
+  _processBatchResponse,
+  _extractBatchResponseData,
   validateSessionsResponse,
 } from "./sessionsResponseFix";
 
@@ -115,7 +116,7 @@ export const useSessionsStore = defineStore(
                     ...msg,
                     timestamp: msg.timestamp || new Date().toISOString(),
                     status: msg.status || "sent",
-                  }),
+                  })
                 );
               });
             }
@@ -172,7 +173,7 @@ export const useSessionsStore = defineStore(
       );
 
       // Cleanup-Funktion
-      const cleanup = () => {
+      const _cleanup = () => {
         if (syncInterval !== null) {
           clearInterval(syncInterval);
         }
@@ -311,7 +312,7 @@ export const useSessionsStore = defineStore(
         
         try {
           // Lade Sessions direkt
-          const sessionsResponse = await axios.get("/api/sessions", {
+          const sessionsResponse = await axios.get(apiConfig.ENDPOINTS.CHAT.SESSIONS, {
             headers: authHeaders,
             params: {
               since: syncStatus.value.lastSyncTime,
@@ -322,8 +323,11 @@ export const useSessionsStore = defineStore(
           console.log("Sessions loaded directly:", sessionsData);
           
           // Optional: Lade Stats separat (wenn benötigt)
+          // TODO: Stats endpoint is not defined in the API config
+          // Commenting out for now to avoid /api/api/sessions/stats error
+          /*
           try {
-            const statsResponse = await axios.get("/api/sessions/stats", {
+            const statsResponse = await axios.get("/sessions/stats", {
               headers: authHeaders,
             });
             statsData = statsResponse.data;
@@ -331,6 +335,7 @@ export const useSessionsStore = defineStore(
             // Stats sind optional
             console.warn("Could not load session stats:", statsError);
           }
+          */
         } catch (error: any) {
           console.error("Failed to load sessions:", error);
           sessions.value = [];
@@ -394,7 +399,7 @@ export const useSessionsStore = defineStore(
           // Lokale Sessions hinzufügen, die nicht vom Server kamen
           // (nur solche, die als isLocal markiert sind - andere wurden gelöscht)
           localSessionsMap.forEach((session: any) => {
-            // if ((session as any).isLocal) { // isLocal check entfernt
+            // if (((session as any).isLocal) { // isLocal check entfernt
             updatedSessions.push(session);
             // }
           });
@@ -457,7 +462,7 @@ export const useSessionsStore = defineStore(
         // Direct API call instead of batch request
         // The batch service seems to have issues with the server response format
         const response = await axios.get(
-          `/api/sessions/${sessionId}/messages`,
+          apiConfig.ENDPOINTS.CHAT.MESSAGES(sessionId),
           {
             headers: authHeaders,
           },
@@ -551,7 +556,7 @@ export const useSessionsStore = defineStore(
               updatedAt: now,
             };
 
-            await axios.post<ChatSession>("/api/sessions", payload, {
+            await axios.post<ChatSession>(apiConfig.ENDPOINTS.CHAT.SESSIONS, payload, {
               headers: authStore.createAuthHeaders(),
             });
 
@@ -590,7 +595,7 @@ export const useSessionsStore = defineStore(
       currentSessionId.value = sessionId;
 
       // Cancel any ongoing streaming for the previous session
-      if (previousSessionId && streaming.value.isStreaming) {
+      if (previousSessionId && (streaming.value as any).isStreaming) {
         cancelStreaming();
       }
 
@@ -626,7 +631,7 @@ export const useSessionsStore = defineStore(
       if (authStore.isAuthenticated) {
         try {
           await axios.patch(
-            `/api/sessions/${sessionId}`,
+            apiConfig.ENDPOINTS.CHAT.SESSION(sessionId),
             { title: newTitle },
             {
               headers: authStore.createAuthHeaders(),
@@ -677,7 +682,7 @@ export const useSessionsStore = defineStore(
       // Mit dem Server synchronisieren, wenn angemeldet
       if (authStore.isAuthenticated) {
         try {
-          await axios.delete(`/api/sessions/${sessionId}`, {
+          await axios.delete(apiConfig.ENDPOINTS.CHAT.SESSION(sessionId), {
             headers: authStore.createAuthHeaders(),
           });
         } catch (err: any) {
@@ -716,7 +721,7 @@ export const useSessionsStore = defineStore(
       if (authStore.isAuthenticated) {
         try {
           await axios.patch(
-            `/api/sessions/${sessionId}`,
+            apiConfig.ENDPOINTS.CHAT.SESSION(sessionId),
             { isPinned },
             {
               headers: authStore.createAuthHeaders(),
@@ -953,7 +958,7 @@ export const useSessionsStore = defineStore(
           // params.append('token', authToken); // Token als URL-Parameter
 
           // Verwende den neuen API-Endpoint aus der Config
-          const url = `/api/question/stream?${params.toString()}`;
+          const url = `/api/chat/message/stream?${params.toString()}`;
           console.log("Streaming URL:", url);
           console.log("Auth token present:", !!authToken);
 
@@ -1058,10 +1063,13 @@ export const useSessionsStore = defineStore(
                       continue;
                     }
                     
-                    // Backend sendet JSON im Format: {"response": "token"}
+                    // Backend sendet JSON im Format: {"type": "content", "content": "token"}
                     const parsed = safeParseSSEData(data);
-                    if (parsed && parsed.response) {
-                      responseContent += parsed.response;
+                    if (parsed && parsed.type === "content" && parsed.content) {
+                      responseContent += parsed.content;
+                    } else if (parsed && parsed.type === "done") {
+                      console.log("Received done event in data");
+                      // Done is handled separately
                     } else if (parsed && parsed.error) {
                       console.error(
                         "Streaming error from backend:",
@@ -1126,17 +1134,14 @@ export const useSessionsStore = defineStore(
             if (!responseContent || responseContent.includes("data:")) {
               // Reset responseContent if it contains raw SSE data
               responseContent = "";
-              const requestData: any = {
-                question: content,
-              };
-
-              if (/^\d+$/.test(sessionId)) {
-                requestData.session_id = parseInt(sessionId);
-              }
 
               const fallbackResponse = await axios.post(
-                "/api/question",
-                requestData,
+                "/chat",
+                {
+                  message: content,
+                  sessionId: sessionId,
+                  model: "llama3:8b-instruct-q4_1"
+                },
                 {
                   headers: {
                     Authorization: `Bearer ${authToken}`,
@@ -1180,13 +1185,6 @@ export const useSessionsStore = defineStore(
           // Nicht-Streaming-Version verwenden
 
           const assistantTempId = `temp-response-${uuidv4()}`; // Diese Variable fehlte
-          const requestData: any = {
-            question: content,
-          };
-
-          if (/^\d+$/.test(sessionId)) {
-            requestData.session_id = parseInt(sessionId);
-          }
 
           // Erstelle eine initiale Assistant-Nachricht
           const initialAssistantMessage: ChatMessage = {
@@ -1201,7 +1199,11 @@ export const useSessionsStore = defineStore(
           messages.value[sessionId].push(initialAssistantMessage);
 
           try {
-            const response = await axios.post("/api/question", requestData, {
+            const response = await axios.post("/chat", {
+              message: content,
+              sessionId: sessionId,
+              model: "llama3:8b-instruct-q4_1"
+            }, {
               headers: {
                 Authorization: `Bearer ${authToken}`,
                 "Content-Type": "application/json",
@@ -1366,7 +1368,7 @@ export const useSessionsStore = defineStore(
       if (authStore.isAuthenticated) {
         try {
           await axios.delete(
-            `/api/sessions/${sessionId}/messages/${messageId}`,
+            apiConfig.ENDPOINTS.CHAT.MESSAGE(sessionId, messageId),
             {
               headers: authStore.createAuthHeaders(),
             },
@@ -1561,7 +1563,7 @@ export const useSessionsStore = defineStore(
 
         // Sende Feedback an Backend
         await axios.post(
-          "/api/feedback",
+          apiConfig.ENDPOINTS.FEEDBACK.SUBMIT,
           {
             message_id: messageId,
             session_id: foundSessionId,
@@ -1625,7 +1627,7 @@ export const useSessionsStore = defineStore(
       if (authStore.isAuthenticated) {
         try {
           await axios.patch(
-            `/api/sessions/${sessionId}`,
+            apiConfig.ENDPOINTS.CHAT.SESSION(sessionId),
             {
               tags: sessions.value[sessionIndex].tags,
             },
@@ -1664,7 +1666,7 @@ export const useSessionsStore = defineStore(
       if (authStore.isAuthenticated) {
         try {
           await axios.patch(
-            `/api/sessions/${sessionId}`,
+            apiConfig.ENDPOINTS.CHAT.SESSION(sessionId),
             {
               tags: sessions.value[sessionIndex].tags,
             },
@@ -1707,7 +1709,7 @@ export const useSessionsStore = defineStore(
       if (authStore.isAuthenticated) {
         try {
           await axios.patch(
-            `/api/sessions/${sessionId}`,
+            apiConfig.ENDPOINTS.CHAT.SESSION(sessionId),
             {
               category: sessions.value[sessionIndex].category,
             },
@@ -1744,7 +1746,7 @@ export const useSessionsStore = defineStore(
       if (authStore.isAuthenticated) {
         try {
           await axios.patch(
-            `/api/sessions/${sessionId}`,
+            apiConfig.ENDPOINTS.CHAT.SESSION(sessionId),
             {
               category: null,
             },
@@ -1785,7 +1787,7 @@ export const useSessionsStore = defineStore(
       if (authStore.isAuthenticated) {
         try {
           await axios.patch(
-            `/api/sessions/${sessionId}`,
+            apiConfig.ENDPOINTS.CHAT.SESSION(sessionId),
             {
               isArchived: archive,
             },
@@ -1950,7 +1952,7 @@ export const useSessionsStore = defineStore(
       // Mit dem Server synchronisieren, wenn angemeldet
       if (authStore.isAuthenticated) {
         try {
-          await axios.delete(`/api/sessions/${sessionId}`, {
+          await axios.delete(apiConfig.ENDPOINTS.CHAT.SESSION(sessionId), {
             headers: authStore.createAuthHeaders(),
           });
         } catch (err: any) {

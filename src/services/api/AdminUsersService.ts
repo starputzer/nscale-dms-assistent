@@ -65,6 +65,13 @@ export class AdminUsersService implements IAdminUsersService {
           options,
         );
 
+        this.logger.info("API Response:", response);
+        this.logger.info("Response type:", typeof response);
+        this.logger.info("Response keys:", response ? Object.keys(response) : 'null');
+        this.logger.info("Response.data:", response?.data);
+        this.logger.info("Response.data type:", typeof response?.data);
+        this.logger.info("Response.data keys:", response?.data ? Object.keys(response.data) : 'null');
+
         if (response.success) {
           // Prüfen, ob die Antwort paginiert ist oder direkt ein Array zurückgibt
           if (Array.isArray(response.data)) {
@@ -79,13 +86,15 @@ export class AdminUsersService implements IAdminUsersService {
               data: response.data.items,
               message: "Benutzer erfolgreich abgerufen",
             };
-          } else if (response.data && response.data.users) {
+          } else if (response.data && (response.data as any).users) {
             return {
               success: true,
-              data: response.data.users,
+              data: (response.data as any).users,
               message: "Benutzer erfolgreich abgerufen",
             };
           } else {
+            this.logger.error("Unerwartetes Antwortformat:", response.data);
+            this.logger.error("Response keys:", response.data ? Object.keys(response.data) : 'null');
             throw new Error("Unerwartetes Antwortformat vom Server");
           }
         } else {

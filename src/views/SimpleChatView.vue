@@ -262,7 +262,7 @@ const currentSessionId = computed(
   () => (route.params.id as string) || sessionsStore.currentSessionId,
 );
 const currentSession = computed(() => sessionsStore.currentSession);
-const messages = computed(() => sessionsStore.currentMessages);
+const messages = computed(() => sessionsStore.allCurrentMessages);
 const isStreaming = computed(() => sessionsStore.isStreaming);
 const hasStreamingMessage = computed(() =>
   messages.value.some((msg) => msg.isStreaming),
@@ -375,7 +375,7 @@ const handleFeedback = async (
 
     // Sende Feedback an die API
     const response = await axios.post(
-      "/api/v1/feedback",
+      "/api/feedback",
       {
         message_id: message.id,
         session_id: currentSessionId.value,
@@ -435,7 +435,7 @@ watch(
 );
 
 // Watch for streaming status changes
-watch(isStreaming, (newVal) => {
+watch(isStreaming, (newVal: any) => {
   if (newVal) {
     scrollToBottom();
   }

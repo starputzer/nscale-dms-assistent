@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Login & Admin API</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>Debug Login & Admin API</h1>
+    
+    <h2>1. Login Test</h2>
+    <button onclick="testLogin()">Test Login</button>
+    <div id="loginResult"></div>
+    
+    <h2>2. Admin Users Test</h2>
+    <button onclick="testAdminUsers()">Test Admin Users (nach Login)</button>
+    <div id="usersResult"></div>
+    
+    <script>
+        let authToken = null;
+        
+        async function testLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            
+            try {
+                console.log('Testing login to /api/auth/login');
+                const response = await axios.post('/api/auth/login', {
+                    email: 'martin@danglefeet.com',
+                    password: '123'
+                });
+                
+                console.log('Full response:', response);
+                console.log('Response data:', response.data);
+                console.log('Response data type:', typeof response.data);
+                console.log('Response data keys:', response.data ? Object.keys(response.data) : 'null');
+                
+                // Store token if available
+                if (response.data) {
+                    authToken = response.data.token || response.data.access_token;
+                    if (authToken) {
+                        axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
+                    }
+                }
+                
+                resultDiv.innerHTML = `
+                    <h3>Login Success!</h3>
+                    <p>Status: ${response.status}</p>
+                    <p>Data: <pre>${JSON.stringify(response.data, null, 2)}</pre></p>
+                    <p>Token exists: ${response.data?.token ? 'YES' : 'NO'}</p>
+                    <p>Access token exists: ${response.data?.access_token ? 'YES' : 'NO'}</p>
+                    <p>Token stored: ${authToken ? 'YES' : 'NO'}</p>
+                `;
+            } catch (error) {
+                console.error('Login error:', error);
+                console.error('Error response:', error.response);
+                resultDiv.innerHTML = `
+                    <h3>Login Error!</h3>
+                    <p>Message: ${error.message}</p>
+                    <p>Response status: ${error.response?.status}</p>
+                    <p>Response data: <pre>${error.response ? JSON.stringify(error.response.data, null, 2) : 'No response'}</pre></p>
+                `;
+            }
+        }
+        
+        async function testAdminUsers() {
+            const resultDiv = document.getElementById('usersResult');
+            
+            if (!authToken) {
+                resultDiv.innerHTML = '<p style="color: red;">Bitte erst einloggen!</p>';
+                return;
+            }
+            
+            try {
+                console.log('Testing admin users API');
+                console.log('Using token:', authToken);
+                console.log('Current axios headers:', axios.defaults.headers.common);
+                
+                // Explicitly set the header for this request
+                const response = await axios.get('/api/admin/users', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                console.log('Admin users response:', response);
+                console.log('Response data:', response.data);
+                console.log('Response data type:', typeof response.data);
+                console.log('Response data keys:', response.data ? Object.keys(response.data) : 'null');
+                
+                resultDiv.innerHTML = `
+                    <h3>Admin Users Success!</h3>
+                    <p>Status: ${response.status}</p>
+                    <p>Data type: ${typeof response.data}</p>
+                    <p>Has users array: ${response.data?.users ? 'YES' : 'NO'}</p>
+                    <p>Is array: ${Array.isArray(response.data) ? 'YES' : 'NO'}</p>
+                    <p>Data: <pre>${JSON.stringify(response.data, null, 2)}</pre></p>
+                `;
+            } catch (error) {
+                console.error('Admin users error:', error);
+                resultDiv.innerHTML = `
+                    <h3>Admin Users Error!</h3>
+                    <p>Message: ${error.message}</p>
+                    <p>Response status: ${error.response?.status}</p>
+                    <p>Response data: <pre>${error.response ? JSON.stringify(error.response.data, null, 2) : 'No response'}</pre></p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

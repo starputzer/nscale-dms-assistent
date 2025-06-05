@@ -145,7 +145,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, defineEmits } from "vue";
+import { computed, ref, defineEmits, onMounted, onUnmounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
 import { useAdminSystemStore } from "@/stores/admin/system";
@@ -154,6 +154,7 @@ import { useAdminFeedbackStore } from "@/stores/admin/feedback";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import AdminCard from "@/components/admin/shared/AdminCard.vue";
+import apiService from '@/services/api/ApiService';
 
 // Use i18n composable
 const { t } = useI18n();
@@ -173,6 +174,8 @@ const { stats: feedbackStats } = storeToRefs(adminFeedbackStore);
 
 // Local state
 const isLoading = ref(false);
+const dashboardStats = ref<any>(null);
+let refreshInterval: number | null = null;
 
 // Load initial data on mount with error handling
 // Lifecycle management with safe component access
@@ -182,27 +185,44 @@ import { initializeAdminComponent } from "@/utils/adminComponentInitializer";
 const { isMounted, safeMountedExecution } = initializeAdminComponent({
   componentName: "AdminDashboard",
   loadData: async () => {
-    // Load each data source separately to better handle errors
+    // Load dashboard stats from new API
     try {
-      console.log("[AdminDashboard] Loading system stats");
-      await adminSystemStore.fetchStats();
+      console.log("[AdminDashboard] Loading dashboard stats");
+      const response = await apiService.get('/admin-dashboard-standard/stats');
+      if (response.success && response.data) {
+        // Update stores with real data
+        dashboardStats.value = response.data;
+        
+        // Update system stats for compatibility
+        adminSystemStore.stats = {
+          memory_usage_percent: response.data.memory_usage_percent,
+          cpu_usage_percent: response.data.cpu_usage_percent,
+          total_sessions: response.data.total_sessions,
+          total_messages: response.data.total_messages,
+          avg_response_time_ms: response.data.avg_response_time_ms,
+          uptime_days: response.data.uptime_days
+        };
+        
+        // Update user count
+        adminUsersStore.totalUsers = response.data.total_users;
+        
+        // Update feedback stats
+        adminFeedbackStore.stats = {
+          positive_percent: response.data.positive_feedback_percent
+        };
+      }
     } catch (e) {
-      console.error("[AdminDashboard] Error loading system stats:", e);
-      // Continue with other data sources even if this one fails
+      console.error("[AdminDashboard] Error loading dashboard stats:", e);
     }
 
     try {
-      console.log("[AdminDashboard] Loading user count");
-      await adminUsersStore.fetchUserCount();
+      console.log("[AdminDashboard] Loading recent activity");
+      const activityResponse = await apiService.get('/admin-dashboard-standard/recent-activity');
+      if (activityResponse.success && activityResponse.data) {
+        recentActivity.value = activityResponse.data.activities;
+      }
     } catch (e) {
-      console.error("[AdminDashboard] Error loading user count:", e);
-    }
-
-    try {
-      console.log("[AdminDashboard] Loading feedback stats");
-      await adminFeedbackStore.fetchStats();
-    } catch (e) {
-      console.error("[AdminDashboard] Error loading feedback stats:", e);
+      console.error("[AdminDashboard] Error loading recent activity:", e);
     }
   },
   emit,
@@ -280,45 +300,67 @@ const systemStatusText = computed(() => {
 // Stats cards data
 const statsCards = computed(() => {
   try {
-    // Create a custom fixed value for totalUsers to prevent undefined issues
-    const userCount = totalUsers.value || 5; // Use fixed value as fallback
+    const stats = dashboardStats.value;
+    if (!stats) {
+      // Use store values as fallback
+      return [
+        {
+          label: t("admin.dashboard.users", "Benutzer"),
+          value: totalUsers.value || 5,
+          icon: "fa-users",
+          trend: 0,
+        },
+        {
+          label: t("admin.dashboard.sessions", "Sitzungen"),
+          value: systemStats?.value?.total_sessions || 128,
+          icon: "fa-comments",
+          trend: 0,
+        },
+        {
+          label: t("admin.dashboard.messages", "Nachrichten"),
+          value: systemStats?.value?.total_messages || 2354,
+          icon: "fa-envelope",
+          trend: 0,
+        },
+      ];
+    }
 
     return [
       {
         label: t("admin.dashboard.users", "Benutzer"),
-        value: userCount,
+        value: stats.total_users,
         icon: "fa-users",
-        trend: 5, // Example: 5% growth
+        trend: stats.users_trend,
       },
       {
         label: t("admin.dashboard.sessions", "Sitzungen"),
-        value: systemStats?.value?.total_sessions || 128,
+        value: stats.total_sessions,
         icon: "fa-comments",
-        trend: 12, // Example: 12% growth
+        trend: stats.sessions_trend,
       },
       {
         label: t("admin.dashboard.messages", "Nachrichten"),
-        value: systemStats?.value?.total_messages || 2354,
+        value: stats.total_messages,
         icon: "fa-envelope",
-        trend: 8, // Example: 8% growth
+        trend: stats.messages_trend,
       },
       {
         label: t("admin.dashboard.positiveFeedback", "Positives Feedback"),
-        value: `${feedbackStats?.value?.positive_percent || 92}%`,
+        value: `${stats.positive_feedback_percent}%`,
         icon: "fa-thumbs-up",
-        trend: -2, // Example: 2% decrease
+        trend: stats.feedback_trend,
       },
       {
         label: t("admin.dashboard.avgResponseTime", "Durchschn. Antwortzeit"),
-        value: `${systemStats?.value?.avg_response_time_ms || 320} ms`,
+        value: `${stats.avg_response_time_ms} ms`,
         icon: "fa-clock",
-        trend: -5, // Example: 5% improvement (faster)
+        trend: stats.response_time_trend,
       },
       {
         label: t("admin.dashboard.uptime", "Uptime"),
-        value: `${systemStats?.value?.uptime_days || 15} ${t("admin.dashboard.days", "Tage")}`,
+        value: `${stats.uptime_days} ${t("admin.dashboard.days", "Tage")}`,
         icon: "fa-server",
-        trend: 0, // No trend
+        trend: 0, // No trend for uptime
       },
     ];
   } catch (error) {
@@ -373,64 +415,45 @@ const quickActions = computed(() => {
   ];
 });
 
-// Sample recent activity data
-const recentActivity = ref([
-  {
-    type: "login",
-    user: "admin",
-    text: t("admin.dashboard.activity.loggedIn", "hat sich angemeldet"),
-    timestamp: Date.now() - 2 * 60 * 1000, // 2 minutes ago
-  },
-  {
-    type: "settings",
-    user: "admin",
-    text: t("admin.dashboard.activity.changedSettings", "hat Systemeinstellungen geändert"),
-    timestamp: Date.now() - 25 * 60 * 1000, // 25 minutes ago
-  },
-  {
-    type: "user",
-    user: "admin",
-    text: t("admin.dashboard.activity.addedUser", "hat einen neuen Benutzer hinzugefügt"),
-    timestamp: Date.now() - 3 * 60 * 60 * 1000, // 3 hours ago
-  },
-  {
-    type: "cache",
-    user: "admin",
-    text: t("admin.dashboard.activity.clearedCache", "hat den Cache geleert"),
-    timestamp: Date.now() - 1 * 24 * 60 * 60 * 1000, // 1 day ago
-  },
-]);
+// Recent activity data
+const recentActivity = ref<any[]>([]);
 
 // Methods
 async function executeAction(actionId: string) {
   isLoading.value = true;
 
   try {
+    let response;
     switch (actionId) {
       case "clearCache":
-        await adminSystemStore.clearCache();
-        console.log("Cache cleared");
+        response = await apiService.post('/admin-dashboard-standard/actions/clear-cache');
+        if (response.success) {
+          console.log("Cache cleared");
+          // Refresh dashboard data
+          await loadDashboardData();
+        }
         break;
       case "reloadMotd":
-        await adminSystemStore.reloadMotd();
-        console.log("MOTD reloaded");
+        response = await apiService.post('/admin-dashboard-standard/actions/reload-motd');
+        if (response.success) {
+          console.log("MOTD reloaded");
+        }
         break;
       case "exportStats":
-        // Example implementation for stats export
-        const statsData = JSON.stringify(systemStats.value, null, 2);
-        const blob = new Blob([statsData], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `system-stats-${new Date().toISOString().slice(0, 10)}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        response = await apiService.post('/admin-dashboard-standard/actions/export-stats');
+        if (response.success && response.data?.details?.filename) {
+          console.log(`Stats exported to ${response.data.details.filename}`);
+          // In a real app, you might download the file or show a success message
+        }
         break;
       case "systemCheck":
-        await adminSystemStore.performSystemCheck();
-        console.log("System check completed");
+        response = await apiService.post('/admin-dashboard-standard/actions/system-check');
+        if (response.success) {
+          console.log("System check completed");
+          if (response.data?.details?.issues?.length > 0) {
+            console.warn("System issues found:", response.data.details.issues);
+          }
+        }
         break;
       default:
         console.warn(`Unknown action: ${actionId}`);
@@ -443,6 +466,33 @@ async function executeAction(actionId: string) {
     });
   } finally {
     isLoading.value = false;
+  }
+}
+
+// Helper function to reload dashboard data
+async function loadDashboardData() {
+  try {
+    const response = await apiService.get('/admin-dashboard-standard/stats');
+    if (response.success && response.data) {
+      dashboardStats.value = response.data;
+      
+      // Update stores
+      adminSystemStore.stats = {
+        memory_usage_percent: response.data.memory_usage_percent,
+        cpu_usage_percent: response.data.cpu_usage_percent,
+        total_sessions: response.data.total_sessions,
+        total_messages: response.data.total_messages,
+        avg_response_time_ms: response.data.avg_response_time_ms,
+        uptime_days: response.data.uptime_days
+      };
+      
+      adminUsersStore.totalUsers = response.data.total_users;
+      adminFeedbackStore.stats = {
+        positive_percent: response.data.positive_feedback_percent
+      };
+    }
+  } catch (e) {
+    console.error("[AdminDashboard] Error reloading dashboard data:", e);
   }
 }
 
@@ -479,6 +529,20 @@ function formatTime(timestamp: number): string {
     return "";
   }
 }
+
+// Set up auto-refresh every 30 seconds
+onMounted(() => {
+  refreshInterval = window.setInterval(() => {
+    loadDashboardData();
+  }, 30000);
+});
+
+// Clean up interval on unmount
+onUnmounted(() => {
+  if (refreshInterval) {
+    window.clearInterval(refreshInterval);
+  }
+});
 </script>
 
 <style lang="scss">

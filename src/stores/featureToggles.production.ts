@@ -2,6 +2,14 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { adminFeatureTogglesService } from "@/services/api/adminServices";
 import { useToast } from "@/composables/useToast";
+import type {
+  FeatureToggle,
+  FeatureMetrics,
+  FeatureHistoryEntry,
+  FeatureErrorLog,
+  FeatureImportOptions,
+  MetricsQuery,
+} from "@/types/featureToggles";
 
 /**
  * Produktions-Feature-Toggle Store
@@ -17,16 +25,26 @@ export interface ProductionFeatureToggle {
   created_at: string;
   updated_at: string;
   updated_by?: string;
+  key?: string; // Add key field for compatibility
+  dependencies?: string[];
+  locked?: boolean;
+  experimental?: boolean;
 }
 
 export const useFeatureTogglesStore = defineStore("featureToggles", () => {
   const { showSuccess, showError } = useToast();
 
   // State
-  const toggles = ref<ProductionFeatureToggle[]>([]);
+  const toggles = ref<FeatureToggle[]>([]);
   const isLoading = ref(false);
   const isLoaded = ref(false);
   const error = ref<string | null>(null);
+  const enhancedFeatures = computed(() => 
+    toggles.value.map(t => ({
+      ...t,
+      key: t.key || t.id, // Ensure key field exists
+    }))
+  );
 
   // Getters
   const categories = computed(() => {
@@ -82,7 +100,7 @@ export const useFeatureTogglesStore = defineStore("featureToggles", () => {
         // Die API gibt die Toggles direkt zurück, nicht in einem toggles-Objekt
         toggles.value = Array.isArray(response.data)
           ? response.data
-          : response.data.toggles || [];
+          : (response.data as any).toggles || [];
         isLoaded.value = true;
       }
     } catch (err) {
@@ -123,7 +141,7 @@ export const useFeatureTogglesStore = defineStore("featureToggles", () => {
       const response =
         await adminFeatureTogglesService.createFeatureToggle(toggle);
       if (response.success && response.data) {
-        toggles.value.push(response.data);
+        toggles.value.push(response.data as any);
         showSuccess("Feature-Toggle wurde erstellt");
       }
     } catch (err) {
@@ -131,6 +149,105 @@ export const useFeatureTogglesStore = defineStore("featureToggles", () => {
       console.error("Error creating toggle:", err);
       throw err;
     }
+  };
+
+  // Additional methods for component compatibility
+  const loadFeatures = loadToggles;
+  
+  const updateFeature = async (feature: FeatureToggle) => {
+    const featureId = feature.key || feature.id;
+    return updateToggle(featureId, feature.enabled);
+  };
+
+  const createFeature = async (feature: FeatureToggle) => {
+    return createToggle({
+      id: feature.key,
+      name: feature.name,
+      description: feature.description,
+      enabled: feature.enabled,
+      category: feature.category,
+      dependencies: feature.dependencies,
+      locked: feature.locked,
+      experimental: feature.experimental,
+    });
+  };
+
+  const deleteFeature = async (featureKey: string) => {
+    return deleteToggle(featureKey);
+  };
+
+  const updateCategoryFeatures = async (category: string, enabled: boolean) => {
+    const featuresInCategory = toggles.value.filter(t => t.category === category);
+    const promises = featuresInCategory.map(feature => 
+      updateToggle(feature.key || feature.id, enabled)
+    );
+    await Promise.all(promises);
+  };
+
+  const getFeatureHistory = async (featureKey: string): Promise<FeatureHistoryEntry[]> => {
+    try {
+      const response = await adminFeatureTogglesService.getFeatureHistory(featureKey);
+      if (response.success && response.data) {
+        return response.data;
+      }
+      return [];
+    } catch (err) {
+      console.error("Error fetching feature history:", err);
+      return [];
+    }
+  };
+
+  const getFeatureMetrics = async (query: MetricsQuery) => {
+    try {
+      const response = await adminFeatureTogglesService.getFeatureMetrics({
+        startDate: query.startDate,
+        endDate: query.endDate,
+      });
+      if (response.success && response.data) {
+        return response.data;
+      }
+      return { features: {} };
+    } catch (err) {
+      console.error("Error fetching feature metrics:", err);
+      return { features: {} };
+    }
+  };
+
+  const getFeatureErrors = async (query: { startDate: Date; endDate: Date; limit: number }): Promise<FeatureErrorLog[]> => {
+    try {
+      const response = await adminFeatureTogglesService.getFeatureErrors(query);
+      if (response.success && response.data) {
+        return response.data;
+      }
+      return [];
+    } catch (err) {
+      console.error("Error fetching feature errors:", err);
+      return [];
+    }
+  };
+
+  const importFeatures = async (features: FeatureToggle[], options: FeatureImportOptions) => {
+    try {
+      const response = await adminFeatureTogglesService.importFeatures(features, options);
+      if (response.success) {
+        showSuccess("Feature-Toggles erfolgreich importiert");
+        await loadToggles(); // Reload the toggles
+      }
+    } catch (err) {
+      showError("Fehler beim Importieren der Feature-Toggles");
+      console.error("Error importing features:", err);
+      throw err;
+    }
+  };
+
+  // Helper to update enhanced features when toggles change
+  const updateEnhancedFeatures = () => {
+    // This is handled by the computed property enhancedFeatures
+  };
+
+  // Helper to update categories list
+  const updateCategories = () => {
+    // This is handled by the computed property categories
   };
 
   const deleteToggle = async (toggleId: string) => {
@@ -154,7 +271,7 @@ export const useFeatureTogglesStore = defineStore("featureToggles", () => {
   };
 
   // Legacy-Kompatibilität für FallbackManager
-  const isFallbackActive = (feature: string): boolean => {
+  const isFallbackActive = (_feature: string): boolean => {
     // In der Produktion gibt es keine Fallbacks mehr
     return false;
   };
@@ -169,7 +286,7 @@ export const useFeatureTogglesStore = defineStore("featureToggles", () => {
     console.error(`Feature error in ${feature}:`, error);
   };
 
-  const getFeatureErrors = (feature: string): any[] => {
+  const getFeatureErrorsLegacy = (_feature: string): any[] => {
     // Legacy-Methode, gibt leeres Array zurück
     return [];
   };
@@ -210,7 +327,7 @@ export const useFeatureTogglesStore = defineStore("featureToggles", () => {
 
   return {
     // State
-    toggles,
+    toggles: enhancedFeatures, // Use enhancedFeatures for component compatibility
     isLoading,
     isLoaded,
     error,
@@ -224,9 +341,20 @@ export const useFeatureTogglesStore = defineStore("featureToggles", () => {
 
     // Actions
     loadToggles,
+    loadFeatures,
     updateToggle,
+    updateFeature,
     createToggle,
+    createFeature,
     deleteToggle,
+    deleteFeature,
+    updateCategoryFeatures,
+    getFeatureHistory,
+    getFeatureMetrics,
+    getFeatureErrors,
+    importFeatures,
+    updateEnhancedFeatures,
+    updateCategories,
     initialize,
     isFeatureEnabled,
 
@@ -234,8 +362,8 @@ export const useFeatureTogglesStore = defineStore("featureToggles", () => {
     isFallbackActive,
     setFallbackActive,
     recordError,
-    getFeatureErrors,
     clearFeatureErrors,
+    getFeatureErrorsLegacy,
     loadFeatureToggles, // Alias für loadToggles
     setFallbackFeatures,
   };

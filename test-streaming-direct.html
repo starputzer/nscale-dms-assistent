@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streaming Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .response {
+            background-color: #f0f0f0;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            min-height: 100px;
+            white-space: pre-wrap;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+        .success {
+            color: green;
+            margin-top: 10px;
+        }
+        .streaming {
+            color: blue;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Streaming Test</h1>
+        
+        <div>
+            <label>Token: <input type="text" id="token" style="width: 300px;" placeholder="JWT Token eingeben"></label>
+        </div>
+        
+        <div style="margin-top: 10px;">
+            <label>Session ID: <input type="text" id="sessionId" style="width: 300px;" placeholder="Session ID eingeben"></label>
+        </div>
+        
+        <div style="margin-top: 10px;">
+            <label>Nachricht: <input type="text" id="message" style="width: 300px;" value="Hallo, wie geht es dir?" placeholder="Nachricht eingeben"></label>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <button onclick="testStreaming()">Test Streaming</button>
+            <button onclick="testNonStreaming()">Test Ohne Streaming</button>
+            <button onclick="clearResponse()">Clear</button>
+        </div>
+        
+        <div id="status"></div>
+        
+        <div class="response" id="response"></div>
+    </div>
+
+    <script>
+        // Get token from localStorage if available
+        const storedToken = localStorage.getItem('nscale_access_token');
+        if (storedToken) {
+            document.getElementById('token').value = storedToken;
+        }
+
+        // Get current session ID from localStorage if available
+        const storedSessions = localStorage.getItem('nscale-sessions');
+        if (storedSessions) {
+            try {
+                const sessionsData = JSON.parse(storedSessions);
+                if (sessionsData.currentSessionId) {
+                    document.getElementById('sessionId').value = sessionsData.currentSessionId;
+                }
+            } catch (e) {
+                console.error('Error parsing sessions:', e);
+            }
+        }
+
+        function setStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.className = type;
+            statusEl.textContent = message;
+        }
+
+        function clearResponse() {
+            document.getElementById('response').textContent = '';
+            document.getElementById('status').textContent = '';
+        }
+
+        async function testStreaming() {
+            clearResponse();
+            const token = document.getElementById('token').value;
+            const sessionId = document.getElementById('sessionId').value;
+            const message = document.getElementById('message').value;
+            
+            if (!token || !sessionId || !message) {
+                setStatus('Bitte alle Felder ausfüllen!', 'error');
+                return;
+            }
+            
+            setStatus('Streaming startet...', 'streaming');
+            const responseEl = document.getElementById('response');
+            
+            try {
+                const params = new URLSearchParams({
+                    question: message,
+                    session_id: sessionId
+                });
+                
+                const response = await fetch(`/api/chat/message/stream?${params.toString()}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'text/event-stream'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                setStatus('Streaming läuft...', 'streaming');
+                
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const chunk = decoder.decode(value, { stream: true });
+                    buffer += chunk;
+                    
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            if (data === '[DONE]') {
+                                setStatus('Streaming abgeschlossen!', 'success');
+                                return;
+                            }
+                            
+                            try {
+                                const parsed = JSON.parse(data);
+                                if (parsed.type === 'content' && parsed.content) {
+                                    responseEl.textContent += parsed.content;
+                                } else if (parsed.type === 'error') {
+                                    setStatus(`Fehler: ${parsed.error}`, 'error');
+                                } else if (parsed.type === 'done') {
+                                    setStatus('Streaming erfolgreich abgeschlossen!', 'success');
+                                }
+                            } catch (e) {
+                                console.error('Parse error:', e, 'Data:', data);
+                            }
+                        }
+                    }
+                }
+                
+            } catch (error) {
+                setStatus(`Fehler: ${error.message}`, 'error');
+                console.error('Streaming error:', error);
+            }
+        }
+
+        async function testNonStreaming() {
+            clearResponse();
+            const token = document.getElementById('token').value;
+            const sessionId = document.getElementById('sessionId').value;
+            const message = document.getElementById('message').value;
+            
+            if (!token || !sessionId || !message) {
+                setStatus('Bitte alle Felder ausfüllen!', 'error');
+                return;
+            }
+            
+            setStatus('Sende Nachricht...', 'info');
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        sessionId: sessionId,
+                        model: 'llama3:8b-instruct-q4_1'
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+                
+                // For non-streaming, we still get SSE response
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                const responseEl = document.getElementById('response');
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const chunk = decoder.decode(value, { stream: true });
+                    buffer += chunk;
+                    
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            try {
+                                const parsed = JSON.parse(data);
+                                if (parsed.type === 'content' && parsed.content) {
+                                    responseEl.textContent += parsed.content;
+                                } else if (parsed.type === 'done') {
+                                    setStatus('Antwort erhalten!', 'success');
+                                }
+                            } catch (e) {
+                                console.error('Parse error:', e);
+                            }
+                        }
+                    }
+                }
+                
+            } catch (error) {
+                setStatus(`Fehler: ${error.message}`, 'error');
+                console.error('Non-streaming error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -152,7 +152,7 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
   // Scrollverhalten für bessere UX
-  scrollBehavior(to, from, savedPosition) {
+  scrollBehavior(to, _from, savedPosition) {
     if (savedPosition) {
       return savedPosition;
     } else if (to.hash) {
@@ -170,7 +170,7 @@ const router = createRouter({
 router.beforeEach(
   async (
     to: RouteLocationNormalized,
-    from: RouteLocationNormalized,
+    _from: RouteLocationNormalized,
     next: NavigationGuardNext,
   ) => {
     const authStore = useAuthStore();

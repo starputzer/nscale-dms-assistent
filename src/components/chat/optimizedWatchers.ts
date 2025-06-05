@@ -453,11 +453,11 @@ export function useMessageStreamingWatch<T extends Array<any>>(
   } = {},
 ): WatchStopHandle {
   const {
-    visibilityThreshold = 0.5, // Prozentsatz der sichtbaren Nachrichtenliste
+    _visibilityThreshold = 0.5, // Prozentsatz der sichtbaren Nachrichtenliste
     scrollingDelay = 300, // Verzögerung während des Scrollens
     idleUpdateRate = 500, // Aktualisierungsrate im Ruhezustand
     activeUpdateRate = 50, // Aktualisierungsrate im aktiven Zustand
-    batchUpdates = true, // Aktualisierungen bündeln
+    _batchUpdates = true, // Aktualisierungen bündeln
     watcherId = `message-stream-${Math.random().toString(36).substr(2, 9)}`,
   } = options;
 

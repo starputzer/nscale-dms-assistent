@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Auth Header Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .test { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background: #dfd; }
+        .error { background: #fdd; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Auth Header Test</h1>
+    
+    <button onclick="runTests()">Run All Tests</button>
+    
+    <div id="results"></div>
+    
+    <script>
+        let token = null;
+        
+        async function runTests() {
+            const results = document.getElementById('results');
+            results.innerHTML = '';
+            
+            // Test 1: Login
+            await testLogin();
+            
+            if (token) {
+                // Test 2: Test Headers Endpoint
+                await testHeadersEndpoint();
+                
+                // Test 3: Admin Users
+                await testAdminUsers();
+                
+                // Test 4: Raw Fetch
+                await testRawFetch();
+            }
+        }
+        
+        async function testLogin() {
+            const div = createTestDiv('Test 1: Login');
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'martin@danglefeet.com',
+                        password: '123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.token) {
+                    token = data.token;
+                    div.className = 'test success';
+                    div.innerHTML += `<p>✅ Login successful</p>`;
+                    div.innerHTML += `<pre>Token: ${token.substring(0, 50)}...</pre>`;
+                } else {
+                    throw new Error('No token received');
+                }
+            } catch (error) {
+                div.className = 'test error';
+                div.innerHTML += `<p>❌ Login failed: ${error.message}</p>`;
+            }
+        }
+        
+        async function testHeadersEndpoint() {
+            const div = createTestDiv('Test 2: Headers Echo Endpoint');
+            
+            try {
+                const response = await fetch('/api/test/headers', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    div.className = 'test success';
+                    div.innerHTML += `<p>✅ Headers endpoint works</p>`;
+                    div.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    throw new Error(`Status ${response.status}`);
+                }
+            } catch (error) {
+                div.className = 'test error';
+                div.innerHTML += `<p>❌ Headers test failed: ${error.message}</p>`;
+            }
+        }
+        
+        async function testAdminUsers() {
+            const div = createTestDiv('Test 3: Admin Users Endpoint');
+            
+            try {
+                const response = await fetch('/api/admin/users', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const text = await response.text();
+                
+                if (response.ok) {
+                    div.className = 'test success';
+                    div.innerHTML += `<p>✅ Admin users endpoint works</p>`;
+                    div.innerHTML += `<pre>${text.substring(0, 200)}...</pre>`;
+                } else {
+                    div.className = 'test error';
+                    div.innerHTML += `<p>❌ Status ${response.status}</p>`;
+                    div.innerHTML += `<pre>${text}</pre>`;
+                }
+            } catch (error) {
+                div.className = 'test error';
+                div.innerHTML += `<p>❌ Admin test failed: ${error.message}</p>`;
+            }
+        }
+        
+        async function testRawFetch() {
+            const div = createTestDiv('Test 4: Raw Fetch (no framework)');
+            
+            try {
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', '/api/admin/users', false); // Synchronous for simplicity
+                xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+                xhr.send();
+                
+                if (xhr.status === 200) {
+                    div.className = 'test success';
+                    div.innerHTML += `<p>✅ Raw XHR works</p>`;
+                } else {
+                    div.className = 'test error';
+                    div.innerHTML += `<p>❌ Status ${xhr.status}</p>`;
+                    div.innerHTML += `<pre>${xhr.responseText}</pre>`;
+                }
+            } catch (error) {
+                div.className = 'test error';
+                div.innerHTML += `<p>❌ Raw fetch failed: ${error.message}</p>`;
+            }
+        }
+        
+        function createTestDiv(title) {
+            const div = document.createElement('div');
+            div.className = 'test';
+            div.innerHTML = `<h3>${title}</h3>`;
+            document.getElementById('results').appendChild(div);
+            return div;
+        }
+        
+        // Auto-run tests on load
+        window.onload = () => {
+            runTests();
+        };
+    </script>
+</body>
+</html>

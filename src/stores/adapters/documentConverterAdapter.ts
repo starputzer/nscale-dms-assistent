@@ -45,7 +45,7 @@ export function useDocumentConverterCompat(): DocumentConverterWithCompat {
     // Ansicht ändern
     setView: (view: string): void => {
       if (typeof store.setView === "function") {
-        store.setView(view);
+        store.setView(view as any);
       } else {
         // Fallback: Direkt die Ansicht setzen
         (store as any).currentView = view;

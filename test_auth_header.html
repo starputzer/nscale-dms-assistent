@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Auth Header</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>Test Auth Header</h1>
+    
+    <h2>Test-Schritte:</h2>
+    <ol>
+        <li><button onclick="testLogin()">1. Login</button></li>
+        <li><button onclick="testWithAxiosDefaults()">2. Test mit axios.defaults</button></li>
+        <li><button onclick="testWithExplicitHeader()">3. Test mit explizitem Header</button></li>
+        <li><button onclick="testRawFetch()">4. Test mit fetch()</button></li>
+    </ol>
+    
+    <div id="result"></div>
+    
+    <script>
+        let authToken = null;
+        
+        function showResult(title, content) {
+            document.getElementById('result').innerHTML += `
+                <h3>${title}</h3>
+                <pre>${JSON.stringify(content, null, 2)}</pre>
+                <hr>
+            `;
+        }
+        
+        async function testLogin() {
+            try {
+                const response = await axios.post('/api/auth/login', {
+                    email: 'martin@danglefeet.com',
+                    password: '123'
+                });
+                
+                authToken = response.data.token;
+                showResult('Login Success', {
+                    status: response.status,
+                    token: authToken ? authToken.substring(0, 50) + '...' : null,
+                    user: response.data.user
+                });
+                
+                // Set default header
+                axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
+                
+            } catch (error) {
+                showResult('Login Error', {
+                    message: error.message,
+                    response: error.response?.data
+                });
+            }
+        }
+        
+        async function testWithAxiosDefaults() {
+            if (!authToken) {
+                showResult('Error', { message: 'Bitte erst einloggen!' });
+                return;
+            }
+            
+            try {
+                console.log('Testing with axios defaults');
+                console.log('axios.defaults.headers.common:', axios.defaults.headers.common);
+                
+                const response = await axios.get('/api/admin/users');
+                showResult('Success with axios.defaults', {
+                    status: response.status,
+                    data: response.data
+                });
+            } catch (error) {
+                showResult('Error with axios.defaults', {
+                    message: error.message,
+                    status: error.response?.status,
+                    data: error.response?.data,
+                    headers: error.config?.headers
+                });
+            }
+        }
+        
+        async function testWithExplicitHeader() {
+            if (!authToken) {
+                showResult('Error', { message: 'Bitte erst einloggen!' });
+                return;
+            }
+            
+            try {
+                console.log('Testing with explicit header');
+                const config = {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                };
+                console.log('Request config:', config);
+                
+                const response = await axios.get('/api/admin/users', config);
+                showResult('Success with explicit header', {
+                    status: response.status,
+                    data: response.data
+                });
+            } catch (error) {
+                showResult('Error with explicit header', {
+                    message: error.message,
+                    status: error.response?.status,
+                    data: error.response?.data,
+                    sentHeaders: error.config?.headers
+                });
+            }
+        }
+        
+        async function testRawFetch() {
+            if (!authToken) {
+                showResult('Error', { message: 'Bitte erst einloggen!' });
+                return;
+            }
+            
+            try {
+                console.log('Testing with raw fetch');
+                const response = await fetch('/api/admin/users', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                showResult('Fetch result', {
+                    status: response.status,
+                    ok: response.ok,
+                    data: data
+                });
+            } catch (error) {
+                showResult('Fetch error', {
+                    message: error.message
+                });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -250,7 +250,7 @@ function setupStoreInteractions(): void {
         // Monitoring Store ist immer aktiv, keine explizite Initialisierung nötig
       });
 
-      onError((error) => {
+      onError((_error) => {
         uiStore.showToast({
           type: "error",
           title: "Anmeldefehler",
@@ -306,7 +306,7 @@ function setupStoreInteractions(): void {
       after((result) => {
         // Nach Erstellung einer neuen Session diese automatisch aktivieren
         if (result) {
-          sessionsStore.setCurrentSession(result.id);
+          sessionsStore.setCurrentSession((result as any).id);
         }
       });
     }

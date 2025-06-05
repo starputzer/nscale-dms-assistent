@@ -6,8 +6,8 @@
 
 import {
   Router,
-  NavigationGuardNext,
-  RouteLocationNormalized,
+  _NavigationGuardNext,
+  _RouteLocationNormalized,
 } from "vue-router";
 import { sessionContinuityService } from "@/services/auth/SessionContinuityService";
 import { useAuthStore } from "@/stores/auth";
@@ -93,7 +93,7 @@ export function setupAuthRouterGuards(router: Router): void {
   /**
    * After-Each Hook für Route-Speicherung
    */
-  router.afterEach((to, from, failure) => {
+  router.afterEach((to, _from, failure) => {
     if (!failure && sessionContinuityService.getState().isAuthenticated) {
       sessionContinuityService.saveCurrentRoute(to);
     }

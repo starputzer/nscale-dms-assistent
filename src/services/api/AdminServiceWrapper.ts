@@ -169,17 +169,17 @@ export class AdminServiceWrapper {
 
       if (filter) {
         if (filter.dateFrom) {
-          feedback = feedback.filter(
+          feedback = feedback.filter((
             (entry: any) => entry.created_at >= filter.dateFrom!,
           );
         }
         if (filter.dateTo) {
-          feedback = feedback.filter(
+          feedback = feedback.filter((
             (entry: any) => entry.created_at <= filter.dateTo!,
           );
         }
         if (filter.isPositive !== undefined) {
-          feedback = feedback.filter(
+          feedback = feedback.filter((
             (entry: any) => entry.is_positive === filter.isPositive,
           );
         }
@@ -190,7 +190,7 @@ export class AdminServiceWrapper {
         }
         if (filter.searchTerm) {
           const term = filter.searchTerm.toLowerCase();
-          feedback = feedback.filter(
+          feedback = feedback.filter((
             (entry: any) =>
               entry.comment?.toLowerCase().includes(term) ||
               entry.question.toLowerCase().includes(term) ||

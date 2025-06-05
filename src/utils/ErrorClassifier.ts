@@ -107,9 +107,9 @@ class ErrorClassifier {
    * Prüft, ob ein Fehler ressourcenbezogen ist (Speicher, CPU)
    */
   private static isResourceError(
-    error: Error,
+    _error: Error,
     message: string,
-    stack: string,
+    _stack: string,
     name: string,
   ): boolean {
     // Typische Ressourcenfehler
@@ -152,9 +152,9 @@ class ErrorClassifier {
    * Prüft, ob ein Fehler validierungsbezogen ist
    */
   private static isValidationError(
-    error: Error,
+    _error: Error,
     message: string,
-    stack: string,
+    _stack: string,
     name: string,
   ): boolean {
     // Typische Validierungsfehler
@@ -191,9 +191,9 @@ class ErrorClassifier {
    * Prüft, ob ein Fehler berechtigungsbezogen ist
    */
   private static isPermissionError(
-    error: Error,
+    _error: Error,
     message: string,
-    stack: string,
+    _stack: string,
     name: string,
   ): boolean {
     // Typische Berechtigungsfehler

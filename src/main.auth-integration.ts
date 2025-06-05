@@ -117,7 +117,7 @@ if (AuthService.isAuthenticated()) {
         });
       }
     })
-    .catch((error: Error) => {
+    .catch(error: Error) => {
       console.error("Session validation error:", error);
     });
 }

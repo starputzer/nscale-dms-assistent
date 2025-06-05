@@ -1,11 +1,9 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import path from "path";
-import { optimizeImports } from "./scripts/plugins/vite-plugin-optimize-imports.js";
 
 export default defineConfig({
   plugins: [
-    optimizeImports(),
     vue(),
     {
       name: 'html-transform',
@@ -37,7 +35,6 @@ export default defineConfig({
     devSourcemap: true,
     preprocessorOptions: {
       scss: {
-        // Vereinfachte Konfiguration ohne zusätzliche Importe
         additionalData: ``,
         charset: false,
       },
@@ -60,80 +57,85 @@ export default defineConfig({
             "@vuelidate/core",
             "@vuelidate/validators",
           ],
-          // bridge removed
           ui: ["./src/components/ui"],
         },
       },
     },
   },
   server: {
-    port: 5173,
+    port: 3000,
     middlewareMode: false,
     proxy: {
       "/api": {
-        target: "http://localhost:8080",
+        target: "http://localhost:8000",
         changeOrigin: true,
         secure: false,
-        // Bei Fehlern Mock-Daten zurückgeben
+        ws: true,
+        // Critical fix: Configure the proxy to properly forward headers
         configure: (proxy, options) => {
-          // Handle streaming endpoints - disable buffering
+          // Fix for Authorization header not being forwarded
           proxy.on('proxyReq', (proxyReq, req, res) => {
-            if (req.url.includes('/api/question/stream')) {
-              console.log("Configuring streaming endpoint:", req.url);
-              // Disable buffering for streaming
+            // Log the request for debugging
+            console.log(`[Proxy] ${req.method} ${req.url}`);
+            
+            // Get the authorization header from the original request
+            const authHeader = req.headers.authorization || req.headers.Authorization;
+            
+            if (authHeader) {
+              // Explicitly set the Authorization header on the proxy request
+              proxyReq.setHeader('Authorization', authHeader);
+              console.log('[Proxy] Authorization header forwarded:', authHeader.substring(0, 20) + '...');
+            }
+            
+            // Also forward other important headers
+            const headersToForward = [
+              'content-type',
+              'accept',
+              'accept-language',
+              'user-agent',
+              'x-requested-with'
+            ];
+            
+            headersToForward.forEach(headerName => {
+              const headerValue = req.headers[headerName];
+              if (headerValue) {
+                proxyReq.setHeader(headerName, headerValue);
+              }
+            });
+            
+            // Special handling for streaming endpoints
+            if (req.url.includes('/stream') || req.url.includes('/sse')) {
               proxyReq.setHeader('X-Accel-Buffering', 'no');
               proxyReq.setHeader('Cache-Control', 'no-cache');
             }
           });
           
+          // Handle the proxy response
           proxy.on('proxyRes', (proxyRes, req, res) => {
-            if (req.url.includes('/api/question/stream')) {
-              console.log("Streaming response headers:", proxyRes.headers);
-              // Ensure streaming headers are set
+            // Log response status
+            console.log(`[Proxy Response] ${req.method} ${req.url} - ${proxyRes.statusCode}`);
+            
+            // Handle streaming responses
+            if (req.url.includes('/stream') || req.url.includes('/sse')) {
               proxyRes.headers['cache-control'] = 'no-cache';
               proxyRes.headers['x-accel-buffering'] = 'no';
-              // Don't override content-type if it's already set correctly by backend
-              if (!proxyRes.headers['content-type'] || !proxyRes.headers['content-type'].includes('event-stream')) {
+              if (!proxyRes.headers['content-type']?.includes('event-stream')) {
                 proxyRes.headers['content-type'] = 'text/event-stream';
               }
             }
           });
-
-          proxy.on("error", (err, req, res) => {
-            console.log("Proxy-Fehler:", err);
-
-            // Mock-Antworten je nach API-Endpunkt
-            if (req.url.includes("/api/sessions")) {
-              res.writeHead(200, { "Content-Type": "application/json" });
-              res.end(
-                JSON.stringify({
-                  sessions: [
-                    {
-                      id: "1",
-                      title: "Beispiel-Session 1",
-                      createdAt: new Date().toISOString(),
-                      updatedAt: new Date().toISOString(),
-                    },
-                    {
-                      id: "2",
-                      title: "Beispiel-Session 2",
-                      createdAt: new Date().toISOString(),
-                      updatedAt: new Date().toISOString(),
-                    },
-                  ],
-                }),
-              );
-            } else if (req.url.includes("/api/session/")) {
-              res.writeHead(200, { "Content-Type": "application/json" });
-              res.end(JSON.stringify({ success: true }));
-            } else {
-              res.writeHead(200, { "Content-Type": "application/json" });
-              res.end(
-                JSON.stringify({
-                  message: "Mock-Antwort (Backend nicht erreichbar)",
-                }),
-              );
-            }
+          
+          // Handle proxy errors
+          proxy.on('error', (err, req, res) => {
+            console.error('[Proxy Error]', err.message);
+            
+            // Return a proper error response
+            res.writeHead(503, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+              success: false,
+              error: 'Service temporarily unavailable',
+              message: 'Backend server is not responding'
+            }));
           });
         },
       },

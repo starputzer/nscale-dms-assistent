@@ -1,6 +1,8 @@
 # 03_KOMPONENTEN - Komponenten-Dokumentation
 
-Dieser Bereich enthält alle Dokumente zu UI-Komponenten und Features.
+Dieser Bereich enthält alle Dokumente zu UI-Komponenten und Features des Digitale Akte Assistenten.
+
+**Stand: Juni 2025 | Production Ready: 85%**
 
 ## Inhalt
 

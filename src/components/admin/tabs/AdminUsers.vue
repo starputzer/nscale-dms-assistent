@@ -221,6 +221,66 @@
         </button>
       </div>
     </AdminCard>
+
+    <!-- User Dialog -->
+    <div v-if="showUserDialog" class="admin-dialog-overlay" @click.self="showUserDialog = false">
+      <div class="admin-dialog">
+        <div class="admin-dialog__header">
+          <h3>{{ dialogMode === 'create' ? t('admin.users.createTitle', 'Neuen Benutzer erstellen') : t('admin.users.editTitle', 'Benutzer bearbeiten') }}</h3>
+          <button @click="showUserDialog = false" class="admin-dialog__close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <form @submit.prevent="saveUser" class="admin-dialog__body">
+          <div class="form-group">
+            <label for="user-email">{{ t('admin.users.form.email', 'E-Mail') }}</label>
+            <input
+              id="user-email"
+              v-model="userForm.email"
+              type="email"
+              class="form-control"
+              :disabled="dialogMode === 'edit'"
+              required
+            />
+          </div>
+          
+          <div v-if="dialogMode === 'create'" class="form-group">
+            <label for="user-password">{{ t('admin.users.form.password', 'Passwort') }}</label>
+            <input
+              id="user-password"
+              v-model="userForm.password"
+              type="password"
+              class="form-control"
+              minlength="6"
+              required
+            />
+          </div>
+          
+          <div class="form-group">
+            <label for="user-role">{{ t('admin.users.form.role', 'Rolle') }}</label>
+            <select
+              id="user-role"
+              v-model="userForm.role"
+              class="form-control"
+              required
+            >
+              <option value="user">{{ t('admin.roles.user', 'Benutzer') }}</option>
+              <option value="admin">{{ t('admin.roles.admin', 'Administrator') }}</option>
+            </select>
+          </div>
+        </form>
+        
+        <div class="admin-dialog__footer">
+          <button @click="showUserDialog = false" class="admin-button admin-button--secondary">
+            {{ t('common.cancel', 'Abbrechen') }}
+          </button>
+          <button @click="saveUser" class="admin-button admin-button--primary">
+            {{ dialogMode === 'create' ? t('common.create', 'Erstellen') : t('common.save', 'Speichern') }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -374,20 +434,81 @@ function formatDate(timestamp: number | null | undefined): string {
   }
 }
 
+// User dialog state
+const showUserDialog = ref(false);
+const dialogMode = ref<'create' | 'edit'>('create');
+const editingUser = ref<User | null>(null);
+const userForm = ref({
+  email: '',
+  password: '',
+  role: 'user' as UserRole
+});
+
 function createNewUser() {
-  // Implementation for new user creation
-  // This would typically open a modal dialog
-  console.log("Open create user dialog");
+  dialogMode.value = 'create';
+  editingUser.value = null;
+  userForm.value = {
+    email: '',
+    password: '',
+    role: 'user' as UserRole
+  };
+  showUserDialog.value = true;
 }
 
 function editUser(user: User) {
-  // Implementation for editing a user
-  console.log("Edit user:", user);
+  dialogMode.value = 'edit';
+  editingUser.value = user;
+  userForm.value = {
+    email: user.email,
+    password: '', // Don't show existing password
+    role: user.role
+  };
+  showUserDialog.value = true;
 }
 
-function deleteUser(user: User) {
-  // Implementation for deleting a user
-  console.log("Delete user:", user);
+async function deleteUser(user: User) {
+  if (!confirm(t('admin.users.confirmDelete', `Möchten Sie den Benutzer ${user.email} wirklich löschen?`))) {
+    return;
+  }
+  
+  try {
+    await adminUsersStore.deleteUser(user.id);
+    emit('reload', {
+      message: t('admin.users.deleteSuccess', 'Benutzer erfolgreich gelöscht')
+    });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    emit('error', {
+      message: t('admin.users.deleteError', 'Fehler beim Löschen des Benutzers'),
+      error: error
+    });
+  }
+}
+
+async function saveUser() {
+  try {
+    if (dialogMode.value === 'create') {
+      await adminUsersStore.createUser(userForm.value);
+      emit('reload', {
+        message: t('admin.users.createSuccess', 'Benutzer erfolgreich erstellt')
+      });
+    } else if (editingUser.value) {
+      await adminUsersStore.updateUserRole(editingUser.value.id, userForm.value.role);
+      emit('reload', {
+        message: t('admin.users.updateSuccess', 'Benutzer erfolgreich aktualisiert')
+      });
+    }
+    showUserDialog.value = false;
+    await adminUsersStore.fetchUsers();
+  } catch (error) {
+    console.error('Error saving user:', error);
+    emit('error', {
+      message: dialogMode.value === 'create' 
+        ? t('admin.users.createError', 'Fehler beim Erstellen des Benutzers')
+        : t('admin.users.updateError', 'Fehler beim Aktualisieren des Benutzers'),
+      error: error
+    });
+  }
 }
 
 // Custom initialization
@@ -567,5 +688,75 @@ console.log(`[AdminUsers] i18n initialized with locale: ${locale.value}`);
   .users-search {
     width: 100%;
   }
+}
+
+// Dialog styles
+.admin-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.admin-dialog {
+  background-color: var(--admin-bg);
+  border-radius: var(--admin-radius-lg);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-dialog__header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--admin-text-primary);
+}
+
+.admin-dialog__close {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: var(--admin-text-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+  
+  &:hover {
+    color: var(--admin-text-primary);
+  }
+}
+
+.admin-dialog__body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.admin-dialog__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border-top: 1px solid var(--admin-border);
+  background-color: var(--admin-bg-alt);
 }
 </style>

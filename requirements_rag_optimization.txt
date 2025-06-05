@@ -1,0 +1,44 @@
+# RAG-Optimierung Dependencies
+# Diese müssen zu requirements.txt hinzugefügt werden
+
+# Kern-Dependencies für Dokumentenverarbeitung
+PyMuPDF==1.23.8          # PDF-Verarbeitung
+camelot-py[cv]==0.11.0   # Tabellen-Extraktion aus PDFs
+tabula-py==2.8.2         # Alternative Tabellen-Extraktion
+python-docx==1.1.0       # DOCX-Verarbeitung
+mammoth==1.6.0           # Bessere DOCX zu Markdown Konvertierung
+openpyxl==3.1.2          # Excel-Verarbeitung
+xlrd==2.0.1              # Legacy Excel-Support
+python-pptx==0.6.23      # PowerPoint-Verarbeitung
+beautifulsoup4==4.12.2   # HTML-Parsing
+markdownify==0.11.6      # HTML zu Markdown Konvertierung
+
+# NLP und Sprachverarbeitung
+spacy==3.7.2             # NLP-Framework
+langdetect==1.0.9        # Spracherkennung
+textstat==0.7.3          # Readability-Metriken
+
+# Retrieval-Optimierung
+faiss-cpu==1.7.4         # Vektor-Index (CPU-Version)
+# faiss-gpu==1.7.4       # Alternativ: GPU-Version
+rank-bm25==0.2.2         # BM25 Sparse Retrieval
+
+# Performance und Caching
+redis==5.0.1             # Cache-Backend
+aiofiles==23.2.1         # Async File I/O
+watchdog==3.0.0          # File System Watching
+psutil==5.9.6            # System-Monitoring
+
+# Bereits in requirements.txt vorhanden (nicht duplizieren):
+# sentence-transformers==4.1.0
+# torch==2.5.1
+# numpy==2.0.2
+# scikit-learn==1.6.1
+# Pillow==11.2.1
+# asyncio (built-in)
+# hashlib (built-in)
+# json (built-in)
+
+# Spacy-Modelle (nach Installation ausführen):
+# python -m spacy download de_core_news_md
+# python -m spacy download de_core_news_lg  # Für bessere Qualität

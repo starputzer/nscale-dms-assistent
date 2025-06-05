@@ -106,7 +106,7 @@ export function setupAuthGuards(router: any) {
  */
 export function setupAuthErrorHandling(router: any) {
   // Spezifischer Error-Handler für Auth-Routen
-  router.onError((error: any) => {
+  router.onError(error: any) => {
     // Prüfen, ob es sich um einen Auth-Fehler handelt
     if (
       error.message?.includes("login") ||

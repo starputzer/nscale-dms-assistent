@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Runtime Error Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .warning { color: orange; font-weight: bold; }
+        
+        #errorLog {
+            background: #f5f5f5;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .error-entry {
+            margin-bottom: 10px;
+            padding: 5px;
+            background: #fee;
+            border-left: 3px solid red;
+        }
+        
+        .test-result {
+            margin: 5px 0;
+            padding: 5px;
+        }
+        
+        #appFrame {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vue.js Application Runtime Error Test</h1>
+    
+    <div class="section">
+        <h2>Instructions</h2>
+        <p>This test checks for JavaScript runtime errors in the Vue.js application.</p>
+        <p>The application will be loaded below and any errors will be captured and displayed.</p>
+    </div>
+    
+    <div class="section">
+        <h2>Error Log</h2>
+        <button onclick="clearErrors()">Clear Errors</button>
+        <button onclick="testApp()">Re-test Application</button>
+        <div id="errorCount"></div>
+        <div id="errorLog"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Test Results</h2>
+        <div id="testResults"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Application</h2>
+        <iframe id="appFrame" src="about:blank"></iframe>
+    </div>
+
+    <script>
+        let errors = [];
+        let testResults = {};
+        
+        function logError(type, message, details = {}) {
+            errors.push({
+                type,
+                message,
+                timestamp: new Date(),
+                ...details
+            });
+            updateErrorDisplay();
+        }
+        
+        function updateErrorDisplay() {
+            const errorLog = document.getElementById('errorLog');
+            const errorCount = document.getElementById('errorCount');
+            
+            const criticalErrors = errors.filter(e => e.type === 'error');
+            const warnings = errors.filter(e => e.type === 'warning');
+            
+            errorCount.innerHTML = `
+                <span class="error">Errors: ${criticalErrors.length}</span> | 
+                <span class="warning">Warnings: ${warnings.length}</span>
+            `;
+            
+            errorLog.innerHTML = errors.map(err => `
+                <div class="error-entry">
+                    <strong>[${err.timestamp.toLocaleTimeString()}] ${err.type.toUpperCase()}:</strong> ${err.message}
+                    ${err.file ? `<br>File: ${err.file}` : ''}
+                    ${err.line ? ` Line: ${err.line}` : ''}
+                    ${err.stack ? `<br><pre>${err.stack}</pre>` : ''}
+                </div>
+            `).reverse().join('');
+        }
+        
+        function clearErrors() {
+            errors = [];
+            updateErrorDisplay();
+        }
+        
+        function updateTestResults() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = Object.entries(testResults).map(([test, result]) => `
+                <div class="test-result">
+                    <span class="${result.success ? 'success' : 'error'}">${result.success ? '✓' : '✗'}</span>
+                    ${test}: ${result.message}
+                </div>
+            `).join('');
+        }
+        
+        async function testApp() {
+            clearErrors();
+            testResults = {};
+            updateTestResults();
+            
+            const iframe = document.getElementById('appFrame');
+            
+            // First check if servers are running
+            try {
+                const frontendResponse = await fetch('http://localhost:5174');
+                testResults['Frontend Server'] = {
+                    success: frontendResponse.ok,
+                    message: frontendResponse.ok ? 'Running' : `Error: ${frontendResponse.status}`
+                };
+            } catch (e) {
+                testResults['Frontend Server'] = {
+                    success: false,
+                    message: 'Not accessible'
+                };
+            }
+            
+            try {
+                const apiResponse = await fetch('http://localhost:8080/api/v1/health');
+                const apiData = await apiResponse.json();
+                testResults['API Server'] = {
+                    success: apiResponse.ok && apiData.status === 'healthy',
+                    message: apiResponse.ok ? 'Healthy' : `Error: ${apiResponse.status}`
+                };
+            } catch (e) {
+                testResults['API Server'] = {
+                    success: false,
+                    message: 'Not accessible'
+                };
+            }
+            
+            updateTestResults();
+            
+            // Set up error capturing before loading the iframe
+            window.addEventListener('message', (event) => {
+                if (event.data && event.data.type === 'app-error') {
+                    logError('error', event.data.message, {
+                        file: event.data.file,
+                        line: event.data.line,
+                        stack: event.data.stack
+                    });
+                }
+            });
+            
+            // Load the app
+            iframe.src = 'http://localhost:5174';
+            
+            // Inject error capturing script when iframe loads
+            iframe.onload = function() {
+                setTimeout(() => {
+                    try {
+                        // Try to inject our error capture script
+                        const script = `
+                            (function() {
+                                // Capture errors
+                                window.addEventListener('error', function(event) {
+                                    parent.postMessage({
+                                        type: 'app-error',
+                                        message: event.message,
+                                        file: event.filename,
+                                        line: event.lineno,
+                                        stack: event.error ? event.error.stack : ''
+                                    }, '*');
+                                });
+                                
+                                // Capture unhandled promise rejections
+                                window.addEventListener('unhandledrejection', function(event) {
+                                    parent.postMessage({
+                                        type: 'app-error',
+                                        message: 'Unhandled Promise Rejection: ' + event.reason,
+                                        stack: event.reason && event.reason.stack ? event.reason.stack : ''
+                                    }, '*');
+                                });
+                                
+                                // Override console.error
+                                const originalError = console.error;
+                                console.error = function(...args) {
+                                    parent.postMessage({
+                                        type: 'app-error',
+                                        message: 'Console Error: ' + args.join(' ')
+                                    }, '*');
+                                    originalError.apply(console, args);
+                                };
+                                
+                                console.log('Error capture initialized');
+                            })();
+                        `;
+                        
+                        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                        const scriptEl = iframeDoc.createElement('script');
+                        scriptEl.textContent = script;
+                        iframeDoc.head.appendChild(scriptEl);
+                        
+                        // Check if Vue loaded
+                        const hasVue = iframe.contentWindow.Vue || 
+                                     iframe.contentWindow.__VUE__ || 
+                                     (iframe.contentWindow.document.querySelector('#app') && 
+                                      iframe.contentWindow.document.querySelector('#app').__vue_app__);
+                        
+                        testResults['Vue.js'] = {
+                            success: !!hasVue,
+                            message: hasVue ? 'Loaded' : 'Not detected'
+                        };
+                        
+                        // Check if app has content
+                        const appEl = iframeDoc.querySelector('#app');
+                        const hasContent = appEl && appEl.innerHTML.trim().length > 100;
+                        
+                        testResults['App Content'] = {
+                            success: hasContent,
+                            message: hasContent ? 'Rendered' : 'Empty or minimal'
+                        };
+                        
+                        updateTestResults();
+                        
+                    } catch (e) {
+                        console.log('Cannot inject script (cross-origin):', e.message);
+                        testResults['Error Capture'] = {
+                            success: false,
+                            message: 'Cross-origin restriction'
+                        };
+                        updateTestResults();
+                    }
+                    
+                    // Final check after a delay
+                    setTimeout(() => {
+                        const errorCount = errors.filter(e => e.type === 'error').length;
+                        testResults['Runtime Errors'] = {
+                            success: errorCount === 0,
+                            message: errorCount === 0 ? 'None detected' : `${errorCount} errors found`
+                        };
+                        updateTestResults();
+                        
+                        if (errorCount === 0) {
+                            console.log('✓ No runtime errors detected in the application');
+                        } else {
+                            console.log(`✗ ${errorCount} runtime errors detected`);
+                        }
+                    }, 3000);
+                    
+                }, 1000);
+            };
+        }
+        
+        // Auto-run test on page load
+        window.onload = () => {
+            testApp();
+        };
+    </script>
+</body>
+</html>

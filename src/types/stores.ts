@@ -448,3 +448,8 @@ export interface OptimizedSessionsStoreReturn extends OptimizedSessionsStore {
  * Generischer Store-Typ für Pinia
  */
 export type PiniaStore<T extends string, S, G, A> = Store<T, S, G, A>;
+
+
+export interface IDocumentConverterStore {
+  [key: string]: any;
+}

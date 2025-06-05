@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Token Debug Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .test { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background: #dfd; }
+        .error { background: #fdd; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+        button { padding: 10px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Token & Authorization Debug Test</h1>
+    
+    <div class="test">
+        <h2>1. Login Test</h2>
+        <button onclick="testLogin()">Test Login</button>
+        <div id="login-result"></div>
+    </div>
+    
+    <div class="test">
+        <h2>2. Direct API Test (No Axios)</h2>
+        <button onclick="testDirectFetch()">Test Direct Fetch</button>
+        <div id="direct-result"></div>
+    </div>
+    
+    <div class="test">
+        <h2>3. Test Headers Endpoint</h2>
+        <button onclick="testHeaders()">Test Headers</button>
+        <div id="headers-result"></div>
+    </div>
+    
+    <div class="test">
+        <h2>4. Admin Users via Different Methods</h2>
+        <button onclick="testAdminViaFetch()">Test via Fetch</button>
+        <button onclick="testAdminViaAxios()">Test via Axios</button>
+        <button onclick="testAdminViaApiClient()">Test via ApiClient</button>
+        <div id="admin-result"></div>
+    </div>
+    
+    <div class="test">
+        <h2>5. Storage Check</h2>
+        <button onclick="checkStorage()">Check Storage</button>
+        <div id="storage-result"></div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        let token = null;
+        
+        async function testLogin() {
+            const div = document.getElementById('login-result');
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'martin@danglefeet.com',
+                        password: '123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && (data.token || data.access_token)) {
+                    token = data.token || data.access_token;
+                    
+                    // Store in all possible places
+                    localStorage.setItem('token', token);
+                    localStorage.setItem('access_token', token);
+                    localStorage.setItem('nscale_access_token', token);
+                    localStorage.setItem('nscale-dms-assistant_auth', JSON.stringify({ token }));
+                    
+                    div.innerHTML = `
+                        <p class="success">✅ Login successful!</p>
+                        <pre>Token: ${token.substring(0, 50)}...</pre>
+                        <pre>Stored in localStorage under multiple keys</pre>
+                    `;
+                } else {
+                    throw new Error('No token received');
+                }
+            } catch (error) {
+                div.innerHTML = `<p class="error">❌ Login failed: ${error.message}</p>`;
+            }
+        }
+        
+        async function testDirectFetch() {
+            const div = document.getElementById('direct-result');
+            
+            if (!token) {
+                div.innerHTML = '<p class="error">❌ No token - login first!</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/users', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const text = await response.text();
+                
+                div.innerHTML = `
+                    <p>Status: ${response.status}</p>
+                    <p>Headers sent: Authorization: Bearer ${token.substring(0, 20)}...</p>
+                    <pre>${text.substring(0, 200)}...</pre>
+                `;
+                
+                if (response.ok) {
+                    div.className = 'success';
+                } else {
+                    div.className = 'error';
+                }
+            } catch (error) {
+                div.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        async function testHeaders() {
+            const div = document.getElementById('headers-result');
+            
+            if (!token) {
+                div.innerHTML = '<p class="error">❌ No token - login first!</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/test/headers', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    div.innerHTML = `
+                        <p class="success">✅ Headers received by backend:</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    div.innerHTML = `<p class="error">❌ Status: ${response.status}</p>`;
+                }
+            } catch (error) {
+                div.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        async function testAdminViaFetch() {
+            const div = document.getElementById('admin-result');
+            
+            if (!token) {
+                div.innerHTML = '<p class="error">❌ No token - login first!</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/users', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const text = await response.text();
+                div.innerHTML = `
+                    <h3>Fetch Result:</h3>
+                    <p>Status: ${response.status}</p>
+                    <pre>${text.substring(0, 200)}</pre>
+                `;
+            } catch (error) {
+                div.innerHTML = `<p class="error">❌ Fetch Error: ${error.message}</p>`;
+            }
+        }
+        
+        async function testAdminViaAxios() {
+            const div = document.getElementById('admin-result');
+            
+            if (!token) {
+                div.innerHTML = '<p class="error">❌ No token - login first!</p>';
+                return;
+            }
+            
+            try {
+                // Configure axios defaults
+                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+                
+                const response = await axios.get('/api/admin/users');
+                
+                div.innerHTML += `
+                    <h3>Axios Result:</h3>
+                    <p class="success">✅ Status: ${response.status}</p>
+                    <pre>${JSON.stringify(response.data, null, 2).substring(0, 200)}</pre>
+                `;
+            } catch (error) {
+                div.innerHTML += `
+                    <h3>Axios Result:</h3>
+                    <p class="error">❌ Error: ${error.response?.status} - ${error.response?.data?.detail || error.message}</p>
+                `;
+            }
+        }
+        
+        async function testAdminViaApiClient() {
+            const div = document.getElementById('admin-result');
+            
+            if (!token) {
+                div.innerHTML = '<p class="error">❌ No token - login first!</p>';
+                return;
+            }
+            
+            try {
+                // Test import of ApiClient
+                const module = await import('/src/services/api/ApiClient.ts');
+                const apiClient = module.default;
+                
+                const response = await apiClient.get('/admin/users');
+                
+                div.innerHTML += `
+                    <h3>ApiClient Result:</h3>
+                    <p class="success">✅ Success</p>
+                    <pre>${JSON.stringify(response, null, 2).substring(0, 200)}</pre>
+                `;
+            } catch (error) {
+                div.innerHTML += `
+                    <h3>ApiClient Result:</h3>
+                    <p class="error">❌ Error: Cannot test ApiClient in this context</p>
+                `;
+            }
+        }
+        
+        function checkStorage() {
+            const div = document.getElementById('storage-result');
+            
+            const keys = [
+                'token',
+                'access_token', 
+                'nscale_access_token',
+                'nscale-dms-assistant_auth'
+            ];
+            
+            let html = '<h3>LocalStorage Contents:</h3>';
+            
+            keys.forEach(key => {
+                const value = localStorage.getItem(key);
+                if (value) {
+                    html += `<p><strong>${key}:</strong> ${value.substring(0, 50)}...</p>`;
+                } else {
+                    html += `<p><strong>${key}:</strong> <em>not found</em></p>`;
+                }
+            });
+            
+            // Check axios defaults
+            if (typeof axios !== 'undefined') {
+                html += '<h3>Axios Defaults:</h3>';
+                html += `<p>Authorization: ${axios.defaults.headers.common['Authorization'] || 'not set'}</p>`;
+            }
+            
+            div.innerHTML = html;
+        }
+        
+        // Auto-check storage on load
+        window.onload = () => {
+            checkStorage();
+        };
+    </script>
+</body>
+</html>

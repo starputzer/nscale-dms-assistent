@@ -19,3 +19,15 @@ Dieser Bereich enthält alle Dokumente zur Systemarchitektur und technischen Kon
 - [API_ROUTES_BEST_PRACTICE.md](50_api_routes_guide.md) - API Routes Best Practices
 - [MIGRATION_TO_SHARED_ROUTES.md](../06_ARCHIV/51_shared_routes_migration.md) - Migration zu Shared Routes
 - [DIRECT_LOGIN_SOLUTION.md](../06_ARCHIV/70_direct_login_loesung.md) - Direct Login Lösung
+
+## RAG-System (Retrieval-Augmented Generation)
+
+- [40_rag_system_komplett.md](40_rag_system_komplett.md) - RAG-System Vollständige Dokumentation
+- [RAG_PHASEN/](RAG_PHASEN/) - Detaillierte Phasen-Dokumentation
+  - Phase 1: RAG Optimization
+  - Phase 2.1: Document Classification
+  - Phase 2.2: Enhanced Processing
+  - Phase 2.3: Knowledge Integration
+  - Phase 2.5: Background Processing
+  - Phase 2.6: Admin Interface Extensions
+  - Phase 2.7: Advanced Document Intelligence

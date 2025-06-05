@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>Login Test</h1>
+    <div id="result"></div>
+    
+    <script>
+        async function testLogin() {
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                // Test 1: Direct API call
+                console.log('Testing direct API call to /api/auth/login');
+                const response = await axios.post('/api/auth/login', {
+                    email: 'martin@danglefeet.com',
+                    password: '123'
+                });
+                
+                console.log('Response:', response);
+                console.log('Response data:', response.data);
+                console.log('Response data type:', typeof response.data);
+                console.log('Response data keys:', Object.keys(response.data));
+                
+                resultDiv.innerHTML = `
+                    <h2>Success!</h2>
+                    <p>Status: ${response.status}</p>
+                    <p>Data: <pre>${JSON.stringify(response.data, null, 2)}</pre></p>
+                    <p>Token exists: ${response.data.token ? 'YES' : 'NO'}</p>
+                    <p>Access token exists: ${response.data.access_token ? 'YES' : 'NO'}</p>
+                `;
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = `
+                    <h2>Error!</h2>
+                    <p>Message: ${error.message}</p>
+                    <p>Response: ${error.response ? JSON.stringify(error.response.data) : 'No response'}</p>
+                `;
+            }
+        }
+        
+        // Run test on page load
+        testLogin();
+    </script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .info {
+            color: #666;
+            font-style: italic;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Authentication Fix Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Direct API Login</h2>
+        <button onclick="testDirectLogin()">Test Direct Login</button>
+        <div id="direct-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 2: Check Response Format</h2>
+        <button onclick="checkResponseFormat()">Check Response Format</button>
+        <div id="format-result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api';
+        const TEST_CREDENTIALS = {
+            email: 'martin@danglefeet.com',
+            password: '123'
+        };
+
+        async function testDirectLogin() {
+            const resultDiv = document.getElementById('direct-result');
+            resultDiv.innerHTML = '<p class="info">Testing login...</p>';
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(TEST_CREDENTIALS)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✓ Login successful!</p>
+                        <p>Response status: ${response.status}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">✗ Login failed!</p>
+                        <p>Response status: ${response.status}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">✗ Connection error!</p>
+                    <p>${error.message}</p>
+                    <p class="info">Make sure the server is running on port 8000</p>
+                `;
+            }
+        }
+
+        async function checkResponseFormat() {
+            const resultDiv = document.getElementById('format-result');
+            resultDiv.innerHTML = '<p class="info">Checking response format...</p>';
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(TEST_CREDENTIALS)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const hasToken = 'token' in data;
+                    const hasAccessToken = 'access_token' in data;
+                    const hasUser = 'user' in data;
+                    
+                    let html = '<h3>Response Format Check:</h3>';
+                    html += '<ul>';
+                    html += `<li>Has 'token' field: <span class="${hasToken ? 'success' : 'error'}">${hasToken ? '✓ Yes' : '✗ No'}</span></li>`;
+                    html += `<li>Has 'access_token' field: <span class="${hasAccessToken ? 'success' : 'error'}">${hasAccessToken ? '✓ Yes' : '✗ No'}</span></li>`;
+                    html += `<li>Has 'user' field: <span class="${hasUser ? 'success' : 'error'}">${hasUser ? '✓ Yes' : '✗ No'}</span></li>`;
+                    html += '</ul>';
+                    
+                    if (hasAccessToken && !hasToken) {
+                        html += '<p class="info">⚠️ Backend returns "access_token" but frontend expects "token"</p>';
+                        html += '<p class="success">✓ Fix applied: AuthService now handles both field names</p>';
+                    }
+                    
+                    html += '<h4>Full Response:</h4>';
+                    html += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">✗ Login failed!</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">✗ Connection error!</p>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

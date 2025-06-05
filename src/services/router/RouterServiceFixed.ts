@@ -28,7 +28,7 @@ export interface RouterState {
 export class RouterService {
   private static instance: RouterService;
   private router: Router | null = null;
-  private initPromise: Promise<void> | null = null;
+  private _initPromise: Promise<void> | null = null;
 
   // State
   private state = ref<RouterState>({

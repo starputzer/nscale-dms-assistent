@@ -3,7 +3,10 @@ import numpy as np
 import threading
 from typing import List, Dict, Any, Optional
 import gc
+import re
+import gzip
 from pathlib import Path
+from datetime import datetime
 from sklearn.feature_extraction import text
 import torch
 
@@ -70,46 +73,45 @@ class EmbeddingManager:
                     return False
 
     def process_chunks(self, chunks: List[Dict[str, Any]]) -> bool:
-        """Verarbeitet Chunks und erstellt Embeddings mit Optimierungen für große Dokumente"""
+        """Phase 1: Advanced preprocessing und optimierte Embedding-Erstellung"""
         with self.lock:
             try:
                 if not self.model:
                     logger.warning("Embedding-Modell nicht initialisiert")
                     return False
 
-                if self._load_from_cache(chunks):
+                # Advanced preprocessing
+                logger.info(f"🔧 Starte Advanced Preprocessing für {len(chunks)} Chunks")
+                preprocessed_chunks = self._advanced_preprocess_chunks(chunks)
+                
+                if self._load_from_cache(preprocessed_chunks):
                     return True
 
-                logger.info(f"Erstelle Embeddings für {len(chunks)} Chunks")
-                self.chunks = chunks
+                logger.info(f"🧮 Erstelle Embeddings für {len(preprocessed_chunks)} preprocessed Chunks")
+                self.chunks = preprocessed_chunks
 
-                # OPTIMIERUNG 1: Progressive Verarbeitung in Teilmengen
-                # Bei sehr vielen Chunks diese in Teilmengen verarbeiten
-                max_chunks_per_batch = 200  # Maximal 200 Chunks pro Teilmenge
+                # Dynamische Batch-Größe basierend auf verfügbarem Speicher
+                max_chunks_per_batch = self._calculate_optimal_batch_size()
                 
-                if len(chunks) > max_chunks_per_batch:
-                    logger.info(f"Verarbeite {len(chunks)} Chunks in Teilmengen von {max_chunks_per_batch}")
+                if len(preprocessed_chunks) > max_chunks_per_batch:
+                    logger.info(f"Verarbeite {len(preprocessed_chunks)} Chunks in Teilmengen von {max_chunks_per_batch}")
                     
                     # Speicher für alle verarbeiteten Embeddings
                     all_embeddings = []
-                    processed_chunks = []
                     
                     # Verarbeite Chunks in Teilmengen
-                    for i in range(0, len(chunks), max_chunks_per_batch):
-                        batch_end = min(i + max_chunks_per_batch, len(chunks))
-                        batch_chunks = chunks[i:batch_end]
+                    for i in range(0, len(preprocessed_chunks), max_chunks_per_batch):
+                        batch_end = min(i + max_chunks_per_batch, len(preprocessed_chunks))
+                        batch_chunks = preprocessed_chunks[i:batch_end]
                         
                         logger.info(f"Verarbeite Teilmenge {i//max_chunks_per_batch + 1} "
-                                f"({i}-{batch_end} von {len(chunks)} Chunks)")
+                                f"({i}-{batch_end} von {len(preprocessed_chunks)} Chunks)")
                         
                         # Extrahiere und begrenzt Texte
                         batch_texts = []
                         for chunk in batch_chunks:
-                            # Begrenze Chunk-Größe auf 1500 Zeichen
-                            if len(chunk['text']) > 1500:
-                                chunk['text'] = chunk['text'][:1500]
+                            # Text ist bereits normalisiert und auf 1500 Zeichen begrenzt
                             batch_texts.append(chunk['text'])
-                            processed_chunks.append(chunk)
                         
                         # Speicher freigeben vor dem Encoding
                         if self.device == "cuda":
@@ -136,10 +138,9 @@ class EmbeddingManager:
                     
                     # Kombiniere alle Teilmengen
                     self.embeddings = np.vstack(all_embeddings)
-                    self.chunks = processed_chunks
                     
                     # Erstelle TF-IDF Matrix für alle Chunks
-                    all_texts = [chunk['text'] for chunk in processed_chunks]
+                    all_texts = [chunk['text'] for chunk in self.chunks]
                     
                     # Deutsche Stopwörter
                     german_stopwords = list(text.ENGLISH_STOP_WORDS.union({
@@ -154,12 +155,7 @@ class EmbeddingManager:
                     
                 else:
                     # Standardverhalten für wenige Chunks
-                    texts = []
-                    for chunk in chunks:
-                        # Begrenze Chunk-Größe auf 1500 Zeichen
-                        if len(chunk['text']) > 1500:
-                            chunk['text'] = chunk['text'][:1500]
-                        texts.append(chunk['text'])
+                    texts = [chunk['text'] for chunk in preprocessed_chunks]
                     
                     # Deutsche Stopwörter
                     german_stopwords = list(text.ENGLISH_STOP_WORDS.union({
@@ -289,3 +285,146 @@ class EmbeddingManager:
             except Exception as e:
                 logger.error(f"Fehler bei der Suche: {e}")
                 return []
+    
+    def _advanced_preprocess_chunks(self, chunks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Phase 1: Advanced preprocessing mit Text-Normalisierung und Qualitätsbewertung"""
+        preprocessed = []
+        
+        for chunk in chunks:
+            # Deep copy um Original nicht zu modifizieren
+            processed_chunk = chunk.copy()
+            
+            # Text-Normalisierung
+            normalized_text = self._normalize_text(chunk['text'])
+            processed_chunk['text'] = normalized_text
+            processed_chunk['original_text'] = chunk['text']
+            
+            # Keyword-Extraktion
+            keywords = self._extract_keywords(normalized_text)
+            processed_chunk['keywords'] = keywords
+            
+            # Qualitätsbewertung
+            quality_score = self._assess_text_quality(normalized_text)
+            processed_chunk['quality_score'] = quality_score
+            
+            # Nur hochwertige Chunks behalten
+            if quality_score >= 0.3:  # Threshold
+                preprocessed.append(processed_chunk)
+            else:
+                logger.debug(f"Chunk mit niedriger Qualität übersprungen: {quality_score:.2f}")
+        
+        logger.info(f"✨ Preprocessing: {len(chunks)} → {len(preprocessed)} Chunks (gefiltert)")
+        return preprocessed
+    
+    def _normalize_text(self, text: str) -> str:
+        """Normalisiert Text für bessere Embedding-Qualität"""
+        # Entferne übermäßige Whitespaces
+        text = re.sub(r'\s+', ' ', text)
+        
+        # Entferne Sonderzeichen am Anfang/Ende
+        text = text.strip()
+        
+        # Normalisiere Umlaute (optional, je nach Modell)
+        # text = text.replace('ä', 'ae').replace('ö', 'oe').replace('ü', 'ue')
+        # text = text.replace('Ä', 'Ae').replace('Ö', 'Oe').replace('Ü', 'Ue')
+        
+        # Entferne leere Klammern
+        text = re.sub(r'\(\s*\)', '', text)
+        text = re.sub(r'\[\s*\]', '', text)
+        
+        # Normalisiere Bindestriche
+        text = re.sub(r'\s*-\s*', '-', text)
+        
+        # Entferne mehrfache Satzzeichen
+        text = re.sub(r'([.!?])\1+', r'\1', text)
+        
+        return text
+    
+    def _extract_keywords(self, text: str, max_keywords: int = 10) -> List[str]:
+        """Extrahiert wichtige Keywords aus dem Text"""
+        # Einfache Keyword-Extraktion basierend auf Worthäufigkeit
+        words = re.findall(r'\b[a-zA-Zäöüßÿ]{4,}\b', text.lower())
+        
+        # Filtere Stoppwörter
+        german_stopwords = {
+            'und', 'oder', 'aber', 'nicht', 'sein', 'haben', 'werden',
+            'dies', 'ein', 'eine', 'der', 'die', 'das', 'mit', 'für',
+            'auf', 'ist', 'den', 'dem', 'des', 'wie', 'wenn', 'dann',
+            'man', 'wir', 'ich', 'sie', 'kann', 'wird', 'durch', 'nach',
+            'auch', 'noch', 'nur', 'sehr', 'schon', 'mehr', 'über',
+            'diese', 'dieser', 'dieses', 'alle', 'ihrer', 'ihren'
+        }
+        
+        filtered_words = [w for w in words if w not in german_stopwords]
+        
+        # Zähle Worthäufigkeiten
+        from collections import Counter
+        word_freq = Counter(filtered_words)
+        
+        # Gib die häufigsten Keywords zurück
+        keywords = [word for word, _ in word_freq.most_common(max_keywords)]
+        return keywords
+    
+    def _assess_text_quality(self, text: str) -> float:
+        """Bewertet die Qualität eines Textes (0.0 - 1.0)"""
+        if not text or len(text.strip()) < 50:
+            return 0.0
+        
+        # Faktoren für Qualitätsbewertung
+        scores = []
+        
+        # 1. Textlänge (optimal: 200-800 Zeichen)
+        length = len(text)
+        if 200 <= length <= 800:
+            length_score = 1.0
+        elif 100 <= length < 200 or 800 < length <= 1200:
+            length_score = 0.7
+        else:
+            length_score = 0.4
+        scores.append(length_score)
+        
+        # 2. Satz-Struktur (enthält vollständige Sätze?)
+        sentences = re.split(r'[.!?]+', text)
+        valid_sentences = sum(1 for s in sentences if len(s.strip()) > 10)
+        sentence_score = min(valid_sentences / 2, 1.0)  # Mindestens 2 Sätze ideal
+        scores.append(sentence_score)
+        
+        # 3. Wort-Vielfalt (Unique words ratio)
+        words = text.lower().split()
+        if words:
+            unique_ratio = len(set(words)) / len(words)
+            diversity_score = unique_ratio * 2  # Skaliert auf 0-1
+            scores.append(min(diversity_score, 1.0))
+        else:
+            scores.append(0.0)
+        
+        # 4. Spezielle Zeichen-Ratio (zu viele Sonderzeichen = schlechte Qualität)
+        special_chars = len(re.findall(r'[^a-zA-Z0-9äöüÄÖÜß\s.,!?-]', text))
+        special_ratio = special_chars / len(text)
+        special_score = 1.0 - min(special_ratio * 5, 1.0)  # Penalty für zu viele Sonderzeichen
+        scores.append(special_score)
+        
+        # Durchschnittlicher Score
+        return sum(scores) / len(scores)
+    
+    def _calculate_optimal_batch_size(self) -> int:
+        """Berechnet optimale Batch-Größe basierend auf verfügbarem Speicher"""
+        if self.device == "cuda":
+            try:
+                # GPU-Speicher checken
+                free_memory = torch.cuda.get_device_properties(0).total_memory - torch.cuda.memory_allocated(0)
+                # Konservative Schätzung: ~100MB pro Chunk bei BGE-M3
+                estimated_chunks = int(free_memory / (100 * 1024 * 1024))
+                return max(10, min(estimated_chunks, 100))  # Zwischen 10 und 100
+            except:
+                return 50  # Fallback für GPU
+        else:
+            # CPU: Basierend auf RAM
+            try:
+                import psutil
+                available_memory = psutil.virtual_memory().available
+                # Konservative Schätzung: ~50MB pro Chunk auf CPU
+                estimated_chunks = int(available_memory / (50 * 1024 * 1024))
+                return max(20, min(estimated_chunks, 200))  # Zwischen 20 und 200
+            except:
+                return 100  # Fallback wenn psutil nicht verfügbar

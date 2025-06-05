@@ -5,7 +5,7 @@
 
 import { ref, onMounted, onUnmounted, type Ref } from "vue";
 import { useLogger } from "@/composables/useLogger";
-import { useRouter, type Router } from "vue-router";
+// import { useRouter, type Router } from "vue-router"; // Unused import
 
 export interface UIError {
   component: string;
@@ -29,7 +29,7 @@ export class UIDiagnostics {
   private logger: ReturnType<typeof useLogger>;
   private errors: UIError[] = [];
   public state: Ref<UIState>;
-  private router?: Router;
+  private _router?: Router;
 
   private constructor() {
     this.logger = useLogger();

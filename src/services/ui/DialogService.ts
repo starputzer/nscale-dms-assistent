@@ -925,7 +925,7 @@ export const dialogService = {
    * Getter für den aktiven Dialog (readonly)
    */
   get activeDialog() {
-    return readonly(state.value.activeDialog);
+    return readonly((state.value as any).activeDialog);
   },
 };
 

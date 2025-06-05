@@ -84,7 +84,7 @@ export function useChatAdapter(): EnhancedChatComposable {
     },
 
     // Laden von Nachrichten mit optionalem Session-Parameter
-    loadMessages: async (sessionId?: string) => {
+    loadMessages: async (_sessionId?: string) => {
       // loadMessages ist nicht Teil des UseChatReturn Interface
       // Diese Methode existiert nicht im aktuellen useChat
 
@@ -94,7 +94,7 @@ export function useChatAdapter(): EnhancedChatComposable {
     },
 
     // Bearbeiten einer Nachricht
-    editMessage: async (messageId: string, content: string, sessionId?: string) => {
+    editMessage: async (messageId: string, content: string, _sessionId?: string) => {
       // editMessage ist nicht Teil des UseChatReturn Interface
       // Diese Methode existiert nicht im aktuellen useChat
 
@@ -104,7 +104,7 @@ export function useChatAdapter(): EnhancedChatComposable {
     },
 
     // Wiederholung einer Nachricht
-    retryMessage: async (messageId: string, sessionId?: string) => {
+    retryMessage: async (messageId: string, _sessionId?: string) => {
       // retryMessage ist nicht Teil des UseChatReturn Interface
       // Diese Methode existiert nicht im aktuellen useChat
 

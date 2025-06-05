@@ -324,7 +324,7 @@ export default defineComponent({
       const info: ResourceInfo = {};
 
       // Memory-Info sammeln (wenn verfügbar)
-      if ((performance as any).memory) {
+      if (performance as any).memory) {
         const memory = (performance as any).memory;
         const usedHeapSizeMB = Math.round(
           memory.usedJSHeapSize / (1024 * 1024),
@@ -336,7 +336,7 @@ export default defineComponent({
       }
 
       // Netzwerkinfo sammeln (wenn Connection API verfügbar)
-      if ((navigator as any).connection) {
+      if (navigator as any).connection) {
         const connection = (navigator as any).connection;
         info.network =
           connection.effectiveType || connection.type || "unbekannt";

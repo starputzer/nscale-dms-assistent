@@ -43,7 +43,7 @@ export interface RouterIssue {
 export class Router404Diagnostics {
   private events: RouterDiagnosticEvent[] = [];
   private router: Router | null = null;
-  private startTime: number = Date.now();
+  private _startTime: number = Date.now();
   private refreshAttempts = 0;
   private errorCount = 0;
   private lastError: Error | null = null;

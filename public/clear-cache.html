@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Cache and Service Workers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Clear Cache and Service Workers</h1>
+    
+    <div id="status"></div>
+    
+    <button onclick="clearAll()">Clear All Caches</button>
+    <button onclick="unregisterServiceWorkers()">Unregister Service Workers</button>
+    <button onclick="hardReload()">Hard Reload</button>
+    
+    <script>
+        const statusDiv = document.getElementById('status');
+        
+        function addStatus(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = message;
+            statusDiv.appendChild(div);
+        }
+        
+        async function clearAll() {
+            // Clear localStorage
+            const localStorageKeys = Object.keys(localStorage);
+            localStorage.clear();
+            addStatus(`Cleared ${localStorageKeys.length} localStorage items`, 'success');
+            
+            // Clear sessionStorage
+            const sessionStorageKeys = Object.keys(sessionStorage);
+            sessionStorage.clear();
+            addStatus(`Cleared ${sessionStorageKeys.length} sessionStorage items`, 'success');
+            
+            // Clear caches
+            if ('caches' in window) {
+                const cacheNames = await caches.keys();
+                for (const cacheName of cacheNames) {
+                    await caches.delete(cacheName);
+                }
+                addStatus(`Cleared ${cacheNames.length} caches`, 'success');
+            }
+            
+            // Clear cookies (limited to current path)
+            document.cookie.split(";").forEach(function(c) { 
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+            });
+            addStatus('Cleared cookies', 'success');
+        }
+        
+        async function unregisterServiceWorkers() {
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (const registration of registrations) {
+                    await registration.unregister();
+                }
+                addStatus(`Unregistered ${registrations.length} service workers`, 'success');
+            } else {
+                addStatus('No service worker support', 'info');
+            }
+        }
+        
+        function hardReload() {
+            // Force reload from server
+            window.location.reload(true);
+        }
+        
+        // Check current status on load
+        window.onload = async function() {
+            // Check service workers
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                addStatus(`Found ${registrations.length} service workers`, 'info');
+            }
+            
+            // Check caches
+            if ('caches' in window) {
+                const cacheNames = await caches.keys();
+                addStatus(`Found ${cacheNames.length} caches: ${cacheNames.join(', ')}`, 'info');
+            }
+            
+            // Check localStorage
+            addStatus(`LocalStorage has ${Object.keys(localStorage).length} items`, 'info');
+            
+            // Check sessionStorage  
+            addStatus(`SessionStorage has ${Object.keys(sessionStorage).length} items`, 'info');
+        }
+    </script>
+</body>
+</html>

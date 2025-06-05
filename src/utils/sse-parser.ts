@@ -42,7 +42,7 @@ export function safeParseSSEData(data: string): any {
 
 export class SSEParser {
   private buffer: string = '';
-  private currentMessage: Partial<SSEMessage> = {};
+  private _currentMessage: Partial<SSEMessage> = {};
 
   /**
    * Parse a chunk of SSE data

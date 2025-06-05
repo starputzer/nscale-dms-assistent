@@ -45,15 +45,15 @@ export function useNScale() {
       }
 
       if (useChat) {
-        promises.push(chat.initialize());
+        promises.push(chat as any).initialize());
       }
 
       if (useUI) {
-        ui.initialize();
+        (ui as any).initialize();
       }
 
       if (useSettings) {
-        settings.initialize();
+        (settings as any).initialize();
       }
 
       // Auf Abschluss aller Initialisierungen warten

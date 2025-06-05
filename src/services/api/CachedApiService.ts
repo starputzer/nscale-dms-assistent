@@ -103,7 +103,7 @@ export class CachedApiService {
         return {
           ...cachedData,
           metadata: {
-            ...cachedData.metadata,
+            ...(cachedData as any).metadata,
             fromCache: true,
             cacheReason: "network_error",
           },
@@ -312,13 +312,13 @@ export class CachedApiService {
    * Invalidiert Cache für eine bestimmte URL oder ein Pattern
    */
   public invalidate(urlPattern: string | RegExp): void {
-    apiCacheService.invalidateByPattern(urlPattern);
+    (apiCacheService as any).invalidateByPattern(urlPattern);
   }
 
   /**
    * Invalidiert verwandte Caches basierend auf URL und Daten
    */
-  private invalidateRelatedCaches(url: string, data?: any): void {
+  private invalidateRelatedCaches(url: string, _data?: any): void {
     // Extract resource type from URL
     const resourceMatch = url.match(/\/api\/(\w+)/);
     if (resourceMatch) {
@@ -360,35 +360,6 @@ export class CachedApiService {
     } catch (error) {
       // Fehler bei der Hintergrundaktualisierung ignorieren
       this.logger.warn("Fehler bei Hintergrundaktualisierung", {
-        url,
-        error,
-      });
-    }
-  }
-
-  /**
-   * Invalidiert verwandte Caches basierend auf dem Anfrage-URL
-   */
-  private invalidateRelatedCaches(url: string, data?: any): void {
-    try {
-      // Ressourcentyp aus URL extrahieren
-      const urlParts = url.split("/").filter((part: any) => part.length > 0);
-
-      if (urlParts.length > 0) {
-        // Ressourcentyp identifizieren (z.B. 'sessions', 'documents', etc.)
-        const resourceType = urlParts[0];
-
-        // Cache für diesen Ressourcentyp invalidieren
-        apiCacheService.invalidateEndpointType(resourceType);
-
-        if (import.meta.env.VITE_ENV !== "production") {
-          this.logger.debug(
-            `Cache invalidiert für Ressourcentyp: ${resourceType}`,
-          );
-        }
-      }
-    } catch (error) {
-      this.logger.warn("Fehler bei Cache-Invalidierung", {
         url,
         error,
       });

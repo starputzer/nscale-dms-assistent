@@ -1,0 +1,263 @@
+# IMPORTS TO ADD TO SERVER.PY
+# Add these after the existing imports
+
+# Import all endpoint routers
+
+# ADMIN endpoints
+try:
+    from api.admin_dashboard_endpoints import router as admin_dashboard_endpoints_router
+    logger.info('Loaded admin_dashboard_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load admin_dashboard_endpoints: {e}')
+    admin_dashboard_endpoints_router = None
+try:
+    from api.admin_dashboard_standard_endpoints import router as admin_dashboard_standard_endpoints_router
+    logger.info('Loaded admin_dashboard_standard_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load admin_dashboard_standard_endpoints: {e}')
+    admin_dashboard_standard_endpoints_router = None
+try:
+    from api.admin_feedback_endpoints import router as admin_feedback_endpoints_router
+    logger.info('Loaded admin_feedback_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load admin_feedback_endpoints: {e}')
+    admin_feedback_endpoints_router = None
+try:
+    from api.admin_statistics_endpoints import router as admin_statistics_endpoints_router
+    logger.info('Loaded admin_statistics_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load admin_statistics_endpoints: {e}')
+    admin_statistics_endpoints_router = None
+try:
+    from api.admin_system_comprehensive_endpoints import router as admin_system_comprehensive_endpoints_router
+    logger.info('Loaded admin_system_comprehensive_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load admin_system_comprehensive_endpoints: {e}')
+    admin_system_comprehensive_endpoints_router = None
+try:
+    from api.admin_system_endpoints import router as admin_system_endpoints_router
+    logger.info('Loaded admin_system_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load admin_system_endpoints: {e}')
+    admin_system_endpoints_router = None
+try:
+    from api.admin_users_endpoints import router as admin_users_endpoints_router
+    logger.info('Loaded admin_users_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load admin_users_endpoints: {e}')
+    admin_users_endpoints_router = None
+
+# DOC endpoints
+try:
+    from api.advanced_document_endpoints import router as advanced_document_endpoints_router
+    logger.info('Loaded advanced_document_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load advanced_document_endpoints: {e}')
+    advanced_document_endpoints_router = None
+try:
+    from api.advanced_documents_endpoints import router as advanced_documents_endpoints_router
+    logger.info('Loaded advanced_documents_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load advanced_documents_endpoints: {e}')
+    advanced_documents_endpoints_router = None
+try:
+    from api.doc_converter_endpoints import router as doc_converter_endpoints_router
+    logger.info('Loaded doc_converter_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load doc_converter_endpoints: {e}')
+    doc_converter_endpoints_router = None
+try:
+    from api.doc_converter_enhanced_endpoints import router as doc_converter_enhanced_endpoints_router
+    logger.info('Loaded doc_converter_enhanced_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load doc_converter_enhanced_endpoints: {e}')
+    doc_converter_enhanced_endpoints_router = None
+try:
+    from api.document_converter_endpoints import router as document_converter_endpoints_router
+    logger.info('Loaded document_converter_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load document_converter_endpoints: {e}')
+    document_converter_endpoints_router = None
+try:
+    from api.document_upload_endpoints import router as document_upload_endpoints_router
+    logger.info('Loaded document_upload_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load document_upload_endpoints: {e}')
+    document_upload_endpoints_router = None
+
+# RAG endpoints
+try:
+    from api.rag_endpoints import router as rag_endpoints_router
+    logger.info('Loaded rag_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load rag_endpoints: {e}')
+    rag_endpoints_router = None
+try:
+    from api.rag_settings_endpoints import router as rag_settings_endpoints_router
+    logger.info('Loaded rag_settings_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load rag_settings_endpoints: {e}')
+    rag_settings_endpoints_router = None
+
+# SYSTEM endpoints
+try:
+    from api.performance_monitor_endpoints import router as performance_monitor_endpoints_router
+    logger.info('Loaded performance_monitor_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load performance_monitor_endpoints: {e}')
+    performance_monitor_endpoints_router = None
+try:
+    from api.system_monitor_endpoints import router as system_monitor_endpoints_router
+    logger.info('Loaded system_monitor_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load system_monitor_endpoints: {e}')
+    system_monitor_endpoints_router = None
+
+# KNOWLEDGE endpoints
+try:
+    from api.knowledge_endpoints import router as knowledge_endpoints_router
+    logger.info('Loaded knowledge_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load knowledge_endpoints: {e}')
+    knowledge_endpoints_router = None
+try:
+    from api.knowledge_manager_endpoints import router as knowledge_manager_endpoints_router
+    logger.info('Loaded knowledge_manager_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load knowledge_manager_endpoints: {e}')
+    knowledge_manager_endpoints_router = None
+
+# BACKGROUND endpoints
+try:
+    from api.background_endpoints import router as background_endpoints_router
+    logger.info('Loaded background_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load background_endpoints: {e}')
+    background_endpoints_router = None
+try:
+    from api.background_processing_endpoints import router as background_processing_endpoints_router
+    logger.info('Loaded background_processing_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load background_processing_endpoints: {e}')
+    background_processing_endpoints_router = None
+
+# OTHER endpoints
+try:
+    from api.fix_admin_endpoints import router as fix_admin_endpoints_router
+    logger.info('Loaded fix_admin_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load fix_admin_endpoints: {e}')
+    fix_admin_endpoints_router = None
+try:
+    from api.missing_endpoints import router as missing_endpoints_router
+    logger.info('Loaded missing_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load missing_endpoints: {e}')
+    missing_endpoints_router = None
+try:
+    from api.simplified_admin_endpoints import router as simplified_admin_endpoints_router
+    logger.info('Loaded simplified_admin_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load simplified_admin_endpoints: {e}')
+    simplified_admin_endpoints_router = None
+try:
+    from api.unified_endpoints import router as unified_endpoints_router
+    logger.info('Loaded unified_endpoints router')
+except Exception as e:
+    logger.error(f'Failed to load unified_endpoints: {e}')
+    unified_endpoints_router = None
+
+# ROUTER REGISTRATIONS TO ADD TO SERVER.PY
+# Add these before app.add_middleware()
+
+
+# Register all routers
+
+# Register ADMIN endpoints
+if admin_dashboard_endpoints_router:
+    app.include_router(admin_dashboard_endpoints_router, prefix="/api/admin-dashboard", tags=["admin"])
+    logger.info('Registered admin_dashboard_endpoints at /api/admin-dashboard')
+if admin_dashboard_standard_endpoints_router:
+    app.include_router(admin_dashboard_standard_endpoints_router, prefix="/api/admin-dashboard", tags=["admin"])
+    logger.info('Registered admin_dashboard_standard_endpoints at /api/admin-dashboard')
+if admin_feedback_endpoints_router:
+    app.include_router(admin_feedback_endpoints_router, prefix="/api/admin", tags=["admin"])
+    logger.info('Registered admin_feedback_endpoints at /api/admin')
+if admin_statistics_endpoints_router:
+    app.include_router(admin_statistics_endpoints_router, prefix="/api/admin", tags=["admin"])
+    logger.info('Registered admin_statistics_endpoints at /api/admin')
+if admin_system_comprehensive_endpoints_router:
+    app.include_router(admin_system_comprehensive_endpoints_router, prefix="/api/admin", tags=["admin"])
+    logger.info('Registered admin_system_comprehensive_endpoints at /api/admin')
+if admin_system_endpoints_router:
+    app.include_router(admin_system_endpoints_router, prefix="/api/admin", tags=["admin"])
+    logger.info('Registered admin_system_endpoints at /api/admin')
+if admin_users_endpoints_router:
+    app.include_router(admin_users_endpoints_router, prefix="/api/admin", tags=["admin"])
+    logger.info('Registered admin_users_endpoints at /api/admin')
+
+# Register DOC endpoints
+if advanced_document_endpoints_router:
+    app.include_router(advanced_document_endpoints_router, prefix="/api/documents", tags=["doc"])
+    logger.info('Registered advanced_document_endpoints at /api/documents')
+if advanced_documents_endpoints_router:
+    app.include_router(advanced_documents_endpoints_router, prefix="/api/documents", tags=["doc"])
+    logger.info('Registered advanced_documents_endpoints at /api/documents')
+if doc_converter_endpoints_router:
+    app.include_router(doc_converter_endpoints_router, prefix="/api/doc-converter", tags=["doc"])
+    logger.info('Registered doc_converter_endpoints at /api/doc-converter')
+if doc_converter_enhanced_endpoints_router:
+    app.include_router(doc_converter_enhanced_endpoints_router, prefix="/api/doc-converter", tags=["doc"])
+    logger.info('Registered doc_converter_enhanced_endpoints at /api/doc-converter')
+if document_converter_endpoints_router:
+    app.include_router(document_converter_endpoints_router, prefix="/api/documents", tags=["doc"])
+    logger.info('Registered document_converter_endpoints at /api/documents')
+if document_upload_endpoints_router:
+    app.include_router(document_upload_endpoints_router, prefix="/api/documents", tags=["doc"])
+    logger.info('Registered document_upload_endpoints at /api/documents')
+
+# Register RAG endpoints
+if rag_endpoints_router:
+    app.include_router(rag_endpoints_router, prefix="/api/rag", tags=["rag"])
+    logger.info('Registered rag_endpoints at /api/rag')
+if rag_settings_endpoints_router:
+    app.include_router(rag_settings_endpoints_router, prefix="/api/rag", tags=["rag"])
+    logger.info('Registered rag_settings_endpoints at /api/rag')
+
+# Register SYSTEM endpoints
+if performance_monitor_endpoints_router:
+    app.include_router(performance_monitor_endpoints_router, prefix="/api/system", tags=["system"])
+    logger.info('Registered performance_monitor_endpoints at /api/system')
+if system_monitor_endpoints_router:
+    app.include_router(system_monitor_endpoints_router, prefix="/api/system", tags=["system"])
+    logger.info('Registered system_monitor_endpoints at /api/system')
+
+# Register KNOWLEDGE endpoints
+if knowledge_endpoints_router:
+    app.include_router(knowledge_endpoints_router, prefix="/api/knowledge", tags=["knowledge"])
+    logger.info('Registered knowledge_endpoints at /api/knowledge')
+if knowledge_manager_endpoints_router:
+    app.include_router(knowledge_manager_endpoints_router, prefix="/api/knowledge", tags=["knowledge"])
+    logger.info('Registered knowledge_manager_endpoints at /api/knowledge')
+
+# Register BACKGROUND endpoints
+if background_endpoints_router:
+    app.include_router(background_endpoints_router, prefix="/api/background", tags=["background"])
+    logger.info('Registered background_endpoints at /api/background')
+if background_processing_endpoints_router:
+    app.include_router(background_processing_endpoints_router, prefix="/api/background", tags=["background"])
+    logger.info('Registered background_processing_endpoints at /api/background')
+
+# Register OTHER endpoints
+if fix_admin_endpoints_router:
+    app.include_router(fix_admin_endpoints_router, prefix="/api", tags=["other"])
+    logger.info('Registered fix_admin_endpoints at /api')
+if missing_endpoints_router:
+    app.include_router(missing_endpoints_router, prefix="/api", tags=["other"])
+    logger.info('Registered missing_endpoints at /api')
+if simplified_admin_endpoints_router:
+    app.include_router(simplified_admin_endpoints_router, prefix="/api", tags=["other"])
+    logger.info('Registered simplified_admin_endpoints at /api')
+if unified_endpoints_router:
+    app.include_router(unified_endpoints_router, prefix="/api", tags=["other"])
+    logger.info('Registered unified_endpoints at /api')

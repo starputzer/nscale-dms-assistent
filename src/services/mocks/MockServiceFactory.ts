@@ -94,7 +94,7 @@ class MockServiceFactory {
       }
 
       // Wenn im Produktionsserver ein flag gesetzt ist
-      if (window.APP_CONFIG?.USE_MOCK_API === true) {
+      if ((window.APP_CONFIG as any)?.USE_MOCK_API === true) {
         return false;
       }
     }

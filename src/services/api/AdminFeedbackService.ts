@@ -67,17 +67,17 @@ export class AdminFeedbackService implements IAdminFeedbackService {
         };
 
         const response = await apiService.get<FeedbackStats>(
-          apiConfig.ENDPOINTS.ADMIN_FEEDBACK.STATS || "/admin/feedback/stats",
+          "/admin/feedback/stats",
           undefined,
           options,
         );
 
         if (response.success) {
           // Check if stats are nested in response.data.stats
-          if (response.data && response.data.stats) {
+          if (response.data && (response.data as any).stats) {
             return {
               success: true,
-              data: response.data.stats,
+              data: (response.data as any).stats,
               message: "Feedback-Statistiken erfolgreich abgerufen",
             };
           }
@@ -137,17 +137,17 @@ export class AdminFeedbackService implements IAdminFeedbackService {
         };
 
         const response = await apiService.get<FeedbackEntry[]>(
-          `${apiConfig.ENDPOINTS.ADMIN_FEEDBACK.LIST || "/admin/feedback"}?limit=${limit}`,
+          `/admin/feedback/list?limit=${limit}`,
           undefined,
           options,
         );
 
         if (response.success) {
           // Check if feedback is nested in response.data.feedback
-          if (response.data && response.data.feedback) {
+          if (response.data && (response.data as any).feedback) {
             return {
               success: true,
-              data: response.data.feedback,
+              data: (response.data as any).feedback,
               message: "Alle Feedbacks erfolgreich abgerufen",
             };
           }
@@ -162,7 +162,7 @@ export class AdminFeedbackService implements IAdminFeedbackService {
       // Fallback zu adminApi mit Mock-Daten
       this.logger.info("Verwende Mock-Daten über adminApi für alle Feedbacks");
 
-      const response = await adminApi.getAllFeedback(limit);
+      const response = await (adminApi as any).getAllFeedback(limit);
       return {
         success: true,
         data: response?.data?.feedback || response?.data,
@@ -205,17 +205,17 @@ export class AdminFeedbackService implements IAdminFeedbackService {
         };
 
         const response = await apiService.get<FeedbackEntry[]>(
-          `${apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE || "/admin/feedback/negative"}?limit=${limit}`,
+          `/admin/feedback/negative?limit=${limit}`,
           undefined,
           options,
         );
 
         if (response.success) {
           // Check if feedback is nested in response.data.feedback
-          if (response.data && response.data.feedback) {
+          if (response.data && (response.data as any).feedback) {
             return {
               success: true,
-              data: response.data.feedback,
+              data: (response.data as any).feedback,
               message: "Negatives Feedback erfolgreich abgerufen",
             };
           }
@@ -271,15 +271,14 @@ export class AdminFeedbackService implements IAdminFeedbackService {
         );
 
         const response = await apiService.put<FeedbackEntry>(
-          `${apiConfig.ENDPOINTS.ADMIN_FEEDBACK.UPDATE_STATUS || "/admin/feedback"}/${id}/status`,
+          `/admin/feedback/${id}/status`,
           { status },
         );
 
         if (response.success) {
           // Cache für Feedback-Listen invalidieren
           cachedApiService.invalidate(
-            apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE ||
-              "/admin/feedback/negative",
+            "/admin/feedback/negative",
           );
           return response;
         } else {
@@ -332,17 +331,16 @@ export class AdminFeedbackService implements IAdminFeedbackService {
         this.logger.info(`Verwende echte API zum Löschen des Feedbacks ${id}`);
 
         const response = await apiService.delete<void>(
-          `${apiConfig.ENDPOINTS.ADMIN_FEEDBACK.DELETE || "/admin/feedback"}/${id}`,
+          `/admin/feedback/${id}`,
         );
 
         if (response.success) {
           // Cache für Feedback-Listen und Stats invalidieren
           cachedApiService.invalidate(
-            apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE ||
-              "/admin/feedback/negative",
+            "/admin/feedback/negative",
           );
           cachedApiService.invalidate(
-            apiConfig.ENDPOINTS.ADMIN_FEEDBACK.STATS || "/admin/feedback/stats",
+            "/admin/feedback/stats",
           );
           return response;
         } else {
@@ -401,7 +399,7 @@ export class AdminFeedbackService implements IAdminFeedbackService {
 
         // Führe den Export mit Blob-Response durch
         const response = await apiService.get<Blob>(
-          apiConfig.ENDPOINTS.ADMIN_FEEDBACK.EXPORT || "/admin/feedback/export",
+          "/admin/feedback/export",
           params,
           { responseType: "blob" },
         );
@@ -463,7 +461,7 @@ export class AdminFeedbackService implements IAdminFeedbackService {
         this.logger.info("Verwende echte API für Feedback-Filterung");
 
         const response = await apiService.post<FeedbackEntry[]>(
-          apiConfig.ENDPOINTS.ADMIN_FEEDBACK.FILTER || "/admin/feedback/filter",
+          "/admin/feedback/filter",
           filter,
         );
 

@@ -40,7 +40,7 @@ export function createBatchedResourceClient<T>(
 ): ResourceOperations<T> {
   const {
     baseEndpoint = "/api",
-    idField = "id",
+    _idField = "id",
     cacheGet = true,
     cacheTTL = 60000, // 1 Minute Cache-Lebensdauer
   } = options;

@@ -37,7 +37,7 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
   // Sessions use shallow reactivity for better performance
   const {
     data: sessions,
-    updateItem: updateSession,
+    updateItem: _updateSession,
     append: appendSession,
     remove: removeSession,
     clear: clearSessions,
@@ -71,11 +71,11 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
       const updatesBySession = new Map<string, ChatMessage[]>();
 
       updates.forEach((update) => {
-        const sessionId = update.data.sessionId;
+        const sessionId = (update as any).data.sessionId;
         if (!updatesBySession.has(sessionId)) {
           updatesBySession.set(sessionId, []);
         }
-        updatesBySession.get(sessionId)!.push(update.data);
+        updatesBySession.get(sessionId)!.push(update as any).data);
       });
 
       // Apply updates to each session
@@ -200,7 +200,7 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
     // Sync with server if authenticated
     if (authStore.isAuthenticated) {
       try {
-        await axios.post("/api/sessions", newSession, {
+        await axios.post("/api/chat/sessions", newSession, {
           headers: authStore.createAuthHeaders(),
         });
       } catch (err) {
@@ -237,10 +237,10 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
     error.value = null;
 
     try {
-      const response = await performanceMonitor.measureAsync(
+      const _response = await performanceMonitor.measureAsync(
         "fetchMessages",
         () =>
-          axios.get(`/api/sessions/${sessionId}/messages`, {
+          axios.get(`/api/chat/sessions/${sessionId}/messages`, {
             headers: authStore.createAuthHeaders(),
           }),
       );
@@ -304,7 +304,7 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
 
       // Setup streaming
       const eventSource = new EventSource(
-        `/api/question/stream?question=${encodeURIComponent(content)}&session_id=${sessionId}`,
+        `/api/chat/message/stream?question=${encodeURIComponent(content)}&session_id=${sessionId}`,
         {
           headers: {
             Authorization: `Bearer ${authStore.token}`,
@@ -321,7 +321,7 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
           accumulatedContent += data.content;
 
           // Queue batch update
-          batchManager.add(
+          (batchManager as any).add(
             createStreamingUpdate(assistantId, {
               ...assistantMessage,
               content: accumulatedContent,
@@ -347,7 +347,7 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
         };
 
         // Force immediate update
-        batchManager.add(
+        (batchManager as any).add(
           createStreamingUpdate(assistantId, finalMessage, true),
         );
         batchManager.flush();
@@ -402,7 +402,7 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
     // Sync with server
     if (authStore.isAuthenticated) {
       try {
-        await axios.delete(`/api/sessions/${sessionId}`, {
+        await axios.delete(`/api/chat/sessions/${sessionId}`, {
           headers: authStore.createAuthHeaders(),
         });
       } catch (err) {
@@ -438,7 +438,7 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
 
   // Cleanup on unmount
   function cleanup() {
-    batchManager.destroy();
+    (batchManager as any).destroy();
     clearAll();
   }
 

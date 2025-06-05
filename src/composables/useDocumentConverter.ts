@@ -101,7 +101,7 @@ export function useDocumentConverter() {
     try {
       // Status im Dokument aktualisieren
       const docIndex = documents.value.findIndex(
-        (doc: ConversionResult) => doc.id === documentId,
+        (doc: ConversionResult) => doc.id === documentId
       );
       if (docIndex !== -1) {
         documents.value[docIndex].status = "processing";
@@ -123,7 +123,7 @@ export function useDocumentConverter() {
         documents.value[docIndex] = {
           ...documents.value[docIndex],
           ...result,
-          status: "success",
+          status: "completed" as const,
           convertedAt: new Date().getTime(),
         };
       }
@@ -137,10 +137,10 @@ export function useDocumentConverter() {
 
       // Fehler im Dokument vermerken
       const docIndex = documents.value.findIndex(
-        (doc: ConversionResult) => doc.id === documentId,
+        (doc: ConversionResult) => doc.id === documentId
       );
       if (docIndex !== -1) {
-        documents.value[docIndex].status = "error";
+        documents.value[docIndex].status = "failed" as const;
         documents.value[docIndex].error = error.value.message;
       }
 

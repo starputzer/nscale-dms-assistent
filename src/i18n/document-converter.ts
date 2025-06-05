@@ -97,6 +97,13 @@ export default {
         failedToLoadConversions: "Failed to load conversions",
         failedToLoadQueue: "Failed to load conversion queue",
         failedToLoadSettings: "Failed to load settings",
+        
+        // Enhanced translations
+        totalDocuments: "Total Documents",
+        dropFiles: "Drop files here",
+        classifiedDocuments: "Classified Documents",
+        ragProcessed: "RAG Processed",
+        enhancedDescription: "Manage document conversions with intelligent classification and RAG optimization"
       },
       common: {
         loading: "Loading...",
@@ -223,6 +230,13 @@ export default {
         failedToLoadConversions: "Fehler beim Laden der Konvertierungen",
         failedToLoadQueue: "Fehler beim Laden der Konvertierungswarteschlange",
         failedToLoadSettings: "Fehler beim Laden der Einstellungen",
+        
+        // Erweiterte Übersetzungen
+        totalDocuments: "Dokumente insgesamt",
+        dropFiles: "Dateien hier ablegen",
+        classifiedDocuments: "Klassifizierte Dokumente",
+        ragProcessed: "RAG-verarbeitet",
+        enhancedDescription: "Verwaltung von Dokumentkonvertierungen mit intelligenter Klassifizierung und RAG-Optimierung"
       },
       common: {
         loading: "Wird geladen...",

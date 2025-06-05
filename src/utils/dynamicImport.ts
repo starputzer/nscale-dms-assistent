@@ -85,7 +85,7 @@ export function dynamicImport(
     chunkName = "async",
     priority = "medium",
     preload = false,
-    prefetch = true,
+    _prefetch = true,
     loadingDelay = getPriorityDelay(priority),
     timeout = 30000,
     errorComponent,
@@ -93,7 +93,7 @@ export function dynamicImport(
     retryDelay = 1000,
     maxRetries = 3,
     delayLoad = 0,
-    meta = {},
+    _meta = {},
   } = options;
 
   // Normalisiere Pfad für Caching
@@ -509,7 +509,7 @@ export function setupRouterErrorTracking() {
     /**
      * Route-Update verarbeiten (für Router afterEach Hook)
      */
-    updateRoute: (to: any, from: any) => {
+    updateRoute: (_to: any, _from: any) => {
       // Optional: Hier können Sie Route-Updates tracken
       // Derzeit ist dies ein Dummy, um den Fehler zu beheben
     },

@@ -1068,7 +1068,7 @@ function handleViewSources(payload: { messageId: string }): void {
 
   // Nachricht finden
   const message = currentMessages.value.find(
-    (m: ChatMessage) => m.id === payload.messageId,
+    (m: ChatMessage) => m.id === payload.messageId
   );
   if (!message) return;
 

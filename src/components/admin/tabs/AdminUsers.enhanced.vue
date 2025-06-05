@@ -544,7 +544,7 @@ const {
 const { currentUser } = storeToRefs(authStore);
 
 // Toast notifications
-const { showToast } = useToast();
+const { show: showToast } = useToast();
 
 // Local state
 const isLoading = ref(false);

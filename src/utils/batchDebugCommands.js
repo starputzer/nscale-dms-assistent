@@ -49,7 +49,7 @@ window.batchDebug = {
         {
           id: "test-sessions",
           method: "GET",
-          path: "/api/sessions",
+          path: "/api/chat/sessions",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("nscale_access_token")}`,
           },

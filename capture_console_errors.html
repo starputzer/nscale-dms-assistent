@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Console Error Capture</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .error { color: red; font-weight: bold; }
+        .warn { color: orange; }
+        .info { color: blue; }
+        .log { color: gray; }
+        #logs { 
+            background: #f5f5f5; 
+            padding: 10px; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-entry { 
+            margin-bottom: 5px; 
+            padding: 5px; 
+            border-left: 3px solid #ddd;
+        }
+        .log-entry.error { border-left-color: red; background: #fee; }
+        .log-entry.warn { border-left-color: orange; background: #fef6e6; }
+    </style>
+</head>
+<body>
+    <h1>Console Error Capture for http://localhost:5174</h1>
+    <button onclick="clearLogs()">Clear Logs</button>
+    <button onclick="location.reload()">Refresh</button>
+    
+    <h2>Summary</h2>
+    <div id="summary"></div>
+    
+    <h2>Console Output</h2>
+    <div id="logs"></div>
+    
+    <script>
+        const logs = [];
+        const logsDiv = document.getElementById('logs');
+        const summaryDiv = document.getElementById('summary');
+        
+        function addLog(type, message, details = {}) {
+            const log = {
+                type,
+                message,
+                timestamp: new Date().toISOString(),
+                ...details
+            };
+            logs.push(log);
+            updateDisplay();
+        }
+        
+        function updateDisplay() {
+            // Update summary
+            const errorCount = logs.filter(l => l.type === 'error').length;
+            const warnCount = logs.filter(l => l.type === 'warn').length;
+            const logCount = logs.filter(l => l.type === 'log').length;
+            
+            summaryDiv.innerHTML = `
+                <span class="error">Errors: ${errorCount}</span> | 
+                <span class="warn">Warnings: ${warnCount}</span> | 
+                <span>Logs: ${logCount}</span> | 
+                Total: ${logs.length}
+            `;
+            
+            // Update logs
+            logsDiv.innerHTML = logs.map(log => `
+                <div class="log-entry ${log.type}">
+                    <strong>[${new Date(log.timestamp).toLocaleTimeString()}] ${log.type.toUpperCase()}:</strong> 
+                    ${escapeHtml(log.message)}
+                    ${log.url ? `<br><small>URL: ${escapeHtml(log.url)}</small>` : ''}
+                    ${log.stack ? `<br><small>Stack: ${escapeHtml(log.stack)}</small>` : ''}
+                </div>
+            `).reverse().join('');
+            
+            logsDiv.scrollTop = 0;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = String(text);
+            return div.innerHTML;
+        }
+        
+        function clearLogs() {
+            logs.length = 0;
+            updateDisplay();
+        }
+        
+        // Open the app in a new window and capture its console
+        addLog('info', 'Opening application in new window...');
+        
+        const appWindow = window.open('http://localhost:5174', 'app', 'width=1200,height=800');
+        
+        if (appWindow) {
+            // Poll to check when window is loaded
+            const checkInterval = setInterval(() => {
+                try {
+                    if (appWindow.console) {
+                        // Override console methods
+                        const originalConsole = {
+                            log: appWindow.console.log,
+                            error: appWindow.console.error,
+                            warn: appWindow.console.warn,
+                            info: appWindow.console.info
+                        };
+                        
+                        ['log', 'error', 'warn', 'info'].forEach(method => {
+                            appWindow.console[method] = function(...args) {
+                                const message = args.map(arg => {
+                                    if (typeof arg === 'object') {
+                                        try {
+                                            return JSON.stringify(arg, null, 2);
+                                        } catch (e) {
+                                            return String(arg);
+                                        }
+                                    }
+                                    return String(arg);
+                                }).join(' ');
+                                
+                                addLog(method, message);
+                                originalConsole[method].apply(appWindow.console, args);
+                            };
+                        });
+                        
+                        // Capture errors
+                        appWindow.addEventListener('error', (event) => {
+                            addLog('error', event.message, {
+                                url: event.filename,
+                                stack: event.error ? event.error.stack : 'No stack trace'
+                            });
+                        });
+                        
+                        // Capture unhandled rejections
+                        appWindow.addEventListener('unhandledrejection', (event) => {
+                            addLog('error', `Unhandled Promise Rejection: ${event.reason}`, {
+                                stack: event.reason && event.reason.stack ? event.reason.stack : 'No stack trace'
+                            });
+                        });
+                        
+                        addLog('info', 'Console capture set up successfully');
+                        clearInterval(checkInterval);
+                    }
+                } catch (e) {
+                    // Cross-origin restriction, can't access the window
+                    addLog('warn', 'Cannot access window console due to cross-origin restrictions');
+                    clearInterval(checkInterval);
+                }
+            }, 100);
+            
+            // Stop checking after 5 seconds
+            setTimeout(() => clearInterval(checkInterval), 5000);
+        } else {
+            addLog('error', 'Failed to open application window');
+        }
+        
+        updateDisplay();
+    </script>
+</body>
+</html>

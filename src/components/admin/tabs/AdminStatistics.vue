@@ -580,22 +580,36 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch, onUnmounted } from "vue";
-import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
-import { useAdminSystemStore } from "@/stores/admin/system";
 import { useToast } from "@/composables/useToast";
+import apiService from "@/services/api/ApiService";
 
 // Use i18n composable
 const { t } = useI18n();
 
-// Stores
-const adminSystemStore = useAdminSystemStore();
-
-// Store state
-const { stats, memoryStatus, cpuStatus } = storeToRefs(adminSystemStore);
+// Data from API
+const stats = ref({
+  total_users: 0,
+  active_users_today: 0,
+  new_users_this_week: 0,
+  total_sessions: 0,
+  total_messages: 0,
+  avg_messages_per_session: 0,
+  total_feedback: 0,
+  positive_feedback_percentage: 0,
+  positive_feedback_percent: 0,
+  cpu_usage_percent: 0,
+  memory_usage_percent: 0,
+  cache_size_mb: 0,
+  cache_hit_rate: 0,
+  database_size_mb: 0,
+  avg_response_time_ms: 0
+});
+const memoryStatus = ref("normal");
+const cpuStatus = ref("normal");
 
 // Toast notifications
-const { showToast } = useToast();
+const toast = useToast();
 
 // Local state
 const isLoading = ref(false);
@@ -622,50 +636,79 @@ const chartInstances = ref<Record<string, any>>({});
 
 // Time range options
 const timeRanges = [
-  { value: "day", label: t("admin.statistics.ranges.day", "Tag") },
-  { value: "week", label: t("admin.statistics.ranges.week", "Woche") },
-  { value: "month", label: t("admin.statistics.ranges.month", "Monat") },
-  { value: "year", label: t("admin.statistics.ranges.year", "Jahr") },
+  { value: "day", label: "Tag" },
+  { value: "week", label: "Woche" },
+  { value: "month", label: "Monat" },
+  { value: "year", label: "Jahr" },
 ];
 
-// User segmentation data (mock)
-const userSegments = ref([
+// Data from API
+const userSegments = ref<any[]>([]);
+const feedbackRatings = ref<any[]>([]);
+const performanceMetrics = ref<any[]>([]);
+const sessionDistribution = ref<any>(null);
+const usageTrendData = ref<any>(null);
+
+// Default user segments (fallback)
+const defaultUserSegments = [
   {
-    label: t("admin.statistics.segments.regular", "Regelmäßige Nutzer"),
+    label: "Regelmäßige Nutzer",
     count: 64,
     percentage: 52,
     color: "#3b82f6",
   },
   {
-    label: t("admin.statistics.segments.occasional", "Gelegentliche Nutzer"),
+    label: "Gelegentliche Nutzer",
     count: 36,
     percentage: 29,
     color: "#10b981",
   },
   {
-    label: t("admin.statistics.segments.new", "Neue Nutzer"),
+    label: "Neue Nutzer",
     count: 18,
     percentage: 15,
     color: "#f59e0b",
   },
   {
-    label: t("admin.statistics.segments.inactive", "Inaktive Nutzer"),
+    label: "Inaktive Nutzer",
     count: 5,
     percentage: 4,
     color: "#ef4444",
   },
-]);
+];
 
-// Feedback data (mock)
-const feedbackRatings = ref({
+// Default feedback ratings (fallback)
+const defaultFeedbackRatings = {
   "1": 12,
   "2": 18,
   "3": 45,
   "4": 78,
   "5": 109,
-});
+};
 
 const feedbackAverage = computed(() => {
+  if (!feedbackRatings.value || feedbackRatings.value.length === 0) return 0;
+  
+  let totalCount = 0;
+  let weightedSum = 0;
+  
+  feedbackRatings.value.forEach(rating => {
+    totalCount += rating.count;
+    weightedSum += rating.rating * rating.count;
+  });
+  
+  return totalCount > 0 ? weightedSum / totalCount : 0;
+});
+
+const feedbackRatingsMap = computed(() => {
+  const map = {};
+  feedbackRatings.value.forEach(rating => {
+    map[rating.rating] = rating.count;
+  });
+  return map;
+});
+
+const oldFeedbackAverage = computed(() => {
   const total = Object.values(feedbackRatings.value).reduce(
     (sum, count) => sum + count,
     0,
@@ -696,16 +739,12 @@ function getStatusText(status: string): string {
 }
 
 function getRatingCount(rating: number): number {
-  return feedbackRatings.value[rating] || 0;
+  return feedbackRatingsMap.value[rating] || 0;
 }
 
 function getRatingPercentage(rating: number): number {
-  const total = Object.values(feedbackRatings.value).reduce(
-    (sum, count) => sum + count,
-    0,
-  );
-  if (total === 0) return 0;
-  return (getRatingCount(rating) / total) * 100;
+  const ratingData = feedbackRatings.value.find(r => r.rating === rating);
+  return ratingData ? ratingData.percentage : 0;
 }
 
 function getRatingColor(rating: number): string {
@@ -741,14 +780,12 @@ async function loadChartLibrary() {
     };
   } catch (error) {
     console.error("Failed to load Chart.js:", error);
-    showToast({
-      type: "error",
-      title: t("admin.statistics.toast.chartLoadError", "Fehler"),
-      message: t(
+    toast.error(
+      t(
         "admin.statistics.toast.chartLoadErrorMessage",
         "Fehler beim Laden der Diagrammbibliothek",
       ),
-    });
+    );
   }
 }
 
@@ -775,32 +812,24 @@ async function initCharts() {
   }
 }
 
-function initUsageChart() {
-  if (!usageChart.value || !Chart) return;
+function updateUsageChart() {
+  if (!usageTrendData.value) return;
+  
+  if (chartInstances.value.usageChart) {
+    // Update existing chart
+    chartInstances.value.usageChart.data = usageTrendData.value;
+    chartInstances.value.usageChart.update();
+  } else {
+    // Initialize new chart
+    initUsageChart();
+  }
+}
 
-  // Mock data for usage chart
-  const labels = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
-  const data = {
-    labels,
-    datasets: [
-      {
-        label: t("admin.statistics.metrics.sessions", "Sitzungen"),
-        data: [65, 78, 86, 74, 92, 51, 44],
-        borderColor: "rgba(54, 162, 235, 1)",
-        backgroundColor: "rgba(54, 162, 235, 0.2)",
-        borderWidth: 2,
-        fill: true,
-      },
-      {
-        label: t("admin.statistics.metrics.messages", "Nachrichten"),
-        data: [325, 420, 390, 410, 450, 240, 210],
-        borderColor: "rgba(75, 192, 192, 1)",
-        backgroundColor: "rgba(75, 192, 192, 0.2)",
-        borderWidth: 2,
-        fill: true,
-      },
-    ],
-  };
+function initUsageChart() {
+  if (!usageChart.value || !Chart || !usageTrendData.value) return;
+
+  // Use real data from API
+  const data = usageTrendData.value;
 
   const config = {
     type: "line",
@@ -930,70 +959,169 @@ function initPerformanceCharts() {
   // Would initialize multiple performance-related charts
 }
 
-function exportData() {
-  showToast({
-    type: "info",
-    title: t("admin.statistics.toast.exported", "Export"),
-    message: t(
-      "admin.statistics.toast.exportedMessage",
-      "Statistikdaten wurden exportiert",
-    ),
-  });
+// API Data Loading Functions
+async function loadStatisticsSummary() {
+  try {
+    const response = await apiService.get('/admin-statistics/summary');
+    if (response.success && response.data) {
+      stats.value = response.data;
+    }
+  } catch (error) {
+    console.error('Error loading statistics summary:', error);
+  }
+}
+
+async function loadUsageTrend() {
+  try {
+    const response = await apiService.get('/admin-statistics/usage-trend', {
+      params: { range: selectedTimeRange.value }
+    });
+    if (response.success && response.data) {
+      usageTrendData.value = response.data;
+      // Update charts if they exist
+      if (selectedView.value === 'overview') {
+        updateUsageChart();
+      }
+    }
+  } catch (error) {
+    console.error('Error loading usage trend:', error);
+  }
+}
+
+async function loadUserSegmentation() {
+  try {
+    const response = await apiService.get('/admin-statistics/user-segmentation');
+    if (response.success && response.data) {
+      userSegments.value = response.data;
+    } else {
+      userSegments.value = defaultUserSegments;
+    }
+  } catch (error) {
+    console.error('Error loading user segmentation:', error);
+    userSegments.value = defaultUserSegments;
+  }
+}
+
+async function loadFeedbackRatings() {
+  try {
+    const response = await apiService.get('/admin-statistics/feedback-ratings');
+    if (response.success && response.data) {
+      feedbackRatings.value = response.data;
+    }
+  } catch (error) {
+    console.error('Error loading feedback ratings:', error);
+  }
+}
+
+async function loadPerformanceMetrics() {
+  try {
+    const response = await apiService.get('/admin-statistics/performance-metrics');
+    if (response.success && response.data) {
+      performanceMetrics.value = response.data;
+    }
+  } catch (error) {
+    console.error('Error loading performance metrics:', error);
+  }
+}
+
+async function loadSessionDistribution() {
+  try {
+    const response = await apiService.get('/admin-statistics/session-distribution');
+    if (response.success && response.data) {
+      sessionDistribution.value = response.data;
+    }
+  } catch (error) {
+    console.error('Error loading session distribution:', error);
+  }
+}
+
+async function exportData() {
+  try {
+    const response = await apiService.get('/admin-statistics/export', {
+      params: {
+        format: 'json',
+        range: selectedTimeRange.value
+      }
+    });
+    
+    if (response.success && response.data) {
+      // Create download link
+      const blob = new Blob([response.data.content], { type: response.data.mime_type });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = response.data.filename;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success(
+        t(
+          "admin.statistics.toast.exportedMessage",
+          "Statistikdaten wurden exportiert",
+        ),
+      );
+    }
+  } catch (error) {
+    console.error('Error exporting data:', error);
+    toast.error(
+      t(
+        "admin.statistics.toast.exportErrorMessage",
+        "Fehler beim Exportieren der Daten",
+      ),
+    );
+  }
 }
 
 async function refreshData() {
   isLoading.value = true;
 
   try {
-    await adminSystemStore.fetchStats();
+    // Load all data in parallel
+    await Promise.all([
+      loadStatisticsSummary(),
+      loadUsageTrend(),
+      loadUserSegmentation(),
+      loadFeedbackRatings(),
+      loadPerformanceMetrics(),
+      loadSessionDistribution()
+    ]);
 
     // Reload charts after data refresh
     initCharts();
 
-    showToast({
-      type: "success",
-      title: t("admin.statistics.toast.refreshed", "Aktualisiert"),
-      message: t(
+    toast.success(
+      t(
         "admin.statistics.toast.refreshedMessage",
         "Statistikdaten wurden aktualisiert",
       ),
-    });
+    );
   } catch (error) {
-    showToast({
-      type: "error",
-      title: t("admin.statistics.toast.refreshError", "Fehler"),
-      message: t(
+    toast.error(
+      t(
         "admin.statistics.toast.refreshErrorMessage",
         "Fehler beim Aktualisieren der Daten",
       ),
-    });
+    );
   } finally {
     isLoading.value = false;
   }
 }
 
 // Handle resize
+// Handle window resize
 function handleResize() {
+  // Update charts on resize
   for (const chart in chartInstances.value) {
     if (chartInstances.value[chart]) {
-      chartInstances.value[chart].update();
+      chartInstances.value[chart].resize?.() || chartInstances.value[chart].update();
     }
   }
 }
 
 // Lifecycle hooks
 onMounted(async () => {
-  // Load system stats
-  isLoading.value = true;
-
-  try {
-    await adminSystemStore.fetchStats();
-    await initCharts();
-  } catch (error) {
-    console.error("Error fetching system stats:", error);
-  } finally {
-    isLoading.value = false;
-  }
+  // Load all data
+  await refreshData();
 
   // Add resize listener
   window.addEventListener("resize", handleResize);
@@ -1018,7 +1146,9 @@ watch(selectedView, () => {
 });
 
 // Watch for time range changes
-watch(selectedTimeRange, () => {
+watch(selectedTimeRange, async () => {
+  // Reload usage trend with new time range
+  await loadUsageTrend();
   // Refresh charts when time range changes
   initCharts();
 });

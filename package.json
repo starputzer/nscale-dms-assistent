@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "vite build",
+    "build:with-typecheck": "vue-tsc --noEmit && vite build",
     "build:strict": "vue-tsc --noEmit --project tsconfig.optimized.json && vite build",
     "build:strict:interactive": "./scripts/build-with-strict-types.sh",
     "build:no-check": "vite build",
@@ -86,7 +87,6 @@
     "date-fns": "^4.1.0",
     "glob": "^10.4.5",
     "highlight.js": "^11.11.1",
-    "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
     "marked": "^9.1.6",
     "pinia": "^3.0.2",

@@ -145,7 +145,7 @@ export function initializeFeatureFlags(): string[] {
     console.log("Feature Flags in localStorage aktiviert");
 
     // Fenster-Attribut setzen für Debugging
-    window.FEATURES_ENABLED = true;
+    (window as any).FEATURES_ENABLED = true;
   } catch (e) {
     console.warn("Fehler beim Aktivieren der Feature-Flags", e);
   }

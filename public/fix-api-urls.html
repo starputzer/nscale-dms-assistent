@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fix API URLs</title>
+    <script>
+        // This script will intercept all fetch and XMLHttpRequest calls
+        // and ensure they use the correct port
+        
+        (function() {
+            // Store original functions
+            const originalFetch = window.fetch;
+            const originalXHROpen = XMLHttpRequest.prototype.open;
+            
+            // Fix URLs function
+            function fixUrl(url) {
+                // Convert to absolute URL
+                let absoluteUrl;
+                try {
+                    absoluteUrl = new URL(url, window.location.origin);
+                } catch (e) {
+                    return url; // Return original if can't parse
+                }
+                
+                // If it's going to port 8080, redirect to current origin
+                if (absoluteUrl.port === '8080') {
+                    console.warn(`🔧 Fixing URL from port 8080: ${url}`);
+                    absoluteUrl.port = window.location.port || '';
+                    absoluteUrl.host = window.location.host;
+                    const newUrl = absoluteUrl.toString();
+                    console.log(`✅ Fixed to: ${newUrl}`);
+                    return newUrl;
+                }
+                
+                // If it's a relative URL starting with /api, ensure it uses current origin
+                if (url.startsWith('/api')) {
+                    return url; // Browser will use current origin
+                }
+                
+                return url;
+            }
+            
+            // Override fetch
+            window.fetch = function(...args) {
+                if (args[0]) {
+                    args[0] = fixUrl(args[0]);
+                }
+                return originalFetch.apply(this, args);
+            };
+            
+            // Override XMLHttpRequest
+            XMLHttpRequest.prototype.open = function(method, url, ...args) {
+                const fixedUrl = fixUrl(url);
+                return originalXHROpen.call(this, method, fixedUrl, ...args);
+            };
+            
+            console.log('✅ API URL fixes applied');
+            
+            // Also fix any axios instances if axios is loaded
+            if (window.axios) {
+                const originalAxiosRequest = window.axios.request;
+                window.axios.request = function(config) {
+                    if (config.url) {
+                        config.url = fixUrl(config.url);
+                    }
+                    return originalAxiosRequest.call(this, config);
+                };
+                console.log('✅ Axios fixes applied');
+            }
+        })();
+        
+        // Redirect to main app after applying fixes
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 1000);
+    </script>
+</head>
+<body>
+    <h1>Applying API URL Fixes...</h1>
+    <p>Redirecting to main application...</p>
+</body>
+</html>

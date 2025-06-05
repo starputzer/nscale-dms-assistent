@@ -740,7 +740,7 @@ export class SessionService {
    * Synchronisiert Nachrichten in den Offline-Speicher
    */
   private async syncMessagesToOfflineStorage(
-    sessionId: string,
+    _sessionId: string,
     messages: ChatMessage[],
   ): Promise<void> {
     try {
@@ -961,7 +961,7 @@ export class SessionService {
               finalMessage = event.message;
             }
           },
-          onComplete: (response) => {
+          onComplete: (_response) => {
             // Stream beenden
             this.currentStream = null;
 

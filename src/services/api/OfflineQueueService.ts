@@ -395,7 +395,7 @@ export class OfflineQueueService {
     switch (operation.type) {
       case OperationType.SEND_MESSAGE:
         // Sende eine Nachricht
-        await fetch(`/api/sessions/${operation.sessionId}/messages`, {
+        await fetch(`/api/chat/sessions/${operation.sessionId}/messages`, {
           method: "POST",
           headers,
           body: JSON.stringify({
@@ -414,7 +414,7 @@ export class OfflineQueueService {
 
       case OperationType.UPDATE_SESSION:
         // Session aktualisieren (z.B. Titel ändern)
-        await fetch(`/api/sessions/${operation.sessionId}`, {
+        await fetch(`/api/chat/sessions/${operation.sessionId}`, {
           method: "PATCH",
           headers,
           body: JSON.stringify(operation.data),
@@ -431,7 +431,7 @@ export class OfflineQueueService {
       case OperationType.DELETE_MESSAGE:
         // Nachricht löschen
         await fetch(
-          `/api/sessions/${operation.sessionId}/messages/${operation.data.messageId}`,
+          `/api/chat/sessions/${operation.sessionId}/messages/${operation.data.messageId}`,
           {
             method: "DELETE",
             headers,
@@ -448,7 +448,7 @@ export class OfflineQueueService {
 
       case OperationType.CREATE_SESSION:
         // Neue Session erstellen
-        await fetch("/api/sessions", {
+        await fetch("/api/chat/sessions", {
           method: "POST",
           headers,
           body: JSON.stringify({
@@ -469,7 +469,7 @@ export class OfflineQueueService {
 
       case OperationType.ARCHIVE_SESSION:
         // Session löschen/archivieren
-        await fetch(`/api/sessions/${operation.sessionId}`, {
+        await fetch(`/api/chat/sessions/${operation.sessionId}`, {
           method: "DELETE",
           headers,
         }).then((response) => {
@@ -484,7 +484,7 @@ export class OfflineQueueService {
 
       case OperationType.PIN_SESSION:
         // Session anpinnen/entpinnen
-        await fetch(`/api/sessions/${operation.sessionId}`, {
+        await fetch(`/api/chat/sessions/${operation.sessionId}`, {
           method: "PATCH",
           headers,
           body: JSON.stringify({

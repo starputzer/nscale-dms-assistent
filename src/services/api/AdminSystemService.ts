@@ -152,7 +152,7 @@ export class AdminSystemService implements IAdminSystemService {
         this.logger.info("Verwende echte API für Cache-Löschung");
 
         const response = await apiService.post<void>(
-          apiConfig.ENDPOINTS.SYSTEM.CLEAR_CACHE || "/admin/clear-cache",
+          (apiConfig.ENDPOINTS.SYSTEM as any).CLEAR_CACHE || "/admin/clear-cache",
         );
 
         if (response.success) {
@@ -203,7 +203,7 @@ export class AdminSystemService implements IAdminSystemService {
         this.logger.info("Verwende echte API für Embedding-Cache-Löschung");
 
         const response = await apiService.post<void>(
-          apiConfig.ENDPOINTS.SYSTEM.CLEAR_EMBEDDING_CACHE ||
+          (apiConfig.ENDPOINTS.SYSTEM as any).CLEAR_EMBEDDING_CACHE ||
             "/admin/clear-embedding-cache",
         );
 
@@ -259,7 +259,7 @@ export class AdminSystemService implements IAdminSystemService {
         this.logger.info("Verwende echte API für Systemprüfung");
 
         const response = await apiService.post<SystemCheckResult>(
-          apiConfig.ENDPOINTS.SYSTEM.CHECK || "/admin/system-check",
+          (apiConfig.ENDPOINTS.SYSTEM as any).CHECK || "/admin/system-check",
         );
 
         if (response.success) {
@@ -356,7 +356,7 @@ export class AdminSystemService implements IAdminSystemService {
         this.logger.info("Verwende echte API für Dokumenten-Neuindizierung");
 
         const response = await apiService.post<void>(
-          apiConfig.ENDPOINTS.SYSTEM.REINDEX || "/admin/reindex",
+          (apiConfig.ENDPOINTS.SYSTEM as any).REINDEX || "/admin/reindex",
         );
 
         if (response.success) {
@@ -408,7 +408,7 @@ export class AdminSystemService implements IAdminSystemService {
         };
 
         const response = await cachedApiService.get<SystemAction[]>(
-          apiConfig.ENDPOINTS.SYSTEM.ACTIONS || "/admin/system-actions",
+          (apiConfig.ENDPOINTS.SYSTEM as any).ACTIONS || "/admin/system-actions",
           undefined,
           options,
         );
@@ -495,7 +495,7 @@ export class AdminSystemService implements IAdminSystemService {
         this.logger.info("Verwende echte API für Systemeinstellungen");
 
         const response = await cachedApiService.get<any>(
-          apiConfig.ENDPOINTS.SYSTEM.SETTINGS || "/admin/settings",
+          (apiConfig.ENDPOINTS.SYSTEM as any).SETTINGS || "/admin/settings",
           undefined,
           { cache: true, cacheTTL: 300 },
         );
@@ -552,14 +552,14 @@ export class AdminSystemService implements IAdminSystemService {
         this.logger.info("Verwende echte API für Systemeinstellungen-Update");
 
         const response = await apiService.put<void>(
-          apiConfig.ENDPOINTS.SYSTEM.SETTINGS || "/admin/settings",
+          (apiConfig.ENDPOINTS.SYSTEM as any).SETTINGS || "/admin/settings",
           settings,
         );
 
         if (response.success) {
           // Cache invalidieren nach Update
           await cachedApiService.invalidate(
-            apiConfig.ENDPOINTS.SYSTEM.SETTINGS || "/admin/settings",
+            (apiConfig.ENDPOINTS.SYSTEM as any).SETTINGS || "/admin/settings",
           );
           return response;
         } else {
@@ -600,7 +600,7 @@ export class AdminSystemService implements IAdminSystemService {
         this.logger.info("Verwende echte API für Dienste-Neustart");
 
         const response = await apiService.post<void>(
-          apiConfig.ENDPOINTS.SYSTEM.RESTART || "/admin/restart-services",
+          (apiConfig.ENDPOINTS.SYSTEM as any).RESTART || "/admin/restart-services",
         );
 
         if (response.success) {
@@ -643,7 +643,7 @@ export class AdminSystemService implements IAdminSystemService {
         this.logger.info("Verwende echte API für Log-Export");
 
         const response = await apiService.get<any>(
-          apiConfig.ENDPOINTS.SYSTEM.EXPORT_LOGS || "/admin/export-logs",
+          (apiConfig.ENDPOINTS.SYSTEM as any).EXPORT_LOGS || "/admin/export-logs",
           undefined,
           { responseType: "blob" },
         );
@@ -685,7 +685,7 @@ export class AdminSystemService implements IAdminSystemService {
         this.logger.info("Verwende echte API für Datenbank-Optimierung");
 
         const response = await apiService.post<void>(
-          apiConfig.ENDPOINTS.SYSTEM.OPTIMIZE_DB || "/admin/optimize-database",
+          (apiConfig.ENDPOINTS.SYSTEM as any).OPTIMIZE_DB || "/admin/optimize-database",
         );
 
         if (response.success) {
@@ -728,7 +728,7 @@ export class AdminSystemService implements IAdminSystemService {
         this.logger.info("Verwende echte API für Statistik-Reset");
 
         const response = await apiService.post<void>(
-          apiConfig.ENDPOINTS.SYSTEM.RESET_STATS || "/admin/reset-statistics",
+          (apiConfig.ENDPOINTS.SYSTEM as any).RESET_STATS || "/admin/reset-statistics",
         );
 
         if (response.success) {
@@ -775,7 +775,7 @@ export class AdminSystemService implements IAdminSystemService {
         this.logger.info("Verwende echte API für Backup-Erstellung");
 
         const response = await apiService.post<void>(
-          apiConfig.ENDPOINTS.SYSTEM.CREATE_BACKUP || "/admin/create-backup",
+          (apiConfig.ENDPOINTS.SYSTEM as any).CREATE_BACKUP || "/admin/create-backup",
         );
 
         if (response.success) {

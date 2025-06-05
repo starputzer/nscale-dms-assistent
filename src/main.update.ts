@@ -56,7 +56,7 @@ const router = createRouter({
 });
 
 // Guards für Router konfigurieren
-router.beforeEach((to, _from, next) => {
+router.beforeEach((_to, _from, next) => {
   // Hier könnte Auth-Logik implementiert werden
   next();
 });
@@ -120,7 +120,7 @@ window.toggleSourceReferences = () => {
   }
 };
 
-window.showSourceReferencesForMessage = (messageId: any, _sources: any) => {
+(window as any).showSourceReferencesForMessage = (messageId: any, _sources: any) => {
   const event = new CustomEvent("show-source-references", {
     detail: { messageId, _sources },
   });

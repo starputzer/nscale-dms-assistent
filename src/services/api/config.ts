@@ -23,7 +23,7 @@ const getNodeEnv = (): string => {
 };
 
 export const API_CONFIG = {
-  BASE_URL: getEnvVar("VITE_API_BASE_URL", "/api/v1"),
+  BASE_URL: getEnvVar("VITE_API_BASE_URL", "/api"),
   API_VERSION: getEnvVar("VITE_API_VERSION", ""),
 
   AUTH: {
@@ -92,14 +92,15 @@ export const API_CONFIG = {
       LOGOUT: "/auth/logout",
       REFRESH: "/auth/refresh",
       USER: "/auth/user",
+      REGISTER: "/auth/register",
     },
     CHAT: {
-      SESSIONS: "/sessions",
-      SESSION: (id: string) => `/sessions/${id}`,
-      MESSAGES: (sessionId: string) => `/sessions/${sessionId}/messages`,
+      SESSIONS: "/chat/sessions",
+      SESSION: (id: string) => `/chat/sessions/${id}`,
+      MESSAGES: (sessionId: string) => `/chat/sessions/${sessionId}/messages`,
       MESSAGE: (sessionId: string, messageId: string) =>
-        `/sessions/${sessionId}/messages/${messageId}`,
-      STREAM: (sessionId: string) => `/sessions/${sessionId}/stream`,
+        `/chat/sessions/${sessionId}/messages/${messageId}`,
+      STREAM: (sessionId: string) => `/chat/sessions/${sessionId}/stream`,
     },
     DOCUMENTS: {
       UPLOAD: "/documents/upload",
@@ -107,9 +108,9 @@ export const API_CONFIG = {
       DOCUMENT: (id: string) => `/documents/${id}`,
     },
     SYSTEM: {
-      INFO: "/system/info",
-      STATS: "/system/stats",
-      HEALTH: "/system/health",
+      INFO: "/api/system/info",
+      STATS: "/api/system/info",  // Using info endpoint which provides system stats
+      HEALTH: "/api/system/health",
     },
     FEEDBACK: {
       SUBMIT: "/feedback",
@@ -118,11 +119,11 @@ export const API_CONFIG = {
       USERS: "/admin/users",
       USER: (id: string) => `/admin/users/${id}`,
       SYSTEM: "/admin/system",
-      STATS: "/system/stats",
-      ACTIONS: "/admin/system-actions",
-      CLEAR_CACHE: "/admin/clear-cache",
+      STATS: "/api/system/info",  // Using system info endpoint
+      ACTIONS: "/api/system/actions",
+      CLEAR_CACHE: "/api/system/cache/clear",
       CLEAR_EMBEDDING_CACHE: "/admin/clear-embedding-cache",
-      CHECK: "/admin/system-check",
+      CHECK: "/api/system/check",
       REINDEX: "/admin/reindex",
     },
     USERS: {

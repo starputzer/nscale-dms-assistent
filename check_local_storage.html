@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Local Storage for Sessions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .found {
+            color: green;
+            font-weight: bold;
+        }
+        .not-found {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Check Browser Storage for Old Sessions</h1>
+    
+    <div class="section">
+        <h2>1. Local Storage</h2>
+        <button onclick="checkLocalStorage()">Check Local Storage</button>
+        <pre id="localStorage"></pre>
+    </div>
+
+    <div class="section">
+        <h2>2. Session Storage</h2>
+        <button onclick="checkSessionStorage()">Check Session Storage</button>
+        <pre id="sessionStorage"></pre>
+    </div>
+
+    <div class="section">
+        <h2>3. IndexedDB</h2>
+        <button onclick="checkIndexedDB()">Check IndexedDB</button>
+        <pre id="indexedDB"></pre>
+    </div>
+
+    <div class="section">
+        <h2>4. Look for Session Data</h2>
+        <button onclick="findSessionData()">Search for Session Data</button>
+        <pre id="sessionData"></pre>
+    </div>
+
+    <script>
+        function checkLocalStorage() {
+            const output = document.getElementById('localStorage');
+            let result = 'Local Storage Contents:\n\n';
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                result += `Key: ${key}\n`;
+                
+                // Try to parse JSON
+                try {
+                    const parsed = JSON.parse(value);
+                    result += `Value (parsed): ${JSON.stringify(parsed, null, 2)}\n`;
+                } catch {
+                    result += `Value: ${value}\n`;
+                }
+                result += '\n---\n\n';
+            }
+            
+            output.textContent = result || 'Local Storage is empty';
+        }
+
+        function checkSessionStorage() {
+            const output = document.getElementById('sessionStorage');
+            let result = 'Session Storage Contents:\n\n';
+            
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                const value = sessionStorage.getItem(key);
+                result += `Key: ${key}\nValue: ${value}\n\n`;
+            }
+            
+            output.textContent = result || 'Session Storage is empty';
+        }
+
+        async function checkIndexedDB() {
+            const output = document.getElementById('indexedDB');
+            let result = 'IndexedDB Databases:\n\n';
+            
+            try {
+                const databases = await indexedDB.databases();
+                for (const db of databases) {
+                    result += `Database: ${db.name} (version: ${db.version})\n`;
+                    
+                    // Try to open and inspect
+                    try {
+                        const openRequest = indexedDB.open(db.name);
+                        await new Promise((resolve, reject) => {
+                            openRequest.onsuccess = () => {
+                                const database = openRequest.result;
+                                const objectStoreNames = Array.from(database.objectStoreNames);
+                                result += `  Object Stores: ${objectStoreNames.join(', ')}\n`;
+                                database.close();
+                                resolve();
+                            };
+                            openRequest.onerror = reject;
+                        });
+                    } catch (e) {
+                        result += `  Error opening: ${e}\n`;
+                    }
+                    result += '\n';
+                }
+            } catch (e) {
+                result += `Error listing databases: ${e}\n`;
+            }
+            
+            output.textContent = result || 'No IndexedDB databases found';
+        }
+
+        function findSessionData() {
+            const output = document.getElementById('sessionData');
+            let result = 'Searching for session-related data...\n\n';
+            let found = false;
+            
+            // Check localStorage
+            result += '=== Local Storage ===\n';
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.toLowerCase().includes('session') || 
+                    key.toLowerCase().includes('chat') || 
+                    key.toLowerCase().includes('nscale')) {
+                    found = true;
+                    const value = localStorage.getItem(key);
+                    result += `Found: ${key}\n`;
+                    
+                    try {
+                        const parsed = JSON.parse(value);
+                        result += `Content: ${JSON.stringify(parsed, null, 2)}\n\n`;
+                    } catch {
+                        result += `Content: ${value.substring(0, 200)}${value.length > 200 ? '...' : ''}\n\n`;
+                    }
+                }
+            }
+            
+            if (!found) {
+                result += 'No session-related data found in localStorage\n';
+            }
+            
+            // Check for Pinia stores
+            result += '\n=== Pinia Stores ===\n';
+            const piniaKeys = Object.keys(localStorage).filter(key => key.includes('pinia'));
+            if (piniaKeys.length > 0) {
+                piniaKeys.forEach(key => {
+                    result += `Found Pinia store: ${key}\n`;
+                    try {
+                        const value = JSON.parse(localStorage.getItem(key));
+                        result += `Content: ${JSON.stringify(value, null, 2)}\n\n`;
+                    } catch {
+                        result += `Could not parse content\n\n`;
+                    }
+                });
+            } else {
+                result += 'No Pinia stores found\n';
+            }
+            
+            output.textContent = result;
+        }
+    </script>
+</body>
+</html>
