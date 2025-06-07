@@ -111,10 +111,17 @@ window.fix = {
       console.log("Endpoint Validator:", {
         available: true,
         testMetadata: window.endpointValidator.isValidEndpoint(
+<<<<<<< HEAD
           "/api/chat/sessions/123/metadata",
         ),
         testMessages: window.endpointValidator.isValidEndpoint(
           "/api/chat/sessions/123/messages",
+=======
+          "/api/sessions/123/metadata",
+        ),
+        testMessages: window.endpointValidator.isValidEndpoint(
+          "/api/sessions/123/messages",
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         ),
       });
     }

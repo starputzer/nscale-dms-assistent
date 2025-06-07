@@ -5,8 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+<<<<<<< HEAD
     "build": "vite build",
     "build:with-typecheck": "vue-tsc --noEmit && vite build",
+=======
+    "build": "vue-tsc --noEmit && vite build",
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     "build:strict": "vue-tsc --noEmit --project tsconfig.optimized.json && vite build",
     "build:strict:interactive": "./scripts/build-with-strict-types.sh",
     "build:no-check": "vite build",
@@ -87,6 +91,10 @@
     "date-fns": "^4.1.0",
     "glob": "^10.4.5",
     "highlight.js": "^11.11.1",
+<<<<<<< HEAD
+=======
+    "lodash": "^4.17.21",
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     "lodash-es": "^4.17.21",
     "marked": "^9.1.6",
     "pinia": "^3.0.2",
@@ -142,4 +150,8 @@
     "npm": ">=10.0.0"
   },
   "legacyDependencies": {}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da

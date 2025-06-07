@@ -113,7 +113,11 @@ export function useAuthStoreCompat(): AuthStoreWithCompat {
     async register(
       username: string,
       password: string,
+<<<<<<< HEAD
       _role: string = "user",
+=======
+      role: string = "user",
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     ): Promise<boolean> {
       try {
         // Moderne register-Methode

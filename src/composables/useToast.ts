@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 // import { useUIStore } from "@/stores/ui"; // Unused import
+=======
+import { useUIStore } from "@/stores/ui";
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 import toastService, {
   type ToastOptions as ServiceToastOptions,
 } from "@/services/ui/ToastService";

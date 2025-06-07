@@ -37,7 +37,11 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
   // Sessions use shallow reactivity for better performance
   const {
     data: sessions,
+<<<<<<< HEAD
     updateItem: _updateSession,
+=======
+    updateItem: updateSession,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     append: appendSession,
     remove: removeSession,
     clear: clearSessions,
@@ -71,11 +75,19 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
       const updatesBySession = new Map<string, ChatMessage[]>();
 
       updates.forEach((update) => {
+<<<<<<< HEAD
         const sessionId = (update as any).data.sessionId;
         if (!updatesBySession.has(sessionId)) {
           updatesBySession.set(sessionId, []);
         }
         updatesBySession.get(sessionId)!.push(update as any).data);
+=======
+        const sessionId = update.data.sessionId;
+        if (!updatesBySession.has(sessionId)) {
+          updatesBySession.set(sessionId, []);
+        }
+        updatesBySession.get(sessionId)!.push(update.data);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       });
 
       // Apply updates to each session
@@ -200,7 +212,11 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
     // Sync with server if authenticated
     if (authStore.isAuthenticated) {
       try {
+<<<<<<< HEAD
         await axios.post("/api/chat/sessions", newSession, {
+=======
+        await axios.post("/api/sessions", newSession, {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           headers: authStore.createAuthHeaders(),
         });
       } catch (err) {
@@ -237,10 +253,17 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
     error.value = null;
 
     try {
+<<<<<<< HEAD
       const _response = await performanceMonitor.measureAsync(
         "fetchMessages",
         () =>
           axios.get(`/api/chat/sessions/${sessionId}/messages`, {
+=======
+      const response = await performanceMonitor.measureAsync(
+        "fetchMessages",
+        () =>
+          axios.get(`/api/sessions/${sessionId}/messages`, {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             headers: authStore.createAuthHeaders(),
           }),
       );
@@ -304,7 +327,11 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
 
       // Setup streaming
       const eventSource = new EventSource(
+<<<<<<< HEAD
         `/api/chat/message/stream?question=${encodeURIComponent(content)}&session_id=${sessionId}`,
+=======
+        `/api/question/stream?question=${encodeURIComponent(content)}&session_id=${sessionId}`,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         {
           headers: {
             Authorization: `Bearer ${authStore.token}`,
@@ -321,7 +348,11 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
           accumulatedContent += data.content;
 
           // Queue batch update
+<<<<<<< HEAD
           (batchManager as any).add(
+=======
+          batchManager.add(
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             createStreamingUpdate(assistantId, {
               ...assistantMessage,
               content: accumulatedContent,
@@ -347,7 +378,11 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
         };
 
         // Force immediate update
+<<<<<<< HEAD
         (batchManager as any).add(
+=======
+        batchManager.add(
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           createStreamingUpdate(assistantId, finalMessage, true),
         );
         batchManager.flush();
@@ -402,7 +437,11 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
     // Sync with server
     if (authStore.isAuthenticated) {
       try {
+<<<<<<< HEAD
         await axios.delete(`/api/chat/sessions/${sessionId}`, {
+=======
+        await axios.delete(`/api/sessions/${sessionId}`, {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           headers: authStore.createAuthHeaders(),
         });
       } catch (err) {
@@ -438,7 +477,11 @@ export const useSessionsStore = defineStore("sessions-performance", () => {
 
   // Cleanup on unmount
   function cleanup() {
+<<<<<<< HEAD
     (batchManager as any).destroy();
+=======
+    batchManager.destroy();
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     clearAll();
   }
 

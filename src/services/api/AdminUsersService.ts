@@ -60,11 +60,16 @@ export class AdminUsersService implements IAdminUsersService {
         };
 
         const response = await cachedApiService.get<PaginatedResponse<User>>(
+<<<<<<< HEAD
           apiConfig.ENDPOINTS.USERS.LIST || "/api/admin/users",
+=======
+          apiConfig.ENDPOINTS.USERS.LIST || "/admin/users",
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           undefined,
           options,
         );
 
+<<<<<<< HEAD
         this.logger.info("API Response:", response);
         this.logger.info("Response type:", typeof response);
         this.logger.info("Response keys:", response ? Object.keys(response) : 'null');
@@ -72,6 +77,8 @@ export class AdminUsersService implements IAdminUsersService {
         this.logger.info("Response.data type:", typeof response?.data);
         this.logger.info("Response.data keys:", response?.data ? Object.keys(response.data) : 'null');
 
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         if (response.success) {
           // Prüfen, ob die Antwort paginiert ist oder direkt ein Array zurückgibt
           if (Array.isArray(response.data)) {
@@ -86,6 +93,7 @@ export class AdminUsersService implements IAdminUsersService {
               data: response.data.items,
               message: "Benutzer erfolgreich abgerufen",
             };
+<<<<<<< HEAD
           } else if (response.data && (response.data as any).users) {
             return {
               success: true,
@@ -95,6 +103,15 @@ export class AdminUsersService implements IAdminUsersService {
           } else {
             this.logger.error("Unerwartetes Antwortformat:", response.data);
             this.logger.error("Response keys:", response.data ? Object.keys(response.data) : 'null');
+=======
+          } else if (response.data && response.data.users) {
+            return {
+              success: true,
+              data: response.data.users,
+              message: "Benutzer erfolgreich abgerufen",
+            };
+          } else {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             throw new Error("Unerwartetes Antwortformat vom Server");
           }
         } else {

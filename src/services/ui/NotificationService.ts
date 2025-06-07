@@ -371,7 +371,11 @@ function updateGroups(): void {
       let groupTitle = groupId;
       if (groupId.startsWith("type:")) {
         const type = groupId.replace("type:", "");
+<<<<<<< HEAD
         groupTitle = (i18n as any).t(`notification.types.${type}`);
+=======
+        groupTitle = i18n.t(`notification.types.${type}`);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       }
 
       // Bestimme höchste Priorität in der Gruppe
@@ -474,7 +478,11 @@ export const notificationService = {
    * @param options Optionen für die Benachrichtigung
    * @returns ID der erstellten Benachrichtigung
    */
+<<<<<<< HEAD
   add(_message: string, options: NotificationOptions = {}): string {
+=======
+  add(message: string, options: NotificationOptions = {}): string {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     // Nichts tun, wenn deaktiviert
     if (!state.enabled) return "";
 
@@ -525,7 +533,11 @@ export const notificationService = {
     return this.add(message, {
       ...options,
       type: "info",
+<<<<<<< HEAD
       title: options.title || (i18n as any).t("notification.info"),
+=======
+      title: options.title || i18n.t("notification.info"),
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     });
   },
 
@@ -542,7 +554,11 @@ export const notificationService = {
     return this.add(message, {
       ...options,
       type: "success",
+<<<<<<< HEAD
       title: options.title || (i18n as any).t("notification.success"),
+=======
+      title: options.title || i18n.t("notification.success"),
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     });
   },
 
@@ -559,7 +575,11 @@ export const notificationService = {
     return this.add(message, {
       ...options,
       type: "warning",
+<<<<<<< HEAD
       title: options.title || (i18n as any).t("notification.warning"),
+=======
+      title: options.title || i18n.t("notification.warning"),
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     });
   },
 
@@ -577,7 +597,11 @@ export const notificationService = {
       ...options,
       type: "error",
       priority: options.priority || "high",
+<<<<<<< HEAD
       title: options.title || (i18n as any).t("notification.error"),
+=======
+      title: options.title || i18n.t("notification.error"),
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     });
   },
 
@@ -595,7 +619,11 @@ export const notificationService = {
       ...options,
       type: "system",
       priority: options.priority || "high",
+<<<<<<< HEAD
       title: options.title || (i18n as any).t("notification.system"),
+=======
+      title: options.title || i18n.t("notification.system"),
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     });
   },
 

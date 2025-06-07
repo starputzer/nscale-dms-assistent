@@ -631,6 +631,7 @@
         </div>
       </div>
     </div>
+<<<<<<< HEAD
     
     <!-- Delete Confirmation Dialog -->
     <div v-if="showDeleteConfirm" class="n-chat-delete-confirm-overlay" @click.self="cancelDeleteSession">
@@ -664,6 +665,8 @@
         </div>
       </div>
     </div>
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   </div>
   
   <!-- Streaming Debug Panel for Development -->
@@ -723,8 +726,11 @@ const showSessionInfo = ref(false);
 const showSourcesModal = ref(false);
 const currentSourceReferences = ref<SourceReference[]>([]);
 const currentSourceMessageId = ref<string | null>(null);
+<<<<<<< HEAD
 const showDeleteConfirm = ref(false);
 const sessionToDelete = ref<string | null>(null);
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 // Computed Properties
 const user = computed<any>(() => authStore.user);
@@ -867,6 +873,7 @@ function handleRenameSession(sessionId: string, newTitle?: string) {
 }
 
 function handleDeleteSession(sessionId: string) {
+<<<<<<< HEAD
   // Store the session ID to delete and show confirmation dialog
   sessionToDelete.value = sessionId;
   showDeleteConfirm.value = true;
@@ -907,6 +914,28 @@ async function confirmDeleteSession() {
     showDeleteConfirm.value = false;
     sessionToDelete.value = null;
   }
+=======
+  // SessionList already shows a confirmation dialog, so we don't need another one
+  sessionsStore
+    .deleteSession(sessionId)
+    .then(() => {
+      // Wenn die gelöschte Session die aktuelle ist, zur ersten verfügbaren wechseln
+      if (sessionId === currentSessionId.value) {
+        const remainingSessions = sessions.value;
+
+        if (remainingSessions.length > 0) {
+          router.push(`/chat/${remainingSessions[0].id}`);
+        } else {
+          // Keine Sessions mehr, neue erstellen
+          handleCreateSession();
+        }
+      }
+    })
+    .catch((error) => {
+      console.error("Fehler beim Löschen der Session:", error);
+      uiStore.showError("Fehler beim Löschen der Unterhaltung");
+    });
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 }
 
 function handlePinSession(sessionId: string, pinned: boolean) {
@@ -1068,7 +1097,11 @@ function handleViewSources(payload: { messageId: string }): void {
 
   // Nachricht finden
   const message = currentMessages.value.find(
+<<<<<<< HEAD
     (m: ChatMessage) => m.id === payload.messageId
+=======
+    (m: ChatMessage) => m.id === payload.messageId,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   );
   if (!message) return;
 
@@ -2238,6 +2271,7 @@ if (import.meta.env.DEV) {
     border-color: var(--nscale-dark-primary, #00d06a);
   }
 }
+<<<<<<< HEAD
 /* Delete Confirmation Dialog */
 .n-chat-delete-confirm-overlay {
   position: fixed;
@@ -2351,4 +2385,6 @@ if (import.meta.env.DEV) {
     opacity: 1;
   }
 }
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 </style>

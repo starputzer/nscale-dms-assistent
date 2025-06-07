@@ -103,7 +103,11 @@ export class CachedApiService {
         return {
           ...cachedData,
           metadata: {
+<<<<<<< HEAD
             ...(cachedData as any).metadata,
+=======
+            ...cachedData.metadata,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             fromCache: true,
             cacheReason: "network_error",
           },
@@ -312,13 +316,21 @@ export class CachedApiService {
    * Invalidiert Cache für eine bestimmte URL oder ein Pattern
    */
   public invalidate(urlPattern: string | RegExp): void {
+<<<<<<< HEAD
     (apiCacheService as any).invalidateByPattern(urlPattern);
+=======
+    apiCacheService.invalidateByPattern(urlPattern);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   }
 
   /**
    * Invalidiert verwandte Caches basierend auf URL und Daten
    */
+<<<<<<< HEAD
   private invalidateRelatedCaches(url: string, _data?: any): void {
+=======
+  private invalidateRelatedCaches(url: string, data?: any): void {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     // Extract resource type from URL
     const resourceMatch = url.match(/\/api\/(\w+)/);
     if (resourceMatch) {
@@ -365,6 +377,38 @@ export class CachedApiService {
       });
     }
   }
+<<<<<<< HEAD
+=======
+
+  /**
+   * Invalidiert verwandte Caches basierend auf dem Anfrage-URL
+   */
+  private invalidateRelatedCaches(url: string, data?: any): void {
+    try {
+      // Ressourcentyp aus URL extrahieren
+      const urlParts = url.split("/").filter((part: any) => part.length > 0);
+
+      if (urlParts.length > 0) {
+        // Ressourcentyp identifizieren (z.B. 'sessions', 'documents', etc.)
+        const resourceType = urlParts[0];
+
+        // Cache für diesen Ressourcentyp invalidieren
+        apiCacheService.invalidateEndpointType(resourceType);
+
+        if (import.meta.env.VITE_ENV !== "production") {
+          this.logger.debug(
+            `Cache invalidiert für Ressourcentyp: ${resourceType}`,
+          );
+        }
+      }
+    } catch (error) {
+      this.logger.warn("Fehler bei Cache-Invalidierung", {
+        url,
+        error,
+      });
+    }
+  }
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 }
 
 // Singleton-Instanz erstellen

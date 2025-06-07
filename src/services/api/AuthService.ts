@@ -228,7 +228,11 @@ export class AuthService {
     credentials: LoginCredentials,
   ): Promise<ApiResponse<User>> {
     try {
+<<<<<<< HEAD
       const response = await apiService.login(credentials as any);
+=======
+      const response = await apiService.login(credentials);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
       if (response.success && response.data) {
         const { accessToken, refreshToken, expiresAt, user } = response.data;

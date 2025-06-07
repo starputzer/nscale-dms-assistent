@@ -26,11 +26,14 @@ export default {
         search: "Search",
         filter: "Filter",
         noData: "No data found",
+<<<<<<< HEAD
         yes: "Yes",
         no: "No",
         active: "Active",
         inactive: "Inactive",
         characters: "characters"
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       }
     }
   },
@@ -58,11 +61,14 @@ export default {
         search: "Suchen",
         filter: "Filtern",
         noData: "Keine Daten gefunden",
+<<<<<<< HEAD
         yes: "Ja",
         no: "Nein",
         active: "Aktiv",
         inactive: "Inaktiv",
         characters: "Zeichen"
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       }
     }
   }

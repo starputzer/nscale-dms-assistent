@@ -142,7 +142,11 @@ function formatDate(timestamp: number, format: string): string {
 const getFeatures = (): Feature[] => {
   // Try to access features property if it exists
   if ("features" in featureStore) {
+<<<<<<< HEAD
     return (featureStore as any).features || []);
+=======
+    return (featureStore as any).features || [];
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   }
 
   // Return empty array if features property doesn't exist

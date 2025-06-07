@@ -1,5 +1,6 @@
 ---
 title: "Digitale Akte Assistent - Projektübersicht"
+<<<<<<< HEAD
 version: "3.2.0"
 date: "16.05.2025"
 lastUpdate: "04.06.2025"
@@ -8,15 +9,33 @@ status: "Aktuell"
 priority: "Hoch"
 category: "Projektdokumentation"
 tags: ["Projektübersicht", "Architektur", "Vue3", "SFC", "Migration", "RAG", "Admin Panel"]
+=======
+version: "3.1.0"
+date: "16.05.2025"
+lastUpdate: "29.05.2025"
+author: "Original: Martin Heinrich, Aktualisiert: Claude"
+status: "Aktiv"
+priority: "Hoch"
+category: "Projektdokumentation"
+tags: ["Projektübersicht", "Architektur", "Vue3", "SFC", "Migration"]
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 ---
 
 # Digitale Akte Assistent - Projektübersicht
 
+<<<<<<< HEAD
 > **Letzte Aktualisierung:** 04.06.2025 | **Version:** 3.2.0 | **Status:** Production Ready (85%)
 
 ## Executive Summary
 
 Der Digitale Akte Assistent ist ein production-ready KI-gestützter Assistent für das Dokumenten-Management-System mit **85% Produktionsreife**. Das System verfügt über ein vollständiges Admin Panel (13/13 Tabs), 156 implementierte API-Endpoints, eine abgeschlossene Vue 3 Migration und ein voll funktionsfähiges RAG-System mit OCR-Support. Mit nur noch 12 TypeScript-Fehlern und einer Performance von 1.8s Load Time ist das System bereit für den produktiven Einsatz.
+=======
+> **Letzte Aktualisierung:** 29.05.2025 | **Version:** 3.1.0 | **Status:** Aktiv
+
+## Executive Summary
+
+Der Digitale Akte Assistent ist ein KI-gestützter Assistent für das Dokumenten-Management-System, der Benutzern bei der effizienten Verwaltung und Verarbeitung digitaler Dokumente hilft. Das System basiert auf einer modernen Vue 3 Single File Component (SFC) Architektur und verwendet einen Retrieval-Augmented Generation (RAG) Ansatz zur intelligenten Beantwortung von Benutzerfragen.
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 ## Projektbeschreibung
 
@@ -27,6 +46,7 @@ Ein intelligenter, benutzerfreundlicher Assistent, der die tägliche Arbeit mit 
 Bereitstellung einer robusten, skalierbaren und intuitiven Plattform für das Dokumentenmanagement mit KI-Unterstützung.
 
 ### Hauptmerkmale
+<<<<<<< HEAD
 - **RAG-basierte KI**: 3-Phasen-System mit OCR und Dokumentenintelligenz ✅
 - **Vue 3 SFC Frontend**: 100% migriert, moderne Composition API ✅
 - **Admin Panel**: 13/13 Tabs vollständig implementiert ✅
@@ -37,6 +57,15 @@ Bereitstellung einer robusten, skalierbaren und intuitiven Plattform für das Do
 - **i18n**: 181 Fehler behoben, vollständig Vue 3 kompatibel ✅
 - **Performance**: 1.8s Load Time, 2.1MB Bundle Size ✅
 - **WCAG 2.1 AA konform**: 95% Accessibility Score ✅
+=======
+- **RAG-basierte KI**: Intelligente Antworten basierend auf Dokumenteninhalten
+- **Vue 3 SFC Frontend**: Moderne, reaktive Benutzeroberfläche
+- **Pinia State Management**: Zentrale Zustandsverwaltung
+- **TypeScript**: Typsichere Entwicklung
+- **Dokumentenkonverter**: Unterstützung verschiedener Dateiformate
+- **Admin-Dashboard**: Umfassende Verwaltungsfunktionen
+- **WCAG 2.1 AA konform**: Barrierefreie Benutzeroberfläche
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 ## Technologie-Stack
 
@@ -113,6 +142,7 @@ src/
 - Fortschrittsanzeige
 - Fehlerbehandlung
 
+<<<<<<< HEAD
 ### 3. Admin-Dashboard (13/13 Tabs)
 - **AdminDashboard**: Übersicht und Statistiken ✅
 - **AdminUsers**: Benutzerverwaltung ✅
@@ -127,6 +157,13 @@ src/
 - **AdminAdvancedDocuments**: Erweiterte Dokumentenverwaltung ✅
 - **AdminDashboard.enhanced**: Erweiterte Dashboard-Features ✅
 - **AdminSystem.enhanced**: Erweiterte Systemfunktionen ✅
+=======
+### 3. Admin-Dashboard
+- Benutzerverwaltung
+- Systemüberwachung
+- Feature-Toggle-Verwaltung
+- Feedback-Analyse
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 ### 4. Einstellungen
 - Benutzerprofile
@@ -179,12 +216,17 @@ npm run test
 ### Tests
 - **Unit Tests**: Vitest für Komponenten
 - **E2E Tests**: Playwright
+<<<<<<< HEAD
 - **Frontend Coverage**: 65% (Ziel: 80%)
 - **Backend Coverage**: 80% (Ziel: 90%)
+=======
+- **Abdeckung**: >80% für kritische Pfade
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 ### Code-Qualität
 - **Linting**: ESLint mit Vue 3 Regeln
 - **Formatierung**: Prettier
+<<<<<<< HEAD
 - **TypeScript**: 98% Coverage, nur 12 Fehler
 - **i18n**: 181 Fehler behoben ✅
 
@@ -193,6 +235,14 @@ npm run test
 - **Bundle Size**: 2.1MB (Ziel: <2MB)
 - **Response Time**: <500ms avg ✅
 - **Uptime**: 99.9% ✅
+=======
+- **TypeScript**: Strenge Typsicherheit
+
+### Performance
+- **Lazy Loading**: Code-Splitting für Routen
+- **Optimierte Bundles**: Vite-Optimierungen
+- **Caching**: Service Worker für Offline-Funktionalität
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 ## Team und Verantwortlichkeiten
 
@@ -209,6 +259,7 @@ npm run test
 
 ## Nächste Schritte
 
+<<<<<<< HEAD
 ### Kurzfristig (Juni 2025)
 - [x] Admin Panel vollständig implementiert ✅
 - [x] RAG-System integriert ✅
@@ -239,11 +290,28 @@ Der Digitale Akte Assistent ist mit **85% Production Readiness** technisch ausge
 - ✅ 181 i18n-Fehler behoben
 - ✅ TypeScript auf 12 Fehler reduziert
 - ✅ Performance-Ziele erreicht
+=======
+1. **Kurzfristig** (Juni - Juli 2025)
+   - Verbesserungen des Dokumentenkonverters
+   - Optimierte Benutzerfreundlichkeit
+   - Technische Schulden abbauen
+
+2. **Mittelfristig** (August - Oktober 2025)
+   - Erweiterte RAG-Engine-Funktionen
+   - Batch-Verarbeitung für Dokumente
+   - Rollenkonzept Phase 3
+
+3. **Langfristig** (November 2025 - Februar 2026)
+   - Integration in Unternehmensumgebung
+   - Erweiterte Wissensbasisfeatures
+   - UI-Optimierungen
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 ## Referenzen
 
 - [Roadmap](./03_entwicklungs_roadmap.md)
 - [Technische Architektur](../02_ARCHITEKTUR/01_system_architektur.md)
+<<<<<<< HEAD
 - [Admin Panel Status](./96_admin_panel_status_juni_2025.md)
 - [RAG-System Dokumentation](../02_ARCHITEKTUR/40_rag_system_komplett.md)
 - [i18n-Fixes](../07_WARTUNG/10_i18n_fixes.md)
@@ -251,3 +319,11 @@ Der Digitale Akte Assistent ist mit **85% Production Readiness** technisch ausge
 ---
 
 *Dokument zuletzt aktualisiert: 04.06.2025 | Version 3.2.0 | Production Ready: 85%*
+=======
+- [Migration Guide](../06_ARCHIV/MIGRATION/05_FINALE_VUE3_MIGRATION.md)
+- [Komponentendokumentation](../02_KOMPONENTEN/)
+
+---
+
+*Hinweis: Diese konsolidierte Dokumentation ersetzt alle vorherigen Versionen der Projektübersicht.*
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da

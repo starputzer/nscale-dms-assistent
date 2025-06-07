@@ -38,7 +38,11 @@ class AuthDiagnostics {
 
   enable() {
     this.isEnabled = true;
+<<<<<<< HEAD
     this.log("diagnostics" as any, "Authentication diagnostics enabled" as any);
+=======
+    this.log("diagnostics", "Authentication diagnostics enabled");
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
     // Hook into auth store
     this.hookAuthStore();

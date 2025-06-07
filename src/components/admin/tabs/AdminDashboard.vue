@@ -145,7 +145,11 @@
 </template>
 
 <script setup lang="ts">
+<<<<<<< HEAD
 import { computed, ref, defineEmits, onMounted, onUnmounted } from "vue";
+=======
+import { computed, ref, defineEmits } from "vue";
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
 import { useAdminSystemStore } from "@/stores/admin/system";
@@ -154,7 +158,10 @@ import { useAdminFeedbackStore } from "@/stores/admin/feedback";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import AdminCard from "@/components/admin/shared/AdminCard.vue";
+<<<<<<< HEAD
 import apiService from '@/services/api/ApiService';
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 // Use i18n composable
 const { t } = useI18n();
@@ -174,8 +181,11 @@ const { stats: feedbackStats } = storeToRefs(adminFeedbackStore);
 
 // Local state
 const isLoading = ref(false);
+<<<<<<< HEAD
 const dashboardStats = ref<any>(null);
 let refreshInterval: number | null = null;
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 // Load initial data on mount with error handling
 // Lifecycle management with safe component access
@@ -185,6 +195,7 @@ import { initializeAdminComponent } from "@/utils/adminComponentInitializer";
 const { isMounted, safeMountedExecution } = initializeAdminComponent({
   componentName: "AdminDashboard",
   loadData: async () => {
+<<<<<<< HEAD
     // Load dashboard stats from new API
     try {
       console.log("[AdminDashboard] Loading dashboard stats");
@@ -223,6 +234,29 @@ const { isMounted, safeMountedExecution } = initializeAdminComponent({
       }
     } catch (e) {
       console.error("[AdminDashboard] Error loading recent activity:", e);
+=======
+    // Load each data source separately to better handle errors
+    try {
+      console.log("[AdminDashboard] Loading system stats");
+      await adminSystemStore.fetchStats();
+    } catch (e) {
+      console.error("[AdminDashboard] Error loading system stats:", e);
+      // Continue with other data sources even if this one fails
+    }
+
+    try {
+      console.log("[AdminDashboard] Loading user count");
+      await adminUsersStore.fetchUserCount();
+    } catch (e) {
+      console.error("[AdminDashboard] Error loading user count:", e);
+    }
+
+    try {
+      console.log("[AdminDashboard] Loading feedback stats");
+      await adminFeedbackStore.fetchStats();
+    } catch (e) {
+      console.error("[AdminDashboard] Error loading feedback stats:", e);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     }
   },
   emit,
@@ -300,6 +334,7 @@ const systemStatusText = computed(() => {
 // Stats cards data
 const statsCards = computed(() => {
   try {
+<<<<<<< HEAD
     const stats = dashboardStats.value;
     if (!stats) {
       // Use store values as fallback
@@ -324,10 +359,15 @@ const statsCards = computed(() => {
         },
       ];
     }
+=======
+    // Create a custom fixed value for totalUsers to prevent undefined issues
+    const userCount = totalUsers.value || 5; // Use fixed value as fallback
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
     return [
       {
         label: t("admin.dashboard.users", "Benutzer"),
+<<<<<<< HEAD
         value: stats.total_users,
         icon: "fa-users",
         trend: stats.users_trend,
@@ -361,6 +401,41 @@ const statsCards = computed(() => {
         value: `${stats.uptime_days} ${t("admin.dashboard.days", "Tage")}`,
         icon: "fa-server",
         trend: 0, // No trend for uptime
+=======
+        value: userCount,
+        icon: "fa-users",
+        trend: 5, // Example: 5% growth
+      },
+      {
+        label: t("admin.dashboard.sessions", "Sitzungen"),
+        value: systemStats?.value?.total_sessions || 128,
+        icon: "fa-comments",
+        trend: 12, // Example: 12% growth
+      },
+      {
+        label: t("admin.dashboard.messages", "Nachrichten"),
+        value: systemStats?.value?.total_messages || 2354,
+        icon: "fa-envelope",
+        trend: 8, // Example: 8% growth
+      },
+      {
+        label: t("admin.dashboard.positiveFeedback", "Positives Feedback"),
+        value: `${feedbackStats?.value?.positive_percent || 92}%`,
+        icon: "fa-thumbs-up",
+        trend: -2, // Example: 2% decrease
+      },
+      {
+        label: t("admin.dashboard.avgResponseTime", "Durchschn. Antwortzeit"),
+        value: `${systemStats?.value?.avg_response_time_ms || 320} ms`,
+        icon: "fa-clock",
+        trend: -5, // Example: 5% improvement (faster)
+      },
+      {
+        label: t("admin.dashboard.uptime", "Uptime"),
+        value: `${systemStats?.value?.uptime_days || 15} ${t("admin.dashboard.days", "Tage")}`,
+        icon: "fa-server",
+        trend: 0, // No trend
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       },
     ];
   } catch (error) {
@@ -415,14 +490,45 @@ const quickActions = computed(() => {
   ];
 });
 
+<<<<<<< HEAD
 // Recent activity data
 const recentActivity = ref<any[]>([]);
+=======
+// Sample recent activity data
+const recentActivity = ref([
+  {
+    type: "login",
+    user: "admin",
+    text: t("admin.dashboard.activity.loggedIn", "hat sich angemeldet"),
+    timestamp: Date.now() - 2 * 60 * 1000, // 2 minutes ago
+  },
+  {
+    type: "settings",
+    user: "admin",
+    text: t("admin.dashboard.activity.changedSettings", "hat Systemeinstellungen geändert"),
+    timestamp: Date.now() - 25 * 60 * 1000, // 25 minutes ago
+  },
+  {
+    type: "user",
+    user: "admin",
+    text: t("admin.dashboard.activity.addedUser", "hat einen neuen Benutzer hinzugefügt"),
+    timestamp: Date.now() - 3 * 60 * 60 * 1000, // 3 hours ago
+  },
+  {
+    type: "cache",
+    user: "admin",
+    text: t("admin.dashboard.activity.clearedCache", "hat den Cache geleert"),
+    timestamp: Date.now() - 1 * 24 * 60 * 60 * 1000, // 1 day ago
+  },
+]);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 // Methods
 async function executeAction(actionId: string) {
   isLoading.value = true;
 
   try {
+<<<<<<< HEAD
     let response;
     switch (actionId) {
       case "clearCache":
@@ -454,6 +560,33 @@ async function executeAction(actionId: string) {
             console.warn("System issues found:", response.data.details.issues);
           }
         }
+=======
+    switch (actionId) {
+      case "clearCache":
+        await adminSystemStore.clearCache();
+        console.log("Cache cleared");
+        break;
+      case "reloadMotd":
+        await adminSystemStore.reloadMotd();
+        console.log("MOTD reloaded");
+        break;
+      case "exportStats":
+        // Example implementation for stats export
+        const statsData = JSON.stringify(systemStats.value, null, 2);
+        const blob = new Blob([statsData], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `system-stats-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        break;
+      case "systemCheck":
+        await adminSystemStore.performSystemCheck();
+        console.log("System check completed");
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         break;
       default:
         console.warn(`Unknown action: ${actionId}`);
@@ -469,6 +602,7 @@ async function executeAction(actionId: string) {
   }
 }
 
+<<<<<<< HEAD
 // Helper function to reload dashboard data
 async function loadDashboardData() {
   try {
@@ -496,6 +630,8 @@ async function loadDashboardData() {
   }
 }
 
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 // Helper methods
 function getActivityIcon(type: string): string {
   switch (type) {
@@ -529,6 +665,7 @@ function formatTime(timestamp: number): string {
     return "";
   }
 }
+<<<<<<< HEAD
 
 // Set up auto-refresh every 30 seconds
 onMounted(() => {
@@ -543,6 +680,8 @@ onUnmounted(() => {
     window.clearInterval(refreshInterval);
   }
 });
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 </script>
 
 <style lang="scss">

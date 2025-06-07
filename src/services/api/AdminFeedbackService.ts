@@ -67,17 +67,28 @@ export class AdminFeedbackService implements IAdminFeedbackService {
         };
 
         const response = await apiService.get<FeedbackStats>(
+<<<<<<< HEAD
           "/admin/feedback/stats",
+=======
+          apiConfig.ENDPOINTS.ADMIN_FEEDBACK.STATS || "/admin/feedback/stats",
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           undefined,
           options,
         );
 
         if (response.success) {
           // Check if stats are nested in response.data.stats
+<<<<<<< HEAD
           if (response.data && (response.data as any).stats) {
             return {
               success: true,
               data: (response.data as any).stats,
+=======
+          if (response.data && response.data.stats) {
+            return {
+              success: true,
+              data: response.data.stats,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
               message: "Feedback-Statistiken erfolgreich abgerufen",
             };
           }
@@ -137,17 +148,28 @@ export class AdminFeedbackService implements IAdminFeedbackService {
         };
 
         const response = await apiService.get<FeedbackEntry[]>(
+<<<<<<< HEAD
           `/admin/feedback/list?limit=${limit}`,
+=======
+          `${apiConfig.ENDPOINTS.ADMIN_FEEDBACK.LIST || "/admin/feedback"}?limit=${limit}`,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           undefined,
           options,
         );
 
         if (response.success) {
           // Check if feedback is nested in response.data.feedback
+<<<<<<< HEAD
           if (response.data && (response.data as any).feedback) {
             return {
               success: true,
               data: (response.data as any).feedback,
+=======
+          if (response.data && response.data.feedback) {
+            return {
+              success: true,
+              data: response.data.feedback,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
               message: "Alle Feedbacks erfolgreich abgerufen",
             };
           }
@@ -162,7 +184,11 @@ export class AdminFeedbackService implements IAdminFeedbackService {
       // Fallback zu adminApi mit Mock-Daten
       this.logger.info("Verwende Mock-Daten über adminApi für alle Feedbacks");
 
+<<<<<<< HEAD
       const response = await (adminApi as any).getAllFeedback(limit);
+=======
+      const response = await adminApi.getAllFeedback(limit);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       return {
         success: true,
         data: response?.data?.feedback || response?.data,
@@ -205,17 +231,28 @@ export class AdminFeedbackService implements IAdminFeedbackService {
         };
 
         const response = await apiService.get<FeedbackEntry[]>(
+<<<<<<< HEAD
           `/admin/feedback/negative?limit=${limit}`,
+=======
+          `${apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE || "/admin/feedback/negative"}?limit=${limit}`,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           undefined,
           options,
         );
 
         if (response.success) {
           // Check if feedback is nested in response.data.feedback
+<<<<<<< HEAD
           if (response.data && (response.data as any).feedback) {
             return {
               success: true,
               data: (response.data as any).feedback,
+=======
+          if (response.data && response.data.feedback) {
+            return {
+              success: true,
+              data: response.data.feedback,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
               message: "Negatives Feedback erfolgreich abgerufen",
             };
           }
@@ -271,14 +308,23 @@ export class AdminFeedbackService implements IAdminFeedbackService {
         );
 
         const response = await apiService.put<FeedbackEntry>(
+<<<<<<< HEAD
           `/admin/feedback/${id}/status`,
+=======
+          `${apiConfig.ENDPOINTS.ADMIN_FEEDBACK.UPDATE_STATUS || "/admin/feedback"}/${id}/status`,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           { status },
         );
 
         if (response.success) {
           // Cache für Feedback-Listen invalidieren
           cachedApiService.invalidate(
+<<<<<<< HEAD
             "/admin/feedback/negative",
+=======
+            apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE ||
+              "/admin/feedback/negative",
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           );
           return response;
         } else {
@@ -331,16 +377,28 @@ export class AdminFeedbackService implements IAdminFeedbackService {
         this.logger.info(`Verwende echte API zum Löschen des Feedbacks ${id}`);
 
         const response = await apiService.delete<void>(
+<<<<<<< HEAD
           `/admin/feedback/${id}`,
+=======
+          `${apiConfig.ENDPOINTS.ADMIN_FEEDBACK.DELETE || "/admin/feedback"}/${id}`,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         );
 
         if (response.success) {
           // Cache für Feedback-Listen und Stats invalidieren
           cachedApiService.invalidate(
+<<<<<<< HEAD
             "/admin/feedback/negative",
           );
           cachedApiService.invalidate(
             "/admin/feedback/stats",
+=======
+            apiConfig.ENDPOINTS.ADMIN_FEEDBACK.NEGATIVE ||
+              "/admin/feedback/negative",
+          );
+          cachedApiService.invalidate(
+            apiConfig.ENDPOINTS.ADMIN_FEEDBACK.STATS || "/admin/feedback/stats",
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           );
           return response;
         } else {
@@ -399,7 +457,11 @@ export class AdminFeedbackService implements IAdminFeedbackService {
 
         // Führe den Export mit Blob-Response durch
         const response = await apiService.get<Blob>(
+<<<<<<< HEAD
           "/admin/feedback/export",
+=======
+          apiConfig.ENDPOINTS.ADMIN_FEEDBACK.EXPORT || "/admin/feedback/export",
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           params,
           { responseType: "blob" },
         );
@@ -461,7 +523,11 @@ export class AdminFeedbackService implements IAdminFeedbackService {
         this.logger.info("Verwende echte API für Feedback-Filterung");
 
         const response = await apiService.post<FeedbackEntry[]>(
+<<<<<<< HEAD
           "/admin/feedback/filter",
+=======
+          apiConfig.ENDPOINTS.ADMIN_FEEDBACK.FILTER || "/admin/feedback/filter",
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           filter,
         );
 

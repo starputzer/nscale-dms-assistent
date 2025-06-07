@@ -98,7 +98,11 @@ async function checkLatency(): Promise<void> {
 
   try {
     const startTime = performance.now();
+<<<<<<< HEAD
     const response = await fetch("/api/health", { method: "HEAD" });
+=======
+    const response = await fetch("/api/ping", { method: "HEAD" });
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
     if (response.ok) {
       const latency = performance.now() - startTime;
@@ -137,7 +141,11 @@ export function setupNetworkMonitoring(): void {
     navigator.webkitConnection;
 
   if (connection) {
+<<<<<<< HEAD
     (connection as any).addEventListener("change", updateConnectionInfo);
+=======
+    connection.addEventListener("change", updateConnectionInfo);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   }
 
   // Regelmäßige Latenzprüfung im Hintergrund einrichten

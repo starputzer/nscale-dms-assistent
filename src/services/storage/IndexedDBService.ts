@@ -316,7 +316,11 @@ export class IndexedDBService {
 
     // Keine Warnung über leere Block-Anweisung
     // eslint-disable-next-line no-empty
+<<<<<<< HEAD
     this.db.onabort = (_event) => {};
+=======
+    this.db.onabort = (event) => {};
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   }
 
   /**

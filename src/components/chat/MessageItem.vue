@@ -292,7 +292,6 @@ const sourceRefs = useSourceReferences();
 // Dialog state for negative feedback comments
 const showFeedbackDialog = ref(false);
 const pendingFeedbackType = ref<"positive" | "negative" | null>(null);
-
 // Debug: Watch message content changes
 watch(
   () => props.message.content,
@@ -787,6 +786,7 @@ function setupMessageUpdateListener() {
   };
 }
 
+<<<<<<< HEAD
 // Load existing feedback
 async function loadExistingFeedback() {
   try {
@@ -800,6 +800,8 @@ async function loadExistingFeedback() {
   }
 }
 
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 // Lifecycle Hooks
 onMounted(() => {
   // Set up code highlighting and source references
@@ -816,11 +818,14 @@ onMounted(() => {
 
   // Clean up listener on unmount
   onBeforeUnmount(cleanup);
+<<<<<<< HEAD
   
   // Load existing feedback if this is an assistant message
   if (props.message.role === 'assistant' && props.showActions) {
     loadExistingFeedback();
   }
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 });
 
 // Watches

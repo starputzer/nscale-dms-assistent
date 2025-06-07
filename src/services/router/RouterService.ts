@@ -508,7 +508,11 @@ export class RouterService {
     });
 
     // After Each Guard
+<<<<<<< HEAD
     this.router.afterEach((to, _from, failure) => {
+=======
+    this.router.afterEach((to, from, failure) => {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       if (failure) {
         this.log("error", "Navigation fehlgeschlagen", failure);
       } else {

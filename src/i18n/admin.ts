@@ -21,6 +21,7 @@ export default {
       },
       version: "Version",
       lightMode: "Light mode",
+<<<<<<< HEAD
       darkMode: "Dark mode",
       // Knowledge Manager translations
       knowledgeManager: {
@@ -238,6 +239,9 @@ export default {
           general: "General"
         }
       }
+=======
+      darkMode: "Dark mode"
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     }
   },
   de: {
@@ -258,6 +262,7 @@ export default {
       },
       version: "Version",
       lightMode: "Hell",
+<<<<<<< HEAD
       darkMode: "Dunkel",
       // Knowledge Manager Übersetzungen
       knowledgeManager: {
@@ -475,6 +480,9 @@ export default {
           general: "Allgemein"
         }
       }
+=======
+      darkMode: "Dunkel"
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     }
   }
 };

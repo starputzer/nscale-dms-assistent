@@ -291,7 +291,11 @@ export function useEnhancedRouteFallback(
     };
 
     // Füge zur Queue hinzu
+<<<<<<< HEAD
     navigationQueue.value.push(navigationFn as any);
+=======
+    navigationQueue.value.push(navigationFn);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
     // Verarbeite Queue
     if (navigationQueue.value.length === 1) {
@@ -320,7 +324,11 @@ export function useEnhancedRouteFallback(
    */
   const navigateToFallback = async (reason: string) => {
     logger.warn(`Navigiere zur Fallback-Route: ${reason}`);
+<<<<<<< HEAD
     const result = await (routerService as any).navigateToFallback(reason);
+=======
+    const result = await routerService.navigateToFallback(reason);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
     if (!result.success) {
       logger.error("Fallback-Navigation fehlgeschlagen, Hard Reload...");
@@ -404,7 +412,11 @@ export function useEnhancedRouteFallback(
   const getDiagnostics = () => {
     return {
       routeHealth: routeHealth.value,
+<<<<<<< HEAD
       routerState: (routerService as any).getState(),
+=======
+      routerState: routerService.getState(),
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       currentRoute: routerService.currentRoute(),
       isMonitoring: isMonitoring.value,
       queueLength: navigationQueue.value.length,

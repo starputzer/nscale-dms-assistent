@@ -356,7 +356,11 @@ export class AuthTokenManager {
   }
 
   // Cookie-Funktionen (nur für Produktion)
+<<<<<<< HEAD
   private saveToCookie(_data: StoredTokenData): void {
+=======
+  private saveToCookie(data: StoredTokenData): void {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     // Implementierung für sichere HttpOnly-Cookies in Produktion
     // Dies sollte idealerweise über den Server erfolgen
   }

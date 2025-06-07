@@ -407,7 +407,11 @@ export interface ComponentRenderContext<
  */
 export type SetupFn<
   Props = {},
+<<<<<<< HEAD
   _Emit extends Record<string, any[]> = {},
+=======
+  Emit extends Record<string, any[]> = {},
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   Return = any,
 > = (props: Props, context: SetupContext<any>) => Return;
 

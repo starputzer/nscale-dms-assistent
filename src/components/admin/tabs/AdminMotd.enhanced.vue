@@ -809,6 +809,7 @@ const toast = useToast();
 // Responsive detection
 const { isMobile, isTablet, isDesktop } = useWindowSize();
 
+<<<<<<< HEAD
 // Local state with proper default structure
 const motdConfig = ref<MotdConfig>({
   enabled: config.value?.enabled ?? true,
@@ -827,6 +828,10 @@ const motdConfig = ref<MotdConfig>({
     showInChat: config.value?.display?.showInChat ?? true,
   },
 });
+=======
+// Local state
+const motdConfig = ref<MotdConfig>({ ...config.value });
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 const scheduling = ref({
   enabled: false,
   startDate: new Date().toISOString().slice(0, 16),
@@ -1313,6 +1318,7 @@ function deleteVersion(version, index) {
 async function loadMotd() {
   try {
     await motdStore.fetchConfig();
+<<<<<<< HEAD
     // Ensure proper structure even if config is incomplete
     motdConfig.value = {
       enabled: config.value?.enabled ?? true,
@@ -1331,6 +1337,9 @@ async function loadMotd() {
         showInChat: config.value?.display?.showInChat ?? true,
       },
     };
+=======
+    motdConfig.value = { ...config.value };
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
     // Simulate version history
     versionHistory.value = [
@@ -1406,6 +1415,7 @@ function togglePreview() {
 watch(
   () => config.value,
   (newValue) => {
+<<<<<<< HEAD
     if (newValue) {
       motdConfig.value = {
         enabled: newValue.enabled ?? true,
@@ -1427,6 +1437,11 @@ watch(
     }
   },
   { deep: true, immediate: true },
+=======
+    motdConfig.value = { ...newValue };
+  },
+  { deep: true },
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 );
 
 // Watch for window size changes to update preview mode automatically

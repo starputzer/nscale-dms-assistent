@@ -127,10 +127,17 @@ const messages = {
 
 // Debug merged translations
 console.log('[i18n] Merged translations sample:', {
+<<<<<<< HEAD
   'admin.title': (messages.de as any).admin?.title,
   'admin.docConverter.title': (messages.de as any).admin?.docConverter?.title,
   'admin.common.refresh': (messages.de as any).admin?.common?.refresh,
   'admin.tabs.docConverter': (messages.de as any).admin?.tabs?.docConverter
+=======
+  'admin.title': messages.de.admin?.title,
+  'admin.docConverter.title': messages.de.admin?.docConverter?.title,
+  'admin.common.refresh': messages.de.admin?.common?.refresh,
+  'admin.tabs.docConverter': messages.de.admin?.tabs?.docConverter
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 });
 
 // Create the i18n instance with composition API mode

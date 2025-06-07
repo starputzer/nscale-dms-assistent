@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ---
 title: "05_BETRIEB - Betriebs-Dokumentation"
 version: "2.1.0"
@@ -195,3 +196,14 @@ add_header Strict-Transport-Security "max-age=31536000";
 ---
 
 *Index zuletzt aktualisiert: 04.06.2025 | Version 2.0.0 | Production Ready: 85%*
+=======
+# 05_BETRIEB - Betriebs-Dokumentation
+
+Dieser Bereich enthält alle Dokumente zum Betrieb und zur Wartung des Systems.
+
+## Inhalt
+
+- [01_PERFORMANCE_OPTIMIERUNG.md](01_performance_guide.md) - Performance Optimierung
+- [02_FEHLERBEHEBUNG.md](02_troubleshooting.md) - Fehlerbehebung
+- [03_CLEANUP_LISTE.md](20_cleanup_tasks.md) - Cleanup Liste
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da

@@ -167,7 +167,11 @@
         <button
           @click="exportLogs"
           class="admin-log-viewer__action-button admin-log-viewer__action-button--secondary"
+<<<<<<< HEAD
           :disabled="isLoading || (logs?.length || 0) === 0"
+=======
+          :disabled="isLoading || (logs.value?.length || 0) === 0"
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         >
           <i class="fas fa-file-export" aria-hidden="true"></i>
           {{ t("admin.logViewer.actions.export", "Exportieren") }}
@@ -175,7 +179,11 @@
         <button
           @click="clearLogs"
           class="admin-log-viewer__action-button admin-log-viewer__action-button--danger"
+<<<<<<< HEAD
           :disabled="isLoading || (logs?.length || 0) === 0"
+=======
+          :disabled="isLoading || (logs.value?.length || 0) === 0"
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         >
           <i class="fas fa-trash-alt" aria-hidden="true"></i>
           {{ t("admin.logViewer.actions.clear", "Löschen") }}
@@ -195,7 +203,11 @@
         </p>
       </div>
 
+<<<<<<< HEAD
       <div v-else-if="(logs?.length || 0) === 0" class="admin-log-viewer__empty">
+=======
+      <div v-else-if="(logs.value?.length || 0) === 0" class="admin-log-viewer__empty">
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         <i
           class="fas fa-file-alt admin-log-viewer__empty-icon"
           aria-hidden="true"
@@ -266,7 +278,11 @@
           </thead>
           <tbody>
             <tr
+<<<<<<< HEAD
               v-for="log in logs || []"
+=======
+              v-for="log in logs.value || []"
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
               :key="log.id"
               :class="{
                 'log-error': log.level === 'error',

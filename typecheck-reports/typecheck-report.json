@@ -1,0 +1,78 @@
+{
+  "timestamp": "2025-05-30T18:38:42.105Z",
+  "totalErrors": 18,
+  "directories": {
+    "assets": {
+      "errorCount": 1,
+      "status": "❌ 1 TypeScript errors"
+    },
+    "components": {
+      "errorCount": 1,
+      "status": "❌ 1 TypeScript errors"
+    },
+    "composables": {
+      "errorCount": 1,
+      "status": "❌ 1 TypeScript errors"
+    },
+    "config": {
+      "errorCount": 1,
+      "status": "❌ 1 TypeScript errors"
+    },
+    "controllers": {
+      "errorCount": 1,
+      "status": "❌ 1 TypeScript errors"
+    },
+    "css": {
+      "errorCount": 1,
+      "status": "❌ 1 TypeScript errors"
+    },
+    "diagnostics": {
+      "errorCount": 1,
+      "status": "❌ 1 TypeScript errors"
+    },
+    "directives": {
+      "errorCount": 1,
+      "status": "❌ 1 TypeScript errors"
+    },
+    "i18n": {
+      "errorCount": 1,
+      "status": "❌ 1 TypeScript errors"
+    },
+    "layouts": {
+      "errorCount": 1,
+      "status": "❌ 1 TypeScript errors"
+    },
+    "plugins": {
+      "errorCount": 1,
+      "status": "❌ 1 TypeScript errors"
+    },
+    "router": {
+      "errorCount": 1,
+      "status": "❌ 1 TypeScript errors"
+    },
+    "services": {
+      "errorCount": 1,
+      "status": "❌ 1 TypeScript errors"
+    },
+    "stores": {
+      "errorCount": 1,
+      "status": "❌ 1 TypeScript errors"
+    },
+    "stories": {
+      "errorCount": 1,
+      "status": "❌ 1 TypeScript errors"
+    },
+    "types": {
+      "errorCount": 1,
+      "status": "❌ 1 TypeScript errors"
+    },
+    "utils": {
+      "errorCount": 1,
+      "status": "❌ 1 TypeScript errors"
+    },
+    "views": {
+      "errorCount": 1,
+      "status": "❌ 1 TypeScript errors"
+    }
+  }
+}

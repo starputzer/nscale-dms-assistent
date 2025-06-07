@@ -71,6 +71,7 @@
 
       <!-- Main Content -->
       <main class="admin-panel__content">
+<<<<<<< HEAD
         <!-- Loading state -->
         <div v-if="isLoading" class="admin-panel__loading">
           <div class="admin-panel__spinner"></div>
@@ -98,6 +99,33 @@
         <div v-else class="admin-panel__error">
           <p>{{ t("admin.tabNotFound", "Tab nicht gefunden") }}</p>
         </div>
+=======
+        <Transition name="fade" mode="out-in">
+          <div v-if="isLoading" class="admin-panel__loading">
+            <div class="admin-panel__spinner"></div>
+            <p>{{ t("admin.loading", "Lade Daten...") }}</p>
+          </div>
+          <div v-else-if="error" class="admin-panel__error">
+            <div class="error-icon">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3>{{ t("admin.error.title", "Ein Fehler ist aufgetreten") }}</h3>
+            <p>{{ error }}</p>
+            <button class="btn btn-primary" @click="window.location.reload()">
+              {{ t("admin.error.refresh", "Seite neu laden") }}
+            </button>
+          </div>
+          <div v-else-if="currentTabComponent" class="admin-tab-container">
+            <component
+              :is="currentTabComponent"
+              @action="handleAction"
+            ></component>
+          </div>
+          <div v-else class="admin-panel__error">
+            <p>{{ t("admin.tabNotFound", "Tab nicht gefunden") }}</p>
+          </div>
+        </Transition>
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       </main>
     </div>
   </div>
@@ -340,6 +368,7 @@ const allTabs = computed(() => [
     icon: "fas fa-file-alt",
   },
   {
+<<<<<<< HEAD
     id: "knowledgeManager",
     label: t("admin.tabs.knowledgeManager", "Wissensdatenbank"),
     icon: "fas fa-database",
@@ -350,6 +379,8 @@ const allTabs = computed(() => [
     icon: "fas fa-heartbeat",
   },
   {
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     id: "system",
     label: t("admin.tabs.system", "System"),
     icon: "fas fa-cogs",
@@ -360,11 +391,14 @@ const allTabs = computed(() => [
     icon: "fas fa-chart-line",
   },
   {
+<<<<<<< HEAD
     id: "ragSettings",
     label: t("admin.tabs.ragSettings", "RAG-Einstellungen"),
     icon: "fas fa-brain",
   },
   {
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     id: "settings",
     label: t("admin.tabs.settings", "Einstellungen"),
     icon: "fas fa-sliders-h",
@@ -379,6 +413,7 @@ const allTabs = computed(() => [
     label: t("admin.tabs.featureToggles", "Feature-Toggles"),
     icon: "fas fa-toggle-on",
   },
+<<<<<<< HEAD
   {
     id: "advancedDocuments",
     label: t("admin.tabs.advancedDocuments", "Erweiterte Dokumentverarbeitung"),
@@ -404,6 +439,8 @@ const allTabs = computed(() => [
     label: t("admin.tabs.abTesting", "A/B Testing"),
     icon: "fas fa-flask",
   },
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 ]);
 
 // In simplified version, all tabs are available
@@ -485,12 +522,17 @@ async function loadTabComponent(tabId) {
   try {
     // Map tab ID to enhanced component path
     const componentMap = {
+<<<<<<< HEAD
       dashboard: () => import("@/components/admin/tabs/AdminDashboard.enhanced.vue"),
+=======
+      dashboard: () => import("@/components/admin/tabs/AdminDashboard.vue"),
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       users: () => import("@/components/admin/tabs/AdminUsers.enhanced.vue"),
       feedback: () =>
         import("@/components/admin/tabs/AdminFeedback.enhanced.vue"),
       motd: () => import("@/components/admin/tabs/AdminMotd.enhanced.vue"),
       docConverter: () =>
+<<<<<<< HEAD
         import("@/components/admin/tabs/AdminDocConverterEnhanced.vue"),
       knowledgeManager: () =>
         import("@/components/admin/tabs/AdminKnowledgeManager.vue"),
@@ -499,10 +541,16 @@ async function loadTabComponent(tabId) {
       system: () => import("@/components/admin/tabs/AdminSystem.enhanced.vue"),
       statistics: () => import("@/components/admin/tabs/AdminStatistics.vue"),
       ragSettings: () => import("@/components/admin/tabs/AdminRAGSettings.vue"),
+=======
+        import("@/components/admin/tabs/AdminDocConverter.vue"),
+      system: () => import("@/components/admin/tabs/AdminSystem.enhanced.vue"),
+      statistics: () => import("@/components/admin/tabs/AdminStatistics.vue"),
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       settings: () => import("@/components/admin/tabs/AdminSystemSettings.vue"),
       logs: () => import("@/components/admin/tabs/AdminLogViewerUpdated.vue"),
       featureToggles: () =>
         import("@/components/admin/tabs/AdminFeatureToggles.enhanced.vue"),
+<<<<<<< HEAD
       advancedDocuments: () =>
         import("@/components/admin/tabs/AdminAdvancedDocuments.vue"),
       backgroundProcessing: () =>
@@ -513,6 +561,8 @@ async function loadTabComponent(tabId) {
         import("@/components/admin/tabs/AdminPredictiveAnalytics.vue"),
       abTesting: () =>
         import("@/components/admin/tabs/AdminABTesting.vue"),
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     };
 
     if (componentMap[tabId]) {

@@ -3,10 +3,14 @@ import numpy as np
 import threading
 from typing import List, Dict, Any, Optional
 import gc
+<<<<<<< HEAD
 import re
 import gzip
 from pathlib import Path
 from datetime import datetime
+=======
+from pathlib import Path
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 from sklearn.feature_extraction import text
 import torch
 
@@ -73,13 +77,18 @@ class EmbeddingManager:
                     return False
 
     def process_chunks(self, chunks: List[Dict[str, Any]]) -> bool:
+<<<<<<< HEAD
         """Phase 1: Advanced preprocessing und optimierte Embedding-Erstellung"""
+=======
+        """Verarbeitet Chunks und erstellt Embeddings mit Optimierungen für große Dokumente"""
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         with self.lock:
             try:
                 if not self.model:
                     logger.warning("Embedding-Modell nicht initialisiert")
                     return False
 
+<<<<<<< HEAD
                 # Advanced preprocessing
                 logger.info(f"🔧 Starte Advanced Preprocessing für {len(chunks)} Chunks")
                 preprocessed_chunks = self._advanced_preprocess_chunks(chunks)
@@ -106,12 +115,46 @@ class EmbeddingManager:
                         
                         logger.info(f"Verarbeite Teilmenge {i//max_chunks_per_batch + 1} "
                                 f"({i}-{batch_end} von {len(preprocessed_chunks)} Chunks)")
+=======
+                if self._load_from_cache(chunks):
+                    return True
+
+                logger.info(f"Erstelle Embeddings für {len(chunks)} Chunks")
+                self.chunks = chunks
+
+                # OPTIMIERUNG 1: Progressive Verarbeitung in Teilmengen
+                # Bei sehr vielen Chunks diese in Teilmengen verarbeiten
+                max_chunks_per_batch = 200  # Maximal 200 Chunks pro Teilmenge
+                
+                if len(chunks) > max_chunks_per_batch:
+                    logger.info(f"Verarbeite {len(chunks)} Chunks in Teilmengen von {max_chunks_per_batch}")
+                    
+                    # Speicher für alle verarbeiteten Embeddings
+                    all_embeddings = []
+                    processed_chunks = []
+                    
+                    # Verarbeite Chunks in Teilmengen
+                    for i in range(0, len(chunks), max_chunks_per_batch):
+                        batch_end = min(i + max_chunks_per_batch, len(chunks))
+                        batch_chunks = chunks[i:batch_end]
+                        
+                        logger.info(f"Verarbeite Teilmenge {i//max_chunks_per_batch + 1} "
+                                f"({i}-{batch_end} von {len(chunks)} Chunks)")
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                         
                         # Extrahiere und begrenzt Texte
                         batch_texts = []
                         for chunk in batch_chunks:
+<<<<<<< HEAD
                             # Text ist bereits normalisiert und auf 1500 Zeichen begrenzt
                             batch_texts.append(chunk['text'])
+=======
+                            # Begrenze Chunk-Größe auf 1500 Zeichen
+                            if len(chunk['text']) > 1500:
+                                chunk['text'] = chunk['text'][:1500]
+                            batch_texts.append(chunk['text'])
+                            processed_chunks.append(chunk)
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                         
                         # Speicher freigeben vor dem Encoding
                         if self.device == "cuda":
@@ -138,9 +181,16 @@ class EmbeddingManager:
                     
                     # Kombiniere alle Teilmengen
                     self.embeddings = np.vstack(all_embeddings)
+<<<<<<< HEAD
                     
                     # Erstelle TF-IDF Matrix für alle Chunks
                     all_texts = [chunk['text'] for chunk in self.chunks]
+=======
+                    self.chunks = processed_chunks
+                    
+                    # Erstelle TF-IDF Matrix für alle Chunks
+                    all_texts = [chunk['text'] for chunk in processed_chunks]
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                     
                     # Deutsche Stopwörter
                     german_stopwords = list(text.ENGLISH_STOP_WORDS.union({
@@ -155,7 +205,16 @@ class EmbeddingManager:
                     
                 else:
                     # Standardverhalten für wenige Chunks
+<<<<<<< HEAD
                     texts = [chunk['text'] for chunk in preprocessed_chunks]
+=======
+                    texts = []
+                    for chunk in chunks:
+                        # Begrenze Chunk-Größe auf 1500 Zeichen
+                        if len(chunk['text']) > 1500:
+                            chunk['text'] = chunk['text'][:1500]
+                        texts.append(chunk['text'])
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                     
                     # Deutsche Stopwörter
                     german_stopwords = list(text.ENGLISH_STOP_WORDS.union({
@@ -284,6 +343,7 @@ class EmbeddingManager:
 
             except Exception as e:
                 logger.error(f"Fehler bei der Suche: {e}")
+<<<<<<< HEAD
                 return []
     
     def _advanced_preprocess_chunks(self, chunks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -428,3 +488,6 @@ class EmbeddingManager:
                 return max(20, min(estimated_chunks, 200))  # Zwischen 20 und 200
             except:
                 return 100  # Fallback wenn psutil nicht verfügbar
+=======
+                return []
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da

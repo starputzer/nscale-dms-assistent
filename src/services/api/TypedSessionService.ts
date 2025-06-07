@@ -165,7 +165,11 @@ export class TypedSessionService extends BaseApiService<
   ): Promise<Result<ChatSession[], APIError>> {
     try {
 
+<<<<<<< HEAD
       const pageSize = params? (response.data as any).pageSize || 20;
+=======
+      const pageSize = params?.pageSize || 20;
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       const sortBy = params?.sortBy || "updatedAt";
       const sortDirection = params?.sortDirection || "desc";
 
@@ -508,7 +512,11 @@ export class TypedSessionService extends BaseApiService<
    * Synchronisiert Nachrichten in den Offline-Speicher
    */
   private async syncMessagesToOfflineStorage(
+<<<<<<< HEAD
     _sessionId: string,
+=======
+    sessionId: string,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     messages: ChatMessage[],
   ): Promise<void> {
     try {
@@ -570,7 +578,11 @@ export class TypedSessionService extends BaseApiService<
         );
 
         // Event auslösen
+<<<<<<< HEAD
         this.emitEvent("messageSent" as any, result.(data as any);
+=======
+        this.emitEvent("messageSent", result.data);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       }
 
       return result;
@@ -731,7 +743,11 @@ export class TypedSessionService extends BaseApiService<
               finalMessage = event.message;
             }
           },
+<<<<<<< HEAD
           onComplete: (_response) => {
+=======
+          onComplete: (response) => {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             // Stream beenden
             this.currentStream = null;
 
@@ -972,7 +988,11 @@ export class TypedSessionService extends BaseApiService<
   /**
    * Fügt eine Anfrage zur Synchronisationsqueue hinzu
    */
+<<<<<<< HEAD
   private async _addToSyncQueue(request: {
+=======
+  private async addToSyncQueue(request: {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     url: string;
     method: string;
     data?: any;

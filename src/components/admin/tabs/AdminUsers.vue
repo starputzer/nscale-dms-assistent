@@ -221,6 +221,7 @@
         </button>
       </div>
     </AdminCard>
+<<<<<<< HEAD
 
     <!-- User Dialog -->
     <div v-if="showUserDialog" class="admin-dialog-overlay" @click.self="showUserDialog = false">
@@ -281,6 +282,8 @@
         </div>
       </div>
     </div>
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   </div>
 </template>
 
@@ -434,6 +437,7 @@ function formatDate(timestamp: number | null | undefined): string {
   }
 }
 
+<<<<<<< HEAD
 // User dialog state
 const showUserDialog = ref(false);
 const dialogMode = ref<'create' | 'edit'>('create');
@@ -509,6 +513,22 @@ async function saveUser() {
       error: error
     });
   }
+=======
+function createNewUser() {
+  // Implementation for new user creation
+  // This would typically open a modal dialog
+  console.log("Open create user dialog");
+}
+
+function editUser(user: User) {
+  // Implementation for editing a user
+  console.log("Edit user:", user);
+}
+
+function deleteUser(user: User) {
+  // Implementation for deleting a user
+  console.log("Delete user:", user);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 }
 
 // Custom initialization
@@ -689,6 +709,7 @@ console.log(`[AdminUsers] i18n initialized with locale: ${locale.value}`);
     width: 100%;
   }
 }
+<<<<<<< HEAD
 
 // Dialog styles
 .admin-dialog-overlay {
@@ -759,4 +780,6 @@ console.log(`[AdminUsers] i18n initialized with locale: ${locale.value}`);
   border-top: 1px solid var(--admin-border);
   background-color: var(--admin-bg-alt);
 }
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 </style>

@@ -84,7 +84,11 @@ export class ApiService {
   private logService: LogService;
 
   /** Flag für laufenden Token-Refresh */
+<<<<<<< HEAD
   private _isRefreshingToken: boolean = false;
+=======
+  private isRefreshingToken: boolean = false;
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
   /** Warteschlange für Anfragen, die auf Token-Refresh warten */
   private tokenRefreshQueue: Array<{
@@ -106,13 +110,21 @@ export class ApiService {
     this.centralAuthManager = CentralAuthManager.getInstance();
 
     // Konfiguriere Axios-Instanz
+<<<<<<< HEAD
     // baseURL leer lassen, da alle unsere Endpoints bereits mit /api beginnen
     const baseURL = ""; // Empty to avoid double /api prefix
+=======
+    // baseURL ist bereits korrekt mit Version konfiguriert (/api/v1)
+    const baseURL = apiConfig.BASE_URL;
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     console.log("[ApiService] Base URL configuration:", {
       BASE_URL: apiConfig.BASE_URL,
       API_VERSION: apiConfig.API_VERSION,
       finalBaseURL: baseURL,
+<<<<<<< HEAD
       note: "Using empty baseURL to avoid double /api prefix"
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     });
     this.axiosInstance = axios.create({
       baseURL: baseURL,
@@ -241,12 +253,15 @@ export class ApiService {
 
         // API-Version nicht hinzufügen, da sie bereits in der baseURL enthalten ist
         // (Entfernt, um doppelte Version zu vermeiden)
+<<<<<<< HEAD
         
         // Fix double /api prefix
         if (config.url && config.url.startsWith('/api/api/')) {
           config.url = config.url.replace('/api/api/', '/api/');
           this.logService.debug(`Fixed double /api prefix: ${config.url}`);
         }
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
         return config;
       },
@@ -598,6 +613,7 @@ export class ApiService {
     url: string,
     options: ApiRequestOptions = {},
   ): Promise<ApiResponse<T>> {
+<<<<<<< HEAD
     // Check if this is an admin endpoint that doesn't use /v1
     const adminEndpoints = [
       '/admin',
@@ -625,6 +641,12 @@ export class ApiService {
     const defaultOptions: ApiRequestOptions = {
       method,
       url: adjustedUrl,
+=======
+    // Default-Optionen
+    const defaultOptions: ApiRequestOptions = {
+      method,
+      url,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       retry: true,
       refreshToken: true,
       handleRateLimit: true,
@@ -690,6 +712,7 @@ export class ApiService {
       // Führe die Anfrage aus
       const response = await this.axiosInstance.request<T>(options);
 
+<<<<<<< HEAD
       // Check if response is already in ApiResponse format
       if (response.data && typeof response.data === 'object' && 
           'success' in response.data && 'data' in response.data) {
@@ -698,6 +721,10 @@ export class ApiService {
       }
       
       // For backward compatibility, wrap raw responses
+=======
+      // Wrap the response in ApiResponse format
+      // The backend returns data directly, not wrapped in success/data structure
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       return {
         success: true,
         data: response.data as T,

@@ -83,7 +83,11 @@ export function useEnhancedStreaming(
   let tokenBatcher: BatchUpdateManager<string> | null = null;
   let currentOptions = { ...defaultOptions };
   let streamStartTime = 0;
+<<<<<<< HEAD
   let _tokenBuffer: string[] = [];
+=======
+  let tokenBuffer: string[] = [];
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
   // Computed
   const isStreaming = computed(() => state.value.isStreaming);
@@ -304,7 +308,11 @@ export function useEnhancedStreaming(
       state.value.estimatedTime = estimated;
     });
 
+<<<<<<< HEAD
     eventSource.onError(error: Error) => {
+=======
+    eventSource.onError((error: Error) => {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       state.value.error = error;
       state.value.connectionState = "error";
 

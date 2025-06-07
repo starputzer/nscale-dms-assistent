@@ -2,6 +2,7 @@ import asyncio
 import json
 from sse_starlette.sse import EventSourceResponse
 from typing import Dict, Any, List, Optional, Tuple, AsyncGenerator
+<<<<<<< HEAD
 from collections import defaultdict
 import re
 from enum import Enum
@@ -34,11 +35,18 @@ class HybridCache:
 from ..retrieval.document_store import DocumentStore
 from ..retrieval.embedding import EmbeddingManager
 from ..retrieval.reranker import ReRanker
+=======
+from ..core.config import Config
+from ..core.logging import LogManager
+from ..retrieval.document_store import DocumentStore
+from ..retrieval.embedding import EmbeddingManager
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 from ..llm.model import OllamaClient
 import torch
 
 logger = LogManager.setup_logging()
 
+<<<<<<< HEAD
 class QueryIntent(Enum):
     """Query Intent Types für bessere Retrieval-Strategien"""
     FACTUAL = "factual"  # Was ist...? Wer ist...?
@@ -49,6 +57,8 @@ class QueryIntent(Enum):
     COMPARISON = "comparison"  # Unterschied zwischen...? Vergleich...
     LISTING = "listing"  # Liste, Aufzählung, alle...
 
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 class RAGEngine:
     """Hauptmodul für RAG-Funktionalität"""
     
@@ -65,17 +75,23 @@ class RAGEngine:
         
         self.document_store = DocumentStore()
         self.embedding_manager = EmbeddingManager()
+<<<<<<< HEAD
         self.reranker = ReRanker()  # Phase 2.3: Cross-Encoder Reranking
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         self.ollama_client = OllamaClient()
         self.initialized = False
         self._init_lock = asyncio.Lock()  # Lock für Thread-Sicherheit bei Initialisierung
         self._active_streams = {}  # Dictionary für aktive Streams
+<<<<<<< HEAD
         
         # Phase 3: Performance Components
         self.pipeline = AsyncPipeline(max_concurrent=5)
         self.resource_processor = ResourceAwareProcessor(self.pipeline)
         self.monitor = self.pipeline.monitor
         self.cache: Optional[HybridCache] = None
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     
     async def initialize(self):
         """Initialisiert alle Komponenten - Thread-sicher"""
@@ -97,6 +113,7 @@ class RAGEngine:
                     logger.error("Fehler beim Initialisieren des Embedding-Modells")
                     return False
                 
+<<<<<<< HEAD
                 # Phase 2.3: Initialisiere Reranker (optional, kein Fehler wenn es fehlschlägt)
                 try:
                     self.reranker.initialize()
@@ -109,6 +126,8 @@ class RAGEngine:
                 self.cache = get_cache()
                 logger.info("💾 Cache-System initialisiert")
                 
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                 # Verarbeite Chunks
                 chunks = self.document_store.get_chunks()
                 if not self.embedding_manager.process_chunks(chunks):
@@ -131,14 +150,22 @@ class RAGEngine:
         """
         if not question:  # Sicherstellen, dass die Frage nicht leer ist
             logger.error("Die Frage wurde nicht übergeben.")
+<<<<<<< HEAD
             yield json.dumps({'error': 'Keine Frage übergeben.'})
+=======
+            yield json.dumps({"error": "Keine Frage übergeben."})
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             return
 
         if not self.initialized:
             logger.info("Lazy-Loading der RAG-Engine für Streaming...")
             success = await self.initialize()
             if not success:
+<<<<<<< HEAD
                 yield json.dumps({'error': 'System konnte nicht initialisiert werden'})
+=======
+                yield json.dumps({"error": "System konnte nicht initialisiert werden"})
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                 return
 
         if len(question) > 2048:
@@ -152,6 +179,7 @@ class RAGEngine:
         logger.info(f"Stream-ID: {stream_id}")
 
         try:
+<<<<<<< HEAD
             # Phase 2: Apply Query Intelligence für Streaming
             intent = self._detect_query_intent(question)
             expansion = self._expand_query(question, intent)
@@ -174,6 +202,14 @@ class RAGEngine:
             relevant_chunks = self._optimize_context_window(
                 relevant_chunks, question, intent, max_tokens=4000
             )
+=======
+            # Chunks suchen
+            relevant_chunks = self.embedding_manager.search(question, top_k=Config.TOP_K)
+            if not relevant_chunks:
+                logger.warning(f"Keine relevanten Chunks für Streaming-Frage gefunden: {question[:50]}...")
+                yield json.dumps({"error": "Keine relevanten Informationen gefunden"})
+                return
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
             # Entferne Duplikate basierend auf der Datei
             seen_sources = set()
@@ -208,8 +244,13 @@ class RAGEngine:
                 # Füge zum Buffer hinzu 
                 complete_answer += chunk
                 
+<<<<<<< HEAD
                 # Für StreamingResponse: Liefere JSON
                 yield json.dumps({'response': chunk}) + '\n'
+=======
+                # Für StreamingResponse: Liefere JSON-Objekt
+                yield json.dumps({"content": chunk})
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                 
                 # Kurze Pause einfügen, um dem Browser Zeit zum Rendern zu geben
                 await asyncio.sleep(0.01)
@@ -217,6 +258,7 @@ class RAGEngine:
             # Wenn keine Antwort empfangen wurde
             if not found_data:
                 logger.warning("Keine Antwort vom Modell empfangen")
+<<<<<<< HEAD
                 yield json.dumps({'error': 'Das Modell hat keine Ausgabe erzeugt.'})
             else:
                 # Speichern der kompletten Antwort in der Chathistorie
@@ -234,6 +276,23 @@ class RAGEngine:
         except Exception as e:
             logger.error(f"Fehler beim Streaming der Antwort: {e}", exc_info=True)
             yield json.dumps({'error': f'Fehler beim Streaming: {str(e)}'})
+=======
+                yield json.dumps({"error": "Das Modell hat keine Ausgabe erzeugt."})
+            else:
+                # Speichern der kompletten Antwort in der Chathistorie
+                if session_id and complete_answer.strip():
+                    logger.info(f"Speichere vollständige Antwort ({len(complete_answer)} Zeichen) in Session {session_id}")
+                    from ..session.chat_history import ChatHistoryManager
+                    chat_history = ChatHistoryManager()
+                    chat_history.add_message(session_id, complete_answer, is_user=False)
+
+            # Für Streaming-Abschluss
+            yield json.dumps({"done": True})
+            
+        except Exception as e:
+            logger.error(f"Fehler beim Streaming der Antwort: {e}", exc_info=True)
+            yield json.dumps({"error": f"Fehler beim Streaming: {str(e)}"})
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     
     async def stream_answer(self, question: str, session_id: Optional[int] = None, 
                            use_simple_language: bool = False, stream_id: Optional[str] = None) -> EventSourceResponse:
@@ -247,7 +306,12 @@ class RAGEngine:
             success = await self.initialize()
             if not success:
                 async def error_stream():
+<<<<<<< HEAD
                     yield json.dumps({'error': 'System konnte nicht initialisiert werden'})
+=======
+                    yield f"data: {json.dumps({'error': 'System konnte nicht initialisiert werden'})}\n\n"
+                    yield "event: done\ndata: \n\n"
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                 return EventSourceResponse(error_stream())
 
         if len(question) > 2048:
@@ -266,8 +330,13 @@ class RAGEngine:
                 relevant_chunks = self.embedding_manager.search(question, top_k=Config.TOP_K)
                 if not relevant_chunks:
                     logger.warning(f"Keine relevanten Chunks für Streaming-Frage gefunden: {question[:50]}...")
+<<<<<<< HEAD
                     # EventSourceResponse fügt SSE-Formatierung automatisch hinzu
                     yield json.dumps({'error': 'Keine relevanten Informationen gefunden'})
+=======
+                    yield f"data: {json.dumps({'error': 'Keine relevanten Informationen gefunden'})}\n\n"
+                    yield "event: done\ndata: \n\n"
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                     return
 
                 # Entferne Duplikate basierend auf der Datei
@@ -305,16 +374,28 @@ class RAGEngine:
                     # SSE-Event formatieren - WICHTIG: Korrektes Format mit \n\n am Ende
                     logger.debug(f"Sende Token: '{chunk}'")
                     
+<<<<<<< HEAD
                     # EventSourceResponse fügt data: prefix automatisch hinzu
                     yield json.dumps({'response': chunk})
                     
                     # Kurze Pause einfügen, um dem Browser Zeit zum Rendern zu geben
                     await asyncio.sleep(0.05)  # Erhöht von 0.01 auf 0.05 für bessere Sichtbarkeit
+=======
+                    # Wichtig: Senden eines vollständigen SSE-Events
+                    yield f"data: {json.dumps({'response': chunk})}\n\n"
+                    
+                    # Kurze Pause einfügen, um dem Browser Zeit zum Rendern zu geben
+                    await asyncio.sleep(0.01)
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
                 # Wenn keine Antwort empfangen wurde
                 if not found_data:
                     logger.warning("Keine Antwort vom Modell empfangen")
+<<<<<<< HEAD
                     yield json.dumps({'error': 'Das Modell hat keine Ausgabe erzeugt.'})
+=======
+                    yield f"data: {json.dumps({'error': 'Das Modell hat keine Ausgabe erzeugt.'})}\n\n"
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                 else:
                     # Speichern der kompletten Antwort in der Chathistorie
                     if session_id and complete_answer.strip():
@@ -323,12 +404,25 @@ class RAGEngine:
                         chat_history = ChatHistoryManager()
                         chat_history.add_message(session_id, complete_answer, is_user=False)
 
+<<<<<<< HEAD
                 # EventSourceResponse beendet automatisch wenn der Generator endet
                 logger.debug("Stream abgeschlossen")
                 
             except Exception as e:
                 logger.error(f"Fehler beim Streaming der Antwort: {e}", exc_info=True)
                 yield json.dumps({"error": f"Fehler beim Streaming: {str(e)}"})
+=======
+                # KRITISCH: Korrektes done-Event senden (separates Event)
+                # Das Format muss exakt sein: "event: done\ndata: \n\n"
+                logger.debug("Sende 'done' Event zum Abschluss des Streams")
+                yield "event: done\ndata: \n\n"
+                
+            except Exception as e:
+                logger.error(f"Fehler beim Streaming der Antwort: {e}", exc_info=True)
+                error_msg = json.dumps({"error": f"Fehler beim Streaming: {str(e)}"})
+                yield f"data: {error_msg}\n\n"
+                yield "event: done\ndata: \n\n"
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
         # Ping-Interval setzen, um Verbindungsabbrüche zu vermeiden
         return EventSourceResponse(
@@ -338,9 +432,16 @@ class RAGEngine:
         )
 
     def _format_error_event(self, error_message: str) -> AsyncGenerator[str, None]:
+<<<<<<< HEAD
         """Formatiert eine Fehlermeldung für EventSourceResponse"""
         async def error_generator():
             yield json.dumps({'error': error_message})
+=======
+        """Formatiert eine Fehlermeldung als SSE-Event"""
+        async def error_generator():
+            yield f"data: {json.dumps({'error': error_message})}\n\n"
+            yield "event: done\ndata: \n\n"
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         return error_generator()
 
     async def cancel_active_streams(self):
@@ -360,6 +461,7 @@ class RAGEngine:
 
     async def answer_question(self, question: str, user_id: Optional[int] = None, use_simple_language: bool = False) -> Dict[str, Any]:
         """Beantwortet eine Frage mit dem RAG-System"""
+<<<<<<< HEAD
         # Phase 3: Performance Monitoring
         result = None
         async with self.monitor.measure_time(f"query_total"):
@@ -416,6 +518,21 @@ class RAGEngine:
                     search_wrapper,
                     fallback_task=fallback_search
                 )
+=======
+        if not self.initialized:
+            success = await self.initialize()
+            if not success:
+                return {
+                    'success': False,
+                    'message': 'Fehler bei der Initialisierung des Systems',
+                    'answer': '',
+                    'chunks': [],
+                    'sources': []
+                }
+        
+        # Suche relevante Chunks
+        chunks = self.embedding_manager.search(question)
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         
         if not chunks:
             return {
@@ -426,6 +543,7 @@ class RAGEngine:
                 'sources': []
             }
         
+<<<<<<< HEAD
         # Phase 2.3: Cross-Encoder Reranking
         if self.reranker.initialized:
             chunks = self.reranker.rerank(
@@ -447,6 +565,12 @@ class RAGEngine:
         seen_sources = set()
         unique_chunks = []
         for chunk in optimized_chunks:
+=======
+        # Entferne Duplikate basierend auf der Datei
+        seen_sources = set()
+        unique_chunks = []
+        for chunk in chunks:
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             source = chunk.get('file', 'unknown')
             # Füge nur hinzu, wenn die Quelle noch nicht gesehen wurde
             if source not in seen_sources:
@@ -475,11 +599,16 @@ class RAGEngine:
         # Prüfe, ob die Antwort Deutsch ist
         is_german, answer = self._ensure_german_answer(result['response'], unique_chunks)
         
+<<<<<<< HEAD
         final_result = {
+=======
+        return {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             'success': True,
             'answer': answer,
             'chunks': unique_chunks,
             'sources': self._extract_sources(unique_chunks),
+<<<<<<< HEAD
             'cached': result.get('cached', False),
             'performance': {
                 'intent': intent.value,
@@ -581,6 +710,15 @@ class RAGEngine:
         
         # Sortiere Chunks nach Relevanz
         sorted_chunks = sorted(hierarchical_chunks, key=lambda x: x.get('score', 0), reverse=True)
+=======
+            'cached': result.get('cached', False)
+        }
+
+    def _format_prompt(self, question: str, chunks: List[Dict[str, Any]], use_simple_language: bool = False) -> str:
+        """Formatiert einen optimierten deutschen Prompt für LLama 3 mit verbesserter Quellenangabe"""
+        # Sortiere Chunks nach Relevanz
+        sorted_chunks = sorted(chunks, key=lambda x: x.get('score', 0), reverse=True)
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         
         # Extrahiere die relevantesten Inhalte in kompakter Form
         kontext_mit_quellen = []
@@ -612,6 +750,7 @@ class RAGEngine:
             source_details['file'] = chunk.get('file', 'Unbekannte Quelle')
             
             # Je nach Chunk-Typ formatieren
+<<<<<<< HEAD
             if chunk.get('type') == 'hierarchical':
                 source_details['type'] = 'hierarchical'
                 source_details['section'] = chunk.get('section_title', 'Hauptteil')
@@ -625,6 +764,12 @@ class RAGEngine:
                 source_details['type'] = 'semantic'
                 source_details['coherence'] = chunk.get('coherence_score', 0)
                 text = f"<{source_id}> Dokument {i+1} (aus {chunk['file']}, Kohärenz: {chunk.get('coherence_score', 0):.2f}): {chunk_text}"
+=======
+            if chunk.get('type') == 'section':
+                source_details['type'] = 'section'
+                source_details['title'] = chunk.get('title', 'Unbekannter Abschnitt')
+                text = f"<{source_id}> Dokument {i+1} (Abschnitt '{chunk['title']}' aus {chunk['file']}): {chunk_text}"
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             else:
                 source_details['type'] = 'chunk'
                 source_details['position'] = chunk.get('start', 0)
@@ -640,7 +785,11 @@ class RAGEngine:
         # Basisprompt mit optimierten Anweisungen für präzisere und kürzere Antworten
         base_prompt = f"""<|begin_of_text|>
     <|system|>
+<<<<<<< HEAD
     Du bist ein deutschsprachiger, präziser und knapper Assistent für den Basisdienst Digitale Akte (auch bekannt als nscale) der SenMVKU Berlin.
+=======
+    Du bist ein deutschsprachiger, präziser und knapper Assistent für die nscale DMS-Software der SenMVKU Berlin.
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
     Aufgaben und Anforderungen:
     1. Erstelle DIREKTE und KURZE Antworten ohne Ausschweifungen - IMMER auf Deutsch.
@@ -658,7 +807,11 @@ class RAGEngine:
     "Quellen:
     1. nscale-handbuch.md, Abschnitt 'Akten anlegen'"
 
+<<<<<<< HEAD
     Zielgruppe: Sachbearbeiter der Berliner Verwaltung, die den Basisdienst Digitale Akte für die Aktenverwaltung nutzen."""
+=======
+    Zielgruppe: Sachbearbeiter der Berliner Verwaltung, die nscale DMS für die Aktenverwaltung nutzen."""
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
         # Erweiterter Prompt für einfache Sprache
         simple_language_prompt = f"""<|begin_of_text|>
@@ -679,7 +832,11 @@ class RAGEngine:
     3. Liste am Ende kurz die Quellen:
     "Quellen: 1. Handbuch, Abschnitt 'Akten'"
     
+<<<<<<< HEAD
     Du hilfst neuen Mitarbeitern, die den Basisdienst Digitale Akte zum ersten Mal benutzen."""
+=======
+    Du hilfst neuen Mitarbeitern, die nscale DMS zum ersten Mal benutzen."""
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
         # Wähle den passenden Prompt
         system_prompt = simple_language_prompt if use_simple_language else base_prompt
@@ -781,6 +938,7 @@ Bitte stellen Sie eine spezifischere Frage oder versuchen Sie es später erneut.
             return {
                 'success': False,
                 'message': f"Fehler: {str(e)}"
+<<<<<<< HEAD
             }
     
     # ==================== Phase 3: Performance & Memory Management ====================
@@ -1235,3 +1393,6 @@ Bitte stellen Sie eine spezifischere Frage oder versuchen Sie es später erneut.
     def clear_cache(self) -> None:
         """Clear the cache"""
         pass
+=======
+            }
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da

@@ -1,0 +1,549 @@
+[
+  {
+    "timestamp": 1747742626.8569121,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747743532.0633628,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747743536.9507148,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747743541.94798,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747743545.9108508,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747743550.069062,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747743554.9243324,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747743559.9093225,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747743563.969927,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747748559.9299917,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747748680.649767,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747748681.9997675,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747748688.9649498,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747748694.1662364,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747748702.3552697,
+    "type": "unknown",
+    "message": "Fehler beim Abrufen der Feedback-Statistiken",
+    "stack": "",
+    "context": {
+      "promiseRejection": true,
+      "originalReason": {}
+    },
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747748704.0908892,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747748707.6369984,
+    "type": "unknown",
+    "message": "showToast is not a function",
+    "stack": "",
+    "context": {
+      "promiseRejection": true,
+      "originalReason": {}
+    },
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747748709.0973797,
+    "type": "unknown",
+    "message": "i18n.t is not a function",
+    "stack": "",
+    "context": {
+      "promiseRejection": true,
+      "originalReason": {}
+    },
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747748710.2584102,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747748710.2602496,
+    "type": "unknown",
+    "message": "i18n.t is not a function",
+    "stack": "",
+    "context": {
+      "promiseRejection": true,
+      "originalReason": {}
+    },
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747748719.9322033,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747748727.0439746,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747748732.9812639,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747748757.9180367,
+    "type": "unknown",
+    "message": "i18n.t is not a function",
+    "stack": "",
+    "context": {
+      "promiseRejection": true,
+      "originalReason": {}
+    },
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747748962.4274383,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747748974.0007114,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747748989.314216,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747748997.3741534,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747749094.9269578,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747749110.5468848,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747749123.487719,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747749154.02691,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747749221.326976,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747749234.9985857,
+    "type": "unknown",
+    "message": "Fehler beim Abrufen des negativen Feedbacks",
+    "stack": "",
+    "context": {
+      "promiseRejection": true,
+      "originalReason": {}
+    },
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747749286.937397,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747749291.9938557,
+    "type": "unknown",
+    "message": "Fehler beim Abrufen des negativen Feedbacks",
+    "stack": "",
+    "context": {
+      "promiseRejection": true,
+      "originalReason": {}
+    },
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747751181.6675093,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747751185.6428523,
+    "type": "unknown",
+    "message": "Fehler beim Abrufen der Feedback-Statistiken",
+    "stack": "",
+    "context": {
+      "promiseRejection": true,
+      "originalReason": {}
+    },
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747751725.3772812,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747751726.305459,
+    "type": "unknown",
+    "message": "Fehler beim Abrufen der Feedback-Statistiken",
+    "stack": "",
+    "context": {
+      "promiseRejection": true,
+      "originalReason": {}
+    },
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747754326.3569188,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747754366.5570588,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747754582.3969843,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747754589.0170424,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747754603.0176744,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747754619.0568295,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747754625.9774525,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747754632.9670465,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747754639.9668627,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747754645.9371903,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747754659.317152,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": 1747754671.0267763,
+    "type": "unknown",
+    "message": "STORE_INITIALIZATION_ERROR",
+    "stack": "",
+    "context": {},
+    "user_id": null,
+    "ip": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  }
+]

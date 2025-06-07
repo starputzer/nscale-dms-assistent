@@ -263,6 +263,7 @@ export interface AdminTab {
   requiredRole?: string;
   featureFlag?: string;
 }
+<<<<<<< HEAD
 
 
 export interface SystemCheckResult {
@@ -273,3 +274,5 @@ export interface SystemCheckResult {
 export interface UserStats {
   [key: string]: any;
 }
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da

@@ -223,7 +223,11 @@ class DocumentConverterServiceWrapper {
   public async getDocumentContent(documentId: string): Promise<string> {
     try {
       this.logger.debug(`Rufe Dokumentinhalt für ${documentId} ab`);
+<<<<<<< HEAD
       return await (this.service as any).getDocumentContent(documentId);
+=======
+      return await this.service.getDocumentContent(documentId);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     } catch (error) {
       const convertedError = this.convertError(
         error,
@@ -346,7 +350,11 @@ class DocumentConverterServiceWrapper {
    * @returns true, wenn das Format unterstützt wird
    */
   public isFormatSupported(format: string): boolean {
+<<<<<<< HEAD
     return (this.service as any).isFormatSupported(format);
+=======
+    return this.service.isFormatSupported(format);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   }
 
   /**
@@ -432,12 +440,21 @@ class DocumentConverterServiceWrapper {
 
     return {
       code,
+<<<<<<< HEAD
       message: (additional as any).message || message,
       details: (additional as any).details || details,
       type,
       timestamp: new Date(),
       resolution: (additional as any).resolution,
       helpItems: (additional as any).helpItems,
+=======
+      message: additional.message || message,
+      details: additional.details || details,
+      type,
+      timestamp: new Date(),
+      resolution: additional.resolution,
+      helpItems: additional.helpItems,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       documentId: additional.documentId,
       originalError: error instanceof Error ? error : undefined,
     };

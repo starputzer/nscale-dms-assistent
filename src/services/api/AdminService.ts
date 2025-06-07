@@ -57,7 +57,11 @@ export class AdminService {
 
     // Get the current user directly
     // Try accessing it from different properties
+<<<<<<< HEAD
     const currentUser = ((((authService as any).user || (authService as any).currentUser;
+=======
+    const currentUser = (authService as any).user || (authService as any).currentUser;
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
     // Get the current user from local storage as a fallback
     let userFromStorage = null;
@@ -67,7 +71,11 @@ export class AdminService {
       const userJson2 = localStorage.getItem("user");
 
       if (userJson) {
+<<<<<<< HEAD
         userFromStorage = JSON.parse(userJson as any);
+=======
+        userFromStorage = JSON.parse(userJson);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       } else if (userJson2) {
         userFromStorage = JSON.parse(userJson2 || '{}');
       }
@@ -80,7 +88,11 @@ export class AdminService {
     try {
       const userJson = sessionStorage.getItem("nscale_user");
       if (userJson) {
+<<<<<<< HEAD
         userFromSessionStorage = JSON.parse(userJson as any);
+=======
+        userFromSessionStorage = JSON.parse(userJson);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       }
     } catch (e) {
       console.error("Error parsing user from session storage", e);
@@ -955,7 +967,11 @@ export class AdminService {
    * Negative Feedback-Einträge abrufen
    */
   public async getNegativeFeedback(
+<<<<<<< HEAD
     _limit: number = 100,
+=======
+    limit: number = 100,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   ): Promise<ApiResponse<any>> {
     try {
       // Prüfen, ob Admin-Rechte vorhanden sind
@@ -1084,7 +1100,11 @@ export class AdminService {
   /**
    * Löst ein Event aus
    */
+<<<<<<< HEAD
   private _emitEvent(event: string, data?: any): void {
+=======
+  private emitEvent(event: string, data?: any): void {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     if (this.eventHandlers.has(event)) {
       this.eventHandlers.get(event)?.forEach((handler: any) => {
         try {

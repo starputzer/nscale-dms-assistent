@@ -1,0 +1,1019 @@
+<template>
+  <div class="app-container" :class="{ 'theme-dark': isDarkTheme }">
+    <!-- Authentifizierungsseite -->
+    <auth-view v-if="!isAuthenticated" />
+
+    <!-- Hauptanwendung (wenn eingeloggt) -->
+    <div v-else class="main-layout">
+      <!-- Header mit Navigation -->
+      <app-header 
+        :user-role="userRole" 
+        :active-view="activeView"
+        @toggle-admin="toggleAdminView"
+        @toggle-settings="toggleSettings"
+        @logout="logout"
+      />
+      
+      <!-- Message of the Day -->
+      <app-motd 
+        v-if="motdConfig.enabled && shouldShowMotd" 
+        :config="motdConfig"
+        @dismiss="dismissMotd"
+      />
+      
+      <!-- Hauptinhalt -->
+      <main class="main-content">
+        <!-- Chat-Bereich -->
+        <chat-view 
+          v-if="activeView === 'chat'"
+          :current-session="currentSession"
+          :sessions="sessions"
+          :messages="messages"
+          :is-streaming="isStreaming"
+          :is-loading="isLoading"
+          @new-session="startNewSession"
+          @load-session="loadSession"
+          @delete-session="deleteSession"
+          @send-message="sendMessage"
+        />
+        
+        <!-- Admin-Panel -->
+        <admin-view 
+          v-else-if="activeView === 'admin'"
+          :active-tab="adminTab"
+          :users-list="usersList"
+          :system-stats="systemStats"
+          :feedback-stats="feedbackStats"
+          :recent-feedback="recentFeedback"
+          :motd-config="motdEditConfig"
+          :ab-tests="abTests"
+          @change-tab="setAdminTab"
+          @update-motd="updateMotd"
+          @toggle-user-role="toggleUserRole"
+          @toggle-user-status="toggleUserStatus"
+          @delete-user="deleteUser"
+        />
+      </main>
+      
+      <!-- Modals -->
+      <feedback-dialog 
+        v-if="showFeedbackDialog"
+        :message="feedbackMessage"
+        :type="feedbackType"
+        v-model:comment="feedbackComment"
+        @close="showFeedbackDialog = false"
+        @submit="submitFeedbackWithComment"
+        @select-type="submitFeedback"
+      />
+      
+      <settings-dialog
+        v-if="settingsVisible"
+        v-model:fontSizeLevel="fontSizeLevel"
+        v-model:contrast-mode="contrastMode"
+        v-model:color-mode="colorMode"
+        v-model:language="language"
+        v-model:streaming-enabled="streamingEnabled"
+        :system-info="systemInfo"
+        :user-role="userRole"
+        @close="toggleSettings"
+        @reset="resetSettings"
+      />
+      
+      <!-- Toast-Container für Benachrichtigungen -->
+      <toast-container />
+      
+      <!-- Error-Boundary für Fehlerfälle -->
+      <error-boundary>
+        <template #default="{ error, resetError }">
+          <critical-error :error="error" @reset="resetError" />
+        </template>
+      </error-boundary>
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+// Vue core imports for composition API
+import { defineComponent, ref, computed, onMounted, watch, inject } from 'vue'
+import type { ComputedRef, Ref } from 'vue'
+
+/**
+ * Type definitions (directly in this file to avoid import resolution issues)
+ */
+// Session types
+interface ChatSession {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+  isArchived?: boolean;
+  isPinned?: boolean;
+  tags?: any[];
+  category?: any;
+  preview?: string;
+  messageCount?: number;
+  customData?: Record<string, any>;
+}
+
+interface ChatMessage {
+  id: string;
+  sessionId: string;
+  content: string;
+  role: "user" | "assistant" | "system";
+  timestamp: string;
+  isStreaming?: boolean;
+  status?: "pending" | "sent" | "error";
+  metadata?: Record<string, any>;
+}
+
+// Legacy Message type for backward compatibility
+interface Message {
+  id: string;
+  text?: string;
+  is_user?: boolean;
+  timestamp: string;
+  sources?: any[];
+}
+
+// MOTD configuration
+interface MotdConfig {
+  enabled: boolean;
+  title?: string;
+  content: string;
+  display?: {
+    showInChat: boolean;
+    showOnStartup: boolean;
+  };
+  format?: string;
+  style?: Record<string, string>;
+}
+
+// Store types (mock implementations)
+interface AuthStore {
+  isAuthenticated: boolean;
+  token: string | null;
+  userRole: string;
+  logout(): void;
+  validateToken(): Promise<void>;
+}
+
+interface SessionsStore {
+  sessions: ChatSession[];
+  currentSession: ChatSession | null;
+  messages: ChatMessage[];
+  loadSessions(): Promise<void>;
+  createNewSession(): Promise<string>;
+  setCurrentSession(sessionId: string): Promise<void>;
+  loadSession(sessionId: string): Promise<void>;
+  deleteSession(sessionId: string): Promise<void>;
+  archiveSession(sessionId: string): Promise<void>;
+  sendMessage(params: { sessionId: string, content: string, role?: string }): Promise<void>;
+  addMessage(message: ChatMessage | Message): void;
+  updateStreamedMessage(content: string): void;
+  clearSessions(): void;
+}
+
+interface SettingsStore {
+  fontSizeLevel: number;
+  contrastMode: string;
+  colorMode: string;
+  language: string;
+  streamingEnabled: boolean;
+  setFontSizeLevel(value: number): void;
+  setContrastMode(value: string): void;
+  setColorMode(value: string): void;
+  setLanguage(value: string): void;
+  setStreamingEnabled(value: boolean): void;
+  resetToDefaults(): void;
+}
+
+interface UIStore {
+  activeView: string;
+  settingsVisible: boolean;
+  setActiveView(view: string): void;
+  toggleSettings(): void;
+  showToast(toast: {type: string, message: string}): void;
+}
+
+interface MotdStore {
+  config: MotdConfig;
+  editConfig: MotdConfig;
+  dismissed: boolean;
+  dismiss(): void;
+  saveConfig(config: MotdConfig): void;
+}
+
+interface FeedbackStore {
+  submitFeedback(feedback: {
+    messageId: string | null;
+    type: string;
+    comment: string;
+    sessionId: string | null;
+  }): Promise<void>;
+}
+
+interface ABTestStore {
+  tests: any[];
+  loadTests(): Promise<void>;
+}
+
+// Mock store functions with initial values
+function useAuthStore(): AuthStore {
+  return {
+    isAuthenticated: false,
+    token: null,
+    userRole: 'user',
+    logout: () => {},
+    validateToken: async () => {}
+  };
+}
+
+function useSessionsStore(): SessionsStore {
+  return {
+    sessions: [],
+    currentSession: null,
+    messages: [],
+    loadSessions: async () => {},
+    createNewSession: async () => "session-id",
+    setCurrentSession: async () => {},
+    loadSession: async () => {},
+    deleteSession: async () => {},
+    archiveSession: async () => {},
+    sendMessage: async () => {},
+    addMessage: () => {},
+    updateStreamedMessage: () => {},
+    clearSessions: () => {}
+  };
+}
+
+function useSettingsStore(): SettingsStore {
+  return {
+    fontSizeLevel: 1,
+    contrastMode: 'normal',
+    colorMode: 'light',
+    language: 'de',
+    streamingEnabled: true,
+    setFontSizeLevel: () => {},
+    setContrastMode: () => {},
+    setColorMode: () => {},
+    setLanguage: () => {},
+    setStreamingEnabled: () => {},
+    resetToDefaults: () => {}
+  };
+}
+
+function useUIStore(): UIStore {
+  return {
+    activeView: 'chat',
+    settingsVisible: false,
+    setActiveView: () => {},
+    toggleSettings: () => {},
+    showToast: () => {}
+  };
+}
+
+function useMotdStore(): MotdStore {
+  return {
+    config: {
+      enabled: false,
+      content: '',
+      display: {
+        showInChat: false,
+        showOnStartup: false
+      }
+    },
+    editConfig: {
+      enabled: false,
+      content: '',
+      display: {
+        showInChat: false,
+        showOnStartup: false
+      }
+    },
+    dismissed: false,
+    dismiss: () => {},
+    saveConfig: () => {}
+  };
+}
+
+function useFeedbackStore(): FeedbackStore {
+  return {
+    submitFeedback: async () => {}
+  };
+}
+
+function useABTestStore(): ABTestStore {
+  return {
+    tests: [],
+    loadTests: async () => {}
+  };
+}
+
+// Component type declarations with proper props
+const AuthView = defineComponent({
+  name: 'AuthView'
+});
+
+const AppHeader = defineComponent({
+  name: 'AppHeader',
+  props: {
+    userRole: { type: String, required: true },
+    activeView: { type: String, required: true }
+  },
+  emits: ['toggle-admin', 'toggle-settings', 'logout']
+});
+
+const AppMotd = defineComponent({
+  name: 'AppMotd',
+  props: {
+    config: { type: Object, required: true }
+  },
+  emits: ['dismiss']
+});
+
+const ChatView = defineComponent({
+  name: 'ChatView',
+  props: {
+    currentSession: { type: Object, default: null },
+    sessions: { type: Array, required: true },
+    messages: { type: Array, required: true },
+    isStreaming: { type: Boolean, default: false },
+    isLoading: { type: Boolean, default: false }
+  },
+  emits: ['new-session', 'load-session', 'delete-session', 'send-message']
+});
+
+const AdminView = defineComponent({
+  name: 'AdminView',
+  props: {
+    activeTab: { type: String, required: true },
+    usersList: { type: Array, required: true },
+    systemStats: { type: Array, required: true },
+    feedbackStats: { type: Object, required: true },
+    recentFeedback: { type: Array, required: true },
+    motdConfig: { type: Object, required: true },
+    abTests: { type: Array, required: true }
+  },
+  emits: ['change-tab', 'update-motd', 'toggle-user-role', 'toggle-user-status', 'delete-user']
+});
+
+const FeedbackDialog = defineComponent({
+  name: 'FeedbackDialog',
+  props: {
+    message: { type: Object, default: null },
+    type: { type: String, default: '' },
+    comment: { type: String, default: '' }
+  },
+  emits: ['close', 'submit', 'select-type', 'update:comment']
+});
+
+const SettingsDialog = defineComponent({
+  name: 'SettingsDialog',
+  props: {
+    fontSizeLevel: { type: Number, required: true },
+    contrastMode: { type: String, required: true },
+    colorMode: { type: String, required: true },
+    language: { type: String, required: true },
+    streamingEnabled: { type: Boolean, required: true },
+    systemInfo: { type: Object, required: true },
+    userRole: { type: String, required: true }
+  },
+  emits: ['close', 'reset', 'update:fontSizeLevel', 'update:contrastMode', 'update:colorMode', 'update:language', 'update:streamingEnabled']
+});
+
+const ToastContainer = defineComponent({
+  name: 'ToastContainer'
+});
+
+const ErrorBoundary = defineComponent({
+  name: 'ErrorBoundary'
+});
+
+const CriticalError = defineComponent({
+  name: 'CriticalError',
+  props: {
+    error: { type: Object, required: true }
+  },
+  emits: ['reset']
+});
+
+// Interface for chat service API
+interface ChatService {
+  sendMessage: (message: string, sessionId: string | undefined) => Promise<{id: string, text: string}>;
+  streamMessage: (message: string, sessionId: string | undefined, callback: (chunk: string) => void) => Promise<void>;
+}
+
+export default defineComponent({
+  name: 'App',
+
+  components: {
+    AuthView,
+    AppHeader,
+    AppMotd,
+    ChatView,
+    AdminView,
+    FeedbackDialog,
+    SettingsDialog,
+    ToastContainer,
+    ErrorBoundary,
+    CriticalError
+  },
+
+  // Define props with TypeScript interface
+  props: {
+    // App doesn't have props since it's the root component
+  },
+
+  // Use defineComponent with proper typing
+  setup() {
+    // Wir verwenden einen flexibleren Rückgabetyp, da der strenge Typ zu viele spezifische ComputedRef<T>-Anforderungen hat
+    // und wir stattdessen ein einfacheres Objekt mit get/set für einige berechnete Eigenschaften verwenden
+        positive: number;
+        negative: number;
+        total: number;
+      }>;
+      recentFeedback: ComputedRef<any[]>;
+      abTests: ComputedRef<any[]>;
+      systemInfo: ComputedRef<{
+        version: string;
+        build: string;
+        model: string;
+        endpoint: string;
+      }>;
+
+      // Settings
+      fontSizeLevel: ComputedRef<number>;
+      contrastMode: ComputedRef<string>;
+      colorMode: ComputedRef<string>;
+      language: ComputedRef<string>;
+      streamingEnabled: ComputedRef<boolean>;
+
+      // Methods
+      toggleAdminView: () => void;
+      setAdminTab: (tab: string) => void;
+      startNewSession: () => Promise<void>;
+      loadSession: (sessionId: string) => Promise<void>;
+      deleteSession: (sessionId: string) => Promise<void>;
+      sendMessage: (message: string) => Promise<void>;
+      submitFeedback: (type: string) => void;
+      submitFeedbackWithComment: () => Promise<void>;
+      toggleSettings: () => void;
+      resetSettings: () => void;
+      logout: () => void;
+      dismissMotd: () => void;
+      updateMotd: (config: MotdConfig) => void;
+      toggleUserRole: (user: any) => Promise<void>;
+      toggleUserStatus: (user: any) => Promise<void>;
+      deleteUser: (userId: string) => Promise<void>;
+    };
+    // Stores
+    const authStore = useAuthStore()
+    const sessionStore = useSessionsStore()
+    const settingsStore = useSettingsStore()
+    const uiStore = useUIStore()
+    const motdStore = useMotdStore()
+    const feedbackStore = useFeedbackStore()
+    const abTestStore = useABTestStore()
+
+    // Services (via Dependency Injection)
+    const chatService = inject('chatService') as ChatService | undefined
+
+    /* Commenting out unused injection to prevent TypeScript warning
+    const sourceReferences = inject('sourceReferences')
+    */
+
+    // Reaktive State-Variablen with typed refs
+    const adminTab = ref('users')
+    const showFeedbackDialog = ref(false)
+    const feedbackMessage = ref(null as Message | null)
+    const feedbackType = ref('')
+    const feedbackComment = ref('')
+    const isStreaming = ref(false)
+    const isLoading = ref(false)
+    
+    // Computed Properties with proper typing
+    const isAuthenticated = computed(() => authStore.isAuthenticated)
+    const userRole = computed(() => authStore.userRole)
+    const activeView = computed(() => uiStore.activeView)
+    const settingsVisible = computed(() => uiStore.settingsVisible)
+    const sessions = computed(() => sessionStore.sessions)
+    const currentSession = computed(() => sessionStore.currentSession)
+    const messages = computed(() => sessionStore.messages)
+    const isDarkTheme = computed(() =>
+      settingsStore.colorMode === 'dark' ||
+      (settingsStore.colorMode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    )
+    const motdConfig = computed(() => motdStore.config)
+    const motdEditConfig = computed(() => motdStore.editConfig)
+    const shouldShowMotd = computed(() => {
+      if (!motdConfig.value.enabled) return false
+      if (motdStore.dismissed) return false
+
+      const isNewSession = messages.value.length === 0
+      const showInChat = motdConfig.value.display?.showInChat && activeView.value === 'chat'
+      const showOnStartup = motdConfig.value.display?.showOnStartup && isNewSession
+
+      return showInChat || showOnStartup
+    })
+    
+    // MOTD-Funktionen
+    const dismissMotd = (): void => {
+      motdStore.dismiss()
+    }
+
+    const updateMotd = (config: MotdConfig): void => {
+      motdStore.saveConfig(config)
+    }
+
+    // Admin-Verwaltung
+    const setAdminTab = (tab: string): void => {
+      adminTab.value = tab
+    }
+
+    const toggleAdminView = (): void => {
+      uiStore.setActiveView(activeView.value === 'chat' ? 'admin' : 'chat')
+    }
+
+    // Session-Management
+    const startNewSession = async (): Promise<void> => {
+      isLoading.value = true
+      try {
+        await sessionStore.createNewSession()
+      } finally {
+        isLoading.value = false
+      }
+    }
+
+    const loadSession = async (sessionId: string): Promise<void> => {
+      isLoading.value = true
+      try {
+        // Verwende setCurrentSession anstelle von loadSession
+        await sessionStore.setCurrentSession(sessionId)
+      } finally {
+        isLoading.value = false
+      }
+    }
+
+    const deleteSession = async (sessionId: string): Promise<void> => {
+      isLoading.value = true
+      try {
+        // Verwende archiveSession anstelle von deleteSession
+        await sessionStore.archiveSession(sessionId)
+      } finally {
+        isLoading.value = false
+      }
+    }
+
+    // Chat-Funktionen
+    const sendMessage = async (message: string): Promise<void> => {
+      if (!message.trim()) return
+
+      // Nachricht hinzufügen
+      const messageObj: ChatMessage = {
+        id: `user-${Date.now()}`,
+        sessionId: currentSession.value?.id || '',
+        content: message,
+        role: 'user',
+        timestamp: new Date().toISOString()
+      }
+
+      sessionStore.addMessage(messageObj)
+
+      if (settingsStore.streamingEnabled) {
+        sendMessageStream(message)
+      } else {
+        sendMessageNormal(message)
+      }
+    }
+
+    const sendMessageNormal = async (message: string): Promise<void> => {
+      isLoading.value = true
+      try {
+        // Verwende den injizierten Mock-ChatService
+        if (!chatService) {
+          throw new Error('Chat service not available')
+        }
+
+        const response = await chatService.sendMessage(message, currentSession.value?.id)
+        sessionStore.addMessage({
+          id: response.id,
+          sessionId: currentSession.value?.id || '',
+          content: response.text,
+          role: 'assistant',
+          timestamp: new Date().toISOString()
+        })
+      } catch (error) {
+        uiStore.showToast({
+          type: 'error',
+          message: 'Fehler beim Senden der Nachricht'
+        })
+      } finally {
+        isLoading.value = false
+      }
+    }
+
+    const sendMessageStream = async (message: string): Promise<void> => {
+      isStreaming.value = true
+      let streamedText = ''
+
+      try {
+        // Verwende den injizierten Mock-ChatService für Streaming
+        if (!chatService) {
+          throw new Error('Chat service not available')
+        }
+
+        await chatService.streamMessage(
+          message,
+          currentSession.value?.id,
+          (chunk: string) => {
+            streamedText += chunk
+            sessionStore.updateStreamedMessage(streamedText)
+          }
+        )
+
+        isStreaming.value = false
+        // Streamed message is already in the store
+      } catch (error) {
+        isStreaming.value = false
+        uiStore.showToast({
+          type: 'error',
+          message: 'Fehler beim Streaming der Antwort'
+        })
+      }
+    }
+
+    // Feedback-Funktionen
+    const submitFeedback = (type: string): void => {
+      feedbackType.value = type
+    }
+
+    const submitFeedbackWithComment = async (): Promise<void> => {
+      try {
+        await feedbackStore.submitFeedback({
+          messageId: feedbackMessage.value?.id || null,
+          type: feedbackType.value,
+          comment: feedbackComment.value,
+          sessionId: currentSession.value?.id || null
+        })
+
+        showFeedbackDialog.value = false
+        feedbackType.value = ''
+        feedbackComment.value = ''
+
+        uiStore.showToast({
+          type: 'success',
+          message: 'Vielen Dank für Ihr Feedback!'
+        })
+      } catch (error) {
+        uiStore.showToast({
+          type: 'error',
+          message: 'Fehler beim Senden des Feedbacks'
+        })
+      }
+    }
+
+    // Einstellungen
+    const toggleSettings = (): void => {
+      uiStore.toggleSettings()
+    }
+
+    const resetSettings = (): void => {
+      settingsStore.resetToDefaults()
+    }
+
+    // Auth-Funktionen
+    const logout = (): void => {
+      authStore.logout()
+      sessionStore.clearSessions()
+    }
+
+    // User-Verwaltung
+    // Using _user with underscore to mark as unused parameter
+    const toggleUserRole = async (_user: any): Promise<void> => {
+      // Implementation für User-Rolle ändern
+    }
+
+    // Using _user with underscore to mark as unused parameter
+    const toggleUserStatus = async (_user: any): Promise<void> => {
+      // Implementation für User-Status ändern
+    }
+
+    // Using _userId with underscore to mark as unused parameter
+    const deleteUser = async (_userId: string): Promise<void> => {
+      // Implementation für User löschen
+    }
+    
+    // Initialisierung
+    onMounted(async () => {
+      // Überprüfe Authentication-Status
+      if (authStore.token) {
+        try {
+          await authStore.validateToken()
+          await sessionStore.loadSessions()
+          await abTestStore.loadTests()
+          
+          // Lade die letzte aktive Session oder erstelle eine neue
+          if (sessions.value.length > 0) {
+            await loadSession(sessions.value[0].id)
+          } else {
+            await startNewSession()
+          }
+        } catch (error) {
+          console.error('Fehler bei der Initialisierung:', error)
+          authStore.logout()
+        }
+      }
+      
+      // Theme setzen basierend auf Einstellungen
+      document.documentElement.classList.toggle('theme-dark', isDarkTheme.value)
+      
+      // Entferne Ladeanimation
+      const appLoader = document.getElementById('app-loading')
+      if (appLoader) {
+        appLoader.classList.add('app-loader-fade')
+        setTimeout(() => {
+          appLoader.style.display = 'none'
+        }, 500)
+      }
+    })
+    
+    // Watch für Theme-Änderungen
+    watch(isDarkTheme, (newValue: boolean): void => {
+      document.documentElement.classList.toggle('theme-dark', newValue)
+    })
+    
+    // Return with proper types to solve the TypeScript errors
+    return {
+      // State
+      isAuthenticated,
+      userRole,
+      activeView,
+      adminTab,
+      sessions,
+      currentSession,
+      messages,
+      isStreaming,
+      isLoading,
+      showFeedbackDialog,
+      feedbackMessage,
+      feedbackType,
+      feedbackComment,
+      settingsVisible,
+      isDarkTheme,
+      motdConfig,
+      motdEditConfig,
+      shouldShowMotd,
+
+      // Admin-Panel
+      usersList: computed(() => []), // Hier würde der tatsächliche Store verwendet
+      systemStats: computed(() => []), // Hier würde der tatsächliche Store verwendet
+      feedbackStats: computed(() => ({
+        positive: 0,
+        negative: 0,
+        total: 0
+      })), // Hier würde der tatsächliche Store verwendet
+      recentFeedback: computed(() => []), // Hier würde der tatsächliche Store verwendet
+      abTests: computed(() => abTestStore.tests),
+
+      // Einstellungen mit korrekter Typisierung für Vue 3 computed mit Getter/Setter
+      fontSizeLevel: {
+        get: () => settingsStore.fontSizeLevel,
+        set: (value: number) => settingsStore.setFontSizeLevel(value)
+      },
+      contrastMode: {
+        get: () => settingsStore.contrastMode,
+        set: (value: string) => settingsStore.setContrastMode(value)
+      },
+      colorMode: {
+        get: () => settingsStore.colorMode,
+        set: (value: string) => settingsStore.setColorMode(value)
+      },
+      language: {
+        get: () => settingsStore.language,
+        set: (value: string) => settingsStore.setLanguage(value)
+      },
+      streamingEnabled: {
+        get: () => settingsStore.streamingEnabled,
+        set: (value: boolean) => settingsStore.setStreamingEnabled(value)
+      },
+      systemInfo: computed(() => ({
+        version: '1.0.0',
+        build: '20250511',
+        model: 'nScale Assistant',
+        endpoint: '/api'
+      })),
+
+      // Methoden
+      toggleAdminView,
+      setAdminTab,
+      startNewSession,
+      loadSession,
+      deleteSession,
+      sendMessage,
+      submitFeedback,
+      submitFeedbackWithComment,
+      toggleSettings,
+      resetSettings,
+      logout,
+      dismissMotd,
+      updateMotd,
+      toggleUserRole,
+      toggleUserStatus,
+      deleteUser
+    } as AppSetupReturn
+  }
+})
+</script>
+
+<style lang="scss">
+// Basis-Styles
+:root {
+  /* Primary color palette */
+  --nscale-green: #00a550;
+  --nscale-green-dark: #008d45;
+  --nscale-green-darker: #00773b;
+  --nscale-green-light: #e8f7ef;
+  --nscale-green-lighter: #f2fbf7;
+  
+  /* Secondary colors */
+  --nscale-dark-gray: #333333;
+  --nscale-mid-gray: #666666;
+  --nscale-light-gray: #cccccc;
+  --nscale-lightest-gray: #f5f5f5;
+
+  /* State colors */
+  --nscale-success: #00a550;
+  --nscale-warning: #ffc107;
+  --nscale-error: #dc3545;
+  --nscale-info: #17a2b8;
+  
+  /* UI component colors */
+  --nscale-border-color: #e2e8f0;
+  --nscale-shadow-color: rgba(0, 0, 0, 0.1);
+  --nscale-focus-ring: rgba(0, 165, 80, 0.25);
+  
+  /* Background colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #f1f5f9;
+  
+  /* Text colors */
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-muted: #888888;
+  
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  
+  /* Animation duration */
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+}
+
+// Dark theme variables
+.theme-dark {
+  --nscale-green-light: rgba(0, 165, 80, 0.2);
+  --nscale-green-lighter: rgba(0, 165, 80, 0.1);
+  
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2a2a2a;
+  --bg-tertiary: #333333;
+  
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  
+  --nscale-border-color: #444444;
+  --nscale-shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+// Basis-Stile
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+// Lade-Animation
+.app-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-primary);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity var(--duration-normal) ease-out;
+  
+  &.app-loader-fade {
+    opacity: 0;
+  }
+}
+
+.app-loader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.app-loader-logo {
+  width: 80px;
+  height: auto;
+}
+
+.app-loader-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--nscale-green-light);
+  border-top-color: var(--nscale-green);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// Critical error styling
+.critical-error {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+.critical-error-content {
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-xl);
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.critical-error h2 {
+  color: var(--nscale-error);
+  margin-top: 0;
+}
+
+.critical-error button {
+  background-color: var(--nscale-green);
+  color: white;
+  border: none;
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: var(--spacing-md);
+  transition: background-color var(--duration-fast) ease;
+  
+  &:hover {
+    background-color: var(--nscale-green-dark);
+  }
+}
+</style>

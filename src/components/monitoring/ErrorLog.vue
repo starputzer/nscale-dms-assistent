@@ -234,7 +234,11 @@ const detailsVisible = ref<Record<string, boolean>>({});
 
 // Computed
 const availableFeatures = computed(() => {
+<<<<<<< HEAD
   return [...new Set(props.errors.map(error) => error.feature))];
+=======
+  return [...new Set(props.errors.map((error) => error.feature))];
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 });
 
 const filteredErrors = computed(() => {
@@ -243,7 +247,11 @@ const filteredErrors = computed(() => {
   // Nach Suchbegriff filtern
   if (searchQuery.value) {
     const lowerQuery = searchQuery.value.toLowerCase();
+<<<<<<< HEAD
     result = result.filter(error) => {
+=======
+    result = result.filter((error) => {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       return (
         error.message.toLowerCase().includes(lowerQuery) ||
         error.feature.toLowerCase().includes(lowerQuery) ||
@@ -254,7 +262,11 @@ const filteredErrors = computed(() => {
 
   // Nach Feature filtern
   if (selectedFeature.value) {
+<<<<<<< HEAD
     result = result.filter(error) => error.feature === selectedFeature.value);
+=======
+    result = result.filter((error) => error.feature === selectedFeature.value);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   }
 
   // Nach Schweregrad filtern

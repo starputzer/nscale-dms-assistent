@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 export type { Logger } from '@/types/logger';
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 import { getCurrentInstance } from "vue";
 import { isProduction } from "@/utils/environmentUtils";
 

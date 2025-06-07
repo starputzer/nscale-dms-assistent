@@ -6,8 +6,13 @@
 
 import {
   Router,
+<<<<<<< HEAD
   _NavigationGuardNext,
   _RouteLocationNormalized,
+=======
+  NavigationGuardNext,
+  RouteLocationNormalized,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 } from "vue-router";
 import { routerService } from "@/services/router/RouterServiceFixed";
 import { useLogger } from "@/composables/useLogger";
@@ -47,7 +52,11 @@ export function installRouterGuards(
     }
 
     // Prüfe Router-Initialisierung
+<<<<<<< HEAD
     const routerState = (routerService as any).getState();
+=======
+    const routerState = routerService.getState();
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
     if (!routerState.isInitialized) {
       logger.warn("Router noch nicht initialisiert, warte...");

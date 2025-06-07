@@ -1132,7 +1132,11 @@ class MockDocumentConverterService implements IDocumentConverterService {
    */
   public async downloadDocument(
     documentId: string,
+<<<<<<< HEAD
     _filename?: string,
+=======
+    filename?: string,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     onProgress?: (progress: number) => void,
   ): Promise<Blob> {
     this.logService.info(`[MOCK] Starte Download für Dokument: ${documentId}`);

@@ -610,12 +610,17 @@ export const useAuthStore = defineStore(
         );
 
         try {
+<<<<<<< HEAD
           const loginUrl = apiConfig.ENDPOINTS.AUTH.LOGIN;
           console.log(
             "Sende Login-Anfrage an:", loginUrl,
             "mit BASE_URL:", apiConfig.BASE_URL || axios.defaults.baseURL,
             "Full URL:", axios.defaults.baseURL ? axios.defaults.baseURL + loginUrl : loginUrl,
             "mit Credentials:",
+=======
+          console.log(
+            "Sende Login-Anfrage an /api/auth/login mit Credentials:",
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             { ...loginCredentials, password: "***" },
           );
 
@@ -627,6 +632,7 @@ export const useAuthStore = defineStore(
           );
 
           // Standard API-Anfrage
+<<<<<<< HEAD
           // Verwende nur den Endpunkt-Pfad, da axios bereits baseURL hat
           console.log("Verwende URL für Login:", loginUrl);
           
@@ -648,6 +654,18 @@ export const useAuthStore = defineStore(
           // The server returns a simple { token: "jwt_token" } or { access_token: "jwt_token" } response
           if (response.data && (response.data.token || response.data.access_token)) {
             const newToken = response.data.token || response.data.access_token;
+=======
+          const response = await axios.post<{ token: string }>(
+            "/api/auth/login",
+            loginCredentials,
+          );
+
+          console.log("Login-Antwort erhalten:", response.status);
+
+          // The server returns a simple { token: "jwt_token" } response
+          if (response.data.token) {
+            const newToken = response.data.token;
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             console.log("Token aus Antwort erhalten, Länge:", newToken.length);
 
             // Token validieren, bevor er gespeichert wird
@@ -791,8 +809,11 @@ export const useAuthStore = defineStore(
             }
           } else {
             console.error("Login fehlgeschlagen: Kein Token in der Antwort");
+<<<<<<< HEAD
             console.error("Response data war:", response.data);
             console.error("Full response:", response);
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             error.value = "Login fehlgeschlagen: Kein Token erhalten";
             return false;
           }
@@ -843,7 +864,11 @@ export const useAuthStore = defineStore(
 
         try {
           const response = await axios.post<LoginResponse>(
+<<<<<<< HEAD
             apiConfig.ENDPOINTS.AUTH.REGISTER,
+=======
+            "/api/auth/register",
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             credentials,
           );
 
@@ -1114,7 +1139,11 @@ export const useAuthStore = defineStore(
       isLoading.value = true;
 
       try {
+<<<<<<< HEAD
         const response = await axios.get("/api/auth/me", {
+=======
+        const response = await axios.get("/api/auth/user", {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           headers: createAuthHeaders(),
         });
 

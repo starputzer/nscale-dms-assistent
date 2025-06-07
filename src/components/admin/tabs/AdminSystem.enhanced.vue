@@ -826,6 +826,7 @@ console.log("[i18n] Component initialized with global scope and inheritance");
 
 // Store with proper reactive references
 const systemStore = useAdminSystemStore();
+<<<<<<< HEAD
 const { resources, dashboardSummary, error } =
   storeToRefs(systemStore);
 
@@ -847,6 +848,11 @@ const stats = computed(() => {
   };
 });
 
+=======
+const { stats, loading, error, apiIntegrationEnabled, systemSettings } =
+  storeToRefs(systemStore);
+
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 // Toast
 const toast = useToast();
 
@@ -856,7 +862,11 @@ const performanceChart = ref<HTMLCanvasElement | null>(null);
 let chart: Chart | null = null;
 
 // Local state
+<<<<<<< HEAD
 const isLoading = computed(() => systemStore.loading);
+=======
+const isLoading = ref(false);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 const isSubmitting = ref(false);
 const isActionPending = ref(false);
 const isEditMode = ref(false);
@@ -870,6 +880,7 @@ const confirmDialogIcon = ref("fa-exclamation-triangle");
 const confirmDialogDanger = ref(false);
 const pendingActionCallback = ref<() => void>();
 
+<<<<<<< HEAD
 // System settings
 const systemSettings = ref({
   defaultModel: 'llama-7b',
@@ -884,6 +895,8 @@ const systemSettings = ref({
   autoBackup: true
 });
 
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 // Real-time data
 const cpuHistory = ref<number[]>([]);
 const memoryHistory = ref<number[]>([]);
@@ -896,6 +909,7 @@ let refreshInterval: number | null = null;
 
 // Computed properties
 const systemHealthStatus = computed(() => {
+<<<<<<< HEAD
   if (!resources.value) return "normal";
   
   const cpuUsage = resources.value.cpu || 0;
@@ -903,6 +917,14 @@ const systemHealthStatus = computed(() => {
   
   if (cpuUsage >= 90 || memUsage >= 90) return "critical";
   if (cpuUsage >= 70 || memUsage >= 70) return "warning";
+=======
+  if (cpuStatus.value === "critical" || memoryStatus.value === "critical") {
+    return "critical";
+  }
+  if (cpuStatus.value === "warning" || memoryStatus.value === "warning") {
+    return "warning";
+  }
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   return "normal";
 });
 
@@ -941,6 +963,7 @@ const systemHealthText = computed(() => {
 
 const systemHealthDetails = computed(() => {
   const details = [];
+<<<<<<< HEAD
   if (!resources.value) return "";
   
   const cpuUsage = resources.value.cpu || 0;
@@ -958,20 +981,40 @@ const systemHealthDetails = computed(() => {
     details.push(t("admin.system.memoryWarning", "Speicher hoch"));
   }
   
+=======
+  if (cpuStatus.value === "critical") {
+    details.push(t("admin.system.cpuCritical", "CPU-Auslastung kritisch"));
+  } else if (cpuStatus.value === "warning") {
+    details.push(t("admin.system.cpuWarning", "CPU-Auslastung hoch"));
+  }
+  if (memoryStatus.value === "critical") {
+    details.push(t("admin.system.memoryCritical", "Speicher kritisch"));
+  } else if (memoryStatus.value === "warning") {
+    details.push(t("admin.system.memoryWarning", "Speicher hoch"));
+  }
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   return details.join(", ");
 });
 
 const cpuStatus = computed(() => {
+<<<<<<< HEAD
   if (!resources.value) return "normal";
   const usage = resources.value.cpu || 0;
+=======
+  const usage = stats.value.cpu_usage_percent || 0;
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   if (usage >= 90) return "critical";
   if (usage >= 70) return "warning";
   return "normal";
 });
 
 const memoryStatus = computed(() => {
+<<<<<<< HEAD
   if (!resources.value) return "normal";
   const usage = resources.value.memory || 0;
+=======
+  const usage = stats.value.memory_usage_percent || 0;
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   if (usage >= 90) return "critical";
   if (usage >= 70) return "warning";
   return "normal";
@@ -1034,11 +1077,19 @@ const actions = computed(() => [
     stats: [
       {
         label: t("admin.system.cacheSize", "Größe"),
+<<<<<<< HEAD
         value: formatBytes((dashboardSummary.value?.systemHealth?.cacheSize || 0) * 1024 * 1024),
       },
       {
         label: t("admin.system.cacheEntries", "Einträge"),
         value: dashboardSummary.value?.systemHealth?.cacheEntries || 0,
+=======
+        value: formatBytes(stats.value.cache_size_mb * 1024 * 1024 || 0),
+      },
+      {
+        label: t("admin.system.cacheEntries", "Einträge"),
+        value: stats.value.cache_entries || 0,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       },
     ],
   },
@@ -1071,7 +1122,11 @@ const actions = computed(() => [
       "Defragmentiert und optimiert die Datenbank",
     ),
     icon: "fa-database",
+<<<<<<< HEAD
     disabled: false,  // TODO: Get from actual status
+=======
+    disabled: stats.value.db_optimization_running,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   },
   {
     id: "reset-stats",
@@ -1095,7 +1150,11 @@ const actions = computed(() => [
     stats: [
       {
         label: t("admin.system.lastBackup", "Letztes Backup"),
+<<<<<<< HEAD
         value: formatDateRelative(dashboardSummary.value?.systemHealth?.lastBackup || Date.now()),
+=======
+        value: formatDateRelative(stats.value.last_backup_time),
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       },
     ],
   },
@@ -1405,7 +1464,11 @@ onMounted(async () => {
     await refreshAll();
 
     // Wenn wir API-Integration verwenden, auch Systemaktionen laden
+<<<<<<< HEAD
     if (systemStore.apiIntegrationEnabled) {
+=======
+    if (apiIntegrationEnabled.value) {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       await systemStore.fetchAvailableActions();
     }
   } catch (error) {
@@ -1425,7 +1488,11 @@ onMounted(async () => {
 
   // Logge erweiterte Diagnoseinformationen
   console.log(
+<<<<<<< HEAD
     `[AdminSystem] Komponente initialisiert, API-Integration: ${systemStore.apiIntegrationEnabled}`,
+=======
+    `[AdminSystem] Komponente initialisiert, API-Integration: ${apiIntegrationEnabled.value}`,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   );
 });
 

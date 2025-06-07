@@ -47,6 +47,7 @@ export class AdminPage {
   }
 
   /**
+<<<<<<< HEAD
    * Alias für switchToTab für Kompatibilität mit existierenden Tests
    * @param tabName Name des Tabs
    */
@@ -55,6 +56,8 @@ export class AdminPage {
   }
 
   /**
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
    * Erzeugt einen neuen Benutzer.
    */
   async createUser(

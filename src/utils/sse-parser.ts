@@ -10,6 +10,7 @@ export interface SSEMessage {
   retry?: number;
 }
 
+<<<<<<< HEAD
 /**
  * Safely parse JSON data from SSE, with additional validation
  * @param data The data to parse
@@ -43,6 +44,11 @@ export function safeParseSSEData(data: string): any {
 export class SSEParser {
   private buffer: string = '';
   private _currentMessage: Partial<SSEMessage> = {};
+=======
+export class SSEParser {
+  private buffer: string = '';
+  private currentMessage: Partial<SSEMessage> = {};
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
   /**
    * Parse a chunk of SSE data

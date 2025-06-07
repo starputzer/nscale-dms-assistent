@@ -52,7 +52,11 @@ export function setupAdminApiInterceptors(): void {
         const token =
           localStorage.getItem("nscale_access_token") ||
           // Fallback to AuthTokenManager
+<<<<<<< HEAD
           (authTokenManager as any).getAccessToken();
+=======
+          authTokenManager.getAccessToken();
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
         if (token) {
           // Set the Authorization header
@@ -135,7 +139,11 @@ export function setupAdminApiInterceptors(): void {
                     ({ mockAuthService }) => {
                       mockAuthService.initMockAuth();
                       logger.info("Mock auth initialized for development");
+<<<<<<< HEAD
                     }
+=======
+                    },
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                   );
                 }
               });

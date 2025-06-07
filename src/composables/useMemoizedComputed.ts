@@ -197,7 +197,11 @@ export function useStableComputed<T>(
   getter: () => T,
   isEqual: (a: T, b: T) => boolean = (a, b) => a === b,
 ): ComputedRef<T> {
+<<<<<<< HEAD
   const lastValue = ref<T>(undefined);
+=======
+  const lastValue = ref<T>();
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   const hasValue = ref(false);
 
   return computed(() => {

@@ -203,7 +203,11 @@ const startDemo = async () => {
   // For demo purposes, use a mock endpoint
   // In real usage, this would be your actual streaming endpoint
   const demoUrl =
+<<<<<<< HEAD
     "/api/chat/message/stream?question=Tell+me+about+streaming&session_id=demo";
+=======
+    "/api/question/stream?question=Tell+me+about+streaming&session_id=demo";
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
   // You can pass headers if needed
   const headers = {

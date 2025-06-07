@@ -818,7 +818,10 @@ const formatDate = (date: string, includeTime = false) => {
 };
 
 const truncateText = (text: string, maxLength: number) => {
+<<<<<<< HEAD
   if (!text) return "";
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   if (text.length <= maxLength) return text;
   return text.substring(0, maxLength) + "...";
 };

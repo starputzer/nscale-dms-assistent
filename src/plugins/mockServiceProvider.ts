@@ -9,7 +9,11 @@ import { App, reactive } from "vue";
 import { mockServiceFactory } from "@/services/mocks/MockServiceFactory";
 // Import des Mock Session Stores wenn mockApi=true
 
+<<<<<<< HEAD
 const _useMockApi =
+=======
+const useMockApi =
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   new URLSearchParams(window.location.search).get("mockApi") === "true";
 
 export const mockServiceProvider = {
@@ -26,7 +30,11 @@ export const mockServiceProvider = {
       // AuthService wird durch die Store direkt bereitgestellt
       // Stelle sicher, dass der Mock-Auth-Store geladen wird
       import("../stores/auth.mock")
+<<<<<<< HEAD
         .then(({ _useAuthStore }) => {
+=======
+        .then(({ useAuthStore }) => {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           console.log("Mock Auth Store erfolgreich geladen");
         })
         .catch((error) => {
@@ -122,7 +130,11 @@ export const mockServiceProvider = {
 
       // Session Store
       import("../stores/sessions.mock")
+<<<<<<< HEAD
         .then(({ _useSessionStore }) => {
+=======
+        .then(({ useSessionStore }) => {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           console.log("Mock Session Store erfolgreich geladen");
         })
         .catch((error) => {
@@ -132,7 +144,11 @@ export const mockServiceProvider = {
       // Admin Stores
       // MOTD Store
       import("../stores/admin/motd.mock")
+<<<<<<< HEAD
         .then(({ _useMotdStore }) => {
+=======
+        .then(({ useMotdStore }) => {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           console.log("Mock MOTD Store erfolgreich geladen");
         })
         .catch((error) => {
@@ -141,7 +157,11 @@ export const mockServiceProvider = {
 
       // Feedback Store
       import("../stores/admin/feedback.mock")
+<<<<<<< HEAD
         .then(({ _useFeedbackStore }) => {
+=======
+        .then(({ useFeedbackStore }) => {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           console.log("Mock Feedback Store erfolgreich geladen");
         })
         .catch((error) => {

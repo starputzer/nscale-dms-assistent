@@ -10,7 +10,11 @@ import { cachedApiService } from "./CachedApiService";
 import { apiConfig } from "./config";
 import { LogService } from "../log/LogService";
 import {
+<<<<<<< HEAD
   _APIRequest,
+=======
+  APIRequest,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   APIResponse,
   APIError,
   PaginationParams,

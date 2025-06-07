@@ -19,23 +19,35 @@ test.describe("Authentifizierungs-Flow", () => {
 
   // Test für erfolgreiche Anmeldung mit gültigen Anmeldedaten
   test("Erfolgreiche Anmeldung mit gültigen Anmeldedaten", async ({ page }) => {
+<<<<<<< HEAD
     // Anmelden mit gültigen Anmeldedaten (verwende existierende Test-User)
     await loginPage.login("martin@danglefeet.com", "123");
+=======
+    // Anmelden mit gültigen Anmeldedaten
+    await loginPage.login("admin@example.com", "admin123");
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
     // Nach erfolgreicher Anmeldung sollte die Seite zur Hauptseite weitergeleitet werden
     await expect(page).toHaveURL("/chat");
 
+<<<<<<< HEAD
     // Warte auf Chat-Interface
     await expect(page.locator('.chat-view')).toBeVisible({ timeout: 10000 });
     
     // Prüfe ob Chat-Input vorhanden ist
     const inputSelector = 'input[placeholder*="Nachricht"], textarea[placeholder*="Nachricht"]';
     await expect(page.locator(inputSelector)).toBeVisible();
+=======
+    // Elemente prüfen, die nur nach erfolgreicher Anmeldung sichtbar sein sollten
+    await expect(chatPage.userProfileButton).toBeVisible();
+    await expect(chatPage.messageInput).toBeVisible();
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   });
 
   // Test für fehlgeschlagene Anmeldung mit ungültigen Anmeldedaten
   test("Fehlgeschlagene Anmeldung mit ungültigen Anmeldedaten", async () => {
     // Anmelden mit ungültigen Anmeldedaten
+<<<<<<< HEAD
     await loginPage.emailInput.fill("falsch@example.com");
     await loginPage.passwordInput.fill("falschesPasswort");
     await loginPage.submitButton.click();
@@ -52,6 +64,15 @@ test.describe("Authentifizierungs-Flow", () => {
       // Wenn keine explizite Fehlermeldung, prüfe ob wir auf Login-Seite geblieben sind
       expect(loginPage.page.url()).toContain('/login');
     }
+=======
+    await loginPage.login("falsch@example.com", "falschesPasswort");
+
+    // Bei ungültigen Anmeldedaten sollte eine Fehlermeldung angezeigt werden
+    await expect(loginPage.errorMessage).toBeVisible();
+
+    // Die URL sollte weiterhin auf der Login-Seite sein
+    await expect(loginPage.page).toHaveURL(/.*\/login/);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   });
 
   // Test für automatischen Redirect zur Login-Seite bei nicht authentifizierten Anfragen
@@ -69,6 +90,7 @@ test.describe("Authentifizierungs-Flow", () => {
   test("Authentifizierungsstatus bleibt nach Seitenaktualisierung erhalten", async ({
     page,
   }) => {
+<<<<<<< HEAD
     // "Angemeldet bleiben" aktivieren wenn vorhanden
     const rememberMe = await loginPage.rememberMeCheckbox.count();
     if (rememberMe > 0) {
@@ -77,6 +99,13 @@ test.describe("Authentifizierungs-Flow", () => {
 
     // Anmelden mit gültigen Anmeldedaten
     await loginPage.login("martin@danglefeet.com", "123");
+=======
+    // "Angemeldet bleiben" aktivieren
+    await loginPage.rememberMeCheckbox.check();
+
+    // Anmelden mit gültigen Anmeldedaten
+    await loginPage.login("admin@example.com", "admin123");
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
     // Warten auf erfolgreiche Anmeldung und Navigation zur Hauptseite
     await expect(page).toHaveURL("/chat");
@@ -86,12 +115,17 @@ test.describe("Authentifizierungs-Flow", () => {
 
     // Nach der Aktualisierung sollte der Benutzer weiterhin angemeldet sein
     await expect(page).not.toHaveURL(/.*\/login/);
+<<<<<<< HEAD
     await expect(page.locator('.chat-view')).toBeVisible();
+=======
+    await expect(chatPage.userProfileButton).toBeVisible();
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   });
 
   // Test für erfolgreichen Logout
   test("Erfolgreicher Logout", async () => {
     // Anmelden mit gültigen Anmeldedaten
+<<<<<<< HEAD
     await loginPage.login("martin@danglefeet.com", "123");
 
     // Warten auf erfolgreiche Anmeldung und Navigation zur Hauptseite
@@ -136,6 +170,22 @@ test.describe("Authentifizierungs-Flow", () => {
     } else {
       console.log('Logout functionality not implemented yet - skipping');
     }
+=======
+    await loginPage.login("admin@example.com", "admin123");
+
+    // Warten auf erfolgreiche Anmeldung und Navigation zur Hauptseite
+    await expect(loginPage.page).toHaveURL("/chat");
+
+    // Logout durchführen
+    await chatPage.logout();
+
+    // Nach dem Logout sollte zur Login-Seite weitergeleitet werden
+    await expect(loginPage.page).toHaveURL(/.*\/login/);
+
+    // Prüfen, ob Anmeldefelder angezeigt werden
+    await expect(loginPage.emailInput).toBeVisible();
+    await expect(loginPage.passwordInput).toBeVisible();
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   });
 
   // Test für das Umschalten zwischen Login- und Registrierungs-Tabs

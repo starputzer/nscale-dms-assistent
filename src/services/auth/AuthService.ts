@@ -286,6 +286,7 @@ export class AuthService {
     try {
       const { data } = await this.client.post<any>("/auth/login", credentials);
 
+<<<<<<< HEAD
       // Handle both 'token' and 'access_token' fields for compatibility
       const token = data.token || data.access_token;
 
@@ -293,16 +294,29 @@ export class AuthService {
         console.error("Login response:", data);
         throw new AuthError(
           "Kein Token in der Antwort vom Server",
+=======
+      if (!data.token) {
+        throw new AuthError(
+          "Server hat kein gültiges Token zurückgegeben",
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           "unknown",
         );
       }
 
       // Token speichern
+<<<<<<< HEAD
       this.setToken(token);
 
       // AuthResponse Format erstellen
       const response: AuthResponse = {
         token: token,
+=======
+      this.setToken(data.token);
+
+      // AuthResponse Format erstellen
+      const response: AuthResponse = {
+        token: data.token,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         user: data.user || {
           id: "1",
           email: credentials.email,
@@ -536,7 +550,11 @@ export class AuthService {
       const jsonPayload = decodeURIComponent(
         atob(base64)
           .split("")
+<<<<<<< HEAD
           .map((
+=======
+          .map(
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             (c: any) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2),
           )
           .join(""),

@@ -18,7 +18,11 @@ export function linkifySourceReferences(content: string): string {
   // Beispiel: [[src:1]] wird zu <span class="source-reference" data-source-id="1">[1]</span>
   return content.replace(
     /\[\[src:([^\]]+)\]\]/g,
+<<<<<<< HEAD
     (_match, sourceId) =>
+=======
+    (match, sourceId) =>
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       `<span class="source-reference" data-source-id="${sourceId}">[${sourceId}]</span>`,
   );
 }
@@ -44,7 +48,11 @@ export function highlightCode(element: HTMLElement): void {
     const codeBlocks = element.querySelectorAll("pre code");
 
     codeBlocks.forEach((block: any) => {
+<<<<<<< HEAD
       (hljs as any).highlightElement(block as HTMLElement);
+=======
+      hljs.highlightElement(block as HTMLElement);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     });
   } catch (error) {
     console.error("Fehler beim Syntax-Highlighting:", error);

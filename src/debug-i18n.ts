@@ -32,8 +32,13 @@ export function debugI18n() {
   console.log('  common.refresh (de):', i18n.global.t('common.refresh', {}, { locale: 'de' }));
   
   // Check for errors
+<<<<<<< HEAD
   if (i18n.global as any).missing) {
     console.log('\nMissing translation handler:', typeof i18n.(global as any).missing);
+=======
+  if (i18n.global.missing) {
+    console.log('\nMissing translation handler:', typeof i18n.global.missing);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   }
   
   console.groupEnd();

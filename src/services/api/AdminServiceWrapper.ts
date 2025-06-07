@@ -169,17 +169,29 @@ export class AdminServiceWrapper {
 
       if (filter) {
         if (filter.dateFrom) {
+<<<<<<< HEAD
           feedback = feedback.filter((
+=======
+          feedback = feedback.filter(
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             (entry: any) => entry.created_at >= filter.dateFrom!,
           );
         }
         if (filter.dateTo) {
+<<<<<<< HEAD
           feedback = feedback.filter((
+=======
+          feedback = feedback.filter(
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             (entry: any) => entry.created_at <= filter.dateTo!,
           );
         }
         if (filter.isPositive !== undefined) {
+<<<<<<< HEAD
           feedback = feedback.filter((
+=======
+          feedback = feedback.filter(
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             (entry: any) => entry.is_positive === filter.isPositive,
           );
         }
@@ -190,7 +202,11 @@ export class AdminServiceWrapper {
         }
         if (filter.searchTerm) {
           const term = filter.searchTerm.toLowerCase();
+<<<<<<< HEAD
           feedback = feedback.filter((
+=======
+          feedback = feedback.filter(
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             (entry: any) =>
               entry.comment?.toLowerCase().includes(term) ||
               entry.question.toLowerCase().includes(term) ||

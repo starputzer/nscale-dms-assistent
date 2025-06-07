@@ -21,11 +21,18 @@ class ChatHistoryManager:
         conn = sqlite3.connect(Config.DB_PATH)
         cursor = conn.cursor()
         
+<<<<<<< HEAD
         # Chat-Sessions Tabelle mit UUID-Unterstützung
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS chat_sessions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             uuid TEXT UNIQUE,
+=======
+        # Chat-Sessions Tabelle
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS chat_sessions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             user_id INTEGER NOT NULL,
             title TEXT NOT NULL,
             created_at INTEGER NOT NULL,
@@ -34,6 +41,7 @@ class ChatHistoryManager:
         )
         ''')
         
+<<<<<<< HEAD
         # Füge UUID-Spalte hinzu, falls sie nicht existiert (für bestehende Datenbanken)
         cursor.execute("PRAGMA table_info(chat_sessions)")
         columns = [column[1] for column in cursor.fetchall()]
@@ -72,6 +80,16 @@ class ChatHistoryManager:
             content TEXT NOT NULL,
             created_at INTEGER NOT NULL,
             model TEXT,
+=======
+        # Chat-Nachrichten Tabelle
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS chat_messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id INTEGER NOT NULL,
+            is_user BOOLEAN NOT NULL,
+            message TEXT NOT NULL,
+            created_at INTEGER NOT NULL,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             FOREIGN KEY (session_id) REFERENCES chat_sessions(id)
         )
         ''')
@@ -81,7 +99,11 @@ class ChatHistoryManager:
         
         logger.info("Chat-Datenbank initialisiert")
     
+<<<<<<< HEAD
     def create_session(self, user_id: int, title: str = "Neue Unterhaltung", uuid: Optional[str] = None) -> Optional[int]:
+=======
+    def create_session(self, user_id: int, title: str = "Neue Unterhaltung") -> Optional[int]:
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         """Erstellt eine neue Chat-Session"""
         try:
             now = int(time.time())
@@ -90,22 +112,35 @@ class ChatHistoryManager:
             cursor = conn.cursor()
             
             cursor.execute(
+<<<<<<< HEAD
                 "INSERT INTO chat_sessions (uuid, user_id, title, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
                 (uuid, user_id, title, now, now)
+=======
+                "INSERT INTO chat_sessions (user_id, title, created_at, updated_at) VALUES (?, ?, ?, ?)",
+                (user_id, title, now, now)
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             )
             
             session_id = cursor.lastrowid
             conn.commit()
             conn.close()
             
+<<<<<<< HEAD
             logger.info(f"Neue Session erstellt: ID {session_id}, UUID {uuid}, Titel '{title}'")
+=======
+            logger.info(f"Neue Session erstellt: ID {session_id}, Titel '{title}'")
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             return session_id
         
         except Exception as e:
             logger.error(f"Fehler beim Erstellen einer Chat-Session: {e}")
             return None
     
+<<<<<<< HEAD
     def add_message(self, session_id: int, message: str, is_user: bool = True, user_id: int = 1) -> Optional[int]:
+=======
+    def add_message(self, session_id: int, message: str, is_user: bool = True) -> Optional[int]:
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         """Fügt eine Nachricht zum Chat-Verlauf hinzu und aktualisiert ggf. den Titel"""
         try:
             now = int(time.time())
@@ -113,6 +148,7 @@ class ChatHistoryManager:
             conn = sqlite3.connect(Config.DB_PATH)
             cursor = conn.cursor()
             
+<<<<<<< HEAD
             # Generate message ID
             import uuid as uuid_lib
             message_id = str(uuid_lib.uuid4())
@@ -121,6 +157,12 @@ class ChatHistoryManager:
             cursor.execute(
                 "INSERT INTO chat_messages (id, session_id, user_id, role, content, created_at, model) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 (message_id, str(session_id), str(user_id), 'user' if is_user else 'assistant', message, now, 'llama3:8b-instruct-q4_1')
+=======
+            # Nachricht hinzufügen
+            cursor.execute(
+                "INSERT INTO chat_messages (session_id, is_user, message, created_at) VALUES (?, ?, ?, ?)",
+                (session_id, is_user, message, now)
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             )
             
             message_id = cursor.lastrowid
@@ -135,8 +177,13 @@ class ChatHistoryManager:
             if is_user:
                 # Prüfen, ob es die erste Benutzernachricht ist
                 cursor.execute(
+<<<<<<< HEAD
                     "SELECT COUNT(*) FROM chat_messages WHERE session_id = ? AND role = 'user'",
                     (str(session_id),)
+=======
+                    "SELECT COUNT(*) FROM chat_messages WHERE session_id = ? AND is_user = 1",
+                    (session_id,)
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                 )
                 message_count = cursor.fetchone()[0]
                 
@@ -179,16 +226,27 @@ class ChatHistoryManager:
             cursor = conn.cursor()
             
             cursor.execute(
+<<<<<<< HEAD
                 "SELECT id, role, content, created_at FROM chat_messages WHERE session_id = ? ORDER BY created_at",
+=======
+                "SELECT id, is_user, message, created_at FROM chat_messages WHERE session_id = ? ORDER BY created_at",
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                 (session_id,)
             )
             
             messages = []
             for row in cursor.fetchall():
+<<<<<<< HEAD
                 # Convert role to is_user for backward compatibility
                 messages.append({
                     'id': row[0],
                     'is_user': row[1] == 'user',  # Convert role to is_user
+=======
+                # Wichtig: is_user korrekt als Boolean umwandeln
+                messages.append({
+                    'id': row[0],
+                    'is_user': bool(row[1]),
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                     'message': row[2],
                     'timestamp': row[3]
                 })
@@ -207,7 +265,11 @@ class ChatHistoryManager:
             cursor = conn.cursor()
             
             cursor.execute(
+<<<<<<< HEAD
                 "SELECT id, uuid, title, created_at, updated_at FROM chat_sessions WHERE user_id = ? ORDER BY updated_at DESC",
+=======
+                "SELECT id, title, created_at, updated_at FROM chat_sessions WHERE user_id = ? ORDER BY updated_at DESC",
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                 (user_id,)
             )
             
@@ -215,10 +277,16 @@ class ChatHistoryManager:
             for row in cursor.fetchall():
                 sessions.append({
                     'id': row[0],
+<<<<<<< HEAD
                     'uuid': row[1] or f"legacy-{row[0]}",  # Fallback für alte Sessions ohne UUID
                     'title': row[2],
                     'created_at': row[3],
                     'updated_at': row[4]
+=======
+                    'title': row[1],
+                    'created_at': row[2],
+                    'updated_at': row[3]
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                 })
             
             conn.close()
@@ -229,6 +297,7 @@ class ChatHistoryManager:
             logger.error(f"Fehler beim Abrufen der Benutzer-Sessions: {e}")
             return []
     
+<<<<<<< HEAD
     def get_session_by_uuid(self, uuid: str, user_id: int) -> Optional[Dict[str, Any]]:
         """Gibt eine Session basierend auf der UUID zurück"""
         try:
@@ -259,12 +328,15 @@ class ChatHistoryManager:
             logger.error(f"Fehler beim Abrufen der Session mit UUID {uuid}: {e}")
             return None
     
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     def delete_session(self, session_id: int, user_id: int) -> bool:
         """Löscht eine Chat-Session und alle zugehörigen Nachrichten"""
         try:
             conn = sqlite3.connect(Config.DB_PATH)
             cursor = conn.cursor()
             
+<<<<<<< HEAD
             # Überprüfe, ob die Session dem Benutzer gehört (unterstützt sowohl ID als auch UUID)
             if isinstance(session_id, str) and not session_id.isdigit():
                 # UUID-basierte Suche
@@ -284,6 +356,13 @@ class ChatHistoryManager:
                     "SELECT id FROM chat_sessions WHERE id = ? AND user_id = ?",
                     (int(session_id) if isinstance(session_id, str) else session_id, user_id)
                 )
+=======
+            # Überprüfe, ob die Session dem Benutzer gehört
+            cursor.execute(
+                "SELECT id FROM chat_sessions WHERE id = ? AND user_id = ?",
+                (session_id, user_id)
+            )
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             
             if not cursor.fetchone():
                 conn.close()
@@ -317,6 +396,7 @@ class ChatHistoryManager:
             conn = sqlite3.connect(Config.DB_PATH)
             cursor = conn.cursor()
             
+<<<<<<< HEAD
             # Überprüfe, ob die Session dem Benutzer gehört (unterstützt sowohl ID als auch UUID)
             if isinstance(session_id, str) and not session_id.isdigit():
                 # UUID-basierte Suche
@@ -336,6 +416,13 @@ class ChatHistoryManager:
                     "SELECT id FROM chat_sessions WHERE id = ? AND user_id = ?",
                     (int(session_id) if isinstance(session_id, str) else session_id, user_id)
                 )
+=======
+            # Überprüfe, ob die Session dem Benutzer gehört
+            cursor.execute(
+                "SELECT id FROM chat_sessions WHERE id = ? AND user_id = ?",
+                (session_id, user_id)
+            )
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             
             if not cursor.fetchone():
                 conn.close()
@@ -397,6 +484,7 @@ class ChatHistoryManager:
             
         except Exception as e:
             logger.error(f"Fehler beim nachträglichen Aktualisieren des Session-Titels: {e}")
+<<<<<<< HEAD
             return False
     
     def get_total_sessions(self) -> int:
@@ -413,3 +501,6 @@ class ChatHistoryManager:
         except Exception as e:
             logger.error(f"Fehler beim Abrufen der Gesamtanzahl der Sessions: {e}")
             return 0
+=======
+            return False
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da

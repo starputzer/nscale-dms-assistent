@@ -35,7 +35,11 @@ export class StreamingService {
       ...(options.simpleLanguage && { simple_language: "true" }),
     });
 
+<<<<<<< HEAD
     const url = `/api/chat/message/stream?${params.toString()}`;
+=======
+    const url = `/api/question/stream?${params.toString()}`;
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
     // Abbruch-Controller für Stream-Kontrolle
     this.controller = new AbortController();
@@ -130,15 +134,20 @@ export class StreamingService {
         // Versuche JSON zu parsen
         const parsed = JSON.parse(data);
 
+<<<<<<< HEAD
         // Backend sendet {"response": "..."} nicht {"content": "..."}
         if (parsed.response) {
           options.onMessage?.(parsed.response);
         } else if (parsed.content) {
           // Fallback für andere Implementierungen
+=======
+        if (parsed.content) {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           options.onMessage?.(parsed.content);
         } else if (parsed.error) {
           options.onError?.(new Error(parsed.error));
         }
+<<<<<<< HEAD
       } catch (error) {
         // Log parsing error but don't send raw JSON data as message
         console.error("Failed to parse SSE JSON data:", error, "Raw data:", data);
@@ -146,6 +155,11 @@ export class StreamingService {
         if (!data.trim().startsWith("{") && !data.trim().startsWith("[")) {
           options.onMessage?.(data);
         }
+=======
+      } catch {
+        // Wenn kein JSON, behandle als Text
+        options.onMessage?.(data);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       }
     } else if (line.startsWith("event: ")) {
       const event = line.slice(7);

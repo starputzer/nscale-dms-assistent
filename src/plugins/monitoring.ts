@@ -13,7 +13,11 @@ export interface MonitoringOptions {
 
 export function createMonitoring(options: MonitoringOptions = {}) {
   const {
+<<<<<<< HEAD
     _telemetryEnabled = true,
+=======
+    telemetryEnabled = true,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     performanceEnabled = true,
     errorTrackingEnabled = true,
     userTrackingEnabled = true,
@@ -42,7 +46,11 @@ export function createMonitoring(options: MonitoringOptions = {}) {
 
         // Track warnings in development
         if (import.meta.env.DEV) {
+<<<<<<< HEAD
           app.(config as any).warnHandler = (msg: any, instance: any, trace: any) => {
+=======
+          app.config.warnHandler = (msg: any, instance: any, trace: any) => {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             console.warn('Vue Warning:', msg);
             
             telemetry.track({
@@ -153,9 +161,15 @@ export function createMonitoring(options: MonitoringOptions = {}) {
       }
 
       // API tracking via axios interceptors
+<<<<<<< HEAD
       if (apiTrackingEnabled && (window as any).axios) {
         // Request interceptor
         (window as any).axios.interceptors.request.use(
+=======
+      if (apiTrackingEnabled && window.axios) {
+        // Request interceptor
+        window.axios.interceptors.request.use(
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           (config: any) => {
             config.metadata = { startTime: performance.now() };
             return config;
@@ -167,7 +181,11 @@ export function createMonitoring(options: MonitoringOptions = {}) {
         );
 
         // Response interceptor
+<<<<<<< HEAD
         (window as any).axios.interceptors.response.use(
+=======
+        window.axios.interceptors.response.use(
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           (response: any) => {
             const duration = performance.now() - response.config.metadata?.startTime;
             const endpoint = response.config.url || 'unknown';
@@ -202,7 +220,11 @@ export function createMonitoring(options: MonitoringOptions = {}) {
       // Development tools
       if (import.meta.env.DEV) {
         // Expose monitoring tools in console
+<<<<<<< HEAD
         (window as any).__MONITORING__ = {
+=======
+        window.__MONITORING__ = {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           telemetry,
           performanceMonitor,
           getFeatureUsage: () => telemetry.getFeatureUsageReport(),

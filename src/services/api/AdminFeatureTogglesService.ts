@@ -26,10 +26,13 @@ export interface IAdminFeatureTogglesService {
     data: Partial<FeatureToggle>,
   ): Promise<ApiResponse<FeatureToggle>>;
   deleteFeatureToggle(id: string): Promise<ApiResponse<void>>;
+<<<<<<< HEAD
   getFeatureHistory(id: string): Promise<ApiResponse<any[]>>;
   getFeatureMetrics(params?: { startDate?: Date; endDate?: Date }): Promise<ApiResponse<any>>;
   getFeatureErrors(params?: { startDate?: Date; endDate?: Date; limit?: number }): Promise<ApiResponse<any[]>>;
   importFeatures(features: any[], options: any): Promise<ApiResponse<any>>;
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 }
 
 /**
@@ -446,6 +449,7 @@ export class AdminFeatureTogglesService implements IAdminFeatureTogglesService {
       };
     }
   }
+<<<<<<< HEAD
 
   /**
    * Feature-Toggle-Historie abrufen
@@ -636,6 +640,8 @@ export class AdminFeatureTogglesService implements IAdminFeatureTogglesService {
       };
     }
   }
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 }
 
 // Singleton-Instanz erstellen

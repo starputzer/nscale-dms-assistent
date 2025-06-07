@@ -17,7 +17,11 @@ import router from "./router";
 
 // Stores
 import { useAuthStore } from "./stores/auth";
+<<<<<<< HEAD
 // import { useUIStore } from "./stores/ui"; // Unused import
+=======
+import { useUIStore } from "./stores/ui";
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 import { useTheme } from "./composables/useTheme";
 
 // Direktiven und Composables
@@ -27,7 +31,10 @@ import { globalPlugins } from "@/plugins";
 // Services und Utilities
 import { initializeApiServices } from "@/services/api/config";
 import { initializeTelemetry } from "@/services/analytics/telemetry";
+<<<<<<< HEAD
 import { fixAxiosBaseURL } from "@/utils/fixAxiosBaseURL";
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 import { performanceMonitor } from "@/utils/performanceMonitor";
 
@@ -97,8 +104,13 @@ const deMessages = i18n.global.getLocaleMessage('de');
 const enMessages = i18n.global.getLocaleMessage('en');
 
 // Clear and reload messages to ensure clean state
+<<<<<<< HEAD
 i18n.global.setLocaleMessage('de' as any, {} as any);
 i18n.global.setLocaleMessage('en' as any, {} as any);
+=======
+i18n.global.setLocaleMessage('de', {});
+i18n.global.setLocaleMessage('en', {});
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 i18n.global.setLocaleMessage('de', deMessages);
 i18n.global.setLocaleMessage('en', enMessages);
 
@@ -128,9 +140,12 @@ const initApp = async () => {
     const { initializeStores } = await import("./stores/storeInitializer");
     await initializeStores();
 
+<<<<<<< HEAD
     // Fix axios base URL before initializing services
     fixAxiosBaseURL();
 
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     // Initialize API services
     await initializeApiServices();
 

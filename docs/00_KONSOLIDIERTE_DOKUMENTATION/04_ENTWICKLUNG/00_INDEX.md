@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ---
 title: "04_ENTWICKLUNG - Entwicklungs-Dokumentation"
 version: "2.1.0"
@@ -24,19 +25,32 @@ Das Projekt hat mit **85% Production Readiness** einen hohen Reifegrad erreicht:
 - **Test Coverage**: Frontend 65%, Backend 80%
 - **156 API Endpoints**: Vollständig implementiert ✅
 - **Performance**: 1.8s Load Time, 2.1MB Bundle ✅
+=======
+# 04_ENTWICKLUNG - Entwicklungs-Dokumentation
+
+Dieser Bereich enthält alle Dokumente zur Entwicklung, Testing und Best Practices.
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 ## Inhalt
 
 ### Entwicklungs-Guidelines
 - [01_FEHLERBEHANDLUNG_UND_FALLBACKS.md](10_error_handling.md) - Fehlerbehandlung und Fallbacks
 - [03_MOBILE_OPTIMIERUNG.md](20_mobile_optimierung.md) - Mobile Optimierung
+<<<<<<< HEAD
 - [04_BARRIEREFREIHEIT.md](21_barrierefreiheit.md) - Barrierefreiheit (WCAG 2.1 AA)
+=======
+- [04_BARRIEREFREIHEIT.md](21_barrierefreiheit.md) - Barrierefreiheit
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 - [05_BEITRAGEN.md](01_contributing_guide.md) - Beitragen zum Projekt
 - [06_EDGE_CASES_UND_GRENZFAELLE.md](30_edge_cases.md) - Edge Cases
 - [07_DIAGNOSTICS_SYSTEM_INTEGRATION.md](12_diagnostics_system.md) - Diagnostics System
 
 ### Testing & Debugging
+<<<<<<< HEAD
 - [01_TYPESCRIPT_TYPSYSTEM.md](02_typescript_guide.md) - TypeScript Typsystem (98% Coverage)
+=======
+- [01_TYPESCRIPT_TYPSYSTEM.md](02_typescript_guide.md) - TypeScript Typsystem
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 - [03_TESTSTRATEGIE.md](03_test_strategie.md) - Teststrategie
 - [04_PINIA_STORE_TESTING.md](31_pinia_testing.md) - Pinia Store Testing
 - [05_AUTH_DEBUGGING_GUIDE.md](11_auth_debugging.md) - Auth Debugging Guide
@@ -47,6 +61,7 @@ Das Projekt hat mit **85% Production Readiness** einen hohen Reifegrad erreicht:
 - [FINAL_ISSUES_SUMMARY.md](../06_ARCHIV/93_final_issues.md) - Finale Issues Zusammenfassung
 - [PLAN.md](../06_ARCHIV/90_development_plan.md) - Entwicklungsplan
 - [WORKTREE_OVERVIEW.md](41_worktree_overview.md) - Worktree Übersicht
+<<<<<<< HEAD
 - [codebase-overview.md](40_codebase_overview.md) - Codebase Übersicht
 
 ## Entwicklungsstand Juni 2025
@@ -122,3 +137,6 @@ Bei Fragen zur Entwicklung:
 ---
 
 *Index zuletzt aktualisiert: 04.06.2025 | Version 2.0.0 | Production Ready: 85%*
+=======
+- [codebase-overview.md](40_codebase_overview.md) - Codebase Übersicht
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da

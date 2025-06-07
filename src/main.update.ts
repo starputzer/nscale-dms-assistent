@@ -56,7 +56,11 @@ const router = createRouter({
 });
 
 // Guards für Router konfigurieren
+<<<<<<< HEAD
 router.beforeEach((_to, _from, next) => {
+=======
+router.beforeEach((to, _from, next) => {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   // Hier könnte Auth-Logik implementiert werden
   next();
 });
@@ -120,7 +124,11 @@ window.toggleSourceReferences = () => {
   }
 };
 
+<<<<<<< HEAD
 (window as any).showSourceReferencesForMessage = (messageId: any, _sources: any) => {
+=======
+window.showSourceReferencesForMessage = (messageId: any, _sources: any) => {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   const event = new CustomEvent("show-source-references", {
     detail: { messageId, _sources },
   });

@@ -38,7 +38,12 @@ export interface IAdminDocConverterService extends IDocumentConverterService {
    * @returns Liste der letzten Konvertierungen
    */
   getRecentConversions(
+<<<<<<< HEAD
     limit?: number): Promise<ApiResponse<ConversionResult[]>>;
+=======
+    limit?: number,
+  ): Promise<ApiResponse<ConversionResult[]>>;
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
   /**
    * Ruft Informationen zur Konvertierungswarteschlange ab
@@ -58,7 +63,12 @@ export interface IAdminDocConverterService extends IDocumentConverterService {
    * @returns Erfolgsstatus
    */
   updateConverterSettings(
+<<<<<<< HEAD
     settings: ConverterSettings): Promise<ApiResponse<void>>;
+=======
+    settings: ConverterSettings,
+  ): Promise<ApiResponse<void>>;
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
   /**
    * Priorisiert einen Job in der Warteschlange
@@ -120,7 +130,12 @@ class AdminDocConverterService implements IAdminDocConverterService {
 
   public async uploadDocument(
     file: File,
+<<<<<<< HEAD
     onProgress?: (progress: number) => void): Promise<string> {
+=======
+    onProgress?: (progress: number) => void,
+  ): Promise<string> {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     return this.documentConverterService.uploadDocument(file, onProgress);
   }
 
@@ -130,11 +145,22 @@ class AdminDocConverterService implements IAdminDocConverterService {
     onProgress?: (
       progress: number,
       step: string,
+<<<<<<< HEAD
       timeRemaining: number) => void): Promise<ConversionResult> {
     return this.documentConverterService.convertDocument(
       documentId,
       settings,
       onProgress);
+=======
+      timeRemaining: number,
+    ) => void,
+  ): Promise<ConversionResult> {
+    return this.documentConverterService.convertDocument(
+      documentId,
+      settings,
+      onProgress,
+    );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   }
 
   public async getDocuments(): Promise<ConversionResult[]> {
@@ -152,11 +178,21 @@ class AdminDocConverterService implements IAdminDocConverterService {
   public async downloadDocument(
     documentId: string,
     filename?: string,
+<<<<<<< HEAD
     onProgress?: (progress: number) => void): Promise<Blob> {
     return this.documentConverterService.downloadDocument(
       documentId,
       filename,
       onProgress);
+=======
+    onProgress?: (progress: number) => void,
+  ): Promise<Blob> {
+    return this.documentConverterService.downloadDocument(
+      documentId,
+      filename,
+      onProgress,
+    );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   }
 
   public async getConversionStatus(documentId: string): Promise<any> {
@@ -182,31 +218,57 @@ class AdminDocConverterService implements IAdminDocConverterService {
       // Prüfen, ob die echte API verwendet werden soll
       if (shouldUseRealApi("useRealDocumentConverterApi")) {
         this.logService.info(
+<<<<<<< HEAD
           "Verwende echte API für Dokumentenkonverter-Statistiken");
+=======
+          "Verwende echte API für Dokumentenkonverter-Statistiken",
+        );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
         const response = await apiService.get<DocumentStatistics>(
           `${this.ADMIN_ENDPOINT}/statistics`,
           null,
           {
             priority: apiConfig.QUEUE.PRIORITIES.ADMIN,
+<<<<<<< HEAD
           });
+=======
+          },
+        );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
         return response;
       }
 
       // Verwende Mock-Daten, wenn keine echte API verfügbar ist
       this.logService.info(
+<<<<<<< HEAD
         "Verwende Mock-Daten für Dokumentenkonverter-Statistiken");
+=======
+        "Verwende Mock-Daten für Dokumentenkonverter-Statistiken",
+      );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
       // Erstelle Mock-Statistiken basierend auf den vorhandenen Dokumenten
       const documents = await this.getDocuments();
       const completed = documents.filter(
+<<<<<<< HEAD
         (doc) => doc.status === "success").length;
       const failed = documents.filter(
         (doc: any) => doc.status === "error"
       ).length;
       const processing = documents.filter(
         (doc) => doc.status === "processing").length;
+=======
+        (doc) => doc.status === "success",
+      ).length;
+      const failed = documents.filter(
+        (doc: any) => doc.status === "error",
+      ).length;
+      const processing = documents.filter(
+        (doc) => doc.status === "processing",
+      ).length;
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
       // Erstelle Statistiken nach Format
       const formatCounts: Record<string, number> = {};
@@ -217,14 +279,24 @@ class AdminDocConverterService implements IAdminDocConverterService {
 
       // Generiere Trend-Daten für die letzten 7 Tage
       const trendData = Array.from({ length: 7 }, () =>
+<<<<<<< HEAD
         Math.floor(Math.random() * 10));
+=======
+        Math.floor(Math.random() * 10),
+      );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
       // Erstelle Mock-Statistiken
       const stats: DocumentStatistics = {
         totalConversions: completed + failed,
         conversionsPastWeek: trendData.reduce(
           (sum: any, value) => sum + value,
+<<<<<<< HEAD
           0),
+=======
+          0,
+        ),
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         successRate:
           completed > 0
             ? Math.round((completed / (completed + failed)) * 100)
@@ -242,7 +314,12 @@ class AdminDocConverterService implements IAdminDocConverterService {
     } catch (err: any) {
       this.logService.error(
         "Fehler beim Abrufen der Dokumentenkonverter-Statistiken",
+<<<<<<< HEAD
         err);
+=======
+        err,
+      );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       return {
         success: false,
         message:
@@ -262,7 +339,12 @@ class AdminDocConverterService implements IAdminDocConverterService {
    * @returns Liste der letzten Konvertierungen
    */
   public async getRecentConversions(
+<<<<<<< HEAD
     limit: number = 20): Promise<ApiResponse<ConversionResult[]>> {
+=======
+    limit: number = 20,
+  ): Promise<ApiResponse<ConversionResult[]>> {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     try {
       this.logService.info(`Rufe letzte ${limit} Konvertierungen ab`);
 
@@ -275,7 +357,12 @@ class AdminDocConverterService implements IAdminDocConverterService {
           { limit },
           {
             priority: apiConfig.QUEUE.PRIORITIES.ADMIN,
+<<<<<<< HEAD
           });
+=======
+          },
+        );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
         return response;
       }
@@ -303,7 +390,12 @@ class AdminDocConverterService implements IAdminDocConverterService {
     } catch (err: any) {
       this.logService.error(
         "Fehler beim Abrufen der letzten Konvertierungen",
+<<<<<<< HEAD
         err);
+=======
+        err,
+      );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       return {
         success: false,
         message:
@@ -327,25 +419,41 @@ class AdminDocConverterService implements IAdminDocConverterService {
       // Prüfen, ob die echte API verwendet werden soll
       if (shouldUseRealApi("useRealDocumentConverterApi")) {
         this.logService.info(
+<<<<<<< HEAD
           "Verwende echte API für Konvertierungswarteschlange");
+=======
+          "Verwende echte API für Konvertierungswarteschlange",
+        );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
         const response = await apiService.get<QueueInfo>(
           `${this.ADMIN_ENDPOINT}/queue`,
           null,
           {
             priority: apiConfig.QUEUE.PRIORITIES.ADMIN,
+<<<<<<< HEAD
           });
+=======
+          },
+        );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
         return response;
       }
 
       // Verwende Mock-Daten, wenn keine echte API verfügbar ist
       this.logService.info(
+<<<<<<< HEAD
         "Verwende Mock-Daten für Konvertierungswarteschlange");
+=======
+        "Verwende Mock-Daten für Konvertierungswarteschlange",
+      );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
       // Erstelle Mock-Warteschlangeninformationen
       const documents = await this.getDocuments();
       const queuedDocuments = documents.filter(
+<<<<<<< HEAD
         (doc) => doc.status === "pending" || doc.status === "processing");
 
       const queueInfo: QueueInfo = {
@@ -355,6 +463,23 @@ class AdminDocConverterService implements IAdminDocConverterService {
         averageWaitTime: Math.floor(Math.random() * 60) + 30, // 30-90 Sekunden
         estimatedCompletionTime: new Date(
           Date.now() + 1000 * 60 * (Math.floor(Math.random() * 30) + 15)),
+=======
+        (doc) => doc.status === "pending" || doc.status === "processing",
+      );
+
+      const queueInfo: QueueInfo = {
+        activeJobs: queuedDocuments.filter(
+          (doc: any) => doc.status === "processing",
+        ).length,
+        queuedJobs: queuedDocuments.filter(
+          (doc: any) => doc.status === "pending",
+        ).length,
+        isPaused: false,
+        averageWaitTime: Math.floor(Math.random() * 60) + 30, // 30-90 Sekunden
+        estimatedCompletionTime: new Date(
+          Date.now() + 1000 * 60 * (Math.floor(Math.random() * 30) + 15),
+        ),
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         jobs: queuedDocuments.map((doc: any) => ({
           id: doc.id,
           fileName: doc.originalName,
@@ -373,7 +498,12 @@ class AdminDocConverterService implements IAdminDocConverterService {
     } catch (err: any) {
       this.logService.error(
         "Fehler beim Abrufen der Konvertierungswarteschlange",
+<<<<<<< HEAD
         err);
+=======
+        err,
+      );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       return {
         success: false,
         message:
@@ -403,7 +533,12 @@ class AdminDocConverterService implements IAdminDocConverterService {
           null,
           {
             priority: apiConfig.QUEUE.PRIORITIES.ADMIN,
+<<<<<<< HEAD
           });
+=======
+          },
+        );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
         return response;
       }
@@ -438,7 +573,12 @@ class AdminDocConverterService implements IAdminDocConverterService {
     } catch (err: any) {
       this.logService.error(
         "Fehler beim Abrufen der Konvertereinstellungen",
+<<<<<<< HEAD
         err);
+=======
+        err,
+      );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       return {
         success: false,
         message:
@@ -457,28 +597,48 @@ class AdminDocConverterService implements IAdminDocConverterService {
    * @returns Erfolgsstatus
    */
   public async updateConverterSettings(
+<<<<<<< HEAD
     settings: ConverterSettings): Promise<ApiResponse<void>> {
+=======
+    settings: ConverterSettings,
+  ): Promise<ApiResponse<void>> {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     try {
       this.logService.info("Aktualisiere Konvertereinstellungen");
 
       // Prüfen, ob die echte API verwendet werden soll
       if (shouldUseRealApi("useRealDocumentConverterApi")) {
         this.logService.info(
+<<<<<<< HEAD
           "Verwende echte API für Aktualisierung der Konvertereinstellungen");
+=======
+          "Verwende echte API für Aktualisierung der Konvertereinstellungen",
+        );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
         const response = await apiService.put<void>(
           `${this.ADMIN_ENDPOINT}/settings`,
           settings,
           {
             priority: apiConfig.QUEUE.PRIORITIES.ADMIN,
+<<<<<<< HEAD
           });
+=======
+          },
+        );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
         return response;
       }
 
       // Wenn keine echte API verfügbar ist, simuliere Erfolg
       this.logService.info(
+<<<<<<< HEAD
         "Simuliere Aktualisierung der Konvertereinstellungen");
+=======
+        "Simuliere Aktualisierung der Konvertereinstellungen",
+      );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
       return {
         success: true,
@@ -487,7 +647,12 @@ class AdminDocConverterService implements IAdminDocConverterService {
     } catch (err: any) {
       this.logService.error(
         "Fehler beim Aktualisieren der Konvertereinstellungen",
+<<<<<<< HEAD
         err);
+=======
+        err,
+      );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       return {
         success: false,
         message:
@@ -518,7 +683,12 @@ class AdminDocConverterService implements IAdminDocConverterService {
           null,
           {
             priority: apiConfig.QUEUE.PRIORITIES.ADMIN,
+<<<<<<< HEAD
           });
+=======
+          },
+        );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
         return response;
       }
@@ -561,14 +731,24 @@ class AdminDocConverterService implements IAdminDocConverterService {
           null,
           {
             priority: apiConfig.QUEUE.PRIORITIES.ADMIN,
+<<<<<<< HEAD
           });
+=======
+          },
+        );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
         return response;
       }
 
       // Wenn keine echte API verfügbar ist, verwende die bestehende cancelConversion-Methode
       this.logService.info(
+<<<<<<< HEAD
         "Verwende bestehende cancelConversion-Methode für Job-Abbruch");
+=======
+        "Verwende bestehende cancelConversion-Methode für Job-Abbruch",
+      );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
       await this.cancelConversion(jobId);
 
@@ -606,7 +786,12 @@ class AdminDocConverterService implements IAdminDocConverterService {
           null,
           {
             priority: apiConfig.QUEUE.PRIORITIES.ADMIN,
+<<<<<<< HEAD
           });
+=======
+          },
+        );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
         return response;
       }
@@ -621,7 +806,12 @@ class AdminDocConverterService implements IAdminDocConverterService {
     } catch (err: any) {
       this.logService.error(
         "Fehler beim Pausieren der Konvertierungswarteschlange",
+<<<<<<< HEAD
         err);
+=======
+        err,
+      );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       return {
         success: false,
         message:
@@ -646,14 +836,24 @@ class AdminDocConverterService implements IAdminDocConverterService {
       // Prüfen, ob die echte API verwendet werden soll
       if (shouldUseRealApi("useRealDocumentConverterApi")) {
         this.logService.info(
+<<<<<<< HEAD
           "Verwende echte API für Warteschlangen-Fortsetzung");
+=======
+          "Verwende echte API für Warteschlangen-Fortsetzung",
+        );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
         const response = await apiService.post<void>(
           `${this.ADMIN_ENDPOINT}/queue/resume`,
           null,
           {
             priority: apiConfig.QUEUE.PRIORITIES.ADMIN,
+<<<<<<< HEAD
           });
+=======
+          },
+        );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
         return response;
       }
@@ -668,7 +868,12 @@ class AdminDocConverterService implements IAdminDocConverterService {
     } catch (err: any) {
       this.logService.error(
         "Fehler beim Fortsetzen der Konvertierungswarteschlange",
+<<<<<<< HEAD
         err);
+=======
+        err,
+      );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       return {
         success: false,
         message:
@@ -698,7 +903,12 @@ class AdminDocConverterService implements IAdminDocConverterService {
           `${this.ADMIN_ENDPOINT}/queue`,
           {
             priority: apiConfig.QUEUE.PRIORITIES.ADMIN,
+<<<<<<< HEAD
           });
+=======
+          },
+        );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
         return response;
       }
@@ -710,7 +920,12 @@ class AdminDocConverterService implements IAdminDocConverterService {
       // aber besser als nichts für die Mockup-Implementierung)
       const documents = await this.getDocuments();
       const pendingDocs = documents.filter(
+<<<<<<< HEAD
         (doc) => doc.status === "pending" || doc.status === "processing");
+=======
+        (doc) => doc.status === "pending" || doc.status === "processing",
+      );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
       for (const doc of pendingDocs) {
         try {
@@ -718,7 +933,12 @@ class AdminDocConverterService implements IAdminDocConverterService {
         } catch (error) {
           this.logService.warn(
             `Konnte Konvertierung für Dokument ${doc.id} nicht abbrechen`,
+<<<<<<< HEAD
             error);
+=======
+            error,
+          );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         }
       }
 
@@ -729,7 +949,12 @@ class AdminDocConverterService implements IAdminDocConverterService {
     } catch (err: any) {
       this.logService.error(
         "Fehler beim Leeren der Konvertierungswarteschlange",
+<<<<<<< HEAD
         err);
+=======
+        err,
+      );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       return {
         success: false,
         message:

@@ -161,7 +161,11 @@ export function useRouteFallback(options: RouteFallbackOptions = {}) {
   const setupRouteWatcher = () => {
     watch(
       () => route.path,
+<<<<<<< HEAD
       async (newPath: any, _oldPath: any) => {
+=======
+      async (newPath: any, oldPath: any) => {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         // Speichere Navigation in History
         navigationHistory.value.push(newPath);
         if (navigationHistory.value.length > 10) {

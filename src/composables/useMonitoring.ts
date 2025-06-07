@@ -63,7 +63,11 @@ export function useMonitoring(featureId: string, componentName: string) {
   }
 
   // Network time tracking for API calls
+<<<<<<< HEAD
   function trackNetworkTime(_url: string, duration: number) {
+=======
+  function trackNetworkTime(url: string, duration: number) {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     if (!isMonitoringEnabled.value) return;
 
     monitoringStore.trackPerformance(
@@ -98,7 +102,11 @@ export function useMonitoring(featureId: string, componentName: string) {
 
     // Also log to console in development mode
     if (isDevelopment()) {
+<<<<<<< HEAD
       (LogService as any).error(
+=======
+      LogService.error(
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         `[${featureId}/${componentName}] ${errorMessage}`,
         error,
       );

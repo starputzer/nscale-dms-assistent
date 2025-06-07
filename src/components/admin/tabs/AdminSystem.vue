@@ -582,7 +582,10 @@ import { useToast } from "@/composables/useToast";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import type { SystemAction } from "@/types/admin";
+<<<<<<< HEAD
 import apiService from '@/services/api/ApiService';
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 // i18n
 const { t, locale } = useI18n({ useScope: 'global', inheritLocale: true });
@@ -611,7 +614,11 @@ const confirmDialogMessage = ref("");
 const currentAction = ref<SystemAction | null>(null);
 const isEditMode = ref(false);
 
+<<<<<<< HEAD
 // System Settings
+=======
+// System Settings (would typically be loaded from an API)
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 const originalSettings = ref({
   maxTokensPerRequest: 4096,
   defaultModel: "llama-7b",
@@ -629,6 +636,7 @@ const originalSettings = ref({
 
 const systemSettings = ref({ ...originalSettings.value });
 
+<<<<<<< HEAD
 // System health
 const systemHealth = ref({
   status: 'normal',
@@ -639,6 +647,8 @@ const systemHealth = ref({
   issues: [] as string[]
 });
 
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 // Computed properties
 const systemHealthClass = computed(() => {
   switch (systemHealthStatus.value) {
@@ -745,6 +755,7 @@ async function saveSettings() {
 
   isSubmitting.value = true;
 
+<<<<<<< HEAD
   try {
     // Save settings via API
     const response = await apiService.post('/admin-system-comprehensive/settings', systemSettings.value);
@@ -775,6 +786,24 @@ async function saveSettings() {
   } finally {
     isSubmitting.value = false;
   }
+=======
+  // Simulate API call for settings update
+  setTimeout(() => {
+    originalSettings.value = { ...systemSettings.value };
+
+    showToast({
+      type: "success",
+      title: t("admin.system.toast.settingsSaved", "Einstellungen gespeichert"),
+      message: t(
+        "admin.system.toast.settingsSavedMessage",
+        "Die Systemeinstellungen wurden erfolgreich aktualisiert",
+      ),
+    });
+
+    isSubmitting.value = false;
+    isEditMode.value = false;
+  }, 1000);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 }
 
 function executeAction(action: SystemAction) {
@@ -815,6 +844,7 @@ async function runAction(action: SystemAction) {
   pendingAction.value = action.type;
 
   try {
+<<<<<<< HEAD
     let response;
     switch (action.type) {
       case "clear-cache":
@@ -840,14 +870,28 @@ async function runAction(action: SystemAction) {
         break;
       case "reload-motd":
         response = await apiService.post('/admin-system-comprehensive/actions/reload-motd');
+=======
+    switch (action.type) {
+      case "clear-cache":
+        await adminSystemStore.clearCache();
+        break;
+      case "clear-embedding-cache":
+        await adminSystemStore.clearEmbeddingCache();
+        break;
+      case "reload-motd":
+        await adminSystemStore.reloadMotd();
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         break;
       default:
         throw new Error(`Unknown action: ${action.type}`);
     }
+<<<<<<< HEAD
     
     if (!response.success) {
       throw new Error(response.error || 'Action failed');
     }
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
     showToast({
       type: "success",
@@ -885,6 +929,7 @@ async function refreshStats() {
   isLoading.value = true;
 
   try {
+<<<<<<< HEAD
     // Fetch stats from new API
     const [statsResponse, healthResponse, settingsResponse, actionsResponse] = await Promise.all([
       apiService.get('/admin-system-comprehensive/stats'),
@@ -941,6 +986,11 @@ async function refreshStats() {
       title: t("admin.system.error.fetchStats", "Fehler"),
       message: t("admin.system.error.fetchStatsMessage", "Systemdaten konnten nicht geladen werden"),
     });
+=======
+    await adminSystemStore.fetchStats();
+  } catch (error) {
+    console.error("Error fetching system stats:", error);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   } finally {
     isLoading.value = false;
   }

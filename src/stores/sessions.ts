@@ -1,10 +1,15 @@
 import { defineStore } from "pinia";
 import { computed, ref, watch } from "vue";
 import { apiService } from "@/services/api/ApiService";
+<<<<<<< HEAD
 import { apiConfig } from "@/services/api/config";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import { safeParseSSEData } from "@/utils/sse-parser";
+=======
+import axios from "axios";
+import { v4 as uuidv4 } from "uuid";
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 import type {
   ChatSession,
   ChatMessage,
@@ -15,10 +20,17 @@ import type {
 } from "../types/session";
 import type { SessionsStoreReturn } from "../types/stores";
 import { useAuthStore } from "./auth";
+<<<<<<< HEAD
 // import { batchRequestService } from "@/services/api/BatchRequestService"; // Unused import
 import {
   _processBatchResponse,
   _extractBatchResponseData,
+=======
+import { batchRequestService } from "@/services/api/BatchRequestService";
+import {
+  processBatchResponse,
+  extractBatchResponseData,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   validateSessionsResponse,
 } from "./sessionsResponseFix";
 
@@ -116,7 +128,11 @@ export const useSessionsStore = defineStore(
                     ...msg,
                     timestamp: msg.timestamp || new Date().toISOString(),
                     status: msg.status || "sent",
+<<<<<<< HEAD
                   })
+=======
+                  }),
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                 );
               });
             }
@@ -140,7 +156,11 @@ export const useSessionsStore = defineStore(
 
       // Only sync sessions if user is authenticated
       if (authStore.isAuthenticated) {
+<<<<<<< HEAD
         await synchronizeSessions();
+=======
+        // await synchronizeSessions();
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       }
 
       // Polling-Intervall für Synchronisation mit dem Server
@@ -152,7 +172,11 @@ export const useSessionsStore = defineStore(
         (isAuthenticated: boolean) => {
           if (isAuthenticated) {
             // Initial sync when becoming authenticated
+<<<<<<< HEAD
             synchronizeSessions();
+=======
+            // synchronizeSessions();
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             // Temporarily disable periodic sync
             /*
             if (syncInterval === null) {
@@ -173,7 +197,11 @@ export const useSessionsStore = defineStore(
       );
 
       // Cleanup-Funktion
+<<<<<<< HEAD
       const _cleanup = () => {
+=======
+      const cleanup = () => {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         if (syncInterval !== null) {
           clearInterval(syncInterval);
         }
@@ -254,6 +282,7 @@ export const useSessionsStore = defineStore(
 
     // Alle Nachrichten der aktuellen Session (inklusive ausstehende)
     const allCurrentMessages = computed(() => {
+<<<<<<< HEAD
       console.log('[SessionsStore] Computing allCurrentMessages for session:', currentSessionId.value);
       if (!currentSessionId.value) return [];
       const sessionMessages = messages.value[currentSessionId.value] || [];
@@ -268,6 +297,17 @@ export const useSessionsStore = defineStore(
       );
       console.log('[SessionsStore] Total messages after merge:', result.length);
       return result;
+=======
+      if (!currentSessionId.value) return [];
+      const sessionMessages = messages.value[currentSessionId.value] || [];
+      const pendingSessionMessages =
+        pendingMessages.value[currentSessionId.value] || [];
+
+      return [...sessionMessages, ...pendingSessionMessages].sort(
+        (a, b) =>
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+      );
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     });
 
     // Actions
@@ -306,6 +346,7 @@ export const useSessionsStore = defineStore(
           return;
         }
 
+<<<<<<< HEAD
         // Direkte API-Aufrufe statt Batch-API (temporär)
         let sessionsData = null;
         let statsData = null;
@@ -338,10 +379,59 @@ export const useSessionsStore = defineStore(
           */
         } catch (error: any) {
           console.error("Failed to load sessions:", error);
+=======
+        // Server unterstützt jetzt Batch-API!
+        const requests = [
+          {
+            id: "sessions_sync",
+            endpoint: "/api/sessions",
+            method: "GET" as const,
+            params: {
+              since: syncStatus.value.lastSyncTime,
+            },
+            headers: authHeaders,
+          },
+          {
+            id: "sessions_stats",
+            endpoint: "/api/sessions/stats",
+            method: "GET" as const,
+            headers: authHeaders,
+          },
+        ];
+
+        // Batch-Request verwenden
+        let rawResponses;
+        try {
+          rawResponses = await batchRequestService.executeBatch(requests);
+        } catch (batchError: any) {
+          console.error("Batch request failed:", {
+            error: batchError,
+            message: batchError?.message,
+            stack: batchError?.stack,
+          });
+          // Don't throw - allow app to continue with empty sessions
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           sessions.value = [];
           return;
         }
 
+<<<<<<< HEAD
+=======
+        // Process batch response with new fix
+        let responses;
+        try {
+          responses = processBatchResponse(rawResponses, "synchronizeSessions");
+        } catch (processError) {
+          console.error("Error processing batch response:", processError);
+          sessions.value = [];
+          return;
+        }
+
+        // Extract data from responses
+        const sessionsData = extractBatchResponseData(responses, 0, "sessions");
+        const statsData = extractBatchResponseData(responses, 1, "stats");
+
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         // Validate and extract sessions
         const { valid, sessions: serverSessions } =
           validateSessionsResponse(sessionsData);
@@ -399,7 +489,11 @@ export const useSessionsStore = defineStore(
           // Lokale Sessions hinzufügen, die nicht vom Server kamen
           // (nur solche, die als isLocal markiert sind - andere wurden gelöscht)
           localSessionsMap.forEach((session: any) => {
+<<<<<<< HEAD
             // if (((session as any).isLocal) { // isLocal check entfernt
+=======
+            // if ((session as any).isLocal) { // isLocal check entfernt
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             updatedSessions.push(session);
             // }
           });
@@ -462,7 +556,11 @@ export const useSessionsStore = defineStore(
         // Direct API call instead of batch request
         // The batch service seems to have issues with the server response format
         const response = await axios.get(
+<<<<<<< HEAD
           apiConfig.ENDPOINTS.CHAT.MESSAGES(sessionId),
+=======
+          `/api/sessions/${sessionId}/messages`,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           {
             headers: authHeaders,
           },
@@ -556,7 +654,11 @@ export const useSessionsStore = defineStore(
               updatedAt: now,
             };
 
+<<<<<<< HEAD
             await axios.post<ChatSession>(apiConfig.ENDPOINTS.CHAT.SESSIONS, payload, {
+=======
+            await axios.post<ChatSession>("/api/sessions", payload, {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
               headers: authStore.createAuthHeaders(),
             });
 
@@ -595,7 +697,11 @@ export const useSessionsStore = defineStore(
       currentSessionId.value = sessionId;
 
       // Cancel any ongoing streaming for the previous session
+<<<<<<< HEAD
       if (previousSessionId && (streaming.value as any).isStreaming) {
+=======
+      if (previousSessionId && streaming.value.isStreaming) {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         cancelStreaming();
       }
 
@@ -631,7 +737,11 @@ export const useSessionsStore = defineStore(
       if (authStore.isAuthenticated) {
         try {
           await axios.patch(
+<<<<<<< HEAD
             apiConfig.ENDPOINTS.CHAT.SESSION(sessionId),
+=======
+            `/api/sessions/${sessionId}`,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             { title: newTitle },
             {
               headers: authStore.createAuthHeaders(),
@@ -682,7 +792,11 @@ export const useSessionsStore = defineStore(
       // Mit dem Server synchronisieren, wenn angemeldet
       if (authStore.isAuthenticated) {
         try {
+<<<<<<< HEAD
           await axios.delete(apiConfig.ENDPOINTS.CHAT.SESSION(sessionId), {
+=======
+          await axios.delete(`/api/sessions/${sessionId}`, {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             headers: authStore.createAuthHeaders(),
           });
         } catch (err: any) {
@@ -721,7 +835,11 @@ export const useSessionsStore = defineStore(
       if (authStore.isAuthenticated) {
         try {
           await axios.patch(
+<<<<<<< HEAD
             apiConfig.ENDPOINTS.CHAT.SESSION(sessionId),
+=======
+            `/api/sessions/${sessionId}`,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             { isPinned },
             {
               headers: authStore.createAuthHeaders(),
@@ -892,16 +1010,23 @@ export const useSessionsStore = defineStore(
 
       try {
         const authToken = authStore.token;
+<<<<<<< HEAD
         const streamingEnabled = true; // Streaming aktiviert
+=======
+        const streamingEnabled = false; // Temporär deaktiviert bis Server-SSE funktioniert
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
         if (streamingEnabled) {
           // Streaming mit EventSource
 
           // Erstelle eine initiale Assistant-Nachricht für Streaming
           const assistantTempId = `temp-response-${uuidv4()}`;
+<<<<<<< HEAD
           // Declare responseContent here so finishStreaming can access it
           let responseContent = "";
           
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           const streamingMessage: ChatMessage = {
             id: assistantTempId,
             sessionId,
@@ -918,6 +1043,7 @@ export const useSessionsStore = defineStore(
               (msg) => msg.id === assistantTempId,
             );
             if (finalMsgIndex !== -1) {
+<<<<<<< HEAD
               // Create a completely new message object for proper reactivity
               const sanitizedContent = responseContent.includes("data:") ? "Fehler beim Verarbeiten der Antwort" : responseContent;
               const updatedMessage = {
@@ -935,6 +1061,18 @@ export const useSessionsStore = defineStore(
               messages.value = Object.assign({}, messages.value, {
                 [sessionId]: newMessages
               });
+=======
+              const updatedMessages = [...messages.value[sessionId]];
+              updatedMessages[finalMsgIndex] = {
+                ...updatedMessages[finalMsgIndex],
+                isStreaming: false,
+                status: "sent",
+              };
+              messages.value = {
+                ...messages.value,
+                [sessionId]: updatedMessages,
+              };
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             }
 
             streaming.value = {
@@ -958,11 +1096,19 @@ export const useSessionsStore = defineStore(
           // params.append('token', authToken); // Token als URL-Parameter
 
           // Verwende den neuen API-Endpoint aus der Config
+<<<<<<< HEAD
           const url = `/api/chat/message/stream?${params.toString()}`;
+=======
+          const url = `/api/question/stream?${params.toString()}`;
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           console.log("Streaming URL:", url);
           console.log("Auth token present:", !!authToken);
 
           // Ersetze EventSource durch fetch mit Headers
+<<<<<<< HEAD
+=======
+          let responseContent = "";
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           try {
             const response = await fetch(url, {
               method: "GET",
@@ -992,6 +1138,7 @@ export const useSessionsStore = defineStore(
               throw new Error("No response body");
             }
 
+<<<<<<< HEAD
             // Debug: Log if responseContent already has data
             if (responseContent) {
               console.warn("WARNING: responseContent already has data before streaming:", responseContent);
@@ -1002,6 +1149,10 @@ export const useSessionsStore = defineStore(
             let chunkCount = 0;
             let buffer = ""; // Buffer für unvollständige Zeilen
             
+=======
+            // Stream verarbeiten
+            let chunkCount = 0;
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             while (true) {
               const { done, value } = await reader.read();
               if (done) {
@@ -1016,6 +1167,7 @@ export const useSessionsStore = defineStore(
                 chunk.substring(0, 100),
               );
 
+<<<<<<< HEAD
               // Safety check: If chunk contains multiple "data:" lines, it might be the entire response
               if (chunk.split("data:").length > 10) {
                 console.error("ERROR: Received what appears to be the entire SSE response in one chunk!");
@@ -1047,6 +1199,16 @@ export const useSessionsStore = defineStore(
                   const data = line.slice(6);
                   console.log("Processing SSE line:", line);
                   console.log("Data after removing 'data: ' prefix:", data);
+=======
+              // SSE-Format parsen
+              const lines = chunk.split("\n");
+              console.log("Lines in chunk:", lines.length, lines);
+
+              for (const line of lines) {
+                if (line.startsWith("data: ")) {
+                  const data = line.slice(6);
+                  console.log("Parsed data:", data);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
                   if (data === "[DONE]") {
                     console.log("Received [DONE] signal");
@@ -1055,6 +1217,7 @@ export const useSessionsStore = defineStore(
                   }
 
                   try {
+<<<<<<< HEAD
                     // Safety check: ensure we're not trying to parse SSE-formatted data
                     if (data.startsWith("data:")) {
                       console.error("ERROR: Attempting to parse SSE-formatted data. This should not happen!");
@@ -1071,12 +1234,20 @@ export const useSessionsStore = defineStore(
                       console.log("Received done event in data");
                       // Done is handled separately
                     } else if (parsed && parsed.error) {
+=======
+                    // Backend sendet JSON im Format: {"response": "token"}
+                    const parsed = JSON.parse(data);
+                    if (parsed.response) {
+                      responseContent += parsed.response;
+                    } else if (parsed.error) {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                       console.error(
                         "Streaming error from backend:",
                         parsed.error,
                       );
                     }
                   } catch (e) {
+<<<<<<< HEAD
                     // Log the parsing error but don't append raw data
                     console.error("Failed to parse SSE data:", e, "Raw data:", data);
                     // Check if this might be nested SSE data
@@ -1088,10 +1259,18 @@ export const useSessionsStore = defineStore(
                   }
 
                   // Update the message with proper reactivity
+=======
+                    // Fallback für plain text
+                    responseContent += data;
+                  }
+
+                  // Update the message
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                   const msgIndex = messages.value[sessionId].findIndex(
                     (msg) => msg.id === assistantTempId,
                   );
                   if (msgIndex !== -1) {
+<<<<<<< HEAD
                     // Create a completely new message object for proper reactivity
                     const sanitizedContent = responseContent.includes("data:") ? "" : responseContent;
                     const updatedMessage = {
@@ -1110,6 +1289,19 @@ export const useSessionsStore = defineStore(
                     messages.value = Object.assign({}, messages.value, {
                       [sessionId]: newMessages
                     });
+=======
+                    const updatedMessages = [...messages.value[sessionId]];
+                    updatedMessages[msgIndex] = {
+                      ...updatedMessages[msgIndex],
+                      content: responseContent,
+                      isStreaming: true,
+                      status: "pending",
+                    };
+                    messages.value = {
+                      ...messages.value,
+                      [sessionId]: updatedMessages,
+                    };
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                   }
                 } else if (line.startsWith("event: ")) {
                   const event = line.slice(7);
@@ -1131,6 +1323,7 @@ export const useSessionsStore = defineStore(
             // Fallback auf nicht-streaming API
 
             // Wenn noch kein Content, versuche die non-streaming API
+<<<<<<< HEAD
             if (!responseContent || responseContent.includes("data:")) {
               // Reset responseContent if it contains raw SSE data
               responseContent = "";
@@ -1142,6 +1335,20 @@ export const useSessionsStore = defineStore(
                   sessionId: sessionId,
                   model: "llama3:8b-instruct-q4_1"
                 },
+=======
+            if (!responseContent) {
+              const requestData: any = {
+                question: content,
+              };
+
+              if (/^\d+$/.test(sessionId)) {
+                requestData.session_id = parseInt(sessionId);
+              }
+
+              const fallbackResponse = await axios.post(
+                "/api/question",
+                requestData,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                 {
                   headers: {
                     Authorization: `Bearer ${authToken}`,
@@ -1163,11 +1370,16 @@ export const useSessionsStore = defineStore(
                 status: "sent",
               };
 
+<<<<<<< HEAD
               // Update message with proper reactivity
+=======
+              // Update message
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
               const msgIndex = messages.value[sessionId].findIndex(
                 (msg) => msg.id === assistantTempId,
               );
               if (msgIndex !== -1) {
+<<<<<<< HEAD
                 // Create new array with the updated message
                 const newMessages = [...messages.value[sessionId]];
                 newMessages[msgIndex] = assistantMessage;
@@ -1176,6 +1388,14 @@ export const useSessionsStore = defineStore(
                 messages.value = Object.assign({}, messages.value, {
                   [sessionId]: newMessages
                 });
+=======
+                const updatedMessages = [...messages.value[sessionId]];
+                updatedMessages[msgIndex] = assistantMessage;
+                messages.value = {
+                  ...messages.value,
+                  [sessionId]: updatedMessages,
+                };
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
               }
             }
 
@@ -1185,6 +1405,16 @@ export const useSessionsStore = defineStore(
           // Nicht-Streaming-Version verwenden
 
           const assistantTempId = `temp-response-${uuidv4()}`; // Diese Variable fehlte
+<<<<<<< HEAD
+=======
+          const requestData: any = {
+            question: content,
+          };
+
+          if (/^\d+$/.test(sessionId)) {
+            requestData.session_id = parseInt(sessionId);
+          }
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
           // Erstelle eine initiale Assistant-Nachricht
           const initialAssistantMessage: ChatMessage = {
@@ -1199,11 +1429,15 @@ export const useSessionsStore = defineStore(
           messages.value[sessionId].push(initialAssistantMessage);
 
           try {
+<<<<<<< HEAD
             const response = await axios.post("/chat", {
               message: content,
               sessionId: sessionId,
               model: "llama3:8b-instruct-q4_1"
             }, {
+=======
+            const response = await axios.post("/api/question", requestData, {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
               headers: {
                 Authorization: `Bearer ${authToken}`,
                 "Content-Type": "application/json",
@@ -1224,11 +1458,16 @@ export const useSessionsStore = defineStore(
               status: "sent",
             };
 
+<<<<<<< HEAD
             // Update the existing message with proper reactivity
+=======
+            // Update the existing message
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             const msgIndex = messages.value[sessionId].findIndex(
               (msg) => msg.id === assistantTempId,
             );
             if (msgIndex !== -1) {
+<<<<<<< HEAD
               // Create new array with the updated message
               const newMessages = [...messages.value[sessionId]];
               newMessages[msgIndex] = assistantMessage;
@@ -1248,6 +1487,17 @@ export const useSessionsStore = defineStore(
               messages.value = Object.assign({}, messages.value, {
                 [sessionId]: newMessages
               });
+=======
+              messages.value[sessionId][msgIndex] = assistantMessage;
+            }
+
+            // Mark user message as sent
+            const userMessageIndex = messages.value[sessionId].findIndex(
+              (m) => m.id === tempId,
+            );
+            if (userMessageIndex !== -1) {
+              messages.value[sessionId][userMessageIndex].status = "sent";
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             }
           } catch (err) {
             console.error("Fallback error:", err);
@@ -1255,6 +1505,7 @@ export const useSessionsStore = defineStore(
               (msg) => msg.id === assistantTempId,
             );
             if (msgIndex !== -1) {
+<<<<<<< HEAD
               // Create a completely new message object for proper reactivity
               const errorMessage = {
                 ...messages.value[sessionId][msgIndex],
@@ -1271,6 +1522,12 @@ export const useSessionsStore = defineStore(
               messages.value = Object.assign({}, messages.value, {
                 [sessionId]: newMessages
               });
+=======
+              messages.value[sessionId][msgIndex].content =
+                "Fehler bei der Kommunikation mit dem Server";
+              messages.value[sessionId][msgIndex].isStreaming = false;
+              messages.value[sessionId][msgIndex].status = "error";
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             }
           }
 
@@ -1368,7 +1625,11 @@ export const useSessionsStore = defineStore(
       if (authStore.isAuthenticated) {
         try {
           await axios.delete(
+<<<<<<< HEAD
             apiConfig.ENDPOINTS.CHAT.MESSAGE(sessionId, messageId),
+=======
+            `/api/sessions/${sessionId}/messages/${messageId}`,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             {
               headers: authStore.createAuthHeaders(),
             },
@@ -1563,7 +1824,11 @@ export const useSessionsStore = defineStore(
 
         // Sende Feedback an Backend
         await axios.post(
+<<<<<<< HEAD
           apiConfig.ENDPOINTS.FEEDBACK.SUBMIT,
+=======
+          "/api/feedback",
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           {
             message_id: messageId,
             session_id: foundSessionId,
@@ -1627,7 +1892,11 @@ export const useSessionsStore = defineStore(
       if (authStore.isAuthenticated) {
         try {
           await axios.patch(
+<<<<<<< HEAD
             apiConfig.ENDPOINTS.CHAT.SESSION(sessionId),
+=======
+            `/api/sessions/${sessionId}`,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             {
               tags: sessions.value[sessionIndex].tags,
             },
@@ -1666,7 +1935,11 @@ export const useSessionsStore = defineStore(
       if (authStore.isAuthenticated) {
         try {
           await axios.patch(
+<<<<<<< HEAD
             apiConfig.ENDPOINTS.CHAT.SESSION(sessionId),
+=======
+            `/api/sessions/${sessionId}`,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             {
               tags: sessions.value[sessionIndex].tags,
             },
@@ -1709,7 +1982,11 @@ export const useSessionsStore = defineStore(
       if (authStore.isAuthenticated) {
         try {
           await axios.patch(
+<<<<<<< HEAD
             apiConfig.ENDPOINTS.CHAT.SESSION(sessionId),
+=======
+            `/api/sessions/${sessionId}`,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             {
               category: sessions.value[sessionIndex].category,
             },
@@ -1746,7 +2023,11 @@ export const useSessionsStore = defineStore(
       if (authStore.isAuthenticated) {
         try {
           await axios.patch(
+<<<<<<< HEAD
             apiConfig.ENDPOINTS.CHAT.SESSION(sessionId),
+=======
+            `/api/sessions/${sessionId}`,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             {
               category: null,
             },
@@ -1787,7 +2068,11 @@ export const useSessionsStore = defineStore(
       if (authStore.isAuthenticated) {
         try {
           await axios.patch(
+<<<<<<< HEAD
             apiConfig.ENDPOINTS.CHAT.SESSION(sessionId),
+=======
+            `/api/sessions/${sessionId}`,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             {
               isArchived: archive,
             },
@@ -1952,7 +2237,11 @@ export const useSessionsStore = defineStore(
       // Mit dem Server synchronisieren, wenn angemeldet
       if (authStore.isAuthenticated) {
         try {
+<<<<<<< HEAD
           await axios.delete(apiConfig.ENDPOINTS.CHAT.SESSION(sessionId), {
+=======
+          await axios.delete(`/api/sessions/${sessionId}`, {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             headers: authStore.createAuthHeaders(),
           });
         } catch (err: any) {

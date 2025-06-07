@@ -184,6 +184,7 @@ onMounted(() => {
 
 // Format message content with markdown
 function formatMessageContent(content: string): string {
+<<<<<<< HEAD
   // CRITICAL: Never display raw SSE data
   if (content.includes("data: {") || content.includes("event: ")) {
     console.error("WARNING: Raw SSE data detected in message content!");
@@ -192,6 +193,8 @@ function formatMessageContent(content: string): string {
     return "<em>Fehler beim Verarbeiten der Antwort. Bitte versuchen Sie es erneut.</em>";
   }
   
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   // Use DOMPurify to sanitize HTML
   const sanitizedContent = DOMPurify.sanitize(marked(content));
 

@@ -1,4 +1,5 @@
 ---
+<<<<<<< HEAD
 title: "Admin-Dashboard - Vollständige Dokumentation (13/13 Tabs)"
 version: "3.2.0"
 date: "29.05.2025"
@@ -13,6 +14,22 @@ tags: ["Admin", "Dashboard", "13 Tabs", "TypeScript", "Vue3", "API", "RAG", "Vol
 # Admin-Dashboard - Vollständige Dokumentation (13/13 Tabs)
 
 > **Letzte Aktualisierung:** 06.06.2025 | **Version:** 3.2.0 | **Status:** Vollständig implementiert | **Production Ready:** 85%
+=======
+title: "Admin-Komponenten - Vollständige Dokumentation"
+version: "2.0.0"
+date: "29.05.2025"
+lastUpdate: "29.05.2025"
+author: "Claude"
+status: "Aktiv"
+priority: "Hoch"
+category: "Komponenten/Admin"
+tags: ["Admin", "Dashboard", "Management", "Interface", "TypeScript", "Vue3", "API", "Authentication"]
+---
+
+# Admin-Komponenten - Vollständige Dokumentation
+
+> **Letzte Aktualisierung:** 29.05.2025 | **Version:** 2.0.0 | **Status:** Aktiv
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 ## Inhaltsverzeichnis
 
@@ -32,6 +49,7 @@ tags: ["Admin", "Dashboard", "13 Tabs", "TypeScript", "Vue3", "API", "RAG", "Vol
 
 ## Übersicht
 
+<<<<<<< HEAD
 Das Admin-Dashboard ist **vollständig implementiert** mit **13 funktionalen Tabs** (Stand Juni 2025). Es bietet eine umfassende Verwaltungsoberfläche mit 156 API-Endpoints und durchgängiger TypeScript-Typisierung (98% Coverage, nur 12 Fehler). Das System ist zu 85% production-ready mit optimierter Performance (1.8s Load Time).
 
 ### Implementierte Tabs (13/13) ✅ - Juni 2025
@@ -49,6 +67,17 @@ Das Admin-Dashboard ist **vollständig implementiert** mit **13 funktionalen Tab
 11. **AdminAdvancedDocuments**: Erweiterte Dokumentenverwaltung
 12. **AdminDashboard.enhanced**: Erweiterte Dashboard-Features
 13. **AdminSystem.enhanced**: Erweiterte Systemfunktionen
+=======
+Das Admin-Interface des Digitale Akte Assistenten bietet eine umfassende Verwaltungsoberfläche für Systemadministratoren. Es ermöglicht die Verwaltung von:
+
+- **Benutzern**: Verwaltung von Benutzerkonten, Rollen und Berechtigungen
+- **Systemeinstellungen**: Konfiguration und Überwachung der Systemressourcen
+- **Feedback**: Sammlung und Verwaltung von Benutzerfeedback
+- **MOTD (Message of the Day)**: Verwaltung von Systemnachrichten
+- **Feature-Toggles**: Steuerung von Feature-Flags für graduelle Rollouts
+- **Dokumentenkonverter**: Verwaltung und Überwachung von Dokumentkonvertierungen
+- **System-Logs**: Einsicht in Systemprotokolle und Debugging
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 ## Architektur
 

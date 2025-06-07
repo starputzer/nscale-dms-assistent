@@ -27,7 +27,11 @@ export class BatchUpdateManager<T> {
   private queue: QueuedUpdate<T>[] = [];
   private flushTimer: ReturnType<typeof setTimeout> | null = null;
   private isProcessing = false;
+<<<<<<< HEAD
   private _lastFlushTime = 0;
+=======
+  private lastFlushTime = 0;
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   
   private metrics: UpdateMetrics = {
     totalUpdates: 0,

@@ -45,6 +45,7 @@ export function useNScale() {
       }
 
       if (useChat) {
+<<<<<<< HEAD
         promises.push(chat as any).initialize());
       }
 
@@ -54,6 +55,17 @@ export function useNScale() {
 
       if (useSettings) {
         (settings as any).initialize();
+=======
+        promises.push(chat.initialize());
+      }
+
+      if (useUI) {
+        ui.initialize();
+      }
+
+      if (useSettings) {
+        settings.initialize();
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       }
 
       // Auf Abschluss aller Initialisierungen warten

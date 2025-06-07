@@ -1,9 +1,17 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import path from "path";
+<<<<<<< HEAD
 
 export default defineConfig({
   plugins: [
+=======
+import { optimizeImports } from "./vite-plugin-optimize-imports.js";
+
+export default defineConfig({
+  plugins: [
+    optimizeImports(),
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     vue(),
     {
       name: 'html-transform',
@@ -35,6 +43,10 @@ export default defineConfig({
     devSourcemap: true,
     preprocessorOptions: {
       scss: {
+<<<<<<< HEAD
+=======
+        // Vereinfachte Konfiguration ohne zusätzliche Importe
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         additionalData: ``,
         charset: false,
       },
@@ -57,12 +69,17 @@ export default defineConfig({
             "@vuelidate/core",
             "@vuelidate/validators",
           ],
+<<<<<<< HEAD
+=======
+          // bridge removed
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           ui: ["./src/components/ui"],
         },
       },
     },
   },
   server: {
+<<<<<<< HEAD
     port: 3000,
     middlewareMode: false,
     proxy: {
@@ -203,3 +220,78 @@ export default defineConfig({
     },
   },
 });
+=======
+    port: 5173,
+    middlewareMode: false,
+    proxy: {
+      "/api": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+        secure: false,
+        // Bei Fehlern Mock-Daten zurückgeben
+        configure: (proxy, options) => {
+          // Handle streaming endpoints - disable buffering
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            if (req.url.includes('/api/question/stream')) {
+              console.log("Configuring streaming endpoint:", req.url);
+              // Disable buffering for streaming
+              proxyReq.setHeader('X-Accel-Buffering', 'no');
+              proxyReq.setHeader('Cache-Control', 'no-cache');
+            }
+          });
+          
+          proxy.on('proxyRes', (proxyRes, req, res) => {
+            if (req.url.includes('/api/question/stream')) {
+              console.log("Streaming response headers:", proxyRes.headers);
+              // Ensure streaming headers are set
+              proxyRes.headers['cache-control'] = 'no-cache';
+              proxyRes.headers['x-accel-buffering'] = 'no';
+              // Don't override content-type if it's already set correctly by backend
+              if (!proxyRes.headers['content-type'] || !proxyRes.headers['content-type'].includes('event-stream')) {
+                proxyRes.headers['content-type'] = 'text/event-stream';
+              }
+            }
+          });
+
+          proxy.on("error", (err, req, res) => {
+            console.log("Proxy-Fehler:", err);
+
+            // Mock-Antworten je nach API-Endpunkt
+            if (req.url.includes("/api/sessions")) {
+              res.writeHead(200, { "Content-Type": "application/json" });
+              res.end(
+                JSON.stringify({
+                  sessions: [
+                    {
+                      id: "1",
+                      title: "Beispiel-Session 1",
+                      createdAt: new Date().toISOString(),
+                      updatedAt: new Date().toISOString(),
+                    },
+                    {
+                      id: "2",
+                      title: "Beispiel-Session 2",
+                      createdAt: new Date().toISOString(),
+                      updatedAt: new Date().toISOString(),
+                    },
+                  ],
+                }),
+              );
+            } else if (req.url.includes("/api/session/")) {
+              res.writeHead(200, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ success: true }));
+            } else {
+              res.writeHead(200, { "Content-Type": "application/json" });
+              res.end(
+                JSON.stringify({
+                  message: "Mock-Antwort (Backend nicht erreichbar)",
+                }),
+              );
+            }
+          });
+        },
+      },
+    },
+  },
+});
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da

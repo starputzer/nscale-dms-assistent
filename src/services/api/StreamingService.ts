@@ -435,7 +435,11 @@ export class StreamingService {
   /**
    * Handler für onopen-Event
    */
+<<<<<<< HEAD
   private handleOpen = (_event: Event): void => {
+=======
+  private handleOpen = (event: Event): void => {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     // Timeout löschen
     if (this.state.connectionTimeoutId) {
       clearTimeout(this.state.connectionTimeoutId);

@@ -1,5 +1,6 @@
 ---
 title: "TypeScript-Typsystem und Type-Definitionen"
+<<<<<<< HEAD
 version: "2.0.0"
 date: "10.05.2025"
 lastUpdate: "04.06.2025"
@@ -8,10 +9,21 @@ status: "Aktuell"
 priority: "Hoch"
 category: "Referenzen"
 tags: ["TypeScript", "Typen", "Interfaces", "Type-Guards", "Type-Safety", "Generics", "98% Coverage", "Production Ready"]
+=======
+version: "1.0.0"
+date: "10.05.2025"
+lastUpdate: "11.05.2025"
+author: "Martin Heinrich"
+status: "Aktiv"
+priority: "Hoch"
+category: "Referenzen"
+tags: ["TypeScript", "Typen", "Interfaces", "Type-Guards", "Type-Safety", "Generics"]
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 ---
 
 # TypeScript-Typsystem und Type-Definitionen
 
+<<<<<<< HEAD
 > **Letzte Aktualisierung:** 04.06.2025 | **Version:** 2.0.0 | **Status:** Aktuell | **TypeScript Coverage:** 98% | **Verbleibende Fehler:** 12
 
 ## Übersicht
@@ -34,6 +46,21 @@ Das Typsystem des Digitale Akte Assistenten ist darauf ausgelegt, maximale Typen
 - **Fehler**: Nur noch 12 (von 2000+ reduziert)
 - **Strict Mode**: Schrittweise aktiviert
 - **Vue 3**: Vollständige Typisierung
+=======
+> **Letzte Aktualisierung:** 10.05.2025 | **Version:** 1.0.0 | **Status:** Aktiv
+
+## Übersicht
+
+Dieses Dokument beschreibt das TypeScript-Typsystem und die Type-Definitionen, die im nscale DMS Assistenten verwendet werden. Es dient als umfassende Referenz für die Entwicklung von typensicheren Komponenten und Funktionen.
+
+Das Typsystem des nscale DMS Assistenten ist darauf ausgelegt, maximale Typensicherheit und Entwicklerunterstützung zu bieten. Es umfasst Definitionen für:
+
+1. Datenmodell-Typen für alle Kernfunktionalitäten
+2. Store-Zustände für die Zustandsverwaltung
+3. API-Schnittstellentypen für die Backend-Kommunikation
+4. Hilfstypen für häufige Muster
+5. Type-Guards für Laufzeitüberprüfungen
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 ## Allgemeine Typen
 

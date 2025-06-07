@@ -117,7 +117,11 @@ describe("Sessions Store", () => {
           mockUtils.createSession({ id: "session-2" }),
         ];
 
+<<<<<<< HEAD
         mockedAxios.(get as any).mockResolvedValueOnce(
+=======
+        mockedAxios.get.mockResolvedValueOnce(
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           createMockAxiosResponse({ sessions, success: true }),
         );
 
@@ -129,7 +133,11 @@ describe("Sessions Store", () => {
       });
 
       it("handles error when loading sessions", async () => {
+<<<<<<< HEAD
         mockedAxios.(get as any).mockRejectedValueOnce(
+=======
+        mockedAxios.get.mockRejectedValueOnce(
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           createMockAxiosError("Failed to load sessions"),
         );
 
@@ -147,7 +155,11 @@ describe("Sessions Store", () => {
           title: "New Chat",
         });
 
+<<<<<<< HEAD
         mockedAxios.(post as any).mockResolvedValueOnce(
+=======
+        mockedAxios.post.mockResolvedValueOnce(
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           createMockAxiosResponse(newSession),
         );
 
@@ -192,7 +204,11 @@ describe("Sessions Store", () => {
         });
 
         // Mock non-streaming response
+<<<<<<< HEAD
         mockedAxios.(post as any).mockResolvedValueOnce(
+=======
+        mockedAxios.post.mockResolvedValueOnce(
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           createMockAxiosResponse({
             response: "Hi there!",
             message_id: assistantMessage.id,
@@ -224,7 +240,11 @@ describe("Sessions Store", () => {
           removeEventListener: vi.fn(),
         };
 
+<<<<<<< HEAD
         global.EventSource = vi.fn(() => (mockEventSource as any));
+=======
+        global.EventSource = vi.fn(() => mockEventSource as any);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
         await store.sendMessage({
           sessionId: store.currentSessionId!,
@@ -269,7 +289,11 @@ describe("Sessions Store", () => {
         store.sessions = [session];
         store.currentSessionId = session.id;
 
+<<<<<<< HEAD
         mockedAxios.(delete as any).mockResolvedValueOnce(
+=======
+        mockedAxios.delete.mockResolvedValueOnce(
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           createMockAxiosResponse({ success: true }),
         );
 
@@ -284,7 +308,11 @@ describe("Sessions Store", () => {
         const session = mockUtils.createSession();
         store.sessions = [session];
 
+<<<<<<< HEAD
         mockedAxios.(delete as any).mockRejectedValueOnce(
+=======
+        mockedAxios.delete.mockRejectedValueOnce(
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           createMockAxiosError("Failed to delete"),
         );
 
@@ -325,7 +353,11 @@ describe("Sessions Store", () => {
         const session = mockUtils.createSession({ isPinned: false });
         store.sessions = [session];
 
+<<<<<<< HEAD
         mockedAxios.(patch as any).mockResolvedValueOnce(
+=======
+        mockedAxios.patch.mockResolvedValueOnce(
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           createMockAxiosResponse({ success: true }),
         );
 
@@ -359,7 +391,11 @@ describe("Sessions Store", () => {
           mockUtils.createMessage({ content: "Pending 2", status: "pending" }),
         ];
 
+<<<<<<< HEAD
         mockedAxios.(post as any).mockResolvedValue(
+=======
+        mockedAxios.post.mockResolvedValue(
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           createMockAxiosResponse({ success: true }),
         );
 

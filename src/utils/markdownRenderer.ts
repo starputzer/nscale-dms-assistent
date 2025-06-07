@@ -20,7 +20,11 @@ async function loadMarked(): Promise<Marked> {
     marked = module.marked;
     
     // Configure marked options
+<<<<<<< HEAD
     (marked as any).setOptions({
+=======
+    marked.setOptions({
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       breaks: true,
       gfm: true,
       headerIds: false,

@@ -103,7 +103,11 @@ export class EnhancedEventSource extends EventEmitter {
       this.handleOpen();
     };
 
+<<<<<<< HEAD
     this.eventSource.onerror = (_event) => {
+=======
+    this.eventSource.onerror = (event) => {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       this.handleError(new Error("EventSource error"));
     };
 
@@ -205,7 +209,11 @@ export class EnhancedEventSource extends EventEmitter {
     }
   }
 
+<<<<<<< HEAD
   private handleHeartbeat(_event: MessageEvent): void {
+=======
+  private handleHeartbeat(event: MessageEvent): void {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     this.lastEventTime = Date.now();
     this.emit("heartbeat");
   }

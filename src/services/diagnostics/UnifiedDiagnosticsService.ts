@@ -113,7 +113,11 @@ export class UnifiedDiagnosticsService {
       router404: await this.getRouter404Status(),
       domErrors: domErrorDetector.detectErrorState(),
       authStatus: this.getAuthStatus(),
+<<<<<<< HEAD
       selfHealingStatus: (selfHealingService as any).getStatus(),
+=======
+      selfHealingStatus: selfHealingService.getStatus(),
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       healthMetrics: { ...this.healthMetrics.value },
     };
 
@@ -132,7 +136,11 @@ export class UnifiedDiagnosticsService {
    * Holt den Status von Router404Diagnostics
    */
   private async getRouter404Status() {
+<<<<<<< HEAD
     const analysis = (router404Diagnostics as any).analyzeDiagnostics();
+=======
+    const analysis = router404Diagnostics.analyzeDiagnostics();
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     return {
       has404Issues: analysis.has404Issues,
       errorCount: analysis.totalErrors,
@@ -155,7 +163,11 @@ export class UnifiedDiagnosticsService {
   /**
    * Analysiert Trends in den Diagnose-Daten
    */
+<<<<<<< HEAD
   private analyzeTrends(_report: DiagnosticReport) {
+=======
+  private analyzeTrends(report: DiagnosticReport) {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     // Erkenne wiederkehrende Muster
     const recentReports = this.diagnosticsHistory.value.slice(-10);
 
@@ -255,7 +267,11 @@ export class UnifiedDiagnosticsService {
   private async executeRecoveryStep(action: string) {
     switch (action) {
       case "clearNavigationHistory":
+<<<<<<< HEAD
         (routerService as any).clearNavigationQueue();
+=======
+        routerService.clearNavigationQueue();
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         break;
 
       case "resetRouterState":
@@ -263,11 +279,19 @@ export class UnifiedDiagnosticsService {
         break;
 
       case "navigateToHome":
+<<<<<<< HEAD
         await routerService.navigate({ name: "Home" } as any);
         break;
 
       case "cleanupErrorElements":
         (domErrorDetector as any).cleanupErrorElements();
+=======
+        await routerService.navigate({ name: "Home" });
+        break;
+
+      case "cleanupErrorElements":
+        domErrorDetector.cleanupErrorElements();
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         break;
 
       case "forceRerender":

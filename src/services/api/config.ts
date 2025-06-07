@@ -23,7 +23,11 @@ const getNodeEnv = (): string => {
 };
 
 export const API_CONFIG = {
+<<<<<<< HEAD
   BASE_URL: getEnvVar("VITE_API_BASE_URL", "/api"),
+=======
+  BASE_URL: getEnvVar("VITE_API_BASE_URL", "/api/v1"),
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   API_VERSION: getEnvVar("VITE_API_VERSION", ""),
 
   AUTH: {
@@ -83,11 +87,16 @@ export const API_CONFIG = {
       retry: 3000,
     },
     CONNECTION_TIMEOUT: 10000,
+<<<<<<< HEAD
     STREAMING_ENDPOINTS: ["/api/chat/stream", "/api/sessions/:sessionId/stream"],
+=======
+    STREAMING_ENDPOINTS: ["/chat/stream", "/sessions/:sessionId/stream"],
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   },
 
   ENDPOINTS: {
     AUTH: {
+<<<<<<< HEAD
       LOGIN: "/api/auth/login",
       LOGOUT: "/api/auth/logout",
       REFRESH: "/api/auth/refresh",
@@ -158,6 +167,77 @@ export const API_CONFIG = {
       DELETE: "/api/admin/feedback",
       EXPORT: "/api/admin/feedback/export",
       FILTER: "/api/admin/feedback/filter",
+=======
+      LOGIN: "/auth/login",
+      LOGOUT: "/auth/logout",
+      REFRESH: "/auth/refresh",
+      USER: "/auth/user",
+    },
+    CHAT: {
+      SESSIONS: "/sessions",
+      SESSION: (id: string) => `/sessions/${id}`,
+      MESSAGES: (sessionId: string) => `/sessions/${sessionId}/messages`,
+      MESSAGE: (sessionId: string, messageId: string) =>
+        `/sessions/${sessionId}/messages/${messageId}`,
+      STREAM: (sessionId: string) => `/sessions/${sessionId}/stream`,
+    },
+    DOCUMENTS: {
+      UPLOAD: "/documents/upload",
+      CONVERT: "/documents/convert",
+      DOCUMENT: (id: string) => `/documents/${id}`,
+    },
+    SYSTEM: {
+      INFO: "/system/info",
+      STATS: "/system/stats",
+      HEALTH: "/system/health",
+    },
+    FEEDBACK: {
+      SUBMIT: "/feedback",
+    },
+    ADMIN: {
+      USERS: "/admin/users",
+      USER: (id: string) => `/admin/users/${id}`,
+      SYSTEM: "/admin/system",
+      STATS: "/system/stats",
+      ACTIONS: "/admin/system-actions",
+      CLEAR_CACHE: "/admin/clear-cache",
+      CLEAR_EMBEDDING_CACHE: "/admin/clear-embedding-cache",
+      CHECK: "/admin/system-check",
+      REINDEX: "/admin/reindex",
+    },
+    USERS: {
+      LIST: "/admin/users",
+      COUNT: "/admin/users/count",
+      DETAIL: "/admin/users",
+      CREATE: "/admin/users",
+      UPDATE_ROLE: "/admin/users",
+      DELETE: "/admin/users",
+      STATS: "/admin/users/stats",
+      ACTIVE: "/admin/users/active",
+      LOCK: "/admin/users",
+      UNLOCK: "/admin/users",
+    },
+    FEATURE_TOGGLES: {
+      LIST: "/admin/feature-toggles",
+      STATS: "/admin/feature-toggles/stats",
+      UPDATE: "/admin/feature-toggles",
+      CREATE: "/admin/feature-toggles",
+      DELETE: "/admin/feature-toggles",
+    },
+    MOTD: {
+      CONFIG: "/motd",
+      UPDATE: "/admin/update-motd",
+      RELOAD: "/admin/reload-motd",
+    },
+    ADMIN_FEEDBACK: {
+      LIST: "/admin/feedback",
+      STATS: "/admin/feedback/stats",
+      NEGATIVE: "/admin/feedback/negative",
+      UPDATE_STATUS: "/admin/feedback",
+      DELETE: "/admin/feedback",
+      EXPORT: "/admin/feedback/export",
+      FILTER: "/admin/feedback/filter",
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     },
   },
 

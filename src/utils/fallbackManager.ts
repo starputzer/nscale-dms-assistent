@@ -456,7 +456,11 @@ export class FallbackManager {
    * @param feature Feature-Name
    * @returns Feature-Konfiguration
    */
+<<<<<<< HEAD
   private _getFeatureConfig(feature: string): FeatureFallbackConfig {
+=======
+  private getFeatureConfig(feature: string): FeatureFallbackConfig {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     if (!this.featureConfigs.has(feature)) {
       // Standardkonfiguration erstellen
       const config: FeatureFallbackConfig = {

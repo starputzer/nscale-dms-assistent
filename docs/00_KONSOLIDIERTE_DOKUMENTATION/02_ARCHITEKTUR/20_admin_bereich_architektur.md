@@ -1,5 +1,6 @@
 ---
 title: "Admin-Bereich Architektur"
+<<<<<<< HEAD
 version: "2.0.0"
 date: "17.05.2025"
 lastUpdate: "04.06.2025"
@@ -8,15 +9,33 @@ status: "Aktuell"
 priority: "Hoch"
 category: "Architektur"
 tags: ["Admin", "Architektur", "Store", "TypeScript", "Vue3", "Pinia", "13 Tabs", "Vollständig"]
+=======
+version: "1.0.0"
+date: "17.05.2025"
+lastUpdate: "17.05.2025"
+author: "Claude"
+status: "Aktiv"
+priority: "Hoch"
+category: "Architektur"
+tags: ["Admin", "Architektur", "Store", "TypeScript", "Vue3", "Pinia"]
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 ---
 
 # Admin-Bereich Architektur
 
+<<<<<<< HEAD
 > **Letzte Aktualisierung:** 04.06.2025 | **Version:** 2.0.0 | **Status:** Vollständig implementiert (13/13 Tabs)
 
 ## Übersicht
 
 Der Admin-Bereich ist **vollständig implementiert** mit **13/13 funktionalen Tabs** (Stand Juni 2025). Das System bietet umfassende Verwaltungsfunktionen mit durchgängiger TypeScript-Typisierung, Pinia State Management und 181 behobenen i18n-Fehlern.
+=======
+> **Letzte Aktualisierung:** 17.05.2025 | **Version:** 1.0.0 | **Status:** Aktiv
+
+## Übersicht
+
+Der Admin-Bereich des Digitale Akte Assistenten ist als modulares, erweiterbares System konzipiert. Er folgt einer klaren Architektur mit Trennung von UI, Business-Logik und Datenschicht.
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 ## Architektonische Prinzipien
 
@@ -28,6 +47,7 @@ Der Admin-Bereich ist **vollständig implementiert** mit **13/13 funktionalen Ta
 
 ## Schichten-Architektur
 
+<<<<<<< HEAD
 ### 1. Präsentationsschicht (UI) - 13 Tabs Vollständig
 
 ```
@@ -80,6 +100,43 @@ services/api/
 ├── AdminKnowledgeService.ts          # Knowledge API ✅
 ├── AdminMonitoringService.ts         # Monitoring API ✅
 └── AdminBackgroundService.ts         # Background Jobs API ✅
+=======
+### 1. Präsentationsschicht (UI)
+
+```
+views/
+└── AdminView.vue                # Hauptcontainer mit Tab-Navigation
+
+components/admin/tabs/
+├── AdminDashboard.vue          # Dashboard-Übersicht
+├── AdminUsers.vue              # Benutzerverwaltung
+├── AdminFeedback.vue           # Feedback-Management
+├── AdminMotd.vue               # MOTD-Editor
+├── AdminSystem.vue             # System-Einstellungen
+├── AdminLogViewer.vue          # Log-Viewer
+└── AdminFeatureToggles.vue     # Feature-Toggle-Management
+```
+
+### 2. Business-Logik (Stores)
+
+```
+stores/admin/
+├── index.ts                    # Zentraler Admin-Store
+├── users.ts                    # Benutzer-Verwaltung
+├── feedback.ts                 # Feedback-Verwaltung
+├── motd.ts                     # MOTD-Konfiguration
+├── system.ts                   # System-Metriken
+└── logs.ts                     # Log-Verwaltung
+```
+
+### 3. Datenschicht (API Services)
+
+```
+services/api/
+├── admin.ts                    # Admin API Service
+├── AdminService.ts             # Type-Safe API Wrapper
+└── AdminServiceWrapper.ts      # Error Handling Layer
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 ```
 
 ## Datenfluss
@@ -196,15 +253,22 @@ export const useAdminUsersStore = defineStore("adminUsers", () => {
 });
 ```
 
+<<<<<<< HEAD
 ## Routing-Konzept (Tab-basiert)
 
 ```typescript
 // Tab-basierte Navigation statt Sub-Routes
+=======
+## Routing-Konzept
+
+```typescript
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 const adminRoutes = {
   path: '/admin',
   name: 'Admin',
   component: AdminView,
   meta: { requiresAdmin: true },
+<<<<<<< HEAD
   beforeEnter: adminGuard
 };
 
@@ -224,6 +288,27 @@ const tabs = [
   { id: 'dashboard-enhanced', label: 'Dashboard+', component: AdminDashboardEnhanced },
   { id: 'system-enhanced', label: 'System+', component: AdminSystemEnhanced }
 ];
+=======
+  beforeEnter: adminGuard,
+  children: [
+    {
+      path: '',
+      redirect: 'dashboard'
+    },
+    {
+      path: 'dashboard',
+      name: 'AdminDashboard',
+      component: () => import('@/components/admin/tabs/AdminDashboard.vue')
+    },
+    {
+      path: 'users',
+      name: 'AdminUsers',
+      component: () => import('@/components/admin/tabs/AdminUsers.vue')
+    }
+    // ... weitere Sub-Routes
+  ]
+};
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 ```
 
 ## Sicherheitskonzept
@@ -540,6 +625,7 @@ export function useAdminTable<T>() {
 }
 ```
 
+<<<<<<< HEAD
 ## Implementierungsstatus Juni 2025
 
 ### Vollständig implementierte Features ✅
@@ -574,3 +660,17 @@ Der Admin-Bereich ist bereit für den produktiven Einsatz.
 ---
 
 *Admin-Architektur zuletzt aktualisiert: 04.06.2025 | Version 2.0.0 | Status: Vollständig (13/13 Tabs)*
+=======
+## Fazit
+
+Die Admin-Architektur des Digitale Akte Assistenten bietet:
+
+- **Modularität**: Leicht erweiterbar um neue Admin-Bereiche
+- **Type Safety**: Durchgängige TypeScript-Nutzung
+- **Performance**: Lazy Loading und Caching
+- **Sicherheit**: Mehrschichtige Zugriffskontrollen
+- **Wartbarkeit**: Klare Trennung der Verantwortlichkeiten
+- **Testbarkeit**: Umfassende Test-Abdeckung möglich
+
+Die gewählte Architektur ermöglicht es, den Admin-Bereich kontinuierlich zu erweitern und an neue Anforderungen anzupassen, ohne die bestehende Funktionalität zu gefährden.
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da

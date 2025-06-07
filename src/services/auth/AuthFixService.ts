@@ -170,9 +170,15 @@ export class AuthFixService {
     this.logger.debug("🔧 Setting up batch auth handling...");
 
     // Ensure batch requests include proper auth headers
+<<<<<<< HEAD
     const originalBatchRequest = (apiService as any).batchRequest?.bind(apiService);
     if (originalBatchRequest) {
       (apiService as any).batchRequest = async (requests: any[]) => {
+=======
+    const originalBatchRequest = apiService.batchRequest?.bind(apiService);
+    if (originalBatchRequest) {
+      apiService.batchRequest = async (requests: any[]) => {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         const token = this.getValidToken();
         if (token) {
           requests = requests.map(req => ({
@@ -435,7 +441,11 @@ export class AuthFixService {
       const response = await apiService.get("/auth/verify", {
         headers: { Authorization: `Bearer ${token}` }
       });
+<<<<<<< HEAD
       return (response as any).status === 200;
+=======
+      return response.status === 200;
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     } catch (error) {
       return false;
     }

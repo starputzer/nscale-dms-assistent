@@ -8,15 +8,24 @@ import axios from "axios";
  * Diese Funktion sollte nur im Testkontext verwendet werden.
  */
 export async function createTestUsers() {
+<<<<<<< HEAD
   const apiUrl = process.env.API_URL || "http://localhost:8000/api";
+=======
+  const apiUrl = process.env.API_URL || "http://localhost:5173/api";
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
   // Admin-Benutzer erstellen
   try {
     await axios.post(
       `${apiUrl}/admin/users`,
       {
+<<<<<<< HEAD
         email: "martin@danglefeet.com",
         password: "123",
+=======
+        username: "admin",
+        password: "admin123",
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         role: "admin",
         isTestUser: true,
       },
@@ -42,8 +51,13 @@ export async function createTestUsers() {
     await axios.post(
       `${apiUrl}/admin/users`,
       {
+<<<<<<< HEAD
         email: "user@example.com",
         password: "password123",
+=======
+        username: "user",
+        password: "user123",
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         role: "user",
         isTestUser: true,
       },
@@ -87,6 +101,7 @@ export async function createTestUsers() {
 }
 
 /**
+<<<<<<< HEAD
  * Test-Benutzer-Daten für E2E-Tests
  */
 export const testUsers = {
@@ -105,6 +120,12 @@ export const testUsers = {
  */
 export async function cleanupTestUsers() {
   const apiUrl = process.env.API_URL || "http://localhost:8000/api";
+=======
+ * Bereinigt Testdaten nach den Tests.
+ */
+export async function cleanupTestUsers() {
+  const apiUrl = process.env.API_URL || "http://localhost:5173/api";
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
   try {
     await axios.delete(`${apiUrl}/test/cleanup-fixtures`, {

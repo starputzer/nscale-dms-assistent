@@ -101,7 +101,11 @@ export function useDocumentConverter() {
     try {
       // Status im Dokument aktualisieren
       const docIndex = documents.value.findIndex(
+<<<<<<< HEAD
         (doc: ConversionResult) => doc.id === documentId
+=======
+        (doc: ConversionResult) => doc.id === documentId,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       );
       if (docIndex !== -1) {
         documents.value[docIndex].status = "processing";
@@ -123,7 +127,11 @@ export function useDocumentConverter() {
         documents.value[docIndex] = {
           ...documents.value[docIndex],
           ...result,
+<<<<<<< HEAD
           status: "completed" as const,
+=======
+          status: "success",
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           convertedAt: new Date().getTime(),
         };
       }
@@ -137,10 +145,17 @@ export function useDocumentConverter() {
 
       // Fehler im Dokument vermerken
       const docIndex = documents.value.findIndex(
+<<<<<<< HEAD
         (doc: ConversionResult) => doc.id === documentId
       );
       if (docIndex !== -1) {
         documents.value[docIndex].status = "failed" as const;
+=======
+        (doc: ConversionResult) => doc.id === documentId,
+      );
+      if (docIndex !== -1) {
+        documents.value[docIndex].status = "error";
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         documents.value[docIndex].error = error.value.message;
       }
 

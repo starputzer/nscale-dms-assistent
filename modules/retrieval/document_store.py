@@ -4,9 +4,13 @@ import hashlib
 import threading
 from pathlib import Path
 from datetime import datetime
+<<<<<<< HEAD
 from typing import List, Dict, Any, Optional, Tuple
 import numpy as np
 from collections import deque
+=======
+from typing import List, Dict, Any, Optional
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 from ..core.config import Config
 from ..core.logging import LogManager
@@ -22,6 +26,7 @@ class Document:
         self.metadata = metadata or {}
         self.chunks = []
 
+<<<<<<< HEAD
     def process(self, use_semantic_chunking: bool = True):
         """Verarbeitet das Dokument mit intelligenten Chunking-Strategien"""
         self.chunks = []
@@ -57,6 +62,44 @@ class Document:
             self._legacy_chunk_processing()
 
         logger.info(f"📄 {self.filename} → {len(self.chunks)} optimierte Chunks erstellt")
+=======
+    def process(self):
+        """Verarbeitet das Dokument in Chunks"""
+        self.chunks = []
+
+        # Versuche strukturierte Abschnitte zu erkennen
+        sections = self._extract_sections()
+
+        if sections:
+            for section in sections:
+                # Ignoriere sehr kleine Abschnitte (< 50 Zeichen)
+                if len(section['text']) > 50:
+                    self.chunks.append({
+                        'text': section['text'],
+                        'file': self.filename,
+                        'title': section['title'],
+                        'type': 'section'
+                    })
+        else:
+            # Neue Variante: Chunking nach ca. 800 Zeichen, satzbasiert
+            chunked = self._chunk_text_by_sentences(self.text, max_chars=800)
+            logger.info(f"📏 Generierte {len(chunked)} Chunks mit Zeichenlängen:")
+            for i, c in enumerate(chunked[:10]):
+                logger.info(f"Chunk {i+1}: {len(c)} Zeichen - Vorschau: {c[:80]}...")
+
+            for chunk_text in chunked:
+                if len(chunk_text) > 1500:
+                    logger.warning(f"⚠️ Ignoriere Chunk mit {len(chunk_text)} Zeichen (zu lang)")
+                    continue
+                if len(chunk_text) > 50:
+                    self.chunks.append({
+                        'text': chunk_text,
+                        'file': self.filename,
+                        'type': 'chunk'
+                    })
+
+            logger.info(f"📄 {self.filename} → {len(self.chunks)} Chunks insgesamt verarbeitet")
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
             # Alte Fallback-Logik (überlappende Chunks) — deaktiviert, aber erhalten
             # chunk_size = Config.CHUNK_SIZE
@@ -77,6 +120,7 @@ class Document:
             #             'type': 'chunk'
             #         })
 
+<<<<<<< HEAD
     def _extract_hierarchical_sections(self) -> List[Dict[str, Any]]:
         """Extrahiert hierarchische Struktur mit verbesserter Pattern-Erkennung"""
         sections = []
@@ -393,6 +437,8 @@ class Document:
                     'type': 'chunk'
                 })
 
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     def _chunk_text_by_sentences(self, text: str, max_chars: int = 800) -> List[str]:
         """Teilt Text an Satzgrenzen in ca. max_chars lange Chunks"""
         sentences = re.split(r'(?<=[.!?]) +', text)

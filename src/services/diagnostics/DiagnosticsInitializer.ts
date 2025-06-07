@@ -166,9 +166,15 @@ export class DiagnosticsInitializer {
           (window as any)?.$router || (window as any)?.app?.$router;
 
         if (router) {
+<<<<<<< HEAD
           router.beforeEach((_to: any, _from: any, next: any) => {
             // Update diagnostics on route change
             this.services.(unifiedDiagnosticsService as any).updateRouterHealth(true);
+=======
+          router.beforeEach((to: any, from: any, next: any) => {
+            // Update diagnostics on route change
+            this.services.unifiedDiagnosticsService.updateRouterHealth(true);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
             next();
           });
 
@@ -178,7 +184,11 @@ export class DiagnosticsInitializer {
               const errorState =
                 this.services.domErrorDetector.detectErrorState();
               if (errorState.hasErrorScreen) {
+<<<<<<< HEAD
                 this.services.(unifiedDiagnosticsService as any).recordError(
+=======
+                this.services.unifiedDiagnosticsService.recordError(
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                   new Error(`DOM error detected: ${errorState.errorType}`),
                   "diagnostics",
                 );

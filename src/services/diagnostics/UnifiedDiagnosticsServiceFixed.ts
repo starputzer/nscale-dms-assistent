@@ -186,7 +186,11 @@ export class UnifiedDiagnosticsServiceFixed {
   /**
    * Analysiert Trends in den Diagnose-Daten
    */
+<<<<<<< HEAD
   private analyzeTrends(_report: DiagnosticReport) {
+=======
+  private analyzeTrends(report: DiagnosticReport) {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     // Erkenne wiederkehrende Muster
     const recentReports = this.diagnosticsHistory.value.slice(-10);
 

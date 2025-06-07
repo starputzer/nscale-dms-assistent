@@ -22,7 +22,11 @@ import {
   type ErrorReportingOptions,
 } from "@/utils/errorReportingService";
 import {
+<<<<<<< HEAD
   _useFallbackManager,
+=======
+  useFallbackManager,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   type FallbackErrorSeverity,
 } from "@/utils/fallbackManager";
 import { useFeatureTogglesStore } from "@/stores/featureToggles";
@@ -178,7 +182,11 @@ export function useErrorReporting(
       ...options,
       source: {
         type: "component",
+<<<<<<< HEAD
         name: (options as any).source?.name || componentName,
+=======
+        name: options.source?.name || componentName,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       },
     });
   }

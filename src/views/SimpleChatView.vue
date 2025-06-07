@@ -139,10 +139,14 @@
             <div v-if="message.role !== 'user'" class="message-actions">
               <button
                 class="action-btn"
+<<<<<<< HEAD
                 :class="{ 'active positive': messageFeedback[message.id] === 'positive' }"
                 @click="handleFeedback(message, 'positive', $event)"
                 :disabled="messageFeedback[message.id] !== undefined"
                 :title="messageFeedback[message.id] === 'positive' ? 'Sie haben diese Antwort als hilfreich bewertet' : 'Als hilfreich markieren'"
+=======
+                @click="handleFeedback(message, 'positive', $event)"
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
               >
                 <svg
                   width="16"
@@ -156,6 +160,7 @@
                     d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"
                   ></path>
                 </svg>
+<<<<<<< HEAD
                 <span v-if="messageFeedback[message.id] === 'positive'" class="feedback-count">Hilfreich</span>
               </button>
               <button
@@ -164,6 +169,12 @@
                 @click="handleFeedback(message, 'negative', $event)"
                 :disabled="messageFeedback[message.id] !== undefined"
                 :title="messageFeedback[message.id] === 'negative' ? 'Sie haben diese Antwort als nicht hilfreich bewertet' : 'Als nicht hilfreich markieren'"
+=======
+              </button>
+              <button
+                class="action-btn"
+                @click="handleFeedback(message, 'negative', $event)"
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
               >
                 <svg
                   width="16"
@@ -177,7 +188,10 @@
                     d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"
                   ></path>
                 </svg>
+<<<<<<< HEAD
                 <span v-if="messageFeedback[message.id] === 'negative'" class="feedback-count">Nicht hilfreich</span>
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
               </button>
               <button class="action-btn" @click="handleViewSources(message)">
                 <svg
@@ -242,6 +256,7 @@
       </form>
     </div>
   </div>
+<<<<<<< HEAD
 
   <!-- Feedback Dialog -->
   <div v-if="showFeedbackDialog" class="feedback-dialog-overlay" @click.self="showFeedbackDialog = false">
@@ -274,6 +289,8 @@
       </div>
     </div>
   </div>
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 </template>
 
 <script setup lang="ts">
@@ -296,6 +313,7 @@ const motdStore = useMotdStore();
 const messageInput = ref("");
 const isLoading = ref(false);
 const messageArea = ref<HTMLElement>();
+<<<<<<< HEAD
 const messageFeedback = ref<Record<string, 'positive' | 'negative'>>({});
 const showFeedbackDialog = ref(false);
 const feedbackDialogData = ref<{
@@ -307,13 +325,19 @@ const feedbackDialogData = ref<{
   type: 'positive',
   comment: ''
 });
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 // Computed
 const currentSessionId = computed(
   () => (route.params.id as string) || sessionsStore.currentSessionId,
 );
 const currentSession = computed(() => sessionsStore.currentSession);
+<<<<<<< HEAD
 const messages = computed(() => sessionsStore.allCurrentMessages);
+=======
+const messages = computed(() => sessionsStore.currentMessages);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 const isStreaming = computed(() => sessionsStore.isStreaming);
 const hasStreamingMessage = computed(() =>
   messages.value.some((msg) => msg.isStreaming),
@@ -407,6 +431,7 @@ const handleFeedback = async (
   type: "positive" | "negative",
   event?: Event,
 ) => {
+<<<<<<< HEAD
   // Prüfe ob bereits Feedback gegeben wurde
   if (messageFeedback.value[message.id]) {
     return;
@@ -437,6 +462,17 @@ const submitFeedback = async (
     let question = "";
     const messageIndex = messages.value.findIndex((m) => m.id === message.id);
     if (messageIndex > 0) {
+=======
+  console.log("Feedback:", type, message);
+
+  try {
+    // Finde die vorherige Benutzer-Nachricht (die Frage)
+    const messageIndex = messages.value.findIndex((m) => m.id === message.id);
+    let question = "";
+
+    if (messageIndex > 0) {
+      // Suche die vorherige Benutzer-Nachricht
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       for (let i = messageIndex - 1; i >= 0; i--) {
         if (messages.value[i].role === "user") {
           question = messages.value[i].content;
@@ -447,11 +483,21 @@ const submitFeedback = async (
 
     // Sende Feedback an die API
     const response = await axios.post(
+<<<<<<< HEAD
       "/api/feedback",
       {
         messageId: message.id,
         isPositive: type === "positive",
         comment: comment
+=======
+      "/api/v1/feedback",
+      {
+        message_id: message.id,
+        session_id: currentSessionId.value,
+        rating: type === "positive" ? 1 : -1,
+        question: question,
+        answer: message.content,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       },
       {
         headers: authStore.createAuthHeaders(),
@@ -460,6 +506,7 @@ const submitFeedback = async (
 
     console.log("Feedback gespeichert:", response.data);
 
+<<<<<<< HEAD
     // Speichere Feedback-Status
     messageFeedback.value[message.id] = type;
 
@@ -495,6 +542,30 @@ const showFeedbackToast = (message: string, type: string = "success") => {
   }, 3000);
 };
 
+=======
+    // Zeige eine kurze Bestätigungsmeldung
+    const feedbackButton = event?.currentTarget as HTMLButtonElement;
+    if (feedbackButton) {
+      const originalContent = feedbackButton.innerHTML;
+      feedbackButton.innerHTML = "✓";
+      feedbackButton.style.backgroundColor =
+        type === "positive" ? "#d1fae5" : "#fee2e2";
+      feedbackButton.style.color = type === "positive" ? "#00a550" : "#dc3545";
+      feedbackButton.setAttribute("disabled", "true");
+
+      setTimeout(() => {
+        feedbackButton.innerHTML = originalContent;
+        feedbackButton.style.backgroundColor = "";
+        feedbackButton.style.color = "";
+        feedbackButton.removeAttribute("disabled");
+      }, 2000);
+    }
+  } catch (error) {
+    console.error("Fehler beim Senden des Feedbacks:", error);
+  }
+};
+
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 const handleViewSources = (message: any) => {
   console.log("View sources:", message);
   // Implement source viewing functionality
@@ -518,7 +589,11 @@ watch(
 );
 
 // Watch for streaming status changes
+<<<<<<< HEAD
 watch(isStreaming, (newVal: any) => {
+=======
+watch(isStreaming, (newVal) => {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   if (newVal) {
     scrollToBottom();
   }
@@ -745,7 +820,28 @@ onMounted(async () => {
   opacity: 1;
 }
 
+<<<<<<< HEAD
 /* Action button styles moved to bottom of file for proper override */
+=======
+.action-btn {
+  background: transparent;
+  border: 1px solid var(--nscale-border, #dee2e6);
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--nscale-text-secondary, #6c757d);
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  background: var(--nscale-surface, #f8f9fa);
+  color: var(--nscale-text, #333);
+}
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 .loading-indicator {
   display: flex;
@@ -885,6 +981,7 @@ onMounted(async () => {
     opacity: 0;
   }
 }
+<<<<<<< HEAD
 
 /* Feedback Buttons */
 .action-btn {
@@ -1097,4 +1194,6 @@ onMounted(async () => {
     opacity: 1;
   }
 }
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 </style>

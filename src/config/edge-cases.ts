@@ -250,9 +250,15 @@ export const detectEdgeCases = {
     }
 
     // Falls Battery API verfügbar
+<<<<<<< HEAD
     if (navigator as any).getBattery) {
       // Asynchrone Prüfung - kann später abgefragt werden
       (navigator as any).getBattery().then((battery: any) => {
+=======
+    if (navigator.getBattery) {
+      // Asynchrone Prüfung - kann später abgefragt werden
+      navigator.getBattery().then((battery: any) => {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
         if (!battery.charging && battery.level < 0.2) {
           // < 20% und nicht ladend
           return true;

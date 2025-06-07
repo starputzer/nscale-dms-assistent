@@ -580,13 +580,21 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch, onUnmounted } from "vue";
+<<<<<<< HEAD
 import { useI18n } from "vue-i18n";
 import { useToast } from "@/composables/useToast";
 import apiService from "@/services/api/ApiService";
+=======
+import { storeToRefs } from "pinia";
+import { useI18n } from "vue-i18n";
+import { useAdminSystemStore } from "@/stores/admin/system";
+import { useToast } from "@/composables/useToast";
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 // Use i18n composable
 const { t } = useI18n();
 
+<<<<<<< HEAD
 // Data from API
 const stats = ref({
   total_users: 0,
@@ -610,6 +618,16 @@ const cpuStatus = ref("normal");
 
 // Toast notifications
 const toast = useToast();
+=======
+// Stores
+const adminSystemStore = useAdminSystemStore();
+
+// Store state
+const { stats, memoryStatus, cpuStatus } = storeToRefs(adminSystemStore);
+
+// Toast notifications
+const { showToast } = useToast();
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 // Local state
 const isLoading = ref(false);
@@ -636,6 +654,7 @@ const chartInstances = ref<Record<string, any>>({});
 
 // Time range options
 const timeRanges = [
+<<<<<<< HEAD
   { value: "day", label: "Tag" },
   { value: "week", label: "Woche" },
   { value: "month", label: "Monat" },
@@ -653,37 +672,69 @@ const usageTrendData = ref<any>(null);
 const defaultUserSegments = [
   {
     label: "Regelmäßige Nutzer",
+=======
+  { value: "day", label: t("admin.statistics.ranges.day", "Tag") },
+  { value: "week", label: t("admin.statistics.ranges.week", "Woche") },
+  { value: "month", label: t("admin.statistics.ranges.month", "Monat") },
+  { value: "year", label: t("admin.statistics.ranges.year", "Jahr") },
+];
+
+// User segmentation data (mock)
+const userSegments = ref([
+  {
+    label: t("admin.statistics.segments.regular", "Regelmäßige Nutzer"),
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     count: 64,
     percentage: 52,
     color: "#3b82f6",
   },
   {
+<<<<<<< HEAD
     label: "Gelegentliche Nutzer",
+=======
+    label: t("admin.statistics.segments.occasional", "Gelegentliche Nutzer"),
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     count: 36,
     percentage: 29,
     color: "#10b981",
   },
   {
+<<<<<<< HEAD
     label: "Neue Nutzer",
+=======
+    label: t("admin.statistics.segments.new", "Neue Nutzer"),
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     count: 18,
     percentage: 15,
     color: "#f59e0b",
   },
   {
+<<<<<<< HEAD
     label: "Inaktive Nutzer",
+=======
+    label: t("admin.statistics.segments.inactive", "Inaktive Nutzer"),
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     count: 5,
     percentage: 4,
     color: "#ef4444",
   },
+<<<<<<< HEAD
 ];
 
 // Default feedback ratings (fallback)
 const defaultFeedbackRatings = {
+=======
+]);
+
+// Feedback data (mock)
+const feedbackRatings = ref({
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   "1": 12,
   "2": 18,
   "3": 45,
   "4": 78,
   "5": 109,
+<<<<<<< HEAD
 };
 
 const feedbackAverage = computed(() => {
@@ -709,6 +760,11 @@ const feedbackRatingsMap = computed(() => {
 });
 
 const oldFeedbackAverage = computed(() => {
+=======
+});
+
+const feedbackAverage = computed(() => {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   const total = Object.values(feedbackRatings.value).reduce(
     (sum, count) => sum + count,
     0,
@@ -739,12 +795,25 @@ function getStatusText(status: string): string {
 }
 
 function getRatingCount(rating: number): number {
+<<<<<<< HEAD
   return feedbackRatingsMap.value[rating] || 0;
 }
 
 function getRatingPercentage(rating: number): number {
   const ratingData = feedbackRatings.value.find(r => r.rating === rating);
   return ratingData ? ratingData.percentage : 0;
+=======
+  return feedbackRatings.value[rating] || 0;
+}
+
+function getRatingPercentage(rating: number): number {
+  const total = Object.values(feedbackRatings.value).reduce(
+    (sum, count) => sum + count,
+    0,
+  );
+  if (total === 0) return 0;
+  return (getRatingCount(rating) / total) * 100;
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 }
 
 function getRatingColor(rating: number): string {
@@ -780,12 +849,23 @@ async function loadChartLibrary() {
     };
   } catch (error) {
     console.error("Failed to load Chart.js:", error);
+<<<<<<< HEAD
     toast.error(
       t(
         "admin.statistics.toast.chartLoadErrorMessage",
         "Fehler beim Laden der Diagrammbibliothek",
       ),
     );
+=======
+    showToast({
+      type: "error",
+      title: t("admin.statistics.toast.chartLoadError", "Fehler"),
+      message: t(
+        "admin.statistics.toast.chartLoadErrorMessage",
+        "Fehler beim Laden der Diagrammbibliothek",
+      ),
+    });
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   }
 }
 
@@ -812,6 +892,7 @@ async function initCharts() {
   }
 }
 
+<<<<<<< HEAD
 function updateUsageChart() {
   if (!usageTrendData.value) return;
   
@@ -830,6 +911,34 @@ function initUsageChart() {
 
   // Use real data from API
   const data = usageTrendData.value;
+=======
+function initUsageChart() {
+  if (!usageChart.value || !Chart) return;
+
+  // Mock data for usage chart
+  const labels = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+  const data = {
+    labels,
+    datasets: [
+      {
+        label: t("admin.statistics.metrics.sessions", "Sitzungen"),
+        data: [65, 78, 86, 74, 92, 51, 44],
+        borderColor: "rgba(54, 162, 235, 1)",
+        backgroundColor: "rgba(54, 162, 235, 0.2)",
+        borderWidth: 2,
+        fill: true,
+      },
+      {
+        label: t("admin.statistics.metrics.messages", "Nachrichten"),
+        data: [325, 420, 390, 410, 450, 240, 210],
+        borderColor: "rgba(75, 192, 192, 1)",
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        borderWidth: 2,
+        fill: true,
+      },
+    ],
+  };
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
   const config = {
     type: "line",
@@ -959,6 +1068,7 @@ function initPerformanceCharts() {
   // Would initialize multiple performance-related charts
 }
 
+<<<<<<< HEAD
 // API Data Loading Functions
 async function loadStatisticsSummary() {
   try {
@@ -1070,12 +1180,24 @@ async function exportData() {
       ),
     );
   }
+=======
+function exportData() {
+  showToast({
+    type: "info",
+    title: t("admin.statistics.toast.exported", "Export"),
+    message: t(
+      "admin.statistics.toast.exportedMessage",
+      "Statistikdaten wurden exportiert",
+    ),
+  });
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 }
 
 async function refreshData() {
   isLoading.value = true;
 
   try {
+<<<<<<< HEAD
     // Load all data in parallel
     await Promise.all([
       loadStatisticsSummary(),
@@ -1085,10 +1207,14 @@ async function refreshData() {
       loadPerformanceMetrics(),
       loadSessionDistribution()
     ]);
+=======
+    await adminSystemStore.fetchStats();
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
     // Reload charts after data refresh
     initCharts();
 
+<<<<<<< HEAD
     toast.success(
       t(
         "admin.statistics.toast.refreshedMessage",
@@ -1102,26 +1228,66 @@ async function refreshData() {
         "Fehler beim Aktualisieren der Daten",
       ),
     );
+=======
+    showToast({
+      type: "success",
+      title: t("admin.statistics.toast.refreshed", "Aktualisiert"),
+      message: t(
+        "admin.statistics.toast.refreshedMessage",
+        "Statistikdaten wurden aktualisiert",
+      ),
+    });
+  } catch (error) {
+    showToast({
+      type: "error",
+      title: t("admin.statistics.toast.refreshError", "Fehler"),
+      message: t(
+        "admin.statistics.toast.refreshErrorMessage",
+        "Fehler beim Aktualisieren der Daten",
+      ),
+    });
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   } finally {
     isLoading.value = false;
   }
 }
 
 // Handle resize
+<<<<<<< HEAD
 // Handle window resize
 function handleResize() {
   // Update charts on resize
   for (const chart in chartInstances.value) {
     if (chartInstances.value[chart]) {
       chartInstances.value[chart].resize?.() || chartInstances.value[chart].update();
+=======
+function handleResize() {
+  for (const chart in chartInstances.value) {
+    if (chartInstances.value[chart]) {
+      chartInstances.value[chart].update();
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
     }
   }
 }
 
 // Lifecycle hooks
 onMounted(async () => {
+<<<<<<< HEAD
   // Load all data
   await refreshData();
+=======
+  // Load system stats
+  isLoading.value = true;
+
+  try {
+    await adminSystemStore.fetchStats();
+    await initCharts();
+  } catch (error) {
+    console.error("Error fetching system stats:", error);
+  } finally {
+    isLoading.value = false;
+  }
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
   // Add resize listener
   window.addEventListener("resize", handleResize);
@@ -1146,9 +1312,13 @@ watch(selectedView, () => {
 });
 
 // Watch for time range changes
+<<<<<<< HEAD
 watch(selectedTimeRange, async () => {
   // Reload usage trend with new time range
   await loadUsageTrend();
+=======
+watch(selectedTimeRange, () => {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   // Refresh charts when time range changes
   initCharts();
 });

@@ -348,9 +348,16 @@ export interface UseFocusTrap<T extends HTMLElement = HTMLElement>
 }
 
 // Gängige Typen für Provide/Inject
+<<<<<<< HEAD
 export const ToastInjectionKey: InjectionKey<UseToast> = Symbol("toast" as any);
 export const DialogInjectionKey: InjectionKey<UseDialog> = Symbol("dialog" as any);
 export const ThemeInjectionKey: InjectionKey<UseTheme> = Symbol("theme" as any);
 export const LoadingInjectionKey: InjectionKey<UseLoading> = Symbol("loading" as any);
+=======
+export const ToastInjectionKey: InjectionKey<UseToast> = Symbol("toast");
+export const DialogInjectionKey: InjectionKey<UseDialog> = Symbol("dialog");
+export const ThemeInjectionKey: InjectionKey<UseTheme> = Symbol("theme");
+export const LoadingInjectionKey: InjectionKey<UseLoading> = Symbol("loading");
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 export const ErrorHandlingInjectionKey: InjectionKey<UseErrorHandling> =
   Symbol("error-handling");

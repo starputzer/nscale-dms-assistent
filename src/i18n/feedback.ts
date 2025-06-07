@@ -51,6 +51,7 @@ export default {
       step: "Step {current} of {total}",
       percent: "{value}%",
     },
+<<<<<<< HEAD
     feedback: {
       dialog: {
         title: "Feedback Details",
@@ -63,6 +64,8 @@ export default {
         close: "Close",
       },
     },
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   },
   de: {
     toast: {
@@ -116,6 +119,7 @@ export default {
       step: "Schritt {current} von {total}",
       percent: "{value}%",
     },
+<<<<<<< HEAD
     feedback: {
       dialog: {
         title: "Feedback Details",
@@ -128,5 +132,7 @@ export default {
         close: "Schließen",
       },
     },
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   },
 };

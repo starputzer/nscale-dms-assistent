@@ -18,6 +18,7 @@ Dieser Bereich enthält alle Dokumente zur Systemarchitektur und technischen Kon
 - [06_DEPENDENCY_ANALYSIS.md](../06_ARCHIV/40_dependency_analyse.md) - Dependency-Analyse
 - [API_ROUTES_BEST_PRACTICE.md](50_api_routes_guide.md) - API Routes Best Practices
 - [MIGRATION_TO_SHARED_ROUTES.md](../06_ARCHIV/51_shared_routes_migration.md) - Migration zu Shared Routes
+<<<<<<< HEAD
 - [DIRECT_LOGIN_SOLUTION.md](../06_ARCHIV/70_direct_login_loesung.md) - Direct Login Lösung
 
 ## RAG-System (Retrieval-Augmented Generation)
@@ -35,3 +36,6 @@ Dieser Bereich enthält alle Dokumente zur Systemarchitektur und technischen Kon
 ## System Monitoring
 
 - [50_model_health_system.md](50_model_health_system.md) - Model Health Check System
+=======
+- [DIRECT_LOGIN_SOLUTION.md](../06_ARCHIV/70_direct_login_loesung.md) - Direct Login Lösung
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da

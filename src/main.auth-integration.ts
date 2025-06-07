@@ -117,7 +117,11 @@ if (AuthService.isAuthenticated()) {
         });
       }
     })
+<<<<<<< HEAD
     .catch(error: Error) => {
+=======
+    .catch((error: Error) => {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       console.error("Session validation error:", error);
     });
 }

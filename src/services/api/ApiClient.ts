@@ -36,7 +36,11 @@ export class ApiClient {
     this.instance.interceptors.response.use(
       (response: any) => response,
       (error: Error | unknown) => {
+<<<<<<< HEAD
         if (error as any).response?.status === 401) {
+=======
+        if ((error as any).response?.status === 401) {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           const authStore = useAuthStore();
           authStore.logout();
         }

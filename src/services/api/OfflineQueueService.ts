@@ -395,7 +395,11 @@ export class OfflineQueueService {
     switch (operation.type) {
       case OperationType.SEND_MESSAGE:
         // Sende eine Nachricht
+<<<<<<< HEAD
         await fetch(`/api/chat/sessions/${operation.sessionId}/messages`, {
+=======
+        await fetch(`/api/sessions/${operation.sessionId}/messages`, {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           method: "POST",
           headers,
           body: JSON.stringify({
@@ -414,7 +418,11 @@ export class OfflineQueueService {
 
       case OperationType.UPDATE_SESSION:
         // Session aktualisieren (z.B. Titel ändern)
+<<<<<<< HEAD
         await fetch(`/api/chat/sessions/${operation.sessionId}`, {
+=======
+        await fetch(`/api/sessions/${operation.sessionId}`, {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           method: "PATCH",
           headers,
           body: JSON.stringify(operation.data),
@@ -431,7 +439,11 @@ export class OfflineQueueService {
       case OperationType.DELETE_MESSAGE:
         // Nachricht löschen
         await fetch(
+<<<<<<< HEAD
           `/api/chat/sessions/${operation.sessionId}/messages/${operation.data.messageId}`,
+=======
+          `/api/sessions/${operation.sessionId}/messages/${operation.data.messageId}`,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           {
             method: "DELETE",
             headers,
@@ -448,7 +460,11 @@ export class OfflineQueueService {
 
       case OperationType.CREATE_SESSION:
         // Neue Session erstellen
+<<<<<<< HEAD
         await fetch("/api/chat/sessions", {
+=======
+        await fetch("/api/sessions", {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           method: "POST",
           headers,
           body: JSON.stringify({
@@ -469,7 +485,11 @@ export class OfflineQueueService {
 
       case OperationType.ARCHIVE_SESSION:
         // Session löschen/archivieren
+<<<<<<< HEAD
         await fetch(`/api/chat/sessions/${operation.sessionId}`, {
+=======
+        await fetch(`/api/sessions/${operation.sessionId}`, {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           method: "DELETE",
           headers,
         }).then((response) => {
@@ -484,7 +504,11 @@ export class OfflineQueueService {
 
       case OperationType.PIN_SESSION:
         // Session anpinnen/entpinnen
+<<<<<<< HEAD
         await fetch(`/api/chat/sessions/${operation.sessionId}`, {
+=======
+        await fetch(`/api/sessions/${operation.sessionId}`, {
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
           method: "PATCH",
           headers,
           body: JSON.stringify({

@@ -47,7 +47,10 @@ class OllamaClient:
                 'model': Config.MODEL_NAME,
                 'prompt': prompt,
                 'stream': True,
+<<<<<<< HEAD
                 'keep_alive': '10m',              # Model im Speicher behalten
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                 'options': {
                     'temperature': 0.1,           # Niedrigere Temperatur für Konsistenz
                     'num_ctx': Config.LLM_CONTEXT_SIZE,
@@ -57,7 +60,11 @@ class OllamaClient:
                     'mirostat': 1,                # Mirostat-Sampling für konsistentere Textqualität (Llama3-spezifisch)
                     'mirostat_eta': 0.1,          # Aggressivere Mirostat-Steuerung
                     'num_batch': 512,
+<<<<<<< HEAD
                     'num_gpu': -1,  # -1 bedeutet ALLE Layer auf GPU
+=======
+                    'num_gpu': 1,
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                     'stop': ["</s>", "<|im_end|>"], # Explizite Stop-Tokens
                     'seed': 42,                   # Reproduzierbarkeit
                 }
@@ -113,16 +120,25 @@ class OllamaClient:
                             
                             try:
                                 # Verarbeite den Stream in einer Schleife direkt über dem aiohttp Stream
+<<<<<<< HEAD
                                 logger.info("Starte Stream-Verarbeitung...")
                                 async for chunk in resp.content.iter_chunked(2048):  # Größere Chunks für weniger Timeouts
                                     if not chunk:
                                         # Ende des Streams erreicht
                                         logger.info("Leerer Chunk erhalten - Stream-Ende")
+=======
+                                async for chunk in resp.content.iter_chunked(2048):  # Größere Chunks für weniger Timeouts
+                                    if not chunk:
+                                        # Ende des Streams erreicht
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                                         break
                                     
                                     # Füge zum Buffer hinzu
                                     buffer += chunk
+<<<<<<< HEAD
                                     logger.debug(f"Chunk erhalten: {len(chunk)} bytes, Buffer-Größe: {len(buffer)} bytes")
+=======
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                                     
                                     # Verarbeite komplette Zeilen im Buffer
                                     while b'\n' in buffer:
@@ -134,7 +150,11 @@ class OllamaClient:
                                             line_text = line.decode('utf-8').strip()
                                             # Logging nur für erste paar Tokens oder periodisch
                                             if token_count < 5 or token_count % 50 == 0:
+<<<<<<< HEAD
                                                 logger.info(f"Stream-Rohdaten #{token_count}: {line_text}")
+=======
+                                                logger.debug(f"Stream-Rohdaten #{token_count}: {line_text}")
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
                                             
                                             # Parse JSON
                                             data = json.loads(line_text)

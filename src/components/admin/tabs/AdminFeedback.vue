@@ -598,6 +598,7 @@ function truncateText(text: string, maxLength: number) {
   return text.substring(0, maxLength) + "...";
 }
 
+<<<<<<< HEAD
 async function exportFeedback() {
   try {
     // Use the feedback store's export functionality
@@ -669,6 +670,56 @@ async function exportFeedback() {
     link.click();
     document.body.removeChild(link);
   }
+=======
+function exportFeedback() {
+  // Create CSV content
+  const headers = [
+    "Datum",
+    "Benutzer",
+    "Typ",
+    "Frage",
+    "Antwort",
+    "Kommentar",
+    "Sitzungs-ID",
+    "Nachrichten-ID",
+  ];
+
+  const csvRows = [headers.join(",")];
+
+  // Add data rows
+  filteredFeedback.value.forEach((feedback) => {
+    const row = [
+      `"${formatDate(feedback.created_at, true)}"`,
+      `"${feedback.user_email}"`,
+      `"${feedback.is_positive ? "Positiv" : "Negativ"}"`,
+      `"${feedback.question.replace(/"/g, '""')}"`,
+      `"${feedback.answer.replace(/"/g, '""')}"`,
+      `"${feedback.comment ? feedback.comment.replace(/"/g, '""') : ""}"`,
+      `"${feedback.session_id}"`,
+      `"${feedback.message_id}"`,
+    ];
+
+    csvRows.push(row.join(","));
+  });
+
+  const csvContent = csvRows.join("\n");
+
+  // Create blob and download
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.setAttribute("href", url);
+  link.setAttribute(
+    "download",
+    `feedback-export-${new Date().toISOString().split("T")[0]}.csv`,
+  );
+  link.style.visibility = "hidden";
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 }
 
 // Mock Chart.js implementation for testing
@@ -815,6 +866,7 @@ function updateCharts() {
 
 // Lifecycle hooks
 onMounted(async () => {
+<<<<<<< HEAD
   // Load initial data
   try {
     await Promise.all([
@@ -823,6 +875,14 @@ onMounted(async () => {
     ]);
   } catch (error) {
     console.error("Error loading feedback data:", error);
+=======
+  // Load initial data if not already loaded
+  if (!negativeFeedback.value.length || !stats.value.total) {
+    await Promise.all([
+      feedbackStore.fetchStats(),
+      feedbackStore.fetchNegativeFeedback(),
+    ]);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
   }
 
   // Initialize charts after data is loaded

@@ -1,5 +1,6 @@
 ---
 title: "Roadmap Digitale Akte Assistent"
+<<<<<<< HEAD
 version: "3.1.0"
 date: "10.05.2025"
 lastUpdate: "04.06.2025"
@@ -8,15 +9,35 @@ status: "Aktuell"
 priority: "Hoch"
 category: "Projektmanagement"
 tags: ["Roadmap", "Planung", "Timeline", "Vue3", "Migration", "Feature-Planung", "Production Ready"]
+=======
+version: "3.0.0"
+date: "10.05.2025"
+lastUpdate: "29.05.2025"
+author: "Martin Heinrich, Aktualisiert: Claude"
+status: "Aktiv"
+priority: "Hoch"
+category: "Projektmanagement"
+tags: ["Roadmap", "Planung", "Timeline", "Vue3", "Migration", "Feature-Planung"]
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 ---
 
 # Roadmap Digitale Akte Assistent
 
+<<<<<<< HEAD
 > **Letzte Aktualisierung:** 04.06.2025 | **Version:** 3.1.0 | **Status:** Production Ready (85%)
 
 ## Executive Summary
 
 Diese Roadmap dokumentiert den erfolgreichen Entwicklungsstand des Digitale Akte Assistenten mit **85% Production Readiness**. Das Projekt hat alle Hauptmeilensteine erreicht: Vue 3 Migration (100%), Admin Panel (13/13 Tabs), RAG-System (vollständig), 156 API-Endpoints und nur noch 12 TypeScript-Fehler. Die verbleibenden Aufgaben sind Optimierungen, die die Funktionalität nicht beeinträchtigen.
+=======
+> **Letzte Aktualisierung:** 29.05.2025 | **Version:** 3.0.0 | **Status:** Aktiv
+
+## Executive Summary
+
+Diese Roadmap gibt einen umfassenden Überblick über den aktuellen Entwicklungsstand und die geplanten Features des Digitale Akte Assistenten. Sie berücksichtigt die tatsächliche Verfügbarkeit von 15 Wochenstunden für die Entwicklung und legt einen realistischen Zeitplan für zukünftige Entwicklungen fest.
+
+Das Projekt hat die Migration des Frontends zu Vue 3 Single File Components (SFCs) erfolgreich abgeschlossen. Die Migration wurde zu 100% fertiggestellt und bildet nun die solide Grundlage für alle zukünftigen Entwicklungen.
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 ## Aktuelle Situation
 
@@ -47,6 +68,7 @@ Die Anwendung hat eine strategische Neuausrichtung bei der UI-Entwicklung durchl
   - [x] Composables vollständig implementiert (100% abgeschlossen)
   - [x] WCAG 2.1 AA-Konformität mit automatisierten Tests (100% abgeschlossen)
 
+<<<<<<< HEAD
 ### Projekt-Status Juni 2025
 
 Übersicht über den aktuellen Entwicklungsstand:
@@ -63,6 +85,28 @@ Die Anwendung hat eine strategische Neuausrichtung bei der UI-Entwicklung durchl
 | **Bundle Size** | ⚠️ 2.1MB | Ziel: <2MB (0.1MB über Ziel) | Läuft |
 | **Test Coverage** | ⚠️ 65%/80% | Frontend: 65%, Backend: 80% | Läuft |
 | **Production Ready** | **✅ 85%** | **Hauptfunktionen stabil** | **Juni 2025** |
+=======
+### Vue 3 SFC-Migration Fortschritt
+
+Eine detaillierte Analyse des aktuellen Migrationsfortschritts nach Komponentengruppen:
+
+| Bereich | Fertigstellungsgrad | Status | Priorität |
+|---------|---------------------|--------|-----------|
+| **Infrastruktur & Build-System** | ~95% | Nahezu abgeschlossen | Abgeschlossen |
+| **Feature-Toggle-System** | ~100% | Abgeschlossen | Abgeschlossen |
+| **Pinia Stores** | ~100% | Abgeschlossen | Abgeschlossen |
+| **Composables** | ~100% | Abgeschlossen | Abgeschlossen |
+| **UI-Basiskomponenten** | ~95% | Nahezu abgeschlossen | Abgeschlossen |
+| **Layout-Komponenten** | ~100% | Abgeschlossen | Abgeschlossen |
+| **Feedback-Komponenten** | ~100% | Abgeschlossen | Abgeschlossen |
+| **Dokumentenkonverter** | ~100% | Abgeschlossen | Abgeschlossen |
+| **Chat-Interface** | ~100% | Abgeschlossen | Abgeschlossen |
+| **Admin-Bereich** | ~100% | Abgeschlossen | Abgeschlossen |
+| **Bridge-Mechanismen** | ~90% | Nahezu abgeschlossen | Abgeschlossen |
+| **Tests** | ~100% | Abgeschlossen | Abgeschlossen |
+| **Barrierefreiheit (WCAG 2.1 AA)** | ~100% | Abgeschlossen | Abgeschlossen |
+| **GESAMTFORTSCHRITT** | **100%** | **ABGESCHLOSSEN - Mai 2025** | |
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 ### Lehren aus der Framework-Migration
 
@@ -78,6 +122,7 @@ Die folgenden wichtigen Erkenntnisse wurden aus der erfolgreich abgeschlossenen 
 
 ### Schlüsselkomponenten und deren Fortschritt
 
+<<<<<<< HEAD
 #### Admin-Panel (13/13 Tabs - 100% abgeschlossen)
 
 - [x] **AdminDashboard**: Übersicht und Statistiken ✅
@@ -101,6 +146,26 @@ Die folgenden wichtigen Erkenntnisse wurden aus der erfolgreich abgeschlossenen 
 - [x] **Phase 3**: OCR und Dokumentenintelligenz ✅
 - [x] **Admin-Integration**: Vollständige UI für RAG-Verwaltung ✅
 - [x] **Auto-Indizierung**: Automatische Verarbeitung neuer Dokumente ✅
+=======
+#### Dokumentenkonverter
+
+- [x] **Robuste Basisimplementierung**: Der Dokumentenkonverter wurde als stabile Vanilla JS-Komponente implementiert (ABGESCHLOSSEN)
+- [x] **Fallback-Mechanismen**: Mehrschichtige Fallback-Mechanismen für maximale Robustheit (ABGESCHLOSSEN)
+- [ ] **Erweiterte Funktionen**: Bessere Fehlerbehandlung und Diagnose (AKTUELLER FOKUS)
+- [ ] **Verbesserter PDF-Parser**: Bessere Erkennung von Tabellen und Strukturen in PDFs
+- [ ] **Batch-Konvertierung**: Möglichkeit, mehrere Dokumente gleichzeitig zu konvertieren
+
+#### Admin-Bereich
+
+Ein besonderer Fortschritt wurde bei der Migration des Admin-Bereichs erzielt:
+
+- [x] **AdminPanel**: Hauptkomponente mit Tab-Navigation und Lazy-Loading (95% abgeschlossen)
+- [x] **AdminUsers**: Benutzerverwaltung mit CRUD-Operationen und Rollenkonzept (95% abgeschlossen)
+- [x] **AdminSystem**: Systemüberwachung und -konfiguration (95% abgeschlossen)
+- [x] **AdminFeatureToggles**: Verwaltung und Monitoring von Feature-Flags (90% abgeschlossen)
+- [x] **AdminFeedback**: Analyse von Benutzerfeedback (100% abgeschlossen)
+- [x] **AdminMotd**: Editor für Message of the Day (100% abgeschlossen)
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 Die Admin-Komponenten sind vollständig mit Pinia Stores integriert und bieten erweiterte Funktionen wie:
 - Rollenbasierte Zugriffskontrollen
@@ -111,6 +176,7 @@ Die Admin-Komponenten sind vollständig mit Pinia Stores integriert und bieten e
 
 ## Revidierter Zeitplan
 
+<<<<<<< HEAD
 Das Projekt hat alle Hauptmeilensteine erreicht und ist zu **85% production-ready**. Die verbleibenden Aufgaben sind Optimierungen, die die Funktionalität nicht beeinträchtigen.
 
 ### ✅ Abgeschlossen: Januar - Juni 2025
@@ -199,6 +265,86 @@ Das Projekt hat alle Hauptmeilensteine erreicht und ist zu **85% production-read
   - [ ] Android App mit React Native
   - [ ] Offline-Synchronisation
   - *Aufwand: ~100 Stunden*
+=======
+Basierend auf der detaillierten Codeanalyse und dem tatsächlichen Fortschritt wurde die Migration deutlich schneller als geplant abgeschlossen. Die vollständige Migration wurde in nur **3 Monaten** statt der ursprünglich veranschlagten 10 Monate abgeschlossen. Diese erhebliche Zeitersparnis wurde durch systematische Implementierung, Wiederverwendung von Komponenten und die Vorteile der Vue 3 Composition API erreicht.
+
+### Kurzfristig: Juni - Juli 2025 (2 Monate)
+
+- [ ] **Verbesserungen des Dokumentenkonverters**
+  - [ ] Optimierte Fehlerbehandlung und bessere Benutzerfeedbacks
+  - [ ] PDF-Erkennung von Tabellen und strukturierten Inhalten verbessern
+  - [ ] Verbessertes Logging für Diagnose von Konvertierungsproblemen
+  - *Aufwand: ~30 Stunden*
+
+- [ ] **Verbesserte Benutzerfreundlichkeit**
+  - [ ] Zugänglichkeitsverbesserungen (Tastaturnavigation, ARIA-Attribute)
+  - [ ] Optimierte mobile Ansicht
+  - [ ] Verbesserung der Ladezeiten durch optimierte Ressourcennutzung
+  - *Aufwand: ~30 Stunden*
+
+- [ ] **Rollenkonzept Phase 2**
+  - [ ] Backend-Support für Feedback-Analyst und Content-Manager implementieren
+  - [ ] Erweiterte Berechtigungsprüfung im Admin-Bereich
+  - *Aufwand: ~20 Stunden*
+
+- [ ] **Technische Schulden abbauen**
+  - [ ] Vollständige Bereinigung verbleibender Framework-Referenzen
+  - [ ] Code-Dokumentation für Vue 3 SFC-Komponenten vervollständigen
+  - [ ] Einheitliche Fehlermeldungen und -behandlung
+  - [ ] Vite-Konfiguration optimieren
+  - *Aufwand: ~40 Stunden*
+
+- [ ] **Abschluss der Admin-Komponenten**
+  - [ ] Implementierung der Feedback-Analyse-Komponente
+  - [ ] Implementierung des MOTD-Editors
+  - [ ] Umfassende Tests für alle Admin-Komponenten
+  - *Aufwand: ~40 Stunden*
+
+### Mittelfristig: August - Oktober 2025 (3 Monate)
+
+- [ ] **Erweiterte RAG-Engine-Funktionen**
+  - [ ] Hybride Suche (Kombination aus Vektor- und Schlüsselwortsuche)
+  - [ ] Optimierte Chunking-Strategie für Dokumente
+  - [ ] Validierung von Antworten anhand von Quelltexten verbessern
+  - *Aufwand: ~60 Stunden*
+
+- [ ] **Chat-Interface Migration**
+  - [ ] Vollständige Migration der Nachrichten-Liste zu Vue 3 SFC
+  - [ ] Migration der Eingabekomponente
+  - [ ] Integration mit Pinia Store für reaktives State Management
+  - [ ] Optimierung der Streaming-Erfahrung
+  - *Aufwand: ~60 Stunden*
+
+- [ ] **Batch-Verarbeitung für Dokumente**
+  - [ ] Gleichzeitige Konvertierung mehrerer Dokumente
+  - [ ] Fortschrittsanzeige für lange Konvertierungsvorgänge
+  - [ ] Priorisierung von Konvertierungsaufträgen
+  - *Aufwand: ~35 Stunden*
+
+- [ ] **Rollenkonzept Phase 3**
+  - [ ] UI-Anpassungen für rollenspezifische Funktionen
+  - [ ] Eingeschränkte Ansichten je nach Benutzerrolle
+  - *Aufwand: ~40 Stunden*
+
+### Langfristig: November 2025 - Februar 2026 (4 Monate)
+
+- [ ] **Integration in nscale-Umgebung verbessern**
+  - [ ] Kontextbezogene Hilfe basierend auf der aktuellen nscale-Ansicht
+  - [ ] Direkte Aktionen in nscale aus dem Chat heraus ausführen
+  - [ ] Single Sign-On mit nscale-Authentifizierung
+  - *Aufwand: ~80 Stunden*
+
+- [ ] **Erweiterte Wissensbasisfeatures**
+  - [ ] Automatische Aktualisierung der Wissensbasis
+  - [ ] Erkennung und Warnung vor veralteten Informationen
+  - [ ] Einbindung von Community-Wissen
+  - *Aufwand: ~60 Stunden*
+
+- [ ] **Rollenkonzept Phase 4 und 5**
+  - [ ] Implementation des Mehrrollen-Systems
+  - [ ] Überarbeitung des Benutzermanagements für Administratoren
+  - *Aufwand: ~50 Stunden*
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 - [ ] **UI-Optimierungen mit Vue 3 SFC**
   - [ ] Überarbeitetes Chat-Interface mit reaktiven Vue 3-Komponenten
@@ -280,6 +426,7 @@ Das Projekt hat alle Hauptmeilensteine erreicht und ist zu **85% production-read
   - Implementierung von Code-Splitting
   - Lazy-Loading für nicht-kritische Komponenten
 
+<<<<<<< HEAD
 ## Erfolge und Meilensteine Juni 2025
 
 1. **Vue 3 Migration**: ✅ 100% abgeschlossen (Mai 2025)
@@ -297,6 +444,18 @@ Das Projekt hat alle Hauptmeilensteine erreicht und ist zu **85% production-read
 3. **Dokumentation**: API-Docs, Deployment Guide
 4. **Enterprise Features**: Multi-Tenant, SSO vorbereiten
 5. **Mobile Experience**: PWA-Features implementieren
+=======
+## Schlüsselprioritäten
+
+Die folgenden Prioritäten leiten die Entwicklung des Digitale Akte Assistenten:
+
+1. **Stabilisierung der Vanilla-JS-Implementierung**: Dies bleibt die höchste Priorität, um eine stabile Grundlage zu gewährleisten
+2. **Vue 3 SFC-Migration**: Fortsetzung der Migration mit Fokus auf Benutzererfahrung und Codequalität
+3. **Test-Automatisierung**: Implementierung umfassender Tests für alle kritischen Komponenten
+4. **Design-System-Standardisierung**: Vereinheitlichung des Styling und der Komponenten-Schnittstellen
+5. **Benutzerfreundlichkeit**: Eine intuitive, einfach zu bedienende Oberfläche hat Priorität
+6. **Performance**: Schnelle Ladezeiten und Antworten sind wichtiger als zusätzliche Features
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
 
 ## Migrationsstrategie
 
@@ -381,6 +540,7 @@ Unter Berücksichtigung der Verfügbarkeit von 15 Wochenstunden ist die folgende
 - Feedback von Benutzern wird kontinuierlich eingeholt und in die Prioritäten einbezogen.
 - Die Roadmap wird vierteljährlich überprüft und bei Bedarf angepasst.
 
+<<<<<<< HEAD
 ## Fazit
 
 Der Digitale Akte Assistent hat mit **85% Production Readiness** alle kritischen Meilensteine erreicht. Die Vue 3 Migration ist abgeschlossen, das Admin Panel vollständig implementiert, das RAG-System funktional und die Performance optimiert. Die verbleibenden Aufgaben sind Optimierungen, die den produktiven Einsatz nicht verhindern.
@@ -395,3 +555,16 @@ Der Digitale Akte Assistent hat mit **85% Production Readiness** alle kritischen
 ---
 
 *Roadmap zuletzt aktualisiert: 04.06.2025 | Version 3.1.0 | Production Ready: 85%*
+=======
+## Verwendete Quelldokumente
+
+Diese konsolidierte Roadmap basiert auf folgenden Quelldokumenten:
+
+1. `/opt/nscale-assist/app/docs/00_ROADMAP.md` - Hauptquelle für aktuelle Roadmap und Zeitplanung
+2. `/opt/nscale-assist/app/docs/01_MIGRATION/01_VUE3_MIGRATION_MASTERPLAN.md` - Detaillierte Informationen zur Vue 3 Migration
+3. `/opt/nscale-assist/app/docs/00_KONSOLIDIERTE_DOKUMENTATION/01_MIGRATION/01_MIGRATIONSSTATUS_UND_PLANUNG.md` - Aktueller Migrationsstatus
+4. `/opt/nscale-assist/app/docs/03_MIGRATION/VUE3_SFC_MIGRATION_DOKUMENTATION.md` - Technische Details zur SFC-Migration
+5. `/opt/nscale-assist/app/docs/03_MIGRATION/MIGRATION_PLAN_KOMPLETT.md` - Vollständiger Migrationsplan
+6. `/opt/nscale-assist/app/REVISED_MIGRATION_TIMELINE.md` - Revidierter Zeitplan für die Migration
+7. `/opt/nscale-assist/app/CLAUDE.md` - Implementierungsdetails des Admin-Panels
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da

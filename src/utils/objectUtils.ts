@@ -34,7 +34,11 @@ export function deepMerge<T extends Record<string, any>>(target: T, ...sources: 
     for (const key in source) {
       if (isObject(source[key])) {
         if (!target[key]) Object.assign(target, { [key]: {} });
+<<<<<<< HEAD
         deepMerge(target[key] as any, source[key] as any);
+=======
+        deepMerge(target[key], source[key]);
+>>>>>>> 54736e963704686b3a684a0827ec3303d2c8d0da
       } else {
         Object.assign(target, { [key]: source[key] });
       }
