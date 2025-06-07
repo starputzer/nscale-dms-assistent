@@ -151,17 +151,92 @@ export default {
         dataRefreshed: "Data refreshed",
         refreshError: "Error refreshing data"
       },
-      // Common translations
-      common: {
-        loading: "Loading...",
-        error: "Error",
-        retry: "Retry",
-        save: "Save",
-        reset: "Reset",
-        cancel: "Cancel",
-        confirm: "Confirm",
-        refresh: "Refresh",
-        unknownError: "An unknown error occurred"
+      // Advanced Documents translations
+      advancedDocuments: {
+        title: "Advanced Document Processing",
+        description: "Manage OCR processing, document analysis, and metadata extraction",
+        ocrStatus: {
+          title: "OCR Status",
+          available: "OCR Available",
+          languages: "Default Languages",
+          formats: "Supported Formats"
+        },
+        upload: {
+          title: "Document Upload",
+          selectFile: "Select File",
+          enableOcr: "Enable OCR Processing",
+          ocrLanguages: "OCR Languages",
+          processing: "Processing...",
+          button: "Upload Document",
+          success: "Document uploaded successfully",
+          error: "Upload failed"
+        },
+        results: {
+          title: "Processing Results",
+          success: "Processing Complete",
+          steps: "Processing Steps",
+          ocr: "OCR Results",
+          pages: "Pages",
+          confidence: "Confidence",
+          textLength: "Text Length",
+          language: "Detected Language",
+          documentType: "Document Type",
+          extractedData: "Extracted Data",
+          error: "Error"
+        },
+        steps: {
+          upload: "File Upload",
+          ocr: "OCR Processing",
+          language_detection: "Language Detection",
+          metadata_extraction: "Metadata Extraction",
+          quality_analysis: "Quality Analysis"
+        },
+        documentTypes: {
+          invoice: "Invoice",
+          contract: "Contract",
+          report: "Report",
+          letter: "Letter",
+          form: "Form",
+          other: "Other"
+        },
+        patterns: {
+          dates: "Dates",
+          emails: "Email Addresses",
+          phone_numbers: "Phone Numbers",
+          urls: "URLs",
+          reference_numbers: "Reference Numbers"
+        },
+        statistics: {
+          title: "Processing Statistics",
+          totalProcessed: "Total Processed",
+          ocrProcessed: "OCR Processed",
+          errors: "Processing Errors",
+          languageDistribution: "Language Distribution",
+          documentTypeDistribution: "Document Type Distribution"
+        },
+        qualityAnalysis: {
+          title: "Quality Analysis",
+          analyze: "Analyze Quality",
+          report: "Quality Report",
+          overall: "Overall Quality",
+          readability: "Readability",
+          structure: "Structure",
+          completeness: "Completeness",
+          issues: "Issues Found",
+          recommendations: "Recommendations",
+          error: "Error analyzing quality"
+        },
+        extractionPatterns: {
+          title: "Extraction Patterns",
+          category: "Category"
+        },
+        categories: {
+          contact: "Contact Information",
+          temporal: "Date & Time",
+          financial: "Financial Data",
+          legal: "Legal Information",
+          general: "General"
+        }
       }
     }
   },
@@ -313,17 +388,92 @@ export default {
         dataRefreshed: "Daten aktualisiert",
         refreshError: "Fehler beim Aktualisieren"
       },
-      // Allgemeine Übersetzungen
-      common: {
-        loading: "Wird geladen...",
-        error: "Fehler",
-        retry: "Wiederholen",
-        save: "Speichern",
-        reset: "Zurücksetzen",
-        cancel: "Abbrechen",
-        confirm: "Bestätigen",
-        refresh: "Aktualisieren",
-        unknownError: "Ein unbekannter Fehler ist aufgetreten"
+      // Erweiterte Dokumentenverarbeitung Übersetzungen
+      advancedDocuments: {
+        title: "Erweiterte Dokumentenverarbeitung",
+        description: "Verwaltung von OCR-Verarbeitung, Dokumentenanalyse und Metadatenextraktion",
+        ocrStatus: {
+          title: "OCR-Status",
+          available: "OCR Verfügbar",
+          languages: "Standard-Sprachen",
+          formats: "Unterstützte Formate"
+        },
+        upload: {
+          title: "Dokument-Upload",
+          selectFile: "Datei auswählen",
+          enableOcr: "OCR-Verarbeitung aktivieren",
+          ocrLanguages: "OCR-Sprachen",
+          processing: "Verarbeitung...",
+          button: "Dokument hochladen",
+          success: "Dokument erfolgreich hochgeladen",
+          error: "Upload fehlgeschlagen"
+        },
+        results: {
+          title: "Verarbeitungsergebnisse",
+          success: "Verarbeitung abgeschlossen",
+          steps: "Verarbeitungsschritte",
+          ocr: "OCR-Ergebnisse",
+          pages: "Seiten",
+          confidence: "Zuverlässigkeit",
+          textLength: "Textlänge",
+          language: "Erkannte Sprache",
+          documentType: "Dokumenttyp",
+          extractedData: "Extrahierte Daten",
+          error: "Fehler"
+        },
+        steps: {
+          upload: "Datei-Upload",
+          ocr: "OCR-Verarbeitung",
+          language_detection: "Spracherkennung",
+          metadata_extraction: "Metadaten-Extraktion",
+          quality_analysis: "Qualitätsanalyse"
+        },
+        documentTypes: {
+          invoice: "Rechnung",
+          contract: "Vertrag",
+          report: "Bericht",
+          letter: "Brief",
+          form: "Formular",
+          other: "Sonstiges"
+        },
+        patterns: {
+          dates: "Datumsangaben",
+          emails: "E-Mail-Adressen",
+          phone_numbers: "Telefonnummern",
+          urls: "URLs",
+          reference_numbers: "Referenznummern"
+        },
+        statistics: {
+          title: "Verarbeitungsstatistiken",
+          totalProcessed: "Gesamt verarbeitet",
+          ocrProcessed: "OCR verarbeitet",
+          errors: "Verarbeitungsfehler",
+          languageDistribution: "Sprachverteilung",
+          documentTypeDistribution: "Dokumenttyp-Verteilung"
+        },
+        qualityAnalysis: {
+          title: "Qualitätsanalyse",
+          analyze: "Qualität analysieren",
+          report: "Qualitätsbericht",
+          overall: "Gesamtqualität",
+          readability: "Lesbarkeit",
+          structure: "Struktur",
+          completeness: "Vollständigkeit",
+          issues: "Gefundene Probleme",
+          recommendations: "Empfehlungen",
+          error: "Fehler bei der Qualitätsanalyse"
+        },
+        extractionPatterns: {
+          title: "Extraktionsmuster",
+          category: "Kategorie"
+        },
+        categories: {
+          contact: "Kontaktinformationen",
+          temporal: "Datum & Zeit",
+          financial: "Finanzdaten",
+          legal: "Rechtliche Informationen",
+          general: "Allgemein"
+        }
       }
     }
   }

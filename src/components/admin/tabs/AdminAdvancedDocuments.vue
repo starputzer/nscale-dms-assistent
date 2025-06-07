@@ -1,29 +1,29 @@
 <template>
   <div class="admin-advanced-documents">
     <div class="section-header">
-      <h2>{{ $t('admin.advancedDocuments.title') }}</h2>
-      <p class="section-description">{{ $t('admin.advancedDocuments.description') }}</p>
+      <h2>{{ t('admin.advancedDocuments.title') }}</h2>
+      <p class="section-description">{{ t('admin.advancedDocuments.description') }}</p>
     </div>
 
     <!-- OCR Status Section -->
     <div class="card mb-4">
       <div class="card-header">
-        <h3>{{ $t('admin.advancedDocuments.ocrStatus.title') }}</h3>
+        <h3>{{ t('admin.advancedDocuments.ocrStatus.title') }}</h3>
       </div>
       <div class="card-body">
         <div class="status-grid">
           <div class="status-item">
-            <span class="status-label">{{ $t('admin.advancedDocuments.ocrStatus.available') }}:</span>
+            <span class="status-label">{{ t('admin.advancedDocuments.ocrStatus.available') }}:</span>
             <span :class="['status-value', ocrStatus.ocr_functional ? 'text-success' : 'text-danger']">
-              {{ ocrStatus.ocr_functional ? $t('common.yes') : $t('common.no') }}
+              {{ ocrStatus.ocr_functional ? t('admin.common.yes') : t('admin.common.no') }}
             </span>
           </div>
           <div class="status-item">
-            <span class="status-label">{{ $t('admin.advancedDocuments.ocrStatus.languages') }}:</span>
+            <span class="status-label">{{ t('admin.advancedDocuments.ocrStatus.languages') }}:</span>
             <span class="status-value">{{ ocrStatus.default_languages }}</span>
           </div>
           <div class="status-item">
-            <span class="status-label">{{ $t('admin.advancedDocuments.ocrStatus.formats') }}:</span>
+            <span class="status-label">{{ t('admin.advancedDocuments.ocrStatus.formats') }}:</span>
             <span class="status-value">{{ ocrStatus.supported_formats?.join(', ') }}</span>
           </div>
         </div>
@@ -33,12 +33,12 @@
     <!-- Document Upload with OCR -->
     <div class="card mb-4">
       <div class="card-header">
-        <h3>{{ $t('admin.advancedDocuments.upload.title') }}</h3>
+        <h3>{{ t('admin.advancedDocuments.upload.title') }}</h3>
       </div>
       <div class="card-body">
         <div class="upload-form">
           <div class="form-group">
-            <label>{{ $t('admin.advancedDocuments.upload.selectFile') }}</label>
+            <label>{{ t('admin.advancedDocuments.upload.selectFile') }}</label>
             <input 
               type="file" 
               ref="fileInput"
@@ -55,12 +55,12 @@
                 v-model="uploadOptions.enableOcr"
                 :disabled="!ocrStatus.ocr_functional"
               >
-              {{ $t('admin.advancedDocuments.upload.enableOcr') }}
+              {{ t('admin.advancedDocuments.upload.enableOcr') }}
             </label>
           </div>
 
           <div class="form-group" v-if="uploadOptions.enableOcr">
-            <label>{{ $t('admin.advancedDocuments.upload.ocrLanguages') }}</label>
+            <label>{{ t('admin.advancedDocuments.upload.ocrLanguages') }}</label>
             <select v-model="uploadOptions.ocrLanguages" class="form-control">
               <option value="deu+eng">Deutsch + English</option>
               <option value="deu">Deutsch</option>
@@ -76,44 +76,44 @@
             class="btn btn-primary"
           >
             <span v-if="isUploading">
-              <i class="fas fa-spinner fa-spin"></i> {{ $t('admin.advancedDocuments.upload.processing') }}
+              <i class="fas fa-spinner fa-spin"></i> {{ t('admin.advancedDocuments.upload.processing') }}
             </span>
             <span v-else>
-              <i class="fas fa-upload"></i> {{ $t('admin.advancedDocuments.upload.button') }}
+              <i class="fas fa-upload"></i> {{ t('admin.advancedDocuments.upload.button') }}
             </span>
           </button>
         </div>
 
         <!-- Upload Results -->
         <div v-if="uploadResult" class="upload-result mt-4">
-          <h4>{{ $t('admin.advancedDocuments.results.title') }}</h4>
+          <h4>{{ t('admin.advancedDocuments.results.title') }}</h4>
           
           <div v-if="uploadResult.success" class="alert alert-success">
-            <strong>{{ $t('admin.advancedDocuments.results.success') }}</strong>
+            <strong>{{ t('admin.advancedDocuments.results.success') }}</strong>
             
             <!-- Processing Steps -->
             <div v-if="uploadResult.processing_steps?.length" class="mt-2">
-              <strong>{{ $t('admin.advancedDocuments.results.steps') }}:</strong>
+              <strong>{{ t('admin.advancedDocuments.results.steps') }}:</strong>
               <ul class="mb-0">
                 <li v-for="step in uploadResult.processing_steps" :key="step">
-                  {{ $t(`admin.advancedDocuments.steps.${step}`) }}
+                  {{ t(`admin.advancedDocuments.steps.${step}`) }}
                 </li>
               </ul>
             </div>
 
             <!-- OCR Results -->
             <div v-if="uploadResult.ocr_result" class="mt-2">
-              <strong>{{ $t('admin.advancedDocuments.results.ocr') }}:</strong>
+              <strong>{{ t('admin.advancedDocuments.results.ocr') }}:</strong>
               <ul class="mb-0">
-                <li>{{ $t('admin.advancedDocuments.results.pages') }}: {{ uploadResult.ocr_result.pages }}</li>
-                <li>{{ $t('admin.advancedDocuments.results.confidence') }}: {{ (uploadResult.ocr_result.confidence * 100).toFixed(1) }}%</li>
-                <li>{{ $t('admin.advancedDocuments.results.textLength') }}: {{ uploadResult.ocr_result.text_length }} {{ $t('common.characters') }}</li>
+                <li>{{ t('admin.advancedDocuments.results.pages') }}: {{ uploadResult.ocr_result.pages }}</li>
+                <li>{{ t('admin.advancedDocuments.results.confidence') }}: {{ (uploadResult.ocr_result.confidence * 100).toFixed(1) }}%</li>
+                <li>{{ t('admin.advancedDocuments.results.textLength') }}: {{ uploadResult.ocr_result.text_length }} {{ t('admin.common.characters') }}</li>
               </ul>
             </div>
 
             <!-- Language Detection -->
             <div v-if="uploadResult.language" class="mt-2">
-              <strong>{{ $t('admin.advancedDocuments.results.language') }}:</strong>
+              <strong>{{ t('admin.advancedDocuments.results.language') }}:</strong>
               <span class="badge badge-info">
                 {{ uploadResult.language.language_name }} 
                 ({{ (uploadResult.language.confidence * 100).toFixed(1) }}%)
@@ -122,19 +122,19 @@
 
             <!-- Document Type -->
             <div v-if="uploadResult.metadata?.document_type" class="mt-2">
-              <strong>{{ $t('admin.advancedDocuments.results.documentType') }}:</strong>
+              <strong>{{ t('admin.advancedDocuments.results.documentType') }}:</strong>
               <span class="badge badge-secondary">
-                {{ $t(`admin.advancedDocuments.documentTypes.${uploadResult.metadata.document_type.type}`) }}
+                {{ t(`admin.advancedDocuments.documentTypes.${uploadResult.metadata.document_type.type}`) }}
                 ({{ (uploadResult.metadata.document_type.confidence * 100).toFixed(1) }}%)
               </span>
             </div>
 
             <!-- Extracted Metadata -->
             <div v-if="uploadResult.metadata?.extracted_patterns" class="mt-2">
-              <strong>{{ $t('admin.advancedDocuments.results.extractedData') }}:</strong>
+              <strong>{{ t('admin.advancedDocuments.results.extractedData') }}:</strong>
               <div class="extracted-patterns">
                 <div v-for="(values, pattern) in uploadResult.metadata.extracted_patterns" :key="pattern" class="pattern-group">
-                  <strong>{{ $t(`admin.advancedDocuments.patterns.${pattern}`) }}:</strong>
+                  <strong>{{ t(`admin.advancedDocuments.patterns.${pattern}`) }}:</strong>
                   <span v-for="(value, index) in values" :key="index" class="pattern-value">
                     {{ value }}{{ index < values.length - 1 ? ', ' : '' }}
                   </span>
@@ -144,7 +144,7 @@
           </div>
 
           <div v-else class="alert alert-danger">
-            <strong>{{ $t('admin.advancedDocuments.results.error') }}:</strong> {{ uploadResult.error }}
+            <strong>{{ t('admin.advancedDocuments.results.error') }}:</strong> {{ uploadResult.error }}
           </div>
         </div>
       </div>
@@ -153,27 +153,27 @@
     <!-- Processing Statistics -->
     <div class="card">
       <div class="card-header">
-        <h3>{{ $t('admin.advancedDocuments.statistics.title') }}</h3>
+        <h3>{{ t('admin.advancedDocuments.statistics.title') }}</h3>
       </div>
       <div class="card-body">
         <div class="stats-grid">
           <div class="stat-item">
             <div class="stat-value">{{ processingStats.stats?.total_processed || 0 }}</div>
-            <div class="stat-label">{{ $t('admin.advancedDocuments.statistics.totalProcessed') }}</div>
+            <div class="stat-label">{{ t('admin.advancedDocuments.statistics.totalProcessed') }}</div>
           </div>
           <div class="stat-item">
             <div class="stat-value">{{ processingStats.stats?.ocr_processed || 0 }}</div>
-            <div class="stat-label">{{ $t('admin.advancedDocuments.statistics.ocrProcessed') }}</div>
+            <div class="stat-label">{{ t('admin.advancedDocuments.statistics.ocrProcessed') }}</div>
           </div>
           <div class="stat-item">
             <div class="stat-value">{{ processingStats.stats?.processing_errors || 0 }}</div>
-            <div class="stat-label">{{ $t('admin.advancedDocuments.statistics.errors') }}</div>
+            <div class="stat-label">{{ t('admin.advancedDocuments.statistics.errors') }}</div>
           </div>
         </div>
 
         <!-- Language Distribution -->
         <div v-if="Object.keys(processingStats.stats?.languages_detected || {}).length" class="mt-4">
-          <h4>{{ $t('admin.advancedDocuments.statistics.languageDistribution') }}</h4>
+          <h4>{{ t('admin.advancedDocuments.statistics.languageDistribution') }}</h4>
           <div class="language-stats">
             <div 
               v-for="(count, lang) in processingStats.stats.languages_detected" 
@@ -188,14 +188,14 @@
 
         <!-- Document Type Distribution -->
         <div v-if="Object.keys(processingStats.stats?.document_types || {}).length" class="mt-4">
-          <h4>{{ $t('admin.advancedDocuments.statistics.documentTypeDistribution') }}</h4>
+          <h4>{{ t('admin.advancedDocuments.statistics.documentTypeDistribution') }}</h4>
           <div class="doctype-stats">
             <div 
               v-for="(count, type) in processingStats.stats.document_types" 
               :key="type"
               class="doctype-item"
             >
-              <span class="doctype-name">{{ $t(`admin.advancedDocuments.documentTypes.${type}`) }}:</span>
+              <span class="doctype-name">{{ t(`admin.advancedDocuments.documentTypes.${type}`) }}:</span>
               <span class="doctype-count">{{ count }}</span>
             </div>
           </div>
@@ -206,7 +206,7 @@
     <!-- Quality Analysis Section -->
     <div class="card mb-4">
       <div class="card-header">
-        <h3>{{ $t('admin.advancedDocuments.qualityAnalysis.title') }}</h3>
+        <h3>{{ t('admin.advancedDocuments.qualityAnalysis.title') }}</h3>
       </div>
       <div class="card-body">
         <div v-if="uploadResult && uploadResult.document_id" class="quality-section">
@@ -215,41 +215,41 @@
             class="btn btn-primary"
             :disabled="isLoadingQuality"
           >
-            {{ $t('admin.advancedDocuments.qualityAnalysis.analyze') }}
+            {{ t('admin.advancedDocuments.qualityAnalysis.analyze') }}
           </button>
           
           <div v-if="qualityReport" class="quality-report mt-3">
-            <h4>{{ $t('admin.advancedDocuments.qualityAnalysis.report') }}</h4>
+            <h4>{{ t('admin.advancedDocuments.qualityAnalysis.report') }}</h4>
             <div class="quality-scores">
               <div class="score-item">
-                <span class="score-label">{{ $t('admin.advancedDocuments.qualityAnalysis.overall') }}:</span>
+                <span class="score-label">{{ t('admin.advancedDocuments.qualityAnalysis.overall') }}:</span>
                 <span class="score-value" :class="getQualityClass(qualityReport.overall_quality)">
                   {{ (qualityReport.overall_quality * 100).toFixed(0) }}%
                 </span>
               </div>
               <div class="score-item">
-                <span class="score-label">{{ $t('admin.advancedDocuments.qualityAnalysis.readability') }}:</span>
+                <span class="score-label">{{ t('admin.advancedDocuments.qualityAnalysis.readability') }}:</span>
                 <span class="score-value">{{ (qualityReport.readability_score * 100).toFixed(0) }}%</span>
               </div>
               <div class="score-item">
-                <span class="score-label">{{ $t('admin.advancedDocuments.qualityAnalysis.structure') }}:</span>
+                <span class="score-label">{{ t('admin.advancedDocuments.qualityAnalysis.structure') }}:</span>
                 <span class="score-value">{{ (qualityReport.structure_score * 100).toFixed(0) }}%</span>
               </div>
               <div class="score-item">
-                <span class="score-label">{{ $t('admin.advancedDocuments.qualityAnalysis.completeness') }}:</span>
+                <span class="score-label">{{ t('admin.advancedDocuments.qualityAnalysis.completeness') }}:</span>
                 <span class="score-value">{{ (qualityReport.completeness_score * 100).toFixed(0) }}%</span>
               </div>
             </div>
             
             <div v-if="qualityReport.issues.length > 0" class="issues-section mt-3">
-              <h5>{{ $t('admin.advancedDocuments.qualityAnalysis.issues') }}:</h5>
+              <h5>{{ t('admin.advancedDocuments.qualityAnalysis.issues') }}:</h5>
               <ul>
                 <li v-for="(issue, index) in qualityReport.issues" :key="index">{{ issue }}</li>
               </ul>
             </div>
             
             <div v-if="qualityReport.recommendations.length > 0" class="recommendations-section mt-3">
-              <h5>{{ $t('admin.advancedDocuments.qualityAnalysis.recommendations') }}:</h5>
+              <h5>{{ t('admin.advancedDocuments.qualityAnalysis.recommendations') }}:</h5>
               <ul>
                 <li v-for="(rec, index) in qualityReport.recommendations" :key="index">{{ rec }}</li>
               </ul>
@@ -262,7 +262,7 @@
     <!-- Extraction Patterns Section -->
     <div class="card">
       <div class="card-header">
-        <h3>{{ $t('admin.advancedDocuments.extractionPatterns.title') }}</h3>
+        <h3>{{ t('admin.advancedDocuments.extractionPatterns.title') }}</h3>
       </div>
       <div class="card-body">
         <div v-if="extractionPatterns.length > 0" class="patterns-list">
@@ -270,13 +270,13 @@
             <div class="pattern-header">
               <h5>{{ pattern.name }}</h5>
               <span class="badge" :class="pattern.is_active ? 'badge-success' : 'badge-secondary'">
-                {{ pattern.is_active ? $t('common.active') : $t('common.inactive') }}
+                {{ pattern.is_active ? t('admin.common.active') : t('admin.common.inactive') }}
               </span>
             </div>
             <p class="pattern-description">{{ pattern.description }}</p>
             <p class="pattern-category">
-              <strong>{{ $t('admin.advancedDocuments.extractionPatterns.category') }}:</strong> 
-              {{ $t(`admin.advancedDocuments.categories.${pattern.category}`) }}
+              <strong>{{ t('admin.advancedDocuments.extractionPatterns.category') }}:</strong> 
+              {{ t(`admin.advancedDocuments.categories.${pattern.category}`) }}
             </p>
           </div>
         </div>

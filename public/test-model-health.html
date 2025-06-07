@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Health Check Dashboard</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+        .status-healthy { background: #d4edda; color: #155724; }
+        .status-warning { background: #fff3cd; color: #856404; }
+        .status-error, .status-critical { background: #f8d7da; color: #721c24; }
+        .status-not_loaded { background: #e9ecef; color: #495057; }
+        
+        .model-card {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #fafafa;
+        }
+        .model-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .model-details {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+        .metric {
+            display: inline-block;
+            margin-right: 20px;
+        }
+        .metric-label {
+            font-weight: 600;
+            color: #555;
+        }
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+        .button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .button-danger {
+            background: #dc3545;
+        }
+        .button-danger:hover {
+            background: #c82333;
+        }
+        .loading {
+            color: #007bff;
+            font-style: italic;
+        }
+        .error {
+            color: #dc3545;
+            margin-top: 10px;
+        }
+        .success {
+            color: #28a745;
+            margin-top: 10px;
+        }
+        .recommendations {
+            background: #e7f3ff;
+            border: 1px solid #b8daff;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .recommendations h3 {
+            margin-top: 0;
+            color: #004085;
+        }
+        .recommendations ul {
+            margin: 5px 0;
+            padding-left: 20px;
+        }
+        .system-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .info-card {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px;
+            background: #f8f9fa;
+        }
+        .info-card h4 {
+            margin: 0 0 8px 0;
+            color: #495057;
+            font-size: 16px;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        .test-section {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        .timestamp {
+            color: #6c757d;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Model Health Check Dashboard</h1>
+    
+    <div class="container">
+        <h2>Authentication</h2>
+        <div id="auth-status">Not authenticated</div>
+        <button class="button" onclick="login()">Login as Admin</button>
+    </div>
+    
+    <div class="container">
+        <h2>Overall Model Health</h2>
+        <button class="button" onclick="checkAllModels()" id="check-all-btn">Check All Models</button>
+        <button class="button" onclick="checkAllModels(true)" id="force-check-btn">Force Fresh Check</button>
+        <button class="button button-danger" onclick="cleanupCache()" id="cleanup-btn">Cleanup Cache</button>
+        
+        <div id="overall-status"></div>
+        <div id="models-container"></div>
+        <div id="recommendations"></div>
+    </div>
+    
+    <div class="container">
+        <h2>System Health</h2>
+        <button class="button" onclick="checkSystemHealth()">Check System Health</button>
+        <div id="system-health"></div>
+    </div>
+    
+    <div class="container test-section">
+        <h2>Test Model with Custom Data</h2>
+        <label>
+            Model:
+            <select id="test-model-select">
+                <option value="embedding_primary">Embedding (Primary)</option>
+                <option value="embedding_fallback">Embedding (Fallback)</option>
+                <option value="reranker">Reranker</option>
+                <option value="llm">LLM (Ollama)</option>
+            </select>
+        </label>
+        <br><br>
+        <label>
+            Test Data (JSON):
+            <textarea id="test-data">{
+  "texts": ["Test embedding 1", "Test embedding 2", "Test embedding 3"]
+}</textarea>
+        </label>
+        <br>
+        <button class="button" onclick="testModel()">Test Model</button>
+        <div id="test-results"></div>
+    </div>
+    
+    <script>
+        let authToken = null;
+        
+        async function login() {
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'martin@danglefeet.com',
+                        password: '123'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.token;
+                    document.getElementById('auth-status').innerHTML = 
+                        '<span class="success">✅ Authenticated as admin</span>';
+                    enableButtons();
+                } else {
+                    throw new Error('Login failed');
+                }
+            } catch (error) {
+                document.getElementById('auth-status').innerHTML = 
+                    '<span class="error">❌ Authentication failed: ' + error.message + '</span>';
+            }
+        }
+        
+        function enableButtons() {
+            document.querySelectorAll('button:not(:first-child)').forEach(btn => {
+                btn.disabled = false;
+            });
+        }
+        
+        function disableButtons() {
+            document.querySelectorAll('button:not(:first-child)').forEach(btn => {
+                btn.disabled = true;
+            });
+        }
+        
+        async function checkAllModels(force = false) {
+            if (!authToken) {
+                alert('Please login first');
+                return;
+            }
+            
+            const container = document.getElementById('models-container');
+            const statusDiv = document.getElementById('overall-status');
+            const recsDiv = document.getElementById('recommendations');
+            
+            container.innerHTML = '<div class="loading">Loading model health data...</div>';
+            statusDiv.innerHTML = '';
+            recsDiv.innerHTML = '';
+            
+            try {
+                const response = await fetch(`/api/health/models${force ? '?force=true' : ''}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Overall status
+                    statusDiv.innerHTML = `
+                        <h3>Overall Status: <span class="status-badge status-${data.overall_status}">${data.overall_status.toUpperCase()}</span></h3>
+                        <div class="timestamp">Last checked: ${new Date(data.timestamp).toLocaleString()}</div>
+                        <div class="metric">
+                            <span class="metric-label">Check Duration:</span> ${data.check_duration_ms}ms
+                        </div>
+                    `;
+                    
+                    // Models
+                    container.innerHTML = '';
+                    for (const [modelId, info] of Object.entries(data.models)) {
+                        container.innerHTML += createModelCard(modelId, info);
+                    }
+                    
+                    // Recommendations
+                    if (data.recommendations && data.recommendations.length > 0) {
+                        recsDiv.innerHTML = `
+                            <div class="recommendations">
+                                <h3>💡 Recommendations</h3>
+                                <ul>
+                                    ${data.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `;
+                    }
+                    
+                    // System info
+                    if (data.system) {
+                        container.innerHTML += createSystemInfo(data.system);
+                    }
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="error">Error loading model health: ${error.message}</div>`;
+            }
+        }
+        
+        function createModelCard(modelId, info) {
+            const statusClass = `status-${info.status}`;
+            let details = [];
+            
+            if (info.loaded) {
+                details.push(`Device: ${info.device || 'CPU'}`);
+                if (info.memory_usage_mb) {
+                    details.push(`Memory: ${info.memory_usage_mb.toFixed(1)} MB`);
+                }
+                if (info.response_time_ms !== null) {
+                    details.push(`Response: ${info.response_time_ms}ms`);
+                }
+            }
+            
+            if (info.model_info) {
+                details.push(`Size: ${info.model_info.size_gb?.toFixed(2) || '?'} GB`);
+            }
+            
+            let errorInfo = '';
+            if (info.error) {
+                errorInfo = `<div class="error">Error: ${info.error}</div>`;
+            } else if (info.warning) {
+                errorInfo = `<div style="color: #856404;">Warning: ${info.warning}</div>`;
+            }
+            
+            return `
+                <div class="model-card">
+                    <div class="model-header">
+                        <div>
+                            <strong>${modelId}</strong>
+                            <span class="status-badge ${statusClass}">${info.status.toUpperCase()}</span>
+                        </div>
+                        <button class="button" onclick="checkSpecificModel('${modelId}')">Refresh</button>
+                    </div>
+                    <div class="model-details">
+                        <div>Model: ${info.model_name || 'Unknown'}</div>
+                        <div>Type: ${info.type || 'Unknown'}</div>
+                        ${details.length > 0 ? '<div>' + details.join(' | ') + '</div>' : ''}
+                        ${errorInfo}
+                    </div>
+                </div>
+            `;
+        }
+        
+        function createSystemInfo(system) {
+            let html = '<h3>System Resources</h3><div class="system-info">';
+            
+            // CPU info
+            if (system.cpu) {
+                html += `
+                    <div class="info-card">
+                        <h4>CPU</h4>
+                        <div>Usage: ${system.cpu.usage_percent.toFixed(1)}%</div>
+                        <div>Cores: ${system.cpu.count}</div>
+                    </div>
+                `;
+            }
+            
+            // Memory info
+            if (system.memory) {
+                html += `
+                    <div class="info-card">
+                        <h4>Memory</h4>
+                        <div>Total: ${system.memory.total_gb.toFixed(1)} GB</div>
+                        <div>Available: ${system.memory.available_gb.toFixed(1)} GB</div>
+                        <div>Used: ${system.memory.used_percent.toFixed(1)}%</div>
+                    </div>
+                `;
+            }
+            
+            // GPU info
+            if (system.gpu && !system.gpu.error) {
+                html += `
+                    <div class="info-card">
+                        <h4>GPU</h4>
+                        <div>Name: ${system.gpu.name}</div>
+                        <div>Total: ${system.gpu.total_memory_gb.toFixed(1)} GB</div>
+                        <div>Free: ${system.gpu.free_memory_gb.toFixed(1)} GB</div>
+                        <div>Used: ${system.gpu.utilization_percent.toFixed(1)}%</div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            return html;
+        }
+        
+        async function checkSpecificModel(modelId) {
+            if (!authToken) {
+                alert('Please login first');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/health/models/${modelId}?force=true`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(`Model ${modelId} status: ${data.status}\n\nDetails:\n${JSON.stringify(data, null, 2)}`);
+                    // Refresh the main view
+                    checkAllModels();
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                alert(`Error checking model ${modelId}: ${error.message}`);
+            }
+        }
+        
+        async function checkSystemHealth() {
+            if (!authToken) {
+                alert('Please login first');
+                return;
+            }
+            
+            const container = document.getElementById('system-health');
+            container.innerHTML = '<div class="loading">Loading system health...</div>';
+            
+            try {
+                const response = await fetch('/api/health/system', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    let html = `
+                        <h3>System Status: <span class="status-badge status-${data.status}">${data.status.toUpperCase()}</span></h3>
+                        <div class="timestamp">Checked: ${new Date(data.timestamp).toLocaleString()}</div>
+                    `;
+                    
+                    // Services
+                    html += '<h4>Services:</h4><div class="system-info">';
+                    for (const [service, status] of Object.entries(data.services)) {
+                        html += `
+                            <div class="info-card">
+                                <strong>${service}:</strong> 
+                                <span class="status-badge status-${status}">${status.toUpperCase()}</span>
+                            </div>
+                        `;
+                    }
+                    html += '</div>';
+                    
+                    // Model summary
+                    if (data.models_summary) {
+                        const ms = data.models_summary;
+                        html += `
+                            <h4>AI Models Summary:</h4>
+                            <div class="model-details">
+                                <div>Overall: <span class="status-badge status-${ms.overall_status}">${ms.overall_status.toUpperCase()}</span></div>
+                                <div>Healthy: ${ms.healthy_models} | Warning: ${ms.warning_models} | Error: ${ms.error_models}</div>
+                            </div>
+                        `;
+                    }
+                    
+                    // Issues
+                    if (data.issues && data.issues.length > 0) {
+                        html += `
+                            <h4>Issues:</h4>
+                            <ul style="color: #dc3545;">
+                                ${data.issues.map(issue => `<li>${issue}</li>`).join('')}
+                            </ul>
+                        `;
+                    }
+                    
+                    container.innerHTML = html;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="error">Error loading system health: ${error.message}</div>`;
+            }
+        }
+        
+        async function testModel() {
+            if (!authToken) {
+                alert('Please login first');
+                return;
+            }
+            
+            const modelId = document.getElementById('test-model-select').value;
+            const testDataText = document.getElementById('test-data').value;
+            const resultsDiv = document.getElementById('test-results');
+            
+            try {
+                const testData = JSON.parse(testDataText);
+                resultsDiv.innerHTML = '<div class="loading">Testing model...</div>';
+                
+                const response = await fetch('/api/health/models/test', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model_id: modelId,
+                        test_data: testData
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultsDiv.innerHTML = `
+                        <div class="success">✅ Test completed successfully</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    const error = await response.text();
+                    throw new Error(error);
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function cleanupCache() {
+            if (!authToken) {
+                alert('Please login first');
+                return;
+            }
+            
+            if (!confirm('This will remove all models from memory and clear the cache. Models will need to be reloaded on next use. Continue?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/health/models/cleanup', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(`Cache cleanup successful!\n\nFreed memory: ~${data.results.freed_memory_mb} MB\nCleaned models: ${data.results.cleaned_models.join(', ')}`);
+                    // Refresh the view
+                    checkAllModels();
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                alert(`Error cleaning cache: ${error.message}`);
+            }
+        }
+        
+        // Update test data based on model selection
+        document.getElementById('test-model-select').addEventListener('change', (e) => {
+            const modelId = e.target.value;
+            const testDataEl = document.getElementById('test-data');
+            
+            if (modelId.includes('embedding')) {
+                testDataEl.value = JSON.stringify({
+                    texts: ["Test embedding 1", "Test embedding 2", "Test embedding 3"]
+                }, null, 2);
+            } else if (modelId === 'reranker') {
+                testDataEl.value = JSON.stringify({
+                    pairs: [
+                        ["How to upload a document?", "To upload a document, click the upload button."],
+                        ["What is nscale?", "nscale is an Enterprise Content Management System."]
+                    ]
+                }, null, 2);
+            } else if (modelId === 'llm') {
+                testDataEl.value = JSON.stringify({
+                    prompt: "Answer briefly: What is 2+2?"
+                }, null, 2);
+            }
+        });
+        
+        // Disable all buttons except login initially
+        disableButtons();
+    </script>
+</body>
+</html>

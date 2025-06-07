@@ -1,0 +1,438 @@
+
+> digitale-akte-assistent@1.0.0 test:e2e
+> playwright test --project=chromium --reporter=list --timeout=300000
+
+[2m[WebServer] [22m
+[2m[WebServer] [22m> digitale-akte-assistent@1.0.0 dev
+[2m[WebServer] [22m> vite
+[2m[WebServer] [22m
+[2m[WebServer] [22mPort 3000 is in use, trying another one...
+[2m[WebServer] [22m
+[2m[WebServer] [22m  [32m[1mVITE[22m v6.3.5[39m  [2mready in [0m[1m167[22m[2m[0m ms[22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m3001[22m/[39m
+[2m[WebServer] [22m[2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+Starting global setup with baseURL: http://localhost:3001
+Using existing test users
+Logging in as admin...
+[2m[WebServer] [22mDEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+[2m[WebServer] [22m
+[2m[WebServer] [22mMore info and automated migrator: https://sass-lang.com/d/import
+[2m[WebServer] [22m
+[2m[WebServer] [22m  ╷
+[2m[WebServer] [22m7 │ @import './_variables';
+[2m[WebServer] [22m  │         ^^^^^^^^^^^^^^
+[2m[WebServer] [22m  ╵
+[2m[WebServer] [22m    src/assets/styles/main.scss 7:9  root stylesheet
+[2m[WebServer] [22m
+[2m[WebServer] [22mDEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+[2m[WebServer] [22m
+[2m[WebServer] [22mMore info and automated migrator: https://sass-lang.com/d/import
+[2m[WebServer] [22m
+[2m[WebServer] [22m   ╷
+[2m[WebServer] [22m10 │ @import './_typography';
+[2m[WebServer] [22m   │         ^^^^^^^^^^^^^^^
+[2m[WebServer] [22m   ╵
+[2m[WebServer] [22m    src/assets/styles/main.scss 10:9  root stylesheet
+[2m[WebServer] [22m
+[2m[WebServer] [22mDEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+[2m[WebServer] [22m
+[2m[WebServer] [22mMore info and automated migrator: https://sass-lang.com/d/import
+[2m[WebServer] [22m
+[2m[WebServer] [22m   ╷
+[2m[WebServer] [22m11 │ @import './_layout';
+[2m[WebServer] [22m   │         ^^^^^^^^^^^
+[2m[WebServer] [22m   ╵
+[2m[WebServer] [22m    src/assets/styles/main.scss 11:9  root stylesheet
+[2m[WebServer] [22m
+[2m[WebServer] [22mDEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+[2m[WebServer] [22m
+[2m[WebServer] [22mMore info and automated migrator: https://sass-lang.com/d/import
+[2m[WebServer] [22m
+[2m[WebServer] [22m   ╷
+[2m[WebServer] [22m12 │ @import './_forms';
+[2m[WebServer] [22m   │         ^^^^^^^^^^
+[2m[WebServer] [22m   ╵
+[2m[WebServer] [22m    src/assets/styles/main.scss 12:9  root stylesheet
+[2m[WebServer] [22m
+[2m[WebServer] [22mDEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+[2m[WebServer] [22m
+[2m[WebServer] [22mMore info and automated migrator: https://sass-lang.com/d/import
+[2m[WebServer] [22m
+[2m[WebServer] [22m   ╷
+[2m[WebServer] [22m13 │ @import './touch-focus';
+[2m[WebServer] [22m   │         ^^^^^^^^^^^^^^^
+[2m[WebServer] [22m   ╵
+[2m[WebServer] [22m    src/assets/styles/main.scss 13:9  root stylesheet
+[2m[WebServer] [22m
+[2m[WebServer] [22mWARNING: 3 repetitive deprecation warnings omitted.
+[2m[WebServer] [22mRun in verbose mode to see all warnings.
+[2m[WebServer] [22m
+[2m[WebServer] [22m[33mFiles in the public directory are served at the root path.
+[2m[WebServer] [22mInstead of [36m/public/assets/styles/base-components.css[33m, use [36m/assets/styles/base-components.css[33m.[39m
+[2m[WebServer] [22m[33mFiles in the public directory are served at the root path.
+[2m[WebServer] [22mInstead of [36m/public/assets/styles/admin-consolidated.css[33m, use [36m/assets/styles/admin-consolidated.css[33m.[39m
+[2m[WebServer] [22m[33mFiles in the public directory are served at the root path.
+[2m[WebServer] [22mInstead of [36m/public/assets/styles/admin-modern.css[33m, use [36m/assets/styles/admin-modern.css[33m.[39m
+[2m[WebServer] [22m[2m10:08:34 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: [33mDuplicate key "history" in object literal[33m
+[2m[WebServer] [22m53 |          importOverwrite: "Overwrite existing features",
+[2m[WebServer] [22m54 |          importKeepEnabled: "Keep current activation states",
+[2m[WebServer] [22m55 |          history: {
+[2m[WebServer] [22m   |          ^
+[2m[WebServer] [22m56 |            loading: "Loading change history...",
+[2m[WebServer] [22m57 |            noEntries: "No changes found.",
+[2m[WebServer] [22m[39m
+[2m[WebServer] [22m  Plugin: [35mvite:esbuild[39m
+[2m[WebServer] [22m  File: [36m/opt/nscale-assist/app/src/i18n/feature-toggles.ts[39m
+[2m[WebServer] [22m[2m10:08:34 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: [33mDuplicate key "history" in object literal[33m
+[2m[WebServer] [22m154|          importOverwrite: "Bestehende Features überschreiben",
+[2m[WebServer] [22m155|          importKeepEnabled: "Behalte aktuelle Aktivierungszustände bei",
+[2m[WebServer] [22m156|          history: {
+[2m[WebServer] [22m   |          ^
+[2m[WebServer] [22m157|            loading: "Lade Änderungsverlauf...",
+[2m[WebServer] [22m158|            noEntries: "Keine Änderungen gefunden.",
+[2m[WebServer] [22m[39m
+[2m[WebServer] [22m  Plugin: [35mvite:esbuild[39m
+[2m[WebServer] [22m  File: [36m/opt/nscale-assist/app/src/i18n/feature-toggles.ts[39m
+[2m[WebServer] [22m[33mFiles in the public directory are served at the root path.
+[2m[WebServer] [22mInstead of [36m/public/assets/styles/admin-sidebar.css[33m, use [36m/assets/styles/admin-sidebar.css[33m.[39m
+[2m[WebServer] [22m[33mFiles in the public directory are served at the root path.
+[2m[WebServer] [22mInstead of [36m/public/assets/styles/admin-overrides.css[33m, use [36m/assets/styles/admin-overrides.css[33m.[39m
+[2m[WebServer] [22m[33mFiles in the public directory are served at the root path.
+[2m[WebServer] [22mInstead of [36m/public/assets/styles/admin-direct-fix.css[33m, use [36m/assets/styles/admin-direct-fix.css[33m.[39m
+[2m[WebServer] [22m[33mFiles in the public directory are served at the root path.
+[2m[WebServer] [22mInstead of [36m/public/assets/styles/admin-nav-text-fix.css[33m, use [36m/assets/styles/admin-nav-text-fix.css[33m.[39m
+Admin page log: [vite] connecting...
+Admin page log: [vite] connected.
+Admin page log: [i18n] Loaded translation modules: {admin: true, adminCommon: true, adminTabs: true, documentConverter: true, featureToggles: true}
+Admin page log: [i18n] Merged translations sample: {admin.title: nscale DMS Assistent Administration, admin.docConverter.title: Dokumentenkonverter, admin.common.refresh: Aktualisieren, admin.tabs.docConverter: Dokumentenkonverter}
+Admin page log: [ApiService] Base URL configuration: {BASE_URL: /api, API_VERSION: v1, finalBaseURL: /api}
+Admin page log: %c[20:08:34.661] [DEBUG] [CacheService] Cache-Service initialisiert color: #6c757d {defaultTTL: 3600, storageType: localStorage, keyPrefix: nscale_dev_, maxEntries: 100, maxSize: 5242880}
+Admin page log: %c[20:08:34.662] [DEBUG] [CacheService] Cache-Service initialisiert color: #6c757d {defaultTTL: 300, storageType: localStorage, keyPrefix: nscale_api_cache_, maxEntries: 100, maxSize: 5242880}
+Admin page log: %c[20:08:34.662] [DEBUG] [ApiCacheService] API-Cache-Service initialisiert color: #6c757d {enabled: true, defaultTTL: 300, excludedEndpoints: Array(7), immutableEndpoints: Array(3), staleWhileRevalidate: true}
+Admin page log: %c[20:08:34.662] [INFO ] [AdminApiInterceptor] Setting up admin API request interceptors color: #0275d8 undefined
+Admin page log: %c[20:08:34.663] [INFO ] [AdminApiInterceptor] Admin API request interceptors set up successfully color: #0275d8 undefined
+Admin page log: Using MOCK DocumentConverterService for development/testing
+Admin page log: MockChatService initialisiert
+Admin page log: MockServiceFactory initialisiert mit Konfiguration: {defaultMode: real, serviceOverrides: Object, forceMode: real}
+Admin page log: 🔧 Fixed axios defaults: {baseURL: (empty), headers: Object}
+Admin page log: [Main] Initializing app with i18n locale: [object Object]
+Admin page log: [Main] i18n registered with app in composition mode - this is correct
+Admin page log: [Main] i18n config: {mode: composition, global: true, globalInjection: not enabled}
+Admin page log: [Main] Current locale: de
+Admin page log: [Main] Testing global translations: {admin.title: nscale DMS Assistent Administration, admin.docConverter.title: Dokumentenkonverter, admin.common.refresh: Aktualisieren, admin.tabs.docConverter: Dokumentenkonverter}
+Admin page log: [Main] Translations have been reloaded
+Admin page log: Initialisiere Mock Service Provider...
+Admin page log: ChatService im Modus: real
+Admin page log: Registriere globale Fallback-Funktionen für Source References...
+Admin page log: Mock Service Provider erfolgreich initialisiert
+Admin page log: Kein initiales Token vorhanden, HTTP-Clients werden nicht konfiguriert
+Admin page log: [Vue warn]: onMounted is called when there is no active component instance to be associated with. Lifecycle injection APIs can only be used during execution of setup(). If you are using async setup(), make sure to register lifecycle hooks before the first await statement.
+Admin page log: UI-Einstellungen aus Legacy-Speicher migriert
+Admin page log: [AuthStore] Initialisiere mit Enhanced Token Recovery
+Admin page log: [AuthStore] Starte Session-Wiederherstellung
+Admin page log: [AuthTokenManager] Lade Tokens aus Speicher
+Admin page log: [AuthTokenManager] Keine Daten in localStorage, versuche sessionStorage
+Admin page log: [AuthTokenManager] Keine Daten in sessionStorage, versuche Legacy-Keys
+Admin page log: [AuthStore] Keine gespeicherten Token gefunden
+Admin page log: [AuthStore] Kein Token während der Initialisierung vorhanden
+Admin page log: Benutzer nicht authentifiziert, kein Token-Refresh eingerichtet
+Admin page log: Auth-Store-Initialisierung abgeschlossen
+Admin page log: [FeatureToggles] Development mode - features already loaded
+Admin page log: UI-Einstellungen aus Legacy-Speicher migriert
+Admin page log: 🔧 Fixed axios defaults: {baseURL: (empty), headers: Object}
+Admin page log: API-Services werden initialisiert...
+Admin page log: API-Konfiguration geladen: {BASE_URL: /api, API_VERSION: v1, AUTH: Object, TIMEOUTS: Object, RETRY: Object}
+Admin page log: Standardheader konfiguriert: {Content-Type: application/json, Accept: application/json, X-Client-Version: 1.0.0, X-Client-Platform: web}
+Admin page log: API-Services erfolgreich initialisiert
+Admin page log: Setting up central auth interceptors...
+Admin page log: Cleaned up existing auth interceptors
+Admin page log: ✅ Central auth interceptors set up
+Admin page log: Telemetrie ist deaktiviert
+Admin page log: Netzwerküberwachung gestartet
+Admin page log: No existing auth, reset auth state
+Admin page log: Digitale Akte Assistent initialized successfully
+Admin page log: <Suspense> is an experimental feature and its API will likely change.
+[2m[WebServer] [22m[Proxy] HEAD /api/health
+Admin page log: DEBUG: isAdmin check - user.value: null
+Admin page log: DEBUG: isAdmin check - user.value?.role: undefined
+Admin page log: DEBUG: isAdmin check - user.value?.roles: undefined
+Admin page log: App mounted successfully
+[2m[WebServer] [22m[Proxy Response] HEAD /api/health - 200
+Admin page log: %c[20:08:34.798] [INFO ] [LoginView] LoginView geladen und Logger initialisiert color: #0275d8 undefined
+Admin page log: Axios-Interceptors für API-Anfragen eingerichtet
+Admin page log: Performance: http://localhost:3001/api/health 949.2999999523163 24.600000023841858
+Admin page log: Performance: http://localhost:3001/src/utils/debugAuth.ts 949.5 26.699999928474426
+Admin page log: Performance: http://localhost:3001/src/utils/tokenDebug.ts 949.7999999523163 33.700000047683716
+Admin page log: [AuthStore] Login-Funktion aufgerufen
+Admin page log: Auth-Store Cleanup wird durchgeführt
+Admin page log: Keine aktiven HTTP-Interceptors zum Entfernen
+Admin page log: LocalStorage bereinigt (mit nscale_ prefix)
+Admin page log: Auth-Store Cleanup abgeschlossen
+Admin page log: [AuthTokenManager] Lösche alle Token
+Admin page log: [AuthStore] Login-Versuch mit E-Mail: ma...
+Admin page log: Sende Login-Anfrage an: /api/auth/login mit BASE_URL: /api Full URL: /api/auth/login mit Credentials: {email: martin@danglefeet.com, password: ***, remember: false}
+Admin page log: Login wird über echtes Backend versucht für: martin@danglefeet.com
+Admin page log: Verwende URL für Login: /api/auth/login
+Admin page log: Überprüfe Login-Anfrage: {transitional: Object, adapter: Array(3), transformRequest: Array(1), transformResponse: Array(1), timeout: 0}
+Admin page log: Login-Anfrage nach Überprüfung: {transitional: Object, adapter: Array(3), transformRequest: Array(1), transformResponse: Array(1), timeout: 0}
+Admin page log: Axios Request: {url: /api/auth/login, method: post, data: Object, headers: AxiosHeaders}
+[2m[WebServer] [22m[Proxy] POST /api/auth/login
+[2m[WebServer] [22m[Proxy Response] POST /api/auth/login - 200
+Admin page log: Axios Response: {url: /api/auth/login, status: 200, data: Object}
+Admin page log: Login-Antwort erhalten: 200
+Admin page log: Response data: {access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkI…5MTV9.MV6AGJxT-JYUj62tHO7fv40hX-DawQ8p7wa78oc7hfM, token_type: bearer, user: Object}
+Admin page log: Response data type: object
+Admin page log: Response data keys: [access_token, token_type, user]
+Admin page log: Token aus Antwort erhalten, Länge: 217
+Admin page log: Dekodierter Token: {user_id: 5, email: martin@danglefeet.com, role: admin, exp: 1749326915, tokenExpiry: 1749326915}
+Admin page log: Token ist gültig, wird gesetzt
+Admin page log: Token in auth store gesetzt. Token value: eyJhbGciOi...
+Admin page log: Token in localStorage gespeichert unter key: nscale_access_token value: eyJhbGciOi...
+Admin page log: RefreshToken gesetzt: Nein
+Admin page log: Token dekodiert: true
+Admin page log: DEBUG: Full decoded token: {user_id: 5, email: martin@danglefeet.com, role: admin, exp: 1749326915, tokenExpiry: 1749326915}
+Admin page log: DEBUG: Token role field: admin
+Admin page log: DEBUG: Token roles field: undefined
+Admin page log: Benutzer aus Token erstellt: {id: 5, username: martin@danglefeet.com, email: martin@danglefeet.com, roles: Array(1), role: admin}
+Admin page log: DEBUG: isAdmin check - user.value: Proxy(Object)
+Admin page log: DEBUG: isAdmin check - user.value?.role: admin
+Admin page log: DEBUG: isAdmin check - user.value?.roles: Proxy(Array)
+Admin page log: DEBUG: isAdmin computed value: true
+Admin page log: Token-Ablaufzeit aus Token gesetzt: 2025-06-07T20:08:35.000Z
+Admin page log: Letzter Token-Refresh-Zeitpunkt gesetzt
+Admin page log: Berechtigungen extrahiert: [user:create, user:read, user:update, user:delete, system:manage, settings:manage, docs:manage]
+Admin page log: [AuthTokenManager] Speichere Tokens redundant
+Admin page log: [AuthStore] HTTP-Clients werden mit neuem Token konfiguriert
+Admin page log: Keine aktiven HTTP-Interceptors zum Entfernen
+Admin page log: Token gesetzt, konfiguriere HTTP-Clients mit Token: eyJhbGciOi...
+Admin page log: [AuthStore] Initialisiere Token-Refresh nach erfolgreicher Anmeldung
+Admin page log: [AuthStore] Initialisiere mit Enhanced Token Recovery
+Admin page log: [AuthStore] Starte Session-Wiederherstellung
+Admin page log: [AuthTokenManager] Lade Tokens aus Speicher
+Admin page log: [AuthStore] Session erfolgreich wiederhergestellt
+Admin page log: [AuthStore] Session erfolgreich wiederhergestellt
+Admin page log: [AuthStore] Token gefunden, konfiguriere HTTP-Clients
+Admin page log: Keine aktiven HTTP-Interceptors zum Entfernen
+Admin page log: Token gesetzt, konfiguriere HTTP-Clients mit Token: eyJhbGciOi...
+Admin page log: Benutzer authentifiziert, richte Token-Refresh ein
+Admin page log: Starte Token-Refresh-Intervall
+Admin page log: Auth-Store-Initialisierung abgeschlossen
+Admin page log: [AuthStore] Login erfolgreich abgeschlossen
+Admin page log: Login-Verarbeitung abgeschlossen, isLoading zurückgesetzt
+Admin page log: ✅ Added auth header to request: /api/chat/sessions
+Admin page log: [FeatureToggles] Development mode - features already loaded
+Admin page log: Login result: true
+Admin page log: Login successful, redirecting to chat...
+Admin page log: Navigation guard - to: /chat from: /login
+Admin page log: Auth check: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJlbWFpbCI6Im1hcnRpbkBkYW5nbGVmZWV0LmNvbSIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTc0OTMyNjkxNSwidG9rZW5FeHBpcnkiOjE3NDkzMjY5MTV9.MV6AGJxT-JYUj62tHO7fv40hX-DawQ8p7wa78oc7hfM
+Admin page log: Performance: http://localhost:3001/api/auth/login 1921.2999999523163 58.799999952316284
+Admin page log: ✅ Updated global auth header
+Admin page log: ✅ Updated global auth header
+[2m[WebServer] [22m[Proxy] GET /api/chat/sessions?since=0
+[2m[WebServer] [22m[Proxy] Authorization header forwarded: Bearer eyJhbGciOiJIU...
+[2m[WebServer] [22m[Proxy Response] GET /api/chat/sessions?since=0 - 200
+Admin page log: Sessions loaded directly: [Object, Object, Object, Object, Object, Object, Object, Object, Object, Object]
+Admin page log: Performance: http://localhost:3001/api/chat/sessions?since=0 1986.8999999761581 26.100000023841858
+Admin page log: Performance: http://localhost:3001/src/layouts/MainAppLayout.vue 1987.2999999523163 35.700000047683716
+Admin page log: Performance: http://localhost:3001/src/layouts/MainAppLayout.vue?vue&type=style&index=0&scoped=c94dd01c&lang.css 2024 9.799999952316284
+Admin login successful
+Admin page log: Navigation to /chat completed
+Admin auth state saved
+Logging in as standard user...
+[2m[WebServer] [22m[33mFiles in the public directory are served at the root path.
+[2m[WebServer] [22mInstead of [36m/public/assets/styles/base-components.css[33m, use [36m/assets/styles/base-components.css[33m.[39m
+[2m[WebServer] [22m[33mFiles in the public directory are served at the root path.
+[2m[WebServer] [22mInstead of [36m/public/assets/styles/admin-consolidated.css[33m, use [36m/assets/styles/admin-consolidated.css[33m.[39m
+[2m[WebServer] [22m[33mFiles in the public directory are served at the root path.
+[2m[WebServer] [22mInstead of [36m/public/assets/styles/admin-modern.css[33m, use [36m/assets/styles/admin-modern.css[33m.[39m
+[2m[WebServer] [22m[33mFiles in the public directory are served at the root path.
+[2m[WebServer] [22mInstead of [36m/public/assets/styles/admin-sidebar.css[33m, use [36m/assets/styles/admin-sidebar.css[33m.[39m
+[2m[WebServer] [22m[33mFiles in the public directory are served at the root path.
+[2m[WebServer] [22mInstead of [36m/public/assets/styles/admin-direct-fix.css[33m, use [36m/assets/styles/admin-direct-fix.css[33m.[39m
+[2m[WebServer] [22m[33mFiles in the public directory are served at the root path.
+[2m[WebServer] [22mInstead of [36m/public/assets/styles/admin-overrides.css[33m, use [36m/assets/styles/admin-overrides.css[33m.[39m
+[2m[WebServer] [22m[33mFiles in the public directory are served at the root path.
+[2m[WebServer] [22mInstead of [36m/public/assets/styles/admin-nav-text-fix.css[33m, use [36m/assets/styles/admin-nav-text-fix.css[33m.[39m
+User page log: [vite] connecting...
+User page log: [vite] connected.
+User page log: [i18n] Loaded translation modules: {admin: true, adminCommon: true, adminTabs: true, documentConverter: true, featureToggles: true}
+User page log: [i18n] Merged translations sample: {admin.title: nscale DMS Assistent Administration, admin.docConverter.title: Dokumentenkonverter, admin.common.refresh: Aktualisieren, admin.tabs.docConverter: Dokumentenkonverter}
+User page log: [ApiService] Base URL configuration: {BASE_URL: /api, API_VERSION: v1, finalBaseURL: /api}
+User page log: %c[20:08:36.151] [DEBUG] [CacheService] Cache-Service initialisiert color: #6c757d {defaultTTL: 3600, storageType: localStorage, keyPrefix: nscale_dev_, maxEntries: 100, maxSize: 5242880}
+User page log: %c[20:08:36.151] [DEBUG] [CacheService] Cache-Service initialisiert color: #6c757d {defaultTTL: 300, storageType: localStorage, keyPrefix: nscale_api_cache_, maxEntries: 100, maxSize: 5242880}
+User page log: %c[20:08:36.151] [DEBUG] [ApiCacheService] API-Cache-Service initialisiert color: #6c757d {enabled: true, defaultTTL: 300, excludedEndpoints: Array(7), immutableEndpoints: Array(3), staleWhileRevalidate: true}
+User page log: %c[20:08:36.152] [INFO ] [AdminApiInterceptor] Setting up admin API request interceptors color: #0275d8 undefined
+User page log: %c[20:08:36.152] [INFO ] [AdminApiInterceptor] Admin API request interceptors set up successfully color: #0275d8 undefined
+User page log: Using MOCK DocumentConverterService for development/testing
+User page log: MockChatService initialisiert
+User page log: MockServiceFactory initialisiert mit Konfiguration: {defaultMode: real, serviceOverrides: Object, forceMode: real}
+User page log: 🔧 Fixed axios defaults: {baseURL: (empty), headers: Object}
+User page log: [Main] Initializing app with i18n locale: [object Object]
+User page log: [Main] i18n registered with app in composition mode - this is correct
+User page log: [Main] i18n config: {mode: composition, global: true, globalInjection: not enabled}
+User page log: [Main] Current locale: de
+User page log: [Main] Testing global translations: {admin.title: nscale DMS Assistent Administration, admin.docConverter.title: Dokumentenkonverter, admin.common.refresh: Aktualisieren, admin.tabs.docConverter: Dokumentenkonverter}
+User page log: [Main] Translations have been reloaded
+User page log: Initialisiere Mock Service Provider...
+User page log: ChatService im Modus: real
+User page log: Registriere globale Fallback-Funktionen für Source References...
+User page log: Mock Service Provider erfolgreich initialisiert
+User page log: Kein initiales Token vorhanden, HTTP-Clients werden nicht konfiguriert
+User page log: [Vue warn]: onMounted is called when there is no active component instance to be associated with. Lifecycle injection APIs can only be used during execution of setup(). If you are using async setup(), make sure to register lifecycle hooks before the first await statement.
+Admin page log: [SessionsStore] Computing allCurrentMessages for session: null
+Admin page log: [MotdStore] Lade MOTD-Konfiguration
+Admin page log: [API-Flags] Verwende echte API für useRealMotdApi (Produktivmodus)
+Admin page log: %c[20:08:36.198] [INFO ] [AdminMotdService] Verwende echte API für MOTD-Konfiguration color: #0275d8 undefined
+Admin page log: %c[20:08:36.198] [DEBUG] [CacheService] Cache: Miss für /api/motd color: #6c757d undefined
+Admin page log: [ApiService] Executing request: {url: /api/motd, baseURL: /api, finalURL: /api/api/motd, axiosConfig: Object}
+Admin page log: %c[20:08:36.200] [DEBUG] [ApiService] 📤 Request [GET] /api/motd color: #6c757d {requestId: 26622892-6bd1-41f3-8070-b95f339b1e0f, headers: AxiosHeaders, params: undefined, data: undefined, hasAuthHeader: false}
+Admin page log: 🔐 Auth check for GET /api/motd: {tokenFromStorage: true, tokenLength: 217, tokenPreview: eyJhbGciOiJIUzI1NiIs..., authAlreadySet: false, storageKey: access_token}
+Admin page log: %c[20:08:36.200] [DEBUG] [ApiService] ✅ Auth header added to request: /api/motd color: #6c757d {token: eyJhbGciOiJIUzI1NiIs...}
+[2m[WebServer] [22m[Proxy] GET /api/api/motd
+[2m[WebServer] [22m[Proxy] Authorization header forwarded: Bearer eyJhbGciOiJIU...
+User page log: UI-Einstellungen aus Legacy-Speicher migriert
+[2m[WebServer] [22m[Proxy Response] GET /api/api/motd - 404
+Admin page log: Failed to load resource: the server responded with a status of 404 (Not Found)
+Admin page log: %c[20:08:36.222] [ERROR] [ApiService] ❌ Response Error color: #d9534f {status: 404, statusText: Not Found, url: /api/motd, message: Request failed with status code 404, data: Object}
+Admin page log: %c[20:08:36.222] [ERROR] [AdminMotdService] Fehler beim Abrufen der MOTD-Konfiguration color: #d9534f {code: ERR_NOT_FOUND, message: Ressource nicht gefunden, status: 404, details: Object, stack: AxiosError: Request failed with status code 404
+  …de_modules/.vite/deps/axios.js?v=71a0e13d:1561:7)}
+Admin page log: %c[20:08:36.222] [INFO ] [AdminMotdService] Fallback zu Mock-Daten nach API-Fehler für MOTD-Konfiguration color: #0275d8 undefined
+Admin page log: [MotdStore] MOTD-Konfiguration erfolgreich geladen: {config: Object}
+Admin page log: Performance: http://localhost:3001/api/api/motd 2384 19.899999976158142
+User page log: [AuthStore] Initialisiere mit Enhanced Token Recovery
+User page log: [AuthStore] Starte Session-Wiederherstellung
+User page log: [AuthTokenManager] Lade Tokens aus Speicher
+User page log: [AuthTokenManager] Keine Daten in localStorage, versuche sessionStorage
+User page log: [AuthTokenManager] Keine Daten in sessionStorage, versuche Legacy-Keys
+User page log: [AuthStore] Keine gespeicherten Token gefunden
+User page log: [AuthStore] Kein Token während der Initialisierung vorhanden
+User page log: Benutzer nicht authentifiziert, kein Token-Refresh eingerichtet
+User page log: Auth-Store-Initialisierung abgeschlossen
+User page log: [FeatureToggles] Development mode - features already loaded
+User page log: UI-Einstellungen aus Legacy-Speicher migriert
+User page log: 🔧 Fixed axios defaults: {baseURL: (empty), headers: Object}
+User page log: API-Services werden initialisiert...
+User page log: API-Konfiguration geladen: {BASE_URL: /api, API_VERSION: v1, AUTH: Object, TIMEOUTS: Object, RETRY: Object}
+User page log: Standardheader konfiguriert: {Content-Type: application/json, Accept: application/json, X-Client-Version: 1.0.0, X-Client-Platform: web}
+User page log: API-Services erfolgreich initialisiert
+User page log: Setting up central auth interceptors...
+User page log: Cleaned up existing auth interceptors
+User page log: ✅ Central auth interceptors set up
+User page log: Telemetrie ist deaktiviert
+User page log: Netzwerküberwachung gestartet
+User page log: No existing auth, reset auth state
+User page log: Digitale Akte Assistent initialized successfully
+User page log: <Suspense> is an experimental feature and its API will likely change.
+[2m[WebServer] [22m[Proxy] HEAD /api/health
+User page log: DEBUG: isAdmin check - user.value: null
+User page log: DEBUG: isAdmin check - user.value?.role: undefined
+User page log: DEBUG: isAdmin check - user.value?.roles: undefined
+User page log: App mounted successfully
+[2m[WebServer] [22m[Proxy Response] HEAD /api/health - 200
+User page log: %c[20:08:36.259] [INFO ] [LoginView] LoginView geladen und Logger initialisiert color: #0275d8 undefined
+User page log: Axios-Interceptors für API-Anfragen eingerichtet
+User page log: Performance: http://localhost:3001/src/utils/debugAuth.ts 272.39999997615814 8.100000023841858
+User page log: Performance: http://localhost:3001/src/utils/tokenDebug.ts 272.5 8.100000023841858
+User page log: Performance: http://localhost:3001/api/health 272.10000002384186 21.799999952316284
+User page log: [AuthStore] Login-Funktion aufgerufen
+User page log: Auth-Store Cleanup wird durchgeführt
+User page log: Keine aktiven HTTP-Interceptors zum Entfernen
+User page log: LocalStorage bereinigt (mit nscale_ prefix)
+User page log: Auth-Store Cleanup abgeschlossen
+User page log: [AuthTokenManager] Lösche alle Token
+User page log: [AuthStore] Login-Versuch mit E-Mail: us...
+User page log: Sende Login-Anfrage an: /api/auth/login mit BASE_URL: /api Full URL: /api/auth/login mit Credentials: {email: user@example.com, password: ***, remember: false}
+User page log: Login wird über echtes Backend versucht für: user@example.com
+User page log: Verwende URL für Login: /api/auth/login
+User page log: Überprüfe Login-Anfrage: {transitional: Object, adapter: Array(3), transformRequest: Array(1), transformResponse: Array(1), timeout: 0}
+User page log: Login-Anfrage nach Überprüfung: {transitional: Object, adapter: Array(3), transformRequest: Array(1), transformResponse: Array(1), timeout: 0}
+User page log: Axios Request: {url: /api/auth/login, method: post, data: Object, headers: AxiosHeaders}
+[2m[WebServer] [22m[Proxy] POST /api/auth/login
+[2m[WebServer] [22m[Proxy Response] POST /api/auth/login - 200
+User page log: Axios Response: {url: /api/auth/login, status: 200, data: Object}
+User page log: Login-Antwort erhalten: 200
+User page log: Response data: {access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkI…5MTd9.vcV-SwxBTWYed0zIMA1x7p2Q__-mYlYrmDfxDY5fyoU, token_type: bearer, user: Object}
+User page log: Response data type: object
+User page log: Response data keys: [access_token, token_type, user]
+User page log: Token aus Antwort erhalten, Länge: 209
+User page log: Dekodierter Token: {user_id: 8, email: user@example.com, role: user, exp: 1749326917, tokenExpiry: 1749326917}
+User page log: Token ist gültig, wird gesetzt
+User page log: Token in auth store gesetzt. Token value: eyJhbGciOi...
+User page log: Token in localStorage gespeichert unter key: nscale_access_token value: eyJhbGciOi...
+User page log: RefreshToken gesetzt: Nein
+User page log: Token dekodiert: true
+User page log: DEBUG: Full decoded token: {user_id: 8, email: user@example.com, role: user, exp: 1749326917, tokenExpiry: 1749326917}
+User page log: DEBUG: Token role field: user
+User page log: DEBUG: Token roles field: undefined
+User page log: Benutzer aus Token erstellt: {id: 8, username: user@example.com, email: user@example.com, roles: Array(1), role: user}
+User page log: DEBUG: isAdmin check - user.value: Proxy(Object)
+User page log: DEBUG: isAdmin check - user.value?.role: user
+User page log: DEBUG: isAdmin check - user.value?.roles: Proxy(Array)
+User page log: DEBUG: isAdmin computed value: false
+User page log: Token-Ablaufzeit aus Token gesetzt: 2025-06-07T20:08:37.000Z
+User page log: Letzter Token-Refresh-Zeitpunkt gesetzt
+User page log: Berechtigungen extrahiert: [docs:read, docs:convert, settings:read]
+User page log: [AuthTokenManager] Speichere Tokens redundant
+User page log: [AuthStore] HTTP-Clients werden mit neuem Token konfiguriert
+User page log: Keine aktiven HTTP-Interceptors zum Entfernen
+User page log: Token gesetzt, konfiguriere HTTP-Clients mit Token: eyJhbGciOi...
+User page log: [AuthStore] Initialisiere Token-Refresh nach erfolgreicher Anmeldung
+User page log: [AuthStore] Initialisiere mit Enhanced Token Recovery
+User page log: [AuthStore] Starte Session-Wiederherstellung
+User page log: [AuthTokenManager] Lade Tokens aus Speicher
+User page log: [AuthStore] Session erfolgreich wiederhergestellt
+User page log: [AuthStore] Session erfolgreich wiederhergestellt
+User page log: [AuthStore] Token gefunden, konfiguriere HTTP-Clients
+User page log: Keine aktiven HTTP-Interceptors zum Entfernen
+User page log: Token gesetzt, konfiguriere HTTP-Clients mit Token: eyJhbGciOi...
+User page log: Benutzer authentifiziert, richte Token-Refresh ein
+User page log: Starte Token-Refresh-Intervall
+User page log: Auth-Store-Initialisierung abgeschlossen
+User page log: [AuthStore] Login erfolgreich abgeschlossen
+User page log: Login-Verarbeitung abgeschlossen, isLoading zurückgesetzt
+User page log: ✅ Added auth header to request: /api/chat/sessions
+User page log: [FeatureToggles] Development mode - features already loaded
+User page log: Login result: true
+User page log: Login successful, redirecting to chat...
+User page log: Navigation guard - to: /chat from: /login
+User page log: Auth check: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImV4cCI6MTc0OTMyNjkxNywidG9rZW5FeHBpcnkiOjE3NDkzMjY5MTd9.vcV-SwxBTWYed0zIMA1x7p2Q__-mYlYrmDfxDY5fyoU
+User page log: Performance: http://localhost:3001/api/auth/login 1228.6000000238419 48.10000002384186
+User page log: ✅ Updated global auth header
+User page log: ✅ Updated global auth header
+[2m[WebServer] [22m[Proxy] GET /api/chat/sessions?since=0
+[2m[WebServer] [22m[Proxy] Authorization header forwarded: Bearer eyJhbGciOiJIU...
+User page log: Performance: http://localhost:3001/src/layouts/MainAppLayout.vue 1283.7000000476837 6.600000023841858
+User page log: Performance: http://localhost:3001/src/layouts/MainAppLayout.vue?vue&type=style&index=0&scoped=c94dd01c&lang.css 1291.6000000238419 5.600000023841858
+User login successful
+User page log: Navigation to /chat completed
+[2m[WebServer] [22m[Proxy Response] GET /api/chat/sessions?since=0 - 200
+User auth state saved
+User page log: Sessions loaded directly: []
+User page log: Performance: http://localhost:3001/api/chat/sessions?since=0 1283.2000000476837 20.199999928474426
+Global setup completed
+ReferenceError: __dirname is not defined in ES module scope
+
+   at fixtures/test-documents.ts:12
+
+  10 | export const TEST_DOCUMENTS = {
+  11 |   pdf: {
+> 12 |     path: path.join(__dirname, "files", "testdocument.pdf"),
+     |                     ^
+  13 |     mimetype: "application/pdf",
+  14 |     content: "Test PDF Dokument",
+  15 |   },
+    at /opt/nscale-assist/app/e2e/fixtures/test-documents.ts:12:21
+ReferenceError: __dirname is not defined in ES module scope
+
+   at fixtures/test-documents.ts:12
+
+  10 | export const TEST_DOCUMENTS = {
+  11 |   pdf: {
+> 12 |     path: path.join(__dirname, "files", "testdocument.pdf"),
+     |                     ^
+  13 |     mimetype: "application/pdf",
+  14 |     content: "Test PDF Dokument",
+  15 |   },
+    at /opt/nscale-assist/app/e2e/fixtures/test-documents.ts:12:21
+

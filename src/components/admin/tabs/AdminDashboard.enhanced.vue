@@ -386,7 +386,7 @@ const refreshAllData = async () => {
   isRefreshing.value = true;
   try {
     // Fetch comprehensive dashboard summary from new API
-    const response = await apiService.get('/admin-dashboard/summary');
+    const response = await apiService.get('/admin/dashboard/summary');
     
     if (response.success && response.data) {
       const summary = response.data;

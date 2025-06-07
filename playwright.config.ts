@@ -55,7 +55,7 @@ export default defineConfig({
     video: process.env.CI ? "on-first-retry" : "on-failure",
 
     // Base URL aus Umgebungsvariablen oder Standardwert
-    baseURL: process.env.BASE_URL || "http://localhost:5173",
+    baseURL: process.env.BASE_URL || "http://localhost:3001",
 
     // Erhöhte Timeouts für Stabilität
     actionTimeout: 15000,
@@ -96,8 +96,8 @@ export default defineConfig({
   // Konfiguration für den Testserver
   webServer: {
     command: "npm run dev",
-    url: "http://localhost:5173",
-    reuseExistingServer: !process.env.CI,
+    url: "http://localhost:3001",
+    reuseExistingServer: true, // Verwende existierenden Server
     timeout: 120 * 1000, // 2 Minuten Timeout für Serverstart
     stdout: "pipe",
     stderr: "pipe",

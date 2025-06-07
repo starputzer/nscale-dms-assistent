@@ -31,8 +31,8 @@ export class LoginPage {
     this.page = page;
 
     // Login-Formular-Elemente
-    this.emailInput = page.locator('input[name="email"]');
-    this.passwordInput = page.locator('input[name="password"]');
+    this.emailInput = page.locator('input#email');
+    this.passwordInput = page.locator('input#password');
     this.usernameInput = page.locator('input[name="username"]');
     this.passwordConfirmInput = page.locator('input[name="passwordConfirm"]');
     this.submitButton = page.locator('button[type="submit"]');

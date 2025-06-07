@@ -30,11 +30,11 @@ export const API_ROUTES = {
   
   // Admin
   ADMIN: {
-    DASHBOARD: '/api/admin-dashboard',
+    DASHBOARD: '/api/admin/dashboard',
     USERS: '/api/admin/users',
     USER: (id: number) => `/api/admin/users/${id}`,
     FEEDBACK: '/api/admin/feedback',
-    STATISTICS: '/api/admin-statistics',
+    STATISTICS: '/api/admin/statistics',
     SYSTEM: {
       INFO: '/api/admin/system/info',
       CACHE_CLEAR: '/api/admin/system/cache/clear',
@@ -45,8 +45,8 @@ export const API_ROUTES = {
       REINDEX: '/api/rag/reindex'
     },
     KNOWLEDGE: {
-      BASE: '/api/knowledge',
-      TRAIN: '/api/knowledge/train'
+      BASE: '/api/knowledge-manager',
+      TRAIN: '/api/knowledge-manager/train'
     },
     TASKS: {
       LIST: '/api/background-processing/jobs',

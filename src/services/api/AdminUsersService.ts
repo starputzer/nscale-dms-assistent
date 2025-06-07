@@ -60,7 +60,7 @@ export class AdminUsersService implements IAdminUsersService {
         };
 
         const response = await cachedApiService.get<PaginatedResponse<User>>(
-          apiConfig.ENDPOINTS.USERS.LIST || "/admin/users",
+          apiConfig.ENDPOINTS.USERS.LIST || "/api/admin/users",
           undefined,
           options,
         );

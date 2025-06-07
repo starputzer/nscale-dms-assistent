@@ -139,7 +139,10 @@
             <div v-if="message.role !== 'user'" class="message-actions">
               <button
                 class="action-btn"
+                :class="{ 'active positive': messageFeedback[message.id] === 'positive' }"
                 @click="handleFeedback(message, 'positive', $event)"
+                :disabled="messageFeedback[message.id] !== undefined"
+                :title="messageFeedback[message.id] === 'positive' ? 'Sie haben diese Antwort als hilfreich bewertet' : 'Als hilfreich markieren'"
               >
                 <svg
                   width="16"
@@ -153,10 +156,14 @@
                     d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"
                   ></path>
                 </svg>
+                <span v-if="messageFeedback[message.id] === 'positive'" class="feedback-count">Hilfreich</span>
               </button>
               <button
                 class="action-btn"
+                :class="{ 'active negative': messageFeedback[message.id] === 'negative' }"
                 @click="handleFeedback(message, 'negative', $event)"
+                :disabled="messageFeedback[message.id] !== undefined"
+                :title="messageFeedback[message.id] === 'negative' ? 'Sie haben diese Antwort als nicht hilfreich bewertet' : 'Als nicht hilfreich markieren'"
               >
                 <svg
                   width="16"
@@ -170,6 +177,7 @@
                     d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"
                   ></path>
                 </svg>
+                <span v-if="messageFeedback[message.id] === 'negative'" class="feedback-count">Nicht hilfreich</span>
               </button>
               <button class="action-btn" @click="handleViewSources(message)">
                 <svg
@@ -234,6 +242,38 @@
       </form>
     </div>
   </div>
+
+  <!-- Feedback Dialog -->
+  <div v-if="showFeedbackDialog" class="feedback-dialog-overlay" @click.self="showFeedbackDialog = false">
+    <div class="feedback-dialog">
+      <h3>Feedback zur Antwort</h3>
+      <p>Ihre Rückmeldung hilft uns, die Qualität der Antworten zu verbessern.</p>
+      
+      <div class="feedback-form">
+        <label for="feedback-comment">Was können wir besser machen? (optional)</label>
+        <textarea
+          id="feedback-comment"
+          v-model="feedbackDialogData.comment"
+          placeholder="Teilen Sie uns mit, warum die Antwort nicht hilfreich war..."
+          rows="4"
+          maxlength="500"
+        ></textarea>
+        <div class="character-count">{{ feedbackDialogData.comment.length }}/500</div>
+      </div>
+
+      <div class="dialog-actions">
+        <button class="btn btn-secondary" @click="showFeedbackDialog = false">
+          Abbrechen
+        </button>
+        <button 
+          class="btn btn-primary" 
+          @click="submitFeedback(feedbackDialogData.message, feedbackDialogData.type, feedbackDialogData.comment)"
+        >
+          Feedback senden
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -256,6 +296,17 @@ const motdStore = useMotdStore();
 const messageInput = ref("");
 const isLoading = ref(false);
 const messageArea = ref<HTMLElement>();
+const messageFeedback = ref<Record<string, 'positive' | 'negative'>>({});
+const showFeedbackDialog = ref(false);
+const feedbackDialogData = ref<{
+  message: any;
+  type: 'positive' | 'negative';
+  comment: string;
+}>({
+  message: null,
+  type: 'positive',
+  comment: ''
+});
 
 // Computed
 const currentSessionId = computed(
@@ -356,15 +407,36 @@ const handleFeedback = async (
   type: "positive" | "negative",
   event?: Event,
 ) => {
-  console.log("Feedback:", type, message);
+  // Prüfe ob bereits Feedback gegeben wurde
+  if (messageFeedback.value[message.id]) {
+    return;
+  }
 
+  // Bei negativem Feedback, zeige Dialog für Kommentar
+  if (type === "negative") {
+    feedbackDialogData.value = {
+      message,
+      type,
+      comment: ''
+    };
+    showFeedbackDialog.value = true;
+    return;
+  }
+
+  // Bei positivem Feedback, sende direkt
+  await submitFeedback(message, type, null);
+};
+
+const submitFeedback = async (
+  message: any,
+  type: "positive" | "negative",
+  comment: string | null
+) => {
   try {
-    // Finde die vorherige Benutzer-Nachricht (die Frage)
-    const messageIndex = messages.value.findIndex((m) => m.id === message.id);
+    // Finde die vorherige Frage (Benutzer-Nachricht)
     let question = "";
-
+    const messageIndex = messages.value.findIndex((m) => m.id === message.id);
     if (messageIndex > 0) {
-      // Suche die vorherige Benutzer-Nachricht
       for (let i = messageIndex - 1; i >= 0; i--) {
         if (messages.value[i].role === "user") {
           question = messages.value[i].content;
@@ -377,11 +449,9 @@ const handleFeedback = async (
     const response = await axios.post(
       "/api/feedback",
       {
-        message_id: message.id,
-        session_id: currentSessionId.value,
-        rating: type === "positive" ? 1 : -1,
-        question: question,
-        answer: message.content,
+        messageId: message.id,
+        isPositive: type === "positive",
+        comment: comment
       },
       {
         headers: authStore.createAuthHeaders(),
@@ -390,26 +460,39 @@ const handleFeedback = async (
 
     console.log("Feedback gespeichert:", response.data);
 
-    // Zeige eine kurze Bestätigungsmeldung
-    const feedbackButton = event?.currentTarget as HTMLButtonElement;
-    if (feedbackButton) {
-      const originalContent = feedbackButton.innerHTML;
-      feedbackButton.innerHTML = "✓";
-      feedbackButton.style.backgroundColor =
-        type === "positive" ? "#d1fae5" : "#fee2e2";
-      feedbackButton.style.color = type === "positive" ? "#00a550" : "#dc3545";
-      feedbackButton.setAttribute("disabled", "true");
+    // Speichere Feedback-Status
+    messageFeedback.value[message.id] = type;
 
-      setTimeout(() => {
-        feedbackButton.innerHTML = originalContent;
-        feedbackButton.style.backgroundColor = "";
-        feedbackButton.style.color = "";
-        feedbackButton.removeAttribute("disabled");
-      }, 2000);
-    }
+    // Schließe Dialog
+    showFeedbackDialog.value = false;
+
+    // Zeige Toast-Benachrichtigung
+    showFeedbackToast(type === "positive" ? "Danke für Ihr Feedback!" : "Danke für Ihr Feedback. Wir werden die Antwort verbessern.");
   } catch (error) {
     console.error("Fehler beim Senden des Feedbacks:", error);
+    showFeedbackToast("Fehler beim Speichern des Feedbacks", "error");
   }
+};
+
+const showFeedbackToast = (message: string, type: string = "success") => {
+  // Erstelle temporäres Toast-Element
+  const toast = document.createElement('div');
+  toast.className = `feedback-toast ${type}`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+
+  // Animiere Toast
+  setTimeout(() => {
+    toast.classList.add('show');
+  }, 10);
+
+  // Entferne Toast nach 3 Sekunden
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => {
+      document.body.removeChild(toast);
+    }, 300);
+  }, 3000);
 };
 
 const handleViewSources = (message: any) => {
@@ -662,24 +745,7 @@ onMounted(async () => {
   opacity: 1;
 }
 
-.action-btn {
-  background: transparent;
-  border: 1px solid var(--nscale-border, #dee2e6);
-  border-radius: 6px;
-  padding: 4px 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--nscale-text-secondary, #6c757d);
-  transition: all 0.2s;
-}
-
-.action-btn:hover {
-  background: var(--nscale-surface, #f8f9fa);
-  color: var(--nscale-text, #333);
-}
+/* Action button styles moved to bottom of file for proper override */
 
 .loading-indicator {
   display: flex;
@@ -817,6 +883,218 @@ onMounted(async () => {
   51%,
   100% {
     opacity: 0;
+  }
+}
+
+/* Feedback Buttons */
+.action-btn {
+  background: transparent;
+  border: 1px solid var(--nscale-border, #dee2e6);
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--nscale-text-secondary, #6c757d);
+  transition: all 0.2s;
+}
+
+.action-btn:hover:not(:disabled) {
+  background: var(--nscale-background, #f8f9fa);
+  border-color: var(--nscale-primary, #0056b3);
+  color: var(--nscale-primary, #0056b3);
+}
+
+.action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.action-btn.active {
+  background: var(--nscale-background, #f8f9fa);
+  border-color: var(--nscale-primary, #0056b3);
+}
+
+.action-btn.active.positive {
+  color: #00a550;
+  border-color: #00a550;
+  background: #d1fae5;
+}
+
+.action-btn.active.negative {
+  color: #dc3545;
+  border-color: #dc3545;
+  background: #fee2e2;
+}
+
+.feedback-count {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Feedback Dialog */
+.feedback-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.feedback-dialog {
+  background: var(--nscale-surface, #ffffff);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.feedback-dialog h3 {
+  margin: 0 0 12px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--nscale-text, #333);
+}
+
+.feedback-dialog p {
+  margin: 0 0 20px 0;
+  color: var(--nscale-text-secondary, #6c757d);
+  line-height: 1.5;
+}
+
+.feedback-form {
+  margin-bottom: 20px;
+}
+
+.feedback-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--nscale-text, #333);
+}
+
+.feedback-form textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--nscale-border, #dee2e6);
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
+}
+
+.feedback-form textarea:focus {
+  outline: none;
+  border-color: var(--nscale-primary, #0056b3);
+  box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.1);
+}
+
+.character-count {
+  text-align: right;
+  font-size: 12px;
+  color: var(--nscale-text-secondary, #6c757d);
+  margin-top: 4px;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--nscale-border, #dee2e6);
+  color: var(--nscale-text, #333);
+}
+
+.btn-secondary:hover {
+  background: var(--nscale-background, #f8f9fa);
+  border-color: var(--nscale-text-secondary, #6c757d);
+}
+
+.btn-primary {
+  background: var(--nscale-primary, #0056b3);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #004494;
+}
+
+/* Toast Notifications */
+.feedback-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--nscale-surface, #ffffff);
+  color: var(--nscale-text, #333);
+  padding: 16px 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 1001;
+  max-width: 400px;
+}
+
+.feedback-toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.feedback-toast.success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.feedback-toast.error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .feedback-dialog {
+    padding: 20px;
+  }
+  
+  .feedback-dialog h3 {
+    font-size: 18px;
+  }
+  
+  .feedback-toast {
+    left: 20px;
+    right: 20px;
+    bottom: 10px;
+  }
+  
+  .message-actions {
+    opacity: 1;
   }
 }
 </style>

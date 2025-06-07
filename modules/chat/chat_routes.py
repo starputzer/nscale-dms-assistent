@@ -16,6 +16,7 @@ from modules.core.auth_dependency import get_current_user
 from modules.chat.chat_history_manager import ChatHistoryManager
 from modules.sessions.session_manager import SessionManager
 from modules.llm.llm_service import LLMService
+from modules.rag.engine import RAGEngine
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -24,6 +25,16 @@ router = APIRouter()
 chat_history_manager = ChatHistoryManager()
 session_manager = SessionManager()
 llm_service = LLMService()
+
+# RAG engine will be initialized at server startup
+rag_engine = None
+
+def get_rag_engine(request: Request) -> RAGEngine:
+    """Get RAG engine from app state"""
+    global rag_engine
+    if rag_engine is None and hasattr(request.app.state, 'rag_engine'):
+        rag_engine = request.app.state.rag_engine
+    return rag_engine
 
 class ChatMessage(BaseModel):
     message: str
@@ -39,7 +50,8 @@ async def generate_sse_response(
     message: str,
     session_id: str,
     user_id: str,
-    model: str
+    model: str,
+    request: Request = None
 ) -> AsyncGenerator[str, None]:
     """Generate Server-Sent Events for streaming response"""
     try:
@@ -64,28 +76,82 @@ async def generate_sse_response(
             })
         messages.append({"role": "user", "content": message})
         
-        # Stream response from LLM
-        assistant_content = ""
-        assistant_msg_id = None
-        
-        async for chunk in llm_service.stream_chat(messages, model):
-            if chunk["type"] == "content":
-                assistant_content += chunk["content"]
-                yield f"data: {json.dumps(chunk)}\n\n"
-            elif chunk["type"] == "done":
-                # Save assistant message
-                assistant_msg_id = chat_history_manager.add_message(
-                    session_id=session_id,
-                    role="assistant",
-                    content=assistant_content,
-                    user_id=user_id,
-                    model=model
-                )
-                logger.info(f"Assistant message saved with ID: {assistant_msg_id}")
+        # Try to use RAG system first
+        try:
+            # Get RAG engine from request if available
+            current_rag_engine = rag_engine
+            if current_rag_engine is None and request:
+                current_rag_engine = get_rag_engine(request)
                 
-                # Send completion event
-                yield f"data: {json.dumps({'type': 'done', 'messageId': assistant_msg_id})}\n\n"
-                break
+            # Check if RAG engine is available
+            if current_rag_engine is None:
+                logger.warning("RAG engine not initialized, falling back to direct LLM")
+                raise Exception("RAG not available")
+                
+            # Use RAG system for enhanced responses
+            accumulated_response = ""
+            
+            async for chunk_json in current_rag_engine.stream_answer_chunks(
+                question=message,
+                session_id=int(session_id) if session_id.isdigit() else None,
+                use_simple_language=False
+            ):
+                try:
+                    # Parse the JSON chunk
+                    chunk_data = json.loads(chunk_json)
+                    
+                    if 'response' in chunk_data:
+                        # This is a content chunk
+                        accumulated_response += chunk_data['response']
+                        yield f"data: {json.dumps({'type': 'content', 'content': chunk_data['response']})}\n\n"
+                    elif 'done' in chunk_data and chunk_data['done']:
+                        # Stream is done
+                        # Save complete assistant message
+                        assistant_msg_id = chat_history_manager.add_message(
+                            session_id=session_id,
+                            role="assistant", 
+                            content=accumulated_response,
+                            user_id=user_id,
+                            model=model
+                        )
+                        logger.info(f"Assistant message saved with ID: {assistant_msg_id}")
+                        
+                        # Send completion event
+                        yield f"data: {json.dumps({'type': 'done', 'messageId': assistant_msg_id})}\n\n"
+                        break
+                    elif 'error' in chunk_data:
+                        # Handle error
+                        logger.error(f"RAG error: {chunk_data['error']}")
+                        yield f"data: {json.dumps({'type': 'error', 'error': chunk_data['error']})}\n\n"
+                        break
+                except json.JSONDecodeError:
+                    logger.error(f"Failed to parse chunk: {chunk_json}")
+                    continue
+                    
+        except Exception as rag_error:
+            logger.warning(f"RAG system unavailable, falling back to direct LLM: {rag_error}")
+            
+            # Fallback to direct LLM
+            assistant_content = ""
+            
+            async for chunk in llm_service.stream_chat(messages, model):
+                if chunk["type"] == "content":
+                    assistant_content += chunk["content"]
+                    yield f"data: {json.dumps(chunk)}\n\n"
+                elif chunk["type"] == "done":
+                    # Save assistant message
+                    assistant_msg_id = chat_history_manager.add_message(
+                        session_id=session_id,
+                        role="assistant",
+                        content=assistant_content,
+                        user_id=user_id,
+                        model=model
+                    )
+                    logger.info(f"Assistant message saved with ID: {assistant_msg_id}")
+                    
+                    # Send completion event
+                    yield f"data: {json.dumps({'type': 'done', 'messageId': assistant_msg_id})}\n\n"
+                    break
         
         # Update session
         session_manager.update_session_activity(session_id)
@@ -96,7 +162,8 @@ async def generate_sse_response(
 
 @router.post("/chat")
 async def chat(
-    request: ChatMessage,
+    chat_request: ChatMessage,
+    request: Request,
     user_data: Dict[str, Any] = Depends(get_current_user)
 ):
     """Main chat endpoint with streaming response"""
@@ -106,19 +173,20 @@ async def chat(
             raise HTTPException(status_code=401, detail="User not authenticated")
         
         # Validate session exists and belongs to user
-        session = session_manager.get_session(request.sessionId, user_id)
+        session = session_manager.get_session(chat_request.sessionId, user_id)
         if not session:
             raise HTTPException(status_code=404, detail="Session not found")
         
-        logger.info(f"Chat request from user {user_id} in session {request.sessionId}")
+        logger.info(f"Chat request from user {user_id} in session {chat_request.sessionId}")
         
         # Return streaming response
         return StreamingResponse(
             generate_sse_response(
-                message=request.message,
-                session_id=request.sessionId,
+                message=chat_request.message,
+                session_id=chat_request.sessionId,
                 user_id=user_id,
-                model=request.model
+                model=chat_request.model,
+                request=request
             ),
             media_type="text/event-stream",
             headers={

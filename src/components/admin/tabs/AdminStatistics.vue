@@ -962,7 +962,7 @@ function initPerformanceCharts() {
 // API Data Loading Functions
 async function loadStatisticsSummary() {
   try {
-    const response = await apiService.get('/admin-statistics/summary');
+    const response = await apiService.get('/admin/statistics/summary');
     if (response.success && response.data) {
       stats.value = response.data;
     }
@@ -973,7 +973,7 @@ async function loadStatisticsSummary() {
 
 async function loadUsageTrend() {
   try {
-    const response = await apiService.get('/admin-statistics/usage-trend', {
+    const response = await apiService.get('/admin/statistics/usage-trend', {
       params: { range: selectedTimeRange.value }
     });
     if (response.success && response.data) {
@@ -990,7 +990,7 @@ async function loadUsageTrend() {
 
 async function loadUserSegmentation() {
   try {
-    const response = await apiService.get('/admin-statistics/user-segmentation');
+    const response = await apiService.get('/admin/statistics/user-segmentation');
     if (response.success && response.data) {
       userSegments.value = response.data;
     } else {
@@ -1004,7 +1004,7 @@ async function loadUserSegmentation() {
 
 async function loadFeedbackRatings() {
   try {
-    const response = await apiService.get('/admin-statistics/feedback-ratings');
+    const response = await apiService.get('/admin/statistics/feedback-ratings');
     if (response.success && response.data) {
       feedbackRatings.value = response.data;
     }
@@ -1015,7 +1015,7 @@ async function loadFeedbackRatings() {
 
 async function loadPerformanceMetrics() {
   try {
-    const response = await apiService.get('/admin-statistics/performance-metrics');
+    const response = await apiService.get('/admin/statistics/performance-metrics');
     if (response.success && response.data) {
       performanceMetrics.value = response.data;
     }
@@ -1026,7 +1026,7 @@ async function loadPerformanceMetrics() {
 
 async function loadSessionDistribution() {
   try {
-    const response = await apiService.get('/admin-statistics/session-distribution');
+    const response = await apiService.get('/admin/statistics/session-distribution');
     if (response.success && response.data) {
       sessionDistribution.value = response.data;
     }
@@ -1037,7 +1037,7 @@ async function loadSessionDistribution() {
 
 async function exportData() {
   try {
-    const response = await apiService.get('/admin-statistics/export', {
+    const response = await apiService.get('/admin/statistics/export', {
       params: {
         format: 'json',
         range: selectedTimeRange.value

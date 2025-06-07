@@ -106,12 +106,13 @@ export class ApiService {
     this.centralAuthManager = CentralAuthManager.getInstance();
 
     // Konfiguriere Axios-Instanz
-    // baseURL ist bereits korrekt mit Version konfiguriert (/api/v1)
-    const baseURL = apiConfig.BASE_URL;
+    // baseURL leer lassen, da alle unsere Endpoints bereits mit /api beginnen
+    const baseURL = ""; // Empty to avoid double /api prefix
     console.log("[ApiService] Base URL configuration:", {
       BASE_URL: apiConfig.BASE_URL,
       API_VERSION: apiConfig.API_VERSION,
       finalBaseURL: baseURL,
+      note: "Using empty baseURL to avoid double /api prefix"
     });
     this.axiosInstance = axios.create({
       baseURL: baseURL,
@@ -240,6 +241,12 @@ export class ApiService {
 
         // API-Version nicht hinzufügen, da sie bereits in der baseURL enthalten ist
         // (Entfernt, um doppelte Version zu vermeiden)
+        
+        // Fix double /api prefix
+        if (config.url && config.url.startsWith('/api/api/')) {
+          config.url = config.url.replace('/api/api/', '/api/');
+          this.logService.debug(`Fixed double /api prefix: ${config.url}`);
+        }
 
         return config;
       },
@@ -593,12 +600,12 @@ export class ApiService {
   ): Promise<ApiResponse<T>> {
     // Check if this is an admin endpoint that doesn't use /v1
     const adminEndpoints = [
-      '/admin-dashboard',
-      '/admin-statistics', 
-      '/admin-system-comprehensive',
-      '/admin-dashboard-standard',
-      '/admin-feedback',
-      '/admin-users',
+      '/admin',
+      '/admin/dashboard',
+      '/admin/statistics', 
+      '/admin/system',
+      '/admin/feedback',
+      '/admin/users',
       '/knowledge-manager',
       '/rag-settings',
       '/system-monitor',
@@ -683,8 +690,14 @@ export class ApiService {
       // Führe die Anfrage aus
       const response = await this.axiosInstance.request<T>(options);
 
-      // Wrap the response in ApiResponse format
-      // The backend returns data directly, not wrapped in success/data structure
+      // Check if response is already in ApiResponse format
+      if (response.data && typeof response.data === 'object' && 
+          'success' in response.data && 'data' in response.data) {
+        // Response is already wrapped
+        return response.data as ApiResponse<T>;
+      }
+      
+      // For backward compatibility, wrap raw responses
       return {
         success: true,
         data: response.data as T,

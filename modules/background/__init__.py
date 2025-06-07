@@ -11,11 +11,8 @@ from .processor import (
     ProcessingMonitor
 )
 
-from .queue_manager import (
-    QueuePersistence,
-    QueueMonitor,
-    PriorityQueueManager
-)
+from .queue_manager import QueueManager
+from .job_manager import BackgroundJobManager
 
 __all__ = [
     'BackgroundProcessor',
@@ -26,7 +23,6 @@ __all__ = [
     'ProcessingProgress',
     'BatchProcessingResult',
     'ProcessingMonitor',
-    'QueuePersistence',
-    'QueueMonitor',
-    'PriorityQueueManager'
+    'QueueManager',
+    'BackgroundJobManager'
 ]

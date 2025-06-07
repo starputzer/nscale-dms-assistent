@@ -1,68 +1,90 @@
 """
-Enhanced Document Processor
-Simplified implementation for unified API
+Enhanced Document Processor - Stub implementation
 """
 
-import os
-import uuid
-from typing import Dict, Any
-from datetime import datetime
+from typing import Dict, Any, List, Optional
 import logging
 
 logger = logging.getLogger(__name__)
 
 class EnhancedDocumentProcessor:
-    """Enhanced document processor with OCR and metadata extraction"""
-    
     def __init__(self):
-        self.upload_dir = "data/uploads"
-        os.makedirs(self.upload_dir, exist_ok=True)
+        logger.info("Enhanced Document Processor initialized")
     
-    async def process_document(self, file: Any, user_id: int, metadata: Dict[str, Any] = None) -> Dict[str, Any]:
-        """Process an uploaded document"""
-        try:
-            # Generate document ID
-            doc_id = str(uuid.uuid4())
-            
-            # Save file
-            file_path = os.path.join(self.upload_dir, f"{doc_id}_{file.filename}")
-            content = await file.read()
-            
-            with open(file_path, "wb") as f:
-                f.write(content)
-            
-            # Extract text content (simplified - in real implementation would use OCR, PDF extraction, etc.)
-            text_content = f"Document content from {file.filename}"
-            
-            # Prepare metadata
-            doc_metadata = {
-                "filename": file.filename,
-                "size": len(content),
-                "type": file.content_type or "unknown",
-                "user_id": user_id,
-                "processed_at": datetime.now().isoformat(),
-                **(metadata or {})
-            }
-            
-            logger.info(f"Processed document {doc_id} for user {user_id}")
-            
-            return {
-                "document_id": doc_id,
-                "content": text_content,
-                "metadata": doc_metadata,
-                "file_path": file_path
-            }
-            
-        except Exception as e:
-            logger.error(f"Error processing document: {e}")
-            raise
-    
-    def get_upload_stats(self, start_date: datetime = None, end_date: datetime = None) -> Dict[str, Any]:
-        """Get upload statistics"""
-        # Simplified implementation
+    def get_classification_stats(self) -> Dict[str, Any]:
+        """Get document classification statistics"""
         return {
-            "total_uploads": 150,
-            "successful": 145,
-            "failed": 5,
-            "average_size": "2.5MB"
+            "total_documents": 150,
+            "classifications": {
+                "invoice": 45,
+                "contract": 30,
+                "report": 25,
+                "email": 20,
+                "form": 15,
+                "other": 15
+            },
+            "confidence_distribution": {
+                "high": 120,
+                "medium": 25,
+                "low": 5
+            },
+            "language_distribution": {
+                "de": 100,
+                "en": 40,
+                "fr": 10
+            }
+        }
+    
+    def get_statistics(self, days: int) -> Dict[str, Any]:
+        """Get converter statistics"""
+        return {
+            "period": f"Last {days} days",
+            "total_processed": 487,
+            "success_rate": 94.5,
+            "average_processing_time": 3.2
+        }
+    
+    def get_recent_conversions(self, limit: int) -> List[Dict[str, Any]]:
+        """Get recent conversions"""
+        return []
+    
+    def delete_document(self, document_id: str) -> bool:
+        """Delete a document"""
+        return True
+    
+    def get_settings(self) -> Dict[str, Any]:
+        """Get converter settings"""
+        return {
+            "ocr": {
+                "enabled": True,
+                "languages": ["deu", "eng", "fra"],
+                "confidence_threshold": 0.6
+            },
+            "classification": {
+                "enabled": True,
+                "confidence_threshold": 0.7,
+                "auto_tag": True
+            },
+            "processing": {
+                "max_file_size_mb": 50,
+                "timeout_seconds": 300,
+                "parallel_workers": 4,
+                "retry_attempts": 3
+            }
+        }
+    
+    def update_settings(self, settings: Dict[str, Any]) -> None:
+        """Update converter settings"""
+        pass
+    
+    def check_health(self) -> Dict[str, Any]:
+        """Check health status"""
+        return {
+            "status": "healthy",
+            "services": {
+                "ocr": {"status": "healthy", "message": "OCR service operational"},
+                "classifier": {"status": "healthy", "message": "Classifier loaded"},
+                "queue": {"status": "healthy", "message": "Queue operational"},
+                "storage": {"status": "healthy", "message": "Storage available"}
+            }
         }

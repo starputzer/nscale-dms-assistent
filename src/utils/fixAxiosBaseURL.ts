@@ -6,18 +6,18 @@ import axios from 'axios';
 
 export function fixAxiosBaseURL() {
   // Set the default base URL for all axios instances
-  axios.defaults.baseURL = '/api';
+  axios.defaults.baseURL = '';  // Empty so paths like /api/feedback work correctly
   
   // Log the current configuration
   console.log('🔧 Fixed axios defaults:', {
-    baseURL: axios.defaults.baseURL,
+    baseURL: axios.defaults.baseURL || '(empty)',
     headers: axios.defaults.headers.common
   });
   
   // Also fix any hardcoded axios instances that might exist
   if (typeof window !== 'undefined') {
     // Store the correct configuration globally
-    (window as any).__AXIOS_BASE_URL__ = '/api';
+    (window as any).__AXIOS_BASE_URL__ = '';
     (window as any).__API_PORT__ = 8000;
     
     // Override any attempts to create axios instances with wrong base URL
@@ -25,13 +25,13 @@ export function fixAxiosBaseURL() {
     axios.create = function(config: any = {}) {
       // Force correct base URL if it contains wrong port
       if (config.baseURL && (config.baseURL.includes('8080') || config.baseURL.includes('3000'))) {
-        console.warn(`⚠️ Fixing incorrect baseURL: ${config.baseURL} -> /api`);
-        config.baseURL = '/api';
+        console.warn(`⚠️ Fixing incorrect baseURL: ${config.baseURL} -> (empty)`);
+        config.baseURL = '';
       }
       
-      // If no baseURL is specified, use the default
-      if (!config.baseURL) {
-        config.baseURL = '/api';
+      // If baseURL is /api, clear it to avoid double /api
+      if (config.baseURL === '/api') {
+        config.baseURL = '';
       }
       
       return originalCreate.call(axios, config);
@@ -50,8 +50,13 @@ export function fixAxiosBaseURL() {
         // Ensure baseURL doesn't have wrong ports
         if (config.baseURL && (config.baseURL.includes(':8080') || config.baseURL.includes(':3000'))) {
           const oldBaseURL = config.baseURL;
-          config.baseURL = config.baseURL.replace(/http:\/\/localhost:(8080|3000)/, '/api');
+          config.baseURL = config.baseURL.replace(/http:\/\/localhost:(8080|3000)/, '');
           console.warn(`🔧 Fixed baseURL: ${oldBaseURL} -> ${config.baseURL}`);
+        }
+        
+        // If baseURL is /api and URL already starts with /api, clear baseURL
+        if (config.baseURL === '/api' && config.url && config.url.startsWith('/api')) {
+          config.baseURL = '';
         }
         
         return config;

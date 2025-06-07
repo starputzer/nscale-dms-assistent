@@ -18,7 +18,7 @@ class DBManager:
         """Initialize database manager"""
         if db_path is None:
             # Default to data directory
-            db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'data', 'db', 'app.db')
+            db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), 'data', 'db', 'users.db')
         
         self.db_path = db_path
         # Ensure directory exists

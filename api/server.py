@@ -40,6 +40,27 @@ async def lifespan(app: FastAPI):
     logger.info(f"Time: {datetime.now()}")
     logger.info("=" * 60)
     
+    # Initialize RAG engine
+    try:
+        from modules.rag.engine import RAGEngine
+        logger.info("Initializing RAG engine...")
+        rag_engine = RAGEngine()
+        # Store it globally for access in routes
+        app.state.rag_engine = rag_engine
+        # Initialize will load documents automatically
+        await rag_engine.initialize()
+        logger.info("✅ RAG engine initialized with documents")
+    except Exception as e:
+        logger.warning(f"RAG engine initialization failed (non-critical): {e}")
+    
+    # Initialize WebSocket support
+    try:
+        from modules.websocket import startup_websocket_tasks
+        await startup_websocket_tasks()
+        logger.info("✅ WebSocket support initialized")
+    except Exception as e:
+        logger.warning(f"WebSocket initialization failed (non-critical): {e}")
+    
     # Load all endpoints
     endpoint_manager = EndpointManager(app)
     endpoint_manager.load_all_endpoints()
@@ -210,6 +231,7 @@ async def create_chat_session(
         from modules.core.config import Config
         from jose import jwt, JWTError
         import uuid
+        import json
         
         # Get authorization header
         authorization = request.headers.get("Authorization")
@@ -229,20 +251,31 @@ async def create_chat_session(
         except JWTError:
             raise HTTPException(status_code=401, detail="Invalid token")
         
+        # Get body to check for session ID
+        body = await request.body()
+        body_data = {}
+        if body:
+            try:
+                body_data = json.loads(body)
+            except:
+                pass
+        
+        # Use provided session ID or generate new one
+        session_id = body_data.get('id') or body_data.get('sessionId') or str(uuid.uuid4())
+        
         # Create new session
         session_manager = SessionManager()
-        session_id = str(uuid.uuid4())
         session = session_manager.create_session(
             session_id=session_id,
             user_id=user_id,
-            title="New Session"
+            title=body_data.get('title', 'New Session')
         )
         
         if not session:
             raise HTTPException(status_code=500, detail="Failed to create session")
         
         return {
-            "id": session["id"],
+            "id": session_id,  # Return the actual session ID used
             "title": session["title"],
             "created_at": session["created_at"],
             "message_count": 0
@@ -568,140 +601,11 @@ async def send_chat_message(
         logger.error(f"Error in chat message: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-# Add admin users endpoint
-@app.get("/api/admin/users")
-async def get_admin_users(request: Request):
-    """Get all users for admin panel"""
-    try:
-        from modules.core.config import Config
-        from jose import jwt, JWTError
-        
-        # Get authorization header
-        authorization = request.headers.get("Authorization")
-        if not authorization or not authorization.startswith("Bearer "):
-            raise HTTPException(status_code=401, detail="Not authenticated")
-        
-        # Extract and verify token
-        token = authorization.replace("Bearer ", "")
-        try:
-            payload = jwt.decode(token, Config.SECRET_KEY, algorithms=['HS256'])
-            user_id = payload.get('user_id')
-            if not user_id:
-                raise HTTPException(status_code=401, detail="Invalid token")
-        except JWTError:
-            raise HTTPException(status_code=401, detail="Invalid token")
-        
-        # Return mock data for now
-        return [
-            {
-                "id": "1",
-                "email": "admin@example.com",
-                "role": "admin",
-                "created_at": "2024-01-01T00:00:00Z",
-                "is_active": True
-            },
-            {
-                "id": "5", 
-                "email": "martin@danglefeet.com",
-                "role": "admin",
-                "created_at": "2024-06-01T00:00:00Z",
-                "is_active": True
-            }
-        ]
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error getting admin users: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+# Admin users endpoint is handled by the admin module router
 
-# Add admin dashboard summary endpoint
-@app.get("/api/admin-dashboard/summary")
-async def get_admin_dashboard_summary(request: Request):
-    """Get dashboard summary for admin panel"""
-    try:
-        from modules.core.config import Config
-        from jose import jwt, JWTError
-        
-        # Get authorization header
-        authorization = request.headers.get("Authorization")
-        if not authorization or not authorization.startswith("Bearer "):
-            raise HTTPException(status_code=401, detail="Not authenticated")
-        
-        # Extract and verify token
-        token = authorization.replace("Bearer ", "")
-        try:
-            payload = jwt.decode(token, Config.SECRET_KEY, algorithms=['HS256'])
-            user_id = payload.get('user_id')
-            if not user_id:
-                raise HTTPException(status_code=401, detail="Invalid token")
-        except JWTError:
-            raise HTTPException(status_code=401, detail="Invalid token")
-        
-        # Return summary data
-        return {
-            "users": {
-                "total": 2,
-                "active": 2,
-                "inactive": 0
-            },
-            "sessions": {
-                "total": 10,
-                "today": 3,
-                "active": 1
-            },
-            "messages": {
-                "total": 50,
-                "today": 12
-            },
-            "system": {
-                "status": "healthy",
-                "uptime": "2 days",
-                "version": "2.0.0"
-            }
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error getting dashboard summary: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+# Admin dashboard endpoint is handled by the admin module router
 
-# Add admin feedback stats endpoint
-@app.get("/api/admin/feedback/stats")
-async def get_admin_feedback_stats(request: Request):
-    """Get feedback statistics for admin panel"""
-    try:
-        from modules.core.config import Config
-        from jose import jwt, JWTError
-        
-        # Get authorization header
-        authorization = request.headers.get("Authorization")
-        if not authorization or not authorization.startswith("Bearer "):
-            raise HTTPException(status_code=401, detail="Not authenticated")
-        
-        # Extract and verify token
-        token = authorization.replace("Bearer ", "")
-        try:
-            payload = jwt.decode(token, Config.SECRET_KEY, algorithms=['HS256'])
-            user_id = payload.get('user_id')
-            if not user_id:
-                raise HTTPException(status_code=401, detail="Invalid token")
-        except JWTError:
-            raise HTTPException(status_code=401, detail="Invalid token")
-        
-        # Return feedback stats
-        return {
-            "total": 25,
-            "positive": 20,
-            "negative": 5,
-            "pending": 3,
-            "resolved": 22,
-            "average_rating": 4.2
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error getting feedback stats: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+# Admin feedback endpoint is handled by the admin module router
 
 # Add MOTD endpoint
 @app.get("/api/motd")
@@ -733,6 +637,148 @@ async def get_motd():
             "format": "text",
             "error": str(e)
         }
+
+# Import and register admin routes
+try:
+    from modules.admin import router as admin_router
+    
+    # Register the central admin router
+    app.include_router(admin_router, prefix="/api/admin", tags=["Admin"])
+    
+    logger.info("✓ Registered admin routes")
+except ImportError as e:
+    logger.error(f"✗ Failed to load admin routes: {e}")
+
+# Import and register MOTD routes
+try:
+    from modules.core.motd_routes import router as motd_router
+    app.include_router(motd_router, prefix="/api", tags=["MOTD"])
+    logger.info("✓ Registered MOTD routes")
+except ImportError as e:
+    logger.error(f"✗ Failed to load MOTD routes: {e}")
+
+# Import and register Feedback routes
+try:
+    from modules.feedback import router as feedback_router
+    app.include_router(feedback_router, prefix="/api/feedback", tags=["Feedback"])
+    logger.info("✓ Registered Feedback routes")
+except ImportError as e:
+    logger.error(f"✗ Failed to load Feedback routes: {e}")
+
+# Import and register feature-specific routes
+try:
+    # Doc Converter routes
+    from modules.doc_converter import router as doc_converter_router
+    app.include_router(doc_converter_router, prefix="/api/doc-converter-enhanced", tags=["Doc Converter"])
+    logger.info("✓ Registered doc converter routes")
+except ImportError as e:
+    logger.warning(f"Could not load doc converter routes: {e}")
+
+try:
+    # Knowledge Manager routes
+    from modules.rag.knowledge_routes import router as knowledge_router
+    app.include_router(knowledge_router, prefix="/api/knowledge-manager", tags=["Knowledge Manager"])
+    logger.info("✓ Registered knowledge manager routes")
+except ImportError as e:
+    logger.warning(f"Could not load knowledge manager routes: {e}")
+
+try:
+    # Background Processing routes
+    from modules.background.routes import router as background_router
+    app.include_router(background_router, prefix="/api/background-processing", tags=["Background Processing"])
+    logger.info("✓ Registered background processing routes")
+except ImportError as e:
+    logger.warning(f"Could not load background processing routes: {e}")
+
+try:
+    # System Monitor routes
+    from modules.monitoring import router as monitor_router
+    app.include_router(monitor_router, prefix="/api/system-monitor", tags=["System Monitor"])
+    logger.info("✓ Registered system monitor routes")
+except ImportError as e:
+    logger.warning(f"Could not load system monitor routes: {e}")
+
+# RAG Settings routes - Register directly without going through admin router
+try:
+    from modules.rag.settings_routes import router as rag_settings_router
+    # Register directly with the app to get the correct path
+    app.include_router(rag_settings_router, prefix="/api/rag-settings", tags=["RAG Settings"])
+    logger.info("✓ Registered RAG settings routes at /api/rag-settings")
+except ImportError as e:
+    logger.warning(f"Could not load RAG settings routes: {e}")
+except Exception as e:
+    logger.error(f"Error registering RAG settings routes: {e}")
+
+# Advanced Documents routes - Register directly without going through admin router
+try:
+    from modules.doc_converter.advanced_routes import router as advanced_documents_router
+    # Register directly with the app to get the correct path
+    app.include_router(advanced_documents_router, prefix="/api/advanced-documents", tags=["Advanced Documents"])
+    logger.info("✓ Registered advanced documents routes at /api/advanced-documents")
+except ImportError as e:
+    logger.warning(f"Could not load advanced documents routes: {e}")
+except Exception as e:
+    logger.error(f"Error registering advanced documents routes: {e}")
+
+# WebSocket routes
+try:
+    from modules.websocket import router as websocket_router
+    app.include_router(websocket_router, tags=["WebSocket"])
+    logger.info("✓ Registered WebSocket routes at /ws")
+except ImportError as e:
+    logger.warning(f"Could not load WebSocket routes: {e}")
+except Exception as e:
+    logger.error(f"Error registering WebSocket routes: {e}")
+
+# System Integration routes (Email, Jobs, Config, Workflows)
+try:
+    from modules.admin.system_integration import router as system_integration_router
+    app.include_router(system_integration_router, tags=["System Integration"])
+    logger.info("✓ Registered system integration routes at /api/admin/system")
+except ImportError as e:
+    logger.warning(f"Could not load system integration routes: {e}")
+except Exception as e:
+    logger.error(f"Error registering system integration routes: {e}")
+
+# Widget Marketplace routes
+try:
+    from modules.marketplace.widget_routes import router as widget_router
+    app.include_router(widget_router, prefix="/api/admin/widgets", tags=["Widget Marketplace"])
+    logger.info("✓ Registered widget marketplace routes at /api/admin/widgets")
+except ImportError as e:
+    logger.warning(f"Could not load widget marketplace routes: {e}")
+except Exception as e:
+    logger.error(f"Error registering widget marketplace routes: {e}")
+
+# Predictive Analytics routes
+try:
+    from modules.admin.predictive_analytics_routes import router as analytics_router
+    app.include_router(analytics_router, tags=["Predictive Analytics"])
+    logger.info("✓ Registered predictive analytics routes at /api/admin/analytics")
+except ImportError as e:
+    logger.warning(f"Could not load predictive analytics routes: {e}")
+except Exception as e:
+    logger.error(f"Error registering predictive analytics routes: {e}")
+
+# A/B Testing routes
+try:
+    from modules.admin.ab_testing_routes import router as ab_testing_router
+    app.include_router(ab_testing_router, tags=["A/B Testing"])
+    logger.info("✓ Registered A/B testing routes at /api/admin/ab-testing")
+except ImportError as e:
+    logger.warning(f"Could not load A/B testing routes: {e}")
+except Exception as e:
+    logger.error(f"Error registering A/B testing routes: {e}")
+
+# Model Health Check routes
+try:
+    from modules.monitoring.health_routes import router as health_router
+    app.include_router(health_router, prefix="/api/health", tags=["Health Check"])
+    logger.info("✓ Registered model health check routes at /api/health")
+except ImportError as e:
+    logger.warning(f"Could not load health check routes: {e}")
+except Exception as e:
+    logger.error(f"Error registering health check routes: {e}")
 
 # No v1 routes - using clean API structure
 

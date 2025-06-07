@@ -71,35 +71,51 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
         ws: true,
-        // Critical fix: Configure the proxy to properly forward headers
+        // Enhanced configuration to ensure headers are properly forwarded
         configure: (proxy, options) => {
-          // Fix for Authorization header not being forwarded
+          // Before the request is sent to the target
           proxy.on('proxyReq', (proxyReq, req, res) => {
-            // Log the request for debugging
+            // Enhanced logging with all headers
             console.log(`[Proxy] ${req.method} ${req.url}`);
+            console.log('[Proxy] Original headers:', JSON.stringify(req.headers, null, 2));
             
-            // Get the authorization header from the original request
-            const authHeader = req.headers.authorization || req.headers.Authorization;
+            // Get authorization header - check multiple variations
+            const authHeader = req.headers.authorization || 
+                              req.headers.Authorization || 
+                              req.headers['authorization'] || 
+                              req.headers['Authorization'];
+            
+            // Also check for Bearer token in different formats
+            const bearerToken = req.headers['bearer'] || req.headers['Bearer'];
             
             if (authHeader) {
-              // Explicitly set the Authorization header on the proxy request
+              // Ensure the header is set correctly
               proxyReq.setHeader('Authorization', authHeader);
-              console.log('[Proxy] Authorization header forwarded:', authHeader.substring(0, 20) + '...');
+              proxyReq.setHeader('authorization', authHeader); // Also set lowercase
+              console.log('[Proxy] ✅ Authorization header forwarded:', authHeader.substring(0, 30) + '...');
+            } else if (bearerToken) {
+              // Handle case where token might be sent as 'Bearer' header
+              const fullAuthHeader = `Bearer ${bearerToken}`;
+              proxyReq.setHeader('Authorization', fullAuthHeader);
+              proxyReq.setHeader('authorization', fullAuthHeader);
+              console.log('[Proxy] ✅ Bearer token converted to Authorization header');
+            } else {
+              console.log('[Proxy] ⚠️  No authorization header found in request');
             }
             
-            // Also forward other important headers
-            const headersToForward = [
-              'content-type',
-              'accept',
-              'accept-language',
-              'user-agent',
-              'x-requested-with'
-            ];
-            
-            headersToForward.forEach(headerName => {
+            // Forward all original headers to ensure nothing is lost
+            Object.keys(req.headers).forEach(headerName => {
               const headerValue = req.headers[headerName];
-              if (headerValue) {
-                proxyReq.setHeader(headerName, headerValue);
+              // Skip host header as it should be set by changeOrigin
+              if (headerName.toLowerCase() !== 'host' && headerValue) {
+                // Handle array headers (like cookies)
+                if (Array.isArray(headerValue)) {
+                  headerValue.forEach(value => {
+                    proxyReq.setHeader(headerName, value);
+                  });
+                } else {
+                  proxyReq.setHeader(headerName, headerValue);
+                }
               }
             });
             
@@ -107,37 +123,82 @@ export default defineConfig({
             if (req.url.includes('/stream') || req.url.includes('/sse')) {
               proxyReq.setHeader('X-Accel-Buffering', 'no');
               proxyReq.setHeader('Cache-Control', 'no-cache');
+              proxyReq.setHeader('Connection', 'keep-alive');
             }
+            
+            // Debug: Log all headers being sent to backend
+            console.log('[Proxy] Headers being sent to backend:', proxyReq.getHeaders());
           });
           
           // Handle the proxy response
           proxy.on('proxyRes', (proxyRes, req, res) => {
-            // Log response status
-            console.log(`[Proxy Response] ${req.method} ${req.url} - ${proxyRes.statusCode}`);
+            // Enhanced response logging
+            console.log(`[Proxy Response] ${req.method} ${req.url} - Status: ${proxyRes.statusCode}`);
+            
+            // Log auth-related error responses
+            if (proxyRes.statusCode === 401 || proxyRes.statusCode === 403) {
+              console.error('[Proxy Response] ❌ Authentication error:', {
+                status: proxyRes.statusCode,
+                headers: proxyRes.headers,
+                url: req.url
+              });
+            }
             
             // Handle streaming responses
             if (req.url.includes('/stream') || req.url.includes('/sse')) {
               proxyRes.headers['cache-control'] = 'no-cache';
               proxyRes.headers['x-accel-buffering'] = 'no';
+              proxyRes.headers['connection'] = 'keep-alive';
               if (!proxyRes.headers['content-type']?.includes('event-stream')) {
                 proxyRes.headers['content-type'] = 'text/event-stream';
               }
             }
+            
+            // Preserve CORS headers from backend
+            const corsHeaders = ['access-control-allow-origin', 'access-control-allow-credentials', 
+                               'access-control-allow-headers', 'access-control-allow-methods'];
+            corsHeaders.forEach(header => {
+              if (proxyRes.headers[header]) {
+                res.setHeader(header, proxyRes.headers[header]);
+              }
+            });
           });
           
-          // Handle proxy errors
+          // Enhanced error handling
           proxy.on('error', (err, req, res) => {
-            console.error('[Proxy Error]', err.message);
+            console.error('[Proxy Error] ❌', {
+              message: err.message,
+              code: err.code,
+              target: options.target,
+              url: req.url,
+              headers: req.headers
+            });
+            
+            // Check if it's a connection error
+            if (err.code === 'ECONNREFUSED') {
+              console.error('[Proxy Error] Backend server is not running on', options.target);
+              console.error('[Proxy Error] Make sure to start the backend with: python api/server.py');
+            }
             
             // Return a proper error response
-            res.writeHead(503, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({
-              success: false,
-              error: 'Service temporarily unavailable',
-              message: 'Backend server is not responding'
-            }));
+            if (!res.headersSent) {
+              res.writeHead(503, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({
+                success: false,
+                error: 'Service temporarily unavailable',
+                message: 'Backend server is not responding',
+                details: err.message,
+                timestamp: new Date().toISOString()
+              }));
+            }
           });
         },
+        // Additional proxy options to ensure proper header handling
+        headers: {
+          // Preserve the original host header
+          'X-Forwarded-Host': 'localhost:3000',
+          'X-Forwarded-Proto': 'http'
+        }
       },
     },
   },

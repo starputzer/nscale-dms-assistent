@@ -394,7 +394,7 @@ const filteredDocuments = computed(() => {
   filtered.sort((a, b) => {
     switch (sortBy.value) {
       case 'name':
-        return a.name.localeCompare(b.name);
+        return (a.name || '').localeCompare(b.name || '');
       case 'date':
         return b.lastUpdated.getTime() - a.lastUpdated.getTime();
       case 'size':
@@ -459,9 +459,11 @@ const loadDocuments = async () => {
     
     const response = await apiService.get('/knowledge-manager/documents', { params });
     if (response.success && response.data) {
-      documents.value = response.data.map((doc: any) => ({
+      // Handle both array and object with documents property
+      const docs = Array.isArray(response.data) ? response.data : (response.data.documents || []);
+      documents.value = docs.map((doc: any) => ({
         ...doc,
-        lastUpdated: new Date(doc.lastUpdated)
+        lastUpdated: new Date(doc.lastUpdated || doc.last_updated || Date.now())
       }));
     }
   } catch (error) {
@@ -613,7 +615,11 @@ const formatNumber = (num: number) => {
   return new Intl.NumberFormat('de-DE').format(num);
 };
 
-const formatBytes = (bytes: number) => {
+const formatBytes = (bytes: number | null | undefined) => {
+  if (bytes == null || bytes === undefined || isNaN(bytes)) {
+    return '0 B';
+  }
+  
   const units = ['B', 'KB', 'MB', 'GB'];
   let size = bytes;
   let unitIndex = 0;

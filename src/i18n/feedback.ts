@@ -51,6 +51,18 @@ export default {
       step: "Step {current} of {total}",
       percent: "{value}%",
     },
+    feedback: {
+      dialog: {
+        title: "Feedback Details",
+        description:
+          "You provided negative feedback. Please tell us what we can improve:",
+        placeholder: "What was the issue? How can we improve the response?",
+        info: "Your feedback helps us improve the quality of our responses.",
+        cancel: "Cancel",
+        submit: "Send Feedback",
+        close: "Close",
+      },
+    },
   },
   de: {
     toast: {
@@ -103,6 +115,18 @@ export default {
       ariaLabel: "Fortschrittsanzeige",
       step: "Schritt {current} von {total}",
       percent: "{value}%",
+    },
+    feedback: {
+      dialog: {
+        title: "Feedback Details",
+        description:
+          "Sie haben negatives Feedback gegeben. Bitte teilen Sie uns mit, was wir verbessern können:",
+        placeholder: "Was war das Problem? Wie können wir die Antwort verbessern?",
+        info: "Ihr Feedback hilft uns, die Qualität unserer Antworten zu verbessern.",
+        cancel: "Abbrechen",
+        submit: "Feedback senden",
+        close: "Schließen",
+      },
     },
   },
 };

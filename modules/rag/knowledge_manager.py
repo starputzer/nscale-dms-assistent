@@ -1269,6 +1269,56 @@ class KnowledgeManager:
                     'last_check': datetime.now().isoformat()
                 }
             }
+    
+    def get_stats(self) -> Dict[str, Any]:
+        """Get knowledge base statistics"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Get document count
+            cursor.execute("SELECT COUNT(*) FROM documents")
+            total_documents = cursor.fetchone()[0]
+            
+            # Get total chunks (approximate based on average doc size)
+            cursor.execute("SELECT SUM(word_count) FROM document_statistics")
+            total_words = cursor.fetchone()[0] or 0
+            avg_chunk_size = 512  # Approximate chunk size
+            total_chunks = max(1, total_words // avg_chunk_size)
+            
+            # Get total embeddings (same as chunks)
+            total_embeddings = total_chunks
+            
+            # Calculate index size (approximate)
+            # Each embedding is ~768 dimensions * 4 bytes = 3KB
+            index_size_mb = (total_embeddings * 3) / 1024.0
+            
+            # Get last update
+            cursor.execute("SELECT MAX(created_at) FROM documents")
+            last_update = cursor.fetchone()[0]
+            
+            conn.close()
+            
+            return {
+                "total_documents": total_documents,
+                "total_chunks": total_chunks,
+                "avg_chunk_size": avg_chunk_size,
+                "total_embeddings": total_embeddings,
+                "index_size_mb": round(index_size_mb, 2),
+                "last_update": last_update
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error getting stats: {str(e)}")
+            # Return default values if error
+            return {
+                "total_documents": 0,
+                "total_chunks": 0,
+                "avg_chunk_size": 512,
+                "total_embeddings": 0,
+                "index_size_mb": 0,
+                "last_update": datetime.now().isoformat()
+            }
 
 
 def create_knowledge_manager(db_path: Optional[str] = None, 
@@ -1286,7 +1336,7 @@ if __name__ == "__main__":
     # Example usage
     import sys
     from ..doc_converter import DocumentClassifier
-    from ..doc_converter.processing import EnhancedProcessor
+    from doc_converter.processing.enhanced_processor import EnhancedProcessor
     
     if len(sys.argv) > 1:
         file_path = sys.argv[1]

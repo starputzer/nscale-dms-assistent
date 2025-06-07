@@ -44,3 +44,24 @@ if CLASSIFIER_AVAILABLE:
         'ClassificationResult',
         'batch_classify_documents'
     ])
+
+# Export routers for server integration
+try:
+    from .routes import router
+    ROUTER_AVAILABLE = True
+except ImportError:
+    ROUTER_AVAILABLE = False
+    router = None
+
+try:
+    from .advanced_routes import router as advanced_router
+    ADVANCED_ROUTER_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: Could not import advanced_router: {e}")
+    ADVANCED_ROUTER_AVAILABLE = False
+    advanced_router = None
+
+if ROUTER_AVAILABLE:
+    __all__.append('router')
+if ADVANCED_ROUTER_AVAILABLE:
+    __all__.append('advanced_router')

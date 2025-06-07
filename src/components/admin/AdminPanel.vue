@@ -384,6 +384,26 @@ const allTabs = computed(() => [
     label: t("admin.tabs.advancedDocuments", "Erweiterte Dokumentverarbeitung"),
     icon: "fas fa-file-invoice",
   },
+  {
+    id: "backgroundProcessing",
+    label: t("admin.tabs.backgroundProcessing", "Hintergrundprozesse"),
+    icon: "fas fa-tasks",
+  },
+  {
+    id: "widgetMarketplace",
+    label: t("admin.tabs.widgetMarketplace", "Widget Marketplace"),
+    icon: "fas fa-puzzle-piece",
+  },
+  {
+    id: "predictiveAnalytics",
+    label: t("admin.tabs.predictiveAnalytics", "Predictive Analytics"),
+    icon: "fas fa-chart-area",
+  },
+  {
+    id: "abTesting",
+    label: t("admin.tabs.abTesting", "A/B Testing"),
+    icon: "fas fa-flask",
+  },
 ]);
 
 // In simplified version, all tabs are available
@@ -485,6 +505,14 @@ async function loadTabComponent(tabId) {
         import("@/components/admin/tabs/AdminFeatureToggles.enhanced.vue"),
       advancedDocuments: () =>
         import("@/components/admin/tabs/AdminAdvancedDocuments.vue"),
+      backgroundProcessing: () =>
+        import("@/components/admin/tabs/AdminBackgroundProcessing.vue"),
+      widgetMarketplace: () =>
+        import("@/components/admin/tabs/AdminWidgetMarketplace.vue"),
+      predictiveAnalytics: () =>
+        import("@/components/admin/tabs/AdminPredictiveAnalytics.vue"),
+      abTesting: () =>
+        import("@/components/admin/tabs/AdminABTesting.vue"),
     };
 
     if (componentMap[tabId]) {

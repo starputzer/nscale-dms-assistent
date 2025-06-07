@@ -1,0 +1,30 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:3001",
+      "localStorage": [
+        {
+          "name": "auth",
+          "value": "{\"token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJlbWFpbCI6Im1hcnRpbkBkYW5nbGVmZWV0LmNvbSIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTc0OTMyNzk5OCwidG9rZW5FeHBpcnkiOjE3NDkzMjc5OTh9.8XyOf5kE62g8QZaSrEUDsFABgp6tpTEhYg0s9gv_hiE\",\"user\":{\"id\":\"5\",\"username\":\"martin@danglefeet.com\",\"email\":\"martin@danglefeet.com\",\"roles\":[\"admin\"],\"role\":\"admin\"},\"expiresAt\":1749327998000,\"version\":3}"
+        },
+        {
+          "name": "nscale_access_token",
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJlbWFpbCI6Im1hcnRpbkBkYW5nbGVmZWV0LmNvbSIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTc0OTMyNzk5OCwidG9rZW5FeHBpcnkiOjE3NDkzMjc5OTh9.8XyOf5kE62g8QZaSrEUDsFABgp6tpTEhYg0s9gv_hiE"
+        },
+        {
+          "name": "nscale_user_info",
+          "value": "{\"id\":\"5\",\"username\":\"martin@danglefeet.com\",\"email\":\"martin@danglefeet.com\",\"roles\":[\"admin\"],\"role\":\"admin\"}"
+        },
+        {
+          "name": "nscale_token_expires",
+          "value": "1749327998000"
+        },
+        {
+          "name": "sessions",
+          "value": "{\"sessions\":[{\"id\":\"1749241164625-sndg8r14g\",\"title\":\"Neue Unterhaltung\",\"created_at\":1749241164,\"updated_at\":1749241173,\"message_count\":2},{\"id\":\"1749241168889-valnvsq0v\",\"title\":\"Neue Unterhaltung\",\"created_at\":1749241168,\"updated_at\":1749241173,\"message_count\":1},{\"id\":\"1749241167888-eiz9bdb4j\",\"title\":\"Neue Unterhaltung\",\"created_at\":1749241167,\"updated_at\":1749241167,\"message_count\":1},{\"id\":\"1749241163599-9p0j0fkwi\",\"title\":\"Neue Unterhaltung\",\"created_at\":1749241163,\"updated_at\":1749241166,\"message_count\":1},{\"id\":\"1749241163811-o99y5jtse\",\"title\":\"Neue Unterhaltung\",\"created_at\":1749241163,\"updated_at\":1749241166,\"message_count\":1},{\"id\":\"1749241166254-ryy5grdtp\",\"title\":\"Neue Unterhaltung\",\"created_at\":1749241166,\"updated_at\":1749241166,\"message_count\":1},{\"id\":\"1749241162310-xl4lvufcf\",\"title\":\"Neue Unterhaltung\",\"created_at\":1749241162,\"updated_at\":1749241162,\"message_count\":1},{\"id\":\"1749240267270-j7lpfdrgb\",\"title\":\"Neue Unterhaltung\",\"created_at\":1749240267,\"updated_at\":1749240268,\"message_count\":2},{\"id\":\"1749240212102-zapd6usz6\",\"title\":\"Neue Unterhaltung\",\"created_at\":1749240212,\"updated_at\":1749240213,\"message_count\":2},{\"id\":\"1749240204394-dulertlpu\",\"title\":\"Neue Unterhaltung\",\"created_at\":1749240204,\"updated_at\":1749240205,\"message_count\":2},{\"id\":\"1749240046368-tgmknc3g2\",\"title\":\"Neue Unterhaltung\",\"created_at\":1749240046,\"updated_at\":1749240048,\"message_count\":2},{\"id\":\"1749240015855-zkrj1feey\",\"title\":\"Neue Unterhaltung\",\"created_at\":1749240015,\"updated_at\":1749240023,\"message_count\":2},{\"id\":\"1749238505468-8b5olf2gh\",\"title\":\"Neue Unterhaltung\",\"created_at\":1749238505,\"updated_at\":1749238514,\"message_count\":2},{\"id\":\"1748768194748-l29tj02g1\",\"title\":\"Testtetssat\",\"created_at\":1748768194,\"updated_at\":1749231425,\"message_count\":16},{\"id\":\"e834855c-4c3f-4835-85c9-9ce739e0c649\",\"title\":\"Hallo Asfsaffas\",\"created_at\":1748762320,\"updated_at\":1749229786,\"message_count\":15},{\"id\":\"1748778343889-np2800xpk\",\"title\":\"Test\",\"created_at\":1748778344,\"updated_at\":1748778366,\"message_count\":2},{\"id\":\"1748770988024-memlbibbe\",\"title\":\"Heyho\",\"created_at\":1748770988,\"updated_at\":1748776851,\"message_count\":4}],\"currentSessionId\":null,\"messages\":{},\"streaming\":{\"isActive\":false,\"progress\":0,\"currentSessionId\":null},\"isLoading\":false,\"error\":null,\"version\":2,\"pendingMessages\":{},\"syncStatus\":{\"lastSyncTime\":1749241598650,\"isSyncing\":false,\"error\":null,\"pendingSessionIds\":{}},\"availableTags\":[{\"id\":\"important\",\"name\":\"Wichtig\",\"color\":\"#F56565\"},{\"id\":\"work\",\"name\":\"Arbeit\",\"color\":\"#3182CE\"},{\"id\":\"personal\",\"name\":\"Persönlich\",\"color\":\"#48BB78\"},{\"id\":\"research\",\"name\":\"Recherche\",\"color\":\"#9F7AEA\"},{\"id\":\"followup\",\"name\":\"Nachverfolgen\",\"color\":\"#ED8936\"},{\"id\":\"draft\",\"name\":\"Entwurf\",\"color\":\"#A0AEC0\"}],\"availableCategories\":[{\"id\":\"general\",\"name\":\"Allgemein\",\"color\":\"#718096\"},{\"id\":\"support\",\"name\":\"Support\",\"color\":\"#3182CE\"},{\"id\":\"documentation\",\"name\":\"Dokumentation\",\"color\":\"#48BB78\"},{\"id\":\"training\",\"name\":\"Training\",\"color\":\"#9F7AEA\"},{\"id\":\"project\",\"name\":\"Projekt\",\"color\":\"#ED8936\"},{\"id\":\"archive\",\"name\":\"Archiv\",\"color\":\"#A0AEC0\"}],\"selectedSessionIds\":[]}"
+        }
+      ]
+    }
+  ]
+}

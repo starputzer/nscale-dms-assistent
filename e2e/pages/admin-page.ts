@@ -47,6 +47,14 @@ export class AdminPage {
   }
 
   /**
+   * Alias für switchToTab für Kompatibilität mit existierenden Tests
+   * @param tabName Name des Tabs
+   */
+  async selectTab(tabName: string) {
+    await this.switchToTab(tabName);
+  }
+
+  /**
    * Erzeugt einen neuen Benutzer.
    */
   async createUser(

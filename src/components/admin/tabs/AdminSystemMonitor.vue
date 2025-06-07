@@ -382,6 +382,13 @@ const ragMetrics = ref({
 // Background Jobs
 const backgroundJobs = ref([]);
 
+// Network Stats
+const networkStats = ref({
+  rxSpeed: 0,
+  txSpeed: 0,
+  total: 0
+});
+
 // Logs
 const logLevel = ref('all');
 const logSearch = ref('');
@@ -477,14 +484,30 @@ const fetchNetworkInfo = async () => {
   try {
     const response = await apiService.get('/system-monitor/network');
     if (response.success && response.data) {
+      // Initialize networkStats if undefined
+      if (!networkStats.value) {
+        networkStats.value = {
+          rxSpeed: 0,
+          txSpeed: 0,
+          total: 0
+        };
+      }
+      
+      // Update with response data
       networkStats.value = {
-        rxSpeed: response.data.rxSpeed,
-        txSpeed: response.data.txSpeed,
-        total: response.data.totalTraffic
+        rxSpeed: response.data.rxSpeed || response.data.recv_rate_mbps || 0,
+        txSpeed: response.data.txSpeed || response.data.send_rate_mbps || 0,
+        total: response.data.totalTraffic || response.data.total_bytes_recv || 0
       };
     }
   } catch (error) {
     console.error('Error fetching network info:', error);
+    // Initialize with default values on error
+    networkStats.value = {
+      rxSpeed: 0,
+      txSpeed: 0,
+      total: 0
+    };
   }
 };
 
@@ -509,14 +532,21 @@ const fetchBackgroundJobs = async () => {
   try {
     const response = await apiService.get('/system-monitor/jobs');
     if (response.success && response.data) {
-      backgroundJobs.value = response.data.map(job => ({
-        id: job.id,
-        name: job.name,
-        status: job.status,
-        progress: job.progress,
-        startTime: new Date(job.startTime * 1000),
-        duration: job.duration
-      }));
+      // Handle different response formats
+      const jobData = response.data.recent_jobs || response.data.jobs || response.data;
+      
+      if (Array.isArray(jobData)) {
+        backgroundJobs.value = jobData.map(job => ({
+          id: job.id,
+          name: job.name || job.type,
+          status: job.status,
+          progress: job.progress || 0,
+          startTime: job.started_at ? new Date(job.started_at) : new Date(),
+          duration: job.duration || job.duration_seconds || 0
+        }));
+      } else {
+        backgroundJobs.value = [];
+      }
     }
   } catch (error) {
     console.error('Error fetching background jobs:', error);
@@ -527,12 +557,19 @@ const fetchSystemLogs = async () => {
   try {
     const response = await apiService.get(`/system-monitor/logs?limit=100${logLevel.value !== 'all' ? '&level=' + logLevel.value : ''}`);
     if (response.success && response.data) {
-      systemLogs.value = response.data.map(log => ({
-        id: log.id,
-        timestamp: new Date(log.timestamp * 1000),
-        level: log.level,
-        message: log.message
-      }));
+      // Handle different response formats
+      const logsData = response.data.logs || response.data;
+      
+      if (Array.isArray(logsData)) {
+        systemLogs.value = logsData.map((log, index) => ({
+          id: log.id || index,
+          timestamp: new Date(log.timestamp),
+          level: log.level,
+          message: log.message
+        }));
+      } else {
+        systemLogs.value = [];
+      }
     }
   } catch (error) {
     console.error('Error fetching system logs:', error);
@@ -714,6 +751,10 @@ const clearLogs = async () => {
 
 // Utility functions
 const formatBytes = (bytes: number) => {
+  if (bytes === undefined || bytes === null || isNaN(bytes)) {
+    return '0 B';
+  }
+  
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
   let size = bytes;
   let unitIndex = 0;

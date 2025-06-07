@@ -188,27 +188,27 @@ const { isMounted, safeMountedExecution } = initializeAdminComponent({
     // Load dashboard stats from new API
     try {
       console.log("[AdminDashboard] Loading dashboard stats");
-      const response = await apiService.get('/admin-dashboard-standard/stats');
-      if (response.success && response.data) {
+      const response = await apiService.get('/admin/dashboard/summary');
+      if (response) {
         // Update stores with real data
-        dashboardStats.value = response.data;
+        dashboardStats.value = response;
         
         // Update system stats for compatibility
         adminSystemStore.stats = {
-          memory_usage_percent: response.data.memory_usage_percent,
-          cpu_usage_percent: response.data.cpu_usage_percent,
-          total_sessions: response.data.total_sessions,
-          total_messages: response.data.total_messages,
-          avg_response_time_ms: response.data.avg_response_time_ms,
-          uptime_days: response.data.uptime_days
+          memory_usage_percent: response.memory_usage_percent,
+          cpu_usage_percent: response.cpu_usage_percent,
+          total_sessions: response.total_sessions,
+          total_messages: response.total_messages,
+          avg_response_time_ms: response.avg_response_time_ms,
+          uptime_days: response.uptime_days
         };
         
         // Update user count
-        adminUsersStore.totalUsers = response.data.total_users;
+        adminUsersStore.totalUsers = response.total_users;
         
         // Update feedback stats
         adminFeedbackStore.stats = {
-          positive_percent: response.data.positive_feedback_percent
+          positive_percent: response.positive_feedback_percent
         };
       }
     } catch (e) {
@@ -217,9 +217,9 @@ const { isMounted, safeMountedExecution } = initializeAdminComponent({
 
     try {
       console.log("[AdminDashboard] Loading recent activity");
-      const activityResponse = await apiService.get('/admin-dashboard-standard/recent-activity');
-      if (activityResponse.success && activityResponse.data) {
-        recentActivity.value = activityResponse.data.activities;
+      const activityResponse = await apiService.get('/admin/dashboard/activity');
+      if (activityResponse && activityResponse.activities) {
+        recentActivity.value = activityResponse.activities;
       }
     } catch (e) {
       console.error("[AdminDashboard] Error loading recent activity:", e);

@@ -22,8 +22,6 @@ import sys
 from ..core.logging import LogManager
 from ..doc_converter.document_classifier import DocumentClassifier, ClassificationResult
 from doc_converter.processing.enhanced_processor import EnhancedProcessor, ProcessedDocument
-from ..rag.knowledge_manager import create_knowledge_manager, IntegrationResult
-from ..rag.quality_assurance import create_quality_assurance, QualityReport
 
 
 class ProcessingStatus(Enum):
@@ -127,6 +125,11 @@ class BackgroundProcessor:
         # Processing components
         self.classifier = DocumentClassifier()
         self.processor = EnhancedProcessor()
+        
+        # Lazy import to avoid circular dependency
+        from ..rag.knowledge_manager import create_knowledge_manager
+        from ..rag.quality_assurance import create_quality_assurance
+        
         self.knowledge_mgr = create_knowledge_manager(self.db_path)
         self.qa_system = create_quality_assurance(self.knowledge_mgr)
         

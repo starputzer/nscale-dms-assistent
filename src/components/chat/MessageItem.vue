@@ -191,17 +191,29 @@
       </div>
     </div>
   </div>
+
+  <!-- Feedback Comment Dialog -->
+  <FeedbackCommentDialog
+    :is-open="showFeedbackDialog"
+    :message-id="message.id"
+    :session-id="sessionStore.currentSession?.id || ''"
+    @close="handleFeedbackDialogClose"
+    @submit="handleFeedbackDialogSubmit"
+  />
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 import hljs from "highlight.js";
 import { useUIStore } from "@/stores/ui";
 import { useSourceReferences } from "@/composables/useSourceReferences";
+import { useSessionStore } from "@/stores/sessions";
 import type { ChatMessage } from "@/types/session";
 import { linkifySourceReferences } from "@/utils/messageFormatter";
+import { feedbackService } from "@/services/api/FeedbackService";
+import FeedbackCommentDialog from "./FeedbackCommentDialog.vue";
 
 // Konfiguration für marked (Markdown-Parser)
 marked.setOptions({
@@ -274,7 +286,12 @@ const emit = defineEmits<{
 const feedback = ref<"positive" | "negative" | null>(null);
 const contentElement = ref<HTMLElement | null>(null);
 const uiStore = useUIStore();
+const sessionStore = useSessionStore();
 const sourceRefs = useSourceReferences();
+
+// Dialog state for negative feedback comments
+const showFeedbackDialog = ref(false);
+const pendingFeedbackType = ref<"positive" | "negative" | null>(null);
 
 // Debug: Watch message content changes
 watch(
@@ -450,24 +467,87 @@ function truncateContent(content: string, maxLength: number): string {
   return content.substring(0, maxLength) + "...";
 }
 
-function handleFeedback(type: "positive" | "negative"): void {
-  // Toggle-Verhalten, wenn bereits ausgewählt
-  if (feedback.value === type) {
-    feedback.value = null;
-  } else {
-    feedback.value = type;
+async function handleFeedback(type: "positive" | "negative"): Promise<void> {
+  console.log("[MessageItem] handleFeedback called with type:", type);
+
+  // Toggle feedback
+  const previousFeedback = feedback.value;
+  feedback.value = feedback.value === type ? null : type;
+
+  // Skip if feedback was removed
+  if (feedback.value === null) {
+    console.log("[MessageItem] Feedback removed");
+    return;
   }
 
-  // Event emittieren
-  emit("feedback", {
-    messageId: props.message.id,
-    type: feedback.value || type,
-  });
+  // For negative feedback, show comment dialog
+  if (type === "negative" && previousFeedback !== "negative") {
+    pendingFeedbackType.value = type;
+    showFeedbackDialog.value = true;
+    return;
+  }
 
-  // Erfolgsmeldung anzeigen
-  uiStore.showSuccess(
-    `Vielen Dank für Ihr ${type === "positive" ? "positives" : "negatives"} Feedback!`,
-  );
+  // For positive feedback, submit immediately
+  await submitFeedback(type);
+}
+
+async function submitFeedback(type: "positive" | "negative", comment?: string): Promise<void> {
+  try {
+    // Get current session
+    const currentSession = sessionStore.currentSession;
+    if (!currentSession) {
+      feedback.value = null; // Reset state
+      uiStore.showError("Keine aktive Sitzung gefunden");
+      return;
+    }
+
+    // Submit feedback to API
+    const response = await feedbackService.submitMessageFeedback(
+      props.message.id,
+      currentSession.id,
+      type,
+      comment
+    );
+
+    if (response.success) {
+      // Event emittieren
+      emit("feedback", {
+        messageId: props.message.id,
+        type: type,
+        feedback: comment,
+      });
+
+      // Erfolgsmeldung anzeigen
+      uiStore.showSuccess(
+        `Vielen Dank für Ihr ${type === "positive" ? "positives" : "negatives"} Feedback!`
+      );
+    } else {
+      // Reset state on error
+      feedback.value = null;
+      uiStore.showError("Feedback konnte nicht gespeichert werden");
+    }
+  } catch (error) {
+    console.error("[MessageItem] Error submitting feedback:", error);
+    // Reset state on error
+    feedback.value = null;
+    uiStore.showError("Fehler beim Senden des Feedbacks");
+  }
+}
+
+function handleFeedbackDialogClose(): void {
+  showFeedbackDialog.value = false;
+  pendingFeedbackType.value = null;
+  feedback.value = null; // Reset feedback state if dialog is cancelled
+}
+
+async function handleFeedbackDialogSubmit(comment: string): Promise<void> {
+  showFeedbackDialog.value = false;
+  
+  if (pendingFeedbackType.value) {
+    await submitFeedback(pendingFeedbackType.value, comment);
+  }
+  
+  pendingFeedbackType.value = null;
 }
 
 function handleDelete(): void {
@@ -707,6 +787,19 @@ function setupMessageUpdateListener() {
   };
 }
 
+// Load existing feedback
+async function loadExistingFeedback() {
+  try {
+    const existingFeedback = await feedbackService.getFeedbackForMessage(props.message.id);
+    if (existingFeedback && existingFeedback.type) {
+      feedback.value = existingFeedback.type;
+    }
+  } catch (error) {
+    // It's ok if no feedback exists yet
+    console.debug("[MessageItem] No existing feedback for message:", props.message.id);
+  }
+}
+
 // Lifecycle Hooks
 onMounted(() => {
   // Set up code highlighting and source references
@@ -723,6 +816,11 @@ onMounted(() => {
 
   // Clean up listener on unmount
   onBeforeUnmount(cleanup);
+  
+  // Load existing feedback if this is an assistant message
+  if (props.message.role === 'assistant' && props.showActions) {
+    loadExistingFeedback();
+  }
 });
 
 // Watches

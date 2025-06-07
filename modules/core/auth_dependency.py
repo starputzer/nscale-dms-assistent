@@ -75,3 +75,31 @@ def require_admin_user():
 
 # Alias for compatibility with different naming conventions
 get_admin_user = require_admin
+
+async def get_current_user_ws(token: str) -> Dict[str, Any]:
+    """WebSocket-specific authentication function"""
+    try:
+        # Verify and decode the token
+        payload = jwt.decode(token, Config.SECRET_KEY, algorithms=['HS256'])
+        
+        # Extract user info from payload
+        user_data = {
+            'user_id': payload.get('user_id'),
+            'email': payload.get('email'),
+            'role': payload.get('role', 'user')
+        }
+        
+        # Check if we have the required fields
+        if not user_data['user_id'] or not user_data['email']:
+            return None
+            
+        return user_data
+        
+    except JWTError:
+        return None
+    except Exception:
+        return None
+
+async def verify_admin(user_data: Dict[str, Any]) -> bool:
+    """Verify if user has admin role"""
+    return user_data.get('role') == 'admin'

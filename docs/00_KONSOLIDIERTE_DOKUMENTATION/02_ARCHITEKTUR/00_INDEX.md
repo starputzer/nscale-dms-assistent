@@ -31,3 +31,7 @@ Dieser Bereich enthält alle Dokumente zur Systemarchitektur und technischen Kon
   - Phase 2.5: Background Processing
   - Phase 2.6: Admin Interface Extensions
   - Phase 2.7: Advanced Document Intelligence
+
+## System Monitoring
+
+- [50_model_health_system.md](50_model_health_system.md) - Model Health Check System

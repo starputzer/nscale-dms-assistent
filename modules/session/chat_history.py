@@ -62,14 +62,16 @@ class ChatHistoryManager:
                 # Index existiert bereits
                 pass
         
-        # Chat-Nachrichten Tabelle
+        # Chat-Nachrichten Tabelle mit neuem Schema
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS chat_messages (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            session_id INTEGER NOT NULL,
-            is_user BOOLEAN NOT NULL,
-            message TEXT NOT NULL,
+            id TEXT PRIMARY KEY,
+            session_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            role TEXT NOT NULL,
+            content TEXT NOT NULL,
             created_at INTEGER NOT NULL,
+            model TEXT,
             FOREIGN KEY (session_id) REFERENCES chat_sessions(id)
         )
         ''')
@@ -103,7 +105,7 @@ class ChatHistoryManager:
             logger.error(f"Fehler beim Erstellen einer Chat-Session: {e}")
             return None
     
-    def add_message(self, session_id: int, message: str, is_user: bool = True) -> Optional[int]:
+    def add_message(self, session_id: int, message: str, is_user: bool = True, user_id: int = 1) -> Optional[int]:
         """Fügt eine Nachricht zum Chat-Verlauf hinzu und aktualisiert ggf. den Titel"""
         try:
             now = int(time.time())
@@ -111,10 +113,14 @@ class ChatHistoryManager:
             conn = sqlite3.connect(Config.DB_PATH)
             cursor = conn.cursor()
             
-            # Nachricht hinzufügen
+            # Generate message ID
+            import uuid as uuid_lib
+            message_id = str(uuid_lib.uuid4())
+            
+            # Nachricht hinzufügen mit neuem Schema
             cursor.execute(
-                "INSERT INTO chat_messages (session_id, is_user, message, created_at) VALUES (?, ?, ?, ?)",
-                (session_id, is_user, message, now)
+                "INSERT INTO chat_messages (id, session_id, user_id, role, content, created_at, model) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (message_id, str(session_id), str(user_id), 'user' if is_user else 'assistant', message, now, 'llama3:8b-instruct-q4_1')
             )
             
             message_id = cursor.lastrowid
@@ -129,8 +135,8 @@ class ChatHistoryManager:
             if is_user:
                 # Prüfen, ob es die erste Benutzernachricht ist
                 cursor.execute(
-                    "SELECT COUNT(*) FROM chat_messages WHERE session_id = ? AND is_user = 1",
-                    (session_id,)
+                    "SELECT COUNT(*) FROM chat_messages WHERE session_id = ? AND role = 'user'",
+                    (str(session_id),)
                 )
                 message_count = cursor.fetchone()[0]
                 
@@ -173,16 +179,16 @@ class ChatHistoryManager:
             cursor = conn.cursor()
             
             cursor.execute(
-                "SELECT id, is_user, message, created_at FROM chat_messages WHERE session_id = ? ORDER BY created_at",
+                "SELECT id, role, content, created_at FROM chat_messages WHERE session_id = ? ORDER BY created_at",
                 (session_id,)
             )
             
             messages = []
             for row in cursor.fetchall():
-                # Wichtig: is_user korrekt als Boolean umwandeln
+                # Convert role to is_user for backward compatibility
                 messages.append({
                     'id': row[0],
-                    'is_user': bool(row[1]),
+                    'is_user': row[1] == 'user',  # Convert role to is_user
                     'message': row[2],
                     'timestamp': row[3]
                 })

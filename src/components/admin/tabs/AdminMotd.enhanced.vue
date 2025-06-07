@@ -809,8 +809,24 @@ const toast = useToast();
 // Responsive detection
 const { isMobile, isTablet, isDesktop } = useWindowSize();
 
-// Local state
-const motdConfig = ref<MotdConfig>({ ...config.value });
+// Local state with proper default structure
+const motdConfig = ref<MotdConfig>({
+  enabled: config.value?.enabled ?? true,
+  format: config.value?.format ?? "markdown",
+  content: config.value?.content ?? "",
+  style: {
+    backgroundColor: config.value?.style?.backgroundColor ?? "#d1ecf1",
+    borderColor: config.value?.style?.borderColor ?? "#bee5eb",
+    textColor: config.value?.style?.textColor ?? "#0c5460",
+    iconClass: config.value?.style?.iconClass ?? "info-circle",
+  },
+  display: {
+    position: config.value?.display?.position ?? "top",
+    dismissible: config.value?.display?.dismissible ?? true,
+    showOnStartup: config.value?.display?.showOnStartup ?? true,
+    showInChat: config.value?.display?.showInChat ?? true,
+  },
+});
 const scheduling = ref({
   enabled: false,
   startDate: new Date().toISOString().slice(0, 16),
@@ -1297,7 +1313,24 @@ function deleteVersion(version, index) {
 async function loadMotd() {
   try {
     await motdStore.fetchConfig();
-    motdConfig.value = { ...config.value };
+    // Ensure proper structure even if config is incomplete
+    motdConfig.value = {
+      enabled: config.value?.enabled ?? true,
+      format: config.value?.format ?? "markdown",
+      content: config.value?.content ?? "",
+      style: {
+        backgroundColor: config.value?.style?.backgroundColor ?? "#d1ecf1",
+        borderColor: config.value?.style?.borderColor ?? "#bee5eb",
+        textColor: config.value?.style?.textColor ?? "#0c5460",
+        iconClass: config.value?.style?.iconClass ?? "info-circle",
+      },
+      display: {
+        position: config.value?.display?.position ?? "top",
+        dismissible: config.value?.display?.dismissible ?? true,
+        showOnStartup: config.value?.display?.showOnStartup ?? true,
+        showInChat: config.value?.display?.showInChat ?? true,
+      },
+    };
 
     // Simulate version history
     versionHistory.value = [
@@ -1373,9 +1406,27 @@ function togglePreview() {
 watch(
   () => config.value,
   (newValue) => {
-    motdConfig.value = { ...newValue };
+    if (newValue) {
+      motdConfig.value = {
+        enabled: newValue.enabled ?? true,
+        format: newValue.format ?? "markdown",
+        content: newValue.content ?? "",
+        style: {
+          backgroundColor: newValue.style?.backgroundColor ?? "#d1ecf1",
+          borderColor: newValue.style?.borderColor ?? "#bee5eb",
+          textColor: newValue.style?.textColor ?? "#0c5460",
+          iconClass: newValue.style?.iconClass ?? "info-circle",
+        },
+        display: {
+          position: newValue.display?.position ?? "top",
+          dismissible: newValue.display?.dismissible ?? true,
+          showOnStartup: newValue.display?.showOnStartup ?? true,
+          showInChat: newValue.display?.showInChat ?? true,
+        },
+      };
+    }
   },
-  { deep: true },
+  { deep: true, immediate: true },
 );
 
 // Watch for window size changes to update preview mode automatically

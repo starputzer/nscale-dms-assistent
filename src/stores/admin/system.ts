@@ -152,7 +152,7 @@ export const useAdminSystemStore = defineStore('adminSystem', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const response = await apiService.get<DashboardSummary>('/admin-dashboard/summary');
+      const response = await apiService.get<DashboardSummary>('/admin/dashboard/summary');
       if (response.success && response.data) {
         dashboardSummary.value = response.data;
       }

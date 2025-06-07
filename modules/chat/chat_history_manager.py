@@ -32,6 +32,15 @@ class ChatHistoryManager:
             with self.db_manager.get_session() as conn:
                 cursor = conn.cursor()
                 
+                # First get the internal session id from uuid
+                cursor.execute("SELECT id FROM chat_sessions WHERE uuid = ?", (session_id,))
+                row = cursor.fetchone()
+                if not row:
+                    logger.error(f"Session with UUID {session_id} not found")
+                    return None
+                    
+                internal_session_id = row['id']
+                
                 message_id = str(uuid.uuid4())
                 now = int(datetime.now().timestamp())
                 
@@ -45,7 +54,7 @@ class ChatHistoryManager:
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                 """, (
                     message_id,
-                    session_id,
+                    internal_session_id,  # Use internal ID for messages table
                     user_id,
                     role,
                     content,
@@ -67,13 +76,22 @@ class ChatHistoryManager:
             with self.db_manager.get_session() as conn:
                 cursor = conn.cursor()
                 
+                # First get the internal session id from uuid
+                cursor.execute("SELECT id FROM chat_sessions WHERE uuid = ?", (session_id,))
+                row = cursor.fetchone()
+                if not row:
+                    logger.error(f"Session with UUID {session_id} not found")
+                    return []
+                    
+                internal_session_id = row['id']
+                
                 cursor.execute("""
                     SELECT id, role, content, created_at, model, user_id
                     FROM chat_messages
                     WHERE session_id = ?
                     ORDER BY created_at DESC
                     LIMIT ?
-                """, (session_id, limit))
+                """, (internal_session_id, limit))
                 
                 messages = []
                 for row in cursor.fetchall():
@@ -110,7 +128,7 @@ class ChatHistoryManager:
                 
                 # Get message details
                 cursor.execute("""
-                    SELECT m.session_id, m.content as answer, s.user_id
+                    SELECT m.session_id, m.content as answer, s.user_id, s.uuid
                     FROM chat_messages m
                     JOIN chat_sessions s ON m.session_id = s.id
                     WHERE m.id = ? AND m.role = 'assistant'
@@ -119,11 +137,21 @@ class ChatHistoryManager:
                 message_data = cursor.fetchone()
                 if not message_data:
                     logger.error(f"Message {message_id} not found or not an assistant message")
+                    # Check if message exists at all
+                    cursor.execute("SELECT COUNT(*) as count FROM chat_messages WHERE id = ?", (message_id,))
+                    count_result = cursor.fetchone()
+                    if count_result and count_result['count'] == 0:
+                        logger.error(f"Message {message_id} does not exist in database")
+                    else:
+                        cursor.execute("SELECT role FROM chat_messages WHERE id = ?", (message_id,))
+                        role_result = cursor.fetchone()
+                        if role_result:
+                            logger.error(f"Message {message_id} has role '{role_result['role']}', expected 'assistant'")
                     return None
                 
-                # Verify user owns the session
-                if message_data["user_id"] != user_id:
-                    logger.error(f"User {user_id} doesn't own the session")
+                # Verify user owns the session (convert to string for comparison)
+                if str(message_data["user_id"]) != str(user_id):
+                    logger.error(f"User {user_id} doesn't own the session (session user: {message_data['user_id']})")
                     return None
                 
                 # Get the previous user message as the question

@@ -1,0 +1,30 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:3001",
+      "localStorage": [
+        {
+          "name": "auth",
+          "value": "{\"token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImV4cCI6MTc0OTMyODAwMCwidG9rZW5FeHBpcnkiOjE3NDkzMjgwMDB9.63134AT9txcjiGSwm6m5FPGCyc6Ndt89wZrMa98GRCg\",\"user\":{\"id\":\"8\",\"username\":\"user@example.com\",\"email\":\"user@example.com\",\"roles\":[\"user\"],\"role\":\"user\"},\"expiresAt\":1749328000000,\"version\":3}"
+        },
+        {
+          "name": "nscale_access_token",
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImV4cCI6MTc0OTMyODAwMCwidG9rZW5FeHBpcnkiOjE3NDkzMjgwMDB9.63134AT9txcjiGSwm6m5FPGCyc6Ndt89wZrMa98GRCg"
+        },
+        {
+          "name": "nscale_user_info",
+          "value": "{\"id\":\"8\",\"username\":\"user@example.com\",\"email\":\"user@example.com\",\"roles\":[\"user\"],\"role\":\"user\"}"
+        },
+        {
+          "name": "nscale_token_expires",
+          "value": "1749328000000"
+        },
+        {
+          "name": "sessions",
+          "value": "{\"sessions\":[],\"currentSessionId\":null,\"messages\":{},\"streaming\":{\"isActive\":false,\"progress\":0,\"currentSessionId\":null},\"isLoading\":false,\"error\":null,\"version\":2,\"pendingMessages\":{},\"syncStatus\":{\"lastSyncTime\":1749241600030,\"isSyncing\":false,\"error\":null,\"pendingSessionIds\":{}},\"availableTags\":[{\"id\":\"important\",\"name\":\"Wichtig\",\"color\":\"#F56565\"},{\"id\":\"work\",\"name\":\"Arbeit\",\"color\":\"#3182CE\"},{\"id\":\"personal\",\"name\":\"Persönlich\",\"color\":\"#48BB78\"},{\"id\":\"research\",\"name\":\"Recherche\",\"color\":\"#9F7AEA\"},{\"id\":\"followup\",\"name\":\"Nachverfolgen\",\"color\":\"#ED8936\"},{\"id\":\"draft\",\"name\":\"Entwurf\",\"color\":\"#A0AEC0\"}],\"availableCategories\":[{\"id\":\"general\",\"name\":\"Allgemein\",\"color\":\"#718096\"},{\"id\":\"support\",\"name\":\"Support\",\"color\":\"#3182CE\"},{\"id\":\"documentation\",\"name\":\"Dokumentation\",\"color\":\"#48BB78\"},{\"id\":\"training\",\"name\":\"Training\",\"color\":\"#9F7AEA\"},{\"id\":\"project\",\"name\":\"Projekt\",\"color\":\"#ED8936\"},{\"id\":\"archive\",\"name\":\"Archiv\",\"color\":\"#A0AEC0\"}],\"selectedSessionIds\":[]}"
+        }
+      ]
+    }
+  ]
+}

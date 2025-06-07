@@ -1,4 +1,0 @@
-
-> nscale-dms-assistent@1.0.0 test
-> vitest run test/system-integrity/ --reporter=json
-

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set Admin Token</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .token-input {
+            width: 100%;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .success {
+            color: green;
+            margin-top: 20px;
+        }
+        .error {
+            color: red;
+            margin-top: 20px;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Token Setup</h1>
+        
+        <div class="info">
+            <p><strong>Current Token:</strong></p>
+            <p style="font-family: monospace; word-break: break-all;">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJtYXJ0aW5AZGFuZ2xlZmVldC5jb20iLCJ1c2VyX2lkIjoxLCJlbWFpbCI6Im1hcnRpbkBkYW5nbGVmZWV0LmNvbSIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTc0OTc0OTExN30.dlfJBG3m-CZFMm51iWQmGygHg08cdDeMNQE5UbMRzxs</p>
+            <p><small>Expires: 2025-06-12</small></p>
+        </div>
+        
+        <button onclick="setToken()">Set Admin Token</button>
+        <button onclick="testToken()" style="margin-left: 10px;">Test Token</button>
+        <button onclick="clearToken()" style="margin-left: 10px; background: #dc3545;">Clear Token</button>
+        
+        <div id="message"></div>
+    </div>
+
+    <script>
+        const adminToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJtYXJ0aW5AZGFuZ2xlZmVldC5jb20iLCJ1c2VyX2lkIjoxLCJlbWFpbCI6Im1hcnRpbkBkYW5nbGVmZWV0LmNvbSIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTc0OTc0OTExN30.dlfJBG3m-CZFMm51iWQmGygHg08cdDeMNQE5UbMRzxs';
+        
+        function setToken() {
+            // Set token in localStorage
+            localStorage.setItem('auth_token', adminToken);
+            localStorage.setItem('user', JSON.stringify({
+                id: 1,
+                email: 'martin@danglefeet.com',
+                role: 'admin'
+            }));
+            
+            // Also set in sessionStorage for good measure
+            sessionStorage.setItem('auth_token', adminToken);
+            
+            document.getElementById('message').innerHTML = '<p class="success">✓ Token set successfully!</p>';
+        }
+        
+        async function testToken() {
+            try {
+                const response = await fetch('/api/admin/dashboard/summary', {
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('message').innerHTML = `
+                        <p class="success">✓ Token is valid!</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    document.getElementById('message').innerHTML = `<p class="error">✗ Token test failed: ${response.status}</p>`;
+                }
+            } catch (error) {
+                document.getElementById('message').innerHTML = `<p class="error">✗ Error: ${error.message}</p>`;
+            }
+        }
+        
+        function clearToken() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+            sessionStorage.removeItem('auth_token');
+            document.getElementById('message').innerHTML = '<p class="success">✓ Token cleared!</p>';
+        }
+        
+        // Check current status
+        window.onload = function() {
+            const currentToken = localStorage.getItem('auth_token');
+            if (currentToken) {
+                document.getElementById('message').innerHTML = '<p class="info">Token is already set in localStorage</p>';
+            }
+        }
+    </script>
+</body>
+</html>

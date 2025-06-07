@@ -26,6 +26,11 @@ export default {
         search: "Search",
         filter: "Filter",
         noData: "No data found",
+        yes: "Yes",
+        no: "No",
+        active: "Active",
+        inactive: "Inactive",
+        characters: "characters"
       }
     }
   },
@@ -53,6 +58,11 @@ export default {
         search: "Suchen",
         filter: "Filtern",
         noData: "Keine Daten gefunden",
+        yes: "Ja",
+        no: "Nein",
+        active: "Aktiv",
+        inactive: "Inaktiv",
+        characters: "Zeichen"
       }
     }
   }
